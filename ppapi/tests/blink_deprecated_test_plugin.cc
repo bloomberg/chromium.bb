@@ -31,6 +31,9 @@
 // * plugin.testCloneObject(): creates and returns another instance of the
 // plugin object.
 //
+// * plugin.testCreateTestObject(): creates and returns a new TestObject
+// instance (see below).
+//
 // * plugin.testExecuteScript(script): synchronously evaluates |script| and
 // returns the result.
 //
@@ -48,6 +51,9 @@
 //
 // Properties:
 // * plugin.testObject (read-only): a TestObject instance (see below).
+//
+// * plugin.testObjectCount (read-only): the number of TestObject instance
+// created.
 //
 // * plugin.testGetUndefined (read-only): returns undefined.
 //
@@ -151,11 +157,16 @@ class TestObjectSO : public ScriptableBase {
  public:
   explicit TestObjectSO(pp::InstancePrivate* instance)
       : ScriptableBase(instance) {
+    ++count_;
     properties_.insert(std::make_pair(
         "testObject",
         base::Bind(&TestObjectSO::TestObjectAccessor, base::Unretained(this))));
   }
-  ~TestObjectSO() override {}
+  ~TestObjectSO() override {
+    --count_;
+  }
+
+  static int32_t count() { return count_; }
 
  private:
   void TestObjectAccessor(bool set, pp::Var* var) {
@@ -166,8 +177,12 @@ class TestObjectSO : public ScriptableBase {
     *var = test_object_;
   }
 
+  static int32_t count_;
+
   pp::VarPrivate test_object_;
 };
+
+int32_t TestObjectSO::count_ = 0;
 
 class InstanceSO : public ScriptableBase {
  public:
@@ -182,6 +197,9 @@ class InstanceSO : public ScriptableBase {
     methods_.insert(std::make_pair(
         "testCloneObject",
         base::Bind(&InstanceSO::TestCloneObject, base::Unretained(this))));
+    methods_.insert(std::make_pair(
+        "testCreateTestObject",
+        base::Bind(&InstanceSO::TestCreateTestObject, base::Unretained(this))));
     methods_.insert(std::make_pair(
         "testExecuteScript",
         base::Bind(&InstanceSO::TestExecuteScript, base::Unretained(this))));
@@ -201,6 +219,9 @@ class InstanceSO : public ScriptableBase {
     properties_.insert(std::make_pair(
         "testObject", base::Bind(&InstanceSO::TestObjectAccessor,
                                  base::Unretained(this))));
+    properties_.insert(std::make_pair(
+        "testObjectCount", base::Bind(&InstanceSO::TestObjectCountAccessor,
+                                      base::Unretained(this))));
     properties_.insert(std::make_pair(
         "testGetUndefined", base::Bind(&InstanceSO::TestGetUndefinedAccessor,
                                        base::Unretained(this))));
@@ -228,6 +249,12 @@ class InstanceSO : public ScriptableBase {
   pp::Var TestCloneObject(const std::vector<pp::Var>& args,
                           pp::Var* exception) {
     return pp::VarPrivate(instance_, new InstanceSO(instance_));
+  }
+
+  // Requires no argument.
+  pp::Var TestCreateTestObject(const std::vector<pp::Var>& args,
+                               pp::Var* exception) {
+    return pp::VarPrivate(instance_, new TestObjectSO(instance_));
   }
 
   // Requires one argument. The argument is passed through as-is to
@@ -277,6 +304,12 @@ class InstanceSO : public ScriptableBase {
     if (test_object_.is_undefined())
       test_object_ = pp::VarPrivate(instance_, new TestObjectSO(instance_));
     *var = test_object_;
+  }
+
+  void TestObjectCountAccessor(bool set, pp::Var* var) {
+    if (set)
+      return;
+    *var = pp::Var(TestObjectSO::count());
   }
 
   void TestGetUndefinedAccessor(bool set, pp::Var* var) {
