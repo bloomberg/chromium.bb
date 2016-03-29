@@ -15,6 +15,15 @@
 
 namespace syncer_v2 {
 
+namespace {
+
+void HashSpecifics(const sync_pb::EntitySpecifics& specifics,
+                   std::string* hash) {
+  base::Base64Encode(base::SHA1HashString(specifics.SerializeAsString()), hash);
+}
+
+}  // namespace
+
 scoped_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
     const std::string& client_tag,
     const std::string& client_tag_hash,
@@ -66,6 +75,14 @@ bool ProcessorEntityTracker::HasCommitData() const {
   return !commit_data_->client_tag_hash.empty();
 }
 
+bool ProcessorEntityTracker::MatchesSpecificsHash(
+    const sync_pb::EntitySpecifics& specifics) const {
+  DCHECK(specifics.ByteSize() > 0);
+  std::string hash;
+  HashSpecifics(specifics, &hash);
+  return hash == metadata_.specifics_hash();
+}
+
 bool ProcessorEntityTracker::IsUnsynced() const {
   return metadata_.sequence_number() > metadata_.acked_sequence_number();
 }
@@ -95,9 +112,6 @@ void ProcessorEntityTracker::ApplyUpdateFromServer(
   DCHECK(metadata_.has_client_tag_hash());
   DCHECK(!metadata_.client_tag_hash().empty());
   DCHECK(metadata_.has_sequence_number());
-
-  // TODO(stanisc): crbug/561829: Filter out update if specifics hash hasn't
-  // changed.
 
   // TODO(stanisc): crbug/521867: Understand and verify the conflict resolution
   // logic here.
@@ -203,10 +217,7 @@ void ProcessorEntityTracker::IncrementSequenceNumber() {
 void ProcessorEntityTracker::UpdateSpecificsHash(
     const sync_pb::EntitySpecifics& specifics) {
   if (specifics.ByteSize() > 0) {
-    std::string hash_input;
-    specifics.AppendToString(&hash_input);
-    base::Base64Encode(base::SHA1HashString(hash_input),
-                       metadata_.mutable_specifics_hash());
+    HashSpecifics(specifics, metadata_.mutable_specifics_hash());
   } else {
     metadata_.clear_specifics_hash();
   }

@@ -116,6 +116,9 @@ class SYNC_EXPORT ProcessorEntityTracker {
   // Check if the instance has cached commit data.
   bool HasCommitData() const;
 
+  // Check whether |specifics| matches the stored specifics_hash.
+  bool MatchesSpecificsHash(const sync_pb::EntitySpecifics& specifics) const;
+
  private:
   friend class ProcessorEntityTrackerTest;
 

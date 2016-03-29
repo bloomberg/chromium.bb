@@ -250,10 +250,11 @@ void SharedModelTypeProcessor::Put(const std::string& tag,
       data->creation_time = data->modification_time;
     }
     entity = CreateEntity(tag, *data);
+  } else if (entity->MatchesSpecificsHash(data->specifics)) {
+    // Ignore changes that don't actually change anything.
+    return;
   }
 
-  // TODO(stanisc): crbug.com/561829: Avoid committing a change if there is no
-  // actual change.
   entity->MakeLocalChange(std::move(data));
   metadata_change_list->UpdateMetadata(tag, entity->metadata());
 
@@ -382,16 +383,16 @@ void SharedModelTypeProcessor::OnUpdateReceived(
       entity = CreateEntity(data);
       entity_changes.push_back(
           EntityChange::CreateAdd(entity->client_tag(), update.entity));
-    } else {
-      if (data.is_deleted()) {
-        entity_changes.push_back(
-            EntityChange::CreateDelete(entity->client_tag()));
-      } else {
-        // TODO(stanisc): crbug.com/561829: Avoid sending an update to the
-        // service if there is no actual change.
-        entity_changes.push_back(
-            EntityChange::CreateUpdate(entity->client_tag(), update.entity));
-      }
+    } else if (entity->UpdateIsReflection(update.response_version)) {
+      // Seen this update before; just ignore it.
+      continue;
+    } else if (data.is_deleted()) {
+      entity_changes.push_back(
+          EntityChange::CreateDelete(entity->client_tag()));
+    } else if (!entity->MatchesSpecificsHash(data.specifics)) {
+      // Specifics have changed, so update the service.
+      entity_changes.push_back(
+          EntityChange::CreateUpdate(entity->client_tag(), update.entity));
     }
 
     entity->ApplyUpdateFromServer(update);
