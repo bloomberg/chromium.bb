@@ -36,10 +36,6 @@ config("compiler") {
     "/GS",  # Enable buffer security checking.
     "/FS",  # Preserve previous PDB behavior.
     "/bigobj",  # Some of our files are bigger than the regular limits.
-
-    # Tell the compiler to crash on failures. This is undocumented
-    # and unsupported but very handy.
-    "/d2FastFail",
   ]
 
   # Force C/C++ mode for the given GN detected file type. This is necessary
