@@ -24,7 +24,13 @@ executable("crash_service") {
 if (target_cpu == "x86" && current_cpu == "x86") {
   # Cross-compile a 64-bit version when compiling a 64-bit target.
   copy("crash_service_win64") {
-    crash_service_64_target = ":crash_service(//build/toolchain/win:x64)"
+    if (is_clang) {
+      maybe_clang = "clang_"
+    } else {
+      maybe_clang = ""
+    }
+    crash_service_64_target =
+        ":crash_service(//build/toolchain/win:${maybe_clang}x64)"
 
     sources = [
       # It would be nice if get_target_outputs would work on the executable,
