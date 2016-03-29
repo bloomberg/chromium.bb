@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -219,6 +221,13 @@ public class BookmarkSearchView extends LinearLayout implements OnItemClickListe
         }
 
         return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    protected void dispatchSaveInstanceState(SparseArray<Parcelable> container) {
+        // No-op because state saving/restoring is intentionally omitted in this View. This is
+        // to fix a crash in Android M that TextView's old text is sometimes restored even if
+        // setText("") is called in onVisibilityChange(). crbug.com/596783
     }
 
     /**
