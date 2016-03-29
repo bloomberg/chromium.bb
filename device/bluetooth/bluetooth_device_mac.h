@@ -14,13 +14,19 @@ namespace device {
 
 class BluetoothAdapterMac;
 
-class BluetoothDeviceMac : public BluetoothDevice {
+class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceMac : public BluetoothDevice {
  public:
   ~BluetoothDeviceMac() override;
 
   // Returns the time of the most recent interaction with the device.  Returns
   // nil if the device has never been seen.
   virtual NSDate* GetLastUpdateTime() const = 0;
+
+  // Converts between ConnectErrorCode and NSError.
+  static NSError* GetNSErrorFromConnectErrorCode(
+      BluetoothDevice::ConnectErrorCode error_code);
+  static BluetoothDevice::ConnectErrorCode GetConnectErrorCodeFromNSError(
+      NSError* error);
 
  protected:
   BluetoothDeviceMac(BluetoothAdapterMac* adapter);

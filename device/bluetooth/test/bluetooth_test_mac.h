@@ -32,10 +32,10 @@ class BluetoothTestMac : public BluetoothTestBase {
   void InitWithFakeAdapter() override;
   BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
-  void SimulateGattDisconnection(BluetoothDevice* device) override;
   void SimulateGattConnectionError(
       BluetoothDevice* device,
       BluetoothDevice::ConnectErrorCode errorCode) override;
+  void SimulateGattDisconnection(BluetoothDevice* device) override;
 
   // Callback for the bluetooth central manager mock.
   void OnFakeBluetoothDeviceConnectGattCalled();

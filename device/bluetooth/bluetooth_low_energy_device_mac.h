@@ -114,7 +114,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   CBPeripheral* GetPeripheral();
 
   // Callback used when the CoreBluetooth Peripheral is disconnected.
-  void DidDisconnectPeripheral();
+  void DidDisconnectPeripheral(BluetoothDevice::ConnectErrorCode error_code);
 
   // CoreBluetooth data structure.
   base::scoped_nsobject<CBPeripheral> peripheral_;

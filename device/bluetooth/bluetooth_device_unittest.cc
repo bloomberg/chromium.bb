@@ -492,7 +492,7 @@ TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectGatt_Cleanup) {
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Calls CreateGattConnection, but simulate errors connecting. Also, verifies
 // multiple errors should only invoke callbacks once.
 TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {
@@ -510,15 +510,19 @@ TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {
   EXPECT_EQ(1, gatt_connection_attempts_);
   SimulateGattConnectionError(device, BluetoothDevice::ERROR_AUTH_FAILED);
   SimulateGattConnectionError(device, BluetoothDevice::ERROR_FAILED);
+#if defined(OS_ANDROID)
   // TODO: Change to ERROR_AUTH_FAILED. We should be getting a callback
   // only with the first error, but our android framework doesn't yet
   // support sending different errors.
   // http://crbug.com/578191
   EXPECT_EQ(BluetoothDevice::ERROR_FAILED, last_connect_error_code_);
+#else
+  EXPECT_EQ(BluetoothDevice::ERROR_AUTH_FAILED, last_connect_error_code_);
+#endif
   for (BluetoothGattConnection* connection : gatt_connections_)
     EXPECT_FALSE(connection->IsConnected());
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_WIN)
 TEST_F(BluetoothTest, GattServices_ObserversCalls) {

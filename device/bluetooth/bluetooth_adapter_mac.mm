@@ -582,8 +582,12 @@ void BluetoothAdapterMac::DidFailToConnectPeripheral(CBPeripheral* peripheral,
   }
   VLOG(1) << "Bluetooth error, domain: " << error.domain.UTF8String
           << ", error code: " << error.code;
-  // TODO(http://crbug.com/585894): Need to convert the error.
-  device_mac->DidFailToConnectGatt(BluetoothClassicDeviceMac::ERROR_UNKNOWN);
+  BluetoothDevice::ConnectErrorCode error_code =
+      BluetoothDeviceMac::GetConnectErrorCodeFromNSError(error);
+  VLOG(1) << "Bluetooth error, domain: " << error.domain.UTF8String
+          << ", error code: " << error.code
+          << ", converted into: " << error_code;
+  device_mac->DidFailToConnectGatt(error_code);
 }
 
 void BluetoothAdapterMac::DidDisconnectPeripheral(CBPeripheral* peripheral,
@@ -594,8 +598,11 @@ void BluetoothAdapterMac::DidDisconnectPeripheral(CBPeripheral* peripheral,
     [low_energy_central_manager_ cancelPeripheralConnection:peripheral];
     return;
   }
-  // TODO(http://crbug.com/585897): Need to pass the error.
-  device_mac->DidDisconnectPeripheral();
+  VLOG(1) << "Bluetooth error, domain: " << error.domain.UTF8String
+          << ", error code: " << error.code;
+  BluetoothDevice::ConnectErrorCode error_code =
+      BluetoothDeviceMac::GetConnectErrorCodeFromNSError(error);
+  device_mac->DidDisconnectPeripheral(error_code);
 }
 
 BluetoothLowEnergyDeviceMac*

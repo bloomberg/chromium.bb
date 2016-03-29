@@ -269,10 +269,12 @@ CBPeripheral* BluetoothLowEnergyDeviceMac::GetPeripheral() {
   return peripheral_;
 }
 
-void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral() {
+void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(
+    BluetoothDevice::ConnectErrorCode error_code) {
   if (create_gatt_connection_error_callbacks_.empty()) {
+    // TODO(http://crbug.com/585897): Need to pass the error.
     DidDisconnectGatt();
   } else {
-    DidFailToConnectGatt(ERROR_FAILED);
+    DidFailToConnectGatt(error_code);
   }
 }

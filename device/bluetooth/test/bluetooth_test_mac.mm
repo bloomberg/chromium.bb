@@ -187,6 +187,23 @@ void BluetoothTestMac::SimulateGattConnection(BluetoothDevice* device) {
                      didConnectPeripheral:peripheral];
 }
 
+void BluetoothTestMac::SimulateGattConnectionError(
+    BluetoothDevice* device,
+    BluetoothDevice::ConnectErrorCode errorCode) {
+  BluetoothLowEnergyDeviceMac* lowEnergyDeviceMac =
+      static_cast<BluetoothLowEnergyDeviceMac*>(device);
+  CBPeripheral* peripheral = lowEnergyDeviceMac->GetPeripheral();
+  MockCBPeripheral* mockPeripheral = (MockCBPeripheral*)peripheral;
+  [mockPeripheral setState:CBPeripheralStateDisconnected];
+  CBCentralManager* centralManager =
+      ObjCCast<CBCentralManager>(mock_central_manager_->get());
+  NSError* error =
+      BluetoothDeviceMac::GetNSErrorFromConnectErrorCode(errorCode);
+  [centralManager.delegate centralManager:centralManager
+               didFailToConnectPeripheral:peripheral
+                                    error:error];
+}
+
 void BluetoothTestMac::SimulateGattDisconnection(BluetoothDevice* device) {
   BluetoothLowEnergyDeviceMac* lowEnergyDeviceMac =
       static_cast<BluetoothLowEnergyDeviceMac*>(device);
@@ -198,26 +215,6 @@ void BluetoothTestMac::SimulateGattDisconnection(BluetoothDevice* device) {
   [centralManager.delegate centralManager:centralManager
                   didDisconnectPeripheral:peripheral
                                     error:nil];
-}
-
-void BluetoothTestMac::SimulateGattConnectionError(
-    BluetoothDevice* device,
-    BluetoothDevice::ConnectErrorCode errorCode) {
-  BluetoothLowEnergyDeviceMac* lowEnergyDeviceMac =
-      static_cast<BluetoothLowEnergyDeviceMac*>(device);
-  CBPeripheral* peripheral = lowEnergyDeviceMac->GetPeripheral();
-  MockCBPeripheral* mockPeripheral = (MockCBPeripheral*)peripheral;
-  [mockPeripheral setState:CBPeripheralStateDisconnected];
-  CBCentralManager* centralManager =
-      ObjCCast<CBCentralManager>(mock_central_manager_->get());
-  // TODO(http://crbug.com/585894): Need to convert the connect error code into
-  // NSError
-  NSError* error = [NSError errorWithDomain:@"BluetoothDevice::ConnectErrorCode"
-                                       code:-1
-                                   userInfo:nil];
-  [centralManager.delegate centralManager:centralManager
-               didFailToConnectPeripheral:peripheral
-                                    error:error];
 }
 
 void BluetoothTestMac::OnFakeBluetoothDeviceConnectGattCalled() {
