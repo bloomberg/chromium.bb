@@ -491,12 +491,9 @@ void WebPagePopupImpl::close()
 {
     m_closing = true;
     // In case closePopup() was not called.
-    if (m_page) {
-        destroyPage();
-        m_popupClient->didClosePopup();
-        m_webView->cleanupPagePopup();
-    }
-    m_widgetClient = 0;
+    if (m_page)
+        cancel();
+    m_widgetClient = nullptr;
     deref();
 }
 
@@ -511,17 +508,19 @@ void WebPagePopupImpl::closePopup()
         toLocalFrame(m_page->mainFrame())->loader().stopAllLoaders();
         PagePopupSupplement::uninstall(*toLocalFrame(m_page->mainFrame()));
     }
+    bool closeAlreadyCalled = m_closing;
     m_closing = true;
 
     destroyPage();
 
     // m_widgetClient might be 0 because this widget might be already closed.
-    if (m_widgetClient) {
+    if (m_widgetClient && !closeAlreadyCalled) {
         // closeWidgetSoon() will call this->close() later.
         m_widgetClient->closeWidgetSoon();
     }
 
     m_popupClient->didClosePopup();
+    m_webView->cleanupPagePopup();
 }
 
 LocalDOMWindow* WebPagePopupImpl::window()

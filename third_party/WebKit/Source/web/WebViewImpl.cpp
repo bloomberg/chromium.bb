@@ -1682,7 +1682,6 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     if (m_pagePopup.get() != popupImpl)
         return;
     m_pagePopup->closePopup();
-    cleanupPagePopup();
 }
 
 void WebViewImpl::cleanupPagePopup()
