@@ -1587,15 +1587,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_TABS_AND_APPS_TITLE" desc="The title of a preference which controls whether your tabs are shown within Chrome or in system app switcher.">
         Merge tabs and apps
       </message>
-      <message name="IDS_TABS_AND_APPS_OPT_OUT_TITLE" desc="A title for the promo message shown to users who have document mode enabled to explain the new location for the tabs and provide an option to opt out.">
-        Chrome tabs have moved
-      </message>
-      <message name="IDS_TABS_AND_APPS_OPT_OUT_TEXT" desc="A promo message shown to users who have document mode enabled to explain the new location for the tabs and provide an option to opt out">
-        See your tabs with other recent apps on your phone’s Overview screen. You can control this in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
-      </message>
-      <message name="IDS_TABS_AND_APPS_GOT_IT_BUTTON" desc="A button to confirm and dismiss opt out promo">
-        Ok, got it
-      </message>
       <message name="IDS_TABS_AND_APPS_SETTINGS_DESCRIPTION" desc="A message shown on settings screen from which you can enable/disable the feature that combines Chrome tabs with recent applications and shows them together in the system app switcher.">
         See your tabs with other recent apps on your phone’s Overview screen.
       </message>

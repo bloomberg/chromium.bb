@@ -2905,16 +2905,19 @@ should be able to be added at any place in this file.
 <action name="DocumentActivity_OptOutShownOnHome">
   <owner>mariakhomenko@chromium.org</owner>
   <description>User was presented with the opt out promo.</description>
+  <obsolete>Removed in M51.</obsolete>
 </action>
 
 <action name="DocumentActivity_UserOptIn">
   <owner>mariakhomenko@chromium.org</owner>
   <description>User opted in to document mode through settings.</description>
+  <obsolete>Removed in M51.</obsolete>
 </action>
 
 <action name="DocumentActivity_UserOptOut">
   <owner>mariakhomenko@chromium.org</owner>
   <description>User opted out of document mode through settings.</description>
+  <obsolete>Removed in M51.</obsolete>
 </action>
 
 <action name="DomDistiller_DistilledPageOpened">

@@ -95,14 +95,6 @@
                 android:layout_weight="0"
                 android:visibility="invisible" />
 
-            <!-- Document mode opt out promo -->
-            <ViewStub
-                android:id="@+id/opt_out_promo_stub"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inflatedId="@+id/opt_out_promo"
-                android:layout="@layout/opt_out_promo" />
-
             <!-- Most visited items -->
             <org.chromium.chrome.browser.ntp.MostVisitedLayout
                 android:id="@+id/most_visited_layout"

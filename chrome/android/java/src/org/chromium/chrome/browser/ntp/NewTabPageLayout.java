@@ -87,7 +87,6 @@ public class NewTabPageLayout extends BoundedLinearLayout {
             }
 
             if (child.getId() == R.id.most_visited_layout) break;
-            if (child.getId() == R.id.opt_out_promo) break;
 
             if (child.getVisibility() != View.GONE) {
                 minScrollAmountRequired += child.getMeasuredHeight();

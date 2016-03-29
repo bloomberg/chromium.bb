@@ -36,9 +36,4 @@ public class DocumentMetricIds {
     public static final int STARTED_BY_EXTERNAL_APP_WHATSAPP = 410;
     public static final int STARTED_BY_EXTERNAL_APP_GSA = 411;
     public static final int STARTED_BY_CONTEXTUAL_SEARCH = 500;
-
-    // DocumentActivity.OptOutDecision (enumerated)
-    public static final int OPT_OUT_CLICK_GOT_IT = 0;
-    public static final int OPT_OUT_CLICK_SETTINGS = 1;
-    public static final int OPT_OUT_CLICK_COUNT = 2;
 }

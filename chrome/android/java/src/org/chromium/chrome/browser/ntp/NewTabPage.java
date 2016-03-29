@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
-import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
@@ -49,10 +48,7 @@ import org.chromium.chrome.browser.ntp.interests.InterestsPage;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickListener;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.preferences.DocumentModeManager;
-import org.chromium.chrome.browser.preferences.DocumentModePreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
@@ -89,9 +85,6 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 public class NewTabPage
         implements NativePage, InvalidationAwareThumbnailProvider, TemplateUrlServiceObserver {
 
-    // The number of times that the document-mode opt-out promo will be shown.
-    private static final int MAX_OPT_OUT_PROMO_COUNT = 10;
-
     // MostVisitedItem Context menu item IDs.
     static final int ID_OPEN_IN_NEW_TAB = 0;
     static final int ID_OPEN_IN_INCOGNITO_TAB = 1;
@@ -116,7 +109,6 @@ public class NewTabPage
     private LargeIconBridge mLargeIconBridge;
     private LogoBridge mLogoBridge;
     private boolean mSearchProviderHasLogo;
-    private final boolean mOptOutPromoShown;
     private String mOnLogoClickUrl;
     private String mAnimatedLogoUrl;
     private FakeboxDelegate mFakeboxDelegate;
@@ -257,41 +249,6 @@ public class NewTabPage
             RecordHistogram.recordMediumTimesHistogram("NewTabPage.MostVisitedTime",
                     System.nanoTime() - mLastShownTimeNs, TimeUnit.NANOSECONDS);
             mMostVisitedSites.recordOpenedMostVisitedItem(item.getIndex(), item.getTileType());
-        }
-
-        private void recordDocumentOptOutPromoClick(int which) {
-            RecordHistogram.recordEnumeratedHistogram("DocumentActivity.OptOutClick", which,
-                    DocumentMetricIds.OPT_OUT_CLICK_COUNT);
-        }
-
-        @Override
-        public boolean shouldShowOptOutPromo() {
-            if (!FeatureUtilities.isDocumentMode(mActivity)) return false;
-            DocumentModeManager documentModeManager = DocumentModeManager.getInstance(mActivity);
-            return !documentModeManager.isOptOutPromoDismissed()
-                    && (documentModeManager.getOptOutShownCount() < MAX_OPT_OUT_PROMO_COUNT);
-        }
-
-        @Override
-        public void optOutPromoShown() {
-            assert FeatureUtilities.isDocumentMode(mActivity);
-            DocumentModeManager.getInstance(mActivity).incrementOptOutShownCount();
-            RecordUserAction.record("DocumentActivity_OptOutShownOnHome");
-        }
-
-        @Override
-        public void optOutPromoClicked(boolean settingsClicked) {
-            assert FeatureUtilities.isDocumentMode(mActivity);
-            if (settingsClicked) {
-                recordDocumentOptOutPromoClick(DocumentMetricIds.OPT_OUT_CLICK_SETTINGS);
-                PreferencesLauncher.launchSettingsPage(mActivity,
-                        DocumentModePreference.class.getName());
-            } else {
-                recordDocumentOptOutPromoClick(DocumentMetricIds.OPT_OUT_CLICK_GOT_IT);
-                DocumentModeManager documentModeManager = DocumentModeManager.getInstance(
-                        mActivity);
-                documentModeManager.setOptedOutState(DocumentModeManager.OPT_OUT_PROMO_DISMISSED);
-            }
         }
 
         @Override
@@ -573,11 +530,6 @@ public class NewTabPage
                 activity.getResources(), R.color.default_primary_color);
         TemplateUrlService.getInstance().addObserver(this);
 
-        // Whether to show the promo can change within the lifetime of a single NTP instance
-        // because the user can dismiss the promo.  To ensure the UI is consistent, cache the
-        // value initially and ignore further updates.
-        mOptOutPromoShown = mNewTabPageManager.shouldShowOptOutPromo();
-
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onShown(Tab tab) {
@@ -654,7 +606,6 @@ public class NewTabPage
 
     private boolean isInSingleUrlBarMode(Context context) {
         if (DeviceFormFactor.isTablet(context)) return false;
-        if (mOptOutPromoShown) return false;
 
         return mSearchProviderHasLogo;
     }
@@ -664,8 +615,7 @@ public class NewTabPage
             mSearchProviderHasLogo = false;
             if (mNewTabPageView != null) mNewTabPageView.setSearchProviderHasLogo(false);
         } else {
-            mSearchProviderHasLogo = !mOptOutPromoShown
-                    && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+            mSearchProviderHasLogo = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
         }
     }
 

@@ -14,7 +14,6 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.Build;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,7 +21,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -30,7 +28,6 @@ import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -49,16 +46,10 @@ import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsManager;
-import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
-import org.chromium.ui.text.NoUnderlineClickableSpan;
-import org.chromium.ui.text.SpanApplier;
-import org.chromium.ui.text.SpanApplier.SpanInfo;
-
-import java.util.Locale;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
@@ -81,7 +72,6 @@ public class NewTabPageView extends FrameLayout
     private ImageView mVoiceSearchButton;
     private MostVisitedLayout mMostVisitedLayout;
     private View mMostVisitedPlaceholder;
-    private View mOptOutView;
     private View mNoSearchLogoSpacer;
     private RecyclerView mSnippetsView;
 
@@ -125,15 +115,6 @@ public class NewTabPageView extends FrameLayout
 
         /** @return Whether the toolbar at the bottom of the NTP is enabled and should be shown. */
         boolean isToolbarEnabled();
-
-        /** @return Whether the document mode opt out promo should be shown. */
-        boolean shouldShowOptOutPromo();
-
-        /** Called when the document mode opt out promo is shown. */
-        void optOutPromoShown();
-
-        /** Called when the user clicks "settings" or "ok, got it" on the opt out promo. */
-        void optOutPromoClicked(boolean settingsClicked);
 
         /** Opens the bookmarks page in the current tab. */
         void navigateToBookmarks();
@@ -350,8 +331,6 @@ public class NewTabPageView extends FrameLayout
         mManager.setMostVisitedURLsObserver(this,
                 mMostVisitedDesign.getNumberOfTiles(searchProviderHasLogo));
 
-        if (mManager.shouldShowOptOutPromo()) showOptOutPromo();
-
         // Set up snippets
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)) {
             mSnippetsView = (RecyclerView) findViewById(R.id.snippets_card_list);
@@ -375,60 +354,6 @@ public class NewTabPageView extends FrameLayout
             });
             snippetsManager.setSnippetsView(mSnippetsView);
         }
-    }
-
-    private int getTabsMovedIllustration() {
-        switch (Build.MANUFACTURER.toLowerCase(Locale.US)) {
-            case "samsung":
-                if (DocumentModeManager.isDeviceTabbedModeByDefault()) return 0;
-                return R.drawable.tabs_moved_samsung;
-            case "htc":
-                return R.drawable.tabs_moved_htc;
-            default:
-                return R.drawable.tabs_moved_nexus;
-        }
-    }
-
-    private void showOptOutPromo() {
-        ViewStub optOutPromoStub = (ViewStub) findViewById(R.id.opt_out_promo_stub);
-        mOptOutView = optOutPromoStub.inflate();
-        // Fill in opt-out text with Settings link
-        TextView optOutText = (TextView) mOptOutView.findViewById(R.id.opt_out_text);
-
-        NoUnderlineClickableSpan settingsLink = new NoUnderlineClickableSpan() {
-            @Override
-            public void onClick(View view) {
-                mManager.optOutPromoClicked(true);
-            }
-        };
-
-        optOutText.setText(SpanApplier.applySpans(
-                getContext().getString(R.string.tabs_and_apps_opt_out_text),
-                new SpanInfo("<link>", "</link>", settingsLink)));
-        optOutText.setMovementMethod(LinkMovementMethod.getInstance());
-
-        ImageView illustration = (ImageView) mOptOutView.findViewById(R.id.tabs_moved_illustration);
-        int resourceId = getTabsMovedIllustration();
-        if (resourceId != 0) {
-            illustration.setImageResource(getTabsMovedIllustration());
-        } else {
-            illustration.setImageDrawable(null);
-        }
-
-        mOptOutView.setVisibility(View.VISIBLE);
-        mMostVisitedLayout.setVisibility(View.GONE);
-
-        Button gotItButton = (Button) mOptOutView.findViewById(R.id.got_it_button);
-        gotItButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mOptOutView.setVisibility(View.GONE);
-                mMostVisitedLayout.setVisibility(View.VISIBLE);
-                mManager.optOutPromoClicked(false);
-                updateMostVisitedPlaceholderVisibility();
-            }
-        });
-        mManager.optOutPromoShown();
     }
 
     private void updateSearchBoxOnScroll() {
@@ -864,7 +789,6 @@ public class NewTabPageView extends FrameLayout
      */
     private void updateMostVisitedPlaceholderVisibility() {
         boolean showPlaceholder = mHasReceivedMostVisitedSites
-                && !mManager.shouldShowOptOutPromo()
                 && mMostVisitedLayout.getChildCount() == 0
                 && !mSearchProviderHasLogo;
 
