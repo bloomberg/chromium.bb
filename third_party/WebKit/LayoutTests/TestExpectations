@@ -1049,10 +1049,7 @@ crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-cent
 crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
-crbug.com/521124 crbug.com/410145 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Pass Failure ]
-crbug.com/521124 crbug.com/410145 [ Win ] fast/text/international/text-combine-image-test.html [ Pass Failure ]
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
-crbug.com/521124 crbug.com/571481 crbug.com/410145 [ Win ] fast/text/orientation-sideways.html [ Pass Failure ]
 
 
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
@@ -1205,7 +1202,6 @@ crbug.com/521730 [ Win10 ] fast/text/basic/011.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/013.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/basic/generic-family-reset.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/cg-vs-atsui.html [ Failure ]
-crbug.com/521730 crbug.com/410145 [ Win ] fast/text/decorations-with-text-combine.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emoticons.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emphasis-ellipsis-complextext.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/font-ascent-mac.html [ Failure ]
@@ -1334,8 +1330,6 @@ crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-sta
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
 
 crbug.com/587779 [ Linux Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
-
-crbug.com/595772 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure ]
 
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
