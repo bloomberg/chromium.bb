@@ -465,8 +465,10 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
 
         mLocationBar.setShouldShowButtonsWhenUnfocused(visible);
 
+        boolean buttonsVisible = mHomeButton.getVisibility() == View.VISIBLE
+                || visible;
         ApiCompatibilityUtils.setPaddingRelative(this,
-                visible ? mStartPaddingWithButtons : mStartPaddingWithoutButtons,
+                buttonsVisible ? mStartPaddingWithButtons : mStartPaddingWithoutButtons,
                 getPaddingTop(),
                 ApiCompatibilityUtils.getPaddingEnd(this),
                 getPaddingBottom());
