@@ -34,7 +34,7 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 
 using web::NavigationManager;
 
-@interface ViewController ()<CRWWebStateObserver, CRWWebUserInterfaceDelegate> {
+@interface ViewController ()<CRWWebStateObserver> {
   web::BrowserState* _browserState;
   base::scoped_nsobject<CRWWebController> _webController;
   scoped_ptr<web::RequestTrackerFactoryImpl> _requestTrackerFactory;
@@ -119,7 +119,6 @@ using web::NavigationManager;
   webState->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
   _webController.reset(web::CreateWebController(std::move(webState)));
   [_webController setDelegate:self];
-  [_webController setUIDelegate:self];
   [_webController setWebUsageEnabled:YES];
 
   _webStateObserver.reset(new web::WebStateObserverBridge(self.webState, self));
@@ -370,19 +369,6 @@ using web::NavigationManager;
                  callback:
                      (const web::WebState::ImageDownloadCallback&)callback {
   return -1;
-}
-
-// -----------------------------------------------------------------------
-// CRWWebUserInterfaceDelegate implementation.
-
-- (void)webController:(CRWWebController*)webController
-    runAuthDialogForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
-                 proposedCredential:(NSURLCredential*)credential
-                  completionHandler:
-                      (void (^)(NSString* user, NSString* password))handler {
-  // Calling |handler| with nil objects is the same as not implemeting it. This
-  // method is implemented to make testing easier.
-  handler(nil, nil);
 }
 
 @end
