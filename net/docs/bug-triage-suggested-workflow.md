@@ -29,6 +29,24 @@
 
 * If non-network causes also seem possible, attach those components as well.
 
+## Investigate UMA notifications
+
+For each alert that fires, determine if it's a real alert and file a bug if so.
+
+* Don't file if the alert is coincident with a major volume change.  The volume
+  at a particular date can be determined by hovering the mouse over the
+  appropriate location on the alert line.
+
+* Don't file if the alert is on a graph with very low volume (< ~200 data
+  points); it's probably noise, and we probably don't care even if it isn't.
+
+* Don't file if the graph is really noisy (but eyeball it to decide if there is
+  an underlying important shift under the noise).
+
+* Don't file if the alert is in the "Known Ignorable" list:
+    * SimpleCache on Windows
+    * DiskCache on Android.
+
 ## Investigating component=Internals>Network bugs
 
 * It's recommended that while on triage duty, you subscribe to the
@@ -106,24 +124,6 @@
 * If it appears to be a bug in the unowned core of the network stack (i.e. no
   subcomponent applies, or only the Internals>Network>HTTP subcomponent
   applies, and there's no clear owner), try to figure out the exact cause.
-
-## Investigate UMA notifications
-
-For each alert that fires, determine if it's a real alert and file a bug if so.
-
-* Don't file if the alert is coincident with a major volume change.  The volume
-  at a particular date can be determined by hovering the mouse over the
-  appropriate location on the alert line.
-
-* Don't file if the alert is on a graph with very low volume (< ~200 data
-  points); it's probably noise, and we probably don't care even if it isn't.
-
-* Don't file if the graph is really noisy (but eyeball it to decide if there is
-  an underlying important shift under the noise).
-
-* Don't file if the alert is in the "Known Ignorable" list:
-    * SimpleCache on Windows
-    * DiskCache on Android.
 
 ## Looking for new crashers
 

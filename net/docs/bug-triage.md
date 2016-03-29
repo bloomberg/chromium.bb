@@ -13,7 +13,7 @@ label seems suitable.
 * Follow up on Needs-Feedback issues for all network components.
 * Identify and file bugs for significant new crashers.
 
-### Best effort:
+### Best effort, also in rough priority order:
 * Investigate unowned and owned-but-forgotten net/ crashers.
 * Investigate old bugs.
 * Close obsolete bugs.
@@ -35,8 +35,9 @@ uniform, predictable two day commitment for all triagers.
   bugs, a network component assigned and an about:net-internals log requested.
   A triager is responsible for looking at bugs reported from noon PST / 3:00 pm
   EST of the last day of the previous triager's rotation until the same time on
-  the last day of their rotation.  Once you've changed labels on a bug, mark it
-  Untriaged, so other triagers sorting through Unconfirmed bugs won't see it.
+  the last day of their rotation.  Once you've assigned a bug to a component,
+  mark it Untriaged, so other triagers sorting through Unconfirmed bugs won't
+  see it. 
   
     * For desktop bugs, ask for a net-internals log and give the user a link to
       https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details
@@ -59,7 +60,8 @@ uniform, predictable two day commitment for all triagers.
       so should respond to chrome-network-debugging@google.com with a short
       email, describing their conclusions.  Future triagers can then use the
       fact an alert was responded to as an inidicator of which of them need
-      to be followed up on.
+      to be followed up on.  Alerts fired before the beginning of the
+      previous triager's rotation may be ignored. 
 
 * Investigate [Uncomfirmed / Untriaged Internals>Network issues that don't belong to a more specific network component](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3DInternals%3ENetwork+status%3AUnconfirmed,Untriaged+-label:Needs-Feedback&sort=-modified),
   prioritizing the most recent issues, ones with the most responsive reporters,
@@ -89,7 +91,7 @@ uniform, predictable two day commitment for all triagers.
       its status should be set to Available.  Future triagers should ignore bugs
       with this status, unless investigating stale bugs.
 
-* Follow up on [Needs-Feedback issues for all components owned by the network stack team](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AInternals%3ENetwork%2CUI>Browser>Downloads+-component%3AInternals%3ENetwork%3EDataProxy+-component%3AInternals%3ENetwork%3EDataUse+-component%3AInternals%3ENetwork%3EVPN+Needs%3DFeedback&sort=-modified).
+* Follow up on [Needs-Feedback issues for all components owned by the network stack team](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AInternals%3ENetwork%2CUI%3EBrowser%3EDownloads+-component%3AInternals%3ENetwork%3EDataProxy+-component%3AInternals%3ENetwork%3EDataUse+-component%3AInternals%3ENetwork%3EVPN+Needs%3DFeedback&sort=-modified).
 
     * Remove label once feedback is provided.  Continue to investigate, if
       the previous section applies.
