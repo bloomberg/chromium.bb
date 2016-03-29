@@ -35,8 +35,9 @@ bool InitializeVideoToolbox();
 class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
  public:
   explicit VTVideoDecodeAccelerator(
-      const MakeContextCurrentCallback& make_context_current,
-      const BindImageCallback& bind_image);
+      const base::Callback<bool(void)>& make_context_current,
+      const base::Callback<
+          void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>& bind_image);
   ~VTVideoDecodeAccelerator() override;
 
   // VideoDecodeAccelerator implementation.
@@ -188,8 +189,9 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   //
   // GPU thread state.
   //
-  MakeContextCurrentCallback make_context_current_;
-  BindImageCallback bind_image_;
+  base::Callback<bool(void)> make_context_current_;
+  base::Callback<void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>
+      bind_image_;
   media::VideoDecodeAccelerator::Client* client_;
   State state_;
 

@@ -292,8 +292,9 @@ VaapiPicture* VaapiVideoDecodeAccelerator::PictureById(
 }
 
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
-    const MakeContextCurrentCallback& make_context_current,
-    const BindImageCallback& bind_image)
+    const base::Callback<bool(void)>& make_context_current,
+    const base::Callback<void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>&
+        bind_image)
     : make_context_current_(make_context_current),
       state_(kUninitialized),
       input_ready_(&lock_),
@@ -747,7 +748,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     scoped_refptr<gl::GLImage> image = picture->GetImageToBind();
     if (image) {
       bind_image_.Run(buffers[i].internal_texture_id(),
-                      VaapiPicture::GetGLTextureTarget(), image, true);
+                      VaapiPicture::GetGLTextureTarget(), image);
     }
 
     RETURN_AND_NOTIFY_ON_FAILURE(

@@ -122,13 +122,10 @@ class GpuVideoDecodeAccelerator
   void SetTextureCleared(const media::Picture& picture);
 
 #if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || defined(OS_MACOSX)
-  // Helper to bind |image| to the texture specified by |client_texture_id|. If
-  // |can_bind_to_sampler| is true, then the image may be used as a sampler
-  // directly, otherwise a copy to a staging buffer is required.
+  // Helper to bind |image| to the texture specified by |client_texture_id|.
   void BindImage(uint32_t client_texture_id,
                  uint32_t texture_target,
-                 scoped_refptr<gl::GLImage> image,
-                 bool can_bind_to_sampler);
+                 scoped_refptr<gl::GLImage> image);
 #endif
 
   // Route ID to communicate with the host.
