@@ -3229,11 +3229,6 @@ int LayoutObject::caretMaxOffset() const
     return 0;
 }
 
-int LayoutObject::previousOffsetForBackwardDeletion(int current) const
-{
-    return current - 1;
-}
-
 bool LayoutObject::isInert() const
 {
     const LayoutObject* layoutObject = this;

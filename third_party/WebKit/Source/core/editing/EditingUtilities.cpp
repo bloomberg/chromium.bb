@@ -55,6 +55,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/Unicode.h"
 
 namespace blink {
 
@@ -556,9 +557,21 @@ int uncheckedPreviousOffset(const Node* node, int current)
     return result == TextBreakDone ? current - 1 : result;
 }
 
-static int uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current)
+static int uncheckedPreviousOffsetForBackwardDeletion(const Node* node, int current)
 {
-    return n->layoutObject() ? n->layoutObject()->previousOffsetForBackwardDeletion(current) : current - 1;
+    DCHECK_GE(current, 0);
+    if (current <= 1)
+        return 0;
+    if (!node->isTextNode())
+        return current - 1;
+
+    const String& text = toText(node)->data();
+    DCHECK(static_cast<unsigned>(current - 1) < text.length());
+    if (U16_IS_TRAIL(text[--current]))
+        --current;
+    if (current < 0)
+        current = 0;
+    return current;
 }
 
 int uncheckedNextOffset(const Node* node, int current)

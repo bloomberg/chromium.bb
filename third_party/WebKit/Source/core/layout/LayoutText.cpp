@@ -1650,17 +1650,6 @@ unsigned LayoutText::resolvedTextLength() const
     return len;
 }
 
-int LayoutText::previousOffsetForBackwardDeletion(int current) const
-{
-    // Delete by one code point. Ideally we should delete grapheme where that
-    // makes sense. https://crbug.com/587241
-    if (U16_IS_TRAIL(m_text[--current]))
-        --current;
-    if (current < 0)
-        current = 0;
-    return current;
-}
-
 bool LayoutText::computeCanUseSimpleFontCodePath() const
 {
     if (m_text.is8Bit())

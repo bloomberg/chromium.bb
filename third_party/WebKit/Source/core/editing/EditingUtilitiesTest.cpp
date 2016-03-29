@@ -642,4 +642,102 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
     EXPECT_EQ(1, uncheckedNextOffset(node, 0));
 }
 
+TEST_F(EditingUtilitiesTest, previousPositionOf_Backspace)
+{
+    // BMP characters. Only one code point should be deleted.
+    setBodyContent("<p id='target'>abc</p>");
+    Node* node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 1), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 1), PositionMoveType::BackwardDeletion));
+}
+
+TEST_F(EditingUtilitiesTest, previousPositionOf_Backspace_FirstLetter)
+{
+
+    setBodyContent("<style>p::first-letter {color:red;}</style><p id='target'>abc</p>");
+    Node* node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 1), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 1), PositionMoveType::BackwardDeletion));
+
+    setBodyContent("<style>p::first-letter {color:red;}</style><p id='target'>(a)bc</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 4), previousPositionOf(Position(node, 5), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 3), previousPositionOf(Position(node, 4), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 1), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 1), PositionMoveType::BackwardDeletion));
+}
+
+TEST_F(EditingUtilitiesTest, previousPositionOf_Backspace_TextTransform)
+{
+    // Uppercase of &#x00DF; will be transformed to SS.
+    setBodyContent("<style>p {text-transform:uppercase}</style><p id='target'>&#x00DF;abc</p>");
+    Node* node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 3), previousPositionOf(Position(node, 4), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 1), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 1), PositionMoveType::BackwardDeletion));
+}
+
+TEST_F(EditingUtilitiesTest, previousPositionOf_Backspace_SurrogatePairs)
+{
+    // Supplementary plane characters. Only one code point should be deleted.
+    // &#x1F441; is EYE.
+    setBodyContent("<p id='target'>&#x1F441;&#x1F441;&#x1F441;</p>");
+    Node* node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 4), previousPositionOf(Position(node, 6), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 4), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+
+    // BMP and Supplementary plane case.
+    setBodyContent("<p id='target'>&#x1F441;a&#x1F441;a</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 5), previousPositionOf(Position(node, 6), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 3), previousPositionOf(Position(node, 5), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+
+    // Edge case: broken surrogate pairs.
+    setBodyContent("<p id='target'>&#xD83D;</p>"); // &#xD83D; is unpaired lead surrogate.
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 1), PositionMoveType::BackwardDeletion));
+
+    setBodyContent("<p id='target'>&#x1F441;&#xD83D;&#x1F441;</p>"); // &#xD83D; is unpaired lead surrogate.
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 3), previousPositionOf(Position(node, 5), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+
+    setBodyContent("<p id='target'>a&#xD83D;a</p>"); // &#xD83D; is unpaired lead surrogate.
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 1), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 1), PositionMoveType::BackwardDeletion));
+
+    setBodyContent("<p id='target'>&#xDC41;</p>"); // &#xDC41; is unpaired trail surrogate.
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 1), PositionMoveType::BackwardDeletion));
+
+    setBodyContent("<p id='target'>&#x1F441;&#xDC41;&#x1F441;</p>"); // &#xDC41; is unpaired trail surrogate.
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 3), previousPositionOf(Position(node, 5), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+
+    setBodyContent("<p id='target'>a&#xDC41;a</p>"); // &#xDC41; is unpaired trail surrogate.
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 1), previousPositionOf(Position(node, 2), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 1), PositionMoveType::BackwardDeletion));
+
+    // Edge case: specify middle of surrogate pairs.
+    setBodyContent("<p id='target'>&#x1F441;&#x1F441;&#x1F441</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(Position(node, 4), previousPositionOf(Position(node, 5), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 2), previousPositionOf(Position(node, 3), PositionMoveType::BackwardDeletion));
+    EXPECT_EQ(Position(node, 0), previousPositionOf(Position(node, 1), PositionMoveType::BackwardDeletion));
+}
+
 } // namespace blink
