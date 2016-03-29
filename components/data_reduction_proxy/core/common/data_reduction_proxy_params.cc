@@ -262,21 +262,49 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
 bool GetOverrideProxiesForHttpFromCommandLine(
     std::vector<net::ProxyServer>* override_proxies_for_http) {
   DCHECK(override_proxies_for_http);
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDataReductionProxyHttpProxies)) {
-    return false;
+    // It is illegal to use |kDataReductionProxy| or
+    // |kDataReductionProxyFallback| with |kDataReductionProxyHttpProxies|.
+    DCHECK(base::CommandLine::ForCurrentProcess()
+               ->GetSwitchValueASCII(switches::kDataReductionProxy)
+               .empty());
+    DCHECK(base::CommandLine::ForCurrentProcess()
+               ->GetSwitchValueASCII(switches::kDataReductionProxyFallback)
+               .empty());
+    override_proxies_for_http->clear();
+
+    std::string proxy_overrides =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kDataReductionProxyHttpProxies);
+    std::vector<std::string> proxy_override_values = base::SplitString(
+        proxy_overrides, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (const std::string& proxy_override : proxy_override_values) {
+      override_proxies_for_http->push_back(net::ProxyServer::FromURI(
+          proxy_override, net::ProxyServer::SCHEME_HTTP));
+    }
+
+    return true;
   }
 
-  override_proxies_for_http->clear();
-
-  std::string proxy_overrides =
+  std::string origin =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kDataReductionProxyHttpProxies);
-  std::vector<std::string> proxy_override_values = base::SplitString(
-      proxy_overrides, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  for (const std::string& proxy_override : proxy_override_values) {
+          switches::kDataReductionProxy);
+  std::string fallback_origin =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kDataReductionProxyFallback);
+
+  if (origin.empty() && fallback_origin.empty())
+    return false;
+
+  override_proxies_for_http->clear();
+  if (!origin.empty()) {
+    override_proxies_for_http->push_back(
+        net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP));
+  }
+  if (!fallback_origin.empty()) {
     override_proxies_for_http->push_back(net::ProxyServer::FromURI(
-        proxy_override, net::ProxyServer::SCHEME_HTTP));
+        fallback_origin, net::ProxyServer::SCHEME_HTTP));
   }
 
   return true;
