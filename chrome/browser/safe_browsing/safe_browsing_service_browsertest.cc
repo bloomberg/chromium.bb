@@ -36,7 +36,6 @@
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"

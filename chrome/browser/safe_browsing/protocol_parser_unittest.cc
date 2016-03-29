@@ -10,8 +10,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "components/safe_browsing_db/metadata.pb.h"
+#include "components/safe_browsing_db/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {

@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/util.h"
 
 namespace extensions {
 
