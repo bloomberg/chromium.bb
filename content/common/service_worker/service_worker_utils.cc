@@ -41,7 +41,6 @@ bool AllOriginsMatch(const GURL& url_a, const GURL& url_b, const GURL& url_c) {
 // static
 bool ServiceWorkerUtils::ScopeMatches(const GURL& scope, const GURL& url) {
   DCHECK(!scope.has_ref());
-  DCHECK(!url.has_ref());
   return base::StartsWith(url.spec(), scope.spec(),
                           base::CompareCase::SENSITIVE);
 }

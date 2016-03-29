@@ -38,6 +38,8 @@ TEST(ServiceWorkerUtilsTest, ScopeMatches) {
   ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
       GURL("http://www.example.com/"),
       GURL("https://www.example.com/page.html")));
+  ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
+      GURL("http://www.example.com/"), GURL("http://www.example.com/#a")));
 
   ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(GURL("http://www.example.com/"),
                                                 GURL("http://www.foo.com/")));
