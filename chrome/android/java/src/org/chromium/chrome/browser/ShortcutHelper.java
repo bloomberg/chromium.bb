@@ -331,10 +331,10 @@ public class ShortcutHelper {
         // Draw the drop shadow.
         int padding = (int) (GENERATED_ICON_PADDING_RATIO * outerSize);
         Rect outerBounds = new Rect(0, 0, outerSize, outerSize);
-        Bitmap bookmarkWidgetBg =
-                getBitmapFromResourceId(context, R.mipmap.bookmark_widget_bg, iconDensity);
+        Bitmap iconShadow =
+                getBitmapFromResourceId(context, R.mipmap.shortcut_icon_shadow, iconDensity);
         Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
-        canvas.drawBitmap(bookmarkWidgetBg, null, outerBounds, paint);
+        canvas.drawBitmap(iconShadow, null, outerBounds, paint);
 
         // Draw the rounded rectangle and letter.
         int innerSize = outerSize - 2 * padding;

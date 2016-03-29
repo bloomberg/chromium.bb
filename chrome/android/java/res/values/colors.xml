@@ -159,6 +159,9 @@
     <color name="bookmark_icon_background_color">#ff787878</color>
     <color name="bookmark_appbar_background">@color/default_primary_color</color>
 
+    <!-- Bookmark widget colors -->
+    <color name="bookmark_widget_pressed_highlight">#1D000000</color>
+
     <!-- Opt out promo -->
     <color name="opt_out_text_color">#646464</color>
 

@@ -2247,9 +2247,6 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ACCESSIBILITY_OMNIBOX_BTN_REFINE" desc="Content description for the omnibox refine button.">
         Refine
       </message>
-      <message name="IDS_ACCESSIBILITY_BOOKMARK_WIDGET_THUMB_LAUNCH_CHROME" desc="Content description for the button in the bookmark widget that launches Chrome.">
-        Launch Chrome
-      </message>
       <message name="IDS_ACCESSIBILITY_BOOKMARK_CANCEL_SELECTION" desc="Content description for the cancel selection button that deselects the selected bookmarks.">
         Cancel selection
       </message>

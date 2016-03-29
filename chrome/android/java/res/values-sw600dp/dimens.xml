@@ -38,10 +38,6 @@
     <dimen name="location_bar_url_text_size">18sp</dimen>
     <dimen name="location_bar_icon_width">40dp</dimen>
 
-    <!-- Bookmarks widget dimensions -->
-    <dimen name="widget_thumbnail_height">104dp</dimen>
-    <dimen name="widget_column_width">130dp</dimen>
-
     <!-- NTP dimensions -->
     <dimen name="ntp_logo_height">180dp</dimen>
     <dimen name="snippets_thumbnail_size">120dp</dimen>

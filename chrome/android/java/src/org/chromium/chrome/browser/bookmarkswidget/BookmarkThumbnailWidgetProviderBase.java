@@ -92,12 +92,6 @@ public class BookmarkThumbnailWidgetProviderBase extends AppWidgetProvider {
 
     private void performUpdate(Context context,
             AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        Intent chromeIntent = new Intent(Intent.ACTION_MAIN);
-        chromeIntent.setPackage(context.getPackageName());
-
-        PendingIntent launchChrome = PendingIntent.getActivity(context, 0, chromeIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
         for (int appWidgetId : appWidgetIds) {
             Intent updateIntent = new Intent(context, BookmarkThumbnailWidgetService.class);
             updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
@@ -105,7 +99,6 @@ public class BookmarkThumbnailWidgetProviderBase extends AppWidgetProvider {
 
             RemoteViews views = new RemoteViews(context.getPackageName(),
                     R.layout.bookmark_thumbnail_widget);
-            views.setOnClickPendingIntent(R.id.app_shortcut, launchChrome);
             views.setRemoteAdapter(R.id.bookmarks_list, updateIntent);
 
             appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.bookmarks_list);
