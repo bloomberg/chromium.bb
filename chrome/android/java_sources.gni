@@ -893,7 +893,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/newtab/NewTabButton.java",
 ]
 
-chrome_shared_test_java_sources = [
+chrome_test_java_sources = [
   "javatests/src/org/chromium/base/test/util/parameter/ParameterizedTestAnnotationTest.java",
   "javatests/src/org/chromium/base/test/util/parameter/ParameterizedTestClassAnnotationInheritanceTest.java",
   "javatests/src/org/chromium/base/test/util/parameter/ParameterizedTestClassAnnotationParameterSetAndTest.java",

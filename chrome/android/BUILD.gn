@@ -341,12 +341,12 @@ android_aidl("custom_tabs_service_aidl") {
   ]
 }
 
-# GYP: //chrome/android/chrome_apk.gyp:chrome_shared_test_java
-android_library("chrome_shared_test_java") {
+# GYP: //chrome/android/chrome_apk.gyp:chrome_test_java
+android_library("chrome_test_java") {
   testonly = true
 
   # From java_sources.gni.
-  java_files = chrome_shared_test_java_sources
+  java_files = chrome_test_java_sources
 
   deps = [
     "//base:base_java",
@@ -547,7 +547,7 @@ instrumentation_test_apk("chrome_public_test_apk") {
 
   deps = [
     ":chrome_public_test_apk_manifest",
-    ":chrome_shared_test_java",
+    ":chrome_test_java",
   ]
   additional_apks = [
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",

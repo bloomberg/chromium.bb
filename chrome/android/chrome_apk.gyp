@@ -269,10 +269,8 @@
       'includes': [ '../../build/apk_fake_jar.gypi' ],
     },
     {
-      # GN: //chrome/android:chrome_shared_test_java
-      # This target is for sharing tests between both upstream and internal
-      # trees until sufficient test coverage is upstream.
-      'target_name': 'chrome_shared_test_java',
+      # GN: //chrome/android:chrome_test_java
+      'target_name': 'chrome_test_java',
       'type': 'none',
       'variables': {
         'java_in_dir': 'javatests',
@@ -330,7 +328,7 @@
       'target_name': 'chrome_public_test_apk',
       'type': 'none',
       'dependencies': [
-        'chrome_shared_test_java',
+        'chrome_test_java',
         'chrome_public_apk_java',
         '../../chrome/chrome.gyp:require_chrome_public_test_support_apk',
         '../../net/net.gyp:require_net_test_support_apk',
