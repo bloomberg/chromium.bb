@@ -19,7 +19,7 @@
 
 namespace libaom_test {
 
-const char kAOMName[] = "WebM Project AOM";
+const char kAOMName[] = "AOMedia Project AOM";
 
 aom_codec_err_t Decoder::PeekStream(const uint8_t *cxdata, size_t size,
                                     aom_codec_stream_info_t *stream_info) {

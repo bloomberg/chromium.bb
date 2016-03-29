@@ -699,7 +699,7 @@ EOF
 ##
 CONFIGURE_ARGS="$@"
 process "$@"
-print_webm_license ${BUILD_PFX}aom_config.c "/*" " */"
+print_aomedia_license ${BUILD_PFX}aom_config.c "/*" " */"
 cat <<EOF >> ${BUILD_PFX}aom_config.c
 #include "aom/aom_codec.h"
 static const char* const cfg = "$CONFIGURE_ARGS";

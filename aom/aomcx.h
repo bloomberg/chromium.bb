@@ -11,7 +11,7 @@
 #ifndef AOM_AOMCX_H_
 #define AOM_AOMCX_H_
 
-/*!\defgroup aom_encoder WebM AOM/AV1 Encoder
+/*!\defgroup aom_encoder AOMedia AOM/AV1 Encoder
  * \ingroup aom
  *
  * @{

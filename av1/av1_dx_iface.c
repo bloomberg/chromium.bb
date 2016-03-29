@@ -1046,7 +1046,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
 #define VERSION_STRING
 #endif
 CODEC_INTERFACE(aom_codec_av1_dx) = {
-  "WebM Project AV1 Decoder" VERSION_STRING,
+  "AOMedia Project AV1 Decoder" VERSION_STRING,
   AOM_CODEC_INTERNAL_ABI_VERSION,
   AOM_CODEC_CAP_DECODER |
       AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER,  // aom_codec_caps_t

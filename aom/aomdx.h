@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-/*!\defgroup aom_decoder WebM AOM/AV1 Decoder
+/*!\defgroup aom_decoder AOMedia AOM/AV1 Decoder
  * \ingroup aom
  *
  * @{
