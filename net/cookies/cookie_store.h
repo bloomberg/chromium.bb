@@ -206,9 +206,12 @@ class NET_EXPORT CookieStore {
   // by some sort of persistence layer.
   // TODO(nharper): Remove this method once crbug.com/548423 has been closed.
   virtual bool IsEphemeral() = 0;
+  void SetChannelIDServiceID(int id);
+  int GetChannelIDServiceID();
 
  protected:
   CookieStore();
+  int channel_id_service_id_;
 };
 
 }  // namespace net

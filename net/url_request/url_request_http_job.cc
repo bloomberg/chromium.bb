@@ -66,6 +66,10 @@ bool IsMethodSafe(const std::string& method) {
          method == "TRACE";
 }
 
+// Logs whether the CookieStore used for this request matches the
+// ChannelIDService used when establishing the connection that this request is
+// sent over. This logging is only done for requests to accounts.google.com, and
+// only for requests where Channel ID was sent when establishing the connection.
 void LogChannelIDAndCookieStores(const GURL& url,
                                  const net::URLRequestContext* context,
                                  const net::SSLInfo& ssl_info) {
@@ -74,16 +78,41 @@ void LogChannelIDAndCookieStores(const GURL& url,
   // This enum is used for an UMA histogram - don't reuse or renumber entries.
   enum {
     // Value 0 was removed (CID_EPHEMERAL_COOKIE_EPHEMERAL)
+    // ChannelIDStore is ephemeral, but CookieStore is persistent.
     CID_EPHEMERAL_COOKIE_PERSISTENT = 1,
+    // ChannelIDStore is persistent, but CookieStore is ephemeral.
     CID_PERSISTENT_COOKIE_EPHEMERAL = 2,
     // Value 3 was removed (CID_PERSISTENT_COOKIE_PERSISTENT)
+    // There is no CookieStore for this request.
     NO_COOKIE_STORE = 4,
+    // There is no ChannelIDStore for this request. This should never happen,
+    // because we only log if Channel ID was sent.
     NO_CHANNEL_ID_STORE = 5,
+    // A case where the CookieStore is persistent and the ChannelIDStore is
+    // ephemeral, but it has been identified as not being a problem.
     KNOWN_MISMATCH = 6,
+    // Both stores are ephemeral, and the ChannelIDService used when
+    // establishing the connection is the same one that the CookieStore was
+    // created to be used with.
     EPHEMERAL_MATCH = 7,
+    // Both stores are ephemeral, but a different CookieStore should have been
+    // used on this request.
     EPHEMERAL_MISMATCH = 8,
+    // Both stores are persistent, and the ChannelIDService used when
+    // establishing the connection is the same one that the CookieStore was
+    // created to be used with.
     PERSISTENT_MATCH = 9,
+    // Both stores are persistent, but a different CookieStore should have been
+    // used on this request.
     PERSISTENT_MISMATCH = 10,
+    // Both stores are ephemeral, but it was never recorded in the CookieStore
+    // which ChannelIDService it was created for, so it is unknown whether the
+    // stores match.
+    EPHEMERAL_UNKNOWN = 11,
+    // Both stores are persistent, but it was never recorded in the CookieStore
+    // which ChannelIDService it was created for, so it is unknown whether the
+    // stores match.
+    PERSISTENT_UNKNOWN = 12,
     EPHEMERALITY_MAX
   } ephemerality;
   const net::HttpNetworkSession::Params* params =
@@ -95,25 +124,31 @@ void LogChannelIDAndCookieStores(const GURL& url,
     ephemerality = NO_COOKIE_STORE;
   } else if (params->channel_id_service->GetChannelIDStore()->IsEphemeral()) {
     if (cookie_store->IsEphemeral()) {
-      if (context->channel_id_service() &&
-          params->channel_id_service->GetUniqueID() ==
-              context->channel_id_service()->GetUniqueID()) {
+      if (cookie_store->GetChannelIDServiceID() == -1) {
+        ephemerality = EPHEMERAL_UNKNOWN;
+      } else if (cookie_store->GetChannelIDServiceID() ==
+                 params->channel_id_service->GetUniqueID()) {
         ephemerality = EPHEMERAL_MATCH;
       } else {
+        NOTREACHED();
         ephemerality = EPHEMERAL_MISMATCH;
       }
     } else if (context->has_known_mismatched_cookie_store()) {
       ephemerality = KNOWN_MISMATCH;
     } else {
+      NOTREACHED();
       ephemerality = CID_EPHEMERAL_COOKIE_PERSISTENT;
     }
   } else if (cookie_store->IsEphemeral()) {
+    NOTREACHED();
     ephemerality = CID_PERSISTENT_COOKIE_EPHEMERAL;
-  } else if (context->channel_id_service() &&
-             params->channel_id_service->GetUniqueID() ==
-                 context->channel_id_service()->GetUniqueID()) {
+  } else if (cookie_store->GetChannelIDServiceID() == -1) {
+    ephemerality = PERSISTENT_UNKNOWN;
+  } else if (cookie_store->GetChannelIDServiceID() ==
+             params->channel_id_service->GetUniqueID()) {
     ephemerality = PERSISTENT_MATCH;
   } else {
+    NOTREACHED();
     ephemerality = PERSISTENT_MISMATCH;
   }
   UMA_HISTOGRAM_ENUMERATION("Net.TokenBinding.StoreEphemerality", ephemerality,

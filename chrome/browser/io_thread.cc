@@ -754,6 +754,8 @@ void IOThread::Init() {
       new net::ChannelIDService(
           new net::DefaultChannelIDStore(NULL),
           base::WorkerPool::GetTaskRunner(true)));
+  globals_->system_cookie_store->SetChannelIDServiceID(
+      globals_->system_channel_id_service->GetUniqueID());
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile12_1(

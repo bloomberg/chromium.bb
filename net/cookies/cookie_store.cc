@@ -61,6 +61,15 @@ void CookieStore::GetAllCookiesForURLAsync(
   GetCookieListWithOptionsAsync(url, options, callback);
 }
 
-CookieStore::CookieStore() {}
+void CookieStore::SetChannelIDServiceID(int id) {
+  DCHECK_EQ(-1, channel_id_service_id_);
+  channel_id_service_id_ = id;
+}
+
+int CookieStore::GetChannelIDServiceID() {
+  return channel_id_service_id_;
+}
+
+CookieStore::CookieStore() : channel_id_service_id_(-1) {}
 
 }  // namespace net

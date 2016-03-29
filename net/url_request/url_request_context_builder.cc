@@ -341,12 +341,14 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_cookie_store(std::move(cookie_store_));
     storage->set_channel_id_service(std::move(channel_id_service_));
   } else {
-    storage->set_cookie_store(
-        make_scoped_ptr(new CookieMonster(nullptr, nullptr)));
+    scoped_ptr<CookieStore> cookie_store(new CookieMonster(nullptr, nullptr));
     // TODO(mmenke):  This always creates a file thread, even when it ends up
     // not being used.  Consider lazily creating the thread.
-    storage->set_channel_id_service(make_scoped_ptr(new ChannelIDService(
-        new DefaultChannelIDStore(NULL), context->GetFileTaskRunner())));
+    scoped_ptr<ChannelIDService> channel_id_service(new ChannelIDService(
+        new DefaultChannelIDStore(NULL), context->GetFileTaskRunner()));
+    cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+    storage->set_cookie_store(std::move(cookie_store));
+    storage->set_channel_id_service(std::move(channel_id_service));
   }
 
   if (sdch_enabled_) {
