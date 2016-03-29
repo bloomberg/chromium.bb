@@ -27,7 +27,6 @@ import parse_dsc
 # Private interfaces that are either not available to NaCl plugins or are only
 # available to Flash or other privileged plugins.
 IGNORED_FILES = set([
-  'ppb_font_dev.h',
   'pp_video_dev.h',
 ])
 
