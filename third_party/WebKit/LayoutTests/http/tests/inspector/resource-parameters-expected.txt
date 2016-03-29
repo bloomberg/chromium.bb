@@ -38,7 +38,7 @@ Tests that resources panel shows form data parameters.
                 value : ""
             }
         ]
-        url : "http://localhost:8000/inspector/resources/post-target.cgi?queryParam1=queryValue1&queryParam2="
+        url : "http://127.0.0.1:8000/inspector/resources/post-target.cgi?queryParam1=queryValue1&queryParam2="
     }
     response : {
         _transferSize : <number>
@@ -57,6 +57,7 @@ Tests that resources panel shows form data parameters.
         status : 200
         statusText : "OK"
     }
+    serverIPAddress : "127.0.0.1"
     startedDateTime : <plausible>
     time : <number>
     timings : <object>

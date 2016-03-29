@@ -41,6 +41,7 @@ Page reloaded.
                 status : 304
                 statusText : "Not Modified"
             }
+            serverIPAddress : "127.0.0.1"
             startedDateTime : <plausible>
             time : <number>
             timings : <object>
@@ -132,6 +133,7 @@ Page reloaded.
                 status : 304
                 statusText : "Not Modified"
             }
+            serverIPAddress : "127.0.0.1"
             startedDateTime : <plausible>
             time : <number>
             timings : <object>
@@ -169,6 +171,7 @@ Page reloaded.
                 status : 304
                 statusText : "Not Modified"
             }
+            serverIPAddress : "127.0.0.1"
             startedDateTime : <plausible>
             time : <number>
             timings : <object>
@@ -211,6 +214,7 @@ Page reloaded.
                 status : 200
                 statusText : "OK"
             }
+            serverIPAddress : ""
             startedDateTime : <plausible>
             time : <number>
             timings : <object>

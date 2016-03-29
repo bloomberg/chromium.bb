@@ -66,6 +66,7 @@ HAR:{
         status : 200
         statusText : "OK"
     }
+    serverIPAddress : ""
     startedDateTime : <object>
     time : <number>
     timings : <object>
