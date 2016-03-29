@@ -19,6 +19,7 @@ interface Directory {
 
   // Reads the contents of this directory.
   // TODO(vtl): Clarify error codes versus |directory_contents|.
+  [Sync]
   Read() => (FileError error, array<DirectoryEntry>? directory_contents);
 
   // Operations *in* "this" |Directory|:
@@ -26,39 +27,48 @@ interface Directory {
   // Opens the file specified by |path| with the given |open_flags|. |file| is
   // optional, mainly for consistency with |OpenDirectory()| (but may be useful,
   // together with |kOpenFlagCreate|, for "touching" a file).
+  [Sync]
   OpenFile(string path, File&? file, uint32 open_flags)
       => (FileError error);
 
   // Opens the file specified by |path| with the given |open_flags|. Returns a
   // native file descriptor wrapped in a MojoHandle.
+  [Sync]
   OpenFileHandle(string path, uint32 open_flags)
       => (FileError error, handle file_handle);
 
   // Opens the directory specified by |path|. |directory| is optional, so that
   // this may be used as a simple "mkdir()" with |kOpenFlagCreate|.
+  [Sync]
   OpenDirectory(string path,
                 Directory&? directory,
                 uint32 open_flags) => (FileError error);
 
   // Renames/moves the file/directory given by |path| to |new_path|.
+  [Sync]
   Rename(string path, string new_path) => (FileError error);
 
   // Deletes the given path, which may be a file or a directory (see
   // |kDeleteFlag...| for details).
+  [Sync]
   Delete(string path, uint32 delete_flags) => (FileError error);
 
   // Returns true if |path| exists.
+  [Sync]
   Exists(string path) => (FileError error, bool exists);
 
   // Returns true if |path| is writable.
+  [Sync]
   IsWritable(string path) => (FileError error, bool is_writable);
 
   // Opens a file descriptor on this directory and calls
   // fsync()/FlushFileBuffers().
+  [Sync]
   Flush() => (FileError error);
 
   // Gets information about this file. On success, |file_information| is
   // non-null and will contain this information.
+  [Sync]
   StatFile(string path) => (FileError error, FileInformation? file_information);
 
   // Reads the contents of an entire file.

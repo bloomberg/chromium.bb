@@ -47,7 +47,8 @@ class ProfileApp::LevelDBServiceObjects
     : public base::SupportsWeakPtr<LevelDBServiceObjects> {
  public:
   // Created on the main thread.
-  LevelDBServiceObjects() {}
+  LevelDBServiceObjects(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : task_runner_(std::move(task_runner)) {}
 
   // Destroyed on the |leveldb_service_runner_|.
   ~LevelDBServiceObjects() {}
@@ -56,11 +57,13 @@ class ProfileApp::LevelDBServiceObjects
   void OnLevelDBServiceRequest(mojo::Connection* connection,
                                leveldb::LevelDBServiceRequest request) {
     if (!leveldb_service_)
-      leveldb_service_.reset(new leveldb::LevelDBServiceImpl);
+      leveldb_service_.reset(new leveldb::LevelDBServiceImpl(task_runner_));
     leveldb_bindings_.AddBinding(leveldb_service_.get(), std::move(request));
   }
 
  private:
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
   // Variables that are only accessible on the |leveldb_service_runner_| thread.
   scoped_ptr<leveldb::LevelDBService> leveldb_service_;
   mojo::BindingSet<leveldb::LevelDBService> leveldb_bindings_;
@@ -93,7 +96,8 @@ void ProfileApp::Initialize(mojo::Connector* connector,
   tracing_.Initialize(connector, identity.name());
   profile_objects_.reset(new ProfileApp::ProfileServiceObjects(
       GetProfileDirForUserID(identity.user_id())));
-  leveldb_objects_.reset(new ProfileApp::LevelDBServiceObjects);
+  leveldb_objects_.reset(
+      new ProfileApp::LevelDBServiceObjects(leveldb_service_runner_));
 }
 
 bool ProfileApp::AcceptConnection(mojo::Connection* connection) {

@@ -16,7 +16,9 @@
 
 namespace leveldb {
 
-LevelDBServiceImpl::LevelDBServiceImpl() : thread_(new LevelDBFileThread) {}
+LevelDBServiceImpl::LevelDBServiceImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : thread_(new LevelDBMojoProxy(std::move(task_runner))) {}
 
 LevelDBServiceImpl::~LevelDBServiceImpl() {}
 
@@ -37,7 +39,7 @@ void LevelDBServiceImpl::Open(filesystem::DirectoryPtr directory,
   options.max_open_files = 80;
 
   // Register our directory with the file thread.
-  LevelDBFileThread::OpaqueDir* dir =
+  LevelDBMojoProxy::OpaqueDir* dir =
       thread_->RegisterDirectory(std::move(directory));
 
   scoped_ptr<MojoEnv> env_mojo(new MojoEnv(thread_, dir));

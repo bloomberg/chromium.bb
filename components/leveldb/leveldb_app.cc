@@ -28,7 +28,8 @@ bool LevelDBApp::AcceptConnection(mojo::Connection* connection) {
 void LevelDBApp::Create(mojo::Connection* connection,
                         leveldb::LevelDBServiceRequest request) {
   if (!service_)
-    service_.reset(new LevelDBServiceImpl);
+    service_.reset(
+        new LevelDBServiceImpl(base::MessageLoop::current()->task_runner()));
   bindings_.AddBinding(service_.get(), std::move(request));
 }
 

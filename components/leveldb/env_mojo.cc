@@ -41,21 +41,21 @@ Status FilesystemErrorToStatus(filesystem::FileError error,
 
 class MojoFileLock : public FileLock {
  public:
-  MojoFileLock(LevelDBFileThread::OpaqueLock* lock, const std::string& name)
+  MojoFileLock(LevelDBMojoProxy::OpaqueLock* lock, const std::string& name)
       : fname_(name), lock_(lock) {}
   ~MojoFileLock() override { DCHECK(!lock_); }
 
   const std::string& name() const { return fname_; }
 
-  LevelDBFileThread::OpaqueLock* TakeLock() {
-    LevelDBFileThread::OpaqueLock* to_return = lock_;
+  LevelDBMojoProxy::OpaqueLock* TakeLock() {
+    LevelDBMojoProxy::OpaqueLock* to_return = lock_;
     lock_ = nullptr;
     return to_return;
   }
 
  private:
   std::string fname_;
-  LevelDBFileThread::OpaqueLock* lock_;
+  LevelDBMojoProxy::OpaqueLock* lock_;
 };
 
 class MojoSequentialFile : public leveldb::SequentialFile {
@@ -125,10 +125,10 @@ class MojoRandomAccessFile : public leveldb::RandomAccessFile {
 
 class MojoWritableFile : public leveldb::WritableFile {
  public:
-  MojoWritableFile(LevelDBFileThread::OpaqueDir* dir,
+  MojoWritableFile(LevelDBMojoProxy::OpaqueDir* dir,
                    const std::string& fname,
                    base::File f,
-                   scoped_refptr<LevelDBFileThread> thread)
+                   scoped_refptr<LevelDBMojoProxy> thread)
       : filename_(fname),
         file_(std::move(f)),
         file_type_(kOther),
@@ -202,20 +202,18 @@ class MojoWritableFile : public leveldb::WritableFile {
   std::string filename_;
   base::File file_;
   Type file_type_;
-  LevelDBFileThread::OpaqueDir* dir_;
+  LevelDBMojoProxy::OpaqueDir* dir_;
   std::string parent_dir_;
-  scoped_refptr<LevelDBFileThread> thread_;
+  scoped_refptr<LevelDBMojoProxy> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoWritableFile);
 };
 
 }  // namespace
 
-MojoEnv::MojoEnv(scoped_refptr<LevelDBFileThread> file_thread,
-                 LevelDBFileThread::OpaqueDir* dir)
-    : thread_(file_thread),
-      dir_(dir) {
-}
+MojoEnv::MojoEnv(scoped_refptr<LevelDBMojoProxy> file_thread,
+                 LevelDBMojoProxy::OpaqueDir* dir)
+    : thread_(file_thread), dir_(dir) {}
 
 MojoEnv::~MojoEnv() {
   thread_->UnregisterDirectory(dir_);
@@ -333,7 +331,7 @@ Status MojoEnv::RenameFile(const std::string& src, const std::string& target) {
 Status MojoEnv::LockFile(const std::string& fname, FileLock** lock) {
   TRACE_EVENT1("leveldb", "MojoEnv::LockFile", "fname", fname);
 
-  std::pair<filesystem::FileError, LevelDBFileThread::OpaqueLock*> p =
+  std::pair<filesystem::FileError, LevelDBMojoProxy::OpaqueLock*> p =
       thread_->LockFile(dir_, mojo::String::From(fname));
 
   if (p.second)

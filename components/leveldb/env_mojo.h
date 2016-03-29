@@ -6,7 +6,7 @@
 #define COMPONENTS_LEVELDB_ENV_MOJO_H_
 
 #include "components/filesystem/public/interfaces/directory.mojom.h"
-#include "components/leveldb/leveldb_file_thread.h"
+#include "components/leveldb/leveldb_mojo_proxy.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 
@@ -19,8 +19,8 @@ namespace leveldb {
 // existence.
 class MojoEnv : public leveldb_env::ChromiumEnv {
  public:
-  MojoEnv(scoped_refptr<LevelDBFileThread> file_thread,
-          LevelDBFileThread::OpaqueDir* dir);
+  MojoEnv(scoped_refptr<LevelDBMojoProxy> file_thread,
+          LevelDBMojoProxy::OpaqueDir* dir);
   ~MojoEnv() override;
 
   // Overridden from leveldb_env::EnvChromium:
@@ -49,8 +49,8 @@ class MojoEnv : public leveldb_env::ChromiumEnv {
   // NowMicros() or SleepForMicroseconds() and use the EnvChromium versions.
 
  private:
-  scoped_refptr<LevelDBFileThread> thread_;
-  LevelDBFileThread::OpaqueDir* dir_;
+  scoped_refptr<LevelDBMojoProxy> thread_;
+  LevelDBMojoProxy::OpaqueDir* dir_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoEnv);
 };
