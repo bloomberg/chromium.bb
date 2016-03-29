@@ -65,15 +65,11 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
   ScopedVector<DeviceInfo> devices = GetAllSignedInDevices(extension_id_,
                                                            profile_);
 
-  std::vector<linked_ptr<api::signed_in_devices::DeviceInfo> > args;
-
-  for (ScopedVector<DeviceInfo>::const_iterator it = devices.begin();
-       it != devices.end();
-       ++it) {
-    linked_ptr<api::signed_in_devices::DeviceInfo> api_device =
-        make_linked_ptr(new api::signed_in_devices::DeviceInfo);
-    FillDeviceInfo(*(*it), api_device.get());
-    args.push_back(api_device);
+  std::vector<api::signed_in_devices::DeviceInfo> args;
+  for (const DeviceInfo* info : devices) {
+    api::signed_in_devices::DeviceInfo api_device;
+    FillDeviceInfo(*info, &api_device);
+    args.push_back(std::move(api_device));
   }
 
   scoped_ptr<base::ListValue> result =

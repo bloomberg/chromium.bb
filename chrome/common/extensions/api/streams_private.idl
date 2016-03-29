@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Streams Private API.
-namespace streamsPrivate {
+[use_movable_types=true] namespace streamsPrivate {
   dictionary StreamInfo {
     // The MIME type of the intercepted URL request.
     DOMString mimeType;

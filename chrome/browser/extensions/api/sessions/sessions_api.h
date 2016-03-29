@@ -63,7 +63,7 @@ class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
   scoped_ptr<api::sessions::Session> CreateSessionModel(
       const sessions::SessionWindow& window,
       const std::string& session_tag);
-  scoped_ptr<api::sessions::Device> CreateDeviceModel(
+  api::sessions::Device CreateDeviceModel(
       const sync_driver::SyncedSession* session);
 };
 

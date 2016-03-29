@@ -130,7 +130,8 @@ scoped_ptr<api::sessions::Session> CreateSessionModelHelper(
     int last_modified,
     scoped_ptr<tabs::Tab> tab,
     scoped_ptr<windows::Window> window) {
-  scoped_ptr<api::sessions::Session> session_struct(new api::sessions::Session);
+  scoped_ptr<api::sessions::Session> session_struct(
+      new api::sessions::Session());
   session_struct->last_modified = last_modified;
   if (tab)
     session_struct->tab = std::move(tab);
@@ -214,7 +215,7 @@ bool SessionsGetRecentlyClosedFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(max_results >= 0 &&
       max_results <= api::sessions::MAX_SESSION_RESULTS);
 
-  std::vector<linked_ptr<api::sessions::Session> > result;
+  std::vector<api::sessions::Session> result;
   sessions::TabRestoreService* tab_restore_service =
       TabRestoreServiceFactory::GetForProfile(GetProfile());
 
@@ -223,21 +224,16 @@ bool SessionsGetRecentlyClosedFunction::RunSync() {
   if (!tab_restore_service) {
     DCHECK_NE(GetProfile(), GetProfile()->GetOriginalProfile())
         << "sessions::TabRestoreService expected for normal profiles";
-    results_ = GetRecentlyClosed::Results::Create(
-        std::vector<linked_ptr<api::sessions::Session> >());
+    results_ = GetRecentlyClosed::Results::Create(result);
     return true;
   }
 
   // List of entries. They are ordered from most to least recent.
   // We prune the list to contain max 25 entries at any time and removes
   // uninteresting entries.
-  sessions::TabRestoreService::Entries entries = tab_restore_service->entries();
-  for (sessions::TabRestoreService::Entries::const_iterator it =
-           entries.begin();
-       it != entries.end() && static_cast<int>(result.size()) < max_results;
-       ++it) {
-    sessions::TabRestoreService::Entry* entry = *it;
-    result.push_back(make_linked_ptr(CreateSessionModel(entry).release()));
+  for (const sessions::TabRestoreService::Entry* entry :
+       tab_restore_service->entries()) {
+    result.push_back(std::move(*CreateSessionModel(entry)));
   }
 
   results_ = GetRecentlyClosed::Results::Create(result);
@@ -349,7 +345,7 @@ SessionsGetDevicesFunction::CreateSessionModel(
                                                   std::move(window_model));
 }
 
-scoped_ptr<api::sessions::Device> SessionsGetDevicesFunction::CreateDeviceModel(
+api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
     const sync_driver::SyncedSession* session) {
   int max_results = api::sessions::MAX_SESSION_RESULTS;
   // Already validated in RunAsync().
@@ -357,20 +353,19 @@ scoped_ptr<api::sessions::Device> SessionsGetDevicesFunction::CreateDeviceModel(
   if (params->filter && params->filter->max_results)
     max_results = *params->filter->max_results;
 
-  scoped_ptr<api::sessions::Device> device_struct(new api::sessions::Device);
-  device_struct->info = session->session_name;
-  device_struct->device_name = session->session_name;
+  api::sessions::Device device_struct;
+  device_struct.info = session->session_name;
+  device_struct.device_name = session->session_name;
 
   for (sync_driver::SyncedSession::SyncedWindowMap::const_iterator it =
            session->windows.begin();
        it != session->windows.end() &&
-           static_cast<int>(device_struct->sessions.size()) < max_results;
+       static_cast<int>(device_struct.sessions.size()) < max_results;
        ++it) {
     scoped_ptr<api::sessions::Session> session_model(CreateSessionModel(
         *it->second, session->session_tag));
     if (session_model)
-      device_struct->sessions.push_back(make_linked_ptr(
-          session_model.release()));
+      device_struct.sessions.push_back(std::move(*session_model));
   }
   return device_struct;
 }
@@ -380,16 +375,16 @@ bool SessionsGetDevicesFunction::RunSync() {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(GetProfile());
   if (!(service && service->GetPreferredDataTypes().Has(syncer::SESSIONS))) {
     // Sync not enabled.
-    results_ = GetDevices::Results::Create(
-        std::vector<linked_ptr<api::sessions::Device> >());
+    results_ =
+        GetDevices::Results::Create(std::vector<api::sessions::Device>());
     return true;
   }
 
   sync_driver::OpenTabsUIDelegate* open_tabs = service->GetOpenTabsUIDelegate();
   std::vector<const sync_driver::SyncedSession*> sessions;
   if (!(open_tabs && open_tabs->GetAllForeignSessions(&sessions))) {
-    results_ = GetDevices::Results::Create(
-        std::vector<linked_ptr<api::sessions::Device> >());
+    results_ =
+        GetDevices::Results::Create(std::vector<api::sessions::Device>());
     return true;
   }
 
@@ -400,12 +395,11 @@ bool SessionsGetDevicesFunction::RunSync() {
         *params->filter->max_results <= api::sessions::MAX_SESSION_RESULTS);
   }
 
-  std::vector<linked_ptr<api::sessions::Device> > result;
+  std::vector<api::sessions::Device> result;
   // Sort sessions from most recent to least recent.
   std::sort(sessions.begin(), sessions.end(), SortSessionsByRecency);
-  for (size_t i = 0; i < sessions.size(); ++i) {
-    result.push_back(make_linked_ptr(CreateDeviceModel(sessions[i]).release()));
-  }
+  for (size_t i = 0; i < sessions.size(); ++i)
+    result.push_back(CreateDeviceModel(sessions[i]));
 
   results_ = GetDevices::Results::Create(result);
   return true;

@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.signedInDevices</code> API to get a list of devices
 // signed into chrome with the same account as the current profile.
-namespace signedInDevices {
+[use_movable_types=true] namespace signedInDevices {
   enum OS {
     win,
     mac,

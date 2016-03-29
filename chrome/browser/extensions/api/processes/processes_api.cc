@@ -124,14 +124,13 @@ void FillProcessData(
   const task_management::TaskIdList tasks_on_process =
       task_manager->GetIdsOfTasksSharingSameProcess(id);
   for (const auto& task_id : tasks_on_process) {
-    linked_ptr<api::processes::TaskInfo> task_info(
-        new api::processes::TaskInfo());
-    task_info->title = base::UTF16ToUTF8(task_manager->GetTitle(task_id));
+    api::processes::TaskInfo task_info;
+    task_info.title = base::UTF16ToUTF8(task_manager->GetTitle(task_id));
     const int tab_id = task_manager->GetTabId(task_id);
     if (tab_id != -1)
-      task_info->tab_id.reset(new int(tab_id));
+      task_info.tab_id.reset(new int(tab_id));
 
-    out_process->tasks.push_back(task_info);
+    out_process->tasks.push_back(std::move(task_info));
   }
 
   // If we don't need to include the optional properties, just return now.

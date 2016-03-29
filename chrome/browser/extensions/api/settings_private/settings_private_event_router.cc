@@ -131,11 +131,12 @@ void SettingsPrivateEventRouter::OnPreferenceChanged(
     return;
   }
 
-  api::settings_private::PrefObject* pref_object =
-      prefs_util_->GetPref(pref_name).release();
+  scoped_ptr<api::settings_private::PrefObject> pref_object =
+      prefs_util_->GetPref(pref_name);
 
-  std::vector<linked_ptr<api::settings_private::PrefObject>> prefs;
-  prefs.push_back(linked_ptr<api::settings_private::PrefObject>(pref_object));
+  std::vector<api::settings_private::PrefObject> prefs;
+  if (pref_object)
+    prefs.push_back(std::move(*pref_object));
 
   scoped_ptr<base::ListValue> args(
       api::settings_private::OnPrefsChanged::Create(prefs));
