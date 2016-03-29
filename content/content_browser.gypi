@@ -55,6 +55,7 @@
     '../ui/accessibility/accessibility.gyp:ax_gen',
     '../ui/base/ui_base.gyp:ui_base',
     '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
+    '../ui/display/display.gyp:display',
     '../ui/events/blink/events_blink.gyp:events_blink',
     '../ui/events/events.gyp:events',
     '../ui/events/events.gyp:events_base',
