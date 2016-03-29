@@ -1,4 +1,3 @@
--CrossSiteTransferTest.NoLeakOnCrossSiteCancel
 -NavigationControllerBrowserTest.FrameNavigationEntry_SubframeHistoryFallback
 -RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
 -RenderViewImplTest.GetCompositionCharacterBoundsTest

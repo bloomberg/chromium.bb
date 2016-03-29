@@ -311,6 +311,17 @@ void NavigationRequest::OnResponseStarted(
   NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
                                                            common_params_.url);
 
+  // For renderer-initiated navigations that are set to commit in a different
+  // renderer, allow the embedder to cancel the transfer.
+  if (!browser_initiated_ &&
+      render_frame_host != frame_tree_node_->current_frame_host() &&
+      !frame_tree_node_->navigator()
+           ->GetDelegate()
+           ->ShouldTransferNavigation()) {
+    frame_tree_node_->ResetNavigationRequest(false);
+    return;
+  }
+
   // Store the response and the StreamHandle until checks have been processed.
   response_ = response;
   body_ = std::move(body);
