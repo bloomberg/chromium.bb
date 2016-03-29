@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issues_observer.h"
+#include "chrome/browser/media/router/media_route_provider_util_win.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_router_type_converters.h"
@@ -81,6 +82,11 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
       current_wake_reason_(MediaRouteProviderWakeReason::TOTAL_COUNT),
       weak_factory_(this) {
   DCHECK(event_page_tracker_);
+#if defined(OS_WIN)
+  CanFirewallUseLocalPorts(
+      base::Bind(&MediaRouterMojoImpl::OnFirewallCheckComplete,
+                 weak_factory_.GetWeakPtr()));
+#endif
 }
 
 MediaRouterMojoImpl::~MediaRouterMojoImpl() {
@@ -140,6 +146,14 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
         callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+#if defined(OS_WIN)
+  // The MRPM may have been upgraded or otherwise reload such that we could be
+  // seeing an MRPM that doesn't know mDNS is enabled, even if we've told a
+  // previously registered MRPM it should be enabled. Furthermore, there may be
+  // a pending request to enable mDNS, so don't clear this flag after
+  // ExecutePendingRequests().
+  is_mdns_enabled_ = false;
+#endif
   if (event_page_tracker_->IsEventPageSuspended(
           media_route_provider_extension_id_)) {
     DVLOG_WITH_INSTANCE(1)
@@ -157,6 +171,16 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
   callback.Run(instance_id_);
   ExecutePendingRequests();
   wakeup_attempt_count_ = 0;
+#if defined(OS_WIN)
+  // The MRPM extension already turns on mDNS discovery for platforms other than
+  // Windows. It only relies on this signalling from MR on Windows to avoid
+  // triggering a firewall prompt out of the context of MR from the user's
+  // perspective. This particular call reminds the extension to enable mDNS
+  // discovery when it wakes up, has been upgraded, etc.
+  if (should_enable_mdns_discovery_) {
+    DoEnsureMdnsDiscoveryEnabled();
+  }
+#endif
 }
 
 void MediaRouterMojoImpl::OnIssue(const interfaces::IssuePtr issue) {
@@ -400,6 +424,12 @@ void MediaRouterMojoImpl::AddIssue(const Issue& issue) {
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   issue_manager_.ClearIssue(issue_id);
+}
+
+void MediaRouterMojoImpl::OnUserGesture() {
+#if defined(OS_WIN)
+  EnsureMdnsDiscoveryEnabled();
+#endif
 }
 
 bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
@@ -929,5 +959,31 @@ void MediaRouterMojoImpl::ClearWakeReason() {
   DCHECK(current_wake_reason_ != MediaRouteProviderWakeReason::TOTAL_COUNT);
   current_wake_reason_ = MediaRouteProviderWakeReason::TOTAL_COUNT;
 }
+
+#if defined(OS_WIN)
+void MediaRouterMojoImpl::EnsureMdnsDiscoveryEnabled() {
+  if (is_mdns_enabled_)
+    return;
+
+  SetWakeReason(MediaRouteProviderWakeReason::ENABLE_MDNS_DISCOVERY);
+  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoEnsureMdnsDiscoveryEnabled,
+                        base::Unretained(this)));
+  should_enable_mdns_discovery_ = true;
+}
+
+void MediaRouterMojoImpl::DoEnsureMdnsDiscoveryEnabled() {
+  DVLOG_WITH_INSTANCE(1) << "DoEnsureMdnsDiscoveryEnabled";
+  if (!is_mdns_enabled_) {
+    media_route_provider_->EnableMdnsDiscovery();
+    is_mdns_enabled_ = true;
+  }
+}
+
+void MediaRouterMojoImpl::OnFirewallCheckComplete(
+    bool firewall_can_use_local_ports) {
+  if (firewall_can_use_local_ports)
+    EnsureMdnsDiscoveryEnabled();
+}
+#endif
 
 }  // namespace media_router

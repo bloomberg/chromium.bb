@@ -41,6 +41,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::AtMost;
 using testing::Eq;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;
@@ -1333,6 +1334,8 @@ TEST_F(MediaRouterMojoExtensionTest, DeferredBindingAndSuspension) {
                 }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
       .WillOnce(Return(false));
+  EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
+      .Times(AtMost(1));
   EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId)))
       .WillOnce(InvokeWithoutArgs([&run_loop2]() {
                   run_loop2.Quit();
@@ -1363,6 +1366,8 @@ TEST_F(MediaRouterMojoExtensionTest, DeferredBindingAndSuspension) {
                 }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
       .WillOnce(Return(false));
+  EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
+      .Times(AtMost(1));
   EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId2)))
       .WillOnce(InvokeWithoutArgs([&run_loop5]() {
                   run_loop5.Quit();
@@ -1474,6 +1479,8 @@ TEST_F(MediaRouterMojoExtensionTest, DropOldestPendingRequest) {
                   run_loop.Quit();
                 }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()));
+  EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
+      .Times(AtMost(1));
   EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId2)))
       .Times(kMaxPendingRequests)
       .WillRepeatedly(InvokeWithoutArgs([&run_loop2, &count]() {
@@ -1486,5 +1493,71 @@ TEST_F(MediaRouterMojoExtensionTest, DropOldestPendingRequest) {
   ExpectVersionBucketCount(MediaRouteProviderVersion::SAME_VERSION_AS_CHROME,
                            1);
 }
+
+#if defined(OS_WIN)
+TEST_F(MediaRouterMojoExtensionTest, EnableMdnsAfterEachRegister) {
+  // This should be queued since no MRPM is registered yet.
+  media_router_->OnUserGesture();
+
+  BindMediaRouteProvider();
+
+  base::RunLoop run_loop;
+  base::RunLoop run_loop2;
+  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() {
+                  run_loop.Quit();
+                }));
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
+      .WillOnce(Return(false));
+  // EnableMdnsDisocvery() is never called except on Windows.
+  EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
+      .WillOnce(InvokeWithoutArgs([&run_loop2]() {
+                  run_loop2.Quit();
+                }));
+  RegisterMediaRouteProvider();
+  run_loop.Run();
+  run_loop2.Run();
+  // Always a no-op at this point.
+  media_router_->OnUserGesture();
+
+  // Reset the extension by "suspending" and notifying MR.
+  base::RunLoop run_loop3;
+  ResetMediaRouteProvider();
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
+      .WillOnce(Return(true));
+  EXPECT_CALL(*process_manager_, WakeEventPage(extension_->id(), _))
+      .WillOnce(testing::DoAll(
+          media::RunCallback<1>(true),
+          InvokeWithoutArgs([&run_loop3]() { run_loop3.Quit(); }),
+          Return(true)));
+  // Use DetachRoute because it unconditionally calls RunOrDefer().
+  media_router_->DetachRoute(kRouteId);
+  run_loop3.Run();
+
+  base::RunLoop run_loop4;
+  base::RunLoop run_loop5;
+  // RegisterMediaRouteProvider() is called.
+  // The queued DetachRoute(kRouteId) call should be executed.
+  EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
+      .WillOnce(InvokeWithoutArgs([&run_loop4]() {
+                  run_loop4.Quit();
+                }));
+  EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
+      .WillOnce(Return(false));
+  // Expected because it was used to wake up the page.
+  EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId)));
+  // EnableMdnsDisocvery() is never called except on Windows.
+  EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
+      .WillOnce(InvokeWithoutArgs([&run_loop5]() {
+                  run_loop5.Quit();
+                }));
+  BindMediaRouteProvider();
+  RegisterMediaRouteProvider();
+  run_loop4.Run();
+  run_loop5.Run();
+  // Always a no-op at this point.
+  media_router_->OnUserGesture();
+}
+#endif
 
 }  // namespace media_router

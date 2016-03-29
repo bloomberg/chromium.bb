@@ -473,6 +473,11 @@ define('media_router_bindings', [
      * @type {function()}
      */
     this.connectRouteByRouteId = null;
+
+    /**
+     * @type {function()}
+     */
+    this.enableMdnsDiscovery = null;
   };
 
   /**
@@ -520,7 +525,8 @@ define('media_router_bindings', [
       'createRoute',
       'stopObservingMediaSinks',
       'startObservingMediaRoutes',
-      'connectRouteByRouteId'
+      'connectRouteByRouteId',
+      'enableMdnsDiscovery',
     ];
     requiredHandlers.forEach(function(nextHandler) {
       if (handlers[nextHandler] === undefined) {
@@ -738,6 +744,13 @@ define('media_router_bindings', [
    */
   MediaRouteProvider.prototype.stopObservingMediaRoutes = function(sourceUrn) {
     this.handlers_.stopObservingMediaRoutes(sourceUrn);
+  };
+
+  /**
+   * Enables mDNS device discovery.
+   */
+  MediaRouteProvider.prototype.enableMdnsDiscovery = function() {
+    this.handlers_.enableMdnsDiscovery();
   };
 
   mediaRouter = new MediaRouter(connector.bindHandleToProxy(

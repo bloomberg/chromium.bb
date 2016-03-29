@@ -281,6 +281,11 @@ interface MediaRouteProvider {
   // |route_id| has been closed (via .close(), garbage collection or
   // navigation).
   DetachRoute(string route_id);
+
+  // Enables mDNS discovery. No-op if mDNS discovery is already enabled.
+  // Calling this will trigger a firewall prompt on Windows if there is not
+  // already a firewall rule for mDNS.
+  EnableMdnsDiscovery();
 };
 
 // Interface for a service which observes state changes across media

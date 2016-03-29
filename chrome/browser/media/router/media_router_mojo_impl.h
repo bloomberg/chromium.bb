@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/media_router.mojom.h"
@@ -98,6 +99,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const SendRouteMessageCallback& callback) override;
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
+  void OnUserGesture() override;
 
   const std::string& media_route_provider_extension_id() const {
     return media_route_provider_extension_id_;
@@ -320,6 +322,19 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // Clears the wake reason after the extension has been awoken.
   void ClearWakeReason();
 
+#if defined(OS_WIN)
+  // Ensures that mDNS discovery is enabled in the MRPM extension. This can be
+  // called many times but the MRPM will only be called once per registration
+  // period.
+  void EnsureMdnsDiscoveryEnabled();
+  void DoEnsureMdnsDiscoveryEnabled();
+
+  // Callback used to enabled mDNS in the MRPM if a firewall prompt will not be
+  // triggered. If a firewall prompt would be triggered, enabling mDNS won't
+  // happen until the user is clearly interacting with MR.
+  void OnFirewallCheckComplete(bool firewall_can_use_local_ports);
+#endif
+
   // Pending requests queued to be executed once component extension
   // becomes ready.
   std::deque<base::Closure> pending_requests_;
@@ -380,6 +395,17 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // A flag to ensure that we record the provider version once, during the
   // initial event page wakeup attempt.
   bool provider_version_was_recorded_ = false;
+
+#if defined(OS_WIN)
+  // A pair of flags to ensure that mDNS discovery is only enabled on Windows
+  // when there will be appropriate context for the user to associate a firewall
+  // prompt with Media Router. |should_enable_mdns_discovery_| can only go from
+  // |false| to |true|. On Windows, |is_mdns_enabled_| is set to |false| in
+  // RegisterMediaRouteProvider and only set to |true| when we successfully call
+  // the extension to enable mDNS.
+  bool is_mdns_enabled_ = false;
+  bool should_enable_mdns_discovery_ = false;
+#endif
 
   base::WeakPtrFactory<MediaRouterMojoImpl> weak_factory_;
 

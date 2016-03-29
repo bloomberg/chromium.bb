@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/issue.h"
@@ -250,6 +251,9 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("media_router", "UI", initiator,
                                       "MediaRouterUI::InitCommon", this);
 
+#if defined(OS_WIN)
+  router_->OnUserGesture();
+#endif
   // Create |collator_| before |query_result_manager_| so that |collator_| is
   // already set up when we get a callback from |query_result_manager_|.
   UErrorCode error = U_ZERO_ERROR;

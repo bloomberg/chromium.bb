@@ -28,8 +28,7 @@ MockMediaRouteProvider::~MockMediaRouteProvider() {
 }
 
 MediaRouterMojoTest::MediaRouterMojoTest()
-    : mock_media_router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)),
-      message_loop_(mojo::common::MessagePumpMojo::Create()) {
+    : mock_media_router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)) {
   mock_media_router_->set_instance_id_for_test(kInstanceId);
   extension_ = extensions::test_util::CreateEmptyExtension();
 }
@@ -57,11 +56,11 @@ void MediaRouterMojoTest::SetUp() {
   ON_CALL(mock_event_page_tracker_, IsEventPageSuspended(extension_id()))
       .WillByDefault(testing::Return(false));
   ConnectProviderManagerService();
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void MediaRouterMojoTest::ProcessEventLoop() {
-  message_loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media_router

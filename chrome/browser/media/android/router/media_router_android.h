@@ -65,6 +65,7 @@ class MediaRouterAndroid : public MediaRouterBase {
       const SendRouteMessageCallback& callback) override;
   void AddIssue(const Issue& issue) override;
   void ClearIssue(const Issue::Id& issue_id) override;
+  void OnUserGesture() override;
 
   // The methods called by the Java counterpart.
 

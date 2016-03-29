@@ -50,6 +50,8 @@
     ],
     # Files that are only needed on desktop builds
     'media_router_non_android_sources': [
+      'media_route_provider_util_win.cc',
+      'media_route_provider_util_win.h',
       'media_router_mojo_impl.cc',
       'media_router_mojo_impl.h',
       'media_router_type_converters.cc',

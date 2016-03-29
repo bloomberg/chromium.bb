@@ -154,6 +154,11 @@ class MediaRouter : public KeyedService {
   // Clears the issue with the id |issue_id|.
   virtual void ClearIssue(const Issue::Id& issue_id) = 0;
 
+  // Notifies the Media Router that the user has taken an action involving the
+  // Media Router. This can be used to perform any initialization that is not
+  // approriate to be done at construction.
+  virtual void OnUserGesture() = 0;
+
   // Adds |callback| to listen for state changes for presentation connected to
   // |route_id|. The returned Subscription object is owned by the caller.
   // |callback| will be invoked whenever there are state changes, until the

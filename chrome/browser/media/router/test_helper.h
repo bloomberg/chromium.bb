@@ -150,6 +150,7 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
                void(const mojo::String& route_id));
   MOCK_METHOD1(StartObservingMediaRoutes, void(const mojo::String& source));
   MOCK_METHOD1(StopObservingMediaRoutes, void(const mojo::String& source));
+  MOCK_METHOD0(EnableMdnsDiscovery, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);

@@ -67,6 +67,7 @@ class MockMediaRouter : public MediaRouter {
                     const SendRouteMessageCallback& callback));
   MOCK_METHOD1(AddIssue, void(const Issue& issue));
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
+  MOCK_METHOD0(OnUserGesture, void());
   MOCK_METHOD1(OnPresentationSessionDetached,
                void(const MediaRoute::Id& route_id));
   scoped_ptr<PresentationConnectionStateSubscription>

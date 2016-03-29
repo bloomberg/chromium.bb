@@ -244,6 +244,9 @@ void MediaRouterAndroid::ClearIssue(const Issue::Id& issue_id) {
   NOTIMPLEMENTED();
 }
 
+void MediaRouterAndroid::OnUserGesture() {
+}
+
 void MediaRouterAndroid::DetachRoute(const MediaRoute::Id& route_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =
