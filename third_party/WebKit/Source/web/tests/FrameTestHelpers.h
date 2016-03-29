@@ -75,6 +75,8 @@ void reloadFrameIgnoringCache(WebFrame*);
 // using one of the above helper methods whenever possible.
 void pumpPendingRequestsForFrameToLoad(WebFrame*);
 
+WebMouseEvent createMouseEvent(WebInputEvent::Type, WebMouseEvent::Button, const IntPoint&, int modifiers);
+
 // Calls WebRemoteFrame::createLocalChild, but with some arguments prefilled
 // with default test values (i.e. with a default |client| or |properties| and/or
 // with a precalculated |uniqueName|).

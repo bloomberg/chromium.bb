@@ -150,6 +150,18 @@ void pumpPendingRequestsForFrameToLoad(WebFrame* frame)
     testing::enterRunLoop();
 }
 
+WebMouseEvent createMouseEvent(WebInputEvent::Type type, WebMouseEvent::Button button, const IntPoint& point, int modifiers)
+{
+    WebMouseEvent result;
+    result.type = type;
+    result.x = result.windowX = result.globalX = point.x();
+    result.y = result.windowX = result.globalX = point.y();
+    result.modifiers = modifiers;
+    result.button = button;
+    result.clickCount = 1;
+    return result;
+}
+
 WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name, WebFrameClient* client, WebFrame* previousSibling, const WebFrameOwnerProperties& properties)
 {
     if (!client)

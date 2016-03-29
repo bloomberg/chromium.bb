@@ -30,6 +30,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "platform/SharedBuffer.h"
+#include "platform/Timer.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
@@ -45,6 +46,12 @@ namespace testing {
 void runPendingTasks()
 {
     Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&exitRunLoop));
+    enterRunLoop();
+}
+
+void runDelayedTasks(double delayMs)
+{
+    Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(BLINK_FROM_HERE, bind(&exitRunLoop), delayMs);
     enterRunLoop();
 }
 

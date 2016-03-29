@@ -263,6 +263,7 @@
       'tests/ImeOnFocusTest.cpp',
       'tests/KeyboardTest.cpp',
       'tests/ListenerLeakTest.cpp',
+      'tests/LinkSelectionTest.cpp',
       'tests/MHTMLTest.cpp',
       'tests/PrerenderingTest.cpp',
       'tests/ProgrammaticScrollTest.cpp',

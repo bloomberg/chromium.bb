@@ -65,6 +65,7 @@ public:
     bool mouseDownMayStartSelect() const;
     bool mouseDownWasSingleClickInSelection() const;
     void notifySelectionChanged();
+    bool hasExtendedSelection() const { return m_selectionState == SelectionState::ExtendedSelection; }
 
 private:
     explicit SelectionController(LocalFrame&);
@@ -87,6 +88,8 @@ private:
     enum class SelectionState { HaveNotStartedSelection, PlacedCaret, ExtendedSelection };
     SelectionState m_selectionState;
 };
+
+bool isLinkSelection(const MouseEventWithHitTestResults&);
 
 } // namespace blink
 

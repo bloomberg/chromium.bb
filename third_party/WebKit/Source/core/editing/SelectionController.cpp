@@ -432,7 +432,8 @@ void SelectionController::handleMousePressEvent(const MouseEventWithHitTestResul
 {
     // If we got the event back, that must mean it wasn't prevented,
     // so it's allowed to start a drag or selection if it wasn't in a scrollbar.
-    m_mouseDownMayStartSelect = canMouseDownStartSelect(event.innerNode()) && !event.scrollbar();
+    m_mouseDownMayStartSelect = (canMouseDownStartSelect(event.innerNode()) || isLinkSelection(event))
+        && !event.scrollbar();
     m_mouseDownWasSingleClickInSelection = false;
     // Avoid double-tap touch gesture confusion by restricting multi-click side
     // effects, e.g., word selection, to editable regions.
@@ -562,7 +563,8 @@ void SelectionController::sendContextMenuEvent(const MouseEventWithHitTestResult
         || !(selection().isContentEditable() || (mev.innerNode() && mev.innerNode()->isTextNode())))
         return;
 
-    m_mouseDownMayStartSelect = true; // context menu events are always allowed to perform a selection
+    // Context menu events are always allowed to perform a selection.
+    TemporaryChange<bool> mouseDownMayStartSelectChange(m_mouseDownMayStartSelect, true);
 
     if (mev.hitTestResult().isMisspelled())
         return selectClosestMisspellingFromMouseEvent(mev);
@@ -621,6 +623,11 @@ void SelectionController::notifySelectionChanged()
 FrameSelection& SelectionController::selection() const
 {
     return m_frame->selection();
+}
+
+bool isLinkSelection(const MouseEventWithHitTestResults& event)
+{
+    return event.event().altKey() && event.isOverLink();
 }
 
 } // namespace blink

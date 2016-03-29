@@ -412,7 +412,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const MouseEventWithHitT
 
     bool singleClick = event.event().clickCount() <= 1;
 
-    m_mouseDownMayStartDrag = singleClick;
+    m_mouseDownMayStartDrag = singleClick && !isLinkSelection(event);
 
     selectionController().handleMousePressEvent(event);
 
@@ -941,7 +941,8 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
 {
     bool editable = (node && node->hasEditableStyle());
 
-    if (useHandCursor(node, result.isOverLink()))
+    const bool isOverLink = !selectionController().mouseDownMayStartSelect() && result.isOverLink();
+    if (useHandCursor(node, isOverLink))
         return handCursor();
 
     bool inResizer = false;
@@ -1365,7 +1366,12 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
 #endif
 
     WebInputEventResult clickEventResult = WebInputEventResult::NotHandled;
-    if (m_clickCount > 0 && !contextMenuEvent && mev.innerNode() && m_clickNode && mev.innerNode()->canParticipateInFlatTree() && m_clickNode->canParticipateInFlatTree()) {
+    const bool shouldDispatchClickEvent = m_clickCount > 0
+        && !contextMenuEvent
+        && mev.innerNode() && m_clickNode
+        && mev.innerNode()->canParticipateInFlatTree() && m_clickNode->canParticipateInFlatTree()
+        && !(selectionController().hasExtendedSelection() && isLinkSelection(mev));
+    if (shouldDispatchClickEvent) {
         // Updates distribution because a 'mouseup' event listener can make the
         // tree dirty at dispatchMouseEvent() invocation above.
         // Unless distribution is updated, commonAncestor would hit ASSERT.
