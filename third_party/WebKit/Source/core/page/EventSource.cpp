@@ -64,6 +64,7 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_url(url)
+    , m_currentURL(url)
     , m_withCredentials(eventSourceInit.withCredentials())
     , m_state(CONNECTING)
     , m_connectTimer(this, &EventSource::connectTimerFired)
@@ -119,7 +120,7 @@ void EventSource::connect()
     ASSERT(getExecutionContext());
 
     ExecutionContext& executionContext = *this->getExecutionContext();
-    ResourceRequest request(m_url);
+    ResourceRequest request(m_currentURL);
     request.setHTTPMethod(HTTPNames::GET);
     request.setHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
     request.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
@@ -140,7 +141,7 @@ void EventSource::connect()
     options.contentSecurityPolicyEnforcement = ContentSecurityPolicy::shouldBypassMainWorld(&executionContext) ? DoNotEnforceContentSecurityPolicy : EnforceContentSecurityPolicy;
 
     ResourceLoaderOptions resourceLoaderOptions;
-    resourceLoaderOptions.allowCredentials = (origin->canRequestNoSuborigin(m_url) || m_withCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+    resourceLoaderOptions.allowCredentials = (origin->canRequestNoSuborigin(m_currentURL) || m_withCredentials) ? AllowStoredCredentials : DoNotAllowStoredCredentials;
     resourceLoaderOptions.credentialsRequested = m_withCredentials ? ClientRequestedCredentials : ClientDidNotRequestCredentials;
     resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
     resourceLoaderOptions.securityOrigin = origin;
@@ -226,6 +227,7 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
     ASSERT(m_state == CONNECTING);
     ASSERT(m_loader);
 
+    m_currentURL = response.url();
     m_eventStreamOrigin = SecurityOrigin::create(response.url())->toString();
     int statusCode = response.httpStatusCode();
     bool mimeTypeIsValid = response.mimeType() == "text/event-stream";

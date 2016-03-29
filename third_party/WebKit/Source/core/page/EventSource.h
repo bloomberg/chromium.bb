@@ -113,7 +113,12 @@ private:
     void connectTimerFired(Timer<EventSource>*);
     void abortConnectionAttempt();
 
-    KURL m_url;
+    // The original URL specified when constructing EventSource instance. Used
+    // for the 'url' attribute getter.
+    const KURL m_url;
+    // The URL used to connect to the server, which may be different from
+    // |m_url| as it may be redirected.
+    KURL m_currentURL;
     bool m_withCredentials;
     State m_state;
 
