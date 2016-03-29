@@ -992,7 +992,6 @@ class Cluster {
   // |timecode| is the absolute timecode of the cluster. |cues_pos| is the
   // position for the cluster within the segment that should be written in
   // the cues element. |timecode_scale| is the timecode scale of the segment.
-  Cluster(uint64_t timecode, int64_t cues_pos, uint64_t timecode_scale);
   Cluster(uint64_t timecode, int64_t cues_pos, uint64_t timecode_scale,
           bool write_last_frame_with_duration = false);
   ~Cluster();
