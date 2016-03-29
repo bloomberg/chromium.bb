@@ -2458,12 +2458,11 @@
         ],
       }],
 
-      ['OS=="win" and clang==1', {
+      ['OS=="win" and clang==1 and asan==0', {
         # TODO(thakis): Remove this again once building with clang/win and
         # debug info doesn't make link.exe run for hours.
         'fastbuild': 1,
       }],
-
 
       ['host_clang==1', {
         'host_cc': '<(make_clang_dir)/bin/clang',
@@ -5926,6 +5925,8 @@
                     'AdditionalOptions': [
                       '-fsanitize=address',
                       '-fsanitize-blacklist=<(PRODUCT_DIR)/../../tools/memory/asan/blacklist_win.txt',
+		      # Omit variable info to speed up /Z7 links.
+		      '-gline-tables-only',
                     ],
                     'AdditionalIncludeDirectories': [
                       # MSVC needs to be able to find the sanitizer headers when

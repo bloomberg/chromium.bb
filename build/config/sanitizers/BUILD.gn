@@ -150,16 +150,19 @@ config("default_sanitizer_flags") {
   defines = []
   configs = [ ":default_sanitizer_ldflags" ]
 
+  # Sanitizers need line table info for stack traces. They don't need type info
+  # or variable info, so we can leave that out to speed up the build.
+  if (is_clang && using_sanitizer) {
+    cflags += [ "-gline-tables-only" ]
+  }
+
   # Only works on Posix-like platforms.
   # FIXME: this is not true, remove the conditional.
   if (is_posix) {
     # Common options for AddressSanitizer, LeakSanitizer, ThreadSanitizer,
     # MemorySanitizer and non-official CFI builds.
     if (using_sanitizer || (is_lto && !is_official_build)) {
-      cflags += [
-        "-fno-omit-frame-pointer",
-        "-gline-tables-only",
-      ]
+      cflags += [ "-fno-omit-frame-pointer" ]
     }
     if (is_asan) {
       asan_blacklist_path =

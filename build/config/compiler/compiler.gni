@@ -28,7 +28,7 @@ if (symbol_level == -1) {
     # With instrumentation enabled, debug info puts libchrome.so over 4gb, which
     # causes the linker to produce an invalid ELF. http://crbug.com/574476
     symbol_level = 0
-  } else if (is_win && is_clang) {
+  } else if (is_win && is_clang && !using_sanitizer) {
     # TODO(thakis): Remove this again once building with clang/win and
     # debug info doesn't make link.exe run for hours.
     symbol_level = 1
