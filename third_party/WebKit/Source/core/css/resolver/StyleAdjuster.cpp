@@ -349,6 +349,14 @@ void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const Comput
         return;
     }
 
+    if (isHTMLFrameElementBase(element)) {
+        // Frames cannot overflow (they are always the size we ask them to be).
+        // Some compositing code paths may try to draw scrollbars anyhow.
+        style.setOverflowX(OverflowVisible);
+        style.setOverflowY(OverflowVisible);
+        return;
+    }
+
     if (isHTMLRTElement(element)) {
         // Ruby text does not support float or position. This might change with evolution of the specification.
         style.setPosition(StaticPosition);
