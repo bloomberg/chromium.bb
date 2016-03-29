@@ -76,7 +76,7 @@ def _upload_worker(
     file_url = '%s/%s' % (base_url, sha1_sum)
     if gsutil.check_call('ls', file_url)[0] == 0 and not force:
       # File exists, check MD5 hash.
-      _, out, _ = gsutil.check_call('ls', '-L', file_url)
+      _, out, _ = gsutil.check_call_with_retries('ls', '-L', file_url)
       etag_match = re.search('ETag:\s+([a-z0-9]{32})', out)
       if etag_match:
         remote_md5 = etag_match.group(1)
@@ -97,7 +97,7 @@ def _upload_worker(
     if gzip:
       gsutil_args.extend(['-z', gzip])
     gsutil_args.extend([filename, file_url])
-    code, _, err = gsutil.check_call(*gsutil_args)
+    code, _, err = gsutil.check_call_with_retries(*gsutil_args)
     if code != 0:
       ret_codes.put(
           (code,
@@ -109,9 +109,9 @@ def _upload_worker(
     # the download script will check for to preserve the executable bit.
     if not sys.platform.startswith('win'):
       if os.stat(filename).st_mode & stat.S_IEXEC:
-        code, _, err = gsutil.check_call('setmeta', '-h',
-                                         'x-goog-meta-executable:1', file_url)
-        if code:
+        code, _, err = gsutil.check_call_with_retries(
+            'setmeta', '-h', 'x-goog-meta-executable:1', file_url)
+        if not code:
           ret_codes.put(
               (code,
                'Encountered error on setting metadata on %s\n%s' %

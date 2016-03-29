@@ -55,6 +55,11 @@ def GetNormalizedPlatform():
 class Gsutil(object):
   """Call gsutil with some predefined settings.  This is a convenience object,
   and is also immutable."""
+
+  MAX_TRIES = 5
+  RETRY_BASE_DELAY = 5.0
+  RETRY_DELAY_MULTIPLE = 1.3
+
   def __init__(self, path, boto_path=None, timeout=None, version='4.15'):
     if not os.path.exists(path):
       raise FileNotFoundError('GSUtil not found in %s' % path)
@@ -99,6 +104,18 @@ class Gsutil(object):
     if 'matched no objects' in err:
       return (404, out, err)
     return (code, out, err)
+
+  def check_call_with_retries(self, *args):
+    delay = self.RETRY_BASE_DELAY
+    for i in xrange(self.MAX_TRIES):
+      code, out, err = self.check_call(*args)
+      if not code or i == self.MAX_TRIES - 1:
+        break
+
+      time.sleep(delay)
+      delay *= self.RETRY_DELAY_MULTIPLE
+
+    return code, out, err
 
 
 def check_platform(target):
