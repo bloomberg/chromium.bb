@@ -212,7 +212,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
             }
         }
 
-        callback = new DiscoveryCallback(sourceId, knownSinks, this);
+        callback = new DiscoveryCallback(sourceId, knownSinks, this, routeSelector);
         mAndroidMediaRouter.addCallback(
                 routeSelector,
                 callback,

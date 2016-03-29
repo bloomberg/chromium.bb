@@ -73,6 +73,14 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
             updateRouteAvailability();
         }
 
+        @Override
+        public void onRouteChanged(MediaRouter router, RouteInfo route) {
+            if (mDebug) {
+                Log.d(TAG, "Changed route " + route.getName() + " " + route.getId());
+            }
+            updateRouteAvailability();
+        }
+
         private void updateRouteAvailability() {
             if (mediaRouterInitializationFailed()) return;
 

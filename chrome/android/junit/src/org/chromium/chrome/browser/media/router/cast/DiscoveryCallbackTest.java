@@ -4,13 +4,18 @@
 
 package org.chromium.chrome.browser.media.router.cast;
 
-import static org.chromium.chrome.browser.media.router.cast.TestUtils.createMockRouteInfo;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import android.support.v7.media.MediaRouteSelector;
+import android.support.v7.media.MediaRouter;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouterTestBase;
@@ -45,7 +50,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     public void testInitCallbackWithEmptyKnownSinks() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         verify(mDiscoveryDelegate).onSinksReceived(eq(SOURCE_ID1), eq(knownSinks));
     }
@@ -56,7 +61,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         MediaSink sink = new MediaSink(SINK_ID1, SINK_NAME1, null);
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         verify(mDiscoveryDelegate).onSinksReceived(eq(SOURCE_ID1), eq(knownSinks));
     }
@@ -66,7 +71,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     public void testCallbackAddOneSink() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
         List<MediaSink> expectedSinks = new ArrayList<MediaSink>();
@@ -79,7 +84,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     public void testCallbackAddTwoSinks() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID2, SINK_NAME2));
@@ -94,7 +99,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     public void testCallbackAddDuplicateSink() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
@@ -109,7 +114,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     public void testCallbackRemoveSink() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
         callback.onRouteRemoved(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
@@ -124,7 +129,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     public void testCallbackRemoveNonexistingSink() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
         callback.onRouteRemoved(null, createMockRouteInfo(SINK_ID2, SINK_NAME2));
@@ -136,10 +141,42 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
 
     @Test
     @Feature({"MediaRouter"})
+    public void testCallbackChangeRouteAddsOneSink() {
+        List<MediaSink> knownSinks = new ArrayList<MediaSink>();
+        DiscoveryCallback callback = new DiscoveryCallback(
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
+
+        callback.onRouteChanged(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
+        List<MediaSink> expectedSinks = new ArrayList<MediaSink>();
+        expectedSinks.add(new MediaSink(SINK_ID1, SINK_NAME1, null));
+        verify(mDiscoveryDelegate).onSinksReceived(eq(SOURCE_ID1), eq(expectedSinks));
+    }
+
+    @Test
+    @Feature({"MediaRouter"})
+    public void testCallbackRemoveSinkAfterRouteChanged() {
+        List<MediaSink> knownSinks = new ArrayList<MediaSink>();
+        DiscoveryCallback callback = new DiscoveryCallback(
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
+
+        MediaRouter.RouteInfo info = createMockRouteInfo(SINK_ID1, SINK_NAME1);
+        callback.onRouteChanged(null, info);
+
+        doReturn(false).when(info).matchesSelector(any(MediaRouteSelector.class));
+        callback.onRouteChanged(null, info);
+
+        List<MediaSink> expectedSinks = new ArrayList<MediaSink>();
+        // One time for init, one time for remove.
+        verify(mDiscoveryDelegate, times(2)).onSinksReceived(eq(SOURCE_ID1), eq(expectedSinks));
+    }
+
+
+    @Test
+    @Feature({"MediaRouter"})
     public void testCallbackAddSourceUrn() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
         callback.addSourceUrn(SOURCE_ID2);
@@ -154,7 +191,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     public void testCallbackAddDuplicateSourceUrn() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
         callback.addSourceUrn(SOURCE_ID1);
@@ -170,7 +207,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     public void testCallbackRemoveSourceUrn() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
         callback.removeSourceUrn(SOURCE_ID1);
@@ -185,7 +222,7 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
     public void testCallbackRemoveNonexistingSourceUrn() {
         List<MediaSink> knownSinks = new ArrayList<MediaSink>();
         DiscoveryCallback callback = new DiscoveryCallback(
-                SOURCE_ID1, knownSinks, mDiscoveryDelegate);
+                SOURCE_ID1, knownSinks, mDiscoveryDelegate, null);
 
         callback.onRouteAdded(null, createMockRouteInfo(SINK_ID1, SINK_NAME1));
         callback.removeSourceUrn(SOURCE_ID2);
@@ -193,5 +230,11 @@ public class DiscoveryCallbackTest extends ChromeMediaRouterTestBase {
         List<MediaSink> expectedSinks = new ArrayList<MediaSink>();
         // Only the one time for init.
         verify(mDiscoveryDelegate, never()).onSinksReceived(eq(SOURCE_ID2), eq(expectedSinks));
+    }
+
+    private MediaRouter.RouteInfo createMockRouteInfo(String sinkId, String sinkName) {
+        MediaRouter.RouteInfo route = spy(TestUtils.createMockRouteInfo(sinkId, sinkName));
+        doReturn(true).when(route).matchesSelector(any(MediaRouteSelector.class));
+        return route;
     }
 }
