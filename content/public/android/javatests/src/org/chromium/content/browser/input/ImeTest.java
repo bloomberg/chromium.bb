@@ -304,19 +304,16 @@ public class ImeTest extends ContentShellTestBase {
         commitText("Sample Text", 1);
         waitAndVerifyUpdateSelection(0, 11, 11, -1, -1);
 
-        // This will select 'Text' part.
-        DOMUtils.clickNode(this, mContentViewCore, "input_text");
-        assertWaitForKeyboardStatus(true);
+        // Select 'text' part.
+        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
 
-        // Wait until selection popup shows before long press. Otherwise view
-        // position may change during sleep in longPressNode implementation.
         assertWaitForSelectActionBarStatus(true);
 
-        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         selectAll();
         copy();
-        assertWaitForKeyboardStatus(true);
+        assertClipboardContents(getActivity(), "Sample Text");
         assertEquals(11, mInputMethodManagerWrapper.getSelection().end());
+        assertWaitForKeyboardStatus(true);
     }
 
     @SmallTest
@@ -1011,10 +1008,6 @@ public class ImeTest extends ContentShellTestBase {
     public void testSelectionClearedOnKeyEvent() throws Throwable {
         commitText("hello", 1);
         waitAndVerifyUpdateSelection(0, 5, 5, -1, -1);
-
-        DOMUtils.clickNode(this, mContentViewCore, "input_text");
-        assertWaitForKeyboardStatus(true);
-        assertWaitForSelectActionBarStatus(true);
 
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         assertWaitForSelectActionBarStatus(true);
