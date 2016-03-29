@@ -138,6 +138,8 @@ void UsbChooserDialogAndroid::Select(const std::string& guid) {
           devices_[i]->serial_number().empty()
               ? WEBUSB_CHOOSER_CLOSED_EPHEMERAL_PERMISSION_GRANTED
               : WEBUSB_CHOOSER_CLOSED_PERMISSION_GRANTED);
+
+      return;
     }
   }
 }
