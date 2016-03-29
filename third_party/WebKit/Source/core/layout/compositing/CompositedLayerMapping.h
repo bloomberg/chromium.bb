@@ -158,7 +158,7 @@ public:
 
     IntRect computeInterestRect(const GraphicsLayer*, const IntRect& previousInterestRect) const override;
     LayoutSize subpixelAccumulation() const final;
-    bool needsRepaint() const override;
+    bool needsRepaint(const GraphicsLayer&) const override;
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const override;
 
     bool isTrackingPaintInvalidations() const override;

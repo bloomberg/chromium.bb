@@ -2287,7 +2287,7 @@ IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphic
 {
     // Use the previous interest rect if it covers the whole layer.
     IntRect wholeLayerRect = IntRect(IntPoint(), expandedIntSize(graphicsLayer->size()));
-    if (!needsRepaint() && previousInterestRect == wholeLayerRect)
+    if (!needsRepaint(*graphicsLayer) && previousInterestRect == wholeLayerRect)
         return previousInterestRect;
 
     // Paint the whole layer if "mainFrameClipsContent" is false, meaning that WebPreferences::record_whole_document is true.
@@ -2307,8 +2307,9 @@ LayoutSize CompositedLayerMapping::subpixelAccumulation() const
     return m_owningLayer.subpixelAccumulation();
 }
 
-bool CompositedLayerMapping::needsRepaint() const
+bool CompositedLayerMapping::needsRepaint(const GraphicsLayer& graphicsLayer) const
 {
+    // TODO(wkorman): Delegate needsRepaint() for scrollbar-affiliated layers.
     return m_owningLayer.needsRepaint();
 }
 

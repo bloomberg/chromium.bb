@@ -212,6 +212,7 @@ private:
     bool visualViewportSuppliesScrollbars() const;
 
     // GraphicsLayerClient implementation.
+    bool needsRepaint(const GraphicsLayer&) const { ASSERT_NOT_REACHED(); return true; }
     IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const;
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect&) const override;
     String debugName(const GraphicsLayer*) const override;

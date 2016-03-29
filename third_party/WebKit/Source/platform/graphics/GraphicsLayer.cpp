@@ -334,7 +334,7 @@ bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsCont
     }
 
     if (!getPaintController().subsequenceCachingIsDisabled()
-        && !m_client->needsRepaint()
+        && !m_client->needsRepaint(*this)
         && !getPaintController().cacheIsEmpty()
         && m_previousInterestRect == *interestRect) {
         ASSERT(!getPaintController().hasInvalidations());

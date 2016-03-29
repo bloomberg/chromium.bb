@@ -72,6 +72,7 @@ public:
     LayoutRect visualRect() const override;
 
     // GraphicsLayerClient implementation
+    bool needsRepaint(const GraphicsLayer&) const { return true; }
     IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const override;
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const override;
     String debugName(const GraphicsLayer*) const override;
