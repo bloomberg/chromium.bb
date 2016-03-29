@@ -652,15 +652,15 @@ _waterfall_config_map = {
         'veyron_minnie-cheets-chrome-pfq',
 
         # Experimental Canaries (Group)
-        'gale-release-group',
         'glados-release-group',
-        'gru-release-group',
         'oak-release-group',
         'storm-release-group',
         'strago-c-release-group',
 
         # Experimental Canaries
         'amd64-generic-goofy-release',
+        'gale-release',
+        'gru-release',
         'kunimitsu-release-group',
         'lakitu_next-release',
         'nyan_freon-release',
@@ -2911,16 +2911,14 @@ def GetConfig():
   )
 
   # gru-based boards
-  _AddGroupConfig(
-      'gru', 'gru', (
-      ),
+  _AdjustLeaderFollowerReleaseConfigs(
+      'gru',
       important=False,
   )
 
   # gale-based boards
-  _AddGroupConfig(
-      'gale', 'gale', (
-      ),
+  _AdjustLeaderFollowerReleaseConfigs(
+      'gale',
       important=False,
   )
 

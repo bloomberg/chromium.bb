@@ -43,8 +43,7 @@ expresso-release
 falco-chrome-pfq
 falco-full-compile-paladin
 falco-paladin
-[gale-release-group]
-  gale-release
+gale-release
 gizmo-release
 glados-cheets-android-pfq
 glados-paladin
@@ -53,8 +52,7 @@ glados-paladin
   chell-release
   glados-cheets-release
   glados-release
-[gru-release-group]
-  gru-release
+gru-release
 guado_moblab-paladin
 guado_moblab-release
 internal-toolchain-minor

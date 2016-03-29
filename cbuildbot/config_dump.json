@@ -7416,37 +7416,6 @@
         ],
         "vm_tests": []
     },
-    "gale-full-group": {
-        "_template": "full",
-        "boards": [
-            "gale"
-        ],
-        "child_configs": [
-            {
-                "_template": "full",
-                "boards": [
-                    "gale"
-                ],
-                "chrome_sdk": false,
-                "grouped": true,
-                "name": "gale-full",
-                "prebuilts": "public",
-                "sync_chrome": false,
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
-            }
-        ],
-        "chrome_sdk": false,
-        "description": "Full Builds; Group config (boards: gale)",
-        "prebuilts": "public",
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "gale-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
         "boards": [
@@ -7504,39 +7473,12 @@
     },
     "gale-release": {
         "_template": "release",
-        "afdo_use": false,
-        "boards": [
-            "gale"
-        ],
-        "chrome_sdk": false,
-        "dev_installer_prebuilts": false,
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "gale-release-group": {
-        "_template": "release",
         "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "gale"
         ],
-        "child_configs": [
-            {
-                "_template": "release",
-                "afdo_use": false,
-                "boards": [
-                    "gale"
-                ],
-                "chrome_sdk": false,
-                "dev_installer_prebuilts": false,
-                "grouped": true,
-                "name": "gale-release",
-                "sync_chrome": false,
-                "vm_tests": []
-            }
-        ],
         "chrome_sdk": false,
-        "description": "Release Builds (canary) (internal); Group config (boards: gale)",
         "dev_installer_prebuilts": false,
         "sync_chrome": false,
         "vm_tests": []
@@ -8720,33 +8662,6 @@
         ],
         "vm_tests": []
     },
-    "gru-full-group": {
-        "_template": "full",
-        "boards": [
-            "gru"
-        ],
-        "child_configs": [
-            {
-                "_template": "full",
-                "boards": [
-                    "gru"
-                ],
-                "grouped": true,
-                "name": "gru-full",
-                "prebuilts": "public",
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
-            }
-        ],
-        "description": "Full Builds; Group config (boards: gru)",
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "gru-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
         "boards": [
@@ -8800,6 +8715,7 @@
     },
     "gru-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "gru"
         ],
@@ -8844,26 +8760,6 @@
         "boards": [
             "gru"
         ],
-        "vm_tests": []
-    },
-    "gru-release-group": {
-        "_template": "release",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "gru"
-        ],
-        "child_configs": [
-            {
-                "_template": "release",
-                "boards": [
-                    "gru"
-                ],
-                "grouped": true,
-                "name": "gru-release",
-                "vm_tests": []
-            }
-        ],
-        "description": "Release Builds (canary) (internal); Group config (boards: gru)",
         "vm_tests": []
     },
     "gru-tot-chrome-pfq-informational": {
