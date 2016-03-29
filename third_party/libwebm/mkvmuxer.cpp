@@ -1045,7 +1045,7 @@ bool AudioTrack::Write(IMkvWriter* writer) const {
 
 const char Tracks::kOpusCodecId[] = "A_OPUS";
 const char Tracks::kVorbisCodecId[] = "A_VORBIS";
-const char Tracks::kVp8CodecId[] = "V_AOM";
+const char Tracks::kAOMCodecId[] = "V_AOM";
 const char Tracks::kVp9CodecId[] = "V_AV1";
 const char Tracks::kAV1CodecId[] = "V_AV1";
 
@@ -2516,7 +2516,7 @@ uint64 Segment::AddVideoTrack(int32 width, int32 height, int32 number) {
     return 0;
 
   track->set_type(Tracks::kVideo);
-  track->set_codec_id(Tracks::kVp8CodecId);
+  track->set_codec_id(Tracks::kAOMCodecId);
   track->set_width(width);
   track->set_height(height);
 
