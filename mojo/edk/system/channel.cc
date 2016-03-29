@@ -34,7 +34,7 @@ static_assert(sizeof(Channel::Message::Header) == 8,
 }  // namespace
 
 const size_t kReadBufferSize = 4096;
-const size_t kMaxUnusedReadBufferCapacity = 256 * 1024;
+const size_t kMaxUnusedReadBufferCapacity = 64 * 1024;
 const size_t kMaxChannelMessageSize = 256 * 1024 * 1024;
 const size_t kMaxAttachedHandles = 128;
 
@@ -408,8 +408,16 @@ class Channel::ReadBuffer {
       num_occupied_bytes_ = num_preserved_bytes;
     }
 
-    // TODO: we should also adaptively shrink the buffer in case of the
-    // occasional abnormally large read.
+    if (num_occupied_bytes_ == 0 && size_ > kMaxUnusedReadBufferCapacity) {
+      // Opportunistically shrink the read buffer back down to a small size if
+      // it's grown very large. We only do this if there are no remaining
+      // unconsumed bytes in the buffer to avoid copies in most the common
+      // cases.
+      size_ = kMaxUnusedReadBufferCapacity;
+      base::AlignedFree(data_);
+      data_ = static_cast<char*>(
+          base::AlignedAlloc(size_, kChannelMessageAlignment));
+    }
   }
 
  private:
