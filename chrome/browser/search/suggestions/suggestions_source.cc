@@ -48,12 +48,11 @@ std::string GetRefreshHtml(bool is_refresh) {
   return std::string("<p><a href=\"") + chrome::kChromeUISuggestionsURL +
          kRefreshPath + "\">Refresh</a></p>\n";
 }
-
-// Fills |output| with the HTML needed to display the suggestions.
-void RenderOutputHtml(bool is_refresh,
-                      const SuggestionsProfile& profile,
-                      const std::map<GURL, std::string>& base64_encoded_pngs,
-                      std::string* output) {
+// Returns the HTML needed to display the suggestions.
+std::string RenderOutputHtml(
+    bool is_refresh,
+    const SuggestionsProfile& profile,
+    const std::map<GURL, std::string>& base64_encoded_pngs) {
   std::vector<std::string> out;
   out.push_back(kHtmlHeader);
   out.push_back(kHtmlBody);
@@ -94,12 +93,11 @@ void RenderOutputHtml(bool is_refresh,
   }
   out.push_back("</ul>");
   out.push_back(kHtmlFooter);
-  *output = base::JoinString(out, base::StringPiece());
+  return base::JoinString(out, base::StringPiece());
 }
 
-// Fills |output| with the HTML needed to display that no suggestions are
-// available.
-void RenderOutputHtmlNoSuggestions(bool is_refresh, std::string* output) {
+// Returns the HTML needed to display that no suggestions are available.
+std::string RenderOutputHtmlNoSuggestions(bool is_refresh) {
   std::vector<std::string> out;
   out.push_back(kHtmlHeader);
   out.push_back(kHtmlBody);
@@ -107,7 +105,7 @@ void RenderOutputHtmlNoSuggestions(bool is_refresh, std::string* output) {
   out.push_back("<p>You have no suggestions.</p>\n");
   out.push_back(GetRefreshHtml(is_refresh));
   out.push_back(kHtmlFooter);
-  *output = base::JoinString(out, base::StringPiece());
+  return base::JoinString(out, base::StringPiece());
 }
 
 }  // namespace
@@ -142,6 +140,13 @@ void SuggestionsSource::StartDataRequest(
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile_);
 
+  // |suggestions_service| is null for guest profiles.
+  if (!suggestions_service) {
+    std::string output = RenderOutputHtmlNoSuggestions(is_refresh);
+    callback.Run(base::RefCountedString::TakeString(&output));
+    return;
+  }
+
   if (is_refresh)
     suggestions_service->FetchSuggestionsData();
 
@@ -149,8 +154,7 @@ void SuggestionsSource::StartDataRequest(
       suggestions_service->GetSuggestionsDataFromCache();
   size_t size = suggestions_profile.suggestions_size();
   if (!size) {
-    std::string output;
-    RenderOutputHtmlNoSuggestions(is_refresh, &output);
+    std::string output = RenderOutputHtmlNoSuggestions(is_refresh);
     callback.Run(base::RefCountedString::TakeString(&output));
   } else {
     RequestContext* context =
@@ -186,9 +190,9 @@ base::MessageLoop* SuggestionsSource::MessageLoopForRequestPath(
 void SuggestionsSource::OnThumbnailsFetched(RequestContext* context) {
   scoped_ptr<RequestContext> context_deleter(context);
 
-  std::string output;
-  RenderOutputHtml(context->is_refresh, context->suggestions_profile,
-                   context->base64_encoded_pngs, &output);
+  std::string output =
+      RenderOutputHtml(context->is_refresh, context->suggestions_profile,
+                       context->base64_encoded_pngs);
   context->callback.Run(base::RefCountedString::TakeString(&output));
 }
 
