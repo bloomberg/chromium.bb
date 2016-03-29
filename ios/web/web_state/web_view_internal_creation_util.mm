@@ -18,7 +18,6 @@
 #import "ios/web/public/web_view_counter.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/weak_nsobject_counter.h"
-#import "ios/web/web_state/ui/crw_wk_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_view_counter_impl.h"
 
@@ -180,15 +179,6 @@ NSUInteger GetActiveWKWebViewsCount() {
 #else
   return GetActiveWKWebViewCounter().Size();
 #endif
-}
-
-id<CRWSimpleWebViewController> CreateSimpleWebViewController(
-    CGRect frame,
-    BrowserState* browser_state) {
-  DCHECK(web::BrowsingDataPartition::IsSynchronized());
-  base::scoped_nsobject<WKWebView> web_view(
-      web::CreateWKWebView(frame, browser_state));
-  return [[CRWWKSimpleWebViewController alloc] initWithWKWebView:web_view];
 }
 
 #if !defined(NDEBUG)

@@ -16,7 +16,6 @@
 #include "ios/web/public/test/test_web_thread.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "ios/web/test/web_test.h"
-#import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/crw_static_file_web_view.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -139,15 +138,6 @@ TEST_F(WebViewCreationUtilsTest, GetActiveWKWebViewsCount) {
 }
 
 #endif  // defined(NDEBUG)
-
-// Tests web::CreateSimpleWebViewController returns a CRWSimpleWebViewController
-// instance with a web view.
-TEST_F(WebViewCreationUtilsTest, CreateSimpleWebViewController) {
-  base::scoped_nsprotocol<id<CRWSimpleWebViewController>>
-      simpleWebViewController(
-          CreateSimpleWebViewController(CGRectZero, GetBrowserState()));
-  EXPECT_TRUE([simpleWebViewController view]);
-}
 
 }  // namespace
 }  // namespace web

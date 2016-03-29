@@ -11,24 +11,24 @@
 #include "ios/web/interstitials/web_interstitial_facade_delegate.h"
 #include "ios/web/public/interstitials/web_interstitial_delegate.h"
 #include "ios/web/public/web_state/ui/crw_web_view_content_view.h"
-#import "ios/web/web_state/ui/crw_simple_web_view_controller.h"
+#import "ios/web/public/web_view_creation_util.h"
+#import "ios/web/web_state/ui/web_view_js_utils.h"
 #include "ios/web/web_state/web_state_impl.h"
-#import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/gfx/geometry/size.h"
 
-// The delegate of the simple web view controller that is used to display the
-// HTML content.  It intercepts JavaScript-triggered commands and forwards them
+// The delegate of the web view that is used to display the HTML content.
+// It intercepts JavaScript-triggered commands and forwards them
 // to the interstitial.
-@interface CRWWebInterstitialImplCRWSimpleWebViewDelegate
-    : NSObject<CRWSimpleWebViewControllerDelegate>
-// Initializes a CRWWebInterstitialImplCRWSimpleWebViewDelegate which will
-// forward JavaScript commands from its CRWSimpleWebView to |interstitial|.
+@interface CRWWebInterstitialImplWKWebViewDelegate
+    : NSObject<WKNavigationDelegate>
+// Initializes a CRWWebInterstitialImplWKWebViewDelegate which will
+// forward JavaScript commands from its WKWebView to |interstitial|.
 - (instancetype)initWithInterstitial:
     (web::HtmlWebInterstitialImpl*)interstitial;
 @end
 
-@implementation CRWWebInterstitialImplCRWSimpleWebViewDelegate {
+@implementation CRWWebInterstitialImplWKWebViewDelegate {
   web::HtmlWebInterstitialImpl* _interstitial;
 }
 
@@ -40,8 +40,7 @@
   return self;
 }
 
-- (BOOL)simpleWebViewController:(id<CRWSimpleWebViewController>)controller
-     shouldStartLoadWithRequest:(NSURLRequest*)request {
+- (BOOL)shouldStartLoadWithRequest:(NSURLRequest*)request {
   NSString* requestString = [[request URL] absoluteString];
   // If the request is a JavaScript-triggered command, parse it and forward the
   // command to |interstitial_|.
@@ -53,6 +52,18 @@
     return NO;
   }
   return YES;
+}
+
+#pragma mark -
+#pragma mark WKNavigationDelegate methods
+
+- (void)webView:(WKWebView*)webView
+    decidePolicyForNavigationAction:(WKNavigationAction*)navigationAction
+                    decisionHandler:
+                        (void (^)(WKNavigationActionPolicy))decisionHandler {
+  decisionHandler([self shouldStartLoadWithRequest:navigationAction.request]
+                      ? WKNavigationActionPolicyAllow
+                      : WKNavigationActionPolicyCancel);
 }
 
 @end
@@ -95,21 +106,18 @@ CRWContentView* HtmlWebInterstitialImpl::GetContentView() const {
 
 void HtmlWebInterstitialImpl::PrepareForDisplay() {
   if (!content_view_) {
-    web_view_controller_delegate_.reset(
-        [[CRWWebInterstitialImplCRWSimpleWebViewDelegate alloc]
-            initWithInterstitial:this]);
-    web_view_controller_.reset(web::CreateSimpleWebViewController(
-        CGRectZero, GetWebStateImpl()->GetBrowserState()));
-    [web_view_controller_ setDelegate:web_view_controller_delegate_];
-    [[web_view_controller_ view]
-        setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
-                             UIViewAutoresizingFlexibleHeight)];
+    web_view_delegate_.reset([[CRWWebInterstitialImplWKWebViewDelegate alloc]
+        initWithInterstitial:this]);
+    web_view_.reset(
+        web::CreateWKWebView(CGRectZero, GetWebStateImpl()->GetBrowserState()));
+    [web_view_ setNavigationDelegate:web_view_delegate_];
+    [web_view_ setAutoresizingMask:(UIViewAutoresizingFlexibleWidth |
+                                    UIViewAutoresizingFlexibleHeight)];
     NSString* html = base::SysUTF8ToNSString(delegate_->GetHtmlContents());
-    [web_view_controller_ loadHTMLString:html
-                                 baseURL:net::NSURLWithGURL(GetUrl())];
+    [web_view_ loadHTMLString:html baseURL:net::NSURLWithGURL(GetUrl())];
     content_view_.reset([[CRWWebViewContentView alloc]
-        initWithWebView:[web_view_controller_ view]
-             scrollView:[web_view_controller_ scrollView]]);
+        initWithWebView:web_view_
+             scrollView:[web_view_ scrollView]]);
   }
 }
 
@@ -120,8 +128,7 @@ WebInterstitialDelegate* HtmlWebInterstitialImpl::GetDelegate() const {
 void HtmlWebInterstitialImpl::EvaluateJavaScript(
     NSString* script,
     JavaScriptCompletion completionHandler) {
-  [web_view_controller_ evaluateJavaScript:script
-                       stringResultHandler:completionHandler];
+  web::EvaluateJavaScript(web_view_, script, completionHandler);
 }
 
 }  // namespace web

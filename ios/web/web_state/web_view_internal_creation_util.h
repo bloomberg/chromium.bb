@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol CRWSimpleWebViewController;
 @class WKWebView;
 @class WKWebViewConfiguration;
 
@@ -50,12 +49,6 @@ WKWebView* CreateWKWebView(CGRect frame,
 // TODO(shreyasv): Remove this once all callers have stopped using it.
 // crbug.com/480507
 NSUInteger GetActiveWKWebViewsCount();
-
-// Returns a CRWSimpleWebViewController for managing/showing a web view.
-// Note: Callers are responsible for releasing the CRWSimpleWebViewController.
-id<CRWSimpleWebViewController> CreateSimpleWebViewController(
-    CGRect frame,
-    BrowserState* browser_state);
 
 #if !defined(NDEBUG)
 // Returns true if the creation of web views using alloc, init has been allowed

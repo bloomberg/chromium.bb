@@ -5,14 +5,11 @@
 #ifndef IOS_WEB_INTERSTITIALS_HTML_WEB_INTERSTITIAL_IMPL_H_
 #define IOS_WEB_INTERSTITIALS_HTML_WEB_INTERSTITIAL_IMPL_H_
 
-#import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "ios/web/interstitials/web_interstitial_impl.h"
-
-@protocol CRWSimpleWebViewController;
-@protocol CRWSimpleWebViewControllerDelegate;
 
 namespace web {
 
@@ -46,13 +43,12 @@ class HtmlWebInterstitialImpl : public WebInterstitialImpl {
  private:
   // The HTML interstitial delegate.
   scoped_ptr<HtmlWebInterstitialDelegate> delegate_;
-  // The |web_view_controller_|'s delegate.  Used to forward JavaScript commands
+  // The |web_view_|'s delegate.  Used to forward JavaScript commands
   // resulting from user interaction with the interstitial content.
-  base::scoped_nsprotocol<id<CRWSimpleWebViewControllerDelegate>>
-      web_view_controller_delegate_;
-  // The CRWSimpleWebViewController that contains the web view used to show the
-  // content. View needs to be resized by the caller.
-  base::scoped_nsprotocol<id<CRWSimpleWebViewController>> web_view_controller_;
+  base::scoped_nsprotocol<id<WKNavigationDelegate>> web_view_delegate_;
+  // The web view used to show the content. View needs to be resized by the
+  // caller.
+  base::scoped_nsobject<WKWebView> web_view_;
   // The CRWContentView used to display |web_view_controller_|'s view.
   base::scoped_nsobject<CRWContentView> content_view_;
 };
