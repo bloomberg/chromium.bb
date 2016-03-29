@@ -59,15 +59,7 @@ WrapVideoFrameInCVPixelBuffer(const VideoFrame& frame) {
 
   int num_planes = VideoFrame::NumPlanes(video_frame_format);
   DCHECK_LE(num_planes, kMaxPlanes);
-  gfx::Size coded_size = frame.coded_size();
-
-  // TODO(jfroy): Support extended pixels (i.e. padding).
-  if (coded_size != frame.visible_rect().size()) {
-    DLOG(ERROR) << " frame with extended pixels not supported: "
-                << " coded_size: " << coded_size.ToString()
-                << ", visible_rect: " << frame.visible_rect().ToString();
-    return pixel_buffer;
-  }
+  const gfx::Rect& visible_rect = frame.visible_rect();
 
   // Build arrays for each plane's data pointer, dimensions and byte alignment.
   void* plane_ptrs[kMaxPlanes];
@@ -75,9 +67,9 @@ WrapVideoFrameInCVPixelBuffer(const VideoFrame& frame) {
   size_t plane_heights[kMaxPlanes];
   size_t plane_bytes_per_row[kMaxPlanes];
   for (int plane_i = 0; plane_i < num_planes; ++plane_i) {
-    plane_ptrs[plane_i] = const_cast<uint8_t*>(frame.data(plane_i));
+    plane_ptrs[plane_i] = const_cast<uint8_t*>(frame.visible_data(plane_i));
     gfx::Size plane_size =
-        VideoFrame::PlaneSize(video_frame_format, plane_i, coded_size);
+        VideoFrame::PlaneSize(video_frame_format, plane_i, visible_rect.size());
     plane_widths[plane_i] = plane_size.width();
     plane_heights[plane_i] = plane_size.height();
     plane_bytes_per_row[plane_i] = frame.stride(plane_i);
@@ -94,9 +86,9 @@ WrapVideoFrameInCVPixelBuffer(const VideoFrame& frame) {
   // give it a smart pointer to the frame, so instead pass a raw pointer and
   // increment the frame's reference count manually.
   CVReturn result = CVPixelBufferCreateWithPlanarBytes(
-      kCFAllocatorDefault, coded_size.width(), coded_size.height(), cv_format,
-      descriptor, 0, num_planes, plane_ptrs, plane_widths, plane_heights,
-      plane_bytes_per_row, &CvPixelBufferReleaseCallback,
+      kCFAllocatorDefault, visible_rect.width(), visible_rect.height(),
+      cv_format, descriptor, 0, num_planes, plane_ptrs, plane_widths,
+      plane_heights, plane_bytes_per_row, &CvPixelBufferReleaseCallback,
       const_cast<VideoFrame*>(&frame), nullptr, pixel_buffer.InitializeInto());
   if (result != kCVReturnSuccess) {
     DLOG(ERROR) << " CVPixelBufferCreateWithPlanarBytes failed: " << result;
