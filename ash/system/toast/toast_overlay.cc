@@ -43,9 +43,7 @@ const int kSlideAnimationDurationMs = 100;
 
 // Colors for the dismiss button.
 const SkColor kButtonBackgroundColor = SkColorSetARGB(0xFF, 0x32, 0x32, 0x32);
-const SkColor kNormalButtonColor = SkColorSetARGB(0xFF, 0x64, 0xA5, 0xF5);
-const SkColor kHoveredButtonColor = SkColorSetARGB(0xFF, 0xE3, 0xF2, 0xFD);
-const SkColor kPressedButtonColor = SkColorSetARGB(0xFF, 0x64, 0xA5, 0xF5);
+const SkColor kButtonTextColor = SkColorSetARGB(0xFF, 0x7B, 0xAA, 0xF7);
 
 }  // anonymous namespace
 
@@ -94,9 +92,9 @@ ToastOverlayButton::ToastOverlayButton(views::ButtonListener* listener,
     : views::LabelButton(listener, label) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
 
-  SetTextColor(STATE_NORMAL, kNormalButtonColor);
-  SetTextColor(STATE_HOVERED, kHoveredButtonColor);
-  SetTextColor(STATE_PRESSED, kPressedButtonColor);
+  SetTextColor(STATE_NORMAL, kButtonTextColor);
+  SetTextColor(STATE_HOVERED, kButtonTextColor);
+  SetTextColor(STATE_PRESSED, kButtonTextColor);
   SetFontList(rb->GetFontList(kTextFontStyle));
   SetBorder(views::Border::NullBorder());
 }
