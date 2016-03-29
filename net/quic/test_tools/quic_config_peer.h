@@ -33,6 +33,7 @@ class QuicConfigPeer {
 
   static void SetReceivedBytesForConnectionId(QuicConfig* config,
                                               uint32_t bytes);
+  static void SetReceivedDisableConnectionMigration(QuicConfig* config);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConfigPeer);

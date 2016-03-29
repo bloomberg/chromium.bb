@@ -45,5 +45,10 @@ void QuicConfigPeer::SetReceivedBytesForConnectionId(QuicConfig* config,
   config->bytes_for_connection_id_.SetReceivedValue(bytes);
 }
 
+// static
+void QuicConfigPeer::SetReceivedDisableConnectionMigration(QuicConfig* config) {
+  config->connection_migration_disabled_.SetReceivedValue(1);
+}
+
 }  // namespace test
 }  // namespace net

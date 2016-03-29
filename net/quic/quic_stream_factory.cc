@@ -84,6 +84,7 @@ enum QuicConnectionMigrationStatus {
   MIGRATION_STATUS_TOO_MANY_CHANGES,
   MIGRATION_STATUS_SUCCESS,
   MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
+  MIGRATION_STATUS_DISABLED,
   MIGRATION_STATUS_MAX
 };
 
@@ -1343,6 +1344,17 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(NetworkHandle network,
       }
       continue;
     }
+    if (session->config()->DisableConnectionMigration()) {
+      // Do not migrate sessions where connection migration is disabled by
+      // config.
+      if (force_close) {
+        // Close sessions where connection migration is disabled.
+        session->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                                     QUIC_IP_ADDRESS_CHANGED);
+        HistogramMigrationStatus(MIGRATION_STATUS_DISABLED);
+      }
+      continue;
+    }
     if (session->HasNonMigratableStreams()) {
       // Do not migrate sessions with non-migratable streams.
       if (force_close) {
@@ -1361,7 +1373,8 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(NetworkHandle network,
 
 void QuicStreamFactory::MaybeMigrateSessionEarly(
     QuicChromiumClientSession* session) {
-  if (!migrate_sessions_early_ || session->HasNonMigratableStreams()) {
+  if (!migrate_sessions_early_ || session->HasNonMigratableStreams() ||
+      session->config()->DisableConnectionMigration()) {
     return;
   }
   NetworkHandle new_network =
