@@ -92,14 +92,6 @@ config("feature_flags") {
   if (use_browser_spellchecker) {
     defines += [ "USE_BROWSER_SPELLCHECKER=1" ]
   }
-
-  # In Windows official builds, this will cause DCHECKs to
-  # dump-without-crashing. See crbug.com/596231.
-  if (is_official_build && is_win) {
-    dcheck_always_on = true
-    defines += [ "DCHECK_IS_DUMP_WITHOUT_CRASH=1" ]
-  }
-
   if (dcheck_always_on) {
     defines += [ "DCHECK_ALWAYS_ON=1" ]
   }

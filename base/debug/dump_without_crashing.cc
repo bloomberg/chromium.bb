@@ -18,12 +18,9 @@ namespace base {
 
 namespace debug {
 
-bool DumpWithoutCrashing() {
-  if (dump_without_crashing_function_) {
+void DumpWithoutCrashing() {
+  if (dump_without_crashing_function_)
     (*dump_without_crashing_function_)();
-    return true;
-  }
-  return false;
 }
 
 void SetDumpWithoutCrashingFunction(void (CDECL *function)()) {
