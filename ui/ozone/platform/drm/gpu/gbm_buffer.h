@@ -42,12 +42,14 @@ class GbmBuffer : public GbmBufferBase {
             gbm_bo* bo,
             gfx::BufferFormat format,
             gfx::BufferUsage usage,
-            base::ScopedFD fd);
+            base::ScopedFD fd,
+            int stride);
   ~GbmBuffer() override;
 
   gfx::BufferFormat format_;
   gfx::BufferUsage usage_;
   base::ScopedFD fd_;
+  int stride_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);
 };

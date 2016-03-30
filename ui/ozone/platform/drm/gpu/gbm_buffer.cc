@@ -29,11 +29,13 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gbm_bo* bo,
                      gfx::BufferFormat format,
                      gfx::BufferUsage usage,
-                     base::ScopedFD fd)
+                     base::ScopedFD fd,
+                     int stride)
     : GbmBufferBase(gbm, bo, format, usage),
       format_(format),
       usage_(usage),
-      fd_(std::move(fd)) {}
+      fd_(std::move(fd)),
+      stride_(stride) {}
 
 GbmBuffer::~GbmBuffer() {
   if (bo())
@@ -45,7 +47,7 @@ int GbmBuffer::GetFd() const {
 }
 
 int GbmBuffer::GetStride() const {
-  return gbm_bo_get_stride(bo());
+  return stride_;
 }
 
 // static
@@ -84,8 +86,8 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
     return nullptr;
   }
 
-  scoped_refptr<GbmBuffer> buffer(
-      new GbmBuffer(gbm, bo, format, usage, std::move(fd)));
+  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
+      gbm, bo, format, usage, std::move(fd), gbm_bo_get_stride(bo)));
   if (usage == gfx::BufferUsage::SCANOUT && !buffer->GetFramebufferId())
     return nullptr;
 
@@ -102,36 +104,10 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFD(
   TRACE_EVENT2("drm", "GbmBuffer::CreateBufferFromFD", "device",
                gbm->device_path().value(), "size", size.ToString());
 
-  struct gbm_import_fd_data fd_data;
-  fd_data.fd = fd.get();
-  fd_data.width = size.width();
-  fd_data.height = size.height();
-  fd_data.stride = stride;
-  fd_data.format = GetFourCCFormatFromBufferFormat(format);
-
-  // Use scanout if supported.
-  const std::vector<uint32_t>& scanout_formats =
-      gbm->plane_manager()->GetSupportedFormats();
-  bool use_scanout = std::find(scanout_formats.begin(), scanout_formats.end(),
-                               fd_data.format) != scanout_formats.end();
-  unsigned flags = 0;
-  if (use_scanout)
-    flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
-
-  // The fd passed to gbm_bo_import is not ref-counted and need to be
-  // kept open for the lifetime of the buffer.
-  gbm_bo* bo = gbm_bo_import(gbm->device(), GBM_BO_IMPORT_FD, &fd_data, flags);
-  if (!bo)
-    return nullptr;
-
-  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
-      gbm, bo, format,
-      use_scanout ? gfx::BufferUsage::SCANOUT : gfx::BufferUsage::GPU_READ,
-      std::move(fd)));
-  if (use_scanout && !buffer->GetFramebufferId())
-    return nullptr;
-
-  return buffer;
+  // TODO(reveman): Use gbm_bo_import after making buffers survive
+  // GPU process crashes. crbug.com/597932
+  return make_scoped_refptr(new GbmBuffer(
+      gbm, nullptr, format, gfx::BufferUsage::GPU_READ, std::move(fd), stride));
 }
 
 GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager,
