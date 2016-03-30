@@ -562,8 +562,10 @@ WTF::String PaintController::displayItemListAsDebugString(const DisplayItemList&
             stringBuilder.append(",\n");
         stringBuilder.append(String::format("{index: %d, ", (int)i));
         displayItem.dumpPropertiesAsDebugString(stringBuilder);
-        stringBuilder.append(", cacheIsValid: ");
-        stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
+        if (displayItem.hasValidClient()) {
+            stringBuilder.append(", cacheIsValid: ");
+            stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
+        }
         stringBuilder.append('}');
     }
     return stringBuilder.toString();
