@@ -1075,7 +1075,7 @@ void WebMediaPlayerImpl::OnAddTextTrack(
   scoped_ptr<WebInbandTextTrackImpl> web_inband_text_track(
       new WebInbandTextTrackImpl(web_kind, web_label, web_language, web_id));
 
-  scoped_ptr<TextTrack> text_track(new TextTrackImpl(
+  scoped_ptr<media::TextTrack> text_track(new TextTrackImpl(
       main_task_runner_, client_, std::move(web_inband_text_track)));
 
   done_cb.Run(std::move(text_track));

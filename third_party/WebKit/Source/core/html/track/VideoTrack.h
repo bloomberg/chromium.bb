@@ -50,7 +50,7 @@ private:
     bool m_selected;
 };
 
-DEFINE_TRACK_TYPE_CASTS(VideoTrack, TrackBase::VideoTrack);
+DEFINE_TRACK_TYPE_CASTS(VideoTrack, WebMediaPlayer::VideoTrack);
 
 } // namespace blink
 

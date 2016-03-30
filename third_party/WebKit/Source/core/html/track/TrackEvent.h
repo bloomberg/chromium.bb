@@ -34,7 +34,7 @@ namespace blink {
 
 class VideoTrackOrAudioTrackOrTextTrack;
 
-class TrackEvent final : public Event {
+class CORE_EXPORT TrackEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~TrackEvent() override;

@@ -5770,11 +5770,13 @@ interface SourceBuffer : EventTarget
     attribute @@toStringTag
     getter appendWindowEnd
     getter appendWindowStart
+    getter audioTracks
     getter buffered
     getter mode
     getter timestampOffset
     getter trackDefaults
     getter updating
+    getter videoTracks
     method abort
     method appendBuffer
     method appendStream

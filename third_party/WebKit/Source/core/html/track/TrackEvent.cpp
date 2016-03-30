@@ -29,6 +29,7 @@
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/VideoTrack.h"
+#include "public/platform/WebMediaPlayer.h"
 
 namespace blink {
 
@@ -68,13 +69,13 @@ void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& returnValue)
         return;
 
     switch (m_track->type()) {
-    case TrackBase::TextTrack:
+    case WebMediaPlayer::TextTrack:
         returnValue.setTextTrack(toTextTrack(m_track.get()));
         break;
-    case TrackBase::AudioTrack:
+    case WebMediaPlayer::AudioTrack:
         returnValue.setAudioTrack(toAudioTrack(m_track.get()));
         break;
-    case TrackBase::VideoTrack:
+    case WebMediaPlayer::VideoTrack:
         returnValue.setVideoTrack(toVideoTrack(m_track.get()));
         break;
     default:

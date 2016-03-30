@@ -95,7 +95,7 @@ const AtomicString& TextTrack::showingKeyword()
 }
 
 TextTrack::TextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType type)
-    : TrackBase(TrackBase::TextTrack, label, language, id)
+    : TrackBase(WebMediaPlayer::TextTrack, label, language, id)
     , m_cues(nullptr)
     , m_regions(nullptr)
     , m_trackList(nullptr)

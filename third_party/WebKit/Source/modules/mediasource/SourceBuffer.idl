@@ -51,6 +51,9 @@ enum AppendMode {
     // Applies an offset to media segment timestamps.
     [RaisesException=Setter] attribute double timestampOffset;
 
+    [RuntimeEnabled=AudioVideoTracks] readonly attribute AudioTrackList audioTracks;
+    [RuntimeEnabled=AudioVideoTracks] readonly attribute VideoTrackList videoTracks;
+
     // Presentation timestamp for the start of append window.
     [RaisesException=Setter] attribute double appendWindowStart;
 

@@ -44,6 +44,7 @@
 
 namespace blink {
 
+class AudioTrackList;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class ExceptionState;
@@ -52,6 +53,7 @@ class GenericEventQueue;
 class MediaSource;
 class Stream;
 class TimeRanges;
+class VideoTrackList;
 class WebSourceBuffer;
 
 class SourceBuffer final
@@ -90,6 +92,9 @@ public:
     TrackDefaultList* trackDefaults() const { return m_trackDefaults.get(); }
     void setTrackDefaults(TrackDefaultList*, ExceptionState&);
 
+    AudioTrackList& audioTracks();
+    VideoTrackList& videoTracks();
+
     void abortIfUpdating();
     void removedFromMediaSource();
 
@@ -106,7 +111,7 @@ public:
     const AtomicString& interfaceName() const override;
 
     // WebSourceBufferClient interface
-    void initializationSegmentReceived() override;
+    std::vector<WebMediaPlayer::TrackId> initializationSegmentReceived(const std::vector<MediaTrackInfo>&) override;
 
     // Oilpan: eagerly release owned m_webSourceBuffer
     EAGERLY_FINALIZE();
@@ -145,6 +150,8 @@ private:
     AtomicString m_mode;
     bool m_updating;
     double m_timestampOffset;
+    Member<AudioTrackList> m_audioTracks;
+    Member<VideoTrackList> m_videoTracks;
     double m_appendWindowStart;
     double m_appendWindowEnd;
     bool m_firstInitializationSegmentReceived;

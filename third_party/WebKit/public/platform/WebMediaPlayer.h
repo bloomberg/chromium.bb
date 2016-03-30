@@ -102,6 +102,7 @@ public:
     };
 
     typedef unsigned TrackId;
+    enum TrackType { TextTrack, AudioTrack, VideoTrack };
 
     virtual ~WebMediaPlayer() { }
 

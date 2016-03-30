@@ -15,6 +15,7 @@
 #include "media/base/media_tracks.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/chunk_demuxer.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebSourceBufferClient.h"
 
 namespace media {
@@ -159,11 +160,35 @@ void WebSourceBufferImpl::removedFromMediaSource() {
   client_ = NULL;
 }
 
+blink::WebMediaPlayer::TrackType mediaTrackTypeToBlink(MediaTrack::Type type) {
+  switch (type) {
+    case MediaTrack::Audio:
+      return blink::WebMediaPlayer::AudioTrack;
+    case MediaTrack::Text:
+      return blink::WebMediaPlayer::TextTrack;
+    case MediaTrack::Video:
+      return blink::WebMediaPlayer::VideoTrack;
+  }
+  NOTREACHED();
+  return blink::WebMediaPlayer::AudioTrack;
+}
+
 void WebSourceBufferImpl::InitSegmentReceived(scoped_ptr<MediaTracks> tracks) {
-  DVLOG(1) << __FUNCTION__;
-  // TODO(servolk): Implement passing MediaTrack info to blink level.
-  // https://crbug.com/249428
-  client_->initializationSegmentReceived();
+  DCHECK(tracks.get());
+  DVLOG(1) << __FUNCTION__ << " tracks=" << tracks->tracks().size();
+
+  std::vector<blink::WebSourceBufferClient::MediaTrackInfo> trackInfoVector;
+  for (const auto& track : tracks->tracks()) {
+    trackInfoVector.push_back(
+        std::make_tuple(mediaTrackTypeToBlink(track->type()),
+                        blink::WebString::fromUTF8(track->id()),
+                        blink::WebString::fromUTF8(track->kind()),
+                        blink::WebString::fromUTF8(track->label()),
+                        blink::WebString::fromUTF8(track->language())));
+  }
+
+  std::vector<blink::WebMediaPlayer::TrackId> blinkTrackIds =
+      client_->initializationSegmentReceived(trackInfoVector);
 }
 
 }  // namespace media

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/w3c/resources/testharness.js"></script>
+        <script src="/w3c/resources/testharnessreport.js"></script>
+        <script src="mediasource-util.js"></script>
+
+        <link rel='stylesheet' href='/w3c/resources/testharness.css'>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
+              test.expectEvent(sourceBuffer, 'updateend', 'initSegment append ended.');
+              sourceBuffer.appendBuffer(initSegment);
+              test.waitForExpectedEvents(function()
+              {
+                // TODO(servolk): Find a way to make tests more concise in JS
+                assert_equals(mediaElement.videoTracks.length, 1, "videoTracks.length");
+                assert_equals(mediaElement.videoTracks[0].id, "1", "videoTrack.id");
+                assert_equals(mediaElement.videoTracks[0].kind, "main", "videoTrack.kind");
+                assert_equals(mediaElement.videoTracks[0].label, "", "videoTrack.label");
+                assert_equals(mediaElement.videoTracks[0].language, "eng", "videoTrack.language");
+
+                assert_equals(mediaElement.audioTracks.length, 1, "audioTracks.length");
+                assert_equals(mediaElement.audioTracks[0].id, "2", "audioTrack.id");
+                assert_equals(mediaElement.audioTracks[0].kind, "main", "audioTrack.kind");
+                assert_equals(mediaElement.audioTracks[0].label, "", "audioTrack.label");
+                assert_equals(mediaElement.audioTracks[0].language, "eng", "audioTrack.language");
+
+                assert_equals(sourceBuffer.videoTracks.length, 1, "videoTracks.length");
+                assert_equals(sourceBuffer.videoTracks[0].id, "1", "videoTrack.id");
+                assert_equals(sourceBuffer.videoTracks[0].kind, "main", "videoTrack.kind");
+                assert_equals(sourceBuffer.videoTracks[0].label, "", "videoTrack.label");
+                assert_equals(sourceBuffer.videoTracks[0].language, "eng", "videoTrack.language");
+
+                assert_equals(sourceBuffer.audioTracks.length, 1, "audioTracks.length");
+                assert_equals(sourceBuffer.audioTracks[0].id, "2", "audioTrack.id");
+                assert_equals(sourceBuffer.audioTracks[0].kind, "main", "audioTrack.kind");
+                assert_equals(sourceBuffer.audioTracks[0].label, "", "audioTrack.label");
+                assert_equals(sourceBuffer.audioTracks[0].language, "eng", "audioTrack.language");
+
+                test.done();
+              });
+          }, "MediaSource audio tracks");
+        </script>
+    </body>
+</html>
+

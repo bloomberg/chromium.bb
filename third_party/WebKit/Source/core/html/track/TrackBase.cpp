@@ -40,7 +40,7 @@ static WebMediaPlayer::TrackId nextTrackId()
     return ++next;
 }
 
-TrackBase::TrackBase(TrackType type, const AtomicString& label, const AtomicString& language, const String& id)
+TrackBase::TrackBase(WebMediaPlayer::TrackType type, const AtomicString& label, const AtomicString& language, const String& id)
     : m_trackId(nextTrackId())
     , m_type(type)
     , m_label(label)

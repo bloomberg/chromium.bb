@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class AudioTrackList final : public TrackListBase<AudioTrack> {
+class CORE_EXPORT AudioTrackList final : public TrackListBase<AudioTrack> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static AudioTrackList* create(HTMLMediaElement&);

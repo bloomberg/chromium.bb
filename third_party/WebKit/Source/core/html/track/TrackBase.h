@@ -42,8 +42,7 @@ public:
 
     WebMediaPlayer::TrackId trackId() const { return m_trackId; }
 
-    enum TrackType { TextTrack, AudioTrack, VideoTrack };
-    TrackType type() const { return m_type; }
+    WebMediaPlayer::TrackType type() const { return m_type; }
 
     const AtomicString& kind() const { return m_kind; }
     virtual void setKind(const AtomicString&);
@@ -64,14 +63,14 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    TrackBase(TrackType, const AtomicString& label, const AtomicString& language, const String& id);
+    TrackBase(WebMediaPlayer::TrackType, const AtomicString& label, const AtomicString& language, const String& id);
 
     virtual bool isValidKind(const AtomicString&) const = 0;
     virtual AtomicString defaultKind() const = 0;
 
 private:
     WebMediaPlayer::TrackId m_trackId;
-    TrackType m_type;
+    WebMediaPlayer::TrackType m_type;
     AtomicString m_kind;
     AtomicString m_label;
     AtomicString m_language;
