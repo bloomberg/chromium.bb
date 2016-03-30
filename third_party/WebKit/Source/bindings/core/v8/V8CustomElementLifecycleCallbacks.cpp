@@ -123,7 +123,7 @@ V8CustomElementLifecycleCallbacks::~V8CustomElementLifecycleCallbacks()
 {
 }
 
-bool V8CustomElementLifecycleCallbacks::setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding> binding)
+bool V8CustomElementLifecycleCallbacks::setBinding(PassOwnPtr<CustomElementBinding> binding)
 {
     V8PerContextData* perContextData = creationContextData();
     if (!perContextData)
@@ -132,7 +132,7 @@ bool V8CustomElementLifecycleCallbacks::setBinding(CustomElementDefinition* owne
     // The context is responsible for keeping the prototype
     // alive. This in turn keeps callbacks alive through hidden
     // references; see CALLBACK_LIST(SET_HIDDEN_VALUE).
-    perContextData->addCustomElementBinding(owner, std::move(binding));
+    perContextData->addCustomElementBinding(std::move(binding));
     return true;
 }
 

@@ -48,7 +48,6 @@
 
 namespace blink {
 
-class CustomElementDefinition;
 class V8DOMActivityLogger;
 class V8PerContextData;
 struct V8NPObject;
@@ -90,7 +89,7 @@ public:
 
     V8NPObjectMap* getV8NPObjectMap() { return &m_v8NPObjectMap; }
 
-    void addCustomElementBinding(CustomElementDefinition*, PassOwnPtr<CustomElementBinding>);
+    void addCustomElementBinding(PassOwnPtr<CustomElementBinding>);
 
     V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
     void setActivityLogger(V8DOMActivityLogger* activityLogger) { m_activityLogger = activityLogger; }

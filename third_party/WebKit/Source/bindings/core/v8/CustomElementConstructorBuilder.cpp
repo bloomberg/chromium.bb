@@ -230,11 +230,11 @@ bool CustomElementConstructorBuilder::prototypeIsValid(const AtomicString& type,
     return true;
 }
 
-bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinition* definition) const
+bool CustomElementConstructorBuilder::didRegisterDefinition() const
 {
     ASSERT(!m_constructor.IsEmpty());
 
-    return m_callbacks->setBinding(definition, CustomElementBinding::create(m_scriptState->isolate(), m_prototype));
+    return m_callbacks->setBinding(CustomElementBinding::create(m_scriptState->isolate(), m_prototype));
 }
 
 ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const

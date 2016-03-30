@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -53,7 +52,7 @@ public:
 
     ~V8CustomElementLifecycleCallbacks() override;
 
-    bool setBinding(CustomElementDefinition* owner, PassOwnPtr<CustomElementBinding>);
+    bool setBinding(PassOwnPtr<CustomElementBinding>);
 
     DECLARE_VIRTUAL_TRACE();
 

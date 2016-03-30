@@ -84,7 +84,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
     m_definitions.add(descriptor, definition);
     m_registeredTypeNames.add(descriptor.type());
 
-    if (!constructorBuilder->didRegisterDefinition(definition.get())) {
+    if (!constructorBuilder->didRegisterDefinition()) {
         CustomElementException::throwException(CustomElementException::ContextDestroyedRegisteringDefinition, type, exceptionState);
         return 0;
     }

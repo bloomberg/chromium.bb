@@ -67,7 +67,7 @@ public:
     bool validateOptions(const AtomicString& type, QualifiedName& tagName, ExceptionState&);
     PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> createCallbacks();
     bool createConstructor(Document*, CustomElementDefinition*, ExceptionState&);
-    bool didRegisterDefinition(CustomElementDefinition*) const;
+    bool didRegisterDefinition() const;
 
     // This method collects a return value for the bindings. It is
     // safe to call this method even if the builder failed; it will
