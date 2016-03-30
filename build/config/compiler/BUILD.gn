@@ -814,6 +814,7 @@ config("default_warnings") {
     if (is_clang) {
       cflags += [
         # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
+        "-Qunused-arguments",  # http://crbug.com/504658
         "-Wno-microsoft-enum-value",  # http://crbug.com/505296
         "-Wno-unknown-pragmas",  # http://crbug.com/505314
         "-Wno-microsoft-cast",  # http://crbug.com/550065
@@ -1226,9 +1227,7 @@ config("optimize_max") {
       # Favor speed over size, /O2 must be before the common flags. The GYP
       # build also specifies /Ot, /Oi, and /GF, but these are implied by /O2.
       cflags = [ "/O2" ] + common_optimize_on_cflags
-
-      # TODO(thakis): Remove is_clang here, https://crbug.com/598772
-      if (is_official_build && !is_clang) {
+      if (is_official_build) {
         # TODO(GYP): TODO(dpranke): Should these only be on in an official
         # build, or on all the time? For now we'll require official build so
         # that the compile is clean.
