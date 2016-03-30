@@ -3069,8 +3069,24 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
       AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
       false, std::vector<ServerFieldType>());
   ASSERT_FALSE(suggestions.empty());
-  EXPECT_EQ(suggestions[0].value,
-            base::ASCIIToUTF16("123 Zoo St., Second Line, Third line, unit 5"));
+  EXPECT_EQ(base::ASCIIToUTF16("123 Zoo St., Second Line, Third line, unit 5"),
+            suggestions[0].value);
+}
+
+TEST_F(PersonalDataManagerTest, GetProfileSuggestions_PhoneSubstring) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+  personal_data_->AddProfile(profile);
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(PHONE_HOME_WHOLE_NUMBER), base::ASCIIToUTF16("234"), false,
+      std::vector<ServerFieldType>());
+  ASSERT_FALSE(suggestions.empty());
+  EXPECT_EQ(base::ASCIIToUTF16("12345678910"), suggestions[0].value);
 }
 
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {

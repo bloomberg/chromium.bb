@@ -196,6 +196,39 @@ static bool CompareVotes(const std::pair<std::string, int>& a,
   return a.second < b.second;
 }
 
+// Returns whether the |suggestion| is valid considering the
+// |field_contents_canon|. Assigns true to |is_prefix_matched| if the
+// |field_contents_canon| is a prefix to |suggestion|, assigns false otherwise.
+bool IsValidSuggestionForFieldContents(base::string16 suggestion_canon,
+                                       base::string16 field_contents_canon,
+                                       const AutofillType& type,
+                                       bool* is_prefix_matched) {
+  *is_prefix_matched = true;
+
+  // Phones should do a substring match because they can be trimmed to remove
+  // the first parts (e.g. country code or prefix). It is still considered a
+  // prefix match in order to put it at the top of the suggestions.
+  if ((type.group() == PHONE_HOME || type.group() == PHONE_BILLING) &&
+      suggestion_canon.find(field_contents_canon) != base::string16::npos) {
+    return true;
+  }
+
+  if (base::StartsWith(suggestion_canon, field_contents_canon,
+                       base::CompareCase::SENSITIVE)) {
+    return true;
+  }
+
+  if (IsFeatureSubstringMatchEnabled() &&
+      suggestion_canon.length() >= field_contents_canon.length() &&
+      GetTextSelectionStart(suggestion_canon, field_contents_canon, false) !=
+          base::string16::npos) {
+    *is_prefix_matched = false;
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 const char kFrecencyFieldTrialName[] = "AutofillProfileOrderByFrecency";
@@ -668,13 +701,13 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
     base::string16 value = GetInfoInOneLine(profile, type, app_locale_);
     if (value.empty())
       continue;
-    base::string16 value_canon =
+
+    bool prefix_matched_suggestion;
+    base::string16 suggestion_canon =
         AutofillProfile::CanonicalizeProfileString(value);
-    bool prefix_matched_suggestion = base::StartsWith(
-        value_canon, field_contents_canon, base::CompareCase::SENSITIVE);
-    if (prefix_matched_suggestion ||
-        FieldIsSuggestionSubstringStartingOnTokenBoundary(value, field_contents,
-                                                          false)) {
+    if (IsValidSuggestionForFieldContents(suggestion_canon,
+                                          field_contents_canon, type,
+                                          &prefix_matched_suggestion)) {
       matched_profiles.push_back(profile);
       suggestions.push_back(Suggestion(value));
       suggestions.back().backend_id = profile->guid();
@@ -762,6 +795,8 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     base::string16 creditcard_field_lower =
         base::i18n::ToLower(creditcard_field_value);
 
+    // TODO(crbug.com/598786): Refactor the prefix/substring suggestion matching
+    // in autofill.
     // For card number fields, suggest the card if:
     // - the number matches any part of the card, or
     // - it's a masked card and there are 6 or fewers typed so far.
