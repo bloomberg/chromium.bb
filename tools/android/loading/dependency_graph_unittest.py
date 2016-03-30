@@ -8,6 +8,7 @@ import dependency_graph
 import request_dependencies_lens
 from request_dependencies_lens_unittest import TestRequests
 import request_track
+import test_utils
 
 
 class RequestDependencyGraphTestCase(unittest.TestCase):
@@ -48,6 +49,94 @@ class RequestDependencyGraphTestCase(unittest.TestCase):
     self.assertEqual(7000, g.Cost())
     g.UpdateRequestsCost({TestRequests.SECOND_REDIRECT_REQUEST.request_id: 0})
     self.assertEqual(6990, g.Cost())
+
+  def testHandleTimingDependencies(self):
+    # Timing adds node 1 as a parent to 2 but not 3.
+    requests = [
+        test_utils.MakeRequest(0, 'null', 100, 110, 110,
+                               magic_content_type=True),
+        test_utils.MakeRequest(1, 0, 115, 120, 120,
+                               magic_content_type=True),
+        test_utils.MakeRequest(2, 0, 121, 122, 122,
+                               magic_content_type=True),
+        test_utils.MakeRequest(3, 0, 112, 119, 119,
+                               magic_content_type=True),
+        test_utils.MakeRequest(4, 2, 122, 126, 126),
+        test_utils.MakeRequest(5, 2, 122, 126, 126)]
+
+    g = self._GraphFromRequests(requests)
+    self.assertSetEqual(
+        self._Successors(g, requests[0]), set([requests[1], requests[3]]))
+    self.assertSetEqual(
+        self._Successors(g, requests[1]), set([requests[2]]))
+    self.assertSetEqual(
+        self._Successors(g, requests[2]), set([requests[4], requests[5]]))
+    self.assertSetEqual(self._Successors(g, requests[3]), set())
+    self.assertSetEqual(self._Successors(g, requests[4]), set())
+    self.assertSetEqual(self._Successors(g, requests[5]), set())
+
+    # Change node 1 so it is a parent of 3, which becomes the parent of 2.
+    requests[1] = test_utils.MakeRequest(
+        1, 0, 110, 111, 111, magic_content_type=True)
+    g = self._GraphFromRequests(requests)
+    self.assertSetEqual(self._Successors(g, requests[0]), set([requests[1]]))
+    self.assertSetEqual(self._Successors(g, requests[1]), set([requests[3]]))
+    self.assertSetEqual(self._Successors(g, requests[2]),
+                        set([requests[4], requests[5]]))
+    self.assertSetEqual(self._Successors(g, requests[3]), set([requests[2]]))
+    self.assertSetEqual(self._Successors(g, requests[4]), set())
+    self.assertSetEqual(self._Successors(g, requests[5]), set())
+
+    # Add an initiator dependence to 1 that will become the parent of 3.
+    requests[1] = test_utils.MakeRequest(
+        1, 0, 110, 111, 111, magic_content_type=True)
+    requests.append(test_utils.MakeRequest(6, 1, 111, 112, 112))
+    g = self._GraphFromRequests(requests)
+    # Check it doesn't change until we change the content type of 6.
+    self.assertEqual(self._Successors(g, requests[6]), set())
+    requests[6] = test_utils.MakeRequest(6, 1, 111, 112, 112,
+                                         magic_content_type=True)
+    g = self._GraphFromRequests(requests)
+    self.assertSetEqual(self._Successors(g, requests[0]), set([requests[1]]))
+    self.assertSetEqual(self._Successors(g, requests[1]), set([requests[6]]))
+    self.assertSetEqual(self._Successors(g, requests[2]),
+                        set([requests[4], requests[5]]))
+    self.assertSetEqual(self._Successors(g, requests[3]), set([requests[2]]))
+    self.assertSetEqual(self._Successors(g, requests[4]), set())
+    self.assertSetEqual(self._Successors(g, requests[5]), set())
+    self.assertSetEqual(self._Successors(g, requests[6]), set([requests[3]]))
+
+  def testHandleTimingDependenciesImages(self):
+    # If we're all image types, then we shouldn't split by timing.
+    requests = [test_utils.MakeRequest(0, 'null', 100, 110, 110),
+                test_utils.MakeRequest(1, 0, 115, 120, 120),
+                test_utils.MakeRequest(2, 0, 121, 122, 122),
+                test_utils.MakeRequest(3, 0, 112, 119, 119),
+                test_utils.MakeRequest(4, 2, 122, 126, 126),
+                test_utils.MakeRequest(5, 2, 122, 126, 126)]
+    for r in requests:
+      r.response_headers['Content-Type'] = 'image/gif'
+    g = self._GraphFromRequests(requests)
+    self.assertSetEqual(self._Successors(g, requests[0]),
+                        set([requests[1], requests[2], requests[3]]))
+    self.assertSetEqual(self._Successors(g, requests[1]), set())
+    self.assertSetEqual(self._Successors(g, requests[2]),
+                        set([requests[4], requests[5]]))
+    self.assertSetEqual(self._Successors(g, requests[3]), set())
+    self.assertSetEqual(self._Successors(g, requests[4]), set())
+    self.assertSetEqual(self._Successors(g, requests[5]), set())
+
+  @classmethod
+  def _GraphFromRequests(cls, requests):
+    trace = test_utils.LoadingTraceFromEvents(requests)
+    deps_lens = test_utils.SimpleLens(trace)
+    return dependency_graph.RequestDependencyGraph(requests, deps_lens)
+
+  @classmethod
+  def _Successors(cls, g, parent_request):
+    parent_node = g._nodes_by_id[parent_request.request_id]
+    edges = g._deps_graph.OutEdges(parent_node)
+    return set(e.to_node.request for e in edges)
 
 
 if __name__ == '__main__':

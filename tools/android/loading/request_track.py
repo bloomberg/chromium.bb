@@ -13,6 +13,7 @@ import copy
 import json
 import logging
 import re
+import urlparse
 
 import devtools_monitor
 
@@ -27,6 +28,24 @@ _TIMING_NAMES_MAPPING = {
     'loadingFinished': 'loading_finished'}
 
 Timing = collections.namedtuple('Timing', _TIMING_NAMES_MAPPING.values())
+
+
+def ShortName(url):
+  """Returns a shortened version of a URL."""
+  parsed = urlparse.urlparse(url)
+  path = parsed.path
+  hostname = parsed.hostname if parsed.hostname else '?.?.?'
+  if path != '' and path != '/':
+    last_path = parsed.path.split('/')[-1]
+    if len(last_path) < 10:
+      if len(path) < 10:
+        return hostname + '/' + path
+      else:
+        return hostname + '/..' + parsed.path[-10:]
+    else:
+        return hostname + '/..' + last_path[:5]
+  else:
+    return hostname
 
 
 def IntervalBetween(first, second, reason):

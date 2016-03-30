@@ -17,7 +17,7 @@ ResourceGraph
 
 import logging
 import os
-import urlparse
+
 import sys
 
 import activity_lens
@@ -404,22 +404,7 @@ class ResourceGraph(object):
       """
       if self._shortname:
         return self._shortname
-      parsed = urlparse.urlparse(self._request.url)
-      path = parsed.path
-      hostname = parsed.hostname if parsed.hostname else '?.?.?'
-      if path != '' and path != '/':
-        last_path = parsed.path.split('/')[-1]
-        if len(last_path) < 10:
-          if len(path) < 10:
-            return hostname + '/' + path
-          else:
-            return hostname + '/..' + parsed.path[-10:]
-        elif len(last_path) > 10:
-          return hostname + '/..' + last_path[:5]
-        else:
-          return hostname + '/..' + last_path
-      else:
-        return hostname
+      return request_track.ShortName(self._request.url)
 
     def Url(self):
       return self._request.url
