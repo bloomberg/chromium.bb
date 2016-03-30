@@ -234,13 +234,19 @@ TEST_F(LoggingTest, Dcheck) {
   EXPECT_TRUE(DLOG_IS_ON(DCHECK));
 #endif
 
+#if defined(DCHECK_IS_DUMP_WITHOUT_CRASH)
+  const bool kDCheckLogsOutput = false;
+#else
+  const bool kDCheckLogsOutput = DCHECK_IS_ON();
+#endif
+
   EXPECT_EQ(0, log_sink_call_count);
   DCHECK(false);
-  EXPECT_EQ(DCHECK_IS_ON() ? 1 : 0, log_sink_call_count);
+  EXPECT_EQ(kDCheckLogsOutput ? 1 : 0, log_sink_call_count);
   DPCHECK(false);
-  EXPECT_EQ(DCHECK_IS_ON() ? 2 : 0, log_sink_call_count);
+  EXPECT_EQ(kDCheckLogsOutput ? 2 : 0, log_sink_call_count);
   DCHECK_EQ(0, 1);
-  EXPECT_EQ(DCHECK_IS_ON() ? 3 : 0, log_sink_call_count);
+  EXPECT_EQ(kDCheckLogsOutput ? 3 : 0, log_sink_call_count);
 }
 
 TEST_F(LoggingTest, DcheckReleaseBehavior) {
