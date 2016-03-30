@@ -11,7 +11,21 @@ then
   exit
 fi
 
-# Test if this script is running under a MSys install.  If it is, we will
+# Test if this script is running under a MSYS install. This is likely an error
+# if it is, so we warn the user accordingly.
+OUTPUT="$(uname | grep 'MSYS')"
+MSYS=$?
+if [ $MSYS = 0 ]; then
+  echo 'WARNING: It looks like you are running these tools from an MSYS shell'
+  echo '(as opposed to a MinGW shell). This shell is not supported and may'
+  echo 'fail in mysterious ways.'
+  echo
+  echo 'To run the supported MinGW shell, use `git bash`, or use `bin/bash.exe`'
+  echo 'in your MinGW installation, as opposed to `usr/bin/bash.exe`.'
+  echo
+fi
+
+# Test if this script is running under a MinGW install.  If it is, we will
 # hardcode the paths to SVN and Git where possible.
 OUTPUT="$(uname | grep 'MINGW')"
 MINGW=$?
@@ -25,10 +39,8 @@ else
   fi
 fi
 
-# Don't try to use Cygwin tools.  Get real win32 tools using the batch script.
-OUTPUT="$(uname | grep 'CYGWIN')"
-CYGWIN=$?
-if [ $CYGWIN = 0 ] || [ $MINGW = 0 ]; then
+# We want to update the bundled tools even under MinGW.
+if [ $MINGW = 0 ]; then
   $COMSPEC /c `cygpath -w "$base_dir/bootstrap/win/win_tools.bat"`
 fi
 
