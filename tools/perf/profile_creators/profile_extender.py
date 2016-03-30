@@ -142,7 +142,7 @@ class ProfileExtender(object):
     network_controller = possible_browser.platform.network_controller
     if not network_controller.is_open:
       self._should_close_network_controller = True
-      network_controller.Open(wpr_mode, finder_options.browser_options.netsim,
+      network_controller.Open(wpr_mode,
                               finder_options.browser_options.extra_wpr_args)
     network_controller.StartReplay(
         wpr_archive_path, make_javascript_deterministic=True)
