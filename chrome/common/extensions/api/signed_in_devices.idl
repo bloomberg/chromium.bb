@@ -56,10 +56,9 @@
   };
 
   interface Events {
-    // Fired if the DeviceInfo object of any of the signed in devices
-    // change or a new device is added or a device removed.
-    // |callback|: The callback to be invoked with the array of DeviceInfo
-    // objects.
+    // Fired when the DeviceInfo object of any of the signed in devices
+    // changes, or when a device is added or removed.
+    // |devices|: The array of all signed in devices.
     static void onDeviceInfoChange(DeviceInfo[] devices);
   };
 };
