@@ -150,9 +150,9 @@ void GraphicsContextState::setLineDash(const DashArray& dashes, float dashOffset
 
 void GraphicsContextState::setColorFilter(PassRefPtr<SkColorFilter> colorFilter)
 {
-    m_colorFilter = colorFilter;
-    m_strokePaint.setColorFilter(m_colorFilter.get());
-    m_fillPaint.setColorFilter(m_colorFilter.get());
+    m_colorFilter = toSkSp(colorFilter);
+    m_strokePaint.setColorFilter(m_colorFilter);
+    m_fillPaint.setColorFilter(m_colorFilter);
 }
 
 void GraphicsContextState::setInterpolationQuality(InterpolationQuality quality)

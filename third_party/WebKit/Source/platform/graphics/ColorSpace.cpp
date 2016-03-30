@@ -32,6 +32,7 @@
 
 #include "platform/graphics/ColorSpace.h"
 
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
@@ -109,7 +110,7 @@ PassRefPtr<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace, Color
     if (!lookupTable)
         return nullptr;
 
-    return adoptRef(SkTableColorFilter::CreateARGB(0, lookupTable, lookupTable, lookupTable));
+    return fromSkSp(SkTableColorFilter::MakeARGB(0, lookupTable, lookupTable, lookupTable));
 }
 
 } // namespace ColorSpaceUtilities

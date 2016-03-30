@@ -129,7 +129,7 @@ private:
 
     TextDrawingModeFlags m_textDrawingMode;
 
-    RefPtr<SkColorFilter> m_colorFilter;
+    sk_sp<SkColorFilter> m_colorFilter;
 
     InterpolationQuality m_interpolationQuality;
 

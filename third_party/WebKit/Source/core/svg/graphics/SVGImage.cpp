@@ -297,7 +297,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize
     paint.setShader(SkShader::MakePictureShader(toSkSp(tilePicture.release()),
         SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &patternTransform, nullptr));
     paint.setXfermodeMode(compositeOp);
-    paint.setColorFilter(context.colorFilter());
+    paint.setColorFilter(sk_ref_sp(context.colorFilter()));
     context.drawRect(dstRect, paint);
 }
 

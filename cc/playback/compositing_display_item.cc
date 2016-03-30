@@ -27,7 +27,7 @@ CompositingDisplayItem::CompositingDisplayItem(
     uint8_t alpha,
     SkXfermode::Mode xfermode,
     SkRect* bounds,
-    skia::RefPtr<SkColorFilter> cf,
+    sk_sp<SkColorFilter> cf,
     bool lcd_text_requires_opaque_layer) {
   SetNew(alpha, xfermode, bounds, std::move(cf),
          lcd_text_requires_opaque_layer);
@@ -46,12 +46,12 @@ CompositingDisplayItem::CompositingDisplayItem(
         new SkRect(gfx::RectFToSkRect(ProtoToRectF(details.bounds()))));
   }
 
-  skia::RefPtr<SkColorFilter> filter;
+  sk_sp<SkColorFilter> filter;
   if (details.has_color_filter()) {
     SkFlattenable* flattenable = SkValidatingDeserializeFlattenable(
         details.color_filter().c_str(), details.color_filter().size(),
         SkColorFilter::GetFlattenableType());
-    filter = skia::AdoptRef(static_cast<SkColorFilter*>(flattenable));
+    filter.reset(static_cast<SkColorFilter*>(flattenable));
   }
 
   bool lcd_text_requires_opaque_layer =
@@ -67,7 +67,7 @@ CompositingDisplayItem::~CompositingDisplayItem() {
 void CompositingDisplayItem::SetNew(uint8_t alpha,
                                     SkXfermode::Mode xfermode,
                                     SkRect* bounds,
-                                    skia::RefPtr<SkColorFilter> cf,
+                                    sk_sp<SkColorFilter> cf,
                                     bool lcd_text_requires_opaque_layer) {
   alpha_ = alpha;
   xfermode_ = xfermode;
@@ -106,7 +106,7 @@ void CompositingDisplayItem::Raster(
   SkPaint paint;
   paint.setXfermodeMode(xfermode_);
   paint.setAlpha(alpha_);
-  paint.setColorFilter(color_filter_.get());
+  paint.setColorFilter(color_filter_);
   const SkRect* bounds = has_bounds_ ? &bounds_ : nullptr;
   if (lcd_text_requires_opaque_layer_)
     canvas->saveLayer(bounds, &paint);

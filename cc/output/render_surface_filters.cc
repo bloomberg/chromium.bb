@@ -148,8 +148,8 @@ void GetSepiaMatrix(float amount, SkScalar matrix[20]) {
 skia::RefPtr<SkImageFilter> CreateMatrixImageFilter(
     const SkScalar matrix[20],
     const skia::RefPtr<SkImageFilter>& input) {
-  skia::RefPtr<SkColorFilter> color_filter =
-      skia::AdoptRef(SkColorMatrixFilter::Create(matrix));
+  sk_sp<SkColorFilter> color_filter =
+      SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
   return skia::AdoptRef(
       SkColorFilterImageFilter::Create(color_filter.get(), input.get()));
 }

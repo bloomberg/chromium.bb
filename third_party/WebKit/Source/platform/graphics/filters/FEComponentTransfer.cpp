@@ -135,10 +135,9 @@ PassRefPtr<SkImageFilter> FEComponentTransfer::createImageFilter(SkiaImageFilter
     unsigned char rValues[256], gValues[256], bValues[256], aValues[256];
     getValues(rValues, gValues, bValues, aValues);
 
-    SkAutoTUnref<SkColorFilter> colorFilter(SkTableColorFilter::CreateARGB(aValues, rValues, gValues, bValues));
-
     SkImageFilter::CropRect cropRect = getCropRect();
-    return adoptRef(SkColorFilterImageFilter::Create(colorFilter, input.get(), &cropRect));
+    sk_sp<SkColorFilter> colorFilter = SkTableColorFilter::MakeARGB(aValues, rValues, gValues, bValues);
+    return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), input.get(), &cropRect));
 }
 
 void FEComponentTransfer::getValues(unsigned char rValues[256], unsigned char gValues[256], unsigned char bValues[256], unsigned char aValues[256])

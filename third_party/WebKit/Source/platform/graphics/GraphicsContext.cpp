@@ -261,7 +261,7 @@ void GraphicsContext::beginLayer(float opacity, SkXfermode::Mode xfermode, const
     SkPaint layerPaint;
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
     layerPaint.setXfermodeMode(xfermode);
-    layerPaint.setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter).get());
+    layerPaint.setColorFilter(toSkSp(WebCoreColorFilterToSkiaColorFilter(colorFilter)));
     layerPaint.setImageFilter(imageFilter);
 
     if (bounds) {
@@ -1251,7 +1251,7 @@ PassRefPtr<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(C
 {
     switch (colorFilter) {
     case ColorFilterLuminanceToAlpha:
-        return adoptRef(SkLumaColorFilter::Create());
+        return fromSkSp(SkLumaColorFilter::Make());
     case ColorFilterLinearRGBToSRGB:
         return ColorSpaceUtilities::createColorSpaceFilter(ColorSpaceLinearRGB, ColorSpaceDeviceRGB);
     case ColorFilterSRGBToLinearRGB:

@@ -149,11 +149,10 @@ skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   skia::RefPtr<SkMaskFilter> blur_mask =
       skia::AdoptRef(SkBlurMaskFilter::Create(
           kNormal_SkBlurStyle, 0.5, SkBlurMaskFilter::kHighQuality_BlurFlag));
-  skia::RefPtr<SkColorFilter> color_filter = skia::AdoptRef(
-      SkColorFilter::CreateModeFilter(color, SkXfermode::kSrcIn_Mode));
   SkPaint* layer_paint = looper_builder.addLayer(layer_info);
   layer_paint->setMaskFilter(blur_mask.get());
-  layer_paint->setColorFilter(color_filter.get());
+  layer_paint->setColorFilter(
+      SkColorFilter::MakeModeFilter(color, SkXfermode::kSrcIn_Mode));
 
   return skia::AdoptRef(looper_builder.detachLooper());
 }

@@ -23,7 +23,7 @@ CompositingRecorder::CompositingRecorder(const PaintContext& context,
 
   context_.list_->CreateAndAppendItem<cc::CompositingDisplayItem>(
       bounds_in_layer_, alpha, SkXfermode::kSrcOver_Mode,
-      nullptr /* no bounds */, skia::RefPtr<SkColorFilter>(),
+      nullptr /* no bounds */, nullptr /* no color filter */,
       lcd_text_requires_opaque_layer);
 }
 

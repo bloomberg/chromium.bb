@@ -118,7 +118,7 @@ static void luminanceToAlphaMatrix(SkScalar matrix[kColorMatrixSize])
     matrix[17] = 0.0721f;
 }
 
-static SkColorFilter* createColorFilter(ColorMatrixType type, const Vector<float>& values)
+static sk_sp<SkColorFilter> createColorFilter(ColorMatrixType type, const Vector<float>& values)
 {
     // Use defaults if values contains too few/many values.
     SkScalar matrix[kColorMatrixSize];
@@ -150,7 +150,7 @@ static SkColorFilter* createColorFilter(ColorMatrixType type, const Vector<float
         luminanceToAlphaMatrix(matrix);
         break;
     }
-    return SkColorMatrixFilter::Create(matrix);
+    return SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
 }
 
 bool FEColorMatrix::affectsTransparentPixels()
@@ -163,9 +163,9 @@ bool FEColorMatrix::affectsTransparentPixels()
 PassRefPtr<SkImageFilter> FEColorMatrix::createImageFilter(SkiaImageFilterBuilder& builder)
 {
     RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
-    SkAutoTUnref<SkColorFilter> filter(createColorFilter(m_type, m_values));
+    sk_sp<SkColorFilter> filter = createColorFilter(m_type, m_values);
     SkImageFilter::CropRect rect = getCropRect();
-    return adoptRef(SkColorFilterImageFilter::Create(filter, input.get(), &rect));
+    return adoptRef(SkColorFilterImageFilter::Create(filter.get(), input.get(), &rect));
 }
 
 static TextStream& operator<<(TextStream& ts, const ColorMatrixType& type)

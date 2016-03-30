@@ -40,17 +40,16 @@ static inline SkPaint CreatePaint() {
 #if (SK_R32_SHIFT || SK_B32_SHIFT != 16)
   // The SkCanvas is in RGBA but the shader is expecting BGRA, so we need to
   // swizzle our colors when drawing to the SkCanvas.
-  SkColorMatrix swizzle_matrix;
+  SkScalar color_matrix[20];
   for (int i = 0; i < 20; ++i)
-    swizzle_matrix.fMat[i] = 0;
-  swizzle_matrix.fMat[0 + 5 * 2] = 1;
-  swizzle_matrix.fMat[1 + 5 * 1] = 1;
-  swizzle_matrix.fMat[2 + 5 * 0] = 1;
-  swizzle_matrix.fMat[3 + 5 * 3] = 1;
+    color_matrix[i] = 0;
+  color_matrix[0 + 5 * 2] = 1;
+  color_matrix[1 + 5 * 1] = 1;
+  color_matrix[2 + 5 * 0] = 1;
+  color_matrix[3 + 5 * 3] = 1;
 
-  skia::RefPtr<SkColorFilter> filter =
-      skia::AdoptRef(SkColorMatrixFilter::Create(swizzle_matrix));
-  paint.setColorFilter(filter.get());
+  paint.setColorFilter(
+      SkColorFilter::MakeMatrixFilterRowMajor255(color_matrix));
 #endif
   return paint;
 }

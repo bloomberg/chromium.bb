@@ -150,9 +150,7 @@ void PrepareBitmapCopyOutputResult(
   }
   SkCanvas canvas(grayscale_bitmap);
   SkPaint paint;
-  skia::RefPtr<SkColorFilter> filter =
-      skia::AdoptRef(SkLumaColorFilter::Create());
-  paint.setColorFilter(filter.get());
+  paint.setColorFilter(SkLumaColorFilter::Make());
   canvas.drawBitmap(scaled_bitmap, SkIntToScalar(0), SkIntToScalar(0), &paint);
   callback.Run(grayscale_bitmap, content::READBACK_SUCCESS);
 }

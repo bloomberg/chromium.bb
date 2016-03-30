@@ -210,9 +210,9 @@ bool FilterEffect::inputsTaintOrigin() const
 
 PassRefPtr<SkImageFilter> FilterEffect::createTransparentBlack(SkiaImageFilterBuilder& builder) const
 {
-    SkAutoTUnref<SkColorFilter> filter(SkColorFilter::CreateModeFilter(0, SkXfermode::kClear_Mode));
     SkImageFilter::CropRect rect = getCropRect();
-    return adoptRef(SkColorFilterImageFilter::Create(filter, nullptr, &rect));
+    sk_sp<SkColorFilter> colorFilter = SkColorFilter::MakeModeFilter(0, SkXfermode::kClear_Mode);
+    return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), nullptr, &rect));
 }
 
 bool FilterEffect::hasConnectedInput() const

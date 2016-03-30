@@ -244,12 +244,12 @@ class ImageFilterClippedPixelTest : public LayerTreeHostFiltersPixelTest {
     memset(matrix, 0, 20 * sizeof(matrix[0]));
     // This filter does a red-blue swap, so the foreground becomes blue.
     matrix[2] = matrix[6] = matrix[10] = matrix[18] = SK_Scalar1;
-    skia::RefPtr<SkColorFilter> colorFilter(
-        skia::AdoptRef(SkColorMatrixFilter::Create(matrix)));
     // We filter only the bottom 200x100 pixels of the foreground.
     SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
+    sk_sp<SkColorFilter> color_filter =
+        SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
     skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(
-        SkColorFilterImageFilter::Create(colorFilter.get(), NULL, &crop_rect));
+        SkColorFilterImageFilter::Create(color_filter.get(), NULL, &crop_rect));
     FilterOperations filters;
     filters.Append(FilterOperation::CreateReferenceFilter(filter));
 
@@ -604,12 +604,11 @@ class FilterWithGiantCropRectPixelTest : public LayerTreeHostFiltersPixelTest {
         0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 20.0f,
     };
 
-    skia::RefPtr<SkColorFilter> color_filter(
-        skia::AdoptRef(SkColorFilter::CreateMatrixFilterRowMajor255(matrix)));
-
     FilterOperations filters;
     SkImageFilter::CropRect cropRect(
         SkRect::MakeXYWH(-40000, -40000, 80000, 80000));
+    sk_sp<SkColorFilter> color_filter =
+        SkColorFilter::MakeMatrixFilterRowMajor255(matrix);
     skia::RefPtr<SkImageFilter> filter(
         skia::AdoptRef(SkColorFilterImageFilter::Create(color_filter.get(),
                                                         nullptr, &cropRect)));

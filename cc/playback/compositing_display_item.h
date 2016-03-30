@@ -11,9 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -27,7 +27,7 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
   CompositingDisplayItem(uint8_t alpha,
                          SkXfermode::Mode xfermode,
                          SkRect* bounds,
-                         skia::RefPtr<SkColorFilter> color_filter,
+                         sk_sp<SkColorFilter> color_filter,
                          bool lcd_text_requires_opaque_layer);
   explicit CompositingDisplayItem(const proto::DisplayItem& proto);
   ~CompositingDisplayItem() override;
@@ -49,14 +49,14 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
   void SetNew(uint8_t alpha,
               SkXfermode::Mode xfermode,
               SkRect* bounds,
-              skia::RefPtr<SkColorFilter> color_filter,
+              sk_sp<SkColorFilter> color_filter,
               bool lcd_text_requires_opaque_layer);
 
   uint8_t alpha_;
   SkXfermode::Mode xfermode_;
   bool has_bounds_;
   SkRect bounds_;
-  skia::RefPtr<SkColorFilter> color_filter_;
+  sk_sp<SkColorFilter> color_filter_;
   bool lcd_text_requires_opaque_layer_;
 };
 
