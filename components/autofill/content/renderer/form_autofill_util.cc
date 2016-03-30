@@ -810,14 +810,17 @@ void ForEachMatchingFormFieldCommon(
     // user is currently editing and interacting with.
     const WebInputElement* input_element = toWebInputElement(element);
     CR_DEFINE_STATIC_LOCAL(WebString, kValue, ("value"));
+    CR_DEFINE_STATIC_LOCAL(WebString, kPlaceholder, ("placeholder"));
     if (!force_override && !is_initiating_element &&
         // A text field, with a non-empty value that is NOT the value of the
-        // input field's "value" attribute, is skipped.
+        // input field's "value" or "placeholder" attribute, is skipped.
         (IsAutofillableInputElement(input_element) ||
          IsTextAreaElement(*element)) &&
         !element->value().isEmpty() &&
         (!element->hasAttribute(kValue) ||
-         element->getAttribute(kValue) != element->value()))
+         element->getAttribute(kValue) != element->value()) &&
+        (!element->hasAttribute(kPlaceholder) ||
+         element->getAttribute(kPlaceholder) != element->value()))
       continue;
 
     if (((filters & FILTER_DISABLED_ELEMENTS) && !element->isEnabled()) ||
@@ -1340,6 +1343,7 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   DCHECK(!element.isNull());
   CR_DEFINE_STATIC_LOCAL(WebString, kAutocomplete, ("autocomplete"));
   CR_DEFINE_STATIC_LOCAL(WebString, kRole, ("role"));
+  CR_DEFINE_STATIC_LOCAL(WebString, kPlaceholder, ("placeholder"));
 
   // The label is not officially part of a WebFormControlElement; however, the
   // labels for all form control elements are scraped from the DOM and set in
@@ -1356,6 +1360,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   if (base::LowerCaseEqualsASCII(
           base::StringPiece16(element.getAttribute(kRole)), "presentation"))
     field->role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+
+  field->placeholder = element.getAttribute(kPlaceholder);
 
   if (!IsAutofillableElement(element))
     return;

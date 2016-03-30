@@ -14,7 +14,7 @@ namespace {
 
 // Increment this anytime pickle format is modified as well as provide
 // deserialization routine from previous kPickleVersion format.
-const int kPickleVersion = 2;
+const int kPickleVersion = 3;
 
 void AddVectorToPickle(std::vector<base::string16> strings,
                        base::Pickle* pickle) {
@@ -77,6 +77,11 @@ bool DeserializeVersion2Specific(base::PickleIterator* iter,
   return ReadAsInt(iter, &field_data->role);
 }
 
+bool DeserializeVersion3Specific(base::PickleIterator* iter,
+                                 FormFieldData* field_data) {
+  return iter->ReadString16(&field_data->placeholder);
+}
+
 }  // namespace
 
 FormFieldData::FormFieldData()
@@ -101,20 +106,20 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   return label == field.label && name == field.name &&
          form_control_type == field.form_control_type &&
          autocomplete_attribute == field.autocomplete_attribute &&
-         max_length == field.max_length &&
+         placeholder == field.placeholder && max_length == field.max_length &&
          // is_checked and is_autofilled counts as "value" since these change
          // when we fill things in.
          is_checkable == field.is_checkable &&
          is_focusable == field.is_focusable &&
          should_autocomplete == field.should_autocomplete &&
          role == field.role && text_direction == field.text_direction;
-         // The option values/contents which are the list of items in the list
-         // of a drop-down are currently not considered part of the identity of
-         // a form element. This is debatable, since one might base heuristics
-         // on the types of elements that are available. Alternatively, one
-         // could imagine some forms that dynamically change the element
-         // contents (say, insert years starting from the current year) that
-         // should not be considered changes in the structure of the form.
+  // The option values/contents which are the list of items in the list
+  // of a drop-down are currently not considered part of the identity of
+  // a form element. This is debatable, since one might base heuristics
+  // on the types of elements that are available. Alternatively, one
+  // could imagine some forms that dynamically change the element
+  // contents (say, insert years starting from the current year) that
+  // should not be considered changes in the structure of the form.
 }
 
 bool FormFieldData::operator<(const FormFieldData& field) const {
@@ -132,6 +137,8 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (form_control_type > field.form_control_type) return false;
   if (autocomplete_attribute < field.autocomplete_attribute) return true;
   if (autocomplete_attribute > field.autocomplete_attribute) return false;
+  if (placeholder < field.placeholder) return true;
+  if (placeholder > field.placeholder) return false;
   if (max_length < field.max_length) return true;
   if (max_length > field.max_length) return false;
   // Skip |is_checked| and |is_autofilled| as in SameFieldAs.
@@ -167,6 +174,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   pickle->WriteInt(field_data.text_direction);
   AddVectorToPickle(field_data.option_values, pickle);
   AddVectorToPickle(field_data.option_contents, pickle);
+  pickle->WriteString16(field_data.placeholder);
 }
 
 bool DeserializeFormFieldData(base::PickleIterator* iter,
@@ -196,6 +204,16 @@ bool DeserializeFormFieldData(base::PickleIterator* iter,
       }
       break;
     }
+    case 3: {
+      if (!DeserializeCommonSection1(iter, &temp_form_field_data) ||
+          !DeserializeVersion2Specific(iter, &temp_form_field_data) ||
+          !DeserializeCommonSection2(iter, &temp_form_field_data) ||
+          !DeserializeVersion3Specific(iter, &temp_form_field_data)) {
+        LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
+        return false;
+      }
+      break;
+    }
     default: {
       LOG(ERROR) << "Unknown FormFieldData pickle version " << version;
       return false;
@@ -209,8 +227,9 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
   return os << base::UTF16ToUTF8(field.label) << " "
             << base::UTF16ToUTF8(field.name) << " "
             << base::UTF16ToUTF8(field.value) << " " << field.form_control_type
-            << " " << field.autocomplete_attribute << " " << field.max_length
-            << " " << (field.is_autofilled ? "true" : "false") << " "
+            << " " << field.autocomplete_attribute << " " << field.placeholder
+            << " " << field.max_length << " "
+            << (field.is_autofilled ? "true" : "false") << " "
             << (field.is_checked ? "true" : "false") << " "
             << (field.is_checkable ? "true" : "false") << " "
             << (field.is_focusable ? "true" : "false") << " "

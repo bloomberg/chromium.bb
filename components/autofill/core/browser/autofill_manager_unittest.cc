@@ -2152,6 +2152,46 @@ TEST_F(AutofillManagerTest, FillAddressForm_AutocompleteOff) {
   }
 }
 
+// Test that a field with a value equal to it's placeholder attribute is filled.
+TEST_F(AutofillManagerTest, FillAddressForm_PlaceholderEqualsValue) {
+  FormData address_form;
+  address_form.name = ASCIIToUTF16("MyForm");
+  address_form.origin = GURL("https://myform.com/form.html");
+  address_form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  // Set the same placeholder and value for each field.
+  test::CreateTestFormField("First name", "firstname", "", "text", &field);
+  field.placeholder = ASCIIToUTF16("First Name");
+  field.value = ASCIIToUTF16("First Name");
+  address_form.fields.push_back(field);
+  test::CreateTestFormField("Middle name", "middle", "", "text", &field);
+  field.placeholder = ASCIIToUTF16("Middle Name");
+  field.value = ASCIIToUTF16("Middle Name");
+  address_form.fields.push_back(field);
+  test::CreateTestFormField("Last name", "lastname", "", "text", &field);
+  field.placeholder = ASCIIToUTF16("Last Name");
+  field.value = ASCIIToUTF16("Last Name");
+  address_form.fields.push_back(field);
+  std::vector<FormData> address_forms(1, address_form);
+  FormsSeen(address_forms);
+
+  // Fill the address form.
+  const char guid[] = "00000000-0000-0000-0000-000000000001";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(
+      kDefaultPageID, address_form, address_form.fields[0],
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+
+  // All the fields should be filled.
+  ExpectFilledField("First name", "firstname", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Middle name", "middle", "Aaron", "text",
+                    response_data.fields[1]);
+  ExpectFilledField("Last name", "lastname", "Presley", "text",
+                    response_data.fields[2]);
+}
+
 // Test that a credit card field with an unrecognized autocomplete attribute
 // gets filled.
 TEST_F(AutofillManagerTest, FillCreditCardForm_UnrecognizedAttribute) {

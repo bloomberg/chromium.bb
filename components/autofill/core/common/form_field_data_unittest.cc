@@ -32,6 +32,14 @@ void FillCommonFields(FormFieldData* data) {
   data->option_contents.push_back(base::ASCIIToUTF16("Second"));
 }
 
+void FillVersion2Fields(FormFieldData* data) {
+  data->role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+}
+
+void FillVersion3Fields(FormFieldData* data) {
+  data->placeholder = base::ASCIIToUTF16("placeholder");
+}
+
 void WriteCommonSection1(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteString16(data.label);
   pickle->WriteString16(data.name);
@@ -56,12 +64,30 @@ void WriteCommonSection2(const FormFieldData& data, base::Pickle* pickle) {
     pickle->WriteString16(s);
 }
 
+void WriteVersion2Specific(const FormFieldData& data, base::Pickle* pickle) {
+  pickle->WriteInt(data.role);
+}
+
+void SerializeInVersion1Format(const FormFieldData& data,
+                               base::Pickle* pickle) {
+  WriteCommonSection1(data, pickle);
+  WriteCommonSection2(data, pickle);
+}
+
+void SerializeInVersion2Format(const FormFieldData& data,
+                               base::Pickle* pickle) {
+  WriteCommonSection1(data, pickle);
+  WriteVersion2Specific(data, pickle);
+  WriteCommonSection2(data, pickle);
+}
+
 }  // namespace
 
 TEST(FormFieldDataTest, SerializeAndDeserialize) {
   FormFieldData data;
   FillCommonFields(&data);
-  data.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
+  FillVersion2Fields(&data);
+  FillVersion3Fields(&data);
 
   base::Pickle pickle;
   SerializeFormFieldData(data, &pickle);
@@ -79,8 +105,23 @@ TEST(FormFieldDataTest, DeserializeVersion1) {
 
   base::Pickle pickle;
   pickle.WriteInt(1);
-  WriteCommonSection1(data, &pickle);
-  WriteCommonSection2(data, &pickle);
+  SerializeInVersion1Format(data, &pickle);
+
+  base::PickleIterator iter(pickle);
+  FormFieldData actual;
+  EXPECT_TRUE(DeserializeFormFieldData(&iter, &actual));
+
+  EXPECT_TRUE(actual.SameFieldAs(data));
+}
+
+TEST(FormFieldDataTest, DeserializeVersion2) {
+  FormFieldData data;
+  FillCommonFields(&data);
+  FillVersion2Fields(&data);
+
+  base::Pickle pickle;
+  pickle.WriteInt(2);
+  SerializeInVersion2Format(data, &pickle);
 
   base::PickleIterator iter(pickle);
   FormFieldData actual;

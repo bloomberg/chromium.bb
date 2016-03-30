@@ -1060,7 +1060,10 @@ class FormAutofillTest : public ChromeRenderViewTest {
   void TestFillFormNonEmptyField(const char* html,
                                  bool unowned,
                                  const char* initial_lastname,
-                                 const char* initial_email) {
+                                 const char* initial_email,
+                                 const char* placeholder_firstname,
+                                 const char* placeholder_lastname,
+                                 const char* placeholder_email) {
     LoadHTML(html);
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
@@ -1096,6 +1099,10 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     expected.name = ASCIIToUTF16("firstname");
     expected.value = ASCIIToUTF16("Wy");
+    if (placeholder_firstname) {
+      expected.label = ASCIIToUTF16(placeholder_firstname);
+      expected.placeholder = ASCIIToUTF16(placeholder_firstname);
+    }
     expected.is_autofilled = false;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
 
@@ -1103,6 +1110,10 @@ class FormAutofillTest : public ChromeRenderViewTest {
     if (initial_lastname) {
       expected.label = ASCIIToUTF16(initial_lastname);
       expected.value = ASCIIToUTF16(initial_lastname);
+    } else if (placeholder_lastname) {
+      expected.label = ASCIIToUTF16(placeholder_lastname);
+      expected.placeholder = ASCIIToUTF16(placeholder_lastname);
+      expected.value = ASCIIToUTF16(placeholder_lastname);
     } else {
       expected.label.clear();
       expected.value.clear();
@@ -1114,6 +1125,10 @@ class FormAutofillTest : public ChromeRenderViewTest {
     if (initial_email) {
       expected.label = ASCIIToUTF16(initial_email);
       expected.value = ASCIIToUTF16(initial_email);
+    } else if (placeholder_email) {
+      expected.label = ASCIIToUTF16(placeholder_email);
+      expected.placeholder = ASCIIToUTF16(placeholder_email);
+      expected.value = ASCIIToUTF16(placeholder_email);
     } else {
       expected.label.clear();
       expected.value.clear();
@@ -1152,19 +1167,37 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     expected.name = ASCIIToUTF16("firstname");
     expected.value = ASCIIToUTF16("Wyatt");
-    expected.label.clear();
+    if (placeholder_firstname) {
+      expected.label = ASCIIToUTF16(placeholder_firstname);
+      expected.placeholder = ASCIIToUTF16(placeholder_firstname);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
     expected.is_autofilled = true;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[0]);
 
     expected.name = ASCIIToUTF16("lastname");
     expected.value = ASCIIToUTF16("Earp");
-    expected.label.clear();
+    if (placeholder_lastname) {
+      expected.label = ASCIIToUTF16(placeholder_lastname);
+      expected.placeholder = ASCIIToUTF16(placeholder_lastname);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
     expected.is_autofilled = true;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[1]);
 
     expected.name = ASCIIToUTF16("email");
     expected.value = ASCIIToUTF16("wyatt@example.com");
-    expected.label.clear();
+    if (placeholder_email) {
+      expected.label = ASCIIToUTF16(placeholder_email);
+      expected.placeholder = ASCIIToUTF16(placeholder_email);
+    } else {
+      expected.label.clear();
+      expected.placeholder.clear();
+    }
     expected.is_autofilled = true;
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
 
@@ -3977,7 +4010,7 @@ TEST_F(FormAutofillTest, FillFormNonEmptyField) {
       "  <INPUT type='text' id='email'/>"
       "  <INPUT type='submit' value='Send'/>"
       "</FORM>",
-      false, nullptr, nullptr);
+      false, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 TEST_F(FormAutofillTest, FillFormNonEmptyFieldsWithDefaultValues) {
@@ -3988,7 +4021,20 @@ TEST_F(FormAutofillTest, FillFormNonEmptyFieldsWithDefaultValues) {
       "  <INPUT type='text' id='email' value='Enter email'/>"
       "  <INPUT type='submit' value='Send'/>"
       "</FORM>",
-      false, "Enter last name", "Enter email");
+      false, "Enter last name", "Enter email", nullptr, nullptr, nullptr);
+}
+
+TEST_F(FormAutofillTest, FillFormNonEmptyFieldsWithPlaceholderValues) {
+  TestFillFormNonEmptyField(
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
+      "  <INPUT type='text' id='firstname' placeholder='First Name' "
+      "value='First Name'/>"
+      "  <INPUT type='text' id='lastname' placeholder='Last Name' value='Last "
+      "Name'/>"
+      "  <INPUT type='text' id='email' placeholder='Email' value='Email'/>"
+      "  <INPUT type='submit' value='Send'/>"
+      "</FORM>",
+      false, nullptr, nullptr, "First Name", "Last Name", "Email");
 }
 
 TEST_F(FormAutofillTest, FillFormNonEmptyFieldForUnownedForm) {
@@ -3998,7 +4044,7 @@ TEST_F(FormAutofillTest, FillFormNonEmptyFieldForUnownedForm) {
       "<INPUT type='text' id='lastname'/>"
       "<INPUT type='text' id='email'/>"
       "<INPUT type='submit' value='Send'/>",
-      true, nullptr, nullptr);
+      true, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 TEST_F(FormAutofillTest, ClearFormWithNode) {

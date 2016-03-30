@@ -46,6 +46,7 @@ struct FormFieldData {
   base::string16 value;
   std::string form_control_type;
   std::string autocomplete_attribute;
+  base::string16 placeholder;
   // Note: we use uint64_t instead of size_t because this struct is sent over
   // IPC which could span 32 & 64 bit processes. We chose uint64_t instead of
   // uint32_t to maintain compatibility with old code which used size_t
@@ -77,17 +78,18 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
 
 // Prefer to use this macro in place of |EXPECT_EQ()| for comparing
 // |FormFieldData|s in test code.
-#define EXPECT_FORM_FIELD_DATA_EQUALS(expected, actual) \
-  do { \
-    EXPECT_EQ(expected.label, actual.label); \
-    EXPECT_EQ(expected.name, actual.name); \
-    EXPECT_EQ(expected.value, actual.value); \
-    EXPECT_EQ(expected.form_control_type, actual.form_control_type); \
+#define EXPECT_FORM_FIELD_DATA_EQUALS(expected, actual)                        \
+  do {                                                                         \
+    EXPECT_EQ(expected.label, actual.label);                                   \
+    EXPECT_EQ(expected.name, actual.name);                                     \
+    EXPECT_EQ(expected.value, actual.value);                                   \
+    EXPECT_EQ(expected.form_control_type, actual.form_control_type);           \
     EXPECT_EQ(expected.autocomplete_attribute, actual.autocomplete_attribute); \
-    EXPECT_EQ(expected.max_length, actual.max_length); \
-    EXPECT_EQ(expected.is_autofilled, actual.is_autofilled); \
-    EXPECT_EQ(expected.is_checked, actual.is_checked); \
-    EXPECT_EQ(expected.is_checkable, actual.is_checkable); \
+    EXPECT_EQ(expected.placeholder, actual.placeholder);                       \
+    EXPECT_EQ(expected.max_length, actual.max_length);                         \
+    EXPECT_EQ(expected.is_autofilled, actual.is_autofilled);                   \
+    EXPECT_EQ(expected.is_checked, actual.is_checked);                         \
+    EXPECT_EQ(expected.is_checkable, actual.is_checkable);                     \
   } while (0)
 
 }  // namespace autofill
