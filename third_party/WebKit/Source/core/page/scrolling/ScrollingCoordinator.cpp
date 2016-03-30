@@ -534,7 +534,7 @@ static void projectRectsToGraphicsLayerSpace(LocalFrame* mainFrame, const LayerH
     MapCoordinatesFlags flags = UseTransforms;
     if (touchHandlerInChildFrame)
         flags |= TraverseDocumentBoundaries;
-    PaintLayer* rootLayer = mainFrame->contentLayoutObject()->layer();
+    PaintLayer* rootLayer = mainFrame->contentLayoutItem().layer();
     LayoutGeometryMap geometryMap(flags);
     geometryMap.pushMappingsToAncestor(rootLayer, 0);
     LayerFrameMap layerChildFrameMap;
@@ -622,8 +622,8 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange()
 
     // FIXME: scheduleAnimation() is just a method of forcing the compositor to realize that it
     // needs to commit here. We should expose a cleaner API for this.
-    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->contentLayoutObject();
-    if (layoutView && layoutView->compositor() && layoutView->compositor()->staleInCompositingMode())
+    LayoutViewItem layoutView = m_page->deprecatedLocalMainFrame()->contentLayoutItem();
+    if (!layoutView.isNull() && layoutView.compositor() && layoutView.compositor()->staleInCompositingMode())
         m_page->deprecatedLocalMainFrame()->view()->scheduleAnimation();
 
     m_touchEventTargetRectsAreDirty = true;
@@ -705,10 +705,10 @@ bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView
     ASSERT(isMainThread());
 
     // We currently only support composited mode.
-    LayoutView* layoutView = frameView->frame().contentLayoutObject();
-    if (!layoutView)
+    LayoutViewItem layoutView = frameView->frame().contentLayoutItem();
+    if (layoutView.isNull())
         return false;
-    return layoutView->usesCompositing();
+    return layoutView.usesCompositing();
 }
 
 Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(const LocalFrame* frame, const IntPoint& frameLocation) const
