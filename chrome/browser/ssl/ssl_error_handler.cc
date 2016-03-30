@@ -107,7 +107,9 @@ class CommonNameMismatchRedirectObserver
         content::CONSOLE_MESSAGE_LEVEL_LOG,
         base::StringPrintf(
             "Redirecting navigation %s -> %s because the server presented a "
-            "certificate valid for %s but not for %s.",
+            "certificate valid for %s but not for %s. To disable such "
+            "redirects launch Chrome with the following flag: "
+            "--force-fieldtrials=SSLCommonNameMismatchHandling/Disabled/",
             request_url_hostname_.c_str(), suggested_url_hostname_.c_str(),
             suggested_url_hostname_.c_str(), request_url_hostname_.c_str()));
     web_contents_->RemoveUserData(UserDataKey());
