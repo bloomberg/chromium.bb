@@ -443,14 +443,10 @@ void XMLDocumentParser::end()
     if (m_parserPaused)
         return;
 
-    if (m_sawError) {
+    if (m_sawError)
         insertErrorMessageBlock();
-    } else {
+    else
         updateLeafTextNode();
-        // Do not bail out if in a stopped state, but notify document that
-        // parsing has finished.
-        document()->styleEngine().resolverChanged(FullStyleUpdate);
-    }
 
     if (isParsing())
         prepareToStopParsing();
@@ -1539,16 +1535,6 @@ void XMLDocumentParser::doEnd()
     } else if (m_sawXSLTransform) {
         xmlDocPtr doc = xmlDocPtrForString(document(), m_originalSourceForTransform.toString(), document()->url().getString());
         document()->setTransformSource(adoptPtr(new TransformSource(doc)));
-        // Make the document think it's done, so it will apply XSL stylesheets.
-        document()->setParsingState(Document::FinishedParsing);
-        document()->styleEngine().resolverChanged(FullStyleUpdate);
-
-        // resolverChanged() call can detach the parser and null out its
-        // document. In that case, we just bail out.
-        if (isDetached())
-            return;
-
-        document()->setParsingState(Document::Parsing);
         DocumentParser::stopParsing();
     }
 }
