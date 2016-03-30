@@ -408,7 +408,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     protected void onTabOrModelChanged() {
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
-        if (ntp != null) getLocationBar().onTabLoadingNTP(ntp);
+        if (ntp != null) {
+            getLocationBar().onTabLoadingNTP(ntp);
+        } else {
+            if (mUrlContainer != null) mUrlContainer.setTrailingTextVisible(true);
+        }
 
         getLocationBar().updateMicButtonState();
     }
