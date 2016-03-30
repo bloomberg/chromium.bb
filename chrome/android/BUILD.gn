@@ -299,6 +299,7 @@ junit_binary("chrome_junit_tests") {
     "//components/invalidation/impl:java",
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
+    "//net/android:net_java",
     "//sync:sync_java_test_support",
     "//sync/android:sync_java",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
