@@ -4,56 +4,46 @@
 
 package org.chromium.chrome.browser.media.router;
 
-import android.content.Context;
 import android.content.IntentFilter;
 import android.support.v7.media.MediaRouteDescriptor;
-import android.support.v7.media.MediaRouteDiscoveryRequest;
 import android.support.v7.media.MediaRouteProvider;
 import android.support.v7.media.MediaRouteProviderDescriptor;
-import android.support.v7.media.MediaRouteSelector;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.media.RoutePublisher;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
- * A dummy MRP that registers some dummy media sinks to the Android support library, so that these
- * dummy sinks can be discovered and shown in the device selection dialog in media router tests.
- * The Cast app id must be fixed to "CCCCCCCC" so that these sinks can be detected.
+ * A dummy route publisher that registers some dummy media sinks to the Android support library, so
+ * that these dummy sinks can be discovered and shown in the device selection dialog in media router
+ * tests.  The Cast app id must be fixed to "CCCCCCCC" so that these sinks can be detected.
  */
-final class DummyMediaRouteProvider extends MediaRouteProvider {
-    private static final String TAG = "DummyMRP";
+public final class DummyRoutePublisher implements RoutePublisher {
+    private static final String TAG = "DummyRoutePublisher";
 
     private static final String DUMMY_ROUTE_ID1 = "test_sink_id_1";
     private static final String DUMMY_ROUTE_ID2 = "test_sink_id_2";
     private static final String DUMMY_ROUTE_NAME1 = "test-sink-1";
     private static final String DUMMY_ROUTE_NAME2 = "test-sink-2";
 
-    public DummyMediaRouteProvider(Context context) {
-        super(context);
+    private static final String CAST_APP_ID = "CCCCCCCC";
+
+    private final MediaRouteProvider mProvider;
+
+    public DummyRoutePublisher(MediaRouteProvider provider) {
+        mProvider = provider;
     }
 
     @Override
-    public void onDiscoveryRequestChanged(MediaRouteDiscoveryRequest request) {
-        Log.i(TAG, "discoveryRequestChanged : " + request);
-        if (request != null) {
-            MediaRouteSelector selector = request.getSelector();
-            if (selector != null) {
-                List<String> controlCategories = selector.getControlCategories();
-                if (controlCategories.contains(
-                        CastMediaControlIntent.categoryForCast("CCCCCCCC"))) {
-                    publishRoutes();
-                    return;
-                }
-            }
-        }
-        Log.i(TAG, "discovery request does not match control categories, not publishing routes");
+    public boolean supportsControlCategory(String controlCategory) {
+        return controlCategory.equals(CastMediaControlIntent.categoryForCast(CAST_APP_ID));
     }
 
-    private void publishRoutes() {
+    @Override
+    public void publishRoutes() {
         Log.i(TAG, "Publishing routes");
         IntentFilter filter = new IntentFilter();
         filter.addCategory(CastMediaControlIntent.categoryForCast("CCCCCCCC"));
@@ -77,6 +67,16 @@ final class DummyMediaRouteProvider extends MediaRouteProvider {
                 .addRoute(testRouteDescriptor1)
                 .addRoute(testRouteDescriptor2)
                 .build();
-        setDescriptor(providerDescriptor);
+        mProvider.setDescriptor(providerDescriptor);
+    }
+
+    @Override
+    public boolean supportsRoute(String routeId) {
+        return false;
+    }
+
+    @Override
+    public MediaRouteProvider.RouteController onCreateRouteController(String routeId) {
+        return null;
     }
 }

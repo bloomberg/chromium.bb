@@ -10,14 +10,15 @@ android_library("cast_emulator") {
   chromium_code = true
 
   java_files = [
+    "src/org/chromium/chrome/browser/media/TestMediaRouteProvider.java",
+    "src/org/chromium/chrome/browser/media/TestMediaRouteProviderService.java",
+    "src/org/chromium/chrome/browser/media/RoutePublisher.java",
     "src/org/chromium/chrome/browser/media/remote/DummyPlayer.java",
     "src/org/chromium/chrome/browser/media/remote/LocalSessionManager.java",
     "src/org/chromium/chrome/browser/media/remote/MediaItem.java",
+    "src/org/chromium/chrome/browser/media/remote/RemotePlaybackRoutePublisher.java",
     "src/org/chromium/chrome/browser/media/remote/RemoteSessionManager.java",
-    "src/org/chromium/chrome/browser/media/remote/TestMediaRouteProvider.java",
-    "src/org/chromium/chrome/browser/media/remote/TestMediaRouteProviderService.java",
-    "src/org/chromium/chrome/browser/media/router/DummyMediaRouteProvider.java",
-    "src/org/chromium/chrome/browser/media/router/DummyMediaRouteProviderService.java",
+    "src/org/chromium/chrome/browser/media/router/DummyRoutePublisher.java",
   ]
   deps = [
     "//base:base_java",

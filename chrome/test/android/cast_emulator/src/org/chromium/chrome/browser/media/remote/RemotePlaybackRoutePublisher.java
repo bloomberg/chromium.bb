@@ -28,15 +28,17 @@ import com.google.android.gms.cast.CastMediaControlIntent;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.browser.media.RoutePublisher;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Dummy media route provider for testing casting from Chrome.
+ * Media route publisher for testing remote playback from Chrome.
  *
  * @see TestMediaRouteProviderService
  */
-final class TestMediaRouteProvider extends MediaRouteProvider {
+public final class RemotePlaybackRoutePublisher implements RoutePublisher {
     private static final String MANIFEST_CAST_KEY =
             "com.google.android.apps.chrome.tests.support.CAST_ID";
 
@@ -47,34 +49,36 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
 
     private int mVolume = 5;
 
-    public TestMediaRouteProvider(Context context) {
-        super(context);
+    private final MediaRouteProvider mProvider;
+    private final List<String> mControlCategories = new ArrayList<String>();
 
-        publishRoutes();
+    public RemotePlaybackRoutePublisher(MediaRouteProvider provider) {
+        mProvider = provider;
+
+        mControlCategories.add(CastMediaControlIntent.categoryForRemotePlayback(getCastId()));
+        mControlCategories.add(CastMediaControlIntent.categoryForRemotePlayback());
     }
 
     @Override
-    public RouteController onCreateRouteController(String routeId) {
+    public boolean supportsRoute(String routeId) {
+        return routeId.equals(VARIABLE_VOLUME_SESSION_ROUTE_ID);
+    }
+
+    @Override
+    public MediaRouteProvider.RouteController onCreateRouteController(String routeId) {
         return new TestMediaController(routeId);
     }
 
-    private void publishRoutes() {
+    @Override
+    public boolean supportsControlCategory(String controlCategory) {
+        return mControlCategories.contains(controlCategory);
+    }
+
+    @Override
+    public void publishRoutes() {
         Log.i(TAG, "publishing routes");
 
-        String castId = CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID;
-        try {
-            // Downstream cast uses a different, private, castId; so read this from
-            // the manifest.
-            ApplicationInfo ai;
-            ai = getContext().getPackageManager().getApplicationInfo(
-                    getContext().getPackageName(), PackageManager.GET_META_DATA);
-            Bundle bundle = ai.metaData;
-            if (bundle != null) {
-                castId = bundle.getString(MANIFEST_CAST_KEY, castId);
-            }
-        } catch (NameNotFoundException e) {
-            // Should never happen, do nothing - use default
-        }
+        String castId = getCastId();
 
         IntentFilter f1 = new IntentFilter();
         f1.addCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK);
@@ -111,12 +115,31 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
 
         MediaRouteProviderDescriptor providerDescriptor = new MediaRouteProviderDescriptor.Builder()
                 .addRoute(testRouteDescriptor).build();
-        setDescriptor(providerDescriptor);
+        mProvider.setDescriptor(providerDescriptor);
+    }
+
+    private String getCastId() {
+        String castId = CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID;
+        try {
+            // Downstream cast uses a different, private, castId; so read this from
+            // the manifest.
+            ApplicationInfo ai;
+            ai = mProvider.getContext().getPackageManager().getApplicationInfo(
+                    mProvider.getContext().getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = ai.metaData;
+            if (bundle != null) {
+                castId = bundle.getString(MANIFEST_CAST_KEY, castId);
+            }
+        } catch (NameNotFoundException e) {
+            // Should never happen, do nothing - use default
+        }
+        return castId;
     }
 
     private final class TestMediaController extends MediaRouteProvider.RouteController {
         private final String mRouteId;
-        private final LocalSessionManager mSessionManager = new LocalSessionManager(getContext());
+        private final LocalSessionManager mSessionManager =
+                new LocalSessionManager(mProvider.getContext());
         private PendingIntent mSessionReceiver;
         private Bundle mMetadata;
 
@@ -224,7 +247,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
             if (volume >= 0 && volume <= VOLUME_MAX) {
                 mVolume = volume;
                 Log.v(TAG, "%s: New volume is %d", mRouteId, mVolume);
-                AudioManager audioManager = (AudioManager) getContext()
+                AudioManager audioManager = (AudioManager) mProvider.getContext()
                         .getSystemService(Context.AUDIO_SERVICE);
                 audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
                 publishRoutes();
@@ -425,7 +448,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
                     intent.putExtra(MediaControlIntent.EXTRA_ITEM_STATUS,
                             item.getStatus().asBundle());
                     try {
-                        receiver.send(getContext(), 0, intent);
+                        receiver.send(mProvider.getContext(), 0, intent);
                         Log.v(TAG, "%s: Sending status update from provider", mRouteId);
                     } catch (PendingIntent.CanceledException e) {
                         Log.v(TAG, "%s: Failed to send status update!", mRouteId);
@@ -441,7 +464,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
                 intent.putExtra(MediaControlIntent.EXTRA_SESSION_STATUS,
                         mSessionManager.getSessionStatus(sid).asBundle());
                 try {
-                    mSessionReceiver.send(getContext(), 0, intent);
+                    mSessionReceiver.send(mProvider.getContext(), 0, intent);
                     Log.v(TAG, "%s: Sending session status update from provider", mRouteId);
                 } catch (PendingIntent.CanceledException e) {
                     Log.v(TAG, "%s: Failed to send session status update!", mRouteId);

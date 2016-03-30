@@ -8,16 +8,8 @@
     <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />
     <uses-permission android:name="android.permission.INTERNET" />
     <application>
-        <service android:name="org.chromium.chrome.browser.media.remote.TestMediaRouteProviderService"
+        <service android:name="org.chromium.chrome.browser.media.TestMediaRouteProviderService"
                 android:label="testMediaRouteProviderService"
-                android:process=":mrp"
-                tools:ignore="ExportedService" >
-            <intent-filter>
-                <action android:name="android.media.MediaRouteProviderService" />
-            </intent-filter>
-        </service>
-        <service android:name="org.chromium.chrome.browser.media.router.DummyMediaRouteProviderService"
-                android:label="dummyMediaRouteProviderService"
                 android:process=":mrp"
                 tools:ignore="ExportedService" >
             <intent-filter>
