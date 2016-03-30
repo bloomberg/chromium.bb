@@ -35,6 +35,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControls.h"
@@ -284,6 +285,12 @@ PassRefPtrWillBeRawPtr<MediaControlPlayButtonElement> MediaControlPlayButtonElem
 void MediaControlPlayButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
+        // Allow play attempts for plain src= media to force a reload in the error state. This allows potential
+        // recovery for transient network and decoder resource issues.
+        const String& url = mediaElement().currentSrc().getString();
+        if (mediaElement().error() && !HTMLMediaElement::isMediaStreamURL(url) && !HTMLMediaSource::lookup(url))
+            mediaElement().load();
+
         mediaElement().togglePlayState();
         updateDisplayType();
         event->setDefaultHandled();

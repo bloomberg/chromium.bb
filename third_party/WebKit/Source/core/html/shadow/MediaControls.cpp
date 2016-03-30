@@ -252,6 +252,10 @@ void MediaControls::reset()
         m_timeline->setIsWanted(true);
     }
 
+    // If the player has entered an error state, force it into the paused state.
+    if (mediaElement().error())
+        mediaElement().pause();
+
     updatePlayState();
 
     updateCurrentTimeDisplay();
