@@ -35,10 +35,9 @@ class SessionsGetRecentlyClosedFunction : public ChromeSyncExtensionFunction {
                              SESSIONS_GETRECENTLYCLOSED)
 
  private:
-  scoped_ptr<api::tabs::Tab> CreateTabModel(
-      const sessions::TabRestoreService::Tab& tab,
-      int session_id,
-      int selected_index);
+  api::tabs::Tab CreateTabModel(const sessions::TabRestoreService::Tab& tab,
+                                int session_id,
+                                int selected_index);
   scoped_ptr<api::windows::Window> CreateWindowModel(
       const sessions::TabRestoreService::Window& window,
       int session_id);
@@ -53,10 +52,10 @@ class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("sessions.getDevices", SESSIONS_GETDEVICES)
 
  private:
-  scoped_ptr<api::tabs::Tab> CreateTabModel(const std::string& session_tag,
-                                            const sessions::SessionTab& tab,
-                                            int tab_index,
-                                            int selected_index);
+  api::tabs::Tab CreateTabModel(const std::string& session_tag,
+                                const sessions::SessionTab& tab,
+                                int tab_index,
+                                int selected_index);
   scoped_ptr<api::windows::Window> CreateWindowModel(
       const sessions::SessionWindow& window,
       const std::string& session_tag);

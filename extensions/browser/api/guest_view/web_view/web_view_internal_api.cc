@@ -209,7 +209,7 @@ bool ParseContentScript(const ContentScriptDetails& script_value,
 }
 
 bool ParseContentScripts(
-    std::vector<linked_ptr<ContentScriptDetails>> content_script_list,
+    const std::vector<ContentScriptDetails>& content_script_list,
     const extensions::Extension* extension,
     const HostID& host_id,
     bool incognito_enabled,
@@ -220,9 +220,8 @@ bool ParseContentScripts(
     return false;
 
   std::set<std::string> names;
-  for (const linked_ptr<ContentScriptDetails> script_value :
-       content_script_list) {
-    const std::string& name = script_value->name;
+  for (const ContentScriptDetails& script_value : content_script_list) {
+    const std::string& name = script_value.name;
     if (!names.insert(name).second) {
       // The name was already in the list.
       *error = kDuplicatedContentScriptNamesError;
@@ -230,7 +229,7 @@ bool ParseContentScripts(
     }
 
     UserScript script;
-    if (!ParseContentScript(*script_value, extension, owner_base_url, &script,
+    if (!ParseContentScript(script_value, extension, owner_base_url, &script,
                             error))
       return false;
 

@@ -73,7 +73,7 @@ bool SortTabsByRecency(const sessions::SessionTab* t1,
   return t1->timestamp > t2->timestamp;
 }
 
-scoped_ptr<tabs::Tab> CreateTabModelHelper(
+tabs::Tab CreateTabModelHelper(
     Profile* profile,
     const sessions::SerializedNavigationEntry& current_navigation,
     const std::string& session_id,
@@ -81,37 +81,37 @@ scoped_ptr<tabs::Tab> CreateTabModelHelper(
     bool pinned,
     int selected_index,
     const Extension* extension) {
-  scoped_ptr<tabs::Tab> tab_struct(new tabs::Tab);
+  tabs::Tab tab_struct;
 
   const GURL& url = current_navigation.virtual_url();
   std::string title = base::UTF16ToUTF8(current_navigation.title());
 
-  tab_struct->session_id.reset(new std::string(session_id));
-  tab_struct->url.reset(new std::string(url.spec()));
-  tab_struct->fav_icon_url.reset(
+  tab_struct.session_id.reset(new std::string(session_id));
+  tab_struct.url.reset(new std::string(url.spec()));
+  tab_struct.fav_icon_url.reset(
       new std::string(current_navigation.favicon_url().spec()));
   if (!title.empty()) {
-    tab_struct->title.reset(new std::string(title));
+    tab_struct.title.reset(new std::string(title));
   } else {
     const std::string languages =
         profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-    tab_struct->title.reset(new std::string(
+    tab_struct.title.reset(new std::string(
         base::UTF16ToUTF8(url_formatter::FormatUrl(url, languages))));
   }
-  tab_struct->index = index;
-  tab_struct->pinned = pinned;
+  tab_struct.index = index;
+  tab_struct.pinned = pinned;
   // Note: |selected_index| from the sync sessions model is what we call
   // "active" in extensions terminology.  "selected" is deprecated because it's
   // not clear whether it means "active" (user can see) or "highlighted" (user
   // has highlighted, since you can select tabs without bringing them into the
   // foreground).
-  tab_struct->active = index == selected_index;
-  ExtensionTabUtil::ScrubTabForExtension(extension, nullptr, tab_struct.get());
+  tab_struct.active = index == selected_index;
+  ExtensionTabUtil::ScrubTabForExtension(extension, nullptr, &tab_struct);
   return tab_struct;
 }
 
 scoped_ptr<windows::Window> CreateWindowModelHelper(
-    scoped_ptr<std::vector<linked_ptr<tabs::Tab>>> tabs,
+    scoped_ptr<std::vector<tabs::Tab>> tabs,
     const std::string& session_id,
     const windows::WindowType& type,
     const windows::WindowState& state) {
@@ -150,7 +150,7 @@ bool is_window_entry(const sessions::TabRestoreService::Entry* entry) {
   return entry->type == sessions::TabRestoreService::WINDOW;
 }
 
-scoped_ptr<tabs::Tab> SessionsGetRecentlyClosedFunction::CreateTabModel(
+tabs::Tab SessionsGetRecentlyClosedFunction::CreateTabModel(
     const sessions::TabRestoreService::Tab& tab,
     int session_id,
     int selected_index) {
@@ -169,12 +169,10 @@ SessionsGetRecentlyClosedFunction::CreateWindowModel(
     int session_id) {
   DCHECK(!window.tabs.empty());
 
-  scoped_ptr<std::vector<linked_ptr<tabs::Tab> > > tabs(
-      new std::vector<linked_ptr<tabs::Tab> >);
+  scoped_ptr<std::vector<tabs::Tab>> tabs(new std::vector<tabs::Tab>());
   for (size_t i = 0; i < window.tabs.size(); ++i) {
-    tabs->push_back(make_linked_ptr(
-        CreateTabModel(window.tabs[i], window.tabs[i].id,
-                       window.selected_tab_index).release()));
+    tabs->push_back(CreateTabModel(window.tabs[i], window.tabs[i].id,
+                                   window.selected_tab_index));
   }
 
   return CreateWindowModelHelper(std::move(tabs), base::IntToString(session_id),
@@ -189,9 +187,9 @@ SessionsGetRecentlyClosedFunction::CreateSessionModel(
   scoped_ptr<windows::Window> window;
   switch (entry->type) {
     case sessions::TabRestoreService::TAB:
-      tab = CreateTabModel(
+      tab.reset(new tabs::Tab(CreateTabModel(
           *static_cast<const sessions::TabRestoreService::Tab*>(entry),
-          entry->id, -1);
+          entry->id, -1)));
       break;
     case sessions::TabRestoreService::WINDOW:
       window = CreateWindowModel(
@@ -240,7 +238,7 @@ bool SessionsGetRecentlyClosedFunction::RunSync() {
   return true;
 }
 
-scoped_ptr<tabs::Tab> SessionsGetDevicesFunction::CreateTabModel(
+tabs::Tab SessionsGetDevicesFunction::CreateTabModel(
     const std::string& session_tag,
     const sessions::SessionTab& tab,
     int tab_index,
@@ -278,12 +276,10 @@ scoped_ptr<windows::Window> SessionsGetDevicesFunction::CreateWindowModel(
     return scoped_ptr<windows::Window>();
   std::sort(tabs_in_window.begin(), tabs_in_window.end(), SortTabsByRecency);
 
-  scoped_ptr<std::vector<linked_ptr<tabs::Tab> > > tabs(
-      new std::vector<linked_ptr<tabs::Tab> >);
+  scoped_ptr<std::vector<tabs::Tab>> tabs(new std::vector<tabs::Tab>());
   for (size_t i = 0; i < tabs_in_window.size(); ++i) {
-    tabs->push_back(make_linked_ptr(
-        CreateTabModel(session_tag, *tabs_in_window[i], i,
-                       window.selected_tab_index).release()));
+    tabs->push_back(CreateTabModel(session_tag, *tabs_in_window[i], i,
+                                   window.selected_tab_index));
   }
 
   std::string session_id =

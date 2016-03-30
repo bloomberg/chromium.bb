@@ -317,46 +317,45 @@ UsageType ConvertUsageTypeToApi(const UsbUsageType& input) {
   }
 }
 
-void ConvertEndpointDescriptor(const UsbEndpointDescriptor& input,
-                               EndpointDescriptor* output) {
-  output->address = input.address;
-  output->type = ConvertTransferTypeToApi(input.transfer_type);
-  output->direction = ConvertDirectionToApi(input.direction);
-  output->maximum_packet_size = input.maximum_packet_size;
-  output->synchronization =
+EndpointDescriptor ConvertEndpointDescriptor(
+    const UsbEndpointDescriptor& input) {
+  EndpointDescriptor output;
+  output.address = input.address;
+  output.type = ConvertTransferTypeToApi(input.transfer_type);
+  output.direction = ConvertDirectionToApi(input.direction);
+  output.maximum_packet_size = input.maximum_packet_size;
+  output.synchronization =
       ConvertSynchronizationTypeToApi(input.synchronization_type);
-  output->usage = ConvertUsageTypeToApi(input.usage_type);
-  output->polling_interval.reset(new int(input.polling_interval));
-  output->extra_data.assign(input.extra_data.begin(), input.extra_data.end());
+  output.usage = ConvertUsageTypeToApi(input.usage_type);
+  output.polling_interval.reset(new int(input.polling_interval));
+  output.extra_data.assign(input.extra_data.begin(), input.extra_data.end());
+  return output;
 }
 
-void ConvertInterfaceDescriptor(const UsbInterfaceDescriptor& input,
-                                InterfaceDescriptor* output) {
-  output->interface_number = input.interface_number;
-  output->alternate_setting = input.alternate_setting;
-  output->interface_class = input.interface_class;
-  output->interface_subclass = input.interface_subclass;
-  output->interface_protocol = input.interface_protocol;
-  for (const UsbEndpointDescriptor& input_endpoint : input.endpoints) {
-    linked_ptr<EndpointDescriptor> endpoint(new EndpointDescriptor);
-    ConvertEndpointDescriptor(input_endpoint, endpoint.get());
-    output->endpoints.push_back(endpoint);
-  }
-  output->extra_data.assign(input.extra_data.begin(), input.extra_data.end());
+InterfaceDescriptor ConvertInterfaceDescriptor(
+    const UsbInterfaceDescriptor& input) {
+  InterfaceDescriptor output;
+  output.interface_number = input.interface_number;
+  output.alternate_setting = input.alternate_setting;
+  output.interface_class = input.interface_class;
+  output.interface_subclass = input.interface_subclass;
+  output.interface_protocol = input.interface_protocol;
+  for (const UsbEndpointDescriptor& input_endpoint : input.endpoints)
+    output.endpoints.push_back(ConvertEndpointDescriptor(input_endpoint));
+  output.extra_data.assign(input.extra_data.begin(), input.extra_data.end());
+  return output;
 }
 
-void ConvertConfigDescriptor(const UsbConfigDescriptor& input,
-                             ConfigDescriptor* output) {
-  output->configuration_value = input.configuration_value;
-  output->self_powered = input.self_powered;
-  output->remote_wakeup = input.remote_wakeup;
-  output->max_power = input.maximum_power;
-  for (const UsbInterfaceDescriptor& input_interface : input.interfaces) {
-    linked_ptr<InterfaceDescriptor> interface(new InterfaceDescriptor);
-    ConvertInterfaceDescriptor(input_interface, interface.get());
-    output->interfaces.push_back(interface);
-  }
-  output->extra_data.assign(input.extra_data.begin(), input.extra_data.end());
+ConfigDescriptor ConvertConfigDescriptor(const UsbConfigDescriptor& input) {
+  ConfigDescriptor output;
+  output.configuration_value = input.configuration_value;
+  output.self_powered = input.self_powered;
+  output.remote_wakeup = input.remote_wakeup;
+  output.max_power = input.maximum_power;
+  for (const UsbInterfaceDescriptor& input_interface : input.interfaces)
+    output.interfaces.push_back(ConvertInterfaceDescriptor(input_interface));
+  output.extra_data.assign(input.extra_data.begin(), input.extra_data.end());
+  return output;
 }
 
 void ConvertDeviceFilter(const usb::DeviceFilter& input,
@@ -557,8 +556,7 @@ ExtensionFunction::ResponseAction UsbGetDevicesFunction::Run() {
   if (parameters->options.filters) {
     filters_.resize(parameters->options.filters->size());
     for (size_t i = 0; i < parameters->options.filters->size(); ++i) {
-      ConvertDeviceFilter(*parameters->options.filters->at(i).get(),
-                          &filters_[i]);
+      ConvertDeviceFilter(parameters->options.filters->at(i), &filters_[i]);
     }
   }
   if (parameters->options.vendor_id) {
@@ -619,8 +617,7 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
   if (parameters->options.filters) {
     filters.resize(parameters->options.filters->size());
     for (size_t i = 0; i < parameters->options.filters->size(); ++i) {
-      ConvertDeviceFilter(*parameters->options.filters->at(i).get(),
-                          &filters[i]);
+      ConvertDeviceFilter(parameters->options.filters->at(i), &filters[i]);
     }
   }
 
@@ -683,8 +680,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationsFunction::Run() {
   scoped_ptr<base::ListValue> configs(new base::ListValue());
   const UsbConfigDescriptor* active_config = device->GetActiveConfiguration();
   for (const UsbConfigDescriptor& config : device->configurations()) {
-    ConfigDescriptor api_config;
-    ConvertConfigDescriptor(config, &api_config);
+    ConfigDescriptor api_config = ConvertConfigDescriptor(config);
     if (active_config &&
         config.configuration_value == active_config->configuration_value) {
       api_config.active = true;
@@ -812,8 +808,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationFunction::Run() {
   const UsbConfigDescriptor* config_descriptor =
       device_handle->GetDevice()->GetActiveConfiguration();
   if (config_descriptor) {
-    ConfigDescriptor config;
-    ConvertConfigDescriptor(*config_descriptor, &config);
+    ConfigDescriptor config = ConvertConfigDescriptor(*config_descriptor);
     config.active = true;
     return RespondNow(OneArgument(config.ToValue()));
   } else {
@@ -841,12 +836,11 @@ ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
   const UsbConfigDescriptor* config_descriptor =
       device_handle->GetDevice()->GetActiveConfiguration();
   if (config_descriptor) {
-    ConfigDescriptor config;
-    ConvertConfigDescriptor(*config_descriptor, &config);
+    ConfigDescriptor config = ConvertConfigDescriptor(*config_descriptor);
 
     scoped_ptr<base::ListValue> result(new base::ListValue);
     for (size_t i = 0; i < config.interfaces.size(); ++i) {
-      result->Append(config.interfaces[i]->ToValue());
+      result->Append(config.interfaces[i].ToValue());
     }
 
     return RespondNow(OneArgument(std::move(result)));
