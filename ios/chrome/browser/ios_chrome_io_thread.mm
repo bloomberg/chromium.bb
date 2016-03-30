@@ -447,6 +447,8 @@ void IOSChromeIOThread::Init() {
   globals_->system_channel_id_service.reset(
       new net::ChannelIDService(new net::DefaultChannelIDStore(nullptr),
                                 base::WorkerPool::GetTaskRunner(true)));
+  globals_->system_cookie_store->SetChannelIDServiceID(
+      globals_->system_channel_id_service->GetUniqueID());
   globals_->http_user_agent_settings.reset(new net::StaticHttpUserAgentSettings(
       std::string(), web::GetWebClient()->GetUserAgent(false)));
   if (command_line.HasSwitch(switches::kIOSTestingFixedHttpPort)) {

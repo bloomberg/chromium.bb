@@ -203,6 +203,7 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
           cookie_util::CookieStoreConfig::RESTORED_SESSION_COOKIES,
           cookie_util::CookieStoreConfig::COOKIE_STORE_IOS, nullptr));
   main_context->set_cookie_store(main_cookie_store_.get());
+  main_cookie_store_->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
   http_network_session_ = CreateHttpNetworkSession(*profile_params);
   main_http_factory_ = CreateMainHttpFactory(

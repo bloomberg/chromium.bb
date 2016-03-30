@@ -140,7 +140,8 @@ void LogChannelIDAndCookieStores(const GURL& url,
       ephemerality = CID_EPHEMERAL_COOKIE_PERSISTENT;
     }
   } else if (cookie_store->IsEphemeral()) {
-    NOTREACHED();
+    // TODO(crbug.com/599049): Add NOTREACHED once this case doesn't happen on
+    // iOS anymore.
     ephemerality = CID_PERSISTENT_COOKIE_EPHEMERAL;
   } else if (cookie_store->GetChannelIDServiceID() == -1) {
     ephemerality = PERSISTENT_UNKNOWN;

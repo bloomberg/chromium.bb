@@ -375,6 +375,7 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
 
   set_channel_id_service(channel_id_service);
   main_context->set_channel_id_service(channel_id_service);
+  main_cookie_store_->SetChannelIDServiceID(channel_id_service->GetUniqueID());
 
   scoped_ptr<net::HttpCache::BackendFactory> main_backend(
       new net::HttpCache::DefaultBackend(
