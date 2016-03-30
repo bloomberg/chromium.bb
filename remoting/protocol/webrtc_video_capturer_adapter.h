@@ -83,7 +83,7 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
 
   // Video frame is kept between captures to avoid YUV conversion for static
   // parts of the screen.
-  scoped_ptr<cricket::VideoFrame> yuv_frame_;
+  rtc::scoped_refptr<webrtc::I420Buffer> yuv_frame_;
 
   bool capture_pending_ = false;
   bool paused_ = false;
@@ -97,4 +97,3 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_WEBRTC_VIDEO_CAPTURER_ADAPTER_H_
-

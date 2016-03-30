@@ -164,29 +164,26 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
   // WebRTC needs to have some mechanism to notify when the bandwidth is
   // exceeded, so the capturer can adapt frame rate.
 
-  size_t width = frame->size().width();
-  size_t height = frame->size().height();
-  if (!yuv_frame_ || yuv_frame_->GetWidth() != width ||
-      yuv_frame_->GetHeight() != height) {
+  int width = frame->size().width();
+  int height = frame->size().height();
+  if (!yuv_frame_ || yuv_frame_->width() != width ||
+      yuv_frame_->height() != height) {
     if (!size_callback_.is_null())
       size_callback_.Run(frame->size());
 
-    scoped_ptr<cricket::WebRtcVideoFrame> webrtc_frame(
-        new cricket::WebRtcVideoFrame());
-    webrtc_frame->InitToEmptyBuffer(width, height, 0);
-    yuv_frame_ = std::move(webrtc_frame);
-
+    yuv_frame_ = new rtc::RefCountedObject<webrtc::I420Buffer>(width, height);
     // Set updated_region so the whole frame is converted to YUV below.
     frame->mutable_updated_region()->SetRect(
         webrtc::DesktopRect::MakeWH(width, height));
   }
 
-  // TODO(sergeyu): This will copy the buffer if it's being used. Optimize it by
-  // keeping a queue of frames.
-  CHECK(yuv_frame_->MakeExclusive());
-
-  yuv_frame_->SetTimeStamp(base::TimeTicks::Now().ToInternalValue() *
-                           base::Time::kNanosecondsPerMicrosecond);
+  if (!yuv_frame_->HasOneRef()) {
+    // Frame is still used, typically by the encoder. We have to make
+    // a copy before modifying it.
+    // TODO(sergeyu): This will copy the buffer if it's being used.
+    // Optimize it by keeping a queue of frames.
+    yuv_frame_ = webrtc::I420Buffer::Copy(yuv_frame_);
+  }
 
   for (webrtc::DesktopRegion::Iterator i(frame->updated_region()); !i.IsAtEnd();
        i.Advance()) {
@@ -203,19 +200,28 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
       --top;
       ++height;
     }
+
+    int y_stride = yuv_frame_->stride(webrtc::kYPlane);
+    int u_stride = yuv_frame_->stride(webrtc::kUPlane);
+    int v_stride = yuv_frame_->stride(webrtc::kVPlane);
     libyuv::ARGBToI420(
         frame->data() + frame->stride() * top +
             left * webrtc::DesktopFrame::kBytesPerPixel,
         frame->stride(),
-        yuv_frame_->GetYPlane() + yuv_frame_->GetYPitch() * top + left,
-        yuv_frame_->GetYPitch(),
-        yuv_frame_->GetUPlane() + yuv_frame_->GetUPitch() * top / 2 + left / 2,
-        yuv_frame_->GetUPitch(),
-        yuv_frame_->GetVPlane() + yuv_frame_->GetVPitch() * top / 2 + left / 2,
-        yuv_frame_->GetVPitch(), width, height);
+        yuv_frame_->MutableData(webrtc::kYPlane) + y_stride * top + left,
+        y_stride, yuv_frame_->MutableData(webrtc::kUPlane) +
+                      u_stride * top / 2 + left / 2,
+        u_stride, yuv_frame_->MutableData(webrtc::kVPlane) +
+                      v_stride * top / 2 + left / 2,
+        v_stride, width, height);
   }
 
-  OnFrame(this, yuv_frame_.get());
+  cricket::WebRtcVideoFrame video_frame(
+      yuv_frame_, (base::TimeTicks::Now() - base::TimeTicks()) /
+                      base::TimeDelta::FromMicroseconds(1),
+      webrtc::kVideoRotation_0);
+
+  OnFrame(this, &video_frame);
 }
 
 void WebrtcVideoCapturerAdapter::CaptureNextFrame() {
