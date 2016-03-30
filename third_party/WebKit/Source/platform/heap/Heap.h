@@ -103,13 +103,37 @@ public:
     }
 };
 
+class PLATFORM_EXPORT ProcessHeap {
+    STATIC_ONLY(ProcessHeap);
+public:
+    static void init();
+
+    static CrossThreadPersistentRegion& crossThreadPersistentRegion();
+
+    static bool isLowEndDevice() { return s_isLowEndDevice; }
+    static void increaseTotalAllocatedObjectSize(size_t delta) { atomicAdd(&s_totalAllocatedObjectSize, static_cast<long>(delta)); }
+    static void decreaseTotalAllocatedObjectSize(size_t delta) { atomicSubtract(&s_totalAllocatedObjectSize, static_cast<long>(delta)); }
+    static size_t totalAllocatedObjectSize() { return acquireLoad(&s_totalAllocatedObjectSize); }
+    static void increaseTotalMarkedObjectSize(size_t delta) { atomicAdd(&s_totalMarkedObjectSize, static_cast<long>(delta)); }
+    static size_t totalMarkedObjectSize() { return acquireLoad(&s_totalMarkedObjectSize); }
+    static void increaseTotalAllocatedSpace(size_t delta) { atomicAdd(&s_totalAllocatedSpace, static_cast<long>(delta)); }
+    static void decreaseTotalAllocatedSpace(size_t delta) { atomicSubtract(&s_totalAllocatedSpace, static_cast<long>(delta)); }
+    static size_t totalAllocatedSpace() { return acquireLoad(&s_totalAllocatedSpace); }
+
+private:
+    static bool s_isLowEndDevice;
+    static size_t s_totalAllocatedSpace;
+    static size_t s_totalAllocatedObjectSize;
+    static size_t s_totalMarkedObjectSize;
+
+    friend class ThreadState;
+};
+
 class PLATFORM_EXPORT Heap {
     STATIC_ONLY(Heap);
 public:
     static void init();
     static void shutdown();
-
-    static CrossThreadPersistentRegion& crossThreadPersistentRegion();
 
 #if ENABLE(ASSERT)
     static BasePage* findPageFromAddress(Address);
@@ -273,13 +297,33 @@ public:
 
     static void setMarkedObjectSizeAtLastCompleteSweep(size_t size) { releaseStore(&s_markedObjectSizeAtLastCompleteSweep, size); }
     static size_t markedObjectSizeAtLastCompleteSweep() { return acquireLoad(&s_markedObjectSizeAtLastCompleteSweep); }
-    static void increaseAllocatedObjectSize(size_t delta) { atomicAdd(&s_allocatedObjectSize, static_cast<long>(delta)); }
-    static void decreaseAllocatedObjectSize(size_t delta) { atomicSubtract(&s_allocatedObjectSize, static_cast<long>(delta)); }
+    static void increaseAllocatedObjectSize(size_t delta)
+    {
+        atomicAdd(&s_allocatedObjectSize, static_cast<long>(delta));
+        ProcessHeap::increaseTotalAllocatedObjectSize(delta);
+    }
+    static void decreaseAllocatedObjectSize(size_t delta)
+    {
+        atomicSubtract(&s_allocatedObjectSize, static_cast<long>(delta));
+        ProcessHeap::decreaseTotalAllocatedObjectSize(delta);
+    }
     static size_t allocatedObjectSize() { return acquireLoad(&s_allocatedObjectSize); }
-    static void increaseMarkedObjectSize(size_t delta) { atomicAdd(&s_markedObjectSize, static_cast<long>(delta)); }
+    static void increaseMarkedObjectSize(size_t delta)
+    {
+        atomicAdd(&s_markedObjectSize, static_cast<long>(delta));
+        ProcessHeap::increaseTotalMarkedObjectSize(delta);
+    }
     static size_t markedObjectSize() { return acquireLoad(&s_markedObjectSize); }
-    static void increaseAllocatedSpace(size_t delta) { atomicAdd(&s_allocatedSpace, static_cast<long>(delta)); }
-    static void decreaseAllocatedSpace(size_t delta) { atomicSubtract(&s_allocatedSpace, static_cast<long>(delta)); }
+    static void increaseAllocatedSpace(size_t delta)
+    {
+        atomicAdd(&s_allocatedSpace, static_cast<long>(delta));
+        ProcessHeap::increaseTotalAllocatedSpace(delta);
+    }
+    static void decreaseAllocatedSpace(size_t delta)
+    {
+        atomicSubtract(&s_allocatedSpace, static_cast<long>(delta));
+        ProcessHeap::decreaseTotalAllocatedSpace(delta);
+    }
     static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
     static size_t objectSizeAtLastGC() { return acquireLoad(&s_objectSizeAtLastGC); }
     static void increaseWrapperCount(size_t delta) { atomicAdd(&s_wrapperCount, static_cast<long>(delta)); }
@@ -293,12 +337,7 @@ public:
     static double estimatedMarkingTime();
     static void reportMemoryUsageHistogram();
     static void reportMemoryUsageForTracing();
-    static bool isLowEndDevice() { return s_isLowEndDevice; }
     static BlinkGC::GCReason lastGCReason() { return s_lastGCReason; }
-
-#if ENABLE(ASSERT)
-    static uint16_t gcGeneration() { return s_gcGeneration; }
-#endif
 
 private:
     // Reset counters that track live and allocated-since-last-GC sizes.
@@ -326,11 +365,7 @@ private:
     static size_t s_collectedWrapperCount;
     static size_t s_partitionAllocSizeAtLastGC;
     static double s_estimatedMarkingTimePerByte;
-    static bool s_isLowEndDevice;
     static BlinkGC::GCReason s_lastGCReason;
-#if ENABLE(ASSERT)
-    static uint16_t s_gcGeneration;
-#endif
 
     friend class ThreadState;
 };

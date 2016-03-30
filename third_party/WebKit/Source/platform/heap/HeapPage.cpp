@@ -1140,7 +1140,7 @@ void NormalPage::sweep()
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
             // Discarding pages increases page faults and may regress performance.
             // So we enable this only on low-RAM devices.
-            if (Heap::isLowEndDevice())
+            if (ProcessHeap::isLowEndDevice())
                 discardPages(startOfGap + sizeof(FreeListEntry), headerAddress);
 #endif
         }
@@ -1152,7 +1152,7 @@ void NormalPage::sweep()
     if (startOfGap != payloadEnd()) {
         pageArena->addToFreeList(startOfGap, payloadEnd() - startOfGap);
 #if !ENABLE(ASSERT) && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-        if (Heap::isLowEndDevice())
+        if (ProcessHeap::isLowEndDevice())
             discardPages(startOfGap + sizeof(FreeListEntry), payloadEnd());
 #endif
     }

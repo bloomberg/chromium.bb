@@ -104,9 +104,18 @@ void Heap::flushHeapDoesNotContainCache()
     s_heapDoesNotContainCache->flush();
 }
 
+void ProcessHeap::init()
+{
+    s_totalAllocatedSpace = 0;
+    s_totalAllocatedObjectSize = 0;
+    s_totalMarkedObjectSize = 0;
+    s_isLowEndDevice = base::SysInfo::IsLowEndDevice();
+}
+
 void Heap::init()
 {
     ThreadState::init();
+    ProcessHeap::init();
     s_markingStack = new CallbackStack();
     s_postMarkingCallbackStack = new CallbackStack();
     s_globalWeakCallbackStack = new CallbackStack();
@@ -118,18 +127,13 @@ void Heap::init()
     s_allocatedSpace = 0;
     s_allocatedObjectSize = 0;
     s_objectSizeAtLastGC = 0;
-    s_markedObjectSize = 0;
     s_markedObjectSizeAtLastCompleteSweep = 0;
     s_wrapperCount = 0;
     s_wrapperCountAtLastGC = 0;
     s_collectedWrapperCount = 0;
     s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     s_estimatedMarkingTimePerByte = 0.0;
-    s_isLowEndDevice = base::SysInfo::IsLowEndDevice();
     s_lastGCReason = BlinkGC::NumberOfGCReason;
-#if ENABLE(ASSERT)
-    s_gcGeneration = 1;
-#endif
 
     GCInfoTable::init();
 
@@ -166,11 +170,16 @@ void Heap::shutdown()
     ASSERT(Heap::allocatedSpace() == 0);
 }
 
-CrossThreadPersistentRegion& Heap::crossThreadPersistentRegion()
+CrossThreadPersistentRegion& ProcessHeap::crossThreadPersistentRegion()
 {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(CrossThreadPersistentRegion, persistentRegion, new CrossThreadPersistentRegion());
     return persistentRegion;
 }
+
+bool ProcessHeap::s_isLowEndDevice = false;
+size_t ProcessHeap::s_totalAllocatedSpace = 0;
+size_t ProcessHeap::s_totalAllocatedObjectSize = 0;
+size_t ProcessHeap::s_totalMarkedObjectSize = 0;
 
 #if ENABLE(ASSERT)
 BasePage* Heap::findPageFromAddress(Address address)
@@ -418,9 +427,9 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, markingTimeHistogram, new CustomCountHistogram("BlinkGC.CollectGarbage", 0, 10 * 1000, 50));
     markingTimeHistogram.count(markingTimeInMilliseconds);
     DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, totalObjectSpaceHistogram, new CustomCountHistogram("BlinkGC.TotalObjectSpace", 0, 4 * 1024 * 1024, 50));
-    totalObjectSpaceHistogram.count(Heap::allocatedObjectSize() / 1024);
+    totalObjectSpaceHistogram.count(ProcessHeap::totalAllocatedObjectSize() / 1024);
     DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, totalAllocatedSpaceHistogram, new CustomCountHistogram("BlinkGC.TotalAllocatedSpace", 0, 4 * 1024 * 1024, 50));
-    totalAllocatedSpaceHistogram.count(Heap::allocatedSpace() / 1024);
+    totalAllocatedSpaceHistogram.count(ProcessHeap::totalAllocatedSpace() / 1024);
     DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gcReasonHistogram, new EnumerationHistogram("BlinkGC.GCReason", BlinkGC::NumberOfGCReason));
     gcReasonHistogram.count(reason);
 
@@ -431,13 +440,6 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
 
     postGC(gcType);
     Heap::decommitCallbackStacks();
-
-#if ENABLE(ASSERT)
-    // 0 is used to figure non-assigned area, so avoid to use 0 in s_gcGeneration.
-    if (++s_gcGeneration == 0) {
-        s_gcGeneration = 1;
-    }
-#endif
 }
 
 void Heap::collectGarbageForTerminatingThread(ThreadState* state)
@@ -670,10 +672,7 @@ size_t Heap::s_wrapperCountAtLastGC = 0;
 size_t Heap::s_collectedWrapperCount = 0;
 size_t Heap::s_partitionAllocSizeAtLastGC = 0;
 double Heap::s_estimatedMarkingTimePerByte = 0.0;
-bool Heap::s_isLowEndDevice = false;
+
 BlinkGC::GCReason Heap::s_lastGCReason = BlinkGC::NumberOfGCReason;
-#if ENABLE(ASSERT)
-uint16_t Heap::s_gcGeneration = 0;
-#endif
 
 } // namespace blink
