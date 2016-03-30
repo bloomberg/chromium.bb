@@ -13,7 +13,7 @@ is_broken = env.Bit('running_on_valgrind') or env.UsingEmulator()
 
 # Increase the test timeout for Subzero.
 # https://code.google.com/p/nativeclient/issues/detail?id=4136
-timeout_override = 200 if env.Bit('use_sz') else 0
+timeout_override = 1000 if env.Bit('use_sz') else 0
 
 libs = []
 if env.Bit('nacl_glibc'):
