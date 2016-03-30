@@ -536,7 +536,7 @@ bool DragController::canProcessDrag(DragData* dragData)
         return false;
 
     IntPoint point = m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(dragData->clientPosition());
-    if (!m_page->deprecatedLocalMainFrame()->contentLayoutObject())
+    if (m_page->deprecatedLocalMainFrame()->contentLayoutItem().isNull())
         return false;
 
     HitTestResult result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point);
@@ -716,7 +716,7 @@ bool DragController::populateDragDataTransfer(LocalFrame* src, const DragState& 
 {
     ASSERT(dragTypeIsValid(state.m_dragType));
     ASSERT(src);
-    if (!src->view() || !src->contentLayoutObject())
+    if (!src->view() || src->contentLayoutItem().isNull())
         return false;
 
     HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin);
@@ -841,7 +841,7 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
 {
     ASSERT(dragTypeIsValid(state.m_dragType));
     ASSERT(src);
-    if (!src->view() || !src->contentLayoutObject())
+    if (!src->view() || src->contentLayoutItem().isNull())
         return false;
 
     HitTestResult hitTestResult = src->eventHandler().hitTestResultAtPoint(dragOrigin);
