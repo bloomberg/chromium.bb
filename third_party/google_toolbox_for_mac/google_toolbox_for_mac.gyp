@@ -70,8 +70,6 @@
         'src/AppKit/GTMUILocalizer.m',
         'src/AppKit/GTMUILocalizerAndLayoutTweaker.h',
         'src/AppKit/GTMUILocalizerAndLayoutTweaker.m',
-        'src/AppKit/GTMWindowSheetController.h',
-        'src/AppKit/GTMWindowSheetController.m',
         'src/DebugUtils/GTMDebugSelectorValidation.h',
         'src/DebugUtils/GTMDebugThreadValidation.h',
         'src/DebugUtils/GTMDebugThreadValidation.m',
