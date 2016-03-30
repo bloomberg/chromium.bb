@@ -13,6 +13,10 @@ test(() => {
     assert_true(window.internals.frobulateNoEnabledCheck,
         'Attribute should return boolean value');
   }, 'Attribute should exist and return value, with trial disabled');
+
+test(() => {
+    assert_not_exists(window.internals, 'frobulateBindings');
+  }, 'Attribute should not exist, with trial disabled');
 };
 
 
@@ -21,5 +25,10 @@ expect_success = () => {
 test(() => {
     assert_idl_attribute(window.internals, 'frobulate');
     assert_true(window.internals.frobulate, 'Attribute should return boolean value');
+  }, 'Attribute should exist and return value');
+
+test(() => {
+    assert_idl_attribute(window.internals, 'frobulateBindings');
+    assert_true(window.internals.frobulateBindings, 'Attribute should return boolean value');
   }, 'Attribute should exist and return value');
 };

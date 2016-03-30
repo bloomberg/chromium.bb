@@ -5,5 +5,6 @@
 partial interface Internals {
     [CallWith=ScriptState, RaisesException] readonly attribute boolean frobulate;
     readonly attribute boolean frobulateNoEnabledCheck;
+    [RuntimeEnabled=ExperimentalFrameworkSampleAPI, OriginTrialEnabled=ExperimentalFrameworkSampleAPI, ImplementedAs=frobulateNoEnabledCheck] readonly attribute boolean frobulateBindings;
 };
 
