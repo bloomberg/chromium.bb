@@ -23,7 +23,8 @@ bool IsAllocatorInitialized() {
 #if defined(OS_WIN) && defined(ALLOCATOR_SHIM)
   // Set by allocator_shim_win.cc when the shimmed _heap_init() is called.
   return g_is_win_shim_layer_initialized;
-#elif defined(OS_LINUX) && defined(USE_TCMALLOC)
+#elif defined(OS_LINUX) && defined(USE_TCMALLOC) && \
+    !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 // From third_party/tcmalloc/chromium/src/gperftools/tcmalloc.h.
 // TODO(primiano): replace with an include once base can depend on allocator.
 #define TC_MALLOPT_IS_OVERRIDDEN_BY_TCMALLOC 0xbeef42
