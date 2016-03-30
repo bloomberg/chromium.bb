@@ -507,8 +507,8 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     if ((layoutItem.isNull() && requireLayoutObject) || useFallback)
         return false;
 
-    WTF_LOG(Plugins, "%p Plugin URL: %s", this, m_url.utf8().data());
-    WTF_LOG(Plugins, "   Loaded URL: %s", url.getString().utf8().data());
+    VLOG(1) << this << " Plugin URL: " << m_url;
+    VLOG(1) << "Loaded URL: " << url.getString();
     m_loadedUrl = url;
 
     if (m_persistedPluginWidget) {
