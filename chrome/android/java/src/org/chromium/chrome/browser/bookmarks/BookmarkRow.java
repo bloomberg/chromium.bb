@@ -122,6 +122,9 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
 
                 @Override
                 public boolean isEnabled(int position) {
+                    // In some erroneous states, the popup window might hang around even if the
+                    // activity is killed (crbug.com/594213), so null check here.
+                    if (mDelegate == null || mDelegate.getModel() == null) return false;
                     if (position == MOVE_POSITION) {
                         BookmarkItem bookmark = mDelegate.getModel().getBookmarkById(mBookmarkId);
                         if (bookmark == null) return false;
