@@ -180,6 +180,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling))
     WebRuntimeFeatures::enableRenderingPipelineThrottling(true);
 
+  // Note that it might already by true for OS_ANDROID, above.  This is for
+  // non-android versions.
+  if (base::FeatureList::IsEnabled(features::kNewMediaPlaybackUi))
+    WebRuntimeFeatures::enableNewMediaPlaybackUi(true);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {

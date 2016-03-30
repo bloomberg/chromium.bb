@@ -20,6 +20,7 @@ CONTENT_EXPORT extern const base::Feature kBrotliEncoding;
 CONTENT_EXPORT extern const base::Feature kCredentialManagementAPI;
 CONTENT_EXPORT extern const base::Feature kDownloadResumption;
 CONTENT_EXPORT extern const base::Feature kExperimentalFramework;
+CONTENT_EXPORT extern const base::Feature kNewMediaPlaybackUi;
 CONTENT_EXPORT extern const base::Feature kNonValidatingReloadOnRefreshContent;
 CONTENT_EXPORT extern const base::Feature kOptimizeIPCForSmallResource;
 CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;

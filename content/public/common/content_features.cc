@@ -28,6 +28,11 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 const base::Feature kExperimentalFramework{"ExperimentalFramework",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable the material design playback UI for media elements.  This is always
+// on for OS_ANDROID, but may be enabled by experiment for other platforms.
+const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Non-validating reload on reload-to-refresh-content (e.g. pull-to-refresh).
 // See https://crbug.com/558829
 const base::Feature kNonValidatingReloadOnRefreshContent{
