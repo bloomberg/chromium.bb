@@ -1835,29 +1835,6 @@
    fun:_ZN18ValueStoreFrontend*
 }
 {
-   bug_176616_a
-   Memcheck:Uninitialized
-   fun:_ZN13WebTestRunner16WebTestProxyBase19didCreateDataSourceEPN5blink8WebFrameEPNS1_13WebDataSourceE
-   fun:_ZN13WebTestRunner12WebTestProxyI11WebViewHostP9TestShellE19didCreateDataSourceEPN5blink8WebFrameEPNS5_13WebDataSourceE
-   fun:_ZN5blink21FrameLoaderClientImpl20createDocumentLoaderERKN7blink15ResourceRequestERKNS1_14SubstituteDataE
-   fun:_ZN5blink11FrameLoader4initEv
-   fun:_ZN5blink5Frame4initEv
-   fun:_ZN5blink12WebFrameImpl21initializeAsMainFrameEPN7blink4PageE
-   fun:_ZN5blink11WebViewImpl19initializeMainFrameEPNS_14WebFrameClientE
-   fun:_ZN9TestShell15createNewWindowERKN5blink6WebURLEP16DRTDevToolsAgentPN13WebTestRunner17WebTestInterfacesE
-   fun:_ZN9TestShell16createMainWindowEv
-   fun:_ZN9TestShell10initializeEP25MockWebKitPlatformSupport
-}
-{
-   bug_176616_b
-   Memcheck:Uninitialized
-   fun:_ZN13WebTestRunner10TestRunner5resetEv
-   fun:_ZN13WebTestRunner14TestInterfaces8resetAllEv
-   fun:_ZN13WebTestRunner17WebTestInterfaces8resetAllEv
-   fun:_ZN9TestShell19resetTestControllerEv
-   fun:_ZL7runTestR9TestShellR10TestParamsRKSsb
-}
-{
    bug_176619_a
    Memcheck:Uninitialized
    fun:_ZN3WTF6StringC1EPKt
@@ -1877,16 +1854,6 @@
    fun:_ZN5blink12TextTrackCue20createWebVTTNodeTreeEv
    fun:_ZN5blink12TextTrackCue22createCueRenderingTreeEv
    fun:_ZN5blink12TextTrackCue17updateDisplayTreeEf
-}
-{
-   bug_176621
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN13WebTestRunner10TestPlugin6createEPN5blink8WebFrameERKNS1_15WebPluginParamsEPNS_15WebTestDelegateE
-   fun:_ZN13WebTestRunner16WebTestProxyBase12createPluginEPN5blink8WebFrameERKNS1_15WebPluginParamsE
-   fun:_ZN13WebTestRunner12WebTestProxyI11WebViewHostP9TestShellE12createPluginEPN5blink8WebFrameERKNS5_15WebPluginParamsE
-   fun:_ZN5blink21FrameLoaderClientImpl12createPluginERKN7blink7IntSizeEPNS1_17HTMLPlugInElementERKNS1_4KURLERKN3WTF6VectorINSA_6String*
-   fun:_ZN5blink14SubframeLoader10loadPluginEPNS_22HTMLPlugInImageElementERKNS_4KURLERKN3WTF6StringERKNS6_6VectorIS7*
 }
 {
    bug_176891a
@@ -2221,17 +2188,6 @@
    ...
    fun:_ZN5blink34CanvasRenderingContext2DV8InternalL18getImageDataMethodERKN2v820FunctionCallbackInfoINS1_5ValueEEE
    fun:_ZN5blink34CanvasRenderingContext2DV8InternalL26getImageDataMethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-}
-{
-   bug_309477
-   Memcheck:Uninitialized
-   fun:_ZN13WebTestRunner11EventSender5resetEv
-   fun:_ZN13WebTestRunner14TestInterfaces26resetTestHelperControllersEv
-   fun:_ZN13WebTestRunner14TestInterfaces8resetAllEv
-   ...
-   fun:_ZN7content26ShellRenderProcessObserver17WebKitInitializedEv
-   fun:_ZN7content16RenderThreadImpl23EnsureWebKitInitializedEv
-   fun:_ZN7content16RenderThreadImpl15OnCreateNewViewERK18ViewMsg_New_Params
 }
 {
    bug_317166
