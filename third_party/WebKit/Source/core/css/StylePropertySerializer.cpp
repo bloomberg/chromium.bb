@@ -34,9 +34,7 @@ namespace blink {
 
 static bool isInitialOrInherit(const String& value)
 {
-    DEFINE_STATIC_LOCAL(String, initial, ("initial"));
-    DEFINE_STATIC_LOCAL(String, inherit, ("inherit"));
-    return value.length() == 7 && (value == initial || value == inherit);
+    return value.length() == 7 && (value == "initial" || value == "inherit");
 }
 
 StylePropertySerializer::StylePropertySetForSerializer::StylePropertySetForSerializer(const StylePropertySet& properties)
