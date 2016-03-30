@@ -96,48 +96,20 @@ Conditions should be written to minimize the number of conditional blocks.
 
 ## Formatting and indenting
 
-  * Indents are two spaces, both for indented blocks and wrapped lines.
+GN contains a built-in code formatter which defines the formatting style.
+Some additional notes:
+
   * Variables are `lower_case_with_underscores`
-  * Complicated conditions and if statements should generally follow the
-    Google C++ style guide for formatting.
   * Comments should be complete sentences with periods at the end.
-  * End-of-line-comments should have two spaces separating them and the
-    code.
   * Compiler flags and such should always be commented with what they do
     and why the flag is needed.
-  * Try to keep lines under 80 columns. If a file name or similar string
-    puts you beyond 80 with reasonable indenting, it's OK, but most
-    things can be wrapped nicely under that for the code review tool.
-
-### List formatting
-
-```
-  deps = [
-    "afile.cc",
-    "bar.cc",  # Note trailing comma on last element.
-  ]
-```
-
-Alphabetize the list elements unless there is a more obvious ordering.
-In some cases, it makes more sense to put more than one list member on a
-line if they clearly go together (for example, two short compiler flags
-that must go next to each other).
-
-Prefer use the multi-line style for lists of more than one elements.
-Lists with single-elements can be written on one line if desired:
-
-```
-  all_dependent_configs = [ ":foo_config" ]  # No trailing comma.
-```
 
 ### Sources
 
-  * Sources should always be alphabetized within a given list.
-  * List sources only once. It is OK to conditionally include sources
-    rather than listing them all at the top and then conditionally
-    excluding them when they don't apply. Conditional inclusion is often
-    clearer since a file is only listed once and it's easier to reason
-    about when reading.
+Prefer to list sources only once. It is OK to conditionally include sources
+rather than listing them all at the top and then conditionally excluding them
+when they don't apply. Conditional inclusion is often clearer since a file is
+only listed once and it's easier to reason about when reading.
 
 ```
   sources = [
@@ -190,6 +162,24 @@ target into the targets depending on it, which saves the "lib" step.
 Build arguments should be scoped to a unit of behavior, e.g. enabling a feature.
 Typically an argument would be declared in an imported file to share it with
 the subset of the build that could make use of it.
+
+Chrome has many legacy flags in `//build/config/features.gni`,
+`//build/config/ui.gni`. These locations are deprecated. Feature flags should
+go along with the code for the feature. Many browser-level features can go
+somewhere in `//chrome/` without lower-level code knowing about it. Some
+UI environment flags can go into `//ui/`, and many flags can also go with
+the corresponding code in `//components/`. You can write a `.gni` file in
+components and have build files in chrome or content import it if necessary.
+
+The way to think about things in the `//build` directory is that this is
+DEPSed into various projects like V8 and WebRTC. Build flags specific to
+code outside of the build directory shouldn't be in the build directory, and
+V8 shouldn't get feature defines for Chrome features.
+
+New feature defines should use the buildflag system. See
+`//build/buildflag_header.gni` which allows preprocessor defines to be
+modularized without many of the disadvantages that made us use global defines
+in the past.
 
 ### Type
 

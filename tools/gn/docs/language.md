@@ -15,6 +15,11 @@ every function and built-in variable. This page is more high-level.
 gn help
 ```
 
+You can also see the
+[slides](https://docs.google.com/presentation/d/15Zwb53JcncHfEwHpnG_PoIbbzQ3GQi_cpujYwbpcbZo/edit?usp=sharing)
+from a March, 2016 introduction to GN. The speaker notes contain the full
+content.
+
 ### Design philosophy
 
   * Writing build files should not be a creative endeavour. Ideally two
@@ -41,34 +46,37 @@ GN uses an extremely simple, dynamically typed language. The types are:
 
   * Boolean (`true`, `false`).
   * 64-bit signed integers.
-  * Strings
-  * Lists (of any other types)
-  * Scopes (sort of like a dictionary, only for built-in stuff)
+  * Strings.
+  * Lists (of any other types).
+  * Scopes (sort of like a dictionary, only for built-in stuff).
 
 There are some built-in variables whose values depend on the current
 environment. See `gn help` for more.
 
 There are purposefully many omissions in the language. There are no
-loops or function calls, for example. As per the above design
-philosophy, if you need this kind of thing you're probably doing it
-wrong.
+user-defined function calls, for example (templates are the closest thing). As
+per the above design philosophy, if you need this kind of thing you're probably
+doing it wrong.
 
 The variable `sources` has a special rule: when assigning to it, a list
 of exclusion patterns is applied to it. This is designed to
 automatically filter out some types of files. See `gn help
 set_sources_assignment_filter` and `gn help label_pattern` for more.
 
+The full grammar for language nerds is available in `gn help grammar`.
+
 ### Strings
 
 Strings are enclosed in double-quotes and use backslash as the escape
-character. The only escape sequences supported are
+character. The only escape sequences supported are:
 
   * `\"` (for literal quote)
   * `\$` (for literal dollars sign)
-  * `\\` (for literal backslash) Any other use of a backslash is treated
-    as a literal backslash. So, for example, `\b` used in patterns does
-    not need to be escaped, nor do most windows paths like
-    `"C:\foo\bar.h"`.
+  * `\\` (for literal backslash)
+
+Any other use of a backslash is treated as a literal backslash. So, for
+example, `\b` used in patterns does not need to be escaped, nor do most Windows
+paths like `"C:\foo\bar.h"`.
 
 Simple variable substitution is supported via `$`, where the word
 following the dollars sign is replaced with the value of the variable.
@@ -81,6 +89,9 @@ a = "mypath"
 b = "$a/foo.cc"  # b -> "mypath/foo.cc"
 c = "foo${a}bar.cc"  # c -> "foomypathbar.cc"
 ```
+
+You can encode 8-bit haracters using "$0xFF" syntax, so a string with newlines
+(hex 0A) would `"look$0x0Alike$0x0Athis"
 
 ### Lists
 
@@ -118,6 +129,11 @@ there is no way to test for inclusion, the main use-case is to set up a
 master list of files or flags, and to remove ones that don't apply to
 the current build based on various conditions.
 
+Stylistically, prefer to only add to lists and have each source file or
+dependency appear once. This is the opposite of the advice Chrome-team used to
+give for GYP (GYP would prefer to list all files, and then remove the ones you
+didn't want in conditionals).
+
 Lists support zero-based subscripting to extract values:
 
 ```
@@ -126,7 +142,6 @@ b = a[1]  # -> "second"
 ```
 
 The \[\] operator is read-only and can not be used to mutate the
-list. This is of limited value absent the ability to iterate over a
 list. The primary use-case of this is when an external script returns
 several known values and you want to extract them.
 
@@ -166,14 +181,29 @@ Conditionals look like C:
 You can use them in most places, even around entire targets if the
 target should only be declared in certain circumstances.
 
-### Functions
+### Looping
 
-Simple functions look like most other languages:
+You can iterate over a list with `foreach`. This is discouraged. Most things
+the build should do can normally be expressed without doing this, and if you
+find it necessary it may be an indication you're doing too much work in the
+metabuild.
+
+```
+foreach(i, mylist) {
+  print(i)  # Note: i is a copy of each element, not a reference to it.
+}
+```
+
+### Function calls
+
+Simple function calls look like most other languages:
 
 ```
 print("hello, world")
 assert(is_win, "This should only be executed on Windows")
 ```
+
+Such functions are built-in and the user can not define new ones.
 
 Some functions take a block of code enclosed by `{ }` following them:
 
@@ -183,23 +213,26 @@ static_library("mylibrary") {
 }
 ```
 
-This means that the block becomes an argument to the function for the
-function to execute. Most of the block-style functions execute the block
-and treat the resulting scope as a dictionary of variables to read.
+Most of these define targets. The user can define new functions like this
+with the template mechanism discussed below.
+
+Precisely, this expression means that the block becomes an argument to the
+function for the function to execute. Most of the block-style functions execute
+the block and treat the resulting scope as a dictionary of variables to read.
 
 ### Scoping and execution
 
-Files and `{ }` blocks introduce new scopes. Scoped are nested. When you
-read a variable, the containing scopes will be searched in reverse order
-until a matching name is found. Variable writes always go to the
+Files and function calls followed by `{ }` blocks introduce new scopes. Scopes
+are nested. When you read a variable, the containing scopes will be searched in
+reverse order until a matching name is found. Variable writes always go to the
 innermost scope.
 
 There is no way to modify any enclosing scope other than the innermost
 one. This means that when you define a target, for example, nothing you
 do inside of the block will "leak out" into the rest of the file.
 
-`if`/`else` statements, even though they use `{ }`, do not introduce a
-new scope so changes will persist outside of the statement.
+`if`/`else`/`foreach` statements, even though they use `{ }`, do not introduce
+a new scope so changes will persist outside of the statement.
 
 ## Naming things
 
@@ -246,10 +279,11 @@ means to look for the thing named "test\_support" in
 
 When loading a build file, if it doesn't exist in the given location
 relative to the source root, GN will look in the secondary tree in
-`tools/gn/secondary`. The structure of this tree mirrors the main
+`build/secondary`. The structure of this tree mirrors the main
 repository and is a way to add build files for directories that may be
 pulled from other repositories where we can't easily check in BUILD
-files.
+files. The secondary tree is a fallback rather than an override, so a file in
+the normal location always takes precedence.
 
 A canonical label also includes the label of the toolchain being used.
 Normally, the toolchain label is implicitly inherited, but you can
@@ -270,14 +304,19 @@ the path name and just start with a colon.
 ":base"
 ```
 
-Labels can be specified as being relative to the current directory:
+Labels can be specified as being relative to the current directory.
+Stylistically, we prefer to use absolute paths for all non-file-local
+references unless a build file needs to be run in different contexts (like
+a project needs to be both standalone and pulled into other projects in
+difference places in the directory hierarchy).
 
 ```
-"source/plugin:myplugin"
+"source/plugin:myplugin"  # Prefer not to do these.
 "../net:url_request"
 ```
 
-If a name is unspecified, it will inherit the directory name:
+If a name is unspecified, it will inherit the directory name. Stylistically, we
+prefer to omit the colon and name in these cases.
 
 ```
 "//net" = "//net:net"
@@ -292,12 +331,13 @@ If a name is unspecified, it will inherit the directory name:
      directory tree until one is found. Set this directory to be the
      "source root" and interpret this file to find the name of the build
      config file.
-  2. Execute the build config file (this is the default toolchain).
+  2. Execute the build config file (this is the default toolchain). In Chrome
+     this is `//build/config/BUILDCONFIG.gn`.
   3. Load the `BUILD.gn` file in the root directory.
   4. Recursively load `BUILD.gn` in other directories to resolve all
      current dependencies. If a BUILD file isn't found in the specified
      location, GN will look in the corresponding location inside
-     `tools/gn/secondary`.
+     `build/secondary`.
   5. When a target's dependencies are resolved, write out the `.ninja`
      file to disk.
   6. When all targets are resolved, write out the root `build.ninja`
@@ -307,7 +347,7 @@ If a name is unspecified, it will inherit the directory name:
 
 The first file executed is the build config file. The name of this file
 is specified in the `.gn` file that marks the root of the repository. In
-Chrome it is `src/build/config/BUILDCONFIG.gn`. There is only one build
+Chrome it is `//build/config/BUILDCONFIG.gn`. There is only one build
 config file.
 
 This file sets up the scope in which all other build files will execute.
@@ -371,7 +411,8 @@ more help) are:
 
   * `action`: Run a script to generate a file.
   * `action_foreach`: Run a script once for each source file.
-  * `component`: Configurable to be another type of library.
+  * `bundle_data`: Declare data to go into a Mac/iOS bundle.
+  * `create_bundle`: Creates a Mac/iOS bundle.
   * `executable`: Generates an executable file.
   * `group`: A virtual dependency node that refers to one or more other
     targets.
@@ -382,7 +423,16 @@ more help) are:
   * `static_library`: A .lib or .a file (normally you'll want a
     `source_set` instead).
 
-You can extend this to make custom target types using templates (see below).
+You can extend this to make custom target types using templates (see below). In
+Chrome some of the more commonly-used templates are:
+
+  * `component`: Either a source set or shared library, depending on the
+    build type.
+  * `test`: A test executable. On mobile this will create the appropritate
+    native app type for tests.
+  * `app`: Executable or Mac/iOS application.
+  * `android_apk`: Make an APK. There are a _lot_ of other Android ones, see
+    `//build/config/android/rules.gni`.
 
 ## Configs
 
@@ -456,7 +506,11 @@ static_library("intermediate_library") {
 
 A target can forward a config to all dependents until a link boundary is
 reached by setting it as an `all_dependent_config`. This is strongly
-discouraged.
+discouraged as it can spray flags and defines over more of the build than
+necessary. Instead, use public_deps to control which flags apply where.
+
+In Chrome, prefer the build flag header system (`build/buildflag_header.gni`)
+for defines which prevents most screw-ups with compiler defines.
 
 ## Toolchains
 
@@ -596,11 +650,22 @@ Templates are GN's primary way to re-use code. Typically, a template
 would expand to one or more other target types.
 
 ```
-# Declares static library consisting of rules to build all of the IDL files into
-# compiled code.
+# Declares a script that compiles IDL files to source, and then compiles those
+# source files.
 template("idl") {
+  # Always base helper targets on target_name so they're unique. Target name
+  # will be the string passed as the name when the template is invoked.
+  idl_target_name = "${target_name}_generate"
+  action_foreach(idl_target_name) {
+    ...
+  }
+
+  # Your template should always define a target with the name target_name.
+  # When other targets depend on your template invocation, this will be the
+  # destination of that dependency.
   source_set(target_name) {
     ...
+    deps = [ ":$idl_target_name" ]  # Require the sources to be compiled.
   }
 }
 ```
@@ -636,7 +701,7 @@ generally accounts for most file handling in a template). However, if
 the template has files itself (perhaps it generates an action that runs
 a script), you will want to use absolute paths ("//foo/...") to refer to
 these files to account for the fact that the current directory will be
-unpredictable during invocation.  See `gn help template` for more
+unpredictable during invocation. See `gn help template` for more
 information and more complete examples.
 
 ## Other features
@@ -644,13 +709,18 @@ information and more complete examples.
 ### Imports
 
 You can import `.gni` files into the current scope with the `import`
-function. This is _not_ an include. The imported file is executed
-independently and the resulting scope is copied into the current file.
-This allows the results of the import to be cached, and also prevents
-some of the more "creative" uses of includes.
+function. This is _not_ an include in the C++ sense. The imported file is
+executed independently and the resulting scope is copied into the current file
+(C++ executes the included file in the current context of when the
+include directive appeared). This allows the results of the import to be
+cached, and also prevents some of the more "creative" uses of includes like
+multiply-included files.
 
 Typically, a `.gni` would define build arguments and templates. See `gn
 help import` for more.
+
+Your `.gni` file can define temporary variables that are not exported files
+that include it by using a preceding underscore in the name like `_this`.
 
 ### Path processing
 
@@ -695,18 +765,24 @@ executing a script requires that the current buildfile execution be
 suspended until a Python process completes execution, relying on
 external scripts is slow and should be minimized.
 
-You can synchronously read and write files which is occasionally
-necessary when synchronously running scripts. The typical use-case would
-be to pass a list of file names longer than the command-line limits of
-the current platform. See `gn help read_file` and `gn help write_file`
-for how to read and write files. These functions should be avoided if at
-all possible.
+To prevent abuse, files permitted to call `exec_script` can be whitelisted in
+the toplevel `.gn` file. Chrome does this to require additional code review
+for such additions. See `gn help dotfile`.
+
+You can synchronously read and write files which is discouraged but
+occasionally necessary when synchronously running scripts. The typical use-case
+would be to pass a list of file names longer than the command-line limits of
+the current platform. See `gn help read_file` and `gn help write_file` for how
+to read and write files. These functions should be avoided if at all possible.
+
+Actions that exceed command-line length limits can use response files to
+get around this limitation without synchronously writing files. See
+`gn help response_file_contents`.
 
 # Differences and similarities to Blaze
 
-[Blaze](http://google-engtools.blogspot.com/2011/08/build-in-cloud-how-build-system-works.html)
-is Google's internal build system. It has inspired a number of other
-systems such as
+Blaze is Google's internal build system, now publicly released as
+[Bazel](http://bazel.io/). It has inspired a number of other systems such as
 [Pants](https://github.com/twitter/commons/tree/master/src/python/twitter/pants)
 and [Buck](http://facebook.github.io/buck/).
 
@@ -722,11 +798,10 @@ toolchain, but built into the tool itself. The way that toolchains work
 in GN is a result of trying to separate this concept out into the build
 files in a clean way.
 
-GN keeps some GYP concept like "all dependent" and "direct dependent"
-settings which work a bit differently in Blaze. This is partially to
-make conversion from the existing GYP code easier, and the GYP
-constructs generally offer more fine-grained control (which is either
-good or bad, depending on the situation).
+GN keeps some GYP concept like "all dependent" settings which work a bit
+differently in Blaze. This is partially to make conversion from the existing
+GYP code easier, and the GYP constructs generally offer more fine-grained
+control (which is either good or bad, depending on the situation).
 
 GN also uses GYP names like "sources" instead of "srcs" since
 abbreviating this seems needlessly obscure, although it uses Blaze's

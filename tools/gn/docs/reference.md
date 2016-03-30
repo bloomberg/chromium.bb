@@ -682,9 +682,28 @@
 
 ```
 ## **gn help <anything>**
+
 ```
   Yo dawg, I heard you like help on your help so I put help on the help
   in the help.
+
+  You can also use "all" as the parameter to get all help at once.
+
+```
+
+### **Switches**
+
+```
+  --markdown
+      Format output in markdown syntax.
+
+```
+
+### **Example**
+
+```
+  gn help --markdown all
+      Dump all help to stdout in markdown format.
 
 
 ```
@@ -1592,7 +1611,8 @@
   }
 
   Executes the loop contents block over each item in the list,
-  assigning the loop_var to each item in sequence.
+  assigning the loop_var to each item in sequence. The loop_var will be
+  a copy so assigning to it will not mutate the list.
 
   The block does not introduce a new scope, so that variable assignments
   inside the loop will be visible once the loop terminates.
