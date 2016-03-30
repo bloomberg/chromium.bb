@@ -101,7 +101,7 @@ V4UpdateProtocolManager::V4UpdateProtocolManager(
     const V4ProtocolConfig& config)
     : update_error_count_(0),
       update_back_off_mult_(1),
-      next_update_time_(Time::Now()),
+      next_update_time_(base::Time()),
       config_(config),
       request_context_getter_(request_context_getter),
       url_fetcher_id_(0) {}
