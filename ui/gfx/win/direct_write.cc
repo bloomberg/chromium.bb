@@ -44,11 +44,8 @@ bool ShouldUseDirectWrite() {
 }
 
 void CreateDWriteFactory(IDWriteFactory** factory) {
-  if (!ShouldUseDirectWrite() ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDirectWriteForUI)) {
+  if (!ShouldUseDirectWrite())
     return;
-  }
 
   using DWriteCreateFactoryProc = decltype(DWriteCreateFactory)*;
   HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
@@ -77,6 +74,11 @@ void MaybeInitializeDirectWrite() {
   if (tried_dwrite_initialize)
     return;
   tried_dwrite_initialize = true;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDirectWriteForUI)) {
+    return;
+  }
 
   base::win::ScopedComPtr<IDWriteFactory> factory;
   CreateDWriteFactory(factory.Receive());
