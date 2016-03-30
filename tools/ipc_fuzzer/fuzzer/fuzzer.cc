@@ -1352,6 +1352,9 @@ struct FuzzTraits<IPC::Message> {
   }
 };
 
+#if !defined(OS_WIN)
+// PlatformfileForTransit is just SharedMemoryHandle on Windows, which already
+// has a trait, see ipc/ipc_platform_file.h
 template <>
 struct FuzzTraits<IPC::PlatformFileForTransit> {
   static bool Fuzz(IPC::PlatformFileForTransit* p, Fuzzer* fuzzer) {
@@ -1360,6 +1363,7 @@ struct FuzzTraits<IPC::PlatformFileForTransit> {
     return true;
   }
 };
+#endif
 
 template <>
 struct FuzzTraits<IPC::ChannelHandle> {
