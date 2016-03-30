@@ -15,6 +15,15 @@ namespace input_method {
 class InputMethodEngine;
 }  // namespace input_method
 
+// The status indicates whether the permission has been granted or denied when
+// the IME warning bubble has been closed.
+enum class ImeWarningBubblePermissionStatus {
+  GRANTED,
+  GRANTED_AND_NEVER_SHOW,
+  DENIED,
+  ABORTED
+};
+
 namespace extensions {
 
 class InputImeEventRouterBase;
@@ -79,11 +88,21 @@ class InputImeActivateFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.activate", INPUT_IME_ACTIVATE)
 
+  // During testing we can disable showing a warning bubble by setting this flag
+  // to true, so that the extension can be activated directly.
+  static bool disable_bubble_for_testing_;
+
  protected:
   ~InputImeActivateFunction() override {}
 
   // UIThreadExtensionFunction:
   ResponseAction Run() override;
+
+ private:
+  // Called when the user finishes interacting with the warning bubble.
+  // |status| indicates whether the user allows or denies to activate the
+  // extension.
+  void OnPermissionBubbleFinished(ImeWarningBubblePermissionStatus status);
 };
 
 class InputImeDeactivateFunction : public UIThreadExtensionFunction {

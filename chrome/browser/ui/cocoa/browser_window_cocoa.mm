@@ -850,3 +850,10 @@ void BrowserWindowCocoa::ExecuteExtensionCommand(
 ExclusiveAccessContext* BrowserWindowCocoa::GetExclusiveAccessContext() {
   return [controller_ exclusiveAccessController];
 }
+
+void BrowserWindowCocoa::ShowImeWarningBubble(
+    const extensions::Extension* extension,
+    const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
+        callback) {
+  NOTREACHED() << "The IME warning bubble is unsupported on this platform.";
+}

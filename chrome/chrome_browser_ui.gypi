@@ -675,6 +675,8 @@
       'browser/ui/views/crypto_module_password_dialog_view.h',
       'browser/ui/views/desktop_media_picker_views.cc',
       'browser/ui/views/desktop_media_picker_views.h',
+      'browser/ui/views/ime/ime_warning_bubble_view.cc',
+      'browser/ui/views/ime/ime_warning_bubble_view.h',
       'browser/ui/views/ime/ime_window_frame_view.cc',
       'browser/ui/views/ime/ime_window_frame_view.h',
       'browser/ui/views/ime/ime_window_view.cc',

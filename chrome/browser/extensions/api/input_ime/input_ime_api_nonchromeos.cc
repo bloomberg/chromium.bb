@@ -12,9 +12,14 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/linked_ptr.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/input_method/input_method_engine.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/input_ime.h"
+#include "extensions/browser/extension_prefs.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -32,12 +37,19 @@ namespace {
 const char kErrorAPIDisabled[] =
     "The chrome.input.ime API is not supported on the current platform";
 const char kErrorNoActiveEngine[] = "The extension has not been activated.";
+const char kErrorPermissionDenied[] = "User denied permission.";
+const char kErrorCouldNotFindActiveBrowser[] =
+    "Cannot find the active browser.";
+const char kErrorNotCalledFromUserAction[] =
+    "This API is only allowed to be called from a user action.";
+
+// A preference determining whether to hide the warning bubble next time.
+const char kPrefWarningBubbleNeverShow[] = "skip_ime_warning_bubble";
 
 bool IsInputImeEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableInputImeAPI);
-
-}  // namespace
+}
 
 class ImeObserverNonChromeOS : public ui::ImeObserver {
  public:
@@ -171,15 +183,77 @@ void InputImeEventRouter::DeleteInputMethodEngine(
   }
 }
 
+// static
+bool InputImeActivateFunction::disable_bubble_for_testing_ = false;
+
 ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
   if (!IsInputImeEnabled())
     return RespondNow(Error(kErrorAPIDisabled));
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
+  if (!event_router)
+    return RespondNow(Error(kErrorNoActiveEngine));
 
-  InputImeEventRouter* event_router =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  if (event_router)
+  // This API is only allowed to be called from a user action.
+  if (!user_gesture())
+    return RespondNow(Error(kErrorNotCalledFromUserAction));
+
+  // Disable using the warning bubble for testing.
+  if (disable_bubble_for_testing_) {
+    GetInputImeEventRouter(profile)->SetActiveEngine(extension_id());
+    return RespondNow(NoArguments());
+  }
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
+  bool allowed_to_activate = false;
+  if (prefs->ReadPrefAsBoolean(extension_id(), kPrefWarningBubbleNeverShow,
+                               &allowed_to_activate) &&
+      allowed_to_activate) {
+    // If user allows to activate the extension without showing the warning
+    // bubble, sets the active engine directly.
+    // Otherwise, the extension will be activated when the user presses the 'OK'
+    // button on the warning bubble.
     event_router->SetActiveEngine(extension_id());
-  return RespondNow(NoArguments());
+    return RespondNow(NoArguments());
+  }
+
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
+  if (!browser)
+    return RespondNow(Error(kErrorCouldNotFindActiveBrowser));
+
+  // Creates and shows the warning bubble. The ImeWarningBubble is self-owned,
+  // it deletes itself when closed.
+  browser->window()->ShowImeWarningBubble(
+      extension(),
+      base::Bind(&InputImeActivateFunction::OnPermissionBubbleFinished, this));
+  return RespondLater();
+}
+
+void InputImeActivateFunction::OnPermissionBubbleFinished(
+    ImeWarningBubblePermissionStatus status) {
+  if (status == ImeWarningBubblePermissionStatus::DENIED ||
+      status == ImeWarningBubblePermissionStatus::ABORTED) {
+    // Fails to activate the extension.
+    Respond(Error(kErrorPermissionDenied));
+    return;
+  }
+
+  DCHECK(status == ImeWarningBubblePermissionStatus::GRANTED ||
+         status == ImeWarningBubblePermissionStatus::GRANTED_AND_NEVER_SHOW);
+
+  // Activates this extension if user presses the 'OK' button.
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  GetInputImeEventRouter(profile)->SetActiveEngine(extension_id());
+
+  if (status == ImeWarningBubblePermissionStatus::GRANTED_AND_NEVER_SHOW) {
+    // Updates the extension preference if user checks the 'Never show this
+    // again' check box. So we can activate the extension directly next time.
+    ExtensionPrefs::Get(profile)->UpdateExtensionPref(
+        extension_id(), kPrefWarningBubbleNeverShow,
+        new base::FundamentalValue(true));
+  }
+
+  Respond(NoArguments());
 }
 
 ExtensionFunction::ResponseAction InputImeDeactivateFunction::Run() {

@@ -499,6 +499,8 @@ void ToolbarActionsBar::OnAnimationEnded() {
     popped_out_closure_.Run();
     popped_out_closure_.Reset();
   }
+  FOR_EACH_OBSERVER(ToolbarActionsBarObserver, observers_,
+                    OnToolbarActionsBarAnimationEnded());
 }
 
 bool ToolbarActionsBar::IsActionVisibleOnMainBar(

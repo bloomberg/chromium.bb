@@ -2267,6 +2267,7 @@
           'conditions': [
             ['OS == "linux" or OS == "win"', {
               'sources': [
+                'browser/ui/views/ime/ime_warning_bubble_browsertest.cc',
                 'browser/ui/views/ime/ime_window_browsertest.cc',
               ],
             }]

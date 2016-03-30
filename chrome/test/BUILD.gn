@@ -986,7 +986,10 @@ if (!is_android) {
         deps += [ "//chrome/browser/chromeos" ]
         data_deps += [ "//third_party/liblouis:liblouis_test_data" ]
       } else if (is_linux || is_win) {
-        sources += [ "../browser/ui/views/ime/ime_window_browsertest.cc" ]
+        sources += [
+          "../browser/ui/views/ime/ime_warning_bubble_browsertest.cc",
+          "../browser/ui/views/ime/ime_window_browsertest.cc",
+        ]
       }
 
       if (is_win || is_linux) {

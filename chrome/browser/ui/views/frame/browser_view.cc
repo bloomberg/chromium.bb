@@ -77,6 +77,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
+#include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -2535,6 +2536,13 @@ void BrowserView::ExecuteExtensionCommand(
 
 ExclusiveAccessContext* BrowserView::GetExclusiveAccessContext() {
   return this;
+}
+
+void BrowserView::ShowImeWarningBubble(
+    const extensions::Extension* extension,
+    const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
+        callback) {
+  ImeWarningBubbleView::ShowBubble(extension, this, callback);
 }
 
 bool BrowserView::DoCutCopyPasteForWebContents(

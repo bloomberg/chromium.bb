@@ -66,6 +66,8 @@ namespace web_modal {
 class WebContentsModalDialogHost;
 }
 
+enum class ImeWarningBubblePermissionStatus;
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow interface
 //  An interface implemented by the "view" of the Browser window.
@@ -378,6 +380,12 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Returns object implementing ExclusiveAccessContext interface.
   virtual ExclusiveAccessContext* GetExclusiveAccessContext() = 0;
+
+  // Shows the IME warning bubble.
+  virtual void ShowImeWarningBubble(
+      const extensions::Extension* extension,
+      const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
+          callback) = 0;
 
  protected:
   friend class BrowserCloseManager;

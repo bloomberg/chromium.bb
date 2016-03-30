@@ -676,7 +676,7 @@
         "name": "onActivate",
         "type": "function",
         "description": "This event is sent when an IME is activated. It signals that the IME will be receiving onKeyPress events.",
-        "platforms": ["chromeos"],
+        "platforms": ["chromeos", "win", "linux"],
         "parameters": [
           {
             "type": "string",

@@ -364,6 +364,10 @@ class BrowserView : public BrowserWindow,
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
   ExclusiveAccessContext* GetExclusiveAccessContext() override;
+  void ShowImeWarningBubble(
+      const extensions::Extension* extension,
+      const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
+          callback) override;
 
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;

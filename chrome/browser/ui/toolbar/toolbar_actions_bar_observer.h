@@ -17,6 +17,9 @@ class ToolbarActionsBarObserver {
   // often animated, chances are the bar did not finish resizing).
   virtual void OnToolbarActionsBarDidStartResize() {}
 
+  // Called when the delegate of the toolbar actions bar finishes animating.
+  virtual void OnToolbarActionsBarAnimationEnded() {}
+
   virtual ~ToolbarActionsBarObserver() {}
 };
 

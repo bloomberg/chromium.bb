@@ -14617,6 +14617,14 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       Enable WebUSB support.
     </message>
 
+    <!-- Chrome IME API activated bubble. -->
+    <message name="IDS_IME_API_ACTIVATED_WARNING" desc="The Warning info when an IME extension is trying to activate.">
+      <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> extension may collect all the text you type, including personal data like passwords and credit card numbers. Do you want to use this extension?
+    </message>
+    <message name="IDS_IME_API_NEVER_SHOW" desc="Checkbox that controls whether this bubble will be shown every time.">
+      Never show this again.
+    </message>
+
     </messages>
   </release>
 </grit>
