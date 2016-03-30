@@ -55,9 +55,10 @@ MediaPipelineHost::~MediaPipelineHost() {
   media_track_map_.clear();
 }
 
-void MediaPipelineHost::Initialize(LoadType load_type,
-                                   const MediaPipelineClient& client,
-                                   const CreateBackendCB& create_backend_cb) {
+void MediaPipelineHost::Initialize(
+    LoadType load_type,
+    const MediaPipelineClient& client,
+    const CreateMediaPipelineBackendCB& create_backend_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media_pipeline_.reset(new MediaPipelineImpl());
   task_runner_.reset(new TaskRunnerImpl());

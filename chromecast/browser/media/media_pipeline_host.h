@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "chromecast/browser/media/media_pipeline_backend_factory.h"
 #include "chromecast/common/media/cma_ipc_common.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "media/base/pipeline_status.h"
@@ -36,22 +37,16 @@ class BrowserCdmCast;
 struct MediaPipelineClient;
 struct VideoPipelineClient;
 class CodedFrameProvider;
-class MediaPipelineBackend;
-struct MediaPipelineDeviceParams;
 class MediaPipelineImpl;
 
 class MediaPipelineHost {
  public:
-  // Factory method to create a MediaPipelineBackend
-  typedef base::Callback<scoped_ptr<MediaPipelineBackend>(
-      const MediaPipelineDeviceParams&)> CreateBackendCB;
-
   MediaPipelineHost();
   ~MediaPipelineHost();
 
   void Initialize(LoadType load_type,
                   const MediaPipelineClient& client,
-                  const CreateBackendCB& create_backend_cb);
+                  const CreateMediaPipelineBackendCB& create_backend_cb);
 
   void SetAvPipe(TrackId track_id,
                  scoped_ptr<base::SharedMemory> shared_mem,

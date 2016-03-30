@@ -5,15 +5,14 @@
 #include "chromecast/browser/media/cast_mojo_media_client.h"
 
 #include "chromecast/browser/media/cast_renderer.h"
-#include "chromecast/browser/media/cma_media_pipeline_client.h"
 
 namespace {
 class CastRendererFactory : public media::RendererFactory {
  public:
   CastRendererFactory(
-      scoped_refptr<chromecast::media::CmaMediaPipelineClient> pipeline_client,
+      const chromecast::media::CreateMediaPipelineBackendCB& create_backend_cb,
       const scoped_refptr<media::MediaLog>& media_log)
-      : pipeline_client_(pipeline_client), media_log_(media_log) {}
+      : create_backend_cb_(create_backend_cb), media_log_(media_log) {}
   ~CastRendererFactory() final {}
 
   scoped_ptr<media::Renderer> CreateRenderer(
@@ -24,11 +23,11 @@ class CastRendererFactory : public media::RendererFactory {
       const media::RequestSurfaceCB& request_surface_cb) final {
     DCHECK(!audio_renderer_sink && !video_renderer_sink);
     return make_scoped_ptr(new chromecast::media::CastRenderer(
-        pipeline_client_, media_task_runner));
+        create_backend_cb_, media_task_runner));
   }
 
  private:
-  scoped_refptr<chromecast::media::CmaMediaPipelineClient> pipeline_client_;
+  const chromecast::media::CreateMediaPipelineBackendCB create_backend_cb_;
   scoped_refptr<media::MediaLog> media_log_;
   DISALLOW_COPY_AND_ASSIGN(CastRendererFactory);
 };
@@ -38,14 +37,15 @@ namespace chromecast {
 namespace media {
 
 CastMojoMediaClient::CastMojoMediaClient(
-    scoped_refptr<CmaMediaPipelineClient> pipeline_client)
-    : pipeline_client_(pipeline_client) {}
+    const CreateMediaPipelineBackendCB& create_backend_cb)
+    : create_backend_cb_(create_backend_cb) {}
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
 
 scoped_ptr<::media::RendererFactory> CastMojoMediaClient::CreateRendererFactory(
     const scoped_refptr<::media::MediaLog>& media_log) {
-  return make_scoped_ptr(new CastRendererFactory(pipeline_client_, media_log));
+  return make_scoped_ptr(
+      new CastRendererFactory(create_backend_cb_, media_log));
 }
 
 }  // namespace media

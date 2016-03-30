@@ -11,6 +11,7 @@ source_set("media") {
     "cast_browser_cdm_factory.h",
     "cast_media_client_android.cc",
     "cast_media_client_android.h",
+    "media_pipeline_backend_factory.h",
     "media_pipeline_host.cc",
     "media_pipeline_host.h",
   ]

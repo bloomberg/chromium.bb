@@ -71,7 +71,8 @@ static scoped_ptr<mojo::ShellClient> CreateCastMojoMediaApplication(
     CastContentBrowserClient* browser_client) {
   scoped_ptr<::media::MojoMediaClient> mojo_media_client(
       new media::CastMojoMediaClient(
-          browser_client->GetCmaMediaPipelineClient()));
+          base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
+                     base::Unretained(browser_client))));
   return scoped_ptr<mojo::ShellClient>(
       new ::media::MojoMediaApplication(std::move(mojo_media_client)));
 }

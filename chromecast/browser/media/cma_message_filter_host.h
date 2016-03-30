@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "chromecast/browser/media/media_pipeline_backend_factory.h"
 #include "chromecast/common/media/cma_ipc_common.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
@@ -40,19 +41,13 @@ namespace chromecast {
 namespace media {
 
 class BrowserCdmCast;
-class MediaPipelineBackend;
-struct MediaPipelineDeviceParams;
 class MediaPipelineHost;
 
 class CmaMessageFilterHost
     : public content::BrowserMessageFilter {
  public:
-  // Factory method to create a MediaPipelineBackend
-  typedef base::Callback<scoped_ptr<MediaPipelineBackend>(
-      const MediaPipelineDeviceParams&)> CreateBackendCB;
-
   CmaMessageFilterHost(int render_process_id,
-                       const CreateBackendCB& create_backend_cb,
+                       const CreateMediaPipelineBackendCB& create_backend_cb,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                        MediaResourceTracker* resource_tracker);
 
@@ -120,7 +115,7 @@ class CmaMessageFilterHost
   const int process_id_;
 
   // Factory function for media pipeline backend.
-  CreateBackendCB create_backend_cb_;
+  CreateMediaPipelineBackendCB create_backend_cb_;
 
   // List of media pipeline and message loop media pipelines are running on.
   MediaPipelineMap media_pipelines_;

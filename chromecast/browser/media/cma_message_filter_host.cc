@@ -131,7 +131,7 @@ void SetCdmOnUiThread(
 
 CmaMessageFilterHost::CmaMessageFilterHost(
     int render_process_id,
-    const CreateBackendCB& create_backend_cb,
+    const CreateMediaPipelineBackendCB& create_backend_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaResourceTracker* resource_tracker)
     : content::BrowserMessageFilter(CastMediaMsgStart),

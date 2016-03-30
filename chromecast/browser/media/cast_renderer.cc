@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/browser/media/cma_media_pipeline_client.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/demuxer_stream_adapter.h"
@@ -29,9 +28,9 @@ const base::TimeDelta kMaxDeltaFetcher(base::TimeDelta::FromMilliseconds(2000));
 }  // namespace
 
 CastRenderer::CastRenderer(
-    const scoped_refptr<CmaMediaPipelineClient> pipeline_client,
+    const CreateMediaPipelineBackendCB& create_backend_cb,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : pipeline_client_(pipeline_client),
+    : create_backend_cb_(create_backend_cb),
       task_runner_(task_runner),
       media_task_runner_factory_(
           new BalancedMediaTaskRunnerFactory(kMaxDeltaFetcher)) {
@@ -63,18 +62,12 @@ void CastRenderer::Initialize(
           ? MediaPipelineDeviceParams::kModeIgnorePts
           : MediaPipelineDeviceParams::kModeSyncPts;
   MediaPipelineDeviceParams params(sync_type, backend_task_runner_.get());
-  scoped_ptr<MediaPipelineBackend> backend(
-      pipeline_client_->CreateMediaPipelineBackend(params));
+  scoped_ptr<MediaPipelineBackend> backend = create_backend_cb_.Run(params);
 
   // Create pipeline.
   MediaPipelineClient pipeline_client;
   pipeline_client.error_cb = error_cb;
   pipeline_client.buffering_state_cb = buffering_state_cb;
-  pipeline_client.pipeline_backend_created_cb = base::Bind(
-      &CmaMediaPipelineClient::OnMediaPipelineBackendCreated, pipeline_client_);
-  pipeline_client.pipeline_backend_destroyed_cb =
-      base::Bind(&CmaMediaPipelineClient::OnMediaPipelineBackendDestroyed,
-                 pipeline_client_);
   pipeline_.reset(new MediaPipelineImpl);
   pipeline_->SetClient(pipeline_client);
   pipeline_->Initialize(load_type, std::move(backend));
