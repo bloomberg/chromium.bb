@@ -51,7 +51,6 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   settings->initial_debug_state.show_screen_space_rects = false;
   settings->initial_debug_state.show_replica_screen_space_rects = false;
   settings->initial_debug_state.SetRecordRenderingStats(false);
-  settings->strict_layer_property_change_checking = false;
 
 #if defined(OS_ANDROID)
   if (base::SysInfo::IsLowEndDevice())

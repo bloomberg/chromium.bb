@@ -41,10 +41,6 @@ const char kTopControlsShowThreshold[] = "top-controls-show-threshold";
 // complete, such as --slow-down-raster-scale-factor=25.
 const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 
-// Check that property changes during paint do not occur.
-const char kStrictLayerPropertyChangeChecking[] =
-    "strict-layer-property-change-checking";
-
 // Compress tile textures for GPUs supporting it.
 const char kEnableTileCompression[] = "enable-tile-compression";
 

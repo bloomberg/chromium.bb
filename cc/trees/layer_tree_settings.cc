@@ -87,7 +87,6 @@ LayerTreeSettings::LayerTreeSettings()
       skewport_target_time_in_seconds(1.0f),
       skewport_extrapolation_limit_in_content_pixels(2000),
       max_memory_for_prepaint_percentage(100),
-      strict_layer_property_change_checking(false),
       use_zero_copy(false),
       use_partial_raster(false),
       enable_elastic_overscroll(false),
@@ -154,8 +153,6 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
              other.skewport_extrapolation_limit_in_content_pixels &&
          max_memory_for_prepaint_percentage ==
              other.max_memory_for_prepaint_percentage &&
-         strict_layer_property_change_checking ==
-             other.strict_layer_property_change_checking &&
          use_zero_copy == other.use_zero_copy &&
          use_partial_raster == other.use_partial_raster &&
          enable_elastic_overscroll == other.enable_elastic_overscroll &&
@@ -215,8 +212,6 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
       skewport_extrapolation_limit_in_content_pixels);
   proto->set_max_memory_for_prepaint_percentage(
       max_memory_for_prepaint_percentage);
-  proto->set_strict_layer_property_change_checking(
-      strict_layer_property_change_checking);
   proto->set_use_zero_copy(use_zero_copy);
   proto->set_use_partial_raster(use_partial_raster);
   proto->set_enable_elastic_overscroll(enable_elastic_overscroll);
@@ -277,8 +272,6 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
       proto.skewport_extrapolation_limit_in_content_pixels();
   max_memory_for_prepaint_percentage =
       proto.max_memory_for_prepaint_percentage();
-  strict_layer_property_change_checking =
-      proto.strict_layer_property_change_checking();
   use_zero_copy = proto.use_zero_copy();
   use_partial_raster = proto.use_partial_raster();
   enable_elastic_overscroll = proto.enable_elastic_overscroll();
