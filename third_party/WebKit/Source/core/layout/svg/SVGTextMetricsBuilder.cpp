@@ -38,7 +38,7 @@ namespace {
 
 class SVGTextMetricsCalculator {
 public:
-    SVGTextMetricsCalculator(LayoutSVGInlineText*);
+    SVGTextMetricsCalculator(LineLayoutSVGInlineText);
     ~SVGTextMetricsCalculator();
 
     bool advancePosition();
@@ -114,9 +114,9 @@ TextRun SVGTextMetricsCalculator::constructTextRun(LineLayoutSVGInlineText textL
     return run;
 }
 
-SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText* text)
+SVGTextMetricsCalculator::SVGTextMetricsCalculator(LineLayoutSVGInlineText text)
     : m_currentPosition(0)
-    , m_text(LineLayoutSVGInlineText(text))
+    , m_text(text)
     , m_fontScalingFactor(m_text.scalingFactor())
     , m_cachedFontHeight(m_text.scaledFont().getFontMetrics().floatHeight() / m_fontScalingFactor)
     , m_run(constructTextRun(m_text, 0, m_text.textLength(), m_text.styleRef().direction()))
@@ -258,17 +258,18 @@ struct UpdateAttributes {
 
 void walkInlineText(LayoutSVGInlineText* text, TreeWalkTextState& textState, UpdateAttributes* attributesToUpdate = nullptr)
 {
+    LineLayoutSVGInlineText textLayoutItem(text);
     if (attributesToUpdate)
         attributesToUpdate->clearExistingAttributes();
 
-    if (!text->textLength())
+    if (!textLayoutItem.textLength())
         return;
 
     // TODO(pdr): This loop is too tightly coupled to SVGTextMetricsCalculator.
     // We should refactor SVGTextMetricsCalculator to be a simple bidi run
     // iterator and move all subrun logic to a single function.
-    SVGTextMetricsCalculator calculator(text);
-    bool preserveWhiteSpace = text->style()->whiteSpace() == PRE;
+    SVGTextMetricsCalculator calculator(textLayoutItem);
+    bool preserveWhiteSpace = textLayoutItem.styleRef().whiteSpace() == PRE;
     unsigned surrogatePairCharacters = 0;
     unsigned skippedWhitespace = 0;
     do {
