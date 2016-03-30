@@ -29,6 +29,7 @@ const uint64_t SquashingDisallowedReasonNearestFixedPositionMismatch            
 const uint64_t SquashingDisallowedReasonScrollChildWithCompositedDescendants     = UINT64_C(1) << 13;
 const uint64_t SquashingDisallowedReasonSquashingLayerIsAnimating                = UINT64_C(1) << 14;
 const uint64_t SquashingDisallowedReasonRenderingContextMismatch                 = UINT64_C(1) << 15;
+const uint64_t SquashingDisallowedReasonNonTranslationTransform                  = UINT64_C(1) << 16;
 
 typedef uint64_t SquashingDisallowedReasons;
 

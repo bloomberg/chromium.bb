@@ -57,6 +57,9 @@ const SquashingDisallowedReasonStringMap kSquashingDisallowedReasonStringMap[] =
     { SquashingDisallowedReasonRenderingContextMismatch,
         "squashingLayerRenderingContextMismatch",
         "Cannot squash layers with different 3D contexts." },
+    { SquashingDisallowedReasonNonTranslationTransform,
+        "SquashingDisallowedReasonNonTranslationTransform",
+        "Cannot squash layers with transforms that are not identity or translation." },
 };
 
 const size_t kNumberOfSquashingDisallowedReasons = WTF_ARRAY_LENGTH(kSquashingDisallowedReasonStringMap);

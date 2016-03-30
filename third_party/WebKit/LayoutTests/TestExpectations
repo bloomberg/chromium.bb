@@ -52,6 +52,11 @@ crbug.com/299010 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Pass F
 crbug.com/299010 [ Linux Debug ] fast/forms/text/text-font-height-mismatch.html [ Pass Failure ]
 crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
 
+crbug.com/594177 compositing/layer-creation/overlap-animation-container.html [ NeedsRebaseline ]
+crbug.com/594177 compositing/squashing/squash-transform-repainting-child.html [ NeedsRebaseline ]
+crbug.com/594177 compositing/squashing/squash-transform-repainting-transformed-child.html [ NeedsRebaseline ]
+crbug.com/594177 compositing/squashing/squash-transform.html [ NeedsRebaseline ]
+
 # See also crbug.com/521730 for the these two text/emphasis tests (non-Oilpan) Win10 failures.
 crbug.com/574660 [ Win7 ] fast/text/emphasis-combined-text.html [ Pass Failure ]
 
