@@ -42,6 +42,8 @@ UtilityProcessMojoProxyResolverFactory::
 
 void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!resolver_factory_);
+  DCHECK(!weak_utility_process_host_);
   DVLOG(1) << "Attempting to create utility process for proxy resolver";
   content::UtilityProcessHost* utility_process_host =
       content::UtilityProcessHost::Create(
@@ -91,6 +93,8 @@ UtilityProcessMojoProxyResolverFactory::CreateResolver(
 void UtilityProcessMojoProxyResolverFactory::OnConnectionError() {
   DVLOG(1) << "Disconnection from utility process detected";
   resolver_factory_.reset();
+  delete weak_utility_process_host_.get();
+  weak_utility_process_host_.reset();
 }
 
 void UtilityProcessMojoProxyResolverFactory::OnResolverDestroyed() {
