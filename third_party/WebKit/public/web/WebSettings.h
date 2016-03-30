@@ -251,6 +251,7 @@ public:
     virtual void setViewportMetaZeroValuesQuirk(bool) = 0;
     virtual void setWebGLErrorsToConsoleEnabled(bool) = 0;
     virtual void setWebSecurityEnabled(bool) = 0;
+    virtual void setWheelGesturesEnabled(bool) = 0;
     virtual void setWideViewportQuirkEnabled(bool) = 0;
     virtual void setXSSAuditorEnabled(bool) = 0;
 

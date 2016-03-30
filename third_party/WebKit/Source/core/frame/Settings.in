@@ -387,3 +387,7 @@ autoplayExperimentMode type=String, initial="off"
 # When DevTools is emulating mobile device, frame resize may mean device size has changed,
 # which in turn affects media queries.
 resizeIsDeviceSizeChange initial=false
+
+# Whether the browser process sends gesture events for wheel events.
+# Can be removed when crbug.com/598798 is fixed.
+wheelGesturesEnabled initial=false

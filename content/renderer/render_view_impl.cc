@@ -1113,6 +1113,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setDoubleTapToZoomEnabled(true);
   web_view->setMaximumLegibleScale(prefs.default_maximum_page_scale_factor);
 #endif
+
+  settings->setWheelGesturesEnabled(UseGestureBasedWheelScrolling());
 }
 
 /*static*/

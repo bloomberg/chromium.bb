@@ -191,6 +191,7 @@ public:
     void setViewportMetaZeroValuesQuirk(bool) override;
     void setWebGLErrorsToConsoleEnabled(bool) override;
     void setWebSecurityEnabled(bool) override;
+    void setWheelGesturesEnabled(bool) override;
     void setWideViewportQuirkEnabled(bool) override;
     void setXSSAuditorEnabled(bool) override;
 
@@ -208,6 +209,7 @@ public:
 
     void setMockGestureTapHighlightsEnabled(bool);
     bool mockGestureTapHighlightsEnabled() const;
+    bool wheelGesturesEnabled() const;
 
 private:
     Settings* m_settings;

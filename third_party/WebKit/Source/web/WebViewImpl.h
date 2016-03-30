@@ -615,6 +615,8 @@ private:
 
     WebPlugin* focusedPluginIfInputMethodSupported(LocalFrame*);
 
+    WebGestureEvent createGestureScrollEventFromFling(WebInputEvent::Type, WebGestureDevice) const;
+
     void enablePopupMouseWheelEventListener();
     void disablePopupMouseWheelEventListener();
 

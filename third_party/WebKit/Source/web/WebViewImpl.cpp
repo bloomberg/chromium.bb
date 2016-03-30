@@ -643,9 +643,26 @@ WebInputEventResult WebViewImpl::handleMouseWheel(LocalFrame& mainFrame, const W
     return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
 }
 
+WebGestureEvent WebViewImpl::createGestureScrollEventFromFling(WebInputEvent::Type type, WebGestureDevice sourceDevice) const
+{
+    WebGestureEvent gestureEvent;
+    gestureEvent.type = type;
+    gestureEvent.sourceDevice = sourceDevice;
+    gestureEvent.timeStampSeconds = WTF::monotonicallyIncreasingTime();
+    gestureEvent.x = m_positionOnFlingStart.x;
+    gestureEvent.y = m_positionOnFlingStart.y;
+    gestureEvent.globalX = m_globalPositionOnFlingStart.x;
+    gestureEvent.globalY = m_globalPositionOnFlingStart.y;
+    gestureEvent.modifiers = m_flingModifier;
+    return gestureEvent;
+}
+
 bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& velocity)
 {
     ASSERT(m_flingSourceDevice != WebGestureDeviceUninitialized);
+    if (!m_page || !m_page->mainFrame() || !m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
+        return false;
+
     if (m_flingSourceDevice == WebGestureDeviceTouchpad) {
         WebMouseWheelEvent syntheticWheel;
         const float tickDivisor = WheelEvent::TickMultiplier;
@@ -663,30 +680,41 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
         syntheticWheel.globalY = m_globalPositionOnFlingStart.y;
         syntheticWheel.modifiers = m_flingModifier;
 
-        if (m_page && m_page->mainFrame() && m_page->mainFrame()->isLocalFrame() && m_page->deprecatedLocalMainFrame()->view())
-            return handleMouseWheel(*m_page->deprecatedLocalMainFrame(), syntheticWheel) != WebInputEventResult::NotHandled;
-    } else {
-        WebGestureEvent syntheticGestureEvent;
+        if (handleMouseWheel(*m_page->deprecatedLocalMainFrame(), syntheticWheel) != WebInputEventResult::NotHandled)
+            return true;
+        if (!m_webSettings->wheelGesturesEnabled())
+            return false;
 
-        syntheticGestureEvent.type = WebInputEvent::GestureScrollUpdate;
-        syntheticGestureEvent.timeStampSeconds = WTF::monotonicallyIncreasingTime();
+        // TODO(dtapuska): Remove these GSB/GSE sequences when trackpad latching is implemented; see crbug.com/526463.
+        WebGestureEvent syntheticScrollBegin = createGestureScrollEventFromFling(WebInputEvent::GestureScrollBegin, WebGestureDeviceTouchpad);
+        syntheticScrollBegin.data.scrollBegin.deltaXHint = delta.width;
+        syntheticScrollBegin.data.scrollBegin.deltaYHint = delta.height;
+        syntheticScrollBegin.data.scrollBegin.inertial = true;
+        handleGestureEvent(syntheticScrollBegin);
+
+        WebGestureEvent syntheticScrollUpdate = createGestureScrollEventFromFling(WebInputEvent::GestureScrollUpdate, WebGestureDeviceTouchpad);
+        syntheticScrollUpdate.data.scrollUpdate.deltaX = delta.width;
+        syntheticScrollUpdate.data.scrollUpdate.deltaY = delta.height;
+        syntheticScrollUpdate.data.scrollUpdate.velocityX = velocity.width;
+        syntheticScrollUpdate.data.scrollUpdate.velocityY = velocity.height;
+        syntheticScrollUpdate.data.scrollUpdate.inertial = true;
+        bool scrollUpdateHandled = handleGestureEvent(syntheticScrollUpdate) != WebInputEventResult::NotHandled;
+
+        WebGestureEvent syntheticScrollEnd = createGestureScrollEventFromFling(WebInputEvent::GestureScrollEnd, WebGestureDeviceTouchpad);
+        syntheticScrollEnd.data.scrollEnd.inertial = true;
+        handleGestureEvent(syntheticScrollEnd);
+        return scrollUpdateHandled;
+    } else {
+        WebGestureEvent syntheticGestureEvent = createGestureScrollEventFromFling(WebInputEvent::GestureScrollUpdate, WebGestureDeviceTouchscreen);
         syntheticGestureEvent.data.scrollUpdate.preventPropagation = true;
         syntheticGestureEvent.data.scrollUpdate.deltaX = delta.width;
         syntheticGestureEvent.data.scrollUpdate.deltaY = delta.height;
         syntheticGestureEvent.data.scrollUpdate.velocityX = velocity.width;
         syntheticGestureEvent.data.scrollUpdate.velocityY = velocity.height;
-        syntheticGestureEvent.x = m_positionOnFlingStart.x;
-        syntheticGestureEvent.y = m_positionOnFlingStart.y;
-        syntheticGestureEvent.globalX = m_globalPositionOnFlingStart.x;
-        syntheticGestureEvent.globalY = m_globalPositionOnFlingStart.y;
-        syntheticGestureEvent.modifiers = m_flingModifier;
-        syntheticGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
         syntheticGestureEvent.data.scrollUpdate.inertial = true;
 
-        if (m_page && m_page->mainFrame() && m_page->mainFrame()->isLocalFrame() && m_page->deprecatedLocalMainFrame()->view())
-            return handleGestureEvent(syntheticGestureEvent) != WebInputEventResult::NotHandled;
+        return handleGestureEvent(syntheticGestureEvent) != WebInputEventResult::NotHandled;
     }
-    return false;
 }
 
 WebInputEventResult WebViewImpl::handleGestureEvent(const WebGestureEvent& event)

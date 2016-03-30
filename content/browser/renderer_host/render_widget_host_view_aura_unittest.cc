@@ -4108,7 +4108,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
   // Check if the canScroll set to true when no modifier is applied to the
   // mouse wheel event.
-  EXPECT_EQ(!UseGestureBasedWheelScrolling(), wheel_event->canScroll);
+  EXPECT_TRUE(wheel_event->canScroll);
   sink_->ClearMessages();
 
   SendInputEventACK(blink::WebInputEvent::MouseWheel,
@@ -4123,7 +4123,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   wheel_event = static_cast<const WebMouseWheelEvent*>(input_event);
   // Check if the canScroll set to true when ctrl-touchpad-scroll is generated
   // from scroll event.
-  EXPECT_EQ(!UseGestureBasedWheelScrolling(), wheel_event->canScroll);
+  EXPECT_TRUE(wheel_event->canScroll);
 }
 
 // Ensures that the mapping from ui::TouchEvent to blink::WebTouchEvent doesn't

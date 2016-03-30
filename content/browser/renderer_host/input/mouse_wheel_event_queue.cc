@@ -227,11 +227,7 @@ void MouseWheelEventQueue::TryForwardNextEventToRenderer() {
   event_sent_for_gesture_ack_.reset(wheel_queue_.front());
   wheel_queue_.pop_front();
 
-  MouseWheelEventWithLatencyInfo send_event(*event_sent_for_gesture_ack_);
-  if (send_gestures_)
-    send_event.event.canScroll = false;
-
-  client_->SendMouseWheelEventImmediately(send_event);
+  client_->SendMouseWheelEventImmediately(*event_sent_for_gesture_ack_);
 }
 
 void MouseWheelEventQueue::SendScrollEnd(blink::WebGestureEvent update_event,

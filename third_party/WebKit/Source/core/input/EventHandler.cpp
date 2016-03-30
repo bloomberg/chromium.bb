@@ -1854,6 +1854,10 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
     if (!startNode || !wheelEvent)
         return;
 
+    Settings* settings = m_frame->settings();
+    if (settings && settings->wheelGesturesEnabled())
+        return;
+
     // When the wheelEvent do not scroll, we trigger zoom in/out instead.
     if (!wheelEvent->canScroll())
         return;
