@@ -42,16 +42,16 @@ bool StreamTexture::Create(GpuCommandBufferStub* owner_stub,
 
     // TODO: Ideally a valid image id was returned to the client so that
     // it could then call glBindTexImage2D() for doing the following.
-    scoped_refptr<gl::GLImage> gl_image(
+    scoped_refptr<gpu::gles2::GLStreamTextureImage> gl_image(
         new StreamTexture(owner_stub, stream_id, texture->service_id()));
     gfx::Size size = gl_image->GetSize();
     texture_manager->SetTarget(texture, GL_TEXTURE_EXTERNAL_OES);
     texture_manager->SetLevelInfo(texture, GL_TEXTURE_EXTERNAL_OES, 0, GL_RGBA,
                                   size.width(), size.height(), 1, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, gfx::Rect(size));
-    texture_manager->SetLevelImage(texture, GL_TEXTURE_EXTERNAL_OES, 0,
-                                   gl_image.get(),
-                                   gpu::gles2::Texture::UNBOUND);
+    texture_manager->SetLevelStreamTextureImage(
+        texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image.get(),
+        gpu::gles2::Texture::UNBOUND);
     return true;
   }
 
@@ -63,7 +63,6 @@ StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
                              uint32_t texture_id)
     : surface_texture_(gfx::SurfaceTexture::Create(texture_id)),
       size_(0, 0),
-      has_valid_frame_(false),
       has_pending_frame_(false),
       owner_stub_(owner_stub),
       route_id_(route_id),
@@ -88,6 +87,12 @@ StreamTexture::~StreamTexture() {
     owner_stub_->RemoveDestructionObserver(this);
     owner_stub_->channel()->RemoveRoute(route_id_);
   }
+}
+
+// gpu::gles2::GLStreamTextureMatrix implementation
+void StreamTexture::GetTextureMatrix(float xform[16]) {
+  UpdateTexImage();
+  surface_texture_->GetTransformMatrix(xform);
 }
 
 void StreamTexture::OnWillDestroyStub() {
@@ -142,22 +147,7 @@ void StreamTexture::UpdateTexImage() {
 
   surface_texture_->UpdateTexImage();
 
-  has_valid_frame_ = true;
   has_pending_frame_ = false;
-
-  float mtx[16];
-  surface_texture_->GetTransformMatrix(mtx);
-
-  if (memcmp(current_matrix_, mtx, sizeof(mtx)) != 0) {
-    memcpy(current_matrix_, mtx, sizeof(mtx));
-
-    if (has_listener_) {
-      GpuStreamTextureMsg_MatrixChanged_Params params;
-      memcpy(&params.m00, mtx, sizeof(mtx));
-      owner_stub_->channel()->Send(
-          new GpuStreamTextureMsg_MatrixChanged(route_id_, params));
-    }
-  }
 
   if (scoped_make_current.get()) {
     // UpdateTexImage() implies glBindTexture().
@@ -176,12 +166,6 @@ void StreamTexture::UpdateTexImage() {
 }
 
 bool StreamTexture::CopyTexImage(unsigned target) {
-  if (target == GL_TEXTURE_2D) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_.width(), size_.height(), 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    return CopyTexSubImage(GL_TEXTURE_2D, gfx::Point(), gfx::Rect(size_));
-  }
-
   if (target != GL_TEXTURE_EXTERNAL_OES)
     return false;
 
@@ -207,8 +191,8 @@ bool StreamTexture::CopyTexImage(unsigned target) {
     // By setting image state to UNBOUND instead of COPIED we ensure that
     // CopyTexImage() is called each time the surface texture is used for
     // drawing.
-    texture->SetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
-                           gpu::gles2::Texture::UNBOUND);
+    texture->SetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES, 0, this,
+                                        gpu::gles2::Texture::UNBOUND);
   }
 
   return true;
@@ -270,94 +254,7 @@ void StreamTexture::ReleaseTexImage(unsigned target) {
 bool StreamTexture::CopyTexSubImage(unsigned target,
                                     const gfx::Point& offset,
                                     const gfx::Rect& rect) {
-  if (target != GL_TEXTURE_2D)
-    return false;
-
-  if (!owner_stub_ || !surface_texture_.get())
-    return true;
-
-  if (!offset.IsOrigin()) {
-    LOG(ERROR) << "Non-origin offset is not supported";
-    return false;
-  }
-
-  if (rect != gfx::Rect(size_)) {
-    LOG(ERROR) << "Sub-rectangle is not supported";
-    return false;
-  }
-
-  GLint target_texture = 0;
-  glGetIntegerv(GL_TEXTURE_BINDING_2D, &target_texture);
-  DCHECK(target_texture);
-
-  UpdateTexImage();
-
-  if (!framebuffer_) {
-    glGenFramebuffersEXT(1, &framebuffer_);
-
-    // This vertex shader introduces a y flip before applying the stream
-    // texture matrix.  This is required because the stream texture matrix
-    // Android provides is intended to  be used in a y-up coordinate system,
-    // whereas Chromium expects y-down.
-
-    // clang-format off
-    const char kVertexShader[] = STRINGIZE(
-      attribute vec2 a_position;
-      varying vec2 v_texCoord;
-      uniform mat4 u_xform;
-      void main() {
-        gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
-        vec2 uv_untransformed = a_position * vec2(0.5, -0.5) + vec2(0.5, 0.5);
-        v_texCoord = (u_xform * vec4(uv_untransformed, 0.0, 1.0)).xy;
-      }
-    );
-    const char kFragmentShader[] =
-      "#extension GL_OES_EGL_image_external : require\n" STRINGIZE(
-      precision mediump float;
-      uniform samplerExternalOES a_texture;
-      varying vec2 v_texCoord;
-      void main() {
-        gl_FragColor = texture2D(a_texture, v_texCoord);
-      }
-    );
-    // clang-format on
-
-    vertex_buffer_ = gfx::GLHelper::SetupQuadVertexBuffer();
-    vertex_shader_ = gfx::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
-    fragment_shader_ =
-        gfx::GLHelper::LoadShader(GL_FRAGMENT_SHADER, kFragmentShader);
-    program_ = gfx::GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
-    gfx::ScopedUseProgram use_program(program_);
-    int sampler_location = glGetUniformLocation(program_, "a_texture");
-    DCHECK_NE(-1, sampler_location);
-    glUniform1i(sampler_location, 0);
-    u_xform_location_ = glGetUniformLocation(program_, "u_xform");
-    DCHECK_NE(-1, u_xform_location_);
-  }
-
-  gfx::ScopedActiveTexture active_texture(GL_TEXTURE0);
-  // UpdateTexImage() call below will bind the surface texture to
-  // TEXTURE_EXTERNAL_OES. This scoped texture binder will restore the current
-  // binding before this function returns.
-  gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES, texture_id_);
-
-  {
-    gfx::ScopedFrameBufferBinder framebuffer_binder(framebuffer_);
-    gfx::ScopedViewport viewport(0, 0, size_.width(), size_.height());
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, target_texture, 0);
-    DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
-              glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
-    gfx::ScopedUseProgram use_program(program_);
-
-    glUniformMatrix4fv(u_xform_location_, 1, false, current_matrix_);
-    gfx::GLHelper::DrawQuad(vertex_buffer_);
-
-    // Detach the output texture from the fbo.
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, 0, 0);
-  }
-  return true;
+  return false;
 }
 
 bool StreamTexture::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,

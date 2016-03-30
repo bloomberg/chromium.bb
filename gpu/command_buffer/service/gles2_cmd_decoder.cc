@@ -13911,34 +13911,29 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
 
   DoCopyTexImageIfNeeded(source_texture, source_target);
 
-  // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
+  // GL_TEXTURE_EXTERNAL_OES texture requires that we apply a transform matrix
   // before presenting.
   if (source_target == GL_TEXTURE_EXTERNAL_OES) {
-    // TODO(hkuang): get the StreamTexture transform matrix in GPU process
-    // instead of using kIdentityMatrix crbug.com/226218.  AVDACodecImage does
-    // this correctly, but others (e.g., stream_texture_android.cc) don't.
-    // (crbug.com/371500, crbug.com/588837)
-    GLfloat transform_matrix[16];
-    memcpy(transform_matrix, kIdentityMatrix, sizeof(transform_matrix));
     if (GLStreamTextureImage* image =
             source_texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
                                                        0)) {
-      image->GetTextureMatrix(transform_matrix);
+      // The coordinate system of this matrix is y-up, not y-down, so a flip is
+      // needed.
+      GLfloat transform_matrix[16];
+      image->GetFlippedTextureMatrix(transform_matrix);
+      copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
+          this, source_target, source_texture->service_id(), dest_target,
+          dest_texture->service_id(), source_width, source_height,
+          unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
+          unpack_unmultiply_alpha == GL_TRUE, transform_matrix);
+      return;
     }
-    copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
-        this, source_target, source_texture->service_id(), dest_target,
-        dest_texture->service_id(), source_width, source_height,
-        unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-        unpack_unmultiply_alpha == GL_TRUE, transform_matrix);
-  } else {
-    copy_texture_CHROMIUM_->DoCopyTexture(
-        this, source_target, source_texture->service_id(),
-        source_internal_format, dest_target, dest_texture->service_id(),
-        internal_format, source_width, source_height,
-        unpack_flip_y == GL_TRUE,
-        unpack_premultiply_alpha == GL_TRUE,
-        unpack_unmultiply_alpha == GL_TRUE);
   }
+  copy_texture_CHROMIUM_->DoCopyTexture(
+      this, source_target, source_texture->service_id(), source_internal_format,
+      dest_target, dest_texture->service_id(), internal_format, source_width,
+      source_height, unpack_flip_y == GL_TRUE,
+      unpack_premultiply_alpha == GL_TRUE, unpack_unmultiply_alpha == GL_TRUE);
 }
 
 void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
@@ -14109,16 +14104,33 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
 
   DoCopyTexImageIfNeeded(source_texture, source_target);
 
-  // TODO(hkuang): get the StreamTexture transform matrix in GPU process.
-  // crbug.com/226218.
+
+  // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
+  // before presenting.
+  if (source_target == GL_TEXTURE_EXTERNAL_OES) {
+    if (GLStreamTextureImage* image =
+            source_texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
+                                                       0)) {
+      // The coordinate system of this matrix is y-up, not y-down, so a flip is
+      // needed.
+      GLfloat transform_matrix[16];
+      image->GetFlippedTextureMatrix(transform_matrix);
+      copy_texture_CHROMIUM_->DoCopySubTextureWithTransform(
+          this, source_target, source_texture->service_id(),
+          source_internal_format, dest_target, dest_texture->service_id(),
+          dest_internal_format, xoffset, yoffset, x, y, width, height,
+          dest_width, dest_height, source_width, source_height,
+          unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
+          unpack_unmultiply_alpha == GL_TRUE, transform_matrix);
+      return;
+    }
+  }
   copy_texture_CHROMIUM_->DoCopySubTexture(
       this, source_target, source_texture->service_id(), source_internal_format,
-      dest_target, dest_texture->service_id(), dest_internal_format,
-      xoffset, yoffset, x, y, width, height, dest_width, dest_height,
-      source_width, source_height,
-      unpack_flip_y == GL_TRUE,
-      unpack_premultiply_alpha == GL_TRUE,
-      unpack_unmultiply_alpha == GL_TRUE);
+      dest_target, dest_texture->service_id(), dest_internal_format, xoffset,
+      yoffset, x, y, width, height, dest_width, dest_height, source_width,
+      source_height, unpack_flip_y == GL_TRUE,
+      unpack_premultiply_alpha == GL_TRUE, unpack_unmultiply_alpha == GL_TRUE);
 }
 
 void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
@@ -14279,22 +14291,11 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
       source_height, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
       gfx::Rect(source_width, source_height));
 
-  // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
-  // before presenting.
-  if (source_texture->target() == GL_TEXTURE_EXTERNAL_OES) {
-    // TODO(hkuang): get the StreamTexture transform matrix in GPU process
-    // instead of using kIdentityMatrix crbug.com/226218.
-    copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
-        this, source_texture->target(), source_texture->service_id(),
-        dest_texture->target(), dest_texture->service_id(), source_width,
-        source_height, false, false, false, kIdentityMatrix);
-  } else {
-    copy_texture_CHROMIUM_->DoCopyTexture(
-        this, source_texture->target(), source_texture->service_id(),
-        source_internal_format, dest_texture->target(),
-        dest_texture->service_id(), GL_RGBA, source_width, source_height, false,
-        false, false);
-  }
+  copy_texture_CHROMIUM_->DoCopyTexture(
+      this, source_texture->target(), source_texture->service_id(),
+      source_internal_format, dest_texture->target(),
+      dest_texture->service_id(), GL_RGBA, source_width, source_height, false,
+      false, false);
 }
 
 void GLES2DecoderImpl::DoTexStorage2DEXT(

@@ -140,29 +140,4 @@ TEST_F(VideoFrameProviderClientImplTest, DidDrawFrameIssuesPutCurrentFrame) {
   StopRendering();
 }
 
-TEST_F(VideoFrameProviderClientImplTest, StreamTextureMatrix) {
-  const float kIdentityMatrix[] = {
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-  };
-
-  EXPECT_FALSE(client_impl_->StreamTextureMatrix().IsIdentity());
-  client_impl_->DidUpdateMatrix(kIdentityMatrix);
-  EXPECT_TRUE(client_impl_->StreamTextureMatrix().IsIdentity());
-}
-
 }  // namespace cc

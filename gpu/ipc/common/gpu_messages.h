@@ -70,27 +70,6 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_CreateImage_Params)
   IPC_STRUCT_MEMBER(uint64_t, image_release_count)
 IPC_STRUCT_END()
 
-#if defined(OS_ANDROID)
-IPC_STRUCT_BEGIN(GpuStreamTextureMsg_MatrixChanged_Params)
-  IPC_STRUCT_MEMBER(float, m00)
-  IPC_STRUCT_MEMBER(float, m01)
-  IPC_STRUCT_MEMBER(float, m02)
-  IPC_STRUCT_MEMBER(float, m03)
-  IPC_STRUCT_MEMBER(float, m10)
-  IPC_STRUCT_MEMBER(float, m11)
-  IPC_STRUCT_MEMBER(float, m12)
-  IPC_STRUCT_MEMBER(float, m13)
-  IPC_STRUCT_MEMBER(float, m20)
-  IPC_STRUCT_MEMBER(float, m21)
-  IPC_STRUCT_MEMBER(float, m22)
-  IPC_STRUCT_MEMBER(float, m23)
-  IPC_STRUCT_MEMBER(float, m30)
-  IPC_STRUCT_MEMBER(float, m31)
-  IPC_STRUCT_MEMBER(float, m32)
-  IPC_STRUCT_MEMBER(float, m33)
-IPC_STRUCT_END()
-#endif
-
 //------------------------------------------------------------------------------
 // GPU Channel Messages
 // These are messages from a renderer process to the GPU process.
@@ -136,10 +115,6 @@ IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_StartListening)
 
 // Inform the renderer that a new frame is available.
 IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_FrameAvailable)
-
-// Inform the renderer process that the transform matrix has changed.
-IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_MatrixChanged,
-                    GpuStreamTextureMsg_MatrixChanged_Params /* params */)
 #endif
 
 //------------------------------------------------------------------------------
