@@ -25,7 +25,7 @@ def ProcessInfoPlist(args):
   return subprocess.check_call([
     '/usr/bin/env',
     'xcrun',
-    'plutil'
+    'plutil',
     '-convert',
     'binary1',
     '-o',
