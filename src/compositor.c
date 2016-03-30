@@ -1082,16 +1082,15 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	}
 }
 
-
 /** Recalculate which output(s) the surface has views displayed on
  *
  * \param es  The surface to remap to outputs
  *
  * Finds the output that is showing the largest amount of one
  * of the surface's various views.  This output becomes the
- * surface's primary output for vsync and frame event purposes.
+ * surface's primary output for vsync and frame callback purposes.
  *
- * Also notes the primary outputs of all of the surface's views
+ * Also notes all outputs of all of the surface's views
  * in the output_mask for the surface.
  */
 static void
@@ -1136,8 +1135,7 @@ weston_surface_assign_output(struct weston_surface *es)
  *
  * Identifies the set of outputs that the view is visible on,
  * noting them into the output_mask.  The output that the view
- * is most visible on is set as the view's primary output for
- * vsync and frame event purposes.
+ * is most visible on is set as the view's primary output.
  *
  * Also does the same for the view's surface.  See
  * weston_surface_assign_output().

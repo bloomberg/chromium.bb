@@ -949,8 +949,9 @@ struct weston_view {
 	} transform;
 
 	/*
-	 * Which output to vsync this surface to.
-	 * Used to determine, whether to send or queue frame events.
+	 * The primary output for this view.
+	 * Used for picking the output for driving internal animations on the
+	 * view, inheriting the primary output for related views in shells, etc.
 	 */
 	struct weston_output *output;
 
@@ -1019,7 +1020,9 @@ struct weston_surface {
 
 	/*
 	 * Which output to vsync this surface to.
-	 * Used to determine, whether to send or queue frame events.
+	 * Used to determine whether to send or queue frame events, and for
+	 * other client-visible syncing/throttling tied to the output
+	 * repaint cycle.
 	 */
 	struct weston_output *output;
 
