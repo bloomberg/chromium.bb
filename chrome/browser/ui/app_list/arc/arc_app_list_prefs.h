@@ -170,6 +170,8 @@ class ArcAppListPrefs : public KeyedService,
   // for different scale factor. Scale factor is defined by specific bit
   // position.
   std::map<std::string, uint32_t> request_icon_deferred_;
+  // True if this preference has been initialized once.
+  bool is_initialized_ = false;
 
   mojo::Binding<arc::AppHost> binding_;
 

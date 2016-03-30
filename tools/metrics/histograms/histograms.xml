@@ -825,13 +825,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Arc.AppCount">
+<histogram name="Arc.AppCount" units="App Count">
   <owner>elijahtaylor@google.com</owner>
   <owner>mitsuji@google.com</owner>
   <summary>
     The number of ARC apps open at any given time. Collected every 5 minutes.
     This indicates both how many users are engaging with apps and, when they do
     engage, how many apps they are engaging with at a time.
+  </summary>
+</histogram>
+
+<histogram name="Arc.AppsInstalledAtStartup" units="App Count">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>
+    Total number of ARC apps installed on a device measured at startup.
   </summary>
 </histogram>
 

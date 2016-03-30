@@ -10,6 +10,7 @@
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
@@ -402,6 +403,11 @@ void ArcAppListPrefs::OnAppListRefreshed(mojo::Array<arc::AppInfoPtr> apps) {
   for (const auto& app_id : old_apps) {
     if (!ready_apps_.count(app_id))
       RemoveApp(app_id);
+  }
+
+  if (!is_initialized_) {
+    is_initialized_ = true;
+    UMA_HISTOGRAM_COUNTS_1000("Arc.AppsInstalledAtStartup", ready_apps_.size());
   }
 }
 
