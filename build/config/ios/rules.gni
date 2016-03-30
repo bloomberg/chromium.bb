@@ -114,6 +114,16 @@ template("app") {
       libs = []
     }
     libs += [ "UIKit.framework" ]
+
+    # TODO(crbug.com/599203) - iossim should probably be a data dependency
+    # of the create_bundle(target_name) target instead but at the moment
+    # create_bundle() is ignoring data_deps.
+    if (use_ios_simulator) {
+      if (!defined(data_deps)) {
+        data_deps = []
+      }
+      data_deps += [ "//testing/iossim(${host_toolchain})" ]
+    }
   }
 
   bundle_data(_bundle_data_executable) {
@@ -147,13 +157,6 @@ template("app") {
       ":$_bundle_data_executable",
       ":$_bundle_data_info_plist",
     ]
-
-    if (use_ios_simulator) {
-      if (!defined(data_deps)) {
-        data_deps = []
-      }
-      data_deps += [ "//testing/iossim(${host_toolchain})" ]
-    }
 
     bundle_root_dir = "$root_out_dir/$_output_name.app"
     bundle_resources_dir = bundle_root_dir
