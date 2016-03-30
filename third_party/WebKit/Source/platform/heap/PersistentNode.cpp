@@ -51,6 +51,9 @@ void PersistentRegion::ensurePersistentNodeSlots(void* self, TraceCallback trace
 // list of PersistentNodes.
 void PersistentRegion::tracePersistentNodes(Visitor* visitor)
 {
+    size_t debugMarkedObjectSize = Heap::markedObjectSize();
+    base::debug::Alias(&debugMarkedObjectSize);
+
     m_freeListHead = nullptr;
     int persistentCount = 0;
     PersistentNodeSlots** prevNext = &m_slots;
@@ -70,6 +73,7 @@ void PersistentRegion::tracePersistentNodes(Visitor* visitor)
             } else {
                 node->tracePersistentNode(visitor);
                 ++persistentCount;
+                debugMarkedObjectSize = Heap::markedObjectSize();
             }
         }
         if (freeCount == PersistentNodeSlots::slotCount) {

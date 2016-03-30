@@ -30,6 +30,7 @@
 
 #include "platform/heap/Heap.h"
 
+#include "base/debug/alias.h"
 #include "base/sys_info.h"
 #include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -344,6 +345,11 @@ const char* Heap::gcReasonString(BlinkGC::GCReason reason)
 void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType, BlinkGC::GCReason reason)
 {
     ASSERT(gcType != BlinkGC::ThreadTerminationGC);
+
+    size_t debugAllocatedObjectSize = Heap::allocatedObjectSize();
+    base::debug::Alias(&debugAllocatedObjectSize);
+    size_t debugWrapperCount = Heap::wrapperCount();
+    base::debug::Alias(&debugWrapperCount);
 
     ThreadState* state = ThreadState::current();
     // Nested collectGarbage() invocations aren't supported.
