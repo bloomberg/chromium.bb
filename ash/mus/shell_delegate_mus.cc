@@ -160,6 +160,10 @@ void ShellDelegateMus::RemoveVirtualKeyboardStateObserver(
   NOTIMPLEMENTED();
 }
 
+void ShellDelegateMus::OpenUrl(const GURL& url) {
+  NOTIMPLEMENTED();
+}
+
 app_list::AppListViewDelegate* ShellDelegateMus::GetAppListViewDelegate() {
   NOTIMPLEMENTED();
   return nullptr;

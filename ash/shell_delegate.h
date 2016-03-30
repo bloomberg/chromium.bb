@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 
+class GURL;
+
 namespace app_list {
 class AppListViewDelegate;
 }
@@ -106,6 +108,9 @@ class ASH_EXPORT ShellDelegate {
       VirtualKeyboardStateObserver* observer) = 0;
   virtual void RemoveVirtualKeyboardStateObserver(
       VirtualKeyboardStateObserver* observer) = 0;
+
+  // Opens the |url| in a new browser tab.
+  virtual void OpenUrl(const GURL& url) = 0;
 
   // Get the AppListViewDelegate, creating one if it does not yet exist.
   // Ownership stays with Chrome's AppListService, or the ShellDelegate.

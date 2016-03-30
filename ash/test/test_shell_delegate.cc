@@ -140,6 +140,8 @@ void TestShellDelegate::RemoveVirtualKeyboardStateObserver(
   keyboard_state_observer_list_.RemoveObserver(observer);
 }
 
+void TestShellDelegate::OpenUrl(const GURL& url) {}
+
 app_list::AppListViewDelegate* TestShellDelegate::GetAppListViewDelegate() {
   if (!app_list_view_delegate_)
     app_list_view_delegate_.reset(new app_list::test::AppListTestViewDelegate);

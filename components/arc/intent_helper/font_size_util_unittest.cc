@@ -1,16 +1,14 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/settings_bridge.h"
+#include "components/arc/intent_helper/font_size_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
 
-namespace fontsizes {
-
-TEST(SettingsBridgeTest, FontSizeConvertChromeToAndroid) {
+TEST(ArcSettingsServiceTest, FontSizeConvertChromeToAndroid) {
   // Does not return a value smaller than Small.
   EXPECT_DOUBLE_EQ(kAndroidFontScaleSmall,
                    ConvertFontSizeChromeToAndroid(0, 0, 0));
@@ -47,7 +45,5 @@ TEST(SettingsBridgeTest, FontSizeConvertChromeToAndroid) {
   EXPECT_DOUBLE_EQ(kAndroidFontScaleHuge,
                    ConvertFontSizeChromeToAndroid(24, 0, 0));
 }
-
-}  // namespace fontsizes
 
 }  // namespace arc

@@ -20,12 +20,16 @@
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/session_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -118,6 +122,21 @@ bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {
 
 void ChromeShellDelegate::Exit() {
   chrome::AttemptUserExit();
+}
+
+void ChromeShellDelegate::OpenUrl(const GURL& url) {
+  if (!url.is_valid())
+    return;
+
+  chrome::ScopedTabbedBrowserDisplayer displayer(
+      ProfileManager::GetActiveUserProfile());
+  chrome::AddSelectedTabWithURL(displayer.browser(), url,
+                                ui::PAGE_TRANSITION_LINK);
+
+  // Since the ScopedTabbedBrowserDisplayer does not guarantee that the
+  // browser will be shown on the active desktop, we ensure the visibility.
+  multi_user_util::MoveWindowToCurrentDesktop(
+      displayer.browser()->window()->GetNativeWindow());
 }
 
 app_list::AppListViewDelegate* ChromeShellDelegate::GetAppListViewDelegate() {

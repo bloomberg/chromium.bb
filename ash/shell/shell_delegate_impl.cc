@@ -189,6 +189,8 @@ void ShellDelegateImpl::RemoveVirtualKeyboardStateObserver(
     VirtualKeyboardStateObserver* observer) {
 }
 
+void ShellDelegateImpl::OpenUrl(const GURL& url) {}
+
 app_list::AppListViewDelegate* ShellDelegateImpl::GetAppListViewDelegate() {
   if (!app_list_view_delegate_)
     app_list_view_delegate_.reset(ash::shell::CreateAppListViewDelegate());
