@@ -5,23 +5,8 @@
 #ifndef CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_RENDERER_CLIENT_H_
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_LAYOUT_TEST_CONTENT_RENDERER_CLIENT_H_
 
-#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
-
-namespace blink {
-class WebFrame;
-class WebPlugin;
-struct WebPluginParams;
-}
-
-namespace web_cache {
-class WebCacheRenderProcessObserver;
-}
-
-namespace test_runner {
-class WebTestProxyBase;
-}
 
 namespace content {
 
@@ -52,9 +37,6 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
       override;
 
  private:
-  void WebTestProxyCreated(RenderView* render_view,
-                           test_runner::WebTestProxyBase* proxy);
-
   scoped_ptr<LayoutTestRenderProcessObserver> shell_observer_;
   scoped_ptr<MockWebClipboardImpl> clipboard_;
 };
