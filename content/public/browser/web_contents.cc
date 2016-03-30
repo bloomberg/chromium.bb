@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/child_process_host.h"
 
+#include <utility>
+
+#include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
 
 namespace content {
@@ -13,9 +15,9 @@ WebContents::CreateParams::CreateParams(BrowserContext* context)
     : CreateParams(context, nullptr) {}
 
 WebContents::CreateParams::CreateParams(BrowserContext* context,
-                                        SiteInstance* site)
+                                        scoped_refptr<SiteInstance> site)
     : browser_context(context),
-      site_instance(site),
+      site_instance(std::move(site)),
       opener_render_process_id(content::ChildProcessHost::kInvalidUniqueID),
       opener_render_frame_id(MSG_ROUTING_NONE),
       opener_suppressed(false),

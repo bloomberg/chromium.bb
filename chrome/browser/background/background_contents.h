@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/deferred_start_render_host.h"
@@ -24,7 +25,6 @@ class Profile;
 
 namespace content {
 class SessionStorageNamespace;
-class SiteInstance;
 };
 
 namespace extensions {
@@ -56,7 +56,7 @@ class BackgroundContents : public extensions::DeferredStartRenderHost,
   };
 
   BackgroundContents(
-      content::SiteInstance* site_instance,
+      scoped_refptr<content::SiteInstance> site_instance,
       int32_t routing_id,
       int32_t main_frame_routing_id,
       int32_t main_frame_widget_routing_id,

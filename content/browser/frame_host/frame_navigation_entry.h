@@ -33,7 +33,7 @@ class CONTENT_EXPORT FrameNavigationEntry
                        const std::string& frame_unique_name,
                        int64_t item_sequence_number,
                        int64_t document_sequence_number,
-                       SiteInstanceImpl* site_instance,
+                       scoped_refptr<SiteInstanceImpl> site_instance,
                        const GURL& url,
                        const Referrer& referrer);
 
@@ -88,8 +88,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   // a SiteInstance must live in the same process.  This is a refcounted pointer
   // that keeps the SiteInstance (not necessarily the process) alive as long as
   // this object remains in the session history.
-  void set_site_instance(SiteInstanceImpl* site_instance) {
-    site_instance_ = site_instance;
+  void set_site_instance(scoped_refptr<SiteInstanceImpl> site_instance) {
+    site_instance_ = std::move(site_instance);
   }
   SiteInstanceImpl* site_instance() const { return site_instance_.get(); }
 

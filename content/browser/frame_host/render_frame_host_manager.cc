@@ -1139,7 +1139,8 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   return false;
 }
 
-SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
+scoped_refptr<SiteInstance>
+RenderFrameHostManager::GetSiteInstanceForNavigation(
     const GURL& dest_url,
     SiteInstance* source_instance,
     SiteInstance* dest_instance,
@@ -1183,7 +1184,7 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForNavigation(
         dest_is_restore, dest_is_view_source_mode, force_swap);
   }
 
-  SiteInstance* new_instance =
+  scoped_refptr<SiteInstance> new_instance =
       ConvertToSiteInstance(new_instance_descriptor, candidate_instance);
 
   // If |force_swap| is true, we must use a different SiteInstance than the
@@ -1402,7 +1403,7 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
                                                            effective_url);
 }
 
-SiteInstance* RenderFrameHostManager::ConvertToSiteInstance(
+scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
     const SiteInstanceDescriptor& descriptor,
     SiteInstance* candidate_instance) {
   SiteInstance* current_instance = render_frame_host_->GetSiteInstance();

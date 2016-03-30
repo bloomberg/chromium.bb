@@ -107,9 +107,9 @@ void ExtensionOptionsGuest::CreateWebContents(
   // Create a WebContents using the extension URL. The options page's
   // WebContents should live in the same process as its parent extension's
   // WebContents, so we can use |extension_url| for creating the SiteInstance.
-  content::SiteInstance* options_site_instance =
-      content::SiteInstance::CreateForURL(browser_context(), extension_url);
-  WebContents::CreateParams params(browser_context(), options_site_instance);
+  WebContents::CreateParams params(
+      browser_context(),
+      content::SiteInstance::CreateForURL(browser_context(), extension_url));
   params.guest_delegate = this;
   WebContents* wc = WebContents::Create(params);
   SetViewType(wc, VIEW_TYPE_EXTENSION_GUEST);

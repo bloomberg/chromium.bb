@@ -32,7 +32,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   ~TestWebContents() override;
 
   static TestWebContents* Create(BrowserContext* browser_context,
-                                 SiteInstance* instance);
+                                 scoped_refptr<SiteInstance> instance);
 
   // WebContentsImpl overrides (returning the same values, but in Test* types)
   TestRenderFrameHost* GetMainFrame() override;

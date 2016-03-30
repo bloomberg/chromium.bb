@@ -20,6 +20,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/save_page_type.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
 #include "ipc/ipc_sender.h"
@@ -55,7 +56,6 @@ class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHostView;
-class SiteInstance;
 class WebContentsDelegate;
 struct CustomContextMenuContext;
 struct DropData;
@@ -91,14 +91,14 @@ class WebContents : public PageNavigator,
     explicit CreateParams(BrowserContext* context);
     CreateParams(const CreateParams& other);
     ~CreateParams();
-    CreateParams(BrowserContext* context, SiteInstance* site);
+    CreateParams(BrowserContext* context, scoped_refptr<SiteInstance> site);
 
     BrowserContext* browser_context;
 
     // Specifying a SiteInstance here is optional.  It can be set to avoid an
     // extra process swap if the first navigation is expected to require a
     // privileged process.
-    SiteInstance* site_instance;
+    scoped_refptr<SiteInstance> site_instance;
 
     // The process id of the frame initiating the open.
     int opener_render_process_id;

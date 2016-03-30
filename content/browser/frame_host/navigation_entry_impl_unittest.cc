@@ -24,7 +24,7 @@ class NavigationEntryTest : public testing::Test {
   void SetUp() override {
     entry1_.reset(new NavigationEntryImpl);
 
-    instance_ = static_cast<SiteInstanceImpl*>(SiteInstance::Create(NULL));
+    instance_ = SiteInstanceImpl::Create(NULL);
     entry2_.reset(new NavigationEntryImpl(
           instance_, 3,
           GURL("test:url"),
@@ -40,7 +40,7 @@ class NavigationEntryTest : public testing::Test {
   scoped_ptr<NavigationEntryImpl> entry1_;
   scoped_ptr<NavigationEntryImpl> entry2_;
   // SiteInstances are deleted when their NavigationEntries are gone.
-  SiteInstanceImpl* instance_;
+  scoped_refptr<SiteInstanceImpl> instance_;
 };
 
 // Test unique ID accessors

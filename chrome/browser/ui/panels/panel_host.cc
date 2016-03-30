@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/panels/panel_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -52,10 +54,11 @@ void PanelHost::Init(const GURL& url,
   if (url.is_empty())
     return;
 
-  content::SiteInstance* instance =
+  scoped_refptr<content::SiteInstance> instance =
       source_site_instance ? source_site_instance->GetRelatedSiteInstance(url)
                            : content::SiteInstance::CreateForURL(profile_, url);
-  content::WebContents::CreateParams create_params(profile_, instance);
+  content::WebContents::CreateParams create_params(profile_,
+                                                   std::move(instance));
   web_contents_.reset(content::WebContents::Create(create_params));
   extensions::SetViewType(web_contents_.get(), extensions::VIEW_TYPE_PANEL);
   web_contents_->SetDelegate(this);

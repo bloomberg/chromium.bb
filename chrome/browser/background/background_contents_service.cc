@@ -4,6 +4,8 @@
 
 #include "chrome/browser/background/background_contents_service.h"
 
+#include <utility>
+
 #include "apps/app_load_service.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -648,7 +650,7 @@ void BackgroundContentsService::LoadBackgroundContents(
 }
 
 BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
-    SiteInstance* site,
+    scoped_refptr<SiteInstance> site,
     int32_t routing_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
@@ -657,9 +659,10 @@ BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
     const base::string16& application_id,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  BackgroundContents* contents = new BackgroundContents(
-      site, routing_id, main_frame_route_id, main_frame_widget_route_id, this,
-      partition_id, session_storage_namespace);
+  BackgroundContents* contents =
+      new BackgroundContents(std::move(site), routing_id, main_frame_route_id,
+                             main_frame_widget_route_id, this, partition_id,
+                             session_storage_namespace);
 
   // Register the BackgroundContents internally, then send out a notification
   // to external listeners.

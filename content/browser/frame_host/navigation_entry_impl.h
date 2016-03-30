@@ -69,7 +69,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   static int kInvalidBindings;
 
   NavigationEntryImpl();
-  NavigationEntryImpl(SiteInstanceImpl* instance,
+  NavigationEntryImpl(scoped_refptr<SiteInstanceImpl> instance,
                       int page_id,
                       const GURL& url,
                       const Referrer& referrer,
@@ -219,7 +219,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Note that the SiteInstance should usually not be changed after it is set,
   // but this may happen if the NavigationEntry was cloned and needs to use a
   // different SiteInstance.
-  void set_site_instance(SiteInstanceImpl* site_instance);
+  void set_site_instance(scoped_refptr<SiteInstanceImpl> site_instance);
   SiteInstanceImpl* site_instance() const {
     return frame_tree_->frame_entry->site_instance();
   }

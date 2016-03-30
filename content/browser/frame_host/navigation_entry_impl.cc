@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <queue>
+#include <utility>
 
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -156,15 +157,21 @@ NavigationEntryImpl::NavigationEntryImpl()
                           ui::PAGE_TRANSITION_LINK, false) {
 }
 
-NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
-                                         int page_id,
-                                         const GURL& url,
-                                         const Referrer& referrer,
-                                         const base::string16& title,
-                                         ui::PageTransition transition_type,
-                                         bool is_renderer_initiated)
-    : frame_tree_(new TreeNode(
-          new FrameNavigationEntry(-1, "", -1, -1, instance, url, referrer))),
+NavigationEntryImpl::NavigationEntryImpl(
+    scoped_refptr<SiteInstanceImpl> instance,
+    int page_id,
+    const GURL& url,
+    const Referrer& referrer,
+    const base::string16& title,
+    ui::PageTransition transition_type,
+    bool is_renderer_initiated)
+    : frame_tree_(new TreeNode(new FrameNavigationEntry(-1,
+                                                        "",
+                                                        -1,
+                                                        -1,
+                                                        std::move(instance),
+                                                        url,
+                                                        referrer))),
       unique_id_(GetUniqueIDInConstructor()),
       bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
@@ -318,9 +325,10 @@ int32_t NavigationEntryImpl::GetPageID() const {
   return page_id_;
 }
 
-void NavigationEntryImpl::set_site_instance(SiteInstanceImpl* site_instance) {
+void NavigationEntryImpl::set_site_instance(
+    scoped_refptr<SiteInstanceImpl> site_instance) {
   // TODO(creis): Update all callers and remove this method.
-  frame_tree_->frame_entry->set_site_instance(site_instance);
+  frame_tree_->frame_entry->set_site_instance(std::move(site_instance));
 }
 
 void NavigationEntryImpl::set_source_site_instance(

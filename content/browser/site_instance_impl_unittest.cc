@@ -277,14 +277,14 @@ TEST_F(SiteInstanceTest, GetProcess) {
   // Ensure that GetProcess returns a process.
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   scoped_ptr<RenderProcessHost> host1;
-  scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
-      SiteInstance::Create(browser_context.get())));
+  scoped_refptr<SiteInstanceImpl> instance(
+      SiteInstanceImpl::Create(browser_context.get()));
   host1.reset(instance->GetProcess());
   EXPECT_TRUE(host1.get() != NULL);
 
   // Ensure that GetProcess creates a new process.
-  scoped_refptr<SiteInstanceImpl> instance2(static_cast<SiteInstanceImpl*>(
-      SiteInstance::Create(browser_context.get())));
+  scoped_refptr<SiteInstanceImpl> instance2(
+      SiteInstanceImpl::Create(browser_context.get()));
   scoped_ptr<RenderProcessHost> host2(instance2->GetProcess());
   EXPECT_TRUE(host2.get() != NULL);
   EXPECT_NE(host1.get(), host2.get());
@@ -294,8 +294,7 @@ TEST_F(SiteInstanceTest, GetProcess) {
 
 // Test to ensure SetSite and site() work properly.
 TEST_F(SiteInstanceTest, SetSite) {
-  scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
-      SiteInstance::Create(NULL)));
+  scoped_refptr<SiteInstanceImpl> instance(SiteInstanceImpl::Create(NULL));
   EXPECT_FALSE(instance->HasSite());
   EXPECT_TRUE(instance->GetSiteURL().is_empty());
 
@@ -416,15 +415,14 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
 
   const GURL url_a1("http://www.google.com/1.html");
   scoped_refptr<SiteInstanceImpl> site_instance_a1(
-      static_cast<SiteInstanceImpl*>(
-          browsing_instance->GetSiteInstanceForURL(url_a1)));
+      browsing_instance->GetSiteInstanceForURL(url_a1));
   EXPECT_TRUE(site_instance_a1.get() != NULL);
 
   // A separate site should create a separate SiteInstance.
   const GURL url_b1("http://www.yahoo.com/");
   scoped_refptr<SiteInstanceImpl> site_instance_b1(
-      static_cast<SiteInstanceImpl*>(
-          browsing_instance->GetSiteInstanceForURL(url_b1)));
+
+      browsing_instance->GetSiteInstanceForURL(url_b1));
   EXPECT_NE(site_instance_a1.get(), site_instance_b1.get());
   EXPECT_TRUE(site_instance_a1->IsRelatedSiteInstance(site_instance_b1.get()));
 
@@ -446,8 +444,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
       new TestBrowsingInstance(browser_context.get(), &delete_counter);
   // Ensure the new SiteInstance is ref counted so that it gets deleted.
   scoped_refptr<SiteInstanceImpl> site_instance_a2_2(
-      static_cast<SiteInstanceImpl*>(
-          browsing_instance2->GetSiteInstanceForURL(url_a2)));
+      browsing_instance2->GetSiteInstanceForURL(url_a2));
   EXPECT_NE(site_instance_a1.get(), site_instance_a2_2.get());
   EXPECT_FALSE(
       site_instance_a1->IsRelatedSiteInstance(site_instance_a2_2.get()));
@@ -490,16 +487,14 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
 
   const GURL url_a1("http://www.google.com/1.html");
   scoped_refptr<SiteInstanceImpl> site_instance_a1(
-      static_cast<SiteInstanceImpl*>(
-          browsing_instance->GetSiteInstanceForURL(url_a1)));
+      browsing_instance->GetSiteInstanceForURL(url_a1));
   EXPECT_TRUE(site_instance_a1.get() != NULL);
   scoped_ptr<RenderProcessHost> process_a1(site_instance_a1->GetProcess());
 
   // A separate site should create a separate SiteInstance.
   const GURL url_b1("http://www.yahoo.com/");
   scoped_refptr<SiteInstanceImpl> site_instance_b1(
-      static_cast<SiteInstanceImpl*>(
-          browsing_instance->GetSiteInstanceForURL(url_b1)));
+      browsing_instance->GetSiteInstanceForURL(url_b1));
   EXPECT_NE(site_instance_a1.get(), site_instance_b1.get());
   EXPECT_TRUE(site_instance_a1->IsRelatedSiteInstance(site_instance_b1.get()));
 
@@ -520,8 +515,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   TestBrowsingInstance* browsing_instance2 =
       new TestBrowsingInstance(browser_context.get(), &delete_counter);
   scoped_refptr<SiteInstanceImpl> site_instance_a1_2(
-      static_cast<SiteInstanceImpl*>(
-          browsing_instance2->GetSiteInstanceForURL(url_a1)));
+      browsing_instance2->GetSiteInstanceForURL(url_a1));
   EXPECT_TRUE(site_instance_a1.get() != NULL);
   EXPECT_NE(site_instance_a1.get(), site_instance_a1_2.get());
   EXPECT_EQ(process_a1.get(), site_instance_a1_2->GetProcess());
@@ -532,8 +526,7 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   TestBrowsingInstance* browsing_instance3 =
       new TestBrowsingInstance(browser_context2.get(), &delete_counter);
   scoped_refptr<SiteInstanceImpl> site_instance_a2_3(
-      static_cast<SiteInstanceImpl*>(
-          browsing_instance3->GetSiteInstanceForURL(url_a2)));
+      browsing_instance3->GetSiteInstanceForURL(url_a2));
   EXPECT_TRUE(site_instance_a2_3.get() != NULL);
   scoped_ptr<RenderProcessHost> process_a2_3(site_instance_a2_3->GetProcess());
   EXPECT_NE(site_instance_a1.get(), site_instance_a2_3.get());
@@ -561,10 +554,10 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   DrainMessageLoops();
 }
 
-static SiteInstanceImpl* CreateSiteInstance(BrowserContext* browser_context,
-                                            const GURL& url) {
-  return static_cast<SiteInstanceImpl*>(
-      SiteInstance::CreateForURL(browser_context, url));
+static scoped_refptr<SiteInstanceImpl> CreateSiteInstance(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  return SiteInstanceImpl::CreateForURL(browser_context, url);
 }
 
 // Test to ensure that pages that require certain privileges are grouped
@@ -635,8 +628,8 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
 TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   scoped_ptr<RenderProcessHost> host;
-  scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
-      SiteInstance::Create(browser_context.get())));
+  scoped_refptr<SiteInstanceImpl> instance(
+      SiteInstanceImpl::Create(browser_context.get()));
 
   EXPECT_FALSE(instance->HasSite());
   EXPECT_TRUE(instance->GetSiteURL().is_empty());
@@ -662,8 +655,8 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
 
   // Test that WebUI SiteInstances reject normal web URLs.
   const GURL webui_url("chrome://gpu");
-  scoped_refptr<SiteInstanceImpl> webui_instance(static_cast<SiteInstanceImpl*>(
-      SiteInstance::Create(browser_context.get())));
+  scoped_refptr<SiteInstanceImpl> webui_instance(
+      SiteInstanceImpl::Create(browser_context.get()));
   webui_instance->SetSite(webui_url);
   scoped_ptr<RenderProcessHost> webui_host(webui_instance->GetProcess());
 
@@ -680,8 +673,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
   // even if we haven't called GetProcess yet.  Make sure HasWrongProcessForURL
   // doesn't crash (http://crbug.com/137070).
   scoped_refptr<SiteInstanceImpl> webui_instance2(
-      static_cast<SiteInstanceImpl*>(
-          SiteInstance::Create(browser_context.get())));
+      SiteInstanceImpl::Create(browser_context.get()));
   webui_instance2->SetSite(webui_url);
   EXPECT_FALSE(webui_instance2->HasWrongProcessForURL(webui_url));
   EXPECT_TRUE(
@@ -697,8 +689,8 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
 
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   scoped_ptr<RenderProcessHost> host;
-  scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
-      SiteInstance::Create(browser_context.get())));
+  scoped_refptr<SiteInstanceImpl> instance(
+      SiteInstanceImpl::Create(browser_context.get()));
 
   instance->SetSite(GURL("http://evernote.com/"));
   EXPECT_TRUE(instance->HasSite());
@@ -728,8 +720,8 @@ TEST_F(SiteInstanceTest, ProcessPerSiteWithWrongBindings) {
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   scoped_ptr<RenderProcessHost> host;
   scoped_ptr<RenderProcessHost> host2;
-  scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
-      SiteInstance::Create(browser_context.get())));
+  scoped_refptr<SiteInstanceImpl> instance(
+      SiteInstanceImpl::Create(browser_context.get()));
 
   EXPECT_FALSE(instance->HasSite());
   EXPECT_TRUE(instance->GetSiteURL().is_empty());
@@ -752,8 +744,7 @@ TEST_F(SiteInstanceTest, ProcessPerSiteWithWrongBindings) {
   // same process.  Make sure it doesn't use the same process if the bindings
   // are missing.
   scoped_refptr<SiteInstanceImpl> instance2(
-      static_cast<SiteInstanceImpl*>(
-          SiteInstance::Create(browser_context.get())));
+      SiteInstanceImpl::Create(browser_context.get()));
   instance2->SetSite(webui_url);
   host2.reset(instance2->GetProcess());
   EXPECT_TRUE(host2.get() != NULL);
@@ -770,8 +761,8 @@ TEST_F(SiteInstanceTest, NoProcessPerSiteForEmptySite) {
       switches::kProcessPerSite);
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   scoped_ptr<RenderProcessHost> host;
-  scoped_refptr<SiteInstanceImpl> instance(static_cast<SiteInstanceImpl*>(
-      SiteInstance::Create(browser_context.get())));
+  scoped_refptr<SiteInstanceImpl> instance(
+      SiteInstanceImpl::Create(browser_context.get()));
 
   instance->SetSite(GURL());
   EXPECT_TRUE(instance->HasSite());

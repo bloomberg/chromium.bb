@@ -900,8 +900,8 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
 // Tests the Init function by checking the initial RenderViewHost.
 TEST_F(RenderFrameHostManagerTest, Init) {
   // Using TestBrowserContext.
-  SiteInstanceImpl* instance =
-      static_cast<SiteInstanceImpl*>(SiteInstance::Create(browser_context()));
+  scoped_refptr<SiteInstanceImpl> instance =
+      SiteInstanceImpl::Create(browser_context());
   EXPECT_FALSE(instance->HasSite());
 
   scoped_ptr<TestWebContents> web_contents(
@@ -923,10 +923,8 @@ TEST_F(RenderFrameHostManagerTest, Init) {
 // Tests the Navigate function. We navigate three sites consecutively and check
 // how the pending/committed RenderViewHost are modified.
 TEST_F(RenderFrameHostManagerTest, Navigate) {
-  SiteInstance* instance = SiteInstance::Create(browser_context());
-
-  scoped_ptr<TestWebContents> web_contents(
-      TestWebContents::Create(browser_context(), instance));
+  scoped_ptr<TestWebContents> web_contents(TestWebContents::Create(
+      browser_context(), SiteInstance::Create(browser_context())));
   RenderViewHostChangedObserver change_observer(web_contents.get());
 
   RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
@@ -1001,7 +999,8 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
 // Tests WebUI creation.
 TEST_F(RenderFrameHostManagerTest, WebUI) {
   set_should_create_webui(true);
-  SiteInstance* instance = SiteInstance::Create(browser_context());
+  scoped_refptr<SiteInstance> instance =
+      SiteInstance::Create(browser_context());
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
@@ -1059,7 +1058,8 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 // grant the correct bindings.  http://crbug.com/189101.
 TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   set_should_create_webui(true);
-  SiteInstance* blank_instance = SiteInstance::Create(browser_context());
+  scoped_refptr<SiteInstance> blank_instance =
+      SiteInstance::Create(browser_context());
   blank_instance->GetProcess()->Init();
 
   // Create a blank tab.
@@ -1613,7 +1613,7 @@ TEST_F(RenderFrameHostManagerTest, EnableWebUIWithSwappedOutOpener) {
 // Test that we reuse the same guest SiteInstance if we navigate across sites.
 TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   GURL guest_url(std::string(kGuestScheme).append("://abc123"));
-  SiteInstance* instance =
+  scoped_refptr<SiteInstance> instance =
       SiteInstance::CreateForURL(browser_context(), guest_url);
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
@@ -1668,7 +1668,8 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
 TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   TestNotificationTracker notifications;
 
-  SiteInstance* instance = SiteInstance::Create(browser_context());
+  scoped_refptr<SiteInstance> instance =
+      SiteInstance::Create(browser_context());
 
   BeforeUnloadFiredWebContentsDelegate delegate;
   scoped_ptr<TestWebContents> web_contents(
@@ -2537,8 +2538,8 @@ TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
   set_should_create_webui(true);
 
   const GURL kInitUrl("chrome://foo/");
-  SiteInstanceImpl* initial_instance =
-      static_cast<SiteInstanceImpl*>(SiteInstance::Create(browser_context()));
+  scoped_refptr<SiteInstanceImpl> initial_instance =
+      SiteInstanceImpl::Create(browser_context());
   initial_instance->SetSite(kInitUrl);
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), initial_instance));

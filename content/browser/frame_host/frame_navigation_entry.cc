@@ -4,6 +4,8 @@
 
 #include "content/browser/frame_host/frame_navigation_entry.h"
 
+#include <utility>
+
 namespace content {
 
 FrameNavigationEntry::FrameNavigationEntry(int frame_tree_node_id)
@@ -12,18 +14,19 @@ FrameNavigationEntry::FrameNavigationEntry(int frame_tree_node_id)
       document_sequence_number_(-1) {
 }
 
-FrameNavigationEntry::FrameNavigationEntry(int frame_tree_node_id,
-                                           const std::string& frame_unique_name,
-                                           int64_t item_sequence_number,
-                                           int64_t document_sequence_number,
-                                           SiteInstanceImpl* site_instance,
-                                           const GURL& url,
-                                           const Referrer& referrer)
+FrameNavigationEntry::FrameNavigationEntry(
+    int frame_tree_node_id,
+    const std::string& frame_unique_name,
+    int64_t item_sequence_number,
+    int64_t document_sequence_number,
+    scoped_refptr<SiteInstanceImpl> site_instance,
+    const GURL& url,
+    const Referrer& referrer)
     : frame_tree_node_id_(frame_tree_node_id),
       frame_unique_name_(frame_unique_name),
       item_sequence_number_(item_sequence_number),
       document_sequence_number_(document_sequence_number),
-      site_instance_(site_instance),
+      site_instance_(std::move(site_instance)),
       url_(url),
       referrer_(referrer) {}
 

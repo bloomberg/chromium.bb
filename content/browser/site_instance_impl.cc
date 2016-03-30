@@ -42,8 +42,22 @@ SiteInstanceImpl::~SiteInstanceImpl() {
   // the BrowsingInstance.  Any future visits to a page from this site
   // (within the same BrowsingInstance) can safely create a new SiteInstance.
   if (has_site_)
-    browsing_instance_->UnregisterSiteInstance(
-        static_cast<SiteInstance*>(this));
+    browsing_instance_->UnregisterSiteInstance(this);
+}
+
+scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::Create(
+    BrowserContext* browser_context) {
+  return make_scoped_refptr(
+      new SiteInstanceImpl(new BrowsingInstance(browser_context)));
+}
+
+scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  // This will create a new SiteInstance and BrowsingInstance.
+  scoped_refptr<BrowsingInstance> instance(
+      new BrowsingInstance(browser_context));
+  return instance->GetSiteInstanceForURL(url);
 }
 
 int32_t SiteInstanceImpl::GetId() {
@@ -177,7 +191,8 @@ bool SiteInstanceImpl::HasRelatedSiteInstance(const GURL& url) {
   return browsing_instance_->HasSiteInstance(url);
 }
 
-SiteInstance* SiteInstanceImpl::GetRelatedSiteInstance(const GURL& url) {
+scoped_refptr<SiteInstance> SiteInstanceImpl::GetRelatedSiteInstance(
+    const GURL& url) {
   return browsing_instance_->GetSiteInstanceForURL(url);
 }
 
@@ -253,17 +268,16 @@ BrowserContext* SiteInstanceImpl::GetBrowserContext() const {
 }
 
 // static
-SiteInstance* SiteInstance::Create(BrowserContext* browser_context) {
-  return new SiteInstanceImpl(new BrowsingInstance(browser_context));
+scoped_refptr<SiteInstance> SiteInstance::Create(
+    BrowserContext* browser_context) {
+  return SiteInstanceImpl::Create(browser_context);
 }
 
 // static
-SiteInstance* SiteInstance::CreateForURL(BrowserContext* browser_context,
-                                         const GURL& url) {
-  // This will create a new SiteInstance and BrowsingInstance.
-  scoped_refptr<BrowsingInstance> instance(
-      new BrowsingInstance(browser_context));
-  return instance->GetSiteInstanceForURL(url);
+scoped_refptr<SiteInstance> SiteInstance::CreateForURL(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  return SiteInstanceImpl::CreateForURL(browser_context, url);
 }
 
 // static

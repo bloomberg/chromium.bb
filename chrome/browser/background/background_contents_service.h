@@ -115,7 +115,7 @@ class BackgroundContentsService : private content::NotificationObserver,
   // |frame_name| and |application_id| values, using the passed |profile| as the
   // Source..
   BackgroundContents* CreateBackgroundContents(
-      content::SiteInstance* site,
+      scoped_refptr<content::SiteInstance> site,
       int32_t route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,

@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_TAB_UTIL_H_
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_UTIL_H_
 
+#include "content/public/browser/site_instance.h"
+
 class GURL;
 class Profile;
 
 namespace content {
-class SiteInstance;
 class WebContents;
 }
 
@@ -25,9 +26,8 @@ content::WebContents* GetWebContentsByFrameID(int render_process_id,
                                               int render_frame_id);
 
 // Returns a new SiteInstance for WebUI and app URLs. Returns NULL otherwise.
-content::SiteInstance* GetSiteInstanceForNewTab(
-    Profile* profile,
-    const GURL& url);
+scoped_refptr<content::SiteInstance> GetSiteInstanceForNewTab(Profile* profile,
+                                                              const GURL& url);
 
 }  // namespace tab_util
 

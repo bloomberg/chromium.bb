@@ -4,6 +4,8 @@
 
 #include "content/public/test/test_renderer_host.h"
 
+#include <utility>
+
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -146,11 +148,11 @@ WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
   DCHECK(aura_test_helper_ != NULL);
 #endif
 
-  // This will be deleted when the WebContentsImpl goes away.
-  SiteInstance* instance = SiteInstance::Create(browser_context_.get());
+  scoped_refptr<SiteInstance> instance =
+      SiteInstance::Create(browser_context_.get());
   instance->GetProcess()->Init();
 
-  return TestWebContents::Create(browser_context_.get(), instance);
+  return TestWebContents::Create(browser_context_.get(), std::move(instance));
 }
 
 void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {

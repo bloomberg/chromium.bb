@@ -168,9 +168,9 @@ class TabStripControllerTest : public CocoaProfileTest {
   }
 
   TabView* CreateTab() {
-    SiteInstance* instance = SiteInstance::Create(profile());
-    WebContents* web_contents = WebContents::Create(
-        content::WebContents::CreateParams(profile(), instance));
+    WebContents* web_contents =
+        WebContents::Create(content::WebContents::CreateParams(
+            profile(), SiteInstance::Create(profile())));
     model_->AppendWebContents(web_contents, true);
     const NSUInteger tab_count = [controller_.get() viewsCount];
     return static_cast<TabView*>([controller_.get() viewAtIndex:tab_count - 1]);

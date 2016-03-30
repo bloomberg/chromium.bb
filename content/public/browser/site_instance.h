@@ -104,13 +104,9 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // Gets a SiteInstance for the given URL that shares the current
   // BrowsingInstance, creating a new SiteInstance if necessary.  This ensures
   // that a BrowsingInstance only has one SiteInstance per site, so that pages
-  // in a BrowsingInstance have the ability to script each other.  Callers
-  // should ensure that this SiteInstance becomes ref counted, by storing it in
-  // a scoped_refptr.  (By having this method, we can hide the BrowsingInstance
-  // class from the rest of the codebase.)
-  // TODO(creis): This may be an argument to build a pass_refptr<T> class, as
-  // Darin suggests.
-  virtual SiteInstance* GetRelatedSiteInstance(const GURL& url) = 0;
+  // in a BrowsingInstance have the ability to script each other.
+  virtual scoped_refptr<SiteInstance> GetRelatedSiteInstance(
+      const GURL& url) = 0;
 
   // Returns whether the given SiteInstance is in the same BrowsingInstance as
   // this one.  If so, JavaScript interactions that are permitted across
@@ -127,22 +123,20 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
 
   // Factory method to create a new SiteInstance.  This will create a new
   // new BrowsingInstance, so it should only be used when creating a new tab
-  // from scratch (or similar circumstances).  Callers should ensure that
-  // this SiteInstance becomes ref counted, by storing it in a scoped_refptr.
+  // from scratch (or similar circumstances).
   //
   // The render process host factory may be nullptr.  See SiteInstance
   // constructor.
-  //
-  // TODO(creis): This may be an argument to build a pass_refptr<T> class, as
-  // Darin suggests.
-  static SiteInstance* Create(content::BrowserContext* browser_context);
+  static scoped_refptr<SiteInstance> Create(
+      content::BrowserContext* browser_context);
 
   // Factory method to get the appropriate SiteInstance for the given URL, in
   // a new BrowsingInstance.  Use this instead of Create when you know the URL,
   // since it allows special site grouping rules to be applied (for example,
   // to group chrome-ui pages into the same instance).
-  static SiteInstance* CreateForURL(
-      content::BrowserContext* browser_context, const GURL& url);
+  static scoped_refptr<SiteInstance> CreateForURL(
+      content::BrowserContext* browser_context,
+      const GURL& url);
 
   // Return whether both URLs are part of the same web site, for the purpose of
   // assigning them to processes accordingly.  The decision is currently based

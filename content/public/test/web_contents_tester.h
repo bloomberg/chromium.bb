@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "content/public/browser/site_instance.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -16,7 +17,6 @@ namespace content {
 class BrowserContext;
 class RenderFrameHost;
 class RenderViewHost;
-class SiteInstance;
 class WebContents;
 struct Referrer;
 
@@ -55,7 +55,7 @@ class WebContentsTester {
   // Creates a WebContents enabled for testing.
   static WebContents* CreateTestWebContents(
       BrowserContext* browser_context,
-      SiteInstance* instance);
+      scoped_refptr<SiteInstance> instance);
 
   // Simulates the appropriate RenderView (pending if any, current otherwise)
   // sending a navigate notification for the NavigationController pending entry.

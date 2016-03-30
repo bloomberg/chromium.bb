@@ -33,13 +33,19 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
     virtual void RenderProcessGone(SiteInstanceImpl* site_instance) = 0;
   };
 
+  static scoped_refptr<SiteInstanceImpl> Create(
+      BrowserContext* browser_context);
+  static scoped_refptr<SiteInstanceImpl> CreateForURL(
+      BrowserContext* browser_context,
+      const GURL& url);
+
   // SiteInstance interface overrides.
   int32_t GetId() override;
   bool HasProcess() const override;
   RenderProcessHost* GetProcess() override;
   BrowserContext* GetBrowserContext() const override;
   const GURL& GetSiteURL() const override;
-  SiteInstance* GetRelatedSiteInstance(const GURL& url) override;
+  scoped_refptr<SiteInstance> GetRelatedSiteInstance(const GURL& url) override;
   bool IsRelatedSiteInstance(const SiteInstance* instance) override;
   size_t GetRelatedActiveContentsCount() override;
   bool RequiresDedicatedProcess() override;
@@ -115,7 +121,6 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
 
  protected:
   friend class BrowsingInstance;
-  friend class SiteInstance;
 
   // Virtual to allow tests to extend it.
   ~SiteInstanceImpl() override;

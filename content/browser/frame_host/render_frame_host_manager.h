@@ -566,13 +566,14 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool new_is_view_source_mode) const;
 
   // Returns the SiteInstance to use for the navigation.
-  SiteInstance* GetSiteInstanceForNavigation(const GURL& dest_url,
-                                             SiteInstance* source_instance,
-                                             SiteInstance* dest_instance,
-                                             SiteInstance* candidate_instance,
-                                             ui::PageTransition transition,
-                                             bool dest_is_restore,
-                                             bool dest_is_view_source_mode);
+  scoped_refptr<SiteInstance> GetSiteInstanceForNavigation(
+      const GURL& dest_url,
+      SiteInstance* source_instance,
+      SiteInstance* dest_instance,
+      SiteInstance* candidate_instance,
+      ui::PageTransition transition,
+      bool dest_is_restore,
+      bool dest_is_view_source_mode);
 
   // Returns a descriptor of the appropriate SiteInstance object for the given
   // |dest_url|, possibly reusing the current, source or destination
@@ -601,8 +602,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Converts a SiteInstanceDescriptor to the actual SiteInstance it describes.
   // If a |candidate_instance| is provided (is not nullptr) and it matches the
   // description, it is returned as is.
-  SiteInstance* ConvertToSiteInstance(const SiteInstanceDescriptor& descriptor,
-                                      SiteInstance* candidate_instance);
+  scoped_refptr<SiteInstance> ConvertToSiteInstance(
+      const SiteInstanceDescriptor& descriptor,
+      SiteInstance* candidate_instance);
 
   // Determines the appropriate url to use as the current url for SiteInstance
   // selection.

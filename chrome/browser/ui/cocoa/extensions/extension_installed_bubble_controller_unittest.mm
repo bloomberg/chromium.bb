@@ -63,9 +63,9 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
 
   // Adds a WebContents to the tab strip.
   void AddWebContents() {
-    content::SiteInstance* instance = content::SiteInstance::Create(profile());
-    content::WebContents* web_contents = content::WebContents::Create(
-        content::WebContents::CreateParams(profile(), instance));
+    content::WebContents* web_contents =
+        content::WebContents::Create(content::WebContents::CreateParams(
+            profile(), content::SiteInstance::Create(profile())));
     browser()->tab_strip_model()->AppendWebContents(web_contents, true);
   }
 

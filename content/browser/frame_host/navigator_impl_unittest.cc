@@ -110,9 +110,10 @@ class NavigatorTestWithBrowserSideNavigation
     return message && rfh->GetRoutingID() == message->routing_id();
   }
 
-  SiteInstance* ConvertToSiteInstance(RenderFrameHostManager* rfhm,
-                                      const SiteInstanceDescriptor& descriptor,
-                                      SiteInstance* candidate_instance) {
+  scoped_refptr<SiteInstance> ConvertToSiteInstance(
+      RenderFrameHostManager* rfhm,
+      const SiteInstanceDescriptor& descriptor,
+      SiteInstance* candidate_instance) {
     return rfhm->ConvertToSiteInstance(descriptor, candidate_instance);
   }
 };
@@ -1025,7 +1026,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
       main_test_rfh()->frame_tree_node()->render_manager();
   {
     SiteInstanceDescriptor descriptor(current_instance);
-    SiteInstance* converted_instance =
+    scoped_refptr<SiteInstance> converted_instance =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
     EXPECT_EQ(current_instance, converted_instance);
   }
@@ -1039,7 +1040,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
       current_instance->IsRelatedSiteInstance(unrelated_instance.get()));
   {
     SiteInstanceDescriptor descriptor(unrelated_instance.get());
-    SiteInstance* converted_instance =
+    scoped_refptr<SiteInstance> converted_instance =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
     EXPECT_EQ(unrelated_instance.get(), converted_instance);
   }
@@ -1049,7 +1050,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   GURL kUrlSameSiteAs1("http://www.a.com/foo");
   {
     SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs1, true);
-    SiteInstance* converted_instance =
+    scoped_refptr<SiteInstance> converted_instance =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
     EXPECT_EQ(current_instance, converted_instance);
   }
@@ -1102,7 +1103,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
               converted_instance_2->GetSiteURL());
 
     // Converts once more but with |converted_instance_1| as a candidate.
-    SiteInstance* converted_instance_3 =
+    scoped_refptr<SiteInstance> converted_instance_3 =
         ConvertToSiteInstance(rfhm, descriptor, converted_instance_1.get());
     // Should return |converted_instance_1| because its site matches and it is
     // unrelated to the current SiteInstance.
@@ -1125,7 +1126,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
     EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrlSameSiteAs2),
               converted_instance_1->GetSiteURL());
 
-    SiteInstance* converted_instance_2 =
+    scoped_refptr<SiteInstance> converted_instance_2 =
         ConvertToSiteInstance(rfhm, descriptor, unrelated_instance.get());
     // Should return |unrelated_instance| because its site matches and it is
     // unrelated to the current SiteInstance.

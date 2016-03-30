@@ -348,7 +348,7 @@ void WebViewGuest::CreateWebContents(
   // the new tag can script each other.
   auto guest_view_manager = GuestViewManager::FromBrowserContext(
       owner_render_process_host->GetBrowserContext());
-  content::SiteInstance* guest_site_instance =
+  scoped_refptr<content::SiteInstance> guest_site_instance =
       guest_view_manager->GetGuestSiteInstance(guest_site);
   if (!guest_site_instance) {
     // Create the SiteInstance in a new BrowsingInstance, which will ensure
@@ -359,7 +359,7 @@ void WebViewGuest::CreateWebContents(
   }
   WebContents::CreateParams params(
       owner_render_process_host->GetBrowserContext(),
-      guest_site_instance);
+      std::move(guest_site_instance));
   params.guest_delegate = this;
   callback.Run(WebContents::Create(params));
 }

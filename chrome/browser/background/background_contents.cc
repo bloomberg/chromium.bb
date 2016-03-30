@@ -4,6 +4,8 @@
 
 #include "chrome/browser/background/background_contents.h"
 
+#include <utility>
+
 #include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -29,7 +31,7 @@ using content::SiteInstance;
 using content::WebContents;
 
 BackgroundContents::BackgroundContents(
-    SiteInstance* site_instance,
+    scoped_refptr<SiteInstance> site_instance,
     int32_t routing_id,
     int32_t main_frame_routing_id,
     int32_t main_frame_widget_routing_id,
@@ -42,7 +44,7 @@ BackgroundContents::BackgroundContents(
   profile_ = Profile::FromBrowserContext(
       site_instance->GetBrowserContext());
 
-  WebContents::CreateParams create_params(profile_, site_instance);
+  WebContents::CreateParams create_params(profile_, std::move(site_instance));
   create_params.routing_id = routing_id;
   create_params.main_frame_routing_id = main_frame_routing_id;
   create_params.main_frame_widget_routing_id = main_frame_widget_routing_id;

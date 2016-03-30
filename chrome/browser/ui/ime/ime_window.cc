@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ime/ime_window.h"
 
+#include <utility>
+
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ime/ime_native_window.h"
@@ -51,13 +53,15 @@ ImeWindow::ImeWindow(Profile* profile,
   if (!gurl.is_valid())
     gurl = extension->GetResourceURL(url);
 
-  content::SiteInstance* site_instance = opener_render_frame_host
-      ? opener_render_frame_host->GetSiteInstance() : nullptr;
+  scoped_refptr<content::SiteInstance> site_instance =
+      opener_render_frame_host ? opener_render_frame_host->GetSiteInstance()
+                               : nullptr;
   if (!site_instance ||
       site_instance->GetSiteURL().GetOrigin() != gurl.GetOrigin()) {
     site_instance = content::SiteInstance::CreateForURL(profile, gurl);
   }
-  content::WebContents::CreateParams create_params(profile, site_instance);
+  content::WebContents::CreateParams create_params(profile,
+                                                   std::move(site_instance));
   if (opener_render_frame_host) {
     create_params.opener_render_process_id =
         opener_render_frame_host->GetProcess()->GetID();

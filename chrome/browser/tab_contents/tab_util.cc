@@ -42,8 +42,8 @@ content::WebContents* GetWebContentsByFrameID(int render_process_id,
   return WebContents::FromRenderFrameHost(render_frame_host);
 }
 
-SiteInstance* GetSiteInstanceForNewTab(Profile* profile,
-                                       const GURL& url) {
+scoped_refptr<SiteInstance> GetSiteInstanceForNewTab(Profile* profile,
+                                                     const GURL& url) {
   // If |url| is a WebUI or extension, we set the SiteInstance up front so that
   // we don't end up with an extra process swap on the first navigation.
   if (ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(profile, url))
@@ -59,7 +59,7 @@ SiteInstance* GetSiteInstanceForNewTab(Profile* profile,
   // to leverage the in-memory cache and reduce process creation.  It now
   // appears that it is more useful to have such links open in a new process,
   // so we create new tabs in a new BrowsingInstance.
-  return NULL;
+   return nullptr;
 }
 
 }  // namespace tab_util

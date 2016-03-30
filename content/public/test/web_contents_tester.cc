@@ -4,6 +4,8 @@
 
 #include "content/public/test/web_contents_tester.h"
 
+#include <utility>
+
 #include "content/test/test_web_contents.h"
 
 namespace content {
@@ -23,8 +25,8 @@ WebContentsTester* WebContentsTester::For(WebContents* contents) {
 // static
 WebContents* WebContentsTester::CreateTestWebContents(
     BrowserContext* browser_context,
-    SiteInstance* instance) {
-  return TestWebContents::Create(browser_context, instance);
+    scoped_refptr<SiteInstance> instance) {
+  return TestWebContents::Create(browser_context, std::move(instance));
 }
 
 // static

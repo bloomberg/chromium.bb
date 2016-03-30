@@ -328,7 +328,7 @@ void ProcessManager::DidNavigateRenderFrameHost(
 
 scoped_refptr<content::SiteInstance> ProcessManager::GetSiteInstanceForURL(
     const GURL& url) {
-  return make_scoped_refptr(site_instance_->GetRelatedSiteInstance(url));
+  return site_instance_->GetRelatedSiteInstance(url);
 }
 
 const ProcessManager::FrameSet ProcessManager::GetAllFrames() const {

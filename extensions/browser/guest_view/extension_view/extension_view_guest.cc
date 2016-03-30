@@ -90,11 +90,9 @@ void ExtensionViewGuest::CreateWebContents(
     return;
   }
 
-  content::SiteInstance* view_site_instance =
-      content::SiteInstance::CreateForURL(browser_context(),
-                                          extension_url_);
-
-  WebContents::CreateParams params(browser_context(), view_site_instance);
+  WebContents::CreateParams params(
+      browser_context(),
+      content::SiteInstance::CreateForURL(browser_context(), extension_url_));
   params.guest_delegate = this;
   callback.Run(WebContents::Create(params));
 }

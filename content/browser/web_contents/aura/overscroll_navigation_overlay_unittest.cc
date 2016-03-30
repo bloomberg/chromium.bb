@@ -38,13 +38,14 @@ class OverscrollTestWebContents : public TestWebContents {
 
   static OverscrollTestWebContents* Create(
       BrowserContext* browser_context,
-      SiteInstance* instance,
+      scoped_refptr<SiteInstance> instance,
       scoped_ptr<aura::Window> fake_native_view,
       scoped_ptr<aura::Window> fake_contents_window) {
     OverscrollTestWebContents* web_contents = new OverscrollTestWebContents(
         browser_context, std::move(fake_native_view),
         std::move(fake_contents_window));
-    web_contents->Init(WebContents::CreateParams(browser_context, instance));
+    web_contents->Init(
+        WebContents::CreateParams(browser_context, std::move(instance)));
     return web_contents;
   }
 
