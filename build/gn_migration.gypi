@@ -578,6 +578,7 @@
             '../ui/accessibility/accessibility.gyp:accessibility_unittests_run',
             '../ui/app_list/app_list.gyp:app_list_unittests_run',
             '../ui/compositor/compositor.gyp:compositor_unittests_run',
+            '../ui/display/display.gyp:display_unittests_run',
             '../ui/events/events_unittests.gyp:events_unittests_run',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_run',
             '../ui/message_center/message_center.gyp:message_center_unittests_run',
@@ -587,7 +588,6 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../sandbox/sandbox.gyp:sandbox_linux_unittests_run',
-                '../ui/display/display.gyp:display_unittests_run',
               ],
             }],
             ['OS=="mac"', {
