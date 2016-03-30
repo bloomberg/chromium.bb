@@ -112,10 +112,7 @@ SettingsPasswordSectionBrowserTest.prototype = {
     passwordsSection.savedPasswords = passwordList;
     passwordsSection.passwordExceptions = exceptionList;
     document.body.appendChild(passwordsSection);
-
-    // Allow polymer binding to finish.
-    Polymer.dom.flush();
-
+    this.flush_(passwordsSection);
     return passwordsSection;
   },
 
@@ -130,6 +127,17 @@ SettingsPasswordSectionBrowserTest.prototype = {
         return true;
     }
     return false;
+  },
+
+  /**
+   * Allow the iron-list to be sized properly.
+   * @param {!Object} passwordsSection
+   * @private
+   */
+  flush_: function(passwordsSection) {
+    passwordsSection.$.passwordList.notifyResize();
+    passwordsSection.$.passwordExceptionsList.notifyResize();
+    Polymer.dom.flush();
   },
 };
 
@@ -178,7 +186,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
           passwordList);
       // Simulate 'longwebsite.com' being removed from the list.
       passwordsSection.splice('savedPasswords', 1, 1);
-      Polymer.dom.flush();
+      self.flush_(passwordsSection);
 
       assertFalse(self.listContainsUrl(passwordsSection.savedPasswords,
                                        'longwebsite.com'));
@@ -280,7 +288,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       passwordsSection.splice('passwordExceptions', 1, 1);
       assertEquals(-1, passwordsSection.passwordExceptions.indexOf('mail.com'));
       assertEquals(-1, exceptionList.indexOf('mail.com'));
-      Polymer.dom.flush();
+      self.flush_(passwordsSection);
 
       self.validateExceptionList_(
           self.getIronListChildren_(passwordsSection.$.passwordExceptionsList),

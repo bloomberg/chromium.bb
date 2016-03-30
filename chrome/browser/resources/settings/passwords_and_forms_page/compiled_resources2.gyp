@@ -8,17 +8,25 @@
       'dependencies': [
         '../prefs/compiled_resources2.gyp:prefs_behavior',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
-        '<(DEPTH)/third_party/closure_compiler/externs/compiled_resources2.gyp:settings_private',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(EXTERNS_GYP):passwords_private',
+        '<(EXTERNS_GYP):settings_private',
         'passwords_section',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'passwords_section',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
+        '<(EXTERNS_GYP):passwords_private',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'password_edit_dialog',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         '<(EXTERNS_GYP):passwords_private',

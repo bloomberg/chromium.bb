@@ -550,6 +550,10 @@ void AddPasswordsAndFormsStrings(content::WebUIDataSource* html_source) {
       {"passwordMenu", IDS_SETTINGS_PASSWORDS_MENU},
       {"editPassword", IDS_SETTINGS_PASSWORDS_EDIT},
       {"removePassword", IDS_SETTINGS_PASSWORDS_REMOVE},
+      {"editPasswordTitle", IDS_SETTINGS_PASSWORDS_EDIT_TITLE},
+      {"editPasswordWebsiteLabel", IDS_SETTINGS_PASSWORDS_WEBSITE},
+      {"editPasswordUsernameLabel", IDS_SETTINGS_PASSWORDS_USERNAME},
+      {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

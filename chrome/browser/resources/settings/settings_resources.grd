@@ -416,6 +416,12 @@
       <structure name="IDR_SETTINGS_PASSWORDS_SECTION_JS"
                  file="passwords_and_forms_page/passwords_section.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PASSWORD_EDIT_DIALOG_HTML"
+                 file="passwords_and_forms_page/password_edit_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PASSWORD_EDIT_DIALOG_JS"
+                 file="passwords_and_forms_page/password_edit_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PEOPLE_PAGE_HTML"
                  file="people_page/people_page.html"
                  type="chrome_html"

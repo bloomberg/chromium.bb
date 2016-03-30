@@ -51,12 +51,27 @@ Polymer({
   },
 
   /**
+   * Shows the edit password dialog.
+   * @private
+   */
+  onMenuEditPasswordTap_: function() {
+    var menu = /** @type {CrSharedMenuElement} */(this.$.menu);
+    var data =
+        /** @type {chrome.passwordsPrivate.PasswordUiEntry} */(menu.itemData);
+    this.$.passwordEditDialog.item = data;
+    this.$.passwordEditDialog.open();
+    menu.closeMenu();
+  },
+
+  /**
    * Fires an event that should delete the saved password.
    * @private
    */
   onMenuRemovePasswordTap_: function() {
     var menu = /** @type {CrSharedMenuElement} */(this.$.menu);
-    this.fire('remove-saved-password', menu.itemData);
+    var data =
+        /** @type {chrome.passwordsPrivate.PasswordUiEntry} */(menu.itemData);
+    this.fire('remove-saved-password', data.loginPair);
     menu.closeMenu();
   },
 
@@ -87,7 +102,7 @@ Polymer({
     var target = /** @type {!Element} */(Polymer.dom(e).localTarget);
     var passwordUiEntryEvent = /** @type {!PasswordUiEntryEvent} */(e);
 
-    menu.toggleMenu(target, passwordUiEntryEvent.model.item.loginPair);
+    menu.toggleMenu(target, passwordUiEntryEvent.model.item);
     e.stopPropagation();  // Prevent the tap event from closing the menu.
   },
 

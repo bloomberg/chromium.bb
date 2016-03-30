@@ -160,6 +160,18 @@
   <message name="IDS_SETTINGS_PASSWORDS_REMOVE" desc="Label for a menu item that removes a saved password.">
    Remove
   </message>
+  <message name="IDS_SETTINGS_PASSWORDS_EDIT_TITLE" desc="Title for the 'Edit saved password' dialog. This dialog lets a user see a saved password and copy the username.">
+    Edit saved password
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_WEBSITE" desc="Label for the website a password is for when editing a password.">
+    Website
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_USERNAME" desc="Label for the saved username when editing a password.">
+    Username
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_PASSWORD" desc="Label for the saved password when editing a password.">
+    Password
+  </message>
 
   <!-- Default Browser Page -->
   <if expr="not chromeos">
