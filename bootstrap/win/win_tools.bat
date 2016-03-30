@@ -69,7 +69,8 @@ if %VERMAJOR% equ 5 if %VERMINOR% lss 2 set XP_SUFFIX=-xp
 set FIND_EXE=%SYSTEMROOT%\System32\find.exe
 
 :: Check to see if we're on a 32 or 64 bit system
-reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | %FIND_EXE% /i "x86" > NUL && set OS_BITS=32 || set OS_BITS=64
+:: (parens) are necessary, otherwise batch puts an extra space after 32.
+reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | %FIND_EXE% /i "x86" > NUL && (set OS_BITS=32) || (set OS_BITS=64)
 
 if not exist "%WIN_TOOLS_ROOT_DIR%\.git_bleeding_edge" goto :GIT_OLD_FLOW
 set GIT_PORTABLE_FLOW=1
