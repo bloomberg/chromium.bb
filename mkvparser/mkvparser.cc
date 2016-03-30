@@ -22,11 +22,6 @@
 
 #include "common/webmids.h"
 
-#ifdef _MSC_VER
-// Disable MSVC warnings that suggest making code non-portable.
-#pragma warning(disable : 4996)
-#endif
-
 namespace mkvparser {
 const double MasteringMetadata::kValueNotPresent = DBL_MAX;
 const long long Colour::kValueNotPresent = LLONG_MAX;

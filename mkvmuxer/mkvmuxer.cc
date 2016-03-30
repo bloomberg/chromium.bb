@@ -23,11 +23,6 @@
 #include "mkvmuxer/mkvwriter.h"
 #include "mkvparser/mkvparser.h"
 
-#ifdef _MSC_VER
-// Disable MSVC warnings that suggest making code non-portable.
-#pragma warning(disable : 4996)
-#endif
-
 namespace mkvmuxer {
 
 const float MasteringMetadata::kValueNotPresent = FLT_MAX;

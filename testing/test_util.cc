@@ -7,11 +7,6 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "testing/test_util.h"
 
-#ifdef _MSC_VER
-// Disable MSVC warnings that suggest making code non-portable.
-#pragma warning(disable : 4996)
-#endif
-
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>

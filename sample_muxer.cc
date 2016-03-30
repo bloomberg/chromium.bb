@@ -29,11 +29,6 @@
 
 #include "sample_muxer_metadata.h"
 
-#ifdef _MSC_VER
-// Disable MSVC warnings that suggest making code non-portable.
-#pragma warning(disable : 4996)
-#endif
-
 namespace {
 
 void Usage() {

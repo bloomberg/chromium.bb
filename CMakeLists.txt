@@ -28,9 +28,11 @@ if (ENABLE_TESTS OR ENABLE_WEBMTS)
   include("${CMAKE_CURRENT_SOURCE_DIR}/build/cxx11_tests.cmake")
 endif ()
 
-# Turn up the warning levels.
+# Set warning levels.
 if (MSVC)
   set(CMAKE_CXX_FLAGS "/W4 ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
+  # Disable MSVC warnings that suggest making code non-portable.
+  set(CMAKE_CXX_FLAGS "/wd4996 ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
 else ()
   set(CMAKE_CXX_FLAGS "-Wall -Wextra ${CMAKE_CXX_FLAGS}" CACHE STRING "" FORCE)
   set(CMAKE_CXX_FLAGS "-Wno-deprecated ${CMAKE_CXX_FLAGS}" CACHE
