@@ -6,8 +6,8 @@
 
 #include <set>
 
+#include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/proto/memory_leak_report.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,16 +26,26 @@ class TestLeakDetectorController : public LeakDetectorController {
 
 using LeakReport = LeakDetector::LeakReport;
 
+// Use a global instance of the test class because LeakDetectorController
+// initializes class LeakDetector, which can only be initialized once, enforced
+// by an internal CHECK. Multiple initializations of LeakDetectorController in
+// the same process will result in multiple initializations of class
+// LeakDetector.
+//
+// See src/components/metrics/leak_detector/leak_detector.h for more info.
+base::LazyInstance<TestLeakDetectorController> g_instance =
+    LAZY_INSTANCE_INITIALIZER;
+
 TEST(LeakDetectorControllerTest, SingleReport) {
   LeakReport report;
   report.alloc_size_bytes = 8;
   report.call_stack = {1, 2, 3, 4};
 
-  TestLeakDetectorController controller;
-  controller.OnLeakFound(report);
+  TestLeakDetectorController* controller = &g_instance.Get();
+  controller->OnLeakFound(report);
 
   std::vector<MemoryLeakReportProto> stored_reports;
-  controller.GetLeakReports(&stored_reports);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(1U, stored_reports.size());
 
   EXPECT_EQ(8U, stored_reports[0].size_bytes());
@@ -46,12 +56,12 @@ TEST(LeakDetectorControllerTest, SingleReport) {
   EXPECT_EQ(4U, stored_reports[0].call_stack().Get(3));
 
   // No more reports.
-  controller.GetLeakReports(&stored_reports);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(0U, stored_reports.size());
 }
 
 TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
-  TestLeakDetectorController controller;
+  TestLeakDetectorController* controller = &g_instance.Get();
   std::vector<MemoryLeakReportProto> stored_reports;
 
   // Pass in first report.
@@ -59,8 +69,8 @@ TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
   report.alloc_size_bytes = 8;
   report.call_stack = {1, 2, 3, 4};
 
-  controller.OnLeakFound(report);
-  controller.GetLeakReports(&stored_reports);
+  controller->OnLeakFound(report);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(1U, stored_reports.size());
 
   EXPECT_EQ(8U, stored_reports[0].size_bytes());
@@ -70,15 +80,15 @@ TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
   EXPECT_EQ(3U, stored_reports[0].call_stack().Get(2));
   EXPECT_EQ(4U, stored_reports[0].call_stack().Get(3));
 
-  controller.GetLeakReports(&stored_reports);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(0U, stored_reports.size());
 
   // Pass in second report.
   report.alloc_size_bytes = 16;
   report.call_stack = {5, 6, 7, 8, 9, 10};
-  controller.OnLeakFound(report);
+  controller->OnLeakFound(report);
 
-  controller.GetLeakReports(&stored_reports);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(1U, stored_reports.size());
 
   EXPECT_EQ(16U, stored_reports[0].size_bytes());
@@ -90,15 +100,15 @@ TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
   EXPECT_EQ(9U, stored_reports[0].call_stack().Get(4));
   EXPECT_EQ(10U, stored_reports[0].call_stack().Get(5));
 
-  controller.GetLeakReports(&stored_reports);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(0U, stored_reports.size());
 
   // Pass in third report.
   report.alloc_size_bytes = 24;
   report.call_stack = {9, 10, 11, 12, 13, 14, 15, 16};
-  controller.OnLeakFound(report);
+  controller->OnLeakFound(report);
 
-  controller.GetLeakReports(&stored_reports);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(1U, stored_reports.size());
 
   EXPECT_EQ(24U, stored_reports[0].size_bytes());
@@ -112,7 +122,7 @@ TEST(LeakDetectorControllerTest, MultipleReportsSeparately) {
   EXPECT_EQ(15U, stored_reports[0].call_stack().Get(6));
   EXPECT_EQ(16U, stored_reports[0].call_stack().Get(7));
 
-  controller.GetLeakReports(&stored_reports);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(0U, stored_reports.size());
 }
 
@@ -125,14 +135,14 @@ TEST(LeakDetectorControllerTest, MultipleReportsTogether) {
   report3.alloc_size_bytes = 24;
   report3.call_stack = {9, 10, 11, 12, 13, 14, 15, 16};
 
-  TestLeakDetectorController controller;
-  controller.OnLeakFound(report1);
-  controller.OnLeakFound(report2);
-  controller.OnLeakFound(report3);
+  TestLeakDetectorController* controller = &g_instance.Get();
+  controller->OnLeakFound(report1);
+  controller->OnLeakFound(report2);
+  controller->OnLeakFound(report3);
 
   std::vector<MemoryLeakReportProto> stored_reports;
 
-  controller.GetLeakReports(&stored_reports);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(3U, stored_reports.size());
 
   EXPECT_EQ(8U, stored_reports[0].size_bytes());
@@ -162,7 +172,7 @@ TEST(LeakDetectorControllerTest, MultipleReportsTogether) {
   EXPECT_EQ(15U, stored_reports[2].call_stack().Get(6));
   EXPECT_EQ(16U, stored_reports[2].call_stack().Get(7));
 
-  controller.GetLeakReports(&stored_reports);
+  controller->GetLeakReports(&stored_reports);
   ASSERT_EQ(0U, stored_reports.size());
 }
 
