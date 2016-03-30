@@ -208,6 +208,11 @@ class CONTENT_EXPORT RTCVideoDecoder
   // The hardware video decoder.
   scoped_ptr<media::VideoDecodeAccelerator> vda_;
 
+  media::VideoCodecProfile vda_codec_profile_;
+
+  // Number of times that |vda_| notified of an error.
+  uint32_t num_vda_errors_;
+
   // The video codec type, as reported by WebRTC.
   const webrtc::VideoCodecType video_codec_type_;
 

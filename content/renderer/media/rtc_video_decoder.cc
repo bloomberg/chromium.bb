@@ -28,6 +28,7 @@ namespace content {
 const int32_t RTCVideoDecoder::ID_LAST = 0x3FFFFFFF;
 const int32_t RTCVideoDecoder::ID_HALF = 0x20000000;
 const int32_t RTCVideoDecoder::ID_INVALID = -1;
+const uint32_t kNumVDAResetsBeforeSWFallback = 5;
 
 // Maximum number of concurrent VDA::Decode() operations RVD will maintain.
 // Higher values allow better pipelining in the GPU, but also require more
@@ -55,7 +56,8 @@ RTCVideoDecoder::BufferData::~BufferData() {}
 
 RTCVideoDecoder::RTCVideoDecoder(webrtc::VideoCodecType type,
                                  media::GpuVideoAcceleratorFactories* factories)
-    : video_codec_type_(type),
+    : num_vda_errors_(0),
+      video_codec_type_(type),
       factories_(factories),
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
@@ -160,6 +162,14 @@ int32_t RTCVideoDecoder::Decode(
 
   if (state_ == DECODE_ERROR) {
     LOG(ERROR) << "Decoding error occurred.";
+    // Try reseting the session |kNumVDAErrorsHandled| times.
+    if (num_vda_errors_ > kNumVDAResetsBeforeSWFallback) {
+      DLOG(ERROR) << num_vda_errors_
+                  << " errors reported by VDA, falling back to software decode";
+      return WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE;
+    }
+    base::AutoUnlock auto_unlock(lock_);
+    Release();
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
 
@@ -475,6 +485,7 @@ void RTCVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
 
   base::AutoLock auto_lock(lock_);
   state_ = DECODE_ERROR;
+  ++num_vda_errors_;
 }
 
 void RTCVideoDecoder::RequestBufferDecode() {
@@ -604,10 +615,16 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
 }
 
 void RTCVideoDecoder::ResetInternal() {
+  DVLOG(2) << __FUNCTION__;
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  DVLOG(2) << "ResetInternal";
-  if (vda_)
+
+  if (vda_) {
     vda_->Reset();
+  } else {
+    CreateVDA(vda_codec_profile_, nullptr);
+    if (vda_)
+      state_ = INITIALIZED;
+  }
 }
 
 // static
@@ -679,9 +696,11 @@ void RTCVideoDecoder::CreateVDA(media::VideoCodecProfile profile,
     media::VideoDecodeAccelerator::Config config(profile);
     if (vda_ && !vda_->Initialize(config, this))
       vda_.release()->Destroy();
+    vda_codec_profile_ = profile;
   }
 
-  waiter->Signal();
+  if (waiter)
+    waiter->Signal();
 }
 
 void RTCVideoDecoder::DestroyTextures() {
@@ -704,7 +723,14 @@ void RTCVideoDecoder::DestroyVDA() {
   if (vda_)
     vda_.release()->Destroy();
   DestroyTextures();
+
   base::AutoLock auto_lock(lock_);
+
+  // Put the buffers back in case we restart the decoder.
+  for (const auto& buffer : bitstream_buffers_in_decoder_)
+    PutSHM_Locked(scoped_ptr<base::SharedMemory>(buffer.second));
+  bitstream_buffers_in_decoder_.clear();
+
   state_ = UNINITIALIZED;
 }
 

@@ -21,13 +21,24 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::Values;
 using ::testing::WithArgs;
 
 namespace content {
 
-// TODO(wuchengli): add MockSharedMemroy so more functions can be tested.
-class RTCVideoDecoderTest : public ::testing::Test,
-                            webrtc::DecodedImageCallback {
+namespace {
+
+static const int kMinResolutionWidth = 16;
+static const int kMinResolutionHeight = 16;
+static const int kMaxResolutionWidth = 1920;
+static const int kMaxResolutionHeight = 1088;
+
+}  // namespace
+
+// TODO(wuchengli): add MockSharedMemory so more functions can be tested.
+class RTCVideoDecoderTest
+    : public ::testing::TestWithParam<webrtc::VideoCodecType>,
+      webrtc::DecodedImageCallback {
  public:
   RTCVideoDecoderTest()
       : mock_gpu_factories_(
@@ -43,8 +54,10 @@ class RTCVideoDecoderTest : public ::testing::Test,
     mock_vda_ = new media::MockVideoDecodeAccelerator;
 
     media::VideoDecodeAccelerator::SupportedProfile supported_profile;
-    supported_profile.min_resolution.SetSize(16, 16);
-    supported_profile.max_resolution.SetSize(1920, 1088);
+    supported_profile.min_resolution.SetSize(kMinResolutionWidth,
+                                             kMinResolutionHeight);
+    supported_profile.max_resolution.SetSize(kMaxResolutionWidth,
+                                             kMaxResolutionHeight);
     supported_profile.profile = media::H264PROFILE_MAIN;
     capabilities_.supported_profiles.push_back(supported_profile);
     supported_profile.profile = media::VP8PROFILE_ANY;
@@ -101,6 +114,14 @@ class RTCVideoDecoderTest : public ::testing::Test,
                    base::Unretained(rtc_decoder_.get())));
   }
 
+  void NotifyError(media::VideoDecodeAccelerator::Error error) {
+    DVLOG(2) << "NotifyError";
+    vda_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RTCVideoDecoder::NotifyError,
+                   base::Unretained(rtc_decoder_.get()), error));
+  }
+
   void RunUntilIdle() {
     DVLOG(2) << "RunUntilIdle";
     vda_task_runner_->PostTask(FROM_HERE,
@@ -109,9 +130,20 @@ class RTCVideoDecoderTest : public ::testing::Test,
     idle_waiter_.Wait();
   }
 
+  void SetUpResetVDA() {
+    mock_vda_after_reset_ = new media::MockVideoDecodeAccelerator;
+    EXPECT_CALL(*mock_gpu_factories_.get(), DoCreateVideoDecodeAccelerator())
+        .WillRepeatedly(Return(mock_vda_after_reset_));
+    EXPECT_CALL(*mock_vda_after_reset_, Initialize(_, _))
+        .Times(1)
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_vda_after_reset_, Destroy()).Times(1);
+  }
+
  protected:
   scoped_ptr<media::MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
   media::MockVideoDecodeAccelerator* mock_vda_;
+  media::MockVideoDecodeAccelerator* mock_vda_after_reset_;
   scoped_ptr<RTCVideoDecoder> rtc_decoder_;
   webrtc::VideoCodec codec_;
   base::Thread vda_thread_;
@@ -131,8 +163,9 @@ TEST_F(RTCVideoDecoderTest, CreateReturnsNullOnUnsupportedCodec) {
   EXPECT_EQ(NULL, null_rtc_decoder.get());
 }
 
-TEST_F(RTCVideoDecoderTest, CreateAndInitSucceedsForH264Codec) {
-  CreateDecoder(webrtc::kVideoCodecH264);
+TEST_P(RTCVideoDecoderTest, CreateAndInitSucceeds) {
+  const webrtc::VideoCodecType codec_type = GetParam();
+  CreateDecoder(codec_type);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->InitDecode(&codec_, 1));
 }
 
@@ -146,7 +179,7 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorWithoutInitDecode) {
   CreateDecoder(webrtc::kVideoCodecVP8);
   webrtc::EncodedImage input_image;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_UNINITIALIZED,
-            rtc_decoder_->Decode(input_image, false, NULL, NULL, 0));
+            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnIncompleteFrame) {
@@ -155,7 +188,7 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnIncompleteFrame) {
   webrtc::EncodedImage input_image;
   input_image._completeFrame = false;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, false, NULL, NULL, 0));
+            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
@@ -164,8 +197,9 @@ TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorOnMissingFrames) {
   webrtc::EncodedImage input_image;
   input_image._completeFrame = true;
   bool missingFrames = true;
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
-            rtc_decoder_->Decode(input_image, missingFrames, NULL, NULL, 0));
+  EXPECT_EQ(
+      WEBRTC_VIDEO_CODEC_ERROR,
+      rtc_decoder_->Decode(input_image, missingFrames, nullptr, nullptr, 0));
 }
 
 TEST_F(RTCVideoDecoderTest, ReleaseReturnsOk) {
@@ -236,5 +270,35 @@ TEST_F(RTCVideoDecoderTest, IsFirstBufferAfterReset) {
   EXPECT_FALSE(
       rtc_decoder_->IsFirstBufferAfterReset(1, RTCVideoDecoder::ID_LAST));
 }
+
+
+TEST_P(RTCVideoDecoderTest, DecodeResetsAfterError) {
+  const webrtc::VideoCodecType codec_type = GetParam();
+  CreateDecoder(codec_type);
+  Initialize();
+
+  webrtc::EncodedImage input_image;
+  input_image._completeFrame = true;
+  input_image._encodedWidth = kMinResolutionWidth;
+  input_image._encodedHeight = kMaxResolutionHeight;
+  input_image._frameType = webrtc::kVideoFrameDelta;
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
+            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+  RunUntilIdle();
+
+  // Notify the decoder about a platform error.
+  NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+  RunUntilIdle();
+
+  // Expect decode call to reset decoder, and set up a new VDA to track it.
+  SetUpResetVDA();
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
+            rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
+}
+
+INSTANTIATE_TEST_CASE_P(CodecProfiles,
+                        RTCVideoDecoderTest,
+                        Values(webrtc::kVideoCodecVP8,
+                               webrtc::kVideoCodecH264));
 
 }  // content
