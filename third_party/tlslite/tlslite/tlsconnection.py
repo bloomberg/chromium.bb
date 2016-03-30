@@ -1570,6 +1570,8 @@ class TLSConnection(TLSRecordLayer):
                 #Set the session
                 self.session = session
                     
+                self.clientRandom = clientHello.random
+                self.serverRandom = serverHello.random
                 yield None # Handshake done!
 
         #Calculate the first cipher suite intersection.

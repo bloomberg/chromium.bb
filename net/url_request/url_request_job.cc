@@ -953,6 +953,14 @@ RedirectInfo URLRequestJob::ComputeRedirectInfo(const GURL& location,
                                  request_->referrer(),
                                  redirect_info.new_url).spec();
 
+  std::string include_referer;
+  request_->GetResponseHeaderByName("include-referer-token-binding-id",
+                                    &include_referer);
+  if (include_referer == "true" &&
+      request_->ssl_info().token_binding_negotiated) {
+    redirect_info.referred_token_binding_host = url.host();
+  }
+
   return redirect_info;
 }
 

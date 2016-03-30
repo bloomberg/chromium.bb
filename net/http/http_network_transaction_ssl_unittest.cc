@@ -172,16 +172,16 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
   mock_socket_factory_.AddSocketDataProvider(&data);
 
   HttpNetworkSession session(session_params_);
-  HttpNetworkTransaction trans(DEFAULT_PRIORITY, &session);
+  HttpNetworkTransaction trans1(DEFAULT_PRIORITY, &session);
 
   TestCompletionCallback callback;
-  int rv =
-      callback.GetResult(trans.Start(GetRequestInfo("https://www.example.com/"),
-                                     callback.callback(), BoundNetLog()));
+  int rv = callback.GetResult(
+      trans1.Start(GetRequestInfo("https://www.example.com/"),
+                   callback.callback(), BoundNetLog()));
   EXPECT_EQ(OK, rv);
 
   HttpRequestHeaders headers1;
-  ASSERT_TRUE(trans.GetFullRequestHeaders(&headers1));
+  ASSERT_TRUE(trans1.GetFullRequestHeaders(&headers1));
   std::string token_binding_header1;
   EXPECT_TRUE(headers1.GetHeader(HttpRequestHeaders::kTokenBinding,
                                  &token_binding_header1));
@@ -191,19 +191,52 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
   mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
   StaticSocketDataProvider data2(mock_reads, arraysize(mock_reads), NULL, 0);
   mock_socket_factory_.AddSocketDataProvider(&data2);
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, &session);
 
-  rv =
-      callback.GetResult(trans.Start(GetRequestInfo("https://www.example.com/"),
-                                     callback.callback(), BoundNetLog()));
+  rv = callback.GetResult(
+      trans2.Start(GetRequestInfo("https://www.example.com/"),
+                   callback.callback(), BoundNetLog()));
   EXPECT_EQ(OK, rv);
 
   HttpRequestHeaders headers2;
-  ASSERT_TRUE(trans.GetFullRequestHeaders(&headers2));
+  ASSERT_TRUE(trans2.GetFullRequestHeaders(&headers2));
   std::string token_binding_header2;
   EXPECT_TRUE(headers2.GetHeader(HttpRequestHeaders::kTokenBinding,
                                  &token_binding_header2));
 
   EXPECT_EQ(token_binding_header1, token_binding_header2);
+}
+
+TEST_F(HttpNetworkTransactionSSLTest, NoTokenBindingOverHttp) {
+  ssl_config_service_ = new TokenBindingSSLConfigService;
+  session_params_.ssl_config_service = ssl_config_service_.get();
+  ChannelIDService channel_id_service(new DefaultChannelIDStore(NULL),
+                                      base::ThreadTaskRunnerHandle::Get());
+  session_params_.channel_id_service = &channel_id_service;
+
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  ssl_data.token_binding_negotiated = true;
+  ssl_data.token_binding_key_param = TB_PARAM_ECDSAP256;
+  mock_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
+  MockRead mock_reads[] = {MockRead("HTTP/1.1 200 OK\r\n\r\n"),
+                           MockRead(SYNCHRONOUS, OK)};
+  StaticSocketDataProvider data(mock_reads, arraysize(mock_reads), NULL, 0);
+  mock_socket_factory_.AddSocketDataProvider(&data);
+
+  HttpNetworkSession session(session_params_);
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, &session);
+
+  TestCompletionCallback callback;
+  int rv =
+      callback.GetResult(trans.Start(GetRequestInfo("http://www.example.com/"),
+                                     callback.callback(), BoundNetLog()));
+  EXPECT_EQ(OK, rv);
+
+  HttpRequestHeaders headers;
+  ASSERT_TRUE(trans.GetFullRequestHeaders(&headers));
+  std::string token_binding_header;
+  EXPECT_FALSE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
+                                 &token_binding_header));
 }
 #endif  // !defined(OS_IOS)
 

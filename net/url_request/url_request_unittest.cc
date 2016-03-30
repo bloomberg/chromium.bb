@@ -3409,16 +3409,153 @@ TEST_F(TokenBindingURLRequestTest, TokenBindingTest) {
     EXPECT_TRUE(base::Base64UrlDecode(
         token_binding_header, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
         &token_binding_message));
-    base::StringPiece ec_point, signature;
-    EXPECT_TRUE(
-        ParseTokenBindingMessage(token_binding_message, &ec_point, &signature));
+    std::vector<TokenBinding> token_bindings;
+    ASSERT_TRUE(
+        ParseTokenBindingMessage(token_binding_message, &token_bindings));
+    ASSERT_EQ(1ull, token_bindings.size());
 
     EXPECT_GT(d.bytes_received(), 0);
     std::string ekm = d.data_received();
 
-    EXPECT_TRUE(VerifyEKMSignature(ec_point, signature, ekm));
+    EXPECT_EQ(TokenBindingType::PROVIDED, token_bindings[0].type);
+    EXPECT_TRUE(VerifyEKMSignature(token_bindings[0].ec_point,
+                                   token_bindings[0].signature, ekm));
   }
 }
+
+TEST_F(TokenBindingURLRequestTest, ForwardTokenBinding) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
+  SpawnedTestServer https_test_server(SpawnedTestServer::TYPE_HTTPS,
+                                      ssl_options,
+                                      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+
+  TestDelegate d;
+  {
+    GURL redirect_url =
+        https_test_server.GetURL("forward-tokbind?/tokbind-ekm");
+    scoped_ptr<URLRequest> r(
+        default_context_.CreateRequest(redirect_url, DEFAULT_PRIORITY, &d));
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+
+    base::RunLoop().Run();
+
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
+
+    HttpRequestHeaders headers;
+    std::string token_binding_header, token_binding_message;
+    EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
+    EXPECT_TRUE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
+                                  &token_binding_header));
+    EXPECT_TRUE(base::Base64UrlDecode(
+        token_binding_header, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+        &token_binding_message));
+    std::vector<TokenBinding> token_bindings;
+    ASSERT_TRUE(
+        ParseTokenBindingMessage(token_binding_message, &token_bindings));
+    ASSERT_EQ(2ull, token_bindings.size());
+
+    EXPECT_GT(d.bytes_received(), 0);
+    std::string ekm = d.data_received();
+
+    EXPECT_EQ(TokenBindingType::PROVIDED, token_bindings[0].type);
+    EXPECT_TRUE(VerifyEKMSignature(token_bindings[0].ec_point,
+                                   token_bindings[0].signature, ekm));
+    EXPECT_EQ(TokenBindingType::REFERRED, token_bindings[1].type);
+    EXPECT_TRUE(VerifyEKMSignature(token_bindings[1].ec_point,
+                                   token_bindings[1].signature, ekm));
+  }
+}
+
+// TODO(nharper): Remove this #ifdef and replace SpawnedTestServer with
+// EmbeddedTestServer once crbug.com/599187 is resolved.
+#if !defined(OS_ANDROID)
+TEST_F(TokenBindingURLRequestTest, DontForwardHeaderFromHttp) {
+  SpawnedTestServer http_server(SpawnedTestServer::TYPE_HTTP,
+                                SpawnedTestServer::kLocalhost,
+                                base::FilePath());
+  ASSERT_TRUE(http_server.Start());
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
+  SpawnedTestServer https_test_server(SpawnedTestServer::TYPE_HTTPS,
+                                      ssl_options,
+                                      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+
+  TestDelegate d;
+  {
+    GURL redirect_url = http_server.GetURL(
+        "forward-tokbind?" + https_test_server.GetURL("tokbind-ekm").spec());
+    scoped_ptr<URLRequest> r(
+        default_context_.CreateRequest(redirect_url, DEFAULT_PRIORITY, &d));
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+
+    base::RunLoop().Run();
+
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
+
+    HttpRequestHeaders headers;
+    std::string token_binding_header, token_binding_message;
+    EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
+    EXPECT_TRUE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
+                                  &token_binding_header));
+    EXPECT_TRUE(base::Base64UrlDecode(
+        token_binding_header, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
+        &token_binding_message));
+    std::vector<TokenBinding> token_bindings;
+    ASSERT_TRUE(
+        ParseTokenBindingMessage(token_binding_message, &token_bindings));
+    ASSERT_EQ(1ull, token_bindings.size());
+
+    EXPECT_GT(d.bytes_received(), 0);
+    std::string ekm = d.data_received();
+
+    EXPECT_EQ(TokenBindingType::PROVIDED, token_bindings[0].type);
+    EXPECT_TRUE(VerifyEKMSignature(token_bindings[0].ec_point,
+                                   token_bindings[0].signature, ekm));
+  }
+}
+
+// Test that if a server supporting Token Binding redirects (with
+// Include-Referer-Token-Binding-ID) to an https url on a server that does not
+// support Token Binding, then we do not send a Sec-Token-Binding when following
+// the redirect.
+TEST_F(TokenBindingURLRequestTest, ForwardWithoutTokenBinding) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  SpawnedTestServer https_test_server(SpawnedTestServer::TYPE_HTTPS,
+                                      ssl_options,
+                                      base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_test_server.Start());
+  ssl_options.supported_token_binding_params.push_back(TB_PARAM_ECDSAP256);
+  SpawnedTestServer token_binding_test_server(SpawnedTestServer::TYPE_HTTPS,
+                                              ssl_options,
+                                              base::FilePath(kTestFilePath));
+  ASSERT_TRUE(token_binding_test_server.Start());
+
+  TestDelegate d;
+  {
+    GURL redirect_url = token_binding_test_server.GetURL(
+        "forward-tokbind?" + https_test_server.GetURL("tokbind-ekm").spec());
+    scoped_ptr<URLRequest> r(
+        default_context_.CreateRequest(redirect_url, DEFAULT_PRIORITY, &d));
+    r->Start();
+    EXPECT_TRUE(r->is_pending());
+
+    base::RunLoop().Run();
+
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status());
+
+    HttpRequestHeaders headers;
+    std::string token_binding_header, token_binding_message;
+    EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
+    EXPECT_FALSE(headers.GetHeader(HttpRequestHeaders::kTokenBinding,
+                                   &token_binding_header));
+  }
+}
+#endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_IOS)
 
 // In this unit test, we're using the HTTPTestServer as a proxy server and

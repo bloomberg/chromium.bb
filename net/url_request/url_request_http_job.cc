@@ -370,6 +370,8 @@ void URLRequestHttpJob::Start() {
                                           referrer.spec());
   }
 
+  request_info_.token_binding_referrer = request_->token_binding_referrer();
+
   request_info_.extra_headers.SetHeaderIfMissing(
       HttpRequestHeaders::kUserAgent,
       http_user_agent_settings_ ?

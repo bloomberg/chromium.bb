@@ -50,3 +50,5 @@ Local Modifications:
 - patches/token_binding_resumption.patch: Fix token binding negotiation
   extension to work on session resumption.
 - patches/extension_number_update.patch: Update TLS extension numbers.
+- patches/save_randoms.patch: Save client and server randoms when resuming
+  sessions.

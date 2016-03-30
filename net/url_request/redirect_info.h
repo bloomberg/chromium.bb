@@ -37,6 +37,11 @@ struct NET_EXPORT RedirectInfo {
 
   // The new HTTP referrer header.
   std::string new_referrer;
+
+  // The hostname of the referrer if it asked the client to include a referred
+  // Token Binding when following the redirect; otherwise this is the empty
+  // string.
+  std::string referred_token_binding_host;
 };
 
 }  // namespace net

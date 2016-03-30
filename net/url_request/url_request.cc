@@ -973,6 +973,7 @@ int URLRequest::Redirect(const RedirectInfo& redirect_info) {
 
   referrer_ = redirect_info.new_referrer;
   first_party_for_cookies_ = redirect_info.new_first_party_for_cookies;
+  token_binding_referrer_ = redirect_info.referred_token_binding_host;
 
   url_chain_.push_back(redirect_info.new_url);
   --redirect_limit_;

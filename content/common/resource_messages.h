@@ -159,6 +159,7 @@ IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)
   IPC_STRUCT_TRAITS_MEMBER(new_url)
   IPC_STRUCT_TRAITS_MEMBER(new_first_party_for_cookies)
   IPC_STRUCT_TRAITS_MEMBER(new_referrer)
+  IPC_STRUCT_TRAITS_MEMBER(referred_token_binding_host)
 IPC_STRUCT_TRAITS_END()
 
 // Parameters for a resource request.

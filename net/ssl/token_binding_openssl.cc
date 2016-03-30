@@ -18,11 +18,6 @@ namespace net {
 
 namespace {
 
-enum TokenBindingType {
-  TB_TYPE_PROVIDED = 0,
-  TB_TYPE_REFERRED = 1,
-};
-
 bool BuildTokenBindingID(crypto::ECPrivateKey* key, CBB* out) {
   EC_KEY* ec_key = EVP_PKEY_get0_EC_KEY(key->key());
   DCHECK(ec_key);
@@ -34,28 +29,6 @@ bool BuildTokenBindingID(crypto::ECPrivateKey* key, CBB* out) {
                             EC_KEY_get0_public_key(ec_key),
                             POINT_CONVERSION_UNCOMPRESSED, nullptr) &&
          CBB_flush(out);
-}
-
-Error BuildTokenBinding(TokenBindingType type,
-                        crypto::ECPrivateKey* key,
-                        const std::vector<uint8_t>& signed_ekm,
-                        std::string* out) {
-  uint8_t* out_data;
-  size_t out_len;
-  CBB token_binding;
-  if (!CBB_init(&token_binding, 0) || !CBB_add_u8(&token_binding, type) ||
-      !BuildTokenBindingID(key, &token_binding) ||
-      !CBB_add_u16(&token_binding, signed_ekm.size()) ||
-      !CBB_add_bytes(&token_binding, signed_ekm.data(), signed_ekm.size()) ||
-      // 0-length extensions
-      !CBB_add_u16(&token_binding, 0) ||
-      !CBB_finish(&token_binding, &out_data, &out_len)) {
-    CBB_cleanup(&token_binding);
-    return ERR_FAILED;
-  }
-  out->assign(reinterpret_cast<char*>(out_data), out_len);
-  OPENSSL_free(out_data);
-  return OK;
 }
 
 }  // namespace
@@ -110,32 +83,60 @@ Error BuildTokenBindingMessageFromTokenBindings(
   return OK;
 }
 
-Error BuildProvidedTokenBinding(crypto::ECPrivateKey* key,
-                                const std::vector<uint8_t>& signed_ekm,
-                                std::string* out) {
-  return BuildTokenBinding(TB_TYPE_PROVIDED, key, signed_ekm, out);
+Error BuildTokenBinding(TokenBindingType type,
+                        crypto::ECPrivateKey* key,
+                        const std::vector<uint8_t>& signed_ekm,
+                        std::string* out) {
+  uint8_t* out_data;
+  size_t out_len;
+  CBB token_binding;
+  if (!CBB_init(&token_binding, 0) ||
+      !CBB_add_u8(&token_binding, static_cast<uint8_t>(type)) ||
+      !BuildTokenBindingID(key, &token_binding) ||
+      !CBB_add_u16(&token_binding, signed_ekm.size()) ||
+      !CBB_add_bytes(&token_binding, signed_ekm.data(), signed_ekm.size()) ||
+      // 0-length extensions
+      !CBB_add_u16(&token_binding, 0) ||
+      !CBB_finish(&token_binding, &out_data, &out_len)) {
+    CBB_cleanup(&token_binding);
+    return ERR_FAILED;
+  }
+  out->assign(reinterpret_cast<char*>(out_data), out_len);
+  OPENSSL_free(out_data);
+  return OK;
 }
 
+TokenBinding::TokenBinding() {}
+
 bool ParseTokenBindingMessage(base::StringPiece token_binding_message,
-                              base::StringPiece* ec_point_out,
-                              base::StringPiece* signature_out) {
-  CBS tb_message, tb, ec_point, signature;
+                              std::vector<TokenBinding>* token_bindings) {
+  CBS tb_message, tb, ec_point, signature, extensions;
   uint8_t tb_type, tb_param;
   CBS_init(&tb_message,
            reinterpret_cast<const uint8_t*>(token_binding_message.data()),
            token_binding_message.size());
-  if (!CBS_get_u16_length_prefixed(&tb_message, &tb) ||
-      !CBS_get_u8(&tb, &tb_type) || !CBS_get_u8(&tb, &tb_param) ||
-      !CBS_get_u8_length_prefixed(&tb, &ec_point) ||
-      !CBS_get_u16_length_prefixed(&tb, &signature) ||
-      tb_type != TB_TYPE_PROVIDED || tb_param != TB_PARAM_ECDSAP256) {
+  if (!CBS_get_u16_length_prefixed(&tb_message, &tb))
     return false;
-  }
+  while (CBS_len(&tb)) {
+    if (!CBS_get_u8(&tb, &tb_type) || !CBS_get_u8(&tb, &tb_param) ||
+        !CBS_get_u8_length_prefixed(&tb, &ec_point) ||
+        !CBS_get_u16_length_prefixed(&tb, &signature) ||
+        !CBS_get_u16_length_prefixed(&tb, &extensions) ||
+        tb_param != TB_PARAM_ECDSAP256 ||
+        (TokenBindingType(tb_type) != TokenBindingType::PROVIDED &&
+         TokenBindingType(tb_type) != TokenBindingType::REFERRED)) {
+      return false;
+    }
 
-  *ec_point_out = base::StringPiece(
-      reinterpret_cast<const char*>(CBS_data(&ec_point)), CBS_len(&ec_point));
-  *signature_out = base::StringPiece(
-      reinterpret_cast<const char*>(CBS_data(&signature)), CBS_len(&signature));
+    TokenBinding token_binding;
+    token_binding.type = TokenBindingType(tb_type);
+    token_binding.ec_point = std::string(
+        reinterpret_cast<const char*>(CBS_data(&ec_point)), CBS_len(&ec_point));
+    token_binding.signature =
+        std::string(reinterpret_cast<const char*>(CBS_data(&signature)),
+                    CBS_len(&signature));
+    token_bindings->push_back(token_binding);
+  }
   return true;
 }
 

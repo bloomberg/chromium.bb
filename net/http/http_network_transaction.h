@@ -154,8 +154,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
     STATE_GENERATE_PROXY_AUTH_TOKEN_COMPLETE,
     STATE_GENERATE_SERVER_AUTH_TOKEN,
     STATE_GENERATE_SERVER_AUTH_TOKEN_COMPLETE,
-    STATE_GET_TOKEN_BINDING_KEY,
-    STATE_GET_TOKEN_BINDING_KEY_COMPLETE,
+    STATE_GET_PROVIDED_TOKEN_BINDING_KEY,
+    STATE_GET_PROVIDED_TOKEN_BINDING_KEY_COMPLETE,
+    STATE_GET_REFERRED_TOKEN_BINDING_KEY,
+    STATE_GET_REFERRED_TOKEN_BINDING_KEY_COMPLETE,
     STATE_INIT_REQUEST_BODY,
     STATE_INIT_REQUEST_BODY_COMPLETE,
     STATE_BUILD_REQUEST,
@@ -198,8 +200,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   int DoGenerateProxyAuthTokenComplete(int result);
   int DoGenerateServerAuthToken();
   int DoGenerateServerAuthTokenComplete(int result);
-  int DoGetTokenBindingKey();
-  int DoGetTokenBindingKeyComplete(int result);
+  int DoGetProvidedTokenBindingKey();
+  int DoGetProvidedTokenBindingKeyComplete(int result);
+  int DoGetReferredTokenBindingKey();
+  int DoGetReferredTokenBindingKeyComplete(int result);
   int DoInitRequestBody();
   int DoInitRequestBodyComplete(int result);
   int DoBuildRequest();
@@ -340,9 +344,11 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // The SSLFailureState which caused the last TLS version fallback.
   SSLFailureState fallback_failure_state_;
 
-  // Key to use for signing message in Token Binding header.
-  scoped_ptr<crypto::ECPrivateKey> token_binding_key_;
-  // Object to manage lookup of |token_binding_key_|.
+  // Keys to use for signing message in Token Binding header.
+  scoped_ptr<crypto::ECPrivateKey> provided_token_binding_key_;
+  scoped_ptr<crypto::ECPrivateKey> referred_token_binding_key_;
+  // Object to manage lookup of |provided_token_binding_key_| and
+  // |referred_token_binding_key_|.
   ChannelIDService::Request token_binding_request_;
 
   HttpRequestHeaders request_headers_;

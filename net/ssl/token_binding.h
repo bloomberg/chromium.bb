@@ -15,6 +15,11 @@
 
 namespace net {
 
+enum class TokenBindingType {
+  PROVIDED = 0,
+  REFERRED = 1,
+};
+
 // Returns whether Token Binding is supported on this platform. If this function
 // returns false, Token Binding must not be negotiated.
 bool IsTokenBindingSupported();
@@ -38,8 +43,8 @@ Error BuildTokenBindingMessageFromTokenBindings(
     const std::vector<base::StringPiece>& token_bindings,
     std::string* out);
 
-// Builds a TokenBinding struct with a provided TokenBindingID created from
-// |*key| and a signature of |ekm| using |*key| to sign.
+// Builds a TokenBinding struct of type |type| with a TokenBindingID created
+// from |*key| and a signature of |ekm| using |*key| to sign.
 //
 // enum {
 //     rsa2048_pkcs1.5(0), rsa2048_pss(1), ecdsap256(2), (255)
@@ -76,20 +81,27 @@ Error BuildTokenBindingMessageFromTokenBindings(
 //                                 // material value
 //     Extension extensions<0..2^16-1>;
 // } TokenBinding;
-Error BuildProvidedTokenBinding(crypto::ECPrivateKey* key,
-                                const std::vector<uint8_t>& ekm,
-                                std::string* out);
+Error BuildTokenBinding(TokenBindingType type,
+                        crypto::ECPrivateKey* key,
+                        const std::vector<uint8_t>& ekm,
+                        std::string* out);
 
-// Given a TokenBindingMessage, parses the first TokenBinding from it,
-// extracts the ECPoint of the TokenBindingID into |*ec_point|, and extracts the
-// signature of the EKM value into |*signature|. It also verifies that the first
-// TokenBinding is a provided Token Binding, and that the key parameters is
-// ecdsap256. This function returns whether the message was able to be parsed
-// successfully.
+// Represents a parsed TokenBinding from a TokenBindingMessage.
+struct TokenBinding {
+  TokenBinding();
+
+  TokenBindingType type;
+  std::string ec_point;
+  std::string signature;
+};
+
+// Given a TokenBindingMessage, parses the TokenBinding structs from it, putting
+// them into |*token_bindings|. If there is an error parsing the
+// TokenBindingMessage or the key parameter for any TokenBinding in the
+// TokenBindingMessage is not ecdsap256, then this function returns false.
 NET_EXPORT_PRIVATE bool ParseTokenBindingMessage(
     base::StringPiece token_binding_message,
-    base::StringPiece* ec_point,
-    base::StringPiece* signature);
+    std::vector<TokenBinding>* token_bindings);
 
 // Takes an ECPoint |ec_point| from a TokenBindingID and |signature| from a
 // TokenBinding and verifies that |signature| is the signature of |ekm| using
