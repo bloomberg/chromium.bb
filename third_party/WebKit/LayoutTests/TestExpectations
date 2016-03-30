@@ -1394,3 +1394,8 @@ crbug.com/273306 [ Mac Win7 ] virtual/threaded/printing/standards-percentage-hei
 crbug.com/273306 [ Mac Win7 ] virtual/threaded/printing/subframes-percentage-height.html [ NeedsManualRebaseline ]
 crbug.com/273306 [ Mac Win ] virtual/threaded/printing/forced-break-tree-dump-only.html [ NeedsManualRebaseline ]
 crbug.com/273306 [ Mac Win ] virtual/threaded/printing/page-count-relayout-shrink.html [ NeedsManualRebaseline ]
+
+crbug.com/453002 [ Win ] fast/text/international/text-combine-image-test.html [ Failure Pass ]
+crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Failure Pass ]
+crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
+crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
