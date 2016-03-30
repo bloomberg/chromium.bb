@@ -45,6 +45,12 @@ def GetToolchainDirectory():
     return None
 
 
+def SetToolchainEnvironment():
+  mac_toolchain_dir = GetToolchainDirectory()
+  if mac_toolchain_dir:
+    os.environ['DEVELOPER_DIR'] = mac_toolchain_dir
+
+
 def ReadStampFile():
   """Return the contents of the stamp file, or '' if it doesn't exist."""
   try:

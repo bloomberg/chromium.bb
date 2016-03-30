@@ -15,6 +15,8 @@ import re
 import subprocess
 import sys
 
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import mac_toolchain
 
 from optparse import OptionParser
 
@@ -39,6 +41,9 @@ def main():
   if len(args) != 1:
     parser.error('Please specify a minimum SDK version')
   min_sdk_version = args[0]
+
+  # Try using the toolchain in mac_files.
+  mac_toolchain.SetToolchainEnvironment()
 
   job = subprocess.Popen(['xcode-select', '-print-path'],
                          stdout=subprocess.PIPE,

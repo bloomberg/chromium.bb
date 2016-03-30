@@ -32,6 +32,4 @@ def SetEnvironment():
     os.environ['GYP_GENERATORS'] = 'ninja'
 
   vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
-  mac_toolchain_dir = mac_toolchain.GetToolchainDirectory()
-  if mac_toolchain_dir:
-     os.environ['DEVELOPER_DIR'] = mac_toolchain_dir
+  mac_toolchain.SetToolchainEnvironment()
