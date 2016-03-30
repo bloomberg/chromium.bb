@@ -300,11 +300,6 @@
             "group_name": "enforce_always_with_extensions_and_dse"
         }
     ],
-    "SimpleCacheTrial": [
-        {
-            "group_name": "ExperimentYes"
-        }
-    ],
     "StrictSecureCookies": [
         {
             "group_name": "Enabled"
