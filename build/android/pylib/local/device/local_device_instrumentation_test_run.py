@@ -54,7 +54,7 @@ class LocalDeviceInstrumentationTestRun(
     self._flag_changers = {}
 
   def TestPackage(self):
-    return None
+    return self._test_instance.suite
 
   def SetUp(self):
     def substitute_external_storage(d, external_storage):
@@ -69,15 +69,16 @@ class LocalDeviceInstrumentationTestRun(
         self._env.BlacklistDevice)
     def individual_device_set_up(dev, host_device_tuples):
       def install_apk():
-        if self._test_instance.apk_under_test_incremental_install_script:
-          local_device_test_run.IncrementalInstall(
-              dev,
-              self._test_instance.apk_under_test,
-              self._test_instance.apk_under_test_incremental_install_script)
-        else:
-          permissions = self._test_instance.apk_under_test.GetPermissions()
-          dev.Install(self._test_instance.apk_under_test,
-                      permissions=permissions)
+        if self._test_instance.apk_under_test:
+          if self._test_instance.apk_under_test_incremental_install_script:
+            local_device_test_run.IncrementalInstall(
+                dev,
+                self._test_instance.apk_under_test,
+                self._test_instance.apk_under_test_incremental_install_script)
+          else:
+            permissions = self._test_instance.apk_under_test.GetPermissions()
+            dev.Install(self._test_instance.apk_under_test,
+                        permissions=permissions)
 
         if self._test_instance.test_apk_incremental_install_script:
           local_device_test_run.IncrementalInstall(

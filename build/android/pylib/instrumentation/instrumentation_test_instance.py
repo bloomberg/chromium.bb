@@ -230,16 +230,17 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._initializeTestControlAttributes(args)
 
   def _initializeApkAttributes(self, args, error_func):
-    apk_under_test_path = args.apk_under_test
-    if not args.apk_under_test.endswith('.apk'):
-      apk_under_test_path = os.path.join(
-          constants.GetOutDirectory(), constants.SDK_BUILD_APKS_DIR,
-          '%s.apk' % args.apk_under_test)
+    if args.apk_under_test:
+      apk_under_test_path = args.apk_under_test
+      if not args.apk_under_test.endswith('.apk'):
+        apk_under_test_path = os.path.join(
+            constants.GetOutDirectory(), constants.SDK_BUILD_APKS_DIR,
+            '%s.apk' % args.apk_under_test)
 
-    if not os.path.exists(apk_under_test_path):
-      error_func('Unable to find APK under test: %s' % apk_under_test_path)
+      if not os.path.exists(apk_under_test_path):
+        error_func('Unable to find APK under test: %s' % apk_under_test_path)
 
-    self._apk_under_test = apk_helper.ToHelper(apk_under_test_path)
+      self._apk_under_test = apk_helper.ToHelper(apk_under_test_path)
 
     if args.test_apk.endswith('.apk'):
       self._suite = os.path.splitext(os.path.basename(args.test_apk))[0]
@@ -290,7 +291,11 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   def _initializeDataDependencyAttributes(self, args, isolate_delegate):
     self._data_deps = []
     if args.isolate_file_path:
-      self._isolate_abs_path = os.path.abspath(args.isolate_file_path)
+      if os.path.isabs(args.isolate_file_path):
+        self._isolate_abs_path = args.isolate_file_path
+      else:
+        self._isolate_abs_path = os.path.join(
+            constants.DIR_SOURCE_ROOT, args.isolate_file_path)
       self._isolate_delegate = isolate_delegate
       self._isolated_abs_path = os.path.join(
           constants.GetOutDirectory(), '%s.isolated' % self._test_package)
@@ -309,7 +314,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       logging.warning('No data dependencies will be pushed.')
 
   def _initializeTestFilterAttributes(self, args):
-    self._test_filter = args.test_filter
+    if args.test_filter:
+      self._test_filter = args.test_filter.replace('#', '.')
 
     def annotation_dict_element(a):
       a = a.split('=')
@@ -340,7 +346,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
         })
 
   def _initializeFlagAttributes(self, args):
-    self._flags = ['--disable-fre', '--enable-test-intents']
+    self._flags = ['--enable-test-intents']
     # TODO(jbudorick): Transition "--device-flags" to "--device-flags-file"
     if hasattr(args, 'device_flags') and args.device_flags:
       with open(args.device_flags) as device_flags_file:

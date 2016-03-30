@@ -977,7 +977,7 @@ def RunTestsCommand(args): # pylint: disable=too-many-return-statements
   ProcessCommonOptions(args)
   logging.info('command: %s', ' '.join(sys.argv))
 
-  if args.enable_platform_mode:
+  if args.enable_platform_mode or command in ('gtest', 'instrumentation'):
     return RunTestsInPlatformMode(args)
 
   forwarder.Forwarder.RemoveHostLog()
@@ -988,12 +988,8 @@ def RunTestsCommand(args): # pylint: disable=too-many-return-statements
     return _GetAttachedDevices(args.blacklist_file, args.test_device,
                                args.enable_device_cache)
 
-  if command == 'gtest':
-    return RunTestsInPlatformMode(args)
-  elif command == 'linker':
+  if command == 'linker':
     return _RunLinkerTests(args, get_devices())
-  elif command == 'instrumentation':
-    return _RunInstrumentationTests(args, get_devices())
   elif command == 'junit':
     return _RunJUnitTests(args)
   elif command == 'monkey':
