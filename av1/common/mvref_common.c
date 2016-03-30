@@ -142,7 +142,29 @@ static void scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           ref_mv_stack[index].weight = len;
           ++(*refmv_count);
         }
-      }
+
+        if (candidate_mi->mbmi.sb_type < BLOCK_8X8 && block >= 0) {
+          int alt_block = 3 - block;
+
+          assert(block <= 3);
+
+          this_refmv =
+              get_sub_block_mv(candidate_mi, ref, mi_pos.col, alt_block);
+          for (index = 0; index < *refmv_count; ++index)
+            if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int)
+              break;
+
+          if (index < *refmv_count)
+            ref_mv_stack[index].weight += len;
+
+          // Add a new item to the list.
+          if (index == *refmv_count) {
+            ref_mv_stack[index].this_mv = this_refmv;
+            ref_mv_stack[index].weight = len;
+            ++(*refmv_count);
+          }
+        }
+      }  // match reference frame
     }
   }  // Analyze a single 8x8 block motion information.
 }
@@ -355,8 +377,8 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
 Done:
-
-  mode_context[ref_frame] = counter_to_context[context_counter];
+  if (mode_context)
+    mode_context[ref_frame] = counter_to_context[context_counter];
 
 #if CONFIG_MISC_FIXES
   for (i = refmv_count; i < MAX_MV_REF_CANDIDATES; ++i)
@@ -408,18 +430,46 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
 }
 
 void av1_append_sub8x8_mvs_for_idx(AV1_COMMON *cm, MACROBLOCKD *xd, int block,
-                                    int ref, int mi_row, int mi_col,
-                                    int_mv *nearest_mv, int_mv *near_mv,
-                                    uint8_t *mode_context) {
+                                   int ref, int mi_row, int mi_col,
+                                   int_mv *nearest_mv, int_mv *near_mv) {
   int_mv mv_list[MAX_MV_REF_CANDIDATES];
   MODE_INFO *const mi = xd->mi[0];
   b_mode_info *bmi = mi->bmi;
   int n;
 
+#if CONFIG_REF_MV
+  CANDIDATE_MV ref_mv_stack[MAX_REF_MV_STACK_SIZE];
+  CANDIDATE_MV tmp_mv;
+  uint8_t ref_mv_count = 0, idx;
+  uint8_t above_count = 0, left_count = 0;
+#endif
+
   assert(MAX_MV_REF_CANDIDATES == 2);
 
   find_mv_refs_idx(cm, xd, mi, mi->mbmi.ref_frame[ref], mv_list, block, mi_row,
-                   mi_col, NULL, NULL, mode_context);
+                   mi_col, NULL, NULL, NULL);
+
+#if CONFIG_REF_MV
+  scan_blk_mbmi(cm, xd, mi_row, mi_col, block, mi->mbmi.ref_frame[ref],
+                -1, 0, ref_mv_stack, &ref_mv_count);
+  above_count = ref_mv_count;
+
+  scan_blk_mbmi(cm, xd, mi_row, mi_col, block, mi->mbmi.ref_frame[ref],
+                0, -1, ref_mv_stack, &ref_mv_count);
+  left_count = ref_mv_count - above_count;
+
+  if (above_count > 1 && left_count > 0) {
+    tmp_mv = ref_mv_stack[1];
+    ref_mv_stack[1] = ref_mv_stack[above_count];
+    ref_mv_stack[above_count] = tmp_mv;
+  }
+
+  for (idx = 0; idx < AOMMIN(MAX_MV_REF_CANDIDATES, ref_mv_count); ++idx) {
+    mv_list[idx].as_int = ref_mv_stack[idx].this_mv.as_int;
+    clamp_mv_ref(&mv_list[idx].as_mv,
+                 xd->n8_w << 3, xd->n8_h << 3, xd);
+  }
+#endif
 
   near_mv->as_int = 0;
   switch (block) {
