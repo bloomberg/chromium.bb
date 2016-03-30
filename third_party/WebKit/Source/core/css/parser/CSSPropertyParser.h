@@ -197,6 +197,9 @@ private:
     RefPtrWillBeMember<CSSCalcValue> m_parsedCalculation;
 };
 
+// TODO(rob.buis): should move to CSSPropertyParser after conversion.
+bool allTracksAreFixedSized(CSSValueList&);
+
 CSSPropertyID unresolvedCSSPropertyID(const CSSParserString&);
 CSSValueID cssValueKeywordID(const CSSParserString&);
 

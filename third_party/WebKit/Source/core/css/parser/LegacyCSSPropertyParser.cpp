@@ -265,12 +265,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         parsedValue = parseGridAutoFlow(*m_valueList);
         break;
 
-    case CSSPropertyGridTemplateColumns:
-    case CSSPropertyGridTemplateRows:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        parsedValue = parseGridTrackList();
-        break;
-
     case CSSPropertyGridTemplateAreas:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridTemplateAreas();
@@ -539,7 +533,7 @@ bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSVal
     return true;
 }
 
-static bool allTracksAreFixedSized(CSSValueList& valueList)
+bool allTracksAreFixedSized(CSSValueList& valueList)
 {
     for (auto value : valueList) {
         if (value->isGridLineNamesValue())

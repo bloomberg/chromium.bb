@@ -16,6 +16,8 @@
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGradientValue.h"
+#include "core/css/CSSGridAutoRepeatValue.h"
+#include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSPaintValue.h"
 #include "core/css/CSSPathValue.h"
@@ -3107,6 +3109,115 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeGridTrackSize(CSSParserTokenRange
     return consumeGridBreadth(range, cssParserMode, restriction);
 }
 
+static PassRefPtrWillBeRawPtr<CSSGridLineNamesValue> consumeGridLineNames(CSSParserTokenRange& range)
+{
+    CSSParserTokenRange rangeCopy = range;
+    if (rangeCopy.consumeIncludingWhitespace().type() != LeftBracketToken)
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = CSSGridLineNamesValue::create();
+    while (RefPtrWillBeRawPtr<CSSCustomIdentValue> lineName = consumeCustomIdentForGridLine(rangeCopy))
+        lineNames->append(lineName.release());
+    if (rangeCopy.consumeIncludingWhitespace().type() != RightBracketToken)
+        return nullptr;
+    range = rangeCopy;
+    return lineNames.release();
+}
+
+static bool consumeGridTrackRepeatFunction(CSSParserTokenRange& range, CSSParserMode cssParserMode, CSSValueList& list, bool& isAutoRepeat)
+{
+    CSSParserTokenRange args = consumeFunction(range);
+    // The number of repetitions for <auto-repeat> is not important at parsing level
+    // because it will be computed later, let's set it to 1.
+    size_t repetitions = 1;
+    isAutoRepeat = identMatches<CSSValueAutoFill, CSSValueAutoFit>(args.peek().id());
+    RefPtrWillBeRawPtr<CSSValueList> repeatedValues;
+    if (isAutoRepeat) {
+        repeatedValues = CSSGridAutoRepeatValue::create(args.consumeIncludingWhitespace().id());
+    } else {
+        // TODO(rob.buis): a consumeIntegerRaw would be more efficient here.
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> repetition = consumePositiveInteger(args);
+        if (!repetition)
+            return false;
+        repetitions = clampTo<size_t>(repetition->getDoubleValue(), 0, kGridMaxTracks);
+        repeatedValues = CSSValueList::createSpaceSeparated();
+    }
+    if (!consumeCommaIncludingWhitespace(args))
+        return false;
+    RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = consumeGridLineNames(args);
+    if (lineNames)
+        repeatedValues->append(lineNames.release());
+
+    size_t numberOfTracks = 0;
+    TrackSizeRestriction restriction = isAutoRepeat ? FixedSizeOnly : AllowAll;
+    while (!args.atEnd()) {
+        if (isAutoRepeat && numberOfTracks)
+            return false;
+        RefPtrWillBeRawPtr<CSSValue> trackSize = consumeGridTrackSize(args, cssParserMode, restriction);
+        if (!trackSize)
+            return false;
+        repeatedValues->append(trackSize.release());
+        ++numberOfTracks;
+        lineNames = consumeGridLineNames(args);
+        if (lineNames)
+            repeatedValues->append(lineNames.release());
+    }
+    // We should have found at least one <track-size> or else it is not a valid <track-list>.
+    if (!numberOfTracks)
+        return false;
+
+    if (isAutoRepeat) {
+        list.append(repeatedValues.release());
+    } else {
+        // We clamp the repetitions to a multiple of the repeat() track list's size, while staying below the max grid size.
+        repetitions = std::min(repetitions, kGridMaxTracks / numberOfTracks);
+        for (size_t i = 0; i < repetitions; ++i) {
+            for (size_t j = 0; j < repeatedValues->length(); ++j)
+                list.append(repeatedValues->item(j));
+        }
+    }
+    return true;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeGridTrackList(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = consumeGridLineNames(range);
+    if (lineNames)
+        values->append(lineNames.release());
+
+    bool seenAutoRepeat = false;
+    // TODO(rob.buis): <line-names> should not be able to directly precede <auto-repeat>.
+    do {
+        bool isAutoRepeat;
+        if (range.peek().functionId() == CSSValueRepeat) {
+            if (!consumeGridTrackRepeatFunction(range, cssParserMode, *values, isAutoRepeat))
+                return nullptr;
+            if (isAutoRepeat && seenAutoRepeat)
+                return nullptr;
+            seenAutoRepeat = seenAutoRepeat || isAutoRepeat;
+        } else if (RefPtrWillBeRawPtr<CSSValue> value = consumeGridTrackSize(range, cssParserMode, seenAutoRepeat ? FixedSizeOnly : AllowAll)) {
+            values->append(value.release());
+        } else {
+            return nullptr;
+        }
+        lineNames = consumeGridLineNames(range);
+        if (lineNames)
+            values->append(lineNames.release());
+    } while (!range.atEnd() && range.peek().type() != DelimiterToken);
+    // <auto-repeat> requires definite minimum track sizes in order to compute the number of repetitions.
+    // The above while loop detects those appearances after the <auto-repeat> but not the ones before.
+    if (seenAutoRepeat && !allTracksAreFixedSized(*values))
+        return nullptr;
+    return values.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeGridTemplatesRowsOrColumns(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    return consumeGridTrackList(range, cssParserMode);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3479,6 +3590,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyGridAutoRows:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return consumeGridTrackSize(m_range, m_context.mode());
+    case CSSPropertyGridTemplateColumns:
+    case CSSPropertyGridTemplateRows:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return consumeGridTemplatesRowsOrColumns(m_range, m_context.mode());
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {
