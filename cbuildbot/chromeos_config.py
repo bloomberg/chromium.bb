@@ -3184,10 +3184,11 @@ def GetConfig():
       if not c.get('active_waterfall'):
         c['active_waterfall'] = GetDefaultWaterfall(c)
 
-    # Apply manual configs.
-    for waterfall, names in _waterfall_config_map.iteritems():
-      for name in names:
-        site_config[name]['active_waterfall'] = waterfall
+    # Apply manual configs, not used for release branches.
+    if not IS_RELEASE_BRANCH:
+      for waterfall, names in _waterfall_config_map.iteritems():
+        for name in names:
+          site_config[name]['active_waterfall'] = waterfall
 
   _SetupWaterfalls()
 
