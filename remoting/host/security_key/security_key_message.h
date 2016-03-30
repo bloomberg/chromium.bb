@@ -100,7 +100,10 @@ enum class RemoteSecurityKeyMessageType : uint8_t {
 class SecurityKeyMessage final {
  public:
   // The number of bytes used to represent the header.
-  static const int kHeaderSizeBytes = 4;
+  static const int kHeaderSizeBytes;
+
+  // The number of bytes used to represent the message type.
+  static const int kMessageTypeSizeBytes;
 
   SecurityKeyMessage();
   ~SecurityKeyMessage();

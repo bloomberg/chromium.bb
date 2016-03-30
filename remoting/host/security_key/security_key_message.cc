@@ -11,11 +11,13 @@ namespace {
 // Limit remote security key messages to 256KB.
 const uint32_t kMaxSecurityKeyMessageByteCount = 256 * 1024;
 
-const int kRemoteSecurityKeyMessageControlCodeByteCount = 1;
-
 }  // namespace
 
 namespace remoting {
+
+const int SecurityKeyMessage::kHeaderSizeBytes = 4;
+
+const int SecurityKeyMessage::kMessageTypeSizeBytes = 1;
 
 SecurityKeyMessage::SecurityKeyMessage() {}
 
@@ -59,7 +61,7 @@ bool SecurityKeyMessage::ParseMessage(const std::string& message_data) {
   }
 
   payload_.clear();
-  if (message_data.size() > kRemoteSecurityKeyMessageControlCodeByteCount) {
+  if (message_data.size() > kMessageTypeSizeBytes) {
     payload_ = message_data.substr(1);
   }
 
