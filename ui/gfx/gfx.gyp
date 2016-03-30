@@ -201,6 +201,7 @@
         'image/image_skia_operations.h',
         'image/image_skia_rep.cc',
         'image/image_skia_rep.h',
+        'image/image_skia_source.cc',
         'image/image_skia_source.h',
         'image/image_skia_util_ios.h',
         'image/image_skia_util_ios.mm',

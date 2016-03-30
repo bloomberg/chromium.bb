@@ -309,6 +309,10 @@ class VectorIconSource : public CanvasImageSource {
   ~VectorIconSource() override {}
 
   // CanvasImageSource:
+  bool HasRepresentationAtAllScales() const override {
+    return id_ != VectorIconId::VECTOR_ICON_NONE;
+  }
+
   void Draw(gfx::Canvas* canvas) override {
     if (path_.empty()) {
       PaintVectorIcon(canvas, id_, size_.width(), color_);

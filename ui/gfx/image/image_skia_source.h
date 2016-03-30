@@ -15,13 +15,17 @@ class ImageSkiaRep;
 
 class GFX_EXPORT ImageSkiaSource {
  public:
-  virtual ~ImageSkiaSource() {}
+  virtual ~ImageSkiaSource();
 
   // Returns the ImageSkiaRep for the given |scale|. ImageSkia caches the
   // returned ImageSkiaRep and calls this method only if it doesn't have
   // ImageSkiaRep for given |scale|. There is no need for the implementation to
   // cache the image.
   virtual gfx::ImageSkiaRep GetImageForScale(float scale) = 0;
+
+  // Subclasses should override this to return true when they are capable of
+  // providing an exact representation at any desired scale factor.
+  virtual bool HasRepresentationAtAllScales() const;
 };
 
 }  // namespace gfx

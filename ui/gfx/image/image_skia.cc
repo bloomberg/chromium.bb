@@ -92,6 +92,11 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
   // the image high DPI aware.
   void AddRepresentation(const ImageSkiaRep& image);
 
+  // Returns whether the underlying image source can provide a representation at
+  // any scale.  In this case, the caller is guaranteed that
+  // FindRepresentation(..., true) will always succeed.
+  bool HasRepresentationAtAllScales() const;
+
   // Returns the iterator of the image rep whose density best matches
   // |scale|. If the image for the |scale| doesn't exist in the storage and
   // |storage| is set, it fetches new image by calling
@@ -160,6 +165,10 @@ bool ImageSkiaStorage::CanRead() const {
 }
 
 void ImageSkiaStorage::AddRepresentation(const ImageSkiaRep& image) {
+  // Explicitly adding a representation makes no sense for images that
+  // inherently have representations at all scales already.
+  DCHECK(!HasRepresentationAtAllScales());
+
   if (image.scale() != 1.0f) {
     for (ImageSkia::ImageSkiaReps::iterator it = image_reps_.begin();
          it < image_reps_.end(); ++it) {
@@ -171,6 +180,10 @@ void ImageSkiaStorage::AddRepresentation(const ImageSkiaRep& image) {
     }
   }
   image_reps_.push_back(image);
+}
+
+bool ImageSkiaStorage::HasRepresentationAtAllScales() const {
+  return source_ && source_->HasRepresentationAtAllScales();
 }
 
 std::vector<ImageSkiaRep>::iterator ImageSkiaStorage::FindRepresentation(
@@ -378,6 +391,14 @@ bool ImageSkia::HasRepresentation(float scale) const {
   if (isNull())
     return false;
   CHECK(CanRead());
+
+  // This check is not only faster than FindRepresentation(), it's important for
+  // getting the right answer in cases of image types that are not based on
+  // discrete preset underlying representations, which otherwise might report
+  // "false" for this if GetRepresentation() has not yet been called for this
+  // |scale|.
+  if (storage_->HasRepresentationAtAllScales())
+    return true;
 
   ImageSkiaReps::iterator it = storage_->FindRepresentation(scale, false);
   return (it != storage_->image_reps().end() && it->scale() == scale);
