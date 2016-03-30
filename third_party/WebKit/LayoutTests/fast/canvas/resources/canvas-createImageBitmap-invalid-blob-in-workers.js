@@ -8,8 +8,8 @@ self.addEventListener('message', function(e) {
   createImageBitmap(e.data).then(function() {
     testFailed('Promise fulfuilled.');
     finishJSTest();
-  }, function() {
-    testPassed('Promise rejected.');
+  }, function(ex) {
+    testPassed('Promise rejected: ' + ex);
     finishJSTest();
   });
 });

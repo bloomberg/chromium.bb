@@ -185,7 +185,7 @@ DEFINE_TRACE(ImageBitmapFactories)
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
 {
-    m_resolver->reject(ScriptValue(m_resolver->getScriptState(), v8::Null(m_resolver->getScriptState()->isolate())));
+    m_resolver->reject(DOMException::create(InvalidStateError, "The source image cannot be decoded."));
     m_factory->didFinishLoading(this);
 }
 
