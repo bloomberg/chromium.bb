@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
+#include "android_webview/browser/shared_renderer_state.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
@@ -26,8 +27,12 @@ RenderingTest::~RenderingTest() {
 
 void RenderingTest::SetUpTestHarness() {
   DCHECK(!browser_view_renderer_.get());
+  DCHECK(!shared_renderer_state_.get());
+  shared_renderer_state_.reset(
+      new SharedRendererState(this, base::ThreadTaskRunnerHandle::Get()));
   browser_view_renderer_.reset(new BrowserViewRenderer(
       this, base::ThreadTaskRunnerHandle::Get(), false));
+  browser_view_renderer_->SetSharedRendererState(shared_renderer_state_.get());
   InitializeCompositor();
   Attach();
 }
@@ -40,8 +45,9 @@ void RenderingTest::InitializeCompositor() {
 }
 
 void RenderingTest::Attach() {
-  window_.reset(
-      new FakeWindow(browser_view_renderer_.get(), this, gfx::Rect(100, 100)));
+  window_.reset(new FakeWindow(browser_view_renderer_.get(),
+                               shared_renderer_state_.get(), this,
+                               gfx::Rect(100, 100)));
 }
 
 void RenderingTest::RunTest() {
@@ -105,6 +111,10 @@ void RenderingTest::OnNewPicture() {
 void RenderingTest::PostInvalidate() {
   if (window_)
     window_->PostInvalidate();
+}
+
+void RenderingTest::OnParentDrawConstraintsUpdated() {
+  browser_view_renderer_->OnParentDrawConstraintsUpdated();
 }
 
 void RenderingTest::DetachFunctorFromView() {

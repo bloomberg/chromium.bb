@@ -19,14 +19,13 @@
 #include "ui/gfx/geometry/vector2d.h"
 
 struct AwDrawGLInfo;
-
 namespace android_webview {
 
 namespace internal {
 class RequestDrawGLTracker;
 }
 
-class BrowserViewRenderer;
+class SharedRendererStateClient;
 class ChildFrame;
 class HardwareRenderer;
 class InsideHardwareReleaseReset;
@@ -44,8 +43,8 @@ class SharedRendererState {
   using ReturnedResourcesMap = std::map<uint32_t, ReturnedResources>;
 
   SharedRendererState(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop,
-      BrowserViewRenderer* browser_view_renderer);
+      SharedRendererStateClient* client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop);
   ~SharedRendererState();
 
   // This function can be called from any thread.
@@ -53,19 +52,18 @@ class SharedRendererState {
 
   // UI thread methods.
   void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset);
-  void SetCompositorFrameOnUI(scoped_ptr<ChildFrame> frame);
+  void SetFrameOnUI(scoped_ptr<ChildFrame> frame);
   void InitializeHardwareDrawIfNeededOnUI();
-  void ReleaseHardwareDrawIfNeededOnUI();
   ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const;
   void SwapReturnedResourcesOnUI(ReturnedResourcesMap* returned_resource_map);
   bool ReturnedResourcesEmptyOnUI() const;
   scoped_ptr<ChildFrame> PassUncommittedFrameOnUI();
-  void DeleteHardwareRendererOnUI();
   bool HasFrameOnUI() const;
+  void DeleteHardwareRendererOnUI();
 
   // RT thread methods.
   gfx::Vector2d GetScrollOffsetOnRT();
-  scoped_ptr<ChildFrame> PassCompositorFrameOnRT();
+  scoped_ptr<ChildFrame> PassFrameOnRT();
   void DrawGL(AwDrawGLInfo* draw_info);
   void PostExternalDrawConstraintsToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
@@ -94,11 +92,10 @@ class SharedRendererState {
   void UpdateParentDrawConstraintsOnUI();
   bool IsInsideHardwareRelease() const;
   void SetInsideHardwareRelease(bool inside);
-  void ReleaseCompositorResourcesIfNeededOnUI(bool release_hardware_draw);
 
   // Accessed by UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_loop_;
-  BrowserViewRenderer* browser_view_renderer_;
+  SharedRendererStateClient* const client_;
   base::WeakPtr<SharedRendererState> ui_thread_weak_ptr_;
   base::CancelableClosure request_draw_gl_cancelable_closure_;
 

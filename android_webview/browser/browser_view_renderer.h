@@ -51,8 +51,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   void RegisterWithWebContents(content::WebContents* web_contents);
 
-  SharedRendererState* GetAwDrawGLViewContext();
-  bool RequestDrawGL(bool wait_for_completion);
+  // The BrowserViewRenderer client is responsible for ensuring that the
+  // SharedRendererState has been set correctly via this method.
+  void SetSharedRendererState(SharedRendererState* shared_renderer_state);
 
   // Called before either OnDrawHardware or OnDrawSoftware to set the view
   // state of this frame. |scroll| is the view's current scroll offset.
@@ -97,10 +98,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   bool attached_to_window() const { return attached_to_window_; }
   bool hardware_enabled() const { return hardware_enabled_; }
   gfx::Size size() const { return size_; }
-  void ReleaseHardware();
 
   bool IsClientVisible() const;
-  void TrimMemory(const int level, const bool visible);
+  void TrimMemory();
 
   // SynchronousCompositorClient overrides.
   void DidInitializeCompositor(
@@ -120,7 +120,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
                      const gfx::Vector2dF& latest_overscroll_delta,
                      const gfx::Vector2dF& current_fling_velocity) override;
 
-  void UpdateParentDrawConstraints();
+  void OnParentDrawConstraintsUpdated();
   void DetachFunctorFromView();
 
  private:
@@ -144,9 +144,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   // view renderer's state.
   std::string ToString() const;
 
-  BrowserViewRendererClient* client_;
-  SharedRendererState shared_renderer_state_;
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  BrowserViewRendererClient* const client_;
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  SharedRendererState* shared_renderer_state_;
   bool disable_page_visibility_;
 
   // The current compositor that's owned by the current RVH.
@@ -192,6 +192,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   gfx::Vector2dF overscroll_rounding_error_;
 
   uint32_t next_compositor_id_;
+
+  ParentCompositorDrawConstraints external_draw_constraints_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };

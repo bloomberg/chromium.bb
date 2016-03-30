@@ -83,8 +83,7 @@ HardwareRenderer::~HardwareRenderer() {
 void HardwareRenderer::CommitFrame() {
   TRACE_EVENT0("android_webview", "CommitFrame");
   scroll_offset_ = shared_renderer_state_->GetScrollOffsetOnRT();
-  scoped_ptr<ChildFrame> child_frame =
-      shared_renderer_state_->PassCompositorFrameOnRT();
+  scoped_ptr<ChildFrame> child_frame = shared_renderer_state_->PassFrameOnRT();
   if (!child_frame.get())
     return;
 

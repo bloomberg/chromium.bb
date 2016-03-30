@@ -11,6 +11,7 @@
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
@@ -179,14 +180,16 @@ AwBrowserPermissionRequestDelegate* AwBrowserPermissionRequestDelegate::FromID(
 }
 
 AwContents::AwContents(scoped_ptr<WebContents> web_contents)
-    : browser_view_renderer_(
-          this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+    : shared_renderer_state_(
+          this, BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+      browser_view_renderer_(
+          this, BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisablePageVisibility)),
       web_contents_(std::move(web_contents)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
+  browser_view_renderer_.SetSharedRendererState(&shared_renderer_state_);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
@@ -361,8 +364,7 @@ jint GetNativeInstanceCount(JNIEnv* env, const JavaParamRef<jclass>&) {
 jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return reinterpret_cast<intptr_t>(
-      browser_view_renderer_.GetAwDrawGLViewContext());
+  return reinterpret_cast<intptr_t>(&shared_renderer_state_);
 }
 
 namespace {
@@ -745,6 +747,10 @@ void AwContents::OnReceivedTouchIconUrl(const std::string& url,
       env, obj.obj(), ConvertUTF8ToJavaString(env, url).obj(), precomposed);
 }
 
+void AwContents::OnParentDrawConstraintsUpdated() {
+  browser_view_renderer_.OnParentDrawConstraintsUpdated();
+}
+
 bool AwContents::RequestDrawGL(bool wait_for_completion) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
@@ -889,6 +895,7 @@ void AwContents::OnAttachedToWindow(JNIEnv* env,
 void AwContents::OnDetachedFromWindow(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  shared_renderer_state_.DeleteHardwareRendererOnUI();
   browser_view_renderer_.OnDetachedFromWindow();
 }
 
@@ -1208,7 +1215,28 @@ void AwContents::TrimMemory(JNIEnv* env,
                             jint level,
                             jboolean visible) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  browser_view_renderer_.TrimMemory(level, visible);
+  // Constants from Android ComponentCallbacks2.
+  enum {
+    TRIM_MEMORY_RUNNING_LOW = 10,
+    TRIM_MEMORY_UI_HIDDEN = 20,
+    TRIM_MEMORY_BACKGROUND = 40,
+    TRIM_MEMORY_MODERATE = 60,
+  };
+
+  // Not urgent enough. TRIM_MEMORY_UI_HIDDEN is treated specially because
+  // it does not indicate memory pressure, but merely that the app is
+  // backgrounded.
+  if (level < TRIM_MEMORY_RUNNING_LOW || level == TRIM_MEMORY_UI_HIDDEN)
+    return;
+
+  // Do not release resources on view we expect to get DrawGL soon.
+  if (level < TRIM_MEMORY_BACKGROUND && visible)
+    return;
+
+  if (level >= TRIM_MEMORY_MODERATE)
+    shared_renderer_state_.DeleteHardwareRendererOnUI();
+
+  browser_view_renderer_.TrimMemory();
 }
 
 // TODO(sgurun) add support for posting a frame whose name is known (only

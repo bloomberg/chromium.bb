@@ -18,6 +18,8 @@
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/icon_helper.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
+#include "android_webview/browser/shared_renderer_state.h"
+#include "android_webview/browser/shared_renderer_state_client.h"
 #include "android_webview/native/permission/permission_request_handler_client.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -60,7 +62,8 @@ class AwContents : public FindHelper::Listener,
                    public AwRenderViewHostExtClient,
                    public BrowserViewRendererClient,
                    public PermissionRequestHandlerClient,
-                   public AwBrowserPermissionRequestDelegate {
+                   public AwBrowserPermissionRequestDelegate,
+                   public SharedRendererStateClient {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
@@ -230,6 +233,11 @@ class AwContents : public FindHelper::Listener,
       const base::Callback<void(bool)>& callback) override;
   void CancelMIDISysexPermissionRequests(const GURL& origin) override;
 
+  // SharedRendererStateClient implementation.
+  void OnParentDrawConstraintsUpdated() override;
+  bool RequestDrawGL(bool wait_for_completion) override;
+  void DetachFunctorFromView() override;
+
   // Find-in-page API and related methods.
   void FindAllAsync(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
@@ -259,9 +267,7 @@ class AwContents : public FindHelper::Listener,
   void OnWebLayoutContentsSizeChanged(const gfx::Size& contents_size) override;
 
   // BrowserViewRendererClient implementation.
-  bool RequestDrawGL(bool wait_for_completion) override;
   void PostInvalidate() override;
-  void DetachFunctorFromView() override;
   void OnNewPicture() override;
   gfx::Point GetLocationOnScreen() override;
   void ScrollContainerViewTo(const gfx::Vector2d& new_value) override;
@@ -272,9 +278,6 @@ class AwContents : public FindHelper::Listener,
                          float max_page_scale_factor) override;
   void DidOverscroll(const gfx::Vector2d& overscroll_delta,
                      const gfx::Vector2dF& overscroll_velocity) override;
-
-  void ParentDrawConstraintsUpdated(
-      const ParentCompositorDrawConstraints& draw_constraints) override {}
 
   void ClearCache(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
@@ -339,6 +342,7 @@ class AwContents : public FindHelper::Listener,
   void SetDipScaleInternal(float dip_scale);
 
   JavaObjectWeakGlobalRef java_ref_;
+  SharedRendererState shared_renderer_state_;
   BrowserViewRenderer browser_view_renderer_;  // Must outlive |web_contents_|.
   scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
   scoped_ptr<AwContentsClientBridge> contents_client_bridge_;

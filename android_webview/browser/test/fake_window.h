@@ -45,6 +45,7 @@ class WindowHooks {
 class FakeWindow {
  public:
   FakeWindow(BrowserViewRenderer* view,
+             SharedRendererState* functor,
              WindowHooks* hooks,
              gfx::Rect location);
   ~FakeWindow();

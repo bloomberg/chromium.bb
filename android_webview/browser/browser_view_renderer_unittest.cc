@@ -123,8 +123,10 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
            constraints1.surface_rect_empty == constraints2.surface_rect_empty;
   }
 
-  void ParentDrawConstraintsUpdated(
-      const ParentCompositorDrawConstraints& constraints) override {
+  void OnParentDrawConstraintsUpdated() override {
+    RenderingTest::OnParentDrawConstraintsUpdated();
+    ParentCompositorDrawConstraints constraints =
+        shared_renderer_state_->GetParentDrawConstraintsOnUI();
     switch (on_draw_count_) {
       case 1u:
         EXPECT_TRUE(DrawConstraintsEquals(constraints, new_constraints_));

@@ -6,11 +6,11 @@
 
 #include <utility>
 
-#include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
+#include "android_webview/browser/shared_renderer_state_client.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -87,16 +87,16 @@ base::LazyInstance<internal::RequestDrawGLTracker> g_request_draw_gl_tracker =
 }
 
 SharedRendererState::SharedRendererState(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop,
-    BrowserViewRenderer* browser_view_renderer)
+    SharedRendererStateClient* client,
+    const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop)
     : ui_loop_(ui_loop),
-      browser_view_renderer_(browser_view_renderer),
+      client_(client),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()),
       hardware_renderer_has_frame_(false),
       inside_hardware_release_(false),
       weak_factory_on_ui_thread_(this) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  DCHECK(browser_view_renderer_);
+  DCHECK(client_);
   ui_thread_weak_ptr_ = weak_factory_on_ui_thread_.GetWeakPtr();
   ResetRequestDrawGLCallback();
 }
@@ -144,7 +144,7 @@ void SharedRendererState::ClientRequestDrawGLOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   ResetRequestDrawGLCallback();
   g_request_draw_gl_tracker.Get().SetQueuedFunctorOnUi(this);
-  if (!browser_view_renderer_->RequestDrawGL(false)) {
+  if (!client_->RequestDrawGL(false)) {
     g_request_draw_gl_tracker.Get().ResetPending();
     LOG(ERROR) << "Failed to request GL process. Deadlock likely";
   }
@@ -152,7 +152,7 @@ void SharedRendererState::ClientRequestDrawGLOnUI() {
 
 void SharedRendererState::UpdateParentDrawConstraintsOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  browser_view_renderer_->UpdateParentDrawConstraints();
+  client_->OnParentDrawConstraintsUpdated();
 }
 
 void SharedRendererState::SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) {
@@ -165,13 +165,13 @@ gfx::Vector2d SharedRendererState::GetScrollOffsetOnRT() {
   return scroll_offset_;
 }
 
-void SharedRendererState::SetCompositorFrameOnUI(scoped_ptr<ChildFrame> frame) {
+void SharedRendererState::SetFrameOnUI(scoped_ptr<ChildFrame> frame) {
   base::AutoLock lock(lock_);
   DCHECK(!child_frame_.get());
   child_frame_ = std::move(frame);
 }
 
-scoped_ptr<ChildFrame> SharedRendererState::PassCompositorFrameOnRT() {
+scoped_ptr<ChildFrame> SharedRendererState::PassFrameOnRT() {
   base::AutoLock lock(lock_);
   hardware_renderer_has_frame_ =
       hardware_renderer_has_frame_ || child_frame_.get();
@@ -314,25 +314,18 @@ void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
   DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
 }
 
-void SharedRendererState::ReleaseHardwareDrawIfNeededOnUI() {
-  ReleaseCompositorResourcesIfNeededOnUI(true);
-}
-
 void SharedRendererState::DeleteHardwareRendererOnUI() {
-  ReleaseCompositorResourcesIfNeededOnUI(false);
-}
-
-void SharedRendererState::ReleaseCompositorResourcesIfNeededOnUI(
-    bool release_hardware_draw) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
+
   InsideHardwareReleaseReset auto_inside_hardware_release_reset(this);
 
-  browser_view_renderer_->DetachFunctorFromView();
-  bool hardware_initialized = browser_view_renderer_->hardware_enabled();
+  client_->DetachFunctorFromView();
+
   // If the WebView gets onTrimMemory >= MODERATE twice in a row, the 2nd
   // onTrimMemory will result in an unnecessary Render Thread DrawGL call.
+  bool hardware_initialized = HasFrameOnUI();
   if (hardware_initialized) {
-    bool draw_functor_succeeded = browser_view_renderer_->RequestDrawGL(true);
+    bool draw_functor_succeeded = client_->RequestDrawGL(true);
     if (!draw_functor_succeeded) {
       LOG(ERROR) << "Unable to free GL resources. Has the Window leaked?";
       // Calling release on wrong thread intentionally.
@@ -340,9 +333,6 @@ void SharedRendererState::ReleaseCompositorResourcesIfNeededOnUI(
       info.mode = AwDrawGLInfo::kModeProcess;
       DrawGL(&info);
     }
-
-    if (release_hardware_draw)
-      browser_view_renderer_->ReleaseHardware();
   }
 
   GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
@@ -357,7 +347,7 @@ void SharedRendererState::ReleaseCompositorResourcesIfNeededOnUI(
 
   if (hardware_initialized) {
     // Flush any invoke functors that's caused by ReleaseHardware.
-    browser_view_renderer_->RequestDrawGL(true);
+    client_->RequestDrawGL(true);
   }
 }
 

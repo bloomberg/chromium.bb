@@ -5,6 +5,8 @@
 #include "android_webview/browser/test/fake_window.h"
 
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/child_frame.h"
+#include "android_webview/browser/shared_renderer_state.h"
 #include "base/location.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
@@ -39,6 +41,7 @@ class FakeWindow::ScopedMakeCurrent {
 };
 
 FakeWindow::FakeWindow(BrowserViewRenderer* view,
+                       SharedRendererState* functor,
                        WindowHooks* hooks,
                        gfx::Rect location)
     : view_(view),
@@ -46,7 +49,7 @@ FakeWindow::FakeWindow(BrowserViewRenderer* view,
       surface_size_(100, 100),
       location_(location),
       on_draw_hardware_pending_(false),
-      functor_(nullptr),
+      functor_(functor),
       context_current_(false),
       weak_ptr_factory_(this) {
   CheckCurrentlyOnUIThread();
@@ -62,6 +65,7 @@ FakeWindow::~FakeWindow() {
 
 void FakeWindow::Detach() {
   CheckCurrentlyOnUIThread();
+  functor_->DeleteHardwareRendererOnUI();
   view_->OnDetachedFromWindow();
 
   if (render_thread_loop_) {
@@ -73,7 +77,6 @@ void FakeWindow::Detach() {
   }
 
   render_thread_.reset();
-  functor_ = nullptr;
 }
 
 void FakeWindow::RequestDrawGL(bool wait_for_completion) {
@@ -173,12 +176,10 @@ void FakeWindow::CheckCurrentlyOnUIThread() {
 
 void FakeWindow::CreateRenderThreadIfNeeded() {
   CheckCurrentlyOnUIThread();
-  if (functor_) {
-    DCHECK(render_thread_.get());
-    DCHECK(render_thread_loop_.get());
+  if (render_thread_) {
+    DCHECK(render_thread_loop_);
     return;
   }
-  functor_ = view_->GetAwDrawGLViewContext();
   render_thread_.reset(new base::Thread("TestRenderThread"));
   render_thread_->Start();
   render_thread_loop_ = render_thread_->task_runner();
@@ -194,11 +195,11 @@ void FakeWindow::CreateRenderThreadIfNeeded() {
 void FakeWindow::InitializeOnRT(base::WaitableEvent* sync) {
   CheckCurrentlyOnRT();
   surface_ = gfx::GLSurface::CreateOffscreenGLSurface(surface_size_);
-  DCHECK(surface_.get());
+  DCHECK(surface_);
   DCHECK(surface_->GetHandle());
   context_ = gfx::GLContext::CreateGLContext(nullptr, surface_.get(),
                                              gfx::PreferDiscreteGpu);
-  DCHECK(context_.get());
+  DCHECK(context_);
   sync->Signal();
 }
 
