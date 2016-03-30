@@ -61,7 +61,6 @@ Loaded modules:
     diff
     elements
     emulation
-    es_tree
     extensions
     host
     main
@@ -85,7 +84,6 @@ Loaded modules:
     diff
     elements
     emulation
-    es_tree
     extensions
     host
     main

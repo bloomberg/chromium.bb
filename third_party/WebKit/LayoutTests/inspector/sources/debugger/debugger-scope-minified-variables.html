@@ -7,19 +7,23 @@
 function test()
 {
     Runtime.experiments.enableForTest("resolveVariableNames");
-    InspectorTest.startDebuggerTest(step1);
+    InspectorTest.startDebuggerTest(() => InspectorTest.runTestFunctionAndWaitUntilPaused());
 
-    function step1()
+    var resolvedScopes = 0;
+    InspectorTest.addSniffer(WebInspector.SourceMapNamesResolver, "_scopeResolvedForTest", onScopeResolved, true);
+
+    function onScopeResolved()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+        if (++resolvedScopes === 2)
+            onAllScopesResolved();
     }
 
-    function step2()
+    function onAllScopesResolved()
     {
-        InspectorTest.expandScopeVariablesSidebarPane(step3);
+        InspectorTest.expandScopeVariablesSidebarPane(onSidebarsExpanded);
     }
 
-    function step3()
+    function onSidebarsExpanded()
     {
         InspectorTest.addResult("");
         InspectorTest.dumpScopeVariablesSidebarPane();
