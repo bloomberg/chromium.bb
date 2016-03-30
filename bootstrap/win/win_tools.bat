@@ -64,8 +64,12 @@ for /f "tokens=2,3 delims=. " %%i in ("%VERSTR%") do (set VERMAJOR=%%i & set VER
 if %VERMAJOR% lss 5 set GIT_VERSION=%GIT_VERSION%-xp
 if %VERMAJOR% equ 5 if %VERMINOR% lss 2 set XP_SUFFIX=-xp
 
+:: must explicitly use FIND_EXE to prevent this from grabbing e.g. gnuwin32 or
+:: msys versions.
+set FIND_EXE=%SYSTEMROOT%\System32\find.exe
+
 :: Check to see if we're on a 32 or 64 bit system
-reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OS_BITS=32 || set OS_BITS=64
+reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | %FIND_EXE% /i "x86" > NUL && set OS_BITS=32 || set OS_BITS=64
 
 if not exist "%WIN_TOOLS_ROOT_DIR%\.git_bleeding_edge" goto :GIT_OLD_FLOW
 set GIT_PORTABLE_FLOW=1
