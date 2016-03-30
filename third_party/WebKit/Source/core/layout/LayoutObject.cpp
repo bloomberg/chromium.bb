@@ -881,7 +881,7 @@ inline void LayoutObject::invalidateContainerPreferredLogicalWidths()
     }
 }
 
-LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
+LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped) const
 {
     // We technically just want our containing block, but
     // we may not have one if we're part of an uninstalled
@@ -890,25 +890,25 @@ LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObj
         if (object->canContainAbsolutePositionObjects())
             return object;
 
-        if (paintInvalidationContainerSkipped && object == paintInvalidationContainer)
-            *paintInvalidationContainerSkipped = true;
+        if (ancestorSkipped && object == ancestor)
+            *ancestorSkipped = true;
     }
     return nullptr;
 }
 
-LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
+LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped) const
 {
-    ASSERT(!paintInvalidationContainerSkipped || !*paintInvalidationContainerSkipped);
+    ASSERT(!ancestorSkipped || !*ancestorSkipped);
     ASSERT(!isText());
 
-    LayoutObject* ancestor = parent();
-    for (; ancestor && !ancestor->canContainFixedPositionObjects(); ancestor = ancestor->parent()) {
-        if (paintInvalidationContainerSkipped && ancestor == paintInvalidationContainer)
-            *paintInvalidationContainerSkipped = true;
+    LayoutObject* object = parent();
+    for (; object && !object->canContainFixedPositionObjects(); object = object->parent()) {
+        if (ancestorSkipped && object == ancestor)
+            *ancestorSkipped = true;
     }
 
-    ASSERT(!ancestor || !ancestor->isAnonymousBlock());
-    return toLayoutBlock(ancestor);
+    ASSERT(!object || !object->isAnonymousBlock());
+    return toLayoutBlock(object);
 }
 
 LayoutBlock* LayoutObject::containingBlockForAbsolutePosition() const
@@ -2245,8 +2245,8 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Tran
     if (ancestor == this)
         return;
 
-    bool containerSkipped;
-    const LayoutObject* o = container(ancestor, &containerSkipped);
+    bool ancestorSkipped;
+    const LayoutObject* o = container(ancestor, &ancestorSkipped);
     if (!o)
         return;
 
@@ -2280,7 +2280,7 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Tran
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
     }
 
-    if (containerSkipped) {
+    if (ancestorSkipped) {
         // There can't be a transform between |ancestor| and |o|, because transforms create
         // containers, so it should be safe to just subtract the delta between the ancestor and |o|.
         LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(o);
@@ -2302,8 +2302,8 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Tran
     if (this == ancestor)
         return;
 
-    bool containerSkipped;
-    LayoutObject* o = container(ancestor, &containerSkipped);
+    bool ancestorSkipped;
+    LayoutObject* o = container(ancestor, &ancestorSkipped);
     if (!o)
         return;
 
@@ -2317,7 +2317,7 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Tran
         }
     }
 
-    if (!containerSkipped)
+    if (!ancestorSkipped)
         o->mapAncestorToLocal(ancestor, transformState, mode);
 
     LayoutSize containerOffset = offsetFromContainer(o);
@@ -2341,7 +2341,7 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Tran
         transformState.move(centerPoint - toLayoutBox(o)->flipForWritingMode(LayoutPoint(centerPoint)));
     }
 
-    if (containerSkipped) {
+    if (ancestorSkipped) {
         containerOffset = ancestor->offsetFromAncestorContainer(o);
         transformState.move(-containerOffset.width(), -containerOffset.height());
     }
@@ -2585,10 +2585,10 @@ RespectImageOrientationEnum LayoutObject::shouldRespectImageOrientation(const La
     return DoNotRespectImageOrientation;
 }
 
-LayoutObject* LayoutObject::container(const LayoutBoxModelObject* paintInvalidationContainer, bool* paintInvalidationContainerSkipped) const
+LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped) const
 {
-    if (paintInvalidationContainerSkipped)
-        *paintInvalidationContainerSkipped = false;
+    if (ancestorSkipped)
+        *ancestorSkipped = false;
 
     LayoutObject* o = parent();
 
@@ -2597,19 +2597,19 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* paintInvalidat
 
     EPosition pos = m_style->position();
     if (pos == FixedPosition)
-        return containerForFixedPosition(paintInvalidationContainer, paintInvalidationContainerSkipped);
+        return containerForFixedPosition(ancestor, ancestorSkipped);
 
     if (pos == AbsolutePosition)
-        return containerForAbsolutePosition(paintInvalidationContainer, paintInvalidationContainerSkipped);
+        return containerForAbsolutePosition(ancestor, ancestorSkipped);
 
     if (isColumnSpanAll()) {
         LayoutObject* multicolContainer = spannerPlaceholder()->container();
-        if (paintInvalidationContainerSkipped && paintInvalidationContainer) {
+        if (ancestorSkipped && ancestor) {
             // We jumped directly from the spanner to the multicol container. Need to check if
             // we skipped |paintInvalidationContainer| on the way.
             for (LayoutObject* walker = parent(); walker && walker != multicolContainer; walker = walker->parent()) {
-                if (walker == paintInvalidationContainer) {
-                    *paintInvalidationContainerSkipped = true;
+                if (walker == ancestor) {
+                    *ancestorSkipped = true;
                     break;
                 }
             }

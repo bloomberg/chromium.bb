@@ -1960,8 +1960,8 @@ bool LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
         return true;
     }
 
-    bool containerSkipped;
-    LayoutObject* container = this->container(ancestor, &containerSkipped);
+    bool ancestorSkipped;
+    LayoutObject* container = this->container(ancestor, &ancestorSkipped);
     if (!container)
         return true;
 
@@ -1999,11 +1999,11 @@ bool LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
             return false;
     }
 
-    if (containerSkipped) {
-        // If the paintInvalidationContainer is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
+    if (ancestorSkipped) {
+        // If the ancestor is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
         LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(container);
         rect.move(-containerOffset);
-        // If the paintInvalidationContainer is fixed, then the rect is already in its coordinates so doesn't need viewport-adjusting.
+        // If the ancestor is fixed, then the rect is already in its coordinates so doesn't need viewport-adjusting.
         if (ancestor->style()->position() != FixedPosition && container->isLayoutView() && position == FixedPosition)
             toLayoutView(container)->adjustOffsetForFixedPosition(rect);
         return true;
