@@ -117,7 +117,7 @@ void TsHeader::Write(PacketDataBuffer* buffer) const {
            << payload_unit_start_indicator.shift;
   *byte |= transport_priority.bits << transport_priority.shift;
 
-  *++byte = pid.bits;
+  *++byte = pid.bits & 0xff;
 
   *++byte = 0;
   *byte |= scrambling_control.bits << scrambling_control.shift;
