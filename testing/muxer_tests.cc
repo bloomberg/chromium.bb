@@ -65,8 +65,8 @@ class MuxerTest : public testing::Test {
   }
 
   void AddVideoTrack() {
-    const int vid_track =
-        segment_.AddVideoTrack(kWidth, kHeight, kVideoTrackNumber);
+    const int vid_track = static_cast<int>(
+        segment_.AddVideoTrack(kWidth, kHeight, kVideoTrackNumber));
     ASSERT_EQ(kVideoTrackNumber, vid_track);
     VideoTrack* const video =
         dynamic_cast<VideoTrack*>(segment_.GetTrackByNumber(vid_track));
@@ -75,8 +75,8 @@ class MuxerTest : public testing::Test {
   }
 
   void AddAudioTrack() {
-    const int aud_track =
-        segment_.AddAudioTrack(kSampleRate, kChannels, kAudioTrackNumber);
+    const int aud_track = static_cast<int>(
+        segment_.AddAudioTrack(kSampleRate, kChannels, kAudioTrackNumber));
     ASSERT_EQ(kAudioTrackNumber, aud_track);
     AudioTrack* const audio =
         dynamic_cast<AudioTrack*>(segment_.GetTrackByNumber(aud_track));
@@ -151,8 +151,8 @@ TEST_F(MuxerTest, AddTracks) {
   EXPECT_EQ(static_cast<uint64_t>(kVideoTrackNumber), video->uid());
 
   // Add an Audio Track
-  const int aud_track =
-      segment_.AddAudioTrack(kSampleRate, kChannels, kAudioTrackNumber);
+  const int aud_track = static_cast<int>(
+      segment_.AddAudioTrack(kSampleRate, kChannels, kAudioTrackNumber));
   EXPECT_EQ(kAudioTrackNumber, aud_track);
   AudioTrack* const audio =
       dynamic_cast<AudioTrack*>(segment_.GetTrackByNumber(aud_track));
