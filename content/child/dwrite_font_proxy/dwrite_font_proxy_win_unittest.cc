@@ -47,8 +47,7 @@ class DWriteFontProxyUnitTest : public testing::Test {
     fake_collection_ = new FakeFontCollection();
     SetupFonts(fake_collection_.get());
     mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
-        &collection_, factory.Get(),
-        base::Bind(&FakeFontCollection::GetTrackingSender, fake_collection_));
+        &collection_, factory.Get(), fake_collection_->GetTrackingSender());
   }
 
   ~DWriteFontProxyUnitTest() override {

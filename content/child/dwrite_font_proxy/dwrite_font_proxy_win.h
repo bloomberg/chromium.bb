@@ -64,8 +64,7 @@ class CONTENT_EXPORT DWriteFontCollectionProxy
                       IDWriteFontFileStream** font_file_stream) override;
 
   HRESULT STDMETHODCALLTYPE
-  RuntimeClassInitialize(IDWriteFactory* factory,
-                         const base::Callback<IPC::Sender*(void)>& sender);
+  RuntimeClassInitialize(IDWriteFactory* factory, IPC::Sender* sender_override);
 
   void Unregister();
 
@@ -77,11 +76,13 @@ class CONTENT_EXPORT DWriteFontCollectionProxy
   bool CreateFamily(UINT32 family_index);
 
  private:
+  IPC::Sender* GetSender();
+
   Microsoft::WRL::ComPtr<IDWriteFactory> factory_;
   std::vector<Microsoft::WRL::ComPtr<DWriteFontFamilyProxy>> families_;
   std::map<base::string16, UINT32> family_names_;
   UINT32 family_count_ = UINT_MAX;
-  base::Callback<IPC::Sender*(void)> sender_;
+  IPC::Sender* sender_override_;
 
   DISALLOW_ASSIGN(DWriteFontCollectionProxy);
 };

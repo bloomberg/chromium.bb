@@ -143,9 +143,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   bool use_direct_write = gfx::win::IsDirectWriteEnabled();
   if (use_direct_write) {
     if (ShouldUseDirectWriteFontProxyFieldTrial()) {
-      InitializeDWriteFontProxy(
-          base::Bind(&ppapi::proxy::PluginGlobals::GetBrowserSender,
-                     base::Unretained(ppapi::proxy::PluginGlobals::Get())));
+      InitializeDWriteFontProxy();
     } else {
       WarmupDirectWrite();
     }

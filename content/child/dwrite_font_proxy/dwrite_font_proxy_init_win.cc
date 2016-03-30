@@ -60,27 +60,16 @@ void CreateDirectWriteFactory(IDWriteFactory** factory) {
       reinterpret_cast<IUnknown**>(factory))));
 }
 
-// Needed as a function for Bind()
-IPC::Sender* GetSenderOverride() {
-  return g_sender_override;
-}
-
 }  // namespace
 
-void InitializeDWriteFontProxy(
-    const base::Callback<IPC::Sender*(void)>& sender) {
+void InitializeDWriteFontProxy() {
   mswr::ComPtr<IDWriteFactory> factory;
 
   CreateDirectWriteFactory(&factory);
 
   if (!g_font_collection) {
-    if (g_sender_override) {
-      mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
-          &g_font_collection, factory.Get(), base::Bind(&GetSenderOverride));
-    } else {
-      mswr::MakeAndInitialize<DWriteFontCollectionProxy>(&g_font_collection,
-                                                         factory.Get(), sender);
-    }
+    mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
+        &g_font_collection, factory.Get(), g_sender_override);
   }
 
   skia::RefPtr<SkFontMgr> skia_font_manager = skia::AdoptRef(

@@ -16,6 +16,7 @@
 #include "base/win/scoped_handle.h"
 #include "content/child/dwrite_font_proxy/dwrite_localized_strings_win.h"
 #include "content/common/dwrite_font_proxy_messages.h"
+#include "content/public/child/child_thread.h"
 #include "ipc/ipc_sender.h"
 
 namespace mswr = Microsoft::WRL;
@@ -69,7 +70,7 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
     return S_OK;
   }
 
-  if (!sender_.Run()->Send(
+  if (!GetSender()->Send(
           new DWriteFontProxyMsg_FindFamily(name, &family_index))) {
     return E_FAIL;
   }
@@ -113,7 +114,7 @@ UINT32 DWriteFontCollectionProxy::GetFontFamilyCount() {
   TRACE_EVENT0("dwrite", "FontProxy::GetFontFamilyCount");
 
   uint32_t family_count = 0;
-  if (!sender_.Run()->Send(
+  if (!GetSender()->Send(
           new DWriteFontProxyMsg_GetFamilyCount(&family_count))) {
     return 0;
   }
@@ -160,7 +161,7 @@ HRESULT DWriteFontCollectionProxy::CreateEnumeratorFromKey(
   DCHECK(!families_[*family_index]->IsLoaded());
 
   std::vector<base::string16> file_names;
-  if (!sender_.Run()->Send(
+  if (!GetSender()->Send(
           new DWriteFontProxyMsg_GetFontFiles(*family_index, &file_names))) {
     return E_FAIL;
   }
@@ -207,11 +208,11 @@ HRESULT DWriteFontCollectionProxy::CreateStreamFromKey(
 
 HRESULT DWriteFontCollectionProxy::RuntimeClassInitialize(
     IDWriteFactory* factory,
-    const base::Callback<IPC::Sender*(void)>& sender) {
+    IPC::Sender* sender_override) {
   DCHECK(factory);
 
   factory_ = factory;
-  sender_ = sender;
+  sender_override_ = sender_override;
 
   HRESULT hr = factory->RegisterFontCollectionLoader(this);
   DCHECK(SUCCEEDED(hr));
@@ -246,7 +247,7 @@ bool DWriteFontCollectionProxy::LoadFamilyNames(
   TRACE_EVENT0("dwrite", "FontProxy::LoadFamilyNames");
 
   std::vector<std::pair<base::string16, base::string16>> strings;
-  if (!sender_.Run()->Send(
+  if (!GetSender()->Send(
           new DWriteFontProxyMsg_GetFamilyNames(family_index, &strings))) {
     return false;
   }
@@ -277,6 +278,10 @@ bool DWriteFontCollectionProxy::CreateFamily(UINT32 family_index) {
 
   families_[family_index] = family;
   return true;
+}
+
+IPC::Sender* DWriteFontCollectionProxy::GetSender() {
+  return sender_override_ ? sender_override_ : ChildThread::Get();
 }
 
 DWriteFontFamilyProxy::DWriteFontFamilyProxy() = default;

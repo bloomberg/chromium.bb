@@ -40,12 +40,6 @@ void SkiaPreCacheFont(const LOGFONT& logfont) {
   }
 }
 
-// Helper function to cast RenderThread to IPC::Sender so we can Bind()
-// it.
-IPC::Sender* GetRenderThreadSender() {
-  return RenderThread::Get();
-}
-
 }  // namespace
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
@@ -76,7 +70,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
 
     if (use_direct_write) {
       if (ShouldUseDirectWriteFontProxyFieldTrial())
-        InitializeDWriteFontProxy(base::Bind(&GetRenderThreadSender));
+        InitializeDWriteFontProxy();
       else
         WarmupDirectWrite();
     } else {
