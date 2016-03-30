@@ -8,7 +8,9 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
+#include "base/logging.h"
 #include "base/macros.h"
+#include "gpu/vulkan/vulkan_command_pool.h"
 
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
 #include "ui/gfx/x/x11_types.h"
@@ -17,7 +19,7 @@
 namespace gpu {
 
 struct VulkanInstance {
-  VulkanInstance() : valid(false) {}
+  VulkanInstance() {}
 
   void Initialize() {
     valid = InitializeVulkanInstance() && InitializeVulkanDevice();
@@ -65,7 +67,7 @@ struct VulkanInstance {
     status =
         vkEnumeratePhysicalDevices(vk_instance, &device_count, devices.data());
     if (VK_SUCCESS != status) {
-      LOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << status;
+      DLOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << status;
       return false;
     }
 
@@ -117,6 +119,9 @@ struct VulkanInstance {
     if (queue_index == -1)
       return false;
 
+    vk_physical_device = devices[device_index];
+    vk_queue_index = queue_index;
+
     float queue_priority = 0.0f;
     VkDeviceQueueCreateInfo queue_create_info = {};
     queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -133,7 +138,7 @@ struct VulkanInstance {
     device_create_info.enabledExtensionCount = arraysize(device_extensions);
     device_create_info.ppEnabledExtensionNames = device_extensions;
 
-    status = vkCreateDevice(devices[device_index], &device_create_info, nullptr,
+    status = vkCreateDevice(vk_physical_device, &device_create_info, nullptr,
                             &vk_device);
     if (VK_SUCCESS != status)
       return false;
@@ -143,10 +148,12 @@ struct VulkanInstance {
     return true;
   }
 
-  bool valid;
+  bool valid = false;
   VkInstance vk_instance;
+  VkPhysicalDevice vk_physical_device;
   VkDevice vk_device;
   VkQueue vk_queue;
+  uint32_t vk_queue_index = 0;
 };
 
 static VulkanInstance* vulkan_instance = nullptr;
@@ -164,6 +171,12 @@ VkInstance GetVulkanInstance() {
   return vulkan_instance->vk_instance;
 }
 
+VkPhysicalDevice GetVulkanPhysicalDevice() {
+  DCHECK(vulkan_instance);
+  DCHECK(vulkan_instance->valid);
+  return vulkan_instance->vk_physical_device;
+}
+
 VkDevice GetVulkanDevice() {
   DCHECK(vulkan_instance);
   DCHECK(vulkan_instance->valid);
@@ -174,6 +187,18 @@ VkQueue GetVulkanQueue() {
   DCHECK(vulkan_instance);
   DCHECK(vulkan_instance->valid);
   return vulkan_instance->vk_queue;
+}
+
+scoped_ptr<VulkanCommandPool> CreateCommandPool() {
+  DCHECK(vulkan_instance);
+  DCHECK(vulkan_instance->valid);
+
+  scoped_ptr<VulkanCommandPool> command_pool(new VulkanCommandPool(
+      vulkan_instance->vk_device, vulkan_instance->vk_queue_index));
+  if (!command_pool->Initialize())
+    return nullptr;
+
+  return command_pool;
 }
 
 }  // namespace gpu

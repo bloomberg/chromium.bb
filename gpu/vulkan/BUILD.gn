@@ -3,32 +3,64 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 
-config("vulkan_config") {
-  defines = [ "ENABLE_VULKAN" ]
-  if (use_x11) {
-    defines += [ "VK_USE_PLATFORM_XLIB_KHR" ]
+if (enable_vulkan) {
+  component("vulkan") {
+    output_name = "vulkan_wrapper"
+
+    if (is_linux) {
+      assert(use_x11, "Vulkan only support x11 at this point.")
+      sources = [
+        "vulkan_command_buffer.cc",
+        "vulkan_command_buffer.h",
+        "vulkan_command_pool.cc",
+        "vulkan_command_pool.h",
+        "vulkan_export.h",
+        "vulkan_image_view.cc",
+        "vulkan_image_view.h",
+        "vulkan_implementation.cc",
+        "vulkan_implementation.h",
+        "vulkan_platform.h",
+        "vulkan_render_pass.cc",
+        "vulkan_render_pass.h",
+        "vulkan_surface.cc",
+        "vulkan_surface.h",
+        "vulkan_swap_chain.cc",
+        "vulkan_swap_chain.h",
+      ]
+
+      configs += [ "//build/config:precompiled_headers" ]
+      defines = [ "VULKAN_IMPLEMENTATION" ]
+
+      libs = [ "vulkan" ]
+
+      include_dirs = [ "/usr/include" ]
+      if (target_cpu == "x64") {
+        lib_dirs = [ "/usr/lib/x86_64-linux-gnu" ]
+      } else {
+        assert(false, "Unsupported vulkan target: " + target_cpu)
+      }
+
+      deps = [
+        "//base",
+        "//ui/base",
+        "//ui/gfx",
+      ]
+
+      if (use_x11) {
+        deps += [ "//ui/gfx/x" ]
+        configs += [ "//build/config/linux:x11" ]
+      }
+    }
   }
-}
 
-component("vulkan") {
-  output_name = "vulkan_wrapper"
-
-  if (is_linux && enable_vulkan) {
-    assert(use_x11, "Vulkan only support x11 at this point.")
+  test("vulkan_tests") {
     sources = [
-      "vulkan_export.h",
-      "vulkan_implementation.cc",
-      "vulkan_implementation.h",
-      "vulkan_surface.cc",
-      "vulkan_surface.h",
+      "tests/native_window.h",
+      "tests/vulkan_test.cc",
+      "tests/vulkan_tests_main.cc",
     ]
-
-    configs += [ "//build/config:precompiled_headers" ]
-    defines = [ "VULKAN_IMPLEMENTATION" ]
-
-    all_dependent_configs = [ ":vulkan_config" ]
-    libs = [ "vulkan" ]
 
     include_dirs = [ "/usr/include" ]
     if (target_cpu == "x64") {
@@ -38,12 +70,14 @@ component("vulkan") {
     }
 
     deps = [
-      "//base",
-      "//ui/base",
-      "//ui/gfx",
+      ":vulkan",
+      "//base/test:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
     ]
 
     if (use_x11) {
+      sources += [ "tests/native_window_x11.cc" ]
       deps += [ "//ui/gfx/x" ]
       configs += [ "//build/config/linux:x11" ]
     }

@@ -5,18 +5,49 @@
 #ifndef GPU_VULKAN_VULKAN_SURFACE_H_
 #define GPU_VULKAN_VULKAN_SURFACE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "gpu/vulkan/vulkan_export.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/swap_result.h"
 
 namespace gpu {
 
+class VulkanSwapChain;
+
 class VULKAN_EXPORT VulkanSurface {
  public:
-  VulkanSurface();
-
   static bool InitializeOneOff();
 
+  // Minimum bit depth of surface.
+  enum Format {
+    FORMAT_BGRA8888,
+    FORMAT_RGB565,
+
+    NUM_SURFACE_FORMATS,
+    DEFAULT_SURFACE_FORMAT = FORMAT_BGRA8888
+  };
+
+  virtual ~VulkanSurface() = 0;
+
+  virtual bool Initialize(VulkanSurface::Format format) = 0;
+  virtual void Destroy() = 0;
+
+  virtual gfx::SwapResult SwapBuffers() = 0;
+
+  virtual VulkanSwapChain* GetSwapChain() = 0;
+
+  virtual void Finish() = 0;
+
+  // Create a surface that render directlys into a surface.
+  static scoped_ptr<VulkanSurface> CreateViewSurface(
+      gfx::AcceleratedWidget window);
+
  protected:
-  virtual ~VulkanSurface();
+  VulkanSurface();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VulkanSurface);
 };
 
 }  // namespace gpu

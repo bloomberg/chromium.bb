@@ -1,0 +1,68 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file is used so we only include platform specific headers when
+// necessary. Otherwise some headers such as for X11 define extra macros which
+// can conflict with other headers.
+
+#ifndef GPU_VULKAN_VULKAN_H_
+#define GPU_VULKAN_VULKAN_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#if defined(USE_X11)
+#define VK_USE_PLATFORM_XLIB_KHR
+#endif
+
+// This section below is taken from <vulkan/vulkan.h>
+#ifdef VK_USE_PLATFORM_XLIB_KHR
+#define VK_KHR_xlib_surface 1
+#include <X11/Xlib.h>
+
+#define VK_KHR_XLIB_SURFACE_SPEC_VERSION 6
+#define VK_KHR_XLIB_SURFACE_EXTENSION_NAME "VK_KHR_xlib_surface"
+
+typedef VkFlags VkXlibSurfaceCreateFlagsKHR;
+
+typedef struct VkXlibSurfaceCreateInfoKHR {
+  VkStructureType sType;
+  const void* pNext;
+  VkXlibSurfaceCreateFlagsKHR flags;
+  Display* dpy;
+  Window window;
+} VkXlibSurfaceCreateInfoKHR;
+
+typedef VkResult(VKAPI_PTR* PFN_vkCreateXlibSurfaceKHR)(
+    VkInstance instance,
+    const VkXlibSurfaceCreateInfoKHR* pCreateInfo,
+    const VkAllocationCallbacks* pAllocator,
+    VkSurfaceKHR* pSurface);
+typedef VkBool32(VKAPI_PTR* PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR)(
+    VkPhysicalDevice physicalDevice,
+    uint32_t queueFamilyIndex,
+    Display* dpy,
+    VisualID visualID);
+
+#ifndef VK_NO_PROTOTYPES
+VKAPI_ATTR VkResult VKAPI_CALL
+vkCreateXlibSurfaceKHR(VkInstance instance,
+                       const VkXlibSurfaceCreateInfoKHR* pCreateInfo,
+                       const VkAllocationCallbacks* pAllocator,
+                       VkSurfaceKHR* pSurface);
+
+VKAPI_ATTR VkBool32 VKAPI_CALL
+vkGetPhysicalDeviceXlibPresentationSupportKHR(VkPhysicalDevice physicalDevice,
+                                              uint32_t queueFamilyIndex,
+                                              Display* dpy,
+                                              VisualID visualID);
+#endif
+#endif /* VK_USE_PLATFORM_XLIB_KHR */
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+
+#endif  // GPU_VULKAN_VULKAN_H_
