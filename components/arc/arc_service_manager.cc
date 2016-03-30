@@ -8,6 +8,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service_impl.h"
+#include "components/arc/audio/arc_audio_bridge.h"
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
 #include "components/arc/ime/arc_ime_service.h"
@@ -32,6 +33,7 @@ ArcServiceManager::ArcServiceManager()
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
 
+  AddService(make_scoped_ptr(new ArcAudioBridge(arc_bridge_service())));
   AddService(make_scoped_ptr(new ArcClipboardBridge(arc_bridge_service())));
   AddService(
       make_scoped_ptr(new ArcCrashCollectorBridge(arc_bridge_service())));

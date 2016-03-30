@@ -5,6 +5,7 @@
 module arc;
 
 import "app.mojom";
+import "audio.mojom";
 import "auth.mojom";
 import "clipboard.mojom";
 import "crash_collector.mojom";
@@ -25,6 +26,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the AppInstance interface is ready.
   OnAppInstanceReady@100(AppInstance instance_ptr);
+
+  // Notifies Chrome that the AudioInstance interface is ready.
+  [MinVersion=8] OnAudioInstanceReady@115(AudioInstance instance_ptr);
 
   // Notifies Chrome that the AuthInstance interface is ready.
   [MinVersion=1] OnAuthInstanceReady@106(AuthInstance instance_ptr);

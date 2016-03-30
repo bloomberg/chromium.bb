@@ -60,6 +60,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
   // them explicitly now to avoid a race.
   if (app_instance())
     observer->OnAppInstanceReady();
+  if (audio_instance())
+    observer->OnAudioInstanceReady();
   if (auth_instance())
     observer->OnAuthInstanceReady();
   if (clipboard_instance())
@@ -111,6 +113,29 @@ void ArcBridgeService::CloseAppChannel() {
 
   app_ptr_.reset();
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAppInstanceClosed());
+}
+
+void ArcBridgeService::OnAudioInstanceReady(AudioInstancePtr audio_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_audio_ptr_ = std::move(audio_ptr);
+  temporary_audio_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnAudioVersionReady, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnAudioVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  audio_ptr_ = std::move(temporary_audio_ptr_);
+  audio_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseAudioChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnAudioInstanceReady());
+}
+
+void ArcBridgeService::CloseAudioChannel() {
+  if (!audio_ptr_)
+    return;
+
+  audio_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnAudioInstanceClosed());
 }
 
 void ArcBridgeService::OnAuthInstanceReady(AuthInstancePtr auth_ptr) {
@@ -434,6 +459,7 @@ void ArcBridgeService::CloseAllChannels() {
   // Call all the error handlers of all the channels to both close the channel
   // and notify any observers that the channel is closed.
   CloseAppChannel();
+  CloseAudioChannel();
   CloseAuthChannel();
   CloseClipboardChannel();
   CloseCrashCollectorChannel();

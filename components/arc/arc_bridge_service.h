@@ -77,6 +77,10 @@ class ArcBridgeService : public ArcBridgeHost {
     virtual void OnAppInstanceReady() {}
     virtual void OnAppInstanceClosed() {}
 
+    // Called whenever the ARC audio interface state changes.
+    virtual void OnAudioInstanceReady() {}
+    virtual void OnAudioInstanceClosed() {}
+
     // Called whenever the ARC auth interface state changes.
     virtual void OnAuthInstanceReady() {}
     virtual void OnAuthInstanceClosed() {}
@@ -163,6 +167,7 @@ class ArcBridgeService : public ArcBridgeHost {
   // you want to be notified when this is ready. This can only be called on the
   // thread that this class was created on.
   AppInstance* app_instance() { return app_ptr_.get(); }
+  AudioInstance* audio_instance() { return audio_ptr_.get(); }
   AuthInstance* auth_instance() { return auth_ptr_.get(); }
   ClipboardInstance* clipboard_instance() { return clipboard_ptr_.get(); }
   CrashCollectorInstance* crash_collector_instance() {
@@ -183,6 +188,7 @@ class ArcBridgeService : public ArcBridgeHost {
   VideoInstance* video_instance() { return video_ptr_.get(); }
 
   int32_t app_version() const { return app_ptr_.version(); }
+  int32_t audio_version() const { return audio_ptr_.version(); }
   int32_t auth_version() const { return auth_ptr_.version(); }
   int32_t clipboard_version() const { return clipboard_ptr_.version(); }
   int32_t crash_collector_version() const {
@@ -200,6 +206,7 @@ class ArcBridgeService : public ArcBridgeHost {
 
   // ArcHost:
   void OnAppInstanceReady(AppInstancePtr app_ptr) override;
+  void OnAudioInstanceReady(AudioInstancePtr audio_ptr) override;
   void OnAuthInstanceReady(AuthInstancePtr auth_ptr) override;
   void OnClipboardInstanceReady(ClipboardInstancePtr clipboard_ptr) override;
   void OnCrashCollectorInstanceReady(
@@ -247,6 +254,7 @@ class ArcBridgeService : public ArcBridgeHost {
 
   // Called when one of the individual channels is closed.
   void CloseAppChannel();
+  void CloseAudioChannel();
   void CloseAuthChannel();
   void CloseClipboardChannel();
   void CloseCrashCollectorChannel();
@@ -262,6 +270,7 @@ class ArcBridgeService : public ArcBridgeHost {
 
   // Callbacks for QueryVersion.
   void OnAppVersionReady(int32_t version);
+  void OnAudioVersionReady(int32_t version);
   void OnAuthVersionReady(int32_t version);
   void OnClipboardVersionReady(int32_t version);
   void OnCrashCollectorVersionReady(int32_t version);
@@ -277,6 +286,7 @@ class ArcBridgeService : public ArcBridgeHost {
 
   // Mojo interfaces.
   AppInstancePtr app_ptr_;
+  AudioInstancePtr audio_ptr_;
   AuthInstancePtr auth_ptr_;
   ClipboardInstancePtr clipboard_ptr_;
   CrashCollectorInstancePtr crash_collector_ptr_;
@@ -297,6 +307,7 @@ class ArcBridgeService : public ArcBridgeHost {
   // To keep the xxx_instance() functions being trivial, store the instance
   // pointer in a temporary variable to avoid losing its reference.
   AppInstancePtr temporary_app_ptr_;
+  AudioInstancePtr temporary_audio_ptr_;
   AuthInstancePtr temporary_auth_ptr_;
   ClipboardInstancePtr temporary_clipboard_ptr_;
   CrashCollectorInstancePtr temporary_crash_collector_ptr_;

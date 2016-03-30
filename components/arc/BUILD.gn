@@ -17,6 +17,8 @@ static_library("arc") {
     "arc_service.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
+    "audio/arc_audio_bridge.cc",
+    "audio/arc_audio_bridge.h",
     "auth/arc_auth_fetcher.cc",
     "auth/arc_auth_fetcher.h",
     "clipboard/arc_clipboard_bridge.cc",
@@ -72,6 +74,7 @@ mojom("arc_bindings") {
   sources = [
     "common/app.mojom",
     "common/arc_bridge.mojom",
+    "common/audio.mojom",
     "common/auth.mojom",
     "common/clipboard.mojom",
     "common/crash_collector.mojom",

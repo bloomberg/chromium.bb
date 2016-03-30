@@ -218,6 +218,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual void SetActiveHDMIOutoutRediscoveringIfNecessary(
       bool force_rediscovering);
 
+  virtual const AudioDevice* GetDeviceFromId(uint64_t device_id) const;
+
  protected:
   explicit CrasAudioHandler(
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
@@ -260,7 +262,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Sets up the additional active audio node's state.
   void SetupAdditionalActiveAudioNodeState(uint64_t node_id);
 
-  const AudioDevice* GetDeviceFromId(uint64_t device_id) const;
   const AudioDevice* GetDeviceFromStableDeviceId(
       uint64_t stable_device_id) const;
   const AudioDevice* GetKeyboardMic() const;

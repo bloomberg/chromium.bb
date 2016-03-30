@@ -38,6 +38,8 @@
         'arc/arc_service.h',
         'arc/arc_service_manager.cc',
         'arc/arc_service_manager.h',
+        'arc/audio/arc_audio_bridge.cc',
+        'arc/audio/arc_audio_bridge.h',
         'arc/auth/arc_auth_fetcher.cc',
         'arc/auth/arc_auth_fetcher.h',
         'arc/clipboard/arc_clipboard_bridge.cc',
@@ -94,6 +96,7 @@
       'sources': [
         'arc/common/app.mojom',
         'arc/common/arc_bridge.mojom',
+        'arc/common/audio.mojom',
         'arc/common/auth.mojom',
         'arc/common/clipboard.mojom',
         'arc/common/crash_collector.mojom',
