@@ -44,17 +44,13 @@ bool ResolveHost(const std::string& host, net::IPAddress* address) {
   if (getaddrinfo(host.c_str(), NULL, &hints, &result))
     return false;
 
-  for (struct addrinfo* addr = result; addr; addr = addr->ai_next) {
-    if (addr->ai_family == AF_INET || addr->ai_family == AF_INET6) {
-      net::IPEndPoint end_point;
-      if (!end_point.FromSockAddr(addr->ai_addr, addr->ai_addrlen)) {
-        freeaddrinfo(result);
-        return false;
-      }
-      *address = end_point.address();
-    }
-  }
+  auto address_list = net::AddressList::CreateFromAddrinfo(result);
   freeaddrinfo(result);
+
+  if (address_list.empty())
+    return false;  // No IPv4 / IPv6 addresses in the list.
+
+  *address = address_list[0].address();
   return true;
 }
 
