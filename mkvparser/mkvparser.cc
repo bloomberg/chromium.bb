@@ -7447,7 +7447,6 @@ const BlockEntry* Cluster::GetEntry(const CuePoint& cp,
 
 BlockEntry::BlockEntry(Cluster* p, long idx) : m_pCluster(p), m_index(idx) {}
 BlockEntry::~BlockEntry() {}
-bool BlockEntry::EOS() const { return (GetKind() == kBlockEOS); }
 const Cluster* BlockEntry::GetCluster() const { return m_pCluster; }
 long BlockEntry::GetIndex() const { return m_index; }
 

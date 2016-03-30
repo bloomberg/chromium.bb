@@ -126,7 +126,7 @@ class BlockEntry {
  public:
   virtual ~BlockEntry();
 
-  bool EOS() const;
+  bool EOS() const { return (GetKind() == kBlockEOS); }
   const Cluster* GetCluster() const;
   long GetIndex() const;
   virtual const Block* GetBlock() const = 0;
