@@ -298,6 +298,17 @@ _VALID_OS_MACROS = (
 )
 
 
+_ANDROID_SPECIFIC_PYDEPS_FILES = [
+    'build/android/test_runner.pydeps',
+]
+
+_GENERIC_PYDEPS_FILES = [
+    'build/secondary/tools/swarming_client/isolate.pydeps',
+]
+
+_ALL_PYDEPS_FILES = _ANDROID_SPECIFIC_PYDEPS_FILES + _GENERIC_PYDEPS_FILES
+
+
 def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   """Attempts to prevent use of functions intended only for testing in
   non-testing code. For now this is just a best-effort implementation
@@ -1498,6 +1509,108 @@ def _CheckAndroidNewMdpiAssetLocation(input_api, output_api):
   return results
 
 
+class PydepsChecker(object):
+  def __init__(self, input_api, pydeps_files):
+    self._file_cache = {}
+    self._input_api = input_api
+    self._pydeps_files = pydeps_files
+
+  def _LoadFile(self, path):
+    """Returns the list of paths within a .pydeps file relative to //."""
+    if path not in self._file_cache:
+      with open(path) as f:
+        self._file_cache[path] = f.read()
+    return self._file_cache[path]
+
+  def _ComputeNormalizedPydepsEntries(self, pydeps_path):
+    """Returns an interable of paths within the .pydep, relativized to //."""
+    os_path = self._input_api.os_path
+    pydeps_dir = os_path.dirname(pydeps_path)
+    entries = (l.rstrip() for l in self._LoadFile(pydeps_path).splitlines()
+               if not l.startswith('*'))
+    return (os_path.normpath(os_path.join(pydeps_dir, e)) for e in entries)
+
+  def _CreateFilesToPydepsMap(self):
+    """Returns a map of local_path -> list_of_pydeps."""
+    ret = {}
+    for pydep_local_path in self._pydeps_files:
+      for path in self._ComputeNormalizedPydepsEntries(pydep_local_path):
+        ret.setdefault(path, []).append(pydep_local_path)
+    return ret
+
+  def ComputeAffectedPydeps(self):
+    """Returns an iterable of .pydeps files that might need regenerating."""
+    affected_pydeps = set()
+    file_to_pydeps_map = None
+    for f in self._input_api.AffectedFiles(include_deletes=True):
+      local_path = f.LocalPath()
+      if local_path  == 'DEPS':
+        return self._pydeps_files
+      elif local_path.endswith('.pydeps'):
+        if local_path in self._pydeps_files:
+          affected_pydeps.add(local_path)
+      elif local_path.endswith('.py'):
+        if file_to_pydeps_map is None:
+          file_to_pydeps_map = self._CreateFilesToPydepsMap()
+        affected_pydeps.update(file_to_pydeps_map.get(local_path, ()))
+    return affected_pydeps
+
+  def DetermineIfStale(self, pydeps_path):
+    """Runs print_python_deps.py to see if the files is stale."""
+    old_pydeps_data = self._LoadFile(pydeps_path)
+
+    m = self._input_api.re.search(r'# target: //(.*)', old_pydeps_data)
+    if not m:
+      return ['COULD NOT FIND .pydeps TARGET']
+    target = m.group(1)
+    m = self._input_api.re.search(r'# root: //(.*)', old_pydeps_data)
+    if not m:
+      return ['COULD NOT FIND .pydeps ROOT']
+    root = m.group(1) or '.'
+
+    cmd = ['build/print_python_deps.py', '--root', root, target]
+    new_pydeps_data = self._input_api.subprocess.check_output(cmd)
+    if old_pydeps_data != new_pydeps_data:
+      return cmd[:-1] + ['--output', pydeps_path] + cmd[-1:]
+
+
+def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
+  """Checks if a .pydeps file needs to be regenerated."""
+  # TODO(agrieve): Update when there's a better way to detect this: crbug/570091
+  is_android = input_api.os_path.exists('third_party/android_tools')
+  pydeps_files = _ALL_PYDEPS_FILES if is_android else _GENERIC_PYDEPS_FILES
+  results = []
+  # First, check for new / deleted .pydeps.
+  for f in input_api.AffectedFiles(include_deletes=True):
+    if f.LocalPath().endswith('.pydeps'):
+      if f.Action() == 'D' and f.LocalPath() in _ALL_PYDEPS_FILES:
+        results.append(output_api.PresubmitError(
+            'Please update _ALL_PYDEPS_FILES within //PRESUBMIT.py to '
+            'remove %s' % f.LocalPath()))
+      elif f.Action() != 'D' and f.LocalPath() not in _ALL_PYDEPS_FILES:
+        results.append(output_api.PresubmitError(
+            'Please update _ALL_PYDEPS_FILES within //PRESUBMIT.py to '
+            'include %s' % f.LocalPath()))
+
+  if results:
+    return results
+
+  checker = checker_for_tests or PydepsChecker(input_api, pydeps_files)
+
+  for pydep_path in checker.ComputeAffectedPydeps():
+    try:
+      cmd = checker.DetermineIfStale(pydep_path)
+      if cmd:
+        results.append(output_api.PresubmitError(
+            'File is stale: %s\nTo regenerate, run:\n%s' % (pydep_path,
+                                                            ' '.join(cmd))))
+    except input_api.subprocess.CalledProcessError as error:
+      return [output_api.PresubmitError('Error running ' + ' '.join(error.cmd),
+          long_text=error.output)]
+
+  return results
+
+
 def _CheckForCopyrightedCode(input_api, output_api):
   """Verifies that newly added code doesn't contain copyrighted material
   and is properly licensed under the standard Chromium license.
@@ -1651,6 +1764,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
   results.extend(_CheckAndroidNewMdpiAssetLocation(input_api, output_api))
   results.extend(_CheckAndroidToastUsage(input_api, output_api))
+  results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
   return results
 
 
