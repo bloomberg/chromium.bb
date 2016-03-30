@@ -90,8 +90,8 @@ def _FindMinLoadVaddr(lib):
   return 0
 
 
-def GetLoadVaddrs(apk_dir):
-  """Return a dictionary of minimum VirtAddr fields for libraries in apk_dir.
+def GetLoadVaddrs(stripped_libs_dir):
+  """Return a dict of minimum VirtAddr for libraries in the given directory.
 
   The dictionary returned may be passed to stack_core.ConvertTrace(). In
   pre-M Android releases the addresses printed by debuggerd into tombstones
@@ -99,12 +99,12 @@ def GetLoadVaddrs(apk_dir):
   so that we can use it later to correct such debuggerd tombstones.
 
   Args:
-    apk_dir: Path to APK staging directory.
+    stripped_libs_dir: Path to directory containing apk's stripped libraries.
   Returns:
     {'libchrome.so': 12345, ...}
   """
-  pathname = apk_dir + '/libs/*/*.so'
-  libs = [lib for lib in glob.glob(pathname) if _HasElfHeader(lib)]
+  libs = glob.glob(os.path.join(stripped_libs_dir, '*.so'))
+  libs = [l for l in libs if _HasElfHeader(l)]
 
   load_vaddrs = {}
   for lib in libs:
