@@ -91,8 +91,6 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
 
   void PostSpellCheckEvent(const blink::WebString& event_name);
 
-  void SetAcceptLanguages(const std::string& accept_languages);
-
   bool AnimationScheduled() { return animate_scheduled_; }
 
  protected:
@@ -148,8 +146,6 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
 
   scoped_ptr<MockCredentialManagerClient> credential_manager_client_;
   scoped_ptr<MockWebSpeechRecognizer> speech_recognizer_;
-
-  std::string accept_languages_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);

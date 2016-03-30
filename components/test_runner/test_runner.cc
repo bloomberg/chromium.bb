@@ -2657,8 +2657,17 @@ void TestRunner::OverridePreference(const std::string& key,
   delegate_->ApplyPreferences();
 }
 
+std::string TestRunner::GetAcceptLanguages() const {
+  return layout_test_runtime_flags_.accept_languages();
+}
+
 void TestRunner::SetAcceptLanguages(const std::string& accept_languages) {
-  proxy_->SetAcceptLanguages(accept_languages);
+  if (accept_languages == GetAcceptLanguages())
+    return;
+
+  layout_test_runtime_flags_.set_accept_languages(accept_languages);
+  OnLayoutTestRuntimeFlagsChanged();
+  proxy_->GetWebView()->acceptLanguagesChanged();
 }
 
 void TestRunner::SetPluginsEnabled(bool enabled) {

@@ -83,6 +83,7 @@ class TestRunner : public WebTestRunner,
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
 
   // Methods used by WebTestProxyBase and WebFrameTestClient.
+  std::string GetAcceptLanguages() const;
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   MockScreenOrientationClient* getMockScreenOrientationClient();
   MockWebUserMediaClient* getMockWebUserMediaClient();
