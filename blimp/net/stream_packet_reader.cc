@@ -47,7 +47,9 @@ void StreamPacketReader::ReadPacket(
     const scoped_refptr<net::GrowableIOBuffer>& buf,
     const net::CompletionCallback& callback) {
   DCHECK_EQ(ReadState::IDLE, read_state_);
-  DCHECK_GT(buf->capacity(), 0);
+  if (static_cast<size_t>(buf->capacity()) < kPacketHeaderSizeBytes) {
+    buf->SetCapacity(kPacketHeaderSizeBytes);
+  }
 
   header_buffer_->set_offset(0);
   payload_buffer_ = buf;
@@ -114,10 +116,12 @@ int StreamPacketReader::DoReadHeader(int result) {
   // Finished reading the header. Parse the size and prepare for payload read.
   payload_size_ = base::NetToHost32(
       *reinterpret_cast<uint32_t*>(header_buffer_->StartOfBuffer()));
-  if (payload_size_ > static_cast<size_t>(payload_buffer_->capacity()) ||
-      payload_size_ == 0) {
+  if (payload_size_ == 0 || payload_size_ > kMaxPacketPayloadSizeBytes) {
     DLOG(ERROR) << "Illegal payload size: " << payload_size_;
     return net::ERR_INVALID_RESPONSE;
+  }
+  if (static_cast<size_t>(payload_buffer_->capacity()) < payload_size_) {
+    payload_buffer_->SetCapacity(payload_size_);
   }
   read_state_ = ReadState::PAYLOAD;
   return net::OK;

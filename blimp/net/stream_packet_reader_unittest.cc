@@ -29,16 +29,12 @@ using testing::WithArg;
 namespace blimp {
 namespace {
 
-const size_t kTestMaxBufferSize = 1 << 16;  // 64KB
-
 class StreamPacketReaderTest : public testing::Test {
  public:
   StreamPacketReaderTest()
       : buffer_(new net::GrowableIOBuffer),
         test_msg_("U WOT M8"),
-        data_reader_(&socket_) {
-    buffer_->SetCapacity(kTestMaxBufferSize);
-  }
+        data_reader_(&socket_) {}
 
   ~StreamPacketReaderTest() override {}
 
@@ -68,8 +64,8 @@ TEST_F(StreamPacketReaderTest, ReadAsyncHeaderAsyncPayload) {
   ReadPacket();
   socket_cb.Run(kPacketHeaderSizeBytes);
   socket_cb.Run(test_msg_.size());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
-  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
+  ASSERT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
+  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_.size(), test_msg_));
 }
 
 // Successful read with 1 async header read and 1 sync payload read.
@@ -91,8 +87,8 @@ TEST_F(StreamPacketReaderTest, ReadAsyncHeaderSyncPayload) {
   EXPECT_FALSE(callback_.have_result());
 
   socket_cb.Run(kPacketHeaderSizeBytes);
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
-  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
+  ASSERT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
+  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_.size(), test_msg_));
 }
 
 // Successful read with 1 sync header read and 1 async payload read.
@@ -108,8 +104,8 @@ TEST_F(StreamPacketReaderTest, ReadSyncHeaderAsyncPayload) {
 
   ReadPacket();
   socket_cb.Run(test_msg_.size());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
-  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
+  ASSERT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
+  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_.size(), test_msg_));
 }
 
 // Successful read with 1 sync header read and 1 sync payload read.
@@ -124,8 +120,8 @@ TEST_F(StreamPacketReaderTest, ReadSyncHeaderSyncPayload) {
           DoAll(FillBufferFromString<0>(test_msg_), Return(test_msg_.size())));
 
   ReadPacket();
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
-  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
+  ASSERT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
+  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_.size(), test_msg_));
 }
 
 // Successful read of 2 messages, header and payload reads all completing
@@ -159,12 +155,12 @@ TEST_F(StreamPacketReaderTest, ReadMultipleMessagesSync) {
       .RetiresOnSaturation();
 
   ReadPacket();
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
+  ASSERT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
 
   ReadPacket();
-  EXPECT_EQ(static_cast<int>(test_msg2.size()), callback_.WaitForResult());
+  ASSERT_EQ(static_cast<int>(test_msg2.size()), callback_.WaitForResult());
 
-  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
+  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg2.size(), test_msg2));
   EXPECT_FALSE(callback_.have_result());
 }
 
@@ -202,13 +198,13 @@ TEST_F(StreamPacketReaderTest, ReadMultipleMessagesAsync) {
   data_reader_.ReadPacket(buffer_, read_cb1.callback());
   socket_cb.Run(kPacketHeaderSizeBytes);
   socket_cb.Run(test_msg_.size());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), read_cb1.WaitForResult());
+  ASSERT_EQ(static_cast<int>(test_msg_.size()), read_cb1.WaitForResult());
 
   data_reader_.ReadPacket(buffer_, read_cb2.callback());
   socket_cb.Run(kPacketHeaderSizeBytes);
   socket_cb.Run(test_msg_.size());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), read_cb2.WaitForResult());
-  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
+  ASSERT_EQ(static_cast<int>(test_msg_.size()), read_cb2.WaitForResult());
+  EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_.size(), test_msg_));
 }
 
 // Verify that partial header reads are supported.
@@ -359,9 +355,9 @@ TEST_F(StreamPacketReaderTest, ReadWhatIsThisAPacketForAnts) {
 // Verify that an illegally large payloads is reported as an erroneous inputs.
 TEST_F(StreamPacketReaderTest, ReadErrorIllegallyLargePayload) {
   EXPECT_CALL(socket_, Read(NotNull(), kPacketHeaderSizeBytes, _))
-      .WillOnce(
-          DoAll(FillBufferFromString<0>(EncodeHeader(kTestMaxBufferSize + 1)),
-                Return(kPacketHeaderSizeBytes)));
+      .WillOnce(DoAll(
+          FillBufferFromString<0>(EncodeHeader(kMaxPacketPayloadSizeBytes + 1)),
+          Return(kPacketHeaderSizeBytes)));
 
   ReadPacket();
   EXPECT_EQ(net::ERR_INVALID_RESPONSE, callback_.WaitForResult());

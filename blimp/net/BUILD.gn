@@ -28,6 +28,10 @@ component("blimp_net") {
     "client_connection_manager.h",
     "common.cc",
     "common.h",
+    "compressed_packet_reader.cc",
+    "compressed_packet_reader.h",
+    "compressed_packet_writer.cc",
+    "compressed_packet_writer.h",
     "connection_error_observer.h",
     "connection_handler.h",
     "engine_authentication_handler.cc",
@@ -65,6 +69,7 @@ component("blimp_net") {
     "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//net",
+    "//third_party/zlib",
     "//ui/base/ime:text_input_types",
   ]
 }
@@ -98,6 +103,7 @@ source_set("unit_tests") {
     "blimp_message_thread_pipe_unittest.cc",
     "browser_connection_handler_unittest.cc",
     "client_connection_manager_unittest.cc",
+    "compressed_packet_unittest.cc",
     "engine_authentication_handler_unittest.cc",
     "engine_connection_manager_unittest.cc",
     "input_message_unittest.cc",

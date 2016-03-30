@@ -72,9 +72,11 @@ std::string EncodeHeader(size_t size) {
   return std::string(serialized.get(), kPacketHeaderSizeBytes);
 }
 
-bool BufferStartsWith(net::GrowableIOBuffer* buf, const std::string& str) {
-  return (static_cast<size_t>(buf->capacity()) > str.size() &&
-          str == std::string(buf->StartOfBuffer(), str.size()));
+bool BufferStartsWith(net::GrowableIOBuffer* buf,
+                      size_t buf_size,
+                      const std::string& str) {
+  return (buf_size >= str.size() &&
+          str == std::string(buf->data(), str.size()));
 }
 
 }  // namespace blimp

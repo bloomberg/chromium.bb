@@ -70,9 +70,10 @@ ACTION_TEMPLATE(FillBufferFromString,
   memcpy(testing::get<buf_idx>(args)->data(), str.data(), str.size());
 }
 
-// Returns true if |buf| has a prefix of |str|.
-// Behavior is undefined if len(buf) < len(str).
-bool BufferStartsWith(net::GrowableIOBuffer* buf, const std::string& str);
+// Returns true if |buf| is prefixed by |str|.
+bool BufferStartsWith(net::GrowableIOBuffer* buf,
+                      size_t buf_size,
+                      const std::string& str);
 
 // GMock action that writes data from a BlimpMessage to a GrowableIOBuffer.
 // Advances the buffer's |offset| to the end of the message.
