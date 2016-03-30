@@ -218,12 +218,8 @@ void AutofillManager::RegisterProfilePrefs(
       prefs::kAutofillEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  // TODO(estade): Should this be syncable?
-  registry->RegisterBooleanPref(
-      prefs::kAutofillWalletImportEnabled,
-      true,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  // This choice is made on a per-device basis, so it's not syncable.
+  // These choices are made on a per-device basis, so they're not syncable.
+  registry->RegisterBooleanPref(prefs::kAutofillWalletImportEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kAutofillWalletImportStorageCheckboxState, true);
 }
