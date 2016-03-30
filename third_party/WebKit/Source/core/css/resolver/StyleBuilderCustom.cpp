@@ -658,7 +658,7 @@ void StyleBuilderFunctions::applyInheritCSSPropertyContent(StyleResolverState&)
 void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(*value).getValueID() == CSSValueNormal);
+        ASSERT(toCSSPrimitiveValue(*value).getValueID() == CSSValueNormal || toCSSPrimitiveValue(*value).getValueID() == CSSValueNone);
         state.style()->clearContent();
         return;
     }
@@ -730,13 +730,11 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
                 didSet = true;
                 break;
             default:
-                // none does not have any effect.
-                { }
+                ASSERT_NOT_REACHED();
             }
         }
     }
-    if (!didSet)
-        state.style()->clearContent();
+    ASSERT(didSet);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState& state, CSSValue* value)
