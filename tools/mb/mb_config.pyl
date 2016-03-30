@@ -556,6 +556,9 @@
       'Win7 Tests (1)': 'tbd',
       'Win7 Tests (dbg)(1)': 'tbd',
 
+      # Test-only builder.
+      'Win10 Tests x64': 'none',
+
       # Windows bots take too long to link w/ full symbols and time out.
       'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols',
       'Win x64 GN': 'gn_release_bot_minimal_symbols',
@@ -796,7 +799,6 @@
     },
 
     'tryserver.chromium.win': {
-      'win10_chromium_rel_ng': 'tbd',
       'win_archive': 'tbd',
       'win_chromium_compile_dbg_ng': 'tbd',
       'win_chromium_compile_dbg_ng_exp': 'tbd',
@@ -822,6 +824,7 @@
       'win_chromium_gn_x64_dbg': 'gn_debug_bot_minimal_symbols',
       'win_chromium_gn_x64_rel': 'gn_release_trybot',
       'win_chromium_x64_rel_ng': 'gn_release_trybot',
+      'win10_chromium_x64_rel_ng': 'gn_release_trybot',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
       'win_pgo': 'gyp_official_winpgo',
     },
