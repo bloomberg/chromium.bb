@@ -52,7 +52,7 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         View.OnLongClickListener {
-    private static final int TITLE_ANIM_DELAY_MS = 200;
+    private static final int TITLE_ANIM_DELAY_MS = 800;
     private static final int STATE_DOMAIN_ONLY = 0;
     private static final int STATE_TITLE_ONLY = 1;
     private static final int STATE_DOMAIN_AND_TITLE = 2;
@@ -259,13 +259,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         if (mState == STATE_DOMAIN_AND_TITLE
                 && !TextUtils.equals(currentTab.getTitle(), currentTab.getUrl())
                 && !TextUtils.equals(currentTab.getTitle(), "about:blank")) {
-            long duration = System.currentTimeMillis() - mInitializeTimeStamp;
-            if (duration >= TITLE_ANIM_DELAY_MS) {
-                mTitleAnimationStarter.run();
-            } else {
-                ThreadUtils.postOnUiThreadDelayed(mTitleAnimationStarter,
-                        TITLE_ANIM_DELAY_MS - duration);
-            }
+            // Delay the title animation until security icon animation finishes.
+            ThreadUtils.postOnUiThreadDelayed(mTitleAnimationStarter, TITLE_ANIM_DELAY_MS);
         }
 
         mTitleBar.setText(currentTab.getTitle());
