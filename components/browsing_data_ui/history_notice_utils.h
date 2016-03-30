@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_BROWSING_DATA_UI_HISTORY_NOTICE_UTILS_H_
 #define COMPONENTS_BROWSING_DATA_UI_HISTORY_NOTICE_UTILS_H_
 
+#include "base/callback_forward.h"
+
 class ProfileSyncService;
 
 namespace history {
@@ -14,10 +16,12 @@ class WebHistoryService;
 namespace browsing_data_ui {
 
 // Whether the Clear Browsing Data UI should show a notice about the existence
-// of other forms of browsing history stored in user's account.
-bool ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+// of other forms of browsing history stored in user's account. The response
+// is returned in a |callback|.
+void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
     const ProfileSyncService* sync_service,
-    const history::WebHistoryService* history_service);
+    history::WebHistoryService* history_service,
+    base::Callback<void(bool)> callback);
 
 }  // namespace browsing_data_ui
 

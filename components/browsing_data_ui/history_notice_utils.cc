@@ -4,19 +4,26 @@
 
 #include "components/browsing_data_ui/history_notice_utils.h"
 
+#include "base/callback.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/history/core/browser/web_history_service.h"
 
 namespace browsing_data_ui {
 
-bool ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
     const ProfileSyncService* sync_service,
-    const history::WebHistoryService* history_service) {
-  return sync_service &&
-         sync_service->IsSyncActive() &&
-         !sync_service->IsUsingSecondaryPassphrase() &&
-         history_service &&
-         history_service->HasOtherFormsOfBrowsingHistory();
+    history::WebHistoryService* history_service,
+    base::Callback<void(bool)> callback) {
+  if (!sync_service ||
+      !sync_service->IsSyncActive() ||
+      sync_service->IsUsingSecondaryPassphrase() ||
+      !history_service ||
+      !history_service->HasOtherFormsOfBrowsingHistory()) {
+    callback.Run(false);
+    return;
+  }
+
+  history_service->QueryWebAndAppActivity(callback);
 }
 
 }  // namespace browsing_data_ui

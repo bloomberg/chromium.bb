@@ -73,6 +73,8 @@ class WebHistoryService : public KeyedService {
   typedef base::Callback<void(bool success, bool new_enabled_value)>
       AudioWebHistoryCallback;
 
+  typedef base::Callback<void(bool success)> QueryWebAndAppActivityCallback;
+
   typedef base::Callback<void(Request*, bool success)> CompletionCallback;
 
   WebHistoryService(
@@ -110,6 +112,10 @@ class WebHistoryService : public KeyedService {
   // Sets the state of audio history recording to |new_enabled_value|.
   virtual void SetAudioHistoryEnabled(bool new_enabled_value,
                                       const AudioWebHistoryCallback& callback);
+
+  // Queries whether web and app activity is enabled on the server.
+  virtual void QueryWebAndAppActivity(
+      const QueryWebAndAppActivityCallback& callback);
 
   // Used for tests.
   size_t GetNumberOfPendingAudioHistoryRequests();
@@ -152,6 +158,14 @@ class WebHistoryService : public KeyedService {
     WebHistoryService::Request* request,
     bool success);
 
+  // Called by |request| when a web and app activity query has completed.
+  // Unpacks the response and calls |callback|, which is the original callback
+  // that was passed to QueryWebAndAppActivity().
+  void QueryWebAndAppActivityCompletionCallback(
+    const WebHistoryService::QueryWebAndAppActivityCallback& callback,
+    WebHistoryService::Request* request,
+    bool success);
+
  private:
   friend class WebHistoryServiceTest;
 
@@ -174,6 +188,10 @@ class WebHistoryService : public KeyedService {
 
   // Pending requests to be canceled if not complete by profile shutdown.
   std::set<Request*> pending_audio_history_requests_;
+
+  // Pending web and app activity queries to be canceled if not complete by
+  // profile shutdown.
+  std::set<Request*> pending_web_and_app_activity_requests_;
 
   base::WeakPtrFactory<WebHistoryService> weak_ptr_factory_;
 

@@ -44,6 +44,9 @@ const char kHistoryAudioHistoryUrl[] =
 const char kHistoryAudioHistoryChangeUrl[] =
     "https://history.google.com/history/api/change";
 
+const char kQueryWebAndAppActivityUrl[] =
+    "https://history.google.com/history/api/lookup?client=web_app";
+
 const char kPostDataMimeType[] = "text/plain";
 
 // The maximum number of retries for the URLFetcher requests.
@@ -298,6 +301,7 @@ WebHistoryService::WebHistoryService(
 WebHistoryService::~WebHistoryService() {
   STLDeleteElements(&pending_expire_requests_);
   STLDeleteElements(&pending_audio_history_requests_);
+  STLDeleteElements(&pending_web_and_app_activity_requests_);
 }
 
 WebHistoryService::Request* WebHistoryService::CreateRequest(
@@ -443,6 +447,20 @@ bool WebHistoryService::HasOtherFormsOfBrowsingHistory() const {
   return false;
 }
 
+void WebHistoryService::QueryWebAndAppActivity(
+    const QueryWebAndAppActivityCallback& callback) {
+  // Wrap the original callback into a generic completion callback.
+  CompletionCallback completion_callback =
+      base::Bind(&WebHistoryService::QueryWebAndAppActivityCompletionCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback);
+
+  GURL url(kQueryWebAndAppActivityUrl);
+  Request* request = CreateRequest(url, completion_callback);
+  pending_web_and_app_activity_requests_.insert(request);
+  request->Start();
+}
+
 // static
 void WebHistoryService::QueryHistoryCompletionCallback(
     const WebHistoryService::QueryWebHistoryCallback& callback,
@@ -458,6 +476,9 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
     const WebHistoryService::ExpireWebHistoryCallback& callback,
     WebHistoryService::Request* request,
     bool success) {
+  pending_expire_requests_.erase(request);
+  scoped_ptr<Request> request_ptr(request);
+
   scoped_ptr<base::DictionaryValue> response_value;
   if (success) {
     response_value = ReadResponse(request);
@@ -465,9 +486,6 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
       response_value->GetString("version_info", &server_version_info_);
   }
   callback.Run(response_value.get() && success);
-  // Clean up from pending requests.
-  pending_expire_requests_.erase(request);
-  delete request;
 }
 
 void WebHistoryService::AudioHistoryCompletionCallback(
@@ -489,6 +507,27 @@ void WebHistoryService::AudioHistoryCompletionCallback(
   // failed, despite receiving a true |success| value. This can happen if
   // the user is offline.
   callback.Run(success && response_value, enabled_value);
+}
+
+void WebHistoryService::QueryWebAndAppActivityCompletionCallback(
+    const WebHistoryService::QueryWebAndAppActivityCallback& callback,
+    WebHistoryService::Request* request,
+    bool success) {
+  pending_web_and_app_activity_requests_.erase(request);
+  scoped_ptr<Request> request_ptr(request);
+
+  scoped_ptr<base::DictionaryValue> response_value;
+  bool web_and_app_activity_enabled = false;
+
+  if (success) {
+    response_value = ReadResponse(request);
+    if (response_value) {
+      response_value->GetBoolean(
+          "history_recording_enabled", &web_and_app_activity_enabled);
+    }
+  }
+
+  callback.Run(web_and_app_activity_enabled);
 }
 
 }  // namespace history
