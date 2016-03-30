@@ -195,6 +195,11 @@ typedef struct macroblockd {
   /* pointer to current frame */
   const YV12_BUFFER_CONFIG *cur_buf;
 
+#if CONFIG_REF_MV
+  uint8_t ref_mv_count[MAX_REF_FRAMES];
+  CANDIDATE_MV ref_mv_stack[MAX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
+#endif
+
   ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
   ENTROPY_CONTEXT left_context[MAX_MB_PLANE][16];
 
