@@ -312,7 +312,9 @@ public:
         pictureBuilder.context().setPrinting(true);
 
         float scale = spoolPage(pictureBuilder.context(), pageNumber);
-        pictureBuilder.endRecording()->playback(canvas);
+        RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
+        if (recording)
+            recording->playback(canvas);
         return scale;
     }
 
@@ -371,7 +373,9 @@ public:
 
             currentHeight += pageSizeInPixels.height() + 1;
         }
-        pictureBuilder.endRecording()->playback(canvas);
+        RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
+        if (recording)
+            recording->playback(canvas);
     }
 
     // DisplayItemClient methods

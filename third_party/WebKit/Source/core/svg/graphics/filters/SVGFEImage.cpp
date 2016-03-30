@@ -178,6 +178,8 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(const Layout
         SVGPaintContext::paintSubtree(filterPicture.context(), &layoutObject);
     }
     RefPtr<const SkPicture> recording = filterPicture.endRecording();
+    if (!recording)
+        return nullptr;
 
     RefPtr<SkImageFilter> result = adoptRef(SkPictureImageFilter::Create(recording.get(), dstRect));
     return result.release();

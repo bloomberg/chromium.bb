@@ -109,8 +109,12 @@ PassOwnPtr<PatternData> LayoutSVGResourcePattern::buildPatternData(const LayoutO
             tileTransform.scale(clientBoundingBox.width(), clientBoundingBox.height());
     }
 
+    RefPtr<SkPicture> recording = asPicture(tileBounds, tileTransform);
+    if (!recording)
+        return nullptr;
+
     OwnPtr<PatternData> patternData = adoptPtr(new PatternData);
-    patternData->pattern = Pattern::createPicturePattern(asPicture(tileBounds, tileTransform));
+    patternData->pattern = Pattern::createPicturePattern(recording);
 
     // Compute pattern space transformation.
     patternData->transform.translate(tileBounds.x(), tileBounds.y());

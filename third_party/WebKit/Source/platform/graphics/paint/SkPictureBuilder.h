@@ -19,6 +19,10 @@ namespace blink {
 class SkPictureBuilder final {
     WTF_MAKE_NONCOPYABLE(SkPictureBuilder);
 public:
+    // Constructs a new builder with the given bounds for the resulting recorded picture. If
+    // |metadata| is specified, that metadata is propagated to the builder's internal canvas. If
+    // |containingContext| is specified, the device scale factor, printing, and disabled state are
+    // propagated to the builder's internal context.
     SkPictureBuilder(const FloatRect& bounds, SkMetaData* metaData = nullptr, GraphicsContext* containingContext = nullptr)
         : m_bounds(bounds)
     {
@@ -38,6 +42,8 @@ public:
 
     GraphicsContext& context() { return *m_context; }
 
+    // Returns a picture capturing all drawing performed on the builder's context since
+    // construction, or nullptr if the picture could not be created.
     PassRefPtr<SkPicture> endRecording()
     {
         m_context->beginRecording(m_bounds);

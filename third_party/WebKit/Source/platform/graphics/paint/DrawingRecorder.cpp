@@ -88,9 +88,13 @@ DrawingRecorder::~DrawingRecorder()
     ASSERT(m_displayItemPosition == m_context.getPaintController().newDisplayItemList().size());
 #endif
 
+    RefPtr<const SkPicture> recording = m_context.endRecording();
+    if (!recording)
+        return;
+
     m_context.getPaintController().createAndAppend<DrawingDisplayItem>(m_displayItemClient
         , m_displayItemType
-        , m_context.endRecording()
+        , recording
         , m_knownToBeOpaque
 #if ENABLE(ASSERT)
         , m_underInvalidationCheckingMode

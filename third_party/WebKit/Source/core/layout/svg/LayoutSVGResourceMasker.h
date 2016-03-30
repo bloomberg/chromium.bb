@@ -50,6 +50,8 @@ public:
     static const LayoutSVGResourceType s_resourceType = MaskerResourceType;
     LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
+    // Returns a picture to paint the contents of the mask, or nullptr if the picture couldn't be created.
+    // Pictures should only fail creation in certain testing situations.
     PassRefPtr<const SkPicture> createContentPicture(AffineTransform&, const FloatRect&, GraphicsContext&);
 
 private:

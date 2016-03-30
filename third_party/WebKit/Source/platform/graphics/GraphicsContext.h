@@ -211,6 +211,9 @@ public:
     // are stored in a display list that can be replayed at a later time. Pass in the bounding
     // rectangle for the content in the list.
     void beginRecording(const FloatRect&);
+    // Returns a picture with any recorded draw commands since the prerequisite call to
+    // beginRecording(), or nullptr if the canvas is disabled. The canvas should only be disabled in
+    // certain testing situations.
     PassRefPtr<SkPicture> endRecording();
 
     void setShadow(const FloatSize& offset, float blur, const Color&,

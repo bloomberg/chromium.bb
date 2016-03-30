@@ -287,6 +287,8 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context, const FloatSize
         drawForContainer(patternPicture.context().canvas(), paint, containerSize, zoom, tile, srcRect, url);
     }
     RefPtr<SkPicture> tilePicture = patternPicture.endRecording();
+    if (!tilePicture)
+        return;
 
     SkMatrix patternTransform;
     patternTransform.setTranslate(phase.x() + spacedTile.x(), phase.y() + spacedTile.y());
@@ -370,7 +372,8 @@ void SVGImage::drawInternal(SkCanvas* canvas, const SkPaint& paint, const FloatR
             canvas->saveLayer(&layerRect, &paint);
         }
         RefPtr<const SkPicture> recording = imagePicture.endRecording();
-        canvas->drawPicture(recording.get());
+        if (recording)
+            canvas->drawPicture(recording.get());
     }
 
     if (getImageObserver())

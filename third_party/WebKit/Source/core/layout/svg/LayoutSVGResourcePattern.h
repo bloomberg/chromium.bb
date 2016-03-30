@@ -54,6 +54,8 @@ public:
 
 private:
     PassOwnPtr<PatternData> buildPatternData(const LayoutObject&);
+    // Returns a picture to paint the pattern, or nullptr if the picture couldn't be created.
+    // Pictures should only fail creation in certain testing situations.
     PassRefPtr<SkPicture> asPicture(const FloatRect& tile, const AffineTransform&) const;
     PatternData* patternForLayoutObject(const LayoutObject&);
 

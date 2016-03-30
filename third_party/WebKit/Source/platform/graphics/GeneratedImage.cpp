@@ -48,6 +48,8 @@ void GeneratedImage::drawPattern(GraphicsContext& destContext, const FloatRect& 
     builder.context().beginRecording(tileRect);
     drawTile(builder.context(), srcRect);
     RefPtr<SkPicture> tilePicture = builder.endRecording();
+    if (!tilePicture)
+        return;
 
     AffineTransform patternTransform;
     patternTransform.translate(phase.x(), phase.y());
