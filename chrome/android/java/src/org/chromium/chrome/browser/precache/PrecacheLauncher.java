@@ -96,7 +96,7 @@ public abstract class PrecacheLauncher {
     }
 
     /**
-     * Updates the PrecacheServiceLauncher with whether conditions are right for precaching. All of
+     * Updates the PrecacheController with whether conditions are right for precaching. All of
      * the following must be true:
      *
      * <ul>
@@ -123,15 +123,15 @@ public abstract class PrecacheLauncher {
         mNetworkPredictionsAllowed = networkPredictionsAllowed;
         mShouldRun = shouldRun;
 
-        PrecacheServiceLauncher.setIsPrecachingEnabled(
-                context.getApplicationContext(), networkPredictionsAllowed && shouldRun);
+        PrecacheController.setIsPrecachingEnabled(
+                context, networkPredictionsAllowed && shouldRun);
         Log.v(TAG, "updateEnabledSync complete");
     }
 
     /**
-     * If precaching is enabled, then allow the PrecacheService to be launched and signal Chrome
+     * If precaching is enabled, then allow the PrecacheController to be launched and signal Chrome
      * when conditions are right to start precaching. If precaching is disabled, prevent the
-     * PrecacheService from ever starting.
+     * PrecacheController from ever starting.
      *
      * @param context any context within the application
      */
@@ -166,9 +166,9 @@ public abstract class PrecacheLauncher {
     }
 
     /**
-     * If precaching is enabled, then allow the PrecacheService to be launched and signal Chrome
+     * If precaching is enabled, then allow the PrecacheController to be launched and signal Chrome
      * when conditions are right to start precaching. If precaching is disabled, prevent the
-     * PrecacheService from ever starting.
+     * PrecacheController from ever starting.
      *
      * @param context any context within the application
      */

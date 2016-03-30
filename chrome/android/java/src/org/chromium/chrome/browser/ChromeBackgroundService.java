@@ -18,6 +18,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsController;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
+import org.chromium.chrome.browser.precache.PrecacheController;
 
 /**
  * {@link ChromeBackgroundService} is scheduled through the {@link GcmNetworkManager} when the
@@ -44,6 +45,11 @@ public class ChromeBackgroundService extends GcmTaskService {
                     case SnippetsLauncher.TASK_TAG_WIFI:
                     case SnippetsLauncher.TASK_TAG_FALLBACK:
                         handleFetchSnippets(context);
+                        break;
+
+                    case PrecacheController.PERIODIC_TASK_TAG:
+                    case PrecacheController.CONTINUATION_TASK_TAG:
+                        handlePrecache(context, params.getTag());
                         break;
 
                     default:
@@ -74,6 +80,23 @@ public class ChromeBackgroundService extends GcmTaskService {
         SnippetsController.get(context).fetchSnippets();
     }
 
+    private void handlePrecache(Context context, String tag) {
+        if (!hasPrecacheInstance()) {
+            launchBrowser(context);
+        }
+        precache(context, tag);
+    }
+
+    @VisibleForTesting
+    protected boolean hasPrecacheInstance() {
+        return PrecacheController.hasInstance();
+    }
+
+    @VisibleForTesting
+    protected void precache(Context context, String tag) {
+        PrecacheController.get(context).precache(tag);
+    }
+
     @VisibleForTesting
     @SuppressFBWarnings("DM_EXIT")
     protected void launchBrowser(Context context) {
@@ -91,5 +114,6 @@ public class ChromeBackgroundService extends GcmTaskService {
     @Override
     public void onInitializeTasks() {
         BackgroundSyncLauncher.rescheduleTasksOnUpgrade(this);
+        PrecacheController.rescheduleTasksOnUpgrade(this);
     }
 }

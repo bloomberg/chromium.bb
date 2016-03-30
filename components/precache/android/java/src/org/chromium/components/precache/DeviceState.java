@@ -7,7 +7,6 @@ package org.chromium.components.precache;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 import android.os.BatteryManager;
 
 import org.chromium.base.VisibleForTesting;
@@ -59,12 +58,11 @@ public class DeviceState {
                 || status == BatteryManager.BATTERY_STATUS_FULL;
     }
 
-    /** @return whether the currently active network is Wi-Fi, not roaming, and not metered. */
-    public boolean isWifiAvailable(Context context) {
+    /** @return whether the currently active network is unmetered. */
+    public boolean isUnmeteredNetworkAvailable(Context context) {
         NetworkInfoDelegate networkInfo =
                 mNetworkInfoDelegateFactory.getNetworkInfoDelegate(context);
         return (networkInfo.isValid()
-                && networkInfo.getType() == ConnectivityManager.TYPE_WIFI
                 && networkInfo.isAvailable()
                 && networkInfo.isConnected()
                 && !networkInfo.isRoaming()

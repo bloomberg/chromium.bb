@@ -135,7 +135,7 @@ public class DeviceStateTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Precache"})
-    public void testWifiAvailable() {
+    public void testUnmeteredNetworkAvailable() {
         AdvancedMockContext context = new AdvancedMockContext();
         DeviceState deviceState = DeviceState.getInstance();
 
@@ -144,41 +144,41 @@ public class DeviceStateTest extends InstrumentationTestCase {
         deviceState.setNetworkInfoDelegateFactory(
                 new MockNetworkInfoDelegateFactory(
                         true, ConnectivityManager.TYPE_WIFI, true, true, false, false));
-        assertTrue(deviceState.isWifiAvailable(context));
+        assertTrue(deviceState.isUnmeteredNetworkAvailable(context));
 
         // Expect WiFi to be reported as unavailable because one of the aforementioned required
         // conditions is not met.
         deviceState.setNetworkInfoDelegateFactory(
                 new MockNetworkInfoDelegateFactory(
                         false, ConnectivityManager.TYPE_WIFI, true, true, false, false));
-        assertFalse(deviceState.isWifiAvailable(context));
+        assertFalse(deviceState.isUnmeteredNetworkAvailable(context));
 
         deviceState.setNetworkInfoDelegateFactory(
                 new MockNetworkInfoDelegateFactory(true, 0, false, true, false, false));
-        assertFalse(deviceState.isWifiAvailable(context));
+        assertFalse(deviceState.isUnmeteredNetworkAvailable(context));
 
         deviceState.setNetworkInfoDelegateFactory(
                 new MockNetworkInfoDelegateFactory(
                         true, ConnectivityManager.TYPE_WIFI, false, true, false, false));
-        assertFalse(deviceState.isWifiAvailable(context));
+        assertFalse(deviceState.isUnmeteredNetworkAvailable(context));
 
         deviceState.setNetworkInfoDelegateFactory(
                 new MockNetworkInfoDelegateFactory(
                         true, ConnectivityManager.TYPE_WIFI, true, false, false, false));
-        assertFalse(deviceState.isWifiAvailable(context));
+        assertFalse(deviceState.isUnmeteredNetworkAvailable(context));
 
         deviceState.setNetworkInfoDelegateFactory(
                 new MockNetworkInfoDelegateFactory(
                         true, ConnectivityManager.TYPE_WIFI, true, true, true, false));
-        assertFalse(deviceState.isWifiAvailable(context));
+        assertFalse(deviceState.isUnmeteredNetworkAvailable(context));
 
         deviceState.setNetworkInfoDelegateFactory(
                 new MockNetworkInfoDelegateFactory(
                         true, ConnectivityManager.TYPE_WIFI, true, true, false, true));
-        assertFalse(deviceState.isWifiAvailable(context));
+        assertFalse(deviceState.isUnmeteredNetworkAvailable(context));
 
         deviceState.setNetworkInfoDelegateFactory(
                 new MockNetworkInfoDelegateFactory(true, 0, false, false, true, true));
-        assertFalse(deviceState.isWifiAvailable(context));
+        assertFalse(deviceState.isUnmeteredNetworkAvailable(context));
     }
 }

@@ -502,13 +502,9 @@ by a child template that "extends" this file.
         to some process churn, so omit them while not relevant. b/24776372
         -->
         {% if channel in ['default', 'canary', 'dev', 'beta'] %}
-        <service android:name="org.chromium.chrome.browser.precache.PrecacheService"
-            android:exported="false" />
-        <receiver android:name="org.chromium.chrome.browser.precache.PrecacheServiceLauncher">
+        <receiver android:name="org.chromium.chrome.browser.precache.PrecacheBootReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
-                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
         {% endif %}
