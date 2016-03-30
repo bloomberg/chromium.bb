@@ -192,6 +192,8 @@ private:
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.
     RawPtrWillBeMember<WebLocalFrameImpl> m_webFrame;
+
+    String m_userAgent;
 };
 
 DEFINE_TYPE_CASTS(FrameLoaderClientImpl, FrameLoaderClient, client, client->isFrameLoaderClientImpl(), client.isFrameLoaderClientImpl());

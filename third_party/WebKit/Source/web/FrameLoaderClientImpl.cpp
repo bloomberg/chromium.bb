@@ -748,7 +748,9 @@ String FrameLoaderClientImpl::userAgent()
     if (!override.isEmpty())
         return override;
 
-    return Platform::current()->userAgent();
+    if (m_userAgent.isEmpty())
+        m_userAgent = Platform::current()->userAgent();
+    return m_userAgent;
 }
 
 String FrameLoaderClientImpl::doNotTrackValue()
