@@ -68,6 +68,18 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // If true, don't dump output until notifyDone is called.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(wait_until_done)
 
+  // Causes navigation actions just printout the intended navigation instead
+  // of taking you to the page. This is used for cases like mailto, where you
+  // don't actually want to open the mail program.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(policy_delegate_enabled)
+
+  // Toggles the behavior of the policy delegate. If true, then navigations
+  // will be allowed. Otherwise, they will be ignored (dropped).
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(policy_delegate_is_permissive)
+
+  // If true, the policy delegate will signal layout test completion.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(policy_delegate_should_notify_done)
+
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 
   // Reports whether recursing over child frames is necessary.

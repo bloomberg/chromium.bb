@@ -23,6 +23,9 @@ void LayoutTestRuntimeFlags::Reset() {
 
   set_is_printing(false);
 
+  set_policy_delegate_enabled(false);
+  set_policy_delegate_is_permissive(false);
+  set_policy_delegate_should_notify_done(false);
   set_wait_until_done(false);
 
   // No need to report the initial state - only the future delta is important.

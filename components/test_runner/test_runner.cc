@@ -1707,9 +1707,6 @@ void TestRunner::Reset() {
   layout_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
   wait_until_external_url_load_ = false;
-  policy_delegate_enabled_ = false;
-  policy_delegate_is_permissive_ = false;
-  policy_delegate_should_notify_done_ = false;
 
   WebSecurityPolicy::resetOriginAccessWhitelists();
 #if defined(__linux__) || defined(ANDROID)
@@ -1973,15 +1970,15 @@ void TestRunner::policyDelegateDone() {
 }
 
 bool TestRunner::policyDelegateEnabled() const {
-  return policy_delegate_enabled_;
+  return layout_test_runtime_flags_.policy_delegate_enabled();
 }
 
 bool TestRunner::policyDelegateIsPermissive() const {
-  return policy_delegate_is_permissive_;
+  return layout_test_runtime_flags_.policy_delegate_is_permissive();
 }
 
 bool TestRunner::policyDelegateShouldNotifyDone() const {
-  return policy_delegate_should_notify_done_;
+  return layout_test_runtime_flags_.policy_delegate_should_notify_done();
 }
 
 bool TestRunner::shouldInterceptPostMessage() const {
@@ -2192,14 +2189,21 @@ void TestRunner::QueueLoadHTMLString(gin::Arguments* args) {
 }
 
 void TestRunner::SetCustomPolicyDelegate(gin::Arguments* args) {
-  args->GetNext(&policy_delegate_enabled_);
-  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsBoolean())
-    args->GetNext(&policy_delegate_is_permissive_);
+  bool value;
+  args->GetNext(&value);
+  layout_test_runtime_flags_.set_policy_delegate_enabled(value);
+
+  if (!args->PeekNext().IsEmpty() && args->PeekNext()->IsBoolean()) {
+    args->GetNext(&value);
+    layout_test_runtime_flags_.set_policy_delegate_is_permissive(value);
+  }
+
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::WaitForPolicyDelegate() {
-  policy_delegate_enabled_ = true;
-  policy_delegate_should_notify_done_ = true;
+  layout_test_runtime_flags_.set_policy_delegate_enabled(true);
+  layout_test_runtime_flags_.set_policy_delegate_should_notify_done(true);
   layout_test_runtime_flags_.set_wait_until_done(true);
   OnLayoutTestRuntimeFlagsChanged();
 }

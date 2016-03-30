@@ -674,18 +674,6 @@ class TestRunner : public WebTestRunner,
   // WebFrameClient::loadURLExternally().
   bool wait_until_external_url_load_;
 
-  // Causes navigation actions just printout the intended navigation instead
-  // of taking you to the page. This is used for cases like mailto, where you
-  // don't actually want to open the mail program.
-  bool policy_delegate_enabled_;
-
-  // Toggles the behavior of the policy delegate. If true, then navigations
-  // will be allowed. Otherwise, they will be ignored (dropped).
-  bool policy_delegate_is_permissive_;
-
-  // If true, the policy delegate will signal layout test completion.
-  bool policy_delegate_should_notify_done_;
-
   WorkQueue work_queue_;
 
   // Bound variable to return the name of this platform (chromium).
