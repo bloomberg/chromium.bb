@@ -29,6 +29,11 @@ public interface ContextMenuItemDelegate {
     boolean isIncognitoSupported();
 
     /**
+     * @return Whether the "Open in other window" context menu item should be shown.
+     */
+    boolean isOpenInOtherWindowSupported();
+
+    /**
      * Returns whether or not the Data Reduction Proxy is enabled for input url.
      * @param url Input url to check for the Data Reduction Proxy setting.
      * @return true if the Data Reduction Proxy is enabled for the url.
@@ -42,6 +47,13 @@ public interface ContextMenuItemDelegate {
      * @return       Whether or not a download should actually be started.
      */
     boolean startDownload(String url, boolean isLink);
+
+    /**
+     * Called when the {@code url} should be opened in the other window with the same incognito
+     * state as the current {@link Tab}.
+     * @param url The URL to open.
+     */
+    void onOpenInOtherWindow(String url, Referrer referrer);
 
     /**
      * Called when the {@code url} should be opened in a new tab with the same incognito state as

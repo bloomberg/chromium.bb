@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentMetricIds;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -89,6 +90,31 @@ public class TabDelegate extends TabCreator {
         return true;
     }
 
+    /**
+     * Creates a tab in the "other" window in multi-window mode. This will only work if
+     * {@link MultiWindowUtils#isOpenInOtherWindowSupported} is true for the given activity.
+     *
+     * @param loadUrlParams Parameters specifying the URL to load and other navigation details.
+     * @param activity      The current {@link Activity}
+     * @param parentId      The ID of the parent tab, or {@link Tab#INVALID_TAB_ID}.
+     */
+    public void createTabInOtherWindow(LoadUrlParams loadUrlParams, Activity activity,
+            int parentId) {
+        Intent intent = createNewTabIntent(new AsyncTabCreationParams(loadUrlParams), parentId);
+
+        Class<?> targetActivity =
+                MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(activity);
+        if (targetActivity == null) return;
+        intent.setClass(activity, targetActivity);
+
+        // TODO(newt): use Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT once we're building against N.
+        final int flagActivityLaunchAdjacent = 0x00001000;
+        intent.addFlags(flagActivityLaunchAdjacent);
+
+        IntentHandler.addTrustedIntentExtras(intent, activity);
+        activity.startActivity(intent);
+    }
+
     @Override
     public Tab launchUrl(String url, TabLaunchType type) {
         return createNewTab(new LoadUrlParams(url), type, null);
@@ -142,7 +168,6 @@ public class TabDelegate extends TabCreator {
                 && asyncParams.getWebContents() != null);
 
         Context context = ApplicationStatus.getApplicationContext();
-        Activity parentActivity = ActivityDelegate.getActivityForTabId(parentId);
 
         boolean mayLaunchDocumentActivity = isAllowedToLaunchDocumentActivity(context);
         assert mayLaunchDocumentActivity || (asyncParams.getWebContents() == null);
@@ -150,29 +175,37 @@ public class TabDelegate extends TabCreator {
         if (FeatureUtilities.isDocumentMode(context) && mayLaunchDocumentActivity) {
             AsyncDocumentLauncher.getInstance().enqueueLaunch(mIsIncognito, parentId, asyncParams);
         } else {
-            // TODO(dfalcantara): Is it possible to get rid of this conditional?
-            int assignedTabId = TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
-            AsyncTabParamsManager.add(assignedTabId, asyncParams);
-
-            Intent intent = new Intent(
-                    Intent.ACTION_VIEW, Uri.parse(asyncParams.getLoadUrlParams().getUrl()));
-            intent.setClass(context, ChromeLauncherActivity.class);
-            intent.putExtra(IntentHandler.EXTRA_TAB_ID, assignedTabId);
-            intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
-            intent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
-
-            if (parentActivity != null && parentActivity.getIntent() != null) {
-                intent.putExtra(IntentHandler.EXTRA_PARENT_INTENT, parentActivity.getIntent());
-            }
-
-            if (asyncParams.getRequestId() != null) {
-                intent.putExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA,
-                        asyncParams.getRequestId().intValue());
-            }
-
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Intent intent = createNewTabIntent(asyncParams, parentId);
             IntentHandler.startActivityForTrustedIntent(intent, context);
         }
+    }
+
+    private Intent createNewTabIntent(AsyncTabCreationParams asyncParams, int parentId) {
+        Context context = ApplicationStatus.getApplicationContext();
+
+        // TODO(dfalcantara): Is it possible to get rid of this conditional?
+        int assignedTabId = TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
+        AsyncTabParamsManager.add(assignedTabId, asyncParams);
+
+        Intent intent = new Intent(
+                Intent.ACTION_VIEW, Uri.parse(asyncParams.getLoadUrlParams().getUrl()));
+        intent.setClass(context, ChromeLauncherActivity.class);
+        intent.putExtra(IntentHandler.EXTRA_TAB_ID, assignedTabId);
+        intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
+        intent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
+
+        Activity parentActivity = ActivityDelegate.getActivityForTabId(parentId);
+        if (parentActivity != null && parentActivity.getIntent() != null) {
+            intent.putExtra(IntentHandler.EXTRA_PARENT_INTENT, parentActivity.getIntent());
+        }
+
+        if (asyncParams.getRequestId() != null) {
+            intent.putExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA,
+                    asyncParams.getRequestId().intValue());
+        }
+
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return intent;
     }
 
     /**

@@ -133,7 +133,7 @@ public class ChromeLauncherActivity extends Activity
             new LaunchMetrics.SparseHistogramSample("Launch.IntentFlags");
 
     private IntentHandler mIntentHandler;
-    private boolean mIsInMultiInstanceMode;
+    private boolean mIsInLegacyMultiInstanceMode;
     private boolean mIsFinishDelayed;
 
     private boolean mIsCustomTabIntent;
@@ -176,7 +176,8 @@ public class ChromeLauncherActivity extends Activity
         maybePerformMigrationTasks();
         recordIntentMetrics();
 
-        mIsInMultiInstanceMode = MultiWindowUtils.getInstance().shouldRunInMultiInstanceMode(this);
+        mIsInLegacyMultiInstanceMode =
+                MultiWindowUtils.getInstance().shouldRunInLegacyMultiInstanceMode(this);
         mIntentHandler = new IntentHandler(this, getPackageName());
         mIsCustomTabIntent = isCustomTabIntent();
         if (!mIsCustomTabIntent) {
@@ -554,11 +555,11 @@ public class ChromeLauncherActivity extends Activity
 
         // Bring the last viewed tab to the foreground, unless we're in Samsung's multi-instance
         // mode -- a MAIN Intent in that case results in the creation of a second default page.
-        if (!mIsInMultiInstanceMode && launchLastViewedActivity()) return;
+        if (!mIsInLegacyMultiInstanceMode && launchLastViewedActivity()) return;
 
         // Launch the default page asynchronously because the homepage URL needs to be queried.
         // This is obviously not ideal, but we don't have a choice.
-        mIsFinishDelayed = mIsInMultiInstanceMode;
+        mIsFinishDelayed = mIsInLegacyMultiInstanceMode;
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
             @Override
             public void run() {
@@ -568,8 +569,8 @@ public class ChromeLauncherActivity extends Activity
                 AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(
                         new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL));
                 asyncParams.setDocumentStartedBy(DocumentMetricIds.STARTED_BY_LAUNCHER);
-                asyncParams.setDocumentLaunchMode(
-                        mIsInMultiInstanceMode ? LAUNCH_MODE_FOREGROUND : LAUNCH_MODE_RETARGET);
+                asyncParams.setDocumentLaunchMode(mIsInLegacyMultiInstanceMode
+                        ? LAUNCH_MODE_FOREGROUND : LAUNCH_MODE_RETARGET);
                 launchDocumentInstance(ChromeLauncherActivity.this, false, asyncParams);
 
                 if (mIsFinishDelayed) finish();
@@ -721,9 +722,9 @@ public class ChromeLauncherActivity extends Activity
         // Remove any flags from the Intent that would prevent a second instance of Chrome from
         // appearing.
         if (context instanceof ChromeLauncherActivity
-                && ((ChromeLauncherActivity) context).mIsInMultiInstanceMode) {
-            MultiWindowUtils.getInstance().makeMultiInstanceIntent((ChromeLauncherActivity) context,
-                    intent);
+                && ((ChromeLauncherActivity) context).mIsInLegacyMultiInstanceMode) {
+            MultiWindowUtils.getInstance().makeLegacyMultiInstanceIntent(
+                    (ChromeLauncherActivity) context, intent);
         }
 
         // Store parameters for the new DocumentActivity, which are retrieved immediately after the
@@ -831,8 +832,8 @@ public class ChromeLauncherActivity extends Activity
         if (uri != null && "content".equals(uri.getScheme())) {
             newIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
-        if (mIsInMultiInstanceMode) {
-            MultiWindowUtils.getInstance().makeMultiInstanceIntent(this, newIntent);
+        if (mIsInLegacyMultiInstanceMode) {
+            MultiWindowUtils.getInstance().makeLegacyMultiInstanceIntent(this, newIntent);
         }
         startActivity(newIntent);
     }

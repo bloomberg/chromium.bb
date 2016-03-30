@@ -49,6 +49,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private static final int[] NORMAL_MODE_WHITELIST = {
             R.id.contextmenu_load_images,
             R.id.contextmenu_open_in_new_tab,
+            R.id.contextmenu_open_in_other_window,
             R.id.contextmenu_open_in_incognito_tab,
             R.id.contextmenu_save_link_as,
             R.id.contextmenu_load_original_image,
@@ -89,7 +90,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_LOAD_ORIGINAL_IMAGE = 13;
         static final int ACTION_SAVE_VIDEO = 14;
         static final int ACTION_SHARE_IMAGE = 19;
-        static final int NUM_ACTIONS = 20;
+        static final int ACTION_OPEN_IN_OTHER_WINDOW = 20;
+        static final int NUM_ACTIONS = 21;
 
         // Note: these values must match the ContextMenuSaveLinkType enum in histograms.xml.
         // Only add new values at the end, right before NUM_TYPES. We depend on these specific
@@ -183,6 +185,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         menu.setGroupVisible(R.id.contextmenu_group_image, params.isImage());
         menu.setGroupVisible(R.id.contextmenu_group_video, params.isVideo());
 
+        if (params.isAnchor() && !mDelegate.isOpenInOtherWindowSupported()) {
+            menu.findItem(R.id.contextmenu_open_in_other_window).setVisible(false);
+        }
+
         if (mDelegate.isIncognito() || !mDelegate.isIncognitoSupported()) {
             menu.findItem(R.id.contextmenu_open_in_incognito_tab).setVisible(false);
         }
@@ -205,8 +211,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         boolean showSaveOfflineMenuItem =
                 shouldShowBackgroundLoadingContextMenu(params.getLinkUrl());
 
-        menu.findItem(R.id.contextmenu_save_offline)
-                .setVisible(showSaveOfflineMenuItem);
+        menu.findItem(R.id.contextmenu_save_offline).setVisible(showSaveOfflineMenuItem);
 
         if (params.imageWasFetchedLoFi()
                 || !DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
@@ -285,7 +290,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     @Override
     public boolean onItemSelected(ContextMenuHelper helper, ContextMenuParams params, int itemId) {
-        if (itemId == R.id.contextmenu_open_in_new_tab) {
+        if (itemId == R.id.contextmenu_open_in_other_window) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_OTHER_WINDOW);
+            mDelegate.onOpenInOtherWindow(params.getLinkUrl(), params.getReferrer());
+        } else if (itemId == R.id.contextmenu_open_in_new_tab) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_NEW_TAB);
             mDelegate.onOpenInNewTab(params.getLinkUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_open_in_incognito_tab) {

@@ -169,9 +169,6 @@ public class IntentHandler {
         return sFakeComponentName;
     }
 
-    // Intent extra used by QSB to send extra HTTP headers.
-    private static final String EXTRA_BROWSER_HEADERS = "com.android.browser.headers";
-
     /** Intent extra to open an incognito tab. */
     public static final String EXTRA_OPEN_NEW_INCOGNITO_TAB =
             "com.google.android.apps.chrome.EXTRA_OPEN_NEW_INCOGNITO_TAB";

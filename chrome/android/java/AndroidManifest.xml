@@ -271,6 +271,16 @@ by a child template that "extends" this file.
              android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
              android:hardwareAccelerated="false">
         </activity>
+        <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity2"
+             android:theme="@style/MainTheme"
+             android:exported="false"
+             android:windowBackground="@drawable/window_background"
+             android:windowSoftInputMode="adjustResize"
+             android:taskAffinity="{{ manifest_package }}.ChromeTabbedActivity2"
+             android:launchMode="singleTask"
+             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+             android:hardwareAccelerated="false">
+        </activity>
         <activity android:name="org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity"
             android:theme="@style/MainTheme"
             android:exported="false"

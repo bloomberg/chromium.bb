@@ -1298,6 +1298,9 @@ You are signing in with a managed account and giving its administrator control o
       </message>
 
       <!-- ContextMenu -->
+      <message name="IDS_CONTEXTMENU_OPEN_IN_OTHER_WINDOW" desc="Context sensitive menu item to open the selected link in the other window. [CHAR-LIMIT=30]">
+        Open in other window
+      </message>
       <message name="IDS_CONTEXTMENU_OPEN_IN_NEW_TAB" desc="Context sensitive menu item to open the selected link in a new tab. [CHAR-LIMIT=30]">
         Open in new tab
       </message>

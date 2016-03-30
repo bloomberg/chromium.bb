@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallbac
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -67,6 +68,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -86,9 +88,10 @@ public class NewTabPage
         implements NativePage, InvalidationAwareThumbnailProvider, TemplateUrlServiceObserver {
 
     // MostVisitedItem Context menu item IDs.
-    static final int ID_OPEN_IN_NEW_TAB = 0;
-    static final int ID_OPEN_IN_INCOGNITO_TAB = 1;
-    static final int ID_REMOVE = 2;
+    static final int ID_OPEN_IN_NEW_WINDOW = 0;
+    static final int ID_OPEN_IN_NEW_TAB = 1;
+    static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
+    static final int ID_REMOVE = 3;
 
     private static MostVisitedSites sMostVisitedSitesForTests;
 
@@ -320,6 +323,11 @@ public class NewTabPage
         @Override
         public void onCreateContextMenu(ContextMenu menu, OnMenuItemClickListener listener) {
             if (mIsDestroyed) return;
+            if (MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity)) {
+                menu.add(Menu.NONE, ID_OPEN_IN_NEW_WINDOW, Menu.NONE,
+                        R.string.contextmenu_open_in_other_window)
+                        .setOnMenuItemClickListener(listener);
+            }
             menu.add(Menu.NONE, ID_OPEN_IN_NEW_TAB, Menu.NONE, R.string.contextmenu_open_in_new_tab)
                     .setOnMenuItemClickListener(listener);
             if (PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
@@ -335,6 +343,12 @@ public class NewTabPage
         public boolean onMenuItemClick(int menuId, MostVisitedItem item) {
             if (mIsDestroyed) return false;
             switch (menuId) {
+                case ID_OPEN_IN_NEW_WINDOW:
+                    TabDelegate tabDelegate = new TabDelegate(false);
+                    LoadUrlParams loadUrlParams = new LoadUrlParams(getLaunchUrl(item.getUrl()));
+                    tabDelegate.createTabInOtherWindow(loadUrlParams, mActivity,
+                            mTab.getParentId());
+                    return true;
                 case ID_OPEN_IN_NEW_TAB:
                     recordOpenedMostVisitedItem(item);
                     mTabModelSelector.openNewTab(new LoadUrlParams(getLaunchUrl(item.getUrl()),
