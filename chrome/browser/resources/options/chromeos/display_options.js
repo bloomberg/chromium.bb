@@ -98,7 +98,14 @@ cr.define('options', function() {
      * @type {boolean}
      * @private
      */
-    showUnifiedDesktopOption_: false,
+    unifiedEnabled_: false,
+
+    /**
+     * Whether the mirroring option should be present.
+     * @type {boolean}
+     * @private
+     */
+    mirroredEnabled_: false,
 
     /**
      * The array of current output displays.  It also contains the display
@@ -233,17 +240,19 @@ cr.define('options', function() {
 
     /**
      * Enables or disables the page. When disabled, the page will not be able to
-     * open, and will close if currently opened.
-     * @param {boolean} enabled Whether the page should be enabled.
-     * @param {boolean} showUnifiedDesktop Whether the unified desktop option
-     *     should be present.
+     * open, and will close if currently opened. Also sets the enabled states of
+     * mirrored and unifed desktop.
+     * @param {boolean} uiEnabled
+     * @param {boolean} unifiedEnabled
+     * @param {boolean} mirroredEnabled
      */
-    setEnabled: function(enabled, showUnifiedDesktop) {
-      this.showUnifiedDesktopOption_ = showUnifiedDesktop;
-      if (this.enabled_ == enabled)
+    setEnabled: function(uiEnabled, unifiedEnabled, mirroredEnabled) {
+      this.unifiedEnabled_ = unifiedEnabled;
+      this.mirroredEnabled_ = mirroredEnabled;
+      if (this.enabled_ == uiEnabled)
         return;
-      this.enabled_ = enabled;
-      if (!enabled && this.visible)
+      this.enabled_ = uiEnabled;
+      if (!uiEnabled && this.visible)
         PageManager.closeOverlay();
     },
 
@@ -481,8 +490,7 @@ cr.define('options', function() {
           displayLayout.div.offsetWidth / 2 - arrow.offsetWidth / 2 + 'px';
 
       $('display-options-set-primary').disabled = display.isPrimary;
-      $('display-options-select-mirroring').disabled =
-          (this.displays_.length <= 1 && !this.unifiedDesktopEnabled_);
+      $('display-options-select-mirroring').disabled = !this.mirroredEnabled_;
       $('selected-display-start-calibrating-overscan').disabled =
           display.isInternal;
 
@@ -694,8 +702,7 @@ cr.define('options', function() {
       $('display-options-select-mirroring').value =
           mirroring ? 'mirroring' : 'extended';
 
-      $('display-options-unified-desktop').hidden =
-          !this.showUnifiedDesktopOption_;
+      $('display-options-unified-desktop').hidden = !this.unifiedEnabled_;
 
       $('display-options-toggle-unified-desktop').checked =
           this.unifiedDesktopEnabled_;

@@ -358,17 +358,20 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
 }
 
 void DisplayOptionsHandler::UpdateDisplaySettingsEnabled() {
+  ash::DisplayManager* display_manager = GetDisplayManager();
   bool disable_multi_display_layout =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableMultiDisplayLayout);
-  bool enabled = !(disable_multi_display_layout &&
-                   GetDisplayManager()->num_connected_displays() > 2);
-  bool show_unified_desktop = GetDisplayManager()->unified_desktop_enabled();
+  bool ui_enabled = display_manager->num_connected_displays() <= 2 ||
+                    !disable_multi_display_layout;
+  bool unified_enabled = display_manager->unified_desktop_enabled();
+  bool mirrored_enabled = display_manager->num_connected_displays() == 2;
 
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.enableDisplaySettings",
-      base::FundamentalValue(enabled),
-      base::FundamentalValue(show_unified_desktop));
+      base::FundamentalValue(ui_enabled),
+      base::FundamentalValue(unified_enabled),
+      base::FundamentalValue(mirrored_enabled));
 }
 
 void DisplayOptionsHandler::HandleDisplayInfo(
