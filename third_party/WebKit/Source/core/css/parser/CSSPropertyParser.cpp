@@ -2161,14 +2161,14 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeLinearGradient(CSSParserTokenRang
     return result.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeImage(CSSParserTokenRange&, CSSParserContext);
+static PassRefPtrWillBeRawPtr<CSSValue> consumeImageOrNone(CSSParserTokenRange&, CSSParserContext);
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeCrossFade(CSSParserTokenRange& args, CSSParserContext context)
 {
-    RefPtrWillBeRawPtr<CSSValue> fromImageValue = consumeImage(args, context);
+    RefPtrWillBeRawPtr<CSSValue> fromImageValue = consumeImageOrNone(args, context);
     if (!fromImageValue || !consumeCommaIncludingWhitespace(args))
         return nullptr;
-    RefPtrWillBeRawPtr<CSSValue> toImageValue = consumeImage(args, context);
+    RefPtrWillBeRawPtr<CSSValue> toImageValue = consumeImageOrNone(args, context);
     if (!toImageValue || !consumeCommaIncludingWhitespace(args))
         return nullptr;
 
@@ -2255,9 +2255,6 @@ static bool isGeneratedImage(CSSValueID id)
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeImage(CSSParserTokenRange& range, CSSParserContext context)
 {
-    if (range.peek().id() == CSSValueNone)
-        return consumeIdent(range);
-
     AtomicString uri(consumeUrl(range));
     if (!uri.isNull())
         return createCSSImageValueWithReferrer(uri, context);
@@ -2269,6 +2266,13 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeImage(CSSParserTokenRange& range,
             return consumeGeneratedImage(range, context);
     }
     return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeImageOrNone(CSSParserTokenRange& range, CSSParserContext context)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    return consumeImage(range, context);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeAttr(CSSParserTokenRange args, CSSParserContext context)
@@ -2333,7 +2337,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeContent(CSSParserTokenRange& rang
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
 
     do {
-        RefPtrWillBeRawPtr<CSSValue> parsedValue = consumeImage(range, context);
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = consumeImageOrNone(range, context);
         if (!parsedValue)
             parsedValue = consumeIdent<CSSValueOpenQuote, CSSValueCloseQuote, CSSValueNoOpenQuote, CSSValueNoCloseQuote>(range);
         if (!parsedValue)
@@ -2614,9 +2618,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeClipPath(CSSParserTokenRange& ran
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeShapeOutside(CSSParserTokenRange& range, const CSSParserContext& context)
 {
-    if (range.peek().id() == CSSValueNone)
-        return consumeIdent(range);
-    if (RefPtrWillBeRawPtr<CSSValue> imageValue = consumeImage(range, context))
+    if (RefPtrWillBeRawPtr<CSSValue> imageValue = consumeImageOrNone(range, context))
         return imageValue.release();
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (RefPtrWillBeRawPtr<CSSValue> boxValue = consumeIdent<CSSValueContentBox, CSSValuePaddingBox, CSSValueBorderBox, CSSValueMarginBox>(range))
@@ -2769,7 +2771,7 @@ static bool consumeBorderImageComponents(CSSPropertyID property, CSSParserTokenR
     RefPtrWillBeRawPtr<CSSValue>& slice, RefPtrWillBeRawPtr<CSSValue>& width, RefPtrWillBeRawPtr<CSSValue>& outset, RefPtrWillBeRawPtr<CSSValue>& repeat)
 {
     do {
-        if (!source && (source = consumeImage(range, context)))
+        if (!source && (source = consumeImageOrNone(range, context)))
             continue;
         if (!repeat && (repeat = consumeBorderImageRepeat(range)))
             continue;
@@ -2932,7 +2934,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeBackgroundComponent(CSSPropertyID
         return consumePrefixedBackgroundBox(unresolvedProperty, range, context);
     case CSSPropertyBackgroundImage:
     case CSSPropertyWebkitMaskImage:
-        return consumeImage(range, context);
+        return consumeImageOrNone(range, context);
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyWebkitMaskPositionX:
         return consumePositionX(range, context.mode());
@@ -3384,7 +3386,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyListStyleImage:
     case CSSPropertyBorderImageSource:
     case CSSPropertyWebkitMaskBoxImageSource:
-        return consumeImage(m_range, m_context);
+        return consumeImageOrNone(m_range, m_context);
     case CSSPropertyPerspective:
         return consumePerspective(m_range, m_context.mode(), unresolvedProperty);
     case CSSPropertyScrollSnapCoordinate:
