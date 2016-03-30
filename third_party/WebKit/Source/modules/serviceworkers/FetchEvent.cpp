@@ -43,7 +43,8 @@ bool FetchEvent::isReload() const
 void FetchEvent::respondWith(ScriptState* scriptState, ScriptPromise scriptPromise, ExceptionState& exceptionState)
 {
     stopImmediatePropagation();
-    m_observer->respondWith(scriptState, scriptPromise, exceptionState);
+    if (m_observer)
+        m_observer->respondWith(scriptState, scriptPromise, exceptionState);
 }
 
 const AtomicString& FetchEvent::interfaceName() const
