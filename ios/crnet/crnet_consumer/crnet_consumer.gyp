@@ -27,7 +27,7 @@
             'main.mm',
           ],
           'mac_bundle_resources': [
-            '../../../third_party/icu/source/data/in/icudtl.dat',
+            '../../../third_party/icu/common/icudtl.dat',
             'Default.png',
             'crnet-consumer-Info.plist',
           ],
