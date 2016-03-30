@@ -32,7 +32,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/dwrite_font_platform_win.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/win/src/process_mitigations.h"
@@ -757,24 +756,6 @@ base::Process StartSandboxedProcess(
                   true,
                   sandbox::TargetPolicy::FILES_ALLOW_READONLY,
                   policy);
-
-      if (!ShouldUseDirectWriteFontProxyFieldTrial()) {
-        // If DirectWrite is enabled for font rendering then open the font
-        // cache section which is created by the browser and pass the handle to
-        // the renderer process. This is needed because renderer processes on
-        // Windows 8+ may be running in an AppContainer sandbox and hence their
-        // kernel object namespace may be partitioned.
-        std::string name(content::kFontCacheSharedSectionName);
-        name.append(base::UintToString(base::GetCurrentProcId()));
-
-        if (direct_write_font_cache_section.Open(name, true)) {
-          HANDLE handle = direct_write_font_cache_section.handle().GetHandle();
-          policy->AddHandleToShare(handle);
-          cmd_line->AppendSwitchASCII(
-              switches::kFontCacheSharedHandle,
-              base::UintToString(base::win::HandleToUint32(handle)));
-        }
-      }
     }
   }
 #endif

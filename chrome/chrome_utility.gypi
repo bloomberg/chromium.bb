@@ -13,8 +13,6 @@
       'utility/cloud_print/bitmap_image.h',
       'utility/cloud_print/pwg_encoder.cc',
       'utility/cloud_print/pwg_encoder.h',
-      'utility/font_cache_handler_win.cc',
-      'utility/font_cache_handler_win.h',
       'utility/printing_handler.cc',
       'utility/printing_handler.h',
       'utility/safe_json_parser_handler.cc',
