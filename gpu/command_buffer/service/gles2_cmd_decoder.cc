@@ -6246,12 +6246,24 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
 
 void GLES2DecoderImpl::DoDisable(GLenum cap) {
   if (SetCapabilityState(cap, false)) {
+    if (cap == GL_PRIMITIVE_RESTART_FIXED_INDEX &&
+        feature_info_->feature_flags().emulate_primitive_restart_fixed_index) {
+      // Enable and Disable PRIMITIVE_RESTART only before and after
+      // DrawElements* for old desktop GL.
+      return;
+    }
     glDisable(cap);
   }
 }
 
 void GLES2DecoderImpl::DoEnable(GLenum cap) {
   if (SetCapabilityState(cap, true)) {
+    if (cap == GL_PRIMITIVE_RESTART_FIXED_INDEX &&
+        feature_info_->feature_flags().emulate_primitive_restart_fixed_index) {
+      // Enable and Disable PRIMITIVE_RESTART only before and after
+      // DrawElements* for old desktop GL.
+      return;
+    }
     glEnable(cap);
   }
 }
@@ -8275,9 +8287,6 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
 
 error::Error GLES2DecoderImpl::HandleDrawArrays(uint32_t immediate_data_size,
                                                 const void* cmd_data) {
-  // TODO(zmo): crbug.com/481184
-  // On Desktop GL with versions lower than 4.3, we need to emulate
-  // GL_PRIMITIVE_RESTART_FIXED_INDEX using glPrimitiveRestartIndex().
   const cmds::DrawArrays& c = *static_cast<const cmds::DrawArrays*>(cmd_data);
   return DoDrawArrays("glDrawArrays",
                       false,
@@ -8353,7 +8362,9 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
       state_.vertex_attrib_manager->element_array_buffer();
 
   if (!element_array_buffer->GetMaxValueForRange(
-      offset, count, type, &max_vertex_accessed)) {
+          offset, count, type,
+          state_.enable_flags.primitive_restart_fixed_index,
+          &max_vertex_accessed)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, function_name, "range out of bounds for buffer");
     return error::kNoError;
@@ -8385,10 +8396,23 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
         indices = element_array_buffer->GetRange(offset, 0);
       }
 
+      if (state_.enable_flags.primitive_restart_fixed_index &&
+          feature_info_->feature_flags().
+              emulate_primitive_restart_fixed_index) {
+        glEnable(GL_PRIMITIVE_RESTART);
+        buffer_manager()->SetPrimitiveRestartFixedIndexIfNecessary(type);
+      }
+
       if (!instanced) {
         glDrawElements(mode, count, type, indices);
       } else {
         glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
+      }
+
+      if (state_.enable_flags.primitive_restart_fixed_index &&
+          feature_info_->feature_flags().
+              emulate_primitive_restart_fixed_index) {
+        glDisable(GL_PRIMITIVE_RESTART);
       }
 
       if (used_client_side_array) {
@@ -8416,9 +8440,6 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
 
 error::Error GLES2DecoderImpl::HandleDrawElements(uint32_t immediate_data_size,
                                                   const void* cmd_data) {
-  // TODO(zmo): crbug.com/481184
-  // On Desktop GL with versions lower than 4.3, we need to emulate
-  // GL_PRIMITIVE_RESTART_FIXED_INDEX using glPrimitiveRestartIndex().
   const gles2::cmds::DrawElements& c =
       *static_cast<const gles2::cmds::DrawElements*>(cmd_data);
   return DoDrawElements("glDrawElements", false, static_cast<GLenum>(c.mode),
@@ -8450,8 +8471,18 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "GetMaxValueInBufferCHROMIUM", "unknown buffer");
   } else {
+    // The max value is used here to emulate client-side vertex
+    // arrays, by uploading enough vertices into buffer objects to
+    // cover the DrawElements call. Baking the primitive restart bit
+    // into this result isn't strictly correct in all cases; the
+    // client side code should pass down the bit and decide how to use
+    // the result. However, the only caller makes the draw call
+    // immediately afterward, so the state won't change between this
+    // query and the draw call.
     if (!buffer->GetMaxValueForRange(
-        offset, count, type, &max_vertex_accessed)) {
+            offset, count, type,
+            state_.enable_flags.primitive_restart_fixed_index,
+            &max_vertex_accessed)) {
       // TODO(gman): Should this be a GL error or a command buffer error?
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION,

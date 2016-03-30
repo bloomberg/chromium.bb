@@ -311,6 +311,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glPolygonOffsetFn = reinterpret_cast<glPolygonOffsetProc>(
       GetGLProcAddress("glPolygonOffset"));
   fn.glPopGroupMarkerEXTFn = 0;
+  fn.glPrimitiveRestartIndexFn = 0;
   fn.glProgramBinaryFn = 0;
   fn.glProgramParameteriFn = 0;
   fn.glProgramPathFragmentInputGenNVFn = 0;
@@ -1632,6 +1633,13 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
   if (ext.b_GL_EXT_debug_marker) {
     fn.glPopGroupMarkerEXTFn = reinterpret_cast<glPopGroupMarkerEXTProc>(
         GetGLProcAddress("glPopGroupMarkerEXT"));
+  }
+
+  debug_fn.glPrimitiveRestartIndexFn = 0;
+  if (ver->IsAtLeastGL(3u, 1u)) {
+    fn.glPrimitiveRestartIndexFn =
+        reinterpret_cast<glPrimitiveRestartIndexProc>(
+            GetGLProcAddress("glPrimitiveRestartIndex"));
   }
 
   debug_fn.glProgramBinaryFn = 0;
@@ -4273,6 +4281,13 @@ static void GL_BINDING_CALL Debug_glPopGroupMarkerEXT(void) {
   g_driver_gl.debug_fn.glPopGroupMarkerEXTFn();
 }
 
+static void GL_BINDING_CALL Debug_glPrimitiveRestartIndex(GLuint index) {
+  GL_SERVICE_LOG("glPrimitiveRestartIndex"
+                 << "(" << index << ")");
+  DCHECK(g_driver_gl.debug_fn.glPrimitiveRestartIndexFn != nullptr);
+  g_driver_gl.debug_fn.glPrimitiveRestartIndexFn(index);
+}
+
 static void GL_BINDING_CALL Debug_glProgramBinary(GLuint program,
                                                   GLenum binaryFormat,
                                                   const GLvoid* binary,
@@ -6349,6 +6364,10 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glPopGroupMarkerEXTFn = fn.glPopGroupMarkerEXTFn;
     fn.glPopGroupMarkerEXTFn = Debug_glPopGroupMarkerEXT;
   }
+  if (!debug_fn.glPrimitiveRestartIndexFn) {
+    debug_fn.glPrimitiveRestartIndexFn = fn.glPrimitiveRestartIndexFn;
+    fn.glPrimitiveRestartIndexFn = Debug_glPrimitiveRestartIndex;
+  }
   if (!debug_fn.glProgramBinaryFn) {
     debug_fn.glProgramBinaryFn = fn.glProgramBinaryFn;
     fn.glProgramBinaryFn = Debug_glProgramBinary;
@@ -7996,6 +8015,10 @@ void GLApiBase::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
 
 void GLApiBase::glPopGroupMarkerEXTFn(void) {
   driver_->fn.glPopGroupMarkerEXTFn();
+}
+
+void GLApiBase::glPrimitiveRestartIndexFn(GLuint index) {
+  driver_->fn.glPrimitiveRestartIndexFn(index);
 }
 
 void GLApiBase::glProgramBinaryFn(GLuint program,
@@ -10109,6 +10132,11 @@ void TraceGLApi::glPolygonOffsetFn(GLfloat factor, GLfloat units) {
 void TraceGLApi::glPopGroupMarkerEXTFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPopGroupMarkerEXT")
   gl_api_->glPopGroupMarkerEXTFn();
+}
+
+void TraceGLApi::glPrimitiveRestartIndexFn(GLuint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPrimitiveRestartIndex")
+  gl_api_->glPrimitiveRestartIndexFn(index);
 }
 
 void TraceGLApi::glProgramBinaryFn(GLuint program,
@@ -12574,6 +12602,13 @@ void NoContextGLApi::glPopGroupMarkerEXTFn(void) {
       << "Trying to call glPopGroupMarkerEXT() without current GL context";
   LOG(ERROR)
       << "Trying to call glPopGroupMarkerEXT() without current GL context";
+}
+
+void NoContextGLApi::glPrimitiveRestartIndexFn(GLuint index) {
+  NOTREACHED()
+      << "Trying to call glPrimitiveRestartIndex() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glPrimitiveRestartIndex() without current GL context";
 }
 
 void NoContextGLApi::glProgramBinaryFn(GLuint program,

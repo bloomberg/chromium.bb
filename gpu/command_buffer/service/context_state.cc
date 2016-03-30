@@ -434,9 +434,10 @@ ErrorState* ContextState::GetErrorState() {
 }
 
 void ContextState::EnableDisable(GLenum pname, bool enable) const {
-  if (pname == GL_PRIMITIVE_RESTART_FIXED_INDEX) {
-    if (feature_info_->feature_flags().emulate_primitive_restart_fixed_index)
-      pname = GL_PRIMITIVE_RESTART;
+  if (pname == GL_PRIMITIVE_RESTART_FIXED_INDEX &&
+      feature_info_->feature_flags().emulate_primitive_restart_fixed_index) {
+    // GLES2DecoderImpl::DoDrawElements can handle this situation
+    return;
   }
   if (enable) {
     glEnable(pname);

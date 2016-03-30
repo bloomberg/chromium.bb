@@ -522,6 +522,7 @@ MOCK_METHOD2(PixelStorei, void(GLenum pname, GLint param));
 MOCK_METHOD2(PointParameteri, void(GLenum pname, GLint param));
 MOCK_METHOD2(PolygonOffset, void(GLfloat factor, GLfloat units));
 MOCK_METHOD0(PopGroupMarkerEXT, void());
+MOCK_METHOD1(PrimitiveRestartIndex, void(GLuint index));
 MOCK_METHOD4(ProgramBinary,
              void(GLuint program,
                   GLenum binaryFormat,

@@ -526,6 +526,7 @@ void glPixelStoreiFn(GLenum pname, GLint param) override;
 void glPointParameteriFn(GLenum pname, GLint param) override;
 void glPolygonOffsetFn(GLfloat factor, GLfloat units) override;
 void glPopGroupMarkerEXTFn(void) override;
+void glPrimitiveRestartIndexFn(GLuint index) override;
 void glProgramBinaryFn(GLuint program,
                        GLenum binaryFormat,
                        const GLvoid* binary,

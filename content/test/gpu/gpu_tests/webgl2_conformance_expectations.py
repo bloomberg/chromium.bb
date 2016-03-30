@@ -40,7 +40,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/negativevertexarrayapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/occlusionquery.html', bug=483282)
     self.Skip('deqp/functional/gles3/pixelbufferobject.html', bug=483282)
-    self.Skip('deqp/functional/gles3/primitiverestart.html', bug=483282)
     self.Skip('deqp/functional/gles3/rasterizerdiscard.html', bug=483282)
     self.Skip('deqp/functional/gles3/shaderbuiltinvar.html', bug=483282)
     self.Skip('deqp/functional/gles3/shadercommonfunction.html', bug=483282)
@@ -586,6 +585,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac AMD
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/primitiverestart.html',
+        ['mac', 'amd'], bug=598930)
 
     # Mac Intel
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',

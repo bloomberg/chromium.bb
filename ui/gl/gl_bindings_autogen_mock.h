@@ -745,6 +745,7 @@ static void GL_BINDING_CALL Mock_glPixelStorei(GLenum pname, GLint param);
 static void GL_BINDING_CALL Mock_glPointParameteri(GLenum pname, GLint param);
 static void GL_BINDING_CALL Mock_glPolygonOffset(GLfloat factor, GLfloat units);
 static void GL_BINDING_CALL Mock_glPopGroupMarkerEXT(void);
+static void GL_BINDING_CALL Mock_glPrimitiveRestartIndex(GLuint index);
 static void GL_BINDING_CALL Mock_glProgramBinary(GLuint program,
                                                  GLenum binaryFormat,
                                                  const GLvoid* binary,

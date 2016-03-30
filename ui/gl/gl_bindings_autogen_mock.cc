@@ -1986,6 +1986,12 @@ void GL_BINDING_CALL MockGLInterface::Mock_glPopGroupMarkerEXT(void) {
   interface_->PopGroupMarkerEXT();
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glPrimitiveRestartIndex(GLuint index) {
+  MakeFunctionUnique("glPrimitiveRestartIndex");
+  interface_->PrimitiveRestartIndex(index);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glProgramBinary(GLuint program,
                                                            GLenum binaryFormat,
                                                            const GLvoid* binary,
@@ -3442,6 +3448,8 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<void*>(Mock_glPolygonOffset);
   if (strcmp(name, "glPopGroupMarkerEXT") == 0)
     return reinterpret_cast<void*>(Mock_glPopGroupMarkerEXT);
+  if (strcmp(name, "glPrimitiveRestartIndex") == 0)
+    return reinterpret_cast<void*>(Mock_glPrimitiveRestartIndex);
   if (strcmp(name, "glProgramBinary") == 0)
     return reinterpret_cast<void*>(Mock_glProgramBinary);
   if (strcmp(name, "glProgramBinaryOES") == 0)
