@@ -1,2 +1,0 @@
-# Flaky under Valgrind. See http://crbug.com/543429
-IPCAttachmentBrokerMacTest.SendSharedMemoryHandleToSelf
