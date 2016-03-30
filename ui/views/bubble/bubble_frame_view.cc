@@ -139,8 +139,13 @@ gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
 bool BubbleFrameView::GetClientMask(const gfx::Size& size,
                                     gfx::Path* path) const {
   const int radius = bubble_border_->GetBorderCornerRadius();
+  gfx::Insets content_insets = GetInsets();
+  // If the client bounds don't touch the edges, no need to mask.
+  if (std::min({content_insets.top(), content_insets.left(),
+                content_insets.bottom(), content_insets.right()}) > radius) {
+    return false;
+  }
   gfx::RectF rect((gfx::Rect(size)));
-  rect.Inset(gfx::InsetsF(0.5f));
   path->addRoundRect(gfx::RectFToSkRect(rect), radius, radius);
   return true;
 }

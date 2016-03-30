@@ -813,7 +813,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
     } else {
       gfx::Path clip_path_in_parent = clip_path_;
       clip_path_in_parent.offset(GetMirroredX(), y());
-      clip_recorder.ClipPath(clip_path_in_parent);
+      clip_recorder.ClipPathWithAntiAliasing(clip_path_in_parent);
     }
   }
 
