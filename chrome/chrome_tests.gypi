@@ -981,6 +981,7 @@
       'test/data/webui/history_browsertest.js',
       'test/data/webui/md_downloads/downloads_browsertest.js',
       'test/data/webui/md_history/md_history_browsertest.js',
+      'test/data/webui/md_user_manager/user_manager_browsertest.js',
       'test/data/webui/mock4js_browsertest.js',
       'test/data/webui/net_internals/bandwidth_view.js',
       'test/data/webui/net_internals/chromeos_view.js',
@@ -992,8 +993,8 @@
       'test/data/webui/net_internals/main.js',
       'test/data/webui/net_internals/net_internals_test.js',
       'test/data/webui/net_internals/prerender_view.js',
-      'test/data/webui/net_internals/timeline_view.js',
       'test/data/webui/net_internals/sdch_view.js',
+      'test/data/webui/net_internals/timeline_view.js',
       'test/data/webui/ntp4.js',
       'test/data/webui/polymer_browser_test_base.js',
       'test/data/webui/print_preview.js',
@@ -1003,8 +1004,8 @@
       'test/data/webui/settings/basic_page_browsertest.js',
       'test/data/webui/settings/bluetooth_page_browsertest_chromeos.js',
       'test/data/webui/settings/change_picture_browsertest_chromeos.js',
-      'test/data/webui/settings/easy_unlock_browsertest_chromeos.js',
       'test/data/webui/settings/cr_settings_browsertest.js',
+      'test/data/webui/settings/easy_unlock_browsertest_chromeos.js',
       'test/data/webui/settings/on_startup_browsertest.js',
       'test/data/webui/settings/settings_page_browsertest.js',
       'test/data/webui/settings/settings_passwords_section_browsertest.js',
@@ -2399,6 +2400,8 @@
             'browser/ui/webui/signin/inline_login_ui_browsertest.cc',
             # chromeos does not use the desktop user manager
             'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
+            # chromeos does not use the desktop user manager
+            'test/data/webui/md_user_manager/user_manager_browsertest.js'
           ],
           'dependencies': [
             '../build/linux/system.gyp:dbus',

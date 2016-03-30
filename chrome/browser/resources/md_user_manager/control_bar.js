@@ -44,7 +44,7 @@
    * @param {!Event} event
    * @private
    */
-  onLauchGuestTap_: function(event) {
+  onLaunchGuestTap_: function(event) {
     this.browserProxy_.launchGuestUser();
   },
 
