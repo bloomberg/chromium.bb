@@ -33,10 +33,13 @@ config("compiler") {
 
   cflags = [
     "/Gy",  # Enable function-level linking.
-    "/GS",  # Enable buffer security checking.
     "/FS",  # Preserve previous PDB behavior.
     "/bigobj",  # Some of our files are bigger than the regular limits.
   ]
+  if (!is_clang) {
+    # TODO(thakis): Enable this with clang too, https://crbug.com/598767
+    cflags += [ "/GS" ]  # Enable buffer security checking.
+  }
 
   # Force C/C++ mode for the given GN detected file type. This is necessary
   # for precompiled headers where the same source file is compiled in both
