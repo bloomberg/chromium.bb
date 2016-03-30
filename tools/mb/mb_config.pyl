@@ -210,6 +210,7 @@
       'Site Isolation Win': 'gyp_release_trybot_x64',
       'Win LKGR (DrM 64)': 'gn_release_drmemory_drfuzz',
       'Win LKGR (DrM)': 'gn_release_drmemory_drfuzz_x86',
+      'WinClang': 'win_clang_debug_bot',
     },
 
     'chromium.gpu': {
@@ -825,6 +826,7 @@
       'win_chromium_gn_x64_rel': 'gn_release_trybot',
       'win_chromium_x64_rel_ng': 'gn_release_trybot',
       'win10_chromium_x64_rel_ng': 'gn_release_trybot',
+      'win_clang': 'win_clang_debug_bot',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
       'win_pgo': 'gyp_official_winpgo',
     },
