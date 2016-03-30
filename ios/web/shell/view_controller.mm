@@ -44,6 +44,7 @@ using web::NavigationManager;
   base::mac::ObjCPropertyReleaser _propertyReleaser_ViewController;
 }
 @property(nonatomic, assign, readonly) web::WebState* webState;
+@property(nonatomic, assign, readonly) NavigationManager* navigationManager;
 @property(nonatomic, readwrite, retain) UITextField* field;
 @end
 
@@ -129,11 +130,15 @@ using web::NavigationManager;
 
   NavigationManager::WebLoadParams params(GURL("https://dev.chromium.org/"));
   params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  [_webController loadWithParams:params];
+  self.navigationManager->LoadURLWithParams(params);
 }
 
 - (web::WebState*)webState {
   return [_webController webState];
+}
+
+- (NavigationManager*)navigationManager {
+  return self.webState->GetNavigationManager();
 }
 
 - (void)setUpNetworkStack {
@@ -169,16 +174,14 @@ using web::NavigationManager;
 }
 
 - (void)back {
-  NavigationManager* navManager = self.webState->GetNavigationManager();
-  if (navManager->CanGoBack()) {
-    navManager->GoBack();
+  if (self.navigationManager->CanGoBack()) {
+    self.navigationManager->GoBack();
   }
 }
 
 - (void)forward {
-  NavigationManager* navManager = self.webState->GetNavigationManager();
-  if (navManager->CanGoForward()) {
-    navManager->GoForward();
+  if (self.navigationManager->CanGoForward()) {
+    self.navigationManager->GoForward();
   }
 }
 
@@ -189,7 +192,7 @@ using web::NavigationManager;
   if (URL.is_valid()) {
     NavigationManager::WebLoadParams params(URL);
     params.transition_type = ui::PAGE_TRANSITION_TYPED;
-    [_webController loadWithParams:params];
+    self.navigationManager->LoadURLWithParams(params);
   }
 
   [field resignFirstResponder];

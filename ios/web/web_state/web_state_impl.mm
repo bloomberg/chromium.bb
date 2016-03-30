@@ -552,6 +552,11 @@ void WebStateImpl::NavigateToPendingEntry() {
   [web_controller_ loadCurrentURL];
 }
 
+void WebStateImpl::LoadURLWithParams(
+    const NavigationManager::WebLoadParams& params) {
+  [web_controller_ loadWithParams:params];
+}
+
 void WebStateImpl::OnNavigationItemsPruned(size_t pruned_item_count) {
   FOR_EACH_OBSERVER(WebStateObserver, observers_,
                     NavigationItemsPruned(pruned_item_count));

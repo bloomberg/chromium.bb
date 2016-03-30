@@ -99,6 +99,10 @@ class NavigationManager {
   // match NavigationController::SetNeedsReload().
   virtual void LoadIfNecessary() = 0;
 
+  // Loads the URL with specified |params|.
+  virtual void LoadURLWithParams(
+      const NavigationManager::WebLoadParams& params) = 0;
+
   // Adds |rewriter| to a transient list of URL rewriters.  Transient URL
   // rewriters will be executed before the rewriters already added to the
   // BrowserURLRewriter singleton, and the list will be cleared after the next

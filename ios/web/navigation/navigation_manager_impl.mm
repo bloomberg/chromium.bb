@@ -222,6 +222,11 @@ void NavigationManagerImpl::LoadIfNecessary() {
   // Nothing to do; iOS loads lazily.
 }
 
+void NavigationManagerImpl::LoadURLWithParams(
+    const NavigationManager::WebLoadParams& params) {
+  delegate_->LoadURLWithParams(params);
+}
+
 void NavigationManagerImpl::AddTransientURLRewriter(
     BrowserURLRewriter::URLRewriter rewriter) {
   DCHECK(rewriter);
