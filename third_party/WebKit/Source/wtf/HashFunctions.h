@@ -25,6 +25,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
 #include <stdint.h>
+#include <type_traits>
 
 namespace WTF {
 
@@ -179,49 +180,37 @@ struct OwnPtrHash : PtrHash<T> {
     }
 };
 
-// default hash function for each type
+// Default hash function for each type.
+template <typename T>
+struct DefaultHash;
 
-template <typename T> struct DefaultHash;
+// Actual implementation of DefaultHash.
+//
+// The case of |isIntegral| == false is not implemented. If you see a compile error saying DefaultHashImpl<T, false>
+// is not defined, that's because the default hash functions for T are not defined. You need to implement them yourself.
+template <typename T, bool isIntegral>
+struct DefaultHashImpl;
 
-template <typename T, typename U> struct PairHash {
-    static unsigned hash(const std::pair<T, U>& p)
-    {
-        return hashInts(DefaultHash<T>::Hash::hash(p.first), DefaultHash<U>::Hash::hash(p.second));
-    }
-    static bool equal(const std::pair<T, U>& a, const std::pair<T, U>& b)
-    {
-        return DefaultHash<T>::Hash::equal(a.first, b.first) && DefaultHash<U>::Hash::equal(a.second, b.second);
-    }
-    static const bool safeToCompareToEmptyOrDeleted = DefaultHash<T>::Hash::safeToCompareToEmptyOrDeleted
-        && DefaultHash<U>::Hash::safeToCompareToEmptyOrDeleted;
+template <typename T>
+struct DefaultHashImpl<T, true> {
+    using Hash = IntHash<typename std::make_unsigned<T>::type>;
 };
 
-template <typename T, typename U> struct IntPairHash {
-    static unsigned hash(const std::pair<T, U>& p) { return hashInts(p.first, p.second); }
-    static bool equal(const std::pair<T, U>& a, const std::pair<T, U>& b) { return PairHash<T, T>::equal(a, b); }
-    static const bool safeToCompareToEmptyOrDeleted = PairHash<T, U>::safeToCompareToEmptyOrDeleted;
+// Canonical implementation of DefaultHash.
+template <typename T>
+struct DefaultHash : DefaultHashImpl<T, std::is_integral<T>::value> { };
+
+// Specializations of DefaultHash follow.
+template <>
+struct DefaultHash<float> {
+    using Hash = FloatHash<float>;
+};
+template <>
+struct DefaultHash<double> {
+    using Hash = FloatHash<double>;
 };
 
-// make IntHash the default hash function for many integer types
-
-template <> struct DefaultHash<short> { typedef IntHash<unsigned> Hash; };
-template <> struct DefaultHash<unsigned short> { typedef IntHash<unsigned> Hash; };
-template <> struct DefaultHash<int> { typedef IntHash<unsigned> Hash; };
-template <> struct DefaultHash<unsigned> { typedef IntHash<unsigned> Hash; };
-template <> struct DefaultHash<long> { typedef IntHash<unsigned long> Hash; };
-template <> struct DefaultHash<unsigned long> { typedef IntHash<unsigned long> Hash; };
-template <> struct DefaultHash<long long> { typedef IntHash<unsigned long long> Hash; };
-template <> struct DefaultHash<unsigned long long> { typedef IntHash<unsigned long long> Hash; };
-
-#if !COMPILER(MSVC) || defined(_NATIVE_WCHAR_T_DEFINED)
-template <> struct DefaultHash<wchar_t> { typedef IntHash<wchar_t> Hash; };
-#endif
-
-template <> struct DefaultHash<float> { typedef FloatHash<float> Hash; };
-template <> struct DefaultHash<double> { typedef FloatHash<double> Hash; };
-
-// Set default hash functions for pointer types.
-
+// Specializations for pointer types.
 template <typename T>
 struct DefaultHash<T*> {
     using Hash = PtrHash<T>;
@@ -239,28 +228,42 @@ struct DefaultHash<OwnPtr<T>> {
     using Hash = OwnPtrHash<T>;
 };
 
-// make IntPairHash the default hash function for pairs of (at most) 32-bit integers.
+// Specializations for pairs.
 
-template <> struct DefaultHash<std::pair<short, short>> { typedef IntPairHash<short, short> Hash; };
-template <> struct DefaultHash<std::pair<short, unsigned short>> { typedef IntPairHash<short, unsigned short> Hash; };
-template <> struct DefaultHash<std::pair<short, int>> { typedef IntPairHash<short, int> Hash; };
-template <> struct DefaultHash<std::pair<short, unsigned>> { typedef IntPairHash<short, unsigned> Hash; };
-template <> struct DefaultHash<std::pair<unsigned short, short>> { typedef IntPairHash<unsigned short, short> Hash; };
-template <> struct DefaultHash<std::pair<unsigned short, unsigned short>> { typedef IntPairHash<unsigned short, unsigned short> Hash; };
-template <> struct DefaultHash<std::pair<unsigned short, int>> { typedef IntPairHash<unsigned short, int> Hash; };
-template <> struct DefaultHash<std::pair<unsigned short, unsigned>> { typedef IntPairHash<unsigned short, unsigned> Hash; };
-template <> struct DefaultHash<std::pair<int, short>> { typedef IntPairHash<int, short> Hash; };
-template <> struct DefaultHash<std::pair<int, unsigned short>> { typedef IntPairHash<int, unsigned short> Hash; };
-template <> struct DefaultHash<std::pair<int, int>> { typedef IntPairHash<int, int> Hash; };
-template <> struct DefaultHash<std::pair<int, unsigned>> { typedef IntPairHash<unsigned, unsigned> Hash; };
-template <> struct DefaultHash<std::pair<unsigned, short>> { typedef IntPairHash<unsigned, short> Hash; };
-template <> struct DefaultHash<std::pair<unsigned, unsigned short>> { typedef IntPairHash<unsigned, unsigned short> Hash; };
-template <> struct DefaultHash<std::pair<unsigned, int>> { typedef IntPairHash<unsigned, int> Hash; };
-template <> struct DefaultHash<std::pair<unsigned, unsigned>> { typedef IntPairHash<unsigned, unsigned> Hash; };
+// Generic case (T or U is non-integral):
+template <typename T, typename U, bool areBothIntegral>
+struct PairHashImpl {
+    static unsigned hash(const std::pair<T, U>& p)
+    {
+        return hashInts(DefaultHash<T>::Hash::hash(p.first), DefaultHash<U>::Hash::hash(p.second));
+    }
+    static bool equal(const std::pair<T, U>& a, const std::pair<T, U>& b)
+    {
+        return DefaultHash<T>::Hash::equal(a.first, b.first) && DefaultHash<U>::Hash::equal(a.second, b.second);
+    }
+    static const bool safeToCompareToEmptyOrDeleted = DefaultHash<T>::Hash::safeToCompareToEmptyOrDeleted
+        && DefaultHash<U>::Hash::safeToCompareToEmptyOrDeleted;
+};
 
-// make PairHash the default hash function for pairs of arbitrary values.
+// Special version for pairs of integrals:
+template <typename T, typename U>
+struct PairHashImpl<T, U, true> {
+    static unsigned hash(const std::pair<T, U>& p) { return hashInts(p.first, p.second); }
+    static bool equal(const std::pair<T, U>& a, const std::pair<T, U>& b)
+    {
+        return PairHashImpl<T, U, false>::equal(a, b); // Refer to the generic version.
+    }
+    static const bool safeToCompareToEmptyOrDeleted = PairHashImpl<T, U, false>::safeToCompareToEmptyOrDeleted;
+};
 
-template <typename T, typename U> struct DefaultHash<std::pair<T, U>> { typedef PairHash<T, U> Hash; };
+// Combined version:
+template <typename T, typename U>
+struct PairHash : PairHashImpl<T, U, std::is_integral<T>::value && std::is_integral<U>::value> { };
+
+template <typename T, typename U>
+struct DefaultHash<std::pair<T, U>> {
+    using Hash = PairHash<T, U>;
+};
 
 } // namespace WTF
 
