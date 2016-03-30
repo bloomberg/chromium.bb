@@ -483,12 +483,12 @@ public:
     virtual int printBegin(const WebPrintParams&, const WebNode& constrainToNode = WebNode()) = 0;
 
     // Returns the page shrinking factor calculated by webkit (usually
-    // between 1/1.25 and 1/2). Returns 0 if the page number is invalid or
+    // between 1/1.33 and 1/2). Returns 0 if the page number is invalid or
     // not in printing mode.
     virtual float getPrintPageShrink(int page) = 0;
 
     // Prints one page, and returns the calculated page shrinking factor
-    // (usually between 1/1.25 and 1/2).  Returns 0 if the page number is
+    // (usually between 1/1.33 and 1/2).  Returns 0 if the page number is
     // invalid or not in printing mode.
     virtual float printPage(int pageToPrint, WebCanvas*) = 0;
 
