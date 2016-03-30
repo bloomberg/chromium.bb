@@ -192,6 +192,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   scoped_ptr<MediaTracks> media_tracks(new MediaTracks());
   AudioDecoderConfig audio_config;
   VideoDecoderConfig video_config;
+  int detected_audio_track_count = 0;
+  int detected_video_track_count = 0;
+  int detected_text_track_count = 0;
 
   for (std::vector<Track>::const_iterator track = moov_->tracks.begin();
        track != moov_->tracks.end(); ++track) {
@@ -215,7 +218,11 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
     RCHECK(desc_idx > 0);
     desc_idx -= 1;  // BMFF descriptor index is one-based
 
-    if (track->media.handler.type == kAudio && !audio_config.IsValidConfig()) {
+    if (track->media.handler.type == kAudio) {
+      detected_audio_track_count++;
+      if (audio_config.IsValidConfig())
+        continue;  // Skip other audio tracks once we found a supported one.
+
       RCHECK(!samp_descr.audio_entries.empty());
 
       // It is not uncommon to find otherwise-valid files with incorrect sample
@@ -314,8 +321,14 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       media_tracks->AddAudioTrack(
           audio_config, base::UintToString(audio_track_id_), "main",
           track->media.handler.name, track->media.header.language());
+      continue;
     }
-    if (track->media.handler.type == kVideo && !video_config.IsValidConfig()) {
+
+    if (track->media.handler.type == kVideo) {
+      detected_video_track_count++;
+      if (video_config.IsValidConfig())
+        continue;  // Skip other video tracks once we found a supported one.
+
       RCHECK(!samp_descr.video_entries.empty());
       if (desc_idx >= samp_descr.video_entries.size())
         desc_idx = 0;
@@ -359,7 +372,15 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       media_tracks->AddVideoTrack(
           video_config, base::UintToString(video_track_id_), "main",
           track->media.handler.name, track->media.header.language());
+      continue;
     }
+
+    // TODO(wolenetz): Investigate support in MSE and Chrome MSE for CEA 608/708
+    // embedded caption data in video track. At time of init segment parsing, we
+    // don't have this data (unless maybe by SourceBuffer's mimetype).
+    // See https://crbug.com/597073
+    if (track->media.handler.type == kText)
+      detected_text_track_count++;
   }
 
   if (!moov_->pssh.empty())
@@ -389,8 +410,12 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
   DVLOG(1) << "liveness: " << params.liveness;
 
-  if (!init_cb_.is_null())
+  if (!init_cb_.is_null()) {
+    params.detected_audio_track_count = detected_audio_track_count;
+    params.detected_video_track_count = detected_video_track_count;
+    params.detected_text_track_count = detected_text_track_count;
     base::ResetAndReturn(&init_cb_).Run(params);
+  }
 
   return true;
 }

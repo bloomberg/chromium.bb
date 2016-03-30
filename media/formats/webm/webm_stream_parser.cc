@@ -242,8 +242,15 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8_t* data, int size) {
       tracks_parser.video_encryption_key_id(), audio_config.codec(),
       media_log_));
 
-  if (!init_cb_.is_null())
+  if (!init_cb_.is_null()) {
+    params.detected_audio_track_count =
+        tracks_parser.detected_audio_track_count();
+    params.detected_video_track_count =
+        tracks_parser.detected_video_track_count();
+    params.detected_text_track_count =
+        tracks_parser.detected_text_track_count();
     base::ResetAndReturn(&init_cb_).Run(params);
+  }
 
   return bytes_parsed;
 }

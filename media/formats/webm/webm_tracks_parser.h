@@ -78,6 +78,12 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
     return text_tracks_;
   }
 
+  int detected_audio_track_count() const { return detected_audio_track_count_; }
+
+  int detected_video_track_count() const { return detected_video_track_count_; }
+
+  int detected_text_track_count() const { return detected_text_track_count_; }
+
   // Note: Calling media_tracks() method passes the ownership of the MediaTracks
   // object from WebMTracksParser to the caller (which is typically
   // WebMStreamParser object). So this method must be called only once, after
@@ -128,6 +134,9 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
   WebMVideoClient video_client_;
   VideoDecoderConfig video_decoder_config_;
 
+  int detected_audio_track_count_;
+  int detected_video_track_count_;
+  int detected_text_track_count_;
   scoped_ptr<MediaTracks> media_tracks_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMTracksParser);

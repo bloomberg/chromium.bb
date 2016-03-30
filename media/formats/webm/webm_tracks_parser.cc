@@ -67,6 +67,9 @@ void WebMTracksParser::Reset() {
   video_decoder_config_ = VideoDecoderConfig();
   text_tracks_.clear();
   ignored_tracks_.clear();
+  detected_audio_track_count_ = 0;
+  detected_video_track_count_ = 0;
+  detected_text_track_count_ = 0;
   media_tracks_.reset(new MediaTracks());
 }
 
@@ -200,6 +203,7 @@ bool WebMTracksParser::OnListEnd(int id) {
         encryption_key_id.empty() ? Unencrypted() : AesCtrEncryptionScheme();
 
     if (track_type_ == kWebMTrackTypeAudio) {
+      detected_audio_track_count_++;
       if (audio_track_num_ == -1) {
         audio_track_num_ = track_num_;
         audio_encryption_key_id_ = encryption_key_id;
@@ -225,6 +229,7 @@ bool WebMTracksParser::OnListEnd(int id) {
         ignored_tracks_.insert(track_num_);
       }
     } else if (track_type_ == kWebMTrackTypeVideo) {
+      detected_video_track_count_++;
       if (video_track_num_ == -1) {
         video_track_num_ = track_num_;
         video_encryption_key_id_ = encryption_key_id;
@@ -251,6 +256,7 @@ bool WebMTracksParser::OnListEnd(int id) {
       }
     } else if (track_type_ == kWebMTrackTypeSubtitlesOrCaptions ||
                track_type_ == kWebMTrackTypeDescriptionsOrMetadata) {
+      detected_text_track_count_++;
       if (ignore_text_tracks_) {
         MEDIA_LOG(DEBUG, media_log_) << "Ignoring text track " << track_num_;
         ignored_tracks_.insert(track_num_);

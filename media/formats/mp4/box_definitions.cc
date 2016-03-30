@@ -461,6 +461,13 @@ bool HandlerReference::Parse(BoxReader* reader) {
     type = kVideo;
   } else if (hdlr_type == FOURCC_SOUN) {
     type = kAudio;
+  } else if (hdlr_type == FOURCC_META || hdlr_type == FOURCC_SUBT ||
+             hdlr_type == FOURCC_TEXT || hdlr_type == FOURCC_SBTL) {
+    // For purposes of detection, we include 'sbtl' handler here. Note, though
+    // that ISO-14496-12 and its 2012 Amendment 2, and the spec for sourcing
+    // inband tracks all reference only 'text' or 'subt', and 14496-30
+    // references only 'subt'. Yet ffmpeg can encode subtitles as 'sbtl'.
+    type = kText;
   } else {
     type = kInvalid;
   }

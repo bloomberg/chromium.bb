@@ -52,7 +52,7 @@ class MEDIA_EXPORT StreamParser {
   typedef std::map<TrackId, const BufferQueue> TextBufferQueueMap;
 
   // Stream parameters passed in InitCB.
-  struct InitParameters {
+  struct MEDIA_EXPORT InitParameters {
     InitParameters(base::TimeDelta duration);
 
     // Stream duration.
@@ -68,6 +68,12 @@ class MEDIA_EXPORT StreamParser {
 
     // Indicates live stream.
     DemuxerStream::Liveness liveness;
+
+    // Counts of tracks detected by type within this stream. Not all of these
+    // tracks may be selected for use by the parser.
+    int detected_audio_track_count;
+    int detected_video_track_count;
+    int detected_text_track_count;
   };
 
   // Indicates completion of parser initialization.
@@ -77,9 +83,9 @@ class MEDIA_EXPORT StreamParser {
   // Indicates when new stream configurations have been parsed.
   // First parameter - An object containing information about media tracks as
   //                   well as audio/video decoder configs associated with each
-  //                   track.
+  //                   track the parser will use from the stream.
   // Second parameter - The new text tracks configuration.  If the map is empty,
-  //                    then no text tracks were parsed from the stream.
+  //                    then no text tracks were parsed for use from the stream.
   // Return value - True if the new configurations are accepted.
   //                False if the new configurations are not supported
   //                and indicates that a parsing error should be signalled.

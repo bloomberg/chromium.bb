@@ -20458,6 +20458,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.MSE.DetectedTrackCount.Audio">
+  <owner>wolenetz@chromium.org</owner>
+  <summary>
+    Number of detected audio tracks in Media Source Extensions playback. Not all
+    may be usable by the player.
+  </summary>
+</histogram>
+
+<histogram name="Media.MSE.DetectedTrackCount.Text">
+  <owner>wolenetz@chromium.org</owner>
+  <summary>
+    Number of detected text tracks in Media Source Extensions playback. Not all
+    may be usable by the player. This count includes only explicitly signalled
+    tracks in MSE initialization segments parsed from WebM or ISO BMFF
+    bytestreams.
+  </summary>
+</histogram>
+
+<histogram name="Media.MSE.DetectedTrackCount.Video">
+  <owner>wolenetz@chromium.org</owner>
+  <summary>
+    Number of detected video tracks in Media Source Extensions playback. Not all
+    may be usable by the player.
+  </summary>
+</histogram>
+
 <histogram name="Media.MSE.LateAudioFrames"
     units="late frames per million frames">
   <owner>qinmin@chromium.org</owner>

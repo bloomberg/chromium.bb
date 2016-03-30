@@ -24,12 +24,7 @@
 namespace media {
 namespace mp4 {
 
-enum TrackType {
-  kInvalid = 0,
-  kVideo,
-  kAudio,
-  kHint
-};
+enum TrackType { kInvalid = 0, kVideo, kAudio, kText, kHint };
 
 enum SampleFlags {
   kSampleIsNonSyncSample = 0x10000

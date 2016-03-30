@@ -544,7 +544,16 @@ bool Mp2tStreamParser::FinishInitializationIfNeeded() {
 
   // For Mpeg2 TS, the duration is not known.
   DVLOG(1) << "Mpeg2TS stream parser initialization done";
-  base::ResetAndReturn(&init_cb_).Run(InitParameters(kInfiniteDuration()));
+
+  // TODO(wolenetz): If possible, detect and report track counts by type more
+  // accurately here. Currently, capped at max 1 each for audio and video, with
+  // assumption of 0 text tracks.
+  InitParameters params(kInfiniteDuration());
+  params.detected_audio_track_count =
+      queue_with_config.audio_config.IsValidConfig() ? 1 : 0;
+  params.detected_video_track_count =
+      queue_with_config.video_config.IsValidConfig() ? 1 : 0;
+  base::ResetAndReturn(&init_cb_).Run(params);
   is_initialized_ = true;
 
   return true;

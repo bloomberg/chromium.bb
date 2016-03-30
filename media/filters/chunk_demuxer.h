@@ -405,6 +405,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Indicates that splice frame generation is enabled.
   const bool splice_frames_enabled_;
 
+  // Accumulate, by type, detected track counts across the SourceBuffers.
+  int detected_audio_track_count_;
+  int detected_video_track_count_;
+  int detected_text_track_count_;
+
   DISALLOW_COPY_AND_ASSIGN(ChunkDemuxer);
 };
 

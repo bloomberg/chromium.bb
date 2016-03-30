@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
@@ -367,7 +368,10 @@ ChunkDemuxer::ChunkDemuxer(
       duration_(kNoTimestamp()),
       user_specified_duration_(-1),
       liveness_(DemuxerStream::LIVENESS_UNKNOWN),
-      splice_frames_enabled_(splice_frames_enabled) {
+      splice_frames_enabled_(splice_frames_enabled),
+      detected_audio_track_count_(0),
+      detected_video_track_count_(0),
+      detected_text_track_count_(0) {
   DCHECK(!open_cb_.is_null());
   DCHECK(!encrypted_media_init_data_cb_.is_null());
 }
@@ -961,11 +965,25 @@ void ChunkDemuxer::OnSourceInitDone(
       video_->SetLiveness(params.liveness);
   }
 
+  detected_audio_track_count_ += params.detected_audio_track_count;
+  detected_video_track_count_ += params.detected_video_track_count;
+  detected_text_track_count_ += params.detected_text_track_count;
+
   // Wait until all streams have initialized.
+  // TODO(wolenetz): Make this gate less fragile. See https://crbug.com/597447.
   if ((!source_id_audio_.empty() && !audio_) ||
       (!source_id_video_.empty() && !video_)) {
     return;
   }
+
+  // Record detected track counts by type corresponding to an MSE playback.
+  // Counts are split into 50 buckets, capped into [0,100] range.
+  UMA_HISTOGRAM_COUNTS_100("Media.MSE.DetectedTrackCount.Audio",
+                           detected_audio_track_count_);
+  UMA_HISTOGRAM_COUNTS_100("Media.MSE.DetectedTrackCount.Video",
+                           detected_video_track_count_);
+  UMA_HISTOGRAM_COUNTS_100("Media.MSE.DetectedTrackCount.Text",
+                           detected_text_track_count_);
 
   SeekAllSources(GetStartTime());
   StartReturningData();
