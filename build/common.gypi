@@ -5630,10 +5630,19 @@
                     'Optimization': '2',
                     # 1, favorSpeed - Favor fast code (/Ot)
                     'FavorSizeOrSpeed': '1',
-                    # This implies link time code generation.
-                    'WholeProgramOptimization': 'true',
                   },
                 },
+                # TODO(thakis): Remove clang==0 here, https://crbug.com/598772
+                'conditions': [
+                  ['clang==0', {
+                    'msvs_settings': {
+                      'VCCLCompilerTool': {
+                        # This implies link time code generation.
+                        'WholeProgramOptimization': 'true',
+                      },
+                    },
+                  }],
+                ],
               }],
             ],
           }],
@@ -5741,7 +5750,6 @@
           'VCCLCompilerTool': {
             'AdditionalOptions': ['/MP'],
             'MinimalRebuild': 'false',
-            'BufferSecurityCheck': 'true',
             'EnableFunctionLevelLinking': 'true',
             'RuntimeTypeInfo': 'false',
             'WarningLevel': '4',
@@ -5814,6 +5822,14 @@
             }],
           ],
           'conditions': [
+            ['clang==0', {
+              'VCCLCompilerTool': {
+                 # TODO(thakis): Enable this with clang too,
+                 # https://crbug.com/598767
+                 'BufferSecurityCheck': 'true',
+              },
+            }],
+
             # Building with Clang on Windows is a work in progress and very
             # experimental. See crbug.com/82385.
             # Keep this in sync with the similar blocks in build/config/compiler/BUILD.gn
@@ -5832,7 +5848,6 @@
                   '/FIIntrin.h',
 
                   # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
-                  '-Qunused-arguments',  # http://crbug.com/504658
                   '-Wno-microsoft-enum-value',  # http://crbug.com/505296
                   '-Wno-unknown-pragmas',  # http://crbug.com/505314
                   '-Wno-microsoft-cast',  # http://crbug.com/550065
