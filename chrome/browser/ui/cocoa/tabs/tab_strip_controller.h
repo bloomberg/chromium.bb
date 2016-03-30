@@ -272,19 +272,19 @@ class WebContents;
 // Removes custom traffic light buttons from the tab strip. Idempotent.
 - (void)removeCustomWindowControls;
 
-// Gets the tab and the media state to check whether the window
-// media state should be updated or not. If the tab media state is
-// AUDIO_PLAYING, the window media state should be set to AUDIO_PLAYING.
-// If the tab media state is AUDIO_MUTING, this method would check if the
-// window has no other tab with state AUDIO_PLAYING, then the window
-// media state will be set to AUDIO_MUTING. If the tab media state is NONE,
+// Gets the tab and the alert state to check whether the window
+// alert state should be updated or not. If the tab alert state is
+// AUDIO_PLAYING, the window alert state should be set to AUDIO_PLAYING.
+// If the tab alert state is AUDIO_MUTING, this method will check if the
+// window has no other tabs with state AUDIO_PLAYING. If so the window
+// alert state will be set to AUDIO_MUTING. If the tab alert state is NONE,
 // this method checks if the window has no playing or muting tab, then window
-// media state will be set as NONE.
-- (void)updateWindowMediaState:(TabMediaState)mediaState
+// alert state will be set to NONE.
+- (void)updateWindowAlertState:(TabAlertState)alertState
                 forWebContents:(content::WebContents*)changed;
 
-// Returns the media state associated with the contents.
-- (TabMediaState)mediaStateForContents:(content::WebContents*)contents;
+// Returns the alert state associated with the contents.
+- (TabAlertState)alertStateForContents:(content::WebContents*)contents;
 
 @end
 

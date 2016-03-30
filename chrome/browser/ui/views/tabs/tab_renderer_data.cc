@@ -16,8 +16,7 @@ TabRendererData::TabRendererData()
       pinned(false),
       blocked(false),
       app(false),
-      media_state(TAB_MEDIA_STATE_NONE) {
-}
+      alert_state(TabAlertState::NONE) {}
 
 TabRendererData::TabRendererData(const TabRendererData& other) = default;
 
@@ -47,5 +46,5 @@ bool TabRendererData::Equals(const TabRendererData& data) {
       pinned == data.pinned &&
       blocked == data.blocked &&
       app == data.app &&
-      media_state == data.media_state;
+      alert_state == data.alert_state;
 }

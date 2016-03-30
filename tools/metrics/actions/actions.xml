@@ -826,6 +826,27 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AlertIndicatorButton_Dragged">
+  <owner>miu@chromium.org</owner>
+  <description>
+    User dragged the tab alert indicator button; perhaps meant to drag the tab.
+  </description>
+</action>
+
+<action name="AlertIndicatorButton_Mute">
+  <owner>miu@chromium.org</owner>
+  <description>
+    User clicked the tab alert indicator button to mute the tab.
+  </description>
+</action>
+
+<action name="AlertIndicatorButton_Unmute">
+  <owner>miu@chromium.org</owner>
+  <description>
+    User clicked the tab alert indicator button to unmute the tab.
+  </description>
+</action>
+
 <action name="AppCloseButton_Clk">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -2340,11 +2361,19 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="CloseTab_NoAlertIndicator">
+  <owner>miu@chromium.org</owner>
+  <description>
+    User clicked the close tab button; the media indicator was not showing.
+  </description>
+</action>
+
 <action name="CloseTab_NoMediaIndicator">
   <owner>miu@chromium.org</owner>
   <description>
     User clicked the close tab button; the media indicator was not showing.
   </description>
+  <obsolete>Replaced with &quot;CloseTab_NoAlertIndicator&quot;.</obsolete>
 </action>
 
 <action name="CloseTab_RecordingIndicator">
@@ -7829,6 +7858,7 @@ should be able to be added at any place in this file.
   <description>
     User dragged the tab media indicator button; perhaps meant to drag the tab.
   </description>
+  <obsolete>Replaced with &quot;AlertIndicatorButton_Dragged&quot;.</obsolete>
 </action>
 
 <action name="MediaIndicatorButton_Mute">
@@ -7836,6 +7866,7 @@ should be able to be added at any place in this file.
   <description>
     User clicked the tab media indicator button to mute the tab.
   </description>
+  <obsolete>Replaced with &quot;AlertIndicatorButton_Mute&quot;.</obsolete>
 </action>
 
 <action name="MediaIndicatorButton_Unmute">
@@ -7843,6 +7874,7 @@ should be able to be added at any place in this file.
   <description>
     User clicked the tab media indicator button to unmute the tab.
   </description>
+  <obsolete>Replaced with &quot;AlertIndicatorButton_Unmute&quot;.</obsolete>
 </action>
 
 <action name="MediaRouter_Icon_Click">
@@ -13132,6 +13164,13 @@ should be able to be added at any place in this file.
   </obsolete>
 </action>
 
+<action name="TabAlertIndicator_Clicked">
+  <owner>miu@chromium.org</owner>
+  <description>
+    User clicked the tab alert indicator; this will have no effect.
+  </description>
+</action>
+
 <action name="TabContextMenu_BookmarkAllTabs">
   <owner>wittman@chromium.org</owner>
   <description>
@@ -13233,6 +13272,7 @@ should be able to be added at any place in this file.
   <description>
     User clicked the tab media indicator; this will have no effect.
   </description>
+  <obsolete>Replaced with &quot;TabAlertIndicator_Clicked&quot;.</obsolete>
 </action>
 
 <action name="TabOverview_DetachCell">

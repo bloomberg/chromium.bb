@@ -310,11 +310,11 @@ void BrowserWindowCocoa::UpdateTitleBar() {
 }
 
 NSString* BrowserWindowCocoa::WindowTitle() {
-  if (media_state_ == TAB_MEDIA_STATE_AUDIO_PLAYING) {
+  if (alert_state_ == TabAlertState::AUDIO_PLAYING) {
     return l10n_util::GetNSStringF(IDS_WINDOW_AUDIO_PLAYING_MAC,
                                    browser_->GetWindowTitleForCurrentTab(),
                                    base::SysNSStringToUTF16(@"🔊"));
-  } else if (media_state_ == TAB_MEDIA_STATE_AUDIO_MUTING) {
+  } else if (alert_state_ == TabAlertState::AUDIO_MUTING) {
     return l10n_util::GetNSStringF(IDS_WINDOW_AUDIO_MUTING_MAC,
                                    browser_->GetWindowTitleForCurrentTab(),
                                    base::SysNSStringToUTF16(@"🔇"));
@@ -527,8 +527,8 @@ void BrowserWindowCocoa::AddFindBar(
   [controller_ addFindBar:find_bar_cocoa_controller];
 }
 
-void BrowserWindowCocoa::UpdateMediaState(TabMediaState media_state) {
-  media_state_ = media_state;
+void BrowserWindowCocoa::UpdateAlertState(TabAlertState alert_state) {
+  alert_state_ = alert_state;
   UpdateTitleBar();
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tabs/media_indicator_button.h"
+#include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -10,14 +10,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/views_test_base.h"
 
-class MediaIndicatorButtonTest : public views::ViewsTestBase {
+class AlertIndicatorButtonTest : public views::ViewsTestBase {
  public:
-  MediaIndicatorButtonTest()
-      : controller_(nullptr),
-        tab_strip_(nullptr) {
-  }
+  AlertIndicatorButtonTest() : controller_(nullptr), tab_strip_(nullptr) {}
 
-  ~MediaIndicatorButtonTest() override {}
+  ~AlertIndicatorButtonTest() override {}
 
   void SetUp() override {
     views::ViewsTestBase::SetUp();
@@ -52,13 +49,13 @@ class MediaIndicatorButtonTest : public views::ViewsTestBase {
     return tab->showing_close_button_;
   }
   bool showing_icon(Tab* tab) const { return tab->showing_icon_; }
-  bool showing_media_indicator(Tab* tab) const {
-    return tab->showing_media_indicator_;
+  bool showing_alert_indicator(Tab* tab) const {
+    return tab->showing_alert_indicator_;
   }
 
   void StopAnimation(Tab* tab) {
-    ASSERT_TRUE(tab->media_indicator_button_->fade_animation_);
-    tab->media_indicator_button_->fade_animation_->Stop();
+    ASSERT_TRUE(tab->alert_indicator_button_->fade_animation_);
+    tab->alert_indicator_button_->fade_animation_->Stop();
   }
 
   // Owned by TabStrip.
@@ -69,37 +66,37 @@ class MediaIndicatorButtonTest : public views::ViewsTestBase {
   scoped_ptr<views::Widget> widget_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MediaIndicatorButtonTest);
+  DISALLOW_COPY_AND_ASSIGN(AlertIndicatorButtonTest);
 };
 
-// This test verifies that the tab has its icon state updated when the media
+// This test verifies that the tab has its icon state updated when the alert
 // animation fade-out finishes.
-TEST_F(MediaIndicatorButtonTest, ButtonUpdateOnAudioStateAnimation) {
+TEST_F(AlertIndicatorButtonTest, ButtonUpdateOnAudioStateAnimation) {
   controller_->AddPinnedTab(0, false);
   controller_->AddTab(1, true);
   Tab* media_tab = tab_strip_->tab_at(0);
 
   // Pinned inactive tab only has an icon.
   EXPECT_TRUE(showing_icon(media_tab));
-  EXPECT_FALSE(showing_media_indicator(media_tab));
+  EXPECT_FALSE(showing_alert_indicator(media_tab));
   EXPECT_FALSE(showing_close_button(media_tab));
 
   TabRendererData start_media;
-  start_media.media_state = TAB_MEDIA_STATE_AUDIO_PLAYING;
+  start_media.alert_state = TabAlertState::AUDIO_PLAYING;
   media_tab->SetData(start_media);
 
   // When audio starts, pinned inactive tab shows indicator.
   EXPECT_FALSE(showing_icon(media_tab));
-  EXPECT_TRUE(showing_media_indicator(media_tab));
+  EXPECT_TRUE(showing_alert_indicator(media_tab));
   EXPECT_FALSE(showing_close_button(media_tab));
 
   TabRendererData stop_media;
-  stop_media.media_state = TAB_MEDIA_STATE_NONE;
+  stop_media.alert_state = TabAlertState::NONE;
   media_tab->SetData(stop_media);
 
   // When audio ends, pinned inactive tab fades out indicator.
   EXPECT_FALSE(showing_icon(media_tab));
-  EXPECT_TRUE(showing_media_indicator(media_tab));
+  EXPECT_TRUE(showing_alert_indicator(media_tab));
   EXPECT_FALSE(showing_close_button(media_tab));
 
   // Rather than flakily waiting some unknown number of seconds for the fade
@@ -108,6 +105,6 @@ TEST_F(MediaIndicatorButtonTest, ButtonUpdateOnAudioStateAnimation) {
   StopAnimation(media_tab);
 
   EXPECT_TRUE(showing_icon(media_tab));
-  EXPECT_FALSE(showing_media_indicator(media_tab));
+  EXPECT_FALSE(showing_alert_indicator(media_tab));
   EXPECT_FALSE(showing_close_button(media_tab));
 }

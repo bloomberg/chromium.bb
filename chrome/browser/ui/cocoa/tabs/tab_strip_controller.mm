@@ -34,7 +34,7 @@
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
-#import "chrome/browser/ui/cocoa/tabs/media_indicator_button_cocoa.h"
+#import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
@@ -170,7 +170,7 @@ private:
 - (void)setNewTabButtonHoverState:(BOOL)showHover;
 - (void)themeDidChangeNotification:(NSNotification*)notification;
 - (BOOL)doesAnyOtherWebContents:(content::WebContents*)selected
-                 haveMediaState:(TabMediaState)state;
+                 haveAlertState:(TabAlertState)state;
 @end
 
 // A simple view class that contains the traffic light buttons. This class
@@ -785,7 +785,7 @@ private:
     return;
   WebContents* contents = tabStripModel_->GetWebContentsAt(index);
   chrome::SetTabAudioMuted(contents, !contents->IsAudioMuted(),
-                           TAB_MUTED_REASON_AUDIO_INDICATOR, std::string());
+                           TabMutedReason::AUDIO_INDICATOR, std::string());
 }
 
 // Called when the user closes a tab. Asks the model to close the tab. |sender|
@@ -1222,7 +1222,7 @@ private:
   [tab setTitle:base::SysUTF16ToNSString(title)];
 
   const base::string16& toolTip = chrome::AssembleTabTooltipText(
-      title, [self mediaStateForContents:contents]);
+      title, [self alertStateForContents:contents]);
   [tab setToolTip:base::SysUTF16ToNSString(toolTip)];
 }
 
@@ -1572,9 +1572,9 @@ private:
     }
   }
 
-  TabMediaState mediaState = [self mediaStateForContents:contents];
-  [self updateWindowMediaState:mediaState forWebContents:contents];
-  [tabController setMediaState:mediaState];
+  TabAlertState alertState = [self alertStateForContents:contents];
+  [self updateWindowAlertState:alertState forWebContents:contents];
+  [tabController setAlertState:alertState];
 
   [tabController updateVisibility];
 }
@@ -2239,58 +2239,58 @@ private:
   [customWindowControls_ setMouseInside:NO];
 }
 
-// Gets the tab and the media state to check whether the window
-// media state should be updated or not. If the tab media state is
-// AUDIO_PLAYING, the window media state should be set to AUDIO_PLAYING.
-// If the tab media state is AUDIO_MUTING, this method would check if the
+// Gets the tab and the alert state to check whether the window
+// alert state should be updated or not. If the tab alert state is
+// AUDIO_PLAYING, the window alert state should be set to AUDIO_PLAYING.
+// If the tab alert state is AUDIO_MUTING, this method would check if the
 // window has no other tab with state AUDIO_PLAYING, then the window
-// media state will be set to AUDIO_MUTING. If the tab media state is NONE,
+// alert state will be set to AUDIO_MUTING. If the tab alert state is NONE,
 // this method checks if the window has no playing or muting tab, then window
-// media state will be set as NONE.
-- (void)updateWindowMediaState:(TabMediaState)mediaState
+// alert state will be set as NONE.
+- (void)updateWindowAlertState:(TabAlertState)alertState
                 forWebContents:(content::WebContents*)selected {
   NSWindow* window = [tabStripView_ window];
   BrowserWindowController* windowController =
       [BrowserWindowController browserWindowControllerForWindow:window];
-  if (mediaState == TAB_MEDIA_STATE_NONE) {
+  if (alertState == TabAlertState::NONE) {
     if (![self doesAnyOtherWebContents:selected
-                        haveMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING] &&
+                        haveAlertState:TabAlertState::AUDIO_PLAYING] &&
         ![self doesAnyOtherWebContents:selected
-                        haveMediaState:TAB_MEDIA_STATE_AUDIO_MUTING]) {
-      [windowController setMediaState:TAB_MEDIA_STATE_NONE];
+                        haveAlertState:TabAlertState::AUDIO_MUTING]) {
+      [windowController setAlertState:TabAlertState::NONE];
     } else if ([self doesAnyOtherWebContents:selected
-                              haveMediaState:TAB_MEDIA_STATE_AUDIO_MUTING]) {
-      [windowController setMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
+                              haveAlertState:TabAlertState::AUDIO_MUTING]) {
+      [windowController setAlertState:TabAlertState::AUDIO_MUTING];
     }
-  } else if (mediaState == TAB_MEDIA_STATE_AUDIO_MUTING) {
+  } else if (alertState == TabAlertState::AUDIO_MUTING) {
     if (![self doesAnyOtherWebContents:selected
-                        haveMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING]) {
-      [windowController setMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
+                        haveAlertState:TabAlertState::AUDIO_PLAYING]) {
+      [windowController setAlertState:TabAlertState::AUDIO_MUTING];
     }
   } else {
-    [windowController setMediaState:mediaState];
+    [windowController setAlertState:alertState];
   }
 }
 
-// Checks if tabs (excluding selected) has media state equals to the second
+// Checks if tabs (excluding selected) has alert state equals to the second
 // parameter. It returns YES when it finds the first tab with the criterion.
 - (BOOL)doesAnyOtherWebContents:(content::WebContents*)selected
-                 haveMediaState:(TabMediaState)state {
+                 haveAlertState:(TabAlertState)state {
   const int existingTabCount = tabStripModel_->count();
   for (int i = 0; i < existingTabCount; ++i) {
     content::WebContents* currentContents = tabStripModel_->GetWebContentsAt(i);
     if (selected == currentContents)
       continue;
-    TabMediaState currentMediaStateForContents =
-        [self mediaStateForContents:currentContents];
-    if (currentMediaStateForContents == state)
+    TabAlertState currentAlertStateForContents =
+        [self alertStateForContents:currentContents];
+    if (currentAlertStateForContents == state)
       return YES;
   }
   return NO;
 }
 
-- (TabMediaState)mediaStateForContents:(content::WebContents*)contents {
-  return chrome::GetTabMediaStateForContents(contents);
+- (TabAlertState)alertStateForContents:(content::WebContents*)contents {
+  return chrome::GetTabAlertStateForContents(contents);
 }
 
 - (void)themeDidChangeNotification:(NSNotification*)notification {

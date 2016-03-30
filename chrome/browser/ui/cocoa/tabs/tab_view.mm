@@ -10,7 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
-#import "chrome/browser/ui/cocoa/tabs/media_indicator_button_cocoa.h"
+#import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -626,10 +626,10 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 }
 
 - (int)widthOfLargestSelectableRegion {
-  // Assume the entire region to the left of the media indicator and/or close
+  // Assume the entire region to the left of the alert indicator and/or close
   // buttons is available for click-to-select.  If neither are visible, the
   // entire tab region is available.
-  MediaIndicatorButton* const indicator = [controller_ mediaIndicatorButton];
+  AlertIndicatorButton* const indicator = [controller_ alertIndicatorButton];
   const int indicatorLeft = (!indicator || [indicator isHidden]) ?
       NSWidth([self frame]) : NSMinX([indicator frame]);
   HoverCloseButton* const closeButton = [controller_ closeButton];

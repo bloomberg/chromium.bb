@@ -21,7 +21,7 @@ enum TabLoadingState {
   kTabCrashed,
 };
 
-@class MediaIndicatorButton;
+@class AlertIndicatorButton;
 @class MenuController;
 namespace TabControllerInternal {
 class MenuDelegate;
@@ -44,7 +44,7 @@ class MenuDelegate;
 @interface TabController : NSViewController<TabDraggingEventTarget> {
  @private
   base::scoped_nsobject<SpriteView> iconView_;
-  base::scoped_nsobject<MediaIndicatorButton> mediaIndicatorButton_;
+  base::scoped_nsobject<AlertIndicatorButton> alertIndicatorButton_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
@@ -75,7 +75,7 @@ class MenuDelegate;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) GURL url;
 @property(readonly, nonatomic) NSView* iconView;
-@property(readonly, nonatomic) MediaIndicatorButton* mediaIndicatorButton;
+@property(readonly, nonatomic) AlertIndicatorButton* alertIndicatorButton;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
 // Default height for tabs.
@@ -100,8 +100,8 @@ class MenuDelegate;
 - (void)setIconImage:(NSImage*)image;
 - (void)setIconImage:(NSImage*)image withToastAnimation:(BOOL)animate;
 
-// Sets the current tab media state and updates the views.
-- (void)setMediaState:(TabMediaState)mediaState;
+// Sets the current tab alert state and updates the views.
+- (void)setAlertState:(TabAlertState)alertState;
 
 // Closes the associated TabView by relaying the message to |target_| to
 // perform the close.
@@ -127,7 +127,7 @@ class MenuDelegate;
 @interface TabController(TestingAPI)
 - (int)iconCapacity;
 - (BOOL)shouldShowIcon;
-- (BOOL)shouldShowMediaIndicator;
+- (BOOL)shouldShowAlertIndicator;
 - (BOOL)shouldShowCloseButton;
 @end  // TabController(TestingAPI)
 

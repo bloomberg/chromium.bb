@@ -418,16 +418,16 @@ scoped_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
   scoped_ptr<api::tabs::MutedInfo> info(new api::tabs::MutedInfo);
   info->muted = contents->IsAudioMuted();
   switch (chrome::GetTabAudioMutedReason(contents)) {
-    case TAB_MUTED_REASON_NONE:
+    case TabMutedReason::NONE:
       break;
-    case TAB_MUTED_REASON_CONTEXT_MENU:
-    case TAB_MUTED_REASON_AUDIO_INDICATOR:
+    case TabMutedReason::CONTEXT_MENU:
+    case TabMutedReason::AUDIO_INDICATOR:
       info->reason = api::tabs::MUTED_INFO_REASON_USER;
       break;
-    case TAB_MUTED_REASON_MEDIA_CAPTURE:
+    case TabMutedReason::MEDIA_CAPTURE:
       info->reason = api::tabs::MUTED_INFO_REASON_CAPTURE;
       break;
-    case TAB_MUTED_REASON_EXTENSION:
+    case TabMutedReason::EXTENSION:
       info->reason = api::tabs::MUTED_INFO_REASON_EXTENSION;
       info->extension_id.reset(
           new std::string(chrome::GetExtensionIdForMutedTab(contents)));

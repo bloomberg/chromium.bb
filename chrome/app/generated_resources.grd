@@ -13601,20 +13601,20 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Printer registration has timed out. In order to register a printer, you must confirm registration on the printer.
       </message>
 
-      <!--Tab media indicator tooltip strings-->
-      <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_RECORDING" desc="Extra tool tip text, when the tab is recording media.">
+      <!--Tab alert tooltip strings-->
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_MEDIA_RECORDING" desc="Extra tool tip text, when the tab is recording media.">
         This tab is using your camera or microphone.
       </message>
-      <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_CAPTURING" desc="Extra tool tip text, when the tab content is being captured.">
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_TAB_CAPTURING" desc="Extra tool tip text, when the tab content is being captured.">
         This tab's content is being shared.
       </message>
-      <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_AUDIO_PLAYING" desc="Extra tool tip text, when the tab is playing audio.">
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_AUDIO_PLAYING" desc="Extra tool tip text, when the tab is playing audio.">
         This tab is playing audio.
       </message>
-      <message name="IDS_TOOLTIP_TAB_MEDIA_STATE_AUDIO_MUTING" desc="Extra tool tip text, when all tab audio output is muted.">
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_AUDIO_MUTING" desc="Extra tool tip text, when all tab audio output is muted.">
         This tab's audio is being muted.
       </message>
-      <message name="IDS_TOOLTIP_TAB_BLUETOOTH_CONNECTED" desc="Extra tool tip text, when tab is connected to a Bluetooth device.">
+      <message name="IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_CONNECTED" desc="Extra tool tip text, when tab is connected to a Bluetooth device.">
         This tab is connected to a Bluetooth Device.
       </message>
 

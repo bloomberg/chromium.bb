@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
-#include "chrome/browser/ui/views/tabs/media_indicator_button.h"
+#include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,12 +116,12 @@ class TabTest : public views::ViewsTestBase {
     // Tab size and TabRendererData state.
     if (tab.data_.pinned) {
       EXPECT_EQ(1, tab.IconCapacity());
-      if (tab.data_.media_state != TAB_MEDIA_STATE_NONE) {
+      if (tab.data_.alert_state != TabAlertState::NONE) {
         EXPECT_FALSE(tab.ShouldShowIcon());
-        EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+        EXPECT_TRUE(tab.ShouldShowAlertIndicator());
       } else {
         EXPECT_TRUE(tab.ShouldShowIcon());
-        EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+        EXPECT_FALSE(tab.ShouldShowAlertIndicator());
       }
       EXPECT_FALSE(tab.ShouldShowCloseBox());
     } else if (tab.IsActive()) {
@@ -130,24 +130,24 @@ class TabTest : public views::ViewsTestBase {
         case 0:
         case 1:
           EXPECT_FALSE(tab.ShouldShowIcon());
-          EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+          EXPECT_FALSE(tab.ShouldShowAlertIndicator());
           break;
         case 2:
-          if (tab.data_.media_state != TAB_MEDIA_STATE_NONE) {
+          if (tab.data_.alert_state != TabAlertState::NONE) {
             EXPECT_FALSE(tab.ShouldShowIcon());
-            EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+            EXPECT_TRUE(tab.ShouldShowAlertIndicator());
           } else {
             EXPECT_TRUE(tab.ShouldShowIcon());
-            EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+            EXPECT_FALSE(tab.ShouldShowAlertIndicator());
           }
           break;
         default:
           EXPECT_LE(3, tab.IconCapacity());
           EXPECT_TRUE(tab.ShouldShowIcon());
-          if (tab.data_.media_state != TAB_MEDIA_STATE_NONE)
-            EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+          if (tab.data_.alert_state != TabAlertState::NONE)
+            EXPECT_TRUE(tab.ShouldShowAlertIndicator());
           else
-            EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+            EXPECT_FALSE(tab.ShouldShowAlertIndicator());
           break;
       }
     } else {  // Tab not active and not pinned tab.
@@ -155,25 +155,25 @@ class TabTest : public views::ViewsTestBase {
         case 0:
           EXPECT_FALSE(tab.ShouldShowCloseBox());
           EXPECT_FALSE(tab.ShouldShowIcon());
-          EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+          EXPECT_FALSE(tab.ShouldShowAlertIndicator());
           break;
         case 1:
           EXPECT_FALSE(tab.ShouldShowCloseBox());
-          if (tab.data_.media_state != TAB_MEDIA_STATE_NONE) {
+          if (tab.data_.alert_state != TabAlertState::NONE) {
             EXPECT_FALSE(tab.ShouldShowIcon());
-            EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+            EXPECT_TRUE(tab.ShouldShowAlertIndicator());
           } else {
             EXPECT_TRUE(tab.ShouldShowIcon());
-            EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+            EXPECT_FALSE(tab.ShouldShowAlertIndicator());
           }
           break;
         default:
           EXPECT_LE(2, tab.IconCapacity());
           EXPECT_TRUE(tab.ShouldShowIcon());
-          if (tab.data_.media_state != TAB_MEDIA_STATE_NONE)
-            EXPECT_TRUE(tab.ShouldShowMediaIndicator());
+          if (tab.data_.alert_state != TabAlertState::NONE)
+            EXPECT_TRUE(tab.ShouldShowAlertIndicator());
           else
-            EXPECT_FALSE(tab.ShouldShowMediaIndicator());
+            EXPECT_FALSE(tab.ShouldShowAlertIndicator());
           break;
       }
     }
@@ -188,22 +188,22 @@ class TabTest : public views::ViewsTestBase {
       EXPECT_LE(contents_bounds.y(), tab.favicon_bounds_.y());
       EXPECT_LE(tab.favicon_bounds_.bottom(), contents_bounds.bottom());
     }
-    if (tab.ShouldShowIcon() && tab.ShouldShowMediaIndicator())
-      EXPECT_LE(tab.favicon_bounds_.right(), GetMediaIndicatorBounds(tab).x());
-    if (tab.ShouldShowMediaIndicator()) {
+    if (tab.ShouldShowIcon() && tab.ShouldShowAlertIndicator())
+      EXPECT_LE(tab.favicon_bounds_.right(), GetAlertIndicatorBounds(tab).x());
+    if (tab.ShouldShowAlertIndicator()) {
       if (tab.title_->width() > 0) {
         EXPECT_LE(tab.title_->bounds().right(),
-                  GetMediaIndicatorBounds(tab).x());
+                  GetAlertIndicatorBounds(tab).x());
       }
-      EXPECT_LE(GetMediaIndicatorBounds(tab).right(), contents_bounds.right());
-      EXPECT_LE(contents_bounds.y(), GetMediaIndicatorBounds(tab).y());
-      EXPECT_LE(GetMediaIndicatorBounds(tab).bottom(),
+      EXPECT_LE(GetAlertIndicatorBounds(tab).right(), contents_bounds.right());
+      EXPECT_LE(contents_bounds.y(), GetAlertIndicatorBounds(tab).y());
+      EXPECT_LE(GetAlertIndicatorBounds(tab).bottom(),
                 contents_bounds.bottom());
     }
-    if (tab.ShouldShowMediaIndicator() && tab.ShouldShowCloseBox()) {
-      // Note: The media indicator can overlap the left-insets of the close box,
+    if (tab.ShouldShowAlertIndicator() && tab.ShouldShowCloseBox()) {
+      // Note: The alert indicator can overlap the left-insets of the close box,
       // but should otherwise be to the left of the close button.
-      EXPECT_LE(GetMediaIndicatorBounds(tab).right(),
+      EXPECT_LE(GetAlertIndicatorBounds(tab).right(),
                 tab.close_button_->bounds().x() +
                     tab.close_button_->GetInsets().left());
     }
@@ -236,12 +236,12 @@ class TabTest : public views::ViewsTestBase {
   }
 
  private:
-  static gfx::Rect GetMediaIndicatorBounds(const Tab& tab) {
-    if (!tab.media_indicator_button_) {
+  static gfx::Rect GetAlertIndicatorBounds(const Tab& tab) {
+    if (!tab.alert_indicator_button_) {
       ADD_FAILURE();
       return gfx::Rect();
     }
-    return tab.media_indicator_button_->bounds();
+    return tab.alert_indicator_button_->bounds();
   }
 
   std::string original_locale_;
@@ -278,10 +278,9 @@ TEST_F(TabTest, HitTestTopPixel) {
 }
 
 TEST_F(TabTest, LayoutAndVisibilityOfElements) {
-  static const TabMediaState kMediaStatesToTest[] = {
-    TAB_MEDIA_STATE_NONE, TAB_MEDIA_STATE_CAPTURING,
-    TAB_MEDIA_STATE_AUDIO_PLAYING, TAB_MEDIA_STATE_AUDIO_MUTING
-  };
+  static const TabAlertState kAlertStatesToTest[] = {
+      TabAlertState::NONE, TabAlertState::TAB_CAPTURING,
+      TabAlertState::AUDIO_PLAYING, TabAlertState::AUDIO_MUTING};
 
   Widget widget;
   InitWidget(&widget);
@@ -299,18 +298,19 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
   // results.
   for (int is_pinned_tab = 0; is_pinned_tab < 2; ++is_pinned_tab) {
     for (int is_active_tab = 0; is_active_tab < 2; ++is_active_tab) {
-      for (size_t media_state_index = 0;
-           media_state_index < arraysize(kMediaStatesToTest);
-           ++media_state_index) {
-        const TabMediaState media_state = kMediaStatesToTest[media_state_index];
+      for (size_t alert_state_index = 0;
+           alert_state_index < arraysize(kAlertStatesToTest);
+           ++alert_state_index) {
+        const TabAlertState alert_state = kAlertStatesToTest[alert_state_index];
         SCOPED_TRACE(::testing::Message()
                      << (is_active_tab ? "Active" : "Inactive") << ' '
                      << (is_pinned_tab ? "Pinned " : "")
-                     << "Tab with media indicator state " << media_state);
+                     << "Tab with alert indicator state "
+                     << static_cast<uint8_t>(alert_state));
 
         data.pinned = !!is_pinned_tab;
         controller.set_active_tab(!!is_active_tab);
-        data.media_state = media_state;
+        data.alert_state = alert_state;
         tab.SetData(data);
 
         // Test layout for every width from standard to minimum.
@@ -357,13 +357,14 @@ TEST_F(TabTest, TooltipProvidedByTab) {
       "the tooltip instead.");
 
   // Test both with and without an indicator showing since the tab tooltip text
-  // should include a description of the media state when the indicator is
+  // should include a description of the alert state when the indicator is
   // present.
   for (int i = 0; i < 2; ++i) {
-    data.media_state =
-        (i == 0 ? TAB_MEDIA_STATE_NONE : TAB_MEDIA_STATE_AUDIO_PLAYING);
+    data.alert_state =
+        (i == 0 ? TabAlertState::NONE : TabAlertState::AUDIO_PLAYING);
     SCOPED_TRACE(::testing::Message()
-                 << "Tab with media indicator state " << data.media_state);
+                 << "Tab with alert indicator state "
+                 << static_cast<uint8_t>(data.alert_state));
     tab.SetData(data);
 
     for (int j = 0; j < tab.child_count(); ++j) {
@@ -382,7 +383,7 @@ TEST_F(TabTest, TooltipProvidedByTab) {
       base::string16 tooltip;
       EXPECT_TRUE(static_cast<views::View&>(tab).GetTooltipText(
           mouse_hover_point, &tooltip));
-      EXPECT_EQ(chrome::AssembleTabTooltipText(data.title, data.media_state),
+      EXPECT_EQ(chrome::AssembleTabTooltipText(data.title, data.alert_state),
                 tooltip);
     }
   }

@@ -30,21 +30,21 @@
 using content::SiteInstance;
 using content::WebContents;
 
-@interface TabStripControllerForMediaTesting : TabStripController {
-  // Keeps media state of tabs in browser for testing purpose.
-  std::map<content::WebContents*, TabMediaState> contentsMediaStateMaps_;
+@interface TabStripControllerForAlertTesting : TabStripController {
+  // Keeps alert state of tabs in browser for testing purpose.
+  std::map<content::WebContents*, TabAlertState> contentsAlertStateMaps_;
 }
 @end
 
-@implementation TabStripControllerForMediaTesting
-// Returns the media state of each tab from the map we are keeping.
-- (TabMediaState)mediaStateForContents:(content::WebContents*)contents {
-  return contentsMediaStateMaps_[contents];
+@implementation TabStripControllerForAlertTesting
+// Returns the alert state of each tab from the map we are keeping.
+- (TabAlertState)alertStateForContents:(content::WebContents*)contents {
+  return contentsAlertStateMaps_[contents];
 }
 
-- (void)setMediaStateForContents:(content::WebContents*)contents
-                  withMediaState:(TabMediaState)media_state {
-  contentsMediaStateMaps_[contents] = media_state;
+- (void)setAlertStateForContents:(content::WebContents*)contents
+                  withAlertState:(TabAlertState)alert_state {
+  contentsAlertStateMaps_[contents] = alert_state;
 }
 
 @end
@@ -157,9 +157,9 @@ class TabStripControllerTest : public CocoaProfileTest {
   }
 
   // Return a derived TabStripController.
-  TabStripControllerForMediaTesting* InitTabStripControllerForMediaTesting() {
-    TabStripControllerForMediaTesting* c =
-        [[TabStripControllerForMediaTesting alloc]
+  TabStripControllerForAlertTesting* InitTabStripControllerForAlertTesting() {
+    TabStripControllerForAlertTesting* c =
+        [[TabStripControllerForAlertTesting alloc]
             initWithView:static_cast<TabStripView*>(tab_strip_.get())
               switchView:switch_view_.get()
                  browser:browser()
@@ -281,15 +281,15 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
   WebContents* const contents = model_->GetActiveWebContents();
 
   // Initially, tab title and tooltip text are equivalent.
-  EXPECT_EQ(TAB_MEDIA_STATE_NONE,
-            chrome::GetTabMediaStateForContents(contents));
+  EXPECT_EQ(TabAlertState::NONE,
+            chrome::GetTabAlertStateForContents(contents));
   [controller_ setTabTitle:tabController withContents:contents];
   NSString* const baseTitle = [tabController title];
   EXPECT_NSEQ(baseTitle, [tabController toolTip]);
 
   // Simulate the start of tab video capture.  Tab title remains the same, but
   // the tooltip text should include the following appended: 1) a line break;
-  // 2) a non-empty string with a localized description of the media state.
+  // 2) a non-empty string with a localized description of the alert state.
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()->
           GetMediaStreamCaptureIndicator();
@@ -298,8 +298,8 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
   scoped_ptr<MediaStreamUI> streamUi(indicator->RegisterMediaStream(
       contents, MediaStreamDevices(1, dummyVideoCaptureDevice)));
   streamUi->OnStarted(base::Bind(&base::DoNothing));
-  EXPECT_EQ(TAB_MEDIA_STATE_CAPTURING,
-            chrome::GetTabMediaStateForContents(contents));
+  EXPECT_EQ(TabAlertState::TAB_CAPTURING,
+            chrome::GetTabAlertStateForContents(contents));
   [controller_ setTabTitle:tabController withContents:contents];
   EXPECT_NSEQ(baseTitle, [tabController title]);
   NSString* const toolTipText = [tabController toolTip];
@@ -316,8 +316,8 @@ TEST_F(TabStripControllerTest, CorrectTitleAndToolTipTextFromSetTabTitle) {
   // Simulate the end of tab video capture.  Tab title and tooltip should become
   // equivalent again.
   streamUi.reset();
-  EXPECT_EQ(TAB_MEDIA_STATE_NONE,
-            chrome::GetTabMediaStateForContents(contents));
+  EXPECT_EQ(TabAlertState::NONE,
+            chrome::GetTabAlertStateForContents(contents));
   [controller_ setTabTitle:tabController withContents:contents];
   EXPECT_NSEQ(baseTitle, [tabController title]);
   EXPECT_NSEQ(baseTitle, [tabController toolTip]);
@@ -382,13 +382,13 @@ TEST_F(TabStripControllerTest, ViewAccessibility_Value) {
   EXPECT_EQ(tab1, value);
 }
 
-TEST_F(TabStripControllerTest, CorrectWindowFromUpdateWindowMediaState) {
-  controller_.reset(InitTabStripControllerForMediaTesting());
+TEST_F(TabStripControllerTest, CorrectWindowFromUpdateWindowAlertState) {
+  controller_.reset(InitTabStripControllerForAlertTesting());
   NSWindow* window = [tab_strip_ window];
   BrowserWindowController* window_controller =
       [BrowserWindowController browserWindowControllerForWindow:window];
-  TabStripControllerForMediaTesting* tabStripControllerForTesting =
-      static_cast<TabStripControllerForMediaTesting*>(controller_);
+  TabStripControllerForAlertTesting* tabStripControllerForTesting =
+      static_cast<TabStripControllerForAlertTesting*>(controller_);
 
   TabView* const tab1 = CreateTab();
   TabView* const tab2 = CreateTab();
@@ -399,17 +399,17 @@ TEST_F(TabStripControllerTest, CorrectWindowFromUpdateWindowMediaState) {
   WebContents* const contents_at_tab1 = model_->GetActiveWebContents();
 
   [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab1
-                withMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING];
-  // Make sure the overriden from base controller correctly handles media
+      setAlertStateForContents:contents_at_tab1
+                withAlertState:TabAlertState::AUDIO_PLAYING];
+  // Make sure the overriden from base controller correctly handles alert
   // status of tabs.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_PLAYING,
-            [controller_ mediaStateForContents:contents_at_tab1]);
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING
+  EXPECT_EQ(TabAlertState::AUDIO_PLAYING,
+            [controller_ alertStateForContents:contents_at_tab1]);
+  [controller_ updateWindowAlertState:TabAlertState::AUDIO_PLAYING
                        forWebContents:contents_at_tab1];
-  // Because we have one tab playing, and the other one's media state is none,
-  // window media state should be AUDIO_PLAYING.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_PLAYING, [window_controller mediaState]);
+  // Because we have one tab playing, and the other one's alert state is none,
+  // window alert state should be AUDIO_PLAYING.
+  EXPECT_EQ(TabAlertState::AUDIO_PLAYING, [window_controller alertState]);
 
   model_->ActivateTabAt(0, false);
   // tab1 should be the selected one now.
@@ -418,53 +418,53 @@ TEST_F(TabStripControllerTest, CorrectWindowFromUpdateWindowMediaState) {
   WebContents* const contents_at_tab0 = model_->GetActiveWebContents();
 
   [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab0
-                withMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_MUTING
+      setAlertStateForContents:contents_at_tab0
+                withAlertState:TabAlertState::AUDIO_MUTING];
+  [controller_ updateWindowAlertState:TabAlertState::AUDIO_MUTING
                        forWebContents:contents_at_tab0];
   // We have two tabs. One is playing and the other one is muting. The window
-  // media state should be still AUDIO_PLAYING.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_PLAYING, [window_controller mediaState]);
+  // alert state should be still AUDIO_PLAYING.
+  EXPECT_EQ(TabAlertState::AUDIO_PLAYING, [window_controller alertState]);
 
   [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab1
-                withMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_MUTING
+      setAlertStateForContents:contents_at_tab1
+                withAlertState:TabAlertState::AUDIO_MUTING];
+  [controller_ updateWindowAlertState:TabAlertState::AUDIO_MUTING
                        forWebContents:contents_at_tab1];
-  // Now both tabs are muting, the window media state should be AUDIO_MUTING.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_MUTING, [window_controller mediaState]);
+  // Now both tabs are muting, the window alert state should be AUDIO_MUTING.
+  EXPECT_EQ(TabAlertState::AUDIO_MUTING, [window_controller alertState]);
 
   [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab0
-                withMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING
+      setAlertStateForContents:contents_at_tab0
+                withAlertState:TabAlertState::AUDIO_PLAYING];
+  [controller_ updateWindowAlertState:TabAlertState::AUDIO_PLAYING
                        forWebContents:contents_at_tab0];
   // Among those tabs which were muting, one is started playing, the window
-  // media state should be playing.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_PLAYING, [window_controller mediaState]);
+  // alert state should be playing.
+  EXPECT_EQ(TabAlertState::AUDIO_PLAYING, [window_controller alertState]);
 
   // Mute it again for further testing.
   [tabStripControllerForTesting
-      setMediaStateForContents:contents_at_tab0
-                withMediaState:TAB_MEDIA_STATE_AUDIO_MUTING];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_AUDIO_MUTING
+      setAlertStateForContents:contents_at_tab0
+                withAlertState:TabAlertState::AUDIO_MUTING];
+  [controller_ updateWindowAlertState:TabAlertState::AUDIO_MUTING
                        forWebContents:contents_at_tab0];
 
-  [tabStripControllerForTesting setMediaStateForContents:contents_at_tab1
-                                          withMediaState:TAB_MEDIA_STATE_NONE];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_NONE
+  [tabStripControllerForTesting setAlertStateForContents:contents_at_tab1
+                                          withAlertState:TabAlertState::NONE];
+  [controller_ updateWindowAlertState:TabAlertState::NONE
                        forWebContents:contents_at_tab1];
-  // One of the tabs is muting, the other one is none. So window media state
+  // One of the tabs is muting, the other one is none. So window alert state
   // should be MUTING.
-  EXPECT_EQ(TAB_MEDIA_STATE_AUDIO_MUTING, [window_controller mediaState]);
+  EXPECT_EQ(TabAlertState::AUDIO_MUTING, [window_controller alertState]);
 
-  [tabStripControllerForTesting setMediaStateForContents:contents_at_tab0
-                                          withMediaState:TAB_MEDIA_STATE_NONE];
-  [controller_ updateWindowMediaState:TAB_MEDIA_STATE_NONE
+  [tabStripControllerForTesting setAlertStateForContents:contents_at_tab0
+                                          withAlertState:TabAlertState::NONE];
+  [controller_ updateWindowAlertState:TabAlertState::NONE
                        forWebContents:contents_at_tab0];
-  // Neither of tabs playing nor muting, so the window media state should be
+  // Neither of tabs playing nor muting, so the window alert state should be
   // NONE.
-  EXPECT_EQ(TAB_MEDIA_STATE_NONE, [window_controller mediaState]);
+  EXPECT_EQ(TabAlertState::NONE, [window_controller alertState]);
 }
 
 }  // namespace

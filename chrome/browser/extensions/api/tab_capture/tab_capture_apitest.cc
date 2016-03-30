@@ -408,8 +408,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
 #endif
 // Tests that the tab indicator (in the tab strip) is shown during tab capture.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
-  ASSERT_EQ(TAB_MEDIA_STATE_NONE,
-            chrome::GetTabMediaStateForContents(
+  ASSERT_EQ(TabAlertState::NONE,
+            chrome::GetTabAlertStateForContents(
                 browser()->tab_strip_model()->GetActiveWebContents()));
 
   // Run an extension test that just turns on tab capture, which should cause
@@ -423,18 +423,18 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
   class IndicatorChangeObserver : public TabStripModelObserver {
    public:
     explicit IndicatorChangeObserver(Browser* browser)
-        : last_media_state_(chrome::GetTabMediaStateForContents(
+        : last_alert_state_(chrome::GetTabAlertStateForContents(
               browser->tab_strip_model()->GetActiveWebContents())) {}
 
-    TabMediaState last_media_state() const { return last_media_state_; }
+    TabAlertState last_alert_state() const { return last_alert_state_; }
 
     void TabChangedAt(content::WebContents* contents,
                       int index,
                       TabChangeType change_type) override {
-      const TabMediaState media_state =
-          chrome::GetTabMediaStateForContents(contents);
-      const bool has_changed = media_state != last_media_state_;
-      last_media_state_ = media_state;
+      const TabAlertState alert_state =
+          chrome::GetTabAlertStateForContents(contents);
+      const bool has_changed = alert_state != last_alert_state_;
+      last_alert_state_ = alert_state;
       if (has_changed) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
@@ -442,17 +442,17 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
     }
 
    private:
-    TabMediaState last_media_state_;
+    TabAlertState last_alert_state_;
   };
 
   // Run the browser until the indicator turns on.
   IndicatorChangeObserver observer(browser());
   browser()->tab_strip_model()->AddObserver(&observer);
   const base::TimeTicks start_time = base::TimeTicks::Now();
-  while (observer.last_media_state() != TAB_MEDIA_STATE_CAPTURING) {
+  while (observer.last_alert_state() != TabAlertState::TAB_CAPTURING) {
     if (base::TimeTicks::Now() - start_time >
             base::TimeDelta::FromSeconds(10)) {
-      EXPECT_EQ(TAB_MEDIA_STATE_CAPTURING, observer.last_media_state());
+      EXPECT_EQ(TabAlertState::TAB_CAPTURING, observer.last_alert_state());
       browser()->tab_strip_model()->RemoveObserver(&observer);
       return;
     }

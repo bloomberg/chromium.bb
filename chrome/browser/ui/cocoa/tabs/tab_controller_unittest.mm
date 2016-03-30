@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/ui/cocoa/tabs/media_indicator_button_cocoa.h"
+#import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_drag_controller.h"
@@ -108,16 +108,16 @@ class TabControllerTest : public CocoaTest {
       const TabController* controller) {
     // Check whether subviews should be visible when they are supposed to be,
     // given Tab size and TabRendererData state.
-    const TabMediaState indicatorState =
-        [[controller mediaIndicatorButton] showingMediaState];
+    const TabAlertState indicatorState =
+        [[controller alertIndicatorButton] showingAlertState];
     if ([controller pinned]) {
       EXPECT_EQ(1, [controller iconCapacity]);
-      if (indicatorState != TAB_MEDIA_STATE_NONE) {
+      if (indicatorState != TabAlertState::NONE) {
         EXPECT_FALSE([controller shouldShowIcon]);
-        EXPECT_TRUE([controller shouldShowMediaIndicator]);
+        EXPECT_TRUE([controller shouldShowAlertIndicator]);
       } else {
         EXPECT_TRUE([controller shouldShowIcon]);
-        EXPECT_FALSE([controller shouldShowMediaIndicator]);
+        EXPECT_FALSE([controller shouldShowAlertIndicator]);
       }
       EXPECT_FALSE([controller shouldShowCloseButton]);
     } else if ([controller selected]) {
@@ -126,24 +126,24 @@ class TabControllerTest : public CocoaTest {
         case 0:
         case 1:
           EXPECT_FALSE([controller shouldShowIcon]);
-          EXPECT_FALSE([controller shouldShowMediaIndicator]);
+          EXPECT_FALSE([controller shouldShowAlertIndicator]);
           break;
         case 2:
-          if (indicatorState != TAB_MEDIA_STATE_NONE) {
+          if (indicatorState != TabAlertState::NONE) {
             EXPECT_FALSE([controller shouldShowIcon]);
-            EXPECT_TRUE([controller shouldShowMediaIndicator]);
+            EXPECT_TRUE([controller shouldShowAlertIndicator]);
           } else {
             EXPECT_TRUE([controller shouldShowIcon]);
-            EXPECT_FALSE([controller shouldShowMediaIndicator]);
+            EXPECT_FALSE([controller shouldShowAlertIndicator]);
           }
           break;
         default:
           EXPECT_LE(3, [controller iconCapacity]);
           EXPECT_TRUE([controller shouldShowIcon]);
-          if (indicatorState != TAB_MEDIA_STATE_NONE)
-            EXPECT_TRUE([controller shouldShowMediaIndicator]);
+          if (indicatorState != TabAlertState::NONE)
+            EXPECT_TRUE([controller shouldShowAlertIndicator]);
           else
-            EXPECT_FALSE([controller shouldShowMediaIndicator]);
+            EXPECT_FALSE([controller shouldShowAlertIndicator]);
           break;
       }
     } else {  // Tab not selected/active and not pinned tab.
@@ -151,25 +151,25 @@ class TabControllerTest : public CocoaTest {
         case 0:
           EXPECT_FALSE([controller shouldShowCloseButton]);
           EXPECT_FALSE([controller shouldShowIcon]);
-          EXPECT_FALSE([controller shouldShowMediaIndicator]);
+          EXPECT_FALSE([controller shouldShowAlertIndicator]);
           break;
         case 1:
           EXPECT_FALSE([controller shouldShowCloseButton]);
-          if (indicatorState != TAB_MEDIA_STATE_NONE) {
+          if (indicatorState != TabAlertState::NONE) {
             EXPECT_FALSE([controller shouldShowIcon]);
-            EXPECT_TRUE([controller shouldShowMediaIndicator]);
+            EXPECT_TRUE([controller shouldShowAlertIndicator]);
           } else {
             EXPECT_TRUE([controller shouldShowIcon]);
-            EXPECT_FALSE([controller shouldShowMediaIndicator]);
+            EXPECT_FALSE([controller shouldShowAlertIndicator]);
           }
           break;
         default:
           EXPECT_LE(2, [controller iconCapacity]);
           EXPECT_TRUE([controller shouldShowIcon]);
-          if (indicatorState != TAB_MEDIA_STATE_NONE)
-            EXPECT_TRUE([controller shouldShowMediaIndicator]);
+          if (indicatorState != TabAlertState::NONE)
+            EXPECT_TRUE([controller shouldShowAlertIndicator]);
           else
-            EXPECT_FALSE([controller shouldShowMediaIndicator]);
+            EXPECT_FALSE([controller shouldShowAlertIndicator]);
           break;
       }
     }
@@ -178,8 +178,8 @@ class TabControllerTest : public CocoaTest {
     EXPECT_TRUE([controller shouldShowIcon] ==
                 (!![controller iconView] && ![[controller iconView] isHidden]));
     EXPECT_TRUE([controller pinned] == [[controller tabView] titleHidden]);
-    EXPECT_TRUE([controller shouldShowMediaIndicator] ==
-                    ![[controller mediaIndicatorButton] isHidden]);
+    EXPECT_TRUE([controller shouldShowAlertIndicator] ==
+                    ![[controller alertIndicatorButton] isHidden]);
     EXPECT_TRUE([controller shouldShowCloseButton] !=
                     [[controller closeButton] isHidden]);
 
@@ -195,22 +195,22 @@ class TabControllerTest : public CocoaTest {
       EXPECT_LE(NSMinY(tabFrame), NSMinY(iconFrame));
       EXPECT_LE(NSMaxY(iconFrame), NSMaxY(tabFrame));
     }
-    if ([controller shouldShowIcon] && [controller shouldShowMediaIndicator]) {
+    if ([controller shouldShowIcon] && [controller shouldShowAlertIndicator]) {
       EXPECT_LE(NSMaxX([[controller iconView] frame]),
-                NSMinX([[controller mediaIndicatorButton] frame]));
+                NSMinX([[controller alertIndicatorButton] frame]));
     }
-    if ([controller shouldShowMediaIndicator]) {
-      const NSRect mediaIndicatorFrame =
-          [[controller mediaIndicatorButton] frame];
+    if ([controller shouldShowAlertIndicator]) {
+      const NSRect alertIndicatorFrame =
+          [[controller alertIndicatorButton] frame];
       if (NSWidth(titleFrame) > 0)
-        EXPECT_LE(NSMaxX(titleFrame), NSMinX(mediaIndicatorFrame));
-      EXPECT_LE(NSMaxX(mediaIndicatorFrame), NSMaxX(tabFrame));
-      EXPECT_LE(NSMinY(tabFrame), NSMinY(mediaIndicatorFrame));
-      EXPECT_LE(NSMaxY(mediaIndicatorFrame), NSMaxY(tabFrame));
+        EXPECT_LE(NSMaxX(titleFrame), NSMinX(alertIndicatorFrame));
+      EXPECT_LE(NSMaxX(alertIndicatorFrame), NSMaxX(tabFrame));
+      EXPECT_LE(NSMinY(tabFrame), NSMinY(alertIndicatorFrame));
+      EXPECT_LE(NSMaxY(alertIndicatorFrame), NSMaxY(tabFrame));
     }
-    if ([controller shouldShowMediaIndicator] &&
+    if ([controller shouldShowAlertIndicator] &&
         [controller shouldShowCloseButton]) {
-      EXPECT_LE(NSMaxX([[controller mediaIndicatorButton] frame]),
+      EXPECT_LE(NSMaxX([[controller alertIndicatorButton] frame]),
                 NSMinX([[controller closeButton] frame]));
     }
     if ([controller shouldShowCloseButton]) {
@@ -474,14 +474,14 @@ TEST_F(TabControllerTest, TitleViewLayout) {
 }
 
 // A comprehensive test of the layout and visibility of all elements (favicon,
-// throbber indicators, titile text, media indicator button, and close button)
+// throbber indicators, titile text, alert indicator button, and close button)
 // over all relevant combinations of tab state.  This test overlaps with parts
 // of the other tests above.
 // Flaky: https://code.google.com/p/chromium/issues/detail?id=311668
 TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
-  static const TabMediaState kMediaStatesToTest[] = {
-    TAB_MEDIA_STATE_NONE, TAB_MEDIA_STATE_CAPTURING,
-    TAB_MEDIA_STATE_AUDIO_PLAYING, TAB_MEDIA_STATE_AUDIO_MUTING
+  static const TabAlertState kAlertStatesToTest[] = {
+    TabAlertState::NONE, TabAlertState::TAB_CAPTURING,
+    TabAlertState::AUDIO_PLAYING, TabAlertState::AUDIO_MUTING
   };
 
   NSWindow* const window = test_window();
@@ -495,32 +495,33 @@ TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
   base::scoped_nsobject<NSImage> favicon(
       rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
 
-  // Trigger TabController to auto-create the MediaIndicatorButton.
-  [controller setMediaState:TAB_MEDIA_STATE_AUDIO_PLAYING];
-  [controller setMediaState:TAB_MEDIA_STATE_NONE];
-  base::scoped_nsobject<MediaIndicatorButton> mediaIndicatorButton(
-      [[controller mediaIndicatorButton] retain]);
-  ASSERT_TRUE(mediaIndicatorButton.get());
+  // Trigger TabController to auto-create the AlertIndicatorButton.
+  [controller setAlertState:TabAlertState::AUDIO_PLAYING];
+  [controller setAlertState:TabAlertState::NONE];
+  base::scoped_nsobject<AlertIndicatorButton> alertIndicatorButton(
+      [[controller alertIndicatorButton] retain]);
+  ASSERT_TRUE(alertIndicatorButton.get());
 
   // Perform layout over all possible combinations, checking for correct
   // results.
   for (int isPinnedTab = 0; isPinnedTab < 2; ++isPinnedTab) {
     for (int isActiveTab = 0; isActiveTab < 2; ++isActiveTab) {
-      for (size_t mediaStateIndex = 0;
-           mediaStateIndex < arraysize(kMediaStatesToTest);
-           ++mediaStateIndex) {
-        const TabMediaState mediaState = kMediaStatesToTest[mediaStateIndex];
+      for (size_t alertStateIndex = 0;
+           alertStateIndex < arraysize(kAlertStatesToTest);
+           ++alertStateIndex) {
+        const TabAlertState alertState = kAlertStatesToTest[alertStateIndex];
         SCOPED_TRACE(::testing::Message()
                      << (isActiveTab ? "Active" : "Inactive") << ' '
                      << (isPinnedTab ? "Pinned " : "")
-                     << "Tab with media indicator state " << mediaState);
+                     << "Tab with alert indicator state "
+                     << static_cast<uint8_t>(alertState));
 
         // Simulate what tab_strip_controller would do to set up the
         // TabController state.
         [controller setPinned:(isPinnedTab ? YES : NO)];
         [controller setActive:(isActiveTab ? YES : NO)];
         [controller setIconImage:favicon];
-        [controller setMediaState:mediaState];
+        [controller setAlertState:alertState];
         [controller updateVisibility];
 
         // Test layout for every width from maximum to minimum.

@@ -385,12 +385,13 @@ class Command;
 - (void)executeExtensionCommand:(const std::string&)extension_id
                         command:(const extensions::Command&)command;
 
-// To set whether the window has a tab playing audio or muted audio playing.
-- (void)setMediaState:(TabMediaState)mediaState;
+// Sets the alert state of the tab e.g. audio playing, media recording, etc.
+// See TabUtils::TabAlertState for a list of all possible alert states.
+- (void)setAlertState:(TabAlertState)alertState;
 
-// Returns current media state, determined by the media state of tabs, set by
-// UpdateMediaState.
-- (TabMediaState)mediaState;
+// Returns current alert state, determined by the alert state of tabs, set by
+// UpdateAlertState.
+- (TabAlertState)alertState;
 
 @end  // @interface BrowserWindowController
 

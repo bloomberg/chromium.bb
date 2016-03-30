@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/tabs/media_indicator_button.h"
+#include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_switches.h"
@@ -494,13 +494,13 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
       crash_icon_animation_(new FaviconCrashAnimation(this)),
       animation_container_(container),
       throbber_(nullptr),
-      media_indicator_button_(nullptr),
+      alert_indicator_button_(nullptr),
       close_button_(nullptr),
       title_(new views::Label()),
       tab_activated_with_last_tap_down_(false),
       hover_controller_(this),
       showing_icon_(false),
-      showing_media_indicator_(false),
+      showing_alert_indicator_(false),
       showing_close_button_(false),
       button_color_(SK_ColorTRANSPARENT) {
   DCHECK(controller);
@@ -528,8 +528,8 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
   throbber_->SetVisible(false);
   AddChildView(throbber_);
 
-  media_indicator_button_ = new MediaIndicatorButton(this);
-  AddChildView(media_indicator_button_);
+  alert_indicator_button_ = new AlertIndicatorButton(this);
+  AddChildView(alert_indicator_button_);
 
   close_button_ = new TabCloseButton(this);
   close_button_->SetAccessibleName(
@@ -597,11 +597,11 @@ bool Tab::IsActive() const {
 
 void Tab::ActiveStateChanged() {
   OnButtonColorMaybeChanged();
-  media_indicator_button_->UpdateEnabledForMuteToggle();
+  alert_indicator_button_->UpdateEnabledForMuteToggle();
   Layout();
 }
 
-void Tab::MediaStateChanged() {
+void Tab::AlertStateChanged() {
   Layout();
 }
 
@@ -635,12 +635,12 @@ void Tab::SetData(const TabRendererData& data) {
     favicon_hiding_offset_ = 0;
   } else if (!should_display_crashed_favicon_ &&
              !crash_icon_animation_->is_animating()) {
-    data_.media_state = TAB_MEDIA_STATE_NONE;
+    data_.alert_state = TabAlertState::NONE;
     crash_icon_animation_->Start();
   }
 
-  if (data_.media_state != old.media_state)
-    media_indicator_button_->TransitionToMediaState(data_.media_state);
+  if (data_.alert_state != old.alert_state)
+    alert_indicator_button_->TransitionToAlertState(data_.alert_state);
 
   if (old.pinned != data_.pinned)
     StopPinnedTabTitleAnimation();
@@ -681,11 +681,11 @@ void Tab::StopPinnedTabTitleAnimation() {
 }
 
 int Tab::GetWidthOfLargestSelectableRegion() const {
-  // Assume the entire region to the left of the media indicator and/or close
+  // Assume the entire region to the left of the alert indicator and/or close
   // buttons is available for click-to-select.  If neither are visible, the
   // entire tab region is available.
-  const int indicator_left = showing_media_indicator_ ?
-      media_indicator_button_->x() : width();
+  const int indicator_left =
+      showing_alert_indicator_ ? alert_indicator_button_->x() : width();
   const int close_button_left = showing_close_button_ ?
       close_button_->x() : width();
   return std::min(indicator_left, close_button_left);
@@ -775,11 +775,11 @@ void Tab::AnimationEnded(const gfx::Animation* animation) {
 // Tab, views::ButtonListener overrides:
 
 void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (!media_indicator_button_ || !media_indicator_button_->visible())
-    content::RecordAction(UserMetricsAction("CloseTab_NoMediaIndicator"));
-  else if (media_indicator_button_->enabled())
+  if (!alert_indicator_button_ || !alert_indicator_button_->visible())
+    content::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
+  else if (alert_indicator_button_->enabled())
     content::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
-  else if (data_.media_state == TAB_MEDIA_STATE_AUDIO_PLAYING)
+  else if (data_.alert_state == TabAlertState::AUDIO_PLAYING)
     content::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
   else
     content::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
@@ -961,9 +961,9 @@ void Tab::Layout() {
   }
   close_button_->SetVisible(showing_close_button_);
 
-  showing_media_indicator_ = ShouldShowMediaIndicator();
-  if (showing_media_indicator_) {
-    const gfx::Size image_size(media_indicator_button_->GetPreferredSize());
+  showing_alert_indicator_ = ShouldShowAlertIndicator();
+  if (showing_alert_indicator_) {
+    const gfx::Size image_size(alert_indicator_button_->GetPreferredSize());
     const int right = showing_close_button_ ?
         close_button_->x() + close_button_->GetInsets().left() : lb.right();
     gfx::Rect bounds(
@@ -972,9 +972,9 @@ void Tab::Layout() {
         image_size.width(),
         image_size.height());
     MaybeAdjustLeftForPinnedTab(&bounds);
-    media_indicator_button_->SetBoundsRect(bounds);
+    alert_indicator_button_->SetBoundsRect(bounds);
   }
-  media_indicator_button_->SetVisible(showing_media_indicator_);
+  alert_indicator_button_->SetVisible(showing_alert_indicator_);
 
   // Size the title to fill the remaining width and use all available height.
   const bool show_title = ShouldRenderAsNormalTab();
@@ -983,9 +983,9 @@ void Tab::Layout() {
     int title_left = showing_icon_ ?
         (favicon_bounds_.right() + title_spacing) : start;
     int title_width = lb.right() - title_left;
-    if (showing_media_indicator_) {
+    if (showing_alert_indicator_) {
       title_width =
-          media_indicator_button_->x() - kAfterTitleSpacing - title_left;
+          alert_indicator_button_->x() - kAfterTitleSpacing - title_left;
     } else if (close_button_->visible()) {
       // Allow the title to overlay the close button's empty border padding.
       title_width = close_button_->x() + close_button_->GetInsets().left() -
@@ -1011,7 +1011,7 @@ const char* Tab::GetClassName() const {
 bool Tab::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
   // Note: Anything that affects the tooltip text should be accounted for when
   // calling TooltipTextChanged() from Tab::DataChanged().
-  *tooltip = chrome::AssembleTabTooltipText(data_.title, data_.media_state);
+  *tooltip = chrome::AssembleTabTooltipText(data_.title, data_.alert_state);
   return !tooltip->empty();
 }
 
@@ -1098,9 +1098,9 @@ void Tab::OnMouseReleased(const ui::MouseEvent& event) {
     // selected.
     controller_->SelectTab(this);
 
-    if (media_indicator_button_ && media_indicator_button_->visible() &&
-        media_indicator_button_->bounds().Contains(event.location())) {
-      content::RecordAction(UserMetricsAction("TabMediaIndicator_Clicked"));
+    if (alert_indicator_button_ && alert_indicator_button_->visible() &&
+        alert_indicator_button_->bounds().Contains(event.location())) {
+      content::RecordAction(UserMetricsAction("TabAlertIndicator_Clicked"));
     }
   }
 }
@@ -1184,7 +1184,7 @@ void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds) const {
 }
 
 void Tab::DataChanged(const TabRendererData& old) {
-  if (data().media_state != old.media_state || data().title != old.title)
+  if (data().alert_state != old.alert_state || data().title != old.title)
     TooltipTextChanged();
 
   if (data().blocked == old.blocked)
@@ -1576,15 +1576,15 @@ int Tab::IconCapacity() const {
 bool Tab::ShouldShowIcon() const {
   return chrome::ShouldTabShowFavicon(
       IconCapacity(), data().pinned, IsActive(), data().show_icon,
-      media_indicator_button_ ? media_indicator_button_->showing_media_state() :
-                                data_.media_state);
+      alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
+                              : data_.alert_state);
 }
 
-bool Tab::ShouldShowMediaIndicator() const {
-  return chrome::ShouldTabShowMediaIndicator(
+bool Tab::ShouldShowAlertIndicator() const {
+  return chrome::ShouldTabShowAlertIndicator(
       IconCapacity(), data().pinned, IsActive(), data().show_icon,
-      media_indicator_button_ ? media_indicator_button_->showing_media_state() :
-                                data_.media_state);
+      alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
+                              : data_.alert_state);
 }
 
 bool Tab::ShouldShowCloseBox() const {
@@ -1636,7 +1636,7 @@ void Tab::OnButtonColorMaybeChanged() {
   if (button_color_ != new_button_color) {
     button_color_ = new_button_color;
     title_->SetEnabledColor(title_color);
-    media_indicator_button_->OnParentTabButtonColorChanged();
+    alert_indicator_button_->OnParentTabButtonColorChanged();
     const gfx::ImageSkia& close_button_normal_image = gfx::CreateVectorIcon(
         gfx::VectorIconId::TAB_CLOSE_NORMAL, kTabCloseButtonSize,
         button_color_);

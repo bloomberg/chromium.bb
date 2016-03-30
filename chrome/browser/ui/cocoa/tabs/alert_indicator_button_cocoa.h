@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TABS_MEDIA_INDICATOR_BUTTON_COCOA_H_
-#define CHROME_BROWSER_UI_COCOA_TABS_MEDIA_INDICATOR_BUTTON_COCOA_H_
+#ifndef CHROME_BROWSER_UI_COCOA_TABS_ALERT_INDICATOR_BUTTON_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_TABS_ALERT_INDICATOR_BUTTON_COCOA_H_
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,7 +15,7 @@ class Animation;
 class AnimationDelegate;
 }  // namespace gfx
 
-// This is an HoverButton subclass that serves as both the media indicator icon
+// This is an HoverButton subclass that serves as both the alert indicator icon
 // (audio, tab capture, etc.), and as a mute button.  It is meant to only be
 // used as a subview of TabView.
 //
@@ -26,19 +26,19 @@ class AnimationDelegate;
 //
 // Note: Send the |-setClickTarget:withAction:| message instead of the
 // |-setTarget:| and |-setAction:| messages to be notified of button clicks.
-@interface MediaIndicatorButton : HoverButton {
+@interface AlertIndicatorButton : HoverButton {
  @private
   class FadeAnimationDelegate;
 
-  // Current TabMediaState.  When animating fade-in/out, this reflects the
+  // Current TabAlertState.  When animating fade-in/out, this reflects the
   // indicator state at the end of the animation.
-  TabMediaState mediaState_;
+  TabAlertState alertState_;
 
-  // Media indicator fade-in/out animation (i.e., only on show/hide, not a
+  // Alert indicator fade-in/out animation (i.e., only on show/hide, not a
   // continuous animation).
   scoped_ptr<gfx::AnimationDelegate> fadeAnimationDelegate_;
   scoped_ptr<gfx::Animation> fadeAnimation_;
-  TabMediaState showingMediaState_;
+  TabAlertState showingAlertState_;
 
   // Target and action invoked whenever a fade-in/out animation completes.  This
   // is used by TabController to layout the TabView after an indicator has
@@ -54,20 +54,20 @@ class AnimationDelegate;
   SEL clickAction_;
 }
 
-@property(readonly, nonatomic) TabMediaState showingMediaState;
+@property(readonly, nonatomic) TabAlertState showingAlertState;
 
-// Initialize a new MediaIndicatorButton in TAB_MEDIA_STATE_NONE (i.e., a
+// Initialize a new AlertIndicatorButton in TabAlertState::NONE (i.e., a
 // non-active indicator).
 - (id)init;
 
 // Updates button images, starts fade animations, and activates/deactivates
 // button functionality as appropriate.
-- (void)transitionToMediaState:(TabMediaState)nextState;
+- (void)transitionToAlertState:(TabAlertState)nextState;
 
-// Determines whether the MediaIndicatorButtonCocoa will be clickable for
+// Determines whether the AlertIndicatorButtonCocoa will be clickable for
 // toggling muting.  This should be called whenever the frame of this view is
 // changed, and also whenever the active/inactive state of the tab has changed.
-// Internally, |-transitionToMediaState:| will call this.
+// Internally, |-transitionToAlertState:| will call this.
 - (void)updateEnabledForMuteToggle;
 
 // Register a message be sent to |target| whenever fade animations complete.  A
@@ -80,4 +80,4 @@ class AnimationDelegate;
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_TABS_MEDIA_INDICATOR_BUTTON_COCOA_H_
+#endif  // CHROME_BROWSER_UI_COCOA_TABS_ALERT_INDICATOR_BUTTON_COCOA_H_

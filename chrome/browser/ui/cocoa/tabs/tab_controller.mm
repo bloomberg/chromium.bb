@@ -12,7 +12,7 @@
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/sprite_view.h"
-#import "chrome/browser/ui/cocoa/tabs/media_indicator_button_cocoa.h"
+#import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
@@ -151,8 +151,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }
 
 - (void)dealloc {
-  [mediaIndicatorButton_ setAnimationDoneTarget:nil withAction:nil];
-  [mediaIndicatorButton_ setClickTarget:nil withAction:nil];
+  [alertIndicatorButton_ setAnimationDoneTarget:nil withAction:nil];
+  [alertIndicatorButton_ setClickTarget:nil withAction:nil];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [[self tabView] setController:nil];
   [super dealloc];
@@ -198,17 +198,17 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (void)closeTab:(id)sender {
   using base::UserMetricsAction;
 
-  if (mediaIndicatorButton_ && ![mediaIndicatorButton_ isHidden]) {
-    if ([mediaIndicatorButton_ isEnabled]) {
+  if (alertIndicatorButton_ && ![alertIndicatorButton_ isHidden]) {
+    if ([alertIndicatorButton_ isEnabled]) {
       content::RecordAction(UserMetricsAction("CloseTab_MuteToggleAvailable"));
-    } else if ([mediaIndicatorButton_ showingMediaState] ==
-                   TAB_MEDIA_STATE_AUDIO_PLAYING) {
+    } else if ([alertIndicatorButton_ showingAlertState] ==
+                   TabAlertState::AUDIO_PLAYING) {
       content::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));
     } else {
       content::RecordAction(UserMetricsAction("CloseTab_RecordingIndicator"));
     }
   } else {
-    content::RecordAction(UserMetricsAction("CloseTab_NoMediaIndicator"));
+    content::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
   }
 
   if ([[self target] respondsToSelector:@selector(closeTab:)]) {
@@ -273,21 +273,21 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     [[self view] addSubview:iconView_];
 }
 
-- (MediaIndicatorButton*)mediaIndicatorButton {
-  return mediaIndicatorButton_;
+- (AlertIndicatorButton*)alertIndicatorButton {
+  return alertIndicatorButton_;
 }
 
-- (void)setMediaState:(TabMediaState)mediaState {
-  if (!mediaIndicatorButton_ && mediaState != TAB_MEDIA_STATE_NONE) {
-    mediaIndicatorButton_.reset([[MediaIndicatorButton alloc] init]);
+- (void)setAlertState:(TabAlertState)alertState {
+  if (!alertIndicatorButton_ && alertState != TabAlertState::NONE) {
+    alertIndicatorButton_.reset([[AlertIndicatorButton alloc] init]);
     [self updateVisibility];  // Do layout and visibility before adding subview.
-    [[self view] addSubview:mediaIndicatorButton_];
-    [mediaIndicatorButton_ setAnimationDoneTarget:self
+    [[self view] addSubview:alertIndicatorButton_];
+    [alertIndicatorButton_ setAnimationDoneTarget:self
                                        withAction:@selector(updateVisibility)];
-    [mediaIndicatorButton_ setClickTarget:self
+    [alertIndicatorButton_ setClickTarget:self
                                withAction:@selector(toggleMute:)];
   }
-  [mediaIndicatorButton_ transitionToMediaState:mediaState];
+  [alertIndicatorButton_ transitionToAlertState:alertState];
 }
 
 - (HoverCloseButton*)closeButton {
@@ -320,15 +320,15 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 - (BOOL)shouldShowIcon {
   return chrome::ShouldTabShowFavicon(
       [self iconCapacity], [self pinned], [self active], iconView_ != nil,
-      !mediaIndicatorButton_ ? TAB_MEDIA_STATE_NONE :
-          [mediaIndicatorButton_ showingMediaState]);
+      !alertIndicatorButton_ ? TabAlertState::NONE :
+          [alertIndicatorButton_ showingAlertState]);
 }
 
-- (BOOL)shouldShowMediaIndicator {
-  return chrome::ShouldTabShowMediaIndicator(
+- (BOOL)shouldShowAlertIndicator {
+  return chrome::ShouldTabShowAlertIndicator(
       [self iconCapacity], [self pinned], [self active], iconView_ != nil,
-      !mediaIndicatorButton_ ? TAB_MEDIA_STATE_NONE :
-          [mediaIndicatorButton_ showingMediaState]);
+      !alertIndicatorButton_ ? TabAlertState::NONE :
+          [alertIndicatorButton_ showingAlertState]);
 }
 
 - (BOOL)shouldShowCloseButton {
@@ -385,33 +385,33 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
   [closeButton_ setHidden:!newShowCloseButton];
 
-  BOOL newShowMediaIndicator = [self shouldShowMediaIndicator];
+  BOOL newShowAlertIndicator = [self shouldShowAlertIndicator];
 
-  [mediaIndicatorButton_ setHidden:!newShowMediaIndicator];
+  [alertIndicatorButton_ setHidden:!newShowAlertIndicator];
 
-  if (newShowMediaIndicator) {
-    NSRect newFrame = [mediaIndicatorButton_ frame];
-    newFrame.size = [[mediaIndicatorButton_ image] size];
+  if (newShowAlertIndicator) {
+    NSRect newFrame = [alertIndicatorButton_ frame];
+    newFrame.size = [[alertIndicatorButton_ image] size];
     if ([self pinned]) {
-      // Tab is pinned: Position the media indicator in the center.
+      // Tab is pinned: Position the alert indicator in the center.
       const CGFloat tabWidth = [TabController pinnedTabWidth];
       newFrame.origin.x = std::floor((tabWidth - NSWidth(newFrame)) / 2);
       newFrame.origin.y = NSMinY(originalIconFrame_) -
           std::floor((NSHeight(newFrame) - NSHeight(originalIconFrame_)) / 2);
     } else {
-      // The Frame for the mediaIndicatorButton_ depends on whether iconView_
+      // The Frame for the alertIndicatorButton_ depends on whether iconView_
       // and/or closeButton_ are visible, and where they have been positioned.
       const NSRect closeButtonFrame = [closeButton_ frame];
       newFrame.origin.x = NSMinX(closeButtonFrame);
       // Position to the left of the close button when it is showing.
       if (newShowCloseButton)
         newFrame.origin.x -= NSWidth(newFrame);
-      // Media indicator is centered vertically, with respect to closeButton_.
+      // Alert indicator is centered vertically, with respect to closeButton_.
       newFrame.origin.y = NSMinY(closeButtonFrame) -
           std::floor((NSHeight(newFrame) - NSHeight(closeButtonFrame)) / 2);
     }
-    [mediaIndicatorButton_ setFrame:newFrame];
-    [mediaIndicatorButton_ updateEnabledForMuteToggle];
+    [alertIndicatorButton_ setFrame:newFrame];
+    [alertIndicatorButton_ updateEnabledForMuteToggle];
   }
 
   // Adjust the title view based on changes to the icon's and close button's
@@ -431,8 +431,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     newTitleFrame.origin.x = originalIconFrame_.origin.x;
   }
 
-  if (newShowMediaIndicator) {
-    newTitleFrame.size.width = NSMinX([mediaIndicatorButton_ frame]) -
+  if (newShowAlertIndicator) {
+    newTitleFrame.size.width = NSMinX([alertIndicatorButton_ frame]) -
                                newTitleFrame.origin.x;
   } else if (newShowCloseButton) {
     newTitleFrame.size.width = NSMinX([closeButton_ frame]) -

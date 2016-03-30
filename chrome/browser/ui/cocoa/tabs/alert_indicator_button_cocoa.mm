@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/tabs/media_indicator_button_cocoa.h"
+#import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -18,17 +18,17 @@ namespace {
 
 // The minimum required click-to-select area of an inactive tab before allowing
 // the click-to-mute functionality to be enabled.  This value is in terms of
-// some percentage of the MediaIndicatorButton's width.  See comments in the
+// some percentage of the AlertIndicatorButton's width.  See comments in the
 // updateEnabledForMuteToggle method.
 const int kMinMouseSelectableAreaPercent = 250;
 
 }  // namespace
 
-@implementation MediaIndicatorButton
+@implementation AlertIndicatorButton
 
 class FadeAnimationDelegate : public gfx::AnimationDelegate {
  public:
-  explicit FadeAnimationDelegate(MediaIndicatorButton* button)
+  explicit FadeAnimationDelegate(AlertIndicatorButton* button)
       : button_(button) {}
   ~FadeAnimationDelegate() override {}
 
@@ -43,23 +43,23 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   }
 
   void AnimationEnded(const gfx::Animation* animation) override {
-    button_->showingMediaState_ = button_->mediaState_;
+    button_->showingAlertState_ = button_->alertState_;
     [button_ setNeedsDisplay:YES];
     [button_->animationDoneTarget_
         performSelector:button_->animationDoneAction_];
   }
 
-  MediaIndicatorButton* const button_;
+  AlertIndicatorButton* const button_;
 
   DISALLOW_COPY_AND_ASSIGN(FadeAnimationDelegate);
 };
 
-@synthesize showingMediaState = showingMediaState_;
+@synthesize showingAlertState = showingAlertState_;
 
 - (id)init {
   if ((self = [super initWithFrame:NSZeroRect])) {
-    mediaState_ = TAB_MEDIA_STATE_NONE;
-    showingMediaState_ = TAB_MEDIA_STATE_NONE;
+    alertState_ = TabAlertState::NONE;
+    showingAlertState_ = TabAlertState::NONE;
     [self setEnabled:NO];
     [super setTarget:self];
     [super setAction:@selector(handleClick:)];
@@ -72,37 +72,37 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   [super removeFromSuperview];
 }
 
-- (void)transitionToMediaState:(TabMediaState)nextState {
-  if (nextState == mediaState_)
+- (void)transitionToAlertState:(TabAlertState)nextState {
+  if (nextState == alertState_)
     return;
 
-  if (nextState != TAB_MEDIA_STATE_NONE) {
+  if (nextState != TabAlertState::NONE) {
     [self
-        setImage:chrome::GetTabMediaIndicatorImage(nextState, 0).ToNSImage()];
+        setImage:chrome::GetTabAlertIndicatorImage(nextState, 0).ToNSImage()];
     affordanceImage_.reset(
-        [chrome::GetTabMediaIndicatorAffordanceImage(nextState, 0)
+        [chrome::GetTabAlertIndicatorAffordanceImage(nextState, 0)
                 .ToNSImage() retain]);
   }
 
-  if ((mediaState_ == TAB_MEDIA_STATE_AUDIO_PLAYING &&
-       nextState == TAB_MEDIA_STATE_AUDIO_MUTING) ||
-      (mediaState_ == TAB_MEDIA_STATE_AUDIO_MUTING &&
-       nextState == TAB_MEDIA_STATE_AUDIO_PLAYING) ||
-      (mediaState_ == TAB_MEDIA_STATE_AUDIO_MUTING &&
-       nextState == TAB_MEDIA_STATE_NONE)) {
+  if ((alertState_ == TabAlertState::AUDIO_PLAYING &&
+       nextState == TabAlertState::AUDIO_MUTING) ||
+      (alertState_ == TabAlertState::AUDIO_MUTING &&
+       nextState == TabAlertState::AUDIO_PLAYING) ||
+      (alertState_ == TabAlertState::AUDIO_MUTING &&
+       nextState == TabAlertState::NONE)) {
     // Instant user feedback: No fade animation.
-    showingMediaState_ = nextState;
+    showingAlertState_ = nextState;
     fadeAnimation_.reset();
   } else {
-    if (nextState == TAB_MEDIA_STATE_NONE)
-      showingMediaState_ = mediaState_;  // Fading-out indicator.
+    if (nextState == TabAlertState::NONE)
+      showingAlertState_ = alertState_;  // Fading-out indicator.
     else
-      showingMediaState_ = nextState;  // Fading-in to next indicator.
+      showingAlertState_ = nextState;  // Fading-in to next indicator.
     // gfx::Animation requires a task runner is available for the current
     // thread.  Generally, only certain unit tests would not instantiate a task
     // runner.
     if (base::ThreadTaskRunnerHandle::IsSet()) {
-      fadeAnimation_ = chrome::CreateTabMediaIndicatorFadeAnimation(nextState);
+      fadeAnimation_ = chrome::CreateTabAlertIndicatorFadeAnimation(nextState);
       if (!fadeAnimationDelegate_)
         fadeAnimationDelegate_.reset(new FadeAnimationDelegate(self));
       fadeAnimation_->set_delegate(fadeAnimationDelegate_.get());
@@ -110,7 +110,7 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
     }
   }
 
-  mediaState_ = nextState;
+  alertState_ = nextState;
 
   [self updateEnabledForMuteToggle];
 
@@ -188,7 +188,7 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
   destRect.size = imageRect.size;
   double opaqueness =
       fadeAnimation_ ? fadeAnimation_->GetCurrentValue() : 1.0;
-  if (mediaState_ == TAB_MEDIA_STATE_NONE)
+  if (alertState_ == TabAlertState::NONE)
     opaqueness = 1.0 - opaqueness;  // Fading out, not in.
   [image drawInRect:destRect
            fromRect:imageRect
@@ -209,10 +209,10 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 - (void)handleClick:(id)sender {
   using base::UserMetricsAction;
 
-  if (mediaState_ == TAB_MEDIA_STATE_AUDIO_PLAYING)
-    content::RecordAction(UserMetricsAction("MediaIndicatorButton_Mute"));
-  else if (mediaState_ == TAB_MEDIA_STATE_AUDIO_MUTING)
-    content::RecordAction(UserMetricsAction("MediaIndicatorButton_Unmute"));
+  if (alertState_ == TabAlertState::AUDIO_PLAYING)
+    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Mute"));
+  else if (alertState_ == TabAlertState::AUDIO_MUTING)
+    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Unmute"));
   else
     NOTREACHED();
 
@@ -221,8 +221,8 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 
 - (void)updateEnabledForMuteToggle {
   BOOL enable = chrome::AreExperimentalMuteControlsEnabled() &&
-      (mediaState_ == TAB_MEDIA_STATE_AUDIO_PLAYING ||
-       mediaState_ == TAB_MEDIA_STATE_AUDIO_MUTING);
+      (alertState_ == TabAlertState::AUDIO_PLAYING ||
+       alertState_ == TabAlertState::AUDIO_MUTING);
 
   // If the tab is not the currently-active tab, make sure it is wide enough
   // before enabling click-to-mute.  This ensures that there is enough click

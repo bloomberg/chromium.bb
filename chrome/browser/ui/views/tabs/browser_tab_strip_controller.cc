@@ -295,7 +295,7 @@ void BrowserTabStripController::CloseTab(int model_index,
 void BrowserTabStripController::ToggleTabAudioMute(int model_index) {
   content::WebContents* const contents = model_->GetWebContentsAt(model_index);
   chrome::SetTabAudioMuted(contents, !contents->IsAudioMuted(),
-                           TAB_MUTED_REASON_AUDIO_INDICATOR, std::string());
+                           TabMutedReason::AUDIO_INDICATOR, std::string());
 }
 
 void BrowserTabStripController::ShowContextMenuForTab(
@@ -505,7 +505,7 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->show_icon = data->pinned || favicon::ShouldDisplayFavicon(contents);
   data->blocked = model_->IsTabBlocked(model_index);
   data->app = extensions::TabHelper::FromWebContents(contents)->is_app();
-  data->media_state = chrome::GetTabMediaStateForContents(contents);
+  data->alert_state = chrome::GetTabAlertStateForContents(contents);
 }
 
 void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,

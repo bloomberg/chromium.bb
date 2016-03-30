@@ -24,86 +24,86 @@ class Animation;
 class Image;
 }  // namespace gfx
 
-// Media state for a tab.  In reality, more than one of these may apply.  See
-// comments for GetTabMediaStateForContents() below.
-enum TabMediaState {
-  TAB_MEDIA_STATE_NONE,
-  TAB_MEDIA_STATE_RECORDING,  // Audio/Video being recorded, consumed by tab.
-  TAB_MEDIA_STATE_CAPTURING,  // Tab contents being captured.
-  TAB_MEDIA_STATE_AUDIO_PLAYING,  // Audible audio is playing from the tab.
-  TAB_MEDIA_STATE_AUDIO_MUTING,  // Tab audio is being muted.
-  TAB_MEDIA_STATE_BLUETOOTH_CONNECTED, // Tab is connected to a BT Device.
+// Alert state for a tab.  In reality, more than one of these may apply.  See
+// comments for GetTabAlertStateForContents() below.
+enum class TabAlertState {
+  NONE,
+  MEDIA_RECORDING,      // Audio/Video being recorded, consumed by tab.
+  TAB_CAPTURING,        // Tab contents being captured.
+  AUDIO_PLAYING,        // Audible audio is playing from the tab.
+  AUDIO_MUTING,         // Tab audio is being muted.
+  BLUETOOTH_CONNECTED,  // Tab is connected to a BT Device.
 };
 
-enum TabMutedReason {
-  TAB_MUTED_REASON_NONE,  // The tab has never been muted or unmuted.
-  TAB_MUTED_REASON_CONTEXT_MENU,  // Mute/Unmute chosen from tab context menu.
-  TAB_MUTED_REASON_AUDIO_INDICATOR,  // Mute toggled via tab-strip audio icon.
-  TAB_MUTED_REASON_MEDIA_CAPTURE,  // Media recording/capture was started.
-  TAB_MUTED_REASON_EXTENSION,  // Mute state changed via extension API.
+enum class TabMutedReason {
+  NONE,             // The tab has never been muted or unmuted.
+  CONTEXT_MENU,     // Mute/Unmute chosen from tab context menu.
+  AUDIO_INDICATOR,  // Mute toggled via tab-strip audio icon.
+  MEDIA_CAPTURE,    // Media recording/capture was started.
+  EXTENSION,        // Mute state changed via extension API.
 };
 
-enum TabMutedResult {
-  TAB_MUTED_RESULT_SUCCESS,
-  TAB_MUTED_RESULT_FAIL_NOT_ENABLED,
-  TAB_MUTED_RESULT_FAIL_TABCAPTURE,
+enum class TabMutedResult {
+  SUCCESS,
+  FAIL_NOT_ENABLED,
+  FAIL_TABCAPTURE,
 };
 
 namespace chrome {
 
-// Logic to determine which components (i.e., close button, favicon, and media
+// Logic to determine which components (i.e., close button, favicon, and alert
 // indicator) of a tab should be shown, given current state.  |capacity|
 // specifies how many components can be shown, given available tab width.
 //
 // Precedence rules for deciding what to show when capacity is insufficient to
 // show everything:
 //
-//   Active tab: Always show the close button, then the media indicator, then
+//   Active tab: Always show the close button, then the alert indicator, then
 //               the favicon.
-//   Inactive tab: Media indicator, then the favicon, then the close button.
-//   Pinned tab: Show only the media indicator, or only the favicon
-//               (TAB_MEDIA_STATE_NONE).  Never show the close button.
+//   Inactive tab: Alert indicator, then the favicon, then the close button.
+//   Pinned tab: Show only the alert indicator, or only the favicon
+//               (TabAlertState::NONE).  Never show the close button.
 bool ShouldTabShowFavicon(int capacity,
                           bool is_pinned_tab,
                           bool is_active_tab,
                           bool has_favicon,
-                          TabMediaState media_state);
-bool ShouldTabShowMediaIndicator(int capacity,
+                          TabAlertState alert_state);
+bool ShouldTabShowAlertIndicator(int capacity,
                                  bool is_pinned_tab,
                                  bool is_active_tab,
                                  bool has_favicon,
-                                 TabMediaState media_state);
+                                 TabAlertState alert_state);
 bool ShouldTabShowCloseButton(int capacity,
                               bool is_pinned_tab,
                               bool is_active_tab);
 
-// Returns the media state to be shown by the tab's media indicator.  When
+// Returns the alert state to be shown by the tab's alert indicator.  When
 // multiple states apply (e.g., tab capture with audio playback), the one most
 // relevant to user privacy concerns is selected.
-TabMediaState GetTabMediaStateForContents(content::WebContents* contents);
+TabAlertState GetTabAlertStateForContents(content::WebContents* contents);
 
-// Returns a cached image, to be shown by the media indicator for the given
-// |media_state|.  Uses the global ui::ResourceBundle shared instance.
-gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state,
+// Returns a cached image, to be shown by the alert indicator for the given
+// |alert_state|.  Uses the global ui::ResourceBundle shared instance.
+gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
                                      SkColor button_color);
 
-// Returns the cached image, to be shown by the media indicator button for mouse
-// hover/pressed, when the indicator is in the given |media_state|.  Uses the
+// Returns the cached image, to be shown by the alert indicator button for mouse
+// hover/pressed, when the indicator is in the given |alert_state|.  Uses the
 // global ui::ResourceBundle shared instance.
-gfx::Image GetTabMediaIndicatorAffordanceImage(TabMediaState media_state,
+gfx::Image GetTabAlertIndicatorAffordanceImage(TabAlertState alert_state,
                                                SkColor button_color);
 
 // Returns a non-continuous Animation that performs a fade-in or fade-out
-// appropriate for the given |next_media_state|.  This is used by the tab media
+// appropriate for the given |next_alert_state|.  This is used by the tab alert
 // indicator to alert the user that recording, tab capture, or audio playback
 // has started/stopped.
-scoped_ptr<gfx::Animation> CreateTabMediaIndicatorFadeAnimation(
-    TabMediaState next_media_state);
+scoped_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
+    TabAlertState next_alert_state);
 
 // Returns the text to show in a tab's tooltip: The contents |title|, followed
-// by a break, followed by a localized string describing the |media_state|.
+// by a break, followed by a localized string describing the |alert_state|.
 base::string16 AssembleTabTooltipText(const base::string16& title,
-                                      TabMediaState media_state);
+                                      TabAlertState alert_state);
 
 // Returns true if experimental audio mute controls (UI or extension API) are
 // enabled.  Currently, toggling mute from a tab's context menu is the only

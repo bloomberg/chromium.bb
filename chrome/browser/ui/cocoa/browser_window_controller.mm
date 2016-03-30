@@ -1889,13 +1889,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
                                                  command.accelerator());
 }
 
-- (void)setMediaState:(TabMediaState)mediaState {
+- (void)setAlertState:(TabAlertState)alertState {
   static_cast<BrowserWindowCocoa*>([self browserWindow])
-      ->UpdateMediaState(mediaState);
+      ->UpdateAlertState(alertState);
 }
 
-- (TabMediaState)mediaState {
-  return static_cast<BrowserWindowCocoa*>([self browserWindow])->media_state();
+- (TabAlertState)alertState {
+  return static_cast<BrowserWindowCocoa*>([self browserWindow])->alert_state();
 }
 
 @end  // @implementation BrowserWindowController

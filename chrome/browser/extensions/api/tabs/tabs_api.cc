@@ -1276,17 +1276,17 @@ bool TabsUpdateFunction::RunAsync() {
   if (params->update_properties.muted.get()) {
     TabMutedResult tab_muted_result = chrome::SetTabAudioMuted(
         contents, *params->update_properties.muted,
-        TAB_MUTED_REASON_EXTENSION, extension()->id());
+        TabMutedReason::EXTENSION, extension()->id());
 
     switch (tab_muted_result) {
-      case TAB_MUTED_RESULT_SUCCESS:
+      case TabMutedResult::SUCCESS:
         break;
-      case TAB_MUTED_RESULT_FAIL_NOT_ENABLED:
+      case TabMutedResult::FAIL_NOT_ENABLED:
         error_ = ErrorUtils::FormatErrorMessage(
             keys::kCannotUpdateMuteDisabled, base::IntToString(tab_id),
             switches::kEnableTabAudioMuting);
         return false;
-      case TAB_MUTED_RESULT_FAIL_TABCAPTURE:
+      case TabMutedResult::FAIL_TABCAPTURE:
         error_ = ErrorUtils::FormatErrorMessage(keys::kCannotUpdateMuteCaptured,
                                                 base::IntToString(tab_id));
         return false;

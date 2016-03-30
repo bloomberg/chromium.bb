@@ -1,4 +1,4 @@
 sky@chromium.org
 
-# For changes related to the tab media indicators.
+# For changes related to the tab alert indicators.
 per-file tab_utils*=miu@chromium.org

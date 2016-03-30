@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tabs/media_indicator_button.h"
+#include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -19,7 +19,7 @@ namespace {
 
 // The minimum required click-to-select area of an inactive Tab before allowing
 // the click-to-mute functionality to be enabled.  These values are in terms of
-// some percentage of the MediaIndicatorButton's width.  See comments in
+// some percentage of the AlertIndicatorButton's width.  See comments in
 // UpdateEnabledForMuteToggle().
 const int kMinMouseSelectableAreaPercent = 250;
 const int kMinGestureSelectableAreaPercent = 400;
@@ -33,12 +33,12 @@ bool IsShiftOrControlDown(const ui::Event& event) {
 
 }  // namespace
 
-const char MediaIndicatorButton::kViewClassName[] = "MediaIndicatorButton";
+const char AlertIndicatorButton::kViewClassName[] = "AlertIndicatorButton";
 
-class MediaIndicatorButton::FadeAnimationDelegate
+class AlertIndicatorButton::FadeAnimationDelegate
     : public gfx::AnimationDelegate {
  public:
-  explicit FadeAnimationDelegate(MediaIndicatorButton* button)
+  explicit FadeAnimationDelegate(AlertIndicatorButton* button)
       : button_(button) {}
   ~FadeAnimationDelegate() override {}
 
@@ -53,79 +53,79 @@ class MediaIndicatorButton::FadeAnimationDelegate
   }
 
   void AnimationEnded(const gfx::Animation* animation) override {
-    button_->showing_media_state_ = button_->media_state_;
-    button_->parent_tab_->MediaStateChanged();
+    button_->showing_alert_state_ = button_->alert_state_;
+    button_->parent_tab_->AlertStateChanged();
   }
 
-  MediaIndicatorButton* const button_;
+  AlertIndicatorButton* const button_;
 
   DISALLOW_COPY_AND_ASSIGN(FadeAnimationDelegate);
 };
 
-MediaIndicatorButton::MediaIndicatorButton(Tab* parent_tab)
+AlertIndicatorButton::AlertIndicatorButton(Tab* parent_tab)
     : views::ImageButton(NULL),
       parent_tab_(parent_tab),
-      media_state_(TAB_MEDIA_STATE_NONE),
-      showing_media_state_(TAB_MEDIA_STATE_NONE) {
+      alert_state_(TabAlertState::NONE),
+      showing_alert_state_(TabAlertState::NONE) {
   DCHECK(parent_tab_);
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 }
 
-MediaIndicatorButton::~MediaIndicatorButton() {}
+AlertIndicatorButton::~AlertIndicatorButton() {}
 
-void MediaIndicatorButton::TransitionToMediaState(TabMediaState next_state) {
-  if (next_state == media_state_)
+void AlertIndicatorButton::TransitionToAlertState(TabAlertState next_state) {
+  if (next_state == alert_state_)
     return;
 
-  TabMediaState previous_media_showing_state = showing_media_state_;
+  TabAlertState previous_alert_showing_state = showing_alert_state_;
 
-  if (next_state != TAB_MEDIA_STATE_NONE)
+  if (next_state != TabAlertState::NONE)
     ResetImages(next_state);
 
-  if ((media_state_ == TAB_MEDIA_STATE_AUDIO_PLAYING &&
-       next_state == TAB_MEDIA_STATE_AUDIO_MUTING) ||
-      (media_state_ == TAB_MEDIA_STATE_AUDIO_MUTING &&
-       next_state == TAB_MEDIA_STATE_AUDIO_PLAYING) ||
-      (media_state_ == TAB_MEDIA_STATE_AUDIO_MUTING &&
-       next_state == TAB_MEDIA_STATE_NONE)) {
+  if ((alert_state_ == TabAlertState::AUDIO_PLAYING &&
+       next_state == TabAlertState::AUDIO_MUTING) ||
+      (alert_state_ == TabAlertState::AUDIO_MUTING &&
+       next_state == TabAlertState::AUDIO_PLAYING) ||
+      (alert_state_ == TabAlertState::AUDIO_MUTING &&
+       next_state == TabAlertState::NONE)) {
     // Instant user feedback: No fade animation.
-    showing_media_state_ = next_state;
+    showing_alert_state_ = next_state;
     fade_animation_.reset();
   } else {
-    if (next_state == TAB_MEDIA_STATE_NONE)
-      showing_media_state_ = media_state_;  // Fading-out indicator.
+    if (next_state == TabAlertState::NONE)
+      showing_alert_state_ = alert_state_;  // Fading-out indicator.
     else
-      showing_media_state_ = next_state;  // Fading-in to next indicator.
-    fade_animation_ = chrome::CreateTabMediaIndicatorFadeAnimation(next_state);
+      showing_alert_state_ = next_state;  // Fading-in to next indicator.
+    fade_animation_ = chrome::CreateTabAlertIndicatorFadeAnimation(next_state);
     if (!fade_animation_delegate_)
       fade_animation_delegate_.reset(new FadeAnimationDelegate(this));
     fade_animation_->set_delegate(fade_animation_delegate_.get());
     fade_animation_->Start();
   }
 
-  media_state_ = next_state;
+  alert_state_ = next_state;
 
-  if (previous_media_showing_state != showing_media_state_)
-    parent_tab_->MediaStateChanged();
+  if (previous_alert_showing_state != showing_alert_state_)
+    parent_tab_->AlertStateChanged();
 
   UpdateEnabledForMuteToggle();
 
   // An indicator state change should be made visible immediately, instead of
   // the user being surprised when their mouse leaves the button.
   if (state() == views::CustomButton::STATE_HOVERED) {
-    SetState(enabled() ? views::CustomButton::STATE_NORMAL :
-             views::CustomButton::STATE_DISABLED);
+    SetState(enabled() ? views::CustomButton::STATE_NORMAL
+                       : views::CustomButton::STATE_DISABLED);
   }
 
   // Note: The calls to SetImage(), SetEnabled(), and SetState() above will call
   // SchedulePaint() if necessary.
 }
 
-void MediaIndicatorButton::UpdateEnabledForMuteToggle() {
+void AlertIndicatorButton::UpdateEnabledForMuteToggle() {
   bool enable = chrome::AreExperimentalMuteControlsEnabled() &&
-      (media_state_ == TAB_MEDIA_STATE_AUDIO_PLAYING ||
-       media_state_ == TAB_MEDIA_STATE_AUDIO_MUTING);
+                (alert_state_ == TabAlertState::AUDIO_PLAYING ||
+                 alert_state_ == TabAlertState::AUDIO_MUTING);
 
   // If the tab is not the currently-active tab, make sure it is wide enough
   // before enabling click-to-mute.  This ensures that there is enough click
@@ -140,22 +140,22 @@ void MediaIndicatorButton::UpdateEnabledForMuteToggle() {
   SetEnabled(enable);
 }
 
-void MediaIndicatorButton::OnParentTabButtonColorChanged() {
-  if (media_state_ == TAB_MEDIA_STATE_AUDIO_PLAYING ||
-      media_state_ == TAB_MEDIA_STATE_AUDIO_MUTING)
-    ResetImages(media_state_);
+void AlertIndicatorButton::OnParentTabButtonColorChanged() {
+  if (alert_state_ == TabAlertState::AUDIO_PLAYING ||
+      alert_state_ == TabAlertState::AUDIO_MUTING)
+    ResetImages(alert_state_);
 }
 
-const char* MediaIndicatorButton::GetClassName() const {
+const char* AlertIndicatorButton::GetClassName() const {
   return kViewClassName;
 }
 
-views::View* MediaIndicatorButton::GetTooltipHandlerForPoint(
+views::View* AlertIndicatorButton::GetTooltipHandlerForPoint(
     const gfx::Point& point) {
   return NULL;  // Tab (the parent View) provides the tooltip.
 }
 
-bool MediaIndicatorButton::OnMousePressed(const ui::MouseEvent& event) {
+bool AlertIndicatorButton::OnMousePressed(const ui::MouseEvent& event) {
   // Do not handle this mouse event when anything but the left mouse button is
   // pressed or when any modifier keys are being held down.  Instead, the Tab
   // should react (e.g., middle-click for close, right-click for context menu).
@@ -167,16 +167,16 @@ bool MediaIndicatorButton::OnMousePressed(const ui::MouseEvent& event) {
   return ImageButton::OnMousePressed(event);
 }
 
-bool MediaIndicatorButton::OnMouseDragged(const ui::MouseEvent& event) {
+bool AlertIndicatorButton::OnMouseDragged(const ui::MouseEvent& event) {
   const ButtonState previous_state = state();
   const bool ret = ImageButton::OnMouseDragged(event);
   if (previous_state != views::CustomButton::STATE_NORMAL &&
       state() == views::CustomButton::STATE_NORMAL)
-    content::RecordAction(UserMetricsAction("MediaIndicatorButton_Dragged"));
+    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Dragged"));
   return ret;
 }
 
-void MediaIndicatorButton::OnMouseEntered(const ui::MouseEvent& event) {
+void AlertIndicatorButton::OnMouseEntered(const ui::MouseEvent& event) {
   // If any modifier keys are being held down, do not turn on hover.
   if (state() != views::CustomButton::STATE_DISABLED &&
       IsShiftOrControlDown(event)) {
@@ -186,7 +186,7 @@ void MediaIndicatorButton::OnMouseEntered(const ui::MouseEvent& event) {
   ImageButton::OnMouseEntered(event);
 }
 
-void MediaIndicatorButton::OnMouseMoved(const ui::MouseEvent& event) {
+void AlertIndicatorButton::OnMouseMoved(const ui::MouseEvent& event) {
   // If any modifier keys are being held down, turn off hover.
   if (state() != views::CustomButton::STATE_DISABLED &&
       IsShiftOrControlDown(event)) {
@@ -196,14 +196,14 @@ void MediaIndicatorButton::OnMouseMoved(const ui::MouseEvent& event) {
   ImageButton::OnMouseMoved(event);
 }
 
-void MediaIndicatorButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+void AlertIndicatorButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   UpdateEnabledForMuteToggle();
 }
 
-void MediaIndicatorButton::OnPaint(gfx::Canvas* canvas) {
+void AlertIndicatorButton::OnPaint(gfx::Canvas* canvas) {
   double opaqueness =
       fade_animation_ ? fade_animation_->GetCurrentValue() : 1.0;
-  if (media_state_ == TAB_MEDIA_STATE_NONE)
+  if (alert_state_ == TabAlertState::NONE)
     opaqueness = 1.0 - opaqueness;  // Fading out, not in.
   if (opaqueness < 1.0)
     canvas->SaveLayerAlpha(opaqueness * SK_AlphaOPAQUE);
@@ -212,26 +212,26 @@ void MediaIndicatorButton::OnPaint(gfx::Canvas* canvas) {
     canvas->Restore();
 }
 
-bool MediaIndicatorButton::DoesIntersectRect(const views::View* target,
+bool AlertIndicatorButton::DoesIntersectRect(const views::View* target,
                                              const gfx::Rect& rect) const {
   // If this button is not enabled, Tab (the parent View) handles all mouse
   // events.
   return enabled() &&
-      views::ViewTargeterDelegate::DoesIntersectRect(target, rect);
+         views::ViewTargeterDelegate::DoesIntersectRect(target, rect);
 }
 
-void MediaIndicatorButton::NotifyClick(const ui::Event& event) {
-  if (media_state_ == TAB_MEDIA_STATE_AUDIO_PLAYING)
-    content::RecordAction(UserMetricsAction("MediaIndicatorButton_Mute"));
-  else if (media_state_ == TAB_MEDIA_STATE_AUDIO_MUTING)
-    content::RecordAction(UserMetricsAction("MediaIndicatorButton_Unmute"));
+void AlertIndicatorButton::NotifyClick(const ui::Event& event) {
+  if (alert_state_ == TabAlertState::AUDIO_PLAYING)
+    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Mute"));
+  else if (alert_state_ == TabAlertState::AUDIO_MUTING)
+    content::RecordAction(UserMetricsAction("AlertIndicatorButton_Unmute"));
   else
     NOTREACHED();
 
   GetTab()->controller()->ToggleTabAudioMute(GetTab());
 }
 
-bool MediaIndicatorButton::IsTriggerableEvent(const ui::Event& event) {
+bool AlertIndicatorButton::IsTriggerableEvent(const ui::Event& event) {
   // For mouse events, only trigger on the left mouse button and when no
   // modifier keys are being held down.
   if (event.IsMouseEvent() &&
@@ -251,19 +251,19 @@ bool MediaIndicatorButton::IsTriggerableEvent(const ui::Event& event) {
   return views::ImageButton::IsTriggerableEvent(event);
 }
 
-Tab* MediaIndicatorButton::GetTab() const {
+Tab* AlertIndicatorButton::GetTab() const {
   DCHECK_EQ(static_cast<views::View*>(parent_tab_), parent());
   return parent_tab_;
 }
 
-void MediaIndicatorButton::ResetImages(TabMediaState state) {
+void AlertIndicatorButton::ResetImages(TabAlertState state) {
   SkColor color = parent_tab_->button_color();
   gfx::ImageSkia indicator_image =
-      chrome::GetTabMediaIndicatorImage(state, color).AsImageSkia();
+      chrome::GetTabAlertIndicatorImage(state, color).AsImageSkia();
   SetImage(views::CustomButton::STATE_NORMAL, &indicator_image);
   SetImage(views::CustomButton::STATE_DISABLED, &indicator_image);
   gfx::ImageSkia affordance_image =
-      chrome::GetTabMediaIndicatorAffordanceImage(state, color).AsImageSkia();
+      chrome::GetTabAlertIndicatorAffordanceImage(state, color).AsImageSkia();
   SetImage(views::CustomButton::STATE_HOVERED, &affordance_image);
   SetImage(views::CustomButton::STATE_PRESSED, &affordance_image);
 }

@@ -59,13 +59,13 @@ TEST_F(BrowserWindowCocoaTest, TestWindowTitle) {
             [bwc->WindowTitle() rangeOfString:playing_emoji].location);
   EXPECT_EQ(static_cast<NSUInteger>(NSNotFound),
             [bwc->WindowTitle() rangeOfString:muting_emoji].location);
-  bwc->UpdateMediaState(TAB_MEDIA_STATE_AUDIO_PLAYING);
+  bwc->UpdateAlertState(TabAlertState::AUDIO_PLAYING);
   EXPECT_NE(static_cast<NSUInteger>(NSNotFound),
             [bwc->WindowTitle() rangeOfString:playing_emoji].location);
-  bwc->UpdateMediaState(TAB_MEDIA_STATE_AUDIO_MUTING);
+  bwc->UpdateAlertState(TabAlertState::AUDIO_MUTING);
   EXPECT_NE(static_cast<NSUInteger>(NSNotFound),
             [bwc->WindowTitle() rangeOfString:muting_emoji].location);
-  bwc->UpdateMediaState(TAB_MEDIA_STATE_NONE);
+  bwc->UpdateAlertState(TabAlertState::NONE);
   EXPECT_EQ(static_cast<NSUInteger>(NSNotFound),
             [bwc->WindowTitle() rangeOfString:playing_emoji].location);
   EXPECT_EQ(static_cast<NSUInteger>(NSNotFound),

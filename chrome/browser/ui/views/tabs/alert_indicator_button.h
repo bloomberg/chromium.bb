@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TABS_MEDIA_INDICATOR_BUTTON_H_
-#define CHROME_BROWSER_UI_VIEWS_TABS_MEDIA_INDICATOR_BUTTON_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TABS_ALERT_INDICATOR_BUTTON_H_
+#define CHROME_BROWSER_UI_VIEWS_TABS_ALERT_INDICATOR_BUTTON_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,7 +18,7 @@ class Animation;
 class AnimationDelegate;
 }
 
-// This is an ImageButton subclass that serves as both the media indicator icon
+// This is an ImageButton subclass that serves as both the alert indicator icon
 // (audio, tab capture, etc.), and as a mute button.  It is meant to only be
 // used as a child view of Tab.
 //
@@ -26,29 +26,27 @@ class AnimationDelegate;
 // button functionality is enabled and begins handling mouse events.  Otherwise,
 // this view behaves like an image and all mouse events will be handled by the
 // Tab (its parent View).
-class MediaIndicatorButton : public views::ImageButton,
+class AlertIndicatorButton : public views::ImageButton,
                              public views::ViewTargeterDelegate {
  public:
-  // The MediaIndicatorButton's class name.
+  // The AlertIndicatorButton's class name.
   static const char kViewClassName[];
 
-  explicit MediaIndicatorButton(Tab* parent_tab);
-  ~MediaIndicatorButton() override;
+  explicit AlertIndicatorButton(Tab* parent_tab);
+  ~AlertIndicatorButton() override;
 
-  // Returns the current TabMediaState except, while the indicator image is
-  // fading out, returns the prior TabMediaState.
-  TabMediaState showing_media_state() const {
-    return showing_media_state_;
-  }
+  // Returns the current TabAlertState except, while the indicator image is
+  // fading out, returns the prior TabAlertState.
+  TabAlertState showing_alert_state() const { return showing_alert_state_; }
 
   // Calls ResetImages(), starts fade animations, and activates/deactivates
   // button functionality as appropriate.
-  void TransitionToMediaState(TabMediaState next_state);
+  void TransitionToAlertState(TabAlertState next_state);
 
-  // Determines whether the MediaIndicatorButton will be clickable for toggling
+  // Determines whether the AlertIndicatorButton will be clickable for toggling
   // muting.  This should be called whenever the active/inactive state of a tab
-  // has changed.  Internally, TransitionToMediaState() and OnBoundsChanged()
-  // calls this when the TabMediaState or the bounds have changed.
+  // has changed.  Internally, TransitionToAlertState() and OnBoundsChanged()
+  // calls this when the TabAlertState or the bounds have changed.
   void UpdateEnabledForMuteToggle();
 
   // Called when the parent tab's button color changes.  Determines whether
@@ -77,27 +75,27 @@ class MediaIndicatorButton : public views::ImageButton,
   bool IsTriggerableEvent(const ui::Event& event) override;
 
  private:
-  friend class MediaIndicatorButtonTest;
+  friend class AlertIndicatorButtonTest;
   class FadeAnimationDelegate;
 
-  // Returns the tab (parent view) of this MediaIndicatorButton.
+  // Returns the tab (parent view) of this AlertIndicatorButton.
   Tab* GetTab() const;
 
   // Resets the images to display on the button to reflect |state| and the
   // parent tab's button color.  Should be called when either of these changes.
-  void ResetImages(TabMediaState state);
+  void ResetImages(TabAlertState state);
 
   Tab* const parent_tab_;
 
-  TabMediaState media_state_;
+  TabAlertState alert_state_;
 
-  // Media indicator fade-in/out animation (i.e., only on show/hide, not a
+  // Alert indicator fade-in/out animation (i.e., only on show/hide, not a
   // continuous animation).
   scoped_ptr<gfx::AnimationDelegate> fade_animation_delegate_;
   scoped_ptr<gfx::Animation> fade_animation_;
-  TabMediaState showing_media_state_;
+  TabAlertState showing_alert_state_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaIndicatorButton);
+  DISALLOW_COPY_AND_ASSIGN(AlertIndicatorButton);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TABS_MEDIA_INDICATOR_BUTTON_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TABS_ALERT_INDICATOR_BUTTON_H_
