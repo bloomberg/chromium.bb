@@ -62,7 +62,7 @@ class CC_EXPORT PictureLayerImpl
   void set_gpu_raster_max_texture_size(gfx::Size gpu_raster_max_texture_size) {
     gpu_raster_max_texture_size_ = gpu_raster_max_texture_size;
   }
-  void UpdateRasterSource(scoped_refptr<DisplayListRasterSource> raster_source,
+  void UpdateRasterSource(scoped_refptr<RasterSource> raster_source,
                           Region* new_invalidation,
                           const PictureLayerTilingSet* pending_set);
   bool UpdateTiles();
@@ -89,9 +89,7 @@ class CC_EXPORT PictureLayerImpl
   bool IsOnActiveOrPendingTree() const;
 
   // Used for benchmarking
-  DisplayListRasterSource* GetRasterSource() const {
-    return raster_source_.get();
-  }
+  RasterSource* GetRasterSource() const { return raster_source_.get(); }
 
  protected:
   friend class LayerRasterTileIterator;
@@ -127,7 +125,7 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerImpl* twin_layer_;
 
   scoped_ptr<PictureLayerTilingSet> tilings_;
-  scoped_refptr<DisplayListRasterSource> raster_source_;
+  scoped_refptr<RasterSource> raster_source_;
   Region invalidation_;
 
   float ideal_page_scale_;

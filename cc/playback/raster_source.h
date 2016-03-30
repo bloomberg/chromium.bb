@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_PLAYBACK_DISPLAY_LIST_RASTER_SOURCE_H_
-#define CC_PLAYBACK_DISPLAY_LIST_RASTER_SOURCE_H_
+#ifndef CC_PLAYBACK_RASTER_SOURCE_H_
+#define CC_PLAYBACK_RASTER_SOURCE_H_
 
 #include <stddef.h>
 
@@ -25,13 +25,12 @@ class DisplayItemList;
 class DrawImage;
 class ImageDecodeController;
 
-class CC_EXPORT DisplayListRasterSource
-    : public base::trace_event::MemoryDumpProvider,
-      public base::RefCountedThreadSafe<DisplayListRasterSource> {
+class CC_EXPORT RasterSource : public base::trace_event::MemoryDumpProvider,
+                               public base::RefCountedThreadSafe<RasterSource> {
  public:
-  static scoped_refptr<DisplayListRasterSource>
-  CreateFromDisplayListRecordingSource(const DisplayListRecordingSource* other,
-                                       bool can_use_lcd_text);
+  static scoped_refptr<RasterSource> CreateFromDisplayListRecordingSource(
+      const DisplayListRecordingSource* other,
+      bool can_use_lcd_text);
 
   // Raster a subrect of this RasterSource into the given canvas. It is
   // assumed that contents_scale has already been applied to this canvas.
@@ -108,7 +107,7 @@ class CC_EXPORT DisplayListRasterSource
   // Return true if LCD anti-aliasing may be used when rastering text.
   virtual bool CanUseLCDText() const;
 
-  scoped_refptr<DisplayListRasterSource> CreateCloneWithoutLCDText() const;
+  scoped_refptr<RasterSource> CreateCloneWithoutLCDText() const;
 
   // Image decode controller should be set once. Its lifetime has to exceed that
   // of the raster source, since the raster source will access it during raster.
@@ -119,13 +118,11 @@ class CC_EXPORT DisplayListRasterSource
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
-  friend class base::RefCountedThreadSafe<DisplayListRasterSource>;
+  friend class base::RefCountedThreadSafe<RasterSource>;
 
-  DisplayListRasterSource(const DisplayListRecordingSource* other,
-                          bool can_use_lcd_text);
-  DisplayListRasterSource(const DisplayListRasterSource* other,
-                          bool can_use_lcd_text);
-  ~DisplayListRasterSource() override;
+  RasterSource(const DisplayListRecordingSource* other, bool can_use_lcd_text);
+  RasterSource(const RasterSource* other, bool can_use_lcd_text);
+  ~RasterSource() override;
 
   // These members are const as this raster source may be in use on another
   // thread and so should not be touched after construction.
@@ -169,9 +166,9 @@ class CC_EXPORT DisplayListRasterSource
   // Used to ensure that memory dump logic always happens on the same thread.
   base::ThreadChecker memory_dump_thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayListRasterSource);
+  DISALLOW_COPY_AND_ASSIGN(RasterSource);
 };
 
 }  // namespace cc
 
-#endif  // CC_PLAYBACK_DISPLAY_LIST_RASTER_SOURCE_H_
+#endif  // CC_PLAYBACK_RASTER_SOURCE_H_

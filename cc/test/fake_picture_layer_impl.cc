@@ -15,7 +15,7 @@ namespace cc {
 FakePictureLayerImpl::FakePictureLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
-    scoped_refptr<DisplayListRasterSource> raster_source,
+    scoped_refptr<RasterSource> raster_source,
     bool is_mask)
     : PictureLayerImpl(tree_impl, id, is_mask),
       append_quads_count_(0),
@@ -30,7 +30,7 @@ FakePictureLayerImpl::FakePictureLayerImpl(
 FakePictureLayerImpl::FakePictureLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
-    scoped_refptr<DisplayListRasterSource> raster_source,
+    scoped_refptr<RasterSource> raster_source,
     bool is_mask,
     const gfx::Size& layer_bounds)
     : PictureLayerImpl(tree_impl, id, is_mask),
@@ -108,7 +108,7 @@ PictureLayerTiling* FakePictureLayerImpl::LowResTiling() const {
 }
 
 void FakePictureLayerImpl::SetRasterSourceOnPending(
-    scoped_refptr<DisplayListRasterSource> raster_source,
+    scoped_refptr<RasterSource> raster_source,
     const Region& invalidation) {
   DCHECK(layer_tree_impl()->IsPendingTree());
   Region invalidation_temp = invalidation;

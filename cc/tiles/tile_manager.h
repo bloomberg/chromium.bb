@@ -17,7 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "cc/base/unique_notifier.h"
-#include "cc/playback/display_list_raster_source.h"
+#include "cc/playback/raster_source.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"

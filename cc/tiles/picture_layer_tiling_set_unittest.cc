@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "cc/resources/resource_provider.h"
-#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
+#include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -36,8 +36,8 @@ TEST(PictureLayerTilingSetTest, NoResources) {
   scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
   client.SetTileSize(gfx::Size(256, 256));
 
-  scoped_refptr<FakeDisplayListRasterSource> raster_source =
-      FakeDisplayListRasterSource::CreateEmpty(layer_bounds);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateEmpty(layer_bounds);
 
   set->AddTiling(1.0, raster_source);
   set->AddTiling(1.5, raster_source);
@@ -74,8 +74,8 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   PictureLayerTiling* high_res_tiling;
   PictureLayerTiling* low_res_tiling;
 
-  scoped_refptr<FakeDisplayListRasterSource> raster_source =
-      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
 
   scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
   set->AddTiling(2.0, raster_source);
@@ -225,8 +225,8 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     client.SetTileSize(gfx::Size(256, 256));
     gfx::Size layer_bounds(1000, 800);
     scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
-    scoped_refptr<FakeDisplayListRasterSource> raster_source =
-        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+    scoped_refptr<FakeRasterSource> raster_source =
+        FakeRasterSource::CreateFilled(layer_bounds);
 
     float scale = min_scale;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
@@ -305,8 +305,8 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
       ACTIVE_TREE, &active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 100);
-  scoped_refptr<FakeDisplayListRasterSource> raster_source =
-      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
 
   gfx::Size tile_size1(10, 10);
   gfx::Size tile_size2(30, 30);
@@ -412,8 +412,8 @@ TEST(PictureLayerTilingSetTest, MaxContentScale) {
       ACTIVE_TREE, &active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 105);
-  scoped_refptr<FakeDisplayListRasterSource> raster_source =
-      FakeDisplayListRasterSource::CreateEmpty(layer_bounds);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateEmpty(layer_bounds);
 
   // Tilings can be added of any scale, the tiling client can controls this.
   pending_set->AddTiling(1.f, raster_source);

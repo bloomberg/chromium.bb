@@ -44,7 +44,7 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
 class RasterTaskImpl : public RasterTask {
  public:
   RasterTaskImpl(const Resource* resource,
-                 scoped_refptr<DisplayListRasterSource> raster_source,
+                 scoped_refptr<RasterSource> raster_source,
                  const gfx::Rect& content_rect,
                  const gfx::Rect& invalid_content_rect,
                  float contents_scale,
@@ -112,7 +112,7 @@ class RasterTaskImpl : public RasterTask {
 
  private:
   const Resource* resource_;
-  scoped_refptr<DisplayListRasterSource> raster_source_;
+  scoped_refptr<RasterSource> raster_source_;
   gfx::Rect content_rect_;
   gfx::Rect invalid_content_rect_;
   float contents_scale_;

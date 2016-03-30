@@ -7,12 +7,11 @@
 
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "cc/playback/display_list_raster_source.h"
 #include "cc/playback/display_list_recording_source.h"
+#include "cc/playback/raster_source.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/begin_frame_args_test.h"
-#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -20,6 +19,7 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
+#include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -88,10 +88,10 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {
-    scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
-        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
-    scoped_refptr<FakeDisplayListRasterSource> active_raster_source =
-        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+    scoped_refptr<FakeRasterSource> pending_raster_source =
+        FakeRasterSource::CreateFilled(layer_bounds);
+    scoped_refptr<FakeRasterSource> active_raster_source =
+        FakeRasterSource::CreateFilled(layer_bounds);
 
     SetupTrees(pending_raster_source, active_raster_source);
   }
@@ -114,14 +114,14 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     active_layer_->set_fixed_tile_size(tile_size);
   }
 
-  void SetupTrees(scoped_refptr<DisplayListRasterSource> pending_raster_source,
-                  scoped_refptr<DisplayListRasterSource> active_raster_source) {
+  void SetupTrees(scoped_refptr<RasterSource> pending_raster_source,
+                  scoped_refptr<RasterSource> active_raster_source) {
     SetupPendingTree(active_raster_source);
     ActivateTree();
     SetupPendingTree(pending_raster_source);
   }
 
-  void SetupPendingTree(scoped_refptr<DisplayListRasterSource> raster_source) {
+  void SetupPendingTree(scoped_refptr<RasterSource> raster_source) {
     host_impl_.CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
 
@@ -677,8 +677,8 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
   SetupDefaultTrees(layer_bounds);
 
   // Create a pending child layer.
-  scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
-      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
   scoped_ptr<FakePictureLayerImpl> pending_child =
       FakePictureLayerImpl::CreateWithRasterSource(
           host_impl_.pending_tree(), id_ + 1, pending_raster_source);
@@ -898,8 +898,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   host_impl_.SetViewportSize(layer_bounds);
 
-  scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
-      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(pending_raster_source);
 
   scoped_ptr<FakePictureLayerImpl> pending_child =
@@ -1014,8 +1014,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   gfx::Size layer_bounds(1000, 1000);
 
-  scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
-      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
   SetupPendingTree(pending_raster_source);
 
   scoped_ptr<FakePictureLayerImpl> pending_child =
@@ -1208,8 +1208,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_content_pixels);
 
-  scoped_refptr<FakeDisplayListRasterSource> raster_source =
-      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
   PictureLayerTiling* tiling = tiling_set->AddTiling(1.0f, raster_source);
   tiling->set_resolution(HIGH_RESOLUTION);
 
@@ -1317,8 +1317,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_content_pixels);
 
-  scoped_refptr<FakeDisplayListRasterSource> raster_source =
-      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
   PictureLayerTiling* tiling = tiling_set->AddTiling(1.0f, raster_source);
   tiling->set_resolution(HIGH_RESOLUTION);
 
@@ -1465,8 +1465,8 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
   // tile iteration.
   gfx::Size layer_bounds(1, 1);
 
-  scoped_refptr<FakeDisplayListRasterSource> raster_source =
-      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
 
   FakePictureLayerTilingClient pending_client;
   pending_client.SetTileSize(gfx::Size(64, 64));
@@ -1540,9 +1540,9 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
                                              non_solid_paint);
   recording_source->Rerecord();
 
-  scoped_refptr<DisplayListRasterSource> raster_source =
-      DisplayListRasterSource::CreateFromDisplayListRecordingSource(
-          recording_source.get(), false);
+  scoped_refptr<RasterSource> raster_source =
+      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
+                                                         false);
 
   FakePictureLayerTilingClient tiling_client;
   tiling_client.SetTileSize(size);
@@ -1595,10 +1595,10 @@ class TileManagerTest : public testing::Test {
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {
-    scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
-        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
-    scoped_refptr<FakeDisplayListRasterSource> active_raster_source =
-        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+    scoped_refptr<FakeRasterSource> pending_raster_source =
+        FakeRasterSource::CreateFilled(layer_bounds);
+    scoped_refptr<FakeRasterSource> active_raster_source =
+        FakeRasterSource::CreateFilled(layer_bounds);
 
     SetupTrees(pending_raster_source, active_raster_source);
   }
@@ -1611,14 +1611,14 @@ class TileManagerTest : public testing::Test {
     host_impl_->active_tree()->UpdateDrawProperties(update_lcd_text);
   }
 
-  void SetupTrees(scoped_refptr<DisplayListRasterSource> pending_raster_source,
-                  scoped_refptr<DisplayListRasterSource> active_raster_source) {
+  void SetupTrees(scoped_refptr<RasterSource> pending_raster_source,
+                  scoped_refptr<RasterSource> active_raster_source) {
     SetupPendingTree(active_raster_source);
     ActivateTree();
     SetupPendingTree(pending_raster_source);
   }
 
-  void SetupPendingTree(scoped_refptr<DisplayListRasterSource> raster_source) {
+  void SetupPendingTree(scoped_refptr<RasterSource> raster_source) {
     host_impl_->CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
 
@@ -1743,7 +1743,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
   for (size_t i = 0; i < arraysize(resolutions); ++i) {
     SCOPED_TRACE(resolutions[i]);
 
-    // Make a DisplayListRasterSource that will draw a blue bitmap image.
+    // Make a RasterSource that will draw a blue bitmap image.
     skia::RefPtr<SkSurface> surface = skia::AdoptRef(
         SkSurface::NewRasterN32Premul(size.width(), size.height()));
     ASSERT_NE(surface, nullptr);
@@ -1761,8 +1761,8 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     recording_source->add_draw_rect_with_paint(gfx::Rect(size), paint);
     recording_source->add_draw_image(blue_image.get(), gfx::Point());
     recording_source->Rerecord();
-    scoped_refptr<DisplayListRasterSource> raster =
-        DisplayListRasterSource::CreateFromDisplayListRecordingSource(
+    scoped_refptr<RasterSource> raster =
+        RasterSource::CreateFromDisplayListRecordingSource(
             recording_source.get(), false);
 
     FakePictureLayerTilingClient tiling_client;
@@ -1885,8 +1885,8 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   const uint64_t kInvalidatedId = 43;
   const gfx::Size kTileSize(128, 128);
 
-  scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
-      FakeDisplayListRasterSource::CreateFilled(kTileSize);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(kTileSize);
   host_impl_->CreatePendingTree();
   LayerTreeImpl* pending_tree = host_impl_->pending_tree();
 
@@ -1978,8 +1978,8 @@ void RunPartialRasterCheck(scoped_ptr<LayerTreeHostImpl> host_impl,
       kInvalidatedId);
   host_impl->resource_pool()->CheckBusyResources();
 
-  scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
-      FakeDisplayListRasterSource::CreateFilled(kTileSize);
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilled(kTileSize);
   host_impl->CreatePendingTree();
   LayerTreeImpl* pending_tree = host_impl->pending_tree();
 

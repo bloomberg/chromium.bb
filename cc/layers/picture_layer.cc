@@ -55,7 +55,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
 
   // Preserve lcd text settings from the current raster source.
   bool can_use_lcd_text = layer_impl->RasterSourceUsesLCDText();
-  scoped_refptr<DisplayListRasterSource> raster_source =
+  scoped_refptr<RasterSource> raster_source =
       recording_source_->CreateRasterSource(can_use_lcd_text);
   layer_impl->set_gpu_raster_max_texture_size(
       layer_tree_host()->device_viewport_size());
@@ -144,7 +144,7 @@ sk_sp<SkPicture> PictureLayer::GetPicture() const {
       client_, &recording_invalidation, layer_size, gfx::Rect(layer_size),
       update_source_frame_number_, DisplayListRecordingSource::RECORD_NORMALLY);
 
-  scoped_refptr<DisplayListRasterSource> raster_source =
+  scoped_refptr<RasterSource> raster_source =
       recording_source->CreateRasterSource(false);
 
   return raster_source->GetFlattenedPicture();

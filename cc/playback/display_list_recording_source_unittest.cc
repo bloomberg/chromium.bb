@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "cc/base/region.h"
-#include "cc/playback/display_list_raster_source.h"
+#include "cc/playback/raster_source.h"
 #include "cc/proto/display_list_recording_source.pb.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_display_list_recording_source.h"
@@ -25,11 +25,11 @@ scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
   return recording_source;
 }
 
-scoped_refptr<DisplayListRasterSource> CreateRasterSource(
+scoped_refptr<RasterSource> CreateRasterSource(
     FakeDisplayListRecordingSource* recording_source) {
   bool can_use_lcd_text = true;
-  return DisplayListRasterSource::CreateFromDisplayListRecordingSource(
-      recording_source, can_use_lcd_text);
+  return RasterSource::CreateFromDisplayListRecordingSource(recording_source,
+                                                            can_use_lcd_text);
 }
 
 void ValidateRecordingSourceSerialization(
@@ -133,9 +133,9 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
   recording_source->Rerecord();
 
   bool can_use_lcd_text = true;
-  scoped_refptr<DisplayListRasterSource> raster_source =
-      DisplayListRasterSource::CreateFromDisplayListRecordingSource(
-          recording_source.get(), can_use_lcd_text);
+  scoped_refptr<RasterSource> raster_source =
+      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
+                                                         can_use_lcd_text);
 
   // Tile sized iterators. These should find only one pixel ref.
   {
@@ -196,7 +196,7 @@ TEST(DisplayListRecordingSourceTest, NoGatherImageEmptyImages) {
   recording_source->SetGenerateDiscardableImagesMetadata(false);
   recording_source->Rerecord();
 
-  scoped_refptr<DisplayListRasterSource> raster_source =
+  scoped_refptr<RasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // If recording source do not gather images, raster source is not going to
@@ -216,7 +216,7 @@ TEST(DisplayListRecordingSourceTest, EmptyImages) {
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
-  scoped_refptr<DisplayListRasterSource> raster_source =
+  scoped_refptr<RasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // Tile sized iterators.
@@ -274,7 +274,7 @@ TEST(DisplayListRecordingSourceTest, NoDiscardableImages) {
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
-  scoped_refptr<DisplayListRasterSource> raster_source =
+  scoped_refptr<RasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // Tile sized iterators.
@@ -326,7 +326,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
-  scoped_refptr<DisplayListRasterSource> raster_source =
+  scoped_refptr<RasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // Tile sized iterators. These should find only one image.
@@ -402,7 +402,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
-  scoped_refptr<DisplayListRasterSource> raster_source =
+  scoped_refptr<RasterSource> raster_source =
       CreateRasterSource(recording_source.get());
 
   // Tile sized iterators. These should find only one image.

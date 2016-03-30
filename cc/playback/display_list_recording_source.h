@@ -24,7 +24,7 @@ class DisplayListRecordingSource;
 
 class ContentLayerClient;
 class DisplayItemList;
-class DisplayListRasterSource;
+class RasterSource;
 class ImageSerializationProcessor;
 class Region;
 
@@ -67,7 +67,7 @@ class CC_EXPORT DisplayListRecordingSource {
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect);
 
   // These functions are virtual for testing.
-  virtual scoped_refptr<DisplayListRasterSource> CreateRasterSource(
+  virtual scoped_refptr<RasterSource> CreateRasterSource(
       bool can_use_lcd_text) const;
   virtual bool IsSuitableForGpuRasterization() const;
 
@@ -95,7 +95,7 @@ class CC_EXPORT DisplayListRecordingSource {
                                         Region* invalidation);
   void FinishDisplayItemListUpdate();
 
-  friend class DisplayListRasterSource;
+  friend class RasterSource;
 
   void DetermineIfSolidColor();
 

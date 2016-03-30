@@ -13,7 +13,7 @@
 #include "cc/base/region.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/playback/display_item_list.h"
-#include "cc/playback/display_list_raster_source.h"
+#include "cc/playback/raster_source.h"
 #include "cc/proto/display_list_recording_source.pb.h"
 #include "cc/proto/gfx_conversions.h"
 #include "skia/ext/analysis_canvas.h"
@@ -232,11 +232,11 @@ bool DisplayListRecordingSource::IsSuitableForGpuRasterization() const {
   return !display_list_ || display_list_->IsSuitableForGpuRasterization();
 }
 
-scoped_refptr<DisplayListRasterSource>
-DisplayListRecordingSource::CreateRasterSource(bool can_use_lcd_text) const {
-  return scoped_refptr<DisplayListRasterSource>(
-      DisplayListRasterSource::CreateFromDisplayListRecordingSource(
-          this, can_use_lcd_text));
+scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource(
+    bool can_use_lcd_text) const {
+  return scoped_refptr<RasterSource>(
+      RasterSource::CreateFromDisplayListRecordingSource(this,
+                                                         can_use_lcd_text));
 }
 
 void DisplayListRecordingSource::DetermineIfSolidColor() {

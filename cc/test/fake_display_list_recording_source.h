@@ -46,7 +46,7 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   }
 
   // DisplayListRecordingSource overrides.
-  scoped_refptr<DisplayListRasterSource> CreateRasterSource(
+  scoped_refptr<RasterSource> CreateRasterSource(
       bool can_use_lcd) const override;
   bool IsSuitableForGpuRasterization() const override;
 

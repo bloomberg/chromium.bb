@@ -58,7 +58,7 @@ class CC_EXPORT PictureLayerTilingSet {
 
   // This function is called on the active tree during activation.
   void UpdateTilingsToCurrentRasterSourceForActivation(
-      scoped_refptr<DisplayListRasterSource> raster_source,
+      scoped_refptr<RasterSource> raster_source,
       const PictureLayerTilingSet* pending_twin_set,
       const Region& layer_invalidation,
       float minimum_contents_scale,
@@ -66,19 +66,18 @@ class CC_EXPORT PictureLayerTilingSet {
 
   // This function is called on the sync tree during commit.
   void UpdateTilingsToCurrentRasterSourceForCommit(
-      scoped_refptr<DisplayListRasterSource> raster_source,
+      scoped_refptr<RasterSource> raster_source,
       const Region& layer_invalidation,
       float minimum_contents_scale,
       float maximum_contents_scale);
 
   // This function is called on the sync tree right after commit.
   void UpdateRasterSourceDueToLCDChange(
-      scoped_refptr<DisplayListRasterSource> raster_source,
+      scoped_refptr<RasterSource> raster_source,
       const Region& layer_invalidation);
 
-  PictureLayerTiling* AddTiling(
-      float contents_scale,
-      scoped_refptr<DisplayListRasterSource> raster_source);
+  PictureLayerTiling* AddTiling(float contents_scale,
+                                scoped_refptr<RasterSource> raster_source);
   size_t num_tilings() const { return tilings_.size(); }
   int NumHighResTilings() const;
   PictureLayerTiling* tiling_at(size_t idx) { return tilings_[idx].get(); }
@@ -183,7 +182,7 @@ class CC_EXPORT PictureLayerTilingSet {
 
   void CopyTilingsAndPropertiesFromPendingTwin(
       const PictureLayerTilingSet* pending_twin_set,
-      scoped_refptr<DisplayListRasterSource> raster_source,
+      scoped_refptr<RasterSource> raster_source,
       const Region& layer_invalidation);
 
   // Remove one tiling.

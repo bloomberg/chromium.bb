@@ -11,11 +11,10 @@ namespace cc {
 
 PrioritizedTile::PrioritizedTile() : tile_(nullptr), is_occluded_(false) {}
 
-PrioritizedTile::PrioritizedTile(
-    Tile* tile,
-    scoped_refptr<DisplayListRasterSource> raster_source,
-    const TilePriority priority,
-    bool is_occluded)
+PrioritizedTile::PrioritizedTile(Tile* tile,
+                                 scoped_refptr<RasterSource> raster_source,
+                                 const TilePriority priority,
+                                 bool is_occluded)
     : tile_(tile),
       raster_source_(std::move(raster_source)),
       priority_(priority),

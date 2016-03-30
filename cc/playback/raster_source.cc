@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/playback/display_list_raster_source.h"
+#include "cc/playback/raster_source.h"
 
 #include <stddef.h>
 
@@ -23,17 +23,14 @@
 
 namespace cc {
 
-scoped_refptr<DisplayListRasterSource>
-DisplayListRasterSource::CreateFromDisplayListRecordingSource(
+scoped_refptr<RasterSource> RasterSource::CreateFromDisplayListRecordingSource(
     const DisplayListRecordingSource* other,
     bool can_use_lcd_text) {
-  return make_scoped_refptr(
-      new DisplayListRasterSource(other, can_use_lcd_text));
+  return make_scoped_refptr(new RasterSource(other, can_use_lcd_text));
 }
 
-DisplayListRasterSource::DisplayListRasterSource(
-    const DisplayListRecordingSource* other,
-    bool can_use_lcd_text)
+RasterSource::RasterSource(const DisplayListRecordingSource* other,
+                           bool can_use_lcd_text)
     : display_list_(other->display_list_),
       painter_reported_memory_usage_(other->painter_reported_memory_usage_),
       background_color_(other->background_color_),
@@ -53,14 +50,11 @@ DisplayListRasterSource::DisplayListRasterSource(
   // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "cc::DisplayListRasterSource",
-        base::ThreadTaskRunnerHandle::Get());
+        this, "cc::RasterSource", base::ThreadTaskRunnerHandle::Get());
   }
 }
 
-DisplayListRasterSource::DisplayListRasterSource(
-    const DisplayListRasterSource* other,
-    bool can_use_lcd_text)
+RasterSource::RasterSource(const RasterSource* other, bool can_use_lcd_text)
     : display_list_(other->display_list_),
       painter_reported_memory_usage_(other->painter_reported_memory_usage_),
       background_color_(other->background_color_),
@@ -81,24 +75,22 @@ DisplayListRasterSource::DisplayListRasterSource(
   // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "cc::DisplayListRasterSource",
-        base::ThreadTaskRunnerHandle::Get());
+        this, "cc::RasterSource", base::ThreadTaskRunnerHandle::Get());
   }
 }
 
-DisplayListRasterSource::~DisplayListRasterSource() {
+RasterSource::~RasterSource() {
   // For MemoryDumpProvider deregistration to work correctly, this must happen
-  // on the same thread that the DisplayListRasterSource was created on.
+  // on the same thread that the RasterSource was created on.
   DCHECK(memory_dump_thread_checker_.CalledOnValidThread());
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
 
-void DisplayListRasterSource::PlaybackToSharedCanvas(
-    SkCanvas* raster_canvas,
-    const gfx::Rect& canvas_rect,
-    float contents_scale,
-    bool include_images) const {
+void RasterSource::PlaybackToSharedCanvas(SkCanvas* raster_canvas,
+                                          const gfx::Rect& canvas_rect,
+                                          float contents_scale,
+                                          bool include_images) const {
   // TODO(vmpstr): This can be improved by plumbing whether the tile itself has
   // discardable images. This way we would only pay for the hijack canvas if the
   // tile actually needed it.
@@ -118,18 +110,17 @@ void DisplayListRasterSource::PlaybackToSharedCanvas(
   }
 }
 
-void DisplayListRasterSource::RasterForAnalysis(skia::AnalysisCanvas* canvas,
-                                                const gfx::Rect& canvas_rect,
-                                                float contents_scale) const {
+void RasterSource::RasterForAnalysis(skia::AnalysisCanvas* canvas,
+                                     const gfx::Rect& canvas_rect,
+                                     float contents_scale) const {
   RasterCommon(canvas, canvas, canvas_rect, canvas_rect, contents_scale);
 }
 
-void DisplayListRasterSource::PlaybackToCanvas(
-    SkCanvas* raster_canvas,
-    const gfx::Rect& canvas_bitmap_rect,
-    const gfx::Rect& canvas_playback_rect,
-    float contents_scale,
-    bool include_images) const {
+void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
+                                    const gfx::Rect& canvas_bitmap_rect,
+                                    const gfx::Rect& canvas_playback_rect,
+                                    float contents_scale,
+                                    bool include_images) const {
   PrepareForPlaybackToCanvas(raster_canvas, canvas_bitmap_rect,
                              canvas_playback_rect, contents_scale);
 
@@ -150,7 +141,7 @@ void DisplayListRasterSource::PlaybackToCanvas(
   }
 }
 
-void DisplayListRasterSource::PrepareForPlaybackToCanvas(
+void RasterSource::PrepareForPlaybackToCanvas(
     SkCanvas* canvas,
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect,
@@ -237,12 +228,11 @@ void DisplayListRasterSource::PrepareForPlaybackToCanvas(
   }
 }
 
-void DisplayListRasterSource::RasterCommon(
-    SkCanvas* canvas,
-    SkPicture::AbortCallback* callback,
-    const gfx::Rect& canvas_bitmap_rect,
-    const gfx::Rect& canvas_playback_rect,
-    float contents_scale) const {
+void RasterSource::RasterCommon(SkCanvas* canvas,
+                                SkPicture::AbortCallback* callback,
+                                const gfx::Rect& canvas_bitmap_rect,
+                                const gfx::Rect& canvas_playback_rect,
+                                float contents_scale) const {
   canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
   gfx::Rect content_rect =
       gfx::ScaleToEnclosingRect(gfx::Rect(size_), contents_scale);
@@ -260,8 +250,8 @@ void DisplayListRasterSource::RasterCommon(
   }
 }
 
-sk_sp<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
-  TRACE_EVENT0("cc", "DisplayListRasterSource::GetFlattenedPicture");
+sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
+  TRACE_EVENT0("cc", "RasterSource::GetFlattenedPicture");
 
   gfx::Rect display_list_rect(size_);
   SkPictureRecorder recorder;
@@ -276,18 +266,17 @@ sk_sp<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
   return recorder.finishRecordingAsPicture();
 }
 
-size_t DisplayListRasterSource::GetPictureMemoryUsage() const {
+size_t RasterSource::GetPictureMemoryUsage() const {
   if (!display_list_)
     return 0;
   return display_list_->ApproximateMemoryUsage() +
          painter_reported_memory_usage_;
 }
 
-bool DisplayListRasterSource::PerformSolidColorAnalysis(
-    const gfx::Rect& content_rect,
-    float contents_scale,
-    SkColor* color) const {
-  TRACE_EVENT0("cc", "DisplayListRasterSource::PerformSolidColorAnalysis");
+bool RasterSource::PerformSolidColorAnalysis(const gfx::Rect& content_rect,
+                                             float contents_scale,
+                                             SkColor* color) const {
+  TRACE_EVENT0("cc", "RasterSource::PerformSolidColorAnalysis");
 
   gfx::Rect layer_rect =
       gfx::ScaleToEnclosingRect(content_rect, 1.0f / contents_scale);
@@ -298,7 +287,7 @@ bool DisplayListRasterSource::PerformSolidColorAnalysis(
   return canvas.GetColorIfSolid(color);
 }
 
-void DisplayListRasterSource::GetDiscardableImagesInRect(
+void RasterSource::GetDiscardableImagesInRect(
     const gfx::Rect& layer_rect,
     float raster_scale,
     std::vector<DrawImage>* images) const {
@@ -306,7 +295,7 @@ void DisplayListRasterSource::GetDiscardableImagesInRect(
   display_list_->GetDiscardableImagesInRect(layer_rect, raster_scale, images);
 }
 
-bool DisplayListRasterSource::CoversRect(const gfx::Rect& layer_rect) const {
+bool RasterSource::CoversRect(const gfx::Rect& layer_rect) const {
   if (size_.IsEmpty())
     return false;
   gfx::Rect bounded_rect = layer_rect;
@@ -314,72 +303,68 @@ bool DisplayListRasterSource::CoversRect(const gfx::Rect& layer_rect) const {
   return recorded_viewport_.Contains(bounded_rect);
 }
 
-gfx::Size DisplayListRasterSource::GetSize() const {
+gfx::Size RasterSource::GetSize() const {
   return size_;
 }
 
-bool DisplayListRasterSource::IsSolidColor() const {
+bool RasterSource::IsSolidColor() const {
   return is_solid_color_;
 }
 
-SkColor DisplayListRasterSource::GetSolidColor() const {
+SkColor RasterSource::GetSolidColor() const {
   DCHECK(IsSolidColor());
   return solid_color_;
 }
 
-bool DisplayListRasterSource::HasRecordings() const {
+bool RasterSource::HasRecordings() const {
   return !!display_list_.get();
 }
 
-gfx::Rect DisplayListRasterSource::RecordedViewport() const {
+gfx::Rect RasterSource::RecordedViewport() const {
   return recorded_viewport_;
 }
 
-void DisplayListRasterSource::SetShouldAttemptToUseDistanceFieldText() {
+void RasterSource::SetShouldAttemptToUseDistanceFieldText() {
   should_attempt_to_use_distance_field_text_ = true;
 }
 
-bool DisplayListRasterSource::ShouldAttemptToUseDistanceFieldText() const {
+bool RasterSource::ShouldAttemptToUseDistanceFieldText() const {
   return should_attempt_to_use_distance_field_text_;
 }
 
-void DisplayListRasterSource::AsValueInto(
-    base::trace_event::TracedValue* array) const {
+void RasterSource::AsValueInto(base::trace_event::TracedValue* array) const {
   if (display_list_.get())
     TracedValue::AppendIDRef(display_list_.get(), array);
 }
 
-void DisplayListRasterSource::DidBeginTracing() {
+void RasterSource::DidBeginTracing() {
   if (display_list_.get())
     display_list_->EmitTraceSnapshot();
 }
 
-bool DisplayListRasterSource::CanUseLCDText() const {
+bool RasterSource::CanUseLCDText() const {
   return can_use_lcd_text_;
 }
 
-scoped_refptr<DisplayListRasterSource>
-DisplayListRasterSource::CreateCloneWithoutLCDText() const {
+scoped_refptr<RasterSource> RasterSource::CreateCloneWithoutLCDText() const {
   bool can_use_lcd_text = false;
-  return scoped_refptr<DisplayListRasterSource>(
-      new DisplayListRasterSource(this, can_use_lcd_text));
+  return scoped_refptr<RasterSource>(new RasterSource(this, can_use_lcd_text));
 }
 
-void DisplayListRasterSource::SetImageDecodeController(
+void RasterSource::SetImageDecodeController(
     ImageDecodeController* image_decode_controller) {
   DCHECK(image_decode_controller);
   image_decode_controller_ = image_decode_controller;
 }
 
-bool DisplayListRasterSource::OnMemoryDump(
-    const base::trace_event::MemoryDumpArgs& args,
-    base::trace_event::ProcessMemoryDump* pmd) {
+bool RasterSource::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                                base::trace_event::ProcessMemoryDump* pmd) {
   DCHECK(memory_dump_thread_checker_.CalledOnValidThread());
 
   uint64_t memory_usage = GetPictureMemoryUsage();
   if (memory_usage > 0) {
-    std::string dump_name = base::StringPrintf(
-        "cc/display_lists/display_list_raster_source_%p", this);
+    std::string dump_name =
+        base::StringPrintf("cc/display_lists/raster_source_%p", this);
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,

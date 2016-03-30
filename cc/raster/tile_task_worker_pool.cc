@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/trace_event/trace_event.h"
-#include "cc/playback/display_list_raster_source.h"
+#include "cc/playback/raster_source.h"
 #include "cc/raster/texture_compressor.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -60,16 +60,15 @@ bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
 }  // anonymous namespace
 
 // static
-void TileTaskWorkerPool::PlaybackToMemory(
-    void* memory,
-    ResourceFormat format,
-    const gfx::Size& size,
-    size_t stride,
-    const DisplayListRasterSource* raster_source,
-    const gfx::Rect& canvas_bitmap_rect,
-    const gfx::Rect& canvas_playback_rect,
-    float scale,
-    bool include_images) {
+void TileTaskWorkerPool::PlaybackToMemory(void* memory,
+                                          ResourceFormat format,
+                                          const gfx::Size& size,
+                                          size_t stride,
+                                          const RasterSource* raster_source,
+                                          const gfx::Rect& canvas_bitmap_rect,
+                                          const gfx::Rect& canvas_playback_rect,
+                                          float scale,
+                                          bool include_images) {
   TRACE_EVENT0("cc", "TileTaskWorkerPool::PlaybackToMemory");
 
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;

@@ -6,12 +6,12 @@
 #define CC_TILES_PRIORITIZED_TILE_H_
 
 #include "cc/base/cc_export.h"
-#include "cc/playback/display_list_raster_source.h"
+#include "cc/playback/raster_source.h"
 #include "cc/tiles/tile.h"
 #include "cc/tiles/tile_priority.h"
 
 namespace cc {
-class DisplayListRasterSource;
+class RasterSource;
 class PictureLayerTiling;
 
 class CC_EXPORT PrioritizedTile {
@@ -23,7 +23,7 @@ class CC_EXPORT PrioritizedTile {
   ~PrioritizedTile();
 
   Tile* tile() const { return tile_; }
-  const scoped_refptr<DisplayListRasterSource>& raster_source() const {
+  const scoped_refptr<RasterSource>& raster_source() const {
     return raster_source_;
   }
   const TilePriority& priority() const { return priority_; }
@@ -35,12 +35,12 @@ class CC_EXPORT PrioritizedTile {
   friend class PictureLayerTiling;
 
   PrioritizedTile(Tile* tile,
-                  scoped_refptr<DisplayListRasterSource> raster_source,
+                  scoped_refptr<RasterSource> raster_source,
                   const TilePriority priority,
                   bool is_occluded);
 
   Tile* tile_;
-  scoped_refptr<DisplayListRasterSource> raster_source_;
+  scoped_refptr<RasterSource> raster_source_;
   TilePriority priority_;
   bool is_occluded_;
 };

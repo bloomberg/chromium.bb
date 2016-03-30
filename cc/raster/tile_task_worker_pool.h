@@ -16,7 +16,7 @@ class SequencedTaskRunner;
 }
 
 namespace cc {
-class DisplayListRasterSource;
+class RasterSource;
 class RenderingStatsInstrumentation;
 
 class CC_EXPORT TileTaskWorkerPool {
@@ -39,7 +39,7 @@ class CC_EXPORT TileTaskWorkerPool {
                                ResourceFormat format,
                                const gfx::Size& size,
                                size_t stride,
-                               const DisplayListRasterSource* raster_source,
+                               const RasterSource* raster_source,
                                const gfx::Rect& canvas_bitmap_rect,
                                const gfx::Rect& canvas_playback_rect,
                                float scale,

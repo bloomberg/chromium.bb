@@ -9,14 +9,14 @@
 #include <limits>
 
 #include "base/thread_task_runner_handle.h"
-#include "cc/test/fake_display_list_raster_source.h"
+#include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_tile_manager.h"
 
 namespace cc {
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
     : tile_manager_(new FakeTileManager(&tile_manager_client_)),
-      raster_source_(FakeDisplayListRasterSource::CreateInfiniteFilled()),
+      raster_source_(FakeRasterSource::CreateInfiniteFilled()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
       has_valid_tile_priorities_(true) {}
@@ -28,7 +28,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
                                base::ThreadTaskRunnerHandle::Get().get())),
       tile_manager_(
           new FakeTileManager(&tile_manager_client_, resource_pool_.get())),
-      raster_source_(FakeDisplayListRasterSource::CreateInfiniteFilled()),
+      raster_source_(FakeRasterSource::CreateInfiniteFilled()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
       has_valid_tile_priorities_(true) {}

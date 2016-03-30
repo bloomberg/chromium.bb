@@ -4,7 +4,7 @@
 
 #include "cc/test/fake_display_list_recording_source.h"
 
-#include "cc/test/fake_display_list_raster_source.h"
+#include "cc/test/fake_raster_source.h"
 #include "cc/test/skia_common.h"
 
 namespace cc {
@@ -19,9 +19,9 @@ bool FakeDisplayListRecordingSource::IsSuitableForGpuRasterization() const {
   return DisplayListRecordingSource::IsSuitableForGpuRasterization();
 }
 
-scoped_refptr<DisplayListRasterSource>
-FakeDisplayListRecordingSource::CreateRasterSource(bool can_use_lcd) const {
-  return FakeDisplayListRasterSource::CreateFromRecordingSourceWithWaitable(
+scoped_refptr<RasterSource> FakeDisplayListRecordingSource::CreateRasterSource(
+    bool can_use_lcd) const {
+  return FakeRasterSource::CreateFromRecordingSourceWithWaitable(
       this, can_use_lcd, playback_allowed_event_);
 }
 

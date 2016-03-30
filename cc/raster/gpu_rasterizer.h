@@ -16,7 +16,7 @@
 namespace cc {
 
 class ContextProvider;
-class DisplayListRasterSource;
+class RasterSource;
 class ResourceProvider;
 
 class CC_EXPORT GpuRasterizer {
@@ -24,7 +24,7 @@ class CC_EXPORT GpuRasterizer {
   ~GpuRasterizer();
 
   void RasterizeSource(ResourceProvider::ScopedWriteLockGr* write_lock,
-                       const DisplayListRasterSource* raster_source,
+                       const RasterSource* raster_source,
                        const gfx::Rect& raster_full_rect,
                        const gfx::Rect& playback_rect,
                        float scale);

@@ -10,7 +10,7 @@
 #include <set>
 #include <vector>
 
-#include "cc/playback/display_list_raster_source.h"
+#include "cc/playback/raster_source.h"
 
 namespace cc {
 
@@ -63,7 +63,7 @@ PictureLayerTilingSet::~PictureLayerTilingSet() {
 
 void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
     const PictureLayerTilingSet* pending_twin_set,
-    scoped_refptr<DisplayListRasterSource> raster_source,
+    scoped_refptr<RasterSource> raster_source,
     const Region& layer_invalidation) {
   if (pending_twin_set->tilings_.empty()) {
     // If the twin (pending) tiling set is empty, it was not updated for the
@@ -97,7 +97,7 @@ void PictureLayerTilingSet::CopyTilingsAndPropertiesFromPendingTwin(
 }
 
 void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
-    scoped_refptr<DisplayListRasterSource> raster_source,
+    scoped_refptr<RasterSource> raster_source,
     const PictureLayerTilingSet* pending_twin_set,
     const Region& layer_invalidation,
     float minimum_contents_scale,
@@ -136,7 +136,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
 }
 
 void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
-    scoped_refptr<DisplayListRasterSource> raster_source,
+    scoped_refptr<RasterSource> raster_source,
     const Region& layer_invalidation,
     float minimum_contents_scale,
     float maximum_contents_scale) {
@@ -162,7 +162,7 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForCommit(
 }
 
 void PictureLayerTilingSet::UpdateRasterSourceDueToLCDChange(
-    scoped_refptr<DisplayListRasterSource> raster_source,
+    scoped_refptr<RasterSource> raster_source,
     const Region& layer_invalidation) {
   for (const auto& tiling : tilings_) {
     tiling->SetRasterSourceAndResize(raster_source);
@@ -249,7 +249,7 @@ void PictureLayerTilingSet::MarkAllTilingsNonIdeal() {
 
 PictureLayerTiling* PictureLayerTilingSet::AddTiling(
     float contents_scale,
-    scoped_refptr<DisplayListRasterSource> raster_source) {
+    scoped_refptr<RasterSource> raster_source) {
   for (size_t i = 0; i < tilings_.size(); ++i) {
     DCHECK_NE(tilings_[i]->contents_scale(), contents_scale);
     DCHECK_EQ(tilings_[i]->raster_source(), raster_source.get());
