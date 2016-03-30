@@ -202,6 +202,10 @@ test("message_center_unittests") {
     "//url",
   ]
 
+  data_deps = [
+    "//ui/resources:ui_test_pak_data",
+  ]
+
   if (enable_notifications && !is_android) {
     sources += [
       "cocoa/notification_controller_unittest.mm",
