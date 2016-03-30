@@ -29,6 +29,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #ifdef HAVE_SYS_SELECT_H
