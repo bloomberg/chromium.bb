@@ -59,7 +59,7 @@ import javax.annotation.Nullable;
  * the UI thread. To keep the situation clear, every non-static method is annotated with either
  * {@link UiThread} or {@link BinderThread}.
  */
-public class BookmarkThumbnailWidgetService extends RemoteViewsService {
+public class BookmarkWidgetService extends RemoteViewsService {
 
     private static final String TAG = "BookmarkWidget";
     private static final String ACTION_CHANGE_FOLDER_SUFFIX = ".CHANGE_FOLDER";
@@ -333,7 +333,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
         @UiThread
         private void refreshWidget() {
             mContext.sendBroadcast(new Intent(
-                    BookmarkThumbnailWidgetProviderBase.getBookmarkAppWidgetUpdateAction(mContext),
+                    BookmarkWidgetProvider.getBookmarkAppWidgetUpdateAction(mContext),
                     null, mContext, BookmarkThumbnailWidgetProvider.class)
                     .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mWidgetId));
         }
@@ -443,8 +443,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
         @BinderThread
         @Override
         public RemoteViews getLoadingView() {
-            return new RemoteViews(mContext.getPackageName(),
-                    R.layout.bookmark_thumbnail_widget_item);
+            return new RemoteViews(mContext.getPackageName(), R.layout.bookmark_widget_item);
         }
 
         @BinderThread
@@ -468,7 +467,7 @@ public class BookmarkThumbnailWidgetService extends RemoteViewsService {
                     : bookmark.id.getId();
 
             RemoteViews views = new RemoteViews(mContext.getPackageName(),
-                    R.layout.bookmark_thumbnail_widget_item);
+                    R.layout.bookmark_widget_item);
 
             // Set the title of the bookmark. Use the url as a backup.
             views.setTextViewText(R.id.title, TextUtils.isEmpty(title) ? url : title);

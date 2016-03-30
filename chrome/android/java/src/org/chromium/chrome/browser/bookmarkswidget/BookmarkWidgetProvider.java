@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 /**
  * Widget that shows a preview of the user's bookmarks.
  */
-public class BookmarkThumbnailWidgetProviderBase extends AppWidgetProvider {
+public class BookmarkWidgetProvider extends AppWidgetProvider {
     private static final String ACTION_BOOKMARK_APPWIDGET_UPDATE_SUFFIX =
             ".BOOKMARK_APPWIDGET_UPDATE";
 
@@ -55,7 +55,7 @@ public class BookmarkThumbnailWidgetProviderBase extends AppWidgetProvider {
     public void onDeleted(Context context, int[] appWidgetIds) {
         super.onDeleted(context, appWidgetIds);
         for (int widgetId : appWidgetIds) {
-            BookmarkThumbnailWidgetService.deleteWidgetState(context, widgetId);
+            BookmarkWidgetService.deleteWidgetState(context, widgetId);
         }
         removeOrphanedStates(context);
     }
@@ -86,19 +86,18 @@ public class BookmarkThumbnailWidgetProviderBase extends AppWidgetProvider {
         AppWidgetManager wm = AppWidgetManager.getInstance(context);
         int[] ids = wm.getAppWidgetIds(getComponentName(context));
         for (int id : ids) {
-            BookmarkThumbnailWidgetService.deleteWidgetState(context, id);
+            BookmarkWidgetService.deleteWidgetState(context, id);
         }
     }
 
     private void performUpdate(Context context,
             AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         for (int appWidgetId : appWidgetIds) {
-            Intent updateIntent = new Intent(context, BookmarkThumbnailWidgetService.class);
+            Intent updateIntent = new Intent(context, BookmarkWidgetService.class);
             updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
             updateIntent.setData(Uri.parse(updateIntent.toUri(Intent.URI_INTENT_SCHEME)));
 
-            RemoteViews views = new RemoteViews(context.getPackageName(),
-                    R.layout.bookmark_thumbnail_widget);
+            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.bookmark_widget);
             views.setRemoteAdapter(R.id.bookmarks_list, updateIntent);
 
             appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.bookmarks_list);

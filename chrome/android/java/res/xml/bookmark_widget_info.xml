@@ -11,7 +11,7 @@
     android:minResizeHeight="40dp"
     android:minResizeWidth="110dp"
     android:previewImage="@drawable/bookmark_widget_preview"
-    android:initialLayout="@layout/bookmark_thumbnail_widget"
+    android:initialLayout="@layout/bookmark_widget"
     android:resizeMode="vertical|horizontal"
     android:updatePeriodMillis="86400000"> <!-- Once per day -->
 </appwidget-provider>

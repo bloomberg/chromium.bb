@@ -102,7 +102,7 @@ Still reading?
   <issue id="UnusedResources">
     <!-- Used by chrome/android/java/AndroidManifest.xml -->
     <ignore path="chrome/android/java/res/drawable/window_background.xml" />
-    <ignore path="chrome/android/java/res/xml/bookmark_thumbnail_widget_info.xml" />
+    <ignore path="chrome/android/java/res/xml/bookmark_widget_info.xml" />
     <ignore path="chrome/android/java/res/xml/file_paths.xml" />
 
     <ignore path="content/shell/android/shell_apk/res/layout/content_shell_activity.xml" />

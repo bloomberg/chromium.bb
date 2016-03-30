@@ -14,7 +14,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.bookmarkswidget.BookmarkThumbnailWidgetProviderBase;
+import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
 import org.chromium.chrome.browser.crash.CrashFileManager;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
@@ -79,7 +79,7 @@ public class DeferredStartupHandler {
                     // Force a widget refresh in order to wake up any possible zombie widgets.
                     // This is needed to ensure the right behavior when the process is suddenly
                     // killed.
-                    BookmarkThumbnailWidgetProviderBase.refreshAllWidgets(application);
+                    BookmarkWidgetProvider.refreshAllWidgets(application);
 
                     // Initialize whether or not precaching is enabled.
                     PrecacheLauncher.updatePrecachingEnabled(application);

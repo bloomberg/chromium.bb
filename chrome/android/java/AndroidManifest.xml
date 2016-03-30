@@ -539,9 +539,9 @@ by a child template that "extends" this file.
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/bookmark_thumbnail_widget_info" />
+                android:resource="@xml/bookmark_widget_info" />
         </receiver>
-        <service android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkThumbnailWidgetService"
+        <service android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
             android:exported="false" />
         <receiver android:name="org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProxy"
