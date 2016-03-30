@@ -6,16 +6,22 @@
 
 #include <stddef.h>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 
-class ProfileInfoCache;
+namespace gfx {
+class Image;
+}
 
 class ProfileAvatarDownloader : public chrome::BitmapFetcherDelegate {
  public:
+  using FetchCompleteCallback = base::Callback<void(const gfx::Image*,
+                                                    const std::string&,
+                                                    const base::FilePath&)>;
+
   ProfileAvatarDownloader(size_t icon_index,
-                          const base::FilePath& profile_path,
-                          ProfileInfoCache* cache);
+                          const FetchCompleteCallback& callback);
   ~ProfileAvatarDownloader() override;
 
   void Start();
@@ -30,10 +36,7 @@ class ProfileAvatarDownloader : public chrome::BitmapFetcherDelegate {
   // Index of the avatar being downloaded.
   size_t icon_index_;
 
-  // Path of the profile for which the avatar is being downloaded.
-  base::FilePath profile_path_;
-
-  ProfileInfoCache* cache_;  // Weak.
+  FetchCompleteCallback callback_;
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_AVATAR_DOWNLOADER_H_

@@ -821,7 +821,7 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
         old_file_name.empty() ? profiles::kGAIAPictureFileName : old_file_name;
     base::FilePath image_path = path.AppendASCII(new_file_name);
     SaveAvatarImageAtPath(
-        image, key, image_path, GetPathOfProfileAtIndex(index));
+        GetPathOfProfileAtIndex(index), image, key, image_path);
   }
 
   scoped_ptr<base::DictionaryValue> info(
@@ -1067,10 +1067,10 @@ void ProfileInfoCache::DownloadHighResAvatarIfNeeded(
 }
 
 void ProfileInfoCache::SaveAvatarImageAtPath(
+    const base::FilePath& profile_path,
     const gfx::Image* image,
     const std::string& key,
-    const base::FilePath& image_path,
-    const base::FilePath& profile_path) {
+    const base::FilePath& image_path) {
   cached_avatar_images_[key] = new gfx::Image(*image);
 
   scoped_ptr<ImageData> data(new ImageData);
@@ -1232,8 +1232,9 @@ void ProfileInfoCache::DownloadHighResAvatar(
   // if that never happens, when the ProfileInfoCache is destroyed.
   ProfileAvatarDownloader* avatar_downloader = new ProfileAvatarDownloader(
       icon_index,
-      profile_path,
-      this);
+      base::Bind(&ProfileInfoCache::SaveAvatarImageAtPath,
+                 base::Unretained(this),
+                 profile_path));
   avatar_images_downloads_in_progress_[file_name] = avatar_downloader;
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/461175

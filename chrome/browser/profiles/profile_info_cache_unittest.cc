@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -585,8 +586,10 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
 
   // Simulate downloading a high-res avatar.
   ProfileAvatarDownloader avatar_downloader(
-      kIconIndex, profile_info_cache.GetPathOfProfileAtIndex(0),
-      &profile_info_cache);
+      kIconIndex,
+      base::Bind(&ProfileInfoCache::SaveAvatarImageAtPath,
+                 base::Unretained(&profile_info_cache),
+                 profile_info_cache.GetPathOfProfileAtIndex(0)));
 
   // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;

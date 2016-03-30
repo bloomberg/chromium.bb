@@ -177,10 +177,10 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Saves the avatar |image| at |image_path|. This is used both for the
   // GAIA profile pictures and the ProfileAvatarDownloader that is used to
   // download the high res avatars.
-  void SaveAvatarImageAtPath(const gfx::Image* image,
+  void SaveAvatarImageAtPath(const base::FilePath& profile_path,
+                             const gfx::Image* image,
                              const std::string& key,
-                             const base::FilePath& image_path,
-                             const base::FilePath& profile_path);
+                             const base::FilePath& image_path);
 
   void AddObserver(ProfileInfoCacheObserver* obs) override;
   void RemoveObserver(ProfileInfoCacheObserver* obs) override;

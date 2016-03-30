@@ -4,12 +4,15 @@
 
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 
+#include <string>
+
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "net/base/load_flags.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 const char kHighResAvatarDownloadUrlPrefix[] =
@@ -18,11 +21,10 @@ const char kHighResAvatarDownloadUrlPrefix[] =
 
 ProfileAvatarDownloader::ProfileAvatarDownloader(
     size_t icon_index,
-    const base::FilePath& profile_path,
-    ProfileInfoCache* cache)
+    const FetchCompleteCallback& callback)
     : icon_index_(icon_index),
-      profile_path_(profile_path),
-      cache_(cache) {
+      callback_(callback) {
+  DCHECK(!callback_.is_null());
   GURL url(std::string(kHighResAvatarDownloadUrlPrefix) +
            profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index));
   fetcher_.reset(new chrome::BitmapFetcher(url, this));
@@ -48,13 +50,12 @@ void ProfileAvatarDownloader::Start() {
 // BitmapFetcherDelegate overrides.
 void ProfileAvatarDownloader::OnFetchComplete(const GURL& url,
                                               const SkBitmap* bitmap) {
-  if (!bitmap || !cache_)
+  if (!bitmap)
     return;
 
   // Decode the downloaded bitmap. Ownership of the image is taken by |cache_|.
   gfx::Image image = gfx::Image::CreateFrom1xBitmap(*bitmap);
-  cache_->SaveAvatarImageAtPath(&image,
-      profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index_),
-      profiles::GetPathOfHighResAvatarAtIndex(icon_index_),
-      profile_path_);
+  callback_.Run(&image,
+                profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index_),
+                profiles::GetPathOfHighResAvatarAtIndex(icon_index_));
 }
