@@ -165,6 +165,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void OnScriptReadStarted();
   void OnScriptReadFinished();
 
+  // Called when the net::URLRequestJob to load the service worker script
+  // created. Not called for import scripts.
+  void OnURLJobCreatedForMainScript();
+
   static std::string StatusToString(Status status);
   static std::string StartingPhaseToString(StartingPhase phase);
 

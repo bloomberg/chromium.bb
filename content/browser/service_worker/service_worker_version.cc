@@ -793,8 +793,6 @@ ServiceWorkerVersion::BaseMojoServiceWrapper::~BaseMojoServiceWrapper() {
 }
 
 void ServiceWorkerVersion::OnThreadStarted() {
-  if (running_status() == STOPPING)
-    return;
   DCHECK_EQ(STARTING, running_status());
   // Activate ping/pong now that JavaScript execution will start.
   ping_controller_->Activate();
@@ -1382,9 +1380,9 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
   params->script_url = script_url_;
-  DCHECK(!pause_after_download_ || !IsInstalled(status()));
   params->pause_after_download = pause_after_download_;
 
+  DCHECK(!pause_after_download_ || !IsInstalled(status_));
   embedded_worker_->Start(
       std::move(params),
       base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,

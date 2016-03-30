@@ -177,13 +177,19 @@ class EmbeddedWorkerInstance::StartTask {
  public:
   enum class ProcessAllocationState { NOT_ALLOCATED, ALLOCATING, ALLOCATED };
 
-  explicit StartTask(EmbeddedWorkerInstance* instance)
+  StartTask(EmbeddedWorkerInstance* instance, const GURL& script_url)
       : instance_(instance),
         state_(ProcessAllocationState::NOT_ALLOCATED),
-        weak_factory_(this) {}
+        weak_factory_(this) {
+    TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker", "EmbeddedWorkerInstance::Start",
+                             this, "Script", script_url.spec());
+  }
 
   ~StartTask() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    TRACE_EVENT_ASYNC_END0("ServiceWorker", "EmbeddedWorkerInstance::Start",
+                           this);
+
     if (!instance_->context_)
       return;
 
@@ -215,10 +221,6 @@ class EmbeddedWorkerInstance::StartTask {
   void Start(scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
              const StatusCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
-                             "EmbeddedWorkerInstance::ProcessAllocate",
-                             params.get(), "Scope", params->scope.spec(),
-                             "Script URL", params->script_url.spec());
     state_ = ProcessAllocationState::ALLOCATING;
     start_callback_ = callback;
 
@@ -252,11 +254,11 @@ class EmbeddedWorkerInstance::StartTask {
       bool is_new_process,
       const EmbeddedWorkerSettings& settings) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                           "EmbeddedWorkerInstance::ProcessAllocate",
-                           params.get(), "Status", status);
 
     if (status != SERVICE_WORKER_OK) {
+      TRACE_EVENT_ASYNC_STEP_PAST1(
+          "ServiceWorker", "EmbeddedWorkerInstance::Start", this,
+          "OnProcessAllocated", "Error", ServiceWorkerStatusToString(status));
       DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, process_id);
       StatusCallback callback = start_callback_;
       start_callback_.Reset();
@@ -264,6 +266,10 @@ class EmbeddedWorkerInstance::StartTask {
       // |this| may be destroyed.
       return;
     }
+
+    TRACE_EVENT_ASYNC_STEP_PAST1(
+        "ServiceWorker", "EmbeddedWorkerInstance::Start", this,
+        "OnProcessAllocated", "Is New Process", is_new_process);
 
     // Notify the instance that a process is allocated.
     state_ = ProcessAllocationState::ALLOCATED;
@@ -294,6 +300,9 @@ class EmbeddedWorkerInstance::StartTask {
       int worker_devtools_agent_route_id,
       bool wait_for_debugger) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker",
+                                 "EmbeddedWorkerInstance::Start", this,
+                                 "OnRegisteredToDevToolsManager");
 
     // Notify the instance that it is registered to the devtools manager.
     instance_->OnRegisteredToDevToolsManager(
@@ -309,6 +318,9 @@ class EmbeddedWorkerInstance::StartTask {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     ServiceWorkerStatusCode status = instance_->registry_->SendStartWorker(
         std::move(params), instance_->process_id());
+    TRACE_EVENT_ASYNC_STEP_PAST1(
+        "ServiceWorker", "EmbeddedWorkerInstance::Start", this,
+        "SendStartWorker", "Status", ServiceWorkerStatusToString(status));
     if (status != SERVICE_WORKER_OK) {
       StatusCallback callback = start_callback_;
       start_callback_.Reset();
@@ -369,7 +381,7 @@ void EmbeddedWorkerInstance::Start(
   params->wait_for_debugger = false;
   params->settings.v8_cache_options = GetV8CacheOptions();
 
-  inflight_start_task_.reset(new StartTask(this));
+  inflight_start_task_.reset(new StartTask(this, params->script_url));
   inflight_start_task_->Start(std::move(params), callback);
 }
 
@@ -498,12 +510,34 @@ void EmbeddedWorkerInstance::OnScriptReadFinished() {
 }
 
 void EmbeddedWorkerInstance::OnScriptLoaded() {
+  if (!inflight_start_task_)
+    return;
+  TRACE_EVENT_ASYNC_STEP_PAST1(
+      "ServiceWorker", "EmbeddedWorkerInstance::Start",
+      inflight_start_task_.get(), "OnScriptLoaded", "Source",
+      (network_accessed_for_script_
+           ? "Network"
+           : "Disk (HttpCache or ServiceWorkerStorage)"));
+
   FOR_EACH_OBSERVER(Listener, listener_list_, OnScriptLoaded());
   starting_phase_ = SCRIPT_LOADED;
 }
 
+void EmbeddedWorkerInstance::OnURLJobCreatedForMainScript() {
+  if (!inflight_start_task_)
+    return;
+  TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker", "EmbeddedWorkerInstance::Start",
+                               inflight_start_task_.get(), "OnURLJobCreated");
+}
+
 void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
+  if (!inflight_start_task_)
+    return;
+  TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker", "EmbeddedWorkerInstance::Start",
+                               inflight_start_task_.get(), "OnThreadStarted");
+
   starting_phase_ = THREAD_STARTED;
+
   if (!start_timing_.is_null()) {
     if (network_accessed_for_script_) {
       UMA_HISTOGRAM_TIMES("EmbeddedWorkerInstance.ScriptLoadWithNetworkAccess",
@@ -534,6 +568,11 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {
+  if (!inflight_start_task_)
+    return;
+  TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker", "EmbeddedWorkerInstance::Start",
+                               inflight_start_task_.get(),
+                               "OnScriptLoadFailed");
   FOR_EACH_OBSERVER(Listener, listener_list_, OnScriptLoadFailed());
 }
 
@@ -541,6 +580,10 @@ void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
   if (!inflight_start_task_)
     return;
   DCHECK_EQ(STARTING, status_);
+
+  TRACE_EVENT_ASYNC_STEP_PAST1("ServiceWorker", "EmbeddedWorkerInstance::Start",
+                               inflight_start_task_.get(), "OnScriptEvaluated",
+                               "Success", success);
 
   starting_phase_ = SCRIPT_EVALUATED;
   if (success && !start_timing_.is_null()) {
