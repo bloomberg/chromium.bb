@@ -754,7 +754,7 @@ struct weston_compositor {
 	struct wl_list output_list;
 	struct wl_list seat_list;
 	struct wl_list layer_list;
-	struct wl_list view_list;
+	struct wl_list view_list;	/* struct weston_view::link */
 	struct wl_list plane_list;
 	struct wl_list key_binding_list;
 	struct wl_list modifier_binding_list;
@@ -890,7 +890,7 @@ struct weston_view {
 	struct wl_list surface_link;
 	struct wl_signal destroy_signal;
 
-	struct wl_list link;
+	struct wl_list link;             /* weston_compositor::view_list */
 	struct weston_layer_entry layer_link; /* part of geometry */
 	struct weston_plane *plane;
 
@@ -951,7 +951,6 @@ struct weston_view {
 	/*
 	 * Which output to vsync this surface to.
 	 * Used to determine, whether to send or queue frame events.
-	 * Must be NULL, if 'link' is not in weston_compositor::surface_list.
 	 */
 	struct weston_output *output;
 
@@ -1021,7 +1020,6 @@ struct weston_surface {
 	/*
 	 * Which output to vsync this surface to.
 	 * Used to determine, whether to send or queue frame events.
-	 * Must be NULL, if 'link' is not in weston_compositor::surface_list.
 	 */
 	struct weston_output *output;
 
