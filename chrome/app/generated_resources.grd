@@ -12699,6 +12699,17 @@ Creating a supervised user does not create a Google Account, and their bookmarks
 
 After you create a new supervised user, you can manage their settings at any time, from any device, at <ph name="DISPLAY_LINK">$1</ph>. <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/chrome/?p=ui_supervised_users&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more about supervised users<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
         </message>
+        <message name="IDS_SUPERVISED_USER_LEARN_MORE_TEXT" desc="Informative text describing the 'supervised user' feature in detail, shown when the 'Learn more' link is clicked in the 'Create User' page of the user manager. The HTML entities at the starts of the lines are a non-breaking space, a bullet, and another non-breaking space.">
+          A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:
+
+&#160;&#8226;&#160;allow or prohibit certain websites,
+&#160;&#8226;&#160;review websites the supervised user has visited, and
+&#160;&#8226;&#160;manage other settings.
+
+Creating a supervised user does not create a Google Account, and their bookmarks, browsing history, and other preferences will not follow them to other devices with Chrome Sync. After you create a new supervised user, you can manage their settings at any time, from any device, at <ph name="BEGIN_MANAGE_LINK">&lt;a target="_blank" href="$1"&gt;</ph><ph name="DISPLAY_LINK">$2</ph><ph name="END_MANAGE_LINK">&lt;/a&gt;</ph>.
+
+For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/chrome/?p=ui_supervised_users&amp;hl=[GRITLANGCODE]"&gt;</ph>Help Center<ph name="END_LINK">&lt;/a&gt;</ph>.
+        </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_DONE_BUTTON" desc="Text for the 'OK' button on the 'Learn more' dialog for the supervised user feature.">
           OK, got it
         </message>

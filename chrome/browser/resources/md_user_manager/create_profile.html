@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://md-user-manager/profile_browser_proxy.html">
+<link rel="import" href="chrome://md-user-manager/shared_styles.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -17,6 +19,7 @@
       href="chrome://md-user-manager/create_profile.css">
   <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <template>
+    <style include="shared-styles"></style>
     <div class="container">
       <div id="title-bar" i18n-content="createProfileTitle"></div>
       <paper-input id="nameInput" value="{{profileName_}}" pattern=".*\S.*"
@@ -36,7 +39,7 @@
         <template is="dom-if" if="[[signedIn_]]">
           <paper-checkbox checked="{{isSupervised_}}"
               disabled="{{supervisedUserCheckboxDisabled_}}">
-            <span i18n-content="manageProfilesSupervisedSignedInLabel"></span>
+            <span>[[i18n('manageProfilesSupervisedSignedInLabel')]]</span>
           </paper-checkbox>
           <paper-dropdown-menu no-label-float>
             <paper-menu selected="{{selectedEmail_}}" class="dropdown-content">
@@ -45,8 +48,9 @@
               </template>
             </paper-menu>
           </paper-dropdown-menu>
-          <a id="learnMore" is="action-link" i18n-content="learnMore"
-              on-tap="onLearnMoreTap_"></a>
+          <a id="learnMore" is="action-link" on-tap="onLearnMoreTap_">
+            [[i18n('learnMore')]]
+          </a>
         </template>
         <span id="noSignedInUserContainer"
             i18n-values=".innerHTML:manageProfilesSupervisedNotSignedIn"
