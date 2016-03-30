@@ -165,6 +165,34 @@ cr.define('options', function() {
     },
 
     /**
+     * Updates eliding of origins. If there is no enough space to show the full
+     * origin, the origin is elided from the left with ellipsis.
+     * @param {!cr.ui.List} list The list to update eliding.
+     */
+    updateOriginsEliding_: function(list) {
+      var entries = list.getElementsByClassName('deletable-item');
+      if (entries.length == 0)
+        return;
+      var entry = entries[0];
+      var computedStyle = window.getComputedStyle(entry.urlDiv);
+      var columnWidth = entry.urlDiv.offsetWidth -
+          parseInt(computedStyle.webkitMarginStart, 10) -
+          parseInt(computedStyle.webkitPaddingStart, 10);
+      if (columnWidth <= 0) {
+        console.error('Estimated column width <= 0. Skip origins eliding.');
+        return;
+      }
+      for (var i = 0; i < entries.length; ++i) {
+        var urlLink = entries[i].urlLink;
+        if (entries[i].isAndroidUri || urlLink.offsetWidth <= columnWidth)
+          continue;
+        urlLink.textContent = '…' + urlLink.textContent.substring(1);
+        while (urlLink.offsetWidth > columnWidth)
+          urlLink.textContent = '…' + urlLink.textContent.substring(2);
+      }
+    },
+
+    /**
      * Updates the data model for the saved passwords list with the values from
      * |entries|.
      * @param {!Array} entries The list of saved password data.
@@ -191,6 +219,9 @@ cr.define('options', function() {
       }
       this.savedPasswordsList_.dataModel = new ArrayDataModel(entries);
       this.updateListVisibility_(this.savedPasswordsList_);
+      // updateOriginsEliding_ should be called after updateListVisibility_,
+      // otherwise updateOrigins... might be not able to read width of elements.
+      this.updateOriginsEliding_(this.savedPasswordsList_);
     },
 
     /**
@@ -201,6 +232,9 @@ cr.define('options', function() {
     setPasswordExceptionsList_: function(entries) {
       this.passwordExceptionsList_.dataModel = new ArrayDataModel(entries);
       this.updateListVisibility_(this.passwordExceptionsList_);
+      // updateOriginsEliding_ should be called after updateListVisibility_,
+      // otherwise updateOrigins... might be not able to read width of elements.
+      this.updateOriginsEliding_(this.passwordExceptionsList_);
     },
 
     /**
