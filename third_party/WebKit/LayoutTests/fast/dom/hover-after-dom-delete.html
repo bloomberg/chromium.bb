@@ -70,7 +70,7 @@ function runtest()
 
 function testAfterDeleteCursorVisible()
 {
-    checkBlueHoverText(blueTextWhenHovered);
+    checkBlueHoverContent(blueTextWhenHovered);
     window.setTimeout(testWithInvisibleCursor, 0);
 }
 
@@ -93,14 +93,14 @@ function testWithInvisibleCursor()
 
 function testAfterDeleteCursorInvisible()
 {
-    checkBlueHoverText(blueTextWhenNotHovered);
+    checkBlueHoverContent("none");
     testRunner.notifyDone();
 }
 
 
 // Helper functions
 
-function checkBlueHoverText(expectedText)
+function checkBlueHoverContent(expectedText)
 {
     shouldBe("blueDiv.offsetTop", "50");
     blueText = window.getComputedStyle(document.querySelector('#blue'), ':after').content;

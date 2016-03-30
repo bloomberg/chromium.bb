@@ -2379,6 +2379,10 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyTextOrientation:
         return CSSPrimitiveValue::create(style.getTextOrientation());
     case CSSPropertyContent:
+        if (style.styleType() == PseudoIdNone)
+            return cssValuePool().createIdentifierValue(CSSValueNormal);
+        if (!style.hasContent() && (style.styleType() == PseudoIdBefore || style.styleType() == PseudoIdAfter))
+            return cssValuePool().createIdentifierValue(CSSValueNone);
         return valueForContentData(style);
     case CSSPropertyCounterIncrement:
         return valueForCounterDirectives(style, propertyID);
