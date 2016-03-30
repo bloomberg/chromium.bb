@@ -27,17 +27,17 @@
 
 namespace blink {
 
-// By shrinking to a width of 75% (1.333f) we will render the correct physical
-// dimensions in paged media (i.e. cm, pt,). The shrinkage used
-// to be 80% (1.25f) to match other browsers - they have since moved on.
+// By imaging to a width a little wider than the available pixels,
+// thin pages will be scaled down a little, matching the way they
+// print in IE and Camino. This lets them use fewer sheets than they
+// would otherwise, which is presumably why other browsers do this.
 // Wide pages will be scaled down more than this.
-const float printingMinimumShrinkFactor = 1.333f;
+const float printingMinimumShrinkFactor = 1.25f;
 
 // This number determines how small we are willing to reduce the page content
 // in order to accommodate the widest line. If the page would have to be
 // reduced smaller to make the widest line fit, we just clip instead (this
-// behavior matches MacIE and Mozilla, at least).
-// TODO(rhogan): Decide if this quirk is still required.
+// behavior matches MacIE and Mozilla, at least)
 const float printingMaximumShrinkFactor = 2;
 
 PrintContext::PrintContext(LocalFrame* frame)
@@ -99,10 +99,7 @@ void PrintContext::computePageRectsWithPageSizeInternal(const FloatSize& pageSiz
     IntRect docRect = view->documentRect();
 
     int pageWidth = pageSizeInPixels.width();
-    // We scaled with floating point arithmetic and need to ensure results like 13329.99
-    // are treated as 13330 so that we don't mistakenly assign an extra page for the
-    // stray pixel.
-    int pageHeight = pageSizeInPixels.height() + LayoutUnit::epsilon();
+    int pageHeight = pageSizeInPixels.height();
 
     bool isHorizontal = view->style()->isHorizontalWritingMode();
 
