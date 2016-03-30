@@ -48,8 +48,8 @@ public final class CastCrashUploader {
     public CastCrashUploader(String crashDumpPath, boolean uploadCrashToStaging) {
         this.mCrashDumpPath = crashDumpPath;
         mCrashReportUploadUrl = uploadCrashToStaging
-                ? "http://clients2.google.com/cr/staging_report"
-                : "http://clients2.google.com/cr/report";
+                ? "https://clients2.google.com/cr/staging_report"
+                : "https://clients2.google.com/cr/report";
         mExecutorService = Executors.newScheduledThreadPool(1);
     }
 
