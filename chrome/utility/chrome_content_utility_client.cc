@@ -44,6 +44,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "chrome/utility/font_cache_handler_win.h"
 #include "chrome/utility/shell_handler_win.h"
 #endif
 
@@ -131,6 +132,7 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
 
 #if defined(OS_WIN)
   handlers_.push_back(new ShellHandler());
+  handlers_.push_back(new FontCacheHandler());
 #endif
 
   handlers_.push_back(new SafeJsonParserHandler());

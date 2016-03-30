@@ -41,6 +41,7 @@
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #elif defined(OS_WIN)
 #include "content/child/font_warmup_win.h"
+#include "content/public/common/dwrite_font_platform_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
@@ -96,6 +97,8 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
        i != files.end();
        ++i) {
     SkTypeface* typeface = fontmgr->createFromFile(i->c_str());
+    if (!ShouldUseDirectWriteFontProxyFieldTrial())
+      DoPreSandboxWarmupForTypeface(typeface);
     blink::WebFontRendering::addSideloadedFontForTesting(typeface);
   }
 }
@@ -161,7 +164,10 @@ void EnableRendererLayoutTestMode() {
 
 #if defined(OS_WIN)
   if (gfx::win::ShouldUseDirectWrite()) {
-    RegisterSideloadedTypefaces(SkFontMgr_New_DirectWrite());
+    if (ShouldUseDirectWriteFontProxyFieldTrial())
+      RegisterSideloadedTypefaces(SkFontMgr_New_DirectWrite());
+    else
+      RegisterSideloadedTypefaces(GetPreSandboxWarmupFontMgr());
   }
 #endif
 }
