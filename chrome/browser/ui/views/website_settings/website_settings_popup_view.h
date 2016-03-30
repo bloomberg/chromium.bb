@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "components/security_state/security_state_model.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/separator.h"
@@ -52,7 +52,7 @@ enum : int {
 class WebsiteSettingsPopupView : public content::WebContentsObserver,
                                  public PermissionSelectorViewObserver,
                                  public ChosenObjectViewObserver,
-                                 public views::BubbleDelegateView,
+                                 public views::BubbleDialogDelegateView,
                                  public views::ButtonListener,
                                  public views::LinkListener,
                                  public views::StyledLabelListener,
@@ -93,8 +93,9 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   void OnChosenObjectDeleted(
       const WebsiteSettingsUI::ChosenObjectInfo& info) override;
 
-  // views::BubbleDelegateView implementation.
+  // views::BubbleDialogDelegateView implementation.
   void OnWidgetDestroying(views::Widget* widget) override;
+  int GetDialogButtons() const override;
 
   // views::ButtonListener implementation.
   void ButtonPressed(views::Button* button, const ui::Event& event) override;
