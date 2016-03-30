@@ -132,7 +132,6 @@ source_set("test_support") {
 
     deps += [
       "//third_party/libjingle:libjingle_webrtc",
-      "//third_party/libjingle:libpeerconnection",
       "//third_party/webrtc/base:rtc_base",
       "//third_party/webrtc/modules/video_capture",
     ]
@@ -738,7 +737,6 @@ test("content_unittests") {
                     "//content")
     deps += [
       "//third_party/libjingle:libjingle_webrtc",
-      "//third_party/libjingle:libpeerconnection",
       "//third_party/webrtc/base:rtc_base",
       "//third_party/webrtc/modules/desktop_capture:primitives",
       "//third_party/webrtc/modules/video_capture",

@@ -39,13 +39,7 @@ source_set("protocol") {
                     "//remoting")
 
     if (enable_webrtc) {
-      deps += [
-        # TODO(GYP): crbug.com/481633. We should probably not have to depend on
-        # libjingle_webrtc; that should be pulled in automatically by
-        # libpeerconnection instead.
-        "//third_party/libjingle:libjingle_webrtc",
-        "//third_party/libjingle:libpeerconnection",
-      ]
+      deps += [ "//third_party/libjingle:libjingle_webrtc" ]
     } else {
       sources -= [
         "webrtc_connection_to_client.cc",

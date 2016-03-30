@@ -369,12 +369,20 @@ if (enable_webrtc) {
       "../webrtc/media/base/videoframefactory.h",
       "../webrtc/media/base/videosourcebase.cc",
       "../webrtc/media/base/videosourcebase.h",
+      "../webrtc/media/engine/simulcast.cc",
+      "../webrtc/media/engine/simulcast.h",
       "../webrtc/media/engine/webrtccommon.h",
+      "../webrtc/media/engine/webrtcmediaengine.cc",
+      "../webrtc/media/engine/webrtcmediaengine.h",
+      "../webrtc/media/engine/webrtcvideoengine2.cc",
+      "../webrtc/media/engine/webrtcvideoengine2.h",
       "../webrtc/media/engine/webrtcvideoframe.cc",
       "../webrtc/media/engine/webrtcvideoframe.h",
       "../webrtc/media/engine/webrtcvideoframefactory.cc",
       "../webrtc/media/engine/webrtcvideoframefactory.h",
       "../webrtc/media/engine/webrtcvoe.h",
+      "../webrtc/media/engine/webrtcvoiceengine.cc",
+      "../webrtc/media/engine/webrtcvoiceengine.h",
       "../webrtc/pc/audiomonitor.cc",
       "../webrtc/pc/audiomonitor.h",
       "../webrtc/pc/bundlefilter.cc",
@@ -408,9 +416,12 @@ if (enable_webrtc) {
     deps = [
       ":libjingle",
       "//third_party/libsrtp",
+      "//third_party/webrtc",
       "//third_party/webrtc/modules/media_file",
       "//third_party/webrtc/modules/video_capture",
       "//third_party/webrtc/modules/video_render",
+      "//third_party/webrtc/system_wrappers",
+      "//third_party/webrtc/voice_engine",
     ]
 
     if (!is_ios) {
@@ -422,33 +433,6 @@ if (enable_webrtc) {
       defines = [ "HAVE_SCTP" ]
       deps += [ "//third_party/usrsctp" ]
     }
-  }
-
-  source_set("libpeerconnection") {
-    sources = [
-      "../webrtc/media/engine/simulcast.cc",
-      "../webrtc/media/engine/simulcast.h",
-      "../webrtc/media/engine/webrtcmediaengine.cc",
-      "../webrtc/media/engine/webrtcmediaengine.h",
-      "../webrtc/media/engine/webrtcvideoengine2.cc",
-      "../webrtc/media/engine/webrtcvideoengine2.h",
-      "../webrtc/media/engine/webrtcvoiceengine.cc",
-      "../webrtc/media/engine/webrtcvoiceengine.h",
-    ]
-
-    configs += [ ":jingle_unexported_configs" ]
-    public_configs = [ ":jingle_public_configs" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
-
-    deps = [
-      # TODO(GYP): crbug.com/481633. Consider depending on :libjingle_webrtc
-      # instead.
-      ":libjingle_webrtc_common",
-      "//third_party/webrtc",
-      "//third_party/webrtc/system_wrappers",
-      "//third_party/webrtc/voice_engine",
-    ]
   }
 
   source_set("libstunprober") {
