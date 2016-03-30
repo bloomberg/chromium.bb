@@ -385,12 +385,13 @@ def _CleanTmpDir():
   print 'cleaning temp directory:', tmp_dir
   for file_name in os.listdir(tmp_dir):
     file_path = os.path.join(tmp_dir, file_name)
-    if os.path.isdir(file_path):
-      print 'deleting sub-directory', file_path
-      shutil.rmtree(file_path, True)
     if file_name.startswith('chromedriver_'):
-      print 'deleting file', file_path
-      os.remove(file_path)
+      if os.path.isdir(file_path):
+        print 'deleting sub-directory', file_path
+        shutil.rmtree(file_path, True)
+      else:
+        print 'deleting file', file_path
+        os.remove(file_path)
 
 
 def _GetCommitPositionFromGitHash(snapshot_hashcode):
@@ -496,6 +497,13 @@ def main():
     platform = 'android'
 
   _CleanTmpDir()
+
+  # Make sure any subprocesses (i.e. chromedriver) create temp files under
+  # $TMPDIR/chromedriver_*, so that they can be cleaned up by _CleanTempDir().
+  if util.IsWindows():
+    os.environ['TMP'] = os.environ['TEMP'] = util.MakeTempDir()
+  else:
+    os.environ['TMPDIR'] = util.MakeTempDir()
 
   if not options.revision:
     commit_position = None

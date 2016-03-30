@@ -87,7 +87,7 @@ def MakeTempDir(parent_dir=None):
   Returns:
     The absolute path to the temporary directory.
   """
-  path = tempfile.mkdtemp(dir=parent_dir)
+  path = tempfile.mkdtemp(prefix='chromedriver_', dir=parent_dir)
   atexit.register(MaybeDelete, path)
   return path
 
