@@ -32,8 +32,6 @@ namespace blink {
 class SVGTextPositioningElement : public SVGTextContentElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static SVGTextPositioningElement* elementFromLayoutObject(LayoutObject&);
-
     SVGAnimatedLengthList* x() { return m_x.get(); }
     SVGAnimatedLengthList* y() { return m_y.get(); }
     SVGAnimatedLengthList* dx() { return m_dx.get(); }

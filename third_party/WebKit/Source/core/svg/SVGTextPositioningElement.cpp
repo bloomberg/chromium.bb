@@ -78,16 +78,4 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
     SVGTextContentElement::svgAttributeChanged(attrName);
 }
 
-SVGTextPositioningElement* SVGTextPositioningElement::elementFromLayoutObject(LayoutObject& layoutObject)
-{
-    if (!layoutObject.isSVGText() && !layoutObject.isSVGInline())
-        return nullptr;
-
-    Node* node = layoutObject.node();
-    ASSERT(node);
-    ASSERT(node->isSVGElement());
-
-    return isSVGTextPositioningElement(*node) ? toSVGTextPositioningElement(node) : 0;
-}
-
 } // namespace blink

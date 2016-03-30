@@ -98,6 +98,17 @@ static inline void processLayoutSVGInlineText(LayoutSVGInlineText* text, unsigne
     }
 }
 
+static SVGTextPositioningElement* positioningElementFromLayoutObject(LayoutObject& layoutObject)
+{
+    ASSERT(layoutObject.isSVGText() || layoutObject.isSVGInline());
+
+    Node* node = layoutObject.node();
+    ASSERT(node);
+    ASSERT(node->isSVGElement());
+
+    return isSVGTextPositioningElement(*node) ? toSVGTextPositioningElement(node) : nullptr;
+}
+
 void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxModelObject& start, UChar& lastCharacter)
 {
     ASSERT(!start.isSVGText() || m_textPositions.isEmpty());
@@ -112,7 +123,7 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxMod
             continue;
 
         LayoutSVGInline& inlineChild = toLayoutSVGInline(*child);
-        SVGTextPositioningElement* element = SVGTextPositioningElement::elementFromLayoutObject(inlineChild);
+        SVGTextPositioningElement* element = positioningElementFromLayoutObject(inlineChild);
         unsigned atPosition = m_textPositions.size();
         if (element)
             m_textPositions.append(TextPosition(element, m_textLength));
@@ -131,7 +142,7 @@ void SVGTextLayoutAttributesBuilder::collectTextPositioningElements(LayoutBoxMod
 
 void SVGTextLayoutAttributesBuilder::buildCharacterDataMap(LayoutSVGText& textRoot)
 {
-    SVGTextPositioningElement* outermostTextElement = SVGTextPositioningElement::elementFromLayoutObject(textRoot);
+    SVGTextPositioningElement* outermostTextElement = positioningElementFromLayoutObject(textRoot);
     ASSERT(outermostTextElement);
 
     // Grab outermost <text> element value lists and insert them in the character data map.
