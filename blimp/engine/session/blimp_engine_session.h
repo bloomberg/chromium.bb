@@ -185,6 +185,9 @@ class BlimpEngineSession
   // Used to manage input capture.
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
 
+  // Used to attach null-parented windows (e.g. popups) to the root window.
+  scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
+
   // Only one web_contents is supported for blimp 0.5
   scoped_ptr<content::WebContents> web_contents_;
 

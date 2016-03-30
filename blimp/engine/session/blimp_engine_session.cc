@@ -14,6 +14,7 @@
 #include "blimp/engine/app/settings_manager.h"
 #include "blimp/engine/app/ui/blimp_layout_manager.h"
 #include "blimp/engine/app/ui/blimp_screen.h"
+#include "blimp/engine/app/ui/blimp_window_tree_client.h"
 #include "blimp/engine/app/ui/blimp_window_tree_host.h"
 #include "blimp/engine/common/blimp_browser_context.h"
 #include "blimp/net/blimp_connection.h"
@@ -46,7 +47,6 @@
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/focus_controller.h"
-
 
 namespace blimp {
 namespace engine {
@@ -229,6 +229,9 @@ void BlimpEngineSession::Initialize() {
                                     focus_client_.get());
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
+
+  window_tree_client_.reset(
+      new BlimpWindowTreeClient(window_tree_host_->window()));
 
   window_tree_host_->GetInputMethod()->AddObserver(this);
 
