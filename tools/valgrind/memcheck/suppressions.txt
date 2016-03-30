@@ -1346,18 +1346,6 @@
    fun:_tnl_vbo_draw_prims
 }
 {
-   bug_122457
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF10RefCountedIN5blink12MHTMLArchiveEEnwEm
-   fun:_ZN5blink12MHTMLArchive6createEv
-   ...
-   fun:_ZN5blink11MHTMLParser22parseArchiveWithHeaderEPNS_10MIMEHeaderE
-   fun:_ZN5blink11MHTMLParser12parseArchiveEv
-   fun:_ZN5blink12MHTMLArchive6createERKNS_4KURLEPNS_12SharedBufferE
-}
-{
    bug_122717_use_after_free
    Memcheck:Unaddressable
    fun:__pthread_mutex_unlock_usercnt
