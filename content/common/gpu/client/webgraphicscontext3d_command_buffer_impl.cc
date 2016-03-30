@@ -98,7 +98,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
                                                    : gfx::PreferIntegratedGpu),
       mem_limits_(limits),
       weak_ptr_factory_(this) {
-  if (attributes_.webGL)
+  if (attributes_.webGLVersion > 0)
     context_type_ = OFFSCREEN_CONTEXT_FOR_WEBGL;
   if (share_context) {
     DCHECK(!attributes_.shareResources);

@@ -35,13 +35,11 @@ WebGraphicsContext3D::Attributes toWebGraphicsContext3DAttributes(const WebGLCon
     result.premultipliedAlpha = attrs.premultipliedAlpha();
     result.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat();
 
-    result.noExtensions = true;
     result.shareResources = false;
     result.preferDiscreteGPU = true;
 
     result.topDocumentURL = topDocumentURL;
 
-    result.webGL = true;
     result.webGLVersion = webGLVersion;
     return result;
 }

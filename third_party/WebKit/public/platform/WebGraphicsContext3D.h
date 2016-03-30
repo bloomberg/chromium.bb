@@ -58,13 +58,10 @@ public:
         bool stencil = true;
         bool antialias = true;
         bool premultipliedAlpha = true;
-        bool canRecoverFromContextLoss = true;
-        bool noExtensions = false;
         bool shareResources = true;
         bool preferDiscreteGPU = false;
         bool noAutomaticFlushes = false;
         bool failIfMajorPerformanceCaveat = false;
-        bool webGL = false;
         unsigned webGLVersion = 0;
         // FIXME: ideally this would be a WebURL, but it is currently not
         // possible to pass a WebURL by value across the WebKit API boundary.
