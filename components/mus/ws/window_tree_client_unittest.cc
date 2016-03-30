@@ -1701,7 +1701,14 @@ TEST_F(WindowTreeClientTest, EmbedSupplyingWindowTreeClient) {
             SingleChangeToDescription(*client2.tracker()->changes()));
 }
 
-TEST_F(WindowTreeClientTest, EmbedFailsFromOtherConnection) {
+// Disabled due to flakes on win8_chromium_ng; see https://crbug.com/598925.
+#if defined(OS_WIN)
+#define MAYBE_EmbedFailsFromOtherConnection \
+    DISABLED_EmbedFailsFromOtherConnection
+#else
+#define MAYBE_EmbedFailsFromOtherConnection EmbedFailsFromOtherConnection
+#endif
+TEST_F(WindowTreeClientTest, MAYBE_EmbedFailsFromOtherConnection) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
