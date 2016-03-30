@@ -1,8 +1,8 @@
-# Libfuzzer Integration Reference
+# libFuzzer Integration Reference
 
 ## fuzzer_test GN Template
 
-Use `fuzzer_test` to define libfuzzer targets:
+Use `fuzzer_test` to define libFuzzer targets:
 
 ```
 fuzzer_test("my_fuzzer") {
@@ -23,7 +23,7 @@ Following arguments are supported:
 
 ## Fuzzer Runtime Options
 
-There are many different runtime options supported by libfuzzer. Options
+There are many different runtime options supported by libFuzzer. Options
 are passed as command line arguments:
 
 ```
@@ -37,10 +37,10 @@ Most common flags are:
 | max_len | Maximum length of test input. |
 | timeout | Timeout of seconds. Units slower than this value will be reported as bugs. |
 
-A fuller list of options can be found at [Libfuzzer Usage] page and by running
+A fuller list of options can be found at [libFuzzer Usage] page and by running
 the binary with `-help=1`.
 
-To specify these options for Clusterfuzz, create `<my_fuzzer>.options` file:
+To specify these options for ClusterFuzz, create `<my_fuzzer>.options` file:
 
 ```
 [libfuzzer]
@@ -49,6 +49,6 @@ max_len=500
 
 and specify the file in `libfuzzer_options` target attribute.
 
-[Libfuzzer Usage]: http://llvm.org/docs/LibFuzzer.html#usage
+[libFuzzer Usage]: http://llvm.org/docs/LibFuzzer.html#usage
 
 

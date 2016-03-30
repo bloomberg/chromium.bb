@@ -1,12 +1,16 @@
-# Libfuzzer and ClusterFuzz Integration
+# libFuzzer and ClusterFuzz Integration
 
-Clusterfuzz is a distributed fuzzing infrastructure 
+*** note
+Most links on this page are private.
+***
+
+ClusterFuzz is a distributed fuzzing infrastructure 
 ([go/clusterfuzz](https://goto.google.com/clusterfuzz)) that automatically
-executes libfuzzer tests on scale.
+executes libFuzzer tests on scale.
 
 ## Status Links
 
-* [Buildbot] - status of all libfuzzer builds
+* [Buildbot] - status of all libFuzzer builds
 * [ClusterFuzz Fuzzer Status] - fuzzing metrics, links to crashes and coverage 
 reports.
 * [Corpus GCS Bucket] - current corpus for each fuzzer. Can be used to upload
@@ -14,7 +18,7 @@ bootstrapped corpus.
 
 ## Integration Details
 
-The integration between Libfuzzer and ClusterFuzz consists of:
+The integration between libFuzzer and ClusterFuzz consists of:
 
 * Build rules definition in [fuzzer_test.gni]
 * [Buildbot] that automatically discovers fuzzers using `gn refs` facility, 

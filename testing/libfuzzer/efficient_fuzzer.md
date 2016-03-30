@@ -5,7 +5,7 @@ to improve it.
 
 ## Overview
 
-Being a coverage-driven fuzzer, Libfuzzer considers a certain input *interesting*
+Being a coverage-driven fuzzer, libFuzzer considers a certain input *interesting*
 if it results in new coverage. The set of all interesting inputs is called 
 *corpus*. 
 Items in corpus are constantly mutated in search of new interesting input.
@@ -28,7 +28,7 @@ Fuzzer speed is printed while fuzzer runs:
 #19346  NEW    cov: 2815 bits: 1082 indir: 43 units: 150 exec/s: 19346 L: 62
 ```
 
-Because Libfuzzer performs randomized search, it is critical to have it as fast
+Because libFuzzer performs randomized search, it is critical to have it as fast
 as possible. You should try to get to at least 1,000 exec/s. Profile the fuzzer
 using any standard tool to see where it spends its time.
 
@@ -53,13 +53,13 @@ new interesting input. Corpus for a reasonably complex functionality
 should contain hundreds (if not thousands) of items.
 
 Too small corpus size indicates some code barrier that
-libfuzzer is having problems penetrating. Common cases include: checksums,
+libFuzzer is having problems penetrating. Common cases include: checksums,
 magic numbers etc. The easiest way to diagnose this problem is to generate a 
 [coverage report](#Coverage). To fix the issue you can:
 
 * change the code (e.g. disable crc checks while fuzzing)
-* prepare [fuzzer dictionary](#Fuzzer-Dictionary)
 * prepare [corpus seed](#Corpus-Seed).
+* prepare [fuzzer dictionary](#Fuzzer-Dictionary)
 
 ## Coverage
 
@@ -75,6 +75,22 @@ determine where your fuzzer is "stuck". Replace `ASAN_OPTIONS` by corresponding
 option variable if your are using another sanitizer (e.g. `MSAN_OPTIONS`).
 `sancov_path` can be omitted by adding llvm bin directory to `PATH` environment
 variable.
+
+## Corpus Seed
+
+You can pass a corpus directory to a fuzzer that you run manually:
+
+```
+./out/libfuzzer/my_fuzzer ~/tmp/my_fuzzer_corpus
+```
+
+The directory can initially be empty. The fuzzer would store all the interesting
+items it finds in the directory. You can help the fuzzer by "seeding" the corpus:
+simply copy interesting inputs for your function to the corpus directory before
+running. This works especially well for file-parsing functionality: just
+use some valid files from your test suite.
+
+After discovering new and interesting items, [upload corpus to ClusterFuzz].
 
 ## Fuzzer Dictionary
 
@@ -101,7 +117,7 @@ kw3="\xF7\xF8"
 Test your dictionary by running your fuzzer locally:
 
 ```bash
-./out/libfuzzer/my_protocol_fuzzer -dict <path_to_dict> <path_to_corpus>
+./out/libfuzzer/my_protocol_fuzzer -dict=<path_to_dict> <path_to_corpus>
 ```
 
 You should see lots of new units discovered.
@@ -118,23 +134,7 @@ fuzzer_test("my_protocol_fuzzer") {
 Make sure to submit dictionary file to git. The dictionary will be used
 automatically by ClusterFuzz once it picks up new fuzzer version (once a day).
 
-## Corpus Seed
-
-You can pass a corpus directory to a fuzzer that you run manually:
-
-```
-./out/libfuzzer/my_fuzzer ~/tmp/my_fuzzer_corpus
-```
-
-The directory can initially be empty. The fuzzer would store all the interesting
-items it finds in the directory. You can help the fuzzer by "seeding" the corpus:
-simply copy interesting inputs for your function to the corpus directory before
-running. This works especially well for file-parsing functionality: just
-use some valid files from your test suite.
-
-After discovering new and interesting items, [upload corpus to Clusterfuzz].
-
 
 [ClusterFuzz status]: ./clusterfuzz.md#Status-Links
-[upload corpus to Clusterfuzz]: ./clusterfuzz.md#Upload-Corpus
+[upload corpus to ClusterFuzz]: ./clusterfuzz.md#Upload-Corpus
 [AFL]: http://lcamtuf.coredump.cx/afl/

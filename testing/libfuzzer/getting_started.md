@@ -1,7 +1,7 @@
-# Getting Started with Libfuzzer in Chrome
+# Getting Started with libFuzzer in Chrome
 
 *** note
-**Prerequisites:** libfuzzer in chrome is supported with GN on Linux only. 
+**Prerequisites:** libFuzzer in chrome is supported with GN on Linux only. 
 ***
 
 This document will walk you through:
@@ -12,8 +12,8 @@ This document will walk you through:
 
 ## Check Out ToT Clang
 
-Libfuzzer relies heavily on compile-time instrumentation. Because it is still
-under heavy development you need to use tot clang with libfuzzer:
+libFuzzer relies heavily on compile-time instrumentation. Because it is still
+under heavy development you need to use tot clang with libFuzzer ([crbug/598448]):
 
 ```bash
 # In chrome/src
@@ -93,7 +93,7 @@ INFO: PreferSmall: 1
 #18     NEW    cov: 2733 bits: 458 indir: 39 units: 11 exec/s: 0 L: 24 MS: 2 CrossOver-CrossOver-
 ```
 
-The `... NEW ...` line appears when libfuzzer finds new and interesting input. The 
+The `... NEW ...` line appears when libFuzzer finds new and interesting input. The 
 efficient fuzzer should be able to finds lots of them rather quickly.
 
 The `... pulse ...` line will appear periodically to show the current status.
@@ -114,6 +114,7 @@ performance and for optimization hints.
 
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
 [Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
-[url_parser_fuzzer.cc]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzers/url_parse_fuzzer.cc
+[url_parse_fuzzer.cc]: https://code.google.com/p/chromium/codesearch#chromium/src/testing/libfuzzer/fuzzers/url_parse_fuzzer.cc
 [ClusterFuzz status]: clusterfuzz.md#Status-Links
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
+[crbug/598448]: https://bugs.chromium.org/p/chromium/issues/detail?id=598448
