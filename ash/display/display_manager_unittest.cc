@@ -1700,22 +1700,22 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   gfx::Screen* screen = gfx::Screen::GetScreen();
   // The 2nd display is scaled so that it has the same height as 1st display.
   // 300 * 500 / 200  + 400 = 1150.
-  EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ(gfx::Size(1150, 500), screen->GetPrimaryDisplay().size());
 
   display_manager()->SetMirrorMode(true);
-  EXPECT_EQ("400x500", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ(gfx::Size(400, 500), screen->GetPrimaryDisplay().size());
 
   display_manager()->SetMirrorMode(false);
-  EXPECT_EQ("1150x500", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ(gfx::Size(1150, 500), screen->GetPrimaryDisplay().size());
 
   // Switch to single desktop.
   UpdateDisplay("500x300");
-  EXPECT_EQ("500x300", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ(gfx::Size(500, 300), screen->GetPrimaryDisplay().size());
 
   // Switch to unified desktop.
   UpdateDisplay("500x300,400x500");
   // 400 * 300 / 500 + 500 ~= 739.
-  EXPECT_EQ("739x300", screen->GetPrimaryDisplay().size().ToString());
+  EXPECT_EQ(gfx::Size(739, 300), screen->GetPrimaryDisplay().size());
 
   // The default should fit to the internal display.
   std::vector<DisplayInfo> display_info_list;
@@ -1726,13 +1726,21 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
     test::ScopedSetInternalDisplayId set_internal(11);
     display_manager()->OnNativeDisplaysChanged(display_info_list);
     // 500 * 500 / 300 + 400 ~= 1233.
-    EXPECT_EQ("1233x500", screen->GetPrimaryDisplay().size().ToString());
+    EXPECT_EQ(gfx::Size(1233, 500), screen->GetPrimaryDisplay().size());
   }
+
+  // Switch to 3 displays.
+  UpdateDisplay("500x300,400x500,500x300");
+  EXPECT_EQ(gfx::Size(1239, 300), screen->GetPrimaryDisplay().size());
 
   // Switch back to extended desktop.
   display_manager()->SetUnifiedDesktopEnabled(false);
-  EXPECT_EQ("500x300", screen->GetPrimaryDisplay().size().ToString());
-  EXPECT_EQ("400x500", ScreenUtil::GetSecondaryDisplay().size().ToString());
+  EXPECT_EQ(gfx::Size(500, 300), screen->GetPrimaryDisplay().size());
+  EXPECT_EQ(gfx::Size(400, 500), ScreenUtil::GetSecondaryDisplay().size());
+  EXPECT_EQ(gfx::Size(500, 300),
+            display_manager()
+                ->GetDisplayForId(ScreenUtil::GetSecondaryDisplay().id() + 1)
+                .size());
 }
 
 TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {

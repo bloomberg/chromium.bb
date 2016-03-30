@@ -1080,129 +1080,129 @@ void DisplayManager::CreateSoftwareMirroringDisplayInfo(
   // the root window so that it matches the external display's
   // resolution. This is necessary in order for scaling to work while
   // mirrored.
-  if (display_info_list->size() == 2) {
-    switch (multi_display_mode_) {
-      case MIRRORING: {
-        bool zero_is_source =
-            first_display_id_ == (*display_info_list)[0].id() ||
-            gfx::Display::IsInternalDisplayId((*display_info_list)[0].id());
-        DCHECK_EQ(MIRRORING, multi_display_mode_);
-        mirroring_display_id_ =
-            (*display_info_list)[zero_is_source ? 1 : 0].id();
+  switch (multi_display_mode_) {
+    case MIRRORING: {
+      if (display_info_list->size() != 2)
+        return;
+      bool zero_is_source =
+          first_display_id_ == (*display_info_list)[0].id() ||
+          gfx::Display::IsInternalDisplayId((*display_info_list)[0].id());
+      DCHECK_EQ(MIRRORING, multi_display_mode_);
+      mirroring_display_id_ = (*display_info_list)[zero_is_source ? 1 : 0].id();
 
-        int64_t display_id = mirroring_display_id_;
-        auto iter =
-            std::find_if(display_info_list->begin(), display_info_list->end(),
-                         [display_id](const DisplayInfo& info) {
-                           return info.id() == display_id;
-                         });
-        DCHECK(iter != display_info_list->end());
+      int64_t display_id = mirroring_display_id_;
+      auto iter =
+          std::find_if(display_info_list->begin(), display_info_list->end(),
+                       [display_id](const DisplayInfo& info) {
+                         return info.id() == display_id;
+                       });
+      DCHECK(iter != display_info_list->end());
 
-        DisplayInfo info = *iter;
-        info.SetOverscanInsets(gfx::Insets());
-        InsertAndUpdateDisplayInfo(info);
-        software_mirroring_display_list_.push_back(
-            CreateMirroringDisplayFromDisplayInfoById(mirroring_display_id_,
-                                                      gfx::Point(), 1.0f));
-        display_info_list->erase(iter);
-        break;
-      }
-      case UNIFIED: {
-        // TODO(oshima): Currently, all displays are laid out horizontally,
-        // from left to right. Allow more flexible layouts, such as
-        // right to left, or vertical layouts.
-        gfx::Rect unified_bounds;
-        software_mirroring_display_list_.clear();
-
-        // 1st Pass. Find the max size.
-        int max_height = std::numeric_limits<int>::min();
-
-        int default_height = 0;
-        float default_device_scale_factor = 1.0f;
-        for (auto& info : *display_info_list) {
-          max_height = std::max(max_height, info.size_in_pixel().height());
-          if (!default_height || gfx::Display::IsInternalDisplayId(info.id())) {
-            default_height = info.size_in_pixel().height();
-            default_device_scale_factor = info.device_scale_factor();
-          }
-        }
-
-        std::vector<DisplayMode> display_mode_list;
-        std::set<std::pair<float, float>> dsf_scale_list;
-
-        // 2nd Pass. Compute the unified display size.
-        for (auto& info : *display_info_list) {
-          InsertAndUpdateDisplayInfo(info);
-          gfx::Point origin(unified_bounds.right(), 0);
-          float scale =
-              info.size_in_pixel().height() / static_cast<float>(max_height);
-          // The display is scaled to fit the unified desktop size.
-          gfx::Display display = CreateMirroringDisplayFromDisplayInfoById(
-              info.id(), origin, 1.0f / scale);
-          unified_bounds.Union(display.bounds());
-
-          dsf_scale_list.insert(
-              std::make_pair(info.device_scale_factor(), scale));
-        }
-
-        DisplayInfo info(kUnifiedDisplayId, "Unified Desktop", false);
-
-        DisplayMode native_mode(unified_bounds.size(), 60.0f, false, true);
-        std::vector<DisplayMode> modes =
-            CreateUnifiedDisplayModeList(native_mode, dsf_scale_list);
-
-        // Find the default mode.
-        auto iter = std::find_if(
-            modes.begin(), modes.end(),
-            [default_height,
-             default_device_scale_factor](const DisplayMode& mode) {
-              return mode.size.height() == default_height &&
-                     mode.device_scale_factor == default_device_scale_factor;
-            });
-        iter->native = true;
-        info.SetDisplayModes(modes);
-        info.set_device_scale_factor(iter->device_scale_factor);
-        info.SetBounds(gfx::Rect(iter->size));
-
-        // Forget the configured resolution if the original unified
-        // desktop resolution has changed.
-        if (display_info_.count(kUnifiedDisplayId) != 0 &&
-            GetMaxNativeSize(display_info_[kUnifiedDisplayId]) !=
-                unified_bounds.size()) {
-          display_modes_.erase(kUnifiedDisplayId);
-        }
-
-        // 3rd Pass. Set the selected mode, then recompute the mirroring
-        // display size.
-        DisplayMode mode;
-        if (GetSelectedModeForDisplayId(kUnifiedDisplayId, &mode) &&
-            FindDisplayMode(info, mode) != info.display_modes().end()) {
-          info.set_device_scale_factor(mode.device_scale_factor);
-          info.SetBounds(gfx::Rect(mode.size));
-        } else {
-          display_modes_.erase(kUnifiedDisplayId);
-        }
-
-        int unified_display_height = info.size_in_pixel().height();
-        gfx::Point origin;
-        for (auto& info : *display_info_list) {
-          float display_scale = info.size_in_pixel().height() /
-                                static_cast<float>(unified_display_height);
-          gfx::Display display = CreateMirroringDisplayFromDisplayInfoById(
-              info.id(), origin, 1.0f / display_scale);
-          origin.Offset(display.size().width(), 0);
-          display.UpdateWorkAreaFromInsets(gfx::Insets());
-          software_mirroring_display_list_.push_back(display);
-        }
-
-        display_info_list->clear();
-        display_info_list->push_back(info);
-        InsertAndUpdateDisplayInfo(info);
-        break;
-      }
-      case EXTENDED:
-        break;
+      DisplayInfo info = *iter;
+      info.SetOverscanInsets(gfx::Insets());
+      InsertAndUpdateDisplayInfo(info);
+      software_mirroring_display_list_.push_back(
+          CreateMirroringDisplayFromDisplayInfoById(mirroring_display_id_,
+                                                    gfx::Point(), 1.0f));
+      display_info_list->erase(iter);
+      break;
     }
+    case UNIFIED: {
+      if (display_info_list->size() == 1)
+        return;
+      // TODO(oshima): Currently, all displays are laid out horizontally,
+      // from left to right. Allow more flexible layouts, such as
+      // right to left, or vertical layouts.
+      gfx::Rect unified_bounds;
+      software_mirroring_display_list_.clear();
+      // 1st Pass. Find the max size.
+      int max_height = std::numeric_limits<int>::min();
+
+      int default_height = 0;
+      float default_device_scale_factor = 1.0f;
+      for (auto& info : *display_info_list) {
+        max_height = std::max(max_height, info.size_in_pixel().height());
+        if (!default_height || gfx::Display::IsInternalDisplayId(info.id())) {
+          default_height = info.size_in_pixel().height();
+          default_device_scale_factor = info.device_scale_factor();
+        }
+      }
+
+      std::vector<DisplayMode> display_mode_list;
+      std::set<std::pair<float, float>> dsf_scale_list;
+
+      // 2nd Pass. Compute the unified display size.
+      for (auto& info : *display_info_list) {
+        InsertAndUpdateDisplayInfo(info);
+        gfx::Point origin(unified_bounds.right(), 0);
+        float scale =
+            info.size_in_pixel().height() / static_cast<float>(max_height);
+        // The display is scaled to fit the unified desktop size.
+        gfx::Display display = CreateMirroringDisplayFromDisplayInfoById(
+            info.id(), origin, 1.0f / scale);
+        unified_bounds.Union(display.bounds());
+
+        dsf_scale_list.insert(
+            std::make_pair(info.device_scale_factor(), scale));
+      }
+
+      DisplayInfo info(kUnifiedDisplayId, "Unified Desktop", false);
+
+      DisplayMode native_mode(unified_bounds.size(), 60.0f, false, true);
+      std::vector<DisplayMode> modes =
+          CreateUnifiedDisplayModeList(native_mode, dsf_scale_list);
+
+      // Find the default mode.
+      auto iter = std::find_if(
+          modes.begin(), modes.end(),
+          [default_height,
+           default_device_scale_factor](const DisplayMode& mode) {
+            return mode.size.height() == default_height &&
+                   mode.device_scale_factor == default_device_scale_factor;
+          });
+      iter->native = true;
+      info.SetDisplayModes(modes);
+      info.set_device_scale_factor(iter->device_scale_factor);
+      info.SetBounds(gfx::Rect(iter->size));
+
+      // Forget the configured resolution if the original unified
+      // desktop resolution has changed.
+      if (display_info_.count(kUnifiedDisplayId) != 0 &&
+          GetMaxNativeSize(display_info_[kUnifiedDisplayId]) !=
+              unified_bounds.size()) {
+        display_modes_.erase(kUnifiedDisplayId);
+      }
+
+      // 3rd Pass. Set the selected mode, then recompute the mirroring
+      // display size.
+      DisplayMode mode;
+      if (GetSelectedModeForDisplayId(kUnifiedDisplayId, &mode) &&
+          FindDisplayMode(info, mode) != info.display_modes().end()) {
+        info.set_device_scale_factor(mode.device_scale_factor);
+        info.SetBounds(gfx::Rect(mode.size));
+      } else {
+        display_modes_.erase(kUnifiedDisplayId);
+      }
+
+      int unified_display_height = info.size_in_pixel().height();
+      gfx::Point origin;
+      for (auto& info : *display_info_list) {
+        float display_scale = info.size_in_pixel().height() /
+                              static_cast<float>(unified_display_height);
+        gfx::Display display = CreateMirroringDisplayFromDisplayInfoById(
+            info.id(), origin, 1.0f / display_scale);
+        origin.Offset(display.size().width(), 0);
+        display.UpdateWorkAreaFromInsets(gfx::Insets());
+        software_mirroring_display_list_.push_back(display);
+      }
+
+      display_info_list->clear();
+      display_info_list->push_back(info);
+      InsertAndUpdateDisplayInfo(info);
+      break;
+    }
+    case EXTENDED:
+      break;
   }
 }
 
