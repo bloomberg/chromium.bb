@@ -144,6 +144,10 @@ skia::RefPtr<SkShader> CreateFadeShader(const FontList& font_list,
                                         const Rect& left_part,
                                         const Rect& right_part,
                                         SkColor color) {
+  // The shader should only specify transparency of the fade itself, not the
+  // original transparency, which will be applied by the actual renderer.
+  DCHECK_EQ(SkColorGetA(color), static_cast<uint8_t>(0xff));
+
   // In general, fade down to 0 alpha.  But when the available width is less
   // than four characters, linearly ramp up the fade target alpha to as high as
   // 20% at zero width.  This allows the user to see the last faded characters a
@@ -1233,7 +1237,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   // TODO(msw): Use the actual text colors corresponding to each faded part.
   skia::RefPtr<SkShader> shader =
       CreateFadeShader(font_list(), text_rect, left_part, right_part,
-                       colors_.breaks().front().second);
+                       SkColorSetA(colors_.breaks().front().second, 0xff));
   if (shader)
     renderer->SetShader(shader.get());
 }
