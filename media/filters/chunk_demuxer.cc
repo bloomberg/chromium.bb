@@ -365,6 +365,7 @@ ChunkDemuxer::ChunkDemuxer(
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
       enable_text_(false),
       media_log_(media_log),
+      pending_source_init_done_count_(0),
       duration_(kNoTimestamp()),
       user_specified_duration_(-1),
       liveness_(DemuxerStream::LIVENESS_UNKNOWN),
@@ -544,6 +545,8 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
     new_text_track_cb = base::Bind(&ChunkDemuxer::OnNewTextTrack,
                                    base::Unretained(this));
   }
+
+  pending_source_init_done_count_++;
 
   source_state->Init(
       base::Bind(&ChunkDemuxer::OnSourceInitDone, base::Unretained(this)),
@@ -970,11 +973,14 @@ void ChunkDemuxer::OnSourceInitDone(
   detected_text_track_count_ += params.detected_text_track_count;
 
   // Wait until all streams have initialized.
-  // TODO(wolenetz): Make this gate less fragile. See https://crbug.com/597447.
-  if ((!source_id_audio_.empty() && !audio_) ||
-      (!source_id_video_.empty() && !video_)) {
+  pending_source_init_done_count_--;
+
+  if (pending_source_init_done_count_ > 0)
     return;
-  }
+
+  DCHECK_EQ(0, pending_source_init_done_count_);
+  DCHECK((source_id_audio_.empty() == !audio_) &&
+         (source_id_video_.empty() == !video_));
 
   // Record detected track counts by type corresponding to an MSE playback.
   // Counts are split into 50 buckets, capped into [0,100] range.

@@ -381,6 +381,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   scoped_ptr<ChunkDemuxerStream> audio_;
   scoped_ptr<ChunkDemuxerStream> video_;
 
+  // Counter to ensure that we do not transition too early to INITIALIZED.
+  // Incremented in AddId(), decremented in OnSourceInitDone().
+  int pending_source_init_done_count_;
+
   base::TimeDelta duration_;
 
   // The duration passed to the last SetDuration(). If
