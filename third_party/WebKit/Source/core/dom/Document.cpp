@@ -5771,26 +5771,6 @@ float Document::devicePixelRatio() const
     return m_frame ? m_frame->devicePixelRatio() : 1.0;
 }
 
-void Document::removedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode updateMode)
-{
-    // If we're in document teardown, then we don't need this notification of our sheet's removal.
-    // resolverChanged() is needed even when the document is inactive so that imported documents
-    // (which are inactive) notify the change to the master document.
-    if (isActive())
-        styleEngine().modifiedStyleSheet(sheet);
-    styleEngine().resolverChanged(updateMode);
-}
-
-void Document::modifiedStyleSheet(StyleSheet* sheet, StyleResolverUpdateMode updateMode)
-{
-    // If we're in document teardown, then we don't need this notification of our sheet's removal.
-    // resolverChanged() is needed even when the document is inactive so that imported documents
-    // (which are inactive) notify the change to the master document.
-    if (isActive())
-        styleEngine().modifiedStyleSheet(sheet);
-    styleEngine().resolverChanged(updateMode);
-}
-
 TextAutosizer* Document::textAutosizer()
 {
     if (!m_textAutosizer)

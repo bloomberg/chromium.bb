@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
+#include "core/dom/StyleEngine.h"
 #include "core/frame/Deprecation.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -200,7 +201,7 @@ void CSSStyleSheet::didMutate(StyleSheetUpdateType updateType)
     // Need FullStyleUpdate when insertRule or deleteRule,
     // because StyleSheetCollection::analyzeStyleSheetChange cannot detect partial rule update.
     StyleResolverUpdateMode updateMode = updateType != PartialRuleUpdate ? AnalyzedStyleUpdate : FullStyleUpdate;
-    owner->modifiedStyleSheet(this, updateMode);
+    owner->styleEngine().setNeedsActiveStyleUpdate(this, updateMode);
 }
 
 void CSSStyleSheet::reattachChildRuleCSSOMWrappers()

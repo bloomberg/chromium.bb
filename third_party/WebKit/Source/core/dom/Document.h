@@ -384,11 +384,6 @@ public:
     bool gotoAnchorNeededAfterStylesheetsLoad() { return m_gotoAnchorNeededAfterStylesheetsLoad; }
     void setGotoAnchorNeededAfterStylesheetsLoad(bool b) { m_gotoAnchorNeededAfterStylesheetsLoad = b; }
 
-    // FIXME: Switch all callers of resolverChanged to these or better ones and then make them
-    // do something smarter.
-    void removedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
-    void modifiedStyleSheet(StyleSheet*, StyleResolverUpdateMode = FullStyleUpdate);
-
     void scheduleUseShadowTreeUpdate(SVGUseElement&);
     void unscheduleUseShadowTreeUpdate(SVGUseElement&);
 

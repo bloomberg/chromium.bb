@@ -106,7 +106,7 @@ void StyleElement::removedFrom(Element* element, ContainerNode* insertionPoint)
     if (m_sheet)
         clearSheet(element);
     if (removedSheet)
-        document.removedStyleSheet(removedSheet.get(), AnalyzedStyleUpdate);
+        document.styleEngine().setNeedsActiveStyleUpdate(removedSheet.get(), AnalyzedStyleUpdate);
 }
 
 void StyleElement::clearDocumentData(Document& document, Element* element)

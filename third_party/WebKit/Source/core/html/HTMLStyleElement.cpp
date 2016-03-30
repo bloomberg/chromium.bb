@@ -26,6 +26,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/MediaList.h"
 #include "core/dom/Document.h"
+#include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/events/EventSender.h"
@@ -68,7 +69,7 @@ void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicStr
         m_sheet->setTitle(value);
     } else if (name == mediaAttr && inDocument() && document().isActive() && m_sheet) {
         m_sheet->setMediaQueries(MediaQuerySet::create(value));
-        document().modifiedStyleSheet(m_sheet.get());
+        document().styleEngine().setNeedsActiveStyleUpdate(m_sheet.get(), FullStyleUpdate);
     } else {
         HTMLElement::parseAttribute(name, oldValue, value);
     }
