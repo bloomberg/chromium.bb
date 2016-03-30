@@ -29,58 +29,11 @@
 
 #include "core/paint/PaintLayerFilterInfo.h"
 
-#include "core/fetch/DocumentResourceReference.h"
-#include "core/layout/svg/LayoutSVGResourceContainer.h"
-#include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/PaintLayer.h"
-#include "core/svg/SVGFilterElement.h"
+#include "platform/graphics/filters/FilterOperations.h"
 
 namespace blink {
-
-PaintLayerFilterInfoMap* PaintLayerFilterInfo::s_filterMap = 0;
-
-PaintLayerFilterInfo* PaintLayerFilterInfo::filterInfoForLayer(const PaintLayer* layer)
-{
-    if (!s_filterMap)
-        return 0;
-    PaintLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
-    return (iter != s_filterMap->end()) ? iter->value : 0;
-}
-
-PaintLayerFilterInfo* PaintLayerFilterInfo::createFilterInfoForLayerIfNeeded(PaintLayer* layer)
-{
-    if (!s_filterMap)
-        s_filterMap = new PaintLayerFilterInfoMap();
-
-    PaintLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
-    if (iter != s_filterMap->end()) {
-        ASSERT(layer->hasFilterInfo());
-        return iter->value;
-    }
-
-    PaintLayerFilterInfo* filter = new PaintLayerFilterInfo(layer);
-    s_filterMap->set(layer, filter);
-    layer->setHasFilterInfo(true);
-    return filter;
-}
-
-void PaintLayerFilterInfo::removeFilterInfoForLayer(PaintLayer* layer)
-{
-    if (!s_filterMap)
-        return;
-    PaintLayerFilterInfo* filter = s_filterMap->take(layer);
-    if (s_filterMap->isEmpty()) {
-        delete s_filterMap;
-        s_filterMap = 0;
-    }
-    if (!filter) {
-        ASSERT(!layer->hasFilterInfo());
-        return;
-    }
-    layer->setHasFilterInfo(false);
-    delete filter;
-}
 
 PaintLayerFilterInfo::PaintLayerFilterInfo(PaintLayer* layer)
     : m_layer(layer)

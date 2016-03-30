@@ -133,6 +133,8 @@ struct PaintLayerRareData {
 
     OwnPtr<PaintLayerReflectionInfo> reflectionInfo;
 
+    OwnPtr<PaintLayerFilterInfo> filterInfo;
+
     // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
     LayoutSize subpixelAccumulation;
 };
@@ -466,16 +468,8 @@ public:
     FilterEffect* lastFilterEffect() const;
     FilterOutsets filterOutsets() const;
 
-    PaintLayerFilterInfo* filterInfo() const { return hasFilterInfo() ? PaintLayerFilterInfo::filterInfoForLayer(this) : 0; }
-    PaintLayerFilterInfo* ensureFilterInfo() { return PaintLayerFilterInfo::createFilterInfoForLayerIfNeeded(this); }
-    void removeFilterInfoIfNeeded()
-    {
-        if (hasFilterInfo())
-            PaintLayerFilterInfo::removeFilterInfoForLayer(this);
-    }
-
-    bool hasFilterInfo() const { return m_hasFilterInfo; }
-    void setHasFilterInfo(bool hasFilterInfo) { m_hasFilterInfo = hasFilterInfo; }
+    PaintLayerFilterInfo* filterInfo() const { return m_rareData ? m_rareData->filterInfo.get() : nullptr; }
+    PaintLayerFilterInfo& ensureFilterInfo();
 
     void updateFilters(const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
 
@@ -796,7 +790,6 @@ private:
 
     unsigned m_containsDirtyOverlayScrollbars : 1;
 
-    unsigned m_hasFilterInfo : 1;
     unsigned m_needsAncestorDependentCompositingInputsUpdate : 1;
     unsigned m_needsDescendantDependentCompositingInputsUpdate : 1;
     unsigned m_childNeedsCompositingInputsUpdate : 1;

@@ -149,7 +149,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject, PaintLayerType type)
     , m_3DTransformedDescendantStatusDirty(true)
     , m_has3DTransformedDescendant(false)
     , m_containsDirtyOverlayScrollbars(false)
-    , m_hasFilterInfo(false)
     , m_needsAncestorDependentCompositingInputsUpdate(true)
     , m_needsDescendantDependentCompositingInputsUpdate(true)
     , m_childNeedsCompositingInputsUpdate(true)
@@ -192,8 +191,6 @@ PaintLayer::~PaintLayer()
         if (ScrollingCoordinator* scrollingCoordinator = layoutObject()->frame()->page()->scrollingCoordinator())
             scrollingCoordinator->willDestroyLayer(this);
     }
-
-    removeFilterInfoIfNeeded();
 
     if (groupedMapping()) {
         DisableCompositingQueryAsserts disabler;
@@ -2614,17 +2611,23 @@ FilterOperations PaintLayer::computeBackdropFilterOperations(const ComputedStyle
     return computeFilterOperationsHandleReferenceFilters(style.backdropFilter(), style.effectiveZoom(), enclosingNode());
 }
 
+PaintLayerFilterInfo& PaintLayer::ensureFilterInfo()
+{
+    PaintLayerRareData& rareData = ensureRareData();
+    if (!rareData.filterInfo)
+        rareData.filterInfo = adoptPtr(new PaintLayerFilterInfo(this));
+    return *rareData.filterInfo;
+}
+
 void PaintLayer::updateOrRemoveFilterClients()
 {
-    if (!hasFilter()) {
-        removeFilterInfoIfNeeded();
-        return;
-    }
-
-    if (layoutObject()->style()->filter().hasReferenceFilter())
-        ensureFilterInfo()->updateReferenceFilterClients(layoutObject()->style()->filter());
-    else if (hasFilterInfo())
+    if (!hasFilter() && m_rareData) {
+        m_rareData->filterInfo = nullptr;
+    } else if (layoutObject()->style()->filter().hasReferenceFilter()) {
+        ensureFilterInfo().updateReferenceFilterClients(layoutObject()->style()->filter());
+    } else if (filterInfo()) {
         filterInfo()->clearFilterReferences();
+    }
 }
 
 FilterEffectBuilder* PaintLayer::updateFilterEffectBuilder() const
@@ -2683,7 +2686,7 @@ void PaintLayer::updateOrRemoveFilterEffectBuilder()
         return;
     }
 
-    ensureFilterInfo()->setBuilder(nullptr);
+    ensureFilterInfo().setBuilder(nullptr);
 }
 
 void PaintLayer::filterNeedsPaintInvalidation()
