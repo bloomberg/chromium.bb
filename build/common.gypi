@@ -2324,14 +2324,6 @@
         'release_extra_cflags': '-g -fno-inline -fno-omit-frame-pointer '
                                 '-fno-builtin -fno-optimize-sibling-calls',
 
-        # MSVS flags for TSan on Pin and Windows.
-        'win_debug_RuntimeChecks': '0',
-        'win_debug_disable_iterator_debugging': '1',
-        'win_debug_Optimization': '1',
-        'win_debug_InlineFunctionExpansion': '0',
-        'win_release_InlineFunctionExpansion': '0',
-        'win_release_OmitFramePointers': '0',
-
         'release_valgrind_build': 1,
         'werror': '',
         'component': 'static_library',
