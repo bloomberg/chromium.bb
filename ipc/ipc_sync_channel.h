@@ -156,10 +156,6 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
     // returned. Otherwise the function returns false.
     bool TryToUnblockListener(const Message* msg);
 
-    // Called on the IPC thread when a sync send that runs a nested message loop
-    // times out.
-    void OnSendTimeout(int message_id);
-
     base::WaitableEvent* shutdown_event() { return shutdown_event_; }
 
     ReceivedSyncMsgQueue* received_sync_msgs() {

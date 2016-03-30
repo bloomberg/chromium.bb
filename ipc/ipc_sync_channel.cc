@@ -317,7 +317,13 @@ bool SyncChannel::SyncContext::TryToUnblockListener(const Message* msg) {
   } else {
     DVLOG(1) << "Received error reply";
   }
-  deserializers_.back().done_event->Signal();
+
+  base::WaitableEvent* done_event = deserializers_.back().done_event;
+  TRACE_EVENT_FLOW_BEGIN0(
+      TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+      "SyncChannel::SyncContext::TryToUnblockListener", done_event);
+
+  done_event->Signal();
 
   return true;
 }
@@ -369,24 +375,16 @@ void SyncChannel::SyncContext::OnChannelClosed() {
   Context::OnChannelClosed();
 }
 
-void SyncChannel::SyncContext::OnSendTimeout(int message_id) {
-  base::AutoLock auto_lock(deserializers_lock_);
-  PendingSyncMessageQueue::iterator iter;
-  DVLOG(1) << "Send timeout";
-  for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++) {
-    if (iter->id == message_id) {
-      iter->done_event->Signal();
-      break;
-    }
-  }
-}
-
 void SyncChannel::SyncContext::CancelPendingSends() {
   base::AutoLock auto_lock(deserializers_lock_);
   PendingSyncMessageQueue::iterator iter;
   DVLOG(1) << "Canceling pending sends";
-  for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++)
+  for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++) {
+    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+                            "SyncChannel::SyncContext::CancelPendingSends",
+                            iter->done_event);
     iter->done_event->Signal();
+  }
 }
 
 void SyncChannel::SyncContext::OnWaitableEventSignaled(WaitableEvent* event) {
@@ -502,6 +500,9 @@ bool SyncChannel::Send(Message* message) {
   // Wait for reply, or for any other incoming synchronous messages.
   // *this* might get deleted, so only call static functions at this point.
   WaitForReply(context.get(), pump_messages_event);
+
+  TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+                        "SyncChannel::Send", context->GetSendDoneEvent());
 
   return context->Pop();
 }
