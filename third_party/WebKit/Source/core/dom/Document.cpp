@@ -175,6 +175,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
@@ -5966,6 +5967,11 @@ void Document::enforceStrictMixedContentChecking()
 PassOwnPtrWillBeRawPtr<OriginTrialContext> Document::createOriginTrialContext()
 {
     return adoptPtrWillBeNoop(new DocumentOriginTrialContext(this));
+}
+
+LayoutViewItem Document::layoutViewItem() const
+{
+    return LayoutViewItem(m_layoutView);
 }
 
 DEFINE_TRACE(Document)

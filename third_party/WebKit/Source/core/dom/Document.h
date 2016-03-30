@@ -128,6 +128,7 @@ class IdleRequestOptions;
 class InputDeviceCapabilities;
 class IntersectionObserverController;
 class LayoutPoint;
+class LayoutViewItem;
 class LiveNodeListBase;
 class Locale;
 class LocalFrame;
@@ -457,6 +458,7 @@ public:
     void layoutObject() const = delete;
 
     LayoutView* layoutView() const { return m_layoutView; }
+    LayoutViewItem layoutViewItem() const;
 
     Document& axObjectCacheOwner() const;
     AXObjectCache* existingAXObjectCache() const;

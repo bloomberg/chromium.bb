@@ -40,6 +40,7 @@
 #include "core/frame/Settings.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/FocusController.h"
@@ -1038,10 +1039,10 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active)
 PaintLayerCompositor* WebFrameWidgetImpl::compositor() const
 {
     LocalFrame* frame = m_localRoot->frame();
-    if (!frame || !frame->document() || !frame->document()->layoutView())
+    if (!frame || !frame->document() || frame->document()->layoutViewItem().isNull())
         return nullptr;
 
-    return frame->document()->layoutView()->compositor();
+    return frame->document()->layoutViewItem().compositor();
 }
 
 void WebFrameWidgetImpl::setRootGraphicsLayer(GraphicsLayer* layer)
