@@ -176,7 +176,8 @@ SkColor ContentSettingImageView::GetBorderColor() const {
 }
 
 bool ContentSettingImageView::ShouldShowBackground() const {
-  return (!IsShrinking() || label()->width() > 0) &&
+  return (!IsShrinking() ||
+          (width() >= MinimumWidthForImageWithBackgroundShown())) &&
          (slide_animator_.is_animating() || pause_animation_);
 }
 

@@ -119,21 +119,7 @@ gfx::Size IconLabelBubbleView::GetPreferredSize() const {
 }
 
 void IconLabelBubbleView::Layout() {
-  // Compute the label bounds.  The label gets whatever size is left over after
-  // accounting for the preferred image width and padding amounts.  Note that if
-  // the label has zero size it doesn't actually matter what we compute its X
-  // value to be, since it won't be visible, so the X value can be "wrong"
-  // compared to where the right edge of the image is computed to be below.
-  // This means doing this layout doesn't doesn't depend on any of the layout
-  // below.  That layout, however, may need for this layout to have already
-  // happened, since the value of ShouldShowBackground() we read below may
-  // depend on whether the label has nonzero size.  Therefore, we do this first.
-  const int label_x = GetOuterPadding(true) + GetImageAndPaddingWidth();
-  const int label_width =
-      std::max(0, width() - label_x - GetOuterPadding(false));
-  label_->SetBounds(label_x, 0, label_width, height());
-
-  // Now compute the image bounds.  In non-MD, the leading padding depends on
+  // Compute the image bounds.  In non-MD, the leading padding depends on
   // whether this is an extension icon, since extension icons and
   // Chrome-provided icons are different sizes.  In MD, these sizes are the
   // same, so it's not necessary to handle the two types differently.
@@ -166,6 +152,15 @@ void IconLabelBubbleView::Layout() {
       std::min(image_preferred_width,
                std::max(0, width() - image_x - bubble_trailing_padding));
   image_->SetBounds(image_x, 0, image_width, height());
+
+  // Compute the label bounds.  The label gets whatever size is left over after
+  // accounting for the preferred image width and padding amounts.  Note that if
+  // the label has zero size it doesn't actually matter what we compute its X
+  // value to be, since it won't be visible.
+  const int label_x = image_x + GetImageAndPaddingWidth();
+  const int label_width =
+      std::max(0, width() - label_x - bubble_trailing_padding);
+  label_->SetBounds(label_x, 0, label_width, height());
 }
 
 void IconLabelBubbleView::OnNativeThemeChanged(

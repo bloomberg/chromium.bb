@@ -59,7 +59,8 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   SkColor GetBorderColor() const override { return kTestColor; }
 
   bool ShouldShowBackground() const override {
-    return !IsShrinking() || label()->width() > 0;
+    return !IsShrinking() ||
+           (width() >= MinimumWidthForImageWithBackgroundShown());
   }
 
   double WidthMultiplier() const override {
