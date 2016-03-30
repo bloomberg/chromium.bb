@@ -199,12 +199,7 @@ source_set("ui") {
       "//components/feedback/proto",
       "//components/proximity_auth/webui",
       "//device/bluetooth",
-      "//third_party/libusb",
     ]
-
-    if (is_android) {
-      deps -= [ "//third_party/libusb" ]
-    }
   }
 
   if (use_aura) {

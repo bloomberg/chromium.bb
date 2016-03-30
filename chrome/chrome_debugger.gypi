@@ -53,7 +53,6 @@
             '../third_party/icu/icu.gyp:icui18n',
             '../third_party/icu/icu.gyp:icuuc',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-            '../third_party/libusb/libusb.gyp:libusb',
             'chrome_resources.gyp:chrome_extra_resources',
             'chrome_resources.gyp:chrome_resources',
             'chrome_resources.gyp:chrome_strings',

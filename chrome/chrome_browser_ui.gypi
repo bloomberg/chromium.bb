@@ -3370,7 +3370,6 @@
             '../components/components.gyp:bubble',
             '../components/components.gyp:feedback_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
-            '../third_party/libusb/libusb.gyp:libusb',
             'chrome_features.gyp:chrome_common_features',
           ],
           'sources': [
