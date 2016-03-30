@@ -226,6 +226,8 @@
       'host/security_key/remote_security_key_ipc_server.h',
       'host/security_key/remote_security_key_ipc_server_impl.cc',
       'host/security_key/remote_security_key_ipc_server_impl.h',
+      'host/security_key/security_key_message.cc',
+      'host/security_key/security_key_message.h',
       'host/server_log_entry_host.cc',
       'host/server_log_entry_host.h',
       'host/service_urls.cc',
