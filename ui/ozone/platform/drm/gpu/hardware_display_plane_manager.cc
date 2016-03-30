@@ -231,7 +231,6 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
   size_t plane_idx = 0;
   HardwareDisplayPlane* primary_plane = nullptr;
   gfx::Rect primary_display_bounds;
-  gfx::Rect primary_src_rect;
   uint32_t primary_format;
   for (const auto& plane : overlay_list) {
     HardwareDisplayPlane* hw_plane =
@@ -269,15 +268,13 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
       // TODO(kalyank): Check if we can move this optimization to
       // DrmOverlayCandidatesHost.
       if (!needs_blending && primary_format == fourcc_format &&
-          primary_display_bounds == plane.display_bounds &&
-          fixed_point_rect == primary_src_rect) {
+          primary_display_bounds == plane.display_bounds) {
         ResetCurrentPlaneList(plane_list);
         hw_plane = primary_plane;
       }
     } else {
       primary_plane = hw_plane;
       primary_display_bounds = plane.display_bounds;
-      primary_src_rect = fixed_point_rect;
       primary_format = fourcc_format;
     }
 
