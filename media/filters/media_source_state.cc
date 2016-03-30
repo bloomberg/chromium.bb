@@ -100,6 +100,7 @@ MediaSourceState::MediaSourceState(
       video_(NULL),
       frame_processor_(frame_processor.release()),
       media_log_(media_log),
+      state_(UNINITIALIZED),
       auto_update_timestamp_offset_(false) {
   DCHECK(!create_demuxer_stream_cb_.is_null());
   DCHECK(frame_processor_);
@@ -117,9 +118,11 @@ void MediaSourceState::Init(
     bool allow_video,
     const StreamParser::EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewTextTrackCB& new_text_track_cb) {
+  DCHECK_EQ(state_, UNINITIALIZED);
   new_text_track_cb_ = new_text_track_cb;
   init_cb_ = init_cb;
 
+  state_ = PENDING_PARSER_CONFIG;
   stream_parser_->Init(
       base::Bind(&MediaSourceState::OnSourceInitDone, base::Unretained(this)),
       base::Bind(&MediaSourceState::OnNewConfigs, base::Unretained(this),
@@ -475,6 +478,7 @@ bool MediaSourceState::OnNewConfigs(
     bool allow_video,
     scoped_ptr<MediaTracks> tracks,
     const StreamParser::TextTrackConfigMap& text_configs) {
+  DCHECK_GE(state_, PENDING_PARSER_CONFIG);
   DCHECK(tracks.get());
   media_tracks_ = std::move(tracks);
   const AudioDecoderConfig& audio_config = media_tracks_->getFirstAudioConfig();
@@ -649,6 +653,8 @@ bool MediaSourceState::OnNewConfigs(
 
   DVLOG(1) << "OnNewConfigs() : " << (success ? "success" : "failed");
   if (success) {
+    if (state_ == PENDING_PARSER_CONFIG)
+      state_ = PENDING_PARSER_INIT;
     DCHECK(!init_segment_received_cb_.is_null());
     init_segment_received_cb_.Run(std::move(media_tracks_));
   }
@@ -658,6 +664,7 @@ bool MediaSourceState::OnNewConfigs(
 
 void MediaSourceState::OnNewMediaSegment() {
   DVLOG(2) << "OnNewMediaSegment()";
+  DCHECK_EQ(state_, PARSER_INITIALIZED);
   parsing_media_segment_ = true;
   media_segment_contained_audio_frame_ = false;
   media_segment_contained_video_frame_ = false;
@@ -665,6 +672,7 @@ void MediaSourceState::OnNewMediaSegment() {
 
 void MediaSourceState::OnEndOfMediaSegment() {
   DVLOG(2) << "OnEndOfMediaSegment()";
+  DCHECK_EQ(state_, PARSER_INITIALIZED);
   parsing_media_segment_ = false;
 
   const bool missing_audio = audio_ && !media_segment_contained_audio_frame_;
@@ -687,6 +695,7 @@ bool MediaSourceState::OnNewBuffers(
     const StreamParser::BufferQueue& video_buffers,
     const StreamParser::TextBufferQueueMap& text_map) {
   DVLOG(2) << "OnNewBuffers()";
+  DCHECK_EQ(state_, PARSER_INITIALIZED);
   DCHECK(timestamp_offset_during_append_);
   DCHECK(parsing_media_segment_);
 
@@ -730,6 +739,8 @@ bool MediaSourceState::OnNewBuffers(
 
 void MediaSourceState::OnSourceInitDone(
     const StreamParser::InitParameters& params) {
+  DCHECK_EQ(state_, PENDING_PARSER_INIT);
+  state_ = PARSER_INITIALIZED;
   auto_update_timestamp_offset_ = params.auto_update_timestamp_offset;
   base::ResetAndReturn(&init_cb_).Run(params);
 }

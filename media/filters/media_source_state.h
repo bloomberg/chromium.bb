@@ -116,6 +116,16 @@ class MEDIA_EXPORT MediaSourceState {
   void SetTracksWatcher(const Demuxer::MediaTracksUpdatedCB& tracks_updated_cb);
 
  private:
+  // State advances through this list. The intent is to ensure at least one
+  // config is received prior to parser calling initialization callback, and
+  // that such initialization callback occurs at most once per parser.
+  enum State {
+    UNINITIALIZED = 0,
+    PENDING_PARSER_CONFIG,
+    PENDING_PARSER_INIT,
+    PARSER_INITIALIZED
+  };
+
   // Called by the |stream_parser_| when a new initialization segment is
   // encountered.
   // Returns true on a successful call. Returns false if an error occurred while
@@ -191,6 +201,8 @@ class MEDIA_EXPORT MediaSourceState {
   scoped_ptr<FrameProcessor> frame_processor_;
   scoped_refptr<MediaLog> media_log_;
   StreamParser::InitCB init_cb_;
+
+  State state_;
 
   // During Append(), OnNewConfigs() will trigger the initialization segment
   // received algorithm. Note, the MSE spec explicitly disallows this algorithm
