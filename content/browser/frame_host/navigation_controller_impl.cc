@@ -588,48 +588,13 @@ bool NavigationControllerImpl::CanGoToOffset(int offset) const {
 }
 
 void NavigationControllerImpl::GoBack() {
-  if (!CanGoBack()) {
-    NOTREACHED();
-    return;
-  }
-
-  // Base the navigation on where we are now...
-  int current_index = GetCurrentEntryIndex();
-
-  DiscardNonCommittedEntries();
-
-  pending_entry_index_ = current_index - 1;
-  entries_[pending_entry_index_]->SetTransitionType(
-      ui::PageTransitionFromInt(
-          entries_[pending_entry_index_]->GetTransitionType() |
-          ui::PAGE_TRANSITION_FORWARD_BACK));
-  NavigateToPendingEntry(NO_RELOAD);
+  // Call GoToIndex rather than GoToOffset to get the NOTREACHED() check.
+  GoToIndex(GetIndexForOffset(-1));
 }
 
 void NavigationControllerImpl::GoForward() {
-  if (!CanGoForward()) {
-    NOTREACHED();
-    return;
-  }
-
-  bool transient = (transient_entry_index_ != -1);
-
-  // Base the navigation on where we are now...
-  int current_index = GetCurrentEntryIndex();
-
-  DiscardNonCommittedEntries();
-
-  pending_entry_index_ = current_index;
-  // If there was a transient entry, we removed it making the current index
-  // the next page.
-  if (!transient)
-    pending_entry_index_++;
-
-  entries_[pending_entry_index_]->SetTransitionType(
-      ui::PageTransitionFromInt(
-          entries_[pending_entry_index_]->GetTransitionType() |
-          ui::PAGE_TRANSITION_FORWARD_BACK));
-  NavigateToPendingEntry(NO_RELOAD);
+  // Call GoToIndex rather than GoToOffset to get the NOTREACHED() check.
+  GoToIndex(GetIndexForOffset(1));
 }
 
 void NavigationControllerImpl::GoToIndex(int index) {
@@ -660,6 +625,7 @@ void NavigationControllerImpl::GoToIndex(int index) {
 }
 
 void NavigationControllerImpl::GoToOffset(int offset) {
+  // Note: This is actually reached in unit tests.
   if (!CanGoToOffset(offset))
     return;
 
