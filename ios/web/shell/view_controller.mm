@@ -15,10 +15,6 @@
 #include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
 #import "ios/net/empty_nsurlcache.h"
-#import "ios/web/navigation/crw_session_controller.h"
-#import "ios/web/net/crw_url_verifying_protocol_handler.h"
-#include "ios/web/net/request_tracker_factory_impl.h"
-#import "ios/web/net/web_http_protocol_handler_delegate.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_controller_factory.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -37,8 +33,6 @@ using web::NavigationManager;
 @interface ViewController ()<CRWWebStateObserver> {
   web::BrowserState* _browserState;
   base::scoped_nsobject<CRWWebController> _webController;
-  scoped_ptr<web::RequestTrackerFactoryImpl> _requestTrackerFactory;
-  scoped_ptr<web::WebHTTPProtocolHandlerDelegate> _httpProtocolDelegate;
   scoped_ptr<web::WebStateObserverBridge> _webStateObserver;
 
   base::mac::ObjCPropertyReleaser _propertyReleaser_ViewController;
@@ -144,21 +138,6 @@ using web::NavigationManager;
 - (void)setUpNetworkStack {
   // Disable the default cache.
   [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
-
-  _httpProtocolDelegate.reset(new web::WebHTTPProtocolHandlerDelegate(
-      _browserState->GetRequestContext()));
-  net::HTTPProtocolHandlerDelegate::SetInstance(_httpProtocolDelegate.get());
-  BOOL success = [NSURLProtocol registerClass:[CRNHTTPProtocolHandler class]];
-  DCHECK(success);
-  // The CRWURLVerifyingProtocolHandler is used to verify URL in the
-  // CRWWebController. It must be registered after the HttpProtocolHandler
-  // because handlers are called in the reverse order of declaration.
-  success =
-      [NSURLProtocol registerClass:[CRWURLVerifyingProtocolHandler class]];
-  DCHECK(success);
-  _requestTrackerFactory.reset(
-      new web::RequestTrackerFactoryImpl(std::string()));
-  net::RequestTracker::SetRequestTrackerFactory(_requestTrackerFactory.get());
   net::CookieStoreIOS::SetCookiePolicy(net::CookieStoreIOS::ALLOW);
 }
 
