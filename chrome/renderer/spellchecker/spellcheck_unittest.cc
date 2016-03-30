@@ -505,6 +505,21 @@ TEST_F(SpellCheckTest, MAYBE_SpellCheckText) {
       L"Google se missie is om die w\x00EAreld se inligting te organiseer en "
       L"dit bruikbaar en toeganklik te maak."
     }, {
+      // Bulgarian
+      "bg-BG",
+      L"\x041c\x0438\x0441\x0438\x044f\x0442\x0430 "
+      L"\x043d\x0430 Google \x0435 \x0434\x0430 \x043e"
+      L"\x0440\x0433\x0430\x043d\x0438\x0437\x0438\x0440"
+      L"\x0430 \x0441\x0432\x0435\x0442\x043e\x0432"
+      L"\x043d\x0430\x0442\x0430 \x0438\x043d\x0444"
+      L"\x043e\x0440\x043c\x0430\x0446\x0438\x044f "
+      L"\x0438 \x0434\x0430 \x044f \x043d"
+      L"\x0430\x043f\x0440\x0430\x0432\x0438 \x0443"
+      L"\x043d\x0438\x0432\x0435\x0440\x0441\x0430\x043b"
+      L"\x043d\x043e \x0434\x043e\x0441\x0442\x044a"
+      L"\x043f\x043d\x0430 \x0438 \x043f\x043e"
+      L"\x043b\x0435\x0437\x043d\x0430."
+    }, {
       // Catalan
       "ca-ES",
       L"La missi\x00F3 de Google \x00E9s organitzar la informaci\x00F3 "
@@ -562,21 +577,6 @@ TEST_F(SpellCheckTest, MAYBE_SpellCheckText) {
       L"Google's mission is to organize the world's information and make it "
       L"universally accessible and useful."
     }, {
-      // Bulgarian
-      "bg-BG",
-      L"\x041c\x0438\x0441\x0438\x044f\x0442\x0430 "
-      L"\x043d\x0430 Google \x0435 \x0434\x0430 \x043e"
-      L"\x0440\x0433\x0430\x043d\x0438\x0437\x0438\x0440"
-      L"\x0430 \x0441\x0432\x0435\x0442\x043e\x0432"
-      L"\x043d\x0430\x0442\x0430 \x0438\x043d\x0444"
-      L"\x043e\x0440\x043c\x0430\x0446\x0438\x044f "
-      L"\x0438 \x0434\x0430 \x044f \x043d"
-      L"\x0430\x043f\x0440\x0430\x0432\x0438 \x0443"
-      L"\x043d\x0438\x0432\x0435\x0440\x0441\x0430\x043b"
-      L"\x043d\x043e \x0434\x043e\x0441\x0442\x044a"
-      L"\x043f\x043d\x0430 \x0438 \x043f\x043e"
-      L"\x043b\x0435\x0437\x043d\x0430."
-    }, {
       // Spanish
       "es-ES",
       L"La misi\x00F3n de "
@@ -589,6 +589,11 @@ TEST_F(SpellCheckTest, MAYBE_SpellCheckText) {
       // L"Google'ile " - to be added.
       L"\x00FClesanne on korraldada maailma teavet ja teeb selle "
       L"k\x00F5igile k\x00E4ttesaadavaks ja kasulikuks.",
+    }, {
+      // Persian
+      "fa",
+      L"\x0686\x0647 \x0637\x0648\x0631 \x0622\x06cc\x0627 \x0634\x0645\x0627 "
+      L"\x0627\x06cc\x0631\x0627\x0646\x06cc \x0647\x0633\x062a\x06cc\x062f"
     }, {
       // Faroese
       "fo-FO",
@@ -874,6 +879,10 @@ TEST_F(SpellCheckTest, MisspelledWords) {
       // A misspelled word for Greek.
       "el-GR",
       L"\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1\x03B1",
+    }, {
+      // A misspelled word for Persian.
+      "fa",
+      L"\x06cc\x06a9\x06cc\x0634\x0627\x0646",
     }, {
       // A misspelled word for Hebrew
       "he-IL",
