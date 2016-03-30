@@ -20,6 +20,7 @@
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/mock_web_speech_recognizer.h"
 #include "components/test_runner/mock_web_user_media_client.h"
+#include "components/test_runner/pixel_dump.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_preferences.h"
 #include "components/test_runner/web_content_settings.h"
@@ -1708,6 +1709,7 @@ void TestRunner::Reset() {
   top_loading_frame_ = nullptr;
   layout_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
+  drag_image_.reset();
   wait_until_external_url_load_ = false;
 
   WebSecurityPolicy::resetOriginAccessWhitelists();
@@ -1746,8 +1748,6 @@ void TestRunner::Reset() {
   dump_window_status_changes_ = false;
   dump_spell_check_callbacks_ = false;
   dump_back_forward_list_ = false;
-  dump_selection_rect_ = false;
-  dump_drag_image_ = false;
   dump_navigation_policy_ = false;
   test_repaint_ = false;
   sweep_horizontally_ = false;
@@ -1849,6 +1849,32 @@ std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
   return ::test_runner::DumpLayout(frame, layout_test_runtime_flags_);
 }
 
+void TestRunner::DumpPixelsAsync(
+    blink::WebView* web_view,
+    const base::Callback<void(const SkBitmap&)>& callback) {
+  if (layout_test_runtime_flags_.dump_drag_image()) {
+    if (drag_image_.isNull()) {
+      // This means the test called dumpDragImage but did not initiate a drag.
+      // Return a blank image so that the test fails.
+      SkBitmap bitmap;
+      bitmap.allocN32Pixels(1, 1);
+      {
+        SkAutoLockPixels lock(bitmap);
+        bitmap.eraseColor(0);
+      }
+      callback.Run(bitmap);
+      return;
+    }
+
+    callback.Run(drag_image_.getSkBitmap());
+    return;
+  }
+
+  test_runner::DumpPixelsAsync(proxy_->GetWebView(), layout_test_runtime_flags_,
+                               delegate_->GetDeviceScaleFactorForTest(),
+                               callback);
+}
+
 void TestRunner::ReplicateLayoutTestRuntimeFlagsChanges(
     const base::DictionaryValue& changed_values) {
   layout_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
@@ -1930,10 +1956,6 @@ bool TestRunner::shouldDumpSpellCheckCallbacks() const {
 
 bool TestRunner::ShouldDumpBackForwardList() const {
   return dump_back_forward_list_;
-}
-
-bool TestRunner::shouldDumpSelectionRect() const {
-  return dump_selection_rect_;
 }
 
 bool TestRunner::isPrinting() const {
@@ -2024,8 +2046,12 @@ void TestRunner::setToolTipText(const WebString& text) {
   tooltip_text_ = text.utf8();
 }
 
-bool TestRunner::shouldDumpDragImage() {
-  return dump_drag_image_;
+void TestRunner::setDragImage(
+    const blink::WebImage& drag_image) {
+  if (layout_test_runtime_flags_.dump_drag_image()) {
+    if (drag_image_.isNull())
+      drag_image_ = drag_image;
+  }
 }
 
 bool TestRunner::shouldDumpNavigationPolicy() const {
@@ -2808,7 +2834,8 @@ void TestRunner::DumpBackForwardList() {
 }
 
 void TestRunner::DumpSelectionRect() {
-  dump_selection_rect_ = true;
+  layout_test_runtime_flags_.set_dump_selection_rect(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetPrinting() {
@@ -2849,8 +2876,9 @@ void TestRunner::WaitUntilExternalURLLoad() {
 }
 
 void TestRunner::DumpDragImage() {
+  layout_test_runtime_flags_.set_dump_drag_image(true);
   DumpAsTextWithPixelResults();
-  dump_drag_image_ = true;
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpNavigationPolicy() {
@@ -3069,11 +3097,10 @@ void TestRunner::GetManifestThen(v8::Local<v8::Function> callback) {
 }
 
 void TestRunner::CapturePixelsAsyncThen(v8::Local<v8::Function> callback) {
-  scoped_ptr<InvokeCallbackTask> task(
-      new InvokeCallbackTask(this, callback));
-  proxy_->CapturePixelsAsync(base::Bind(&TestRunner::CapturePixelsCallback,
-                                        weak_factory_.GetWeakPtr(),
-                                        base::Passed(&task)));
+  scoped_ptr<InvokeCallbackTask> task(new InvokeCallbackTask(this, callback));
+  DumpPixelsAsync(proxy_->GetWebView(),
+                  base::Bind(&TestRunner::CapturePixelsCallback,
+                             weak_factory_.GetWeakPtr(), base::Passed(&task)));
 }
 
 void TestRunner::OnLayoutTestRuntimeFlagsChanged() {
@@ -3099,10 +3126,10 @@ void TestRunner::CopyImageAtAndCapturePixelsAsyncThen(
     int x, int y, v8::Local<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
-  proxy_->CopyImageAtAndCapturePixels(
-      x, y, base::Bind(&TestRunner::CapturePixelsCallback,
-                       weak_factory_.GetWeakPtr(),
-                       base::Passed(&task)));
+  CopyImageAtAndCapturePixels(
+      proxy_->GetWebView(), x, y,
+      base::Bind(&TestRunner::CapturePixelsCallback, weak_factory_.GetWeakPtr(),
+                 base::Passed(&task)));
 }
 
 void TestRunner::GetManifestCallback(scoped_ptr<InvokeCallbackTask> task,

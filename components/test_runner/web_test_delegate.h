@@ -274,9 +274,7 @@ class WebTestDelegate {
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) = 0;
 
-  // Convert the position in DIP to native coordinates.
-  virtual blink::WebPoint ConvertDIPToNative(
-      const blink::WebPoint& point_in_dip) const = 0;
+  virtual float GetDeviceScaleFactorForTest() const = 0;
 };
 
 }  // namespace test_runner

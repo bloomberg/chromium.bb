@@ -16,6 +16,8 @@ class WebLocalFrame;
 
 namespace test_runner {
 
+// Dumps textual representation of |frame| contents.  Exact dump mode depends
+// on |flags| (i.e. dump_as_text VS dump_as_markup and/or is_printing).
 TEST_RUNNER_EXPORT std::string DumpLayout(blink::WebLocalFrame* frame,
                                           const LayoutTestRuntimeFlags& flags);
 
