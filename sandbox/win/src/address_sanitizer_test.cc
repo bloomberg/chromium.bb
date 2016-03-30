@@ -93,7 +93,10 @@ TEST_F(AddressSanitizerTests, TestAddressSanitizer) {
         << "There doesn't seem to be an ASan report:\n" << data;
     ASSERT_TRUE(strstr(data.c_str(), "AddressSanitizerTests_Report"))
         << "The ASan report doesn't appear to be symbolized:\n" << data;
-    ASSERT_TRUE(strstr(data.c_str(), strrchr(__FILE__, '\\')))
+    std::string source_file_basename(__FILE__);
+    size_t last_slash = source_file_basename.find_last_of("/\\");
+    last_slash = last_slash == std::string::npos ? 0 : last_slash + 1;
+    ASSERT_TRUE(strstr(data.c_str(), &source_file_basename[last_slash]))
         << "The stack trace doesn't have a correct filename:\n" << data;
   } else {
     LOG(WARNING) << "Not an AddressSanitizer build, skipping the run.";
