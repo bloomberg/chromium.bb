@@ -208,10 +208,18 @@ public:
     static int* const kDeletedValue;
 
     explicit CountCopy(int* counter = nullptr) : m_counter(counter) { }
-    CountCopy(const CountCopy& other) : m_counter(other.m_counter)
+    CountCopy(const CountCopy& other)
+        : m_counter(other.m_counter)
     {
         if (m_counter && m_counter != kDeletedValue)
             ++*m_counter;
+    }
+    CountCopy& operator=(const CountCopy& other)
+    {
+        m_counter = other.m_counter;
+        if (m_counter && m_counter != kDeletedValue)
+            ++*m_counter;
+        return *this;
     }
     const int* counter() const { return m_counter; }
 

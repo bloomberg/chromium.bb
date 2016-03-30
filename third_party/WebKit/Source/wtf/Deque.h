@@ -52,13 +52,15 @@ public:
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     Deque();
-    Deque(const Deque<T, inlineCapacity, Allocator>&);
+    Deque(const Deque&);
     Deque& operator=(const Deque&);
+    Deque(Deque&&);
+    Deque& operator=(Deque&&);
 
     void finalize();
     void finalizeGarbageCollectedObject() { finalize(); }
 
-    void swap(Deque<T, inlineCapacity, Allocator>&);
+    void swap(Deque&);
 
     size_t size() const { return m_start <= m_end ? m_end - m_start : m_end + m_buffer.capacity() - m_start; }
     bool isEmpty() const { return m_start == m_end; }
@@ -109,6 +111,12 @@ public:
     iterator findIf(Predicate&);
 
     template <typename VisitorDispatcher> void trace(VisitorDispatcher);
+
+    static_assert(!std::is_polymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "Cannot initialize with memset if there is a vtable");
+#if ENABLE(OILPAN)
+    static_assert(Allocator::isGarbageCollected || !AllowsOnlyPlacementNew<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Deque");
+#endif
+    static_assert(Allocator::isGarbageCollected || !IsPointerToGarbageCollectedType<T>::value, "Cannot put raw pointers to garbage-collected classes into a Deque. Use HeapDeque<Member<T>> instead.");
 
 private:
     friend class DequeIteratorBase<T, inlineCapacity, Allocator>;
@@ -237,15 +245,10 @@ inline Deque<T, inlineCapacity, Allocator>::Deque()
     : m_start(0)
     , m_end(0)
 {
-    static_assert(!std::is_polymorphic<T>::value || !VectorTraits<T>::canInitializeWithMemset, "Cannot initialize with memset if there is a vtable");
-#if ENABLE(OILPAN)
-    static_assert(Allocator::isGarbageCollected || !AllowsOnlyPlacementNew<T>::value || !NeedsTracing<T>::value, "Cannot put DISALLOW_NEW_EXCEPT_PLACEMENT_NEW objects that have trace methods into an off-heap Deque");
-#endif
-    static_assert(Allocator::isGarbageCollected || !IsPointerToGarbageCollectedType<T>::value, "Cannot put raw pointers to garbage-collected classes into a Deque. Use HeapDeque<Member<T>> instead.");
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline Deque<T, inlineCapacity, Allocator>::Deque(const Deque<T, inlineCapacity, Allocator>& other)
+inline Deque<T, inlineCapacity, Allocator>::Deque(const Deque& other)
     : m_buffer(other.m_buffer.capacity())
     , m_start(other.m_start)
     , m_end(other.m_end)
@@ -264,6 +267,21 @@ inline Deque<T, inlineCapacity, Allocator>& Deque<T, inlineCapacity, Allocator>:
 {
     Deque<T> copy(other);
     swap(copy);
+    return *this;
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+inline Deque<T, inlineCapacity, Allocator>::Deque(Deque&& other)
+    : m_start(0)
+    , m_end(0)
+{
+    swap(other);
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+inline Deque<T, inlineCapacity, Allocator>& Deque<T, inlineCapacity, Allocator>::operator=(Deque&& other)
+{
+    swap(other);
     return *this;
 }
 

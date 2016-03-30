@@ -566,6 +566,46 @@ TEST(DequeTest, UniquePtr)
     deque.clear();
 }
 
+class CountCopy final {
+public:
+    explicit CountCopy(int* counter = nullptr) : m_counter(counter) { }
+    CountCopy(const CountCopy& other)
+        : m_counter(other.m_counter)
+    {
+        if (m_counter)
+            ++*m_counter;
+    }
+    CountCopy& operator=(const CountCopy& other)
+    {
+        m_counter = other.m_counter;
+        if (m_counter)
+            ++*m_counter;
+        return *this;
+    }
+
+private:
+    int* m_counter;
+};
+
+TEST(DequeTest, MoveShouldNotMakeCopy)
+{
+    // Because data in inline buffer may be swapped or moved individually, we force the creation of out-of-line buffer
+    // so we can make sure there's no element-wise copy/move.
+    Deque<CountCopy, 1> deque;
+    int counter = 0;
+    deque.append(CountCopy(&counter));
+    deque.append(CountCopy(&counter));
+
+    Deque<CountCopy, 1> other(deque);
+    counter = 0;
+    deque = std::move(other); // Move assignment.
+    EXPECT_EQ(0, counter);
+
+    counter = 0;
+    Deque<CountCopy, 1> yetAnother(std::move(deque)); // Move construction.
+    EXPECT_EQ(0, counter);
+}
+
 } // anonymous namespace
 
 } // namespace WTF

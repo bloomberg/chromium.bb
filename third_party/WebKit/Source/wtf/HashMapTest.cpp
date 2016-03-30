@@ -478,10 +478,18 @@ class CountCopy final {
 public:
     CountCopy() : m_counter(nullptr) { }
     explicit CountCopy(int& counter) : m_counter(&counter) { }
-    CountCopy(const CountCopy& other) : m_counter(other.m_counter)
+    CountCopy(const CountCopy& other)
+        : m_counter(other.m_counter)
     {
         if (m_counter)
             ++*m_counter;
+    }
+    CountCopy& operator=(const CountCopy& other)
+    {
+        m_counter = other.m_counter;
+        if (m_counter)
+            ++*m_counter;
+        return *this;
     }
 
 private:
