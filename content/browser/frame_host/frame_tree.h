@@ -42,7 +42,6 @@ class RenderWidgetHostDelegate;
 class CONTENT_EXPORT FrameTree {
  public:
   class NodeRange;
-  class ConstNodeRange;
 
   class CONTENT_EXPORT NodeIterator
       : public std::iterator<std::forward_iterator_tag, FrameTreeNode> {
@@ -81,42 +80,6 @@ class CONTENT_EXPORT FrameTree {
     FrameTreeNode* const node_to_skip_;
   };
 
-  class CONTENT_EXPORT ConstNodeIterator {
-   public:
-    ConstNodeIterator(const ConstNodeIterator& other);
-    ~ConstNodeIterator();
-
-    ConstNodeIterator& operator++();
-
-    bool operator==(const ConstNodeIterator& rhs) const;
-    bool operator!=(const ConstNodeIterator& rhs) const {
-      return !(*this == rhs);
-    }
-
-    const FrameTreeNode* operator*() { return current_node_; }
-
-   private:
-    friend class ConstNodeRange;
-
-    ConstNodeIterator(const FrameTreeNode* starting_node);
-
-    const FrameTreeNode* current_node_;
-    std::queue<const FrameTreeNode*> queue_;
-  };
-
-  class CONTENT_EXPORT ConstNodeRange {
-   public:
-    ConstNodeIterator begin();
-    ConstNodeIterator end();
-
-   private:
-    friend class FrameTree;
-
-    ConstNodeRange(const FrameTreeNode* root);
-
-    const FrameTreeNode* const root_;
-  };
-
   // Each FrameTreeNode will default to using the given |navigator| for
   // navigation tasks in the frame.
   // A set of delegates are remembered here so that we can create
@@ -152,10 +115,6 @@ class CONTENT_EXPORT FrameTree {
   // Returns a range to iterate over all FrameTreeNodes in a subtree of the
   // frame tree, starting from |subtree_root|.
   NodeRange SubtreeNodes(FrameTreeNode* subtree_root);
-
-  // Returns a range to iterate over all FrameTreeNodes in the frame tree in
-  // breadth-first traversal order. All FrameTreeNodes returned will be const.
-  ConstNodeRange ConstNodes() const;
 
   // Adds a new child frame to the frame tree. |process_id| is required to
   // disambiguate |new_routing_id|, and it must match the process of the
