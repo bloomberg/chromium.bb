@@ -719,7 +719,6 @@ class TryServerMasterTest(unittest.TestCase):
             'mac_nacl_sdk',
             'mac_nacl_sdk_build',
             'mac_rel_naclmore',
-            'mac_valgrind',
             'mac_x64_rel',
             'mac_xcodebuild',
         ],

@@ -1016,38 +1016,7 @@
             '../url/url.gyp:url_unittests',
           ],
         },
-        {
-          'target_name': 'chromium_builder_dbg_valgrind_mac',
-          'type': 'none',
-          'dependencies': [
-            '../base/base.gyp:base_unittests',
-            '../chrome/chrome.gyp:unit_tests',
-            '../components/components_tests.gyp:components_unittests',
-            '../content/content_shell_and_tests.gyp:content_unittests',
-            '../crypto/crypto.gyp:crypto_unittests',
-            '../device/device_tests.gyp:device_unittests',
-            '../ipc/ipc.gyp:ipc_tests',
-            '../jingle/jingle.gyp:jingle_unittests',
-            '../media/media.gyp:media_unittests',
-            '../media/midi/midi.gyp:midi_unittests',
-            '../net/net.gyp:net_unittests',
-            '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
-            '../printing/printing.gyp:printing_unittests',
-            '../remoting/remoting.gyp:remoting_unittests',
-            '../skia/skia_tests.gyp:skia_unittests',
-            '../sql/sql.gyp:sql_unittests',
-            '../sync/sync.gyp:sync_unit_tests',
-            '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
-            '../third_party/leveldatabase/leveldatabase.gyp:env_chromium_unittests',
-            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_unittests',
-            '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
-            '../ui/base/ui_base_tests.gyp:ui_base_unittests',
-            '../ui/gfx/gfx_tests.gyp:gfx_unittests',
-            '../ui/gl/gl_tests.gyp:gl_unittests',
-            '../url/url.gyp:url_unittests',
-          ],
-        },
-      ],  # targets
+     ],  # targets
     }], # OS="mac"
     ['OS=="win"', {
       'targets': [
