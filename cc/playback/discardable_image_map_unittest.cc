@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "cc/base/region.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_display_list_recording_source.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -84,12 +84,12 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
     }
   }
 
-  FakeDisplayListRecordingSource recording_source;
+  FakeRecordingSource recording_source;
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
-      1, DisplayListRecordingSource::RECORD_NORMALLY);
+      1, RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;
@@ -161,12 +161,12 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
     }
   }
 
-  FakeDisplayListRecordingSource recording_source;
+  FakeRecordingSource recording_source;
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, layer_size, visible_rect, 1,
-      DisplayListRecordingSource::RECORD_NORMALLY);
+      RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;
@@ -261,12 +261,12 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
     }
   }
 
-  FakeDisplayListRecordingSource recording_source;
+  FakeRecordingSource recording_source;
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
-      1, DisplayListRecordingSource::RECORD_NORMALLY);
+      1, RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;
@@ -304,12 +304,12 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   content_layer_client.add_draw_image(discardable_image.get(), gfx::Point(0, 0),
                                       paint);
 
-  FakeDisplayListRecordingSource recording_source;
+  FakeRecordingSource recording_source;
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
-      1, DisplayListRecordingSource::RECORD_NORMALLY);
+      1, RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;

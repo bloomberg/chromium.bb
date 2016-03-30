@@ -36,13 +36,13 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
@@ -1320,13 +1320,12 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     root_layer_ = FakePictureLayer::CreateWithRecordingSource(
         &client_, std::move(recording));
     root_layer_->SetBounds(gfx::Size(50, 50));
 
-    recording.reset(new FakeDisplayListRecordingSource);
+    recording.reset(new FakeRecordingSource);
     child_layer_ = FakePictureLayer::CreateWithRecordingSource(
         &client_, std::move(recording));
     child_layer_->SetBounds(gfx::Size(25, 25));
@@ -4535,8 +4534,7 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4581,7 +4579,7 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
 
   FakeContentLayerClient layer_client_;
   FakePictureLayer* layer_;
-  FakeDisplayListRecordingSource* recording_source_;
+  FakeRecordingSource* recording_source_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationDefault);
@@ -4591,8 +4589,7 @@ class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4634,7 +4631,7 @@ class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
 
   FakeContentLayerClient layer_client_;
   FakePictureLayer* layer_;
-  FakeDisplayListRecordingSource* recording_source_;
+  FakeRecordingSource* recording_source_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestEmptyLayerGpuRasterization);
@@ -4649,8 +4646,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4704,7 +4700,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
 
   FakeContentLayerClient layer_client_;
   FakePictureLayer* layer_;
-  FakeDisplayListRecordingSource* recording_source_;
+  FakeRecordingSource* recording_source_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
@@ -4719,8 +4715,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4775,7 +4770,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
 
   FakeContentLayerClient layer_client_;
   FakePictureLayer* layer_;
-  FakeDisplayListRecordingSource* recording_source_;
+  FakeRecordingSource* recording_source_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationForced);
@@ -5166,8 +5161,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(&client_,
@@ -5372,8 +5366,7 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
     root->SetBounds(gfx::Size(500, 500));
     client_.set_bounds(root->bounds());
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(&client_,
                                                     std::move(recording));
@@ -5414,8 +5407,7 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     scoped_refptr<FakePictureLayer> root =
         FakePictureLayer::CreateWithRecordingSource(&client_,
                                                     std::move(recording));
@@ -5471,8 +5463,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording(new FakeRecordingSource);
     recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(&client_,

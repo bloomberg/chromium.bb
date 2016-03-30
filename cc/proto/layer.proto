@@ -4,10 +4,10 @@
 
 syntax = "proto2";
 
-import "display_list_recording_source.proto";
 import "layer_position_constraint.proto";
 import "point3f.proto";
 import "pointf.proto";
+import "recording_source.proto";
 import "region.proto";
 import "rect.proto";
 import "scroll_offset.proto";
@@ -130,7 +130,7 @@ message BaseLayerProperties {
 }
 
 message PictureLayerProperties {
-  optional DisplayListRecordingSource recording_source = 1;
+  optional RecordingSource recording_source = 1;
   optional Region invalidation = 2;
   optional Rect last_updated_visible_layer_rect = 3;
   optional bool is_mask = 4;

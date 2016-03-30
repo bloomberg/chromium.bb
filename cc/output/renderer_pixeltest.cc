@@ -11,8 +11,8 @@
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/video_resource_updater.h"
-#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_raster_source.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/pixel_test.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
@@ -817,9 +817,8 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
   SkPaint green_paint;
   green_paint.setColor(SK_ColorGREEN);
 
-  scoped_ptr<FakeDisplayListRecordingSource> blue_recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          this->quad_rect_.size());
+  scoped_ptr<FakeRecordingSource> blue_recording =
+      FakeRecordingSource::CreateFilledRecordingSource(this->quad_rect_.size());
   blue_recording->add_draw_rect_with_paint(outer_rect, black_paint);
   blue_recording->add_draw_rect_with_paint(inner_rect, blue_paint);
   blue_recording->Rerecord();
@@ -834,9 +833,8 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
                     this->quad_rect_.size(), false, RGBA_8888, this->quad_rect_,
                     1.f, blue_raster_source);
 
-  scoped_ptr<FakeDisplayListRecordingSource> green_recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          this->quad_rect_.size());
+  scoped_ptr<FakeRecordingSource> green_recording =
+      FakeRecordingSource::CreateFilledRecordingSource(this->quad_rect_.size());
   green_recording->add_draw_rect_with_paint(outer_rect, green_paint);
   green_recording->add_draw_rect_with_paint(inner_rect, black_paint);
   green_recording->Rerecord();
@@ -2335,9 +2333,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   gfx::Rect blue_rect(gfx::Size(100, 100));
   gfx::Rect blue_clip_rect(gfx::Point(50, 50), gfx::Size(50, 50));
 
-  scoped_ptr<FakeDisplayListRecordingSource> blue_recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          blue_rect.size());
+  scoped_ptr<FakeRecordingSource> blue_recording =
+      FakeRecordingSource::CreateFilledRecordingSource(blue_rect.size());
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
   blue_recording->add_draw_rect_with_paint(blue_rect, red_paint);
@@ -2367,9 +2364,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
                     1.f, std::move(blue_raster_source));
 
   // One viewport-filling green quad.
-  scoped_ptr<FakeDisplayListRecordingSource> green_recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          viewport.size());
+  scoped_ptr<FakeRecordingSource> green_recording =
+      FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
   SkPaint green_paint;
   green_paint.setColor(SK_ColorGREEN);
   green_recording->add_draw_rect_with_paint(viewport, green_paint);
@@ -2409,9 +2405,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
       CreateTestRenderPass(id, viewport, transform_to_root);
 
   // One viewport-filling 0.5-opacity green quad.
-  scoped_ptr<FakeDisplayListRecordingSource> green_recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          viewport.size());
+  scoped_ptr<FakeRecordingSource> green_recording =
+      FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
   SkPaint green_paint;
   green_paint.setColor(SK_ColorGREEN);
   green_recording->add_draw_rect_with_paint(viewport, green_paint);
@@ -2431,9 +2426,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
                      texture_format, viewport, 1.f, green_raster_source.get());
 
   // One viewport-filling white quad.
-  scoped_ptr<FakeDisplayListRecordingSource> white_recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          viewport.size());
+  scoped_ptr<FakeRecordingSource> white_recording =
+      FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
   SkPaint white_paint;
   white_paint.setColor(SK_ColorWHITE);
   white_recording->add_draw_rect_with_paint(viewport, white_paint);
@@ -2502,9 +2496,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   canvas->drawPoint(1, 1, SK_ColorGREEN);
   skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          viewport.size());
+  scoped_ptr<FakeRecordingSource> recording =
+      FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
   SkPaint paint;
   paint.setFilterQuality(kLow_SkFilterQuality);
   recording->add_draw_image_with_paint(image.get(), gfx::Point(), paint);
@@ -2553,9 +2546,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   canvas->drawPoint(1, 1, SK_ColorGREEN);
   skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          viewport.size());
+  scoped_ptr<FakeRecordingSource> recording =
+      FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
   SkPaint paint;
   paint.setFilterQuality(kLow_SkFilterQuality);
   recording->add_draw_image_with_paint(image.get(), gfx::Point(), paint);
@@ -2754,9 +2746,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Rect green_rect1(gfx::Point(80, 0), gfx::Size(20, 100));
   gfx::Rect green_rect2(gfx::Point(0, 80), gfx::Size(100, 20));
 
-  scoped_ptr<FakeDisplayListRecordingSource> green_recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          viewport.size());
+  scoped_ptr<FakeRecordingSource> green_recording =
+      FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
 
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
@@ -2821,9 +2812,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   blue_layer_rect1.Inset(inset, inset, inset, inset);
   blue_layer_rect2.Inset(inset, inset, inset, inset);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
-          layer_rect.size());
+  scoped_ptr<FakeRecordingSource> recording =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_rect.size());
 
   Region outside(layer_rect);
   outside.Subtract(gfx::ToEnclosingRect(union_layer_rect));

@@ -23,14 +23,13 @@
 
 namespace cc {
 
-scoped_refptr<RasterSource> RasterSource::CreateFromDisplayListRecordingSource(
-    const DisplayListRecordingSource* other,
+scoped_refptr<RasterSource> RasterSource::CreateFromRecordingSource(
+    const RecordingSource* other,
     bool can_use_lcd_text) {
   return make_scoped_refptr(new RasterSource(other, can_use_lcd_text));
 }
 
-RasterSource::RasterSource(const DisplayListRecordingSource* other,
-                           bool can_use_lcd_text)
+RasterSource::RasterSource(const RecordingSource* other, bool can_use_lcd_text)
     : display_list_(other->display_list_),
       painter_reported_memory_usage_(other->painter_reported_memory_usage_),
       background_color_(other->background_color_),

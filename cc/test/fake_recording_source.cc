@@ -2,31 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/fake_display_list_recording_source.h"
+#include "cc/test/fake_recording_source.h"
 
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/skia_common.h"
 
 namespace cc {
 
-FakeDisplayListRecordingSource::FakeDisplayListRecordingSource()
+FakeRecordingSource::FakeRecordingSource()
     : force_unsuitable_for_gpu_rasterization_(false),
       playback_allowed_event_(nullptr) {}
 
-bool FakeDisplayListRecordingSource::IsSuitableForGpuRasterization() const {
+bool FakeRecordingSource::IsSuitableForGpuRasterization() const {
   if (force_unsuitable_for_gpu_rasterization_)
     return false;
-  return DisplayListRecordingSource::IsSuitableForGpuRasterization();
+  return RecordingSource::IsSuitableForGpuRasterization();
 }
 
-scoped_refptr<RasterSource> FakeDisplayListRecordingSource::CreateRasterSource(
+scoped_refptr<RasterSource> FakeRecordingSource::CreateRasterSource(
     bool can_use_lcd) const {
   return FakeRasterSource::CreateFromRecordingSourceWithWaitable(
       this, can_use_lcd, playback_allowed_event_);
 }
 
-bool FakeDisplayListRecordingSource::EqualsTo(
-    const FakeDisplayListRecordingSource& other) {
+bool FakeRecordingSource::EqualsTo(const FakeRecordingSource& other) {
   // The DisplayItemLists are equal if they are both null or they are both not
   // null and render to the same thing.
   bool display_lists_equal = !display_list_ && !other.display_list_;

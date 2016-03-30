@@ -21,12 +21,12 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/gpu_rasterization_enabled_settings.h"
 #include "cc/test/layer_test_common.h"
@@ -420,8 +420,8 @@ TEST_F(PictureLayerImplTest, TileGridAlignment) {
       FakeRasterSource::CreateFilled(layer_size);
 
   // Create an active recording source, but make sure it's not solid.
-  scoped_ptr<FakeDisplayListRecordingSource> active_recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_size);
+  scoped_ptr<FakeRecordingSource> active_recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_size);
   active_recording_source->SetLayerBounds(layer_size);
   active_recording_source->add_draw_rect(gfx::Rect(layer_size));
   active_recording_source->add_draw_rect(
@@ -4381,8 +4381,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
   host->SetRootLayer(layer);
-  DisplayListRecordingSource* recording_source =
-      layer->GetDisplayListRecordingSourceForTesting();
+  RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
   int frame_number = 0;
 
@@ -4391,7 +4390,7 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   Region invalidation(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation, layer_bounds, layer_rect, frame_number++,
-      DisplayListRecordingSource::RECORD_NORMALLY);
+      RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> pending_raster_source =
       recording_source->CreateRasterSource(true);
@@ -4445,8 +4444,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   scoped_ptr<FakeLayerTreeHost> host =
       FakeLayerTreeHost::Create(&host_client, &task_graph_runner);
   host->SetRootLayer(layer);
-  DisplayListRecordingSource* recording_source =
-      layer->GetDisplayListRecordingSourceForTesting();
+  RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
   int frame_number = 0;
 
@@ -4456,7 +4454,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   Region invalidation1;
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation1, layer_bounds, layer_rect, frame_number++,
-      DisplayListRecordingSource::RECORD_NORMALLY);
+      RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source1 =
       recording_source->CreateRasterSource(true);
@@ -4476,7 +4474,7 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   Region invalidation2;
   recording_source->UpdateAndExpandInvalidation(
       &client, &invalidation2, layer_bounds, layer_rect, frame_number++,
-      DisplayListRecordingSource::RECORD_NORMALLY);
+      RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source2 =
       recording_source->CreateRasterSource(true);

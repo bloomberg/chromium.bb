@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_PLAYBACK_DISPLAY_LIST_RECORDING_SOURCE_H_
-#define CC_PLAYBACK_DISPLAY_LIST_RECORDING_SOURCE_H_
+#ifndef CC_PLAYBACK_RECORDING_SOURCE_H_
+#define CC_PLAYBACK_RECORDING_SOURCE_H_
 
 #include <stddef.h>
 
@@ -19,7 +19,7 @@
 namespace cc {
 
 namespace proto {
-class DisplayListRecordingSource;
+class RecordingSource;
 }  // namespace proto
 
 class ContentLayerClient;
@@ -28,7 +28,7 @@ class RasterSource;
 class ImageSerializationProcessor;
 class Region;
 
-class CC_EXPORT DisplayListRecordingSource {
+class CC_EXPORT RecordingSource {
  public:
   // TODO(schenney) Remove RECORD_WITH_SK_NULL_CANVAS when we no longer
   // support a non-Slimming Paint path.
@@ -42,13 +42,13 @@ class CC_EXPORT DisplayListRecordingSource {
     RECORDING_MODE_COUNT,  // Must be the last entry.
   };
 
-  DisplayListRecordingSource();
-  virtual ~DisplayListRecordingSource();
+  RecordingSource();
+  virtual ~RecordingSource();
 
   void ToProtobuf(
-      proto::DisplayListRecordingSource* proto,
+      proto::RecordingSource* proto,
       ImageSerializationProcessor* image_serialization_processor) const;
-  void FromProtobuf(const proto::DisplayListRecordingSource& proto,
+  void FromProtobuf(const proto::RecordingSource& proto,
                     ImageSerializationProcessor* image_serialization_processor);
 
   bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
@@ -101,9 +101,9 @@ class CC_EXPORT DisplayListRecordingSource {
 
   InvalidationRegion invalidation_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayListRecordingSource);
+  DISALLOW_COPY_AND_ASSIGN(RecordingSource);
 };
 
 }  // namespace cc
 
-#endif  // CC_PLAYBACK_DISPLAY_LIST_RECORDING_SOURCE_H_
+#endif  // CC_PLAYBACK_RECORDING_SOURCE_H_

@@ -6,51 +6,49 @@
 
 #include "cc/base/region.h"
 #include "cc/playback/raster_source.h"
-#include "cc/proto/display_list_recording_source.pb.h"
+#include "cc/proto/recording_source.pb.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_image_serialization_processor.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
 
-scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
+scoped_ptr<FakeRecordingSource> CreateRecordingSource(
     const gfx::Rect& viewport) {
   gfx::Rect layer_rect(viewport.right(), viewport.bottom());
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateRecordingSource(viewport,
-                                                            layer_rect.size());
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateRecordingSource(viewport, layer_rect.size());
   return recording_source;
 }
 
 scoped_refptr<RasterSource> CreateRasterSource(
-    FakeDisplayListRecordingSource* recording_source) {
+    FakeRecordingSource* recording_source) {
   bool can_use_lcd_text = true;
-  return RasterSource::CreateFromDisplayListRecordingSource(recording_source,
-                                                            can_use_lcd_text);
+  return RasterSource::CreateFromRecordingSource(recording_source,
+                                                 can_use_lcd_text);
 }
 
-void ValidateRecordingSourceSerialization(
-    FakeDisplayListRecordingSource* source) {
+void ValidateRecordingSourceSerialization(FakeRecordingSource* source) {
   scoped_ptr<FakeImageSerializationProcessor>
       fake_image_serialization_processor =
           make_scoped_ptr(new FakeImageSerializationProcessor);
 
-  proto::DisplayListRecordingSource proto;
+  proto::RecordingSource proto;
   source->ToProtobuf(&proto, fake_image_serialization_processor.get());
 
-  FakeDisplayListRecordingSource new_source;
+  FakeRecordingSource new_source;
   new_source.FromProtobuf(proto, fake_image_serialization_processor.get());
 
   EXPECT_TRUE(source->EqualsTo(new_source));
 }
 
-TEST(DisplayListRecordingSourceTest, TestNullDisplayListSerialization) {
+TEST(RecordingSourceTest, TestNullDisplayListSerialization) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+  scoped_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetDisplayListUsesCachedPicture(false);
   recording_source->SetGenerateDiscardableImagesMetadata(true);
@@ -60,10 +58,10 @@ TEST(DisplayListRecordingSourceTest, TestNullDisplayListSerialization) {
   ValidateRecordingSourceSerialization(recording_source.get());
 }
 
-TEST(DisplayListRecordingSourceTest, TestEmptySerializationDeserialization) {
+TEST(RecordingSourceTest, TestEmptySerializationDeserialization) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+  scoped_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetDisplayListUsesCachedPicture(false);
   recording_source->SetGenerateDiscardableImagesMetadata(true);
@@ -72,11 +70,10 @@ TEST(DisplayListRecordingSourceTest, TestEmptySerializationDeserialization) {
   ValidateRecordingSourceSerialization(recording_source.get());
 }
 
-TEST(DisplayListRecordingSourceTest,
-     TestPopulatedSerializationDeserialization) {
+TEST(RecordingSourceTest, TestPopulatedSerializationDeserialization) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+  scoped_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetDisplayListUsesCachedPicture(false);
 
@@ -97,11 +94,11 @@ TEST(DisplayListRecordingSourceTest,
   ValidateRecordingSourceSerialization(recording_source.get());
 }
 
-TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
+TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
   gfx::Rect recorded_viewport(256, 256);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(
           recorded_viewport.size());
   skia::RefPtr<SkImage> discardable_image[2][2];
   gfx::Transform identity_transform;
@@ -134,8 +131,8 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
 
   bool can_use_lcd_text = true;
   scoped_refptr<RasterSource> raster_source =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         can_use_lcd_text);
+      RasterSource::CreateFromRecordingSource(recording_source.get(),
+                                              can_use_lcd_text);
 
   // Tile sized iterators. These should find only one pixel ref.
   {
@@ -188,10 +185,10 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
   }
 }
 
-TEST(DisplayListRecordingSourceTest, NoGatherImageEmptyImages) {
+TEST(RecordingSourceTest, NoGatherImageEmptyImages) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+  scoped_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetGenerateDiscardableImagesMetadata(false);
   recording_source->Rerecord();
@@ -208,10 +205,10 @@ TEST(DisplayListRecordingSourceTest, NoGatherImageEmptyImages) {
   }
 }
 
-TEST(DisplayListRecordingSourceTest, EmptyImages) {
+TEST(RecordingSourceTest, EmptyImages) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+  scoped_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
@@ -242,10 +239,10 @@ TEST(DisplayListRecordingSourceTest, EmptyImages) {
   }
 }
 
-TEST(DisplayListRecordingSourceTest, NoDiscardableImages) {
+TEST(RecordingSourceTest, NoDiscardableImages) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+  scoped_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
 
   SkPaint simple_paint;
@@ -300,10 +297,10 @@ TEST(DisplayListRecordingSourceTest, NoDiscardableImages) {
   }
 }
 
-TEST(DisplayListRecordingSourceTest, DiscardableImages) {
+TEST(RecordingSourceTest, DiscardableImages) {
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+  scoped_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
 
   skia::RefPtr<SkImage> discardable_image[2][2];
@@ -367,10 +364,10 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
   }
 }
 
-TEST(DisplayListRecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
+TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
   gfx::Rect recorded_viewport(0, 0, 512, 512);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+  scoped_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
 
   SkBitmap non_discardable_bitmap;

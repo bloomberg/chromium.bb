@@ -7,12 +7,11 @@
 
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "cc/playback/display_list_recording_source.h"
 #include "cc/playback/raster_source.h"
+#include "cc/playback/recording_source.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/begin_frame_args_test.h"
-#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -20,6 +19,7 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_raster_source.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -1522,8 +1522,8 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
   gfx::Size size(10, 10);
   const gfx::Size layer_bounds(1000, 1000);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
   SkPaint solid_paint;
   SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
@@ -1541,8 +1541,7 @@ TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster_source =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   FakePictureLayerTilingClient tiling_client;
   tiling_client.SetTileSize(size);
@@ -1751,8 +1750,8 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     skia::RefPtr<SkImage> blue_image =
         skia::AdoptRef(surface->newImageSnapshot());
 
-    scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-        FakeDisplayListRecordingSource::CreateFilledRecordingSource(size);
+    scoped_ptr<FakeRecordingSource> recording_source =
+        FakeRecordingSource::CreateFilledRecordingSource(size);
     recording_source->SetBackgroundColor(SK_ColorTRANSPARENT);
     recording_source->SetRequiresClear(true);
     recording_source->SetClearCanvasWithDebugColor(false);
@@ -1762,8 +1761,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     recording_source->add_draw_image(blue_image.get(), gfx::Point());
     recording_source->Rerecord();
     scoped_refptr<RasterSource> raster =
-        RasterSource::CreateFromDisplayListRecordingSource(
-            recording_source.get(), false);
+        RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
     FakePictureLayerTilingClient tiling_client;
     tiling_client.SetTileSize(size);

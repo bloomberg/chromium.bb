@@ -13,7 +13,7 @@
 
 namespace cc {
 
-class DisplayListRecordingSource;
+class RecordingSource;
 
 class FakeRasterSource : public RasterSource {
  public:
@@ -27,10 +27,10 @@ class FakeRasterSource : public RasterSource {
       const gfx::Rect& recorded_viewport);
   static scoped_refptr<FakeRasterSource> CreateEmpty(const gfx::Size& size);
   static scoped_refptr<FakeRasterSource> CreateFromRecordingSource(
-      const DisplayListRecordingSource* recording_source,
+      const RecordingSource* recording_source,
       bool can_use_lcd);
   static scoped_refptr<FakeRasterSource> CreateFromRecordingSourceWithWaitable(
-      const DisplayListRecordingSource* recording_source,
+      const RecordingSource* recording_source,
       bool can_use_lcd,
       base::WaitableEvent* playback_allowed_event);
 
@@ -41,9 +41,8 @@ class FakeRasterSource : public RasterSource {
                         bool include_images) const override;
 
  protected:
-  FakeRasterSource(const DisplayListRecordingSource* recording_source,
-                   bool can_use_lcd);
-  FakeRasterSource(const DisplayListRecordingSource* recording_source,
+  FakeRasterSource(const RecordingSource* recording_source, bool can_use_lcd);
+  FakeRasterSource(const RecordingSource* recording_source,
                    bool can_use_lcd,
                    base::WaitableEvent* playback_allowed_event);
   ~FakeRasterSource() override;

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_FAKE_DISPLAY_LIST_RECORDING_SOURCE_H_
-#define CC_TEST_FAKE_DISPLAY_LIST_RECORDING_SOURCE_H_
+#ifndef CC_TEST_FAKE_RECORDING_SOURCE_H_
+#define CC_TEST_FAKE_RECORDING_SOURCE_H_
 
 #include <stddef.h>
 
 #include "cc/base/region.h"
-#include "cc/playback/display_list_recording_source.h"
+#include "cc/playback/recording_source.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/trees/layer_tree_settings.h"
 
@@ -21,31 +21,29 @@ namespace cc {
 // This class provides method for test to add bitmap and draw rect to content
 // layer client. This class also provides function to rerecord to generate a new
 // display list.
-class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
+class FakeRecordingSource : public RecordingSource {
  public:
-  FakeDisplayListRecordingSource();
-  ~FakeDisplayListRecordingSource() override {}
+  FakeRecordingSource();
+  ~FakeRecordingSource() override {}
 
-  static scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
+  static scoped_ptr<FakeRecordingSource> CreateRecordingSource(
       const gfx::Rect& recorded_viewport,
       const gfx::Size& layer_bounds) {
-    scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
     recording_source->SetRecordedViewport(recorded_viewport);
     recording_source->SetLayerBounds(layer_bounds);
     return recording_source;
   }
 
-  static scoped_ptr<FakeDisplayListRecordingSource> CreateFilledRecordingSource(
+  static scoped_ptr<FakeRecordingSource> CreateFilledRecordingSource(
       const gfx::Size& layer_bounds) {
-    scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource);
+    scoped_ptr<FakeRecordingSource> recording_source(new FakeRecordingSource);
     recording_source->SetRecordedViewport(gfx::Rect(layer_bounds));
     recording_source->SetLayerBounds(layer_bounds);
     return recording_source;
   }
 
-  // DisplayListRecordingSource overrides.
+  // RecordingSource overrides.
   scoped_refptr<RasterSource> CreateRasterSource(
       bool can_use_lcd) const override;
   bool IsSuitableForGpuRasterization() const override;
@@ -129,7 +127,7 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   // Checks that the basic properties of the |other| match |this|.  For the
   // DisplayItemList, it checks that the painted result matches the painted
   // result of |other|.
-  bool EqualsTo(const FakeDisplayListRecordingSource& other);
+  bool EqualsTo(const FakeRecordingSource& other);
 
  private:
   FakeContentLayerClient client_;
@@ -140,4 +138,4 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
 
 }  // namespace cc
 
-#endif  // CC_TEST_FAKE_DISPLAY_LIST_RECORDING_SOURCE_H_
+#endif  // CC_TEST_FAKE_RECORDING_SOURCE_H_

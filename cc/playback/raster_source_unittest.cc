@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/playback/raster_source.h"
-#include "cc/test/fake_display_list_recording_source.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
 #include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,8 +21,8 @@ namespace {
 TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
   gfx::Size layer_bounds(400, 400);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
   SkPaint solid_paint;
   SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
@@ -39,8 +39,7 @@ TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   // Ensure everything is solid.
   for (int y = 0; y <= 300; y += 100) {
@@ -56,8 +55,8 @@ TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
   recording_source->add_draw_rect_with_paint(gfx::Rect(50, 50, 1, 1),
                                              non_solid_paint);
   recording_source->Rerecord();
-  raster = RasterSource::CreateFromDisplayListRecordingSource(
-      recording_source.get(), false);
+  raster =
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   color = SK_ColorTRANSPARENT;
   is_solid_color =
@@ -93,8 +92,8 @@ TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
 TEST(RasterSourceTest, AnalyzeIsSolidScaled) {
   gfx::Size layer_bounds(400, 400);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
   SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
   SkColor color = SK_ColorTRANSPARENT;
@@ -111,8 +110,7 @@ TEST(RasterSourceTest, AnalyzeIsSolidScaled) {
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   // Ensure everything is solid.
   for (int y = 0; y <= 30; y += 10) {
@@ -128,8 +126,8 @@ TEST(RasterSourceTest, AnalyzeIsSolidScaled) {
   recording_source->add_draw_rect_with_paint(gfx::Rect(50, 50, 1, 1),
                                              non_solid_paint);
   recording_source->Rerecord();
-  raster = RasterSource::CreateFromDisplayListRecordingSource(
-      recording_source.get(), false);
+  raster =
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   color = SK_ColorTRANSPARENT;
   is_solid_color =
@@ -165,13 +163,12 @@ TEST(RasterSourceTest, AnalyzeIsSolidScaled) {
 TEST(RasterSourceTest, AnalyzeIsSolidEmpty) {
   gfx::Size layer_bounds(400, 400);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   SkColor color = SK_ColorTRANSPARENT;
   bool is_solid_color =
@@ -184,8 +181,8 @@ TEST(RasterSourceTest, AnalyzeIsSolidEmpty) {
 TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   gfx::Size layer_bounds(512, 512);
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
   skia::RefPtr<SkImage> discardable_image[2][2];
   discardable_image[0][0] = CreateDiscardableImage(gfx::Size(32, 32));
@@ -208,8 +205,7 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   // Tile sized iterators. These should find only one pixel ref.
   {
@@ -249,8 +245,8 @@ TEST(RasterSourceTest, RasterFullContents) {
   float contents_scale = 1.5f;
   float raster_divisions = 2.f;
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorBLACK);
   recording_source->SetClearCanvasWithDebugColor(false);
 
@@ -263,8 +259,7 @@ TEST(RasterSourceTest, RasterFullContents) {
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   gfx::Size content_bounds(
       gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
@@ -316,8 +311,8 @@ TEST(RasterSourceTest, RasterPartialContents) {
   gfx::Size layer_bounds(3, 5);
   float contents_scale = 1.5f;
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorGREEN);
   recording_source->SetClearCanvasWithDebugColor(false);
 
@@ -329,8 +324,7 @@ TEST(RasterSourceTest, RasterPartialContents) {
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   gfx::Size content_bounds(
       gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
@@ -369,8 +363,8 @@ TEST(RasterSourceTest, RasterPartialContents) {
   recording_source->Rerecord();
 
   // Make a new RasterSource from the new recording.
-  raster = RasterSource::CreateFromDisplayListRecordingSource(
-      recording_source.get(), false);
+  raster =
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   // We're going to playback from "everything is black" into a smaller area,
   // that touches the edge pixels of the recording.
@@ -410,8 +404,8 @@ TEST(RasterSourceTest, RasterPartialClear) {
   gfx::Size partial_bounds(2, 4);
   float contents_scale = 1.5f;
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorGREEN);
   recording_source->SetRequiresClear(true);
   recording_source->SetClearCanvasWithDebugColor(false);
@@ -426,8 +420,7 @@ TEST(RasterSourceTest, RasterPartialClear) {
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
 
   gfx::Size content_bounds(
       gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
@@ -458,8 +451,8 @@ TEST(RasterSourceTest, RasterPartialClear) {
     }
   }
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source_light =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source_light =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source_light->SetBackgroundColor(SK_ColorGREEN);
   recording_source_light->SetRequiresClear(true);
   recording_source_light->SetClearCanvasWithDebugColor(false);
@@ -472,8 +465,8 @@ TEST(RasterSourceTest, RasterPartialClear) {
   recording_source_light->Rerecord();
 
   // Make a new RasterSource from the new recording.
-  raster = RasterSource::CreateFromDisplayListRecordingSource(
-      recording_source_light.get(), false);
+  raster = RasterSource::CreateFromRecordingSource(recording_source_light.get(),
+                                                   false);
 
   // We're going to playback from alpha(18) white rectangle into a smaller area
   // of the recording resulting in a smaller lighter white rectangle over a
@@ -501,16 +494,15 @@ TEST(RasterSourceTest, RasterContentsTransparent) {
   gfx::Size layer_bounds(5, 3);
   float contents_scale = 0.5f;
 
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->SetBackgroundColor(SK_ColorTRANSPARENT);
   recording_source->SetRequiresClear(true);
   recording_source->SetClearCanvasWithDebugColor(false);
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
   gfx::Size content_bounds(
       gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
 
@@ -535,14 +527,13 @@ TEST(RasterSourceTest, RasterContentsTransparent) {
 TEST(RasterSourceTest, GetPictureMemoryUsageIncludesClientReportedMemory) {
   const size_t kReportedMemoryUsageInBytes = 100 * 1024 * 1024;
   gfx::Size layer_bounds(5, 3);
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+  scoped_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_reported_memory_usage(kReportedMemoryUsageInBytes);
   recording_source->Rerecord();
 
   scoped_refptr<RasterSource> raster =
-      RasterSource::CreateFromDisplayListRecordingSource(recording_source.get(),
-                                                         false);
+      RasterSource::CreateFromRecordingSource(recording_source.get(), false);
   size_t total_memory_usage = raster->GetPictureMemoryUsage();
   EXPECT_GE(total_memory_usage, kReportedMemoryUsageInBytes);
   EXPECT_LT(total_memory_usage, 2 * kReportedMemoryUsageInBytes);

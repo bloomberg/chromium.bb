@@ -8,7 +8,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
-#include "cc/playback/display_list_recording_source.h"
+#include "cc/playback/recording_source.h"
 #include "cc/proto/cc_conversions.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/layer.pb.h"
@@ -31,7 +31,7 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
       nearest_neighbor_(false) {}
 
 PictureLayer::PictureLayer(ContentLayerClient* client,
-                           scoped_ptr<DisplayListRecordingSource> source)
+                           scoped_ptr<RecordingSource> source)
     : PictureLayer(client) {
   recording_source_ = std::move(source);
 }
@@ -70,7 +70,7 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
     return;
 
   if (!recording_source_)
-    recording_source_.reset(new DisplayListRecordingSource);
+    recording_source_.reset(new RecordingSource);
   recording_source_->SetSlowdownRasterScaleFactor(
       host->debug_state().slow_down_raster_scale_factor);
   // If we need to enable image decode tasks, then we have to generate the
@@ -111,7 +111,7 @@ bool PictureLayer::Update() {
   DCHECK(client_);
   updated |= recording_source_->UpdateAndExpandInvalidation(
       client_, &last_updated_invalidation_, layer_size, update_rect,
-      update_source_frame_number_, DisplayListRecordingSource::RECORD_NORMALLY);
+      update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
   last_updated_visible_layer_rect_ = visible_layer_rect();
 
   if (updated) {
@@ -130,19 +130,18 @@ void PictureLayer::SetIsMask(bool is_mask) {
 }
 
 sk_sp<SkPicture> PictureLayer::GetPicture() const {
-  // We could either flatten the DisplayListRecordingSource into a single
+  // We could either flatten the RecordingSource into a single
   // SkPicture, or paint a fresh one depending on what we intend to do with the
   // picture. For now we just paint a fresh one to get consistent results.
   if (!DrawsContent())
     return nullptr;
 
   gfx::Size layer_size = bounds();
-  scoped_ptr<DisplayListRecordingSource> recording_source(
-      new DisplayListRecordingSource);
+  scoped_ptr<RecordingSource> recording_source(new RecordingSource);
   Region recording_invalidation;
   recording_source->UpdateAndExpandInvalidation(
       client_, &recording_invalidation, layer_size, gfx::Rect(layer_size),
-      update_source_frame_number_, DisplayListRecordingSource::RECORD_NORMALLY);
+      update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source =
       recording_source->CreateRasterSource(false);
@@ -203,7 +202,7 @@ void PictureLayer::FromLayerSpecificPropertiesProto(
   // hierarchy deserialization, ::SetLayerTreeHost(...) is not called, but
   // instead the member is set directly, so it needs to be set here explicitly.
   if (!recording_source_)
-    recording_source_.reset(new DisplayListRecordingSource);
+    recording_source_.reset(new RecordingSource);
 
   recording_source_->FromProtobuf(
       picture.recording_source(),

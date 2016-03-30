@@ -13,13 +13,13 @@
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/proto/layer.pb.h"
-#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_proxy.h"
+#include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -34,14 +34,13 @@ class TestSerializationPictureLayer : public PictureLayer {
       const gfx::Size& recording_source_viewport) {
     return make_scoped_refptr(new TestSerializationPictureLayer(
         EmptyContentLayerClient::GetInstance(),
-        FakeDisplayListRecordingSource::CreateFilledRecordingSource(
+        FakeRecordingSource::CreateFilledRecordingSource(
             recording_source_viewport),
         recording_source_viewport));
   }
 
-  FakeDisplayListRecordingSource* recording_source() {
-    return static_cast<FakeDisplayListRecordingSource*>(
-        recording_source_.get());
+  FakeRecordingSource* recording_source() {
+    return static_cast<FakeRecordingSource*>(recording_source_.get());
   }
 
   void set_invalidation(const Region& invalidation) {
@@ -92,7 +91,7 @@ class TestSerializationPictureLayer : public PictureLayer {
 
  private:
   TestSerializationPictureLayer(ContentLayerClient* client,
-                                scoped_ptr<DisplayListRecordingSource> source,
+                                scoped_ptr<RecordingSource> source,
                                 const gfx::Size& recording_source_viewport)
       : PictureLayer(client, std::move(source)),
         recording_source_viewport_(recording_source_viewport) {}
@@ -383,10 +382,9 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 }
 
 TEST(PictureLayerTest, SuitableForGpuRasterization) {
-  scoped_ptr<FakeDisplayListRecordingSource> recording_source_owned(
-      new FakeDisplayListRecordingSource);
-  FakeDisplayListRecordingSource* recording_source =
-      recording_source_owned.get();
+  scoped_ptr<FakeRecordingSource> recording_source_owned(
+      new FakeRecordingSource);
+  FakeRecordingSource* recording_source = recording_source_owned.get();
 
   ContentLayerClient* client = EmptyContentLayerClient::GetInstance();
   scoped_refptr<FakePictureLayer> layer =
@@ -405,7 +403,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   Region invalidation(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
       client, &invalidation, layer_bounds, layer_rect, 1,
-      DisplayListRecordingSource::RECORD_NORMALLY);
+      RecordingSource::RECORD_NORMALLY);
 
   // Layer is suitable for gpu rasterization by default.
   EXPECT_TRUE(recording_source->IsSuitableForGpuRasterization());

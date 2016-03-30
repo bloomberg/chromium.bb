@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/synchronization/waitable_event.h"
-#include "cc/test/fake_display_list_recording_source.h"
+#include "cc/test/fake_recording_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -22,7 +22,7 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateInfiniteFilled() {
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilled(
     const gfx::Size& size) {
   auto recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(size);
+      FakeRecordingSource::CreateFilledRecordingSource(size);
 
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
@@ -43,7 +43,7 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilled(
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledLCD(
     const gfx::Size& size) {
   auto recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(size);
+      FakeRecordingSource::CreateFilledRecordingSource(size);
 
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
@@ -63,7 +63,7 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledLCD(
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFilledSolidColor(
     const gfx::Size& size) {
   auto recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(size);
+      FakeRecordingSource::CreateFilledRecordingSource(size);
 
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
@@ -81,8 +81,8 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreatePartiallyFilled(
     const gfx::Rect& recorded_viewport) {
   DCHECK(recorded_viewport.IsEmpty() ||
          gfx::Rect(size).Contains(recorded_viewport));
-  auto recording_source = FakeDisplayListRecordingSource::CreateRecordingSource(
-      recorded_viewport, size);
+  auto recording_source =
+      FakeRecordingSource::CreateRecordingSource(recorded_viewport, size);
 
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
@@ -104,13 +104,13 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreatePartiallyFilled(
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateEmpty(
     const gfx::Size& size) {
   auto recording_source =
-      FakeDisplayListRecordingSource::CreateFilledRecordingSource(size);
+      FakeRecordingSource::CreateFilledRecordingSource(size);
   return make_scoped_refptr(
       new FakeRasterSource(recording_source.get(), false));
 }
 
 scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFromRecordingSource(
-    const DisplayListRecordingSource* recording_source,
+    const RecordingSource* recording_source,
     bool can_use_lcd) {
   return make_scoped_refptr(
       new FakeRasterSource(recording_source, can_use_lcd));
@@ -118,23 +118,21 @@ scoped_refptr<FakeRasterSource> FakeRasterSource::CreateFromRecordingSource(
 
 scoped_refptr<FakeRasterSource>
 FakeRasterSource::CreateFromRecordingSourceWithWaitable(
-    const DisplayListRecordingSource* recording_source,
+    const RecordingSource* recording_source,
     bool can_use_lcd,
     base::WaitableEvent* playback_allowed_event) {
   return make_scoped_refptr(new FakeRasterSource(recording_source, can_use_lcd,
                                                  playback_allowed_event));
 }
 
-FakeRasterSource::FakeRasterSource(
-    const DisplayListRecordingSource* recording_source,
-    bool can_use_lcd)
+FakeRasterSource::FakeRasterSource(const RecordingSource* recording_source,
+                                   bool can_use_lcd)
     : RasterSource(recording_source, can_use_lcd),
       playback_allowed_event_(nullptr) {}
 
-FakeRasterSource::FakeRasterSource(
-    const DisplayListRecordingSource* recording_source,
-    bool can_use_lcd,
-    base::WaitableEvent* playback_allowed_event)
+FakeRasterSource::FakeRasterSource(const RecordingSource* recording_source,
+                                   bool can_use_lcd,
+                                   base::WaitableEvent* playback_allowed_event)
     : RasterSource(recording_source, can_use_lcd),
       playback_allowed_event_(playback_allowed_event) {}
 

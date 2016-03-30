@@ -14,7 +14,7 @@
 namespace cc {
 
 class ContentLayerClient;
-class DisplayListRecordingSource;
+class RecordingSource;
 class ResourceUpdateQueue;
 
 class CC_EXPORT PictureLayer : public Layer {
@@ -39,15 +39,14 @@ class CC_EXPORT PictureLayer : public Layer {
 
   ContentLayerClient* client() { return client_; }
 
-  DisplayListRecordingSource* GetDisplayListRecordingSourceForTesting() {
+  RecordingSource* GetRecordingSourceForTesting() {
     return recording_source_.get();
   }
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);
   // Allow tests to inject a recording source.
-  PictureLayer(ContentLayerClient* client,
-               scoped_ptr<DisplayListRecordingSource> source);
+  PictureLayer(ContentLayerClient* client, scoped_ptr<RecordingSource> source);
   ~PictureLayer() override;
 
   bool HasDrawableContent() const override;
@@ -64,7 +63,7 @@ class CC_EXPORT PictureLayer : public Layer {
   void DropRecordingSourceContentIfInvalid();
 
   ContentLayerClient* client_;
-  scoped_ptr<DisplayListRecordingSource> recording_source_;
+  scoped_ptr<RecordingSource> recording_source_;
   devtools_instrumentation::
       ScopedLayerObjectTracker instrumentation_object_tracker_;
 

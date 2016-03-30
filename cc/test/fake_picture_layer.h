@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/playback/display_list_recording_source.h"
+#include "cc/playback/recording_source.h"
 
 namespace cc {
 class FakePictureLayer : public PictureLayer {
@@ -21,7 +21,7 @@ class FakePictureLayer : public PictureLayer {
 
   static scoped_refptr<FakePictureLayer> CreateWithRecordingSource(
       ContentLayerClient* client,
-      scoped_ptr<DisplayListRecordingSource> source) {
+      scoped_ptr<RecordingSource> source) {
     return make_scoped_refptr(new FakePictureLayer(client, std::move(source)));
   }
 
@@ -44,7 +44,7 @@ class FakePictureLayer : public PictureLayer {
  private:
   explicit FakePictureLayer(ContentLayerClient* client);
   FakePictureLayer(ContentLayerClient* client,
-                   scoped_ptr<DisplayListRecordingSource> source);
+                   scoped_ptr<RecordingSource> source);
   ~FakePictureLayer() override;
 
   int update_count_;

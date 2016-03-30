@@ -16,7 +16,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
-#include "cc/playback/display_list_recording_source.h"
+#include "cc/playback/recording_source.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
@@ -28,8 +28,8 @@ class ImageDecodeController;
 class CC_EXPORT RasterSource : public base::trace_event::MemoryDumpProvider,
                                public base::RefCountedThreadSafe<RasterSource> {
  public:
-  static scoped_refptr<RasterSource> CreateFromDisplayListRecordingSource(
-      const DisplayListRecordingSource* other,
+  static scoped_refptr<RasterSource> CreateFromRecordingSource(
+      const RecordingSource* other,
       bool can_use_lcd_text);
 
   // Raster a subrect of this RasterSource into the given canvas. It is
@@ -120,7 +120,7 @@ class CC_EXPORT RasterSource : public base::trace_event::MemoryDumpProvider,
  protected:
   friend class base::RefCountedThreadSafe<RasterSource>;
 
-  RasterSource(const DisplayListRecordingSource* other, bool can_use_lcd_text);
+  RasterSource(const RecordingSource* other, bool can_use_lcd_text);
   RasterSource(const RasterSource* other, bool can_use_lcd_text);
   ~RasterSource() override;
 

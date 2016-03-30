@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/playback/display_list_recording_source.h"
+#include "cc/playback/recording_source.h"
 
 #include <stdint.h>
 
@@ -14,8 +14,8 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/raster_source.h"
-#include "cc/proto/display_list_recording_source.pb.h"
 #include "cc/proto/gfx_conversions.h"
+#include "cc/proto/recording_source.pb.h"
 #include "skia/ext/analysis_canvas.h"
 
 namespace {
@@ -26,8 +26,12 @@ const bool kDefaultClearCanvasSetting = false;
 const bool kDefaultClearCanvasSetting = true;
 #endif
 
+// Note that the name of the historgram doesn't match the class name
+// (DisplayListRecordingSource vs RecordingSource). This is due to the fact that
+// the histograms are being monitored under this particular name.
+// TODO(vmpstr): Update the histograms.
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
-    ScopedDisplayListRecordingSourceUpdateTimer,
+    ScopedRecordingSourceUpdateTimer,
     "Compositing.%s.DisplayListRecordingSource.UpdateUs",
     "Compositing.%s.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs");
 
@@ -36,7 +40,7 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
 namespace cc {
 class ImageSerializationProcessor;
 
-DisplayListRecordingSource::DisplayListRecordingSource()
+RecordingSource::RecordingSource()
     : slow_down_raster_scale_factor_for_debug_(0),
       generate_discardable_images_metadata_(false),
       requires_clear_(false),
@@ -46,11 +50,10 @@ DisplayListRecordingSource::DisplayListRecordingSource()
       background_color_(SK_ColorTRANSPARENT),
       painter_reported_memory_usage_(0) {}
 
-DisplayListRecordingSource::~DisplayListRecordingSource() {
-}
+RecordingSource::~RecordingSource() {}
 
-void DisplayListRecordingSource::ToProtobuf(
-    proto::DisplayListRecordingSource* proto,
+void RecordingSource::ToProtobuf(
+    proto::RecordingSource* proto,
     ImageSerializationProcessor* image_serialization_processor) const {
   RectToProto(recorded_viewport_, proto->mutable_recorded_viewport());
   SizeToProto(size_, proto->mutable_size());
@@ -69,8 +72,8 @@ void DisplayListRecordingSource::ToProtobuf(
   }
 }
 
-void DisplayListRecordingSource::FromProtobuf(
-    const proto::DisplayListRecordingSource& proto,
+void RecordingSource::FromProtobuf(
+    const proto::RecordingSource& proto,
     ImageSerializationProcessor* image_serialization_processor) {
   recorded_viewport_ = ProtoToRect(proto.recorded_viewport());
   size_ = ProtoToSize(proto.size());
@@ -85,7 +88,7 @@ void DisplayListRecordingSource::FromProtobuf(
   background_color_ = static_cast<SkColor>(proto.background_color());
 
   // This might not exist if the |display_list_| of the serialized
-  // DisplayListRecordingSource was null, wich can happen if |Clear()| is
+  // RecordingSource was null, wich can happen if |Clear()| is
   // called.
   if (proto.has_display_list()) {
     display_list_ = DisplayItemList::CreateFromProto(
@@ -96,7 +99,7 @@ void DisplayListRecordingSource::FromProtobuf(
   }
 }
 
-void DisplayListRecordingSource::UpdateInvalidationForNewViewport(
+void RecordingSource::UpdateInvalidationForNewViewport(
     const gfx::Rect& old_recorded_viewport,
     const gfx::Rect& new_recorded_viewport,
     Region* invalidation) {
@@ -110,29 +113,28 @@ void DisplayListRecordingSource::UpdateInvalidationForNewViewport(
   invalidation->Union(no_longer_exposed_region);
 }
 
-void DisplayListRecordingSource::FinishDisplayItemListUpdate() {
+void RecordingSource::FinishDisplayItemListUpdate() {
   DetermineIfSolidColor();
   display_list_->EmitTraceSnapshot();
   if (generate_discardable_images_metadata_)
     display_list_->GenerateDiscardableImagesMetadata();
 }
 
-void DisplayListRecordingSource::SetNeedsDisplayRect(
-    const gfx::Rect& layer_rect) {
+void RecordingSource::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
   if (!layer_rect.IsEmpty()) {
     // Clamp invalidation to the layer bounds.
     invalidation_.Union(gfx::IntersectRects(layer_rect, gfx::Rect(size_)));
   }
 }
 
-bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
+bool RecordingSource::UpdateAndExpandInvalidation(
     ContentLayerClient* painter,
     Region* invalidation,
     const gfx::Size& layer_size,
     const gfx::Rect& visible_layer_rect,
     int frame_number,
     RecordingMode recording_mode) {
-  ScopedDisplayListRecordingSourceUpdateTimer timer;
+  ScopedRecordingSourceUpdateTimer timer;
   bool updated = false;
 
   // TODO(chrishtr): delete this conditional once synchronized paint launches.
@@ -198,33 +200,33 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
   return true;
 }
 
-gfx::Size DisplayListRecordingSource::GetSize() const {
+gfx::Size RecordingSource::GetSize() const {
   return size_;
 }
 
-void DisplayListRecordingSource::SetEmptyBounds() {
+void RecordingSource::SetEmptyBounds() {
   size_ = gfx::Size();
   Clear();
 }
 
-void DisplayListRecordingSource::SetSlowdownRasterScaleFactor(int factor) {
+void RecordingSource::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
 }
 
-void DisplayListRecordingSource::SetGenerateDiscardableImagesMetadata(
+void RecordingSource::SetGenerateDiscardableImagesMetadata(
     bool generate_metadata) {
   generate_discardable_images_metadata_ = generate_metadata;
 }
 
-void DisplayListRecordingSource::SetBackgroundColor(SkColor background_color) {
+void RecordingSource::SetBackgroundColor(SkColor background_color) {
   background_color_ = background_color;
 }
 
-void DisplayListRecordingSource::SetRequiresClear(bool requires_clear) {
+void RecordingSource::SetRequiresClear(bool requires_clear) {
   requires_clear_ = requires_clear;
 }
 
-bool DisplayListRecordingSource::IsSuitableForGpuRasterization() const {
+bool RecordingSource::IsSuitableForGpuRasterization() const {
   // The display list needs to be created (see: UpdateAndExpandInvalidation)
   // before checking for suitability. There are cases where an update will not
   // create a display list (e.g., if the size is empty). We return true in these
@@ -232,14 +234,13 @@ bool DisplayListRecordingSource::IsSuitableForGpuRasterization() const {
   return !display_list_ || display_list_->IsSuitableForGpuRasterization();
 }
 
-scoped_refptr<RasterSource> DisplayListRecordingSource::CreateRasterSource(
+scoped_refptr<RasterSource> RecordingSource::CreateRasterSource(
     bool can_use_lcd_text) const {
   return scoped_refptr<RasterSource>(
-      RasterSource::CreateFromDisplayListRecordingSource(this,
-                                                         can_use_lcd_text));
+      RasterSource::CreateFromRecordingSource(this, can_use_lcd_text));
 }
 
-void DisplayListRecordingSource::DetermineIfSolidColor() {
+void RecordingSource::DetermineIfSolidColor() {
   DCHECK(display_list_);
   is_solid_color_ = false;
   solid_color_ = SK_ColorTRANSPARENT;
@@ -253,7 +254,7 @@ void DisplayListRecordingSource::DetermineIfSolidColor() {
   is_solid_color_ = canvas.GetColorIfSolid(&solid_color_);
 }
 
-void DisplayListRecordingSource::Clear() {
+void RecordingSource::Clear() {
   recorded_viewport_ = gfx::Rect();
   display_list_ = nullptr;
   painter_reported_memory_usage_ = 0;

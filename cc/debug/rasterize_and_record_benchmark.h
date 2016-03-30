@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "cc/debug/micro_benchmark_controller.h"
-#include "cc/playback/display_list_recording_source.h"
+#include "cc/playback/recording_source.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {
@@ -49,8 +49,7 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
 
     int pixels_recorded;
     size_t bytes_used;
-    base::TimeDelta
-        total_best_time[DisplayListRecordingSource::RECORDING_MODE_COUNT];
+    base::TimeDelta total_best_time[RecordingSource::RECORDING_MODE_COUNT];
   };
 
   RecordResults record_results_;

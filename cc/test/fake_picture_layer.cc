@@ -17,9 +17,8 @@ FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
   SetIsDrawable(true);
 }
 
-FakePictureLayer::FakePictureLayer(
-    ContentLayerClient* client,
-    scoped_ptr<DisplayListRecordingSource> source)
+FakePictureLayer::FakePictureLayer(ContentLayerClient* client,
+                                   scoped_ptr<RecordingSource> source)
     : PictureLayer(client, std::move(source)),
       update_count_(0),
       push_properties_count_(0),

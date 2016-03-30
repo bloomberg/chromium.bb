@@ -12,8 +12,8 @@ option optimize_for = LITE_RUNTIME;
 
 package cc.proto;
 
-// A serialized representation of the DisplayListRecordingSource class.
-message DisplayListRecordingSource {
+// A serialized representation of the RecordingSource class.
+message RecordingSource {
   optional Rect recorded_viewport = 1;
   optional Size size = 2;
   optional int64 slow_down_raster_scale_factor_for_debug = 3;

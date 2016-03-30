@@ -2187,7 +2187,7 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
 }
 
 // The following should be kept in sync with the code computing potential_new_recorded_viewport in
-// cc::DisplayListRecordingSource::UpdateAndExpandInvalidation() before we keep only one copy of the algorithm.
+// cc::RecordingSource::UpdateAndExpandInvalidation() before we keep only one copy of the algorithm.
 static const int kPixelDistanceToRecord = 4000;
 
 IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graphicsLayer) const
@@ -2247,7 +2247,7 @@ IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graph
     return localInterestRect;
 }
 
-// The following should be kept in sync with cc::DisplayListRecordingSource::ExposesEnoughNewArea()
+// The following should be kept in sync with cc::RecordingSource::ExposesEnoughNewArea()
 // before we keep only one copy of the algorithm.
 static const int kMinimumDistanceBeforeRepaint = 512;
 
