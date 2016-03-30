@@ -311,31 +311,30 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   if (load_type == LoadTypeMediaSource) {
     supports_save_ = false;
     StartPipeline();
-    return;
-  }
-
-  // TODO(hubbe): This experiment is temporary and should be removed once
-  // we have enough data to support the primacy of the new media cache.
-  // See http://crbug.com/514719 for details.
-  // Otherwise it's a regular request which requires resolving the URL first.
-  if (base::FeatureList::IsEnabled(kUseNewMediaCache)) {
-    // Remove this when MultiBufferDataSource becomes default.
-    LOG(WARNING) << "Using MultibufferDataSource";
-    data_source_.reset(new MultibufferDataSource(
-        url, static_cast<UrlData::CORSMode>(cors_mode), main_task_runner_,
-        url_index_, frame_, media_log_.get(), &buffered_data_source_host_,
-        base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
   } else {
-    data_source_.reset(new BufferedDataSource(
-        url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
-        main_task_runner_, frame_, media_log_.get(),
-        &buffered_data_source_host_,
-        base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
+    // TODO(hubbe): This experiment is temporary and should be removed once
+    // we have enough data to support the primacy of the new media cache.
+    // See http://crbug.com/514719 for details.
+    // Otherwise it's a regular request which requires resolving the URL first.
+    if (base::FeatureList::IsEnabled(kUseNewMediaCache)) {
+      // Remove this when MultiBufferDataSource becomes default.
+      LOG(WARNING) << "Using MultibufferDataSource";
+      data_source_.reset(new MultibufferDataSource(
+          url, static_cast<UrlData::CORSMode>(cors_mode), main_task_runner_,
+          url_index_, frame_, media_log_.get(), &buffered_data_source_host_,
+          base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
+    } else {
+      data_source_.reset(new BufferedDataSource(
+          url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
+          main_task_runner_, frame_, media_log_.get(),
+          &buffered_data_source_host_,
+          base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
+    }
+    data_source_->SetPreload(preload_);
+    data_source_->SetBufferingStrategy(buffering_strategy_);
+    data_source_->Initialize(
+        base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
   }
-  data_source_->SetPreload(preload_);
-  data_source_->SetBufferingStrategy(buffering_strategy_);
-  data_source_->Initialize(
-      base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   cast_impl_.Initialize(url, frame_, delegate_id_);
