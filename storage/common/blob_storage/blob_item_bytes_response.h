@@ -11,28 +11,30 @@
 #include <ostream>
 #include <vector>
 
+#include "base/time/time.h"
 #include "storage/common/storage_common_export.h"
 
 namespace storage {
 
 // This class is serialized over IPC to send blob item data, or to signal that
-// the memory has been populated.
+// the memory has been populated in shared memory or a file.
 struct STORAGE_COMMON_EXPORT BlobItemBytesResponse {
   // not using std::numeric_limits<T>::max() because of non-C++11 builds.
-  static const size_t kInvalidIndex = SIZE_MAX;
+  static const uint32_t kInvalidIndex = UINT32_MAX;
 
   BlobItemBytesResponse();
-  explicit BlobItemBytesResponse(size_t request_number);
+  explicit BlobItemBytesResponse(uint32_t request_number);
   BlobItemBytesResponse(const BlobItemBytesResponse& other);
   ~BlobItemBytesResponse();
 
-  char* allocate_mutable_data(size_t size) {
+  char* allocate_mutable_data(uint32_t size) {
     inline_data.resize(size);
     return &inline_data[0];
   }
 
-  size_t request_number;
+  uint32_t request_number;
   std::vector<char> inline_data;
+  base::Time time_file_modified;
 };
 
 STORAGE_COMMON_EXPORT void PrintTo(const BlobItemBytesResponse& response,

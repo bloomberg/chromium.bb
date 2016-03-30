@@ -15,50 +15,51 @@
 namespace storage {
 
 // This class is serialized over IPC to request bytes from a blob item.
+// We are using uint32_t for the indexes
 struct STORAGE_COMMON_EXPORT BlobItemBytesRequest {
   // Not using std::numeric_limits<T>::max() because of non-C++11 builds.
-  static const size_t kInvalidIndex = SIZE_MAX;
+  static const uint32_t kInvalidIndex = UINT32_MAX;
   static const uint64_t kInvalidSize = UINT64_MAX;
 
-  static BlobItemBytesRequest CreateIPCRequest(size_t request_number,
-                                               size_t renderer_item_index,
-                                               size_t renderer_item_offset,
-                                               size_t size);
+  static BlobItemBytesRequest CreateIPCRequest(uint32_t request_number,
+                                               uint32_t renderer_item_index,
+                                               uint64_t renderer_item_offset,
+                                               uint64_t size);
 
   static BlobItemBytesRequest CreateSharedMemoryRequest(
-      size_t request_number,
-      size_t renderer_item_index,
-      size_t renderer_item_offset,
-      size_t size,
-      size_t handle_index,
+      uint32_t request_number,
+      uint32_t renderer_item_index,
+      uint64_t renderer_item_offset,
+      uint64_t size,
+      uint32_t handle_index,
       uint64_t handle_offset);
 
-  static BlobItemBytesRequest CreateFileRequest(size_t request_number,
-                                                size_t renderer_item_index,
+  static BlobItemBytesRequest CreateFileRequest(uint32_t request_number,
+                                                uint32_t renderer_item_index,
                                                 uint64_t renderer_item_offset,
                                                 uint64_t size,
-                                                size_t handle_index,
+                                                uint32_t handle_index,
                                                 uint64_t handle_offset);
 
   BlobItemBytesRequest();
-  BlobItemBytesRequest(size_t request_number,
+  BlobItemBytesRequest(uint32_t request_number,
                        IPCBlobItemRequestStrategy transport_strategy,
-                       size_t renderer_item_index,
+                       uint32_t renderer_item_index,
                        uint64_t renderer_item_offset,
                        uint64_t size,
-                       size_t handle_index,
+                       uint32_t handle_index,
                        uint64_t handle_offset);
   ~BlobItemBytesRequest();
 
   // The request number uniquely identifies the memory request. We can't use
   // the renderer item index or browser item index as there can be multiple
   // requests for both (as segmentation boundaries can exist in both).
-  size_t request_number;
+  uint32_t request_number;
   IPCBlobItemRequestStrategy transport_strategy;
-  size_t renderer_item_index;
+  uint32_t renderer_item_index;
   uint64_t renderer_item_offset;
   uint64_t size;
-  size_t handle_index;
+  uint32_t handle_index;
   uint64_t handle_offset;
 };
 

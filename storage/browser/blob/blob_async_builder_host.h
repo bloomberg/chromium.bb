@@ -9,16 +9,20 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
-#include "storage/browser/blob/blob_async_transport_strategy.h"
+#include "base/memory/weak_ptr.h"
+#include "storage/browser/blob/blob_async_transport_request_builder.h"
 #include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_transport_result.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
@@ -30,51 +34,89 @@ class SharedMemory;
 }
 
 namespace storage {
+class BlobDataHandle;
+class BlobStorageContext;
 
-// This class holds all blobs that are currently being built asynchronously for
-// a child process. It sends memory request, cancel, and done messages through
-// the given callbacks.
-// This also includes handling 'shortcut' logic, where the host will use the
-// initial data in the description instead of requesting for data if we have
-// enough immediate space.
+// This class
+// * holds all blobs that are currently being built asynchronously for a child
+//   process,
+// * sends memory requests through the given callback in |StartBuildingBlob|,
+//   and uses the BlobTransportResult return value to signify other results,
+// * includes all logic for deciding which async transport strategy to use, and
+// * handles all blob construction communication with the BlobStorageContext.
+// The method |CancelAll| must be called by the consumer, it is not called on
+// destruction.
 class STORAGE_EXPORT BlobAsyncBuilderHost {
  public:
+  using RequestMemoryCallback = base::Callback<void(
+      scoped_ptr<std::vector<storage::BlobItemBytesRequest>>,
+      scoped_ptr<std::vector<base::SharedMemoryHandle>>,
+      scoped_ptr<std::vector<base::File>>)>;
   BlobAsyncBuilderHost();
-  virtual ~BlobAsyncBuilderHost();
+  ~BlobAsyncBuilderHost();
+
+  // This registers the given blob internally and adds it to the storage.
+  // Calling this method also guarentees that the referenced blobs are kept
+  // alive for the duration of the construction of this blob.
+  // We return
+  // * BAD_IPC if we already have the blob registered or if we reference ourself
+  //   in the referenced_blob_uuids.
+  // * CANCEL_REFERENCED_BLOB_BROKEN if one of the referenced blobs is broken or
+  //   doesn't exist. We store the blob in the context as broken  with code
+  //   REFERENCED_BLOB_BROKEN.
+  // * DONE if we successfully registered the blob.
+  BlobTransportResult RegisterBlobUUID(
+      const std::string& uuid,
+      const std::string& content_type,
+      const std::string& content_disposition,
+      const std::set<std::string>& referenced_blob_uuids,
+      BlobStorageContext* context);
 
   // This method begins the construction of the blob given the descriptions.
-  // After this method is called, either of the following can happen.
-  // * The |done| callback is triggered immediately because we can shortcut the
-  //   construction.
-  // * The |request_memory| callback is called to request memory from the
-  //   renderer. This class waits for calls to OnMemoryResponses to continue.
-  //   The last argument in the callback corresponds to file handle sizes.
-  //   When all memory is recieved, the |done| callback is triggered.
-  // * The |cancel| callback is triggered if there is an error at any point. All
-  //   state for the cancelled blob is cleared before |cancel| is called.
-  // Returns if the arguments are valid and we have a good IPC message.
-  bool StartBuildingBlob(
+  // When we return:
+  // * DONE: The blob is finished transfering right away, and is now
+  //   successfully saved in the context.
+  // * PENDING_RESPONSES: The async builder host is waiting for responses from
+  //   the renderer. It has called |request_memory| for these responses.
+  // * CANCEL_*: We have to cancel the blob construction. This function clears
+  //   the blob's internal state and marks the blob as broken in the context
+  //   before returning.
+  // * BAD_IPC: The arguments were invalid/bad. This marks the blob as broken in
+  //   the context before returning.
+  BlobTransportResult StartBuildingBlob(
       const std::string& uuid,
-      const std::string& type,
-      const std::vector<DataElement>& descriptions,
+      const std::vector<DataElement>& elements,
       size_t memory_available,
-      const base::Callback<
-          void(const std::vector<storage::BlobItemBytesRequest>&,
-               const std::vector<base::SharedMemoryHandle>&,
-               const std::vector<uint64_t>&)>& request_memory,
-      const base::Callback<void(const BlobDataBuilder&)>& done,
-      const base::Callback<void(IPCBlobCreationCancelCode)>& cancel);
+      BlobStorageContext* context,
+      const RequestMemoryCallback& request_memory);
 
   // This is called when we have responses from the Renderer to our calls to
-  // the request_memory callback above.
-  // Returns if the arguments are valid and we have a good IPC message.
-  bool OnMemoryResponses(const std::string& uuid,
-                         const std::vector<BlobItemBytesResponse>& responses);
+  // the request_memory callback above. See above for return value meaning.
+  BlobTransportResult OnMemoryResponses(
+      const std::string& uuid,
+      const std::vector<BlobItemBytesResponse>& responses,
+      BlobStorageContext* context);
 
-  // This erases the blob building state.
-  void StopBuildingBlob(const std::string& uuid);
+  // This removes the BlobBuildingState from our map and flags the blob as
+  // broken in the context. This can be called both from our own logic to cancel
+  // the blob, or from the DispatcherHost (Renderer). If the blob isn't being
+  // built then we do nothing.
+  // Note: if the blob isn't in the context (renderer dereferenced it before we
+  // finished constructing), then we don't bother touching the context.
+  void CancelBuildingBlob(const std::string& uuid,
+                          IPCBlobCreationCancelCode code,
+                          BlobStorageContext* context);
+
+  // This clears this object of pending construction. It also handles marking
+  // blobs that haven't been fully constructed as broken in the context if there
+  // are any references being held by anyone.
+  void CancelAll(BlobStorageContext* context);
 
   size_t blob_building_count() const { return async_blob_map_.size(); }
+
+  bool IsBeingBuilt(const std::string& key) const {
+    return async_blob_map_.find(key) != async_blob_map_.end();
+  }
 
   // For testing use only.  Must be called before StartBuildingBlob.
   void SetMemoryConstantsForTesting(size_t max_ipc_memory_size,
@@ -87,36 +129,60 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
 
  private:
   struct BlobBuildingState {
-    BlobBuildingState();
+    // |refernced_blob_handles| should be all handles generated from the set
+    // of |refernced_blob_uuids|.
+    BlobBuildingState(
+        const std::string& uuid,
+        std::set<std::string> referenced_blob_uuids,
+        std::vector<scoped_ptr<BlobDataHandle>>* referenced_blob_handles);
     ~BlobBuildingState();
 
-    std::string type;
-    BlobAsyncTransportStrategy transport_strategy;
-    size_t next_request;
-    size_t num_fulfilled_requests;
+    BlobAsyncTransportRequestBuilder request_builder;
+    BlobDataBuilder data_builder;
+    std::vector<bool> request_received;
+    size_t next_request = 0;
+    size_t num_fulfilled_requests = 0;
     scoped_ptr<base::SharedMemory> shared_memory_block;
     // This is the number of requests that have been sent to populate the above
     // shared data. We won't ask for more data in shared memory until all
     // requests have been responded to.
-    size_t num_shared_memory_requests;
+    size_t num_shared_memory_requests = 0;
     // Only relevant if num_shared_memory_requests is > 0
-    size_t current_shared_memory_handle_index;
+    size_t current_shared_memory_handle_index = 0;
 
-    base::Callback<void(const std::vector<storage::BlobItemBytesRequest>&,
-                        const std::vector<base::SharedMemoryHandle>&,
-                        const std::vector<uint64_t>&)> request_memory_callback;
-    base::Callback<void(const BlobDataBuilder&)> done_callback;
-    base::Callback<void(IPCBlobCreationCancelCode)> cancel_callback;
+    // We save these to double check that the RegisterBlob and StartBuildingBlob
+    // messages are in sync.
+    std::set<std::string> referenced_blob_uuids;
+    // These are the blobs that are referenced in the newly constructed blob.
+    // We use these to make sure they stay alive while we create the new blob,
+    // and to wait until any blobs that are not done building are fully
+    // constructed.
+    std::vector<scoped_ptr<BlobDataHandle>> referenced_blob_handles;
+
+    // These are the number of blobs we're waiting for before we can start
+    // building.
+    size_t num_referenced_blobs_building = 0;
+
+    BlobAsyncBuilderHost::RequestMemoryCallback request_memory_callback;
   };
 
   typedef std::map<std::string, scoped_ptr<BlobBuildingState>> AsyncBlobMap;
 
   // This is the 'main loop' of our memory requests to the renderer.
-  void ContinueBlobMemoryRequests(const std::string& uuid);
+  BlobTransportResult ContinueBlobMemoryRequests(const std::string& uuid,
+                                                 BlobStorageContext* context);
 
-  void CancelAndCleanup(const std::string& uuid,
-                        IPCBlobCreationCancelCode code);
-  void DoneAndCleanup(const std::string& uuid);
+  // This is our callback for when we want to finish the blob and we're waiting
+  // for blobs we reference to be built. When the last callback occurs, we
+  // complete the blob and erase our internal state.
+  void ReferencedBlobFinished(const std::string& uuid,
+                              base::WeakPtr<BlobStorageContext> context,
+                              bool construction_success);
+
+  // This finishes creating the blob in the context, decrements blob references
+  // that we were holding during construction, and erases our state.
+  void FinishBuildingBlob(BlobBuildingState* state,
+                          BlobStorageContext* context);
 
   AsyncBlobMap async_blob_map_;
 
@@ -124,6 +190,8 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
   size_t max_ipc_memory_size_ = kBlobStorageIPCThresholdBytes;
   size_t max_shared_memory_size_ = kBlobStorageMaxSharedMemoryBytes;
   uint64_t max_file_size_ = kBlobStorageMaxFileSizeBytes;
+
+  base::WeakPtrFactory<BlobAsyncBuilderHost> ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobAsyncBuilderHost);
 };

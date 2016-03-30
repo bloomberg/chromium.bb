@@ -327,8 +327,7 @@ class BlobReaderTest : public ::testing::Test {
   void InitializeReader(BlobDataBuilder* builder) {
     blob_handle_ = builder ? context_.AddFinishedBlob(builder) : nullptr;
     provider_ = new MockFileStreamReaderProvider();
-    scoped_ptr<BlobReader::FileStreamReaderProvider> temp_ptr(provider_);
-    reader_.reset(new BlobReader(blob_handle_.get(), std::move(temp_ptr),
+    reader_.reset(new BlobReader(blob_handle_.get(), make_scoped_ptr(provider_),
                                  message_loop_.task_runner().get()));
   }
 
@@ -394,8 +393,6 @@ class BlobReaderTest : public ::testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(BlobReaderTest);
 };
-
-namespace {
 
 TEST_F(BlobReaderTest, BasicMemory) {
   BlobDataBuilder b("uuid");
@@ -1113,5 +1110,52 @@ TEST_F(BlobReaderTest, RangeError) {
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, reader_->net_error());
 }
 
-}  // namespace
+TEST_F(BlobReaderTest, HandleBeforeAsyncCancel) {
+  const std::string kUuid("uuid1");
+
+  context_.CreatePendingBlob(kUuid, "", "");
+  blob_handle_ = context_.GetBlobDataFromUUID(kUuid);
+  provider_ = new MockFileStreamReaderProvider();
+  reader_.reset(new BlobReader(blob_handle_.get(), make_scoped_ptr(provider_),
+                               message_loop_.task_runner().get()));
+  int size_result = -1;
+  EXPECT_EQ(BlobReader::Status::IO_PENDING,
+            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  context_.CancelPendingBlob(kUuid, IPCBlobCreationCancelCode::UNKNOWN);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(net::ERR_FAILED, size_result);
+}
+
+TEST_F(BlobReaderTest, ReadFromIncompleteBlob) {
+  const std::string kUuid("uuid1");
+  const std::string kData("Hello!!!");
+  const size_t kDataSize = 8ul;
+
+  BlobDataBuilder b(kUuid);
+  b.AppendData(kData);
+  context_.CreatePendingBlob(kUuid, "", "");
+  blob_handle_ = context_.GetBlobDataFromUUID(kUuid);
+  provider_ = new MockFileStreamReaderProvider();
+  reader_.reset(new BlobReader(blob_handle_.get(), make_scoped_ptr(provider_),
+                               message_loop_.task_runner().get()));
+  int size_result = -1;
+  EXPECT_EQ(BlobReader::Status::IO_PENDING,
+            reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  context_.CompletePendingBlob(b);
+  message_loop_.RunUntilIdle();
+  CheckSizeCalculatedAsynchronously(kDataSize, size_result);
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kDataSize));
+
+  int bytes_read = 0;
+  int async_bytes_read = 0;
+  EXPECT_EQ(BlobReader::Status::DONE,
+            reader_->Read(buffer.get(), kDataSize, &bytes_read,
+                          base::Bind(&SetValue<int>, &async_bytes_read)));
+  EXPECT_EQ(net::OK, reader_->net_error());
+  EXPECT_EQ(kDataSize, static_cast<size_t>(bytes_read));
+  EXPECT_EQ(0, async_bytes_read);
+  EXPECT_EQ(kData, std::string(buffer->data(), kDataSize));
+  EXPECT_EQ(net::OK, size_result);
+}
+
 }  // namespace storage

@@ -44,6 +44,8 @@ class STORAGE_EXPORT BlobDataSnapshot : public base::SupportsUserData::Data {
  private:
   friend class BlobDataBuilder;
   friend class BlobStorageContext;
+  friend STORAGE_EXPORT void PrintTo(const BlobDataSnapshot& x,
+                                     ::std::ostream* os);
   BlobDataSnapshot(const std::string& uuid,
                    const std::string& content_type,
                    const std::string& content_disposition);

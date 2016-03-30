@@ -43,6 +43,8 @@ class STORAGE_EXPORT ViewBlobInternalsJob
 
   void GenerateHTML(std::string* out) const;
   static void GenerateHTMLForBlobData(const InternalBlobData& blob_data,
+                                      const std::string& content_type,
+                                      const std::string& content_disposition,
                                       int refcount,
                                       std::string* out);
 

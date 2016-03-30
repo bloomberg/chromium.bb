@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -116,6 +117,8 @@ class STORAGE_EXPORT BlobReader {
  protected:
   friend class BlobDataHandle;
   friend class BlobReaderTest;
+  FRIEND_TEST_ALL_PREFIXES(BlobReaderTest, HandleBeforeAsyncCancel);
+  FRIEND_TEST_ALL_PREFIXES(BlobReaderTest, ReadFromIncompleteBlob);
 
   BlobReader(const BlobDataHandle* blob_handle,
              scoped_ptr<FileStreamReaderProvider> file_stream_provider,
@@ -127,6 +130,9 @@ class STORAGE_EXPORT BlobReader {
   Status ReportError(int net_error);
   void InvalidateCallbacksAndDone(int net_error, net::CompletionCallback done);
 
+  void AsyncCalculateSize(const net::CompletionCallback& done,
+                          bool async_succeeded);
+  Status CalculateSizeImpl(const net::CompletionCallback& done);
   bool AddItemLength(size_t index, uint64_t length);
   bool ResolveFileItemLength(const BlobDataItem& item,
                              int64_t total_length,
@@ -163,6 +169,7 @@ class STORAGE_EXPORT BlobReader {
       const BlobDataItem& item,
       uint64_t additional_offset);
 
+  scoped_ptr<BlobDataHandle> blob_handle_;
   scoped_ptr<BlobDataSnapshot> blob_data_;
   scoped_ptr<FileStreamReaderProvider> file_stream_provider_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

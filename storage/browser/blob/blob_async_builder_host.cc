@@ -9,115 +9,200 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/shared_memory.h"
+#include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_storage_context.h"
 
 namespace storage {
+namespace {
+bool CalculateBlobMemorySize(const std::vector<DataElement>& elements,
+                             size_t* shortcut_bytes,
+                             uint64_t* total_bytes) {
+  DCHECK(shortcut_bytes);
+  DCHECK(total_bytes);
+  base::CheckedNumeric<uint64_t> total_size_checked = 0;
+  base::CheckedNumeric<size_t> shortcut_size_checked = 0;
+  for (const auto& e : elements) {
+    if (e.type() == DataElement::TYPE_BYTES) {
+      total_size_checked += e.length();
+      shortcut_size_checked += e.length();
+    } else if (e.type() == DataElement::TYPE_BYTES_DESCRIPTION) {
+      total_size_checked += e.length();
+    } else {
+      continue;
+    }
+    if (!total_size_checked.IsValid() || !shortcut_size_checked.IsValid()) {
+      return false;
+    }
+  }
+  *shortcut_bytes = shortcut_size_checked.ValueOrDie();
+  *total_bytes = total_size_checked.ValueOrDie();
+  return true;
+}
+}  // namespace
 
-using MemoryItemRequest = BlobAsyncTransportStrategy::RendererMemoryItemRequest;
+using MemoryItemRequest =
+    BlobAsyncTransportRequestBuilder::RendererMemoryItemRequest;
 
-BlobAsyncBuilderHost::BlobBuildingState::BlobBuildingState()
-    : next_request(0),
-      num_fulfilled_requests(0),
-      num_shared_memory_requests(0),
-      current_shared_memory_handle_index(0) {}
+BlobAsyncBuilderHost::BlobBuildingState::BlobBuildingState(
+    const std::string& uuid,
+    std::set<std::string> referenced_blob_uuids,
+    std::vector<scoped_ptr<BlobDataHandle>>* referenced_blob_handles)
+    : data_builder(uuid),
+      referenced_blob_uuids(referenced_blob_uuids),
+      referenced_blob_handles(std::move(*referenced_blob_handles)) {}
 
 BlobAsyncBuilderHost::BlobBuildingState::~BlobBuildingState() {}
 
-BlobAsyncBuilderHost::BlobAsyncBuilderHost() {}
+BlobAsyncBuilderHost::BlobAsyncBuilderHost() : ptr_factory_(this) {}
 
 BlobAsyncBuilderHost::~BlobAsyncBuilderHost() {}
 
-bool BlobAsyncBuilderHost::StartBuildingBlob(
+BlobTransportResult BlobAsyncBuilderHost::RegisterBlobUUID(
     const std::string& uuid,
-    const std::string& type,
-    const std::vector<DataElement>& descriptions,
-    size_t memory_available,
-    const base::Callback<void(const std::vector<storage::BlobItemBytesRequest>&,
-                              const std::vector<base::SharedMemoryHandle>&,
-                              const std::vector<uint64_t>&)>& request_memory,
-    const base::Callback<void(const BlobDataBuilder&)>& done,
-    const base::Callback<void(IPCBlobCreationCancelCode)>& cancel) {
+    const std::string& content_type,
+    const std::string& content_disposition,
+    const std::set<std::string>& referenced_blob_uuids,
+    BlobStorageContext* context) {
   if (async_blob_map_.find(uuid) != async_blob_map_.end())
-    return false;
-  if (BlobAsyncTransportStrategy::ShouldBeShortcut(descriptions,
-                                                   memory_available)) {
-    // We have enough memory, and all the data is here, so we use the shortcut
-    // method and populate the old way.
-    BlobDataBuilder builder(uuid);
-    builder.set_content_type(type);
-    for (const DataElement& element : descriptions) {
-      builder.AppendIPCDataElement(element);
+    return BlobTransportResult::BAD_IPC;
+  if (referenced_blob_uuids.find(uuid) != referenced_blob_uuids.end())
+    return BlobTransportResult::BAD_IPC;
+  context->CreatePendingBlob(uuid, content_type, content_disposition);
+  std::vector<scoped_ptr<BlobDataHandle>> handles;
+  for (const std::string& referenced_uuid : referenced_blob_uuids) {
+    scoped_ptr<BlobDataHandle> handle =
+        context->GetBlobDataFromUUID(referenced_uuid);
+    if (!handle || handle->IsBroken()) {
+      // We cancel the blob right away, and don't bother storing our state.
+      context->CancelPendingBlob(
+          uuid, IPCBlobCreationCancelCode::REFERENCED_BLOB_BROKEN);
+      return BlobTransportResult::CANCEL_REFERENCED_BLOB_BROKEN;
     }
-    done.Run(builder);
-    return true;
+    handles.emplace_back(std::move(handle));
   }
-
-  scoped_ptr<BlobBuildingState> state(new BlobBuildingState());
-  BlobBuildingState* state_ptr = state.get();
-  async_blob_map_[uuid] = std::move(state);
-  state_ptr->type = type;
-  state_ptr->request_memory_callback = request_memory;
-  state_ptr->done_callback = done;
-  state_ptr->cancel_callback = cancel;
-
-  // We are currently only operating in 'no disk' mode. This will change in
-  // future patches to enable disk storage.
-  // Since we don't have a disk yet, we put 0 for disk_space_left.
-  state_ptr->transport_strategy.Initialize(
-      max_ipc_memory_size_, max_shared_memory_size_, max_file_size_,
-      0 /* disk_space_left */, memory_available, uuid, descriptions);
-
-  switch (state_ptr->transport_strategy.error()) {
-    case BlobAsyncTransportStrategy::ERROR_TOO_LARGE:
-      // Cancel cleanly, we're out of memory.
-      CancelAndCleanup(uuid, IPCBlobCreationCancelCode::OUT_OF_MEMORY);
-      return true;
-    case BlobAsyncTransportStrategy::ERROR_INVALID_PARAMS:
-      // Bad IPC, so we ignore and clean up.
-      VLOG(1) << "Error initializing transport strategy: "
-              << state_ptr->transport_strategy.error();
-      async_blob_map_.erase(async_blob_map_.find(uuid));
-      return false;
-    case BlobAsyncTransportStrategy::ERROR_NONE:
-      ContinueBlobMemoryRequests(uuid);
-      return true;
-  }
-  return false;
+  async_blob_map_[uuid] = make_scoped_ptr(
+      new BlobBuildingState(uuid, referenced_blob_uuids, &handles));
+  return BlobTransportResult::DONE;
 }
 
-bool BlobAsyncBuilderHost::OnMemoryResponses(
+BlobTransportResult BlobAsyncBuilderHost::StartBuildingBlob(
     const std::string& uuid,
-    const std::vector<BlobItemBytesResponse>& responses) {
-  if (responses.empty()) {
-    return false;
+    const std::vector<DataElement>& elements,
+    size_t memory_available,
+    BlobStorageContext* context,
+    const RequestMemoryCallback& request_memory) {
+  DCHECK(context);
+  if (async_blob_map_.find(uuid) == async_blob_map_.end()) {
+    return BlobTransportResult::BAD_IPC;
   }
+
+  // Step 1: Get the sizes.
+  size_t shortcut_memory_size_bytes = 0;
+  uint64_t total_memory_size_bytes = 0;
+  if (!CalculateBlobMemorySize(elements, &shortcut_memory_size_bytes,
+                               &total_memory_size_bytes)) {
+    CancelBuildingBlob(uuid, IPCBlobCreationCancelCode::UNKNOWN, context);
+    return BlobTransportResult::BAD_IPC;
+  }
+
+  // Step 2: Check if we have enough memory to store the blob.
+  if (total_memory_size_bytes > memory_available) {
+    CancelBuildingBlob(uuid, IPCBlobCreationCancelCode::OUT_OF_MEMORY, context);
+    return BlobTransportResult::CANCEL_MEMORY_FULL;
+  }
+
+  // From here on, we know we can fit the blob in memory.
+  BlobBuildingState* state_ptr = async_blob_map_[uuid].get();
+  if (!state_ptr->request_builder.requests().empty()) {
+    // Check that we're not a duplicate call.
+    return BlobTransportResult::BAD_IPC;
+  }
+  state_ptr->request_memory_callback = request_memory;
+
+  // Step 3: Check to make sure the referenced blob information we received
+  //         earlier is correct:
+  std::set<std::string> extracted_blob_uuids;
+  for (const DataElement& e : elements) {
+    if (e.type() == DataElement::TYPE_BLOB) {
+      extracted_blob_uuids.insert(e.blob_uuid());
+      // We can't depend on ourselves.
+      if (e.blob_uuid() == uuid) {
+        CancelBuildingBlob(uuid, IPCBlobCreationCancelCode::UNKNOWN, context);
+        return BlobTransportResult::BAD_IPC;
+      }
+    }
+  }
+  if (extracted_blob_uuids != state_ptr->referenced_blob_uuids) {
+    CancelBuildingBlob(uuid, IPCBlobCreationCancelCode::UNKNOWN, context);
+    return BlobTransportResult::BAD_IPC;
+  }
+
+  // Step 4: Decide if we're using the shortcut method. This will also catch
+  //         the case where we don't have any memory items.
+  if (shortcut_memory_size_bytes == total_memory_size_bytes &&
+      shortcut_memory_size_bytes <= memory_available) {
+    for (const DataElement& e : elements) {
+      state_ptr->data_builder.AppendIPCDataElement(e);
+    }
+    FinishBuildingBlob(state_ptr, context);
+    return BlobTransportResult::DONE;
+  }
+
+  // From here on, we know the blob's size is less than |memory_available|,
+  // so we know we're < max(size_t).
+  // Step 5: Decide if we're using shared memory.
+  if (total_memory_size_bytes > max_ipc_memory_size_) {
+    state_ptr->request_builder.InitializeForSharedMemoryRequests(
+        max_shared_memory_size_, total_memory_size_bytes, elements,
+        &(state_ptr->data_builder));
+  } else {
+    // Step 6: We can fit in IPC.
+    state_ptr->request_builder.InitializeForIPCRequests(
+        max_ipc_memory_size_, total_memory_size_bytes, elements,
+        &(state_ptr->data_builder));
+  }
+  // We initialize our requests received state now that they are populated.
+  state_ptr->request_received.resize(
+      state_ptr->request_builder.requests().size(), false);
+  return ContinueBlobMemoryRequests(uuid, context);
+}
+
+BlobTransportResult BlobAsyncBuilderHost::OnMemoryResponses(
+    const std::string& uuid,
+    const std::vector<BlobItemBytesResponse>& responses,
+    BlobStorageContext* context) {
   AsyncBlobMap::const_iterator state_it = async_blob_map_.find(uuid);
   if (state_it == async_blob_map_.end()) {
-    // There's a possibility that we had a shared memory error, and there were
-    // still responses in flight. So we don't fail here, we just ignore.
     DVLOG(1) << "Could not find blob " << uuid;
-    return true;
+    return BlobTransportResult::BAD_IPC;
+  }
+  if (responses.empty()) {
+    CancelBuildingBlob(uuid, IPCBlobCreationCancelCode::UNKNOWN, context);
+    return BlobTransportResult::BAD_IPC;
   }
   BlobAsyncBuilderHost::BlobBuildingState* state = state_it->second.get();
-  BlobAsyncTransportStrategy& strategy = state->transport_strategy;
-  bool invalid_ipc = false;
-  bool memory_error = false;
-  const auto& requests = strategy.requests();
+  BlobAsyncTransportRequestBuilder& request_builder = state->request_builder;
+  const auto& requests = request_builder.requests();
   for (const BlobItemBytesResponse& response : responses) {
     if (response.request_number >= requests.size()) {
       // Bad IPC, so we delete our record and ignore.
       DVLOG(1) << "Invalid request number " << response.request_number;
-      async_blob_map_.erase(state_it);
-      return false;
+      CancelBuildingBlob(uuid, IPCBlobCreationCancelCode::UNKNOWN, context);
+      return BlobTransportResult::BAD_IPC;
     }
+    DCHECK_LT(response.request_number, state->request_received.size());
     const MemoryItemRequest& request = requests[response.request_number];
-    if (request.received) {
+    if (state->request_received[response.request_number]) {
       // Bad IPC, so we delete our record.
       DVLOG(1) << "Already received response for that request.";
-      async_blob_map_.erase(state_it);
-      return false;
+      CancelBuildingBlob(uuid, IPCBlobCreationCancelCode::UNKNOWN, context);
+      return BlobTransportResult::BAD_IPC;
     }
-    strategy.MarkRequestAsReceived(response.request_number);
+    state->request_received[response.request_number] = true;
+    bool invalid_ipc = false;
+    bool memory_error = false;
     switch (request.message.transport_strategy) {
       case IPCBlobItemRequestStrategy::IPC:
         if (response.inline_data.size() < request.message.size) {
@@ -126,7 +211,7 @@ bool BlobAsyncBuilderHost::OnMemoryResponses(
           invalid_ipc = true;
           break;
         }
-        invalid_ipc = !strategy.blob_builder()->PopulateFutureData(
+        invalid_ipc = !state->data_builder.PopulateFutureData(
             request.browser_item_index, &response.inline_data[0],
             request.browser_item_offset, request.message.size);
         break;
@@ -142,8 +227,8 @@ bool BlobAsyncBuilderHost::OnMemoryResponses(
           // whole thing in this group of responses. Another option is to use
           // MapAt, remove the mapped boolean, and then exclude the
           // handle_offset below.
-          size_t handle_size = strategy.handle_sizes().at(
-              state->current_shared_memory_handle_index);
+          size_t handle_size = request_builder.shared_memory_sizes()
+                                   [state->current_shared_memory_handle_index];
           if (!state->shared_memory_block->Map(handle_size)) {
             DVLOG(1) << "Unable to map memory to size " << handle_size;
             memory_error = true;
@@ -151,7 +236,7 @@ bool BlobAsyncBuilderHost::OnMemoryResponses(
           }
         }
 
-        invalid_ipc = !strategy.blob_builder()->PopulateFutureData(
+        invalid_ipc = !state->data_builder.PopulateFutureData(
             request.browser_item_index,
             static_cast<const char*>(state->shared_memory_block->memory()) +
                 request.message.handle_offset,
@@ -165,46 +250,81 @@ bool BlobAsyncBuilderHost::OnMemoryResponses(
     }
     if (invalid_ipc) {
       // Bad IPC, so we delete our record and return false.
-      async_blob_map_.erase(state_it);
-      return false;
+      CancelBuildingBlob(uuid, IPCBlobCreationCancelCode::UNKNOWN, context);
+      return BlobTransportResult::BAD_IPC;
     }
     if (memory_error) {
       DVLOG(1) << "Shared memory error.";
-      CancelAndCleanup(uuid, IPCBlobCreationCancelCode::OUT_OF_MEMORY);
-      return true;
+      CancelBuildingBlob(uuid, IPCBlobCreationCancelCode::OUT_OF_MEMORY,
+                         context);
+      return BlobTransportResult::CANCEL_MEMORY_FULL;
     }
     state->num_fulfilled_requests++;
   }
-  ContinueBlobMemoryRequests(uuid);
-  return true;
+  return ContinueBlobMemoryRequests(uuid, context);
 }
 
-void BlobAsyncBuilderHost::StopBuildingBlob(const std::string& uuid) {
-  async_blob_map_.erase(async_blob_map_.find(uuid));
+void BlobAsyncBuilderHost::CancelBuildingBlob(const std::string& uuid,
+                                              IPCBlobCreationCancelCode code,
+                                              BlobStorageContext* context) {
+  DCHECK(context);
+  auto state_it = async_blob_map_.find(uuid);
+  if (state_it == async_blob_map_.end()) {
+    return;
+  }
+  // We can have the blob dereferenced by the renderer, but have it still being
+  // 'built'. In this case, it's destructed in the context, but we still have
+  // it in our map. Hence we make sure the context has the entry before
+  // calling cancel.
+  if (context->registry().HasEntry(uuid))
+    context->CancelPendingBlob(uuid, code);
+  async_blob_map_.erase(state_it);
 }
 
-void BlobAsyncBuilderHost::ContinueBlobMemoryRequests(const std::string& uuid) {
+void BlobAsyncBuilderHost::CancelAll(BlobStorageContext* context) {
+  DCHECK(context);
+  // Some of our pending blobs may still be referenced elsewhere.
+  std::vector<scoped_ptr<BlobDataHandle>> referenced_pending_blobs;
+  for (const auto& uuid_state_pair : async_blob_map_) {
+    if (context->IsBeingBuilt(uuid_state_pair.first)) {
+      referenced_pending_blobs.emplace_back(
+          context->GetBlobDataFromUUID(uuid_state_pair.first));
+    }
+  }
+  // We clear the map before canceling them to prevent any strange reentry into
+  // our class (see ReferencedBlobFinished) if any blobs were waiting for others
+  // to construct.
+  async_blob_map_.clear();
+  for (const scoped_ptr<BlobDataHandle>& handle : referenced_pending_blobs) {
+    context->CancelPendingBlob(
+        handle->uuid(), IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT);
+  }
+}
+
+BlobTransportResult BlobAsyncBuilderHost::ContinueBlobMemoryRequests(
+    const std::string& uuid,
+    BlobStorageContext* context) {
   AsyncBlobMap::const_iterator state_it = async_blob_map_.find(uuid);
   DCHECK(state_it != async_blob_map_.end());
   BlobAsyncBuilderHost::BlobBuildingState* state = state_it->second.get();
 
-  const std::vector<MemoryItemRequest>& requests =
-      state->transport_strategy.requests();
-  BlobAsyncTransportStrategy& strategy = state->transport_strategy;
+  BlobAsyncTransportRequestBuilder& request_builder = state->request_builder;
+  const std::vector<MemoryItemRequest>& requests = request_builder.requests();
   size_t num_requests = requests.size();
   if (state->num_fulfilled_requests == num_requests) {
-    DoneAndCleanup(uuid);
-    return;
+    FinishBuildingBlob(state, context);
+    return BlobTransportResult::DONE;
   }
   DCHECK_LT(state->num_fulfilled_requests, num_requests);
   if (state->next_request == num_requests) {
     // We are still waiting on other requests to come back.
-    return;
+    return BlobTransportResult::PENDING_RESPONSES;
   }
 
-  std::vector<BlobItemBytesRequest> byte_requests;
-  std::vector<base::SharedMemoryHandle> shared_memory;
-  std::vector<uint64_t> files;
+  scoped_ptr<std::vector<BlobItemBytesRequest>> byte_requests(
+      new std::vector<BlobItemBytesRequest>());
+  scoped_ptr<std::vector<base::SharedMemoryHandle>> shared_memory(
+      new std::vector<base::SharedMemoryHandle>());
 
   for (; state->next_request < num_requests; ++state->next_request) {
     const MemoryItemRequest& request = requests[state->next_request];
@@ -213,7 +333,7 @@ void BlobAsyncBuilderHost::ContinueBlobMemoryRequests(const std::string& uuid) {
     bool using_shared_memory_handle = state->num_shared_memory_requests > 0;
     switch (request.message.transport_strategy) {
       case IPCBlobItemRequestStrategy::IPC:
-        byte_requests.push_back(request.message);
+        byte_requests->push_back(request.message);
         break;
       case IPCBlobItemRequestStrategy::SHARED_MEMORY:
         if (using_shared_memory_handle &&
@@ -230,18 +350,19 @@ void BlobAsyncBuilderHost::ContinueBlobMemoryRequests(const std::string& uuid) {
 
         if (!state->shared_memory_block) {
           state->shared_memory_block.reset(new base::SharedMemory());
-          size_t size = strategy.handle_sizes()[request.message.handle_index];
+          size_t size =
+              request_builder
+                  .shared_memory_sizes()[request.message.handle_index];
           if (!state->shared_memory_block->CreateAnonymous(size)) {
             DVLOG(1) << "Unable to allocate shared memory for blob transfer.";
-            CancelAndCleanup(uuid, IPCBlobCreationCancelCode::OUT_OF_MEMORY);
-            return;
+            return BlobTransportResult::CANCEL_MEMORY_FULL;
           }
         }
-        shared_memory.push_back(state->shared_memory_block->handle());
-        byte_requests.push_back(request.message);
+        shared_memory->push_back(state->shared_memory_block->handle());
+        byte_requests->push_back(request.message);
         // Since we are only using one handle at a time, transform our handle
         // index correctly back to 0.
-        byte_requests.back().handle_index = 0;
+        byte_requests->back().handle_index = 0;
         break;
       case IPCBlobItemRequestStrategy::FILE:
       case IPCBlobItemRequestStrategy::UNKNOWN:
@@ -252,25 +373,65 @@ void BlobAsyncBuilderHost::ContinueBlobMemoryRequests(const std::string& uuid) {
       break;
     }
   }
-
   DCHECK(!requests.empty());
 
-  state->request_memory_callback.Run(byte_requests, shared_memory, files);
+  state->request_memory_callback.Run(
+      std::move(byte_requests), std::move(shared_memory),
+      make_scoped_ptr(new std::vector<base::File>()));
+  return BlobTransportResult::PENDING_RESPONSES;
 }
 
-void BlobAsyncBuilderHost::CancelAndCleanup(const std::string& uuid,
-                                            IPCBlobCreationCancelCode code) {
-  scoped_ptr<BlobBuildingState> state = std::move(async_blob_map_[uuid]);
-  async_blob_map_.erase(uuid);
-  state->cancel_callback.Run(code);
+void BlobAsyncBuilderHost::ReferencedBlobFinished(
+    const std::string& owning_blob_uuid,
+    base::WeakPtr<BlobStorageContext> context,
+    bool construction_success) {
+  if (!context) {
+    return;
+  }
+  auto state_it = async_blob_map_.find(owning_blob_uuid);
+  if (state_it == async_blob_map_.end()) {
+    return;
+  }
+  if (!construction_success) {
+    CancelBuildingBlob(owning_blob_uuid,
+                       IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT,
+                       context.get());
+    return;
+  }
+  BlobBuildingState* state = state_it->second.get();
+  DCHECK_GT(state->num_referenced_blobs_building, 0u);
+  if (--state->num_referenced_blobs_building == 0) {
+    context->CompletePendingBlob(state->data_builder);
+    async_blob_map_.erase(state->data_builder.uuid());
+  }
 }
 
-void BlobAsyncBuilderHost::DoneAndCleanup(const std::string& uuid) {
-  scoped_ptr<BlobBuildingState> state = std::move(async_blob_map_[uuid]);
-  async_blob_map_.erase(uuid);
-  BlobDataBuilder* builder = state->transport_strategy.blob_builder();
-  builder->set_content_type(state->type);
-  state->done_callback.Run(*builder);
+void BlobAsyncBuilderHost::FinishBuildingBlob(BlobBuildingState* state,
+                                              BlobStorageContext* context) {
+  if (!state->referenced_blob_uuids.empty()) {
+    DCHECK_EQ(0u, state->num_referenced_blobs_building);
+    state->num_referenced_blobs_building = 0;
+    // We assume re-entry is not possible, as RunOnConstructionComplete
+    // will schedule a task when the blob is being built. Thus we can't have the
+    // case where |num_referenced_blobs_building| reaches 0 in the
+    // ReferencedBlobFinished method before we're finished looping.
+    for (const std::string& referenced_uuid : state->referenced_blob_uuids) {
+      if (context->IsBeingBuilt(referenced_uuid)) {
+        state->num_referenced_blobs_building++;
+        context->RunOnConstructionComplete(
+            referenced_uuid,
+            base::Bind(&BlobAsyncBuilderHost::ReferencedBlobFinished,
+                       ptr_factory_.GetWeakPtr(), state->data_builder.uuid(),
+                       context->AsWeakPtr()));
+      }
+    }
+    if (state->num_referenced_blobs_building > 0) {
+      // We wait until referenced blobs are done.
+      return;
+    }
+  }
+  context->CompletePendingBlob(state->data_builder);
+  async_blob_map_.erase(state->data_builder.uuid());
 }
 
 }  // namespace storage

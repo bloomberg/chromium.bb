@@ -10,20 +10,20 @@
 namespace storage {
 
 BlobItemBytesRequest BlobItemBytesRequest::CreateIPCRequest(
-    size_t request_number,
-    size_t renderer_item_index,
-    size_t renderer_item_offset,
-    size_t size) {
+    uint32_t request_number,
+    uint32_t renderer_item_index,
+    uint64_t renderer_item_offset,
+    uint64_t size) {
   return BlobItemBytesRequest(request_number, IPCBlobItemRequestStrategy::IPC,
                               renderer_item_index, renderer_item_offset, size,
                               kInvalidIndex, kInvalidSize);
 }
 BlobItemBytesRequest BlobItemBytesRequest::CreateSharedMemoryRequest(
-    size_t request_number,
-    size_t renderer_item_index,
-    size_t renderer_item_offset,
-    size_t size,
-    size_t handle_index,
+    uint32_t request_number,
+    uint32_t renderer_item_index,
+    uint64_t renderer_item_offset,
+    uint64_t size,
+    uint32_t handle_index,
     uint64_t handle_offset) {
   return BlobItemBytesRequest(request_number,
                               IPCBlobItemRequestStrategy::SHARED_MEMORY,
@@ -32,11 +32,11 @@ BlobItemBytesRequest BlobItemBytesRequest::CreateSharedMemoryRequest(
 }
 
 BlobItemBytesRequest BlobItemBytesRequest::CreateFileRequest(
-    size_t request_number,
-    size_t renderer_item_index,
+    uint32_t request_number,
+    uint32_t renderer_item_index,
     uint64_t renderer_item_offset,
     uint64_t size,
-    size_t handle_index,
+    uint32_t handle_index,
     uint64_t handle_offset) {
   return BlobItemBytesRequest(request_number, IPCBlobItemRequestStrategy::FILE,
                               renderer_item_index, renderer_item_offset, size,
@@ -53,12 +53,12 @@ BlobItemBytesRequest::BlobItemBytesRequest()
       handle_offset(kInvalidSize) {}
 
 BlobItemBytesRequest::BlobItemBytesRequest(
-    size_t request_number,
+    uint32_t request_number,
     IPCBlobItemRequestStrategy transport_strategy,
-    size_t renderer_item_index,
+    uint32_t renderer_item_index,
     uint64_t renderer_item_offset,
     uint64_t size,
-    size_t handle_index,
+    uint32_t handle_index,
     uint64_t handle_offset)
     : request_number(request_number),
       transport_strategy(transport_strategy),

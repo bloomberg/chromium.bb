@@ -37,7 +37,7 @@ GURL ClearBlobUrlRef(const GURL& url) {
 }  // namespace
 
 BlobStorageRegistry::Entry::Entry(int refcount, BlobState state)
-    : refcount(refcount), state(state), exceeded_memory(false) {}
+    : refcount(refcount), state(state) {}
 
 BlobStorageRegistry::Entry::~Entry() {}
 
@@ -58,15 +58,24 @@ BlobStorageRegistry::~BlobStorageRegistry() {
 }
 
 BlobStorageRegistry::Entry* BlobStorageRegistry::CreateEntry(
-    const std::string& uuid) {
+    const std::string& uuid,
+    const std::string& content_type,
+    const std::string& content_disposition) {
   DCHECK(!ContainsKey(blob_map_, uuid));
-  Entry* entry = new Entry(1, BlobState::RESERVED);
-  blob_map_.add(uuid, make_scoped_ptr(entry));
-  return entry;
+  scoped_ptr<Entry> entry(new Entry(1, BlobState::PENDING));
+  entry->content_type = content_type;
+  entry->content_disposition = content_disposition;
+  Entry* entry_ptr = entry.get();
+  blob_map_.add(uuid, std::move(entry));
+  return entry_ptr;
 }
 
 bool BlobStorageRegistry::DeleteEntry(const std::string& uuid) {
   return blob_map_.erase(uuid) == 1;
+}
+
+bool BlobStorageRegistry::HasEntry(const std::string& uuid) const {
+  return blob_map_.find(uuid) != blob_map_.end();
 }
 
 BlobStorageRegistry::Entry* BlobStorageRegistry::GetEntry(
@@ -75,6 +84,11 @@ BlobStorageRegistry::Entry* BlobStorageRegistry::GetEntry(
   if (found == blob_map_.end())
     return nullptr;
   return found->second;
+}
+
+const BlobStorageRegistry::Entry* BlobStorageRegistry::GetEntry(
+    const std::string& uuid) const {
+  return const_cast<BlobStorageRegistry*>(this)->GetEntry(uuid);
 }
 
 bool BlobStorageRegistry::CreateUrlMapping(const GURL& blob_url,

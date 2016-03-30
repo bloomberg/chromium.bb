@@ -22,7 +22,9 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/url_request/url_request.h"
+#include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/blob/blob_storage_registry.h"
 #include "storage/browser/blob/internal_blob_data.h"
 
 namespace {
@@ -140,7 +142,7 @@ int ViewBlobInternalsJob::GetData(
 
   data->clear();
   StartHTML(data);
-  if (blob_storage_context_->blob_map_.empty())
+  if (blob_storage_context_->registry_.blob_map_.empty())
     data->append(kEmptyBlobStorageMessage);
   else
     GenerateHTML(data);
@@ -149,19 +151,19 @@ int ViewBlobInternalsJob::GetData(
 }
 
 void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
-  for (BlobStorageContext::BlobMap::const_iterator iter =
-           blob_storage_context_->blob_map_.begin();
-       iter != blob_storage_context_->blob_map_.end();
-       ++iter) {
+  for (BlobStorageRegistry::BlobMap::const_iterator iter =
+           blob_storage_context_->registry_.blob_map_.begin();
+       iter != blob_storage_context_->registry_.blob_map_.end(); ++iter) {
     AddHTMLBoldText(iter->first, out);
-    GenerateHTMLForBlobData(*iter->second->data, iter->second->refcount, out);
+    GenerateHTMLForBlobData(*iter->second->data, iter->second->content_type,
+                            iter->second->content_disposition,
+                            iter->second->refcount, out);
   }
-  if (!blob_storage_context_->public_blob_urls_.empty()) {
+  if (!blob_storage_context_->registry_.url_to_uuid_.empty()) {
     AddHorizontalRule(out);
-    for (BlobStorageContext::BlobURLMap::const_iterator iter =
-             blob_storage_context_->public_blob_urls_.begin();
-         iter != blob_storage_context_->public_blob_urls_.end();
-         ++iter) {
+    for (BlobStorageRegistry::URLMap::const_iterator iter =
+             blob_storage_context_->registry_.url_to_uuid_.begin();
+         iter != blob_storage_context_->registry_.url_to_uuid_.end(); ++iter) {
       AddHTMLBoldText(iter->first.spec(), out);
       StartHTMLList(out);
       AddHTMLListItem(kUUID, iter->second, out);
@@ -172,15 +174,17 @@ void ViewBlobInternalsJob::GenerateHTML(std::string* out) const {
 
 void ViewBlobInternalsJob::GenerateHTMLForBlobData(
     const InternalBlobData& blob_data,
+    const std::string& content_type,
+    const std::string& content_disposition,
     int refcount,
     std::string* out) {
   StartHTMLList(out);
 
   AddHTMLListItem(kRefcount, base::IntToString(refcount), out);
-  if (!blob_data.content_type().empty())
-    AddHTMLListItem(kContentType, blob_data.content_type(), out);
-  if (!blob_data.content_disposition().empty())
-    AddHTMLListItem(kContentDisposition, blob_data.content_disposition(), out);
+  if (!content_type.empty())
+    AddHTMLListItem(kContentType, content_type, out);
+  if (!content_disposition.empty())
+    AddHTMLListItem(kContentDisposition, content_disposition, out);
 
   bool has_multi_items = blob_data.items().size() > 1;
   if (has_multi_items) {

@@ -46,10 +46,6 @@ class URLRequestContext;
 class URLRequestContextGetter;
 }  // namespace net
 
-namespace content {
-class BlobStorageHost;
-}
-
 namespace storage {
 class ShareableFileReference;
 class DataElement;
@@ -127,21 +123,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   void OnCreateSnapshotFile(int request_id,
                             const GURL& path);
   void OnDidReceiveSnapshotFile(int request_id);
-
-  // Handlers for BlobHostMsg_ family messages.
-
-  void OnStartBuildingBlob(const std::string& uuid);
-  void OnAppendBlobDataItemToBlob(const std::string& uuid,
-                                  const storage::DataElement& item);
-  void OnAppendSharedMemoryToBlob(const std::string& uuid,
-                                  base::SharedMemoryHandle handle,
-                                  uint32_t buffer_size);
-  void OnFinishBuildingBlob(const std::string& uuid,
-                             const std::string& content_type);
-  void OnIncrementBlobRefCount(const std::string& uuid);
-  void OnDecrementBlobRefCount(const std::string& uuid);
-  void OnRegisterPublicBlobURL(const GURL& public_url, const std::string& uuid);
-  void OnRevokePublicBlobURL(const GURL& public_url);
 
   // Handlers for StreamHostMsg_ family messages.
   //
@@ -228,10 +209,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   scoped_refptr<StreamContext> stream_context_;
 
   scoped_ptr<storage::FileSystemOperationRunner> operation_runner_;
-
-  // Keeps track of blobs used in this process and cleans up
-  // when the renderer process dies.
-  scoped_ptr<BlobStorageHost> blob_storage_host_;
 
   // Keep track of stream URLs registered in this process. Need to unregister
   // all of them when the renderer process dies.

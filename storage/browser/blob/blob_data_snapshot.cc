@@ -47,4 +47,16 @@ size_t BlobDataSnapshot::GetMemoryUsage() const {
   return memory;
 }
 
+void PrintTo(const BlobDataSnapshot& x, std::ostream* os) {
+  DCHECK(os);
+  *os << "<BlobDataSnapshot>{uuid: " << x.uuid()
+      << ", content_type: " << x.content_type_
+      << ", content_disposition: " << x.content_disposition_ << ", items: [";
+  for (const auto& item : x.items_) {
+    PrintTo(*item, os);
+    *os << ", ";
+  }
+  *os << "]}";
+}
+
 }  // namespace storage

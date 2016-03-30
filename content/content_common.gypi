@@ -313,7 +313,6 @@
       'common/establish_channel_params.h',
       'common/file_utilities_messages.h',
       'common/fileapi/file_system_messages.h',
-      'common/fileapi/webblob_messages.h',
       'common/font_cache_dispatcher_win.cc',
       'common/font_cache_dispatcher_win.h',
       'common/font_config_ipc_linux.cc',

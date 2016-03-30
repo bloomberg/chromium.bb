@@ -64,6 +64,8 @@
       'child/blink_platform_impl.h',
       'child/blob_storage/blob_consolidation.cc',
       'child/blob_storage/blob_consolidation.h',
+      'child/blob_storage/blob_message_filter.cc',
+      'child/blob_storage/blob_message_filter.h',
       'child/blob_storage/blob_transport_controller.cc',
       'child/blob_storage/blob_transport_controller.h',
       'child/browser_font_resource_trusted.cc',

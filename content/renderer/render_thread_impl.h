@@ -92,6 +92,7 @@ class AecDumpMessageFilter;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
+class BlobMessageFilter;
 class BluetoothMessageFilter;
 class BrowserPluginManager;
 class CacheStorageDispatcher;
@@ -538,6 +539,7 @@ class CONTENT_EXPORT RenderThreadImpl
   blink::WebMediaStreamCenter* media_stream_center_;
 
   // Used on the renderer and IPC threads.
+  scoped_refptr<BlobMessageFilter> blob_message_filter_;
   scoped_refptr<DBMessageFilter> db_message_filter_;
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<AudioMessageFilter> audio_message_filter_;

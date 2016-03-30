@@ -12,15 +12,16 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_data_item.h"
-#include "storage/browser/blob/blob_data_snapshot.h"
+#include "storage/browser/blob/blob_storage_registry.h"
 #include "storage/browser/blob/internal_blob_data.h"
-#include "storage/browser/blob/shareable_blob_data_item.h"
 #include "storage/browser/storage_browser_export.h"
+#include "storage/common/blob_storage/blob_storage_constants.h"
 #include "storage/common/data_element.h"
 
 class GURL;
@@ -31,13 +32,16 @@ class Time;
 }
 
 namespace content {
-class BlobStorageHost;
+class BlobDispatcherHost;
+class BlobDispatcherHostTest;
 }
 
 namespace storage {
 
 class BlobDataBuilder;
-class InternalBlobData;
+class BlobDataItem;
+class BlobDataSnapshot;
+class ShareableBlobDataItem;
 
 // This class handles the logistics of blob Storage within the browser process,
 // and maintains a mapping from blob uuid to the data. The class is single
@@ -69,60 +73,73 @@ class STORAGE_EXPORT BlobStorageContext
   void RevokePublicBlobURL(const GURL& url);
 
   size_t memory_usage() const { return memory_usage_; }
-  size_t blob_count() const { return blob_map_.size(); }
+  size_t blob_count() const { return registry_.blob_count(); }
+  size_t memory_available() const {
+    return kBlobStorageMaxMemoryUsage - memory_usage_;
+  }
+
+  const BlobStorageRegistry& registry() { return registry_; }
 
  private:
-  friend class content::BlobStorageHost;
+  using BlobRegistryEntry = BlobStorageRegistry::Entry;
+  friend class content::BlobDispatcherHost;
+  friend class BlobAsyncBuilderHost;
+  friend class BlobAsyncBuilderHostTest;
+  friend class BlobDataHandle;
   friend class BlobDataHandle::BlobDataHandleShared;
+  friend class BlobReaderTest;
+  FRIEND_TEST_ALL_PREFIXES(BlobReaderTest, HandleBeforeAsyncCancel);
+  FRIEND_TEST_ALL_PREFIXES(BlobReaderTest, ReadFromIncompleteBlob);
+  friend class BlobStorageContextTest;
+  FRIEND_TEST_ALL_PREFIXES(BlobStorageContextTest, IncrementDecrementRef);
+  FRIEND_TEST_ALL_PREFIXES(BlobStorageContextTest, OnCancelBuildingBlob);
+  FRIEND_TEST_ALL_PREFIXES(BlobStorageContextTest, PublicBlobUrls);
+  FRIEND_TEST_ALL_PREFIXES(BlobStorageContextTest,
+                           TestUnknownBrokenAndBuildingBlobReference);
   friend class ViewBlobInternalsJob;
 
-  enum EntryFlags {
-    EXCEEDED_MEMORY = 1 << 1,
-  };
+  // CompletePendingBlob or CancelPendingBlob should be called after this.
+  void CreatePendingBlob(const std::string& uuid,
+                         const std::string& content_type,
+                         const std::string& content_disposition);
 
-  struct BlobMapEntry {
-    int refcount;
-    int flags;
-    // data and data_builder are mutually exclusive.
-    scoped_ptr<InternalBlobData> data;
-    scoped_ptr<InternalBlobData::Builder> data_builder;
+  // This includes resolving blob references in the builder. This will run the
+  // callbacks given in RunOnConstructionComplete.
+  void CompletePendingBlob(const BlobDataBuilder& external_builder);
 
-    BlobMapEntry();
-    BlobMapEntry(int refcount, InternalBlobData::Builder* data);
-    ~BlobMapEntry();
+  // This will run the callbacks given in RunOnConstructionComplete.
+  void CancelPendingBlob(const std::string& uuid,
+                         IPCBlobCreationCancelCode reason);
 
-    bool IsBeingBuilt();
-  };
-
-  typedef std::map<std::string, BlobMapEntry*> BlobMap;
-  typedef std::map<GURL, std::string> BlobURLMap;
-
-  // Called by BlobDataHandle.
-  scoped_ptr<BlobDataSnapshot> CreateSnapshot(const std::string& uuid);
-
-  // ### Methods called by BlobStorageHost ###
-  void StartBuildingBlob(const std::string& uuid);
-  void AppendBlobDataItem(const std::string& uuid,
-                          const DataElement& data_item);
-  void FinishBuildingBlob(const std::string& uuid, const std::string& type);
-  void CancelBuildingBlob(const std::string& uuid);
   void IncrementBlobRefCount(const std::string& uuid);
   void DecrementBlobRefCount(const std::string& uuid);
-  // #########################################
 
-  // Flags the entry for exceeding memory, and resets the builder.
-  void BlobEntryExceededMemory(BlobMapEntry* entry);
-
-  // Allocates memory to hold the given data element and copies the data over.
-  scoped_refptr<BlobDataItem> AllocateBlobItem(const std::string& uuid,
-                                               const DataElement& data_item);
+  // Methods called by BlobDataHandle:
+  // This will return an empty snapshot until the blob is complete.
+  // TODO(dmurph): After we make the snapshot method in BlobHandle private, then
+  // make this DCHECK on the blob not being complete.
+  scoped_ptr<BlobDataSnapshot> CreateSnapshot(const std::string& uuid);
+  bool IsBroken(const std::string& uuid) const;
+  bool IsBeingBuilt(const std::string& uuid) const;
+  // Runs |done| when construction completes, with true if it was successful.
+  void RunOnConstructionComplete(const std::string& uuid,
+                                 const base::Callback<void(bool)>& done);
 
   // Appends the given blob item to the blob builder.  The new blob
   // retains ownership of data_item if applicable, and returns false if there
-  // wasn't enough memory to hold the item.
+  // was an error and pouplates the error_code.  We can either have an error of:
+  // OUT_OF_MEMORY: We are out of memory to store this blob.
+  // REFERENCED_BLOB_BROKEN: One of the referenced blobs is broken.
   bool AppendAllocatedBlobItem(const std::string& target_blob_uuid,
                                scoped_refptr<BlobDataItem> data_item,
-                               InternalBlobData::Builder* target_blob_data);
+                               InternalBlobData::Builder* target_blob_data,
+                               IPCBlobCreationCancelCode* error_code);
+
+  // Allocates a shareable blob data item, with blob references resolved.  If
+  // there isn't enough memory, then a nullptr is returned.
+  scoped_refptr<ShareableBlobDataItem> AllocateShareableBlobDataItem(
+      const std::string& target_blob_uuid,
+      scoped_refptr<BlobDataItem> data_item);
 
   // Deconstructs the blob and appends it's contents to the target blob.  Items
   // are shared if possible, and copied if the given offset and length
@@ -133,12 +150,7 @@ class STORAGE_EXPORT BlobStorageContext
                   uint64_t length,
                   InternalBlobData::Builder* target_blob_data);
 
-  bool IsInUse(const std::string& uuid);
-  bool IsBeingBuilt(const std::string& uuid);
-  bool IsUrlRegistered(const GURL& blob_url);
-
-  BlobMap blob_map_;
-  BlobURLMap public_blob_urls_;
+  BlobStorageRegistry registry_;
 
   // Used to keep track of how much memory is being utilized for blob data,
   // we count only the items of TYPE_DATA which are held in memory and not

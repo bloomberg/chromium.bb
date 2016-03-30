@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEBBLOBREGISTRY_IMPL_H_
-#define CONTENT_CHILD_WEBBLOBREGISTRY_IMPL_H_
+#ifndef CONTENT_CHILD_BLOB_STORAGE_WEBBLOBREGISTRY_IMPL_H_
+#define CONTENT_CHILD_BLOB_STORAGE_WEBBLOBREGISTRY_IMPL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/child/blob_storage/blob_consolidation.h"
+#include "base/single_thread_task_runner.h"
 #include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 
@@ -25,11 +25,14 @@ class DataElement;
 }
 
 namespace content {
+class BlobConsolidation;
 class ThreadSafeSender;
 
 class WebBlobRegistryImpl : public blink::WebBlobRegistry {
  public:
-  explicit WebBlobRegistryImpl(ThreadSafeSender* sender);
+  WebBlobRegistryImpl(scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+                      scoped_refptr<base::SingleThreadTaskRunner> main_runner,
+                      scoped_refptr<ThreadSafeSender> sender);
   ~WebBlobRegistryImpl() override;
 
   // TODO(dmurph): remove this after moving to createBuilder. crbug.com/504583
@@ -64,8 +67,10 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
   class BuilderImpl : public blink::WebBlobRegistry::Builder {
    public:
     BuilderImpl(const blink::WebString& uuid,
-                const blink::WebString& contentType,
-                ThreadSafeSender* sender);
+                const blink::WebString& content_type,
+                ThreadSafeSender* sender,
+                scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+                scoped_refptr<base::SingleThreadTaskRunner> main_runner);
     ~BuilderImpl() override;
 
     void appendData(const blink::WebThreadSafeData&) override;
@@ -84,18 +89,26 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
     void build() override;
 
    private:
-    // Sends data that is larger than the threshold.
-    void SendOversizedDataForBlob(size_t consolidated_item_index);
-
     const std::string uuid_;
     const std::string content_type_;
-    BlobConsolidation consolidation_;
+    scoped_ptr<BlobConsolidation> consolidation_;
     scoped_refptr<ThreadSafeSender> sender_;
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
+    scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   };
 
+  // Method called on the IO thread.
+  static void StartBlobAsyncConstruction(
+      const std::string& uuid,
+      scoped_ptr<BlobConsolidation> consolidation,
+      scoped_refptr<ThreadSafeSender> sender,
+      scoped_refptr<base::SingleThreadTaskRunner> main_runner);
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<ThreadSafeSender> sender_;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_WEBBLOBREGISTRY_IMPL_H_
+#endif  // CONTENT_CHILD_BLOB_STORAGE_WEBBLOBREGISTRY_IMPL_H_

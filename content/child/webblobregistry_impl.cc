@@ -4,17 +4,22 @@
 
 #include "content/child/webblobregistry_impl.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "content/child/blob_storage/blob_consolidation.h"
+#include "content/child/blob_storage/blob_transport_controller.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
+#include "storage/common/blob_storage/blob_storage_constants.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -30,15 +35,13 @@ using storage::DataElement;
 
 namespace content {
 
-namespace {
-
-const size_t kLargeThresholdBytes = 250 * 1024;
-const size_t kMaxSharedMemoryBytes = 10 * 1024 * 1024;
-
-}  // namespace
-
-WebBlobRegistryImpl::WebBlobRegistryImpl(ThreadSafeSender* sender)
-    : sender_(sender) {
+WebBlobRegistryImpl::WebBlobRegistryImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_runner,
+    scoped_refptr<ThreadSafeSender> sender)
+    : io_runner_(std::move(io_runner)),
+      main_runner_(std::move(main_runner)),
+      sender_(std::move(sender)) {
   // Record a dummy trace event on startup so the 'Storage' category shows up
   // in the chrome://tracing viewer.
   TRACE_EVENT0("Blob", "Init");
@@ -49,8 +52,9 @@ WebBlobRegistryImpl::~WebBlobRegistryImpl() {
 
 blink::WebBlobRegistry::Builder* WebBlobRegistryImpl::createBuilder(
     const blink::WebString& uuid,
-    const blink::WebString& contentType) {
-  return new BuilderImpl(uuid, contentType, sender_.get());
+    const blink::WebString& content_type) {
+  return new BuilderImpl(uuid, content_type, sender_.get(), io_runner_,
+                         main_runner_);
 }
 
 void WebBlobRegistryImpl::registerBlobData(const blink::WebString& uuid,
@@ -135,14 +139,15 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
   DCHECK(ChildThreadImpl::current());
   if (length == 0)
     return;
-  if (length < kLargeThresholdBytes) {
+  if (length < storage::kBlobStorageIPCThresholdBytes) {
     DataElement item;
     item.SetToBytes(data, length);
     sender_->Send(new StreamHostMsg_AppendBlobDataItem(url, item));
   } else {
     // We handle larger amounts of data via SharedMemory instead of
     // writing it directly to the IPC channel.
-    size_t shared_memory_size = std::min(length, kMaxSharedMemoryBytes);
+    size_t shared_memory_size =
+        std::min(length, storage::kBlobStorageMaxSharedMemoryBytes);
     scoped_ptr<base::SharedMemory> shared_memory(
         ChildThreadImpl::AllocateSharedMemory(shared_memory_size,
                                               sender_.get()));
@@ -187,22 +192,28 @@ void WebBlobRegistryImpl::unregisterStreamURL(const WebURL& url) {
 WebBlobRegistryImpl::BuilderImpl::BuilderImpl(
     const blink::WebString& uuid,
     const blink::WebString& content_type,
-    ThreadSafeSender* sender)
-    : uuid_(uuid.utf8()), content_type_(content_type.utf8()), sender_(sender) {
-}
+    ThreadSafeSender* sender,
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_runner)
+    : uuid_(uuid.utf8()),
+      content_type_(content_type.utf8()),
+      consolidation_(new BlobConsolidation()),
+      sender_(sender),
+      io_runner_(std::move(io_runner)),
+      main_runner_(std::move(main_runner)) {}
 
 WebBlobRegistryImpl::BuilderImpl::~BuilderImpl() {
 }
 
 void WebBlobRegistryImpl::BuilderImpl::appendData(
     const WebThreadSafeData& data) {
-  consolidation_.AddDataItem(data);
+  consolidation_->AddDataItem(data);
 }
 
 void WebBlobRegistryImpl::BuilderImpl::appendBlob(const WebString& uuid,
                                                   uint64_t offset,
                                                   uint64_t length) {
-  consolidation_.AddBlobItem(uuid.utf8(), offset, length);
+  consolidation_->AddBlobItem(uuid.utf8(), offset, length);
 }
 
 void WebBlobRegistryImpl::BuilderImpl::appendFile(
@@ -210,9 +221,8 @@ void WebBlobRegistryImpl::BuilderImpl::appendFile(
     uint64_t offset,
     uint64_t length,
     double expected_modification_time) {
-  consolidation_.AddFileItem(
-      blink::WebStringToFilePath(path), offset, length,
-      expected_modification_time);
+  consolidation_->AddFileItem(blink::WebStringToFilePath(path), offset, length,
+                              expected_modification_time);
 }
 
 void WebBlobRegistryImpl::BuilderImpl::appendFileSystemURL(
@@ -221,92 +231,27 @@ void WebBlobRegistryImpl::BuilderImpl::appendFileSystemURL(
     uint64_t length,
     double expected_modification_time) {
   DCHECK(GURL(fileSystemURL).SchemeIsFileSystem());
-  consolidation_.AddFileSystemItem(GURL(fileSystemURL), offset, length,
-                                   expected_modification_time);
+  consolidation_->AddFileSystemItem(GURL(fileSystemURL), offset, length,
+                                    expected_modification_time);
 }
 
 void WebBlobRegistryImpl::BuilderImpl::build() {
-  sender_->Send(new BlobHostMsg_StartBuilding(uuid_));
-  const auto& items = consolidation_.consolidated_items();
-
-  // We still need a buffer to hold the continuous block of data so the
-  // DataElement can hold it.
-  size_t buffer_size = 0;
-  scoped_ptr<char[]> buffer;
-  for (size_t i = 0; i < items.size(); i++) {
-    const BlobConsolidation::ConsolidatedItem& item = items[i];
-    DataElement element;
-    // NOTE: length == -1 when we want to use the whole file.  This
-    // only happens when we are creating a file object in Blink, and the file
-    // object is the only item in the 'blob'.  If we use that file blob to
-    // create another blob, it is sent here as a 'file' item and not a blob,
-    // and the correct size is populated.
-    // static_cast<uint64_t>(-1) == kuint64max, which is what DataElement uses
-    // to specificy "use the whole file".
-    switch (item.type) {
-      case DataElement::TYPE_BYTES:
-        if (item.length > kLargeThresholdBytes) {
-          SendOversizedDataForBlob(i);
-          break;
-        }
-        if (buffer_size < item.length) {
-          buffer.reset(new char[item.length]);
-          buffer_size = item.length;
-        }
-        consolidation_.ReadMemory(i, 0, item.length, buffer.get());
-        element.SetToSharedBytes(buffer.get(), item.length);
-        sender_->Send(new BlobHostMsg_AppendBlobDataItem(uuid_, element));
-        break;
-      case DataElement::TYPE_FILE:
-        element.SetToFilePathRange(
-            item.path, item.offset, item.length,
-            base::Time::FromDoubleT(item.expected_modification_time));
-        sender_->Send(new BlobHostMsg_AppendBlobDataItem(uuid_, element));
-        break;
-      case DataElement::TYPE_BLOB:
-        element.SetToBlobRange(item.blob_uuid, item.offset, item.length);
-        sender_->Send(new BlobHostMsg_AppendBlobDataItem(uuid_, element));
-        break;
-      case DataElement::TYPE_FILE_FILESYSTEM:
-        element.SetToFileSystemUrlRange(
-            item.filesystem_url, item.offset, item.length,
-            base::Time::FromDoubleT(item.expected_modification_time));
-        sender_->Send(new BlobHostMsg_AppendBlobDataItem(uuid_, element));
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  sender_->Send(new BlobHostMsg_FinishBuilding(uuid_, content_type_));
+  sender_->Send(new BlobStorageMsg_RegisterBlobUUID(
+      uuid_, content_type_, "", consolidation_->referenced_blobs()));
+  io_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&WebBlobRegistryImpl::StartBlobAsyncConstruction, uuid_,
+                 base::Passed(&consolidation_), sender_, main_runner_));
 }
 
-void WebBlobRegistryImpl::BuilderImpl::SendOversizedDataForBlob(
-    size_t consolidated_item_index) {
-  TRACE_EVENT0("Blob", "Registry::SendOversizedBlobData");
-  const BlobConsolidation::ConsolidatedItem& item =
-      consolidation_.consolidated_items()[consolidated_item_index];
-  // We handle larger amounts of data via SharedMemory instead of
-  // writing it directly to the IPC channel.
-
-  size_t data_size = item.length;
-  size_t shared_memory_size = std::min(data_size, kMaxSharedMemoryBytes);
-  scoped_ptr<base::SharedMemory> shared_memory(
-      ChildThreadImpl::AllocateSharedMemory(shared_memory_size, sender_.get()));
-  CHECK(shared_memory.get());
-  const bool mapped = shared_memory->Map(shared_memory_size);
-  CHECK(mapped) << "Unable to map shared memory.";
-
-  size_t offset = 0;
-  while (data_size) {
-    TRACE_EVENT0("Blob", "Registry::SendOversizedBlobItem");
-    size_t chunk_size = std::min(data_size, shared_memory_size);
-    consolidation_.ReadMemory(consolidated_item_index, offset, chunk_size,
-                              shared_memory->memory());
-    sender_->Send(new BlobHostMsg_SyncAppendSharedMemory(
-        uuid_, shared_memory->handle(), static_cast<uint32_t>(chunk_size)));
-    data_size -= chunk_size;
-    offset += chunk_size;
-  }
+/* static */
+void WebBlobRegistryImpl::StartBlobAsyncConstruction(
+    const std::string& uuid,
+    scoped_ptr<BlobConsolidation> consolidation,
+    scoped_refptr<ThreadSafeSender> sender,
+    scoped_refptr<base::SingleThreadTaskRunner> main_runner) {
+  BlobTransportController::GetInstance()->InitiateBlobTransfer(
+      uuid, std::move(consolidation), sender.get(), std::move(main_runner));
 }
 
 }  // namespace content

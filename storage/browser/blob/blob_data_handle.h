@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -40,6 +41,23 @@ class STORAGE_EXPORT BlobDataHandle
   BlobDataHandle(const BlobDataHandle& other);  // May be copied on any thread.
   ~BlobDataHandle() override;                   // May be deleted on any thread.
 
+  // Returns if this blob is still constructing. If so, one can use the
+  // RunOnConstructionComplete to wait.
+  // Must be called on IO thread.
+  bool IsBeingBuilt() const;
+
+  // Returns if this blob is broken, and there is no data associated with it.
+  // Must be called on IO thread.
+  bool IsBroken() const;
+
+  // The callback will be run on the IO thread when construction of the blob
+  // is complete. If construction is already complete, then the task is run
+  // immediately on the current message loop (i.e. IO thread).
+  // Must be called on IO thread.  Returns if construction successful.
+  // Calling this multiple times results in registering multiple
+  // completion callbacks.
+  void RunOnConstructionComplete(const base::Callback<void(bool)>& done);
+
   // A BlobReader is used to read the data from the blob.  This object is
   // intended to be transient and should not be stored for any extended period
   // of time.
@@ -55,7 +73,9 @@ class STORAGE_EXPORT BlobDataHandle
   const std::string& content_disposition() const;
 
   // This call and the destruction of the returned snapshot must be called
-  // on the IO thread.
+  // on the IO thread. If the blob is broken, then we return a nullptr here.
+  // Please do not call this, and use CreateReader instead. It appropriately
+  // waits until the blob is built before having a size (see CalculateSize).
   // TODO(dmurph): Make this protected, where only the BlobReader can call it.
   scoped_ptr<BlobDataSnapshot> CreateSnapshot() const;
 
@@ -69,6 +89,8 @@ class STORAGE_EXPORT BlobDataHandle
                          const std::string& content_type,
                          const std::string& content_disposition,
                          BlobStorageContext* context);
+
+    void RunOnConstructionComplete(const base::Callback<void(bool)>& done);
 
     scoped_ptr<BlobDataSnapshot> CreateSnapshot() const;
 

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -22,13 +23,14 @@
 #include "url/gurl.h"
 
 namespace storage {
+using BlobState = BlobStorageRegistry::BlobState;
 
 namespace {
 
 class FileStreamReaderProviderImpl
     : public BlobReader::FileStreamReaderProvider {
  public:
-  FileStreamReaderProviderImpl(FileSystemContext* file_system_context)
+  explicit FileStreamReaderProviderImpl(FileSystemContext* file_system_context)
       : file_system_context_(file_system_context) {}
   ~FileStreamReaderProviderImpl() override {}
 
@@ -70,6 +72,15 @@ BlobDataHandle::BlobDataHandleShared::BlobDataHandleShared(
   context_->IncrementBlobRefCount(uuid);
 }
 
+void BlobDataHandle::BlobDataHandleShared::RunOnConstructionComplete(
+    const base::Callback<void(bool)>& done) {
+  if (!context_.get()) {
+    done.Run(false);
+    return;
+  }
+  context_->RunOnConstructionComplete(uuid_, done);
+}
+
 scoped_ptr<BlobReader> BlobDataHandle::CreateReader(
     FileSystemContext* file_system_context,
     base::SequencedTaskRunner* file_task_runner) const {
@@ -81,6 +92,8 @@ scoped_ptr<BlobReader> BlobDataHandle::CreateReader(
 
 scoped_ptr<BlobDataSnapshot>
 BlobDataHandle::BlobDataHandleShared::CreateSnapshot() const {
+  if (!context_.get())
+    return nullptr;
   return context_->CreateSnapshot(uuid_);
 }
 
@@ -115,6 +128,26 @@ BlobDataHandle::~BlobDataHandle() {
     shared_ = nullptr;
     io_task_runner_->ReleaseSoon(FROM_HERE, raw);
   }
+}
+
+bool BlobDataHandle::IsBeingBuilt() const {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (!shared_->context_)
+    return false;
+  return shared_->context_->IsBeingBuilt(shared_->uuid_);
+}
+
+bool BlobDataHandle::IsBroken() const {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (!shared_->context_)
+    return true;
+  return shared_->context_->IsBroken(shared_->uuid_);
+}
+
+void BlobDataHandle::RunOnConstructionComplete(
+    const base::Callback<void(bool)>& done) {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  shared_->RunOnConstructionComplete(done);
 }
 
 scoped_ptr<BlobDataSnapshot> BlobDataHandle::CreateSnapshot() const {

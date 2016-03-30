@@ -7,8 +7,17 @@
 
 #include <stddef.h>
 
+#include <set>
+
+#include "base/memory/shared_memory.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_utils.h"
+#include "ipc/ipc_param_traits.h"
+#include "ipc/ipc_platform_file.h"
+#include "storage/common/blob_storage/blob_item_bytes_request.h"
+#include "storage/common/blob_storage/blob_item_bytes_response.h"
+#include "storage/common/blob_storage/blob_storage_constants.h"
 #include "storage/common/data_element.h"
 #include "url/ipc/url_param_traits.h"
 
@@ -16,20 +25,63 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START BlobMsgStart
 
-// Blob messages sent from the renderer to the browser.
+// Trait definitions for async blob transport messages.
 
-IPC_MESSAGE_CONTROL1(BlobHostMsg_StartBuilding,
-                     std::string /*uuid */)
-IPC_MESSAGE_CONTROL2(BlobHostMsg_AppendBlobDataItem,
+IPC_ENUM_TRAITS_MAX_VALUE(storage::IPCBlobItemRequestStrategy,
+                          storage::IPCBlobItemRequestStrategy::LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(storage::IPCBlobCreationCancelCode,
+                          storage::IPCBlobCreationCancelCode::LAST)
+
+IPC_STRUCT_TRAITS_BEGIN(storage::BlobItemBytesRequest)
+  IPC_STRUCT_TRAITS_MEMBER(request_number)
+  IPC_STRUCT_TRAITS_MEMBER(transport_strategy)
+  IPC_STRUCT_TRAITS_MEMBER(renderer_item_index)
+  IPC_STRUCT_TRAITS_MEMBER(renderer_item_offset)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+  IPC_STRUCT_TRAITS_MEMBER(handle_index)
+  IPC_STRUCT_TRAITS_MEMBER(handle_offset)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(storage::BlobItemBytesResponse)
+  IPC_STRUCT_TRAITS_MEMBER(request_number)
+  IPC_STRUCT_TRAITS_MEMBER(inline_data)
+  IPC_STRUCT_TRAITS_MEMBER(time_file_modified)
+IPC_STRUCT_TRAITS_END()
+
+// This message is to tell the browser that we will be building a blob.
+IPC_MESSAGE_CONTROL4(BlobStorageMsg_RegisterBlobUUID,
                      std::string /* uuid */,
-                     storage::DataElement)
-IPC_SYNC_MESSAGE_CONTROL3_0(BlobHostMsg_SyncAppendSharedMemory,
-                            std::string /*uuid*/,
-                            base::SharedMemoryHandle,
-                            uint32_t /* buffer size */)
-IPC_MESSAGE_CONTROL2(BlobHostMsg_FinishBuilding,
+                     std::string /* content_type */,
+                     std::string /* content_disposition */,
+                     std::set<std::string> /* referenced_blob_uuids */);
+
+// The DataElements are used to:
+// * describe & transport non-memory resources (blobs, files, etc)
+// * describe the size of memory items
+// * 'shortcut' transport the memory up to the IPC limit so the browser can use
+//   it if it's not currently full.
+// See https://bit.ly/BlobStorageRefactor
+IPC_MESSAGE_CONTROL2(BlobStorageMsg_StartBuildingBlob,
                      std::string /* uuid */,
-                     std::string /* content_type */)
+                     std::vector<storage::DataElement> /* item_descriptions */);
+
+IPC_MESSAGE_CONTROL4(
+    BlobStorageMsg_RequestMemoryItem,
+    std::string /* uuid */,
+    std::vector<storage::BlobItemBytesRequest> /* requests */,
+    std::vector<base::SharedMemoryHandle> /* memory_handles */,
+    std::vector<IPC::PlatformFileForTransit> /* file_handles */);
+
+IPC_MESSAGE_CONTROL2(
+    BlobStorageMsg_MemoryItemResponse,
+    std::string /* uuid */,
+    std::vector<storage::BlobItemBytesResponse> /* responses */);
+
+IPC_MESSAGE_CONTROL2(BlobStorageMsg_CancelBuildingBlob,
+                     std::string /* uuid */,
+                     storage::IPCBlobCreationCancelCode /* code */);
+
+IPC_MESSAGE_CONTROL1(BlobStorageMsg_DoneBuildingBlob, std::string /* uuid */);
 
 IPC_MESSAGE_CONTROL1(BlobHostMsg_IncrementRefCount,
                      std::string /* uuid */)

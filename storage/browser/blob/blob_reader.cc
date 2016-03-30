@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -48,8 +49,8 @@ BlobReader::BlobReader(
       file_task_runner_(file_task_runner),
       net_error_(net::OK),
       weak_factory_(this) {
-  if (blob_handle) {
-    blob_data_ = blob_handle->CreateSnapshot();
+  if (blob_handle && !blob_handle->IsBroken()) {
+    blob_handle_.reset(new BlobDataHandle(*blob_handle));
   }
 }
 
@@ -61,58 +62,20 @@ BlobReader::Status BlobReader::CalculateSize(
     const net::CompletionCallback& done) {
   DCHECK(!total_size_calculated_);
   DCHECK(size_callback_.is_null());
-  if (!blob_data_.get()) {
+  if (!blob_handle_.get() || blob_handle_->IsBroken()) {
     return ReportError(net::ERR_FILE_NOT_FOUND);
   }
-
-  net_error_ = net::OK;
-  total_size_ = 0;
-  const auto& items = blob_data_->items();
-  item_length_list_.resize(items.size());
-  pending_get_file_info_count_ = 0;
-  for (size_t i = 0; i < items.size(); ++i) {
-    const BlobDataItem& item = *items.at(i);
-    if (IsFileType(item.type())) {
-      ++pending_get_file_info_count_;
-      storage::FileStreamReader* const reader = GetOrCreateFileReaderAtIndex(i);
-      if (!reader) {
-        return ReportError(net::ERR_FAILED);
-      }
-      int64_t length_output = reader->GetLength(base::Bind(
-          &BlobReader::DidGetFileItemLength, weak_factory_.GetWeakPtr(), i));
-      if (length_output == net::ERR_IO_PENDING) {
-        continue;
-      }
-      if (length_output < 0) {
-        return ReportError(length_output);
-      }
-      // We got the length right away
-      --pending_get_file_info_count_;
-      uint64_t resolved_length;
-      if (!ResolveFileItemLength(item, length_output, &resolved_length)) {
-        return ReportError(net::ERR_FILE_NOT_FOUND);
-      }
-      if (!AddItemLength(i, resolved_length)) {
-        return ReportError(net::ERR_FAILED);
-      }
-      continue;
-    }
-
-    if (!AddItemLength(i, item.length()))
-      return ReportError(net::ERR_FAILED);
+  if (blob_handle_->IsBeingBuilt()) {
+    blob_handle_->RunOnConstructionComplete(base::Bind(
+        &BlobReader::AsyncCalculateSize, weak_factory_.GetWeakPtr(), done));
+    return Status::IO_PENDING;
   }
-
-  if (pending_get_file_info_count_ == 0) {
-    DidCountSize();
-    return Status::DONE;
-  }
-  // Note: We only set the callback if we know that we're an async operation.
-  size_callback_ = done;
-  return Status::IO_PENDING;
+  blob_data_ = blob_handle_->CreateSnapshot();
+  return CalculateSizeImpl(done);
 }
 
 BlobReader::Status BlobReader::SetReadRange(uint64_t offset, uint64_t length) {
-  if (!blob_data_.get()) {
+  if (!blob_handle_.get() || blob_handle_->IsBroken()) {
     return ReportError(net::ERR_FILE_NOT_FOUND);
   }
   if (!total_size_calculated_) {
@@ -217,6 +180,78 @@ void BlobReader::InvalidateCallbacksAndDone(int net_error,
 BlobReader::Status BlobReader::ReportError(int net_error) {
   net_error_ = net_error;
   return Status::NET_ERROR;
+}
+
+void BlobReader::AsyncCalculateSize(const net::CompletionCallback& done,
+                                    bool async_succeeded) {
+  if (!async_succeeded) {
+    InvalidateCallbacksAndDone(net::ERR_FAILED, done);
+    return;
+  }
+  DCHECK(!blob_handle_->IsBroken()) << "Callback should have returned false.";
+  blob_data_ = blob_handle_->CreateSnapshot();
+  Status size_status = CalculateSizeImpl(done);
+  switch (size_status) {
+    case Status::NET_ERROR:
+      InvalidateCallbacksAndDone(net_error_, done);
+      return;
+    case Status::DONE:
+      done.Run(net::OK);
+      return;
+    case Status::IO_PENDING:
+      return;
+  }
+}
+
+BlobReader::Status BlobReader::CalculateSizeImpl(
+    const net::CompletionCallback& done) {
+  DCHECK(!total_size_calculated_);
+  DCHECK(size_callback_.is_null());
+
+  net_error_ = net::OK;
+  total_size_ = 0;
+  const auto& items = blob_data_->items();
+  item_length_list_.resize(items.size());
+  pending_get_file_info_count_ = 0;
+  for (size_t i = 0; i < items.size(); ++i) {
+    const BlobDataItem& item = *items.at(i);
+    if (IsFileType(item.type())) {
+      ++pending_get_file_info_count_;
+      storage::FileStreamReader* const reader = GetOrCreateFileReaderAtIndex(i);
+      if (!reader) {
+        return ReportError(net::ERR_FAILED);
+      }
+      int64_t length_output = reader->GetLength(base::Bind(
+          &BlobReader::DidGetFileItemLength, weak_factory_.GetWeakPtr(), i));
+      if (length_output == net::ERR_IO_PENDING) {
+        continue;
+      }
+      if (length_output < 0) {
+        return ReportError(length_output);
+      }
+      // We got the length right away
+      --pending_get_file_info_count_;
+      uint64_t resolved_length;
+      if (!ResolveFileItemLength(item, length_output, &resolved_length)) {
+        return ReportError(net::ERR_FILE_NOT_FOUND);
+      }
+      if (!AddItemLength(i, resolved_length)) {
+        return ReportError(net::ERR_FAILED);
+      }
+      continue;
+    }
+
+    if (!AddItemLength(i, item.length()))
+      return ReportError(net::ERR_FAILED);
+  }
+
+  if (pending_get_file_info_count_ == 0) {
+    DidCountSize();
+    return Status::DONE;
+  }
+  // Note: We only set the callback if we know that we're an async operation.
+  size_callback_ = done;
+  return Status::IO_PENDING;
 }
 
 bool BlobReader::AddItemLength(size_t index, uint64_t item_length) {

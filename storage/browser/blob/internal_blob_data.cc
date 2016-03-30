@@ -32,18 +32,6 @@ void InternalBlobData::Builder::RemoveBlobFromShareableItems(
   data_->RemoveBlobFromShareableItems(blob_uuid);
 }
 
-void InternalBlobData::Builder::set_content_type(
-    const std::string& content_type) {
-  DCHECK(data_);
-  data_->content_type_ = content_type;
-}
-
-void InternalBlobData::Builder::set_content_disposition(
-    const std::string& content_disposition) {
-  DCHECK(data_);
-  data_->content_disposition_ = content_disposition;
-}
-
 size_t InternalBlobData::Builder::GetNonsharedMemoryUsage() const {
   DCHECK(data_);
   return data_->GetUnsharedMemoryUsage();
@@ -63,12 +51,6 @@ InternalBlobData::~InternalBlobData() {
 const std::vector<scoped_refptr<ShareableBlobDataItem>>&
 InternalBlobData::items() const {
   return items_;
-}
-const std::string& InternalBlobData::content_type() const {
-  return content_type_;
-}
-const std::string& InternalBlobData::content_disposition() const {
-  return content_disposition_;
 }
 
 void InternalBlobData::RemoveBlobFromShareableItems(

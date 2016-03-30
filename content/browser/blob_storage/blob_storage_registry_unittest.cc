@@ -15,36 +15,33 @@ using BlobState = BlobStorageRegistry::BlobState;
 
 TEST(BlobStorageRegistry, UUIDRegistration) {
   const std::string kBlob1 = "Blob1";
+  const std::string kType = "type1";
+  const std::string kDisposition = "disp1";
   BlobStorageRegistry registry;
 
   EXPECT_FALSE(registry.DeleteEntry(kBlob1));
   EXPECT_EQ(0u, registry.blob_count());
 
-  Entry* entry = registry.CreateEntry(kBlob1);
+  Entry* entry = registry.CreateEntry(kBlob1, kType, kDisposition);
   ASSERT_NE(nullptr, entry);
-  EXPECT_EQ(BlobState::RESERVED, entry->state);
+  EXPECT_EQ(BlobState::PENDING, entry->state);
+  EXPECT_EQ(kType, entry->content_type);
+  EXPECT_EQ(kDisposition, entry->content_disposition);
   EXPECT_EQ(1u, entry->refcount);
-  EXPECT_FALSE(entry->exceeded_memory);
   EXPECT_FALSE(entry->data.get() || entry->data_builder.get());
-  EXPECT_EQ(0u, entry->construction_complete_callbacks.size());
+  EXPECT_EQ(0u, entry->build_completion_callbacks.size());
 
   EXPECT_EQ(entry, registry.GetEntry(kBlob1));
   EXPECT_TRUE(registry.DeleteEntry(kBlob1));
-  entry = registry.CreateEntry(kBlob1);
+  entry = registry.CreateEntry(kBlob1, kType, kDisposition);
 
-  EXPECT_TRUE(entry->TestAndSetState(BlobState::RESERVED,
-                                     BlobState::ASYNC_TRANSPORTATION));
-  EXPECT_FALSE(
-      entry->TestAndSetState(BlobState::CONSTRUCTION, BlobState::RESERVED));
-  EXPECT_FALSE(entry->TestAndSetState(BlobState::ACTIVE, BlobState::RESERVED));
-  EXPECT_TRUE(entry->TestAndSetState(BlobState::ASYNC_TRANSPORTATION,
-                                     BlobState::CONSTRUCTION));
-  EXPECT_EQ(BlobState::CONSTRUCTION, entry->state);
   EXPECT_EQ(1u, registry.blob_count());
 }
 
 TEST(BlobStorageRegistry, URLRegistration) {
   const std::string kBlob = "Blob1";
+  const std::string kType = "type1";
+  const std::string kDisposition = "disp1";
   const std::string kBlob2 = "Blob2";
   const GURL kURL = GURL("blob://Blob1");
   const GURL kURL2 = GURL("blob://Blob2");
@@ -55,7 +52,7 @@ TEST(BlobStorageRegistry, URLRegistration) {
   EXPECT_FALSE(registry.DeleteURLMapping(kURL, nullptr));
   EXPECT_FALSE(registry.CreateUrlMapping(kURL, kBlob));
   EXPECT_EQ(0u, registry.url_count());
-  Entry* entry = registry.CreateEntry(kBlob);
+  Entry* entry = registry.CreateEntry(kBlob, kType, kDisposition);
 
   EXPECT_FALSE(registry.IsURLMapped(kURL));
   EXPECT_TRUE(registry.CreateUrlMapping(kURL, kBlob));
@@ -68,7 +65,7 @@ TEST(BlobStorageRegistry, URLRegistration) {
   EXPECT_EQ(kBlob, uuid);
   EXPECT_EQ(1u, registry.url_count());
 
-  registry.CreateEntry(kBlob2);
+  registry.CreateEntry(kBlob2, kType, kDisposition);
   EXPECT_TRUE(registry.CreateUrlMapping(kURL2, kBlob2));
   EXPECT_EQ(2u, registry.url_count());
   EXPECT_TRUE(registry.DeleteURLMapping(kURL2, &uuid));

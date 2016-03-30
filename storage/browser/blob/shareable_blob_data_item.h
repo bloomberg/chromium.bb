@@ -5,6 +5,8 @@
 #ifndef STORAGE_BROWSER_BLOB_SHAREABLE_BLOB_DATA_ITEM_H_
 #define STORAGE_BROWSER_BLOB_SHAREABLE_BLOB_DATA_ITEM_H_
 
+#include <string>
+
 #include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "base/macros.h"
@@ -12,8 +14,8 @@
 #include "storage/common/data_element.h"
 
 namespace storage {
-
 class BlobDataItem;
+class InternalBlobData;
 
 // This class allows blob items to be shared between blobs, and is only used by
 // BlobStorageContext. This class contains both the blob data item and the uuids
@@ -34,6 +36,7 @@ class ShareableBlobDataItem : public base::RefCounted<ShareableBlobDataItem> {
 
  private:
   friend class base::RefCounted<ShareableBlobDataItem>;
+  friend class InternalBlobData;
   ~ShareableBlobDataItem();
 
   scoped_refptr<BlobDataItem> item_;

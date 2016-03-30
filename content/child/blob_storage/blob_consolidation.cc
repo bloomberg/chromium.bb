@@ -83,6 +83,7 @@ void BlobConsolidation::AddBlobItem(const std::string& uuid,
       ConsolidatedItem(DataElement::TYPE_BLOB, offset, length));
   ConsolidatedItem& item = consolidated_items_.back();
   item.blob_uuid = uuid;
+  referenced_blobs_.insert(uuid);
 }
 
 void BlobConsolidation::AddFileSystemItem(const GURL& url,

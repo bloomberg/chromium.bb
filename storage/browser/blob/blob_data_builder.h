@@ -165,12 +165,20 @@ inline bool operator==(const BlobDataSnapshot& a, const BlobDataBuilder& b) {
   return true;
 }
 
+inline bool operator==(const BlobDataBuilder& a, const BlobDataSnapshot& b) {
+  return b == a;
+}
+
 inline bool operator!=(const BlobDataSnapshot& a, const BlobDataBuilder& b) {
   return !(a == b);
 }
 
 inline bool operator!=(const BlobDataBuilder& a, const BlobDataBuilder& b) {
   return !(a == b);
+}
+
+inline bool operator!=(const BlobDataBuilder& a, const BlobDataSnapshot& b) {
+  return b != a;
 }
 
 #endif  // defined(UNIT_TEST)

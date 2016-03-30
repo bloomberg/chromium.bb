@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #include "base/numerics/safe_math.h"
-#include "storage/browser/blob/blob_async_transport_strategy.h"
+#include "storage/browser/blob/blob_async_transport_request_builder.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
 
 namespace storage {
@@ -37,7 +37,7 @@ bool IsBytes(DataElement::Type type) {
 class FileStorageStrategy {
  public:
   FileStorageStrategy(
-      std::vector<BlobAsyncTransportStrategy::RendererMemoryItemRequest>*
+      std::vector<BlobAsyncTransportRequestBuilder::RendererMemoryItemRequest>*
           requests,
       BlobDataBuilder* builder)
       : requests(requests), builder(builder), current_item_index(0) {}
@@ -49,7 +49,7 @@ class FileStorageStrategy {
                          size_t segment_index,
                          uint64_t segment_offset,
                          uint64_t size) {
-    BlobAsyncTransportStrategy::RendererMemoryItemRequest request;
+    BlobAsyncTransportRequestBuilder::RendererMemoryItemRequest request;
     request.browser_item_index = current_item_index;
     request.browser_item_offset = 0;
     request.message.request_number = requests->size();
@@ -72,7 +72,8 @@ class FileStorageStrategy {
 
   void Done() {}
 
-  std::vector<BlobAsyncTransportStrategy::RendererMemoryItemRequest>* requests;
+  std::vector<BlobAsyncTransportRequestBuilder::RendererMemoryItemRequest>*
+      requests;
   BlobDataBuilder* builder;
 
   size_t current_item_index;
@@ -84,7 +85,7 @@ class SharedMemoryStorageStrategy {
  public:
   SharedMemoryStorageStrategy(
       size_t max_segment_size,
-      std::vector<BlobAsyncTransportStrategy::RendererMemoryItemRequest>*
+      std::vector<BlobAsyncTransportRequestBuilder::RendererMemoryItemRequest>*
           requests,
       BlobDataBuilder* builder)
       : requests(requests),
@@ -104,7 +105,7 @@ class SharedMemoryStorageStrategy {
       current_item_index++;
       current_item_size = 0;
     }
-    BlobAsyncTransportStrategy::RendererMemoryItemRequest request;
+    BlobAsyncTransportRequestBuilder::RendererMemoryItemRequest request;
     request.browser_item_index = current_item_index;
     request.browser_item_offset = current_item_size;
     request.message.request_number = requests->size();
@@ -136,7 +137,8 @@ class SharedMemoryStorageStrategy {
     }
   }
 
-  std::vector<BlobAsyncTransportStrategy::RendererMemoryItemRequest>* requests;
+  std::vector<BlobAsyncTransportRequestBuilder::RendererMemoryItemRequest>*
+      requests;
 
   size_t max_segment_size;
   BlobDataBuilder* builder;
@@ -191,101 +193,61 @@ void ForEachWithSegment(const std::vector<DataElement>& elements,
 }
 }  // namespace
 
-BlobAsyncTransportStrategy::RendererMemoryItemRequest::
+BlobAsyncTransportRequestBuilder::RendererMemoryItemRequest::
     RendererMemoryItemRequest()
-    : browser_item_index(0), browser_item_offset(0), received(false) {}
+    : browser_item_index(0), browser_item_offset(0) {}
 
-BlobAsyncTransportStrategy::BlobAsyncTransportStrategy()
-    : error_(BlobAsyncTransportStrategy::ERROR_NONE), total_bytes_size_(0) {}
+BlobAsyncTransportRequestBuilder::BlobAsyncTransportRequestBuilder()
+    : total_bytes_size_(0) {}
 
-BlobAsyncTransportStrategy::~BlobAsyncTransportStrategy() {}
+BlobAsyncTransportRequestBuilder::~BlobAsyncTransportRequestBuilder() {}
 
-// if total_blob_size > |memory_available| (say 400MB)
-//   Request all data in files
-//   (Segment all of the existing data into
-//   file blocks, of <= |max_file_size|)
-// else if total_blob_size > |max_ipc_memory_size| (say 150KB)
-//   Request all data in shared memory
-//   (Segment all of the existing data into
-//   shared memory blocks, of <= |max_shared_memory_size|)
-// else
-//   Request all data to be sent over IPC
-void BlobAsyncTransportStrategy::Initialize(
-    size_t max_ipc_memory_size,
-    size_t max_shared_memory_size,
+// Initializes the transport strategy for file requests.
+void BlobAsyncTransportRequestBuilder::InitializeForFileRequests(
     size_t max_file_size,
-    uint64_t disk_space_left,
-    size_t memory_available,
-    const std::string& uuid,
-    const std::vector<DataElement>& blob_item_infos) {
-  DCHECK(handle_sizes_.empty());
+    uint64_t blob_total_size,
+    const std::vector<DataElement>& elements,
+    BlobDataBuilder* builder) {
   DCHECK(requests_.empty());
-  DCHECK(!builder_.get());
-  builder_.reset(new BlobDataBuilder(uuid));
-  error_ = BlobAsyncTransportStrategy::ERROR_NONE;
+  total_bytes_size_ = blob_total_size;
+  ComputeHandleSizes(total_bytes_size_, max_file_size, &file_sizes_);
+  FileStorageStrategy strategy(&requests_, builder);
+  ForEachWithSegment(elements, static_cast<uint64_t>(max_file_size), &strategy);
+}
 
-  size_t memory_items = 0;
-  base::CheckedNumeric<uint64_t> total_size_checked = 0;
-  for (const auto& info : blob_item_infos) {
-    if (!IsBytes(info.type())) {
-      continue;
-    }
-    total_size_checked += info.length();
-    ++memory_items;
-  }
+void BlobAsyncTransportRequestBuilder::InitializeForSharedMemoryRequests(
+    size_t max_shared_memory_size,
+    uint64_t blob_total_size,
+    const std::vector<DataElement>& elements,
+    BlobDataBuilder* builder) {
+  DCHECK(requests_.empty());
+  DCHECK(blob_total_size <= std::numeric_limits<size_t>::max());
+  total_bytes_size_ = blob_total_size;
+  ComputeHandleSizes(total_bytes_size_, max_shared_memory_size,
+                     &shared_memory_sizes_);
+  SharedMemoryStorageStrategy strategy(max_shared_memory_size, &requests_,
+                                       builder);
+  ForEachWithSegment(elements, static_cast<uint64_t>(max_shared_memory_size),
+                     &strategy);
+}
 
-  if (!total_size_checked.IsValid()) {
-    DVLOG(1) << "Impossible total size of all memory elements.";
-    error_ = BlobAsyncTransportStrategy::ERROR_INVALID_PARAMS;
-    return;
-  }
-
-  total_bytes_size_ = total_size_checked.ValueOrDie();
-
-  // See if we have enough memory.
-  if (total_bytes_size_ >
-      disk_space_left + static_cast<uint64_t>(memory_available)) {
-    error_ = BlobAsyncTransportStrategy::ERROR_TOO_LARGE;
-    return;
-  }
-
-  // If we're more than the available memory, then we're going straight to disk.
-  if (total_bytes_size_ > memory_available) {
-    if (total_bytes_size_ > disk_space_left) {
-      error_ = BlobAsyncTransportStrategy::ERROR_TOO_LARGE;
-      return;
-    }
-    ComputeHandleSizes(total_bytes_size_, max_file_size, &handle_sizes_);
-    FileStorageStrategy strategy(&requests_, builder_.get());
-    ForEachWithSegment(blob_item_infos, static_cast<uint64_t>(max_file_size),
-                       &strategy);
-    return;
-  }
-
-  if (total_bytes_size_ > max_ipc_memory_size) {
-    // Note: The size must be <= std::numeric_limits<size_t>::max(). Otherwise
-    // we are guarenteed to be caught by the if statement above,
-    // |total_bytes_size_ > memory_available|.
-    ComputeHandleSizes(total_bytes_size_, max_shared_memory_size,
-                       &handle_sizes_);
-    SharedMemoryStorageStrategy strategy(max_shared_memory_size, &requests_,
-                                         builder_.get());
-    ForEachWithSegment(blob_item_infos,
-                       static_cast<uint64_t>(max_shared_memory_size),
-                       &strategy);
-    return;
-  }
-
-  // Since they can all fit in IPC memory, we don't need to segment anything,
-  // and just request them straight in IPC.
-  size_t items_length = blob_item_infos.size();
+void BlobAsyncTransportRequestBuilder::InitializeForIPCRequests(
+    size_t max_ipc_memory_size,
+    uint64_t blob_total_size,
+    const std::vector<DataElement>& elements,
+    BlobDataBuilder* builder) {
+  DCHECK(requests_.empty());
+  // We don't segment anything, and just request the memory items directly
+  // in IPC.
+  size_t items_length = elements.size();
+  total_bytes_size_ = blob_total_size;
   for (size_t i = 0; i < items_length; i++) {
-    const auto& info = blob_item_infos.at(i);
+    const auto& info = elements.at(i);
     if (!IsBytes(info.type())) {
-      builder_->AppendIPCDataElement(info);
+      builder->AppendIPCDataElement(info);
       continue;
     }
-    BlobAsyncTransportStrategy::RendererMemoryItemRequest request;
+    BlobAsyncTransportRequestBuilder::RendererMemoryItemRequest request;
     request.browser_item_index = i;
     request.browser_item_offset = 0;
     request.message.request_number = requests_.size();
@@ -294,12 +256,12 @@ void BlobAsyncTransportStrategy::Initialize(
     request.message.renderer_item_offset = 0;
     request.message.size = info.length();
     requests_.push_back(request);
-    builder_->AppendFutureData(info.length());
+    builder->AppendFutureData(info.length());
   }
 }
 
 /* static */
-bool BlobAsyncTransportStrategy::ShouldBeShortcut(
+bool BlobAsyncTransportRequestBuilder::ShouldBeShortcut(
     const std::vector<DataElement>& elements,
     size_t memory_available) {
   base::CheckedNumeric<size_t> shortcut_bytes = 0;
@@ -319,7 +281,7 @@ bool BlobAsyncTransportStrategy::ShouldBeShortcut(
 }
 
 /* static */
-void BlobAsyncTransportStrategy::ComputeHandleSizes(
+void BlobAsyncTransportRequestBuilder::ComputeHandleSizes(
     uint64_t total_memory_size,
     size_t max_segment_size,
     std::vector<size_t>* segment_sizes) {

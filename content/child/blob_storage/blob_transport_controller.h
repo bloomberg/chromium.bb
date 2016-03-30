@@ -23,6 +23,7 @@
 namespace base {
 template <typename T>
 struct DefaultLazyInstanceTraits;
+class SingleThreadTaskRunner;
 }
 
 namespace storage {
@@ -55,10 +56,14 @@ class CONTENT_EXPORT BlobTransportController {
 
   // This kicks off a blob transfer to the browser thread, which involves
   // sending an IPC message and storing the blob consolidation object.
-  void InitiateBlobTransfer(const std::string& uuid,
-                            const std::string& type,
-                            scoped_ptr<BlobConsolidation> consolidation,
-                            IPC::Sender* sender);
+  // If we have no pending blobs, we also call ChildProcess::AddRefProcess to
+  // keep our process around while we transfer. This will be decremented when
+  // we finish our last pending transfer (when our map is empty).
+  void InitiateBlobTransfer(
+      const std::string& uuid,
+      scoped_ptr<BlobConsolidation> consolidation,
+      IPC::Sender* sender,
+      scoped_refptr<base::SingleThreadTaskRunner> main_runner);
 
   // This responds to the request using the sender.
   void OnMemoryRequest(
@@ -73,8 +78,6 @@ class CONTENT_EXPORT BlobTransportController {
 
   void OnDone(const std::string& uuid);
 
-  // Clears all internal state for testing and such.
-  void Clear();
 
   bool IsTransporting(const std::string& uuid) {
     return blob_storage_.find(uuid) != blob_storage_.end();
@@ -83,10 +86,15 @@ class CONTENT_EXPORT BlobTransportController {
   ~BlobTransportController();
 
  private:
+  friend class BlobTransportControllerTest;
   FRIEND_TEST_ALL_PREFIXES(BlobTransportControllerTest, Descriptions);
   FRIEND_TEST_ALL_PREFIXES(BlobTransportControllerTest, Responses);
   FRIEND_TEST_ALL_PREFIXES(BlobTransportControllerTest, SharedMemory);
   FRIEND_TEST_ALL_PREFIXES(BlobTransportControllerTest, ResponsesErrors);
+
+  // Clears all internal state. If our map wasn't previously empty, then we call
+  // ChildProcess::ReleaseProcess to release our previous reference.
+  void ClearForTesting();
 
   enum class ResponsesStatus {
     BLOB_NOT_FOUND,
@@ -96,12 +104,6 @@ class CONTENT_EXPORT BlobTransportController {
   friend struct base::DefaultLazyInstanceTraits<BlobTransportController>;
 
   BlobTransportController();
-
-  // Sends the IPC to cancel the blob transfer, and releases the blob from
-  // internal storage.
-  void CancelBlobTransfer(const std::string& uuid,
-                          storage::IPCBlobCreationCancelCode code,
-                          IPC::Sender* sender);
 
   void GetDescriptions(BlobConsolidation* consolidation,
                        size_t max_data_population,
@@ -114,8 +116,12 @@ class CONTENT_EXPORT BlobTransportController {
       const std::vector<IPC::PlatformFileForTransit>& file_handles,
       std::vector<storage::BlobItemBytesResponse>* output);
 
+  // Deletes the consolidation, and if we removed the last consolidation from
+  // our map, we call ChildProcess::ReleaseProcess to release our previous
+  // reference.
   void ReleaseBlobConsolidation(const std::string& uuid);
 
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
   std::map<std::string, scoped_ptr<BlobConsolidation>> blob_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobTransportController);

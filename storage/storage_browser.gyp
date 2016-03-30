@@ -27,8 +27,8 @@
       'sources': [
         'browser/blob/blob_async_builder_host.cc',
         'browser/blob/blob_async_builder_host.h',
-        'browser/blob/blob_async_transport_strategy.cc',
-        'browser/blob/blob_async_transport_strategy.h',
+        'browser/blob/blob_async_transport_request_builder.cc',
+        'browser/blob/blob_async_transport_request_builder.h',
         'browser/blob/blob_data_builder.cc',
         'browser/blob/blob_data_builder.h',
         'browser/blob/blob_data_handle.cc',

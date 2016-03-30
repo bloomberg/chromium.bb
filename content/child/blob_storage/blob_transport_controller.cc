@@ -10,9 +10,12 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "content/child/blob_storage/blob_consolidation.h"
+#include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/fileapi/webblob_messages.h"
 #include "ipc/ipc_sender.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
 #include "storage/common/blob_storage/blob_item_bytes_response.h"
@@ -36,6 +39,15 @@ namespace {
 const size_t kLargeThresholdBytes = 250 * 1024;
 static base::LazyInstance<BlobTransportController> g_controller =
     LAZY_INSTANCE_INITIALIZER;
+
+// This keeps the process alive while blobs are being transferred.
+void IncChildProcessRefCount() {
+  ChildProcess::current()->AddRefProcess();
+}
+
+void DecChildProcessRefCount() {
+  ChildProcess::current()->ReleaseProcess();
+}
 }  // namespace
 
 BlobTransportController* BlobTransportController::GetInstance() {
@@ -46,16 +58,19 @@ BlobTransportController::~BlobTransportController() {}
 
 void BlobTransportController::InitiateBlobTransfer(
     const std::string& uuid,
-    const std::string& type,
     scoped_ptr<BlobConsolidation> consolidation,
-    IPC::Sender* sender) {
+    IPC::Sender* sender,
+    scoped_refptr<base::SingleThreadTaskRunner> main_runner) {
   BlobConsolidation* consolidation_ptr = consolidation.get();
-  blob_storage_.insert(std::make_pair(uuid, std::move(consolidation)));
+  if (blob_storage_.empty()) {
+    main_thread_runner_ = std::move(main_runner);
+    main_thread_runner_->PostTask(FROM_HERE,
+                                  base::Bind(&IncChildProcessRefCount));
+  }
+  blob_storage_[uuid] = std::move(consolidation);
   std::vector<storage::DataElement> descriptions;
   GetDescriptions(consolidation_ptr, kLargeThresholdBytes, &descriptions);
-  // TODO(dmurph): Uncomment when IPC messages are added.
-  // sender->Send(new BlobStorageMsg_StartBuildingBlob(uuid, type,
-  // descriptions));
+  sender->Send(new BlobStorageMsg_StartBuildingBlob(uuid, descriptions));
 }
 
 void BlobTransportController::OnMemoryRequest(
@@ -85,25 +100,14 @@ void BlobTransportController::OnMemoryRequest(
       break;
   }
 
-  // TODO(dmurph): Uncomment when IPC messages are added.
-  // sender->Send(new BlobStorageMsg_MemoryItemResponse(uuid, responses));
+  sender->Send(new BlobStorageMsg_MemoryItemResponse(uuid, responses));
 }
 
 void BlobTransportController::OnCancel(
     const std::string& uuid,
     storage::IPCBlobCreationCancelCode code) {
-  DVLOG(1) << "Received blob cancel for blob " << uuid << " with reason:";
-  switch (code) {
-    case IPCBlobCreationCancelCode::UNKNOWN:
-      DVLOG(1) << "Unknown.";
-      break;
-    case IPCBlobCreationCancelCode::OUT_OF_MEMORY:
-      DVLOG(1) << "Out of Memory.";
-      break;
-    case IPCBlobCreationCancelCode::FILE_WRITE_FAILED:
-      DVLOG(1) << "File Write Failed (Invalid cancel reason!).";
-      break;
-  }
+  DVLOG(1) << "Received blob cancel for blob " << uuid
+           << " with code: " << static_cast<int>(code);
   ReleaseBlobConsolidation(uuid);
 }
 
@@ -111,19 +115,15 @@ void BlobTransportController::OnDone(const std::string& uuid) {
   ReleaseBlobConsolidation(uuid);
 }
 
-void BlobTransportController::Clear() {
+void BlobTransportController::ClearForTesting() {
+  if (!blob_storage_.empty() && main_thread_runner_) {
+    main_thread_runner_->PostTask(FROM_HERE,
+                                  base::Bind(&DecChildProcessRefCount));
+  }
   blob_storage_.clear();
 }
 
 BlobTransportController::BlobTransportController() {}
-
-void BlobTransportController::CancelBlobTransfer(const std::string& uuid,
-                                                 IPCBlobCreationCancelCode code,
-                                                 IPC::Sender* sender) {
-  // TODO(dmurph): Uncomment when IPC messages are added.
-  // sender->Send(new BlobStorageMsg_CancelBuildingBlob(uuid, code));
-  ReleaseBlobConsolidation(uuid);
-}
 
 void BlobTransportController::GetDescriptions(
     BlobConsolidation* consolidation,
@@ -255,7 +255,13 @@ BlobTransportController::ResponsesStatus BlobTransportController::GetResponses(
 
 void BlobTransportController::ReleaseBlobConsolidation(
     const std::string& uuid) {
-  blob_storage_.erase(uuid);
+  // If we erased something and we're now empty, release the child process
+  // ref count and deref the main thread runner.
+  if (blob_storage_.erase(uuid) && blob_storage_.empty()) {
+    main_thread_runner_->PostTask(FROM_HERE,
+                                  base::Bind(&DecChildProcessRefCount));
+    main_thread_runner_ = nullptr;
+  }
 }
 
 }  // namespace content

@@ -16,7 +16,7 @@ namespace storage {
 BlobItemBytesResponse::BlobItemBytesResponse()
     : request_number(kInvalidIndex) {}
 
-BlobItemBytesResponse::BlobItemBytesResponse(size_t request_number)
+BlobItemBytesResponse::BlobItemBytesResponse(uint32_t request_number)
     : request_number(request_number) {}
 
 BlobItemBytesResponse::BlobItemBytesResponse(

@@ -28,11 +28,24 @@ enum class IPCBlobItemRequestStrategy {
   LAST = FILE
 };
 
+// These items cannot be reordered or renumbered because they're recorded to
+// UMA. New items must be added immediately before LAST, and LAST must be set to
+// the the last item.
 enum class IPCBlobCreationCancelCode {
   UNKNOWN = 0,
-  OUT_OF_MEMORY,
-  FILE_WRITE_FAILED,
-  LAST = FILE_WRITE_FAILED
+  OUT_OF_MEMORY = 1,
+  FILE_WRITE_FAILED = 2,
+  // The renderer was destroyed while data was in transit.
+  SOURCE_DIED_IN_TRANSIT = 3,
+  // The renderer destructed the blob before it was done transferring, and there
+  // were no outstanding references (no one is waiting to read) to keep the
+  // blob alive.
+  BLOB_DEREFERENCED_WHILE_BUILDING = 4,
+  // A blob that we referenced during construction is broken, or a browser-side
+  // builder tries to build a blob with a blob reference that isn't finished
+  // constructing.
+  REFERENCED_BLOB_BROKEN = 5,
+  LAST = REFERENCED_BLOB_BROKEN
 };
 
 }  // namespace storage
