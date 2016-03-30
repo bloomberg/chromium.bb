@@ -148,7 +148,7 @@ bool PesOptionalHeader::Write(bool write_pts, PacketDataBuffer* buffer) const {
   }
 
   // Third byte of header, fields: remaining size of header.
-  *++byte = remaining_size.bits;  // Field is 8 bits wide.
+  *++byte = remaining_size.bits & 0xff;  // Field is 8 bits wide.
 
   int num_stuffing_bytes =
       (pts.num_bits + 7) / 8 + 1 /* always 1 stuffing byte */;
@@ -164,7 +164,7 @@ bool PesOptionalHeader::Write(bool write_pts, PacketDataBuffer* buffer) const {
 
   // Add the stuffing byte(s).
   for (int i = 0; i < num_stuffing_bytes; ++i)
-    *++byte = stuffing_byte.bits;
+    *++byte = stuffing_byte.bits & 0xff;
 
   for (int i = 0; i < kHeaderSize; ++i)
     buffer->push_back(header[i]);
@@ -274,8 +274,8 @@ bool Webm2Pes::ConvertToFile() {
           const mkvparser::Block::Frame& frame = block->GetFrame(frame_num);
 
           // Write frame out as PES packet(s), storing them in |packet_data_|.
-          const bool pes_status =
-              WritePesPacket(frame, block->GetTime(cluster));
+          const bool pes_status = WritePesPacket(
+              frame, static_cast<double>(block->GetTime(cluster)));
           if (pes_status != true) {
             std::fprintf(stderr, "Webm2Pes: WritePesPacket failed.\n");
             return false;
@@ -336,8 +336,8 @@ bool Webm2Pes::ConvertToPacketReceiver() {
           const mkvparser::Block::Frame& frame = block->GetFrame(frame_num);
 
           // Write frame out as PES packet(s).
-          const bool pes_status =
-              WritePesPacket(frame, block->GetTime(cluster));
+          const bool pes_status = WritePesPacket(
+              frame, static_cast<double>(block->GetTime(cluster)));
           if (pes_status != true) {
             std::fprintf(stderr, "Webm2Pes: WritePesPacket failed.\n");
             return false;
@@ -466,7 +466,8 @@ bool Webm2Pes::WritePesPacket(const mkvparser::Block::Frame& vpx_frame,
            payload_range.length);
   }
 
-  const std::int64_t khz90_pts = NanosecondsTo90KhzTicks(nanosecond_pts);
+  const std::int64_t khz90_pts =
+      NanosecondsTo90KhzTicks(static_cast<std::int64_t>(nanosecond_pts));
   header.optional_header.SetPtsBits(khz90_pts);
 
   packet_data_.clear();
@@ -474,7 +475,8 @@ bool Webm2Pes::WritePesPacket(const mkvparser::Block::Frame& vpx_frame,
   bool write_pts = true;
   for (const Range& packet_payload_range : packet_payload_ranges) {
     header.packet_length =
-        header.optional_header.size_in_bytes() + packet_payload_range.length;
+        (header.optional_header.size_in_bytes() + packet_payload_range.length) &
+        0xffff;
     if (header.Write(write_pts, &packet_data_) != true) {
       std::fprintf(stderr, "Webm2Pes: packet header write failed.\n");
       return false;
