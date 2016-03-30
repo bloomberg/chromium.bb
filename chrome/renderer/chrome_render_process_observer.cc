@@ -13,6 +13,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -233,6 +234,10 @@ void CreateResourceUsageReporter(
   new ResourceUsageReporterImpl(observer, std::move(request));
 }
 
+const base::Feature kV8_ES2015_TailCalls_Feature {
+  "V8_ES2015_TailCalls", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 }  // namespace
 
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
@@ -245,6 +250,11 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
 #if defined(ENABLE_AUTOFILL_DIALOG)
   WebRuntimeFeatures::enableRequestAutocomplete(true);
 #endif
+
+  if (base::FeatureList::IsEnabled(kV8_ES2015_TailCalls_Feature)) {
+    std::string flag("--harmony-tailcalls");
+    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
+  }
 
   if (command_line.HasSwitch(switches::kDisableJavaScriptHarmonyShipping)) {
     std::string flag("--noharmony-shipping");
