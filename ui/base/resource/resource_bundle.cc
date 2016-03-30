@@ -390,12 +390,14 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     DCHECK(!data_packs_.empty()) <<
         "Missing call to SetResourcesDataDLL?";
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-  ui::ScaleFactor scale_factor_to_load = GetMaxScaleFactor();
+#if defined(OS_CHROMEOS)
+    ui::ScaleFactor scale_factor_to_load = GetMaxScaleFactor();
+#elif defined(OS_WIN)
+    ui::ScaleFactor scale_factor_to_load =
+        gfx::GetDPIScale() > 1.25 ? GetMaxScaleFactor() : ui::SCALE_FACTOR_100P;
 #else
-  ui::ScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
+    ui::ScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
 #endif
-
     // TODO(oshima): Consider reading the image size from png IHDR chunk and
     // skip decoding here and remove #ifdef below.
     // ResourceBundle::GetSharedInstance() is destroyed after the
@@ -610,7 +612,7 @@ void ResourceBundle::ReloadFonts() {
 }
 
 ScaleFactor ResourceBundle::GetMaxScaleFactor() const {
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
   return max_scale_factor_;
 #else
   return GetSupportedScaleFactors().back();
@@ -642,7 +644,7 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle(delegate);
   static std::vector<ScaleFactor> supported_scale_factors;
-#if !defined(OS_IOS) && !defined(OS_WIN)
+#if !defined(OS_IOS)
   // On platforms other than iOS, 100P is always a supported scale factor.
   // For Windows we have a separate case in this function.
   supported_scale_factors.push_back(SCALE_FACTOR_100P);
@@ -672,22 +674,8 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
 #elif defined(OS_MACOSX)
   if (base::mac::IsOSLionOrLater())
     supported_scale_factors.push_back(SCALE_FACTOR_200P);
-#elif defined(OS_CHROMEOS)
-  // TODO(oshima): Include 200P only if the device support 200P
+#elif defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
   supported_scale_factors.push_back(SCALE_FACTOR_200P);
-#elif defined(OS_LINUX) && BUILDFLAG(ENABLE_HIDPI)
-  supported_scale_factors.push_back(SCALE_FACTOR_200P);
-#elif defined(OS_WIN)
-  bool default_to_100P = true;
-  // On Windows if the dpi scale is greater than 1.25 on high dpi machines
-  // downscaling from 200 percent looks better than scaling up from 100
-  // percent.
-  if (gfx::GetDPIScale() > 1.25) {
-    supported_scale_factors.push_back(SCALE_FACTOR_200P);
-    default_to_100P = false;
-  }
-  if (default_to_100P)
-    supported_scale_factors.push_back(SCALE_FACTOR_100P);
 #endif
   ui::SetSupportedScaleFactors(supported_scale_factors);
 }
