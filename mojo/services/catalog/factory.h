@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/catalog/public/interfaces/catalog.mojom.h"
 #include "mojo/services/catalog/public/interfaces/resolver.mojom.h"
+#include "mojo/services/catalog/types.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/shell_client.mojom.h"
 #include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
@@ -69,6 +70,8 @@ class Factory
   scoped_ptr<mojo::ShellConnection> shell_connection_;
 
   std::map<std::string, scoped_ptr<Catalog>> catalogs_;
+
+  EntryCache system_catalog_;
 
   base::WeakPtrFactory<Factory> weak_factory_;
 

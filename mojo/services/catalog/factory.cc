@@ -58,7 +58,8 @@ Catalog* Factory::GetCatalogForUserId(const std::string& user_id) {
     return it->second.get();
 
   // TODO(beng): There needs to be a way to load the store from different users.
-  Catalog* instance = new Catalog(std::move(store_), file_task_runner_);
+  Catalog* instance =
+      new Catalog(std::move(store_), file_task_runner_, &system_catalog_);
   catalogs_[user_id] = make_scoped_ptr(instance);
   return instance;
 }

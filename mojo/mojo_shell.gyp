@@ -15,6 +15,7 @@
       'services/catalog/factory.h',
       'services/catalog/store.cc',
       'services/catalog/store.h',
+      'services/catalog/types.h',
       'shell/loader.h',
       'shell/connect_params.cc',
       'shell/connect_params.h',

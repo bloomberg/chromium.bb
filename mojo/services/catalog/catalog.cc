@@ -49,9 +49,11 @@ base::FilePath GetPackagePath(const base::FilePath& package_dir,
   return base::FilePath();
 }
 
-scoped_ptr<ReadManifestResult> ReadManifest(const base::FilePath& package_dir,
-                                            const std::string& name) {
-  base::FilePath manifest_path = GetManifestPath(package_dir, name);
+scoped_ptr<ReadManifestResult> ReadManifest(
+    const base::FilePath& user_package_dir,
+    const base::FilePath& system_package_dir,
+    const std::string& name) {
+  base::FilePath manifest_path = GetManifestPath(system_package_dir, name);
   JSONFileValueDeserializer deserializer(manifest_path);
   int error = 0;
   std::string message;
@@ -59,7 +61,7 @@ scoped_ptr<ReadManifestResult> ReadManifest(const base::FilePath& package_dir,
   //             be done when figuring out if to unblock connection completion.
   scoped_ptr<ReadManifestResult> result(new ReadManifestResult);
   result->manifest_root = deserializer.Deserialize(&error, &message);
-  result->package_dir = package_dir;
+  result->package_dir = system_package_dir;
   return result;
 }
 
@@ -71,9 +73,12 @@ ReadManifestResult::~ReadManifestResult() {}
 ////////////////////////////////////////////////////////////////////////////////
 // Catalog, public:
 
-Catalog::Catalog(scoped_ptr<Store> store, base::TaskRunner* file_task_runner)
+Catalog::Catalog(scoped_ptr<Store> store,
+                 base::TaskRunner* file_task_runner,
+                 EntryCache* system_catalog)
     : store_(std::move(store)),
       file_task_runner_(file_task_runner),
+      system_catalog_(system_catalog),
       weak_factory_(this) {
   PathService::Get(base::DIR_MODULE, &system_package_dir_);
   DeserializeCatalog();
@@ -130,16 +135,22 @@ void Catalog::ResolveMojoName(const mojo::String& mojo_name,
     return;
   }
 
-  auto entry = catalog_.find(mojo_name);
-  if (entry != catalog_.end()) {
+  auto entry = user_catalog_.find(mojo_name);
+  if (entry != user_catalog_.end()) {
     callback.Run(mojo::shell::mojom::ResolveResult::From(*entry->second));
-  } else {
-    base::PostTaskAndReplyWithResult(
-        file_task_runner_, FROM_HERE,
-        base::Bind(&ReadManifest, system_package_dir_, mojo_name),
-        base::Bind(&Catalog::OnReadManifest, weak_factory_.GetWeakPtr(),
-                   mojo_name, callback));
+    return;
   }
+  entry = system_catalog_->find(mojo_name);
+  if (entry != system_catalog_->end()) {
+    callback.Run(mojo::shell::mojom::ResolveResult::From(*entry->second));
+    return;
+  }
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_, FROM_HERE,
+      base::Bind(&ReadManifest, base::FilePath(), system_package_dir_,
+                 mojo_name),
+      base::Bind(&Catalog::OnReadManifest, weak_factory_.GetWeakPtr(),
+                  mojo_name, callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,12 +161,16 @@ void Catalog::GetEntries(mojo::Array<mojo::String> names,
   mojo::Map<mojo::String, mojom::CatalogEntryPtr> entries;
   std::vector<mojo::String> names_vec = names.PassStorage();
   for (const std::string& name : names_vec) {
-    if (catalog_.find(name) == catalog_.end())
+    Entry* entry = nullptr;
+    if (user_catalog_.find(name) != user_catalog_.end())
+      entry = user_catalog_[name].get();
+    else if (system_catalog_->find(name) != system_catalog_->end())
+      entry = (*system_catalog_)[name].get();
+    else
       continue;
-    const Entry& entry = *catalog_[name];
     mojom::CatalogEntryPtr entry_ptr(mojom::CatalogEntry::New());
-    entry_ptr->display_name = entry.display_name();
-    entries[entry.name()] = std::move(entry_ptr);
+    entry_ptr->display_name = entry->display_name();
+    entries[entry->name()] = std::move(entry_ptr);
   }
   callback.Run(std::move(entries));
 }
@@ -169,19 +184,21 @@ void Catalog::DeserializeCatalog() {
   const base::ListValue* catalog = store_->GetStore();
   CHECK(catalog);
   // TODO(sky): make this handle aliases.
+  // TODO(beng): implement this properly!
   for (auto it = catalog->begin(); it != catalog->end(); ++it) {
     const base::DictionaryValue* dictionary = nullptr;
     const base::Value* v = *it;
     CHECK(v->GetAsDictionary(&dictionary));
     scoped_ptr<Entry> entry = Entry::Deserialize(*dictionary);
     if (entry)
-      catalog_[entry->name()] = std::move(entry);
+      user_catalog_[entry->name()] = std::move(entry);
   }
 }
 
 void Catalog::SerializeCatalog() {
+  // TODO(beng): system catalog?
   scoped_ptr<base::ListValue> catalog(new base::ListValue);
-  for (const auto& entry : catalog_)
+  for (const auto& entry : user_catalog_)
     catalog->Append(entry.second->Serialize());
   if (store_)
     store_->UpdateStore(std::move(catalog));
@@ -201,17 +218,22 @@ void Catalog::OnReadManifest(base::WeakPtr<Catalog> catalog,
   entry->set_path(GetPackagePath(result->package_dir, name));
 
   callback.Run(mojo::shell::mojom::ResolveResult::From(*entry));
-  if (catalog)
-    catalog->AddEntryToCatalog(std::move(entry));
+  if (catalog) {
+    catalog->AddEntryToCatalog(
+       std::move(entry),
+        result->package_dir == catalog->system_package_dir_);
+  }
 }
 
-void Catalog::AddEntryToCatalog(scoped_ptr<Entry> entry) {
+void Catalog::AddEntryToCatalog(scoped_ptr<Entry> entry,
+                                bool is_system_catalog) {
   DCHECK(entry);
-  if (catalog_.end() != catalog_.find(entry->name()))
+  EntryCache* catalog = is_system_catalog ? system_catalog_ : &user_catalog_;
+  if (catalog->end() != catalog->find(entry->name()))
     return;
   for (auto child : entry->applications())
-    AddEntryToCatalog(make_scoped_ptr(child));
-  catalog_[entry->name()] = std::move(entry);
+    AddEntryToCatalog(make_scoped_ptr(child), is_system_catalog);
+  (*catalog)[entry->name()] = std::move(entry);
   SerializeCatalog();
 }
 

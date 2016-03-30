@@ -23,6 +23,7 @@ source_set("lib") {
     "factory.h",
     "store.cc",
     "store.h",
+    "types.h",
   ]
 
   deps = [

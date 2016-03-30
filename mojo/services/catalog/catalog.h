@@ -14,6 +14,7 @@
 #include "mojo/services/catalog/public/interfaces/catalog.mojom.h"
 #include "mojo/services/catalog/public/interfaces/resolver.mojom.h"
 #include "mojo/services/catalog/store.h"
+#include "mojo/services/catalog/types.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
 
@@ -32,7 +33,9 @@ class Catalog : public mojom::Resolver,
                 public mojo::shell::mojom::ShellResolver,
                 public mojom::Catalog {
  public:
-  Catalog(scoped_ptr<Store> store, base::TaskRunner* file_task_runner);
+  Catalog(scoped_ptr<Store> store,
+          base::TaskRunner* file_task_runner,
+          EntryCache* system_catalog);
   ~Catalog() override;
 
   void BindResolver(mojom::ResolverRequest request);
@@ -76,12 +79,12 @@ class Catalog : public mojom::Resolver,
 
   // Populate the catalog with data from |entry|, and pass it to the client
   // via callback.
-  void AddEntryToCatalog(scoped_ptr<Entry> entry);
+  void AddEntryToCatalog(scoped_ptr<Entry> entry, bool is_system_catalog);
 
   // Directory that contains packages and executables visible to all users.
   base::FilePath system_package_dir_;
-
-  // TODO(beng): add user package dir.
+  // Directory that contains packages visible to this Catalog instance's user.
+  base::FilePath user_package_dir_;
 
   // User-specific persistent storage of package manifests and other settings.
   scoped_ptr<Store> store_;
@@ -93,8 +96,11 @@ class Catalog : public mojom::Resolver,
   mojo::BindingSet<mojo::shell::mojom::ShellResolver> shell_resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
-  // Mojo name -> Entry storage, constructed from Store/package manifests.
-  std::map<std::string, scoped_ptr<Entry>> catalog_;
+  // The current user's packages, constructed from Store/package manifests.
+  EntryCache user_catalog_;
+  // Same as above, but for system-level (visible to all-users) packages and
+  // executables.
+  EntryCache* system_catalog_;
 
   base::WeakPtrFactory<Catalog> weak_factory_;
 
