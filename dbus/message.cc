@@ -599,6 +599,19 @@ void MessageWriter::AppendArrayOfBytes(const uint8_t* values, size_t length) {
   CloseContainer(&array_writer);
 }
 
+void MessageWriter::AppendArrayOfDoubles(const double* values, size_t length) {
+  DCHECK(!container_is_open_);
+  MessageWriter array_writer(message_);
+  OpenArray("d", &array_writer);
+  const bool success = dbus_message_iter_append_fixed_array(
+      &(array_writer.raw_message_iter_),
+      DBUS_TYPE_DOUBLE,
+      &values,
+      static_cast<int>(length));
+  CHECK(success) << "Unable to allocate memory";
+  CloseContainer(&array_writer);
+}
+
 void MessageWriter::AppendArrayOfStrings(
     const std::vector<std::string>& strings) {
   DCHECK(!container_is_open_);
@@ -822,7 +835,26 @@ bool MessageReader::PopArrayOfBytes(const uint8_t** bytes, size_t* length) {
   dbus_message_iter_get_fixed_array(&array_reader.raw_message_iter_,
                                     bytes,
                                     &int_length);
-  *length = static_cast<int>(int_length);
+  *length = static_cast<size_t>(int_length);
+  return true;
+}
+
+bool MessageReader::PopArrayOfDoubles(const double** doubles, size_t* length) {
+  MessageReader array_reader(message_);
+  if (!PopArray(&array_reader))
+    return false;
+  if (!array_reader.HasMoreData()) {
+    *length = 0;
+    *doubles = nullptr;
+    return true;
+  }
+  if (!array_reader.CheckDataType(DBUS_TYPE_DOUBLE))
+    return false;
+  int int_length = 0;
+  dbus_message_iter_get_fixed_array(&array_reader.raw_message_iter_,
+                                    doubles,
+                                    &int_length);
+  *length = static_cast<size_t>(int_length);
   return true;
 }
 

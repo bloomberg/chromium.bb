@@ -248,6 +248,27 @@ TEST(MessageTest, ArrayOfBytes) {
   EXPECT_EQ(3, output_bytes[2]);
 }
 
+TEST(MessageTest, ArrayOfDoubles) {
+  scoped_ptr<Response> message(Response::CreateEmpty());
+  MessageWriter writer(message.get());
+  std::vector<double> doubles;
+  doubles.push_back(0.2);
+  doubles.push_back(0.5);
+  doubles.push_back(1);
+  writer.AppendArrayOfDoubles(doubles.data(), doubles.size());
+
+  MessageReader reader(message.get());
+  const double* output_doubles = NULL;
+  size_t length = 0;
+  ASSERT_EQ("ad", reader.GetDataSignature());
+  ASSERT_TRUE(reader.PopArrayOfDoubles(&output_doubles, &length));
+  ASSERT_FALSE(reader.HasMoreData());
+  ASSERT_EQ(3U, length);
+  EXPECT_EQ(0.2, output_doubles[0]);
+  EXPECT_EQ(0.5, output_doubles[1]);
+  EXPECT_EQ(1, output_doubles[2]);
+}
+
 TEST(MessageTest, ArrayOfBytes_Empty) {
   scoped_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());

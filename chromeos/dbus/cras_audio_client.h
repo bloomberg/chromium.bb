@@ -128,6 +128,9 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   // |node_id|.
   virtual void SwapLeftRight(uint64_t node_id, bool swap) = 0;
 
+  virtual void SetGlobalOutputChannelRemix(
+      int32_t channels, const std::vector<double>& mixer) = 0;
+
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
       const WaitForServiceToBeAvailableCallback& callback) = 0;

@@ -40,6 +40,8 @@ class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
   void AddActiveOutputNode(uint64_t node_id) override;
   void RemoveActiveOutputNode(uint64_t node_id) override;
   void SwapLeftRight(uint64_t node_id, bool swap) override;
+  void SetGlobalOutputChannelRemix(int32_t channels,
+                                   const std::vector<double>& mixer) override;
   void WaitForServiceToBeAvailable(
       const WaitForServiceToBeAvailableCallback& callback) override;
 

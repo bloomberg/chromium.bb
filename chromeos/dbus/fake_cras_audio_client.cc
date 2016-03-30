@@ -167,6 +167,9 @@ void FakeCrasAudioClient::RemoveActiveInputNode(uint64_t node_id) {
 
 void FakeCrasAudioClient::SwapLeftRight(uint64_t node_id, bool swap) {}
 
+void FakeCrasAudioClient::SetGlobalOutputChannelRemix(
+    int32_t channels, const std::vector<double>& mixer) {}
+
 void FakeCrasAudioClient::AddActiveOutputNode(uint64_t node_id) {
   for (size_t i = 0; i < node_list_.size(); ++i) {
     if (node_list_[i].id == node_id)
