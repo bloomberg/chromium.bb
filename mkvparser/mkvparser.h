@@ -395,12 +395,12 @@ struct PrimaryChromaticity {
   static bool Parse(IMkvReader* reader, long long read_pos,
                     long long value_size, bool is_x,
                     PrimaryChromaticity** chromaticity);
-  double x;
-  double y;
+  float x;
+  float y;
 };
 
 struct MasteringMetadata {
-  static const double kValueNotPresent;
+  static const float kValueNotPresent;
 
   MasteringMetadata()
       : r(NULL),
@@ -424,8 +424,8 @@ struct MasteringMetadata {
   PrimaryChromaticity* g;
   PrimaryChromaticity* b;
   PrimaryChromaticity* white_point;
-  double luminance_max;
-  double luminance_min;
+  float luminance_max;
+  float luminance_min;
 };
 
 struct Colour {

@@ -23,7 +23,7 @@
 #include "common/webmids.h"
 
 namespace mkvparser {
-const double MasteringMetadata::kValueNotPresent = DBL_MAX;
+const float MasteringMetadata::kValueNotPresent = FLT_MAX;
 const long long Colour::kValueNotPresent = LLONG_MAX;
 
 #ifdef MSC_COMPAT
@@ -4994,10 +4994,13 @@ bool PrimaryChromaticity::Parse(IMkvReader* reader, long long read_pos,
   if (!chromaticity_ptr.get())
     return false;
 
-  double* value = is_x ? &chromaticity_ptr->x : &chromaticity_ptr->y;
+  float* value = is_x ? &chromaticity_ptr->x : &chromaticity_ptr->y;
 
+  double parser_value = 0;
   const long long value_parse_status =
-      UnserializeFloat(reader, read_pos, value_size, *value);
+      UnserializeFloat(reader, read_pos, value_size, parser_value);
+
+  *value = static_cast<float>(parser_value);
 
   if (value_parse_status < 0 || *value < 0.0 || *value > 1.0)
     return false;
@@ -5028,15 +5031,19 @@ bool MasteringMetadata::Parse(IMkvReader* reader, long long mm_start,
       return false;
 
     if (child_id == libwebm::kMkvLuminanceMax) {
+      double value = 0;
       const long long value_parse_status =
-          UnserializeFloat(reader, read_pos, child_size, mm_ptr->luminance_max);
+          UnserializeFloat(reader, read_pos, child_size, value);
+      mm_ptr->luminance_max = static_cast<float>(value);
       if (value_parse_status < 0 || mm_ptr->luminance_max < 0.0 ||
           mm_ptr->luminance_max > 9999.99) {
         return false;
       }
     } else if (child_id == libwebm::kMkvLuminanceMin) {
+      double value = 0;
       const long long value_parse_status =
-          UnserializeFloat(reader, read_pos, child_size, mm_ptr->luminance_min);
+          UnserializeFloat(reader, read_pos, child_size, value);
+      mm_ptr->luminance_min = static_cast<float>(value);
       if (value_parse_status < 0 || mm_ptr->luminance_min < 0.0 ||
           mm_ptr->luminance_min > 999.9999) {
         return false;
