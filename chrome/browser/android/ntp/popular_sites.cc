@@ -39,7 +39,7 @@ namespace {
 const char kPopularSitesURLFormat[] = "https://www.gstatic.com/chrome/ntp/%s";
 const char kPopularSitesServerFilenameFormat[] = "suggested_sites_%s_%s.json";
 const char kPopularSitesDefaultCountryCode[] = "DEFAULT";
-const char kPopularSitesDefaultVersion[] = "3";
+const char kPopularSitesDefaultVersion[] = "5";
 const char kPopularSitesLocalFilename[] = "suggested_sites.json";
 const int kPopularSitesRedownloadIntervalHours = 24;
 
