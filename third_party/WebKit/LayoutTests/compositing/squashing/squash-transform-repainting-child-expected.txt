@@ -8,18 +8,31 @@ CASE 1, original layer tree
       "drawsContent": true,
       "children": [
         {
+          "position": [100, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        },
+        {
           "shouldFlattenTransform": false,
           "children": [
             {
-              "position": [100, 100],
+              "position": [20, 20],
               "bounds": [100, 100],
               "contentsOpaque": true,
               "drawsContent": true,
-              "backgroundColor": "#0000FF"
+              "backgroundColor": "#00FF00",
+              "transform": [
+                [0.707106781186548, 0.707106781186548, 0, 0],
+                [-0.707106781186548, 0.707106781186548, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+              ]
             },
             {
-              "position": [-1, -1],
-              "bounds": [281, 281],
+              "position": [180, 180],
+              "bounds": [100, 100],
               "drawsContent": true
             }
           ]
@@ -38,22 +51,35 @@ CASE 2, hovering over the outer div
       "drawsContent": true,
       "children": [
         {
+          "position": [100, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        },
+        {
           "shouldFlattenTransform": false,
           "children": [
             {
-              "position": [100, 100],
+              "position": [20, 20],
               "bounds": [100, 100],
               "contentsOpaque": true,
               "drawsContent": true,
-              "backgroundColor": "#0000FF"
+              "backgroundColor": "#008000",
+              "transform": [
+                [0.707106781186548, 0.707106781186548, 0, 0],
+                [-0.707106781186548, 0.707106781186548, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+              ],
+              "repaintRects": [
+                [0, 0, 100, 100]
+              ]
             },
             {
-              "position": [-1, -1],
-              "bounds": [281, 281],
-              "drawsContent": true,
-              "repaintRects": [
-                [0, 0, 142, 142]
-              ]
+              "position": [180, 180],
+              "bounds": [100, 100],
+              "drawsContent": true
             }
           ]
         }
@@ -71,23 +97,36 @@ CASE 3, hovering over the inner div
       "drawsContent": true,
       "children": [
         {
+          "position": [100, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        },
+        {
           "shouldFlattenTransform": false,
           "children": [
             {
-              "position": [100, 100],
+              "position": [20, 20],
               "bounds": [100, 100],
               "contentsOpaque": true,
               "drawsContent": true,
-              "backgroundColor": "#0000FF"
+              "backgroundColor": "#008000",
+              "transform": [
+                [0.707106781186548, 0.707106781186548, 0, 0],
+                [-0.707106781186548, 0.707106781186548, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+              ],
+              "repaintRects": [
+                [20, 25, 50, 50],
+                [0, 0, 100, 100]
+              ]
             },
             {
-              "position": [-1, -1],
-              "bounds": [281, 281],
-              "drawsContent": true,
-              "repaintRects": [
-                [32, 32, 71, 71],
-                [0, 0, 142, 142]
-              ]
+              "position": [180, 180],
+              "bounds": [100, 100],
+              "drawsContent": true
             }
           ]
         }

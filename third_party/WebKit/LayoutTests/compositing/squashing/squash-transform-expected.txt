@@ -7,18 +7,31 @@
       "drawsContent": true,
       "children": [
         {
+          "position": [100, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        },
+        {
           "shouldFlattenTransform": false,
           "children": [
             {
-              "position": [100, 100],
+              "position": [20, 20],
               "bounds": [100, 100],
               "contentsOpaque": true,
               "drawsContent": true,
-              "backgroundColor": "#0000FF"
+              "backgroundColor": "#00FF00",
+              "transform": [
+                [0.707106781186548, 0.707106781186548, 0, 0],
+                [-0.707106781186548, 0.707106781186548, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+              ]
             },
             {
-              "position": [-1, -1],
-              "bounds": [281, 281],
+              "position": [180, 180],
+              "bounds": [100, 100],
               "drawsContent": true
             }
           ]
