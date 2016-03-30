@@ -25,9 +25,9 @@
             "enable_features": [
                 "AutomaticTabDiscarding"
             ],
-            "group_name": "Enabled_Once_5",
+            "group_name": "Enabled_Once_10-gen2",
             "params": {
-                "MinimumProtectionTime": "300"
+                "MinimumProtectionTime": "600"
             }
         }
     ],
