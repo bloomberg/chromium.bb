@@ -5,6 +5,8 @@
 #ifndef WebBluetoothError_h
 #define WebBluetoothError_h
 
+#include "public/platform/modules/bluetooth/web_bluetooth.mojom.h"
+
 namespace blink {
 
 // Errors that can occur during Web Bluetooth execution, which are transformed
@@ -13,62 +15,7 @@ namespace blink {
 // These errors all produce constant message strings. If a particular message
 // needs a dynamic component, we should add a separate enum so type-checking the IPC
 // ensures the dynamic component is passed.
-enum class WebBluetoothError {
-    // AbortError:
-    // InvalidModificationError:
-    GATTInvalidAttributeLength,
-    // InvalidStateError:
-    ServiceNoLongerExists,
-    CharacteristicNoLongerExists,
-    // NetworkError:
-    ConnectAlreadyInProgress,
-    ConnectAttributeLengthInvalid,
-    ConnectAuthCanceled,
-    ConnectAuthFailed,
-    ConnectAuthRejected,
-    ConnectAuthTimeout,
-    ConnectConnectionCongested,
-    ConnectInsufficientEncryption,
-    ConnectOffsetInvalid,
-    ConnectReadNotPermitted,
-    ConnectRequestNotSupported,
-    ConnectUnknownError,
-    ConnectUnknownFailure,
-    ConnectUnsupportedDevice,
-    ConnectWriteNotPermitted,
-    DeviceNoLongerInRange,
-    GATTNotPaired,
-    GATTOperationInProgress,
-    UntranslatedConnectErrorCode,
-    // NotFoundError:
-    NoBluetoothAdapter,
-    ChosenDeviceVanished,
-    ChooserCancelled,
-    ChooserDisabled,
-    ChooserDeniedPermission,
-    ServiceNotFound,
-    CharacteristicNotFound,
-    NoCharacteristicsFound,
-    // NotSupportedError:
-    GATTUnknownError,
-    GATTUnknownFailure,
-    GATTNotPermitted,
-    GATTNotSupported,
-    GATTUntranslatedErrorCode,
-    // SecurityError:
-    GATTNotAuthorized,
-    BlacklistedCharacteristicUUID,
-    BlacklistedRead,
-    BlacklistedWrite,
-    NotAllowedToAccessService,
-    RequestDeviceWithBlacklistedUUID,
-    RequestDeviceWithUniqueOrigin,
-    RequestDeviceWithoutFrame,
-    // SyntaxError:
-
-    ENUM_MAX_VALUE = RequestDeviceWithoutFrame,
-};
-
+using WebBluetoothError = mojom::WebBluetoothError;
 } // namespace blink
 
 #endif // WebBluetoothError_h

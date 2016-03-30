@@ -118,55 +118,55 @@ WebBluetoothError TranslateConnectError(
   switch (error_code) {
     case device::BluetoothDevice::ERROR_UNKNOWN:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNKNOWN);
-      return WebBluetoothError::ConnectUnknownError;
+      return WebBluetoothError::CONNECT_UNKNOWN_ERROR;
     case device::BluetoothDevice::ERROR_INPROGRESS:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::IN_PROGRESS);
-      return WebBluetoothError::ConnectAlreadyInProgress;
+      return WebBluetoothError::CONNECT_ALREADY_IN_PROGRESS;
     case device::BluetoothDevice::ERROR_FAILED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::FAILED);
-      return WebBluetoothError::ConnectUnknownFailure;
+      return WebBluetoothError::CONNECT_UNKNOWN_FAILURE;
     case device::BluetoothDevice::ERROR_AUTH_FAILED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_FAILED);
-      return WebBluetoothError::ConnectAuthFailed;
+      return WebBluetoothError::CONNECT_AUTH_FAILED;
     case device::BluetoothDevice::ERROR_AUTH_CANCELED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_CANCELED);
-      return WebBluetoothError::ConnectAuthCanceled;
+      return WebBluetoothError::CONNECT_AUTH_CANCELED;
     case device::BluetoothDevice::ERROR_AUTH_REJECTED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_REJECTED);
-      return WebBluetoothError::ConnectAuthRejected;
+      return WebBluetoothError::CONNECT_AUTH_REJECTED;
     case device::BluetoothDevice::ERROR_AUTH_TIMEOUT:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_TIMEOUT);
-      return WebBluetoothError::ConnectAuthTimeout;
+      return WebBluetoothError::CONNECT_AUTH_TIMEOUT;
     case device::BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNSUPPORTED_DEVICE);
-      return WebBluetoothError::ConnectUnsupportedDevice;
+      return WebBluetoothError::CONNECT_UNSUPPORTED_DEVICE;
     case device::BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::ATTRIBUTE_LENGTH_INVALID);
-      return WebBluetoothError::ConnectAttributeLengthInvalid;
+      return WebBluetoothError::CONNECT_ATTRIBUTE_LENGTH_INVALID;
     case device::BluetoothDevice::ERROR_CONNECTION_CONGESTED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::CONNECTION_CONGESTED);
-      return WebBluetoothError::ConnectConnectionCongested;
+      return WebBluetoothError::CONNECT_CONNECTION_CONGESTED;
     case device::BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::INSUFFICIENT_ENCRYPTION);
-      return WebBluetoothError::ConnectInsufficientEncryption;
+      return WebBluetoothError::CONNECT_INSUFFICIENT_ENCRYPTION;
     case device::BluetoothDevice::ERROR_OFFSET_INVALID:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::OFFSET_INVALID);
-      return WebBluetoothError::ConnectOffsetInvalid;
+      return WebBluetoothError::CONNECT_OFFSET_INVALID;
     case device::BluetoothDevice::ERROR_READ_NOT_PERMITTED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::READ_NOT_PERMITTED);
-      return WebBluetoothError::ConnectReadNotPermitted;
+      return WebBluetoothError::CONNECT_READ_NOT_PERMITTED;
     case device::BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::REQUEST_NOT_SUPPORTED);
-      return WebBluetoothError::ConnectRequestNotSupported;
+      return WebBluetoothError::CONNECT_REQUEST_NOT_SUPPORTED;
     case device::BluetoothDevice::ERROR_WRITE_NOT_PERMITTED:
       RecordConnectGATTOutcome(UMAConnectGATTOutcome::WRITE_NOT_PERMITTED);
-      return WebBluetoothError::ConnectWriteNotPermitted;
+      return WebBluetoothError::CONNECT_WRITE_NOT_PERMITTED;
     case device::BluetoothDevice::NUM_CONNECT_ERROR_CODES:
       NOTREACHED();
-      return WebBluetoothError::UntranslatedConnectErrorCode;
+      return WebBluetoothError::UNTRANSLATED_CONNECT_ERROR_CODE;
   }
   NOTREACHED();
-  return WebBluetoothError::UntranslatedConnectErrorCode;
+  return WebBluetoothError::UNTRANSLATED_CONNECT_ERROR_CODE;
 }
 
 blink::WebBluetoothError TranslateGATTError(
@@ -175,37 +175,37 @@ blink::WebBluetoothError TranslateGATTError(
   switch (error_code) {
     case BluetoothGattService::GATT_ERROR_UNKNOWN:
       RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::UNKNOWN);
-      return blink::WebBluetoothError::GATTUnknownError;
+      return blink::WebBluetoothError::GATT_UNKNOWN_ERROR;
     case BluetoothGattService::GATT_ERROR_FAILED:
       RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::FAILED);
-      return blink::WebBluetoothError::GATTUnknownFailure;
+      return blink::WebBluetoothError::GATT_UNKNOWN_FAILURE;
     case BluetoothGattService::GATT_ERROR_IN_PROGRESS:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::IN_PROGRESS);
-      return blink::WebBluetoothError::GATTOperationInProgress;
+      return blink::WebBluetoothError::GATT_OPERATION_IN_PROGRESS;
     case BluetoothGattService::GATT_ERROR_INVALID_LENGTH:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::INVALID_LENGTH);
-      return blink::WebBluetoothError::GATTInvalidAttributeLength;
+      return blink::WebBluetoothError::GATT_INVALID_ATTRIBUTE_LENGTH;
     case BluetoothGattService::GATT_ERROR_NOT_PERMITTED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_PERMITTED);
-      return blink::WebBluetoothError::GATTNotPermitted;
+      return blink::WebBluetoothError::GATT_NOT_PERMITTED;
     case BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_AUTHORIZED);
-      return blink::WebBluetoothError::GATTNotAuthorized;
+      return blink::WebBluetoothError::GATT_NOT_AUTHORIZED;
     case BluetoothGattService::GATT_ERROR_NOT_PAIRED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_PAIRED);
-      return blink::WebBluetoothError::GATTNotPaired;
+      return blink::WebBluetoothError::GATT_NOT_PAIRED;
     case BluetoothGattService::GATT_ERROR_NOT_SUPPORTED:
       RecordGATTOperationOutcome(operation,
                                  UMAGATTOperationOutcome::NOT_SUPPORTED);
-      return blink::WebBluetoothError::GATTNotSupported;
+      return blink::WebBluetoothError::GATT_NOT_SUPPORTED;
   }
   NOTREACHED();
-  return blink::WebBluetoothError::GATTUntranslatedErrorCode;
+  return blink::WebBluetoothError::GATT_UNTRANSLATED_ERROR_CODE;
 }
 
 void StopDiscoverySession(
@@ -426,16 +426,16 @@ struct BluetoothDispatcherHost::CacheQueryResult {
       case CacheQueryOutcome::SUCCESS:
       case CacheQueryOutcome::BAD_RENDERER:
         NOTREACHED();
-        return WebBluetoothError::DeviceNoLongerInRange;
+        return WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
       case CacheQueryOutcome::NO_DEVICE:
-        return WebBluetoothError::DeviceNoLongerInRange;
+        return WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
       case CacheQueryOutcome::NO_SERVICE:
-        return WebBluetoothError::ServiceNoLongerExists;
+        return WebBluetoothError::SERVICE_NO_LONGER_EXISTS;
       case CacheQueryOutcome::NO_CHARACTERISTIC:
-        return WebBluetoothError::CharacteristicNoLongerExists;
+        return WebBluetoothError::CHARACTERISTIC_NO_LONGER_EXISTS;
     }
     NOTREACHED();
-    return WebBluetoothError::DeviceNoLongerInRange;
+    return WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
   }
 
   device::BluetoothDevice* device;
@@ -591,7 +591,7 @@ void BluetoothDispatcherHost::GattServicesDiscovered(
               UMAGetPrimaryServiceOutcome::NOT_FOUND);
           Send(new BluetoothMsg_GetPrimaryServiceError(
               request.thread_id, request.request_id,
-              WebBluetoothError::ServiceNotFound));
+              WebBluetoothError::SERVICE_NOT_FOUND));
         }
         break;
       case PrimaryServicesRequest::GET_PRIMARY_SERVICES:
@@ -660,7 +660,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
     }
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_BLUETOOTH_ADAPTER);
     Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
+        thread_id, request_id, WebBluetoothError::NO_BLUETOOTH_ADAPTER));
     return;
   }
   OnRequestDeviceImpl(thread_id, request_id, frame_routing_id, filters,
@@ -752,7 +752,8 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
   if (!allowed_devices_map_.IsOriginAllowedToAccessService(
           GetOrigin(frame_routing_id), device_id, service_uuid)) {
     Send(new BluetoothMsg_GetPrimaryServiceError(
-        thread_id, request_id, WebBluetoothError::NotAllowedToAccessService));
+        thread_id, request_id,
+        WebBluetoothError::NOT_ALLOWED_TO_ACCESS_SERVICE));
     return;
   }
 
@@ -794,7 +795,7 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
     VLOG(1) << "Service not found in device.";
     RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NOT_FOUND);
     Send(new BluetoothMsg_GetPrimaryServiceError(
-        thread_id, request_id, WebBluetoothError::ServiceNotFound));
+        thread_id, request_id, WebBluetoothError::SERVICE_NOT_FOUND));
     return;
   }
 
@@ -822,7 +823,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
     RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::BLACKLISTED);
     Send(new BluetoothMsg_GetCharacteristicError(
         thread_id, request_id,
-        WebBluetoothError::BlacklistedCharacteristicUUID));
+        WebBluetoothError::BLACKLISTED_CHARACTERISTIC_UUID));
     return;
   }
 
@@ -864,7 +865,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
   }
   RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NOT_FOUND);
   Send(new BluetoothMsg_GetCharacteristicError(
-      thread_id, request_id, WebBluetoothError::CharacteristicNotFound));
+      thread_id, request_id, WebBluetoothError::CHARACTERISTIC_NOT_FOUND));
 }
 
 void BluetoothDispatcherHost::OnGetCharacteristics(
@@ -885,7 +886,7 @@ void BluetoothDispatcherHost::OnGetCharacteristics(
     RecordGetCharacteristicsOutcome(UMAGetCharacteristicOutcome::BLACKLISTED);
     Send(new BluetoothMsg_GetCharacteristicsError(
         thread_id, request_id,
-        WebBluetoothError::BlacklistedCharacteristicUUID));
+        WebBluetoothError::BLACKLISTED_CHARACTERISTIC_UUID));
     return;
   }
 
@@ -942,9 +943,10 @@ void BluetoothDispatcherHost::OnGetCharacteristics(
           ? UMAGetCharacteristicOutcome::NO_CHARACTERISTICS
           : UMAGetCharacteristicOutcome::NOT_FOUND);
   Send(new BluetoothMsg_GetCharacteristicsError(
-      thread_id, request_id, characteristics_uuid.empty()
-                                 ? WebBluetoothError::NoCharacteristicsFound
-                                 : WebBluetoothError::CharacteristicNotFound));
+      thread_id, request_id,
+      characteristics_uuid.empty()
+          ? WebBluetoothError::NO_CHARACTERISTICS_FOUND
+          : WebBluetoothError::CHARACTERISTIC_NOT_FOUND));
 }
 
 void BluetoothDispatcherHost::OnReadValue(
@@ -974,7 +976,7 @@ void BluetoothDispatcherHost::OnReadValue(
           query_result.characteristic->GetUUID())) {
     RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::BLACKLISTED);
     Send(new BluetoothMsg_ReadCharacteristicValueError(
-        thread_id, request_id, WebBluetoothError::BlacklistedRead));
+        thread_id, request_id, WebBluetoothError::BLACKLISTED_READ));
     return;
   }
 
@@ -1024,7 +1026,7 @@ void BluetoothDispatcherHost::OnWriteValue(
           query_result.characteristic->GetUUID())) {
     RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::BLACKLISTED);
     Send(new BluetoothMsg_WriteCharacteristicValueError(
-        thread_id, request_id, WebBluetoothError::BlacklistedWrite));
+        thread_id, request_id, WebBluetoothError::BLACKLISTED_WRITE));
     return;
   }
 
@@ -1173,7 +1175,7 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
         UMARequestDeviceOutcome::BLACKLISTED_SERVICE_IN_FILTER);
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id,
-        WebBluetoothError::RequestDeviceWithBlacklistedUUID));
+        WebBluetoothError::REQUEST_DEVICE_WITH_BLACKLISTED_UUID));
     return;
   }
   std::vector<BluetoothUUID> optional_services_blacklist_filtered(
@@ -1192,7 +1194,8 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
                   << ", " << frame_routing_id;
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_RENDER_FRAME);
     Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id, WebBluetoothError::RequestDeviceWithoutFrame));
+        thread_id, request_id,
+        WebBluetoothError::REQUEST_DEVICE_WITHOUT_FRAME));
     return;
   }
 
@@ -1205,7 +1208,7 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
     VLOG(1) << "Request device with unique origin.";
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id,
-        WebBluetoothError::RequestDeviceWithUniqueOrigin));
+        WebBluetoothError::REQUEST_DEVICE_WITH_UNIQUE_ORIGIN));
     return;
   }
 
@@ -1216,7 +1219,7 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
     RecordRequestDeviceOutcome(
         UMARequestDeviceOutcome::BLUETOOTH_ADAPTER_NOT_PRESENT);
     Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
+        thread_id, request_id, WebBluetoothError::NO_BLUETOOTH_ADAPTER));
     return;
   }
 
@@ -1233,7 +1236,7 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
     RecordRequestDeviceOutcome(
         UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_GLOBALLY_DISABLED);
     Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id, WebBluetoothError::ChooserDisabled));
+        thread_id, request_id, WebBluetoothError::CHOOSER_DISABLED));
     return;
   }
 
@@ -1377,7 +1380,7 @@ void BluetoothDispatcherHost::FinishClosingChooser(
     RecordRequestDeviceOutcome(OutcomeFromChooserEvent(event));
     Send(new BluetoothMsg_RequestDeviceError(
         session->thread_id, session->request_id,
-        WebBluetoothError::ChooserCancelled));
+        WebBluetoothError::CHOOSER_CANCELLED));
     request_device_sessions_.Remove(chooser_id);
     return;
   }
@@ -1387,7 +1390,7 @@ void BluetoothDispatcherHost::FinishClosingChooser(
     VLOG(1) << "Bluetooth chooser denied permission";
     Send(new BluetoothMsg_RequestDeviceError(
         session->thread_id, session->request_id,
-        WebBluetoothError::ChooserDeniedPermission));
+        WebBluetoothError::CHOOSER_DENIED_PERMISSION));
     request_device_sessions_.Remove(chooser_id);
     return;
   }
@@ -1402,7 +1405,7 @@ void BluetoothDispatcherHost::FinishClosingChooser(
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::CHOSEN_DEVICE_VANISHED);
     Send(new BluetoothMsg_RequestDeviceError(
         session->thread_id, session->request_id,
-        WebBluetoothError::ChosenDeviceVanished));
+        WebBluetoothError::CHOSEN_DEVICE_VANISHED));
     request_device_sessions_.Remove(chooser_id);
     return;
   }
