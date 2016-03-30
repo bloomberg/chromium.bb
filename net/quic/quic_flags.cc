@@ -146,3 +146,6 @@ bool FLAGS_quic_use_socket_timestamp = true;
 // If true, handling of errors from invalid stream frames is done in
 // one place in QuicStreamSequencer::OnStreamFrame.
 bool FLAGS_quic_consolidate_onstreamframe_errors = true;
+
+// Resend 0RTT requests in response to an REJ that re-establishes encryption.
+bool FLAGS_quic_reply_to_rej = true;

@@ -48,5 +48,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_copy_acks;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_sslr_byte_conservation;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_socket_timestamp;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_consolidate_onstreamframe_errors;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_reply_to_rej;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

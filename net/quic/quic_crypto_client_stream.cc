@@ -377,12 +377,20 @@ void QuicCryptoClientStream::DoSendCHLO(
       ENCRYPTION_INITIAL,
       crypto_negotiated_params_.initial_crypters.encrypter.release());
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
-  if (!encryption_established_) {
+
+  if (FLAGS_quic_reply_to_rej) {
+    // TODO(ianswett): Merge ENCRYPTION_REESTABLISHED and
+    // ENCRYPTION_FIRST_ESTABLSIHED.
     encryption_established_ = true;
-    session()->OnCryptoHandshakeEvent(
-        QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
-  } else {
     session()->OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_REESTABLISHED);
+  } else {
+    if (!encryption_established_) {
+      encryption_established_ = true;
+      session()->OnCryptoHandshakeEvent(
+          QuicSession::ENCRYPTION_FIRST_ESTABLISHED);
+    } else {
+      session()->OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_REESTABLISHED);
+    }
   }
 }
 
