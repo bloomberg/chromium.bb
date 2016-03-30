@@ -26458,6 +26458,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.PreconnectedLinkNavigations" enum="PreconnectedNavigation">
   <owner>csharrison@chromium.org</owner>
+  <obsolete>
+    No longer tracked.
+  </obsolete>
   <summary>
     Indicate whether a link navigation was preceded by a recent pre-connect
     trigger (within 10 seconds). There is a high chance that loading the page
@@ -26467,6 +26470,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.PreconnectedNavigation" enum="PreconnectedNavigation">
   <owner>csharrison@chromium.org</owner>
+  <obsolete>
+    No longer tracked.
+  </obsolete>
   <summary>
     Indicate whether a URLRequest was preceded by a recent pre-connect trigger
     (within 10 seconds). There is a high chance that loading the resource used a
@@ -26494,6 +26500,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.PreconnectProxyStatus" enum="ProxyStatus">
   <owner>csharrison@chromium.org</owner>
+  <obsolete>
+    No longer tracked.
+  </obsolete>
   <summary>
     Indicate whether there was a proxy to preclude preconnection.
   </summary>
@@ -26529,6 +26538,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.PreconnectTriggerUsed" enum="PreconnectTriggerUsed">
   <owner>csharrison@chromium.org</owner>
+  <obsolete>
+    No longer tracked.
+  </obsolete>
   <summary>
     Indicate whether if a preconnect trigger is followed by a resource request
     (from link navigations) to the host or not. This is to measure precision of
