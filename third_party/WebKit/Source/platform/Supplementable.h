@@ -167,7 +167,7 @@ public:
 
 protected:
     SupplementableTracing() { }
-    typedef HeapHashMap<const char*, Member<SupplementBase<T, true>>, PtrHash<const char*>> SupplementMap;
+    typedef HeapHashMap<const char*, Member<SupplementBase<T, true>>, PtrHash<const char>> SupplementMap;
     SupplementMap m_supplements;
 };
 
@@ -176,7 +176,7 @@ class SupplementableTracing<T, false> {
     WTF_MAKE_NONCOPYABLE(SupplementableTracing);
 protected:
     SupplementableTracing() { }
-    typedef HashMap<const char*, OwnPtr<SupplementBase<T, false>>, PtrHash<const char*>> SupplementMap;
+    typedef HashMap<const char*, OwnPtr<SupplementBase<T, false>>, PtrHash<const char>> SupplementMap;
     SupplementMap m_supplements;
 };
 

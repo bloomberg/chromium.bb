@@ -121,8 +121,9 @@ template <typename T> struct FloatHash {
 
 // pointer identity hash function
 
-template <typename T> struct PtrHash {
-    static unsigned hash(T key)
+template <typename T>
+struct PtrHash {
+    static unsigned hash(T* key)
     {
 #if COMPILER(MSVC)
 #pragma warning(push)
@@ -133,40 +134,46 @@ template <typename T> struct PtrHash {
 #pragma warning(pop)
 #endif
     }
-    static bool equal(T a, T b) { return a == b; }
-    static bool equal(std::nullptr_t, T b) { return b == 0; }
-    static bool equal(T a, std::nullptr_t) { return a == 0; }
+    static bool equal(T* a, T* b) { return a == b; }
+    static bool equal(std::nullptr_t, T* b) { return !b; }
+    static bool equal(T* a, std::nullptr_t) { return !a; }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
-template <typename P> struct PtrHash<RefPtr<P>> : PtrHash<P*> {
-    using PtrHash<P*>::hash;
-    static unsigned hash(const RefPtr<P>& key) { return hash(key.get()); }
-    static unsigned hash(const PassRefPtr<P>& key) { return hash(key.get()); }
-    using PtrHash<P*>::equal;
-    static bool equal(const RefPtr<P>& a, const RefPtr<P>& b) { return a == b; }
-    static bool equal(P* a, const RefPtr<P>& b) { return a == b; }
-    static bool equal(const RefPtr<P>& a, P* b) { return a == b; }
-    static bool equal(const RefPtr<P>& a, const PassRefPtr<P>& b) { return a == b; }
-};
-template <typename P> struct PtrHash<RawPtr<P>> : PtrHash<P*> {
-    using PtrHash<P*>::hash;
-    static unsigned hash(const RawPtr<P>& key) { return hash(key.get()); }
-    using PtrHash<P*>::equal;
-    static bool equal(const RawPtr<P>& a, const RawPtr<P>& b) { return a == b; }
-    static bool equal(P* a, const RawPtr<P>& b) { return a == b; }
-    static bool equal(const RawPtr<P>& a, P* b) { return a == b; }
-};
-template <typename P> struct PtrHash<OwnPtr<P>> : PtrHash<P*> {
-    using PtrHash<P*>::hash;
-    static unsigned hash(const OwnPtr<P>& key) { return hash(key.get()); }
-    static unsigned hash(const PassOwnPtr<P>& key) { return hash(key.get()); }
 
-    static bool equal(const OwnPtr<P>& a, const OwnPtr<P>& b)
+template <typename T>
+struct RefPtrHash : PtrHash<T> {
+    using PtrHash<T>::hash;
+    static unsigned hash(const RefPtr<T>& key) { return hash(key.get()); }
+    static unsigned hash(const PassRefPtr<T>& key) { return hash(key.get()); }
+    using PtrHash<T>::equal;
+    static bool equal(const RefPtr<T>& a, const RefPtr<T>& b) { return a == b; }
+    static bool equal(T* a, const RefPtr<T>& b) { return a == b; }
+    static bool equal(const RefPtr<T>& a, T* b) { return a == b; }
+    static bool equal(const RefPtr<T>& a, const PassRefPtr<T>& b) { return a == b; }
+};
+
+template <typename T>
+struct RawPtrHash : PtrHash<T> {
+    using PtrHash<T>::hash;
+    static unsigned hash(const RawPtr<T>& key) { return hash(key.get()); }
+    using PtrHash<T>::equal;
+    static bool equal(const RawPtr<T>& a, const RawPtr<T>& b) { return a == b; }
+    static bool equal(T* a, const RawPtr<T>& b) { return a == b; }
+    static bool equal(const RawPtr<T>& a, T* b) { return a == b; }
+};
+
+template <typename T>
+struct OwnPtrHash : PtrHash<T> {
+    using PtrHash<T>::hash;
+    static unsigned hash(const OwnPtr<T>& key) { return hash(key.get()); }
+    static unsigned hash(const PassOwnPtr<T>& key) { return hash(key.get()); }
+
+    static bool equal(const OwnPtr<T>& a, const OwnPtr<T>& b)
     {
         return a.get() == b.get();
     }
-    static bool equal(const OwnPtr<P>& a, P* b) { return a == b; }
-    static bool equal(const OwnPtr<P>& a, const PassOwnPtr<P>& b)
+    static bool equal(const OwnPtr<T>& a, T* b) { return a == b; }
+    static bool equal(const OwnPtr<T>& a, const PassOwnPtr<T>& b)
     {
         return a.get() == b.get();
     }
@@ -213,12 +220,24 @@ template <> struct DefaultHash<wchar_t> { typedef IntHash<wchar_t> Hash; };
 template <> struct DefaultHash<float> { typedef FloatHash<float> Hash; };
 template <> struct DefaultHash<double> { typedef FloatHash<double> Hash; };
 
-// make PtrHash the default hash function for pointer types that don't specialize
+// Set default hash functions for pointer types.
 
-template <typename P> struct DefaultHash<P*> { typedef PtrHash<P*> Hash; };
-template <typename P> struct DefaultHash<RefPtr<P>> { typedef PtrHash<RefPtr<P>> Hash; };
-template <typename P> struct DefaultHash<RawPtr<P>> { typedef PtrHash<RawPtr<P>> Hash; };
-template <typename P> struct DefaultHash<OwnPtr<P>> { typedef PtrHash<OwnPtr<P>> Hash; };
+template <typename T>
+struct DefaultHash<T*> {
+    using Hash = PtrHash<T>;
+};
+template <typename T>
+struct DefaultHash<RefPtr<T>> {
+    using Hash = RefPtrHash<T>;
+};
+template <typename T>
+struct DefaultHash<RawPtr<T>> {
+    using Hash = RawPtrHash<T>;
+};
+template <typename T>
+struct DefaultHash<OwnPtr<T>> {
+    using Hash = OwnPtrHash<T>;
+};
 
 // make IntPairHash the default hash function for pairs of (at most) 32-bit integers.
 

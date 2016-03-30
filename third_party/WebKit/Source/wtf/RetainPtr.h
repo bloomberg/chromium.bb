@@ -25,6 +25,7 @@
 #include "wtf/HashTraits.h"
 #include "wtf/TypeTraits.h"
 #include <algorithm>
+#include <type_traits>
 #include <utility>
 
 #if USE(CF)
@@ -297,18 +298,24 @@ template <typename T> inline RetainPtr<T> retainPtr(T o)
     return RetainPtr<T>(o);
 }
 
-template <typename P> struct HashTraits<RetainPtr<P>> : SimpleClassHashTraits<RetainPtr<P>> { };
+template <typename T>
+struct HashTraits<RetainPtr<T>> : SimpleClassHashTraits<RetainPtr<T>> { };
 
-template <typename P> struct PtrHash<RetainPtr<P>> : PtrHash<typename RetainPtr<P>::PtrType> {
-    using PtrHash<typename RetainPtr<P>::PtrType>::hash;
-    static unsigned hash(const RetainPtr<P>& key) { return hash(key.get()); }
-    using PtrHash<typename RetainPtr<P>::PtrType>::equal;
-    static bool equal(const RetainPtr<P>& a, const RetainPtr<P>& b) { return a == b; }
-    static bool equal(typename RetainPtr<P>::PtrType a, const RetainPtr<P>& b) { return a == b; }
-    static bool equal(const RetainPtr<P>& a, typename RetainPtr<P>::PtrType b) { return a == b; }
+template <typename T>
+struct RetainPtrHash : PtrHash<typename std::remove_pointer<typename RetainPtr<T>::PtrType>::type> {
+    using Base = PtrHash<typename std::remove_pointer<typename RetainPtr<T>::PtrType>::type>;
+    using Base::hash;
+    static unsigned hash(const RetainPtr<T>& key) { return hash(key.get()); }
+    using Base::equal;
+    static bool equal(const RetainPtr<T>& a, const RetainPtr<T>& b) { return a == b; }
+    static bool equal(typename RetainPtr<T>::PtrType a, const RetainPtr<T>& b) { return a == b; }
+    static bool equal(const RetainPtr<T>& a, typename RetainPtr<T>::PtrType b) { return a == b; }
 };
 
-template <typename P> struct DefaultHash<RetainPtr<P>> { typedef PtrHash<RetainPtr<P>> Hash; };
+template <typename T>
+struct DefaultHash<RetainPtr<T>> {
+    using Hash = RetainPtrHash<T>;
+};
 
 } // namespace WTF
 

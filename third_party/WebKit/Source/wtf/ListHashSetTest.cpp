@@ -645,11 +645,11 @@ struct CountCopyHashTraits : public GenericHashTraits<CountCopy> {
     static bool isDeletedValue(const CountCopy& value) { return value.counter() == CountCopy::kDeletedValue; }
 };
 
-struct CountCopyHash : public PtrHash<const int*> {
-    static unsigned hash(const CountCopy& value) { return PtrHash<const int*>::hash(value.counter()); }
+struct CountCopyHash : public PtrHash<const int> {
+    static unsigned hash(const CountCopy& value) { return PtrHash<const int>::hash(value.counter()); }
     static bool equal(const CountCopy& left, const CountCopy& right)
     {
-        return PtrHash<const int*>::equal(left.counter(), right.counter());
+        return PtrHash<const int>::equal(left.counter(), right.counter());
     }
 };
 

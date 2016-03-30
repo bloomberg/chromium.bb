@@ -1451,7 +1451,7 @@ void CompositedLayerMapping::updateRenderingContext()
     // consistent id.
     if (PaintLayer* root = m_owningLayer.renderingContextRoot()) {
         if (Node* node = root->layoutObject()->node())
-            id = static_cast<int>(WTF::PtrHash<Node*>::hash(node));
+            id = static_cast<int>(PtrHash<Node>::hash(node));
     }
 
     UpdateRenderingContextFunctor functor = { id };

@@ -1372,38 +1372,42 @@ public:
 
 namespace WTF {
 
-template<typename T> struct PtrHash<blink::Member<T>> : PtrHash<T*> {
-    STATIC_ONLY(PtrHash);
-    template<typename U>
-    static unsigned hash(const U& key) { return PtrHash<T*>::hash(key); }
-    static bool equal(T* a, const blink::Member<T>& b) { return a == b; }
-    static bool equal(const blink::Member<T>& a, T* b) { return a == b; }
-    template<typename U, typename V>
+template <typename T>
+struct MemberHash : PtrHash<T> {
+    STATIC_ONLY(MemberHash);
+    template <typename U>
+    static unsigned hash(const U& key) { return PtrHash<T>::hash(key); }
+    template <typename U, typename V>
     static bool equal(const U& a, const V& b) { return a == b; }
 };
 
-template<typename T> struct PtrHash<blink::WeakMember<T>> : PtrHash<blink::Member<T>> {
-    STATIC_ONLY(PtrHash);
+template <typename T>
+struct WeakMemberHash : MemberHash<T> {
+    STATIC_ONLY(WeakMemberHash);
 };
 
-template<typename T> struct PtrHash<blink::UntracedMember<T>> : PtrHash<blink::Member<T>> {
-    STATIC_ONLY(PtrHash);
+template <typename T>
+struct UntracedMemberHash : MemberHash<T> {
+    STATIC_ONLY(UntracedMemberHash);
 };
 
 // PtrHash is the default hash for hash tables with members.
-template<typename T> struct DefaultHash<blink::Member<T>> {
+template <typename T>
+struct DefaultHash<blink::Member<T>> {
     STATIC_ONLY(DefaultHash);
-    using Hash = PtrHash<blink::Member<T>>;
+    using Hash = MemberHash<T>;
 };
 
-template<typename T> struct DefaultHash<blink::WeakMember<T>> {
+template <typename T>
+struct DefaultHash<blink::WeakMember<T>> {
     STATIC_ONLY(DefaultHash);
-    using Hash = PtrHash<blink::WeakMember<T>>;
+    using Hash = WeakMemberHash<T>;
 };
 
-template<typename T> struct DefaultHash<blink::UntracedMember<T>> {
+template <typename T>
+struct DefaultHash<blink::UntracedMember<T>> {
     STATIC_ONLY(DefaultHash);
-    using Hash = PtrHash<blink::UntracedMember<T>>;
+    using Hash = UntracedMemberHash<T>;
 };
 
 template<typename T>

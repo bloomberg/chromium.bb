@@ -422,10 +422,10 @@ public:
 
     struct LineLayoutItemHash {
         STATIC_ONLY(LineLayoutItemHash);
-        static unsigned hash(const LineLayoutItem& key) { return WTF::PtrHash<LayoutObject*>::hash(key.m_layoutObject); }
+        static unsigned hash(const LineLayoutItem& key) { return WTF::PtrHash<LayoutObject>::hash(key.m_layoutObject); }
         static bool equal(const LineLayoutItem& a, const LineLayoutItem& b)
         {
-            return WTF::PtrHash<LayoutObject*>::equal(a.m_layoutObject, b.m_layoutObject);
+            return WTF::PtrHash<LayoutObject>::equal(a.m_layoutObject, b.m_layoutObject);
         }
         static const bool safeToCompareToEmptyOrDeleted = true;
     };

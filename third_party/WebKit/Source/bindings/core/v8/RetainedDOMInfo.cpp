@@ -73,7 +73,7 @@ bool RetainedDOMInfo::IsEquivalent(v8::RetainedObjectInfo* other)
 
 intptr_t RetainedDOMInfo::GetHash()
 {
-    return PtrHash<void*>::hash(m_root);
+    return PtrHash<void>::hash(m_root);
 }
 
 const char* RetainedDOMInfo::GetGroupLabel()
@@ -122,7 +122,7 @@ bool ActiveDOMObjectsInfo::IsEquivalent(v8::RetainedObjectInfo* other)
 
 intptr_t ActiveDOMObjectsInfo::GetHash()
 {
-    return PtrHash<void*>::hash(this);
+    return PtrHash<void>::hash(this);
 }
 
 const char* ActiveDOMObjectsInfo::GetGroupLabel()
