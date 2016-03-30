@@ -498,7 +498,10 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
 #endif
   }
 
-  return ThemeProperties::GetDefaultColor(id, incognito);
+  // Always fall back to the non-incognito color when there's a custom theme
+  // because the default (classic) incognito color may be dramatically different
+  // (optimized for a light-on-dark color).
+  return ThemeProperties::GetDefaultColor(id, incognito && !theme_supplier_);
 }
 
 color_utils::HSL ThemeService::GetTint(int id, bool incognito) const {
@@ -508,7 +511,9 @@ color_utils::HSL ThemeService::GetTint(int id, bool incognito) const {
   if (theme_supplier_ && theme_supplier_->GetTint(id, &hsl))
     return hsl;
 
-  return ThemeProperties::GetDefaultTint(id, incognito);
+  // Always fall back to the non-incognito tint when there's a custom theme.
+  // See comment in GetDefaultColor().
+  return ThemeProperties::GetDefaultTint(id, incognito && !theme_supplier_);
 }
 
 void ThemeService::ClearAllThemeData() {
