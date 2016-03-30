@@ -1147,11 +1147,12 @@ TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     waiter.Wait();
 
     // origin2 is cleaned up because all its urls are deleted. origin1a is still
-    // in history, maintaining origin1's score. origin3 is untouched.
-    EXPECT_EQ(5.0, engagement->GetScore(origin1));
+    // in history, but 50% of urls have been deleted, thus halving origin1's
+    // score. origin3 is untouched.
+    EXPECT_EQ(2.5, engagement->GetScore(origin1));
     EXPECT_EQ(0, engagement->GetScore(origin2));
     EXPECT_EQ(5.0, engagement->GetScore(origin3));
-    EXPECT_EQ(10.0, engagement->GetTotalEngagementPoints());
+    EXPECT_EQ(7.5, engagement->GetTotalEngagementPoints());
   }
 
   {

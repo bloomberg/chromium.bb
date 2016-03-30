@@ -299,7 +299,9 @@ class SiteEngagementService : public KeyedService,
   int OriginsWithMaxEngagement(const std::map<GURL, double>& score_map) const;
 
   void GetCountsForOriginsComplete(
-      const history::OriginCountMap& origin_counts);
+    const std::multiset<GURL>& deleted_url_origins,
+    bool expired,
+    const history::OriginCountMap& remaining_origin_counts);
 
   Profile* profile_;
 

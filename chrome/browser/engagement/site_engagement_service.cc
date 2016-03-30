@@ -456,6 +456,13 @@ void SiteEngagementService::ResetScoreForURL(const GURL& url, double score) {
   SiteEngagementScore engagement_score(clock_.get(), *score_dict);
 
   engagement_score.Reset(score);
+  if (score == 0) {
+    settings_map->SetWebsiteSettingDefaultScope(
+        url, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
+        nullptr);
+    return;
+  }
+
   if (engagement_score.UpdateScoreDict(score_dict.get())) {
     settings_map->SetWebsiteSettingDefaultScope(
         url, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
@@ -469,15 +476,16 @@ void SiteEngagementService::OnURLsDeleted(
     bool expired,
     const history::URLRows& deleted_rows,
     const std::set<GURL>& favicon_urls) {
-  std::set<GURL> origins;
+  std::multiset<GURL> origins;
   for (const history::URLRow& row : deleted_rows)
     origins.insert(row.url().GetOrigin());
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   hs->GetCountsForOrigins(
-      origins, base::Bind(&SiteEngagementService::GetCountsForOriginsComplete,
-                          weak_factory_.GetWeakPtr()));
+      std::set<GURL>(origins.begin(), origins.end()),
+      base::Bind(&SiteEngagementService::GetCountsForOriginsComplete,
+                 weak_factory_.GetWeakPtr(), origins, expired));
 }
 
 void SiteEngagementService::SetLastShortcutLaunchTime(const GURL& url) {
@@ -736,15 +744,23 @@ int SiteEngagementService::OriginsWithMaxEngagement(
 }
 
 void SiteEngagementService::GetCountsForOriginsComplete(
-    const history::OriginCountMap& origin_counts) {
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  for (const auto& origin_to_count : origin_counts) {
-    if (origin_to_count.second != 0)
+    const std::multiset<GURL>& deleted_origins,
+    bool expired,
+    const history::OriginCountMap& remaining_origins) {
+  for (const auto& origin_to_count : remaining_origins) {
+    GURL origin = origin_to_count.first;
+    int remaining = origin_to_count.second;
+    int deleted = deleted_origins.count(origin);
+
+    // Do not update engagement scores if the deletion was an expiry, but the
+    // URL still has entries in history.
+    if ((expired && remaining != 0) || deleted == 0)
       continue;
 
-    settings_map->SetWebsiteSettingDefaultScope(
-        origin_to_count.first, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-        std::string(), nullptr);
+    // Remove engagement proportional to the urls expired from the origin's
+    // entire history.
+    double proportion_remaining =
+        static_cast<double>(remaining) / (remaining + deleted);
+    ResetScoreForURL(origin, proportion_remaining * GetScore(origin));
   }
 }
