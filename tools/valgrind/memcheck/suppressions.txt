@@ -1630,83 +1630,6 @@
    fun:NaClThreadInterfaceStart
 }
 {
-   bug_145696
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions9TabHelper23OnInlineWebstoreInstallEiiRKSsRK4GURL
-}
-{
-   bug_145697
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN18SecurityFilterPeer40CreateSecurityFilterPeerForDeniedRequestEN12ResourceType4TypeEPN11webkit_glue20ResourceLoaderBridge4PeerEi
-   fun:_ZN12_GLOBAL__N_124RendererResourceDelegate17OnRequestCompleteEPN11webkit_glue20ResourceLoaderBridge4PeerEN12ResourceType4TypeERKN3net16URLRequestStatusE
-   fun:_ZN7content18ResourceDispatcher17OnRequestCompleteEiRKN3net16URLRequestStatusERKSsRKN4base9TimeTicksE
-}
-{
-   bug_145699
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN17OAuth2ApiCallFlow24CreateAccessTokenFetcherEv
-   fun:_ZN17OAuth2ApiCallFlow20BeginMintAccessTokenEv
-   fun:_ZN17OAuth2ApiCallFlow12BeginApiCallEv
-   fun:_ZN17OAuth2ApiCallFlow5StartEv
-   fun:_ZN19OAuth2MintTokenFlow13FireAndForgetEv
-}
-{
-   bug_145703
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN7content16SiteInstanceImpl10GetProcessEv
-   fun:_ZN7content*Render*SiteInstance*
-   fun:_ZN7content*Render*SiteInstance*
-   ...
-   fun:_ZN7content15WebContentsImpl4InitERKNS_11WebContents12CreateParamsE
-}
-{
-   bug_145708
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN27ExtensionDevToolsClientHostC1EPN7content11WebContentsERKSsS4_i
-   fun:_ZN22AttachDebuggerFunction7RunImplEv
-   fun:_ZN17ExtensionFunction3RunEv
-   fun:_ZN27ExtensionFunctionDispatcher8DispatchERK31ExtensionHostMsg_Request_ParamsPN7content14RenderViewHostE
-   fun:_ZN10extensions13ExtensionHost9OnRequestERK31ExtensionHostMsg_Request_Params
-}
-{
-   bug_145723
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z20NewExtensionFunctionI25TabsExecuteScriptFunctionEP17ExtensionFunctionv
-   fun:_ZN25ExtensionFunctionRegistry11NewFunctionERKSs
-   fun:_ZN27ExtensionFunctionDispatcher23CreateExtensionFunctionERK31ExtensionHostMsg_Request_ParamsPKN10extensions9ExtensionEiRKNS3_10ProcessMapEPNS3_12ExtensionAPIEPvPN3IPC6SenderEPN7content14RenderViewHostEi
-   fun:_ZN27ExtensionFunctionDispatcher8DispatchERK31ExtensionHostMsg_Request_ParamsPN7content14RenderViewHostE
-   fun:_ZN10extensions13ExtensionHost9OnRequestERK31ExtensionHostMsg_Request_Params
-}
-{
-   bug_145735
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIcE8allocateEmPKv
-   fun:_ZNSt12_Vector_baseIcSaIcEE11_M_allocateEm
-   fun:_ZNSt12_Vector_baseIcSaIcEEC2EmRKS0_
-   fun:_ZNSt6vectorIcSaIcEEC1EmRKcRKS0_
-   fun:_ZN4base5files12_GLOBAL__N_121InotifyReaderCallbackEPNS1_13InotifyReaderEii
-}
-{
-   bug_146950
-   Memcheck:Leak
-   fun:malloc
-   fun:get_peer_sock_name
-   fun:_xcb_get_auth_info
-   fun:xcb_connect_to_display_with_auth_info
-   fun:_XConnectXCB
-   fun:XOpenDisplay
-   fun:_ZN4base18MessagePumpAuraX1118GetDefaultXDisplayEv
-}
-{
    bug_162825
    Memcheck:Uninitialized
    fun:bcmp
@@ -1953,18 +1876,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN3ash4test53FocusCyclerTest_CycleFocusThroughWindowWithPanes_Test8TestBodyEv
-}
-{
-   bug_239141
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:_ZN3WTF9BitVector13OutOfLineBits6createEm
-   fun:_ZN3WTF9BitVector15resizeOutOfLineEm
-   fun:_ZN3WTF9BitVector10ensureSizeEm
-   fun:_ZN3WTF9BitVectorC*
-   ...
-   fun:_ZN5blink10UseCounter17recordMeasurementENS0_7FeatureE
 }
 {
    bug_245828
