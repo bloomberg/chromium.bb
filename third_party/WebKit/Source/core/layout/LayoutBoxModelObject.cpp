@@ -840,7 +840,13 @@ LayoutRect LayoutBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width,
     }
     x = std::min(x, (maxX - caretWidth()).clampNegativeToZero());
 
-    LayoutUnit height = LayoutUnit(style()->getFontMetrics().height());
+    const Font& font = style()->font();
+    const SimpleFontData* fontData = font.primaryFont();
+    LayoutUnit height;
+    // crbug.com/595692 This check should not be needed but sometimes
+    // primaryFont is null.
+    if (fontData)
+        height = LayoutUnit(fontData->getFontMetrics().height());
     LayoutUnit verticalSpace = lineHeight(true, currentStyle.isHorizontalWritingMode() ? HorizontalLine : VerticalLine,  PositionOfInteriorLineBoxes) - height;
     LayoutUnit y = paddingTop() + borderTop() + (verticalSpace / 2);
     return currentStyle.isHorizontalWritingMode() ? LayoutRect(x, y, caretWidth(), height) : LayoutRect(y, x, height, caretWidth());
