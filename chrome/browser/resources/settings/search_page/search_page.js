@@ -51,7 +51,27 @@ Polymer({
   },
 
   /** @private */
-  onDefaultEngineChanged_: function() {
-    this.browserProxy_.setDefaultSearchEngine(this.$.searchEnginesMenu.value);
+  onIronSelect_: function() {
+    var searchEngine = this.searchEngines_[this.$$('paper-listbox').selected];
+    if (searchEngine.default) {
+      // If the selected search engine is already marked as the default one,
+      // this change originated in some other tab, and nothing should be done
+      // here.
+      return;
+    }
+
+    // Otherwise, this change originated by an explicit user action in this tab.
+    // Submit the default search engine change.
+    this.browserProxy_.setDefaultSearchEngine(searchEngine.modelIndex);
+  },
+
+  /**
+   * @return {number}
+   * @private
+   */
+  getSelectedSearchEngineIndex_: function() {
+    return this.searchEngines_.findIndex(function(searchEngine) {
+      return searchEngine.default;
+    });
   },
 });

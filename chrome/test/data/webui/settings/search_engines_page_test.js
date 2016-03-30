@@ -4,91 +4,6 @@
 
 cr.define('settings_search_engines_page', function() {
   /**
-   * A test version of SearchEnginesBrowserProxy. Provides helper methods
-   * for allowing tests to know when a method was called, as well as
-   * specifying mock responses.
-   *
-   * @constructor
-   * @implements {settings.SearchEnginesBrowserProxy}
-   * @extends {settings.TestBrowserProxy}
-   */
-  var TestSearchEnginesBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
-      'getSearchEnginesList',
-      'removeSearchEngine',
-      'searchEngineEditCancelled',
-      'searchEngineEditCompleted',
-      'searchEngineEditStarted',
-      'setDefaultSearchEngine',
-      'validateSearchEngineInput',
-      'manageExtension',
-      'disableExtension',
-    ]);
-
-    /** @private {!SearchEnginesInfo} */
-    this.searchEnginesInfo_ = {defaults: [], others: [], extensions: []};
-  };
-
-  TestSearchEnginesBrowserProxy.prototype = {
-    __proto__: settings.TestBrowserProxy.prototype,
-
-    /** @override */
-    setDefaultSearchEngine: function(modelIndex) {
-      this.methodCalled('setDefaultSearchEngine', modelIndex);
-    },
-
-    /** @override */
-    removeSearchEngine: function(modelIndex) {
-      this.methodCalled('removeSearchEngine', modelIndex);
-    },
-
-    /** @override */
-    searchEngineEditStarted: function(modelIndex) {
-      this.methodCalled('searchEngineEditStarted', modelIndex);
-    },
-
-    /** @override */
-    searchEngineEditCancelled: function() {
-      this.methodCalled('searchEngineEditCancelled');
-    },
-
-    /** @override */
-    searchEngineEditCompleted: function(searchEngine, keyword, queryUrl) {
-      this.methodCalled('searchEngineEditCompleted');
-    },
-
-    /**
-     * Sets the response to be returned by |getSearchEnginesList|.
-     * @param {!SearchEnginesInfo}
-     */
-    setSearchEnginesInfo: function(searchEnginesInfo) {
-      this.searchEnginesInfo_ = searchEnginesInfo;
-    },
-
-    /** @override */
-    getSearchEnginesList: function() {
-      this.methodCalled('getSearchEnginesList');
-      return Promise.resolve(this.searchEnginesInfo_);
-    },
-
-    /** @override */
-    validateSearchEngineInput: function(fieldName, fieldValue) {
-      this.methodCalled('validateSearchEngineInput');
-      return Promise.resolve(true);
-    },
-
-    /** @override */
-    manageExtension: function(extensionId) {
-      this.methodCalled('manageExtension', extensionId);
-    },
-
-    /** @override */
-    disableExtension: function(extensionId) {
-      this.methodCalled('disableExtension', extensionId);
-    },
-  };
-
-  /**
    * @param {boolean} canBeDefault
    * @param {boolean} canBeEdited
    * @param {boolean} canBeRemoved
@@ -141,7 +56,7 @@ cr.define('settings_search_engines_page', function() {
       var browserProxy = null;
 
       setup(function() {
-        browserProxy = new TestSearchEnginesBrowserProxy();
+        browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
         settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         dialog = document.createElement('settings-search-engine-dialog');
@@ -231,7 +146,7 @@ cr.define('settings_search_engines_page', function() {
       var browserProxy = null;
 
       setup(function() {
-        browserProxy = new TestSearchEnginesBrowserProxy();
+        browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
         settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         entry = document.createElement('settings-search-engine-entry');
@@ -328,7 +243,7 @@ cr.define('settings_search_engines_page', function() {
       };
 
       setup(function() {
-        browserProxy = new TestSearchEnginesBrowserProxy();
+        browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
         browserProxy.setSearchEnginesInfo(searchEnginesInfo);
         settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
@@ -388,7 +303,7 @@ cr.define('settings_search_engines_page', function() {
       var browserProxy = null;
 
       setup(function() {
-        browserProxy = new TestSearchEnginesBrowserProxy();
+        browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
         settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         entry = document.createElement('settings-omnibox-extension-entry');
@@ -420,11 +335,12 @@ cr.define('settings_search_engines_page', function() {
     });
   }
 
-
   return {
-    registerDialogTests: registerDialogTests,
-    registerSearchEngineEntryTests: registerSearchEngineEntryTests,
-    registerOmniboxExtensionEntryTests: registerOmniboxExtensionEntryTests,
-    registerPageTests: registerPageTests,
+    registerTests: function() {
+      registerDialogTests();
+      registerSearchEngineEntryTests();
+      registerOmniboxExtensionEntryTests();
+      registerPageTests();
+    },
   };
 });

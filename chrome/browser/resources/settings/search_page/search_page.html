@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
@@ -8,21 +10,44 @@
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-search-page">
-  <link rel="import" type="css" href="search_page.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      paper-listbox div {
+        align-items: center;
+        display: flex;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 24px;
+        min-height: 48px;
+        padding: 0px 16px;
+      }
+
+      paper-listbox div.iron-selected {
+        font-weight: bold;
+      }
+
+      paper-listbox div:focus {
+        outline: none;
+      }
+
+      paper-listbox div:hover {
+        background-color: var(--settings-hover-color);
+      }
+    </style>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="search">
       <neon-animatable id="main">
         <div class="settings-box first">
           <p class="start" i18n-content="searchExplanation"></p>
-          <select id="searchEnginesMenu" on-change="onDefaultEngineChanged_">
-            <template is="dom-repeat" items="[[searchEngines_]]">
-              <option selected$="[[item.default]]" value="[[item.modelIndex]]">
-                [[item.name]]
-              </option>
-            </template>
-          </select>
+          <paper-dropdown-menu>
+            <paper-listbox class="dropdown-content"
+                selected="[[getSelectedSearchEngineIndex_(searchEngines_)]]"
+                on-iron-select="onIronSelect_">
+              <template is="dom-repeat" items="[[searchEngines_]]">
+                <div>[[item.name]]</div>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
         </div>
         <div class="settings-box">
           <paper-button i18n-content="searchEnginesManage"

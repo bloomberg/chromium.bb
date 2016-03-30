@@ -616,9 +616,6 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_SEARCH_PAGE_CSS"
-                 file="search_page/search_page.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SYNC_PAGE_JS"
                  file="people_page/sync_page.js"
                  type="chrome_html" />

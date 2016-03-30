@@ -98,6 +98,33 @@ TEST_F('CrSettingsRtlTest', 'DrawerPanelFlips', function() {
 });
 
 /**
+ * Test fixture for chrome/browser/resources/settings/search_page/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsSearchPageTest() {}
+
+CrSettingsSearchPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/search_page/search_page.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'test_search_engines_browser_proxy.js',
+    'search_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSearchPageTest', 'SearchPage', function() {
+  settings_search_page.registerTests();
+  mocha.run();
+});
+
+/**
  * Test fixture for chrome/browser/resources/settings/search_engines_page/.
  * @constructor
  * @extends {CrSettingsBrowserTest}
@@ -115,15 +142,13 @@ CrSettingsSearchEnginesTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     'test_browser_proxy.js',
+    'test_search_engines_browser_proxy.js',
     'search_engines_page_test.js',
   ]),
 };
 
 TEST_F('CrSettingsSearchEnginesTest', 'SearchEngines', function() {
-  settings_search_engines_page.registerDialogTests();
-  settings_search_engines_page.registerSearchEngineEntryTests();
-  settings_search_engines_page.registerOmniboxExtensionEntryTests();
-  settings_search_engines_page.registerPageTests();
+  settings_search_engines_page.registerTests();
   mocha.run();
 });
 
