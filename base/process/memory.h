@@ -25,14 +25,6 @@
 
 namespace base {
 
-// Enables low fragmentation heap (LFH) for every heaps of this process. This
-// won't have any effect on heaps created after this function call. It will not
-// modify data allocated in the heaps before calling this function. So it is
-// better to call this function early in initialization and again before
-// entering the main loop.
-// Note: Returns true on Windows 2000 without doing anything.
-BASE_EXPORT bool EnableLowFragmentationHeap();
-
 // Enables 'terminate on heap corruption' flag. Helps protect against heap
 // overflow. Has no effect if the OS doesn't provide the necessary facility.
 BASE_EXPORT void EnableTerminationOnHeapCorruption();

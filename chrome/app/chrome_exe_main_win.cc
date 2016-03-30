@@ -130,17 +130,6 @@ void EnableHighDPISupport() {
   }
 }
 
-void SwitchToLFHeap() {
-  // Only needed on XP but harmless on other Windows flavors.
-  auto crt_heap = _get_heap_handle();
-  ULONG enable_LFH = 2;
-  if (HeapSetInformation(reinterpret_cast<HANDLE>(crt_heap),
-                         HeapCompatibilityInformation,
-                         &enable_LFH, sizeof(enable_LFH))) {
-    VLOG(1) << "Low fragmentation heap enabled.";
-  }
-}
-
 // Returns true if |command_line| contains a /prefetch:# argument where # is in
 // [1, 8].
 bool HasValidWindowsPrefetchArgument(const base::CommandLine& command_line) {
@@ -204,8 +193,6 @@ int main() {
   crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());
   crash_reporter::InitializeCrashpadWithEmbeddedHandler(process_type.empty(),
                                                         process_type);
-
-  SwitchToLFHeap();
 
   startup_metric_utils::RecordExeMainEntryPointTime(base::Time::Now());
 

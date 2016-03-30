@@ -44,17 +44,7 @@ bool win_heap_init() {
   // Set the _crtheap global here.  THis allows us to offload most of the
   // memory management to the CRT, except the functions we need to shim.
   _crtheap = GetProcessHeap();
-  if (_crtheap == NULL)
-    return false;
-
-  ULONG enable_lfh = 2;
-  // NOTE: Setting LFH may fail.  Vista already has it enabled.
-  //       And under the debugger, it won't use LFH.  So we
-  //       ignore any errors.
-  HeapSetInformation(_crtheap, HeapCompatibilityInformation, &enable_lfh,
-                     sizeof(enable_lfh));
-
-  return true;
+  return _crtheap != nullptr;
 }
 
 void* win_heap_malloc(size_t size) {
