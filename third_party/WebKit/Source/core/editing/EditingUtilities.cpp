@@ -718,16 +718,16 @@ Element* enclosingBlock(const PositionInFlatTree& position, EditingBoundaryCross
     return enclosingBlockAlgorithm<EditingInFlatTreeStrategy>(position, rule);
 }
 
-Element* enclosingBlockFlowElement(Node& node)
+Element* enclosingBlockFlowElement(const Node& node)
 {
     if (isBlockFlowElement(node))
-        return &toElement(node);
+        return const_cast<Element*>(&toElement(node));
 
     for (Node* n = node.parentNode(); n; n = n->parentNode()) {
         if (isBlockFlowElement(*n) || isHTMLBodyElement(*n))
             return toElement(n);
     }
-    return 0;
+    return nullptr;
 }
 
 bool inSameContainingBlockFlowElement(Node* a, Node* b)

@@ -78,7 +78,7 @@ Node* highestNodeToRemoveInPruning(Node*, Node* excludeNode = nullptr);
 Element* enclosingBlock(Node*, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT Element* enclosingBlock(const Position&, EditingBoundaryCrossingRule);
 CORE_EXPORT Element* enclosingBlock(const PositionInFlatTree&, EditingBoundaryCrossingRule);
-Element* enclosingBlockFlowElement(Node&); // Deprecated, use enclosingBlock instead.
+Element* enclosingBlockFlowElement(const Node&); // Deprecated, use enclosingBlock instead.
 bool inSameContainingBlockFlowElement(Node*, Node*);
 Element* enclosingTableCell(const Position&);
 Element* associatedElementOf(const Position&);
