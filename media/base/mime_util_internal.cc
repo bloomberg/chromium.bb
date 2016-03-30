@@ -57,16 +57,14 @@ static const MediaFormat kFormatCodecMappings[] = {
     {"audio/webm", COMMON, "opus,vorbis"},
     {"audio/wav", COMMON, "1"},
     {"audio/x-wav", COMMON, "1"},
-#if defined(OS_ANDROID)
-    // Android does not support Opus in Ogg container.
-    // Android does not support Theora and thus video/ogg.
-    {"audio/ogg", COMMON, "vorbis"},
-    {"application/ogg", COMMON, "vorbis"},
-#else
+#if !defined(OS_ANDROID)
+    // Note: Android does not support Theora and thus video/ogg.
     {"video/ogg", COMMON, "opus,theora,vorbis"},
-    {"audio/ogg", COMMON, "opus,vorbis"},
-    {"application/ogg", COMMON, "opus,theora,vorbis"},
 #endif
+    {"audio/ogg", COMMON, "opus,vorbis"},
+    // Note: Theora is not supported on Android and will be rejected during the
+    // call to IsCodecSupportedOnPlatform().
+    {"application/ogg", COMMON, "opus,theora,vorbis"},
 #if defined(USE_PROPRIETARY_CODECS)
     {"audio/mpeg", PROPRIETARY, "mp3"},
     {"audio/mp3", PROPRIETARY, ""},
