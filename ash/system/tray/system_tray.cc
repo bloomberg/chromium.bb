@@ -130,11 +130,15 @@ class SystemBubbleWrapper {
 SystemTray::SystemTray(StatusAreaWidget* status_area_widget)
     : TrayBackgroundView(status_area_widget),
       items_(),
+      detailed_item_(nullptr),
       default_bubble_height_(0),
       hide_notifications_(false),
       full_system_tray_menu_(false),
-      tray_accessibility_(NULL),
-      tray_date_(NULL) {
+      tray_accessibility_(nullptr),
+      tray_cast_(nullptr),
+      tray_date_(nullptr),
+      screen_capture_tray_item_(nullptr),
+      screen_share_tray_item_(nullptr) {
   SetContentsBackground();
 }
 
