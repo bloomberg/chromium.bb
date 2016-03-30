@@ -562,13 +562,21 @@ Profile* ProfileManager::GetLastUsedProfile(
     profile_dir = chromeos::ProfileHelper::Get()->GetActiveUserProfileDir();
 
     base::FilePath profile_path(user_data_dir);
-    Profile* profile = GetProfile(profile_path.Append(profile_dir));
+    Profile* profile = GetProfileByPath(profile_path.Append(profile_dir));
+    // If we get here, it means the user has logged in but the profile has not
+    // finished initializing, so treat the user as not having logged in.
+    if (!profile) {
+      DLOG(WARNING) << "Calling GetLastUsedProfile() before profile "
+                    << "initialization is completed. Returning login profile.";
+      return GetActiveUserOrOffTheRecordProfileFromPath(user_data_dir);
+    }
     return profile->IsGuestSession() ? profile->GetOffTheRecordProfile() :
                                        profile;
   }
-#endif
+#else
 
   return GetProfile(GetLastUsedProfileDir(user_data_dir));
+#endif
 }
 
 base::FilePath ProfileManager::GetLastUsedProfileDir(
