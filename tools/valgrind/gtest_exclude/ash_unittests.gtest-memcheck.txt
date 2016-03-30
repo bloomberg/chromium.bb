@@ -10,3 +10,5 @@ WebNotificationTrayTest.*TouchFeedback*
 MagnificationControllerTest.CenterTextCaretNotInsideViewport
 # https://crbug.com/516898
 TrayIMETest.PerformActionOnDetailedView
+# https://crbug.com/598950
+ToastManagerTest.QueueMessage
