@@ -12,6 +12,7 @@
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/property_tree_builder.h"
@@ -31,6 +32,21 @@ static bool IsRootLayer(const LayerImpl* layer) {
   return layer->layer_tree_impl()->IsRootLayer(layer);
 }
 
+#if DCHECK_IS_ON()
+static Layer* EffectNodeOwner(Layer* layer) {
+  EffectNode* node =
+      layer->layer_tree_host()->property_trees()->effect_tree.Node(
+          layer->effect_tree_index());
+  return layer->layer_tree_host()->LayerById(node->owner_id);
+}
+
+static LayerImpl* EffectNodeOwner(LayerImpl* layer) {
+  EffectNode* node =
+      layer->layer_tree_impl()->property_trees()->effect_tree.Node(
+          layer->effect_tree_index());
+  return layer->layer_tree_impl()->LayerById(node->owner_id);
+}
+
 template <typename LayerType>
 static void ValidateRenderSurfaceForLayer(LayerType* layer) {
   // This test verifies that there are no cases where a LayerImpl needs
@@ -41,7 +57,7 @@ static void ValidateRenderSurfaceForLayer(LayerType* layer) {
   DCHECK(layer->filters().IsEmpty()) << "layer: " << layer->id();
   DCHECK(layer->background_filters().IsEmpty()) << "layer: " << layer->id();
   DCHECK(!IsRootLayer(layer)) << "layer: " << layer->id();
-  if (layer->parent()->replica_layer() == layer)
+  if (EffectNodeOwner(layer)->replica_layer() == layer)
     return;
   DCHECK(!layer->mask_layer()) << "layer: " << layer->id();
   DCHECK(!layer->replica_layer()) << "layer: " << layer->id();
@@ -54,6 +70,7 @@ static void ValidateRenderSurfacesRecursive(Layer* layer) {
   for (size_t i = 0; i < layer->children().size(); ++i)
     ValidateRenderSurfacesRecursive(layer->child_at(i));
 }
+#endif
 
 template <typename LayerType>
 void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
@@ -697,7 +714,9 @@ void BuildPropertyTreesAndComputeVisibleRects(
       device_transform, property_trees);
   UpdateRenderSurfacesForLayersRecursive(&property_trees->effect_tree,
                                          root_layer);
+#if DCHECK_IS_ON()
   ValidateRenderSurfacesRecursive(root_layer);
+#endif
   ComputeVisibleRects(root_layer, property_trees,
                       can_render_to_separate_surface, update_layer_list);
 }
@@ -742,8 +761,10 @@ void ComputeVisibleRects(LayerImpl* root_layer,
   for (auto* layer : *root_layer->layer_tree_impl()) {
     UpdateRenderSurfaceForLayer(&property_trees->effect_tree,
                                 can_render_to_separate_surface, layer);
+#if DCHECK_IS_ON()
     if (can_render_to_separate_surface)
       ValidateRenderSurfaceForLayer(layer);
+#endif
   }
   LayerImplList update_layer_list;
   ComputeVisibleRectsInternal(root_layer, property_trees,
