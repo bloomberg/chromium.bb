@@ -1409,6 +1409,11 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   MathUtil::AddToTracedValue("transform_origin", transform_origin_, state);
 
+  if (!transform().IsIdentity())
+    MathUtil::AddToTracedValue("transform", transform(), state);
+
+  state->SetBoolean("should_flatten", should_flatten_transform_);
+
   bool clipped;
   gfx::QuadF layer_quad =
       MathUtil::MapQuad(ScreenSpaceTransform(),
