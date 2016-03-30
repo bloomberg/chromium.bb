@@ -435,6 +435,7 @@ public:
         RunPostLayoutTasksSynchronously,
     };
     void updateLayoutIgnorePendingStylesheets(RunPostLayoutTasks = RunPostLayoutTasksAsyhnchronously);
+    void updateLayoutIgnorePendingStylesheetsForNode(Node*);
     PassRefPtr<ComputedStyle> styleForElementIgnoringPendingStylesheets(Element*);
     PassRefPtr<ComputedStyle> styleForPage(int pageIndex);
 

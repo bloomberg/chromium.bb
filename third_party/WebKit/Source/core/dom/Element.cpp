@@ -460,7 +460,7 @@ bool Element::shouldIgnoreAttributeCase() const
 
 void Element::scrollIntoView(bool alignToTop)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (!layoutObject())
         return;
@@ -479,7 +479,7 @@ void Element::scrollIntoView(bool alignToTop)
 
 void Element::scrollIntoViewIfNeeded(bool centerIfNeeded)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (!layoutObject())
         return;
@@ -556,6 +556,7 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
     const double deltaY = scrollState.deltaY();
     bool scrolled = false;
 
+    // TODO(esprehn): This should use updateLayoutIgnorePendingStylesheetsForNode.
     if (deltaY || deltaX)
         document().updateLayoutIgnorePendingStylesheets();
 
@@ -614,7 +615,7 @@ void Element::callApplyScroll(ScrollState& scrollState)
 
 int Element::offsetLeft()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
         return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetLeft()), layoutObject->styleRef()).round();
     return 0;
@@ -622,7 +623,7 @@ int Element::offsetLeft()
 
 int Element::offsetTop()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
         return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetTop()), layoutObject->styleRef()).round();
     return 0;
@@ -630,7 +631,7 @@ int Element::offsetTop()
 
 int Element::offsetWidth()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
         return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetWidth()), layoutObject->styleRef()).round();
     return 0;
@@ -638,7 +639,7 @@ int Element::offsetWidth()
 
 int Element::offsetHeight()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
         return adjustLayoutUnitForAbsoluteZoom(LayoutUnit(layoutObject->pixelSnappedOffsetHeight()), layoutObject->styleRef()).round();
     return 0;
@@ -646,7 +647,7 @@ int Element::offsetHeight()
 
 Element* Element::offsetParent()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     LayoutObject* layoutObject = this->layoutObject();
     if (!layoutObject)
@@ -664,7 +665,7 @@ Element* Element::offsetParent()
 
 int Element::clientLeft()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (LayoutBox* layoutObject = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(layoutObject->clientLeft(), layoutObject->styleRef()).round();
@@ -673,7 +674,7 @@ int Element::clientLeft()
 
 int Element::clientTop()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (LayoutBox* layoutObject = layoutBox())
         return adjustLayoutUnitForAbsoluteZoom(layoutObject->clientTop(), layoutObject->styleRef()).round();
@@ -682,7 +683,7 @@ int Element::clientTop()
 
 int Element::clientWidth()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     // When in strict mode, clientWidth for the document element should return the width of the containing frame.
     // When in quirks mode, clientWidth for the body element should return the width of the containing frame.
@@ -703,7 +704,7 @@ int Element::clientWidth()
 
 int Element::clientHeight()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     // When in strict mode, clientHeight for the document element should return the height of the containing frame.
     // When in quirks mode, clientHeight for the body element should return the height of the containing frame.
@@ -725,7 +726,7 @@ int Element::clientHeight()
 
 double Element::scrollLeft()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (document().scrollingElement() == this) {
         if (document().domWindow())
@@ -741,7 +742,7 @@ double Element::scrollLeft()
 
 double Element::scrollTop()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (document().scrollingElement() == this) {
         if (document().domWindow())
@@ -757,7 +758,7 @@ double Element::scrollTop()
 
 void Element::setScrollLeft(double newLeft)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     newLeft = ScrollableArea::normalizeNonFiniteScroll(newLeft);
 
@@ -773,7 +774,7 @@ void Element::setScrollLeft(double newLeft)
 
 void Element::setScrollTop(double newTop)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     newTop = ScrollableArea::normalizeNonFiniteScroll(newTop);
 
@@ -789,7 +790,7 @@ void Element::setScrollTop(double newTop)
 
 int Element::scrollWidth()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (document().scrollingElement() == this) {
         if (document().view())
@@ -804,7 +805,7 @@ int Element::scrollWidth()
 
 int Element::scrollHeight()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (document().scrollingElement() == this) {
         if (document().view())
@@ -829,7 +830,7 @@ void Element::scrollBy(const ScrollToOptions& scrollToOptions)
 {
     // FIXME: This should be removed once scroll updates are processed only after
     // the compositing update. See http://crbug.com/420741.
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (document().scrollingElement() == this) {
         scrollFrameBy(scrollToOptions);
@@ -850,7 +851,7 @@ void Element::scrollTo(const ScrollToOptions& scrollToOptions)
 {
     // FIXME: This should be removed once scroll updates are processed only after
     // the compositing update. See http://crbug.com/420741.
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (document().scrollingElement() == this) {
         scrollFrameTo(scrollToOptions);
@@ -1002,7 +1003,7 @@ IntRect Element::boundsInViewport() const
 
 ClientRectList* Element::getClientRects()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     LayoutObject* elementLayoutObject = layoutObject();
     if (!elementLayoutObject || (!elementLayoutObject->isBoxModelObject() && !elementLayoutObject->isBR()))
@@ -1019,7 +1020,7 @@ ClientRectList* Element::getClientRects()
 
 ClientRect* Element::getBoundingClientRect()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     Vector<FloatQuad> quads;
     LayoutObject* elementLayoutObject = layoutObject();
@@ -1047,14 +1048,14 @@ ClientRect* Element::getBoundingClientRect()
 
 const AtomicString& Element::computedRole()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
     OwnPtr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document());
     return cache->get()->computedRoleForNode(this);
 }
 
 String Element::computedName()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
     OwnPtr<ScopedAXObjectCache> cache = ScopedAXObjectCache::create(document());
     return cache->get()->computedNameForNode(this);
 }
@@ -2359,7 +2360,7 @@ void Element::focus(const FocusParams& params)
     if (!document().isActive())
         return;
 
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
     if (!isFocusable())
         return;
 
@@ -2669,7 +2670,7 @@ void Element::releasePointerCapture(int pointerId, ExceptionState& exceptionStat
 String Element::innerText()
 {
     // We need to update layout, since plainText uses line boxes in the layout tree.
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateLayoutIgnorePendingStylesheetsForNode(this);
 
     if (!layoutObject())
         return textContent(true);

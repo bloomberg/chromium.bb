@@ -1940,6 +1940,14 @@ void Document::updateLayoutTreeForNode(Node* node)
     updateLayoutTree();
 }
 
+void Document::updateLayoutIgnorePendingStylesheetsForNode(Node* node)
+{
+    ASSERT(node);
+    if (!node->inActiveDocument())
+        return;
+    updateLayoutIgnorePendingStylesheets();
+}
+
 void Document::updateLayout()
 {
     ASSERT(isMainThread());

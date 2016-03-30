@@ -566,7 +566,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         || (document.ownerElement() && document.ensureStyleResolver().hasViewportDependentMediaQueries());
 
     if (forceFullLayout) {
-        document.updateLayoutIgnorePendingStylesheets();
+        document.updateLayoutIgnorePendingStylesheetsForNode(styledNode);
         styledNode = this->styledNode();
         style = computeComputedStyle();
         layoutObject = styledNode->layoutObject();
