@@ -169,6 +169,42 @@ static void scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }  // Analyze a single 8x8 block motion information.
 }
 
+static int has_top_right(const MACROBLOCKD *xd,
+                         int mi_row, int mi_col, int bs) {
+  int is_second_rect = 0;
+  int has_tr = !((mi_row & bs) & (bs * 2 - 1)) ||
+               !((mi_col & bs) & (bs * 2 - 1));
+
+  // Filter out partial right-most boundaries
+  if ((mi_col & bs) & (bs * 2 - 1)) {
+    if (((mi_col & (2 * bs)) & (bs * 4 - 1)) &&
+        ((mi_row & (2 * bs)) & (bs * 4 - 1)))
+      has_tr = 0;
+  }
+
+  if (has_tr)
+    if (((mi_col + xd->n8_w) & 0x07) == 0)
+      if ((mi_row & 0x07) > 0)
+        has_tr = 0;
+
+  if (xd->n8_w < xd->n8_h) {
+    if (mi_col & (xd->n8_h - 1))
+      is_second_rect = 1;
+
+    if (!is_second_rect)
+      has_tr = 1;
+  }
+
+  if (xd->n8_w > xd->n8_h) {
+    if (mi_row & (xd->n8_w - 1))
+      is_second_rect = 1;
+
+    if (is_second_rect)
+      has_tr = 0;
+  }
+  return has_tr;
+}
+
 static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                               MV_REFERENCE_FRAME ref_frame,
                               uint8_t *refmv_count,
@@ -177,9 +213,10 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                               int block, int mi_row, int mi_col,
                               uint8_t *mode_context) {
   int idx, nearest_refmv_count = 0;
-
   CANDIDATE_MV tmp_mv;
   int len, nr_len;
+  const int bs = AOMMAX(xd->n8_w, xd->n8_h);
+  const int has_tr = has_top_right(xd, mi_row, mi_col, bs);
 
   (void) mode_context;
 
@@ -191,6 +228,11 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // Scan the first left column mode info.
   scan_col_mbmi(cm, xd, mi_row, mi_col, block, ref_frame,
                 -1, ref_mv_stack, refmv_count);
+
+  // Check top-right boundary
+  if (has_tr)
+    scan_blk_mbmi(cm, xd, mi_row, mi_col, block, ref_frame,
+                  -1, 1, ref_mv_stack, refmv_count);
 
   nearest_refmv_count = *refmv_count;
 
