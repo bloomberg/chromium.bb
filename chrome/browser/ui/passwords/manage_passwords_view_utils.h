@@ -74,6 +74,7 @@ void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
 // branding.
 void GetAccountChooserDialogTitleTextAndLinkRange(
     bool is_smartlock_branding_enabled,
+    bool many_accounts,
     base::string16* title,
     gfx::Range* title_link_range);
 

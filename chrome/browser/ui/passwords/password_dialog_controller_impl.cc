@@ -77,6 +77,7 @@ PasswordDialogControllerImpl::GetAccoutChooserTitle() const {
   std::pair<base::string16, gfx::Range> result;
   GetAccountChooserDialogTitleTextAndLinkRange(
       IsSmartLockBrandingEnabled(profile_),
+      local_credentials_.size() > 1,
       &result.first,
       &result.second);
   return result;

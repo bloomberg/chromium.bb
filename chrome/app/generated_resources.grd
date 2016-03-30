@@ -5923,8 +5923,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_PASSWORD_MANAGER_LINK_DESCRIPTION" desc="Description of the flag to enable showing a link to account central on password settings page">
         Show a link in the password manager settings page to manage your synced passwords online.
       </message>
-      <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE" desc="The title of the account chooser bubble/infobar.">
+      <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE_MANY_ACCOUNTS" desc="The title of the account chooser dialog/infobar for more than one account.">
         Choose your account saved with <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> to sign in
+      </message>
+      <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE_ONE_ACCOUNT" desc="The title of the account chooser dialog/infobar for one account.">
+        Sign in with your account saved with <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph>
       </message>
       <message name="IDS_PASSWORD_MANAGER_SAVE_PROMPT_FIRST_RUN_EXPERIENCE" desc="The message which explains to the user what is Smart Lock, when the user sees the branded title of the Save prompt for the first time.">
         Smart Lock helps you quickly sign in to apps and sites using passwords you have saved with Google.

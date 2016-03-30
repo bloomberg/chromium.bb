@@ -128,8 +128,9 @@ void AccountChooserDialogAndroid::ShowDialog() {
               Profile::FromBrowserContext(web_contents_->GetBrowserContext())));
   base::string16 title;
   gfx::Range title_link_range = gfx::Range();
-  GetAccountChooserDialogTitleTextAndLinkRange(is_smartlock_branding_enabled,
-                                               &title, &title_link_range);
+  GetAccountChooserDialogTitleTextAndLinkRange(
+      is_smartlock_branding_enabled, local_credentials_forms().size() > 1,
+      &title, &title_link_range);
   gfx::NativeWindow native_window = web_contents_->GetTopLevelNativeWindow();
   size_t credential_array_size =
       local_credentials_forms().size() + federated_credentials_forms().size();

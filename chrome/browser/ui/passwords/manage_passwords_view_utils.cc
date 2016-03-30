@@ -143,11 +143,14 @@ void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
 
 void GetAccountChooserDialogTitleTextAndLinkRange(
     bool is_smartlock_branding_enabled,
+    bool many_accounts,
     base::string16* title,
     gfx::Range* title_link_range) {
+  int string_id = many_accounts
+      ? IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE_MANY_ACCOUNTS
+      : IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE_ONE_ACCOUNT;
   GetBrandedTextAndLinkRange(is_smartlock_branding_enabled,
-                             IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE,
-                             IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_TITLE,
+                             string_id, string_id,
                              title, title_link_range);
 }
 
