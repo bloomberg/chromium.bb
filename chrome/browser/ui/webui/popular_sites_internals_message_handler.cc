@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "chrome/browser/android/popular_sites.h"
+#include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"

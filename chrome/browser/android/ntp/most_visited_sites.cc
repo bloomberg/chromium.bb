@@ -20,7 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/popular_sites.h"
+#include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
