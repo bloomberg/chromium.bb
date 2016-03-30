@@ -76,16 +76,18 @@ void OfflinePageTabHelper::DidFinishNavigation(
   GURL last_redirect_from_url_copy = last_redirect_from_url_;
   last_redirect_from_url_ = GURL();
 
-  // Skips non-main frame or load failure other than no network.
-  if (navigation_handle->GetNetErrorCode() != net::ERR_INTERNET_DISCONNECTED ||
-      !navigation_handle->IsInMainFrame()) {
+  // Skips non-main frame.
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  // Skips load failure other than no network.
+  net::Error error_code = navigation_handle->GetNetErrorCode();
+  if (error_code != net::ERR_INTERNET_DISCONNECTED &&
+      error_code != net::ERR_NAME_NOT_RESOLVED &&
+      error_code != net::ERR_ADDRESS_UNREACHABLE &&
+      error_code != net::ERR_PROXY_CONNECTION_FAILED) {
     return;
   }
-
-  // Redirecting to offline version will only take effect when there is no
-  // network connection.
-  if (!net::NetworkChangeNotifier::IsOffline())
-    return;
 
   // On a forward or back transition, don't affect the order of the nav stack.
   if (navigation_handle->GetPageTransition() ==
