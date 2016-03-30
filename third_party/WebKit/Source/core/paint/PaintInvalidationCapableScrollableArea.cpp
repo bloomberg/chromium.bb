@@ -66,6 +66,8 @@ static void invalidatePaintOfScrollbarIfNeeded(Scrollbar* scrollbar, GraphicsLay
         // of the scrollbar on the box's paint invalidation container to ensure newly expanded/shrunk areas
         // of the box to be invalidated.
         needsPaintInvalidation = false;
+
+        graphicsLayer->invalidateDisplayItemClient(*graphicsLayer, PaintInvalidationScroll);
     }
 
     // Invalidate the box's display item client if the box's padding box size is affected by change of the
