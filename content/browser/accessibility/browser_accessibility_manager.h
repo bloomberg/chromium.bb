@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -196,6 +197,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // communicate with the renderer and doesn't fire any events.
   void SetFocusLocallyForTesting(BrowserAccessibility* node);
 
+  // For testing only, register a function to be called when focus changes
+  // in any BrowserAccessibilityManager.
+  static void SetFocusChangeCallbackForTesting(const base::Closure& callback);
+
   // Tell the renderer to do the default action for this node.
   void DoDefaultAction(const BrowserAccessibility& node);
 
@@ -266,8 +271,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       ToBrowserAccessibilityManagerAuraLinux();
 #endif
 
-  // Return the object that has focus.
+  // Return the object that has focus, starting at the top of the frame tree.
   virtual BrowserAccessibility* GetFocus();
+
+  // Return the object that has focus, only considering this frame and
+  // descendants.
+  BrowserAccessibility* GetFocusFromThisOrDescendantFrame();
 
   // Given a focused node |focus|, returns a descendant of that node if it
   // has an active descendant, otherwise returns |focus|.

@@ -26,6 +26,7 @@
 #include "content/public/common/page_type.h"
 #include "ipc/message_filter.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
 
@@ -278,6 +279,15 @@ void RunTaskAndWaitForInterstitialDetach(content::WebContents* web_contents,
 // via domAutomationController. The caller should make sure this extra
 // message is handled properly.
 bool WaitForRenderFrameReady(RenderFrameHost* rfh) WARN_UNUSED_RESULT;
+
+// Enable accessibility support for all of the frames in this WebContents
+void EnableAccessibilityForWebContents(WebContents* web_contents);
+
+// Wait until the focused accessible node changes in any WebContents.
+void WaitForAccessibilityFocusChange();
+
+// Retrieve information about the node that's focused in the accessibility tree.
+ui::AXNodeData GetFocusedAccessibilityNodeInfo(WebContents* web_contents);
 
 // Watches title changes on a WebContents, blocking until an expected title is
 // set.

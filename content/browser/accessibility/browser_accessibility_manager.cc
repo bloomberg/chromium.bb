@@ -43,6 +43,10 @@ using AXTreeIDMap =
     base::hash_map<AXTreeIDRegistry::AXTreeID, BrowserAccessibilityManager*>;
 base::LazyInstance<AXTreeIDMap> g_ax_tree_id_map = LAZY_INSTANCE_INITIALIZER;
 
+// A function to call when focus changes, for testing only.
+base::LazyInstance<base::Closure> g_focus_change_callback_for_testing =
+    LAZY_INSTANCE_INITIALIZER;
+
 ui::AXTreeUpdate MakeAXTreeUpdate(
     const ui::AXNodeData& node1,
     const ui::AXNodeData& node2 /* = ui::AXNodeData() */,
@@ -179,11 +183,17 @@ BrowserAccessibilityManager::GetEmptyDocument() {
 
 void BrowserAccessibilityManager::FireFocusEventsIfNeeded() {
   BrowserAccessibility* focus = GetFocus();
-  if (delegate_ && !delegate_->AccessibilityViewHasFocus())
-    focus = nullptr;
 
-  if (!CanFireEvents())
-    focus = nullptr;
+  // Don't fire focus events if the window itself doesn't have focus.
+  // Bypass this check if a global focus listener was set up for testing
+  // so that the test passes whether the window is active or not.
+  if (!g_focus_change_callback_for_testing.Pointer()) {
+    if (delegate_ && !delegate_->AccessibilityViewHasFocus())
+      focus = nullptr;
+
+    if (!CanFireEvents())
+      focus = nullptr;
+  }
 
   // Don't allow the document to be focused if it has no children and
   // hasn't finished loading yet. Wait for at least a tiny bit of content,
@@ -209,6 +219,9 @@ bool BrowserAccessibilityManager::CanFireEvents() {
 
 void BrowserAccessibilityManager::FireFocusEvent(BrowserAccessibility* node) {
   NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, node);
+
+  if (!g_focus_change_callback_for_testing.Get().is_null())
+    g_focus_change_callback_for_testing.Get().Run();
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
@@ -456,17 +469,22 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFocus() {
   if (!focused_manager)
     focused_manager = root_manager;
 
-  int32_t focus_id = focused_manager->GetTreeData().focus_id;
-  BrowserAccessibility* obj = focused_manager->GetFromID(focus_id);
+  return focused_manager->GetFocusFromThisOrDescendantFrame();
+}
+
+BrowserAccessibility*
+BrowserAccessibilityManager::GetFocusFromThisOrDescendantFrame() {
+  int32_t focus_id = GetTreeData().focus_id;
+  BrowserAccessibility* obj = GetFromID(focus_id);
   if (!obj)
-    return focused_manager->GetRoot();
+    return GetRoot();
 
   if (obj->HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
     BrowserAccessibilityManager* child_manager =
         BrowserAccessibilityManager::FromID(
             obj->GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID));
     if (child_manager)
-      return child_manager->GetFocus();
+      return child_manager->GetFocusFromThisOrDescendantFrame();
   }
 
   return obj;
@@ -482,6 +500,12 @@ void BrowserAccessibilityManager::SetFocusLocallyForTesting(
   ui::AXTreeData data = GetTreeData();
   data.focus_id = node->GetId();
   tree_->UpdateData(data);
+}
+
+// static
+void BrowserAccessibilityManager::SetFocusChangeCallbackForTesting(
+    const base::Closure& callback) {
+  g_focus_change_callback_for_testing.Get() = callback;
 }
 
 void BrowserAccessibilityManager::DoDefaultAction(

@@ -1330,6 +1330,7 @@
         '../net/net.gyp:net_test_support',
         '../testing/gtest.gyp:gtest',
         '../third_party/WebKit/public/blink.gyp:blink',
+        '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/base/ui_base.gyp:ui_base_test_support',

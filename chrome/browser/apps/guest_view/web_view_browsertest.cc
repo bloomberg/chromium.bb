@@ -738,6 +738,11 @@ INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewTest, testing::Bool());
 // These features current would not work with
 // --use-cross-process-frames-for-guest and is disabled on
 // UseCrossProcessFramesForGuests.
+class WebViewAccessibilityTest : public WebViewTest {};
+INSTANTIATE_TEST_CASE_P(WebViewTests,
+                        WebViewAccessibilityTest,
+                        testing::Values(false));
+
 class WebViewNewWindowTest : public WebViewTest {};
 INSTANTIATE_TEST_CASE_P(WebViewTests,
                         WebViewNewWindowTest,
@@ -2662,6 +2667,35 @@ IN_PROC_BROWSER_TEST_P(WebViewTest,
 IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewAccessibleResource) {
   TestHelper("testLoadWebviewAccessibleResource",
              "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, FocusAccessibility) {
+  LoadAppWithGuest("web_view/focus_accessibility");
+  content::WebContents* web_contents = GetFirstAppWindowWebContents();
+  content::EnableAccessibilityForWebContents(web_contents);
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  content::EnableAccessibilityForWebContents(guest_web_contents);
+
+  // Wait for focus to land on the "root web area" role, representing
+  // focus on the main document itself.
+  while (content::GetFocusedAccessibilityNodeInfo(web_contents).role !=
+             ui::AX_ROLE_ROOT_WEB_AREA) {
+    content::WaitForAccessibilityFocusChange();
+  }
+
+  // Now keep pressing the Tab key until focus lands on a button.
+  while (content::GetFocusedAccessibilityNodeInfo(web_contents).role !=
+             ui::AX_ROLE_BUTTON) {
+    content::SimulateKeyPress(
+        web_contents, ui::VKEY_TAB, false, false, false, false);
+    content::WaitForAccessibilityFocusChange();
+  }
+
+  // Ensure that we hit the button inside the guest frame labeled
+  // "Guest button".
+  ui::AXNodeData node_data =
+      content::GetFocusedAccessibilityNodeInfo(web_contents);
+  EXPECT_EQ("Guest button", node_data.GetStringAttribute(ui::AX_ATTR_NAME));
 }
 
 class WebViewGuestScrollTest

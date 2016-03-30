@@ -56,6 +56,7 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_DISCLOSURE_TRIANGLE, NSAccessibilityDisclosureTriangleRole},
       {ui::AX_ROLE_DIV, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DOCUMENT, NSAccessibilityGroupRole},
+      {ui::AX_ROLE_EMBEDDED_OBJECT, NSAccessibilityGroupRole},
       {ui::AX_ROLE_FIGCAPTION, NSAccessibilityGroupRole},
       {ui::AX_ROLE_FIGURE, NSAccessibilityGroupRole},
       {ui::AX_ROLE_FOOTER, NSAccessibilityGroupRole},

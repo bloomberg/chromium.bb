@@ -264,6 +264,7 @@ source_set("browsertest_base") {
     "//content/public/app:both",
     "//net:test_support",
     "//testing/gtest",
+    "//ui/accessibility",
     "//ui/base",
     "//ui/base:test_support",
     "//ui/base/ime",

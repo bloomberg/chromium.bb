@@ -206,6 +206,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       nav_entry_id_(0),
       accessibility_reset_token_(0),
       accessibility_reset_count_(0),
+      browser_plugin_embedder_ax_tree_id_(AXTreeIDRegistry::kNoAXTreeID),
       no_create_browser_accessibility_manager_for_testing_(false),
       web_ui_type_(WebUI::kNoWebUI),
       pending_web_ui_type_(WebUI::kNoWebUI),
@@ -2668,10 +2669,12 @@ AXTreeIDRegistry::AXTreeID RenderFrameHostImpl::RoutingIDToAXTreeID(
 AXTreeIDRegistry::AXTreeID
 RenderFrameHostImpl::BrowserPluginInstanceIDToAXTreeID(
     int instance_id) {
-  RenderFrameHost* guest = delegate()->GetGuestByInstanceID(
-      this, instance_id);
+  RenderFrameHostImpl* guest = static_cast<RenderFrameHostImpl*>(
+      delegate()->GetGuestByInstanceID(this, instance_id));
   if (!guest)
     return AXTreeIDRegistry::kNoAXTreeID;
+
+  guest->set_browser_plugin_embedder_ax_tree_id(GetAXTreeID());
 
   return guest->GetAXTreeID();
 }
@@ -2716,6 +2719,9 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
 
   if (src.parent_routing_id != -1)
     dst->parent_tree_id = RoutingIDToAXTreeID(src.parent_routing_id);
+
+  if (browser_plugin_embedder_ax_tree_id_ != AXTreeIDRegistry::kNoAXTreeID)
+    dst->parent_tree_id = browser_plugin_embedder_ax_tree_id_;
 
   // If this is not the root frame tree node, we're done.
   if (frame_tree_node()->parent())

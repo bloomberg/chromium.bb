@@ -458,6 +458,12 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // a renderer.
   void UpdateAXTreeData();
 
+  // Set the AX tree ID of the embedder RFHI, if this is a browser plugin guest.
+  void set_browser_plugin_embedder_ax_tree_id(
+      AXTreeIDRegistry::AXTreeID ax_tree_id) {
+    browser_plugin_embedder_ax_tree_id_ = ax_tree_id;
+  }
+
   // Send a message to the render process to change text track style settings.
   void SetTextTrackSettings(const FrameMsg_TextTrackSettings_Params& params);
 
@@ -893,6 +899,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
 
   // The last AXContentTreeData for this frame received from the RenderFrame.
   AXContentTreeData ax_content_tree_data_;
+
+  // The AX tree ID of the embedder, if this is a browser plugin guest.
+  AXTreeIDRegistry::AXTreeID browser_plugin_embedder_ax_tree_id_;
 
   // The mapping from callback id to corresponding callback for pending
   // accessibility tree snapshot calls created by RequestAXTreeSnapshot.
