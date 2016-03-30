@@ -48,7 +48,7 @@ class TargetedEvent : public ServerWindowObserver {
   }
 
   ServerWindow* target() { return target_; }
-  ui::Event* event() { return event_.get(); }
+  scoped_ptr<ui::Event> TakeEvent() { return std::move(event_); }
 
  private:
   // ServerWindowObserver:
@@ -1188,13 +1188,13 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id, bool handled) {
   if (!event_queue_.empty()) {
     DCHECK(!event_ack_id_);
     ServerWindow* target = nullptr;
-    ui::Event* event = nullptr;
+    scoped_ptr<ui::Event> event;
     do {
       scoped_ptr<TargetedEvent> targeted_event =
           std::move(event_queue_.front());
       event_queue_.pop();
       target = targeted_event->target();
-      event = targeted_event->event();
+      event = targeted_event->TakeEvent();
     } while (!event_queue_.empty() && !GetDisplay(target));
     if (target)
       DispatchInputEventImpl(target, *event);
