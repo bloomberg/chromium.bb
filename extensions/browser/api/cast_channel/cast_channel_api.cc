@@ -26,6 +26,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/api/cast_channel/logging.pb.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 
@@ -101,8 +102,8 @@ bool IsValidConnectInfoPort(const ConnectInfo& connect_info) {
 }
 
 bool IsValidConnectInfoIpAddress(const ConnectInfo& connect_info) {
-  net::IPAddressNumber ip_address;
-  return net::ParseIPLiteralToNumber(connect_info.ip_address, &ip_address);
+  net::IPAddress ip_address;
+  return ip_address.AssignFromIPLiteral(connect_info.ip_address);
 }
 
 }  // namespace

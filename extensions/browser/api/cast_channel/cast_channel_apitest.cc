@@ -23,6 +23,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/base/completion_callback.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -95,9 +96,7 @@ class CastChannelAPITest : public ExtensionApiTest {
     timeout_timer_ = new base::MockTimer(true, false);
     api->SetPingTimeoutTimerForTest(make_scoped_ptr(timeout_timer_));
 
-    net::IPAddressNumber ip_number;
-    net::ParseIPLiteralToNumber("192.168.1.1", &ip_number);
-    net::IPEndPoint ip_endpoint(ip_number, 8009);
+    net::IPEndPoint ip_endpoint(net::IPAddress(192, 168, 1, 1), 8009);
     mock_cast_socket_ = new MockCastSocket;
     // Transfers ownership of the socket.
     api->SetSocketForTest(make_scoped_ptr<CastSocket>(mock_cast_socket_));

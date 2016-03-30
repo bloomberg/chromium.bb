@@ -9,6 +9,7 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
@@ -106,11 +107,11 @@ bool Socket::StringAndPortToIPEndPoint(const std::string& ip_address_str,
                                        uint16_t port,
                                        net::IPEndPoint* ip_end_point) {
   DCHECK(ip_end_point);
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(ip_address_str, &ip_number))
+  net::IPAddress ip_address;
+  if (!ip_address.AssignFromIPLiteral(ip_address_str))
     return false;
 
-  *ip_end_point = net::IPEndPoint(ip_number, port);
+  *ip_end_point = net::IPEndPoint(ip_address, port);
   return true;
 }
 

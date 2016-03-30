@@ -144,8 +144,9 @@ void Logger::LogNewSocketEvent(const CastSocket& cast_socket) {
   AggregatedSocketEvent& aggregated_socket_event =
       LogSocketEvent(cast_socket.id(), event);
 
-  const net::IPAddressNumber& ip = cast_socket.ip_endpoint().address().bytes();
-  aggregated_socket_event.set_endpoint_id(ip.back());
+  const net::IPAddress& ip = cast_socket.ip_endpoint().address();
+  DCHECK(ip.IsValid());
+  aggregated_socket_event.set_endpoint_id(ip.bytes().back());
   aggregated_socket_event.set_channel_auth_type(cast_socket.channel_auth() ==
                                                         CHANNEL_AUTH_TYPE_SSL
                                                     ? proto::SSL
