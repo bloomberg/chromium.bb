@@ -93,6 +93,12 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // the flag is enabled.
     switches::kEnableWebBluetooth,
 
+    // This flag disables WebUSB's CORS-like checks for origin to device
+    // communication, allowing any origin to ask the user for permission to
+    // connect to a device. It is intended for manufacturers testing their
+    // existing devices until https://crbug.com/598766 is implemented.
+    switches::kDisableWebUsbSecurity,
+
     NULL
   };
 

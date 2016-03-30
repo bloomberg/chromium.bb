@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/web_usb_histograms.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/bubble/bubble_controller.h"
 #include "content/public/browser/render_frame_host.h"
@@ -105,10 +107,7 @@ void UsbChooserBubbleController::Close() {}
 
 void UsbChooserBubbleController::OnDeviceAdded(
     scoped_refptr<device::UsbDevice> device) {
-  if (device::UsbDeviceFilter::MatchesAny(device, filters_) &&
-      FindInWebUsbAllowedOrigins(
-          device->webusb_allowed_origins(),
-          render_frame_host_->GetLastCommittedURL().GetOrigin())) {
+  if (DisplayDevice(device)) {
     devices_.push_back(std::make_pair(device, device->product_string()));
     if (observer())
       observer()->OnOptionAdded(devices_.size() - 1);
@@ -142,13 +141,19 @@ void UsbChooserBubbleController::set_bubble_reference(
 void UsbChooserBubbleController::GotUsbDeviceList(
     const std::vector<scoped_refptr<device::UsbDevice>>& devices) {
   for (const auto& device : devices) {
-    if (device::UsbDeviceFilter::MatchesAny(device, filters_) &&
-        FindInWebUsbAllowedOrigins(
-            device->webusb_allowed_origins(),
-            render_frame_host_->GetLastCommittedURL().GetOrigin())) {
+    if (DisplayDevice(device))
       devices_.push_back(std::make_pair(device, device->product_string()));
-    }
   }
   if (observer())
     observer()->OnOptionsInitialized();
+}
+
+bool UsbChooserBubbleController::DisplayDevice(
+    scoped_refptr<device::UsbDevice> device) const {
+  return device::UsbDeviceFilter::MatchesAny(device, filters_) &&
+         (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableWebUsbSecurity) ||
+          device::FindInWebUsbAllowedOrigins(
+              device->webusb_allowed_origins(),
+              render_frame_host_->GetLastCommittedURL().GetOrigin()));
 }

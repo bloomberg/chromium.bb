@@ -54,6 +54,7 @@ class UsbChooserBubbleController : public ChooserBubbleController,
  private:
   void GotUsbDeviceList(
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
+  bool DisplayDevice(scoped_refptr<device::UsbDevice> device) const;
 
   content::RenderFrameHost* const render_frame_host_;
   device::usb::ChooserService::GetPermissionCallback callback_;

@@ -7,9 +7,11 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -26,6 +28,10 @@ bool FindOriginInDescriptorSet(const WebUsbDescriptorSet* set,
                                const GURL& origin,
                                const uint8_t* configuration_value,
                                const uint8_t* interface_number) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebUsbSecurity))
+    return true;
+
   if (!set)
     return false;
   for (size_t i = 0; i < set->origins.size(); ++i)
