@@ -259,7 +259,7 @@ class AudioRendererImplTest : public ::testing::Test {
                                next_timestamp_->GetTimestamp());
     next_timestamp_->AddFrames(frames.value);
 
-    DeliverBuffer(AudioDecoder::kOk, buffer);
+    DeliverBuffer(DecodeStatus::OK, buffer);
   }
 
   void DeliverEndOfStream() {
@@ -273,13 +273,13 @@ class AudioRendererImplTest : public ::testing::Test {
     // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
     message_loop_.PostTask(
         FROM_HERE,
-        base::Bind(base::ResetAndReturn(&decode_cb_), AudioDecoder::kOk));
+        base::Bind(base::ResetAndReturn(&decode_cb_), DecodeStatus::OK));
 
     WaitForPendingRead();
 
     message_loop_.PostTask(
         FROM_HERE,
-        base::Bind(base::ResetAndReturn(&decode_cb_), AudioDecoder::kOk));
+        base::Bind(base::ResetAndReturn(&decode_cb_), DecodeStatus::OK));
 
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(last_statistics_.audio_memory_usage,
@@ -399,7 +399,7 @@ class AudioRendererImplTest : public ::testing::Test {
     message_loop_.PostTask(FROM_HERE, reset_cb);
   }
 
-  void DeliverBuffer(AudioDecoder::Status status,
+  void DeliverBuffer(DecodeStatus status,
                      const scoped_refptr<AudioBuffer>& buffer) {
     CHECK(!decode_cb_.is_null());
 

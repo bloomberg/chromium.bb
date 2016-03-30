@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/channel_layout.h"
+#include "media/base/decode_status.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
@@ -24,15 +25,6 @@ class DemuxerStream;
 
 class MEDIA_EXPORT AudioDecoder {
  public:
-  // Status codes for decode operations.
-  // TODO(rileya): Now that both AudioDecoder and VideoDecoder Status enums
-  // match, break them into a decoder_status.h.
-  enum Status {
-    kOk,          // We're all good.
-    kAborted,     // We aborted as a result of Reset() or destruction.
-    kDecodeError  // A decoding error occurred.
-  };
-
   // Callback for VideoDecoder initialization.
   typedef base::Callback<void(bool success)> InitCB;
 
@@ -42,7 +34,7 @@ class MEDIA_EXPORT AudioDecoder {
 
   // Callback for Decode(). Called after the decoder has accepted corresponding
   // DecoderBuffer, indicating that the pipeline can send next buffer to decode.
-  typedef base::Callback<void(Status)> DecodeCB;
+  typedef base::Callback<void(DecodeStatus)> DecodeCB;
 
   AudioDecoder();
 

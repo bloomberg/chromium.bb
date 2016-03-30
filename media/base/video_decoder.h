@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/decode_status.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "ui/gfx/geometry/size.h"
@@ -23,15 +24,6 @@ class VideoFrame;
 
 class MEDIA_EXPORT VideoDecoder {
  public:
-  // Status codes for decode operations on VideoDecoder.
-  // TODO(rileya): Now that both AudioDecoder and VideoDecoder Status enums
-  // match, break them into a decoder_status.h.
-  enum Status {
-    kOk,          // Everything went as planned.
-    kAborted,     // Decode was aborted as a result of Reset() being called.
-    kDecodeError  // Decoding error happened.
-  };
-
   // Callback for VideoDecoder initialization.
   typedef base::Callback<void(bool success)> InitCB;
 
@@ -42,7 +34,7 @@ class MEDIA_EXPORT VideoDecoder {
   // Callback type for Decode(). Called after the decoder has completed decoding
   // corresponding DecoderBuffer, indicating that it's ready to accept another
   // buffer to decode.
-  typedef base::Callback<void(Status status)> DecodeCB;
+  typedef base::Callback<void(DecodeStatus)> DecodeCB;
 
   VideoDecoder();
 

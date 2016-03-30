@@ -104,22 +104,21 @@ void MojoAudioDecoderService::OnInitialized(const InitializeCallback& callback,
 }
 
 static interfaces::AudioDecoder::DecodeStatus ConvertDecodeStatus(
-    media::AudioDecoder::Status status) {
+    media::DecodeStatus status) {
   switch (status) {
-    case media::AudioDecoder::kOk:
+    case media::DecodeStatus::OK:
       return interfaces::AudioDecoder::DecodeStatus::OK;
-    case media::AudioDecoder::kAborted:
+    case media::DecodeStatus::ABORTED:
       return interfaces::AudioDecoder::DecodeStatus::ABORTED;
-    case media::AudioDecoder::kDecodeError:
+    case media::DecodeStatus::DECODE_ERROR:
       return interfaces::AudioDecoder::DecodeStatus::DECODE_ERROR;
   }
   NOTREACHED();
   return interfaces::AudioDecoder::DecodeStatus::DECODE_ERROR;
 }
 
-void MojoAudioDecoderService::OnDecodeStatus(
-    const DecodeCallback& callback,
-    media::AudioDecoder::Status status) {
+void MojoAudioDecoderService::OnDecodeStatus(const DecodeCallback& callback,
+                                             media::DecodeStatus status) {
   DVLOG(3) << __FUNCTION__ << " status:" << status;
   callback.Run(ConvertDecodeStatus(status));
 }

@@ -335,7 +335,7 @@ void DecoderStream<StreamType>::FlushDecoder() {
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
                                              bool end_of_stream,
-                                             typename Decoder::Status status) {
+                                             DecodeStatus status) {
   FUNCTION_DVLOG(2) << ": " << status;
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR)
@@ -362,7 +362,7 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
     return;
 
   switch (status) {
-    case Decoder::kDecodeError:
+    case DecodeStatus::DECODE_ERROR:
       state_ = STATE_ERROR;
       MEDIA_LOG(ERROR, media_log_) << GetStreamTypeString() << " decode error";
       ready_outputs_.clear();
@@ -370,11 +370,12 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
         SatisfyRead(DECODE_ERROR, NULL);
       return;
 
-    case Decoder::kAborted:
-      // Decoder can return kAborted during Reset() or during destruction.
+    case DecodeStatus::ABORTED:
+      // Decoder can return DecodeStatus::ABORTED during Reset() or during
+      // destruction.
       return;
 
-    case Decoder::kOk:
+    case DecodeStatus::OK:
       // Any successful decode counts!
       if (buffer_size > 0)
         StreamTraits::ReportStatistics(statistics_cb_, buffer_size);

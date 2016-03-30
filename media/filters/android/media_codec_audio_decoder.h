@@ -190,7 +190,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
 
   // Calls DecodeCB with |decode_status| for every frame in |input_queue| and
   // then clears it.
-  void ClearInputQueue(Status decode_status);
+  void ClearInputQueue(DecodeStatus decode_status);
 
   // Dequeues all output buffers from MediaCodec that are immediately available.
   // Returns true if any output buffer was received from MediaCodec.

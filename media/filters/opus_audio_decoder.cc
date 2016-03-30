@@ -196,7 +196,7 @@ void OpusAudioDecoder::DecodeBuffer(
   // Libopus does not buffer output. Decoding is complete when an end of stream
   // input buffer is received.
   if (input->end_of_stream()) {
-    decode_cb.Run(kOk);
+    decode_cb.Run(DecodeStatus::OK);
     return;
   }
 
@@ -204,14 +204,14 @@ void OpusAudioDecoder::DecodeBuffer(
   // occurs with some damaged files.
   if (input->timestamp() == kNoTimestamp()) {
     DLOG(ERROR) << "Received a buffer without timestamps!";
-    decode_cb.Run(kDecodeError);
+    decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   scoped_refptr<AudioBuffer> output_buffer;
 
   if (!Decode(input, &output_buffer)) {
-    decode_cb.Run(kDecodeError);
+    decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -219,7 +219,7 @@ void OpusAudioDecoder::DecodeBuffer(
     output_cb_.Run(output_buffer);
   }
 
-  decode_cb.Run(kOk);
+  decode_cb.Run(DecodeStatus::OK);
 }
 
 bool OpusAudioDecoder::ConfigureDecoder() {

@@ -48,7 +48,7 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
 
   // Called by |decoder_| when DecoderBuffer is accepted or rejected.
   void OnDecodeStatus(const DecodeCallback& callback,
-                      media::AudioDecoder::Status status);
+                      media::DecodeStatus status);
 
   // Called by |decoder_| when reset sequence is finished.
   void OnResetDone(const ResetCallback& callback);

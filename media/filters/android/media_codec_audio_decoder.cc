@@ -86,7 +86,7 @@ MediaCodecAudioDecoder::~MediaCodecAudioDecoder() {
     media_drm_bridge_cdm_context_->UnregisterPlayer(cdm_registration_id_);
   }
 
-  ClearInputQueue(kAborted);
+  ClearInputQueue(DecodeStatus::ABORTED);
 }
 
 std::string MediaCodecAudioDecoder::GetDisplayName() const {
@@ -148,7 +148,7 @@ void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp()) {
     DVLOG(2) << __FUNCTION__ << " " << buffer->AsHumanReadableString()
              << ": no timestamp, skipping this buffer";
-    bound_decode_cb.Run(kDecodeError);
+    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -156,8 +156,8 @@ void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     // We get here if an error happens in DequeueOutput() or Reset().
     DVLOG(2) << __FUNCTION__ << " " << buffer->AsHumanReadableString()
              << ": Error state, returning decode error for all buffers";
-    ClearInputQueue(kDecodeError);
-    bound_decode_cb.Run(kDecodeError);
+    ClearInputQueue(DecodeStatus::DECODE_ERROR);
+    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -179,7 +179,7 @@ void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
 
   io_timer_.Stop();
 
-  ClearInputQueue(kAborted);
+  ClearInputQueue(DecodeStatus::ABORTED);
 
   // Flush if we can, otherwise completely recreate and reconfigure the codec.
   // Prior to JellyBean-MR2, flush() had several bugs (b/8125974, b/8347958) so
@@ -318,7 +318,7 @@ bool MediaCodecAudioDecoder::QueueOneInputBuffer() {
 
   if (input_info.buf_index == kInvalidBufferIndex) {
     if (state_ == STATE_ERROR)
-      ClearInputQueue(kDecodeError);
+      ClearInputQueue(DecodeStatus::DECODE_ERROR);
 
     return false;
   }
@@ -330,7 +330,7 @@ bool MediaCodecAudioDecoder::QueueOneInputBuffer() {
   switch (state_) {
     case STATE_READY: {
       const DecodeCB& decode_cb = input_queue_.front().second;
-      decode_cb.Run(kOk);
+      decode_cb.Run(DecodeStatus::OK);
       input_queue_.pop_front();
     } break;
 
@@ -346,13 +346,13 @@ bool MediaCodecAudioDecoder::QueueOneInputBuffer() {
       break;
 
     case STATE_ERROR:
-      ClearInputQueue(kDecodeError);
+      ClearInputQueue(DecodeStatus::DECODE_ERROR);
       break;
 
     default:
       NOTREACHED() << ": internal error, unexpected state " << AsString(state_);
       SetState(STATE_ERROR);
-      ClearInputQueue(kDecodeError);
+      ClearInputQueue(DecodeStatus::DECODE_ERROR);
       did_work = false;
       break;
   }
@@ -468,7 +468,7 @@ bool MediaCodecAudioDecoder::EnqueueInputBuffer(
   return did_work;
 }
 
-void MediaCodecAudioDecoder::ClearInputQueue(Status decode_status) {
+void MediaCodecAudioDecoder::ClearInputQueue(DecodeStatus decode_status) {
   DVLOG(2) << __FUNCTION__;
 
   for (const auto& entry : input_queue_)
@@ -577,7 +577,7 @@ void MediaCodecAudioDecoder::OnDecodedEos(const OutputBufferInfo& out) {
   DCHECK(input_queue_.front().first->end_of_stream());
 
   const DecodeCB& decode_cb = input_queue_.front().second;
-  decode_cb.Run(kOk);
+  decode_cb.Run(DecodeStatus::OK);
 
   // Remove the EOS buffer from the input queue.
   input_queue_.pop_front();

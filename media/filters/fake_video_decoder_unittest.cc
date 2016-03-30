@@ -39,7 +39,7 @@ class FakeVideoDecoderTest
         num_decoded_frames_(0),
         num_bytes_decoded_(0),
         total_bytes_in_buffers_(0),
-        last_decode_status_(VideoDecoder::kOk),
+        last_decode_status_(DecodeStatus::OK),
         pending_decode_requests_(0),
         is_reset_pending_(false) {}
 
@@ -71,7 +71,7 @@ class FakeVideoDecoderTest
   }
 
   // Callback for VideoDecoder::Decode().
-  void DecodeDone(VideoDecoder::Status status) {
+  void DecodeDone(DecodeStatus status) {
     DCHECK_GT(pending_decode_requests_, 0);
     --pending_decode_requests_;
     last_decode_status_ = status;
@@ -101,17 +101,17 @@ class FakeVideoDecoderTest
         break;
       case OK:
         EXPECT_EQ(0, pending_decode_requests_);
-        ASSERT_EQ(VideoDecoder::kOk, last_decode_status_);
+        ASSERT_EQ(DecodeStatus::OK, last_decode_status_);
         ASSERT_TRUE(last_decoded_frame_.get());
         break;
       case NOT_ENOUGH_DATA:
         EXPECT_EQ(0, pending_decode_requests_);
-        ASSERT_EQ(VideoDecoder::kOk, last_decode_status_);
+        ASSERT_EQ(DecodeStatus::OK, last_decode_status_);
         ASSERT_FALSE(last_decoded_frame_.get());
         break;
       case ABORTED:
         EXPECT_EQ(0, pending_decode_requests_);
-        ASSERT_EQ(VideoDecoder::kAborted, last_decode_status_);
+        ASSERT_EQ(DecodeStatus::ABORTED, last_decode_status_);
         EXPECT_FALSE(last_decoded_frame_.get());
         break;
     }
@@ -228,7 +228,7 @@ class FakeVideoDecoderTest
   int total_bytes_in_buffers_;
 
   // Callback result/status.
-  VideoDecoder::Status last_decode_status_;
+  DecodeStatus last_decode_status_;
   scoped_refptr<VideoFrame> last_decoded_frame_;
   int pending_decode_requests_;
   bool is_reset_pending_;
@@ -254,7 +254,7 @@ TEST_P(FakeVideoDecoderTest, SimulateFailureToInitialize) {
   decoder_->SimulateFailureToInit();
   InitializeWithConfigAndExpectResult(TestVideoConfig::Normal(), false);
   Decode();
-  EXPECT_EQ(last_decode_status_, VideoDecoder::kDecodeError);
+  EXPECT_EQ(last_decode_status_, DecodeStatus::DECODE_ERROR);
 }
 
 TEST_P(FakeVideoDecoderTest, Read_AllFrames) {
@@ -354,7 +354,7 @@ TEST_P(FakeVideoDecoderTest, SimulateFailureToReinitialize) {
   decoder_->SimulateFailureToInit();
   InitializeWithConfigAndExpectResult(TestVideoConfig::Normal(), false);
   Decode();
-  EXPECT_EQ(last_decode_status_, VideoDecoder::kDecodeError);
+  EXPECT_EQ(last_decode_status_, DecodeStatus::DECODE_ERROR);
 }
 
 // Reinitializing the decoder during the middle of the decoding process can

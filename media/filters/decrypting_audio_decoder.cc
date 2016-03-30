@@ -108,7 +108,7 @@ void DecryptingAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   // Return empty (end-of-stream) frames if decoding has finished.
   if (state_ == kDecodeFinished) {
     output_cb_.Run(AudioBuffer::CreateEOSBuffer());
-    base::ResetAndReturn(&decode_cb_).Run(kOk);
+    base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::OK);
     return;
   }
 
@@ -150,7 +150,7 @@ void DecryptingAudioDecoder::Reset(const base::Closure& closure) {
   if (state_ == kWaitingForKey) {
     DCHECK(!decode_cb_.is_null());
     pending_buffer_to_decode_ = NULL;
-    base::ResetAndReturn(&decode_cb_).Run(kAborted);
+    base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::ABORTED);
   }
 
   DCHECK(decode_cb_.is_null());
@@ -172,7 +172,7 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(false);
   if (!decode_cb_.is_null())
-    base::ResetAndReturn(&decode_cb_).Run(kAborted);
+    base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::ABORTED);
   if (!reset_cb_.is_null())
     base::ResetAndReturn(&reset_cb_).Run();
 }
@@ -248,7 +248,7 @@ void DecryptingAudioDecoder::DeliverFrame(
   pending_buffer_to_decode_ = NULL;
 
   if (!reset_cb_.is_null()) {
-    base::ResetAndReturn(&decode_cb_).Run(kAborted);
+    base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::ABORTED);
     DoReset();
     return;
   }
@@ -259,7 +259,7 @@ void DecryptingAudioDecoder::DeliverFrame(
     DVLOG(2) << "DeliverFrame() - kError";
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": decode error";
     state_ = kDecodeFinished; // TODO add kError state
-    base::ResetAndReturn(&decode_cb_).Run(kDecodeError);
+    base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -286,7 +286,7 @@ void DecryptingAudioDecoder::DeliverFrame(
     DVLOG(2) << "DeliverFrame() - kNeedMoreData";
     state_ = scoped_pending_buffer_to_decode->end_of_stream() ? kDecodeFinished
                                                               : kIdle;
-    base::ResetAndReturn(&decode_cb_).Run(kOk);
+    base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::OK);
     return;
   }
 
@@ -303,7 +303,7 @@ void DecryptingAudioDecoder::DeliverFrame(
   }
 
   state_ = kIdle;
-  base::ResetAndReturn(&decode_cb_).Run(kOk);
+  base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::OK);
 }
 
 void DecryptingAudioDecoder::OnKeyAdded() {

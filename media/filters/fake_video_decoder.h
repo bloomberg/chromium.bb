@@ -86,7 +86,7 @@ class FakeVideoDecoder : public VideoDecoder {
   // Callback for updating |total_bytes_decoded_|.
   void OnFrameDecoded(int buffer_size,
                       const DecodeCB& decode_cb,
-                      Status status);
+                      DecodeStatus status);
 
   // Runs |decode_cb| or puts it to |held_decode_callbacks_| depending on
   // current value of |hold_decode_|.

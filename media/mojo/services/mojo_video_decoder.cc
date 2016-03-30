@@ -44,7 +44,8 @@ void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   NOTIMPLEMENTED();
 
   // Actually we can't decode anything.
-  task_runner_->PostTask(FROM_HERE, base::Bind(decode_cb, kDecodeError));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
 }
 
 void MojoVideoDecoder::Reset(const base::Closure& closure) {

@@ -650,7 +650,7 @@ class VideoDecoderShim::DecoderImpl {
  private:
   void OnInitDone(bool success);
   void DoDecode();
-  void OnDecodeComplete(media::VideoDecoder::Status status);
+  void OnDecodeComplete(media::DecodeStatus status);
   void OnOutputComplete(const scoped_refptr<media::VideoFrame>& frame);
   void OnResetComplete();
 
@@ -732,8 +732,8 @@ void VideoDecoderShim::DecoderImpl::Reset() {
     const PendingDecode& decode = pending_decodes_.front();
     scoped_ptr<PendingFrame> pending_frame(new PendingFrame(decode.decode_id));
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoDecoderShim::OnDecodeComplete, shim_,
-                              media::VideoDecoder::kAborted, decode.decode_id));
+        FROM_HERE, base::Bind(&VideoDecoderShim::OnDecodeComplete, shim_, PP_OK,
+                              decode.decode_id));
     pending_decodes_.pop();
   }
   // Don't need to call Reset() if the |decoder_| hasn't been initialized.
@@ -781,22 +781,18 @@ void VideoDecoderShim::DecoderImpl::DoDecode() {
 }
 
 void VideoDecoderShim::DecoderImpl::OnDecodeComplete(
-    media::VideoDecoder::Status status) {
+    media::DecodeStatus status) {
   DCHECK(awaiting_decoder_);
   awaiting_decoder_ = false;
 
   int32_t result;
   switch (status) {
-    case media::VideoDecoder::kOk:
-    case media::VideoDecoder::kAborted:
+    case media::DecodeStatus::OK:
+    case media::DecodeStatus::ABORTED:
       result = PP_OK;
       break;
-    case media::VideoDecoder::kDecodeError:
+    case media::DecodeStatus::DECODE_ERROR:
       result = PP_ERROR_RESOURCE_FAILED;
-      break;
-    default:
-      NOTREACHED();
-      result = PP_ERROR_FAILED;
       break;
   }
 

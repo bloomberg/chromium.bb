@@ -85,7 +85,8 @@ void MojoAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (has_connection_error_) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(decode_cb, kDecodeError));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));
     return;
   }
 
@@ -103,9 +104,9 @@ void MojoAudioDecoder::Reset(const base::Closure& closure) {
 
   if (has_connection_error_) {
     if (!decode_cb_.is_null()) {
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(base::ResetAndReturn(&decode_cb_), kDecodeError));
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(base::ResetAndReturn(&decode_cb_),
+                                        DecodeStatus::DECODE_ERROR));
     }
 
     task_runner_->PostTask(FROM_HERE, closure);
@@ -144,7 +145,7 @@ void MojoAudioDecoder::OnConnectionError() {
   }
 
   if (!decode_cb_.is_null())
-    base::ResetAndReturn(&decode_cb_).Run(kDecodeError);
+    base::ResetAndReturn(&decode_cb_).Run(DecodeStatus::DECODE_ERROR);
   if (!reset_cb_.is_null())
     base::ResetAndReturn(&reset_cb_).Run();
 }
@@ -162,18 +163,18 @@ void MojoAudioDecoder::OnInitialized(bool status,
   task_runner_->PostTask(FROM_HERE, base::Bind(init_cb_, status));
 }
 
-static media::AudioDecoder::Status ConvertDecodeStatus(
+static media::DecodeStatus ConvertDecodeStatus(
     interfaces::AudioDecoder::DecodeStatus status) {
   switch (status) {
     case interfaces::AudioDecoder::DecodeStatus::OK:
-      return media::AudioDecoder::kOk;
+      return media::DecodeStatus::OK;
     case interfaces::AudioDecoder::DecodeStatus::ABORTED:
-      return media::AudioDecoder::kAborted;
+      return media::DecodeStatus::ABORTED;
     case interfaces::AudioDecoder::DecodeStatus::DECODE_ERROR:
-      return media::AudioDecoder::kDecodeError;
+      return media::DecodeStatus::DECODE_ERROR;
   }
   NOTREACHED();
-  return media::AudioDecoder::kDecodeError;
+  return media::DecodeStatus::DECODE_ERROR;
 }
 
 void MojoAudioDecoder::OnDecodeStatus(

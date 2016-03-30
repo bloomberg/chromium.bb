@@ -172,14 +172,14 @@ class VideoRendererImplTest
       if (token == "abort") {
         scoped_refptr<VideoFrame> null_frame;
         decode_results_.push_back(
-            std::make_pair(VideoDecoder::kAborted, null_frame));
+            std::make_pair(DecodeStatus::ABORTED, null_frame));
         continue;
       }
 
       if (token == "error") {
         scoped_refptr<VideoFrame> null_frame;
         decode_results_.push_back(
-            std::make_pair(VideoDecoder::kDecodeError, null_frame));
+            std::make_pair(DecodeStatus::DECODE_ERROR, null_frame));
         continue;
       }
 
@@ -189,7 +189,7 @@ class VideoRendererImplTest
         scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
             PIXEL_FORMAT_YV12, natural_size, gfx::Rect(natural_size),
             natural_size, base::TimeDelta::FromMilliseconds(timestamp_in_ms));
-        decode_results_.push_back(std::make_pair(VideoDecoder::kOk, frame));
+        decode_results_.push_back(std::make_pair(DecodeStatus::OK, frame));
         continue;
       }
 
@@ -251,13 +251,13 @@ class VideoRendererImplTest
     // Satify pending |decode_cb_| to trigger a new DemuxerStream::Read().
     message_loop_.PostTask(
         FROM_HERE,
-        base::Bind(base::ResetAndReturn(&decode_cb_), VideoDecoder::kOk));
+        base::Bind(base::ResetAndReturn(&decode_cb_), DecodeStatus::OK));
 
     WaitForPendingRead();
 
     message_loop_.PostTask(
         FROM_HERE,
-        base::Bind(base::ResetAndReturn(&decode_cb_), VideoDecoder::kOk));
+        base::Bind(base::ResetAndReturn(&decode_cb_), DecodeStatus::OK));
   }
 
   void AdvanceWallclockTimeInMs(int time_ms) {
@@ -352,8 +352,8 @@ class VideoRendererImplTest
   // Run during DecodeRequested() to unblock WaitForPendingRead().
   base::Closure wait_for_pending_decode_cb_;
 
-  std::deque<std::pair<
-      VideoDecoder::Status, scoped_refptr<VideoFrame> > > decode_results_;
+  std::deque<std::pair<DecodeStatus, scoped_refptr<VideoFrame>>>
+      decode_results_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererImplTest);
 };

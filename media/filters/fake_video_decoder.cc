@@ -93,7 +93,7 @@ void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                                           BindToCurrentLoop(decode_cb));
 
   if (state_ == STATE_ERROR) {
-    wrapped_decode_cb.Run(kDecodeError);
+    wrapped_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -180,7 +180,7 @@ void FakeVideoDecoder::SimulateError() {
 
   state_ = STATE_ERROR;
   while (!held_decode_callbacks_.empty()) {
-    held_decode_callbacks_.front().Run(kDecodeError);
+    held_decode_callbacks_.front().Run(DecodeStatus::DECODE_ERROR);
     held_decode_callbacks_.pop_front();
   }
   decoded_frames_.clear();
@@ -196,10 +196,10 @@ int FakeVideoDecoder::GetMaxDecodeRequests() const {
 
 void FakeVideoDecoder::OnFrameDecoded(int buffer_size,
                                       const DecodeCB& decode_cb,
-                                      Status status) {
+                                      DecodeStatus status) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (status == kOk) {
+  if (status == DecodeStatus::OK) {
     total_bytes_decoded_ += buffer_size;
     bytes_decoded_cb_.Run(buffer_size);
   }
@@ -222,7 +222,7 @@ void FakeVideoDecoder::RunDecodeCallback(const DecodeCB& decode_cb) {
 
   if (!reset_cb_.IsNull()) {
     DCHECK(decoded_frames_.empty());
-    decode_cb.Run(kAborted);
+    decode_cb.Run(DecodeStatus::ABORTED);
     return;
   }
 
@@ -247,7 +247,7 @@ void FakeVideoDecoder::RunDecodeCallback(const DecodeCB& decode_cb) {
     }
   }
 
-  decode_cb.Run(kOk);
+  decode_cb.Run(DecodeStatus::OK);
 }
 
 void FakeVideoDecoder::DoReset() {

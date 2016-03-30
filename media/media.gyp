@@ -310,6 +310,8 @@
         'base/data_buffer.h',
         'base/data_source.cc',
         'base/data_source.h',
+        'base/decode_status.cc',
+        'base/decode_status.h',
         'base/decoder_buffer.cc',
         'base/decoder_buffer.h',
         'base/decoder_buffer_queue.cc',

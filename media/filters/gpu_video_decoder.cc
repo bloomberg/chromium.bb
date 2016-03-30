@@ -299,7 +299,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
 
   if (state_ == kError || !vda_) {
-    bound_decode_cb.Run(kDecodeError);
+    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -328,7 +328,7 @@ void GpuVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   size_t size = buffer->data_size();
   scoped_ptr<SHMBuffer> shm_buffer = GetSHM(size);
   if (!shm_buffer) {
-    bound_decode_cb.Run(kDecodeError);
+    bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -631,7 +631,8 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32_t id) {
   }
 
   PutSHM(make_scoped_ptr(it->second.shm_buffer));
-  it->second.done_cb.Run(state_ == kError ? kDecodeError : kOk);
+  it->second.done_cb.Run(state_ == kError ? DecodeStatus::DECODE_ERROR
+                                          : DecodeStatus::OK);
   bitstream_buffers_in_decoder_.erase(it);
 }
 
@@ -657,7 +658,7 @@ GpuVideoDecoder::~GpuVideoDecoder() {
            bitstream_buffers_in_decoder_.begin();
        it != bitstream_buffers_in_decoder_.end(); ++it) {
     delete it->second.shm_buffer;
-    it->second.done_cb.Run(kAborted);
+    it->second.done_cb.Run(DecodeStatus::ABORTED);
   }
   bitstream_buffers_in_decoder_.clear();
 
@@ -670,7 +671,7 @@ void GpuVideoDecoder::NotifyFlushDone() {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK_EQ(state_, kDrainingDecoder);
   state_ = kDecoderDrained;
-  base::ResetAndReturn(&eos_decode_cb_).Run(kOk);
+  base::ResetAndReturn(&eos_decode_cb_).Run(DecodeStatus::OK);
 }
 
 void GpuVideoDecoder::NotifyResetDone() {
@@ -699,7 +700,7 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   // won't be another decode request to report the error.
   if (!bitstream_buffers_in_decoder_.empty()) {
     auto it = bitstream_buffers_in_decoder_.begin();
-    it->second.done_cb.Run(kDecodeError);
+    it->second.done_cb.Run(DecodeStatus::DECODE_ERROR);
     bitstream_buffers_in_decoder_.erase(it);
   }
 

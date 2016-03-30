@@ -128,7 +128,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // Returns true if more buffers are needed.
   bool HandleSplicerBuffer_Locked(const scoped_refptr<AudioBuffer>& buffer);
 
-  // Helper functions for AudioDecoder::Status values passed to
+  // Helper functions for DecodeStatus values passed to
   // DecodedAudioReady().
   void HandleAbortedReadOrDecodeError(PipelineStatus status);
 

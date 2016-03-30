@@ -192,13 +192,13 @@ void FFmpegAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DecodeCB decode_cb_bound = BindToCurrentLoop(decode_cb);
 
   if (state_ == kError) {
-    decode_cb_bound.Run(kDecodeError);
+    decode_cb_bound.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
   // Do nothing if decoding has finished.
   if (state_ == kDecodeFinished) {
-    decode_cb_bound.Run(kOk);
+    decode_cb_bound.Run(DecodeStatus::OK);
     return;
   }
 
@@ -227,7 +227,7 @@ void FFmpegAudioDecoder::DecodeBuffer(
   // occurs with some damaged files.
   if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp()) {
     DVLOG(1) << "Received a buffer without timestamps!";
-    decode_cb.Run(kDecodeError);
+    decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -236,7 +236,7 @@ void FFmpegAudioDecoder::DecodeBuffer(
     has_produced_frame = false;
     if (!FFmpegDecode(buffer, &has_produced_frame)) {
       state_ = kError;
-      decode_cb.Run(kDecodeError);
+      decode_cb.Run(DecodeStatus::DECODE_ERROR);
       return;
     }
     // Repeat to flush the decoder after receiving EOS buffer.
@@ -245,7 +245,7 @@ void FFmpegAudioDecoder::DecodeBuffer(
   if (buffer->end_of_stream())
     state_ = kDecodeFinished;
 
-  decode_cb.Run(kOk);
+  decode_cb.Run(DecodeStatus::OK);
 }
 
 bool FFmpegAudioDecoder::FFmpegDecode(

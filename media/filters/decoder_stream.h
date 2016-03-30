@@ -39,7 +39,6 @@ class MEDIA_EXPORT DecoderStream {
   typedef DecoderStreamTraits<StreamType> StreamTraits;
   typedef typename StreamTraits::DecoderType Decoder;
   typedef typename StreamTraits::OutputType Output;
-  typedef typename Decoder::Status DecoderStatus;
 
   enum Status {
     OK,  // Everything went as planned.
@@ -156,7 +155,7 @@ class MEDIA_EXPORT DecoderStream {
   void FlushDecoder();
 
   // Callback for Decoder::Decode().
-  void OnDecodeDone(int buffer_size, bool end_of_stream, DecoderStatus status);
+  void OnDecodeDone(int buffer_size, bool end_of_stream, DecodeStatus status);
 
   // Output callback passed to Decoder::Initialize().
   void OnDecodeOutputReady(const scoped_refptr<Output>& output);

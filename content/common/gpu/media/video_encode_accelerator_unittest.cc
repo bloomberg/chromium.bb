@@ -629,8 +629,8 @@ class VideoFrameQualityValidator {
 
  private:
   void InitializeCB(bool success);
-  void DecodeDone(media::VideoDecoder::Status status);
-  void FlushDone(media::VideoDecoder::Status status);
+  void DecodeDone(media::DecodeStatus status);
+  void FlushDone(media::DecodeStatus status);
   void VerifyOutputFrame(const scoped_refptr<media::VideoFrame>& output_frame);
   void Decode();
 
@@ -712,9 +712,8 @@ void VideoFrameQualityValidator::AddOriginalFrame(
   original_frames_.push(frame);
 }
 
-void VideoFrameQualityValidator::DecodeDone(
-    media::VideoDecoder::Status status) {
-  if (status == media::VideoDecoder::kOk) {
+void VideoFrameQualityValidator::DecodeDone(media::DecodeStatus status) {
+  if (status == media::DecodeStatus::OK) {
     decoder_state_ = INITIALIZED;
     Decode();
   } else {
@@ -724,7 +723,7 @@ void VideoFrameQualityValidator::DecodeDone(
   }
 }
 
-void VideoFrameQualityValidator::FlushDone(media::VideoDecoder::Status status) {
+void VideoFrameQualityValidator::FlushDone(media::DecodeStatus status) {
   flush_complete_cb_.Run();
 }
 
