@@ -39,7 +39,6 @@ WTFLogChannel LogResourceLoading =    { WTFLogChannelOff };
 WTFLogChannel LogSQLDatabase =        { WTFLogChannelOff };
 WTFLogChannel LogStorageAPI =         { WTFLogChannelOff };
 WTFLogChannel LogTimers =             { WTFLogChannelOff };
-WTFLogChannel LogWebAudio =           { WTFLogChannelOff };
 
 WTFLogChannel* getChannelFromName(const String& channelName)
 {
@@ -66,9 +65,6 @@ WTFLogChannel* getChannelFromName(const String& channelName)
 
     if (equalIgnoringCase(channelName, String("FileAPI")))
         return &LogFileAPI;
-
-    if (equalIgnoringCase(channelName, String("WebAudio")))
-        return &LogWebAudio;
 
     if (equalIgnoringCase(channelName, String("Timers")))
         return &LogTimers;

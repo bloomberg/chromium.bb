@@ -82,7 +82,7 @@ void DefaultAudioDestinationHandler::uninitialize()
 void DefaultAudioDestinationHandler::createDestination()
 {
     float hardwareSampleRate = AudioDestination::hardwareSampleRate();
-    WTF_LOG(WebAudio, ">>>> hardwareSampleRate = %f\n", hardwareSampleRate);
+    VLOG(1) << ">>>> hardwareSampleRate = " << hardwareSampleRate;
 
     m_destination = AudioDestination::create(*this, m_inputDeviceId, m_numberOfInputChannels, channelCount(), hardwareSampleRate, context()->getSecurityOrigin());
 }
