@@ -38,6 +38,24 @@ namespace safe_browsing {
 const float PhishingClassifier::kInvalidScore = -1.0;
 const float PhishingClassifier::kPhishyThreshold = 0.5;
 
+namespace {
+// Used for UMA, do not reorder.
+enum SkipClassificationReason {
+  CLASSIFICATION_PROCEED = 0,
+  SKIP_HTTPS = 1,
+  SKIP_NONE_GET = 2,
+  SKIP_REASON_MAX
+};
+
+void RecordReasonForSkippingClassificationToUMA(
+    SkipClassificationReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.SkipClassificationReason",
+                            reason,
+                            SKIP_REASON_MAX);
+}
+
+}  // namespace
+
 PhishingClassifier::PhishingClassifier(content::RenderFrame* render_frame,
                                        FeatureExtractorClock* clock)
     : render_frame_(render_frame),
@@ -111,6 +129,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
   // Currently, we only classify http: URLs that are GET requests.
   GURL url(frame->document().url());
   if (!url.SchemeIs(url::kHttpScheme)) {
+    RecordReasonForSkippingClassificationToUMA(SKIP_HTTPS);
     RunFailureCallback();
     return;
   }
@@ -119,10 +138,13 @@ void PhishingClassifier::BeginFeatureExtraction() {
   if (!ds ||
       !base::EqualsASCII(base::StringPiece16(ds->request().httpMethod()),
                          "GET")) {
+    if (ds)
+      RecordReasonForSkippingClassificationToUMA(SKIP_NONE_GET);
     RunFailureCallback();
     return;
   }
 
+  RecordReasonForSkippingClassificationToUMA(CLASSIFICATION_PROCEED);
   features_.reset(new FeatureMap);
   if (!url_extractor_->ExtractFeatures(url, features_.get())) {
     RunFailureCallback();

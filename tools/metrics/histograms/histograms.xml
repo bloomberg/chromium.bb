@@ -44160,6 +44160,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientMalware.ResourceUrlMatchedBadIp"
+    enum="BooleanMatchedBadIp">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    True if at least one resource url matched the malware IP list. Recorded when
+    client side malware feature extraction is done.
+  </summary>
+</histogram>
+
 <histogram name="SBClientMalware.SentReports" enum="SBClientMalwareSentReports">
   <owner>noelutz@chromium.org</owner>
   <summary>
@@ -44167,6 +44176,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     fail due to a client reaching the limit on the number of reports it can send
     per day or due to the report failing to be serialized.
   </summary>
+</histogram>
+
+<histogram name="SBClientMalware.ServerDeterminesMalware"
+    enum="BooleanIsMalware">
+  <owner>jialiul@chromium.org</owner>
+  <summary>The counts for malware verdicts given by server side model.</summary>
 </histogram>
 
 <histogram name="SBClientMalware.UnexpectedPageId" enum="BooleanHit">
@@ -44207,6 +44222,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     number of top page navigations by users with SBClientPhishing enabled). The
     name is slightly misleading as it is recorded before
     &quot;Preclassification&quot; happens.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.ClientDeterminesPhishing"
+    enum="BooleanIsPhishing">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    The counts for phishing verdicts given by client side model.
   </summary>
 </histogram>
 
@@ -44356,6 +44379,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records the status when we create a scorer object for the client-side
     phishing detection classifier.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.ServerDeterminesPhishing"
+    enum="BooleanIsPhishing">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    The counts for phishing verdicts given by server side model.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.SkipClassificationReason"
+    enum="SBClientPhishingSkipClassificationReason">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    The counts for various reasons why a phishing classification is skipped.
   </summary>
 </histogram>
 
@@ -61171,9 +61210,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Retrieved"/>
 </enum>
 
+<enum name="BooleanIsMalware" type="int">
+  <int value="0" label="Not malware"/>
+  <int value="1" label="Is malware"/>
+</enum>
+
 <enum name="BooleanIsMobileOptimized" type="int">
   <int value="0" label="Not mobile optimized web page"/>
   <int value="1" label="Mobile optimized web page"/>
+</enum>
+
+<enum name="BooleanIsPhishing" type="int">
+  <int value="0" label="Not phishing"/>
+  <int value="1" label="Is phishing"/>
 </enum>
 
 <enum name="BooleanLoaded" type="int">
@@ -61182,6 +61231,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="BooleanMatched" type="int">
+  <int value="0" label="Not matched"/>
+  <int value="1" label="Matched"/>
+</enum>
+
+<enum name="BooleanMatchedBadIp" type="int">
   <int value="0" label="Not matched"/>
   <int value="1" label="Matched"/>
 </enum>
@@ -80576,6 +80630,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="MODEL_FILE_TOO_LARGE"/>
   <int value="4" label="MODEL_PARSE_ERROR"/>
   <int value="5" label="MODEL_MISSING_FIELDS"/>
+</enum>
+
+<enum name="SBClientPhishingSkipClassificationReason" type="int">
+  <int value="0" label="Not skipped"/>
+  <int value="1" label="Skipped: HTTPS"/>
+  <int value="2" label="Skipped: Not a GET request"/>
 </enum>
 
 <enum name="SBDownloadFeedbackUploadResult" type="int">

@@ -523,6 +523,9 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "SBClientPhishing.ClientDeterminesPhishing",
+        verdict->is_phishing());
     // We only send phishing verdict to the server if the verdict is phishing or
     // if a SafeBrowsing interstitial was already shown for this site.  E.g., a
     // malware or phishing interstitial was shown but the user clicked
@@ -547,6 +550,9 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(2) << "Received server phishing verdict for URL:" << phishing_url
            << " is_phishing:" << is_phishing;
+  UMA_HISTOGRAM_BOOLEAN(
+      "SBClientPhishing.ServerDeterminesPhishing",
+      is_phishing);
   if (is_phishing) {
     DCHECK(web_contents());
     if (ui_manager_.get()) {
@@ -579,6 +585,9 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(2) << "Received server malawre IP verdict for URL:" << malware_url
            << " is_malware:" << is_malware;
+  UMA_HISTOGRAM_BOOLEAN(
+      "SBClientMalware.ServerDeterminesMalware",
+      is_malware);
   if (is_malware && malware_url.is_valid() && original_url.is_valid()) {
     DCHECK(web_contents());
     if (ui_manager_.get()) {
@@ -635,7 +644,9 @@ void ClientSideDetectionHost::MalwareFeatureExtractionDone(
   DCHECK(request.get());
   DVLOG(2) << "Malware Feature extraction done for URL: " << request->url()
            << ", with badip url count:" << request->bad_ip_url_info_size();
-
+  UMA_HISTOGRAM_BOOLEAN(
+      "SBClientMalware.ResourceUrlMatchesBadIp",
+      request->bad_ip_url_info_size() > 0);
   // Send ping if there is matching features.
   if (feature_extraction_success && request->bad_ip_url_info_size() > 0) {
     DVLOG(1) << "Start sending client malware request.";
