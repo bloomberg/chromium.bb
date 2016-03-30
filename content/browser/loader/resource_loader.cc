@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
@@ -172,6 +173,8 @@ void ResourceLoader::StartRequest() {
     return;
   }
 
+  TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::StartRequest", this,
+                         TRACE_EVENT_FLAG_FLOW_OUT);
   if (defer_start) {
     deferred_stage_ = DEFERRED_START;
   } else {
@@ -180,6 +183,8 @@ void ResourceLoader::StartRequest() {
 }
 
 void ResourceLoader::CancelRequest(bool from_renderer) {
+  TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::CancelRequest", this,
+                         TRACE_EVENT_FLAG_FLOW_IN);
   CancelRequestInternal(net::ERR_ABORTED, from_renderer);
 }
 
@@ -190,6 +195,8 @@ void ResourceLoader::CancelAndIgnore() {
 }
 
 void ResourceLoader::CancelWithError(int error_code) {
+  TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::CancelWithError", this,
+                         TRACE_EVENT_FLAG_FLOW_IN);
   CancelRequestInternal(error_code, false);
 }
 
@@ -597,6 +604,8 @@ void ResourceLoader::ResumeReading() {
 }
 
 void ResourceLoader::ReadMore(int* bytes_read) {
+  TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::ReadMore", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   DCHECK(!is_deferred());
 
   // Make sure we track the buffer in at least one place.  This ensures it gets
@@ -625,6 +634,9 @@ void ResourceLoader::ReadMore(int* bytes_read) {
 }
 
 void ResourceLoader::CompleteRead(int bytes_read) {
+  TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::CompleteRead", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   DCHECK(bytes_read >= 0);
   DCHECK(request_->status().is_success());
 
@@ -647,6 +659,9 @@ void ResourceLoader::CompleteRead(int bytes_read) {
 }
 
 void ResourceLoader::ResponseCompleted() {
+  TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::ResponseCompleted", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   DVLOG(1) << "ResponseCompleted: " << request_->url().spec();
   RecordHistograms();
   ResourceRequestInfoImpl* info = GetRequestInfo();
@@ -680,6 +695,8 @@ void ResourceLoader::ResponseCompleted() {
 }
 
 void ResourceLoader::CallDidFinishLoading() {
+  TRACE_EVENT_WITH_FLOW0("loading", "ResourceLoader::CallDidFinishLoading",
+                         this, TRACE_EVENT_FLAG_FLOW_IN);
   delegate_->DidFinishLoading(this);
 }
 
