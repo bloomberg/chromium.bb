@@ -1986,8 +1986,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     DCHECK(!recycle_tree_);
     pending_tree_.swap(recycle_tree_);
 
-    UpdateViewportContainerSizes();
-
     // If we commit to the active tree directly, this is already done during
     // commit.
     ActivateAnimations();
@@ -1996,8 +1994,11 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   }
 
   // bounds_delta isn't a pushed property, so the newly-pushed property tree
-  // won't already account for current bounds_delta values.
+  // won't already account for current bounds_delta values. This needs to
+  // happen before calling UpdateViewportContainerSizes().
   active_tree_->UpdatePropertyTreesForBoundsDelta();
+  UpdateViewportContainerSizes();
+
   active_tree_->DidBecomeActive();
   client_->RenewTreePriority();
   // If we have any picture layers, then by activating we also modified tile

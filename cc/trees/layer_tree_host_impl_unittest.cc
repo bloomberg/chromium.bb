@@ -3779,21 +3779,28 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
       const gfx::Size& scroll_layer_size) {
     settings_ = DefaultSettings();
     CreateHostImpl(settings_, CreateOutputSurface());
-    host_impl_->sync_tree()->set_top_controls_shrink_blink_size(true);
-    host_impl_->sync_tree()->set_top_controls_height(top_controls_height_);
+    SetupTopControlsAndScrollLayerWithVirtualViewport(
+        host_impl_->active_tree(), inner_viewport_size, outer_viewport_size,
+        scroll_layer_size);
+  }
+
+  void SetupTopControlsAndScrollLayerWithVirtualViewport(
+      LayerTreeImpl* tree_impl,
+      const gfx::Size& inner_viewport_size,
+      const gfx::Size& outer_viewport_size,
+      const gfx::Size& scroll_layer_size) {
+    tree_impl->set_top_controls_shrink_blink_size(true);
+    tree_impl->set_top_controls_height(top_controls_height_);
+    tree_impl->SetCurrentTopControlsShownRatio(1.f);
+    tree_impl->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->DidChangeTopControlsPosition();
 
-    scoped_ptr<LayerImpl> root =
-        LayerImpl::Create(host_impl_->active_tree(), 1);
-    scoped_ptr<LayerImpl> root_clip =
-        LayerImpl::Create(host_impl_->active_tree(), 2);
-    scoped_ptr<LayerImpl> page_scale =
-        LayerImpl::Create(host_impl_->active_tree(), 3);
+    scoped_ptr<LayerImpl> root = LayerImpl::Create(tree_impl, 1);
+    scoped_ptr<LayerImpl> root_clip = LayerImpl::Create(tree_impl, 2);
+    scoped_ptr<LayerImpl> page_scale = LayerImpl::Create(tree_impl, 3);
 
-    scoped_ptr<LayerImpl> outer_scroll =
-        LayerImpl::Create(host_impl_->active_tree(), 4);
-    scoped_ptr<LayerImpl> outer_clip =
-        LayerImpl::Create(host_impl_->active_tree(), 5);
+    scoped_ptr<LayerImpl> outer_scroll = LayerImpl::Create(tree_impl, 4);
+    scoped_ptr<LayerImpl> outer_clip = LayerImpl::Create(tree_impl, 5);
 
     root_clip->SetBounds(inner_viewport_size);
     root->SetScrollClipLayer(root_clip->id());
@@ -3818,14 +3825,14 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
     page_scale->AddChild(std::move(root));
     root_clip->AddChild(std::move(page_scale));
 
-    host_impl_->active_tree()->SetRootLayer(std::move(root_clip));
-    host_impl_->active_tree()->SetViewportLayersFromIds(
-        Layer::INVALID_ID, page_scale_layer_id, inner_viewport_scroll_layer_id,
-        outer_viewport_scroll_layer_id);
-    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+    tree_impl->SetRootLayer(std::move(root_clip));
+    tree_impl->SetViewportLayersFromIds(Layer::INVALID_ID, page_scale_layer_id,
+                                        inner_viewport_scroll_layer_id,
+                                        outer_viewport_scroll_layer_id);
+    tree_impl->BuildPropertyTreesForTesting();
 
     host_impl_->SetViewportSize(inner_viewport_size);
-    LayerImpl* root_clip_ptr = host_impl_->active_tree()->root_layer();
+    LayerImpl* root_clip_ptr = tree_impl->root_layer();
     EXPECT_EQ(inner_viewport_size, root_clip_ptr->bounds());
   }
 
@@ -4516,6 +4523,75 @@ TEST_F(LayerTreeHostImplTopControlsTest,
                 ->ScrollBegin(BeginState(gfx::Point()).get(),
                               InputHandler::TOUCHSCREEN)
                 .thread);
+}
+
+// Tests that activating a pending tree while there's a bounds_delta on the
+// viewport layers from top controls doesn't cause a scroll jump. This bug was
+// occurring because the UpdateViewportContainerSizes was being called before
+// the property trees were updated with the bounds_delta. crbug.com/597266.
+TEST_F(LayerTreeHostImplTopControlsTest, ViewportBoundsDeltaOnTreeActivation) {
+  const gfx::Size inner_viewport_size(500, 500);
+  const gfx::Size outer_viewport_size(1000, 1000);
+  const gfx::Size content_size(2000, 2000);
+
+  SetupTopControlsAndScrollLayerWithVirtualViewport(
+      inner_viewport_size, outer_viewport_size, content_size);
+  host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.25f, 4.f);
+
+  host_impl_->CreatePendingTree();
+  SetupTopControlsAndScrollLayerWithVirtualViewport(
+      host_impl_->pending_tree(), inner_viewport_size, outer_viewport_size,
+      content_size);
+
+  // Zoom in to 2X.
+  host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
+                          InputHandler::TOUCHSCREEN);
+  host_impl_->PinchGestureBegin();
+  host_impl_->PinchGestureUpdate(2.f, gfx::Point());
+  host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd(EndState().get());
+
+  ASSERT_EQ(2.0f, host_impl_->active_tree()->current_page_scale_factor());
+
+  // All scroll types outside this region should succeed.
+  host_impl_->ScrollBegin(BeginState(gfx::Point(75, 75)).get(),
+                          InputHandler::TOUCHSCREEN);
+  // Fully scroll the viewports.
+  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 2000)).get());
+  host_impl_->ScrollEnd(EndState().get());
+
+  LayerImpl* inner_scroll =
+      host_impl_->active_tree()->InnerViewportScrollLayer();
+  LayerImpl* outer_scroll =
+      host_impl_->active_tree()->OuterViewportScrollLayer();
+
+  EXPECT_FLOAT_EQ(0, host_impl_->top_controls_manager()->ContentTopOffset());
+
+  EXPECT_EQ(925, inner_scroll->MaxScrollOffset().y());
+  EXPECT_EQ(800, outer_scroll->MaxScrollOffset().y());
+
+  // Activate the pending tree which should have all the same values as the
+  // active tree.
+  host_impl_->pending_tree()->SetCurrentTopControlsShownRatio(0);
+  host_impl_->pending_tree()->PushPageScaleFromMainThread(2.f, 0.25f, 4.f);
+  host_impl_->pending_tree()
+      ->property_trees()
+      ->scroll_tree.SetScrollOffsetDeltaForTesting(inner_scroll->id(),
+                                                   gfx::Vector2dF(0, 925));
+  host_impl_->pending_tree()
+      ->property_trees()
+      ->scroll_tree.SetScrollOffsetDeltaForTesting(outer_scroll->id(),
+                                                   gfx::Vector2dF(0, 800));
+  host_impl_->ActivateSyncTree();
+
+  inner_scroll = host_impl_->active_tree()->InnerViewportScrollLayer();
+  outer_scroll = host_impl_->active_tree()->OuterViewportScrollLayer();
+
+  // The test should pass if the scroll offets remain as they are. We fail if
+  // the offets get clamped due to MaxScrollOffset not having the proper
+  // bounds_delta set when UpdateViewportContainerSizes is called.
+  EXPECT_EQ(925, inner_scroll->CurrentScrollOffset().y());
+  EXPECT_EQ(800, outer_scroll->CurrentScrollOffset().y());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollNonCompositedRoot) {
