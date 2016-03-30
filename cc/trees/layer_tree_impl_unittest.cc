@@ -2385,5 +2385,56 @@ TEST_F(LayerTreeImplTest, DeviceScaleFactorNeedsDrawPropertiesUpdate) {
   EXPECT_TRUE(host_impl().active_tree()->needs_update_draw_properties());
 }
 
+TEST_F(LayerTreeImplTest, HitTestingCorrectLayerWheelListener) {
+  host_impl().active_tree()->set_event_listener_properties(
+      EventListenerClass::kMouseWheel, EventListenerProperties::kBlocking);
+  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
+  scoped_ptr<LayerImpl> left_child =
+      LayerImpl::Create(host_impl().active_tree(), 2);
+  scoped_ptr<LayerImpl> right_child =
+      LayerImpl::Create(host_impl().active_tree(), 3);
+
+  gfx::Point3F transform_origin;
+  gfx::PointF position;
+  gfx::Size bounds(100, 100);
+  {
+    gfx::Transform translate_z;
+    translate_z.Translate3d(0, 0, 10);
+    SetLayerPropertiesForTesting(root.get(), translate_z, transform_origin,
+                                 position, bounds, false, false, true);
+    root->SetDrawsContent(true);
+  }
+  {
+    gfx::Transform translate_z;
+    translate_z.Translate3d(0, 0, 10);
+    SetLayerPropertiesForTesting(left_child.get(), translate_z,
+                                 transform_origin, position, bounds, false,
+                                 false, false);
+    left_child->SetDrawsContent(true);
+  }
+  {
+    gfx::Transform translate_z;
+    translate_z.Translate3d(0, 0, 10);
+    SetLayerPropertiesForTesting(right_child.get(), translate_z,
+                                 transform_origin, position, bounds, false,
+                                 false, false);
+  }
+
+  root->AddChild(std::move(left_child));
+  root->AddChild(std::move(right_child));
+
+  host_impl().SetViewportSize(root->bounds());
+  host_impl().active_tree()->SetRootLayer(std::move(root));
+  host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
+  CHECK_EQ(1u, RenderSurfaceLayerList().size());
+
+  gfx::PointF test_point = gfx::PointF(1.f, 1.f);
+  LayerImpl* result_layer =
+      host_impl().active_tree()->FindLayerThatIsHitByPoint(test_point);
+
+  CHECK(result_layer);
+  EXPECT_EQ(2, result_layer->id());
+}
+
 }  // namespace
 }  // namespace cc
