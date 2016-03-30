@@ -220,8 +220,9 @@ bool IsPartialRasterEnabled() {
   if (IsZeroCopyUploadEnabled())
     return false;
 
-  // TODO(dshwang): enable partial raster. crbug.com/492754
-  return false;
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(switches::kEnablePartialRaster) &&
+    !command_line.HasSwitch(switches::kDisablePartialRaster);
 }
 
 bool IsGpuMemoryBufferCompositorResourcesEnabled() {

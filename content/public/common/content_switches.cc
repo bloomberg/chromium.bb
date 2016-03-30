@@ -225,9 +225,12 @@ const char kDisableNativeGpuMemoryBuffers[] =
 // Disables the Web Notification and the Push APIs.
 const char kDisableNotifications[]          = "disable-notifications";
 
-// Disable partial raster in renderer. Disabling this switch also disables
+// Disable partial raster in the renderer. Disabling this switch also disables
 // the use of persistent gpu memory buffers.
 const char kDisablePartialRaster[] = "disable-partial-raster";
+
+// Enable partial raster in the renderer.
+const char kEnablePartialRaster[] = "enable-partial-raster";
 
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
