@@ -106,6 +106,66 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
   content_setting_image_model_->SetAnimationHasRun(web_contents);
 }
 
+const char* ContentSettingImageView::GetClassName() const {
+  return "ContentSettingsImageView";
+}
+
+void ContentSettingImageView::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  if (bubble_view_)
+    bubble_view_->OnAnchorBoundsChanged();
+}
+
+bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
+  // If the bubble is showing then don't reshow it when the mouse is released.
+  suppress_mouse_released_action_ = bubble_view_ != nullptr;
+  if (!suppress_mouse_released_action_ && !label()->visible())
+    ink_drop_delegate_->OnAction(views::InkDropState::ACTION_PENDING);
+
+  // We want to show the bubble on mouse release; that is the standard behavior
+  // for buttons.
+  return true;
+}
+
+void ContentSettingImageView::OnMouseReleased(const ui::MouseEvent& event) {
+  // If this is the second click on this view then the bubble was showing on the
+  // mouse pressed event and is hidden now. Prevent the bubble from reshowing by
+  // doing nothing here.
+  if (suppress_mouse_released_action_) {
+    suppress_mouse_released_action_ = false;
+    return;
+  }
+  const bool activated = HitTestPoint(event.location());
+  if (!label()->visible() && !activated)
+    ink_drop_delegate_->OnAction(views::InkDropState::HIDDEN);
+  if (activated)
+    OnClick();
+}
+
+bool ContentSettingImageView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() != ui::VKEY_SPACE && event.key_code() != ui::VKEY_RETURN)
+    return false;
+
+  OnClick();
+  return true;
+}
+
+void ContentSettingImageView::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP)
+    OnClick();
+  if ((event->type() == ui::ET_GESTURE_TAP) ||
+      (event->type() == ui::ET_GESTURE_TAP_DOWN))
+    event->SetHandled();
+}
+
+void ContentSettingImageView::OnNativeThemeChanged(
+    const ui::NativeTheme* native_theme) {
+  if (ui::MaterialDesignController::IsModeMaterial())
+    UpdateImage();
+
+  IconLabelBubbleView::OnNativeThemeChanged(native_theme);
+}
+
 SkColor ContentSettingImageView::GetTextColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor);
@@ -165,66 +225,6 @@ void ContentSettingImageView::AnimationCanceled(
   AnimationEnded(animation);
 }
 
-const char* ContentSettingImageView::GetClassName() const {
-  return "ContentSettingsImageView";
-}
-
-void ContentSettingImageView::OnBoundsChanged(
-    const gfx::Rect& previous_bounds) {
-  if (bubble_view_)
-    bubble_view_->OnAnchorBoundsChanged();
-}
-
-bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
-  // If the bubble is showing then don't reshow it when the mouse is released.
-  suppress_mouse_released_action_ = IsBubbleShowing();
-  if (!suppress_mouse_released_action_ && !label()->visible())
-    ink_drop_delegate_->OnAction(views::InkDropState::ACTION_PENDING);
-
-  // We want to show the bubble on mouse release; that is the standard behavior
-  // for buttons.
-  return true;
-}
-
-void ContentSettingImageView::OnMouseReleased(const ui::MouseEvent& event) {
-  // If this is the second click on this view then the bubble was showing on the
-  // mouse pressed event and is hidden now. Prevent the bubble from reshowing by
-  // doing nothing here.
-  if (suppress_mouse_released_action_) {
-    suppress_mouse_released_action_ = false;
-    return;
-  }
-  const bool activated = HitTestPoint(event.location());
-  if (!label()->visible() && !activated)
-    ink_drop_delegate_->OnAction(views::InkDropState::HIDDEN);
-  if (activated)
-    OnClick();
-}
-
-bool ContentSettingImageView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() != ui::VKEY_SPACE && event.key_code() != ui::VKEY_RETURN)
-    return false;
-
-  OnClick();
-  return true;
-}
-
-void ContentSettingImageView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP)
-    OnClick();
-  if ((event->type() == ui::ET_GESTURE_TAP) ||
-      (event->type() == ui::ET_GESTURE_TAP_DOWN))
-    event->SetHandled();
-}
-
-void ContentSettingImageView::OnNativeThemeChanged(
-    const ui::NativeTheme* native_theme) {
-  if (ui::MaterialDesignController::IsModeMaterial())
-    UpdateImage();
-
-  IconLabelBubbleView::OnNativeThemeChanged(native_theme);
-}
-
 void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(bubble_view_);
   DCHECK_EQ(bubble_view_->GetWidget(), widget);
@@ -256,10 +256,8 @@ void ContentSettingImageView::OnClick() {
     // closes. The former looks more jerky, so we avoid it unless the animation
     // hasn't even fully exposed the image yet, in which case pausing with half
     // an image visible will look broken.
-    const int final_width = image()->GetPreferredSize().width() +
-                            GetBubbleOuterPadding(true) +
-                            GetBubbleOuterPadding(false);
-    if (!pause_animation_ && ShouldShowBackground() && width() > final_width) {
+    if (!pause_animation_ && ShouldShowBackground() &&
+        (width() > MinimumWidthForImageWithBackgroundShown())) {
       pause_animation_ = true;
       pause_animation_state_ = slide_animator_.GetCurrentValue();
     }
@@ -292,8 +290,4 @@ void ContentSettingImageView::OnClick() {
 void ContentSettingImageView::UpdateImage() {
   SetImage(content_setting_image_model_->GetIcon(GetTextColor()).AsImageSkia());
   image()->SetTooltipText(content_setting_image_model_->get_tooltip());
-}
-
-bool ContentSettingImageView::IsBubbleShowing() const {
-  return bubble_view_ != nullptr;
 }

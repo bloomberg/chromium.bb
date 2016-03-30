@@ -93,18 +93,22 @@ class IconLabelBubbleView : public views::InkDropHostView {
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;
 
-  // Amount of padding from the edge of the icon / label to the outer edge of
-  // the bubble view.  If |leading| is true, this is the padding at the
-  // beginning of the bubble (left in LTR), otherwise it's the trailing padding.
-  int GetBubbleOuterPadding(bool leading) const;
+  // Returns the minimum width the view can be to show the complete image when
+  // the background is showing.
+  int MinimumWidthForImageWithBackgroundShown() const;
 
  private:
   // Sets a background color on |label_| based on |chip_background_color| and
   // the parent's bg color.
   void SetLabelBackgroundColor(SkColor chip_background_color);
 
-  // As above, but for Material Design. TODO(estade): remove/replace the above.
-  int GetBubbleOuterPaddingMd(bool leading) const;
+  // Amount of padding from the leading edge of the view to the leading edge of
+  // the image (if |leading| is true), or from the trailing edge of the label
+  // (or image, if the label is invisible) to the trailing edge of the view.
+  int GetOuterPadding(bool leading) const;
+
+  // Spacing between the image and the label.
+  int GetInternalSpacing() const;
 
   // views::View:
   const char* GetClassName() const override;

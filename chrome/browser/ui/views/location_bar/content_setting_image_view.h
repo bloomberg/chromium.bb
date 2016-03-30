@@ -61,6 +61,13 @@ class ContentSettingImageView : public IconLabelBubbleView,
   static const int kAnimationDurationMS;
 
   // IconLabelBubbleView:
+  const char* GetClassName() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
   SkColor GetTextColor() const override;
   SkColor GetBorderColor() const override;
   bool ShouldShowBackground() const override;
@@ -72,25 +79,16 @@ class ContentSettingImageView : public IconLabelBubbleView,
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
-  // views::View:
-  const char* GetClassName() const override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
-
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
 
+  // Called when the user clicks the view; this freezes the animation or snaps
+  // it to its end state as necessary and then opens a content setting bubble.
   void OnClick();
 
+  // Updates the image and tooltip to match the current model state.
   void UpdateImage();
-
-  // Returns true if a related bubble is showing.
-  bool IsBubbleShowing() const;
 
   LocationBarView* parent_;  // Weak, owns us.
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;

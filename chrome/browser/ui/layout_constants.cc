@@ -10,7 +10,7 @@
 
 int GetLayoutConstant(LayoutConstant constant) {
   const int kFindBarVerticalOffset[] = {1, 6, 6};
-  const int kIconLabelViewInternalPadding[] = {3, 2, 2};
+  const int kIconLabelViewInternalSpacing[] = {3, 2, 2};
   const int kIconLabelViewTrailingPadding[] = {2, 3, 3};
   const int kLocationBarBorderThickness[] = {2, 1, 1};
   const int kLocationBarBubbleFontVerticalPadding[] = {1, 2, 4};
@@ -46,8 +46,8 @@ int GetLayoutConstant(LayoutConstant constant) {
   switch (constant) {
     case FIND_BAR_TOOLBAR_OVERLAP:
       return kFindBarVerticalOffset[mode];
-    case ICON_LABEL_VIEW_INTERNAL_PADDING:
-      return kIconLabelViewInternalPadding[mode];
+    case ICON_LABEL_VIEW_INTERNAL_SPACING:
+      return kIconLabelViewInternalSpacing[mode];
     case ICON_LABEL_VIEW_TRAILING_PADDING:
       return kIconLabelViewTrailingPadding[mode];
     case LOCATION_BAR_BORDER_THICKNESS:

@@ -37,7 +37,7 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
     SizeToPreferredSize();
   }
 
-  int width() { return bounds().width(); }
+  int width() const { return bounds().width(); }
   bool IsLabelVisible() const { return label()->visible(); }
   void SetLabelVisible(bool visible) { label()->SetVisible(visible); }
   const gfx::Rect& GetLabelBounds() const { return label()->bounds(); }
