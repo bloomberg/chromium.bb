@@ -9,7 +9,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/mac/mac_util.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/native_library.h"
@@ -25,20 +25,27 @@ namespace content {
 
 namespace {
 
-void GetPluginCommonDirectory(std::vector<base::FilePath>* plugin_dirs,
-                              bool user) {
-  // Note that there are no NSSearchPathDirectory constants for these
-  // directories so we can't use Cocoa's NSSearchPathForDirectoriesInDomains().
-  // Interestingly, Safari hard-codes the location (see
+void GetPluginCommonDirectories(std::vector<base::FilePath>* plugin_dirs) {
+  // This once used ::FSFindFolder() and kInternetPlugInFolderType, which is
+  // deprecated since 10.8. There is no NSSearchPathDirectory replacement for
+  // kInternetPlugInFolderType, so append a hard-coded value to [~]/Library.
+  // Interestingly, Safari also hard-codes the location (see
   // WebKit/WebKit/mac/Plugins/WebPluginDatabase.mm's +_defaultPlugInPaths).
-  FSRef ref;
-  OSErr err = FSFindFolder(user ? kUserDomain : kLocalDomain,
-                           kInternetPlugInFolderType, false, &ref);
+  const char kInternetPluginFolderName[] = "Internet Plug-Ins";
 
-  if (err)
-    return;
-
-  plugin_dirs->push_back(base::FilePath(base::mac::PathFromFSRef(ref)));
+  NSSearchPathDomainMask mask = NSUserDomainMask | NSLocalDomainMask;
+  // Note the returned urls are ordered according to the order of the domain
+  // mask constants: paths under $HOME come first, which take precedence.
+  NSArray* library_urls =
+      [[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory
+                                             inDomains:mask];
+  for (NSURL* url in library_urls) {
+    DCHECK([url isFileURL]);
+    base::FilePath path = base::mac::NSStringToFilePath([url path])
+                              .AppendASCII(kInternetPluginFolderName);
+    if (base::PathExists(path))
+      plugin_dirs->push_back(path);
+  }
 }
 
 // Returns true if the plugin should be prevented from loading.
@@ -280,11 +287,7 @@ void PluginList::GetPluginDirectories(
   if (PluginList::plugins_discovery_disabled_)
     return;
 
-  // Load from the user's area
-  GetPluginCommonDirectory(plugin_dirs, true);
-
-  // Load from the machine-wide area
-  GetPluginCommonDirectory(plugin_dirs, false);
+  GetPluginCommonDirectories(plugin_dirs);
 }
 
 void PluginList::GetPluginsInDir(
