@@ -507,12 +507,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
   ASSERT_EQ(1U, new_root->child_count());
   ASSERT_NE(nullptr, new_root->child_at(0));
 
-  // Navigate it.
+  // Navigate it cross-site.
   GURL frame_url = embedded_test_server()->GetURL(
-      "/navigation_controller/simple_page_2.html");
+      "foo.com", "/navigation_controller/simple_page_2.html");
   script = "location.assign('" + frame_url.spec() + "')";
   EXPECT_TRUE(content::ExecuteScript(
       new_root->child_at(0)->current_frame_host(), script));
+  WaitForLoadStopWithoutSuccessCheck(new_shell->web_contents());
 
   // Success is not crashing, and not navigating.
   EXPECT_EQ(nullptr,

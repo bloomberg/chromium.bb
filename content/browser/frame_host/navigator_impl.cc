@@ -756,18 +756,57 @@ void NavigatorImpl::RequestTransferURL(
     is_renderer_initiated = false;
   }
 
-  NavigationController::LoadURLParams load_url_params(dest_url);
-  // The source_site_instance may matter for navigations via RenderFrameProxy.
-  load_url_params.source_site_instance = source_site_instance;
-  load_url_params.transition_type = page_transition;
-  load_url_params.frame_tree_node_id = node->frame_tree_node_id();
-  load_url_params.referrer = referrer_to_use;
-  load_url_params.redirect_chain = redirect_chain;
-  load_url_params.is_renderer_initiated = is_renderer_initiated;
-  load_url_params.transferred_global_request_id = transferred_global_request_id;
-  load_url_params.should_replace_current_entry = should_replace_current_entry;
+  // Create a NavigationEntry for the transfer, without making it the pending
+  // entry.  Subframe transfers should only be possible in OOPIF-enabled modes,
+  // and should have a clone of the last committed entry with a
+  // FrameNavigationEntry for the target frame.  Main frame transfers should
+  // have a new NavigationEntry.
+  // TODO(creis): Make this unnecessary by creating (and validating) the params
+  // directly, passing them to the destination RenderFrameHost.
+  scoped_ptr<NavigationEntryImpl> entry;
+  if (!node->IsMainFrame()) {
+    // Subframe case: create FrameNavigationEntry.
+    CHECK(SiteIsolationPolicy::UseSubframeNavigationEntries());
+    if (controller_->GetLastCommittedEntry()) {
+      entry = controller_->GetLastCommittedEntry()->Clone();
+      entry->SetPageID(-1);
+    } else {
+      // If there's no last committed entry, create an entry for about:blank
+      // with a subframe entry for our destination.
+      // TODO(creis): Ensure this case can't exist in https://crbug.com/524208.
+      entry = NavigationEntryImpl::FromNavigationEntry(
+          controller_->CreateNavigationEntry(
+              GURL(url::kAboutBlankURL), referrer_to_use, page_transition,
+              is_renderer_initiated, std::string(),
+              controller_->GetBrowserContext()));
+    }
+    entry->AddOrUpdateFrameEntry(node, std::string(), -1, -1, nullptr, dest_url,
+                                 referrer_to_use, PageState());
+  } else {
+    // Main frame case.
+    entry = NavigationEntryImpl::FromNavigationEntry(
+        controller_->CreateNavigationEntry(
+            dest_url, referrer_to_use, page_transition, is_renderer_initiated,
+            std::string(), controller_->GetBrowserContext()));
+  }
 
-  controller_->LoadURLWithParams(load_url_params);
+  // The source_site_instance may matter for navigations via RenderFrameProxy.
+  entry->set_source_site_instance(
+      static_cast<SiteInstanceImpl*>(source_site_instance));
+  entry->SetRedirectChain(redirect_chain);
+  // Don't allow an entry replacement if there is no entry to replace.
+  // http://crbug.com/457149
+  if (should_replace_current_entry && controller_->GetEntryCount() > 0)
+    entry->set_should_replace_entry(true);
+  if (controller_->GetLastCommittedEntry() &&
+      controller_->GetLastCommittedEntry()->GetIsOverridingUserAgent()) {
+    entry->SetIsOverridingUserAgent(true);
+  }
+  entry->set_transferred_global_request_id(transferred_global_request_id);
+  // TODO(creis): Set user gesture and intent received timestamp on Android.
+  FrameNavigationEntry* frame_entry = entry->GetFrameEntry(node);
+  NavigateToEntry(node, *frame_entry, *entry.get(),
+                  NavigationController::NO_RELOAD, false, false);
 }
 
 // PlzNavigate
