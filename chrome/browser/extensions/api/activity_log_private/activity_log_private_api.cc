@@ -88,9 +88,8 @@ void ActivityLogAPI::OnListenerRemoved(const EventListenerInfo& details) {
 
 void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
   scoped_ptr<base::ListValue> value(new base::ListValue());
-  scoped_ptr<ExtensionActivity> activity_arg =
-      activity->ConvertToExtensionActivity();
-  value->Append(activity_arg->ToValue().release());
+  ExtensionActivity activity_arg = activity->ConvertToExtensionActivity();
+  value->Append(activity_arg.ToValue());
   scoped_ptr<Event> event(new Event(
       events::ACTIVITY_LOG_PRIVATE_ON_EXTENSION_ACTIVITY,
       activity_log_private::OnExtensionActivity::kEventName, std::move(value)));
@@ -162,17 +161,13 @@ bool ActivityLogPrivateGetExtensionActivitiesFunction::RunAsync() {
 void ActivityLogPrivateGetExtensionActivitiesFunction::OnLookupCompleted(
     scoped_ptr<std::vector<scoped_refptr<Action> > > activities) {
   // Convert Actions to ExtensionActivities.
-  std::vector<linked_ptr<ExtensionActivity> > result_arr;
-  for (std::vector<scoped_refptr<Action> >::iterator it = activities->begin();
-       it != activities->end();
-       ++it) {
-    result_arr.push_back(
-        make_linked_ptr(it->get()->ConvertToExtensionActivity().release()));
-  }
+  std::vector<ExtensionActivity> result_arr;
+  for (const auto& activity : *activities)
+    result_arr.push_back(activity->ConvertToExtensionActivity());
 
   // Populate the return object.
   scoped_ptr<ActivityResultSet> result_set(new ActivityResultSet);
-  result_set->activities = result_arr;
+  result_set->activities = std::move(result_arr);
   results_ = activity_log_private::GetExtensionActivities::Results::Create(
       *result_set);
 

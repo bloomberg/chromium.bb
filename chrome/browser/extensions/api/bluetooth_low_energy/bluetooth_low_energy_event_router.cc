@@ -342,18 +342,11 @@ bool BluetoothLowEnergyEventRouter::GetServices(
 
   out_services->clear();
 
-  const std::vector<BluetoothGattService*>& services =
-      device->GetGattServices();
-  for (std::vector<BluetoothGattService*>::const_iterator iter =
-           services.begin();
-       iter != services.end();
-       ++iter) {
+  for (const BluetoothGattService* service : device->GetGattServices()) {
     // Populate an API service and add it to the return value.
-    const BluetoothGattService* service = *iter;
-    linked_ptr<apibtle::Service> api_service(new apibtle::Service());
-    PopulateService(service, api_service.get());
-
-    out_services->push_back(api_service);
+    apibtle::Service api_service;
+    PopulateService(service, &api_service);
+    out_services->push_back(std::move(api_service));
   }
 
   return true;
@@ -398,18 +391,11 @@ BluetoothLowEnergyEventRouter::GetIncludedServices(
 
   out_services->clear();
 
-  const std::vector<BluetoothGattService*>& includes =
-      service->GetIncludedServices();
-  for (std::vector<BluetoothGattService*>::const_iterator iter =
-           includes.begin();
-       iter != includes.end();
-       ++iter) {
+  for (const BluetoothGattService* included : service->GetIncludedServices()) {
     // Populate an API service and add it to the return value.
-    const BluetoothGattService* included = *iter;
-    linked_ptr<apibtle::Service> api_service(new apibtle::Service());
-    PopulateService(included, api_service.get());
-
-    out_services->push_back(api_service);
+    apibtle::Service api_service;
+    PopulateService(included, &api_service);
+    out_services->push_back(std::move(api_service));
   }
 
   return kStatusSuccess;
@@ -443,19 +429,12 @@ BluetoothLowEnergyEventRouter::GetCharacteristics(
 
   out_characteristics->clear();
 
-  const std::vector<BluetoothGattCharacteristic*>& characteristics =
-      service->GetCharacteristics();
-  for (std::vector<BluetoothGattCharacteristic*>::const_iterator iter =
-           characteristics.begin();
-       iter != characteristics.end();
-       ++iter) {
+  for (const BluetoothGattCharacteristic* characteristic :
+       service->GetCharacteristics()) {
     // Populate an API characteristic and add it to the return value.
-    const BluetoothGattCharacteristic* characteristic = *iter;
-    linked_ptr<apibtle::Characteristic> api_characteristic(
-        new apibtle::Characteristic());
-    PopulateCharacteristic(characteristic, api_characteristic.get());
-
-    out_characteristics->push_back(api_characteristic);
+    apibtle::Characteristic api_characteristic;
+    PopulateCharacteristic(characteristic, &api_characteristic);
+    out_characteristics->push_back(std::move(api_characteristic));
   }
 
   return kStatusSuccess;
@@ -523,18 +502,12 @@ BluetoothLowEnergyEventRouter::GetDescriptors(
 
   out_descriptors->clear();
 
-  const std::vector<BluetoothGattDescriptor*>& descriptors =
-      characteristic->GetDescriptors();
-  for (std::vector<BluetoothGattDescriptor*>::const_iterator iter =
-           descriptors.begin();
-       iter != descriptors.end();
-       ++iter) {
+  for (const BluetoothGattDescriptor* descriptor :
+       characteristic->GetDescriptors()) {
     // Populate an API descriptor and add it to the return value.
-    const BluetoothGattDescriptor* descriptor = *iter;
-    linked_ptr<apibtle::Descriptor> api_descriptor(new apibtle::Descriptor());
-    PopulateDescriptor(descriptor, api_descriptor.get());
-
-    out_descriptors->push_back(api_descriptor);
+    apibtle::Descriptor api_descriptor;
+    PopulateDescriptor(descriptor, &api_descriptor);
+    out_descriptors->push_back(std::move(api_descriptor));
   }
 
   return kStatusSuccess;

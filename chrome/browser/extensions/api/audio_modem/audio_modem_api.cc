@@ -226,31 +226,42 @@ void AudioModemAPI::WhispernetInitComplete(bool success) {
 
 void AudioModemAPI::TokensReceived(const std::vector<AudioToken>& tokens) {
   // Distribute the tokens to the appropriate app(s).
-  std::map<std::string, std::vector<linked_ptr<ReceivedToken>>> tokens_by_app;
+  std::list<ReceivedToken> all_tokens;
+  std::map<std::string, std::vector<ReceivedToken*>> tokens_by_app;
   for (const AudioToken& token : tokens) {
-    linked_ptr<ReceivedToken> api_token(new ReceivedToken);
+    ReceivedToken api_token;
     const std::string& raw_token = DecodeBase64Token(token.token);
-    api_token->token.assign(raw_token.c_str(),
-                            raw_token.c_str() + raw_token.size());
-    api_token->band = token.audible ? AUDIOBAND_AUDIBLE : AUDIOBAND_INAUDIBLE;
+    api_token.token.assign(raw_token.c_str(),
+                           raw_token.c_str() + raw_token.size());
+    api_token.band = token.audible ? AUDIOBAND_AUDIBLE : AUDIOBAND_INAUDIBLE;
+    all_tokens.push_back(std::move(api_token));
     for (const auto& receiver :
          receive_timers_[token.audible ? AUDIBLE : INAUDIBLE]) {
-      tokens_by_app[receiver.first].push_back(api_token);
+      tokens_by_app[receiver.first].push_back(&all_tokens.back());
     }
   }
 
   // Send events to the appropriate app(s).
   for (const auto& app_entry : tokens_by_app) {
     const std::string& app_id = app_entry.first;
-    const auto& tokens = app_entry.second;
+    const auto& app_tokens = app_entry.second;
     if (app_id.empty())
       continue;
+
+    // Construct the event arguments by hand because a given token can be
+    // present for multiple listeners, so constructing a
+    // std::vector<ReceivedToken> for each is inefficient.
+    scoped_ptr<base::ListValue> tokens_value(new base::ListValue());
+    for (const ReceivedToken* token : app_tokens)
+      tokens_value->Append(token->ToValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
+    args->Append(std::move(tokens_value));
 
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(
             app_id, make_scoped_ptr(new Event(events::AUDIO_MODEM_ON_RECEIVED,
                                               OnReceived::kEventName,
-                                              OnReceived::Create(tokens))));
+                                              std::move(args))));
   }
 }
 

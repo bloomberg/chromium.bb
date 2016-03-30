@@ -19,11 +19,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "content/public/browser/browser_context.h"
 
-using AddressEntryList = std::vector<linked_ptr<
-    extensions::api::autofill_private::AddressEntry> >;
-using CreditCardEntryList = std::vector<linked_ptr<
-    extensions::api::autofill_private::CreditCardEntry> >;
-
 namespace extensions {
 
 AutofillPrivateEventRouter::AutofillPrivateEventRouter(
@@ -79,22 +74,22 @@ void AutofillPrivateEventRouter::OnListenerRemoved(
 void AutofillPrivateEventRouter::OnPersonalDataChanged() {
   DCHECK(personal_data_ && personal_data_->IsDataLoaded());
 
-  scoped_ptr<AddressEntryList> addressList =
+  autofill_util::AddressEntryList addressList =
       extensions::autofill_util::GenerateAddressList(*personal_data_);
   scoped_ptr<base::ListValue> args(
-      api::autofill_private::OnAddressListChanged::Create(*addressList)
-      .release());
+      api::autofill_private::OnAddressListChanged::Create(addressList)
+          .release());
   scoped_ptr<Event> extension_event(
       new Event(events::AUTOFILL_PRIVATE_ON_ADDRESS_LIST_CHANGED,
                 api::autofill_private::OnAddressListChanged::kEventName,
                 std::move(args)));
   event_router_->BroadcastEvent(std::move(extension_event));
 
-  scoped_ptr<CreditCardEntryList> creditCardList =
+  autofill_util::CreditCardEntryList creditCardList =
       extensions::autofill_util::GenerateCreditCardList(*personal_data_);
   args.reset(
-      api::autofill_private::OnCreditCardListChanged::Create(*creditCardList)
-      .release());
+      api::autofill_private::OnCreditCardListChanged::Create(creditCardList)
+          .release());
   extension_event.reset(
       new Event(events::AUTOFILL_PRIVATE_ON_CREDIT_CARD_LIST_CHANGED,
                 api::autofill_private::OnCreditCardListChanged::kEventName,

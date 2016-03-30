@@ -61,36 +61,37 @@ scoped_ptr<std::string> GetStringFromProfile(
       new std::string(base::UTF16ToUTF8(profile.GetRawInfo(type))));
 }
 
-scoped_ptr<autofill_private::AddressEntry> ProfileToAddressEntry(
+autofill_private::AddressEntry ProfileToAddressEntry(
     const autofill::AutofillProfile& profile,
     const base::string16& label) {
-  scoped_ptr<autofill_private::AddressEntry>
-      address(new autofill_private::AddressEntry);
+  autofill_private::AddressEntry address;
 
   // Add all address fields to the entry.
-  address->guid.reset(new std::string(profile.guid()));
-  address->full_names = GetValueList(profile, autofill::NAME_FULL);
-  address->company_name.reset(GetStringFromProfile(
-      profile, autofill::COMPANY_NAME).release());
-  address->address_lines.reset(GetStringFromProfile(
-      profile, autofill::ADDRESS_HOME_STREET_ADDRESS).release());
-  address->address_level1.reset(GetStringFromProfile(
-      profile, autofill::ADDRESS_HOME_STATE).release());
-  address->address_level2.reset(GetStringFromProfile(
-      profile, autofill::ADDRESS_HOME_CITY).release());
-  address->address_level3.reset(GetStringFromProfile(
-      profile, autofill::ADDRESS_HOME_DEPENDENT_LOCALITY).release());
-  address->postal_code.reset(GetStringFromProfile(
-      profile, autofill::ADDRESS_HOME_ZIP).release());
-  address->sorting_code.reset(GetStringFromProfile(
-      profile, autofill::ADDRESS_HOME_SORTING_CODE).release());
-  address->country_code.reset(GetStringFromProfile(
-      profile, autofill::ADDRESS_HOME_COUNTRY).release());
-  address->phone_numbers =
+  address.guid.reset(new std::string(profile.guid()));
+  address.full_names = GetValueList(profile, autofill::NAME_FULL);
+  address.company_name.reset(
+      GetStringFromProfile(profile, autofill::COMPANY_NAME).release());
+  address.address_lines.reset(
+      GetStringFromProfile(profile, autofill::ADDRESS_HOME_STREET_ADDRESS)
+          .release());
+  address.address_level1.reset(
+      GetStringFromProfile(profile, autofill::ADDRESS_HOME_STATE).release());
+  address.address_level2.reset(
+      GetStringFromProfile(profile, autofill::ADDRESS_HOME_CITY).release());
+  address.address_level3.reset(
+      GetStringFromProfile(profile, autofill::ADDRESS_HOME_DEPENDENT_LOCALITY)
+          .release());
+  address.postal_code.reset(
+      GetStringFromProfile(profile, autofill::ADDRESS_HOME_ZIP).release());
+  address.sorting_code.reset(
+      GetStringFromProfile(profile, autofill::ADDRESS_HOME_SORTING_CODE)
+          .release());
+  address.country_code.reset(
+      GetStringFromProfile(profile, autofill::ADDRESS_HOME_COUNTRY).release());
+  address.phone_numbers =
       GetValueList(profile, autofill::PHONE_HOME_WHOLE_NUMBER);
-  address->email_addresses =
-      GetValueList(profile, autofill::EMAIL_ADDRESS);
-  address->language_code.reset(new std::string(profile.language_code()));
+  address.email_addresses = GetValueList(profile, autofill::EMAIL_ADDRESS);
+  address.language_code.reset(new std::string(profile.language_code()));
 
   // Parse |label| so that it can be used to create address metadata.
   base::string16 separator =
@@ -106,25 +107,24 @@ scoped_ptr<autofill_private::AddressEntry> ProfileToAddressEntry(
       label.substr(label_pieces[0].size()))));
   metadata->is_local.reset(new bool(
       profile.record_type() == autofill::AutofillProfile::LOCAL_PROFILE));
-  address->metadata = std::move(metadata);
+  address.metadata = std::move(metadata);
 
   return address;
 }
 
-scoped_ptr<autofill_private::CreditCardEntry> CreditCardToCreditCardEntry(
+autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
     const autofill::CreditCard& credit_card) {
-  scoped_ptr<autofill_private::CreditCardEntry>
-      card(new autofill_private::CreditCardEntry);
+  autofill_private::CreditCardEntry card;
 
   // Add all credit card fields to the entry.
-  card->guid.reset(new std::string(credit_card.guid()));
-  card->name.reset(new std::string(base::UTF16ToUTF8(
+  card.guid.reset(new std::string(credit_card.guid()));
+  card.name.reset(new std::string(base::UTF16ToUTF8(
       credit_card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL))));
-  card->card_number.reset(new std::string(base::UTF16ToUTF8(
-      credit_card.GetRawInfo(autofill::CREDIT_CARD_NUMBER))));
-  card->expiration_month.reset(new std::string(base::UTF16ToUTF8(
+  card.card_number.reset(new std::string(
+      base::UTF16ToUTF8(credit_card.GetRawInfo(autofill::CREDIT_CARD_NUMBER))));
+  card.expiration_month.reset(new std::string(base::UTF16ToUTF8(
       credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH))));
-  card->expiration_year.reset(new std::string(base::UTF16ToUTF8(
+  card.expiration_year.reset(new std::string(base::UTF16ToUTF8(
       credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR))));
 
   // Create address metadata and add it to |address|.
@@ -139,7 +139,7 @@ scoped_ptr<autofill_private::CreditCardEntry> CreditCardToCreditCardEntry(
       credit_card.record_type() == autofill::CreditCard::LOCAL_CARD));
   metadata->is_cached.reset(new bool(
       credit_card.record_type() == autofill::CreditCard::FULL_SERVER_CARD));
-  card->metadata = std::move(metadata);
+  card.metadata = std::move(metadata);
 
   return card;
 }
@@ -150,7 +150,7 @@ namespace extensions {
 
 namespace autofill_util {
 
-scoped_ptr<AddressEntryList> GenerateAddressList(
+AddressEntryList GenerateAddressList(
     const autofill::PersonalDataManager& personal_data) {
   const std::vector<autofill::AutofillProfile*>& profiles =
       personal_data.GetProfiles();
@@ -161,27 +161,21 @@ scoped_ptr<AddressEntryList> GenerateAddressList(
       &labels);
   DCHECK_EQ(labels.size(), profiles.size());
 
-  scoped_ptr<AddressEntryList> list(new AddressEntryList);
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    autofill_private::AddressEntry* entry =
-        ProfileToAddressEntry(*profiles[i], labels[i]).release();
-    list->push_back(linked_ptr<autofill_private::AddressEntry>(entry));
-  }
+  AddressEntryList list;
+  for (size_t i = 0; i < profiles.size(); ++i)
+    list.push_back(ProfileToAddressEntry(*profiles[i], labels[i]));
 
   return list;
 }
 
-scoped_ptr<CreditCardEntryList> GenerateCreditCardList(
+CreditCardEntryList GenerateCreditCardList(
     const autofill::PersonalDataManager& personal_data) {
   const std::vector<autofill::CreditCard*>& cards =
       personal_data.GetCreditCards();
 
-  scoped_ptr<CreditCardEntryList> list(new CreditCardEntryList);
-  for (const autofill::CreditCard* card : cards) {
-    autofill_private::CreditCardEntry* entry =
-        CreditCardToCreditCardEntry(*card).release();
-    list->push_back(linked_ptr<autofill_private::CreditCardEntry>(entry));
-  }
+  CreditCardEntryList list;
+  for (const autofill::CreditCard* card : cards)
+    list.push_back(CreditCardToCreditCardEntry(*card));
 
   return list;
 }

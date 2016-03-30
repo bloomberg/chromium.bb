@@ -14,7 +14,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/bluetooth_low_energy.h"
 #include "content/public/browser/notification_observer.h"
@@ -128,8 +127,7 @@ class BluetoothLowEnergyEventRouter
   // is found but it has no GATT services, then returns true and leaves
   // |out_services| empty. Returns true, on success. |out_services| must not
   // be NULL. If it is non-empty, then its contents will be cleared.
-  typedef std::vector<linked_ptr<api::bluetooth_low_energy::Service>>
-      ServiceList;
+  typedef std::vector<api::bluetooth_low_energy::Service> ServiceList;
   bool GetServices(const std::string& device_address,
                    ServiceList* out_services) const;
 
@@ -154,7 +152,7 @@ class BluetoothLowEnergyEventRouter
   // |out_characteristics| must not be NULL and if it is non-empty,
   // then its contents will be cleared. |extension| is the extension that made
   // the call.
-  typedef std::vector<linked_ptr<api::bluetooth_low_energy::Characteristic>>
+  typedef std::vector<api::bluetooth_low_energy::Characteristic>
       CharacteristicList;
   Status GetCharacteristics(const Extension* extension,
                             const std::string& instance_id,
@@ -175,8 +173,7 @@ class BluetoothLowEnergyEventRouter
   // |out_descriptors| must not be NULL and if it is non-empty,
   // then its contents will be cleared. |extension| is the extension that made
   // the call.
-  typedef std::vector<linked_ptr<api::bluetooth_low_energy::Descriptor>>
-      DescriptorList;
+  typedef std::vector<api::bluetooth_low_energy::Descriptor> DescriptorList;
   Status GetDescriptors(const Extension* extension,
                         const std::string& instance_id,
                         DescriptorList* out_descriptors) const;

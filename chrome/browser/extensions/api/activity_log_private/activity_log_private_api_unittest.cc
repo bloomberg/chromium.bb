@@ -35,13 +35,13 @@ TEST_F(ActivityLogApiUnitTest, ConvertChromeApiAction) {
                                           Action::ACTION_API_CALL,
                                           kApiCall));
   action->set_args(std::move(args));
-  scoped_ptr<ExtensionActivity> result = action->ConvertToExtensionActivity();
+  ExtensionActivity result = action->ConvertToExtensionActivity();
   ASSERT_EQ(api::activity_log_private::EXTENSION_ACTIVITY_TYPE_API_CALL,
-            result->activity_type);
-  ASSERT_EQ(kExtensionId, *(result->extension_id.get()));
-  ASSERT_EQ(kApiCall, *(result->api_call.get()));
-  ASSERT_EQ(kArgs, *(result->args.get()));
-  ASSERT_EQ(NULL, result->activity_id.get());
+            result.activity_type);
+  ASSERT_EQ(kExtensionId, *(result.extension_id.get()));
+  ASSERT_EQ(kApiCall, *(result.api_call.get()));
+  ASSERT_EQ(kArgs, *(result.args.get()));
+  ASSERT_EQ(NULL, result.activity_id.get());
 }
 
 TEST_F(ActivityLogApiUnitTest, ConvertDomAction) {
@@ -60,17 +60,17 @@ TEST_F(ActivityLogApiUnitTest, ConvertDomAction) {
                                       DomActionType::INSERTED);
   action->mutable_other()->SetBoolean(activity_log_constants::kActionPrerender,
                                       false);
-  scoped_ptr<ExtensionActivity> result = action->ConvertToExtensionActivity();
-  ASSERT_EQ(kExtensionId, *(result->extension_id.get()));
-  ASSERT_EQ("http://www.google.com/", *(result->page_url.get()));
-  ASSERT_EQ("Title", *(result->page_title.get()));
-  ASSERT_EQ(kApiCall, *(result->api_call.get()));
-  ASSERT_EQ(kArgs, *(result->args.get()));
-  scoped_ptr<ExtensionActivity::Other> other(std::move(result->other));
+  ExtensionActivity result = action->ConvertToExtensionActivity();
+  ASSERT_EQ(kExtensionId, *(result.extension_id.get()));
+  ASSERT_EQ("http://www.google.com/", *(result.page_url.get()));
+  ASSERT_EQ("Title", *(result.page_title.get()));
+  ASSERT_EQ(kApiCall, *(result.api_call.get()));
+  ASSERT_EQ(kArgs, *(result.args.get()));
+  scoped_ptr<ExtensionActivity::Other> other(std::move(result.other));
   ASSERT_EQ(api::activity_log_private::EXTENSION_ACTIVITY_DOM_VERB_INSERTED,
             other->dom_verb);
   ASSERT_TRUE(other->prerender.get());
-  ASSERT_EQ("12345", *(result->activity_id.get()));
+  ASSERT_EQ("12345", *(result.activity_id.get()));
 }
 
 }  // namespace extensions

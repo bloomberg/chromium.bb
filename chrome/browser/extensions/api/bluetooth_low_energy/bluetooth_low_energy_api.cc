@@ -134,25 +134,25 @@ void DoWorkCallback(const base::Callback<bool()>& callback) {
 
 scoped_ptr<device::BluetoothAdvertisement::ManufacturerData>
 CreateManufacturerData(
-    std::vector<linked_ptr<apibtle::ManufacturerData>>* manufacturer_data) {
+    std::vector<apibtle::ManufacturerData>* manufacturer_data) {
   scoped_ptr<device::BluetoothAdvertisement::ManufacturerData> created_data(
       new device::BluetoothAdvertisement::ManufacturerData());
   for (const auto& it : *manufacturer_data) {
-    std::vector<uint8_t> data(it->data.size());
-    std::copy(it->data.begin(), it->data.end(), data.begin());
-    (*created_data)[it->id] = data;
+    std::vector<uint8_t> data(it.data.size());
+    std::copy(it.data.begin(), it.data.end(), data.begin());
+    (*created_data)[it.id] = data;
   }
   return created_data;
 }
 
 scoped_ptr<device::BluetoothAdvertisement::ServiceData> CreateServiceData(
-    std::vector<linked_ptr<apibtle::ServiceData>>* service_data) {
+    std::vector<apibtle::ServiceData>* service_data) {
   scoped_ptr<device::BluetoothAdvertisement::ServiceData> created_data(
       new device::BluetoothAdvertisement::ServiceData());
   for (const auto& it : *service_data) {
-    std::vector<uint8_t> data(it->data.size());
-    std::copy(it->data.begin(), it->data.end(), data.begin());
-    (*created_data)[it->uuid] = data;
+    std::vector<uint8_t> data(it.data.size());
+    std::copy(it.data.begin(), it.data.end(), data.begin());
+    (*created_data)[it.uuid] = data;
   }
   return created_data;
 }
@@ -434,11 +434,8 @@ bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
   // apibtle::GetCharacteristics::Result::Create as it doesn't convert lists of
   // enums correctly.
   scoped_ptr<base::ListValue> result(new base::ListValue());
-  for (BluetoothLowEnergyEventRouter::CharacteristicList::iterator iter =
-           characteristic_list.begin();
-       iter != characteristic_list.end();
-       ++iter)
-    result->Append(apibtle::CharacteristicToValue(iter->get()).release());
+  for (apibtle::Characteristic& characteristic : characteristic_list)
+    result->Append(apibtle::CharacteristicToValue(&characteristic));
 
   SetResult(result.release());
   SendResponse(true);
@@ -546,11 +543,8 @@ bool BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
   // apibtle::GetDescriptors::Result::Create as it doesn't convert lists of
   // enums correctly.
   scoped_ptr<base::ListValue> result(new base::ListValue());
-  for (BluetoothLowEnergyEventRouter::DescriptorList::iterator iter =
-           descriptor_list.begin();
-       iter != descriptor_list.end();
-       ++iter)
-    result->Append(apibtle::DescriptorToValue(iter->get()).release());
+  for (apibtle::Descriptor& descriptor : descriptor_list)
+    result->Append(apibtle::DescriptorToValue(&descriptor));
 
   SetResult(result.release());
   SendResponse(true);

@@ -131,56 +131,56 @@ void Action::ParseArgUrl(const std::string& url) {
     set_arg_url(GURL(url));
 }
 
-scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
-  scoped_ptr<ExtensionActivity> result(new ExtensionActivity);
+ExtensionActivity Action::ConvertToExtensionActivity() {
+  ExtensionActivity result;
 
   // We do this translation instead of using the same enum because the database
   // values need to be stable; this allows us to change the extension API
   // without affecting the database.
   switch (action_type()) {
     case ACTION_API_CALL:
-      result->activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_API_CALL;
+      result.activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_API_CALL;
       break;
     case ACTION_API_EVENT:
-      result->activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_API_EVENT;
+      result.activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_API_EVENT;
       break;
     case ACTION_CONTENT_SCRIPT:
-      result->activity_type =
+      result.activity_type =
           activity_log::EXTENSION_ACTIVITY_TYPE_CONTENT_SCRIPT;
       break;
     case ACTION_DOM_ACCESS:
-      result->activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_DOM_ACCESS;
+      result.activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_DOM_ACCESS;
       break;
     case ACTION_DOM_EVENT:
-      result->activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_DOM_EVENT;
+      result.activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_DOM_EVENT;
       break;
     case ACTION_WEB_REQUEST:
-      result->activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_WEB_REQUEST;
+      result.activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_WEB_REQUEST;
       break;
     case UNUSED_ACTION_API_BLOCKED:
     case ACTION_ANY:
     default:
       // This shouldn't be reached, but some people might have old or otherwise
       // weird db entries. Treat it like an API call if that happens.
-      result->activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_API_CALL;
+      result.activity_type = activity_log::EXTENSION_ACTIVITY_TYPE_API_CALL;
       break;
   }
 
-  result->extension_id.reset(new std::string(extension_id()));
-  result->time.reset(new double(time().ToJsTime()));
-  result->count.reset(new double(count()));
-  result->api_call.reset(new std::string(api_name()));
-  result->args.reset(new std::string(Serialize(args())));
+  result.extension_id.reset(new std::string(extension_id()));
+  result.time.reset(new double(time().ToJsTime()));
+  result.count.reset(new double(count()));
+  result.api_call.reset(new std::string(api_name()));
+  result.args.reset(new std::string(Serialize(args())));
   if (action_id() != -1)
-    result->activity_id.reset(
+    result.activity_id.reset(
         new std::string(base::StringPrintf("%" PRId64, action_id())));
   if (page_url().is_valid()) {
     if (!page_title().empty())
-      result->page_title.reset(new std::string(page_title()));
-    result->page_url.reset(new std::string(SerializePageUrl()));
+      result.page_title.reset(new std::string(page_title()));
+    result.page_url.reset(new std::string(SerializePageUrl()));
   }
   if (arg_url().is_valid())
-    result->arg_url.reset(new std::string(SerializeArgUrl()));
+    result.arg_url.reset(new std::string(SerializeArgUrl()));
 
   if (other()) {
     scoped_ptr<ExtensionActivity::Other> other_field(
@@ -237,7 +237,7 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
     } else {
       other_field->dom_verb = activity_log::EXTENSION_ACTIVITY_DOM_VERB_NONE;
     }
-    result->other.reset(other_field.release());
+    result.other.reset(other_field.release());
   }
 
   return result;

@@ -123,8 +123,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
   void set_count(int count) { count_ = count; }
 
   // Flatten the activity's type-specific fields into an ExtensionActivity.
-  scoped_ptr<api::activity_log_private::ExtensionActivity>
-      ConvertToExtensionActivity();
+  api::activity_log_private::ExtensionActivity ConvertToExtensionActivity();
 
   // Print an action as a regular string for debugging purposes.
   virtual std::string PrintForDebug() const;
