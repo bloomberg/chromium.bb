@@ -2,27 +2,18 @@
 <html>
 <body>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-battery-monitor.js"></script>
 <script>
 description("Test basic API definitions.");
 
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
-if (!window.internals)
-    debug('This test cannot be run without the window.internals');
 
 // Clean-up any unused battery manager objects from previous tests.
 gc();
 jsTestIsAsync = true;
 testRunner.waitUntilDone();
-
-var mockBatteryInfo;
-function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
-    mockBatteryInfo = { charging: charging,
-                        chargingTime: chargingTime,
-                        dischargingTime: dischargingTime,
-                        level: level };
-    window.internals.updateBatteryStatus(charging, chargingTime, dischargingTime, level);
-}
 
 var battery;
 function batteryStatusSuccess(batteryManager) {
@@ -36,10 +27,7 @@ function batteryStatusSuccess(batteryManager) {
     shouldBeDefined("battery.dischargingTime");
     shouldBeDefined("battery.level");
 
-    shouldBe('battery.charging', 'mockBatteryInfo.charging');
-    shouldBe('battery.chargingTime', 'mockBatteryInfo.chargingTime');
-    shouldBe('battery.dischargingTime', 'mockBatteryInfo.dischargingTime');
-    shouldBe('battery.level', 'mockBatteryInfo.level');
+    testIfBatteryStatusIsUpToDate(batteryManager);
 
     shouldBeTrue("typeof battery.onchargingchange == 'object'");
     shouldBeTrue("typeof battery.onchargingtimechange == 'object'");
@@ -54,16 +42,14 @@ function batteryStatusSuccess(batteryManager) {
     setTimeout(finishJSTest, 0);
 }
 
-function batteryStatusFailure() {
-    testFailed('failed to successfully resolve the promise');
-    setTimeout(finishJSTest, 0);
-}
-
-promise = navigator.getBattery();
-shouldBeDefined("promise");
-shouldBeDefined("promise.then");
-promise.then(batteryStatusSuccess, batteryStatusFailure);
-setAndFireMockBatteryInfo(false, 10, 20, 0.5);
+var promise;
+mockBatteryMonitorReady.then(() => {
+    promise = navigator.getBattery();
+    shouldBeDefined("promise");
+    shouldBeDefined("promise.then");
+    promise.then(batteryStatusSuccess, batteryStatusFailure);
+    setAndFireMockBatteryInfo(false, 10, 20, 0.5);
+});
 </script>
 </body>
 </html>

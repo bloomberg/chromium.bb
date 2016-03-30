@@ -1166,14 +1166,6 @@ void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
 void RendererBlinkPlatformImpl::connectToRemoteService(
     const char* name,
     mojo::ScopedMessagePipeHandle handle) {
-  // In the layout test mode, mock services should be used instead.
-  // TODO(yukishiino): We'd like to inject mock services implemented in
-  // JavaScript.  Remove the following hack once we support JS-bindings
-  // of Mojo and service mocking in JS.
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->layout_test_mode())
-    return;
-
   RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
       name, std::move(handle));
 }

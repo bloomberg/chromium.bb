@@ -34,10 +34,12 @@
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
@@ -595,6 +597,16 @@ void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
 }
 
 void BlinkTestRunner::TestFinished() {
+  // In layout tests, mock Mojo service factories implemented in JS may be
+  // installed on the per-frame and the per-process service registries. With
+  // the test finished, clear any overrides so they don't interfere with any
+  // later tests and so they aren't detected as leaks.
+  RenderThread::Get()->GetServiceRegistry()->ClearServiceOverridesForTesting();
+  render_view()
+      ->GetMainRenderFrame()
+      ->GetServiceRegistry()
+      ->ClearServiceOverridesForTesting();
+
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
     Send(new ShellViewHostMsg_TestFinishedInSecondaryRenderer(routing_id()));
     return;
