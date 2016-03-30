@@ -573,6 +573,7 @@ TestDownloadRequestHandler::Parameters::Parameters(Parameters&& that)
       content_type(std::move(that.content_type)),
       size(that.size),
       pattern_generator_seed(that.pattern_generator_seed),
+      support_byte_ranges(that.support_byte_ranges),
       on_start_handler(that.on_start_handler),
       injected_errors(std::move(that.injected_errors)) {}
 
@@ -583,8 +584,9 @@ operator=(Parameters&& that) {
   content_type = std::move(that.content_type);
   size = that.size;
   pattern_generator_seed = that.pattern_generator_seed;
+  support_byte_ranges = that.support_byte_ranges;
   on_start_handler = that.on_start_handler;
-  injected_errors.swap(that.injected_errors);
+  injected_errors = std::move(that.injected_errors);
   return *this;
 }
 
