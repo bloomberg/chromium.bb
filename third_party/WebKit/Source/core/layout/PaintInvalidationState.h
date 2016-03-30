@@ -18,8 +18,8 @@ class LayoutSVGModelObject;
 class LayoutView;
 class PaintLayer;
 
-enum VisibleRectFlags {
-    DefaultVisibleRectFlags = 0,
+enum VisualRectFlags {
+    DefaultVisualRectFlags = 0,
     EdgeInclusive = 1
 };
 

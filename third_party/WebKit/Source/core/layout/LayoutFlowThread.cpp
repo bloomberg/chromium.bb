@@ -97,7 +97,7 @@ void LayoutFlowThread::validateColumnSets()
     generateColumnSetIntervalTree();
 }
 
-bool LayoutFlowThread::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
+bool LayoutFlowThread::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
     ASSERT(ancestor != this); // A flow thread should never be an invalidation container.
     // |rect| is a layout rectangle, where the block direction coordinate is flipped for writing
@@ -106,7 +106,7 @@ bool LayoutFlowThread::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObjec
     flipForWritingMode(rect);
     rect = fragmentsBoundingBox(rect);
     flipForWritingMode(rect);
-    return LayoutBlockFlow::mapToVisibleRectInAncestorSpace(ancestor, rect, visibleRectFlags);
+    return LayoutBlockFlow::mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
 
 void LayoutFlowThread::layout()

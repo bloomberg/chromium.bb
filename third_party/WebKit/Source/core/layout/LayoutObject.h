@@ -96,7 +96,7 @@ enum MapCoordinatesMode {
     ApplyContainerFlip = 1 << 2,
     TraverseDocumentBoundaries = 1 << 3,
 
-    // Applies to LayoutView::mapLocalToAncestor() and LayoutView::mapToVisibleRectInAncestorSpace()
+    // Applies to LayoutView::mapLocalToAncestor() and LayoutView::mapToVisualRectInAncestorSpace()
     // only, to indicate the input point or rect is in frame coordinates instead of frame contents
     // coordinates. This disables view clipping and scroll offset adjustment.
     // TODO(wangxianzhu): Remove this when root-layer-scrolls launches.
@@ -1141,16 +1141,19 @@ public:
     // should use paintInvalidationRectInLocalSVGCoordinates() and map with SVG transforms instead.
     virtual LayoutRect localOverflowRectForPaintInvalidation() const;
 
-    // Given a rect in the object's coordinate space, compute a rect in the coordinate space of |ancestor|.  If
-    // intermediate containers have clipping or scrolling of any kind, it is applied; but overflow clipping is
-    // *not* applied for |ancestor| itself. The output rect is suitable for purposes such as paint invalidation.
+    // Given a rect in the object's coordinate space, mutates the rect into one representing the size of its visual painted
+    // output as if |ancestor| was the root of the page: the rect is modified by any intervening clips, transforms
+    // and scrolls between |this| and |ancestor|, but not any above |ancestor|.
+    // The output is in the physical, painted coordinate pixel space of |ancestor|.
+    // Overflow clipping is *not* applied for |ancestor| itself.
+    // The output rect is suitable for purposes such as paint invalidation.
     //
-    // If visibleRectFlags has the EdgeInclusive bit set, clipping operations will use
+    // If visualRectFlags has the EdgeInclusive bit set, clipping operations will use
     // LayoutRect::inclusiveIntersect, and the return value of inclusiveIntersect will be propagated
     // to the return value of this method.  Otherwise, clipping operations will use LayoutRect::intersect,
     // and the return value will be true only if the clipped rect has non-zero area.
     // See the documentation for LayoutRect::inclusiveIntersect for more information.
-    virtual bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const;
+    virtual bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const;
 
     // Return the offset to the column in which the specified point (in flow-thread coordinates)
     // lives. This is used to convert a flow-thread point to a visual point.

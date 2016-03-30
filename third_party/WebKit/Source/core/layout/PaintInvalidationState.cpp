@@ -284,20 +284,20 @@ LayoutRect PaintInvalidationState::computePaintInvalidationRectInBackingForSVG()
     return rect;
 }
 
-static void slowMapToVisibleRectInAncestorSpace(const LayoutObject& object, const LayoutBoxModelObject& ancestor, LayoutRect& rect)
+static void slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const LayoutBoxModelObject& ancestor, LayoutRect& rect)
 {
-    // TODO(crbug.com/597965): LayoutBox::mapToVisibleRectInAncestorSpace() incorrectly flips a rect
+    // TODO(crbug.com/597965): LayoutBox::mapToVisualRectInAncestorSpace() incorrectly flips a rect
     // in its own space for writing mode. Here flip to workaround the flip.
     if (object.isBox() && (toLayoutBox(object).isWritingModeRoot() || (ancestor == object && object.styleRef().isFlippedBlocksWritingMode())))
         toLayoutBox(object).flipForWritingMode(rect);
 
     if (object.isLayoutView()) {
-        toLayoutView(object).mapToVisibleRectInAncestorSpace(&ancestor, rect, InputIsInFrameCoordinates, DefaultVisibleRectFlags);
+        toLayoutView(object).mapToVisualRectInAncestorSpace(&ancestor, rect, InputIsInFrameCoordinates, DefaultVisualRectFlags);
     } else if (object.isSVGRoot()) {
         // TODO(crbug.com/597813): This is to avoid the extra clip applied in LayoutSVGRoot::mapVisibleRectInAncestorSpace().
-        toLayoutSVGRoot(object).LayoutReplaced::mapToVisibleRectInAncestorSpace(&ancestor, rect);
+        toLayoutSVGRoot(object).LayoutReplaced::mapToVisualRectInAncestorSpace(&ancestor, rect);
     } else {
-        object.mapToVisibleRectInAncestorSpace(&ancestor, rect);
+        object.mapToVisualRectInAncestorSpace(&ancestor, rect);
     }
 }
 
@@ -308,7 +308,7 @@ void PaintInvalidationState::mapLocalRectToPaintInvalidationBacking(LayoutRect& 
     if (m_cachedOffsetsEnabled) {
 #if ASSERT_SAME_RESULT_SLOW_AND_FAST_PATH
         LayoutRect slowPathRect(rect);
-        slowMapToVisibleRectInAncestorSpace(m_currentObject, m_paintInvalidationContainer, slowPathRect);
+        slowMapToVisualRectInAncestorSpace(m_currentObject, m_paintInvalidationContainer, slowPathRect);
 #endif
         rect.move(m_paintOffset);
         if (m_clipped)
@@ -325,7 +325,7 @@ void PaintInvalidationState::mapLocalRectToPaintInvalidationBacking(LayoutRect& 
         ASSERT(m_currentObject.isLayoutView() || (rect.isEmpty() && slowPathRect.isEmpty()) || rect == slowPathRect);
 #endif
     } else {
-        slowMapToVisibleRectInAncestorSpace(m_currentObject, m_paintInvalidationContainer, rect);
+        slowMapToVisualRectInAncestorSpace(m_currentObject, m_paintInvalidationContainer, rect);
     }
 
     if (m_paintInvalidationContainer.layer()->groupedMapping())

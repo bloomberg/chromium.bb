@@ -581,7 +581,7 @@ void PaintLayer::mapRectInPaintInvalidationContainerToBacking(const LayoutBoxMod
 void PaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject& layoutObject, const LayoutBoxModelObject& paintInvalidationContainer, LayoutRect& rect)
 {
     if (!paintInvalidationContainer.layer()->groupedMapping()) {
-        layoutObject.mapToVisibleRectInAncestorSpace(&paintInvalidationContainer, rect);
+        layoutObject.mapToVisualRectInAncestorSpace(&paintInvalidationContainer, rect);
         return;
     }
 
@@ -589,7 +589,7 @@ void PaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject& layoutObj
     // layer. This is because all layers that squash together need to issue paint invalidations w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the paint invalidation code structure.
-    layoutObject.mapToVisibleRectInAncestorSpace(&paintInvalidationContainer, rect);
+    layoutObject.mapToVisualRectInAncestorSpace(&paintInvalidationContainer, rect);
 
     mapRectInPaintInvalidationContainerToBacking(paintInvalidationContainer, rect);
 }

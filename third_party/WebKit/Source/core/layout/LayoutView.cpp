@@ -479,12 +479,12 @@ void LayoutView::invalidatePaintForViewAndCompositedLayers()
         compositor()->fullyInvalidatePaint();
 }
 
-bool LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
+bool LayoutView::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
-    return mapToVisibleRectInAncestorSpace(ancestor, rect, 0, visibleRectFlags);
+    return mapToVisualRectInAncestorSpace(ancestor, rect, 0, visualRectFlags);
 }
 
-bool LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, MapCoordinatesFlags mode, VisibleRectFlags visibleRectFlags) const
+bool LayoutView::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, MapCoordinatesFlags mode, VisualRectFlags visualRectFlags) const
 {
     if (document().printing())
         return true;
@@ -517,7 +517,7 @@ bool LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* anc
         if (!(mode & InputIsInFrameCoordinates)) {
             // Intersect the viewport with the paint invalidation rect.
             LayoutRect viewRectangle = viewRect();
-            if (visibleRectFlags & EdgeInclusive) {
+            if (visualRectFlags & EdgeInclusive) {
                 if (!rect.inclusiveIntersect(viewRectangle))
                     return false;
             } else {
@@ -534,7 +534,7 @@ bool LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* anc
 
         // Adjust for frame border.
         rect.move(obj->contentBoxOffset());
-        return obj->mapToVisibleRectInAncestorSpace(ancestor, rect, visibleRectFlags);
+        return obj->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
     }
 
     return true;

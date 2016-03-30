@@ -292,7 +292,7 @@ private:
 
     LayoutSize offsetFromContainer(const LayoutObject*) const override;
     LayoutRect localOverflowRectForPaintInvalidation() const override;
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const override;
+    bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const override;
 
     int borderHalfLeft(bool outer) const;
     int borderHalfRight(bool outer) const;

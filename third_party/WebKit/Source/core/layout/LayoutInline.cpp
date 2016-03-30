@@ -1023,7 +1023,7 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const
 {
     if (!continuation()) {
         LayoutRect rect = visualOverflowRect();
-        mapToVisibleRectInAncestorSpace(view(), rect);
+        mapToVisualRectInAncestorSpace(view(), rect);
         return rect;
     }
 
@@ -1040,7 +1040,7 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const
             context(FloatRect(rect));
             if (curr == endContinuation) {
                 LayoutRect rect(enclosingIntRect(floatResult));
-                mapToVisibleRectInAncestorSpace(view(), rect);
+                mapToVisualRectInAncestorSpace(view(), rect);
                 return rect;
             }
         }
@@ -1078,7 +1078,7 @@ LayoutRect LayoutInline::visualOverflowRect() const
     return overflowRect;
 }
 
-bool LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
+bool LayoutInline::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
     if (ancestor == this)
         return true;
@@ -1104,7 +1104,7 @@ bool LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
     if (container->hasOverflowClip()) {
         LayoutBox* containerBox = toLayoutBox(container);
         containerBox->mapScrollingContentsRectToBoxSpace(rect);
-        if (container != ancestor && !containerBox->applyOverflowClip(rect, visibleRectFlags))
+        if (container != ancestor && !containerBox->applyOverflowClip(rect, visualRectFlags))
             return false;
     }
 
@@ -1115,7 +1115,7 @@ bool LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
         return true;
     }
 
-    return container->mapToVisibleRectInAncestorSpace(ancestor, rect, visibleRectFlags);
+    return container->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
 
 LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container) const

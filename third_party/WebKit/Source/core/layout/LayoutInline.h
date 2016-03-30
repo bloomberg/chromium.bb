@@ -241,7 +241,7 @@ private:
     // for culled inline boxes, which aren't necessary for paint invalidation.
     LayoutRect localOverflowRectForPaintInvalidation() const override;
 
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const final;
+    bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const final;
 
     PositionWithAffinity positionForPoint(const LayoutPoint&) final;
 

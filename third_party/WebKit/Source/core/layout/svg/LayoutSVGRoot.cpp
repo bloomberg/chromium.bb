@@ -350,16 +350,16 @@ LayoutRect LayoutSVGRoot::localOverflowRectForPaintInvalidation() const
     return LayoutRect(enclosingIntRect(paintInvalidationRect));
 }
 
-bool LayoutSVGRoot::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
+bool LayoutSVGRoot::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
     // Note that we don't apply the border-box transform here - it's assumed
     // that whoever called us has done that already.
 
     // Apply initial viewport clip
     // TODO(crbug.com/597813): We should not apply clip on LayoutSVGRoot's own rect. This clip should
-    // be applied in children's mapToVisibleRectInAncestorSpace().
+    // be applied in children's mapToVisualRectInAncestorSpace().
     if (shouldApplyViewportClip()) {
-        if (visibleRectFlags & EdgeInclusive) {
+        if (visualRectFlags & EdgeInclusive) {
             if (!rect.inclusiveIntersect(LayoutRect(pixelSnappedBorderBoxRect())))
                 return false;
         } else {
@@ -367,7 +367,7 @@ bool LayoutSVGRoot::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* 
         }
     }
 
-    return LayoutReplaced::mapToVisibleRectInAncestorSpace(ancestor, rect, visibleRectFlags);
+    return LayoutReplaced::mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
 
 // This method expects local CSS box coordinates.

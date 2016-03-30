@@ -104,9 +104,9 @@ LayoutRect LayoutSVGBlock::absoluteClippedOverflowRect() const
     return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, *view());
 }
 
-bool LayoutSVGBlock::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
+bool LayoutSVGBlock::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags) const
 {
-    return SVGLayoutSupport::mapToVisibleRectInAncestorSpace(*this, ancestor, FloatRect(rect), rect);
+    return SVGLayoutSupport::mapToVisualRectInAncestorSpace(*this, ancestor, FloatRect(rect), rect);
 }
 
 bool LayoutSVGBlock::nodeAtPoint(HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)

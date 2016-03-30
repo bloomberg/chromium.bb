@@ -77,7 +77,7 @@ FloatRect SVGLayoutSupport::localOverflowRectForPaintInvalidation(const LayoutOb
 LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const LayoutObject& object, const LayoutBoxModelObject& paintInvalidationContainer)
 {
     LayoutRect rect;
-    mapToVisibleRectInAncestorSpace(object, &paintInvalidationContainer, localOverflowRectForPaintInvalidation(object), rect);
+    mapToVisualRectInAncestorSpace(object, &paintInvalidationContainer, localOverflowRectForPaintInvalidation(object), rect);
     return rect;
 }
 
@@ -119,12 +119,12 @@ static const LayoutSVGRoot& computeTransformToSVGRoot(const LayoutObject& object
     return svgRoot;
 }
 
-bool SVGLayoutSupport::mapToVisibleRectInAncestorSpace(const LayoutObject& object, const LayoutBoxModelObject* ancestor, const FloatRect& localPaintInvalidationRect, LayoutRect& resultRect, VisibleRectFlags visibleRectFlags)
+bool SVGLayoutSupport::mapToVisualRectInAncestorSpace(const LayoutObject& object, const LayoutBoxModelObject* ancestor, const FloatRect& localPaintInvalidationRect, LayoutRect& resultRect, VisualRectFlags visualRectFlags)
 {
     AffineTransform rootBorderBoxTransform;
     const LayoutSVGRoot& svgRoot = computeTransformToSVGRoot(object, rootBorderBoxTransform);
     resultRect = transformPaintInvalidationRect(object, rootBorderBoxTransform, localPaintInvalidationRect);
-    return svgRoot.mapToVisibleRectInAncestorSpace(ancestor, resultRect, visibleRectFlags);
+    return svgRoot.mapToVisualRectInAncestorSpace(ancestor, resultRect, visualRectFlags);
 }
 
 void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object, const LayoutBoxModelObject* ancestor, TransformState& transformState)

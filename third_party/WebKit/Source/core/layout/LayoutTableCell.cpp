@@ -358,13 +358,13 @@ LayoutRect LayoutTableCell::localOverflowRectForPaintInvalidation() const
     return LayoutRect(-location.x(), -location.y(), location.x() + std::max(size().width() + right, visualOverflowRect().maxX()), location.y() + std::max(size().height() + bottom, visualOverflowRect().maxY()));
 }
 
-bool LayoutTableCell::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& r, VisibleRectFlags visibleRectFlags) const
+bool LayoutTableCell::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& r, VisualRectFlags visualRectFlags) const
 {
     if (ancestor == this)
         return true;
     if (parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
-    return LayoutBlockFlow::mapToVisibleRectInAncestorSpace(ancestor, r, visibleRectFlags);
+    return LayoutBlockFlow::mapToVisualRectInAncestorSpace(ancestor, r, visualRectFlags);
 }
 
 int LayoutTableCell::cellBaselinePosition() const

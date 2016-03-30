@@ -1361,7 +1361,7 @@ LayoutRect LayoutObject::selectionRectInViewCoordinates() const
 {
     LayoutRect selectionRect = localSelectionRect();
     if (!selectionRect.isEmpty())
-        mapToVisibleRectInAncestorSpace(view(), selectionRect);
+        mapToVisualRectInAncestorSpace(view(), selectionRect);
     return selectionRect;
 }
 
@@ -1628,7 +1628,7 @@ void LayoutObject::invalidatePaintForOverflowIfNeeded()
 LayoutRect LayoutObject::absoluteClippedOverflowRect() const
 {
     LayoutRect rect = localOverflowRectForPaintInvalidation();
-    mapToVisibleRectInAncestorSpace(view(), rect);
+    mapToVisualRectInAncestorSpace(view(), rect);
     return rect;
 }
 
@@ -1638,7 +1638,7 @@ LayoutRect LayoutObject::localOverflowRectForPaintInvalidation() const
     return LayoutRect();
 }
 
-bool LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
+bool LayoutObject::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
     // For any layout object that doesn't override this method (the main example is LayoutText),
     // the rect is assumed to be in the coordinate space of the object's parent.
@@ -1650,11 +1650,11 @@ bool LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
         if (parent->hasOverflowClip()) {
             LayoutBox* parentBox = toLayoutBox(parent);
             parentBox->mapScrollingContentsRectToBoxSpace(rect);
-            if (parent != ancestor && !parentBox->applyOverflowClip(rect, visibleRectFlags))
+            if (parent != ancestor && !parentBox->applyOverflowClip(rect, visualRectFlags))
                 return false;
         }
 
-        return parent->mapToVisibleRectInAncestorSpace(ancestor, rect, visibleRectFlags);
+        return parent->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
     }
     return true;
 }

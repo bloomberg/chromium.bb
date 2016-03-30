@@ -109,7 +109,7 @@ TEST_F(LayoutObjectTest, ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStatic
     EXPECT_EQ(layoutObject->containingBlock(), bodyLayoutObject);
 }
 
-TEST_F(LayoutObjectTest, LayoutTextMapToVisibleRectInAncestorSpace)
+TEST_F(LayoutObjectTest, LayoutTextMapToVisualRectInAncestorSpace)
 {
     setBodyInnerHTML(
         "<style>body { margin: 0; }</style>"
@@ -123,15 +123,15 @@ TEST_F(LayoutObjectTest, LayoutTextMapToVisibleRectInAncestorSpace)
 
     container->setScrollTop(LayoutUnit(50));
     LayoutRect rect(0, 60, 20, 80);
-    EXPECT_TRUE(text->mapToVisibleRectInAncestorSpace(container, rect));
+    EXPECT_TRUE(text->mapToVisualRectInAncestorSpace(container, rect));
     EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
 
     rect = LayoutRect(0, 60, 80, 0);
-    EXPECT_TRUE(text->mapToVisibleRectInAncestorSpace(container, rect, EdgeInclusive));
+    EXPECT_TRUE(text->mapToVisualRectInAncestorSpace(container, rect, EdgeInclusive));
     EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
 }
 
-TEST_F(LayoutObjectTest, LayoutInlineMapToVisibleRectInAncestorSpace)
+TEST_F(LayoutObjectTest, LayoutInlineMapToVisualRectInAncestorSpace)
 {
     document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
     setBodyInnerHTML(
@@ -145,15 +145,15 @@ TEST_F(LayoutObjectTest, LayoutInlineMapToVisibleRectInAncestorSpace)
 
     container->setScrollTop(LayoutUnit(50));
     LayoutRect rect(0, 60, 20, 80);
-    EXPECT_TRUE(leaf->mapToVisibleRectInAncestorSpace(container, rect));
+    EXPECT_TRUE(leaf->mapToVisualRectInAncestorSpace(container, rect));
     EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
 
     rect = LayoutRect(0, 60, 80, 0);
-    EXPECT_TRUE(leaf->mapToVisibleRectInAncestorSpace(container, rect, EdgeInclusive));
+    EXPECT_TRUE(leaf->mapToVisualRectInAncestorSpace(container, rect, EdgeInclusive));
     EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
 }
 
-TEST_F(LayoutObjectTest, LayoutViewMapToVisibleRectInAncestorSpace)
+TEST_F(LayoutObjectTest, LayoutViewMapToVisualRectInAncestorSpace)
 {
     document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
     setBodyInnerHTML(
@@ -173,15 +173,15 @@ TEST_F(LayoutObjectTest, LayoutViewMapToVisibleRectInAncestorSpace)
     // so height should be clipped to (50 - 13) == 37.
     frameDocument.view()->setScrollPosition(DoublePoint(0, 47), ProgrammaticScroll);
     LayoutRect rect(4, 60, 20, 80);
-    EXPECT_TRUE(frameText->mapToVisibleRectInAncestorSpace(frameContainer, rect));
+    EXPECT_TRUE(frameText->mapToVisualRectInAncestorSpace(frameContainer, rect));
     EXPECT_EQ(rect, LayoutRect(4, 13, 20, 37));
 
     rect = LayoutRect(4, 60, 0, 80);
-    EXPECT_TRUE(frameText->mapToVisibleRectInAncestorSpace(frameContainer, rect, EdgeInclusive));
+    EXPECT_TRUE(frameText->mapToVisualRectInAncestorSpace(frameContainer, rect, EdgeInclusive));
     EXPECT_EQ(rect, LayoutRect(4, 13, 0, 37));
 }
 
-TEST_F(LayoutObjectTest, LayoutViewMapToVisibleRectInAncestorSpaceSubpixelRounding)
+TEST_F(LayoutObjectTest, LayoutViewMapToVisualRectInAncestorSpaceSubpixelRounding)
 {
     document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
     setBodyInnerHTML(
@@ -197,7 +197,7 @@ TEST_F(LayoutObjectTest, LayoutViewMapToVisibleRectInAncestorSpaceSubpixelRoundi
     LayoutBlock* frameContainer = toLayoutBlock(getLayoutObjectByElementId("frameContainer"));
     LayoutObject* target = frameDocument.getElementById("target")->layoutObject();
     LayoutRect rect(0, 0, 100, 100);
-    EXPECT_TRUE(target->mapToVisibleRectInAncestorSpace(frameContainer, rect));
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(frameContainer, rect));
     // When passing from the iframe to the parent frame, the rect of (0.5, 0, 100, 100) is expanded to (0, 0, 100, 100), and then offset by
     // the 0.5 offset of frameContainer.
     EXPECT_EQ(LayoutRect(LayoutPoint(DoublePoint(0.5, 0)), LayoutSize(101, 100)), rect);

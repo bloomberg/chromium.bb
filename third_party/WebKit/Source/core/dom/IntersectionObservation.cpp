@@ -71,7 +71,7 @@ void IntersectionObservation::clipToRoot(IntersectionGeometry& geometry) const
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     LayoutObject* targetLayoutObject = target()->layoutObject();
 
-    geometry.doesIntersect = targetLayoutObject->mapToVisibleRectInAncestorSpace(toLayoutBoxModelObject(rootLayoutObject), geometry.intersectionRect, EdgeInclusive);
+    geometry.doesIntersect = targetLayoutObject->mapToVisualRectInAncestorSpace(toLayoutBoxModelObject(rootLayoutObject), geometry.intersectionRect, EdgeInclusive);
     if (!geometry.doesIntersect)
         return;
     LayoutRect rootClipRect(geometry.rootRect);

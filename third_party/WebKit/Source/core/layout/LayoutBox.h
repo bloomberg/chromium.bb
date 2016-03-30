@@ -639,7 +639,7 @@ public:
     bool hasForcedBreakAfter() const;
 
     LayoutRect localOverflowRectForPaintInvalidation() const override;
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const override;
+    bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const override;
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants);
 
     LayoutUnit containingBlockLogicalHeightForGetComputedStyle() const;
@@ -846,7 +846,7 @@ public:
     // Returns true if the rect actually intersects the clipping region.
     // If edgeInclusive is true, then this method may return true even
     // if the resulting rect has zero area.
-    bool applyOverflowClip(LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const;
+    bool applyOverflowClip(LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const;
 
     virtual bool hasRelativeLogicalWidth() const;
     virtual bool hasRelativeLogicalHeight() const;

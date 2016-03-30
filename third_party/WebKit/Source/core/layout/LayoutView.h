@@ -104,8 +104,8 @@ public:
 
     FrameView* frameView() const { return m_frameView; }
 
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, MapCoordinatesFlags, VisibleRectFlags) const;
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const override;
+    bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, MapCoordinatesFlags, VisualRectFlags) const;
+    bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisualRectFlags = DefaultVisualRectFlags) const override;
     void adjustOffsetForFixedPosition(LayoutRect&) const;
 
     void invalidatePaintForViewAndCompositedLayers();

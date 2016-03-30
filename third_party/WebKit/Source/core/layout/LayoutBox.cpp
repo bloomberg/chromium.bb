@@ -973,7 +973,7 @@ void LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect) const
     rect.move(offset);
 }
 
-bool LayoutBox::applyOverflowClip(LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
+bool LayoutBox::applyOverflowClip(LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
     ASSERT(hasLayer());
     ASSERT(hasOverflowClip());
@@ -985,7 +985,7 @@ bool LayoutBox::applyOverflowClip(LayoutRect& rect, VisibleRectFlags visibleRect
     // anyway if its size does change.
     LayoutRect clipRect(LayoutPoint(), LayoutSize(layer()->size()));
     bool doesIntersect;
-    if (visibleRectFlags & EdgeInclusive) {
+    if (visualRectFlags & EdgeInclusive) {
         doesIntersect = rect.inclusiveIntersect(clipRect);
     } else {
         rect.intersect(clipRect);
@@ -1482,7 +1482,7 @@ bool LayoutBox::intersectsVisibleViewport()
     LayoutView* layoutView = view();
     while (layoutView->frame()->ownerLayoutObject())
         layoutView = layoutView->frame()->ownerLayoutObject()->view();
-    mapToVisibleRectInAncestorSpace(layoutView, rect);
+    mapToVisualRectInAncestorSpace(layoutView, rect);
     return rect.intersects(LayoutRect(layoutView->frameView()->getScrollableArea()->visibleContentRectDouble()));
 }
 
@@ -1935,7 +1935,7 @@ LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const
     return visualOverflowRect();
 }
 
-bool LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
+bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -1995,7 +1995,7 @@ bool LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
     if (container->hasOverflowClip()) {
         LayoutBox* containerBox = toLayoutBox(container);
         containerBox->mapScrollingContentsRectToBoxSpace(rect);
-        if (container != ancestor && !containerBox->applyOverflowClip(rect, visibleRectFlags))
+        if (container != ancestor && !containerBox->applyOverflowClip(rect, visualRectFlags))
             return false;
     }
 
@@ -2010,9 +2010,9 @@ bool LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
     }
 
     if (container->isLayoutView())
-        return toLayoutView(container)->mapToVisibleRectInAncestorSpace(ancestor, rect, position == FixedPosition ? IsFixed : 0, visibleRectFlags);
+        return toLayoutView(container)->mapToVisualRectInAncestorSpace(ancestor, rect, position == FixedPosition ? IsFixed : 0, visualRectFlags);
     else
-        return container->mapToVisibleRectInAncestorSpace(ancestor, rect, visibleRectFlags);
+        return container->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
 
 void LayoutBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const
