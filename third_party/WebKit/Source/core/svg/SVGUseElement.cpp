@@ -493,7 +493,7 @@ void SVGUseElement::toClipPath(Path& path) const
 
     const SVGGraphicsElement* element = targetGraphicsElementForClipping();
 
-    if (!element)
+    if (!element || !element->layoutObject())
         return;
 
     if (element->isSVGGeometryElement()) {
