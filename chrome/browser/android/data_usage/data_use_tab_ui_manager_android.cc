@@ -63,15 +63,16 @@ jboolean CheckAndResetDataUseTrackingStarted(
     const JavaParamRef<jclass>& clazz,
     jint tab_id,
     const JavaParamRef<jobject>& jprofile) {
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
+
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
-  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
-  if (data_use_ui_tab_model) {
-    return data_use_ui_tab_model->CheckAndResetDataUseTrackingStarted(
-        static_cast<SessionID::id_type>(tab_id));
-  }
-  return false;
+  if (!data_use_ui_tab_model)
+    return false;
+
+  return data_use_ui_tab_model->CheckAndResetDataUseTrackingStarted(
+      static_cast<SessionID::id_type>(tab_id));
 }
 
 // static
@@ -80,15 +81,16 @@ jboolean CheckAndResetDataUseTrackingEnded(
     const JavaParamRef<jclass>& clazz,
     jint tab_id,
     const JavaParamRef<jobject>& jprofile) {
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
+
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
-  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
-  if (data_use_ui_tab_model) {
-    return data_use_ui_tab_model->CheckAndResetDataUseTrackingEnded(
-        static_cast<SessionID::id_type>(tab_id));
-  }
-  return false;
+  if (!data_use_ui_tab_model)
+    return false;
+
+  return data_use_ui_tab_model->CheckAndResetDataUseTrackingEnded(
+      static_cast<SessionID::id_type>(tab_id));
 }
 
 // static
@@ -96,14 +98,16 @@ void UserClickedContinueOnDialogBox(JNIEnv* env,
                                     const JavaParamRef<jclass>& clazz,
                                     jint tab_id,
                                     const JavaParamRef<jobject>& jprofile) {
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
+
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
-  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
-  if (data_use_ui_tab_model) {
-    data_use_ui_tab_model->UserClickedContinueOnDialogBox(
-        static_cast<SessionID::id_type>(tab_id));
-  }
+  if (!data_use_ui_tab_model)
+    return;
+
+  data_use_ui_tab_model->UserClickedContinueOnDialogBox(
+      static_cast<SessionID::id_type>(tab_id));
 }
 
 // static
@@ -113,35 +117,44 @@ jboolean WouldDataUseTrackingEnd(JNIEnv* env,
                                  const JavaParamRef<jstring>& url,
                                  jint transition_type,
                                  const JavaParamRef<jobject>& jprofile) {
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
+
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
-  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
-  if (data_use_ui_tab_model) {
-    return data_use_ui_tab_model->WouldDataUseTrackingEnd(
-        ConvertJavaStringToUTF8(env, url), transition_type,
-        static_cast<SessionID::id_type>(tab_id));
-  }
-  return false;
+  if (!data_use_ui_tab_model)
+    return false;
+
+  return data_use_ui_tab_model->WouldDataUseTrackingEnd(
+      ConvertJavaStringToUTF8(env, url), transition_type,
+      static_cast<SessionID::id_type>(tab_id));
 }
 
 // static
 void OnCustomTabInitialNavigation(JNIEnv* env,
                                   const JavaParamRef<jclass>& clazz,
                                   jint tab_id,
-                                  const JavaParamRef<jstring>& package_name,
-                                  const JavaParamRef<jstring>& url,
+                                  const JavaParamRef<jstring>& jpackage_name,
+                                  const JavaParamRef<jstring>& jurl,
                                   const JavaParamRef<jobject>& jprofile) {
+  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
+
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   chrome::android::DataUseUITabModel* data_use_ui_tab_model =
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(profile);
-  DCHECK_LE(0, static_cast<SessionID::id_type>(tab_id));
-  if (data_use_ui_tab_model) {
-    data_use_ui_tab_model->ReportCustomTabInitialNavigation(
-        static_cast<SessionID::id_type>(tab_id),
-        ConvertJavaStringToUTF8(env, package_name),
-        ConvertJavaStringToUTF8(env, url));
-  }
+  if (!data_use_ui_tab_model)
+    return;
+
+  std::string url;
+  if (!jurl.is_null())
+    ConvertJavaStringToUTF8(env, jurl, &url);
+
+  std::string package_name;
+  if (!jpackage_name.is_null())
+    ConvertJavaStringToUTF8(env, jpackage_name, &package_name);
+
+  data_use_ui_tab_model->ReportCustomTabInitialNavigation(
+      static_cast<SessionID::id_type>(tab_id), package_name, url);
 }
 
 // static
@@ -149,7 +162,8 @@ ScopedJavaLocalRef<jstring> GetDataUseUIString(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     int message_id) {
-  DCHECK(message_id >= 0 && message_id < DATA_USE_UI_MESSAGE_MAX);
+  DCHECK_GE(message_id, 0);
+  DCHECK_LT(message_id, DATA_USE_UI_MESSAGE_MAX);
   return base::android::ConvertUTF8ToJavaString(
       env, l10n_util::GetStringUTF8(data_use_ui_message_id_map[message_id]));
 }

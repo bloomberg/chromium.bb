@@ -675,8 +675,9 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         mUrl = state.getVirtualUrlFromState();
 
         mTitle = state.getDisplayTitleFromState();
-        mIsTitleDirectionRtl = LocalizationUtils.getFirstStrongCharacterDirection(mTitle)
-                == LocalizationUtils.RIGHT_TO_LEFT;
+        mIsTitleDirectionRtl = mTitle != null
+                && LocalizationUtils.getFirstStrongCharacterDirection(mTitle)
+                        == LocalizationUtils.RIGHT_TO_LEFT;
     }
 
     /**

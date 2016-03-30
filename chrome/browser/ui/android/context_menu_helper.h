@@ -35,7 +35,7 @@ class ContextMenuHelper
   void OnStartDownload(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        jboolean jis_link,
-                       const base::android::JavaParamRef<jstring>& jheaders);
+                       jboolean jis_data_reduction_proxy_enabled);
   void SearchForImage(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
   void ShareImage(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

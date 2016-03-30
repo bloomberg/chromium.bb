@@ -1331,6 +1331,14 @@ public class AwContents implements SmartClipProvider,
         ValueCallback<String[]> callback = new ValueCallback<String[]>() {
             @Override
             public void onReceiveValue(final String[] value) {
+                if (value != null) {
+                    // Replace null values with empty strings, because they can't be represented as
+                    // native strings.
+                    for (int i = 0; i < value.length; i++) {
+                        if (value[i] == null) value[i] = "";
+                    }
+                }
+
                 ThreadUtils.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

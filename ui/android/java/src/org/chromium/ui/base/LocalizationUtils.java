@@ -66,6 +66,7 @@ public class LocalizationUtils {
      * @return One of the UNKNOWN_DIRECTION, RIGHT_TO_LEFT, and LEFT_TO_RIGHT.
      */
     public static int getFirstStrongCharacterDirection(String string) {
+        assert string != null;
         return nativeGetFirstStrongCharacterDirection(string);
     }
 

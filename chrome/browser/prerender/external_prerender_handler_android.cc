@@ -32,8 +32,9 @@ static bool CheckAndConvertParams(
     GURL* url,
     prerender::PrerenderManager** prerender_manager,
     content::WebContents** web_contents) {
-  if (jurl == NULL)
+  if (!jurl)
     return false;
+
   *url = GURL(ConvertJavaStringToUTF16(env, jurl));
   if (!url->is_valid())
     return false;
@@ -43,6 +44,7 @@ static bool CheckAndConvertParams(
       prerender::PrerenderManagerFactory::GetForProfile(profile);
   if (!*prerender_manager)
     return false;
+
   *web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
   return true;
 }
@@ -65,19 +67,25 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
   if (!url.is_valid())
     return false;
 
-  GURL referrer_url = GURL(ConvertJavaStringToUTF16(env, jreferrer));
-  content::Referrer referrer = referrer_url.is_valid() ?
-      content::Referrer(referrer_url, blink::WebReferrerPolicyDefault) :
-      content::Referrer();
+  content::Referrer referrer;
+  if (!jreferrer.is_null()) {
+    GURL referrer_url(ConvertJavaStringToUTF16(env, jreferrer));
+    if (referrer_url.is_valid()) {
+      referrer =
+          content::Referrer(referrer_url, blink::WebReferrerPolicyDefault);
+    }
+  }
+
   PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile);
   if (!prerender_manager)
     return false;
+
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
-  if (prerender_handle_.get()) {
+  if (prerender_handle_)
     prerender_handle_->OnNavigateAway();
-  }
+
   if (prerender_on_cellular && net::NetworkChangeNotifier::IsConnectionCellular(
                    net::NetworkChangeNotifier::GetConnectionType())) {
     prerender_handle_.reset(
@@ -95,9 +103,7 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
             gfx::Size(width, height)));
   }
 
-  if (!prerender_handle_)
-    return false;
-  return true;
+  return !!prerender_handle_;
 }
 
 void ExternalPrerenderHandlerAndroid::CancelCurrentPrerender(
@@ -105,6 +111,7 @@ void ExternalPrerenderHandlerAndroid::CancelCurrentPrerender(
     const JavaParamRef<jobject>& object) {
   if (!prerender_handle_)
     return;
+
   prerender_handle_->OnCancel();
   prerender_handle_.reset();
 }
@@ -120,6 +127,7 @@ static jboolean HasPrerenderedUrl(JNIEnv* env,
   if (!CheckAndConvertParams(env, jprofile, jurl, jweb_contents, &url,
                              &prerender_manager, &web_contents))
     return false;
+
   return prerender_manager->HasPrerenderedUrl(url, web_contents);
 }
 
@@ -135,6 +143,7 @@ static jboolean HasPrerenderedAndFinishedLoadingUrl(
   if (!CheckAndConvertParams(env, jprofile, jurl, jweb_contents, &url,
                              &prerender_manager, &web_contents))
     return false;
+
   return prerender_manager->HasPrerenderedAndFinishedLoadingUrl(url,
                                                                 web_contents);
 }

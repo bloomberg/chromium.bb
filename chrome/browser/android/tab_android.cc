@@ -529,6 +529,9 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
   if (!web_contents())
     return PAGE_LOAD_FAILED;
 
+  if (url.is_null())
+    return PAGE_LOAD_FAILED;
+
   GURL gurl(base::android::ConvertJavaStringToUTF8(env, url));
   if (gurl.is_empty())
     return PAGE_LOAD_FAILED;

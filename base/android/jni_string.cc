@@ -24,11 +24,7 @@ namespace base {
 namespace android {
 
 void ConvertJavaStringToUTF8(JNIEnv* env, jstring str, std::string* result) {
-  if (!str) {
-    LOG(WARNING) << "ConvertJavaStringToUTF8 called with null string.";
-    result->clear();
-    return;
-  }
+  DCHECK(str);
   const jsize length = env->GetStringLength(str);
   if (!length) {
     result->clear();
@@ -74,11 +70,7 @@ ScopedJavaLocalRef<jstring> ConvertUTF8ToJavaString(
 }
 
 void ConvertJavaStringToUTF16(JNIEnv* env, jstring str, string16* result) {
-  if (!str) {
-    LOG(WARNING) << "ConvertJavaStringToUTF16 called with null string.";
-    result->clear();
-    return;
-  }
+  DCHECK(str);
   const jsize length = env->GetStringLength(str);
   if (!length) {
     result->clear();

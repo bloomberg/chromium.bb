@@ -43,6 +43,9 @@ std::string GetContentUriMimeType(const FilePath& content_uri) {
   ScopedJavaLocalRef<jstring> j_mime =
       Java_ContentUriUtils_getMimeType(
           env, base::android::GetApplicationContext(), j_uri.obj());
+  if (j_mime.is_null())
+    return std::string();
+
   return base::android::ConvertJavaStringToUTF8(env, j_mime.obj());
 }
 
