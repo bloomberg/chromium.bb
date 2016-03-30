@@ -55,6 +55,9 @@ class MediaCodecBridge {
     // non-decreasing for the remaining frames.
     private static final long MAX_PRESENTATION_TIMESTAMP_SHIFT_US = 100000;
 
+    // We use only one output audio format (PCM16) that has 2 bytes per sample
+    private static final int PCM16_BYTES_PER_SAMPLE = 2;
+
     // TODO(qinmin): Use MediaFormat constants when part of the public API.
     private static final String KEY_CROP_LEFT = "crop-left";
     private static final String KEY_CROP_RIGHT = "crop-right";
@@ -540,8 +543,22 @@ class MediaCodecBridge {
                 // kBytesPerAudioOutputSample in media_codec_bridge.cc.
                 int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, channelConfig,
                         AudioFormat.ENCODING_PCM_16BIT);
+
+                // Set buffer size to be at least 1.5 times the minimum buffer size
+                // (see http://crbug.com/589269).
+                // TODO(timav, qinmin): For MediaSourcePlayer, we starts both audio and
+                // video decoder once we got valid presentation timestamp from the decoder
+                // (prerolling_==false). However, this doesn't guarantee that audiotrack
+                // starts outputing samples, especially with a larger buffersize.
+                // The best solution will be having a large buffer size in AudioTrack, and
+                // sync audio/video start when audiotrack starts output samples
+                // (head position starts progressing).
+                int minBufferSizeInFrames = minBufferSize / PCM16_BYTES_PER_SAMPLE / channelCount;
+                int bufferSize =
+                        (int) (1.5 * minBufferSizeInFrames) * PCM16_BYTES_PER_SAMPLE * channelCount;
+
                 mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfig,
-                        AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
+                        AudioFormat.ENCODING_PCM_16BIT, bufferSize, AudioTrack.MODE_STREAM);
                 if (mAudioTrack.getState() == AudioTrack.STATE_UNINITIALIZED) {
                     Log.e(TAG, "Cannot create AudioTrack");
                     mAudioTrack = null;
