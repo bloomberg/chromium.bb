@@ -2963,6 +2963,7 @@ interface KeyboardEvent : UIEvent
     getter charCode
     getter code
     getter ctrlKey
+    getter key
     getter keyCode
     getter keyIdentifier
     getter location

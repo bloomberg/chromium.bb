@@ -104,7 +104,7 @@ InputModeAttribute status=experimental
 InstalledApp status=experimental
 IntersectionObserver status=experimental
 KeyboardEventCode status=stable
-KeyboardEventKey status=experimental
+KeyboardEventKey status=stable
 LangAttributeAwareFormControlUI
 LinkPreconnect status=stable
 LinkPreload status=stable
