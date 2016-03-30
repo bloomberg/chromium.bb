@@ -53,6 +53,8 @@ int GetHardwareLatencyInBytes(pa_stream* stream,
 // otherwise false. |mainloop| and |context| have to be from a valid Pulse
 // threaded mainloop and the handle of the created stream will be returned by
 // |stream|.
+// TODO(grunell): Move this function to PulseAudioInputStream class since it's
+// only used there.
 bool CreateInputStream(pa_threaded_mainloop* mainloop,
                        pa_context* context,
                        pa_stream** stream,
@@ -65,8 +67,10 @@ bool CreateInputStream(pa_threaded_mainloop* mainloop,
 // otherwise false. This function will create a new Pulse threaded mainloop,
 // and the handles of the mainloop, context and stream will be returned by
 // |mainloop|, |context| and |stream|.
-bool CreateOutputStream(pa_threaded_mainloop** mainloop,
-                        pa_context** context,
+// TODO(grunell): Move this function to PulseAudioOutputStream class since it's
+// only used there.
+bool CreateOutputStream(pa_threaded_mainloop* mainloop,
+                        pa_context* context,
                         pa_stream** stream,
                         const AudioParameters& params,
                         const std::string& device_id,
