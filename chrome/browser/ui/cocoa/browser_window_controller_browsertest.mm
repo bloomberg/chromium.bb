@@ -691,8 +691,9 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FullscreenResizeFlags) {
 // Tests that the omnibox and tabs are hidden/visible in fullscreen mode.
 // Ensure that when the user toggles this setting, the omnibox, tabs and
 // preferences are updated correctly.
+// Flakily times out. http://crbug.com/599119
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       FullscreenToolbarIsVisibleAccordingToPrefs) {
+                       DISABLED_FullscreenToolbarIsVisibleAccordingToPrefs) {
   // This feature is only available on SystemFullscreen.
   if (!chrome::mac::SupportsSystemFullscreen())
     return;
