@@ -105,6 +105,19 @@ If you need help triaging, here are the common labels you should use:
 
  If you still need help, ask the speed infra chat, or escalate to sullivan@.
 
+###<a name="clobber"></a> Clobbering
+
+Sometimes when a compile step is failing, you may be asked to clobber
+[example](https://bugs.chromium.org/p/chromium/issues/detail?id=598955#c7).
+Steps to clobber:
+
+1.  Open the builder page through
+    [uberchromegw](https://uberchromegw.corp.google.com/i/chromium.perf).
+2.  At the bottom, there is a form titled **"Force build"**.
+3.  Fill out the force build form, including your username, the reason for the
+    clobber with crbug id if possible, and checking the **"Clobber"** box.
+4.  Click the "Force Build" button.
+
 ##<a name="testfailures"></a> Handle Test Failures
 
 You want to keep the waterfall green! So any bot that is red or purple needs to
