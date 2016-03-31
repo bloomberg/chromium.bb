@@ -1254,6 +1254,8 @@ component("base") {
       "netapi32.lib",
       "powrprof.lib",
       "setupapi.lib",
+      "userenv.lib",
+      "winmm.lib",
     ]
     all_dependent_configs = [ ":base_win_linker_flags" ]
   } else if (!is_nacl || is_nacl_nonsfi) {

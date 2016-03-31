@@ -33,7 +33,6 @@
 
 #include "base/time/time.h"
 
-#pragma comment(lib, "winmm.lib")
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdint.h>
