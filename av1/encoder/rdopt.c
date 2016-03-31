@@ -1266,6 +1266,14 @@ static int cost_mv_ref(const AV1_COMP *cpi, PREDICTION_MODE mode,
     } else {
       mode_cost += cpi->zeromv_mode_cost[mode_ctx][1];
       mode_ctx = (mode_context >> REFMV_OFFSET) & REFMV_CTX_MASK;
+
+      if (mode_context & (1 << SKIP_NEARESTMV_OFFSET))
+        mode_ctx = 6;
+      if (mode_context & (1 << SKIP_NEARMV_OFFSET))
+        mode_ctx = 7;
+      if (mode_context & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET))
+        mode_ctx = 8;
+
       mode_cost += cpi->refmv_mode_cost[mode_ctx][mode != NEARESTMV];
       return mode_cost;
     }
@@ -1327,7 +1335,8 @@ static int set_and_cost_bmi_mvs(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       memmove(&mic->bmi[i + idy * 2 + idx], &mic->bmi[i], sizeof(mic->bmi[i]));
 
 #if CONFIG_REF_MV
-  mode_ctx &= 0x00ff;
+  mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
+                                       mbmi->ref_frame, mbmi->sb_type, i);
 #endif
   return cost_mv_ref(cpi, mode, mode_ctx) + thismvcost;
 }
@@ -1494,20 +1503,26 @@ static int check_best_zero_mv(const AV1_COMP *cpi,
                               const int16_t mode_context[MAX_REF_FRAMES],
                               int_mv frame_mv[MB_MODE_COUNT][MAX_REF_FRAMES],
                               int this_mode,
-                              const MV_REFERENCE_FRAME ref_frames[2]) {
+                              const MV_REFERENCE_FRAME ref_frames[2],
+                              const BLOCK_SIZE bsize, int block) {
   if ((this_mode == NEARMV || this_mode == NEARESTMV || this_mode == ZEROMV) &&
       frame_mv[this_mode][ref_frames[0]].as_int == 0 &&
       (ref_frames[1] == NONE ||
        frame_mv[this_mode][ref_frames[1]].as_int == 0)) {
 #if CONFIG_REF_MV
-    int16_t rfc = (ref_frames[1] == NONE) ? mode_context[ref_frames[0]] :
-        mode_context[ref_frames[0]] & (mode_context[ref_frames[1]] | 0x00ff);
+    int16_t rfc = av1_mode_context_analyzer(mode_context,
+                                            ref_frames, bsize, block);
 #else
     int16_t rfc = mode_context[ref_frames[0]];
 #endif
     int c1 = cost_mv_ref(cpi, NEARMV, rfc);
     int c2 = cost_mv_ref(cpi, NEARESTMV, rfc);
     int c3 = cost_mv_ref(cpi, ZEROMV, rfc);
+
+#if !CONFIG_REF_MV
+    (void)bsize;
+    (void)block;
+#endif
 
     if (this_mode == NEARMV) {
       if (c1 > c3) return 0;
@@ -1773,7 +1788,7 @@ static int64_t rd_pick_best_sub8x8_mode(
         if (!(inter_mode_mask & (1 << this_mode))) continue;
 
         if (!check_best_zero_mv(cpi, mbmi_ext->mode_context, frame_mv,
-                                this_mode, mbmi->ref_frame))
+                                this_mode, mbmi->ref_frame, bsize, i))
           continue;
 
         memcpy(orig_pre, pd->pre, sizeof(orig_pre));
@@ -2363,8 +2378,8 @@ static int64_t handle_inter_mode(
   int16_t mode_ctx = mbmi_ext->mode_context[refs[0]];
 
 #if CONFIG_REF_MV
-  if (refs[1] > NONE)
-    mode_ctx &= (mbmi_ext->mode_context[refs[1]] | 0x00ff);
+  mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
+                                       mbmi->ref_frame, bsize, -1);
 #endif
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -2925,6 +2940,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     x->pred_mv_sad[ref_frame] = INT_MAX;
+    x->mbmi_ext->mode_context[ref_frame] = 0;
     if (cpi->ref_frame_flags & flag_list[ref_frame]) {
       assert(get_ref_frame_buffer(cpi, ref_frame) != NULL);
       setup_buffer_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
@@ -3120,7 +3136,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     } else {
       const MV_REFERENCE_FRAME ref_frames[2] = { ref_frame, second_ref_frame };
       if (!check_best_zero_mv(cpi, mbmi_ext->mode_context, frame_mv, this_mode,
-                              ref_frames))
+                              ref_frames, bsize, -1))
         continue;
     }
 
@@ -3617,6 +3633,7 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
   rd_cost->rate = INT_MAX;
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ref_frame++) {
+    x->mbmi_ext->mode_context[ref_frame] = 0;
     if (cpi->ref_frame_flags & flag_list[ref_frame]) {
       setup_buffer_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
                          frame_mv[NEARESTMV], frame_mv[NEARMV], yv12_mb);
