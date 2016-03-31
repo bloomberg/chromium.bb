@@ -693,7 +693,7 @@
       'linux_chromium_chromeos_dbg_ng': 'tbd',
       'linux_chromium_chromeos_msan_rel_ng': 'tbd',
       'linux_chromium_chromeos_ozone_rel_ng': 'tbd',
-      'linux_chromium_chromeos_rel_ng': 'tbd',
+      'linux_chromium_chromeos_rel_ng': 'swarming_chromeos_gyp_release_trybot',
       'linux_chromium_chromeos_variable': 'tbd',
       'linux_chromium_variable': 'tbd',
       'linux_nacl_sdk': 'tbd',
@@ -1229,6 +1229,10 @@
 
     'swarming_chromeos_gyp_release_bot': [
       'swarming', 'chromeos_with_codecs', 'gyp', 'release_bot',
+    ],
+
+    'swarming_chromeos_gyp_release_trybot': [
+      'swarming', 'chromeos_with_codecs', 'gyp', 'release_trybot',
     ],
 
     'swarming_msan_gyp_release_trybot': [
