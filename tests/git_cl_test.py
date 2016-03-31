@@ -126,6 +126,11 @@ class TestGitCl(TestCase):
     return result
 
   @classmethod
+  def _is_gerrit_calls(cls, gerrit=False):
+    return [((['git', 'config', 'rietveld.autoupdate'],), ''),
+            ((['git', 'config', 'gerrit.host'],), 'True' if gerrit else '')]
+
+  @classmethod
   def _upload_calls(cls, similarity, find_copies, private):
     return (cls._git_base_calls(similarity, find_copies) +
             cls._git_upload_calls(private))
@@ -167,18 +172,17 @@ class TestGitCl(TestCase):
       similarity_call,
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       find_copies_call,
+    ] + cls._is_gerrit_calls() + [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.rietveldissue'],), ''),
       ((['git', 'config', 'branch.master.gerritissue'],), ''),
-      ((['git', 'config', 'rietveld.autoupdate'],), ''),
-      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git', 'config', 'rietveld.server'],),
        'codereview.example.com'),
       ((['git', 'config', 'branch.master.merge'],), 'master'),
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
       ((['get_or_create_merge_base', 'master', 'master'],),
        'fake_ancestor_sha'),
-      ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
+    ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
       ((['git', 'diff', '--name-status', '--no-renames', '-r',
@@ -542,7 +546,7 @@ class TestGitCl(TestCase):
 
 
   @classmethod
-  def _gerrit_base_calls(cls):
+  def _gerrit_base_calls(cls, issue=None):
     return [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', '--int', '--get',
@@ -550,11 +554,11 @@ class TestGitCl(TestCase):
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', '--int', '--get',
           'branch.master.git-find-copies'],), ''),
+      ] + cls._is_gerrit_calls(True) + [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.rietveldissue'],), ''),
-        ((['git', 'config', 'branch.master.gerritissue'],), ''),
-        ((['git', 'config', 'rietveld.autoupdate'],), ''),
-        ((['git', 'config', 'gerrit.host'],), 'True'),
+        ((['git', 'config', 'branch.master.gerritissue'],),
+          '' if issue is None else str(issue)),
         ((['git', 'config', 'branch.master.merge'],), 'master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['get_or_create_merge_base', 'master', 'master'],),
@@ -567,9 +571,11 @@ class TestGitCl(TestCase):
            'fake_ancestor_sha...', '.'],),
          'M\t.gitignore\n'),
         ((['git', 'config', 'branch.master.gerritpatchset'],), ''),
+      ] + ([] if issue else [
         ((['git',
            'log', '--pretty=format:%s%n%n%b', 'fake_ancestor_sha...'],),
          'foo'),
+      ]) + [
         ((['git', 'config', 'user.email'],), 'me@example.com'),
         ((['git',
            'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
@@ -580,15 +586,23 @@ class TestGitCl(TestCase):
   @classmethod
   def _gerrit_upload_calls(cls, description, reviewers, squash,
                            expected_upstream_ref='origin/refs/heads/master',
-                           post_amend_description=None):
+                           post_amend_description=None, issue=None):
     if post_amend_description is None:
       post_amend_description = description
+
     calls = [
         ((['git', 'config', '--bool', 'gerrit.squash-uploads'],), 'false'),
-        ((['git', 'log', '--pretty=format:%s\n\n%b',
-           'fake_ancestor_sha..HEAD'],),
-         description)
-        ]
+    ]
+    # If issue is given, then description is fetched from Gerrit instead.
+    if issue is None:
+      if squash:
+        calls += [
+          ((['git', 'show', '--format=%B', '-s',
+             'refs/heads/git_cl_uploads/master'],), '')]
+      calls += [
+          ((['git', 'log', '--pretty=format:%s\n\n%b',
+                   'fake_ancestor_sha..HEAD'],),
+                  description)]
     if not git_footers.get_footer_change_id(description) and not squash:
       calls += [
           # DownloadGerritHook(False)
@@ -605,11 +619,14 @@ class TestGitCl(TestCase):
            post_amend_description)
           ]
     if squash:
+      if not issue:
+        # Prompting to edit description on first upload.
+        calls += [
+            ((['git', 'config', 'core.editor'],), ''),
+            ((['RunEditor'],), description),
+        ]
       ref_to_push = 'abcdef0123456789'
       calls += [
-          ((['git', 'show', '--format=%B', '-s',
-            'refs/heads/git_cl_uploads/master'],),
-           (description, 0)),
           ((['git', 'config', 'branch.master.merge'],),
            'refs/heads/master'),
           ((['git', 'config', 'branch.master.remote'],),
@@ -619,7 +636,7 @@ class TestGitCl(TestCase):
           ((['git', 'rev-parse', 'HEAD:'],),
            '0123456789abcdef'),
           ((['git', 'commit-tree', '0123456789abcdef', '-p',
-             'origin/master', '-m', 'd'],),
+             'origin/master', '-m', description],),
            ref_to_push),
           ]
     else:
@@ -663,10 +680,8 @@ class TestGitCl(TestCase):
             'https://chromium.googlesource.com/my/repo.git'),
           ((['git', 'config', 'branch.master.gerritserver',
           'https://chromium-review.googlesource.com'],), ''),
-          ((['git', 'rev-parse', 'HEAD'],), 'abcdef0123456789'),
-          ((['git', 'update-ref', '-m', 'Uploaded abcdef0123456789',
-            'refs/heads/git_cl_uploads/master', 'abcdef0123456789'],),
-           '')
+          ((['git', 'config', 'branch.master.gerritsquashhash',
+             'abcdef0123456789'],), ''),
           ]
     calls += cls._git_post_upload_calls()
     return calls
@@ -678,13 +693,15 @@ class TestGitCl(TestCase):
       reviewers,
       squash=False,
       expected_upstream_ref='origin/refs/heads/master',
-      post_amend_description=None):
+      post_amend_description=None,
+      issue=None):
     """Generic gerrit upload test framework."""
-    self.calls = self._gerrit_base_calls()
+    self.calls = self._gerrit_base_calls(issue=issue)
     self.calls += self._gerrit_upload_calls(
         description, reviewers, squash,
         expected_upstream_ref=expected_upstream_ref,
-        post_amend_description=post_amend_description)
+        post_amend_description=post_amend_description,
+        issue=issue)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
     git_cl.main(['upload'] + upload_args)
@@ -716,13 +733,35 @@ class TestGitCl(TestCase):
         'Change-Id: 123456789\n',
         ['reviewer@example.com', 'another@example.com'])
 
-  def test_gerrit_upload_squash(self):
+  def test_gerrit_upload_squash_first(self):
+    # Mock Gerrit CL description to indicate the first upload.
+    self.mock(git_cl.Changelist, 'GetDescription',
+              lambda *_: None)
+    self.mock(git_cl.gclient_utils, 'RunEditor',
+              lambda *_, **__: self._mocked_call(['RunEditor']))
     self._run_gerrit_upload_test(
         ['--squash'],
-        'desc\n\nBUG=\nChange-Id:123456789\n',
+        'desc\nBUG=\n\nChange-Id: 123456789',
         [],
         squash=True,
         expected_upstream_ref='origin/master')
+
+  def test_gerrit_upload_squash_reupload(self):
+    description = 'desc\nBUG=\n\nChange-Id: 123456789'
+    # Mock Gerrit CL description to indicate re-upload.
+    self.mock(git_cl.Changelist, 'GetDescription',
+              lambda *args: description)
+    self.mock(git_cl.Changelist, 'GetMostRecentPatchset',
+              lambda *args: 1)
+    self.mock(git_cl._GerritChangelistImpl, '_GetChangeDetail',
+              lambda *args: {'change_id': '123456789'})
+    self._run_gerrit_upload_test(
+        ['--squash'],
+        description,
+        [],
+        squash=True,
+        expected_upstream_ref='origin/master',
+        issue=123456)
 
   def test_upload_branch_deps(self):
     def mock_run_git(*args, **_kwargs):

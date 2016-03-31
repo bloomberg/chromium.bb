@@ -2518,6 +2518,9 @@ def GenerateGerritChangeId(message):
 
 def GerritUpload(options, args, cl, change):
   """upload the current branch to gerrit."""
+  # TODO(tandrii): refactor this to be a method of _GerritChangelistImpl,
+  # to avoid private members accessors below.
+
   # We assume the remote called "origin" is the one we want.
   # It is probably not worthwhile to support different workflows.
   gerrit_remote = 'origin'
@@ -2526,52 +2529,122 @@ def GerritUpload(options, args, cl, change):
   branch = GetTargetRef(remote, remote_branch, options.target_branch,
                         pending_prefix='')
 
-  change_desc = ChangeDescription(
-      options.message or CreateDescriptionFromLog(args))
-  if not change_desc.description:
-    print "\nDescription is empty. Aborting..."
-    return 1
-
   if options.title:
     print "\nPatch titles (-t) are not supported in Gerrit. Aborting..."
     return 1
 
   if options.squash:
-    # Try to get the message from a previous upload.
-    shadow_branch = 'refs/heads/git_cl_uploads/' + cl.GetBranch()
-    message = RunGitSilent(['show', '--format=%B', '-s', shadow_branch])
-    if not message:
+    if not cl.GetIssue():
+      # TODO(tandrii): deperecate this after 2016Q2.
+      # Backwards compatibility with shadow branch, which used to contain
+      # change-id for a given branch, using which we can fetch actual issue
+      # number and set it as the property of the branch, which is the new way.
+      message = RunGitSilent(['show', '--format=%B', '-s',
+                              'refs/heads/git_cl_uploads/%s' % cl.GetBranch()])
+      if message:
+        change_ids = git_footers.get_footer_change_id(message.strip())
+        if change_ids and len(change_ids) == 1:
+          details = gerrit_util.GetChangeDetail(
+              cl._codereview_impl._GetGerritHost(), change_ids[0])
+          if details:
+            print('WARNING: found old upload in branch git_cl_uploads/%s '
+                  'corresponding to issue %s' %
+                  (cl.GetBranch(), details['_number']))
+            cl.SetIssue(details['_number'])
+        if not cl.GetIssue():
+          DieWithError(
+              '\n'  # For readability of the blob below.
+              'Found old upload in branch git_cl_uploads/%s, '
+              'but failed to find corresponding Gerrit issue.\n'
+              'If you know the issue number, set it manually first:\n'
+              '    git cl issue 123456\n'
+              'If you intended to upload this CL as new issue, '
+              'just delete or rename the old upload branch:\n'
+              '    git rename-branch git_cl_uploads/%s old_upload-%s\n'
+              'After that, please run git cl upload again.' %
+              tuple([cl.GetBranch()] * 3))
+      # End of backwards compatability.
+
+    if cl.GetIssue():
+      # Try to get the message from a previous upload.
+      message = cl.GetDescription()
+      if not message:
+        DieWithError(
+            'failed to fetch description from current Gerrit issue %d\n'
+            '%s' % (cl.GetIssue(), cl.GetIssueURL()))
+      change_id = cl._codereview_impl._GetChangeDetail([])['change_id']
+      while True:
+        footer_change_ids = git_footers.get_footer_change_id(message)
+        if footer_change_ids == [change_id]:
+          break
+        if not footer_change_ids:
+          message = git_footers.add_footer_change_id(message, change_id)
+          print('WARNING: appended missing Change-Id to issue description')
+          continue
+        # There is already a valid footer but with different or several ids.
+        # Doing this automatically is non-trivial as we don't want to lose
+        # existing other footers, yet we want to append just 1 desired
+        # Change-Id. Thus, just create a new footer, but let user verify the new
+        # description.
+        message = '%s\n\nChange-Id: %s' % (message, change_id)
+        print(
+            'WARNING: issue %s has Change-Id footer(s):\n'
+            '  %s\n'
+            'but issue has Change-Id %s, according to Gerrit.\n'
+            'Please, check the proposed correction to the description, '
+            'and edit it if necessary but keep the "Change-Id: %s" footer\n'
+            % (cl.GetIssue(), '\n  '.join(footer_change_ids), change_id,
+               change_id))
+        ask_for_data('Press enter to edit now, Ctrl+C to abort')
+        if not options.force:
+          change_desc = ChangeDescription(message)
+          change_desc.prompt()
+          message = change_desc.description
+          if not message:
+            DieWithError("Description is empty. Aborting...")
+        # Continue the while loop.
+      # Sanity check of this code - we should end up with proper message footer.
+      assert [change_id] == git_footers.get_footer_change_id(message)
+      change_desc = ChangeDescription(message)
+    else:
+      change_desc = ChangeDescription(
+          options.message or CreateDescriptionFromLog(args))
       if not options.force:
         change_desc.prompt()
       if not change_desc.description:
-        print "Description is empty; aborting."
-        return 1
+        DieWithError("Description is empty. Aborting...")
       message = change_desc.description
       change_ids = git_footers.get_footer_change_id(message)
       if len(change_ids) > 1:
-        DieWithError('too many Change-Id footers in %s branch' % shadow_branch)
+        DieWithError('too many Change-Id footers, at most 1 allowed.')
       if not change_ids:
+        # Generate the Change-Id automatically.
         message = git_footers.add_footer_change_id(
             message, GenerateGerritChangeId(message))
         change_desc.set_description(message)
         change_ids = git_footers.get_footer_change_id(message)
         assert len(change_ids) == 1
-
       change_id = change_ids[0]
 
     remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
     if remote is '.':
       # If our upstream branch is local, we base our squashed commit on its
       # squashed version.
-      parent = ('refs/heads/git_cl_uploads/' +
-                scm.GIT.ShortBranchName(upstream_branch))
-
-      # Verify that the upstream branch has been uploaded too, otherwise Gerrit
-      # will create additional CLs when uploading.
-      if (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
-          RunGitSilent(['rev-parse', parent + ':'])):
-        print 'Upload upstream branch ' + upstream_branch + ' first.'
-        return 1
+      upstream_branch_name = scm.GIT.ShortBranchName(upstream_branch)
+      # Check the squashed hash of the parent.
+      parent = RunGit(['config',
+                       'branch.%s.gerritsquashhash' % upstream_branch_name],
+                      error_ok=True).strip()
+      # Verify that the upstream branch has been uploaded too, otherwise
+      # Gerrit will create additional CLs when uploading.
+      if not parent or (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
+                        RunGitSilent(['rev-parse', parent + ':'])):
+        # TODO(tandrii): remove "old depot_tools" part on April 12, 2016.
+        DieWithError(
+            'Upload upstream branch %s first.\n'
+            'Note: maybe you\'ve uploaded it with --no-squash or with an old\n'
+            '      version of depot_tools. If so, then re-upload it with:\n'
+            '      git cl upload --squash\n' % upstream_branch_name)
     else:
       parent = cl.GetCommonAncestorWithUpstream()
 
@@ -2579,6 +2652,11 @@ def GerritUpload(options, args, cl, change):
     ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
                           '-m', message]).strip()
   else:
+    change_desc = ChangeDescription(
+        options.message or CreateDescriptionFromLog(args))
+    if not change_desc.description:
+      DieWithError("Description is empty. Aborting...")
+
     if not git_footers.get_footer_change_id(change_desc.description):
       DownloadGerritHook(False)
       change_desc.set_description(AddChangeIdToCommitMessage(options, args))
@@ -2586,6 +2664,7 @@ def GerritUpload(options, args, cl, change):
     parent = '%s/%s' % (gerrit_remote, branch)
     change_id = git_footers.get_footer_change_id(change_desc.description)[0]
 
+  assert change_desc
   commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
                                                   ref_to_push)]).splitlines()
   if len(commits) > 1:
@@ -2632,8 +2711,8 @@ def GerritUpload(options, args, cl, change):
         ('Created|Updated %d issues on Gerrit, but only 1 expected.\n'
          'Change-Id: %s') % (len(change_numbers), change_id))
     cl.SetIssue(change_numbers[0])
-    head = RunGit(['rev-parse', 'HEAD']).strip()
-    RunGit(['update-ref', '-m', 'Uploaded ' + head, shadow_branch, ref_to_push])
+    RunGit(['config', 'branch.%s.gerritsquashhash' % cl.GetBranch(),
+            ref_to_push])
   return 0
 
 
@@ -2923,6 +3002,9 @@ def CMDupload(parser, args):
 
   options.reviewers = cleanup_list(options.reviewers)
   options.cc = cleanup_list(options.cc)
+
+  # For sanity of test expectations, do this otherwise lazy-loading *now*.
+  settings.GetIsGerrit()
 
   cl = Changelist(auth_config=auth_config)
   if args:
