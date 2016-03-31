@@ -52,6 +52,7 @@ class OortOnline(perf_benchmark.PerfBenchmark):
 # Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
 @benchmark.Disabled('reference')
 @benchmark.Disabled('android')
+@benchmark.Disabled('mac', 'win')  # crbug.com/599416
 class OortOnlineTBM(perf_benchmark.PerfBenchmark):
   """OortOnline benchmark that measures WebGL and V8 performance.
   URL: http://oortonline.gl/#run
