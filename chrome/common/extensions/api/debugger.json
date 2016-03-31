@@ -63,7 +63,7 @@
           {
             "type": "string",
             "name": "requiredVersion",
-            "description": "Required debugging protocol version (\"0.1\"). One can only attach to the debuggee with matching major version and greater or equal minor version. List of the protocol versions can be obtained <a href='http://code.google.com/chrome/devtools/docs/remote-debugging'>here</a>."
+            "description": "Required debugging protocol version (\"0.1\"). One can only attach to the debuggee with matching major version and greater or equal minor version. List of the protocol versions can be obtained <a href='https://developer.chrome.com/devtools/docs/debugger-protocol'>here</a>."
           },
           {
             "type": "function",
@@ -106,7 +106,7 @@
           {
             "type": "string",
             "name": "method",
-            "description": "Method name. Should be one of the methods defined by the <a href='http://code.google.com/chrome/devtools/docs/remote-debugging'>remote debugging protocol</a>."
+            "description": "Method name. Should be one of the methods defined by the <a href='https://developer.chrome.com/devtools/docs/debugger-protocol'>remote debugging protocol</a>."
           },
           {
             "type": "object",
@@ -166,7 +166,7 @@
           {
             "type": "string",
             "name": "method",
-            "description": "Method name. Should be one of the notifications defined by the <a href='http://code.google.com/chrome/devtools/docs/remote-debugging'>remote debugging protocol</a>."
+            "description": "Method name. Should be one of the notifications defined by the <a href='https://developer.chrome.com/devtools/docs/debugger-protocol'>remote debugging protocol</a>."
           },
           {
             "type": "object",
