@@ -506,11 +506,6 @@ class ChromeTests:
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
                            cmd_args=self.UI_TEST_ARGS)
 
-  def TestSafeBrowsing(self):
-    return self.SimpleTest("chrome", "safe_browsing_tests",
-                           valgrind_test_args=self.UI_VALGRIND_ARGS,
-                           cmd_args=(["--ui-test-action-max-timeout=450000"]))
-
   def TestSyncIntegration(self):
     return self.SimpleTest("chrome", "sync_integration_tests",
                            valgrind_test_args=self.UI_VALGRIND_ARGS,
@@ -705,7 +700,6 @@ class ChromeTests:
     "ppapi": TestPPAPI,          "ppapi_unittests": TestPPAPI,
     "printing": TestPrinting,    "printing_unittests": TestPrinting,
     "remoting": TestRemoting,    "remoting_unittests": TestRemoting,
-    "safe_browsing": TestSafeBrowsing, "safe_browsing_tests": TestSafeBrowsing,
     "sandbox": TestLinuxSandbox, "sandbox_linux_unittests": TestLinuxSandbox,
     "skia": TestSkia,            "skia_unittests": TestSkia,
     "sql": TestSql,              "sql_unittests": TestSql,
