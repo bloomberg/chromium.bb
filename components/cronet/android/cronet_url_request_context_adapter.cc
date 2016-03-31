@@ -263,6 +263,16 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
+// Helper method that takes a Java string that can be null, in which case it
+// will get converted to an empty string.
+std::string ConvertNullableJavaStringToUTF8(JNIEnv* env,
+                                            const JavaParamRef<jstring>& jstr) {
+  std::string str;
+  if (!jstr.is_null())
+    base::android::ConvertJavaStringToUTF8(env, jstr, &str);
+  return str;
+}
+
 }  // namespace
 
 namespace cronet {
@@ -700,20 +710,19 @@ static jlong CreateRequestContextConfig(
     jlong jmock_cert_verifier) {
   return reinterpret_cast<jlong>(new URLRequestContextConfig(
       jquic_enabled,
-      base::android::ConvertJavaStringToUTF8(env, jquic_default_user_agent_id),
+      ConvertNullableJavaStringToUTF8(env, jquic_default_user_agent_id),
       jhttp2_enabled, jsdch_enabled,
       static_cast<URLRequestContextConfig::HttpCacheType>(jhttp_cache_mode),
       jhttp_cache_max_size, jdisable_cache,
-      base::android::ConvertJavaStringToUTF8(env, jstorage_path),
-      base::android::ConvertJavaStringToUTF8(env, juser_agent),
-      base::android::ConvertJavaStringToUTF8(
-          env, jexperimental_quic_connection_options),
-      base::android::ConvertJavaStringToUTF8(env, jdata_reduction_proxy_key),
-      base::android::ConvertJavaStringToUTF8(
-          env, jdata_reduction_proxy_primary_proxy),
-      base::android::ConvertJavaStringToUTF8(
-          env, jdata_reduction_proxy_fallback_proxy),
-      base::android::ConvertJavaStringToUTF8(
+      ConvertNullableJavaStringToUTF8(env, jstorage_path),
+      ConvertNullableJavaStringToUTF8(env, juser_agent),
+      ConvertNullableJavaStringToUTF8(env,
+                                      jexperimental_quic_connection_options),
+      ConvertNullableJavaStringToUTF8(env, jdata_reduction_proxy_key),
+      ConvertNullableJavaStringToUTF8(env, jdata_reduction_proxy_primary_proxy),
+      ConvertNullableJavaStringToUTF8(env,
+                                      jdata_reduction_proxy_fallback_proxy),
+      ConvertNullableJavaStringToUTF8(
           env, jdata_reduction_proxy_secure_proxy_check_url),
       make_scoped_ptr(
           reinterpret_cast<net::CertVerifier*>(jmock_cert_verifier))));
