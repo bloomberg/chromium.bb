@@ -4,6 +4,7 @@
 
 #include "gpu/vulkan/tests/native_window.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_render_pass.h"
 #include "gpu/vulkan/vulkan_surface.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
@@ -19,16 +20,22 @@ class BasicVulkanTest : public testing::Test {
   void SetUp() override {
     const gfx::Rect kDefaultBounds(10, 10, 100, 100);
     window_ = CreateNativeWindow(kDefaultBounds);
+    device_queue_.Initialize(
+        VulkanDeviceQueue::GRAPHICS_QUEUE_FLAG |
+        VulkanDeviceQueue::PRESENTATION_SUPPORT_QUEUE_FLAG);
   }
 
   void TearDown() override {
     DestroyNativeWindow(window_);
     window_ = gfx::kNullAcceleratedWidget;
+    device_queue_.Destroy();
   }
 
   gfx::AcceleratedWidget window() const { return window_; }
+  VulkanDeviceQueue* GetDeviceQueue() { return &device_queue_; }
 
  private:
+  VulkanDeviceQueue device_queue_;
   gfx::AcceleratedWidget window_ = gfx::kNullAcceleratedWidget;
 };
 
@@ -36,7 +43,8 @@ TEST_F(BasicVulkanTest, BasicVulkanSurface) {
   scoped_ptr<VulkanSurface> surface =
       VulkanSurface::CreateViewSurface(window());
   EXPECT_TRUE(surface);
-  EXPECT_TRUE(surface->Initialize(VulkanSurface::DEFAULT_SURFACE_FORMAT));
+  EXPECT_TRUE(surface->Initialize(GetDeviceQueue(),
+                                  VulkanSurface::DEFAULT_SURFACE_FORMAT));
   surface->Destroy();
 }
 
@@ -44,7 +52,8 @@ TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
   scoped_ptr<VulkanSurface> surface =
       VulkanSurface::CreateViewSurface(window());
   ASSERT_TRUE(surface);
-  ASSERT_TRUE(surface->Initialize(VulkanSurface::DEFAULT_SURFACE_FORMAT));
+  ASSERT_TRUE(surface->Initialize(GetDeviceQueue(),
+                                  VulkanSurface::DEFAULT_SURFACE_FORMAT));
 
   // First swap is a special case, call it first to get better errors.
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());
@@ -61,7 +70,8 @@ TEST_F(BasicVulkanTest, BasicRenderPass) {
   scoped_ptr<VulkanSurface> surface =
       VulkanSurface::CreateViewSurface(window());
   ASSERT_TRUE(surface);
-  ASSERT_TRUE(surface->Initialize(VulkanSurface::DEFAULT_SURFACE_FORMAT));
+  ASSERT_TRUE(surface->Initialize(GetDeviceQueue(),
+                                  VulkanSurface::DEFAULT_SURFACE_FORMAT));
   VulkanSwapChain* swap_chain = surface->GetSwapChain();
 
   VulkanRenderPass::RenderPassData render_pass_data;
@@ -97,7 +107,7 @@ TEST_F(BasicVulkanTest, BasicRenderPass) {
 
   ASSERT_TRUE(render_pass_data.ValidateData(swap_chain));
 
-  VulkanRenderPass render_pass;
+  VulkanRenderPass render_pass(GetDeviceQueue());
   EXPECT_TRUE(render_pass.Initialize(swap_chain, render_pass_data));
 
   for (int i = 0; i < 10; ++i) {

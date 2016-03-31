@@ -13,10 +13,11 @@
 namespace gpu {
 
 class VulkanCommandBuffer;
+class VulkanDeviceQueue;
 
 class VulkanCommandPool {
  public:
-  VulkanCommandPool(VkDevice device, uint32_t queue_index);
+  explicit VulkanCommandPool(VulkanDeviceQueue* device_queue);
   ~VulkanCommandPool();
 
   bool Initialize();
@@ -33,8 +34,7 @@ class VulkanCommandPool {
   void IncrementCommandBufferCount();
   void DecrementCommandBufferCount();
 
-  VkDevice device_ = VK_NULL_HANDLE;
-  uint32_t queue_index_ = 0;
+  VulkanDeviceQueue* device_queue_;
   VkCommandPool handle_ = VK_NULL_HANDLE;
   uint32_t command_buffer_count_ = 0;
 

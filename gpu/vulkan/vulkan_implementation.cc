@@ -4,13 +4,10 @@
 
 #include "gpu/vulkan/vulkan_implementation.h"
 
-#include <string>
-#include <vector>
 #include <vulkan/vulkan.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "gpu/vulkan/vulkan_command_pool.h"
 
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
 #include "ui/gfx/x/x11_types.h"
@@ -21,9 +18,7 @@ namespace gpu {
 struct VulkanInstance {
   VulkanInstance() {}
 
-  void Initialize() {
-    valid = InitializeVulkanInstance() && InitializeVulkanDevice();
-  }
+  void Initialize() { valid = InitializeVulkanInstance(); }
 
   bool InitializeVulkanInstance() {
     VkResult status = VK_SUCCESS;
@@ -55,105 +50,8 @@ struct VulkanInstance {
     return true;
   }
 
-  bool InitializeVulkanDevice() {
-    VkResult status = VK_SUCCESS;
-
-    uint32_t device_count = 0;
-    status = vkEnumeratePhysicalDevices(vk_instance, &device_count, nullptr);
-    if (VK_SUCCESS != status || device_count == 0)
-      return false;
-
-    std::vector<VkPhysicalDevice> devices(device_count);
-    status =
-        vkEnumeratePhysicalDevices(vk_instance, &device_count, devices.data());
-    if (VK_SUCCESS != status) {
-      DLOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << status;
-      return false;
-    }
-
-// TODO(dyen): Enable this once vkGetPhysicalDeviceXlibPresentationSupportKHR()
-// is properly supported in the driver.
-#if 0 && defined(VK_USE_PLATFORM_XLIB_KHR)
-    Display* xdisplay = gfx::GetXDisplay();
-    VisualID visual_id =
-        XVisualIDFromVisual(DefaultVisual(xdisplay, DefaultScreen(xdisplay)));
-#endif  // defined(VK_USE_PLATFORM_XLIB_KHR)
-
-    int device_index = -1;
-    int queue_index = -1;
-    for (size_t i = 0; i < devices.size(); ++i) {
-      const VkPhysicalDevice& device = devices[i];
-      uint32_t queue_count = 0;
-      vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_count, nullptr);
-      if (queue_count) {
-        std::vector<VkQueueFamilyProperties> queue_properties(queue_count);
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_count,
-                                                 queue_properties.data());
-        for (size_t n = 0; n < queue_properties.size(); ++n) {
-          if ((queue_properties[n].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)
-            continue;
-
-// TODO(dyen): Enable this once vkGetPhysicalDeviceXlibPresentationSupportKHR()
-// is properly supported in the driver.
-#if 1
-#elif defined(VK_USE_PLATFORM_XLIB_KHR)
-          if (!vkGetPhysicalDeviceXlibPresentationSupportKHR(
-                  device, n, xdisplay, visual_id)) {
-            continue;
-          }
-#else
-#error Non-Supported Vulkan implementation.
-#endif
-
-          queue_index = static_cast<int>(n);
-          break;
-        }
-
-        if (-1 != queue_index) {
-          device_index = static_cast<int>(i);
-          break;
-        }
-      }
-    }
-
-    if (queue_index == -1)
-      return false;
-
-    vk_physical_device = devices[device_index];
-    vk_queue_index = queue_index;
-
-    float queue_priority = 0.0f;
-    VkDeviceQueueCreateInfo queue_create_info = {};
-    queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queue_create_info.queueFamilyIndex = queue_index;
-    queue_create_info.queueCount = 1;
-    queue_create_info.pQueuePriorities = &queue_priority;
-
-    const char* device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
-    VkDeviceCreateInfo device_create_info = {};
-    device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    device_create_info.queueCreateInfoCount = 1;
-    device_create_info.pQueueCreateInfos = &queue_create_info;
-    device_create_info.enabledExtensionCount = arraysize(device_extensions);
-    device_create_info.ppEnabledExtensionNames = device_extensions;
-
-    status = vkCreateDevice(vk_physical_device, &device_create_info, nullptr,
-                            &vk_device);
-    if (VK_SUCCESS != status)
-      return false;
-
-    vkGetDeviceQueue(vk_device, queue_index, 0, &vk_queue);
-
-    return true;
-  }
-
   bool valid = false;
-  VkInstance vk_instance;
-  VkPhysicalDevice vk_physical_device;
-  VkDevice vk_device;
-  VkQueue vk_queue;
-  uint32_t vk_queue_index = 0;
+  VkInstance vk_instance = VK_NULL_HANDLE;
 };
 
 static VulkanInstance* vulkan_instance = nullptr;
@@ -169,36 +67,6 @@ VkInstance GetVulkanInstance() {
   DCHECK(vulkan_instance);
   DCHECK(vulkan_instance->valid);
   return vulkan_instance->vk_instance;
-}
-
-VkPhysicalDevice GetVulkanPhysicalDevice() {
-  DCHECK(vulkan_instance);
-  DCHECK(vulkan_instance->valid);
-  return vulkan_instance->vk_physical_device;
-}
-
-VkDevice GetVulkanDevice() {
-  DCHECK(vulkan_instance);
-  DCHECK(vulkan_instance->valid);
-  return vulkan_instance->vk_device;
-}
-
-VkQueue GetVulkanQueue() {
-  DCHECK(vulkan_instance);
-  DCHECK(vulkan_instance->valid);
-  return vulkan_instance->vk_queue;
-}
-
-scoped_ptr<VulkanCommandPool> CreateCommandPool() {
-  DCHECK(vulkan_instance);
-  DCHECK(vulkan_instance->valid);
-
-  scoped_ptr<VulkanCommandPool> command_pool(new VulkanCommandPool(
-      vulkan_instance->vk_device, vulkan_instance->vk_queue_index));
-  if (!command_pool->Initialize())
-    return nullptr;
-
-  return command_pool;
 }
 
 }  // namespace gpu

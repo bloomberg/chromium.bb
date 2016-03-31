@@ -16,6 +16,8 @@ if (enable_vulkan) {
         "vulkan_command_buffer.h",
         "vulkan_command_pool.cc",
         "vulkan_command_pool.h",
+        "vulkan_device_queue.cc",
+        "vulkan_device_queue.h",
         "vulkan_export.h",
         "vulkan_image_view.cc",
         "vulkan_image_view.h",

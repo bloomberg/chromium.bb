@@ -16,11 +16,6 @@ class VulkanCommandPool;
 bool InitializeVulkan();
 
 VkInstance GetVulkanInstance();
-VkPhysicalDevice GetVulkanPhysicalDevice();
-VkDevice GetVulkanDevice();
-VkQueue GetVulkanQueue();
-
-scoped_ptr<VulkanCommandPool> CreateCommandPool();
 
 }  // namespace gpu
 

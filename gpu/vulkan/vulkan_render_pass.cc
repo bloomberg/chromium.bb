@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_image_view.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
@@ -127,7 +128,8 @@ VulkanRenderPass::RenderPassData::RenderPassData() {}
 
 VulkanRenderPass::RenderPassData::~RenderPassData() {}
 
-VulkanRenderPass::VulkanRenderPass() {}
+VulkanRenderPass::VulkanRenderPass(VulkanDeviceQueue* device_queue)
+    : device_queue_(device_queue) {}
 
 VulkanRenderPass::~VulkanRenderPass() {
   DCHECK_EQ(static_cast<VkRenderPass>(VK_NULL_HANDLE), render_pass_);
@@ -158,7 +160,7 @@ bool VulkanRenderPass::Initialize(const VulkanSwapChain* swap_chain,
   DCHECK(frame_buffers_.empty());
   DCHECK(render_pass_data.ValidateData(swap_chain));
 
-  VkDevice device = GetVulkanDevice();
+  VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
   swap_chain_ = swap_chain;
@@ -328,7 +330,7 @@ bool VulkanRenderPass::Initialize(const VulkanSwapChain* swap_chain,
 }
 
 void VulkanRenderPass::Destroy() {
-  VkDevice device = GetVulkanDevice();
+  VkDevice device = device_queue_->GetVulkanDevice();
 
   for (VkFramebuffer frame_buffer : frame_buffers_) {
     vkDestroyFramebuffer(device, frame_buffer, nullptr);

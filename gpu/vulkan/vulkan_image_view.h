@@ -11,6 +11,8 @@
 
 namespace gpu {
 
+class VulkanDeviceQueue;
+
 class VulkanImageView {
  public:
   enum ImageType {
@@ -23,7 +25,7 @@ class VulkanImageView {
     IMAGE_TYPE_INVALID = -1,
   };
 
-  VulkanImageView();
+  explicit VulkanImageView(VulkanDeviceQueue* device_queue);
   ~VulkanImageView();
 
   bool Initialize(VkImage image,
@@ -47,6 +49,7 @@ class VulkanImageView {
   uint32_t layers() const { return layers_; }
 
  private:
+  VulkanDeviceQueue* device_queue_ = nullptr;
   ImageType image_type_ = IMAGE_TYPE_INVALID;
   VkImageView handle_ = VK_NULL_HANDLE;
   VkFormat format_ = VK_FORMAT_UNDEFINED;

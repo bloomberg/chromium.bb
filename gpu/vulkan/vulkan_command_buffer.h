@@ -15,18 +15,20 @@
 namespace gpu {
 
 class VulkanCommandPool;
+class VulkanDeviceQueue;
 
 class VULKAN_EXPORT VulkanCommandBuffer {
  public:
-  VulkanCommandBuffer(VulkanCommandPool* command_pool, bool primary);
+  VulkanCommandBuffer(VulkanDeviceQueue* device_queue,
+                      VulkanCommandPool* command_pool,
+                      bool primary);
   ~VulkanCommandBuffer();
 
   bool Initialize();
   void Destroy();
 
   // Submit primary command buffer to the queue.
-  bool Submit(VkQueue queue,
-              uint32_t num_wait_semaphores,
+  bool Submit(uint32_t num_wait_semaphores,
               VkSemaphore* wait_semaphores,
               uint32_t num_signal_semaphores,
               VkSemaphore* signal_semaphores);
@@ -70,6 +72,7 @@ class VULKAN_EXPORT VulkanCommandBuffer {
   const bool primary_;
   bool recording_ = false;
   RecordType record_type_ = RECORD_TYPE_EMPTY;
+  VulkanDeviceQueue* device_queue_;
   VulkanCommandPool* command_pool_;
   VkCommandBuffer command_buffer_ = VK_NULL_HANDLE;
   VkFence submission_fence_ = VK_NULL_HANDLE;

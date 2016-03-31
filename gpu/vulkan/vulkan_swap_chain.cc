@@ -6,6 +6,7 @@
 
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_image_view.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 
@@ -19,9 +20,12 @@ VulkanSwapChain::~VulkanSwapChain() {
   DCHECK_EQ(static_cast<VkSemaphore>(VK_NULL_HANDLE), next_present_semaphore_);
 }
 
-bool VulkanSwapChain::Initialize(VkSurfaceKHR surface,
+bool VulkanSwapChain::Initialize(VulkanDeviceQueue* device_queue,
+                                 VkSurfaceKHR surface,
                                  const VkSurfaceCapabilitiesKHR& surface_caps,
                                  const VkSurfaceFormatKHR& surface_format) {
+  DCHECK(device_queue);
+  device_queue_ = device_queue;
   return InitializeSwapChain(surface, surface_caps, surface_format) &&
          InitializeSwapImages(surface_caps, surface_format);
 }
@@ -34,8 +38,8 @@ void VulkanSwapChain::Destroy() {
 gfx::SwapResult VulkanSwapChain::SwapBuffers() {
   VkResult result = VK_SUCCESS;
 
-  VkDevice device = GetVulkanDevice();
-  VkQueue queue = GetVulkanQueue();
+  VkDevice device = device_queue_->GetVulkanDevice();
+  VkQueue queue = device_queue_->GetVulkanQueue();
 
   scoped_ptr<ImageData>& current_image_data = images_[current_image_];
 
@@ -49,7 +53,7 @@ gfx::SwapResult VulkanSwapChain::SwapBuffers() {
 
   // Submit our command buffer for the current buffer.
   if (!current_image_data->command_buffer->Submit(
-          queue, 1, &current_image_data->present_semaphore, 1,
+          1, &current_image_data->present_semaphore, 1,
           &current_image_data->render_semaphore)) {
     return gfx::SwapResult::SWAP_FAILED;
   }
@@ -73,6 +77,7 @@ gfx::SwapResult VulkanSwapChain::SwapBuffers() {
                                  next_present_semaphore_, VK_NULL_HANDLE,
                                  &current_image_);
   if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkAcquireNextImageKHR() failed: " << result;
     return gfx::SwapResult::SWAP_FAILED;
   }
 
@@ -89,7 +94,7 @@ bool VulkanSwapChain::InitializeSwapChain(
     VkSurfaceKHR surface,
     const VkSurfaceCapabilitiesKHR& surface_caps,
     const VkSurfaceFormatKHR& surface_format) {
-  VkDevice device = GetVulkanDevice();
+  VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
   VkSwapchainCreateInfoKHR swap_chain_create_info = {};
@@ -127,7 +132,7 @@ bool VulkanSwapChain::InitializeSwapChain(
 }
 
 void VulkanSwapChain::DestroySwapChain() {
-  VkDevice device = GetVulkanDevice();
+  VkDevice device = device_queue_->GetVulkanDevice();
 
   if (swap_chain_ != VK_NULL_HANDLE) {
     vkDestroySwapchainKHR(device, swap_chain_, nullptr);
@@ -138,7 +143,7 @@ void VulkanSwapChain::DestroySwapChain() {
 bool VulkanSwapChain::InitializeSwapImages(
     const VkSurfaceCapabilitiesKHR& surface_caps,
     const VkSurfaceFormatKHR& surface_format) {
-  VkDevice device = GetVulkanDevice();
+  VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
   uint32_t image_count = 0;
@@ -178,7 +183,7 @@ bool VulkanSwapChain::InitializeSwapImages(
   image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   image_memory_barrier.subresourceRange = image_subresource_range;
 
-  command_pool_ = CreateCommandPool();
+  command_pool_ = device_queue_->CreateCommandPool();
   if (!command_pool_)
     return false;
 
@@ -215,7 +220,7 @@ bool VulkanSwapChain::InitializeSwapImages(
                          nullptr, 1, &image_memory_barrier);
 
     // Create the image view.
-    image_data->image_view.reset(new VulkanImageView);
+    image_data->image_view.reset(new VulkanImageView(device_queue_));
     if (!image_data->image_view->Initialize(
             images[i], VK_IMAGE_VIEW_TYPE_2D, VulkanImageView::IMAGE_TYPE_COLOR,
             surface_format.format, size_.width(), size_.height(), 0, 1, 0, 1)) {
@@ -231,7 +236,7 @@ bool VulkanSwapChain::InitializeSwapImages(
   }
 
   // Acquire the initial buffer.
-  result = vkAcquireNextImageKHR(GetVulkanDevice(), swap_chain_, UINT64_MAX,
+  result = vkAcquireNextImageKHR(device, swap_chain_, UINT64_MAX,
                                  next_present_semaphore_, VK_NULL_HANDLE,
                                  &current_image_);
   if (VK_SUCCESS != result) {
@@ -246,7 +251,7 @@ bool VulkanSwapChain::InitializeSwapImages(
 }
 
 void VulkanSwapChain::DestroySwapImages() {
-  VkDevice device = GetVulkanDevice();
+  VkDevice device = device_queue_->GetVulkanDevice();
 
   if (VK_NULL_HANDLE != next_present_semaphore_) {
     vkDestroySemaphore(device, next_present_semaphore_, nullptr);

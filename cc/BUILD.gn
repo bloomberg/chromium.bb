@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
 import("//testing/test.gni")
 
 component("cc") {
@@ -566,6 +567,28 @@ component("cc") {
   if (!is_debug && (is_win || is_android)) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
+  if (enable_vulkan) {
+    deps += [ ":vulkan_cc" ]
+  }
+}
+
+if (enable_vulkan) {
+  source_set("vulkan_cc") {
+    include_dirs = [ "/usr/include" ]
+    sources = [
+      "output/vulkan_context_provider.h",
+      "output/vulkan_in_process_context_provider.cc",
+      "output/vulkan_in_process_context_provider.h",
+    ]
+
+    configs += [ "//build/config:precompiled_headers" ]
+    defines = [ "CC_IMPLEMENTATION=1" ]
+
+    deps = [
+      "//gpu/vulkan",
+    ]
   }
 }
 

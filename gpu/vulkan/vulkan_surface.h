@@ -13,6 +13,7 @@
 
 namespace gpu {
 
+class VulkanDeviceQueue;
 class VulkanSwapChain;
 
 class VULKAN_EXPORT VulkanSurface {
@@ -30,7 +31,8 @@ class VULKAN_EXPORT VulkanSurface {
 
   virtual ~VulkanSurface() = 0;
 
-  virtual bool Initialize(VulkanSurface::Format format) = 0;
+  virtual bool Initialize(VulkanDeviceQueue* device_queue,
+                          VulkanSurface::Format format) = 0;
   virtual void Destroy() = 0;
 
   virtual gfx::SwapResult SwapBuffers() = 0;

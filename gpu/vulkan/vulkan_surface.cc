@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_platform.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
@@ -36,23 +37,36 @@ class VulkanWSISurface : public VulkanSurface {
     DCHECK_EQ(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
   }
 
-  bool Initialize(VulkanSurface::Format format) override {
+  bool Initialize(VulkanDeviceQueue* device_queue,
+                  VulkanSurface::Format format) override {
     DCHECK(format >= 0 && format < NUM_SURFACE_FORMATS);
+    DCHECK_EQ(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
+    VkResult result = VK_SUCCESS;
+
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
     VkXlibSurfaceCreateInfoKHR surface_create_info = {};
     surface_create_info.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
     surface_create_info.dpy = gfx::GetXDisplay();
     surface_create_info.window = window_;
-    vkCreateXlibSurfaceKHR(GetVulkanInstance(), &surface_create_info, nullptr,
-                           &surface_);
+    result = vkCreateXlibSurfaceKHR(GetVulkanInstance(), &surface_create_info,
+                                    nullptr, &surface_);
+    if (VK_SUCCESS != result) {
+      DLOG(ERROR) << "vkCreateXlibSurfaceKHR() failed: " << result;
+      return false;
+    }
 #else
 #error Unsupported Vulkan Platform.
 #endif
 
+    DCHECK_NE(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
+    DCHECK(device_queue);
+    device_queue_ = device_queue;
+
     // Get list of supported formats.
     uint32_t format_count = 0;
-    VkResult result = vkGetPhysicalDeviceSurfaceFormatsKHR(
-        GetVulkanPhysicalDevice(), surface_, &format_count, nullptr);
+    result = vkGetPhysicalDeviceSurfaceFormatsKHR(
+        device_queue_->GetVulkanPhysicalDevice(), surface_, &format_count,
+        nullptr);
     if (VK_SUCCESS != result) {
       DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceFormatsKHR() failed: "
                   << result;
@@ -61,7 +75,8 @@ class VulkanWSISurface : public VulkanSurface {
 
     std::vector<VkSurfaceFormatKHR> formats(format_count);
     result = vkGetPhysicalDeviceSurfaceFormatsKHR(
-        GetVulkanPhysicalDevice(), surface_, &format_count, formats.data());
+        device_queue_->GetVulkanPhysicalDevice(), surface_, &format_count,
+        formats.data());
     if (VK_SUCCESS != result) {
       DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceFormatsKHR() failed: "
                   << result;
@@ -91,7 +106,7 @@ class VulkanWSISurface : public VulkanSurface {
     // Get Surface Information.
     VkSurfaceCapabilitiesKHR surface_caps;
     result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-        GetVulkanPhysicalDevice(), surface_, &surface_caps);
+        device_queue_->GetVulkanPhysicalDevice(), surface_, &surface_caps);
     if (VK_SUCCESS != result) {
       DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceCapabilitiesKHR() failed: "
                   << result;
@@ -105,8 +120,10 @@ class VulkanWSISurface : public VulkanSurface {
                       surface_caps.currentExtent.height);
 
     // Create Swapchain.
-    if (!swap_chain_.Initialize(surface_, surface_caps, surface_format_))
+    if (!swap_chain_.Initialize(device_queue_, surface_, surface_caps,
+                                surface_format_)) {
       return false;
+    }
 
     return true;
   }
@@ -119,13 +136,14 @@ class VulkanWSISurface : public VulkanSurface {
 
   gfx::SwapResult SwapBuffers() override { return swap_chain_.SwapBuffers(); }
   VulkanSwapChain* GetSwapChain() override { return &swap_chain_; }
-  void Finish() override { vkQueueWaitIdle(GetVulkanQueue()); }
+  void Finish() override { vkQueueWaitIdle(device_queue_->GetVulkanQueue()); }
 
  protected:
   gfx::AcceleratedWidget window_;
   gfx::Size size_;
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;
   VkSurfaceFormatKHR surface_format_ = {};
+  VulkanDeviceQueue* device_queue_ = nullptr;
   VulkanSwapChain swap_chain_;
 };
 

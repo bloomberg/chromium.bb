@@ -14,6 +14,7 @@
 namespace gpu {
 
 class CommandBufferRecorderBase;
+class VulkanDeviceQueue;
 class VulkanImageView;
 class VulkanSwapChain;
 
@@ -79,7 +80,7 @@ class VULKAN_EXPORT VulkanRenderPass {
     bool ValidateData(const VulkanSwapChain* swap_chain) const;
   };
 
-  VulkanRenderPass();
+  explicit VulkanRenderPass(VulkanDeviceQueue* device_queue);
   ~VulkanRenderPass();
 
   bool Initialize(const VulkanSwapChain* swap_chain,
@@ -102,6 +103,7 @@ class VULKAN_EXPORT VulkanRenderPass {
   void SetClearValue(uint32_t attachment_index, VkClearValue clear_value);
 
  private:
+  VulkanDeviceQueue* device_queue_ = nullptr;
   const VulkanSwapChain* swap_chain_ = nullptr;
   uint32_t num_sub_passes_ = 0;
   uint32_t current_sub_pass_ = 0;

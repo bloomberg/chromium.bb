@@ -17,6 +17,7 @@ namespace gpu {
 
 class VulkanCommandBuffer;
 class VulkanCommandPool;
+class VulkanDeviceQueue;
 class VulkanImageView;
 
 class VulkanSwapChain {
@@ -24,7 +25,8 @@ class VulkanSwapChain {
   VulkanSwapChain();
   ~VulkanSwapChain();
 
-  bool Initialize(VkSurfaceKHR surface,
+  bool Initialize(VulkanDeviceQueue* device_queue,
+                  VkSurfaceKHR surface,
                   const VkSurfaceCapabilitiesKHR& surface_caps,
                   const VkSurfaceFormatKHR& surface_format);
   void Destroy();
@@ -59,6 +61,7 @@ class VulkanSwapChain {
                             const VkSurfaceFormatKHR& surface_format);
   void DestroySwapImages();
 
+  VulkanDeviceQueue* device_queue_;
   VkSwapchainKHR swap_chain_ = VK_NULL_HANDLE;
 
   scoped_ptr<VulkanCommandPool> command_pool_;

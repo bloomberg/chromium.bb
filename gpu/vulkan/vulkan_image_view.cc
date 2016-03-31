@@ -5,7 +5,7 @@
 #include "gpu/vulkan/vulkan_image_view.h"
 
 #include "base/logging.h"
-#include "gpu/vulkan/vulkan_implementation.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 
 namespace gpu {
 
@@ -27,7 +27,8 @@ static_assert(arraysize(kAspectFlags) == VulkanImageView::NUM_IMAGE_TYPES,
               "Array size for kAspectFlags must match image types.");
 }  // namespace
 
-VulkanImageView::VulkanImageView() {}
+VulkanImageView::VulkanImageView(VulkanDeviceQueue* device_queue)
+    : device_queue_(device_queue) {}
 
 VulkanImageView::~VulkanImageView() {
   DCHECK_EQ(static_cast<VkImageView>(VK_NULL_HANDLE), handle_);
@@ -63,8 +64,9 @@ bool VulkanImageView::Initialize(VkImage image,
       VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
   image_view_create_info.subresourceRange = image_subresource_range;
 
-  VkResult result = vkCreateImageView(
-      GetVulkanDevice(), &image_view_create_info, nullptr, &handle_);
+  VkResult result =
+      vkCreateImageView(device_queue_->GetVulkanDevice(),
+                        &image_view_create_info, nullptr, &handle_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateImageView() failed: " << result;
     return false;
@@ -80,7 +82,7 @@ bool VulkanImageView::Initialize(VkImage image,
 
 void VulkanImageView::Destroy() {
   if (VK_NULL_HANDLE != handle_) {
-    vkDestroyImageView(GetVulkanDevice(), handle_, nullptr);
+    vkDestroyImageView(device_queue_->GetVulkanDevice(), handle_, nullptr);
     image_type_ = IMAGE_TYPE_INVALID;
     handle_ = VK_NULL_HANDLE;
   }

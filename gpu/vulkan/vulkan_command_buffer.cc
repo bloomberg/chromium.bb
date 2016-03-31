@@ -6,13 +6,17 @@
 
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 
 namespace gpu {
 
-VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandPool* command_pool,
+VulkanCommandBuffer::VulkanCommandBuffer(VulkanDeviceQueue* device_queue,
+                                         VulkanCommandPool* command_pool,
                                          bool primary)
-    : primary_(primary), command_pool_(command_pool) {
+    : primary_(primary),
+      device_queue_(device_queue),
+      command_pool_(command_pool) {
   command_pool_->IncrementCommandBufferCount();
 }
 
@@ -25,7 +29,7 @@ VulkanCommandBuffer::~VulkanCommandBuffer() {
 
 bool VulkanCommandBuffer::Initialize() {
   VkResult result = VK_SUCCESS;
-  VkDevice device = GetVulkanDevice();
+  VkDevice device = device_queue_->GetVulkanDevice();
 
   VkCommandBufferAllocateInfo command_buffer_info = {};
   command_buffer_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -57,7 +61,7 @@ bool VulkanCommandBuffer::Initialize() {
 }
 
 void VulkanCommandBuffer::Destroy() {
-  VkDevice device = GetVulkanDevice();
+  VkDevice device = device_queue_->GetVulkanDevice();
   if (VK_NULL_HANDLE != submission_fence_) {
     DCHECK(SubmissionFinished());
     vkDestroyFence(device, submission_fence_, nullptr);
@@ -70,8 +74,7 @@ void VulkanCommandBuffer::Destroy() {
   }
 }
 
-bool VulkanCommandBuffer::Submit(VkQueue queue,
-                                 uint32_t num_wait_semaphores,
+bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
                                  VkSemaphore* wait_semaphores,
                                  uint32_t num_signal_semaphores,
                                  VkSemaphore* signal_semaphores) {
@@ -85,8 +88,18 @@ bool VulkanCommandBuffer::Submit(VkQueue queue,
   submit_info.signalSemaphoreCount = num_signal_semaphores;
   submit_info.pSignalSemaphores = signal_semaphores;
 
-  vkResetFences(GetVulkanDevice(), 1, &submission_fence_);
-  VkResult result = vkQueueSubmit(queue, 1, &submit_info, submission_fence_);
+  VkResult result = VK_SUCCESS;
+
+  result =
+      vkResetFences(device_queue_->GetVulkanDevice(), 1, &submission_fence_);
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkResetFences() failed: " << result;
+    return false;
+  }
+
+  result = vkQueueSubmit(device_queue_->GetVulkanQueue(), 1, &submit_info,
+                         submission_fence_);
+
   PostExecution();
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkQueueSubmit() failed: " << result;
@@ -109,11 +122,13 @@ void VulkanCommandBuffer::Clear() {
 }
 
 void VulkanCommandBuffer::Wait(uint64_t timeout) {
-  vkWaitForFences(GetVulkanDevice(), 1, &submission_fence_, true, timeout);
+  VkDevice device = device_queue_->GetVulkanDevice();
+  vkWaitForFences(device, 1, &submission_fence_, true, timeout);
 }
 
 bool VulkanCommandBuffer::SubmissionFinished() {
-  return VK_SUCCESS == vkGetFenceStatus(GetVulkanDevice(), submission_fence_);
+  VkDevice device = device_queue_->GetVulkanDevice();
+  return VK_SUCCESS == vkGetFenceStatus(device, submission_fence_);
 }
 
 void VulkanCommandBuffer::PostExecution() {
@@ -131,7 +146,8 @@ void VulkanCommandBuffer::ResetIfDirty() {
   if (record_type_ == RECORD_TYPE_DIRTY) {
     // Block if command buffer is still in use. This can be externally avoided
     // using the asynchronous SubmissionFinished() function.
-    vkWaitForFences(GetVulkanDevice(), 1, &submission_fence_, true, UINT64_MAX);
+    VkDevice device = device_queue_->GetVulkanDevice();
+    vkWaitForFences(device, 1, &submission_fence_, true, UINT64_MAX);
 
     vkResetCommandBuffer(command_buffer_, 0);
     record_type_ = RECORD_TYPE_EMPTY;

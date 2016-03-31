@@ -6,12 +6,13 @@
 
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 
 namespace gpu {
 
-VulkanCommandPool::VulkanCommandPool(VkDevice device, uint32_t queue_index)
-    : device_(device), queue_index_(queue_index) {}
+VulkanCommandPool::VulkanCommandPool(VulkanDeviceQueue* device_queue)
+    : device_queue_(device_queue) {}
 
 VulkanCommandPool::~VulkanCommandPool() {
   DCHECK_EQ(0u, command_buffer_count_);
@@ -23,10 +24,12 @@ bool VulkanCommandPool::Initialize() {
   command_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
   command_pool_create_info.flags =
       VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  command_pool_create_info.queueFamilyIndex = queue_index_;
+  command_pool_create_info.queueFamilyIndex =
+      device_queue_->GetVulkanQueueIndex();
 
-  VkResult result = vkCreateCommandPool(device_, &command_pool_create_info,
-                                        nullptr, &handle_);
+  VkResult result =
+      vkCreateCommandPool(device_queue_->GetVulkanDevice(),
+                          &command_pool_create_info, nullptr, &handle_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateCommandPool() failed: " << result;
     return false;
@@ -38,7 +41,7 @@ bool VulkanCommandPool::Initialize() {
 void VulkanCommandPool::Destroy() {
   DCHECK_EQ(0u, command_buffer_count_);
   if (VK_NULL_HANDLE != handle_) {
-    vkDestroyCommandPool(device_, handle_, nullptr);
+    vkDestroyCommandPool(device_queue_->GetVulkanDevice(), handle_, nullptr);
     handle_ = VK_NULL_HANDLE;
   }
 }
@@ -46,7 +49,7 @@ void VulkanCommandPool::Destroy() {
 scoped_ptr<VulkanCommandBuffer>
 VulkanCommandPool::CreatePrimaryCommandBuffer() {
   scoped_ptr<VulkanCommandBuffer> command_buffer(
-      new VulkanCommandBuffer(this, true));
+      new VulkanCommandBuffer(device_queue_, this, true));
   if (!command_buffer->Initialize())
     return nullptr;
 
@@ -56,7 +59,7 @@ VulkanCommandPool::CreatePrimaryCommandBuffer() {
 scoped_ptr<VulkanCommandBuffer>
 VulkanCommandPool::CreateSecondaryCommandBuffer() {
   scoped_ptr<VulkanCommandBuffer> command_buffer(
-      new VulkanCommandBuffer(this, false));
+      new VulkanCommandBuffer(device_queue_, this, false));
   if (!command_buffer->Initialize())
     return nullptr;
 

@@ -9,6 +9,7 @@ include_rules = [
   "+gpu/command_buffer/common/mailbox.h",
   "+gpu/command_buffer/common/mailbox_holder.h",
   "+gpu/command_buffer/common/sync_token.h",
+  "+gpu/vulkan",
   "+media",
   "+skia/ext",
   "+third_party/khronos/GLES2/gl2.h",
