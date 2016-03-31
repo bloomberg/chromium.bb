@@ -65,7 +65,15 @@ class MacTool(object):
     elif extension == '.strings':
       self._CopyStringsFile(source, dest)
     else:
-      shutil.copy(source, dest)
+      # Try to hard-link, but fallback to copy if the hard-link fails due
+      # to cross device link error ([Errno 18] Cross-device link).
+      try:
+        os.link(source, dest)
+      except OSError, e:
+        if e.errno == errno.EXDEV:
+          shutil.copy(source, dest)
+        else:
+          raise
 
     if extension in ('.plist', '.strings') and convert_to_binary == 'True':
       self._ConvertToBinary(dest)
