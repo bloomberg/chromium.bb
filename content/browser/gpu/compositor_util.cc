@@ -221,8 +221,7 @@ bool IsPartialRasterEnabled() {
     return false;
 
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kEnablePartialRaster) &&
-    !command_line.HasSwitch(switches::kDisablePartialRaster);
+  return !command_line.HasSwitch(switches::kDisablePartialRaster);
 }
 
 bool IsGpuMemoryBufferCompositorResourcesEnabled() {
