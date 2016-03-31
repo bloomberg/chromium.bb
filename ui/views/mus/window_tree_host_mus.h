@@ -28,7 +28,7 @@ class PlatformWindowMus;
 class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
   WindowTreeHostMus(mojo::Connector* connector,
-                    NativeWidgetMus* native_widget_,
+                    NativeWidgetMus* native_widget,
                     mus::Window* window);
   ~WindowTreeHostMus() override;
 
