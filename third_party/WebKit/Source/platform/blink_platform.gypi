@@ -777,6 +777,7 @@
       'graphics/paint/ScrollDisplayItem.cpp',
       'graphics/paint/ScrollDisplayItem.h',
       'graphics/paint/SkPictureBuilder.h',
+      'graphics/paint/SkPictureBuilder.cpp',
       'graphics/paint/SubsequenceDisplayItem.h',
       'graphics/paint/SubsequenceRecorder.cpp',
       'graphics/paint/SubsequenceRecorder.h',

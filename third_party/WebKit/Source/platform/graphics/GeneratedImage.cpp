@@ -31,6 +31,7 @@
 #include "platform/graphics/GeneratedImage.h"
 
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPicture.h"
