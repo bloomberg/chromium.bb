@@ -112,6 +112,8 @@
         'blink_platform.gyp:blink_common',
         'blink_platform.gyp:blink_platform',
         '<(DEPTH)/cc/cc.gyp:cc',
+        '<(DEPTH)/cc/cc_tests.gyp:cc_test_support',
+        '<(DEPTH)/cc/blink/cc_blink.gyp:cc_blink',
         '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
         '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '<(DEPTH)/testing/gmock.gyp:gmock',

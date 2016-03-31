@@ -176,8 +176,6 @@
       'test/web_contents_observer_sanity_checker.h',
       'test/web_gesture_curve_mock.cc',
       'test/web_gesture_curve_mock.h',
-      'test/web_layer_tree_view_impl_for_testing.cc',
-      'test/web_layer_tree_view_impl_for_testing.h',
       'test/weburl_loader_mock.cc',
       'test/weburl_loader_mock.h',
       'test/weburl_loader_mock_factory.cc',

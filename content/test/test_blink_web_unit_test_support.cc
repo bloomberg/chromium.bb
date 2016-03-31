@@ -21,7 +21,6 @@
 #include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
-#include "content/test/web_layer_tree_view_impl_for_testing.h"
 #include "content/test/weburl_loader_mock_factory.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
@@ -327,15 +326,6 @@ void TestBlinkWebUnitTestSupport::serveAsynchronousMockedRequests() {
 void TestBlinkWebUnitTestSupport::setLoaderDelegate(
     blink::WebURLLoaderTestDelegate* delegate) {
   url_loader_factory_->set_delegate(delegate);
-}
-
-blink::WebLayerTreeView*
-TestBlinkWebUnitTestSupport::createLayerTreeViewForTesting() {
-  scoped_ptr<WebLayerTreeViewImplForTesting> view(
-      new WebLayerTreeViewImplForTesting());
-
-  view->Initialize();
-  return view.release();
 }
 
 blink::WebThread* TestBlinkWebUnitTestSupport::currentThread() {

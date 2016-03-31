@@ -1255,6 +1255,8 @@
       'testing/URLTestHelpers.h',
       'testing/UnitTestHelpers.cpp',
       'testing/UnitTestHelpers.h',
+      'testing/WebLayerTreeViewImplForTesting.cpp',
+      'testing/WebLayerTreeViewImplForTesting.h',
     ],
     'conditions': [
       ['OS=="win"',

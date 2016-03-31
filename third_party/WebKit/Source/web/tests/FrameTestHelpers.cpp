@@ -32,6 +32,7 @@
 
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebString.h"
@@ -302,8 +303,7 @@ void TestWebRemoteFrameClient::frameDetached(DetachType type)
 
 void TestWebViewClient::initializeLayerTreeView()
 {
-    m_layerTreeView = adoptPtr(Platform::current()->unitTestSupport()->createLayerTreeViewForTesting());
-    ASSERT(m_layerTreeView);
+    m_layerTreeView = adoptPtr(new WebLayerTreeViewImplForTesting);
 }
 
 } // namespace FrameTestHelpers

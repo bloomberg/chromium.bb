@@ -7,7 +7,6 @@ include_rules = [
     "+base/metrics/statistics_recorder.h",
     "+base/test/test_io_thread.h",
     "+cc",
-    "-cc/blink",
     "+mojo/edk/embedder",
     "+mojo/edk/test",
 ]

@@ -457,6 +457,8 @@ source_set("test_support") {
   public_deps = [
     ":platform",
     "//cc",
+    "//cc:test_support",
+    "//cc/blink",
     "//testing/gmock",
   ]
 
