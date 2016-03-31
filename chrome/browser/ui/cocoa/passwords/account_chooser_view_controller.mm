@@ -24,12 +24,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/strings/grit/ui_strings.h"
 
-// Height of one credential item.
-const CGFloat kButtonHeight = kAvatarImageSize + 2 * kVerticalAvatarMargin;
-
-// Maximum number of accounts displayed before vertical scrolling appears.
-const size_t kMaxAccounts = 3;
-
 @interface AccountChooserViewController () {
   NSButton* cancelButton_;  // Weak.
   NSTextView* titleView_;   //  Weak.
@@ -95,31 +89,14 @@ const size_t kMaxAccounts = 3;
       kFramePadding + width - NSWidth([cancelButton_ frame]),
       kFramePadding)];
 
-  NSSize buttonsSize = NSMakeSize(
-      kDesiredBubbleWidth,
-      std::min([credentialButtons_ count], kMaxAccounts) * kButtonHeight);
-  base::scoped_nsobject<NSScrollView> scrollView = [[NSScrollView alloc]
-      initWithFrame:NSMakeRect(0, 0, buttonsSize.width, buttonsSize.height)];
-  [scrollView setHasVerticalScroller:[credentialButtons_ count] > kMaxAccounts
-                                         ? YES
-                                         : NO];
-  [scrollView setBorderType:NSNoBorder];
-  CGFloat buttonWidth = [scrollView contentSize].width;
-  CGFloat curY = 0;
-  base::scoped_nsobject<NSView> documentView([[NSView alloc]
-      initWithFrame:NSMakeRect(0, 0, buttonWidth,
-                               [credentialButtons_ count] * kButtonHeight)]);
+  CGFloat curY =
+      NSMaxY([cancelButton_ frame]) + 3 * kRelatedControlVerticalSpacing;
   for (CredentialItemButton* button in credentialButtons_.get()) {
-    [documentView addSubview:button];
-    [button setFrame:NSMakeRect(0, curY, buttonWidth, kButtonHeight)];
+    [view addSubview:button];
+    [button setFrameOrigin:NSMakePoint(0, curY)];
     curY = NSMaxY([button frame]);
   }
-  [scrollView setDocumentView:documentView];
-  [view addSubview:scrollView];
-  [documentView scrollRectToVisible:NSMakeRect(0, curY, buttonWidth, 0)];
-  curY = NSMaxY([cancelButton_ frame]) + 3 * kRelatedControlVerticalSpacing;
-  [scrollView setFrameOrigin:NSMakePoint(0, curY)];
-  curY = NSMaxY([scrollView frame]) + 2 * kRelatedControlVerticalSpacing;
+  curY += 2 * kRelatedControlVerticalSpacing;
 
   [titleView_ setFrameOrigin:NSMakePoint(kFramePadding, curY)];
 
@@ -153,7 +130,8 @@ const size_t kMaxAccounts = 3;
 - (void)loadCredentialItems {
   base::scoped_nsobject<NSMutableArray> items([[NSMutableArray alloc] init]);
   PasswordDialogController* controller = self.bridge->GetDialogController();
-  NSRect rect = NSMakeRect(0, 0, kDesiredBubbleWidth, kButtonHeight);
+  NSRect rect = NSMakeRect(0, 0, kDesiredBubbleWidth,
+                           kAvatarImageSize + 2 * kVerticalAvatarMargin);
   for (const auto& form : controller->GetLocalForms()) {
     base::scoped_nsobject<CredentialItemButton> item(
         [[CredentialItemButton alloc]
