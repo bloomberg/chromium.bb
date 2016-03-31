@@ -628,7 +628,7 @@ update_prop(struct ivi_layout_screen  *iviscrn,
 	bool can_calc = true;
 
 	/*In case of no prop change, this just returns*/
-	if (!ivilayer->event_mask && !ivisurf->event_mask)
+	if (!ivilayer->prop.event_mask && !ivisurf->prop.event_mask)
 		return;
 
 	update_opacity(ivilayer, ivisurf);
@@ -828,7 +828,7 @@ commit_layer_list(struct ivi_layout *layout)
 			ivisurf->on_layer = NULL;
 			wl_list_remove(&ivisurf->order.link);
 			wl_list_init(&ivisurf->order.link);
-			ivisurf->event_mask |= IVI_NOTIFICATION_REMOVE;
+			ivisurf->prop.event_mask |= IVI_NOTIFICATION_REMOVE;
 		}
 
 		assert(wl_list_empty(&ivilayer->order.surface_list));
@@ -839,7 +839,7 @@ commit_layer_list(struct ivi_layout *layout)
 			wl_list_insert(&ivilayer->order.surface_list,
 				       &ivisurf->order.link);
 			ivisurf->on_layer = ivilayer;
-			ivisurf->event_mask |= IVI_NOTIFICATION_ADD;
+			ivisurf->prop.event_mask |= IVI_NOTIFICATION_ADD;
 		}
 
 		ivilayer->order.dirty = 0;
@@ -865,7 +865,7 @@ commit_screen_list(struct ivi_layout *layout)
 				ivilayer->on_screen = NULL;
 				wl_list_remove(&ivilayer->order.link);
 				wl_list_init(&ivilayer->order.link);
-				ivilayer->event_mask |= IVI_NOTIFICATION_REMOVE;
+				ivilayer->prop.event_mask |= IVI_NOTIFICATION_REMOVE;
 			}
 
 			assert(wl_list_empty(&iviscrn->order.layer_list));
@@ -878,7 +878,7 @@ commit_screen_list(struct ivi_layout *layout)
 				wl_list_insert(&iviscrn->order.layer_list,
 					       &ivilayer->order.link);
 				ivilayer->on_screen = iviscrn;
-				ivilayer->event_mask |= IVI_NOTIFICATION_ADD;
+				ivilayer->prop.event_mask |= IVI_NOTIFICATION_ADD;
 			}
 
 			iviscrn->order.dirty = 0;
@@ -923,14 +923,14 @@ static void
 send_surface_prop(struct ivi_layout_surface *ivisurf)
 {
 	wl_signal_emit(&ivisurf->property_changed, ivisurf);
-	ivisurf->event_mask = 0;
+	ivisurf->pending.prop.event_mask = 0;
 }
 
 static void
 send_layer_prop(struct ivi_layout_layer *ivilayer)
 {
 	wl_signal_emit(&ivilayer->property_changed, ivilayer);
-	ivilayer->event_mask = 0;
+	ivilayer->pending.prop.event_mask = 0;
 }
 
 static void
@@ -940,12 +940,12 @@ send_prop(struct ivi_layout *layout)
 	struct ivi_layout_surface *ivisurf  = NULL;
 
 	wl_list_for_each_reverse(ivilayer, &layout->layer_list, link) {
-		if (ivilayer->event_mask)
+		if (ivilayer->prop.event_mask)
 			send_layer_prop(ivilayer);
 	}
 
 	wl_list_for_each_reverse(ivisurf, &layout->surface_list, link) {
-		if (ivisurf->event_mask)
+		if (ivisurf->prop.event_mask)
 			send_surface_prop(ivisurf);
 	}
 }
@@ -1024,7 +1024,7 @@ layer_prop_changed(struct wl_listener *listener, void *data)
 		layout_listener->userdata;
 
 	((layer_property_notification_func)prop_callback->callback)
-		(ivilayer, &ivilayer->prop, ivilayer->event_mask, prop_callback->data);
+		(ivilayer, &ivilayer->prop, ivilayer->prop.event_mask, prop_callback->data);
 }
 
 static void
@@ -1075,9 +1075,7 @@ surface_prop_changed(struct wl_listener *listener, void *data)
 		layout_listener->userdata;
 
 	((surface_property_notification_func)prop_callback->callback)
-		(ivisurf, &ivisurf->prop, ivisurf->event_mask, prop_callback->data);
-
-	ivisurf->event_mask = 0;
+		(ivisurf, &ivisurf->prop, ivisurf->prop.event_mask, prop_callback->data);
 }
 
 static void
@@ -1634,7 +1632,6 @@ ivi_layout_layer_create_with_dimension(uint32_t id_layer,
 	ivilayer->id_layer = id_layer;
 
 	init_layer_properties(&ivilayer->prop, width, height);
-	ivilayer->event_mask = 0;
 
 	wl_list_init(&ivilayer->pending.surface_list);
 	wl_list_init(&ivilayer->pending.link);
@@ -1716,9 +1713,9 @@ ivi_layout_layer_set_visibility(struct ivi_layout_layer *ivilayer,
 	prop->visibility = newVisibility;
 
 	if (ivilayer->prop.visibility != newVisibility)
-		ivilayer->event_mask |= IVI_NOTIFICATION_VISIBILITY;
+		prop->event_mask |= IVI_NOTIFICATION_VISIBILITY;
 	else
-		ivilayer->event_mask &= ~IVI_NOTIFICATION_VISIBILITY;
+		prop->event_mask &= ~IVI_NOTIFICATION_VISIBILITY;
 
 	return IVI_SUCCEEDED;
 }
@@ -1740,9 +1737,9 @@ ivi_layout_layer_set_opacity(struct ivi_layout_layer *ivilayer,
 	prop->opacity = opacity;
 
 	if (ivilayer->prop.opacity != opacity)
-		ivilayer->event_mask |= IVI_NOTIFICATION_OPACITY;
+		prop->event_mask |= IVI_NOTIFICATION_OPACITY;
 	else
-		ivilayer->event_mask &= ~IVI_NOTIFICATION_OPACITY;
+		prop->event_mask &= ~IVI_NOTIFICATION_OPACITY;
 
 	return IVI_SUCCEEDED;
 }
@@ -1768,9 +1765,9 @@ ivi_layout_layer_set_source_rectangle(struct ivi_layout_layer *ivilayer,
 	if (ivilayer->prop.source_x != x || ivilayer->prop.source_y != y ||
 	    ivilayer->prop.source_width != width ||
 	    ivilayer->prop.source_height != height)
-		ivilayer->event_mask |= IVI_NOTIFICATION_SOURCE_RECT;
+		prop->event_mask |= IVI_NOTIFICATION_SOURCE_RECT;
 	else
-		ivilayer->event_mask &= ~IVI_NOTIFICATION_SOURCE_RECT;
+		prop->event_mask &= ~IVI_NOTIFICATION_SOURCE_RECT;
 
 	return IVI_SUCCEEDED;
 }
@@ -1796,9 +1793,9 @@ ivi_layout_layer_set_destination_rectangle(struct ivi_layout_layer *ivilayer,
 	if (ivilayer->prop.dest_x != x || ivilayer->prop.dest_y != y ||
 	    ivilayer->prop.dest_width != width ||
 	    ivilayer->prop.dest_height != height)
-		ivilayer->event_mask |= IVI_NOTIFICATION_DEST_RECT;
+		prop->event_mask |= IVI_NOTIFICATION_DEST_RECT;
 	else
-		ivilayer->event_mask &= ~IVI_NOTIFICATION_DEST_RECT;
+		prop->event_mask &= ~IVI_NOTIFICATION_DEST_RECT;
 
 	return IVI_SUCCEEDED;
 }
@@ -1818,9 +1815,9 @@ ivi_layout_layer_set_orientation(struct ivi_layout_layer *ivilayer,
 	prop->orientation = orientation;
 
 	if (ivilayer->prop.orientation != orientation)
-		ivilayer->event_mask |= IVI_NOTIFICATION_ORIENTATION;
+		prop->event_mask |= IVI_NOTIFICATION_ORIENTATION;
 	else
-		ivilayer->event_mask &= ~IVI_NOTIFICATION_ORIENTATION;
+		prop->event_mask &= ~IVI_NOTIFICATION_ORIENTATION;
 
 	return IVI_SUCCEEDED;
 }
@@ -1865,9 +1862,9 @@ ivi_layout_surface_set_visibility(struct ivi_layout_surface *ivisurf,
 	prop->visibility = newVisibility;
 
 	if (ivisurf->prop.visibility != newVisibility)
-		ivisurf->event_mask |= IVI_NOTIFICATION_VISIBILITY;
+		prop->event_mask |= IVI_NOTIFICATION_VISIBILITY;
 	else
-		ivisurf->event_mask &= ~IVI_NOTIFICATION_VISIBILITY;
+		prop->event_mask &= ~IVI_NOTIFICATION_VISIBILITY;
 
 	return IVI_SUCCEEDED;
 }
@@ -1889,9 +1886,9 @@ ivi_layout_surface_set_opacity(struct ivi_layout_surface *ivisurf,
 	prop->opacity = opacity;
 
 	if (ivisurf->prop.opacity != opacity)
-		ivisurf->event_mask |= IVI_NOTIFICATION_OPACITY;
+		prop->event_mask |= IVI_NOTIFICATION_OPACITY;
 	else
-		ivisurf->event_mask &= ~IVI_NOTIFICATION_OPACITY;
+		prop->event_mask &= ~IVI_NOTIFICATION_OPACITY;
 
 	return IVI_SUCCEEDED;
 }
@@ -1921,9 +1918,9 @@ ivi_layout_surface_set_destination_rectangle(struct ivi_layout_surface *ivisurf,
 	if (ivisurf->prop.dest_x != x || ivisurf->prop.dest_y != y ||
 	    ivisurf->prop.dest_width != width ||
 	    ivisurf->prop.dest_height != height)
-		ivisurf->event_mask |= IVI_NOTIFICATION_DEST_RECT;
+		prop->event_mask |= IVI_NOTIFICATION_DEST_RECT;
 	else
-		ivisurf->event_mask &= ~IVI_NOTIFICATION_DEST_RECT;
+		prop->event_mask &= ~IVI_NOTIFICATION_DEST_RECT;
 
 	return IVI_SUCCEEDED;
 }
@@ -1943,9 +1940,9 @@ ivi_layout_surface_set_orientation(struct ivi_layout_surface *ivisurf,
 	prop->orientation = orientation;
 
 	if (ivisurf->prop.orientation != orientation)
-		ivisurf->event_mask |= IVI_NOTIFICATION_ORIENTATION;
+		prop->event_mask |= IVI_NOTIFICATION_ORIENTATION;
 	else
-		ivisurf->event_mask &= ~IVI_NOTIFICATION_ORIENTATION;
+		prop->event_mask &= ~IVI_NOTIFICATION_ORIENTATION;
 
 	return IVI_SUCCEEDED;
 }
@@ -2144,9 +2141,9 @@ ivi_layout_surface_set_source_rectangle(struct ivi_layout_surface *ivisurf,
 	if (ivisurf->prop.source_x != x || ivisurf->prop.source_y != y ||
 	    ivisurf->prop.source_width != width ||
 	    ivisurf->prop.source_height != height)
-		ivisurf->event_mask |= IVI_NOTIFICATION_SOURCE_RECT;
+		prop->event_mask |= IVI_NOTIFICATION_SOURCE_RECT;
 	else
-		ivisurf->event_mask &= ~IVI_NOTIFICATION_SOURCE_RECT;
+		prop->event_mask &= ~IVI_NOTIFICATION_SOURCE_RECT;
 
 	return IVI_SUCCEEDED;
 }
@@ -2323,7 +2320,6 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 	wl_list_init(&ivisurf->transform.link);
 
 	init_surface_properties(&ivisurf->prop);
-	ivisurf->event_mask = 0;
 
 	ivisurf->pending.prop = ivisurf->prop;
 	wl_list_init(&ivisurf->pending.link);

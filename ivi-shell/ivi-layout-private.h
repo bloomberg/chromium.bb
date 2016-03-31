@@ -42,7 +42,6 @@ struct ivi_layout_surface {
 	struct weston_transform transform;
 
 	struct ivi_layout_surface_properties prop;
-	uint32_t event_mask;
 
 	struct {
 		struct ivi_layout_surface_properties prop;
@@ -64,7 +63,6 @@ struct ivi_layout_layer {
 	struct ivi_layout_screen *on_screen;
 
 	struct ivi_layout_layer_properties prop;
-	uint32_t event_mask;
 
 	struct {
 		struct ivi_layout_layer_properties prop;

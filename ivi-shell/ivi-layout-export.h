@@ -84,6 +84,7 @@ struct ivi_layout_surface_properties
 	bool visibility;
 	int32_t transition_type;
 	uint32_t transition_duration;
+	uint32_t event_mask;
 };
 
 struct ivi_layout_layer_properties
@@ -104,6 +105,7 @@ struct ivi_layout_layer_properties
 	double start_alpha;
 	double end_alpha;
 	uint32_t is_fade_in;
+	uint32_t event_mask;
 };
 
 enum ivi_layout_notification_mask {
