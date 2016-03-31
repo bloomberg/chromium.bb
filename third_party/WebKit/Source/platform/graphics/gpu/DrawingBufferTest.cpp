@@ -245,7 +245,7 @@ public:
     }
 
     DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
-        : DrawingBuffer(contextProvider, extensionsUtil, false /* multisampleExtensionSupported */, false /* discardFramebufferSupported */, preserve, WebGraphicsContext3D::Attributes())
+        : DrawingBuffer(contextProvider, extensionsUtil, false /* multisampleExtensionSupported */, false /* discardFramebufferSupported */, false /* premultipliedAlpha */, preserve, WebGraphicsContext3D::Attributes())
         , m_live(0)
     { }
 
@@ -724,7 +724,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
         WebGraphicsContext3D::Attributes requestedAttributes;
         requestedAttributes.stencil = cases[i].requestStencil;
         requestedAttributes.depth = cases[i].requestDepth;
-        RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(provider.release(), IntSize(10, 10), preserve, requestedAttributes);
+        RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(provider.release(), IntSize(10, 10), false /* premultipliedAlpha */, preserve, requestedAttributes);
 
         EXPECT_EQ(cases[i].requestDepth, drawingBuffer->getActualAttributes().depth);
         EXPECT_EQ(cases[i].requestStencil, drawingBuffer->getActualAttributes().stencil);

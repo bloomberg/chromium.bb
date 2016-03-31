@@ -90,7 +90,7 @@ static bool shouldFailDrawingBufferCreationForTesting = false;
 
 } // namespace
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, bool premultipliedAlpha, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
 {
     ASSERT(contextProvider);
 
@@ -120,7 +120,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DP
     if (discardFramebufferSupported)
         extensionsUtil->ensureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(contextProvider), extensionsUtil.release(), multisampleSupported, discardFramebufferSupported, preserve, requestedAttributes));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(contextProvider), extensionsUtil.release(), multisampleSupported, discardFramebufferSupported, premultipliedAlpha, preserve, requestedAttributes));
     if (!drawingBuffer->initialize(size)) {
         drawingBuffer->beginDestruction();
         return PassRefPtr<DrawingBuffer>();
@@ -133,7 +133,7 @@ void DrawingBuffer::forceNextDrawingBufferCreationToFail()
     shouldFailDrawingBufferCreationForTesting = true;
 }
 
-DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, bool multisampleExtensionSupported, bool discardFramebufferSupported, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
+DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, bool multisampleExtensionSupported, bool discardFramebufferSupported, bool premultipliedAlpha, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
     : m_preserveDrawingBuffer(preserve)
     , m_scissorEnabled(false)
     , m_texture2DBinding(0)
@@ -148,6 +148,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider> contextPro
     , m_requestedAttributes(requestedAttributes)
     , m_multisampleExtensionSupported(multisampleExtensionSupported)
     , m_discardFramebufferSupported(discardFramebufferSupported)
+    , m_premultipliedAlpha(premultipliedAlpha)
     , m_fbo(0)
     , m_depthStencilBuffer(0)
     , m_multisampleFBO(0)
@@ -267,7 +268,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
         bitmap->setSize(size());
 
         unsigned char* pixels = bitmap->pixels();
-        bool needPremultiply = m_actualAttributes.alpha && !m_actualAttributes.premultipliedAlpha;
+        bool needPremultiply = m_actualAttributes.alpha && !m_premultipliedAlpha;
         WebGLImageConversion::AlphaOp op = needPremultiply ? WebGLImageConversion::AlphaDoPremultiply : WebGLImageConversion::AlphaDoNothing;
         if (pixels)
             readBackFramebuffer(pixels, size().width(), size().height(), ReadbackSkia, op);
@@ -544,9 +545,9 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gl
 
     GLboolean unpackPremultiplyAlphaNeeded = GL_FALSE;
     GLboolean unpackUnpremultiplyAlphaNeeded = GL_FALSE;
-    if (m_actualAttributes.alpha && m_actualAttributes.premultipliedAlpha && !premultiplyAlpha)
+    if (m_actualAttributes.alpha && m_premultipliedAlpha && !premultiplyAlpha)
         unpackUnpremultiplyAlphaNeeded = GL_TRUE;
-    else if (m_actualAttributes.alpha && !m_actualAttributes.premultipliedAlpha && premultiplyAlpha)
+    else if (m_actualAttributes.alpha && !m_premultipliedAlpha && premultiplyAlpha)
         unpackPremultiplyAlphaNeeded = GL_TRUE;
 
     gl->CopyTextureCHROMIUM(sourceTexture, texture, internalFormat, destType, flipY, unpackPremultiplyAlphaNeeded, unpackUnpremultiplyAlphaNeeded);
@@ -575,7 +576,7 @@ WebLayer* DrawingBuffer::platformLayer()
 
         m_layer->setOpaque(!m_actualAttributes.alpha);
         m_layer->setBlendBackgroundColor(m_actualAttributes.alpha);
-        m_layer->setPremultipliedAlpha(m_actualAttributes.premultipliedAlpha);
+        m_layer->setPremultipliedAlpha(m_premultipliedAlpha);
         m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
         GraphicsLayer::registerContentsLayer(m_layer->layer());
     }
@@ -864,7 +865,7 @@ void DrawingBuffer::setPackAlignment(GLint param)
 
 bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, SourceDrawingBuffer sourceBuffer, WTF::ArrayBufferContents& contents)
 {
-    ASSERT(!m_actualAttributes.premultipliedAlpha);
+    ASSERT(!m_premultipliedAlpha);
     width = size().width();
     height = size().height();
 

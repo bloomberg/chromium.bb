@@ -57,7 +57,6 @@ public:
         bool depth = true;
         bool stencil = true;
         bool antialias = true;
-        bool premultipliedAlpha = true;
         bool shareResources = true;
         bool preferDiscreteGPU = false;
         bool noAutomaticFlushes = false;

@@ -32,7 +32,6 @@ WebGraphicsContext3D::Attributes toWebGraphicsContext3DAttributes(const WebGLCon
         if (settings && !settings->openGLMultisamplingEnabled())
             result.antialias = false;
     }
-    result.premultipliedAlpha = attrs.premultipliedAlpha();
     result.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat();
 
     result.shareResources = false;

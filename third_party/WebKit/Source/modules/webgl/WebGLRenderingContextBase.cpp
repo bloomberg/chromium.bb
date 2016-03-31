@@ -885,9 +885,9 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwn
     attrs.depth = m_requestedAttributes.depth();
     attrs.stencil = m_requestedAttributes.stencil();
     attrs.antialias = m_requestedAttributes.antialias();
-    attrs.premultipliedAlpha = m_requestedAttributes.premultipliedAlpha();
+    bool premultipliedAlpha = m_requestedAttributes.premultipliedAlpha();
     DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes.preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    return DrawingBuffer::create(contextProvider, clampedCanvasSize(), preserve, attrs);
+    return DrawingBuffer::create(contextProvider, clampedCanvasSize(), premultipliedAlpha, preserve, attrs);
 }
 
 void WebGLRenderingContextBase::initializeNewContext()

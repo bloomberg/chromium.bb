@@ -76,7 +76,7 @@ public:
         Discard
     };
 
-    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, PreserveDrawingBuffer, WebGraphicsContext3D::Attributes requestedAttributes);
+    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, bool premultipliedAlpha, PreserveDrawingBuffer, WebGraphicsContext3D::Attributes requestedAttributes);
     static void forceNextDrawingBufferCreationToFail();
 
     ~DrawingBuffer() override;
@@ -185,6 +185,7 @@ protected: // For unittests
         PassOwnPtr<Extensions3DUtil>,
         bool multisampleExtensionSupported,
         bool discardFramebufferSupported,
+        bool premultipliedAlpha,
         PreserveDrawingBuffer,
         WebGraphicsContext3D::Attributes requestedAttributes);
 
@@ -313,6 +314,7 @@ private:
     WebGraphicsContext3D::Attributes m_requestedAttributes;
     bool m_multisampleExtensionSupported;
     bool m_discardFramebufferSupported;
+    bool m_premultipliedAlpha;
     GLuint m_fbo;
     // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
     TextureInfo m_colorBuffer;
