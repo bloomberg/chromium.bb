@@ -108,7 +108,7 @@ if exist "%GIT_EXE_PATH%" (
   rem batch script to make sure it points to the desired version.
   find "%GIT_BIN_DIR%" "%WIN_TOOLS_ROOT_DIR%\git.bat" 2>nul 1>nul
   if errorlevel 1 goto :GIT_MAKE_BATCH_FILES
-  goto :SVN_CHECK
+  goto :SYNC_GIT_HELP_FILES
 )
 goto :GIT_INSTALL
 
@@ -164,8 +164,20 @@ call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.autocrlf false
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.filemode false
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.preloadindex true
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.fscache true
-goto :SVN_CHECK
 
+:SYNC_GIT_HELP_FILES
+:: Copy all the depot_tools docs into the mingw64 git docs root.
+:: /i : Make sure xcopy knows that the destination names a folder, not a file
+:: /q : Make xcopy quiet (though it still prints a `X File(s) copied` message
+::      which is why we have the > NUL)
+:: /d : Copy source files that are newer than the corresponding destination
+::      files only. This prevents excessive copying when none of the docs
+::      actually changed.
+:: /y : Don't prompt for overwrites (yes)
+if defined GIT_PORTABLE_FLOW (
+  xcopy /i /q /d /y "%WIN_TOOLS_ROOT_DIR%\man\html\*" "%GIT_INST_DIR%\mingw64\share\doc\git-doc" > NUL
+)
+goto :SVN_CHECK
 
 :GIT_FAIL
 echo ... Failed to checkout git automatically.
