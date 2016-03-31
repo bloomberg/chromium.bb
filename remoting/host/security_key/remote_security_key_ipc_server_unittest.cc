@@ -20,6 +20,7 @@ namespace {
 const int kTestConnectionId = 42;
 const int kInitialConnectTimeoutMs = 250;
 const int kConnectionTimeoutErrorDeltaMs = 100;
+const int kLargeMessageSizeBytes = 256 * 1024;
 }  // namespace
 
 namespace remoting {
@@ -127,6 +128,74 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleSingleGnubbyRequest) {
 
   // Send a response from the IPC server to the IPC client.
   std::string response_data("Blargh!");
+  ASSERT_TRUE(remote_security_key_ipc_server_->SendResponse(response_data));
+  WaitForOperationComplete();
+
+  // Verify the request was received.
+  ASSERT_EQ(response_data, fake_ipc_client.last_message_received());
+
+  // Typically the client will be the one to close the connection.
+  fake_ipc_client.CloseIpcConnection();
+}
+
+TEST_F(RemoteSecurityKeyIpcServerTest, HandleLargeGnubbyRequest) {
+  std::string channel_name(GetUniqueTestChannelName());
+  ASSERT_TRUE(remote_security_key_ipc_server_->CreateChannel(
+      channel_name,
+      /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
+
+  // Create a fake client and connect to the IPC server channel.
+  FakeRemoteSecurityKeyIpcClient fake_ipc_client(
+      base::Bind(&RemoteSecurityKeyIpcServerTest::OperationComplete,
+                 base::Unretained(this)));
+  ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
+  WaitForOperationComplete();
+
+  // Send a request from the IPC client to the IPC server.
+  std::string request_data(kLargeMessageSizeBytes, 'Y');
+  fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data);
+  WaitForOperationComplete();
+
+  // Verify the request was received.
+  ASSERT_EQ(kTestConnectionId, last_connection_id_received_);
+  ASSERT_EQ(request_data, last_message_received_);
+
+  // Send a response from the IPC server to the IPC client.
+  std::string response_data(kLargeMessageSizeBytes, 'Z');
+  ASSERT_TRUE(remote_security_key_ipc_server_->SendResponse(response_data));
+  WaitForOperationComplete();
+
+  // Verify the request was received.
+  ASSERT_EQ(response_data, fake_ipc_client.last_message_received());
+
+  // Typically the client will be the one to close the connection.
+  fake_ipc_client.CloseIpcConnection();
+}
+
+TEST_F(RemoteSecurityKeyIpcServerTest, HandleReallyLargeGnubbyRequest) {
+  std::string channel_name(GetUniqueTestChannelName());
+  ASSERT_TRUE(remote_security_key_ipc_server_->CreateChannel(
+      channel_name,
+      /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
+
+  // Create a fake client and connect to the IPC server channel.
+  FakeRemoteSecurityKeyIpcClient fake_ipc_client(
+      base::Bind(&RemoteSecurityKeyIpcServerTest::OperationComplete,
+                 base::Unretained(this)));
+  ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
+  WaitForOperationComplete();
+
+  // Send a request from the IPC client to the IPC server.
+  std::string request_data(kLargeMessageSizeBytes * 2, 'Y');
+  fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data);
+  WaitForOperationComplete();
+
+  // Verify the request was received.
+  ASSERT_EQ(kTestConnectionId, last_connection_id_received_);
+  ASSERT_EQ(request_data, last_message_received_);
+
+  // Send a response from the IPC server to the IPC client.
+  std::string response_data(kLargeMessageSizeBytes * 2, 'Z');
   ASSERT_TRUE(remote_security_key_ipc_server_->SendResponse(response_data));
   WaitForOperationComplete();
 

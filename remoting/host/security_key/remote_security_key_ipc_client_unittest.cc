@@ -21,6 +21,7 @@ const int kTestConnectionId = 1;
 const char kNonexistentIpcChannelName[] = "Nonexistent_IPC_Channel";
 const char kValidIpcChannelName[] =
     "Remote_Security_Key_Ipc_Client_Test_Channel.";
+const int kLargeMessageSizeBytes = 256 * 1024;
 }  // namespace
 
 namespace remoting {
@@ -208,6 +209,24 @@ TEST_F(RemoteSecurityKeyIpcClientTest, GenerateSingleGnubbyRequest) {
   EstablishConnection(/*expect_success=*/true);
 
   SendRequestAndResponse("Auth me!", "You've been authed!");
+
+  remote_security_key_ipc_client_.CloseIpcConnection();
+}
+
+TEST_F(RemoteSecurityKeyIpcClientTest, GenerateLargeGnubbyRequest) {
+  EstablishConnection(/*expect_success=*/true);
+
+  SendRequestAndResponse(std::string(kLargeMessageSizeBytes, 'Y'),
+                         std::string(kLargeMessageSizeBytes, 'Z'));
+
+  remote_security_key_ipc_client_.CloseIpcConnection();
+}
+
+TEST_F(RemoteSecurityKeyIpcClientTest, GenerateReallyLargeGnubbyRequest) {
+  EstablishConnection(/*expect_success=*/true);
+
+  SendRequestAndResponse(std::string(kLargeMessageSizeBytes * 2, 'Y'),
+                         std::string(kLargeMessageSizeBytes * 2, 'Z'));
 
   remote_security_key_ipc_client_.CloseIpcConnection();
 }
