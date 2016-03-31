@@ -83,10 +83,6 @@ const char kEnableDataReductionProxyBypassWarning[] =
 const char kEnableDataReductionProxyCarrierTest[] =
     "enable-data-reduction-proxy-carrier-test";
 
-// Enable the data reduction proxy config client.
-const char kEnableDataReductionProxyConfigClient[] =
-    "enable-data-reduction-proxy-config-client";
-
 // Enables the origin of the data reduction proxy dev.
 const char kEnableDataReductionProxyDev[] = "enable-spdy-proxy-dev-auth-origin";
 

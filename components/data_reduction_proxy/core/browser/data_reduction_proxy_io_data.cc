@@ -115,7 +115,8 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   event_creator_.reset(new DataReductionProxyEventCreator(this));
   configurator_.reset(
       new DataReductionProxyConfigurator(net_log, event_creator_.get()));
-  bool use_config_client = params::IsConfigClientEnabled();
+  bool use_config_client =
+      params::IsConfigClientEnabled() && client_ != CRONET_ANDROID;
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
   if (use_config_client) {
     scoped_ptr<DataReductionProxyMutableConfigValues> mutable_config =

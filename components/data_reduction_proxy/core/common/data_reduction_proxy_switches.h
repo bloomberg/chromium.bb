@@ -32,7 +32,6 @@ extern const char kDisableDataReductionProxyDev[];
 extern const char kEnableDataReductionProxy[];
 extern const char kEnableDataReductionProxyBypassWarning[];
 extern const char kEnableDataReductionProxyCarrierTest[];
-extern const char kEnableDataReductionProxyConfigClient[];
 extern const char kEnableDataReductionProxyDev[];
 extern const char kEnableDataReductionProxyLoFiPreview[];
 
