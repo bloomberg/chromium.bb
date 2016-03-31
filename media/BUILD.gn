@@ -449,6 +449,7 @@ component("media") {
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//crypto:platform",  # TODO(ajwong): This used to be provided by crypto.gyp via export_dependent_settings
+    "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
     "//skia",
     "//third_party/libwebm",
@@ -457,6 +458,7 @@ component("media") {
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl:gl",
     "//url",
   ]
 }
