@@ -251,6 +251,11 @@
             "group_name": "On"
         }
     ],
+    "SSLCommonNameMismatchHandling": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "SafeBrowsingReportPhishingErrorLink": [
         {
             "group_name": "Enabled"

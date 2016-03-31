@@ -115,6 +115,11 @@
             "group_name": "DontShowAndDontSend"
         }
     ],
+    "SSLCommonNameMismatchHandling": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "SafeBrowsingUnverifiedDownloads": [
         {
             "group_name": "DisableByParameterMostSbTypes2",
