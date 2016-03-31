@@ -1057,7 +1057,8 @@ def _CreateSwarmingArgs(build, suite, timeout_mins=None):
       'swarming_server': topology.topology.get(
           topology.SWARMING_PROXY_HOST_KEY),
       'task_name': '-'.join([build, suite]),
-      'dimension': ('os', 'Linux'),
+      'dimensions': [('os', 'Ubuntu-14.04'),
+                     ('pool', 'default')],
       'print_status_updates': True,
       'timeout_secs': swarming_timeout,
       'io_timeout_secs': swarming_timeout,
@@ -1185,7 +1186,8 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
         'swarming_server': topology.topology.get(
             topology.SWARMING_PROXY_HOST_KEY),
         'task_name': '-'.join(['abort', substr, suite]),
-        'dimension': ('os', 'Linux'),
+        'dimensions': [('os', 'Ubuntu-14.04'),
+                       ('pool', 'default')],
         'print_status_updates': True,
         'expiration_secs': _SWARMING_EXPIRATION}
     if debug:

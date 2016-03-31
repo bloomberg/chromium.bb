@@ -26,7 +26,7 @@ RETRIABLE_INTERNAL_FAILURE_STATES = {80}
 
 
 def RunSwarmingCommand(cmd, swarming_server, task_name=None,
-                       dimension=None,
+                       dimensions=None,
                        print_status_updates=False,
                        timeout_secs=None, io_timeout_secs=None,
                        hard_timeout_secs=None, expiration_secs=None,
@@ -38,8 +38,9 @@ def RunSwarmingCommand(cmd, swarming_server, task_name=None,
     cmd: Commands to run, represented as a list.
     swarming_server: The swarming server to send request to.
     task_name: String, represent a task.
-    dimension: A tuple with two elements, representing dimension for
-               selecting a swarming bots. E.g. ('os', 'Linux')
+    dimensions: A list of tuple with two elements, representing dimension for
+               selecting a swarming bots. E.g. ('os', 'Linux') and pools and
+               other dimension related stuff.
     print_status_updates: Boolean, whether to output status updates,
                           can be used to prevent from hitting
                           buildbot silent timeout.
@@ -60,8 +61,9 @@ def RunSwarmingCommand(cmd, swarming_server, task_name=None,
     if task_name:
       swarming_cmd += ['--task-name', task_name]
 
-    if dimension:
-      swarming_cmd += ['--dimension', dimension[0], dimension[1]]
+    if dimensions:
+      for dimension in dimensions:
+        swarming_cmd += ['--dimension', dimension[0], dimension[1]]
 
     if print_status_updates:
       swarming_cmd.append('--print-status-updates')
