@@ -117,7 +117,8 @@ public class UrlBar extends VerticallyFixedEditText {
     private long mFirstFocusTimeMs;
 
     private boolean mInBatchEditMode;
-    private String mBeforeBatchEditAutocompleteText;
+    private int mBeforeBatchEditAutocompleteIndex = -1;
+    private String mBeforeBatchEditFullText;
     private boolean mSelectionChangedInBatchMode;
     private boolean mTextDeletedInBatchMode;
 
@@ -360,7 +361,8 @@ public class UrlBar extends VerticallyFixedEditText {
 
     @Override
     public void onBeginBatchEdit() {
-        mBeforeBatchEditAutocompleteText = getTextWithoutAutocomplete();
+        mBeforeBatchEditAutocompleteIndex = getText().getSpanStart(mAutocompleteSpan);
+        mBeforeBatchEditFullText = getText().toString();
 
         super.onBeginBatchEdit();
         mInBatchEditMode = true;
@@ -377,12 +379,14 @@ public class UrlBar extends VerticallyFixedEditText {
             mSelectionChangedInBatchMode = false;
         }
 
-        if (!TextUtils.equals(mBeforeBatchEditAutocompleteText, getTextWithoutAutocomplete())) {
+        if (!TextUtils.equals(mBeforeBatchEditFullText, getText().toString())
+                || getText().getSpanStart(mAutocompleteSpan) != mBeforeBatchEditAutocompleteIndex) {
             notifyAutocompleteTextStateChanged(mTextDeletedInBatchMode);
         }
 
         mTextDeletedInBatchMode = false;
-        mBeforeBatchEditAutocompleteText = null;
+        mBeforeBatchEditAutocompleteIndex = -1;
+        mBeforeBatchEditFullText = null;
     }
 
     @Override

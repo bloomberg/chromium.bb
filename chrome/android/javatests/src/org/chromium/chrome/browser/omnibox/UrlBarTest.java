@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.inputmethod.BaseInputConnection;
 
 import org.chromium.base.ThreadUtils;
@@ -24,6 +25,7 @@ import org.chromium.chrome.test.util.OmniboxTestUtils.StubAutocompleteController
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.KeyUtils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -339,6 +341,52 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
         autocompleteHelper.waitForCallback(0);
         assertFalse("Inline autocomplete incorrectly prevented.",
+                didPreventInlineAutocomplete.get());
+    }
+
+    /**
+     * Ensure that if the user deletes just the inlined autocomplete text that the suggestions are
+     * regenerated.
+     */
+    @SmallTest
+    @Feature({"Omnibox"})
+    public void testSuggestionsUpdatedWhenDeletingInlineAutocomplete()
+            throws InterruptedException, TimeoutException {
+        startMainActivityOnBlankPage();
+
+        stubLocationBarAutocomplete();
+        final UrlBar urlBar = getUrlBar();
+        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+
+        setTextAndVerifyNoAutocomplete(urlBar, "test");
+        setAutocomplete(urlBar, "test", "ing");
+
+        final CallbackHelper autocompleteHelper = new CallbackHelper();
+        final AtomicBoolean didPreventInlineAutocomplete = new AtomicBoolean();
+        final StubAutocompleteController controller = new StubAutocompleteController() {
+            @Override
+            public void start(Profile profile, String url, String text, int cursorPosition,
+                    boolean preventInlineAutocomplete) {
+                if (!TextUtils.equals("test", text)) return;
+                if (autocompleteHelper.getCallCount() != 0) return;
+
+                didPreventInlineAutocomplete.set(preventInlineAutocomplete);
+                autocompleteHelper.notifyCalled();
+            }
+        };
+        setAutocompleteController(controller);
+
+        KeyUtils.singleKeyEventView(getInstrumentation(), urlBar, KeyEvent.KEYCODE_DEL);
+
+        CriteriaHelper.pollUiThread(Criteria.equals("test", new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return urlBar.getText().toString();
+            }
+        }));
+
+        autocompleteHelper.waitForCallback(0);
+        assertTrue("Inline autocomplete incorrectly allowed after delete.",
                 didPreventInlineAutocomplete.get());
     }
 
