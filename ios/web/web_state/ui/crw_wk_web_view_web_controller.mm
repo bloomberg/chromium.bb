@@ -87,9 +87,6 @@ NSString* GetRefererFromNavigationAction(WKNavigationAction* action) {
   return [action.request valueForHTTPHeaderField:@"Referer"];
 }
 
-NSString* const kScriptMessageName = @"crwebinvoke";
-NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
-
 // Utility functions for storing the source of NSErrors received by WKWebViews:
 // - Errors received by |-webView:didFailProvisionalNavigation:withError:| are
 //   recorded using WKWebViewErrorSource::PROVISIONAL_LOAD.  These should be
@@ -357,12 +354,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // Returns YES if there is currently a requested but uncommitted load for
 // |targetURL|.
 - (BOOL)isLoadRequestPendingForURL:(const GURL&)targetURL;
-
-// Called when web controller receives a new message from the web page.
-- (void)didReceiveScriptMessage:(WKScriptMessage*)message;
-
-// Attempts to handle a script message. Returns YES on success, NO otherwise.
-- (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
 
 // Used to decide whether a load that generates errors with the
 // NSURLErrorCancelled code should be cancelled.
@@ -1199,55 +1190,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   web::NavigationItem* pendingItem =
       self.webState->GetNavigationManager()->GetPendingItem();
   return pendingItem && pendingItem->GetURL() == targetURL;
-}
-
-- (void)didReceiveScriptMessage:(WKScriptMessage*)message {
-  // Broken out into separate method to catch errors.
-  if (![self respondToWKScriptMessage:message]) {
-    DLOG(WARNING) << "Message from JS not handled due to invalid format";
-  }
-}
-
-- (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
-  CHECK(scriptMessage.frameInfo.mainFrame);
-  int errorCode = 0;
-  std::string errorMessage;
-  scoped_ptr<base::Value> inputJSONData(
-      base::JSONReader::ReadAndReturnError(
-          base::SysNSStringToUTF8(scriptMessage.body),
-          false,
-          &errorCode,
-          &errorMessage));
-  if (errorCode) {
-    DLOG(WARNING) << "JSON parse error: %s" << errorMessage.c_str();
-    return NO;
-  }
-  base::DictionaryValue* message = nullptr;
-  if (!inputJSONData->GetAsDictionary(&message)) {
-    return NO;
-  }
-  std::string windowID;
-  message->GetString("crwWindowId", &windowID);
-  // Check for correct windowID
-  if (![[self windowId] isEqualToString:base::SysUTF8ToNSString(windowID)]) {
-    DLOG(WARNING) << "Message from JS ignored due to non-matching windowID: "
-                  << [self windowId] << " != "
-                  << base::SysUTF8ToNSString(windowID);
-    return NO;
-  }
-  base::DictionaryValue* command = nullptr;
-  if (!message->GetDictionary("crwCommand", &command)) {
-    return NO;
-  }
-  if ([scriptMessage.name isEqualToString:kScriptImmediateName] ||
-      [scriptMessage.name isEqualToString:kScriptMessageName]) {
-    return [self respondToMessage:command
-                userIsInteracting:[self userIsInteracting]
-                        originURL:net::GURLWithNSURL([_wkWebView URL])];
-  }
-
-  NOTREACHED();
-  return NO;
 }
 
 - (BOOL)shouldAbortLoadForCancelledError:(NSError*)error {

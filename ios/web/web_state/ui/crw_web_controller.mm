@@ -338,6 +338,8 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 // NSError if there is an error. The |handler| can be nil.
 - (void)evaluateJavaScript:(NSString*)script
          JSONResultHandler:(void (^)(scoped_ptr<base::Value>, NSError*))handler;
+// Attempts to handle a script message. Returns YES on success, NO otherwise.
+- (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage;
 // Generates the JavaScript string used to update the UIWebView's URL so that it
 // matches the URL displayed in the omnibox and sets window.history.state to
 // stateObject. Needed for history.pushState() and history.replaceState().
@@ -2096,6 +2098,51 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK(handlers);
   auto iter = handlers->find(command);
   return iter != handlers->end() ? iter->second : nullptr;
+}
+
+- (void)didReceiveScriptMessage:(WKScriptMessage*)message {
+  // Broken out into separate method to catch errors.
+  if (![self respondToWKScriptMessage:message]) {
+    DLOG(WARNING) << "Message from JS not handled due to invalid format";
+  }
+}
+
+- (BOOL)respondToWKScriptMessage:(WKScriptMessage*)scriptMessage {
+  CHECK(scriptMessage.frameInfo.mainFrame);
+  int errorCode = 0;
+  std::string errorMessage;
+  scoped_ptr<base::Value> inputJSONData(base::JSONReader::ReadAndReturnError(
+      base::SysNSStringToUTF8(scriptMessage.body), false, &errorCode,
+      &errorMessage));
+  if (errorCode) {
+    DLOG(WARNING) << "JSON parse error: %s" << errorMessage.c_str();
+    return NO;
+  }
+  base::DictionaryValue* message = nullptr;
+  if (!inputJSONData->GetAsDictionary(&message)) {
+    return NO;
+  }
+  std::string windowID;
+  message->GetString("crwWindowId", &windowID);
+  // Check for correct windowID
+  if (![[self windowId] isEqualToString:base::SysUTF8ToNSString(windowID)]) {
+    DLOG(WARNING) << "Message from JS ignored due to non-matching windowID: " <<
+        [self windowId] << " != " << base::SysUTF8ToNSString(windowID);
+    return NO;
+  }
+  base::DictionaryValue* command = nullptr;
+  if (!message->GetDictionary("crwCommand", &command)) {
+    return NO;
+  }
+  if ([scriptMessage.name isEqualToString:kScriptImmediateName] ||
+      [scriptMessage.name isEqualToString:kScriptMessageName]) {
+    return [self respondToMessage:command
+                userIsInteracting:[self userIsInteracting]
+                        originURL:net::GURLWithNSURL([self.webView URL])];
+  }
+
+  NOTREACHED();
+  return NO;
 }
 
 #pragma mark -

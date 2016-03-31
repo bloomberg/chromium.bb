@@ -33,6 +33,11 @@ enum WebViewDocumentType {
 };
 }  // namespace web
 
+// URL scheme for messages sent from javascript for asynchronous processing.
+static NSString* const kScriptMessageName = @"crwebinvoke";
+// URL scheme for messages sent from javascript for immediate processing.
+static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
+
 // Category for methods used or implemented by implementation subclasses of
 // CRWWebController.
 @interface CRWWebController (ProtectedMethods)
@@ -103,6 +108,9 @@ enum WebViewDocumentType {
 
 // Creates a web view with given |config|. No-op if web view is already created.
 - (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config;
+
+// Called when web controller receives a new message from the web page.
+- (void)didReceiveScriptMessage:(WKScriptMessage*)message;
 
 #pragma mark - Optional methods for subclasses
 // Subclasses may overwrite methods in this section.
