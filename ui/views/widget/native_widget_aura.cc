@@ -877,7 +877,6 @@ void NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   delegate_->OnKeyEvent(event);
-  event->SetHandled();
 }
 
 void NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
