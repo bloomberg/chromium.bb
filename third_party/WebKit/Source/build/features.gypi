@@ -40,6 +40,7 @@
   'variables': {
     'feature_defines': [
       'ENABLE_LAYOUT_UNIT_IN_INLINE_BOXES=0',
+      'ENABLE_OILPAN=1',
       # WTF_USE_DYNAMIC_ANNOTATIONS=1 may be defined in build/common.gypi
       # We can't define it here because it should be present only
       # in Debug or release_valgrind_build=1 builds.
@@ -83,11 +84,6 @@
       ['use_default_render_theme==1', {
         'feature_defines': [
           'WTF_USE_DEFAULT_RENDER_THEME=1',
-        ],
-      }],
-      ['enable_oilpan==1', {
-        'feature_defines': [
-          'ENABLE_OILPAN=1',
         ],
       }],
       ['blink_logging_always_on==1', {

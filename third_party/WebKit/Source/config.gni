@@ -47,7 +47,10 @@ use_concatenated_impulse_responses = true
 
 # feature_defines_list ---------------------------------------------------------
 
-feature_defines_list = [ "ENABLE_LAYOUT_UNIT_IN_INLINE_BOXES=0" ]
+feature_defines_list = [
+  "ENABLE_LAYOUT_UNIT_IN_INLINE_BOXES=0",
+  "ENABLE_OILPAN=1",
+]
 
 if (is_debug) {
   # TODO(GYP) this should also be set when release_valgrind_build is set,
@@ -82,9 +85,6 @@ if (use_openmax_dl_fft) {
 
 if (use_default_render_theme) {
   feature_defines_list += [ "WTF_USE_DEFAULT_RENDER_THEME=1" ]
-}
-if (enable_oilpan) {
-  feature_defines_list += [ "ENABLE_OILPAN=1" ]
 }
 if (blink_asserts_off_in_release && !is_debug) {
   feature_defines_list += [ "ENABLE_ASSERT=0" ]
