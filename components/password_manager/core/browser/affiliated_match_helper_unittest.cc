@@ -147,6 +147,13 @@ autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
   return form;
 }
 
+autofill::PasswordForm GetTestBlacklistedAndroidCredentials(
+    const char* signon_realm) {
+  autofill::PasswordForm form = GetTestAndroidCredentials(signon_realm);
+  form.blacklisted_by_user = true;
+  return form;
+}
+
 autofill::PasswordForm GetTestObservedWebForm(const char* signon_realm,
                                               const char* origin) {
   autofill::PasswordForm form;
@@ -199,6 +206,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
   void AddAndroidAndNonAndroidTestLogins() {
     AddLogin(GetTestAndroidCredentials(kTestAndroidRealmAlpha3));
     AddLogin(GetTestAndroidCredentials(kTestAndroidRealmBeta2));
+    AddLogin(GetTestBlacklistedAndroidCredentials(kTestAndroidRealmBeta3));
     AddLogin(GetTestAndroidCredentials(kTestAndroidRealmGamma));
 
     AddLogin(GetTestAndroidCredentials(kTestWebRealmAlpha1));
@@ -208,6 +216,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
   void RemoveAndroidAndNonAndroidTestLogins() {
     RemoveLogin(GetTestAndroidCredentials(kTestAndroidRealmAlpha3));
     RemoveLogin(GetTestAndroidCredentials(kTestAndroidRealmBeta2));
+    RemoveLogin(GetTestBlacklistedAndroidCredentials(kTestAndroidRealmBeta3));
     RemoveLogin(GetTestAndroidCredentials(kTestAndroidRealmGamma));
 
     RemoveLogin(GetTestAndroidCredentials(kTestWebRealmAlpha1));
@@ -218,6 +227,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
     mock_affiliation_service()->ExpectCallToPrefetch(
         kTestAndroidFacetURIAlpha3);
     mock_affiliation_service()->ExpectCallToPrefetch(kTestAndroidFacetURIBeta2);
+    mock_affiliation_service()->ExpectCallToPrefetch(kTestAndroidFacetURIBeta3);
     mock_affiliation_service()->ExpectCallToPrefetch(kTestAndroidFacetURIGamma);
   }
 
@@ -227,6 +237,8 @@ class AffiliatedMatchHelperTest : public testing::Test {
     mock_affiliation_service()->ExpectCallToCancelPrefetch(
         kTestAndroidFacetURIBeta2);
     mock_affiliation_service()->ExpectCallToCancelPrefetch(
+        kTestAndroidFacetURIBeta3);
+    mock_affiliation_service()->ExpectCallToCancelPrefetch(
         kTestAndroidFacetURIGamma);
   }
 
@@ -235,6 +247,8 @@ class AffiliatedMatchHelperTest : public testing::Test {
         kTestAndroidFacetURIAlpha3);
     mock_affiliation_service()->ExpectCallToTrimCacheForFacet(
         kTestAndroidFacetURIBeta2);
+    mock_affiliation_service()->ExpectCallToTrimCacheForFacet(
+        kTestAndroidFacetURIBeta3);
     mock_affiliation_service()->ExpectCallToTrimCacheForFacet(
         kTestAndroidFacetURIGamma);
   }

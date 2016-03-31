@@ -154,6 +154,7 @@ void AffiliatedMatchHelper::DoDeferredInitialization() {
   // taken to avoid inconsistencies due to any changes taking place in-between.
   password_store_->AddObserver(this);
   password_store_->GetAutofillableLogins(this);
+  password_store_->GetBlacklistLogins(this);
 }
 
 void AffiliatedMatchHelper::CompleteGetAffiliatedAndroidRealms(

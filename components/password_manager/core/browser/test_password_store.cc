@@ -127,14 +127,22 @@ bool TestPasswordStore::RemoveStatisticsCreatedBetweenImpl(
 bool TestPasswordStore::FillAutofillableLogins(
     ScopedVector<autofill::PasswordForm>* forms) {
   for (const auto& forms_for_realm : stored_passwords_) {
-    for (const autofill::PasswordForm& form : forms_for_realm.second)
-      forms->push_back(new autofill::PasswordForm(form));
+    for (const autofill::PasswordForm& form : forms_for_realm.second) {
+      if (!form.blacklisted_by_user)
+        forms->push_back(new autofill::PasswordForm(form));
+    }
   }
   return true;
 }
 
 bool TestPasswordStore::FillBlacklistLogins(
     ScopedVector<autofill::PasswordForm>* forms) {
+  for (const auto& forms_for_realm : stored_passwords_) {
+    for (const autofill::PasswordForm& form : forms_for_realm.second) {
+      if (form.blacklisted_by_user)
+        forms->push_back(new autofill::PasswordForm(form));
+    }
+  }
   return true;
 }
 
