@@ -23,6 +23,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/web_touch_event_traits.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/common/webplugin_geometry.h"
 #include "content/public/common/content_switches.h"
@@ -334,10 +335,14 @@ void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
   // and so we will always hit this code path.
   if (!guest_)
     return;
-  guest_->SendMessageToEmbedder(
-      new BrowserPluginMsg_SetCursor(guest_->browser_plugin_instance_id(),
-                                     cursor));
-
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+    RenderWidgetHostViewBase* rwhvb = GetOwnerRenderWidgetHostView();
+    if (rwhvb)
+      rwhvb->UpdateCursor(cursor);
+  } else {
+    guest_->SendMessageToEmbedder(new BrowserPluginMsg_SetCursor(
+        guest_->browser_plugin_instance_id(), cursor));
+  }
 }
 
 void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
