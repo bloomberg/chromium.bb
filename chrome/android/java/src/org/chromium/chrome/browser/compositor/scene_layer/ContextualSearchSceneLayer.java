@@ -45,6 +45,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
 
         int searchContextViewId = searchBarControl.getSearchContextViewId();
         int searchTermViewId = searchBarControl.getSearchTermViewId();
+        int searchCaptionViewId = searchBarControl.getCaptionViewId();
 
         // TODO(pedrosimonetti): Move to Promo logic to its own control class.
         boolean searchPromoVisible = panel.getPromoVisible();
@@ -72,6 +73,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
 
         float searchContextOpacity = searchBarControl.getSearchBarContextOpacity();
         float searchTermOpacity = searchBarControl.getSearchBarTermOpacity();
+        float searchCaptionOpacity = searchBarControl.getCaptionOpacity();
 
         boolean searchBarBorderVisible = panel.isBarBorderVisible();
         float searchBarBorderHeight = panel.getBarBorderHeight();
@@ -94,6 +96,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 R.drawable.contextual_search_bar_background,
                 searchContextViewId,
                 searchTermViewId,
+                searchCaptionViewId,
                 R.drawable.contextual_search_bar_shadow,
                 R.drawable.google_icon_sprite,
                 R.raw.google_icon_sprite,
@@ -123,6 +126,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchBarHeight * mDpToPx,
                 searchContextOpacity,
                 searchTermOpacity,
+                searchCaptionOpacity,
                 searchBarBorderVisible,
                 searchBarBorderHeight * mDpToPx,
                 searchBarShadowVisible,
@@ -162,6 +166,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             int searchBarBackgroundResourceId,
             int searchContextResourceId,
             int searchTermResourceId,
+            int searchCaptionResourceId,
             int searchBarShadowResourceId,
             int panelIconResourceId,
             int searchProviderIconSpriteMetadataResourceId,
@@ -191,6 +196,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             float searchBarHeight,
             float searchContextOpacity,
             float searchTermOpacity,
+            float searchCaptionOpacity,
             boolean searchBarBorderVisible,
             float searchBarBorderHeight,
             boolean searchBarShadowVisible,

@@ -63,14 +63,6 @@ class OverlayPanelLayer : public Layer {
   ui::ResourceManager* resource_manager_;
   scoped_refptr<cc::Layer> layer_;
 
-  int panel_icon_resource_id_;
-
- private:
-  int bar_text_resource_id_;
-  int panel_shadow_resource_id_;
-  int bar_shadow_resource_id_;
-  int close_icon_resource_id_;
-
   scoped_refptr<cc::NinePatchLayer> panel_shadow_;
   scoped_refptr<cc::SolidColorLayer> bar_background_;
   scoped_refptr<cc::UIResourceLayer> bar_text_;
@@ -80,6 +72,12 @@ class OverlayPanelLayer : public Layer {
   scoped_refptr<cc::Layer> content_view_container_;
   scoped_refptr<cc::Layer> text_container_;
   scoped_refptr<cc::SolidColorLayer> bar_border_;
+
+  int panel_icon_resource_id_;
+  int bar_text_resource_id_;
+  int panel_shadow_resource_id_;
+  int bar_shadow_resource_id_;
+  int close_icon_resource_id_;
 };
 
 }  //  namespace android

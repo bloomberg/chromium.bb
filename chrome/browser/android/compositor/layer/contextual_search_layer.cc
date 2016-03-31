@@ -65,6 +65,7 @@ void ContextualSearchLayer::SetProperties(
     int panel_shadow_resource_id,
     int search_context_resource_id,
     int search_term_resource_id,
+    int search_caption_resource_id,
     int search_bar_shadow_resource_id,
     int panel_icon_resource_id,
     int search_provider_icon_sprite_metadata_resource_id,
@@ -94,6 +95,7 @@ void ContextualSearchLayer::SetProperties(
     float search_bar_height,
     float search_context_opacity,
     float search_term_opacity,
+    float search_caption_opacity,
     bool search_bar_border_visible,
     float search_bar_border_height,
     bool search_bar_shadow_visible,
@@ -114,7 +116,7 @@ void ContextualSearchLayer::SetProperties(
   search_provider_icon_sprite_completion_percentage_ =
       search_provider_icon_sprite_completion_percentage;
 
-  // Grabs the dynamic Search Bar Text resource.
+  // Grabs the dynamic Search Context resource.
   ui::ResourceManager::Resource* search_context_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
                                      search_context_resource_id);
@@ -138,6 +140,9 @@ void ContextualSearchLayer::SetProperties(
   float should_render_bar_border = search_bar_border_visible
       && !should_render_progress_bar;
 
+  // -----------------------------------------------------------------
+  // Overlay Panel
+  // -----------------------------------------------------------------
   OverlayPanelLayer::SetProperties(
       dp_to_px,
       content_view_core,
@@ -265,6 +270,43 @@ void ContextualSearchLayer::SetProperties(
     search_context_->SetBounds(search_context_resource->size);
     search_context_->SetPosition(gfx::PointF(0.f, search_bar_padding_top));
     search_context_->SetOpacity(search_context_opacity);
+  }
+
+  // -----------------------------------------------------------------
+  // Search Caption Text
+  // -----------------------------------------------------------------
+  if (search_caption_opacity != 0.f && search_caption_.get()) {
+    if (search_caption_->parent() != text_container_) {
+      AddBarTextLayer(search_caption_);
+    }
+    // Grabs the dynamic Search Caption resource.
+    ui::ResourceManager::Resource* search_caption_resource =
+        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
+                                       search_caption_resource_id);
+    // Calculate position of the Caption, and the main bar text.
+    // Without a caption the bar text is not moved from it's default centered
+    // position. When there is a Caption interpolate its position between the
+    // default and adjusted (moved up by the size of the caption and margin).
+    float bar_text_height = bar_text_->bounds().height();
+    float search_caption_height = search_caption_resource->size.height();
+    float text_margin = floor(bar_text_height / 10);
+    float search_caption_top =
+        search_bar_top + bar_text_height + text_margin * 2;
+    // Get the current centered position set up by the OverlayPanelLayer.
+    float bar_text_top_centered = bar_text_->position().y();
+    float bar_text_adjust = search_caption_height + text_margin;
+    float bar_text_top = bar_text_top_centered -
+                            bar_text_adjust * search_caption_opacity / 2;
+    // Move the main bar text up.
+    bar_text_->SetPosition(gfx::PointF(0.f, bar_text_top));
+    // Add the caption
+    search_caption_->SetUIResourceId(
+        search_caption_resource->ui_resource->id());
+    search_caption_->SetBounds(search_caption_resource->size);
+    search_caption_->SetPosition(gfx::PointF(0.f, search_caption_top));
+    search_caption_->SetOpacity(search_caption_opacity);
+  } else if (search_caption_.get() && search_caption_->parent()) {
+    search_caption_->RemoveFromParent();
   }
 
   // ---------------------------------------------------------------------------
@@ -414,7 +456,8 @@ ContextualSearchLayer::ContextualSearchLayer(
       peek_promo_ripple_(cc::NinePatchLayer::Create()),
       peek_promo_text_(cc::UIResourceLayer::Create()),
       progress_bar_(cc::NinePatchLayer::Create()),
-      progress_bar_background_(cc::NinePatchLayer::Create()) {
+      progress_bar_background_(cc::NinePatchLayer::Create()),
+      search_caption_(cc::UIResourceLayer::Create()) {
   // Search Peek Promo
   peek_promo_container_->SetIsDrawable(true);
   peek_promo_container_->SetBackgroundColor(kSearchBarBackgroundColor);
@@ -428,6 +471,9 @@ ContextualSearchLayer::ContextualSearchLayer(
   search_context_->SetIsDrawable(true);
   // NOTE(mdjones): This can be called multiple times to add other text layers.
   AddBarTextLayer(search_context_);
+
+  // Search Bar Caption
+  search_caption_->SetIsDrawable(true);
 
   // Arrow Icon
   arrow_icon_->SetIsDrawable(true);

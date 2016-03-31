@@ -41,6 +41,11 @@ public class ContextualSearchBarControl
     private final ContextualSearchTermControl mSearchTermControl;
 
     /**
+    * The {@link ContextualSearchCaptionControl} used to control the Caption View.
+    */
+    private final ContextualSearchCaptionControl mCaptionControl;
+
+    /**
      * The opacity of the Bar's Search Context.
      */
     private float mSearchBarContextOpacity = 1.f;
@@ -65,6 +70,7 @@ public class ContextualSearchBarControl
         mOverlayPanel = panel;
         mContextControl = new ContextualSearchContextControl(panel, context, container, loader);
         mSearchTermControl = new ContextualSearchTermControl(panel, context, container, loader);
+        mCaptionControl = new ContextualSearchCaptionControl(panel, context, container, loader);
     }
 
     /**
@@ -73,6 +79,31 @@ public class ContextualSearchBarControl
     public void destroy() {
         mContextControl.destroy();
         mSearchTermControl.destroy();
+        mCaptionControl.destroy();
+    }
+
+    /**
+     * Updates this bar when in transition between closed to peeked states.
+     * @param percentage The percentage to the more opened state.
+     */
+    public void onUpdateFromCloseToPeek(float percentage) {
+        mCaptionControl.onUpdateFromCloseToPeek(percentage);
+    }
+
+    /**
+     * Updates this bar when in transition between peeked to expanded states.
+     * @param percentage The percentage to the more opened state.
+     */
+    public void onUpdateFromPeekToExpand(float percentage) {
+        mCaptionControl.onUpdateFromPeekToExpand(percentage);
+    }
+
+    /**
+     * Updates this bar when in transition between expanded and maximized states.
+     * @param percentage The percentage to the more opened state.
+     */
+    public void onUpdateFromExpandToMaximize(float percentage) {
+        mCaptionControl.onUpdateFromExpandToMaximize(percentage);
     }
 
     /**
@@ -82,6 +113,7 @@ public class ContextualSearchBarControl
      */
     public void setSearchContext(String selection, String end) {
         cancelSearchTermResolutionAnimation();
+        hideCaption();
         mContextControl.setSearchContext(selection, end);
         resetSearchBarContextOpacity();
     }
@@ -92,8 +124,24 @@ public class ContextualSearchBarControl
      */
     public void setSearchTerm(String searchTerm) {
         cancelSearchTermResolutionAnimation();
+        hideCaption();
         mSearchTermControl.setSearchTerm(searchTerm);
         resetSearchBarTermOpacity();
+    }
+
+    /**
+     * Sets the caption to display in the control and shows the caption.
+     * @param caption The caption to display.
+     */
+    public void setCaption(String caption) {
+        mCaptionControl.setCaption(caption);
+    }
+
+    /**
+     * @return The current opacity of the Caption control.
+     */
+    public float getCaptionOpacity() {
+        return mCaptionControl.getOpacity();
     }
 
     /**
@@ -108,6 +156,13 @@ public class ContextualSearchBarControl
      */
     public int getSearchTermViewId() {
         return mSearchTermControl.getViewId();
+    }
+
+    /**
+     * @return The Id of the Search Caption View.
+     */
+    public int getCaptionViewId() {
+        return mCaptionControl.getViewId();
     }
 
     /**
@@ -140,6 +195,13 @@ public class ContextualSearchBarControl
     private void resetSearchBarTermOpacity() {
         mSearchBarContextOpacity = 0.f;
         mSearchBarTermOpacity = 1.f;
+    }
+
+    /**
+     * Hides the caption so it will not be displayed in the control.
+     */
+    private void hideCaption() {
+        mCaptionControl.hide();
     }
 
     // ============================================================================================

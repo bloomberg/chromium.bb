@@ -25,7 +25,7 @@ import android.view.ViewTreeObserver;
  * There's also an option to not attach to the hierarchy at all, by overriding the method
  * {@link #shouldAttachView()} and making it return false (the default is yes). In this case
  * the changes to the View will always be "offscreen". By default, an unspecified value of
- * {@link View.MeasureSpec} will de used to determine the width and height of the View.
+ * {@link View.MeasureSpec} will be used to determine the width and height of the View.
  * It's possible to specify custom size constraints by overriding the methods
  * {@link #getWidthMeasureSpec()} and {@link #getHeightMeasureSpec()}.
  */

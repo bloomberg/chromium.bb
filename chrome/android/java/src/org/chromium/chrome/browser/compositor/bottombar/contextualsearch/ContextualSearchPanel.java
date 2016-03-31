@@ -445,23 +445,33 @@ public class ContextualSearchPanel extends OverlayPanel
     }
 
     /**
-     * Shows the search term in the SearchBar. This should be called when the search term is set
-     * without search term resolution.
+     * Sets the search term to display in the SearchBar.
+     * This should be called when the search term is set without search term resolution, or
+     * after search term resolution completed.
      * @param searchTerm The string that represents the search term.
      */
-    public void displaySearchTerm(String searchTerm) {
+    public void setSearchTerm(String searchTerm) {
         getSearchBarControl().setSearchTerm(searchTerm);
         mPanelMetrics.onSearchRequestStarted();
     }
 
     /**
-     * Shows the search context in the SearchBar.
+     * Sets the search context to display in the SearchBar.
      * @param selection The portion of the context that represents the user's selection.
      * @param end The portion of the context from the selection to its end.
      */
-    public void displaySearchContext(String selection, String end) {
+    public void setSearchContext(String selection, String end) {
         getSearchBarControl().setSearchContext(selection, end);
         mPanelMetrics.onSearchRequestStarted();
+    }
+
+    /**
+     * Sets the caption to display in the SearchBar.
+     * When the caption is displayed, the Search Term is pushed up and the caption shows below.
+     * @param caption The string to show in as the caption.
+     */
+    public void setCaption(String caption) {
+        getSearchBarControl().setCaption(caption);
     }
 
     /**
@@ -495,6 +505,7 @@ public class ContextualSearchPanel extends OverlayPanel
         updatePromoVisibility(1.f);
 
         getPeekPromoControl().onUpdateFromCloseToPeek(percentage);
+        getSearchBarControl().onUpdateFromCloseToPeek(percentage);
     }
 
     @Override
@@ -505,6 +516,7 @@ public class ContextualSearchPanel extends OverlayPanel
         updatePromoVisibility(1.f);
 
         getPeekPromoControl().onUpdateFromPeekToExpand(percentage);
+        getSearchBarControl().onUpdateFromPeekToExpand(percentage);
     }
 
     @Override
@@ -515,6 +527,7 @@ public class ContextualSearchPanel extends OverlayPanel
         updatePromoVisibility(1.f - percentage);
 
         getPeekPromoControl().onUpdateFromExpandToMaximize(percentage);
+        getSearchBarControl().onUpdateFromExpandToMaximize(percentage);
     }
 
     @Override

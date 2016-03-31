@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalFocusChangeListener;
 
-import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
@@ -423,7 +422,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                     null, shouldPrefetch);
             mTranslateController.forceAutoDetectTranslateUnlessDisabled(mSearchRequest);
             mDidStartLoadingResolvedSearchRequest = false;
-            mSearchPanel.displaySearchTerm(mSelectionController.getSelectedText());
+            mSearchPanel.setSearchTerm(mSelectionController.getSelectedText());
             if (shouldPrefetch) loadSearchUrl();
         }
 
@@ -589,7 +588,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     @CalledByNative
     private void onSurroundingTextAvailable(final String afterText) {
         if (mSearchPanel.isShowing()) {
-            mSearchPanel.displaySearchContext(
+            mSearchPanel.setSearchContext(
                     mSelectionController.getSelectedText(), afterText);
         }
     }
@@ -727,8 +726,9 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      */
     @CalledByNative
     private void onSetCaption(String caption, boolean doesAnswer) {
-        // TODO(donnd): notify the UI of the caption and log doesAnswer.
-        Log.i(TAG, "ctxs setCaption: '" + caption + "', " + doesAnswer);
+        // Notify the UI of the caption.
+        mSearchPanel.setCaption(caption);
+        // TODO(donnd): log doesAnswer!
     }
 
     /**
@@ -1224,7 +1224,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
         if (mSearchPanel.isShowing()) {
             if (selectionValid) {
-                mSearchPanel.displaySearchTerm(selection);
+                mSearchPanel.setSearchTerm(selection);
             } else {
                 hideContextualSearch(StateChangeReason.INVALID_SELECTION);
             }

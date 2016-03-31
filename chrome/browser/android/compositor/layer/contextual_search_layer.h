@@ -36,6 +36,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   void SetProperties(int panel_shadow_resource_id,
                      int search_context_resource_id,
                      int search_term_resource_id,
+                     int search_caption_resource_id,
                      int search_bar_shadow_resource_id,
                      int panel_icon_resource_id,
                      int search_provider_icon_sprite_metadata_resource_id,
@@ -65,6 +66,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float search_bar_height,
                      float search_context_opacity,
                      float search_term_opacity,
+                     float search_caption_opacity,
                      bool search_bar_border_visible,
                      float search_bar_border_height,
                      bool search_bar_shadow_visible,
@@ -99,6 +101,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   scoped_refptr<cc::UIResourceLayer> peek_promo_text_;
   scoped_refptr<cc::NinePatchLayer> progress_bar_;
   scoped_refptr<cc::NinePatchLayer> progress_bar_background_;
+  scoped_refptr<cc::UIResourceLayer> search_caption_;
 };
 
 }  //  namespace android
