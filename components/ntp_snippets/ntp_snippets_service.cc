@@ -254,6 +254,11 @@ void NTPSnippetsService::OnJsonError(const std::string& snippets_json,
 
 void NTPSnippetsService::FetchSnippetsImpl(
     const std::vector<std::string>& hosts) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDontRestrict)) {
+    snippets_fetcher_->FetchSnippets(std::vector<std::string>());
+    return;
+  }
   if (!hosts.empty())
     snippets_fetcher_->FetchSnippets(hosts);
 }

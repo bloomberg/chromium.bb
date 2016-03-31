@@ -12,6 +12,8 @@ extern const char kFetchingIntervalWifiChargingSeconds[];
 extern const char kFetchingIntervalWifiSeconds[];
 extern const char kFetchingIntervalFallbackSeconds[];
 
+extern const char kDontRestrict[];
+
 }  // namespace switches
 }  // namespace ntp_snippets
 

@@ -14,5 +14,9 @@ const char kFetchingIntervalWifiSeconds[] =
 const char kFetchingIntervalFallbackSeconds[] =
     "ntp-snippets-fetching-interval-fallback";
 
+// If this flag is set, the snippets won't be restricted to the user's NTP
+// suggestions.
+const char kDontRestrict[] = "ntp-snippets-dont-restrict";
+
 }  // namespace switches
 }  // namespace ntp_snippets
