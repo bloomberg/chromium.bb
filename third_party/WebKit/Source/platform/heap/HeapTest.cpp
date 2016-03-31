@@ -2371,6 +2371,25 @@ TEST(HeapTest, LargeHeapObjects)
     preciselyCollectGarbage();
 }
 
+TEST(HeapTest, LargeHashMap)
+{
+    clearOutOldGarbage();
+
+    size_t size = (1 << 27) / sizeof(int);
+    Persistent<HeapHashMap<int, int>> map = new HeapHashMap<int, int>();
+    map->reserveCapacityForSize(size);
+    EXPECT_LE(size, map->capacity());
+}
+
+TEST(HeapTest, LargeVector)
+{
+    clearOutOldGarbage();
+
+    size_t size = (1 << 27) / sizeof(int);
+    Persistent<HeapVector<int>> vector = new HeapVector<int>(size);
+    EXPECT_LE(size, vector->capacity());
+}
+
 typedef std::pair<Member<IntWrapper>, int> PairWrappedUnwrapped;
 typedef std::pair<int, Member<IntWrapper>> PairUnwrappedWrapped;
 typedef std::pair<WeakMember<IntWrapper>, Member<IntWrapper>> PairWeakStrong;

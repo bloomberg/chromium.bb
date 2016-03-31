@@ -240,13 +240,10 @@ public:
 
     static inline size_t allocationSizeFromSize(size_t size)
     {
-        // Check the size before computing the actual allocation size.  The
-        // allocation size calculation can overflow for large sizes and the check
-        // therefore has to happen before any calculation on the size.
-        RELEASE_ASSERT(size < maxHeapObjectSize);
-
         // Add space for header.
         size_t allocationSize = size + sizeof(HeapObjectHeader);
+        // The allocation size calculation can overflow for large sizes.
+        RELEASE_ASSERT(allocationSize > size);
         // Align size with allocation granularity.
         allocationSize = (allocationSize + allocationMask) & ~allocationMask;
         return allocationSize;
