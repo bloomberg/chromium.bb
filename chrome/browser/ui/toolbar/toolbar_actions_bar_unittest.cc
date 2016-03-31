@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -425,56 +424,6 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(ui::MaterialDesignController::NON_MATERIAL,
                     ui::MaterialDesignController::MATERIAL_NORMAL,
                     ui::MaterialDesignController::MATERIAL_HYBRID));
-
-TEST_P(ToolbarActionsBarRedesignUnitTest, IconSurfacingBubbleAppearance) {
-  // Without showing anything new, we shouldn't show the bubble, and should
-  // auto-acknowledge it.
-  EXPECT_FALSE(
-      ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-          profile()));
-  PrefService* prefs = profile()->GetPrefs();
-  EXPECT_TRUE(
-      prefs->GetBoolean(prefs::kToolbarIconSurfacingBubbleAcknowledged));
-
-  // Clear the pref for testing, and add an extension that wouldn't normally
-  // have an icon. We should now show the bubble.
-  prefs->ClearPref(prefs::kToolbarIconSurfacingBubbleAcknowledged);
-  CreateAndAddExtension("extension",
-                        extensions::extension_action_test_util::NO_ACTION);
-  EXPECT_TRUE(ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-      profile()));
-
-  // If the bubble was recently shown, we shouldn't show it again...
-  scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble_delegate(
-      new ExtensionToolbarIconSurfacingBubbleDelegate(profile()));
-  bubble_delegate->OnBubbleShown();
-  bubble_delegate->OnBubbleClosed(
-      ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION);
-  EXPECT_FALSE(
-    ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-        profile()));
-
-  // ...But if it was only dismissed, we should show it before too long.
-  base::Time two_days_ago = base::Time::Now() - base::TimeDelta::FromDays(2);
-  prefs->SetInt64(prefs::kToolbarIconSurfacingBubbleLastShowTime,
-                  two_days_ago.ToInternalValue());
-  EXPECT_TRUE(ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-      profile()));
-
-  // If it's acknowledged, then it should never show again, and should be
-  // recorded as acknowledged.
-  bubble_delegate->OnBubbleShown();
-  bubble_delegate->OnBubbleClosed(
-      ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE);
-  EXPECT_FALSE(
-      ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-          profile()));
-  base::Time one_week_ago = base::Time::Now() - base::TimeDelta::FromDays(7);
-  prefs->SetInt64(prefs::kToolbarIconSurfacingBubbleLastShowTime,
-                  one_week_ago.ToInternalValue());
-  EXPECT_TRUE(
-      prefs->GetBoolean(prefs::kToolbarIconSurfacingBubbleAcknowledged));
-}
 
 // Test the bounds calculation for different indices.
 TEST_P(ToolbarActionsBarRedesignUnitTest, TestActionFrameBounds) {

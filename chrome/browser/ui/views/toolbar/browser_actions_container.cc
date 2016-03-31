@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -96,7 +95,6 @@ BrowserActionsContainer::BrowserActionsContainer(
       chevron_(NULL),
       suppress_chevron_(false),
       added_to_view_(false),
-      shown_bubble_(false),
       resize_starting_width_(-1),
       resize_amount_(0),
       animation_target_size_(0),
@@ -191,18 +189,6 @@ views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
   return chevron_ ? static_cast<views::MenuButton*>(chevron_)
                   : static_cast<views::MenuButton*>(
                         GetToolbarView(browser_)->app_menu_button());
-}
-
-void BrowserActionsContainer::OnMouseEnteredToolbarActionView() {
-  if (!shown_bubble_ && !toolbar_action_views_.empty() &&
-      toolbar_actions_bar_->show_icon_surfacing_bubble()) {
-    ToolbarActionsBarBubbleViews* bubble = new ToolbarActionsBarBubbleViews(
-        this, make_scoped_ptr(new ExtensionToolbarIconSurfacingBubbleDelegate(
-                  browser_->profile())));
-    views::BubbleDelegateView::CreateBubble(bubble);
-    bubble->Show();
-  }
-  shown_bubble_ = true;
 }
 
 void BrowserActionsContainer::AddViewForAction(
@@ -457,10 +443,6 @@ void BrowserActionsContainer::Layout() {
       view->SetVisible(true);
     }
   }
-}
-
-void BrowserActionsContainer::OnMouseEntered(const ui::MouseEvent& event) {
-  OnMouseEnteredToolbarActionView();
 }
 
 bool BrowserActionsContainer::GetDropFormats(

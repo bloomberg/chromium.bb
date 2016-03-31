@@ -171,9 +171,6 @@ class ToolbarActionsModel
 
   bool is_highlighting() const { return highlight_type_ != HIGHLIGHT_NONE; }
   HighlightType highlight_type() const { return highlight_type_; }
-  bool highlighting_for_toolbar_redesign() const {
-    return highlighting_for_toolbar_redesign_;
-  }
 
   void SetActionVisibility(const std::string& action_id, bool visible);
 
@@ -305,10 +302,6 @@ class ToolbarActionsModel
   // The current type of highlight (with HIGHLIGHT_NONE indicating no current
   // highlight).
   HighlightType highlight_type_;
-
-  // Whether or not the toolbar model is actively highlighting for the toolbar
-  // redesign.
-  bool highlighting_for_toolbar_redesign_;
 
   // A list of action ids ordered to correspond with their last known
   // positions.

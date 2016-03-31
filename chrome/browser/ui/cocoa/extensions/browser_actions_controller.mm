@@ -23,7 +23,6 @@
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -107,9 +106,6 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // and updates the chevron overflow menu. Also fires a notification to let the
 // toolbar know that the drag has finished.
 - (void)containerDragFinished:(NSNotification*)notification;
-
-// Shows the toolbar info bubble, if it should be displayed.
-- (void)containerMouseEntered:(NSNotification*)notification;
 
 // Notifies the controlling ToolbarActionsBar that any running animation has
 // ended.
@@ -610,15 +606,6 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
           new ui::NinePartImageIds(IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT)));
   }
   [containerView_ setHighlight:std::move(highlight)];
-  if (toolbarActionsBar_->show_icon_surfacing_bubble() &&
-      ![containerView_ trackingEnabled]) {
-    [containerView_ setTrackingEnabled:YES];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(containerMouseEntered:)
-               name:kBrowserActionsContainerMouseEntered
-             object:containerView_];
-  }
 
   std::vector<ToolbarActionViewController*> toolbar_actions =
       toolbarActionsBar_->GetActions();
@@ -851,23 +838,6 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
     case BROWSER_ACTIONS_INVALID_KEY_ACTION:
       NOTREACHED();
   }
-}
-
-- (void)containerMouseEntered:(NSNotification*)notification {
-  if (!activeBubble_ &&  // only show one bubble at a time
-      toolbarActionsBar_->show_icon_surfacing_bubble()) {
-    scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate(
-        new ExtensionToolbarIconSurfacingBubbleDelegate(browser_->profile()));
-    ToolbarActionsBarBubbleMac* bubble =
-        [self createMessageBubble:std::move(delegate)
-                       anchorView:containerView_];
-    [bubble showWindow:nil];
-  }
-  [containerView_ setTrackingEnabled:NO];
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:self
-                name:kBrowserActionsContainerMouseEntered
-              object:containerView_];
 }
 
 - (void)actionButtonDragging:(NSNotification*)notification {

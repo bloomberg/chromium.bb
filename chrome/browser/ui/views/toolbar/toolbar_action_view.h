@@ -57,9 +57,6 @@ class ToolbarActionView : public views::MenuButton,
     // reference point for a popup when this view isn't visible.
     virtual views::MenuButton* GetOverflowReferenceView() = 0;
 
-    // Notifies the delegate that the mouse entered the view.
-    virtual void OnMouseEnteredToolbarActionView() = 0;
-
    protected:
     ~Delegate() override {}
   };
@@ -74,7 +71,6 @@ class ToolbarActionView : public views::MenuButton,
   // views::MenuButton:
   void GetAccessibleState(ui::AXViewState* state) override;
   scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
   bool IsTriggerableEvent(const ui::Event& event) override;
   SkColor GetInkDropBaseColor() const override;
   bool ShouldShowInkDropHover() const override;

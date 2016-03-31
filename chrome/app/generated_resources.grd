@@ -3619,17 +3619,6 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <if expr="enable_extensions">
-        <!-- Extension toolbar bubble -->
-        <message name="IDS_EXTENSION_TOOLBAR_BUBBLE_HEADING" desc="Heading of the bubble to tell users that all extensions are now visible in the toolbar (the extension toolbar info bubble).">
-          All your extensions are here
-        </message>
-        <message name="IDS_EXTENSION_TOOLBAR_BUBBLE_CONTENT" desc="Content of the extension toolbar info bubble.">
-          Use the context (right-click) menu to remove the extensions you don't need.
-        </message>
-        <message name="IDS_EXTENSION_TOOLBAR_BUBBLE_OK" desc="Button label for the extension toolbar info bubble.">
-          Got it
-        </message>
-
         <!-- Extension blocked action bubble -->
         <message name="IDS_EXTENSION_BLOCKED_ACTION_BUBBLE_HEADING" desc="Heading of the bubble to tell users that in order to run an extension, they'll need to refresh the page.">
           Refresh required

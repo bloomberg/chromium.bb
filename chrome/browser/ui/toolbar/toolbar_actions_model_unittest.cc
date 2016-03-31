@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/mock_component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
@@ -1334,35 +1333,6 @@ TEST_F(ToolbarActionsModelUnitTest, ComponentExtensionsAddedToEnd) {
   EXPECT_EQ(browser_action_a()->id(), GetActionIdAtIndex(1));
   EXPECT_EQ(browser_action_b()->id(), GetActionIdAtIndex(2));
   EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(3));
-}
-
-TEST_F(ToolbarActionsModelUnitTest, ToolbarModelHighlightsForToolbarRedesign) {
-  extensions::FeatureSwitch::ScopedOverride enable_redesign(
-      extensions::FeatureSwitch::extension_action_redesign(), true);
-  InitializeEmptyExtensionService();
-  EXPECT_TRUE(AddActionExtensions());
-  ToolbarActionsModel* toolbar_model =
-      extensions::extension_action_test_util::CreateToolbarModelForProfile(
-          profile());
-  EXPECT_TRUE(toolbar_model);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_TRUE(ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-      profile()));
-  EXPECT_TRUE(toolbar_model->is_highlighting());
-  EXPECT_EQ(ToolbarActionsModel::HIGHLIGHT_INFO,
-            toolbar_model->highlight_type());
-  EXPECT_EQ(3u, toolbar_model->visible_icon_count());
-  EXPECT_EQ(3u, toolbar_model->toolbar_items().size());
-
-  scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble(
-      new ExtensionToolbarIconSurfacingBubbleDelegate(profile()));
-  bubble->OnBubbleClosed(
-      ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION);
-
-  EXPECT_FALSE(toolbar_model->is_highlighting());
-  EXPECT_EQ(ToolbarActionsModel::HIGHLIGHT_NONE,
-            toolbar_model->highlight_type());
 }
 
 // Test various different reorderings, removals, and reinsertions of the

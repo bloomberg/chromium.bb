@@ -102,11 +102,6 @@ scoped_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder() const {
   return border;
 }
 
-void ToolbarActionView::OnMouseEntered(const ui::MouseEvent& event) {
-  delegate_->OnMouseEnteredToolbarActionView();
-  views::MenuButton::OnMouseEntered(event);
-}
-
 bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
   return views::MenuButton::IsTriggerableEvent(event) &&
          (base::TimeTicks::Now() - popup_closed_time_).InMilliseconds() >

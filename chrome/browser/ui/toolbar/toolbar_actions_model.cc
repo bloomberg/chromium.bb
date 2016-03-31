@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
-#include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -55,7 +54,6 @@ ToolbarActionsModel::ToolbarActionsModel(
       use_redesign_(extensions::FeatureSwitch::extension_action_redesign()
                         ->IsEnabled()),
       highlight_type_(HIGHLIGHT_NONE),
-      highlighting_for_toolbar_redesign_(false),
       extension_action_observer_(this),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
@@ -258,15 +256,6 @@ void ToolbarActionsModel::OnReady() {
   // taken from prefs.
   extension_registry_observer_.Add(extension_registry_);
   extension_action_observer_.Add(extension_action_api_);
-
-  if (ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-          profile_)) {
-    highlighting_for_toolbar_redesign_ = true;
-    std::vector<std::string> ids;
-    for (const ToolbarItem& action : toolbar_items_)
-      ids.push_back(action.id);
-    HighlightActions(ids, HIGHLIGHT_INFO);
-  }
 
   actions_initialized_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnToolbarModelInitialized());
@@ -779,7 +768,6 @@ bool ToolbarActionsModel::HighlightActions(const std::vector<std::string>& ids,
 
 void ToolbarActionsModel::StopHighlighting() {
   if (is_highlighting()) {
-    highlighting_for_toolbar_redesign_ = false;
     // It's important that is_highlighting_ is changed immediately before the
     // observers are notified since it changes the result of toolbar_items().
     highlight_type_ = HIGHLIGHT_NONE;

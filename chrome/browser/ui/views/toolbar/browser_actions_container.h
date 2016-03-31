@@ -190,7 +190,6 @@ class BrowserActionsContainer : public views::View,
   int GetHeightForWidth(int width) const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
   bool GetDropFormats(
       int* formats,
       std::set<ui::Clipboard::FormatType>* format_types) override;
@@ -223,7 +222,6 @@ class BrowserActionsContainer : public views::View,
   bool ShownInsideMenu() const override;
   void OnToolbarActionViewDragDone() override;
   views::MenuButton* GetOverflowReferenceView() override;
-  void OnMouseEnteredToolbarActionView() override;
 
   // ToolbarActionsBarDelegate:
   void AddViewForAction(ToolbarActionViewController* action,
@@ -312,9 +310,6 @@ class BrowserActionsContainer : public views::View,
 
   // True if the container has been added to the parent view.
   bool added_to_view_;
-
-  // Whether or not the info bubble has been shown, if it should be.
-  bool shown_bubble_;
 
   // When the container is resizing, this is the width at which it started.
   // If the container is not resizing, -1.
