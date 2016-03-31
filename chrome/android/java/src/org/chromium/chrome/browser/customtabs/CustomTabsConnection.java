@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -671,6 +672,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         if (FieldTrialList.findFullName("CustomTabs").equals("DisablePrerender")) return false;
         if (!DeviceClassManager.enablePrerendering()) return false;
         if (!PrivacyPreferencesManager.getInstance(mApplication).shouldPrerender()) return false;
+        if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) return false;
         ConnectivityManager cm =
                 (ConnectivityManager) mApplication.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
