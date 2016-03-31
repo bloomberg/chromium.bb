@@ -13,7 +13,6 @@ namespace blink {
 class WebAppBannerClient;
 class WebAudioDevice;
 class WebFrame;
-class WebFrameClient;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMIDIAccessor;
@@ -29,7 +28,6 @@ namespace test_runner {
 
 class AppBannerClient;
 class TestInterfaces;
-class WebFrameTestClient;
 class WebTestDelegate;
 class WebTestProxyBase;
 class WebTestRunner;
@@ -66,15 +64,8 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
 
   TestInterfaces* GetTestInterfaces();
 
-  // Gets a borrowed pointer to a WebFrameClient implementation providing
-  // test behavior (i.e. forwarding javascript console output to the test
-  // harness).  The caller should guarantee that the returned pointer
-  // won't be used beyond the lifetime of WebTestInterfaces.
-  blink::WebFrameClient* GetWebFrameTestClient();
-
  private:
   scoped_ptr<TestInterfaces> interfaces_;
-  scoped_ptr<WebFrameTestClient> web_frame_test_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestInterfaces);
 };

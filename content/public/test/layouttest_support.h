@@ -32,7 +32,6 @@ class BluetoothAdapter;
 }
 
 namespace test_runner {
-class WebFrameTestProxyBase;
 class WebTestProxyBase;
 }
 
@@ -52,17 +51,12 @@ void EnableBrowserLayoutTestMode();
 // Turn a renderer into layout test mode.
 void EnableRendererLayoutTestMode();
 
-// Enable injecting of a WebTestProxy between WebViews and RenderViews
-// and WebFrameTestProxy between WebFrames and RenderFrames.
-// |view_proxy_creation_callback| is invoked after creating WebTestProxy.
-// |frame_proxy_creation_callback| is called after creating WebFrameTestProxy.
-using ViewProxyCreationCallback =
-    base::Callback<void(RenderView*, test_runner::WebTestProxyBase*)>;
-using FrameProxyCreationCallback =
-    base::Callback<void(RenderFrame*, test_runner::WebFrameTestProxyBase*)>;
+// Enable injecting of a WebTestProxy between WebViews and RenderViews.
+// |callback| is invoked with a pointer to WebTestProxyBase for each created
+// WebTestProxy.
 void EnableWebTestProxyCreation(
-    const ViewProxyCreationCallback& view_proxy_creation_callback,
-    const FrameProxyCreationCallback& frame_proxy_creation_callback);
+    const base::Callback<void(RenderView*, test_runner::WebTestProxyBase*)>&
+        callback);
 
 typedef base::Callback<void(const blink::WebURLResponse& response,
                             const std::string& data)> FetchManifestCallback;

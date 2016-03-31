@@ -12,34 +12,30 @@
 
 namespace test_runner {
 
-class TestRunner;
 class WebTestDelegate;
+class WebTestProxyBase;
 
 class MockColorChooser : public blink::WebColorChooser {
 public:
- // Caller has to guarantee that |client| and |delegate| are alive
- // until |WebColorChooserClient::didEndChooser| is called.
- // Caller has to guarantee that |test_runner| lives longer
- // than MockColorChooser.
- MockColorChooser(blink::WebColorChooserClient* client,
-                  WebTestDelegate* delegate,
-                  TestRunner* test_runner);
- ~MockColorChooser() override;
+    MockColorChooser(blink::WebColorChooserClient* client,
+                     WebTestDelegate* delegate,
+                     WebTestProxyBase* proxy);
+    ~MockColorChooser() override;
 
- // blink::WebColorChooser implementation.
- void setSelectedColor(const blink::WebColor color) override;
- void endChooser() override;
+    // blink::WebColorChooser implementation.
+    void setSelectedColor(const blink::WebColor color) override;
+    void endChooser() override;
 
- void InvokeDidEndChooser();
- WebTaskList* mutable_task_list() { return &task_list_; }
+    void InvokeDidEndChooser();
+    WebTaskList* mutable_task_list() { return &task_list_; }
 
 private:
- blink::WebColorChooserClient* client_;
- WebTestDelegate* delegate_;
- TestRunner* test_runner_;
- WebTaskList task_list_;
+    blink::WebColorChooserClient* client_;
+    WebTestDelegate* delegate_;
+    WebTestProxyBase* proxy_;
+    WebTaskList task_list_;
 
- DISALLOW_COPY_AND_ASSIGN(MockColorChooser);
+    DISALLOW_COPY_AND_ASSIGN(MockColorChooser);
 };
 
 }  // namespace test_runner

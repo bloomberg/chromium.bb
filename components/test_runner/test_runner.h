@@ -42,7 +42,6 @@ namespace test_runner {
 
 class InvokeCallbackTask;
 class MockScreenOrientationClient;
-class MockWebUserMediaClient;
 class TestInterfaces;
 class WebContentSettings;
 class WebTestDelegate;
@@ -82,10 +81,9 @@ class TestRunner : public WebTestRunner,
   bool ShouldDumpBackForwardList() const override;
   blink::WebContentSettingsClient* GetWebContentSettings() const override;
 
-  // Methods used by WebTestProxyBase and WebFrameTestClient.
+  // Methods used by WebTestProxyBase.
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   MockScreenOrientationClient* getMockScreenOrientationClient();
-  MockWebUserMediaClient* getMockWebUserMediaClient();
   bool shouldDumpSelectionRect() const;
   bool isPrinting() const;
   bool shouldDumpAsTextWithPixelResults();
@@ -132,10 +130,6 @@ class TestRunner : public WebTestRunner,
   bool shouldDumpNavigationPolicy() const;
 
   bool midiAccessorResult();
-
-  // Methods used by MockColorChooser:
-  void DidOpenChooser();
-  void DidCloseChooser();
 
   // A single item in the work queue.
   class WorkItem {
@@ -811,10 +805,6 @@ class TestRunner : public WebTestRunner,
   bool use_mock_theme_;
 
   scoped_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
-  scoped_ptr<MockWebUserMediaClient> user_media_client_;
-
-  // Number of currently active color choosers.
-  int chooser_count_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 

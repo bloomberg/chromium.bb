@@ -104,8 +104,6 @@
         'web_ax_object_proxy.h',
         'web_content_settings.cc',
         'web_content_settings.h',
-        'web_frame_test_client.cc',
-        'web_frame_test_client.h',
         'web_frame_test_proxy.h',
         'web_task.cc',
         'web_task.h',

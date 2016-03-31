@@ -59,21 +59,28 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<ViewProxyCreationCallback>::Leaky
-    g_view_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<FrameProxyCreationCallback>::Leaky
-    g_frame_test_proxy_callback = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<
+    base::Callback<void(RenderView*, test_runner::WebTestProxyBase*)>>::Leaky
+    g_callback = LAZY_INSTANCE_INITIALIZER;
 
 RenderViewImpl* CreateWebTestProxy(CompositorDependencies* compositor_deps,
                                    const ViewMsg_New_Params& params) {
   typedef test_runner::WebTestProxy<RenderViewImpl, CompositorDependencies*,
                                     const ViewMsg_New_Params&> ProxyType;
   ProxyType* render_view_proxy = new ProxyType(compositor_deps, params);
-  if (g_view_test_proxy_callback == 0)
+  if (g_callback == 0)
     return render_view_proxy;
-  g_view_test_proxy_callback.Get().Run(render_view_proxy, render_view_proxy);
+  g_callback.Get().Run(render_view_proxy, render_view_proxy);
   return render_view_proxy;
+}
+
+test_runner::WebTestProxyBase* GetWebTestProxyBase(
+    RenderViewImpl* render_view) {
+  typedef test_runner::WebTestProxy<RenderViewImpl, const ViewMsg_New_Params&>
+      ViewProxy;
+
+  ViewProxy* render_view_proxy = static_cast<ViewProxy*>(render_view);
+  return static_cast<test_runner::WebTestProxyBase*>(render_view_proxy);
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(
@@ -82,9 +89,8 @@ RenderFrameImpl* CreateWebFrameTestProxy(
       RenderFrameImpl, const RenderFrameImpl::CreateParams&> FrameProxy;
 
   FrameProxy* render_frame_proxy = new FrameProxy(params);
-  if (g_frame_test_proxy_callback == 0)
-    return render_frame_proxy;
-  g_frame_test_proxy_callback.Get().Run(render_frame_proxy, render_frame_proxy);
+  render_frame_proxy->set_base_proxy(GetWebTestProxyBase(params.render_view));
+
   return render_frame_proxy;
 }
 
@@ -107,10 +113,9 @@ void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
 }  // namespace
 
 void EnableWebTestProxyCreation(
-    const ViewProxyCreationCallback& view_proxy_creation_callback,
-    const FrameProxyCreationCallback& frame_proxy_creation_callback) {
-  g_view_test_proxy_callback.Get() = view_proxy_creation_callback;
-  g_frame_test_proxy_callback.Get() = frame_proxy_creation_callback;
+    const base::Callback<void(RenderView*, test_runner::WebTestProxyBase*)>&
+        callback) {
+  g_callback.Get() = callback;
   RenderViewImpl::InstallCreateHook(CreateWebTestProxy);
   RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
 }
