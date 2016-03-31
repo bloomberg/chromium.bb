@@ -63,13 +63,6 @@ curl -X POST -d @urls.json http://<instance-ip>:8080/set_tasks
 
 where `urls.json` is a file containing URLs as a JSON array.
 
-Start the processing by sending a request to `http://<instance-ip>:8080/start`,
-for example:
-
-```shell
-curl http://<instance-ip>:8080/start
-```
-
 ## Stop the app in the cloud
 
 ```shell

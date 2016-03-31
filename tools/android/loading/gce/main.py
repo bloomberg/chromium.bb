@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+import os
 import re
 import threading
 import subprocess
@@ -37,7 +38,7 @@ class ServerApp(object):
        if len(storage_path_components) > 1:
          self._base_path_in_bucket = '/'.join(storage_path_components[1:])
          if not self._base_path_in_bucket.endswith('/'):
-           self._base_path_in_bucket.append('/')
+           self._base_path_in_bucket += '/'
 
        self._chrome_path = config['chrome_path']
 
@@ -57,15 +58,30 @@ class ServerApp(object):
       filename_dest: name of the file in Google Cloud Storage
 
     Returns:
-      The URL of the new file in Google Cloud Storage.
+      The URL of the file in Google Cloud Storage.
     """
     client = self._GetStorageClient()
     bucket = self._GetStorageBucket(client)
     blob = bucket.blob(filename_dest)
     with open(filename_src) as file_src:
       blob.upload_from_file(file_src)
-    url = blob.public_url
-    return url
+    return blob.public_url
+
+  def _UploadString(self, data_string, filename_dest):
+    """Uploads a string to Google Cloud Storage
+
+    Args:
+      data_string: the contents of the file to be uploaded
+      filename_dest: name of the file in Google Cloud Storage
+
+    Returns:
+      The URL of the file in Google Cloud Storage.
+    """
+    client = self._GetStorageClient()
+    bucket = self._GetStorageBucket(client)
+    blob = bucket.blob(filename_dest)
+    blob.upload_from_string(data_string)
+    return blob.public_url
 
   def _DeleteFile(self, filename):
     client = self._GetStorageClient()
@@ -84,40 +100,78 @@ class ServerApp(object):
       return None
     return blob.download_as_string()
 
-  def _SetTasks(self, task_list):
-    if len(self._tasks) > 0:
-      return False  # There are tasks already.
-    self._tasks = json.loads(task_list)
-    return len(self._tasks) != 0
-
-  def _GenerateTrace(self, url, filename):
+  def _GenerateTrace(self, url, filename, log_filename):
     """ Generates a trace using analyze.py
 
     Args:
       url: url as a string.
-      filename: name of the file where the output is saved.
+      filename: name of the file where the trace is saved.
+      log_filename: name of the file where standard output and errors are logged
 
     Returns:
       True if the trace was generated successfully.
     """
-    ret = subprocess.call(
-        ['python', '../analyze.py', 'log_requests', '--clear_cache', '--local',
-         '--headless', '--local_binary', self._chrome_path, '--url',
-         url, '--output', filename])
+    try:
+      os.remove(filename)  # Remove any existing trace for this URL.
+    except OSError:
+      pass  # Nothing to remove.
+    command_line = ['python', '../analyze.py', 'log_requests', '--clear_cache',
+        '--local', '--headless', '--local_binary', self._chrome_path, '--url',
+        url, '--output', filename]
+    with open(log_filename, 'w') as log_file:
+      ret = subprocess.call(command_line , stderr = subprocess.STDOUT,
+                            stdout = log_file)
     return ret == 0
 
   def _ProcessTasks(self):
+    """Iterates over _tasks and runs analyze.py on each of them. Uploads the
+    resulting traces to Google Cloud Storage.
+    """
+    failures_dir = self._base_path_in_bucket + 'failures/'
+    traces_dir = self._base_path_in_bucket + 'traces/'
+    logs_dir = self._base_path_in_bucket + 'analyze_logs/'
+    log_filename = 'analyze.log'
     # Avoid special characters in storage object names
     pattern = re.compile(r"[#\?\[\]\*/]")
+    failed_tasks = []
     while len(self._tasks) > 0:
       url = self._tasks.pop()
+      print 'Generating trace for URL: %s' % url
       filename = pattern.sub('_', url)
-      if self._GenerateTrace(url, filename):
-        self._UploadFile(filename, self._base_path_in_bucket + 'traces/'
-                         + filename)
+      if self._GenerateTrace(url, filename, log_filename):
+        self._UploadFile(filename, traces_dir + filename)
       else:
-        # TODO(droger): Upload the list of urls that failed.
         print 'analyze.py failed'
+        failed_tasks.append(url)
+        if os.path.isfile(filename):
+          self._UploadFile(filename, failures_dir + filename)
+      print 'Uploading analyze log'
+      self._UploadFile(log_filename, logs_dir + filename)
+
+    if len(failed_tasks) > 0:
+      print 'Uploading failing URLs'
+      self._UploadString(json.dumps(failed_tasks),
+                         failures_dir + 'failures.json')
+
+  def _SetTaskList(self, http_body):
+    """Sets the list of tasks and starts processing them
+
+    Args:
+      http_body: List of URLs as a string representing a JSON array.
+
+    Returns:
+      A string to be sent back to the client, describing the success status of
+      the request.
+    """
+    self._tasks = json.loads(http_body)
+    if len(self._tasks) == 0:
+      return 'Error: Empty task list'
+    elif self._thread is not None and self._thread.is_alive():
+      return 'Error: Already running'
+    else:
+      self._thread = threading.Thread(target = self._ProcessTasks)
+      self._thread.start()
+      return 'Starting generation of ' + str(len(self._tasks)) + 'tasks'
 
   def __call__(self, environ, start_response):
     path = environ['PATH_INFO']
@@ -129,19 +183,7 @@ class ServerApp(object):
       except (ValueError):
         body_size = 0
       body = environ['wsgi.input'].read(body_size)
-      if self._SetTasks(body):
-        data = 'Set tasks: ' + str(len(self._tasks))
-      else:
-        data = 'Something went wrong'
-    elif path == '/start':
-      if len(self._tasks) == 0 :
-        data = 'Nothing to do!'
-      elif self._thread is not None and self._thread.is_alive():
-        data = 'Already running!'
-      else:
-        data = 'Starting generation of ' + str(len(self._tasks)) + 'tasks'
-        self._thread = threading.Thread(target = self._ProcessTasks)
-        self._thread.start()
+      data = self._SetTaskList(body)
     elif path == '/test':
       data = 'hello'
     else:

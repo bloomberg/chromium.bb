@@ -98,7 +98,8 @@ autorestart=true
 user=pythonapp
 # Environment variables ensure that the application runs inside of the
 # configured virtualenv.
-environment=VIRTUAL_ENV="/opt/app/clovis/env",PATH="/opt/app/clovis/env/bin",\
+environment=VIRTUAL_ENV="/opt/app/clovis/env", \
+    PATH="/opt/app/clovis/env/bin:/usr/bin", \
     HOME="/home/pythonapp",USER="pythonapp"
 stdout_logfile=syslog
 stderr_logfile=syslog
