@@ -155,7 +155,10 @@ bool SandboxCompiler::CompileAndApplyProfile(std::string* error) {
   if (sandbox_init_with_parameters(profile_str_.c_str(), 0, params.data(),
                                    &error_internal)) {
     error->assign(error_internal);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     sandbox_free_error(error_internal);
+#pragma clang diagnostic pop
     return false;
   }
   return true;

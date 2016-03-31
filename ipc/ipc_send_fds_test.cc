@@ -193,6 +193,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendFdsSandboxedClient) {
 
   // Enable the sandbox.
   char* error_buff = NULL;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   int error = sandbox_init(kSBXProfilePureComputation, SANDBOX_NAMED,
                            &error_buff);
   bool success = (error == 0 && error_buff == NULL);
@@ -200,6 +202,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendFdsSandboxedClient) {
     return -1;
 
   sandbox_free_error(error_buff);
+#pragma clang diagnostic pop
 
   // Make sure sandbox is really enabled.
   if (open(kDevZeroPath, O_RDONLY) != -1) {
