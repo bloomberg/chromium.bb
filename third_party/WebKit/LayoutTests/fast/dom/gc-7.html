@@ -3,13 +3,7 @@
 
 function frameLoaded()
 {
-    // create lots of objects to force a garbage collection
-    var i = 0;
-    var s;
-    while (i < 5000) {
-        i = i+1.11;
-        s = s + " ";
-    }
+    gc();
 
     var output= document.getElementById("output");
 
@@ -17,9 +11,9 @@ function frameLoaded()
     output.innerHTML += spanB + "<BR>";
     output.innerHTML += spanB.parentNode + "<BR>";
     output.innerHTML += spanB.ownerDocument + "<BR>";
-    
+
     if (window.testRunner)
-        testRunner.notifyDone();    
+        testRunner.notifyDone();
 }
 
 function doit()
@@ -49,7 +43,7 @@ collection as long as the document is alive (for contrast with test
 </p>
 <p>
 The output should be the following pieces of text on lines by
-themselves: "B", "[object HTMLElement]", "[object HTMLElement]", "[object HTMLDocument]".
+themselves: "B", "[object HTMLSpanElement]", "[object HTMLSpanElement]", "[object HTMLDocument]".
 </p>
 </div>
 

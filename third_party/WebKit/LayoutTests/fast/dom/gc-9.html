@@ -5,13 +5,13 @@
         color: black;
         padding: 0px 0px 0px 0px;
     }
-    
+
     .hidden {
         visibility: hidden;
     }
 </style>
 <script>
-function print(message, color) 
+function print(message, color)
 {
     var paragraph = document.createElement("div");
     paragraph.appendChild(document.createTextNode(message));
@@ -28,16 +28,6 @@ function shouldBe(a, b)
         print("PASS: " + a + " should be " + b + " and is.", "green");
     else
         print("FAIL: " + a + " should be " + b + " but instead is " + evalA + ".", "red");
-}
-
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++) { // > force garbage collection (FF requires about 9K allocations before a collect)
-        var s = new String("");
-    }
 }
 
 var event;
@@ -90,16 +80,16 @@ function testDOMImplementation()
   impl.createHTMLDocument('');  // May crash or throw an exception if we collect parent document of impl.
 }
 
-function test() 
+function test()
 {
     if (window.testRunner)
         testRunner.dumpAsText();
-        
+
     print("DOM OBJECTS BEFORE GARBAGE COLLECTION:");
     generateProperties();
 
     gc();
-    
+
     print("DOM OBJECTS AFTER GARBAGE COLLECTION:");
     testPropertiesAgain();
 
@@ -141,7 +131,7 @@ var objectsToTest = [
     [ "document.getElementsByTagName('table')[0].tBodies[0].rows", "allow custom" ],
     [ "document.body.children", "allow custom" ],
     [ "document.getElementsByTagName('map')[0].areas", "allow custom" ],
-    
+
     [ "document.body.style", "allow custom" ],
     [ "document.styleSheets", "allow custom" ],
     [ "document.styleSheets[0]", "allow custom" ],
@@ -192,8 +182,8 @@ function testPropertiesAgain()
 <body style="color: black" onload="test();">
 <p>This page tests whether custom properties on DOM objects persist after garbage collection.</p>
 <p>If the test passes, you'll see a series of 'PASS' messages below.</p>
-<p>Because neither WinIE nor FF has reasonable or predictable behavior in this scenario, this 
-   test just documents our behavior to ensure that we don't change it accidentally. It is not 
+<p>Because neither WinIE nor FF has reasonable or predictable behavior in this scenario, this
+   test just documents our behavior to ensure that we don't change it accidentally. It is not
    a prescription for how things should behave.</p>
 <hr>
 

@@ -4,13 +4,7 @@ function doit()
 {
     document.getElementById("span-B").customProperty = "B";
 
-    // create lots of objects to force a garbage collection
-    var i = 0;
-    var s;
-    while (i < 5000) {
-        i = i+1.11;
-	s = s + " ";
-    }
+    gc();
 
     var output= document.getElementById("output");
 

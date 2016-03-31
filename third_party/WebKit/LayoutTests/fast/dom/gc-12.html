@@ -21,15 +21,6 @@ function shouldBeNode(a, aDescription)
     log("PASS: " + aDescription + " should be a Node and is.");
 }
 
-function gc()
-{
-    if (window.GCController)
-        return GCController.collect();
-
-    for (var i = 0; i < 10000; i++)
-        var s = new String("");
-}
-
 (function () {
     if (window.testRunner) {
         testRunner.dumpAsText();

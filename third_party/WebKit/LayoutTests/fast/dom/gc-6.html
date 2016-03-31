@@ -3,21 +3,14 @@
 
 function frameLoaded()
 {
-    // create lots of objects to force a garbage collection
-    var i = 0;
-    var s;
-    while (i < 5000) {
-        i = i+1.11;
-        s = s + " ";
-    }
-
+    gc();
     var output= document.getElementById("output");
 
     output.innerHTML += spanB.customProperty + "<BR>";
     output.innerHTML += spanB + "<BR>";
     output.innerHTML += spanB.parentNode + "<BR>";
     output.innerHTML += spanB.ownerDocument + "<BR>";
-    
+
     if (window.testRunner)
         testRunner.notifyDone();
 }
@@ -27,8 +20,8 @@ function doit()
     var frame = document.getElementById("frame");
     spanB = frame.contentDocument.getElementById("span-B");
     spanB.customProperty = "B";
-    frame.onload = frameLoaded;    
-    frame.src = "about:blank";    
+    frame.onload = frameLoaded;
+    frame.src = "about:blank";
 }
 
 if (window.testRunner) {
@@ -48,7 +41,7 @@ so long as any node in the document is reachable.
 </p>
 <p>
 The output should be the following pieces of text on lines by
-themselves: "B", "[object HTMLElement]", "null", "[object HTMLDocument]".
+themselves: "B", "[object HTMLSpanElement]", "[object HTMLSpanElement]", "[object HTMLDocument]".
 </p>
 </div>
 
