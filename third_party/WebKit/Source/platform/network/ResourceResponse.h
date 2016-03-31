@@ -221,6 +221,9 @@ public:
         m_multipartBoundary.append(bytes, size);
     }
 
+    const String& cacheStorageCacheName() const { return m_cacheStorageCacheName; }
+    void setCacheStorageCacheName(const String& cacheStorageCacheName) { m_cacheStorageCacheName = cacheStorageCacheName; }
+
     int64_t responseTime() const { return m_responseTime; }
     void setResponseTime(int64_t responseTime) { m_responseTime = responseTime; }
 
@@ -338,6 +341,10 @@ private:
     // This may be empty if the response was created inside the ServiceWorker.
     KURL m_originalURLViaServiceWorker;
 
+    // The cache name of the CacheStorage from where the response is served via
+    // the ServiceWorker. Null if the response isn't from the CacheStorage.
+    String m_cacheStorageCacheName;
+
     // The time at which the response headers were received.  For cached
     // responses, this time could be "far" in the past.
     int64_t m_responseTime;
@@ -392,6 +399,7 @@ public:
     bool m_wasFallbackRequiredByServiceWorker;
     WebServiceWorkerResponseType m_serviceWorkerResponseType;
     KURL m_originalURLViaServiceWorker;
+    String m_cacheStorageCacheName;
     int64_t m_responseTime;
     String m_remoteIPAddress;
     unsigned short m_remotePort;

@@ -79,6 +79,9 @@ public:
     void setResponseTime(int64_t);
     int64_t responseTime() const;
 
+    void setCacheStorageCacheName(const WebString&);
+    WebString cacheStorageCacheName() const;
+
 #if INSIDE_BLINK
     const HTTPHeaderMap& headers() const;
 

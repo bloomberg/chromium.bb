@@ -703,6 +703,9 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
 
   response_url_ = response.url;
   service_worker_response_type_ = response.response_type;
+  response_time_ = response.response_time;
+  response_is_in_cache_storage_ = response.is_in_cache_storage;
+  response_cache_storage_cache_name_ = response.cache_storage_cache_name;
   CreateResponseHeader(
       response.status_code, response.status_text, response.headers);
   load_timing_info_.receive_headers_end = base::TimeTicks::Now();
@@ -831,13 +834,16 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
         GURL() /* original_url_via_service_worker */,
         blink::WebServiceWorkerResponseTypeDefault,
         base::TimeTicks() /* service_worker_start_time */,
-        base::TimeTicks() /* service_worker_ready_time */);
+        base::TimeTicks() /* service_worker_ready_time */,
+        false /* respons_is_in_cache_storage */,
+        std::string() /* response_cache_storage_cache_name */);
     return;
   }
   delegate_->OnStartCompleted(true /* was_fetched_via_service_worker */,
                               fall_back_required_, response_url_,
                               service_worker_response_type_, worker_start_time_,
-                              worker_ready_time_);
+                              worker_ready_time_, response_is_in_cache_storage_,
+                              response_cache_storage_cache_name_);
 }
 
 bool ServiceWorkerURLRequestJob::IsMainResourceLoad() const {

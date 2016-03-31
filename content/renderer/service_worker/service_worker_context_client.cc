@@ -532,7 +532,9 @@ void ServiceWorkerContextClient::didHandleFetchEvent(
       web_response.statusText().utf8(), web_response.responseType(), headers,
       web_response.blobUUID().utf8(), web_response.blobSize(),
       web_response.streamURL(), web_response.error(),
-      base::Time::FromInternalValue(web_response.responseTime()));
+      base::Time::FromInternalValue(web_response.responseTime()),
+      !web_response.cacheStorageCacheName().isNull(),
+      web_response.cacheStorageCacheName().utf8());
   Send(new ServiceWorkerHostMsg_FetchEventFinished(
       GetRoutingID(), request_id,
       SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,

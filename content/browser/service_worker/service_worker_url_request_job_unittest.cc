@@ -72,7 +72,9 @@ class TestCallbackTracker {
       const GURL& original_url_via_service_worker,
       blink::WebServiceWorkerResponseType response_type_via_service_worker,
       base::TimeTicks service_worker_start_time,
-      base::TimeTicks service_worker_ready_time) {
+      base::TimeTicks service_worker_ready_time,
+      bool response_is_in_cache_storage,
+      const std::string& response_cache_storage_cache_name) {
     ++times_on_start_completed_invoked_;
 
     was_fetched_via_service_worker_ = was_fetched_via_service_worker;
@@ -82,6 +84,8 @@ class TestCallbackTracker {
         blink::WebServiceWorkerResponseTypeDefault;
     service_worker_start_time_ = service_worker_start_time;
     service_worker_ready_time_ = service_worker_ready_time;
+    response_is_in_cache_storage_ = response_is_in_cache_storage;
+    response_cache_storage_cache_name_ = response_cache_storage_cache_name;
   }
 
   void OnPrepareToRestart(base::TimeTicks service_worker_start_time,
@@ -127,6 +131,14 @@ class TestCallbackTracker {
     return service_worker_ready_time_;
   }
 
+  bool response_is_in_cache_storage() const {
+    return response_is_in_cache_storage_;
+  }
+
+  const std::string& response_cache_storage_cache_name() const {
+    return response_cache_storage_cache_name_;
+  }
+
  private:
   int times_on_start_completed_invoked_ = 0;
   int times_prepare_to_restart_invoked_ = 0;
@@ -140,6 +152,8 @@ class TestCallbackTracker {
       blink::WebServiceWorkerResponseTypeDefault;
   base::TimeTicks service_worker_start_time_;
   base::TimeTicks service_worker_ready_time_;
+  bool response_is_in_cache_storage_ = false;
+  std::string response_cache_storage_cache_name_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCallbackTracker);
 };
@@ -347,11 +361,14 @@ class ServiceWorkerURLRequestJobTest
       const GURL& original_url_via_service_worker,
       blink::WebServiceWorkerResponseType response_type_via_service_worker,
       base::TimeTicks worker_start_time,
-      base::TimeTicks service_worker_ready_time) override {
+      base::TimeTicks service_worker_ready_time,
+      bool response_is_in_cache_storage,
+      const std::string& response_cache_storage_cache_name) override {
     callback_tracker_.OnStartCompleted(
         was_fetched_via_service_worker, was_fallback_required,
         original_url_via_service_worker, response_type_via_service_worker,
-        worker_start_time, service_worker_ready_time);
+        worker_start_time, service_worker_ready_time,
+        response_is_in_cache_storage, response_cache_storage_cache_name);
   }
 
   ServiceWorkerVersion* GetServiceWorkerVersion(
@@ -416,6 +433,9 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
             callback_tracker_.response_type_via_service_worker());
   EXPECT_FALSE(callback_tracker_.service_worker_start_time().is_null());
   EXPECT_FALSE(callback_tracker_.service_worker_ready_time().is_null());
+  EXPECT_FALSE(callback_tracker_.response_is_in_cache_storage());
+  EXPECT_EQ(std::string(),
+            callback_tracker_.response_cache_storage_cache_name());
 }
 
 class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
@@ -434,7 +454,9 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
         ServiceWorkerResponse(
             GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
             ServiceWorkerHeaderMap(), std::string(), 0, GURL(),
-            blink::WebServiceWorkerResponseErrorUnknown, base::Time())));
+            blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
+            false /* response_is_in_cache_storage */,
+            std::string() /* response_cache_storage_cache_name */)));
   }
 
  private:
@@ -506,7 +528,9 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
         ServiceWorkerResponse(
             GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
             ServiceWorkerHeaderMap(), blob_uuid_, blob_size_, GURL(),
-            blink::WebServiceWorkerResponseErrorUnknown, base::Time())));
+            blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
+            false /* response_is_in_cache_storage */,
+            std::string() /* response_cache_storage_cache_name */)));
   }
 
   std::string blob_uuid_;
@@ -578,7 +602,9 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
         ServiceWorkerResponse(
             GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
             ServiceWorkerHeaderMap(), "", 0, stream_url_,
-            blink::WebServiceWorkerResponseErrorUnknown, base::Time())));
+            blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
+            false /* response_is_in_cache_storage */,
+            std::string() /* response_cache_storage_cache_name */)));
   }
 
   const GURL stream_url_;

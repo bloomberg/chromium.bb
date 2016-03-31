@@ -169,6 +169,7 @@ FetchResponseData* FetchResponseData::clone(ExecutionContext* executionContext)
     newResponse->m_headerList = m_headerList->clone();
     newResponse->m_mimeType = m_mimeType;
     newResponse->m_responseTime = m_responseTime;
+    newResponse->m_cacheStorageCacheName = m_cacheStorageCacheName;
 
     switch (m_type) {
     case BasicType:
@@ -218,6 +219,7 @@ void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerRespons
     response.setStatusText(statusMessage());
     response.setResponseType(fetchTypeToWebType(m_type));
     response.setResponseTime(responseTime());
+    response.setCacheStorageCacheName(cacheStorageCacheName());
     for (size_t i = 0; i < headerList()->size(); ++i) {
         const FetchHeaderList::Header* header = headerList()->list()[i].get();
         response.appendHeader(header->first, header->second);

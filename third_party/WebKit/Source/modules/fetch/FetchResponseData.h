@@ -51,12 +51,14 @@ public:
     BodyStreamBuffer* internalBuffer() const;
     String internalMIMEType() const;
     int64_t responseTime() const { return m_responseTime; }
+    String cacheStorageCacheName() const { return m_cacheStorageCacheName; }
 
     void setURL(const KURL& url) { m_url = url; }
     void setStatus(unsigned short status) { m_status = status; }
     void setStatusMessage(AtomicString statusMessage) { m_statusMessage = statusMessage; }
     void setMIMEType(const String& type) { m_mimeType = type; }
     void setResponseTime(int64_t responseTime) { m_responseTime = responseTime; }
+    void setCacheStorageCacheName(const String& cacheStorageCacheName) { m_cacheStorageCacheName = cacheStorageCacheName; }
 
     // If the type is Default, replaces |m_buffer|.
     // If the type is Basic or CORS, replaces |m_buffer| and
@@ -82,6 +84,7 @@ private:
     Member<BodyStreamBuffer> m_buffer;
     String m_mimeType;
     int64_t m_responseTime;
+    String m_cacheStorageCacheName;
 };
 
 } // namespace blink

@@ -62,11 +62,13 @@ class CONTENT_EXPORT CacheStorageCache
 
   static scoped_refptr<CacheStorageCache> CreateMemoryCache(
       const GURL& origin,
+      const std::string& cache_name,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
   static scoped_refptr<CacheStorageCache> CreatePersistentCache(
       const GURL& origin,
+      const std::string& cache_name,
       const base::FilePath& path,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
@@ -149,6 +151,7 @@ class CONTENT_EXPORT CacheStorageCache
 
   CacheStorageCache(
       const GURL& origin,
+      const std::string& cache_name,
       const base::FilePath& path,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
@@ -292,6 +295,7 @@ class CONTENT_EXPORT CacheStorageCache
   scoped_ptr<disk_cache::Backend> backend_;
 
   GURL origin_;
+  const std::string cache_name_;
   base::FilePath path_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;

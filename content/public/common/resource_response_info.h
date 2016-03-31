@@ -135,6 +135,14 @@ struct ResourceResponseInfo {
   // TODO(ksakamoto): Move this to net::LoadTimingInfo.
   base::TimeTicks service_worker_ready_time;
 
+  // True when the response is served from the CacheStorage via the
+  // ServiceWorker.
+  bool is_in_cache_storage = false;
+
+  // The cache name of the CacheStorage from where the response is served via
+  // the ServiceWorker. Empty if the response isn't from the CacheStorage.
+  std::string cache_storage_cache_name;
+
   // Whether or not the request was for a LoFi version of the resource.
   bool is_using_lofi;
 };

@@ -227,6 +227,11 @@ public:
     // The boundary of the response. Set only when this is a multipart response.
     BLINK_PLATFORM_EXPORT void setMultipartBoundary(const char* bytes, size_t /* size */);
 
+    // The cache name of the CacheStorage from where the response is served via
+    // the ServiceWorker. Null if the response isn't from the CacheStorage.
+    BLINK_PLATFORM_EXPORT WebString cacheStorageCacheName() const;
+    BLINK_PLATFORM_EXPORT void setCacheStorageCacheName(const WebString&);
+
     // This indicates the location of a downloaded response if the
     // WebURLRequest had the downloadToFile flag set to true. This file path
     // remains valid for the lifetime of the WebURLLoader used to create it.

@@ -150,7 +150,8 @@ class CacheStorage::MemoryLoader : public CacheStorage::CacheLoader {
   scoped_refptr<CacheStorageCache> CreateCache(
       const std::string& cache_name) override {
     return CacheStorageCache::CreateMemoryCache(
-        origin_, request_context_getter_, quota_manager_proxy_, blob_context_);
+        origin_, cache_name, request_context_getter_, quota_manager_proxy_,
+        blob_context_);
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,
@@ -212,8 +213,8 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     std::string cache_dir = cache_name_to_cache_dir_[cache_name];
     base::FilePath cache_path = origin_path_.AppendASCII(cache_dir);
     return CacheStorageCache::CreatePersistentCache(
-        origin_, cache_path, request_context_getter_, quota_manager_proxy_,
-        blob_context_);
+        origin_, cache_name, cache_path, request_context_getter_,
+        quota_manager_proxy_, blob_context_);
   }
 
   void PrepareNewCacheDestination(const std::string& cache_name,

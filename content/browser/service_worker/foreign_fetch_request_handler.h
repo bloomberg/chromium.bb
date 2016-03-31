@@ -106,7 +106,9 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       const GURL& original_url_via_service_worker,
       blink::WebServiceWorkerResponseType response_type_via_service_worker,
       base::TimeTicks worker_start_time,
-      base::TimeTicks service_worker_ready_time) override;
+      base::TimeTicks service_worker_ready_time,
+      bool response_is_in_cache_storage,
+      const std::string& response_cache_storage_cache_name) override;
   ServiceWorkerVersion* GetServiceWorkerVersion(
       ServiceWorkerMetrics::URLRequestJobResult* result) override;
 

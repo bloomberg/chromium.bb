@@ -163,7 +163,9 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
                         uint64_t blob_size,
                         const GURL& stream_url,
                         blink::WebServiceWorkerResponseError error,
-                        base::Time response_time);
+                        base::Time response_time,
+                        bool is_in_cache_storage,
+                        const std::string& cache_storage_cache_name);
   ServiceWorkerResponse(const ServiceWorkerResponse& other);
   ~ServiceWorkerResponse();
 
@@ -177,6 +179,8 @@ struct CONTENT_EXPORT ServiceWorkerResponse {
   GURL stream_url;
   blink::WebServiceWorkerResponseError error;
   base::Time response_time;
+  bool is_in_cache_storage = false;
+  std::string cache_storage_cache_name;
 };
 
 // Represents initialization info for a WebServiceWorker object.

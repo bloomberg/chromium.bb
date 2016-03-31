@@ -284,24 +284,26 @@ struct CacheStorageCache::PutContext {
 // static
 scoped_refptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
     const GURL& origin,
+    const std::string& cache_name,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
   return make_scoped_refptr(new CacheStorageCache(
-      origin, base::FilePath(), std::move(request_context_getter),
+      origin, cache_name, base::FilePath(), std::move(request_context_getter),
       std::move(quota_manager_proxy), blob_context));
 }
 
 // static
 scoped_refptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
     const GURL& origin,
+    const std::string& cache_name,
     const base::FilePath& path,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context) {
-  return make_scoped_refptr(
-      new CacheStorageCache(origin, path, std::move(request_context_getter),
-                            std::move(quota_manager_proxy), blob_context));
+  return make_scoped_refptr(new CacheStorageCache(
+      origin, cache_name, path, std::move(request_context_getter),
+      std::move(quota_manager_proxy), blob_context));
 }
 
 CacheStorageCache::~CacheStorageCache() {
@@ -478,11 +480,13 @@ void CacheStorageCache::GetSizeThenClose(const SizeCallback& callback) {
 
 CacheStorageCache::CacheStorageCache(
     const GURL& origin,
+    const std::string& cache_name,
     const base::FilePath& path,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context)
     : origin_(origin),
+      cache_name_(cache_name),
       path_(path),
       request_context_getter_(std::move(request_context_getter)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
@@ -771,7 +775,9 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
       operation.response.status_text, operation.response.response_type,
       operation.response.headers, operation.response.blob_uuid,
       operation.response.blob_size, operation.response.stream_url,
-      operation.response.error, operation.response.response_time));
+      operation.response.error, operation.response.response_time,
+      false /* is_in_cache_storage */,
+      std::string() /* cache_storage_cache_name */));
 
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
 
@@ -1372,7 +1378,8 @@ void CacheStorageCache::PopulateResponseMetadata(
       ProtoResponseTypeToWebResponseType(metadata.response().response_type()),
       ServiceWorkerHeaderMap(), "", 0, GURL(),
       blink::WebServiceWorkerResponseErrorUnknown,
-      base::Time::FromInternalValue(metadata.response().response_time()));
+      base::Time::FromInternalValue(metadata.response().response_time()),
+      true /* is_in_cache_storage */, cache_name_);
 
   for (int i = 0; i < metadata.response().headers_size(); ++i) {
     const CacheHeaderMap header = metadata.response().headers(i);

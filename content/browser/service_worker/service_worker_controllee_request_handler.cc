@@ -143,6 +143,8 @@ void ServiceWorkerControlleeRequestHandler::GetExtraResponseInfo(
       response_type_via_service_worker_;
   response_info->service_worker_start_time = service_worker_start_time_;
   response_info->service_worker_ready_time = service_worker_ready_time_;
+  response_info->is_in_cache_storage = response_is_in_cache_storage_;
+  response_info->cache_storage_cache_name = response_cache_storage_cache_name_;
 }
 
 void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
@@ -387,11 +389,15 @@ void ServiceWorkerControlleeRequestHandler::OnStartCompleted(
     const GURL& original_url_via_service_worker,
     blink::WebServiceWorkerResponseType response_type_via_service_worker,
     base::TimeTicks service_worker_start_time,
-    base::TimeTicks service_worker_ready_time) {
+    base::TimeTicks service_worker_ready_time,
+    bool response_is_in_cache_storage,
+    const std::string& response_cache_storage_cache_name) {
   was_fetched_via_service_worker_ = was_fetched_via_service_worker;
   was_fallback_required_ = was_fallback_required;
   original_url_via_service_worker_ = original_url_via_service_worker;
   response_type_via_service_worker_ = response_type_via_service_worker;
+  response_is_in_cache_storage_ = response_is_in_cache_storage;
+  response_cache_storage_cache_name_ = response_cache_storage_cache_name;
 
   // Update times, if not already set by a previous Job.
   if (service_worker_start_time_.is_null()) {
@@ -438,6 +444,8 @@ void ServiceWorkerControlleeRequestHandler::ClearJob() {
   original_url_via_service_worker_ = GURL();
   response_type_via_service_worker_ =
       blink::WebServiceWorkerResponseTypeDefault;
+  response_is_in_cache_storage_ = false;
+  response_cache_storage_cache_name_ = std::string();
 }
 
 }  // namespace content

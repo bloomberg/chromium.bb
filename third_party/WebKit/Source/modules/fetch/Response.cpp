@@ -46,6 +46,7 @@ FetchResponseData* createFetchResponseDataFromWebResponse(ExecutionContext* exec
     response->setStatus(webResponse.status());
     response->setStatusMessage(webResponse.statusText());
     response->setResponseTime(webResponse.responseTime());
+    response->setCacheStorageCacheName(webResponse.cacheStorageCacheName());
 
     for (HTTPHeaderMap::const_iterator i = webResponse.headers().begin(), end = webResponse.headers().end(); i != end; ++i) {
         response->headerList()->append(i->key, i->value);

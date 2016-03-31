@@ -245,7 +245,9 @@ class CacheStorageManagerTest : public testing::Test {
     ServiceWorkerResponse response(
         url, status_code, "OK", blink::WebServiceWorkerResponseTypeDefault,
         ServiceWorkerHeaderMap(), blob_handle->uuid(), url.spec().size(),
-        GURL(), blink::WebServiceWorkerResponseErrorUnknown, base::Time());
+        GURL(), blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
+        false /* is_in_cache_storage */,
+        std::string() /* cache_storage_cache_name */);
 
     CacheStorageBatchOperation operation;
     operation.operation_type = CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT;

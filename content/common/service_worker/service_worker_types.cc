@@ -59,8 +59,7 @@ ServiceWorkerResponse::ServiceWorkerResponse()
     : status_code(0),
       response_type(blink::WebServiceWorkerResponseTypeOpaque),
       blob_size(0),
-      error(blink::WebServiceWorkerResponseErrorUnknown) {
-}
+      error(blink::WebServiceWorkerResponseErrorUnknown) {}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
     const GURL& url,
@@ -72,7 +71,9 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     uint64_t blob_size,
     const GURL& stream_url,
     blink::WebServiceWorkerResponseError error,
-    base::Time response_time)
+    base::Time response_time,
+    bool is_in_cache_storage,
+    const std::string& cache_storage_cache_name)
     : url(url),
       status_code(status_code),
       status_text(status_text),
@@ -82,7 +83,9 @@ ServiceWorkerResponse::ServiceWorkerResponse(
       blob_size(blob_size),
       stream_url(stream_url),
       error(error),
-      response_time(response_time) {}
+      response_time(response_time),
+      is_in_cache_storage(is_in_cache_storage),
+      cache_storage_cache_name(cache_storage_cache_name) {}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
     const ServiceWorkerResponse& other) = default;

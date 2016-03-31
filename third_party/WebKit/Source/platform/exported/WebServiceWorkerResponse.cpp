@@ -29,6 +29,7 @@ public:
     WebURL streamURL;
     WebServiceWorkerResponseError error;
     int64_t responseTime;
+    WebString cacheStorageCacheName;
 };
 
 WebServiceWorkerResponse::WebServiceWorkerResponse()
@@ -180,6 +181,16 @@ void WebServiceWorkerResponse::setResponseTime(int64_t time)
 int64_t WebServiceWorkerResponse::responseTime() const
 {
     return m_private->responseTime;
+}
+
+void WebServiceWorkerResponse::setCacheStorageCacheName(const WebString& cacheStorageCacheName)
+{
+    m_private->cacheStorageCacheName = cacheStorageCacheName;
+}
+
+WebString WebServiceWorkerResponse::cacheStorageCacheName() const
+{
+    return m_private->cacheStorageCacheName;
 }
 
 } // namespace blink

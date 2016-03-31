@@ -445,6 +445,16 @@ void WebURLResponse::setMultipartBoundary(const char* bytes, size_t size)
     m_private->m_resourceResponse->setMultipartBoundary(bytes, size);
 }
 
+WebString WebURLResponse::cacheStorageCacheName() const
+{
+    return m_private->m_resourceResponse->cacheStorageCacheName();
+}
+
+void WebURLResponse::setCacheStorageCacheName(const WebString& cacheStorageCacheName)
+{
+    m_private->m_resourceResponse->setCacheStorageCacheName(cacheStorageCacheName);
+}
+
 WebString WebURLResponse::downloadFilePath() const
 {
     return m_private->m_resourceResponse->downloadedFilePath();

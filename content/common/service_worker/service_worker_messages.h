@@ -92,6 +92,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(stream_url)
   IPC_STRUCT_TRAITS_MEMBER(error)
   IPC_STRUCT_TRAITS_MEMBER(response_time)
+  IPC_STRUCT_TRAITS_MEMBER(is_in_cache_storage)
+  IPC_STRUCT_TRAITS_MEMBER(cache_storage_cache_name)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerObjectInfo)

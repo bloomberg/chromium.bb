@@ -971,7 +971,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       FetchEvent_ResponseTime) {
+                       FetchEvent_ResponseViaCache) {
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response1;
   ServiceWorkerResponse response2;
@@ -987,12 +987,16 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   EXPECT_EQ(200, response1.status_code);
   EXPECT_EQ("OK", response1.status_text);
   EXPECT_TRUE(response1.response_time >= start_time);
+  EXPECT_FALSE(response1.is_in_cache_storage);
+  EXPECT_EQ(std::string(), response2.cache_storage_cache_name);
 
   FetchOnRegisteredWorker(&result, &response2, &blob_data_handle);
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
   EXPECT_EQ(200, response2.status_code);
   EXPECT_EQ("OK", response2.status_text);
   EXPECT_EQ(response1.response_time, response2.response_time);
+  EXPECT_TRUE(response2.is_in_cache_storage);
+  EXPECT_EQ("cache_name", response2.cache_storage_cache_name);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,

@@ -236,10 +236,12 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
   SimulateSend(new ServiceWorkerHostMsg_FetchEventFinished(
       embedded_worker_id, request_id,
       SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
-      ServiceWorkerResponse(
-          GURL(), 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
-          ServiceWorkerHeaderMap(), std::string(), 0, GURL(),
-          blink::WebServiceWorkerResponseErrorUnknown, base::Time())));
+      ServiceWorkerResponse(GURL(), 200, "OK",
+                            blink::WebServiceWorkerResponseTypeDefault,
+                            ServiceWorkerHeaderMap(), std::string(), 0, GURL(),
+                            blink::WebServiceWorkerResponseErrorUnknown,
+                            base::Time(), false /* is_in_cache_storage */,
+                            std::string() /* cache_storage_cache_name */)));
 }
 
 void EmbeddedWorkerTestHelper::OnPushEvent(int embedded_worker_id,

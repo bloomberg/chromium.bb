@@ -942,6 +942,10 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   response->setServiceWorkerResponseType(info.response_type_via_service_worker);
   response->setOriginalURLViaServiceWorker(
       info.original_url_via_service_worker);
+  response->setCacheStorageCacheName(
+      info.is_in_cache_storage
+          ? blink::WebString::fromUTF8(info.cache_storage_cache_name)
+          : blink::WebString());
 
   SetSecurityStyleAndDetails(url, info.security_info, response,
                              report_security_info);

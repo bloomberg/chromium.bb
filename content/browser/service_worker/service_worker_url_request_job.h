@@ -75,7 +75,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
         const GURL& original_url_via_service_worker,
         blink::WebServiceWorkerResponseType response_type_via_service_worker,
         base::TimeTicks worker_start_time,
-        base::TimeTicks service_worker_ready_time) = 0;
+        base::TimeTicks service_worker_ready_time,
+        bool response_is_in_cache_storage,
+        const std::string& response_cache_storage_cache_name) = 0;
 
     // Returns the ServiceWorkerVersion fetch events for this request job should
     // be dispatched to. If no appropriate worker can be determined, returns
@@ -276,6 +278,9 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
 
   ResponseBodyType response_body_type_ = UNKNOWN;
   bool did_record_result_ = false;
+
+  bool response_is_in_cache_storage_ = false;
+  std::string response_cache_storage_cache_name_;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 
