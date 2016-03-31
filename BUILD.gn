@@ -793,7 +793,7 @@ if (!is_ios) {
     # so we need to specify the dependencies here instead.
     if (is_android) {
       deps += [
-        "//breakpad:breakpad_unittests_deps",
+        "//breakpad:breakpad_unittests",
         "//breakpad:dump_syms($host_toolchain)",
         "//breakpad:microdump_stackwalk($host_toolchain)",
         "//breakpad:minidump_dump($host_toolchain)",

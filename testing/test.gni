@@ -8,76 +8,15 @@
 
 # Define a test as an executable (or apk on Android) with the "testonly" flag
 # set.
+# Variable:
+#   use_raw_android_executable: Use executable() rather than android_apk().
 template("test") {
   if (is_android) {
     import("//build/config/android/config.gni")
     import("//build/config/android/rules.gni")
 
-    _library_target = "_${target_name}__library"
-    _apk_target = "${target_name}_apk"
-
-    shared_library(_library_target) {
-      # Configs will always be defined since we set_defaults for a component
-      # in the main config. We want to use those rather than whatever came with
-      # the nested shared/static library inside the component.
-      configs = []  # Prevent list overwriting warning.
-      configs = invoker.configs
-
-      testonly = true
-
-      # Don't use "*" to forward all variables since some (like output_name
-      # and isolate_file) apply only to the APK below.
-      deps = []
-      forward_variables_from(invoker,
-                             [
-                               "all_dependent_configs",
-                               "allow_circular_includes_from",
-                               "cflags",
-                               "cflags_c",
-                               "cflags_cc",
-                               "check_includes",
-                               "data",
-                               "data_deps",
-                               "datadeps",
-                               "defines",
-                               "deps",
-                               "include_dirs",
-                               "ldflags",
-                               "lib_dirs",
-                               "libs",
-                               "output_extension",
-                               "output_name",
-                               "public",
-                               "public_configs",
-                               "public_deps",
-                               "sources",
-                               "visibility",
-                             ])
-
-      if (!defined(invoker.use_default_launcher) ||
-          invoker.use_default_launcher) {
-        deps += [ "//testing/android/native_test:native_test_native_code" ]
-      }
-    }
-
-    unittest_apk(_apk_target) {
-      forward_variables_from(invoker,
-                             [
-                               "android_manifest",
-                               "deps",
-                               "enable_multidex",
-                               "use_default_launcher",
-                               "write_asset_list",
-                             ])
-      unittests_dep = ":$_library_target"
-      apk_name = invoker.target_name
-      if (defined(invoker.output_name)) {
-        apk_name = invoker.output_name
-        unittests_binary = "lib${apk_name}.so"
-        install_script_name = "install_${invoker.output_name}"
-      }
-      deps += [ ":$_library_target" ]
-    }
+    _use_raw_android_executable = defined(invoker.use_raw_android_executable) &&
+                                  invoker.use_raw_android_executable
 
     # output_name is used to allow targets with the same name but in different
     # packages to still produce unique runner scripts.
@@ -85,46 +24,123 @@ template("test") {
     if (defined(invoker.output_name)) {
       _output_name = invoker.output_name
     }
+
+    if (_use_raw_android_executable) {
+      _exec_target = "${target_name}__exec"
+      _dist_target = "${target_name}__dist"
+      _exec_output =
+          "$target_out_dir/${invoker.target_name}/${invoker.target_name}"
+
+      executable(_exec_target) {
+        data_deps = []
+        forward_variables_from(invoker, "*")
+        testonly = true
+
+        # Don't output to the root or else conflict with the group() below.
+        output_name = rebase_path(_exec_output, root_out_dir)
+        if (is_component_build || is_asan) {
+          data_deps += [ "//build/android:cpplib_stripped" ]
+        }
+      }
+
+      # TODO(agrieve): This is required for component builds, but it's not
+      # currently used by test_runner.py (and so doesn't work in component
+      # builds).
+      create_native_executable_dist(_dist_target) {
+        testonly = true
+        dist_dir = "$target_out_dir/$target_name"
+        binary = _exec_output
+        deps = [
+          ":$_exec_target",
+        ]
+      }
+    } else {
+      _library_target = "_${target_name}__library"
+      _apk_target = "${target_name}_apk"
+      _apk_specific_vars = [
+        "android_manifest",
+        "enable_multidex",
+        "use_default_launcher",
+        "write_asset_list",
+      ]
+      shared_library(_library_target) {
+        # Configs will always be defined since we set_defaults for a component
+        # in the main config. We want to use those rather than whatever came
+        # with the nested shared/static library inside the component.
+        configs = []  # Prevent list overwriting warning.
+        configs = invoker.configs
+        testonly = true
+
+        deps = []
+        forward_variables_from(invoker,
+                               "*",
+                               _apk_specific_vars + [
+                                     "isolate_file",
+                                     "visibility",
+                                   ])
+
+        if (!defined(invoker.use_default_launcher) ||
+            invoker.use_default_launcher) {
+          deps += [ "//testing/android/native_test:native_test_native_code" ]
+        }
+      }
+      unittest_apk(_apk_target) {
+        forward_variables_from(invoker, _apk_specific_vars + [ "deps" ])
+        unittests_dep = ":$_library_target"
+        apk_name = invoker.target_name
+        if (defined(invoker.output_name)) {
+          apk_name = invoker.output_name
+          unittests_binary = "lib${apk_name}.so"
+          install_script_name = "install_${invoker.output_name}"
+        }
+        deps += [ ":$_library_target" ]
+      }
+
+      # Incremental test targets work only for .apks.
+      _incremental_test_runner_target =
+          "${_output_name}_incremental__test_runner_script"
+      test_runner_script(_incremental_test_runner_target) {
+        forward_variables_from(invoker, [ "isolate_file" ])
+        apk_target = ":$_apk_target"
+        test_name = "${_output_name}_incremental"
+        test_type = "gtest"
+        test_suite = _output_name
+        incremental_install = true
+      }
+      group("${target_name}_incremental") {
+        testonly = true
+        datadeps = [
+          ":$_incremental_test_runner_target",
+        ]
+        deps = [
+          ":${_apk_target}_incremental",
+        ]
+      }
+    }
+
     _test_runner_target = "${_output_name}__test_runner_script"
     test_runner_script(_test_runner_target) {
-      apk_target = ":$_apk_target"
+      forward_variables_from(invoker, [ "isolate_file" ])
+      if (_use_raw_android_executable) {
+        executable = _exec_output
+      } else {
+        apk_target = ":$_apk_target"
+      }
       test_name = _output_name
       test_type = "gtest"
       test_suite = _output_name
-      if (defined(invoker.isolate_file)) {
-        isolate_file = invoker.isolate_file
-      }
-    }
-    _incremental_test_runner_target =
-        "${_output_name}_incremental__test_runner_script"
-    test_runner_script(_incremental_test_runner_target) {
-      apk_target = ":$_apk_target"
-      test_name = "${_output_name}_incremental"
-      test_type = "gtest"
-      test_suite = _output_name
-      incremental_install = true
-      if (defined(invoker.isolate_file)) {
-        isolate_file = invoker.isolate_file
-      }
     }
 
     group(target_name) {
       testonly = true
-      datadeps = [
+      deps = [
         ":$_test_runner_target",
       ]
-      deps = [
-        ":$_apk_target",
-      ]
-    }
-    group("${target_name}_incremental") {
-      testonly = true
-      datadeps = [
-        ":$_incremental_test_runner_target",
-      ]
-      deps = [
-        ":${_apk_target}_incremental",
-      ]
+      if (_use_raw_android_executable) {
+        deps += [ ":$_dist_target" ]
+      } else {
+        deps += [ ":$_apk_target" ]
+      }
     }
 
     # TODO(GYP): Delete this after we've converted everything to GN.
