@@ -1244,7 +1244,7 @@
     'android_infra': ['jbudorick+watch@chromium.org',
                       'mikecase+watch@chromium.org'],
     'android_loading': ['gabadie+watch@chromium.org',
-                        'lizeb+watch-android-loading@chromium.org@'],
+                        'lizeb+watch-android-loading@chromium.org'],
     'android_media': ['avayvod+watch@chromium.org',
                       'mlamouri+watch-media@chromium.org'],
     'android_tab': ['avayvod+watch@chromium.org', 'dtrainor@chromium.org'],
