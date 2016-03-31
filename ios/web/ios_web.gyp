@@ -98,7 +98,6 @@
         'navigation/nscoder_util.mm',
         'navigation/time_smoother.cc',
         'navigation/time_smoother.h',
-        'navigation/web_load_params.h',
         'net/cert_host_pair.cc',
         'net/cert_host_pair.h',
         'net/cert_policy.cc',
