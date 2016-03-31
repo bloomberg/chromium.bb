@@ -727,6 +727,10 @@ TELEMETRY_TESTS = {
             'gpu': '8086:041a',
             'os': 'Windows-2008ServerR2-SP1'
           },
+          {
+            'gpu': '8086:0412',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
         ],
       },
     ],
