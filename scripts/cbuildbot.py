@@ -1193,11 +1193,7 @@ def main(argv):
     _BackupPreviousLog(log_file)
 
   with cros_build_lib.ContextManagerStack() as stack:
-    # TODO(ferringb): update this once
-    # https://chromium-review.googlesource.com/25359
-    # is landed- it's sensitive to the manifest-versions cache path.
-    options.preserve_paths = set(['manifest-versions', '.cache',
-                                  'manifest-versions-internal'])
+    options.preserve_paths = set()
     if log_file is not None:
       # We don't want the critical section to try to clean up the tee process,
       # so we run Tee (forked off) outside of it. This prevents a deadlock
