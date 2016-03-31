@@ -5184,6 +5184,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NACL_DEBUG_DESCRIPTION" desc="Description of the 'NaCl GDB debug stub' lab.">
         Enable GDB debug stub. This will stop a Native Client application on startup and wait for nacl-gdb (from the NaCl SDK) to attach to it.
       </message>
+      <if expr="not is_android">
+        <message name="IDS_FLAGS_PNACL_SUBZERO_NAME" desc="Name of the 'Force PNaCl Subzero' lab.">
+          Force PNaCl Subzero
+        </message>
+        <message name="IDS_FLAGS_PNACL_SUBZERO_DESCRIPTION" desc="Description of the 'Force PNaCl Subzero' lab.">
+          Force the use of PNaCl's fast Subzero translator for all pexe files.
+        </message>
+      </if>
       <message name="IDS_FLAGS_NACL_DEBUG_MASK_NAME" desc="Name of the 'Restrict NaCl GDB debugging' lab.">
         Restrict Native Client GDB-based debugging by pattern
       </message>

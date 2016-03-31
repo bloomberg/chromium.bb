@@ -631,6 +631,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-nacl-debug",  // FLAGS:RECORD_UMA
      IDS_FLAGS_NACL_DEBUG_NAME, IDS_FLAGS_NACL_DEBUG_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableNaClDebug)},
+    {"force-pnacl-subzero",
+     IDS_FLAGS_PNACL_SUBZERO_NAME,
+     IDS_FLAGS_PNACL_SUBZERO_DESCRIPTION, kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kForcePNaClSubzero)},
     {"nacl-debug-mask",  // FLAGS:RECORD_UMA
      IDS_FLAGS_NACL_DEBUG_MASK_NAME, IDS_FLAGS_NACL_DEBUG_MASK_DESCRIPTION,
      kOsDesktop, MULTI_VALUE_TYPE(kNaClDebugMaskChoices)},
