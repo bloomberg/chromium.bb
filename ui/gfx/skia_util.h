@@ -76,7 +76,7 @@ GFX_EXPORT sk_sp<SkShader> CreateGradientShader(int start_point,
 // Creates a draw looper to generate |shadows|. The caller owns the draw looper.
 // NULL is returned if |shadows| is empty since no draw looper is needed in
 // this case.
-GFX_EXPORT skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(
+GFX_EXPORT sk_sp<SkDrawLooper> CreateShadowDrawLooper(
     const std::vector<ShadowValue>& shadows);
 
 // Returns true if the two bitmaps contain the same pixels.

@@ -138,9 +138,9 @@ void GraphicsContextState::setFillGradient(const PassRefPtr<Gradient> gradient, 
 // Shadow. (This will need tweaking if we use draw loopers for other things.)
 void GraphicsContextState::setDrawLooper(PassRefPtr<SkDrawLooper> drawLooper)
 {
-    m_looper = drawLooper;
-    m_strokePaint.setLooper(m_looper.get());
-    m_fillPaint.setLooper(m_looper.get());
+    m_looper = toSkSp(drawLooper);
+    m_strokePaint.setLooper(m_looper);
+    m_fillPaint.setLooper(m_looper);
 }
 
 void GraphicsContextState::setLineDash(const DashArray& dashes, float dashOffset)

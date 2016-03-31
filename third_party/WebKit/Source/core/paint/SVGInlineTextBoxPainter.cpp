@@ -314,8 +314,7 @@ bool SVGInlineTextBoxPainter::setupTextPaint(const PaintInfo& paintInfo, const C
 
     if (hasShadow) {
         OwnPtr<DrawLooperBuilder> drawLooperBuilder = shadowList->createDrawLooper(DrawLooperBuilder::ShadowRespectsAlpha, style.visitedDependentColor(CSSPropertyColor));
-        RefPtr<SkDrawLooper> drawLooper = drawLooperBuilder->detachDrawLooper();
-        paint.setLooper(drawLooper.get());
+        paint.setLooper(toSkSp(drawLooperBuilder->detachDrawLooper()));
     }
 
     if (resourceMode == ApplyToStrokeMode) {

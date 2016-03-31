@@ -125,7 +125,7 @@ private:
     Color m_fillColor;
     RefPtr<Gradient> m_fillGradient;
 
-    RefPtr<SkDrawLooper> m_looper;
+    sk_sp<SkDrawLooper> m_looper;
 
     TextDrawingModeFlags m_textDrawingMode;
 

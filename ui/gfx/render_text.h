@@ -57,7 +57,7 @@ class GFX_EXPORT SkiaTextRenderer {
   explicit SkiaTextRenderer(Canvas* canvas);
   virtual ~SkiaTextRenderer();
 
-  void SetDrawLooper(SkDrawLooper* draw_looper);
+  void SetDrawLooper(sk_sp<SkDrawLooper> draw_looper);
   void SetFontRenderParams(const FontRenderParams& params,
                            bool subpixel_rendering_suppressed);
   void SetTypeface(SkTypeface* typeface);

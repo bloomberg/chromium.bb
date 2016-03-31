@@ -137,7 +137,7 @@ int GetNewTabButtonWidth() {
       GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP);
 }
 
-skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
+sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   SkLayerDrawLooper::Builder looper_builder;
   looper_builder.addLayer();
 
@@ -154,7 +154,7 @@ skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
   layer_paint->setColorFilter(
       SkColorFilter::MakeModeFilter(color, SkXfermode::kSrcIn_Mode));
 
-  return skia::AdoptRef(looper_builder.detachLooper());
+  return looper_builder.detach();
 }
 
 // Animation delegate used for any automatic tab movement.  Hides the tab if it
@@ -418,9 +418,8 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     const float alpha = SkColorGetA(stroke_color);
     const SkAlpha shadow_alpha =
         base::saturated_cast<SkAlpha>(std::round(2.1875f * alpha));
-    skia::RefPtr<SkDrawLooper> stroke_looper =
-        CreateShadowDrawLooper(SkColorSetA(stroke_color, shadow_alpha));
-    paint.setLooper(stroke_looper.get());
+    paint.setLooper(
+        CreateShadowDrawLooper(SkColorSetA(stroke_color, shadow_alpha)));
     const SkAlpha path_alpha = static_cast<SkAlpha>(
         std::round((pressed ? 0.875f : 0.609375f) * alpha));
     paint.setColor(SkColorSetA(stroke_color, path_alpha));
@@ -570,9 +569,8 @@ void NewTabButton::PaintFill(bool pressed,
       const SkColor stroke_color = tab_strip_->GetToolbarTopSeparatorColor();
       const SkAlpha alpha = static_cast<SkAlpha>(
           std::round(SkColorGetA(stroke_color) * 0.59375f));
-      skia::RefPtr<SkDrawLooper> looper =
-          CreateShadowDrawLooper(SkColorSetA(stroke_color, alpha));
-      paint.setLooper(looper.get());
+      paint.setLooper(
+          CreateShadowDrawLooper(SkColorSetA(stroke_color, alpha)));
       canvas->DrawPath(fill, paint);
     }
 

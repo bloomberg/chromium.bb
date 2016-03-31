@@ -240,8 +240,8 @@ SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
 SkiaTextRenderer::~SkiaTextRenderer() {
 }
 
-void SkiaTextRenderer::SetDrawLooper(SkDrawLooper* draw_looper) {
-  paint_.setLooper(draw_looper);
+void SkiaTextRenderer::SetDrawLooper(sk_sp<SkDrawLooper> draw_looper) {
+  paint_.setLooper(std::move(draw_looper));
 }
 
 void SkiaTextRenderer::SetFontRenderParams(const FontRenderParams& params,
@@ -1241,8 +1241,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
 }
 
 void RenderText::ApplyTextShadows(internal::SkiaTextRenderer* renderer) {
-  skia::RefPtr<SkDrawLooper> looper = CreateShadowDrawLooper(shadows_);
-  renderer->SetDrawLooper(looper.get());
+  renderer->SetDrawLooper(CreateShadowDrawLooper(shadows_));
 }
 
 base::i18n::TextDirection RenderText::GetTextDirection(

@@ -54,7 +54,7 @@ PassOwnPtr<DrawLooperBuilder> DrawLooperBuilder::create()
 
 PassRefPtr<SkDrawLooper> DrawLooperBuilder::detachDrawLooper()
 {
-    return adoptRef(m_skDrawLooperBuilder.detachLooper());
+    return fromSkSp(m_skDrawLooperBuilder.detach());
 }
 
 void DrawLooperBuilder::addUnmodifiedContent()

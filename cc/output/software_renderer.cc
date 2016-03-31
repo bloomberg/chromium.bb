@@ -543,10 +543,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     SkLayerRasterizer::Builder builder;
     builder.addLayer(mask_paint);
 
-    skia::RefPtr<SkLayerRasterizer> mask_rasterizer =
-        skia::AdoptRef(builder.detachRasterizer());
-
-    current_paint_.setRasterizer(mask_rasterizer.get());
+    current_paint_.setRasterizer(builder.detach());
   }
 
   // If we have a background filter shader, render its results first.
@@ -555,7 +552,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   if (background_filter_shader) {
     SkPaint paint;
     paint.setShader(std::move(background_filter_shader));
-    paint.setRasterizer(current_paint_.getRasterizer());
+    paint.setRasterizer(sk_ref_sp(current_paint_.getRasterizer()));
     current_canvas_->drawRect(dest_visible_rect, paint);
   }
   current_paint_.setShader(std::move(shader));

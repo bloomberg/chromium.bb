@@ -138,10 +138,10 @@ static SkScalar RadiusToSigma(double radius) {
   return radius > 0 ? SkDoubleToScalar(0.57735f * radius + 0.5) : 0;
 }
 
-skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(
+sk_sp<SkDrawLooper> CreateShadowDrawLooper(
     const std::vector<ShadowValue>& shadows) {
   if (shadows.empty())
-    return skia::RefPtr<SkDrawLooper>();
+    return nullptr;
 
   SkLayerDrawLooper::Builder looper_builder;
 
@@ -172,7 +172,7 @@ skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(
                                       SkXfermode::kSrcIn_Mode));
   }
 
-  return skia::AdoptRef<SkDrawLooper>(looper_builder.detachLooper());
+  return looper_builder.detach();
 }
 
 bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2) {

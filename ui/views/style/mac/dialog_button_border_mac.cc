@@ -72,8 +72,7 @@ void DrawConstrainedButtonBackground(const SkRect& button_rect,
   std::vector<gfx::ShadowValue> shadows(
       1, gfx::ShadowValue(gfx::Vector2d(0, kShadowOffsetY), blur,
                           shadow[button_state]));
-  skia::RefPtr<SkDrawLooper> looper = gfx::CreateShadowDrawLooper(shadows);
-  paint.setLooper(looper.get());
+  paint.setLooper(gfx::CreateShadowDrawLooper(shadows));
 
   // Background.
   paint.setShader(CreateButtonGradient(rect.height(), button_state));
@@ -106,8 +105,7 @@ void DrawRoundRectInnerShadow(const SkRect& rect,
   SkPaint paint;
   std::vector<gfx::ShadowValue> shadows(
       1, gfx::ShadowValue(shadow_offset, kInnerShadowBlurRadius, shadow_color));
-  skia::RefPtr<SkDrawLooper> looper = gfx::CreateShadowDrawLooper(shadows);
-  paint.setLooper(looper.get());
+  paint.setLooper(gfx::CreateShadowDrawLooper(shadows));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(SK_ColorBLACK);  // Note: Entirely clipped.
 

@@ -544,7 +544,7 @@ const SkPaint* CanvasRenderingContext2DState::getPaint(PaintType paintType, Shad
     }
 
     if (!shouldDrawShadows() && shadowMode == DrawShadowOnly) {
-        paint->setLooper(emptyDrawLooper()); // draw nothing
+        paint->setLooper(sk_ref_sp(emptyDrawLooper())); // draw nothing
         paint->setImageFilter(0);
         return paint;
     }
@@ -555,7 +555,7 @@ const SkPaint* CanvasRenderingContext2DState::getPaint(PaintType paintType, Shad
             paint->setImageFilter(shadowOnlyImageFilter());
             return paint;
         }
-        paint->setLooper(shadowOnlyDrawLooper());
+        paint->setLooper(sk_ref_sp(shadowOnlyDrawLooper()));
         paint->setImageFilter(0);
         return paint;
     }
@@ -566,7 +566,7 @@ const SkPaint* CanvasRenderingContext2DState::getPaint(PaintType paintType, Shad
         paint->setImageFilter(shadowAndForegroundImageFilter());
         return paint;
     }
-    paint->setLooper(shadowAndForegroundDrawLooper());
+    paint->setLooper(sk_ref_sp(shadowAndForegroundDrawLooper()));
     paint->setImageFilter(0);
     return paint;
 }

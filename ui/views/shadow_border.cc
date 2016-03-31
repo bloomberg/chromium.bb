@@ -38,8 +38,7 @@ void ShadowBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
   SkPaint paint;
   std::vector<gfx::ShadowValue> shadows;
   shadows.push_back(shadow_value_);
-  skia::RefPtr<SkDrawLooper> looper = gfx::CreateShadowDrawLooper(shadows);
-  paint.setLooper(looper.get());
+  paint.setLooper(gfx::CreateShadowDrawLooper(shadows));
   paint.setColor(SK_ColorTRANSPARENT);
   paint.setStrokeJoin(SkPaint::kRound_Join);
   gfx::Rect bounds(view.size());
