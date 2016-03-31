@@ -3,17 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('settings_device_page', function() {
-  /** @return {!DevicePageElement} */
-  function getDevicePage() {
-    var devicePage = document.createElement('settings-device-page');
-    var page = this.getPage('basic');
-    var deviceSection = this.getSection(page, 'device');
-    expectTrue(!!deviceSection);
-    var devicePage = deviceSection.querySelector('settings-device-page');
-    expectTrue(!!devicePage);
-    return devicePage;
-  };
-
   suite('SettingsDevicePage', function() {
     var fakePrefs = [{
       key: 'settings.touchpad.enable_tap_to_click',
