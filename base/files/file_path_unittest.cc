@@ -1295,4 +1295,23 @@ TEST_F(FilePathTest, PrintTo) {
   EXPECT_EQ("foo", ss.str());
 }
 
+// Test GetHFSDecomposedForm should return empty result for invalid UTF-8
+// strings.
+#if defined(OS_MACOSX)
+TEST_F(FilePathTest, GetHFSDecomposedFormWithInvalidInput) {
+  const FilePath::CharType* cases[] = {
+    FPL("\xc3\x28"),
+    FPL("\xe2\x82\x28"),
+    FPL("\xe2\x28\xa1"),
+    FPL("\xf0\x28\x8c\xbc"),
+    FPL("\xf0\x28\x8c\x28"),
+  };
+  for (const auto& invalid_input : cases) {
+    FilePath::StringType observed = FilePath::GetHFSDecomposedForm(
+        invalid_input);
+    EXPECT_TRUE(observed.empty());
+  }
+}
+#endif
+
 }  // namespace base
