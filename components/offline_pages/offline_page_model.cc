@@ -162,9 +162,11 @@ void OfflinePageModel::SavePage(const GURL& url,
   int64_t offline_id = GenerateOfflineId();
 
   archiver->CreateArchive(
-      archives_dir_, base::Bind(&OfflinePageModel::OnCreateArchiveDone,
-                                weak_ptr_factory_.GetWeakPtr(), url, offline_id,
-                                client_id, base::Time::Now(), callback));
+      archives_dir_,
+      offline_id,
+      base::Bind(&OfflinePageModel::OnCreateArchiveDone,
+                 weak_ptr_factory_.GetWeakPtr(), url, offline_id,
+                 client_id, base::Time::Now(), callback));
   pending_archivers_.push_back(std::move(archiver));
 }
 

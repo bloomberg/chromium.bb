@@ -44,6 +44,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
 
   // OfflinePageArchiver implementation:
   void CreateArchive(const base::FilePath& archives_dir,
+                     int64_t archive_id,
                      const CreateArchiveCallback& callback) override;
 
   // Completes the creation of archive. Should be used with |set_delayed| set to

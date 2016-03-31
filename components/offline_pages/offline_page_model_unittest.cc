@@ -488,6 +488,41 @@ TEST_F(OfflinePageModelTest, FinalizePageDeletion) {
   EXPECT_EQ(0UL, GetStore()->GetAllPages().size());
 }
 
+TEST_F(OfflinePageModelTest, SavePageAfterMarkingPageForDeletion) {
+  scoped_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+      kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, std::move(archiver),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  // Mark the page for deletion.
+  model()->MarkPageForDeletion(
+      last_save_offline_id(),
+      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  EXPECT_EQ(1UL, GetStore()->GetAllPages().size());
+
+  // Re-save the same page.
+  scoped_ptr<OfflinePageTestArchiver> archiver2(BuildArchiver(
+      kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, std::move(archiver2),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+
+  // Fast forward to trigger the page cleanup.
+  FastForwardBy(OfflinePageModel::GetFinalDeletionDelayForTesting());
+
+  // The re-saved page should still exist.
+  const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
+  ASSERT_EQ(1UL, offline_pages.size());
+  EXPECT_EQ(kTestUrl, offline_pages[0].url);
+  EXPECT_EQ(kTestPageBookmarkId1, offline_pages[0].client_id);
+  EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
+  EXPECT_EQ(0, offline_pages[0].access_count);
+}
+
 TEST_F(OfflinePageModelTest, GetAllPagesStoreEmpty) {
   const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
 

@@ -48,13 +48,15 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   // Creates a file name for the archive file based on url and title. Public for
   // testing.
   static base::FilePath GenerateFileName(const GURL& url,
-                                         const std::string& title);
+                                         const std::string& title,
+                                         int64_t archive_id);
 
   explicit OfflinePageMHTMLArchiver(content::WebContents* web_contents);
   ~OfflinePageMHTMLArchiver() override;
 
   // OfflinePageArchiver implementation:
   void CreateArchive(const base::FilePath& archives_dir,
+                     int64_t archive_id,
                      const CreateArchiveCallback& callback) override;
 
  protected:
@@ -63,7 +65,8 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
 
   // Try to generate MHTML.
   // Might be overridden for testing purpose.
-  virtual void GenerateMHTML(const base::FilePath& archives_dir);
+  virtual void GenerateMHTML(const base::FilePath& archives_dir,
+                             int64_t archive_id);
 
   // Callback for Generating MHTML.
   void OnGenerateMHTMLDone(const GURL& url,
