@@ -780,6 +780,53 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestPropertyTreesChangedSync);
 
+class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
+ protected:
+  void SetupTree() override {
+    scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> child = Layer::Create();
+    mask_layer = Layer::Create();
+    child->SetMaskLayer(mask_layer.get());
+    root->AddChild(std::move(child));
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override {
+    index_ = 0;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        layer_tree_host()->root_layer()->RemoveAllChildren();
+        layer_tree_host()->root_layer()->SetMaskLayer(mask_layer.get());
+        break;
+    }
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    switch (index_) {
+      case 0:
+        index_++;
+        EXPECT_FALSE(impl->sync_tree()->root_layer()->mask_layer());
+        break;
+      case 1:
+        EXPECT_TRUE(impl->sync_tree()->root_layer()->mask_layer());
+        EndTest();
+        break;
+    }
+  }
+
+  void AfterTest() override {}
+
+  scoped_refptr<Layer> mask_layer;
+  int index_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSwitchMaskLayer);
+
 // 1 setNeedsRedraw after the first commit has completed should lead to 1
 // additional draw.
 class LayerTreeHostTestSetNeedsRedraw : public LayerTreeHostTest {

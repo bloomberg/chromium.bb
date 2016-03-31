@@ -149,6 +149,12 @@ void LayerImpl::ClearChildList() {
   children_.clear();
 }
 
+void LayerImpl::ClearLinksToOtherLayers() {
+  children_.clear();
+  mask_layer_ = nullptr;
+  replica_layer_ = nullptr;
+}
+
 void LayerImpl::SetScrollParent(LayerImpl* parent) {
   if (scroll_parent_ == parent)
     return;

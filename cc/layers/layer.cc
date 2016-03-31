@@ -413,8 +413,8 @@ void Layer::SetMaskLayer(Layer* mask_layer) {
   }
   mask_layer_ = mask_layer;
   if (mask_layer_.get()) {
-    DCHECK(!mask_layer_->parent());
     mask_layer_->RemoveFromParent();
+    DCHECK(!mask_layer_->parent());
     mask_layer_->SetParent(this);
     mask_layer_->SetIsMask(true);
   }

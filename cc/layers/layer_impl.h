@@ -597,6 +597,8 @@ class CC_EXPORT LayerImpl {
 
   void PushLayerPropertyChangedForSubtree();
 
+  void ClearLinksToOtherLayers();
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,

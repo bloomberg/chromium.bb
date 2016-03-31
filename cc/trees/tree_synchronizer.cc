@@ -33,9 +33,9 @@ void SynchronizeTreesInternal(LayerType* layer_root, LayerTreeImpl* tree_impl) {
 
   for (auto& it : old_layer_map) {
     if (it.second) {
-      // Need to ensure that layer destruction doesn't tear down child
-      // LayerImpl that have been used in the new tree.
-      it.second->children().clear();
+      // Need to ensure that layer destruction doesn't tear down other layers
+      // linked to this LayerImpl that have been used in the new tree.
+      it.second->ClearLinksToOtherLayers();
     }
   }
 }
