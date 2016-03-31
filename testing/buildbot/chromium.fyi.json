@@ -1,4 +1,140 @@
 {
+  "Android Asan Builder Tests (dbg)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "android_webview_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "base_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "cc_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "components_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "content_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "events_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "gl_tests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "gl_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "gpu_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "ipc_tests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "media_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "midi_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "net_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "skia_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "sql_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "sync_unit_tests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "ui_android_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "ui_base_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "ui_touch_selection_unittests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "unit_tests"
+      },
+      {
+        "args": [
+          "--tool=asan"
+        ],
+        "test": "webkit_unit_tests"
+      }
+    ]
+  },
   "Android Cloud Tests": {
     "gtest_tests": [
       {
