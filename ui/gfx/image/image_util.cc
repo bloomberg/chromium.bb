@@ -15,9 +15,23 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace gfx {
+namespace {
 
-const uint32_t kMinimumVisibleOpacity = 12;
+// Returns whether column |x| of |bitmap| has any "visible pixels", where
+// "visible" is defined as having an opactiy greater than an arbitrary small
+// value.
+bool ColumnHasVisiblePixels(const SkBitmap& bitmap, int x) {
+  const SkAlpha kMinimumVisibleOpacity = 12;
+  for (int y = 0; y < bitmap.height(); ++y) {
+    if (SkColorGetA(bitmap.getColor(x, y)) > kMinimumVisibleOpacity)
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
+namespace gfx {
 
 // The iOS implementations of the JPEG functions are in image_util_ios.mm.
 #if !defined(OS_IOS)
@@ -52,57 +66,39 @@ bool JPEG1xEncodedDataFromImage(const Image& image, int quality,
 }
 #endif  // !defined(OS_IOS)
 
-bool VisibleMargins(const ImageSkia& image, int* leading, int* trailing) {
-  *leading = 0;
-  *trailing = std::max(1, image.width()) - 1;
-  if (!image.HasRepresentation(1.0))
-    return false;
+void GetVisibleMargins(const ImageSkia& image, int* left, int* right) {
+  *left = 0;
+  *right = 0;
+  if (!image.HasRepresentation(1.f))
+    return;
+  const SkBitmap& bitmap = image.GetRepresentation(1.f).sk_bitmap();
+  if (bitmap.drawsNothing() || bitmap.isOpaque())
+    return;
 
-  const ImageSkiaRep& rep = image.GetRepresentation(1.0);
-  if (rep.is_null())
-    return false;
-
-  const SkBitmap& bitmap = rep.sk_bitmap();
-  if (bitmap.isNull() || bitmap.width() == 0)
-    return false;
-
-  if (bitmap.isOpaque())
-    return true;
-
-  SkAutoLockPixels l(bitmap);
-  int inner_min = bitmap.width();
-  for (int x = 0; x < bitmap.width(); ++x) {
-    for (int y = 0; y < bitmap.height(); ++y) {
-      if (SkColorGetA(bitmap.getColor(x, y)) > kMinimumVisibleOpacity) {
-        inner_min = x;
-        break;
-      }
+  SkAutoLockPixels lock(bitmap);
+  int x = 0;
+  for (; x < bitmap.width(); ++x) {
+    if (ColumnHasVisiblePixels(bitmap, x)) {
+      *left = x;
+      break;
     }
-    if (inner_min < bitmap.width())
+  }
+
+  if (x == bitmap.width()) {
+    // Image is fully transparent.  Divide the width in half, giving the leading
+    // region the extra pixel for odd widths.
+    *left = (bitmap.width() + 1) / 2;
+    *right = bitmap.width() - *left;
+    return;
+  }
+
+  // Since we already know column *left is non-transparent, we can avoid
+  // rechecking that column; hence the '>' here.
+  for (x = bitmap.width() - 1; x > *left; --x) {
+    if (ColumnHasVisiblePixels(bitmap, x))
       break;
   }
-
-  int inner_max = -1;
-  for (int x = bitmap.width() - 1; x > inner_min; --x) {
-    for (int y = 0; y < bitmap.height(); ++y) {
-      if (SkColorGetA(bitmap.getColor(x, y)) > kMinimumVisibleOpacity) {
-        inner_max = x;
-        break;
-      }
-    }
-    if (inner_max > -1)
-      break;
-  }
-
-  if (inner_min == bitmap.width()) {
-    *leading = bitmap.width()/2;
-    *trailing = bitmap.width()/2 + 1;
-    return true;
-  }
-
-  *leading = inner_min;
-  *trailing = inner_max;
-  return true;
+  *right = bitmap.width() - 1 - x;
 }
 
 }  // namespace gfx
