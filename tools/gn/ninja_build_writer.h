@@ -30,7 +30,6 @@ class NinjaBuildWriter {
       const std::vector<const Target*>& default_toolchain_targets,
       Err* err);
 
- private:
   NinjaBuildWriter(const BuildSettings* settings,
                    const std::vector<const Settings*>& all_settings,
                    const Toolchain* default_toolchain,
@@ -41,6 +40,7 @@ class NinjaBuildWriter {
 
   bool Run(Err* err);
 
+ private:
   void WriteNinjaRules();
   void WriteLinkPool();
   void WriteSubninjas();

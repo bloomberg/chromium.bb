@@ -114,8 +114,12 @@ Err GetDuplicateOutputError(const std::vector<const Target*>& all_targets,
                             const OutputFile& bad_output) {
   std::vector<const Target*> matches;
   for (const Target* target : all_targets) {
-    if (GetTargetOutputFile(target) == bad_output)
-      matches.push_back(target);
+    for (const auto& output : target->computed_outputs()) {
+      if (output == bad_output) {
+        matches.push_back(target);
+        break;
+      }
+    }
   }
 
   // There should always be at least two targets generating this file for this
@@ -127,11 +131,10 @@ Err GetDuplicateOutputError(const std::vector<const Target*>& all_targets,
 
   Err result(matches[0]->defined_from(), "Duplicate output file.",
       "Two or more targets generate the same output:\n  " +
-      bad_output.value() + "\n"
-      "This is normally the result of either overriding the output name or\n"
-      "having two shared libraries or executables in different directories\n"
-      "with the same name (since all such targets will be written to the root\n"
-      "output directory).\n\nCollisions:\n" + matches_string);
+      bad_output.value() + "\n\n"
+      "This is can often be fixed by changing one of the target names, or by \n"
+      "setting an output_name on one of them.\n"
+      "\nCollisions:\n" + matches_string);
   for (size_t i = 1; i < matches.size(); i++)
     result.AppendSubErr(Err(matches[i]->defined_from(), "Collision."));
   return result;
@@ -294,12 +297,14 @@ bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
 
   for (const auto& target : default_toolchain_targets_) {
     const Label& label = target->label();
-    OutputFile target_file = GetTargetOutputFile(target);
-    if (!target_files.insert(target_file.value()).second) {
-      *err = GetDuplicateOutputError(default_toolchain_targets_, target_file);
-      return false;
+    for (const auto& output : target->computed_outputs()) {
+      if (!target_files.insert(output.value()).second) {
+        *err = GetDuplicateOutputError(default_toolchain_targets_, output);
+        return false;
+      }
     }
 
+    OutputFile target_file = GetTargetOutputFile(target);
     // Write the long name "foo/bar:baz" for the target "//foo/bar:baz".
     std::string long_name = label.GetUserVisibleName(false);
     base::TrimString(long_name, "/", &long_name);
