@@ -517,6 +517,8 @@ android_assets("cronet_test_apk_assets") {
     "test/assets/test/content_length_mismatch.html.mock-http-headers",
     "test/assets/test/datareductionproxysuccess.txt",
     "test/assets/test/datareductionproxysuccess.txt.mock-http-headers",
+    "test/assets/test/gzipped.html",
+    "test/assets/test/gzipped.html.mock-http-headers",
     "test/assets/test/multiredirect.html",
     "test/assets/test/multiredirect.html.mock-http-headers",
     "test/assets/test/notfound.html",
