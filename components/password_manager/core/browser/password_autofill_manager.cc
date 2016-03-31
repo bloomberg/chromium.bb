@@ -32,18 +32,6 @@ namespace password_manager {
 
 namespace {
 
-// Tests if |username| and |suggestion| are the same. This is different from the
-// usual string operator== in that an empty username will only match the
-// (non-empty) description of the empty username, used in the suggestions UI.
-bool CompareUsernameSuggestion(const base::string16& username,
-                               const base::string16& suggestion) {
-  if (username.empty()) {
-    return suggestion ==
-           l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
-  }
-  return username == suggestion;
-}
-
 // Returns |username| unless it is empty. For an empty |username| returns a
 // localised string saying this username is empty. Use this for displaying the
 // usernames to the user.
@@ -62,6 +50,15 @@ base::string16 GetHumanReadableRealm(const std::string& signon_realm) {
     return base::UTF8ToUTF16("android://" +
                              maybe_facet_uri.android_package_name() + "/");
   return base::UTF8ToUTF16(signon_realm);
+}
+
+// If |suggestion| was made for an empty username, then return the empty
+// string, otherwise return |suggestion|.
+base::string16 GetUsernameFromSuggestion(const base::string16& suggestion) {
+  return suggestion ==
+                 l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
+             ? base::string16()
+             : suggestion;
 }
 
 // If |field_suggestion| matches |field_content|, creates a Suggestion out of it
@@ -239,14 +236,16 @@ void PasswordAutofillManager::OnPopupHidden() {
 void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
-  bool success = PreviewSuggestion(form_data_key_, value);
+  bool success =
+      PreviewSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
   DCHECK(success);
 }
 
 void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                                                   int identifier,
                                                   int position) {
-  bool success = FillSuggestion(form_data_key_, value);
+  bool success =
+      FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
   DCHECK(success);
   autofill_client_->HideAutofillPopup();
 }
@@ -282,8 +281,7 @@ bool PasswordAutofillManager::GetPasswordAndRealmForUsername(
   // fetch the actual password. See crbug.com/178358 for more context.
 
   // Look for any suitable matches to current field text.
-  if (CompareUsernameSuggestion(fill_data.username_field.value,
-                                current_username)) {
+  if (fill_data.username_field.value == current_username) {
     password_and_realm->password = fill_data.password_field.value;
     password_and_realm->realm = fill_data.preferred_realm;
     return true;
@@ -293,7 +291,7 @@ bool PasswordAutofillManager::GetPasswordAndRealmForUsername(
   for (autofill::PasswordFormFillData::LoginCollection::const_iterator iter =
            fill_data.additional_logins.begin();
        iter != fill_data.additional_logins.end(); ++iter) {
-    if (CompareUsernameSuggestion(iter->first, current_username)) {
+    if (iter->first == current_username) {
       *password_and_realm = iter->second;
       return true;
     }
@@ -304,8 +302,7 @@ bool PasswordAutofillManager::GetPasswordAndRealmForUsername(
        usernames_iter != fill_data.other_possible_usernames.end();
        ++usernames_iter) {
     for (size_t i = 0; i < usernames_iter->second.size(); ++i) {
-      if (CompareUsernameSuggestion(usernames_iter->second[i],
-                                    current_username)) {
+      if (usernames_iter->second[i] == current_username) {
         password_and_realm->password = usernames_iter->first.password;
         password_and_realm->realm = usernames_iter->first.realm;
         return true;

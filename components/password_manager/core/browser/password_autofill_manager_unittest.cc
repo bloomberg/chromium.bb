@@ -105,6 +105,7 @@ class PasswordAutofillManagerTest : public testing::Test {
 
  protected:
   int fill_data_id() { return fill_data_id_; }
+  autofill::PasswordFormFillData& fill_data() { return fill_data_; }
 
   scoped_ptr<PasswordAutofillManager> password_autofill_manager_;
 
@@ -530,6 +531,39 @@ TEST_F(PasswordAutofillManagerTest,
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo"), false,
       element_bounds);
+}
+
+TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
+  // Initialize PasswordAutofillManager with credentials without username.
+  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  fill_data().username_field.value.clear();
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  base::string16 no_username_string =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
+
+  // Simulate that the user clicks on a username field.
+  EXPECT_CALL(*autofill_client, ShowAutofillPopup(_, _, _, _));
+  gfx::RectF element_bounds;
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      fill_data_id(), base::i18n::RIGHT_TO_LEFT, base::string16(), false,
+      element_bounds);
+
+  // Check that preview of the empty username works.
+  EXPECT_CALL(*client->mock_driver(),
+              PreviewSuggestion(base::string16(), test_password_));
+  password_autofill_manager_->DidSelectSuggestion(no_username_string,
+                                                  0 /*not used*/);
+  testing::Mock::VerifyAndClearExpectations(client->mock_driver());
+
+  // Check that fill of the empty username works.
+  EXPECT_CALL(*client->mock_driver(),
+              FillSuggestion(base::string16(), test_password_));
+  EXPECT_CALL(*autofill_client, HideAutofillPopup());
+  password_autofill_manager_->DidAcceptSuggestion(
+      no_username_string, autofill::POPUP_ITEM_ID_PASSWORD_ENTRY, 1);
+  testing::Mock::VerifyAndClearExpectations(client->mock_driver());
 }
 
 }  // namespace password_manager
