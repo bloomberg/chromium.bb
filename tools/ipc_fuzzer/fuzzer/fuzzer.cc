@@ -910,22 +910,6 @@ struct FuzzTraits<content::IndexedDBKeyPath> {
 };
 
 template <>
-struct FuzzTraits<content::NPIdentifier_Param> {
-  static bool Fuzz(content::NPIdentifier_Param* p, Fuzzer* fuzzer) {
-    // TODO(mbarbella): This should actually do something.
-    return true;
-  }
-};
-
-template <>
-struct FuzzTraits<content::NPVariant_Param> {
-  static bool Fuzz(content::NPVariant_Param* p, Fuzzer* fuzzer) {
-    // TODO(mbarbella): This should actually do something.
-    return true;
-  }
-};
-
-template <>
 struct FuzzTraits<content::PageState> {
   static bool Fuzz(content::PageState* p, Fuzzer* fuzzer) {
     std::string data = p->ToEncodedData();

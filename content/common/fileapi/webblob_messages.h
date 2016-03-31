@@ -53,7 +53,7 @@ IPC_MESSAGE_CONTROL4(BlobStorageMsg_RegisterBlobUUID,
                      std::string /* uuid */,
                      std::string /* content_type */,
                      std::string /* content_disposition */,
-                     std::set<std::string> /* referenced_blob_uuids */);
+                     std::set<std::string> /* referenced_blob_uuids */)
 
 // The DataElements are used to:
 // * describe & transport non-memory resources (blobs, files, etc)
@@ -63,25 +63,25 @@ IPC_MESSAGE_CONTROL4(BlobStorageMsg_RegisterBlobUUID,
 // See https://bit.ly/BlobStorageRefactor
 IPC_MESSAGE_CONTROL2(BlobStorageMsg_StartBuildingBlob,
                      std::string /* uuid */,
-                     std::vector<storage::DataElement> /* item_descriptions */);
+                     std::vector<storage::DataElement> /* item_descriptions */)
 
 IPC_MESSAGE_CONTROL4(
     BlobStorageMsg_RequestMemoryItem,
     std::string /* uuid */,
     std::vector<storage::BlobItemBytesRequest> /* requests */,
     std::vector<base::SharedMemoryHandle> /* memory_handles */,
-    std::vector<IPC::PlatformFileForTransit> /* file_handles */);
+    std::vector<IPC::PlatformFileForTransit> /* file_handles */)
 
 IPC_MESSAGE_CONTROL2(
     BlobStorageMsg_MemoryItemResponse,
     std::string /* uuid */,
-    std::vector<storage::BlobItemBytesResponse> /* responses */);
+    std::vector<storage::BlobItemBytesResponse> /* responses */)
 
 IPC_MESSAGE_CONTROL2(BlobStorageMsg_CancelBuildingBlob,
                      std::string /* uuid */,
-                     storage::IPCBlobCreationCancelCode /* code */);
+                     storage::IPCBlobCreationCancelCode /* code */)
 
-IPC_MESSAGE_CONTROL1(BlobStorageMsg_DoneBuildingBlob, std::string /* uuid */);
+IPC_MESSAGE_CONTROL1(BlobStorageMsg_DoneBuildingBlob, std::string /* uuid */)
 
 IPC_MESSAGE_CONTROL1(BlobHostMsg_IncrementRefCount,
                      std::string /* uuid */)
