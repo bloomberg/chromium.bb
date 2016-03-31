@@ -74,3 +74,6 @@ const char kClearBrowsingDataLearnMoreURL[] =
     "https://support.google.com/chrome/answer/2392709";
 
 const char kGoogleHistoryURL[] = "https://history.google.com";
+
+const char kGoogleMyAccountURL[] =
+    "https://myaccount.google.com/privacy#activitycontrols";

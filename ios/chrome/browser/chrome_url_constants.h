@@ -81,4 +81,7 @@ extern const char kClearBrowsingDataLearnMoreURL[];
 // Google history URL for the Clear Browsing Data under Privacy Options.
 extern const char kGoogleHistoryURL[];
 
+// Google my account URL for the sign-in confirmation screen.
+extern const char kGoogleMyAccountURL[];
+
 #endif  // IOS_CHROME_BROWSER_CHROME_URL_CONSTANTS_H_
