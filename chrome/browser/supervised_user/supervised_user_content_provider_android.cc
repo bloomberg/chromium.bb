@@ -11,6 +11,8 @@
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "jni/SupervisedUserContentProvider_jni.h"
 
 using base::android::JavaRef;
@@ -69,8 +71,7 @@ void SupervisedUserContentProvider::ShouldProceed(
     const JavaParamRef<jstring>& url) {
   if (!profile_->IsSupervised()) {
     // User isn't supervised
-    Java_SupervisedUserQueryReply_onQueryComplete(env, query_result_jobj.obj(),
-                                                  true, nullptr);
+    Java_SupervisedUserQueryReply_onQueryComplete(env, query_result_jobj.obj());
     return;
   }
   SupervisedUserService* supervised_user_service =
@@ -106,14 +107,33 @@ void SupervisedUserContentProvider::OnQueryComplete(
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool /* uncertain */) {
   if (behavior != SupervisedUserURLFilter::BLOCK) {
-    Java_SupervisedUserQueryReply_onQueryComplete(
-        AttachCurrentThread(), query_reply_jobj.obj(), true, nullptr);
+    Java_SupervisedUserQueryReply_onQueryComplete(AttachCurrentThread(),
+                                                  query_reply_jobj.obj());
   } else {
     JNIEnv* env = AttachCurrentThread();
-    Java_SupervisedUserQueryReply_onQueryComplete(
-        env, query_reply_jobj.obj(), false,
+    SupervisedUserService* service =
+        SupervisedUserServiceFactory::GetForProfile(profile_);
+    Java_SupervisedUserQueryReply_onQueryFailed(
+        env, query_reply_jobj.obj(), reason, service->AccessRequestsEnabled(),
+        profile_->IsChild(),
         base::android::ConvertUTF8ToJavaString(
-            env, SupervisedUserInterstitial::GetHTMLContents(profile_, reason))
+            env, profile_->GetPrefs()->GetString(
+                     prefs::kSupervisedUserCustodianProfileImageURL))
+            .obj(),
+        base::android::ConvertUTF8ToJavaString(
+            env, profile_->GetPrefs()->GetString(
+                     prefs::kSupervisedUserSecondCustodianProfileImageURL))
+            .obj(),
+        base::android::ConvertUTF8ToJavaString(env, service->GetCustodianName())
+            .obj(),
+        base::android::ConvertUTF8ToJavaString(
+            env, service->GetCustodianEmailAddress())
+            .obj(),
+        base::android::ConvertUTF8ToJavaString(
+            env, service->GetSecondCustodianName())
+            .obj(),
+        base::android::ConvertUTF8ToJavaString(
+            env, service->GetSecondCustodianEmailAddress())
             .obj());
   }
 }

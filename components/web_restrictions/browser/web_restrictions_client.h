@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -46,7 +47,13 @@ class WebRestrictionsClient {
 
   bool SupportsRequest() const;
 
-  bool GetErrorHtml(const GURL& url, std::string* error_html) const;
+  int GetResultColumnCount(const GURL& url) const;
+
+  std::string GetResultColumnName(const GURL& url, int column) const;
+
+  int GetResultIntValue(const GURL& url, int column) const;
+
+  std::string GetResultStringValue(const GURL& url, int column) const;
 
   void RequestPermission(const GURL& url,
                          const base::Callback<void(bool)>& callback);
@@ -54,31 +61,27 @@ class WebRestrictionsClient {
   void OnWebRestrictionsChanged();
 
  private:
-  struct ShouldProceedResult {
-    bool ok_to_proceed;
-    std::string error_page;
-  };
 
   void RecordURLAccess(const GURL& url);
 
   void UpdateCache(std::string provider_authority,
                    GURL url,
-                   bool should_proceed,
-                   std::string error_page);
+                   base::android::ScopedJavaGlobalRef<jobject> result);
 
   void RequestSupportKnown(std::string provider_authority,
                            bool supports_request);
 
   void ClearCache();
 
-  static ShouldProceedResult ShouldProceedTask(
+  static base::android::ScopedJavaGlobalRef<jobject> ShouldProceedTask(
       const GURL& url,
       const base::android::JavaRef<jobject>& java_provider);
 
-  void OnShouldProceedComplete(std::string provider_authority,
-                               const GURL& url,
-                               const base::Callback<void(bool)>& callback,
-                               const ShouldProceedResult& result);
+  void OnShouldProceedComplete(
+      std::string provider_authority,
+      const GURL& url,
+      const base::Callback<void(bool)>& callback,
+      const base::android::ScopedJavaGlobalRef<jobject>& result);
 
   // Set up after SetAuthority().
   bool initialized_;
@@ -89,8 +92,7 @@ class WebRestrictionsClient {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> single_thread_task_runner_;
 
-  std::map<GURL, std::string> error_page_cache_;
-  std::map<GURL, bool> url_access_cache_;
+  std::map<GURL, base::android::ScopedJavaGlobalRef<jobject>> cache_;
   std::list<GURL> recent_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRestrictionsClient);

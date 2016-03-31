@@ -45,6 +45,7 @@ TEST_F(WebRestrictionsClientTest, ShouldProceed) {
                   base::Bind(&ResultCallback, run_loop.QuitClosure())));
     run_loop.Run();
     EXPECT_TRUE(g_returned_result);
+    EXPECT_EQ(1, client_.GetResultColumnCount(GURL("http://example.com")));
   }
   // A repeated call should go to the cache and return a result immediately.
   {
@@ -88,10 +89,12 @@ TEST_F(WebRestrictionsClientTest, ShouldProceed) {
                   base::Bind(&ResultCallback, run_loop.QuitClosure())));
     run_loop.Run();
     EXPECT_FALSE(g_returned_result);
-    std::string error_html;
-    EXPECT_TRUE(
-        client_.GetErrorHtml(GURL("http://example.com/2"), &error_html));
-    EXPECT_EQ("http://example.com/2", error_html);
+    EXPECT_EQ(3, client_.GetResultColumnCount(GURL("http://example.com/2")));
+    EXPECT_EQ(42, client_.GetResultIntValue(GURL("http://example.com/2"), 1));
+    EXPECT_EQ("Error string",
+              client_.GetResultColumnName(GURL("http://example.com/2"), 2));
+    EXPECT_EQ("http://example.com/2",
+              client_.GetResultStringValue(GURL("http://example.com/2"), 2));
   }
 }
 

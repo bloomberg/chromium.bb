@@ -12,7 +12,6 @@ import android.content.pm.ProviderInfo;
 import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Pair;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,9 +34,52 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
     private UriMatcher mContentUriMatcher;
     private Uri mContentUri;
 
+    /**
+     * Structure for returning result including the custom error data.
+     */
+    public static class WebRestrictionsResult {
+        private final boolean mShouldProceed;
+        private final int mErrorInts[];
+        private final String mErrorStrings[];
+
+        public WebRestrictionsResult(boolean shouldProceed, final int[] errorInts,
+                final String[] errorStrings) {
+            assert !shouldProceed || errorInts == null;
+            assert !shouldProceed || errorStrings == null;
+            mShouldProceed = shouldProceed;
+            mErrorInts = errorInts == null ? null : errorInts.clone();
+            mErrorStrings = errorStrings == null ? null : errorStrings.clone();
+        }
+
+        public int getErrorInt(int i) {
+            if (mErrorInts == null || i >= mErrorInts.length) return 0;
+            return mErrorInts[i];
+        }
+
+        public String getErrorString(int i) {
+            if (mErrorStrings == null || i >= mErrorStrings.length) return null;
+            return mErrorStrings[i];
+        }
+
+        public boolean shouldProceed() {
+            return mShouldProceed;
+        }
+
+        public int errorIntCount() {
+            if (mErrorInts == null) return 0;
+            return mErrorInts.length;
+        }
+
+        public int errorStringCount() {
+            if (mErrorStrings == null) return 0;
+            return mErrorStrings.length;
+        }
+    }
+
     protected WebRestrictionsContentProvider() {
         // Pattern to extract the URL from the selection.
-        // Matches patterns of the form "url = '<url>'" with arbitrary spacing around the "=" etc.
+        // Matches patterns of the form "url = '<url>'" with arbitrary spacing
+        // around the "=" etc.
         mSelectionPattern = Pattern.compile("\\s*url\\s*=\\s*'([^']*)'");
     }
 
@@ -66,7 +108,8 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
         Matcher matcher = mSelectionPattern.matcher(selection);
         if (!matcher.find()) return null;
         final String url = matcher.group(1);
-        final Pair<Boolean, String> result = shouldProceed(url);
+        final WebRestrictionsResult result = shouldProceed(url);
+        if (result == null) return null;
 
         return new AbstractCursor() {
 
@@ -77,12 +120,26 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"Should Proceed", "Error message"};
+                String errorNames[] = getErrorColumnNames();
+                String names[] = new String[errorNames.length + 1];
+                names[0] = "Should Proceed";
+                for (int i = 0; i < errorNames.length; i++) {
+                    names[i + 1] = errorNames[i];
+                }
+                return names;
             }
 
             @Override
             public String getString(int column) {
-                if (column == 1) return result.second;
+                // The column order is:
+                //    result,
+                //    integer error parameters,
+                //    string error parameters
+                // so offset the string error parameters by the number of integer parameters + 1
+                int errorStringNumber = column - result.errorIntCount() - 1;
+                if (errorStringNumber >= 0 && errorStringNumber < result.errorStringCount()) {
+                    return result.getErrorString(errorStringNumber);
+                }
                 return null;
             }
 
@@ -93,7 +150,16 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
 
             @Override
             public int getInt(int column) {
-                if (column == 0) return result.first ? PROCEED : BLOCKED;
+                if (column == 0) return result.shouldProceed() ? PROCEED : BLOCKED;
+                // The column order is:
+                //    result,
+                //    integer error parameters,
+                //    string error parameters
+                // so offset the integer error parameters by 1
+                int errorIntNumber = column - 1;
+                if (errorIntNumber < result.errorIntCount()) {
+                    return result.getErrorInt(errorIntNumber);
+                }
                 return 0;
             }
 
@@ -115,6 +181,15 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
             @Override
             public boolean isNull(int column) {
                 return false;
+            }
+
+            @Override
+            public int getType(int column) {
+                if (column < result.errorIntCount() + 1) return FIELD_TYPE_INTEGER;
+                if (column < result.errorIntCount() + result.errorStringCount() + 1) {
+                    return FIELD_TYPE_STRING;
+                }
+                return FIELD_TYPE_NULL;
             }
         };
     }
@@ -157,12 +232,18 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
      *         proceed, false otherwise. error message is only meaningful if result is false, a null
      *         error message means use application default.
      */
-    protected abstract Pair<Boolean, String> shouldProceed(final String url);
+    protected abstract WebRestrictionsResult shouldProceed(final String url);
 
     /**
      * @return whether the content provider allows insertions.
      */
     protected abstract boolean canInsert();
+
+    /**
+     * @return the names of the custom error columns, integer valued columns must proceed string
+     * valued columns.
+     */
+    protected abstract String[] getErrorColumnNames();
 
     /**
      * Start a request that a URL should be permitted

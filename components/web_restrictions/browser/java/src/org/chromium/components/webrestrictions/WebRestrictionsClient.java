@@ -22,22 +22,40 @@ import org.chromium.base.annotations.JNINamespace;
 @JNINamespace("web_restrictions")
 public class WebRestrictionsClient {
     static class ShouldProceedResult {
-        private final boolean mShouldProceed;
-        private final String mErrorPage;
+        private final Cursor mCursor;
 
-        ShouldProceedResult(boolean shouldProceed, String errorPage) {
-            mShouldProceed = shouldProceed;
-            mErrorPage = errorPage;
+        ShouldProceedResult(Cursor cursor) {
+            mCursor = cursor;
         }
 
         @CalledByNative("ShouldProceedResult")
         boolean shouldProceed() {
-            return mShouldProceed;
+            if (mCursor == null) return true;
+            return mCursor.getInt(0) > 0;
         }
 
         @CalledByNative("ShouldProceedResult")
-        String getErrorPage() {
-            return mErrorPage;
+        int getInt(int column) {
+            if (mCursor == null) return 0;
+            return mCursor.getInt(column);
+        }
+
+        @CalledByNative("ShouldProceedResult")
+        String getString(int column) {
+            if (mCursor == null) return null;
+            return mCursor.getString(column);
+        }
+
+        @CalledByNative("ShouldProceedResult")
+        String getColumnName(int column) {
+            if (mCursor == null) return null;
+            return mCursor.getColumnName(column);
+        }
+
+        @CalledByNative("ShouldProceedResult")
+        int getColumnCount() {
+            if (mCursor == null) return 0;
+            return mCursor.getColumnCount();
         }
     }
 
@@ -109,10 +127,7 @@ public class WebRestrictionsClient {
     @CalledByNative
     ShouldProceedResult shouldProceed(final String url) {
         String select = String.format("url = '%s'", url);
-        Cursor result = mContentResolver.query(mQueryUri, null, select, null, null);
-        boolean shouldProceed = result == null || result.getInt(0) > 0;
-        String errorPage = shouldProceed ? null : result.getString(1);
-        return new ShouldProceedResult(shouldProceed, errorPage);
+        return new ShouldProceedResult(mContentResolver.query(mQueryUri, null, select, null, null));
     }
 
     /**

@@ -74,26 +74,26 @@ public class WebRestrictionsClientTest {
         verify(mProvider).query(Uri.parse("content://" + TEST_CONTENT_PROVIDER + "/authorized"),
                 null, "url = 'http://example.com'", null, null);
         assertThat(result.shouldProceed(), is(true));
-        assertThat(result.getErrorPage(), is(nullValue()));
+        assertThat(result.getString(1), is(nullValue()));
 
         Cursor cursor = Mockito.mock(Cursor.class);
         when(cursor.getInt(0)).thenReturn(1);
-        when(cursor.getString(1)).thenReturn("No error");
+        when(cursor.getInt(1)).thenReturn(42);
+        when(cursor.getString(2)).thenReturn("No error");
         when(mProvider.query(any(Uri.class), any(String[].class), anyString(), any(String[].class),
                      anyString()))
                 .thenReturn(cursor);
         result = mTestClient.shouldProceed("http://example.com");
         assertThat(result.shouldProceed(), is(true));
-        assertThat(result.getErrorPage(), is(nullValue()));
+        assertThat(result.getInt(1), is(42));
+        assertThat(result.getString(2), is("No error"));
 
         when(cursor.getInt(0)).thenReturn(0);
-        when(cursor.getString(1)).thenReturn("Error");
         when(mProvider.query(any(Uri.class), any(String[].class), anyString(), any(String[].class),
                      anyString()))
                 .thenReturn(cursor);
         result = mTestClient.shouldProceed("http://example.com");
         assertThat(result.shouldProceed(), is(false));
-        assertThat(result.getErrorPage(), is("Error"));
     }
 
     @Test

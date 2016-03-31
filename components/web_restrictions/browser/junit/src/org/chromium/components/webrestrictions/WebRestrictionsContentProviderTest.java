@@ -17,8 +17,8 @@ import android.content.ContentValues;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Pair;
 
+import org.chromium.components.webrestrictions.WebRestrictionsContentProvider.WebRestrictionsResult;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class WebRestrictionsContentProviderTest {
         // necessary.
         mContentProvider = Mockito.spy(new WebRestrictionsContentProvider() {
             @Override
-            protected Pair<Boolean, String> shouldProceed(String url) {
+            protected WebRestrictionsResult shouldProceed(String url) {
                 return null;
             }
 
@@ -63,6 +63,11 @@ public class WebRestrictionsContentProviderTest {
             @Override
             protected boolean contentProviderEnabled() {
                 return false;
+            }
+
+            @Override
+            protected String[] getErrorColumnNames() {
+                return null;
             }
         });
         mContentProvider.onCreate();
@@ -84,16 +89,19 @@ public class WebRestrictionsContentProviderTest {
                            "url = 'dummy'", null, null),
                 is(nullValue()));
         when(mContentProvider.contentProviderEnabled()).thenReturn(true);
-        when(mContentProvider.shouldProceed(anyString()))
-                .thenReturn(new Pair<Boolean, String>(false, "Error Message"));
+        int errorInt[] = {42};
+        String errorString[] = {"Error Message"};
+        WebRestrictionsResult result = new WebRestrictionsResult(false, errorInt, errorString);
+        when(mContentProvider.shouldProceed(anyString())).thenReturn(result);
         Cursor cursor = mContentResolver.query(mUri.buildUpon().appendPath("authorized").build(),
                 null, "url = 'dummy'", null, null);
         verify(mContentProvider).shouldProceed("dummy");
         assertThat(cursor, is(not(nullValue())));
         assertThat(cursor.getInt(0), is(WebRestrictionsContentProvider.BLOCKED));
-        assertThat(cursor.getString(1), is("Error Message"));
-        when(mContentProvider.shouldProceed(anyString()))
-                .thenReturn(new Pair<Boolean, String>(true, null));
+        assertThat(cursor.getInt(1), is(42));
+        assertThat(cursor.getString(2), is("Error Message"));
+        result = new WebRestrictionsResult(true, null, null);
+        when(mContentProvider.shouldProceed(anyString())).thenReturn(result);
         cursor = mContentResolver.query(mUri.buildUpon().appendPath("authorized").build(), null,
                 "url = 'dummy'", null, null);
         assertThat(cursor, is(not(nullValue())));

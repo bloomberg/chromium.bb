@@ -4,6 +4,8 @@
 
 package org.chromium.components.webrestrictions;
 
+import android.database.AbstractCursor;
+
 import org.chromium.base.annotations.CalledByNative;
 
 /**
@@ -53,7 +55,62 @@ public class MockWebRestrictionsClient extends WebRestrictionsClient {
      */
     @Override
     ShouldProceedResult shouldProceed(final String url) {
-        return new ShouldProceedResult(mAuthority.contains("Good"), url);
+        return new ShouldProceedResult(new AbstractCursor() {
+
+            @Override
+            public int getCount() {
+                return 0;
+            }
+
+            @Override
+            public String[] getColumnNames() {
+                return new String[] {"Result", "Error number", "Error string"};
+            }
+
+            @Override
+            public int getColumnCount() {
+                return mAuthority.contains("Good") ? 1 : 3;
+            }
+
+            @Override
+            public String getString(int column) {
+                if (column == 2 && !mAuthority.contains("Good")) return url;
+                return null;
+            }
+
+            @Override
+            public short getShort(int column) {
+                return 0;
+            }
+
+            @Override
+            public int getInt(int column) {
+                if (column == 0 && mAuthority.contains("Good")) return 1;
+                if (column == 1 && !mAuthority.contains("Good")) return 42;
+                return 0;
+            }
+
+            @Override
+            public long getLong(int column) {
+                return 0;
+            }
+
+            @Override
+            public float getFloat(int column) {
+                return 0;
+            }
+
+            @Override
+            public double getDouble(int column) {
+                return 0;
+            }
+
+            @Override
+            public boolean isNull(int column) {
+                return false;
+            }
+
+        });
     }
 
     /**

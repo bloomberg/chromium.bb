@@ -12,7 +12,6 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
-import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -25,7 +24,8 @@ import org.chromium.content.browser.BrowserStartupController;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * Content provider for telling other apps (e.g. WebView apps) about the supervised user URL filter.
+ * Content provider for telling other apps (e.g. WebView apps) about the
+ * supervised user URL filter.
  */
 public class SupervisedUserContentProvider extends WebRestrictionsContentProvider {
     private static final String SUPERVISED_USER_CONTENT_PROVIDER_ENABLED =
@@ -48,31 +48,57 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         return mNativeSupervisedUserContentProvider;
     }
 
-    @VisibleForTesting
     void setNativeSupervisedUserContentProviderForTesting(long nativeProvider) {
         mNativeSupervisedUserContentProvider = nativeProvider;
     }
 
-    @VisibleForTesting
     static class SupervisedUserQueryReply {
         final CountDownLatch mLatch = new CountDownLatch(1);
-        private Pair<Boolean, String> mResult;
-        @VisibleForTesting
+        private WebRestrictionsResult mResult;
+
+        // One of the following three functions must be called precisely once per query.
+
         @CalledByNative("SupervisedUserQueryReply")
-        void onQueryComplete(boolean result, String errorMessage) {
-            // This must be called precisely once per query.
+        void onQueryComplete() {
             assert mResult == null;
-            mResult = new Pair<Boolean, String>(result, errorMessage);
+
+            mResult = new WebRestrictionsResult(true, null, null);
             mLatch.countDown();
         }
-        Pair<Boolean, String> getResult() throws InterruptedException {
+
+        @CalledByNative("SupervisedUserQueryReply")
+        void onQueryFailed(int reason, int allowAccessRequests, int isChildAccount,
+                String profileImageUrl, String profileImageUrl2, String custodian,
+                String custodianEmail, String secondCustodian, String secondCustodianEmail) {
+            assert mResult == null;
+            int errorInt[] = new int[] {reason, allowAccessRequests, isChildAccount};
+            String errorString[] = new String[] {
+                    profileImageUrl,
+                    profileImageUrl2,
+                    custodian,
+                    custodianEmail,
+                    secondCustodian,
+                    secondCustodianEmail
+            };
+            mResult = new WebRestrictionsResult(false, errorInt, errorString);
+            mLatch.countDown();
+        }
+
+        void onQueryFailedNoErrorData() {
+            assert mResult == null;
+
+            mResult = new WebRestrictionsResult(false, null, null);
+            mLatch.countDown();
+        }
+
+        WebRestrictionsResult getResult() throws InterruptedException {
             mLatch.await();
             return mResult;
         }
     }
 
     @Override
-    protected Pair<Boolean, String> shouldProceed(final String url) {
+    protected WebRestrictionsResult shouldProceed(final String url) {
         // This will be called on multiple threads (but never the UI thread),
         // see http://developer.android.com/guide/components/processes-and-threads.html#ThreadSafe.
         // The reply comes back on a different thread (possibly the UI thread) some time later.
@@ -86,7 +112,7 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
                 try {
                     nativeShouldProceed(getSupervisedUserContentProvider(), queryReply, url);
                 } catch (ProcessInitException e) {
-                    queryReply.onQueryComplete(false, null);
+                    queryReply.onQueryFailedNoErrorData();
                 }
             }
         });
@@ -95,7 +121,7 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
             // something to the queue.
             return queryReply.getResult();
         } catch (InterruptedException e) {
-            return new Pair<Boolean, String>(false, null);
+            return new WebRestrictionsResult(false, null, null);
         }
     }
 
@@ -105,11 +131,10 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         return true;
     }
 
-    @VisibleForTesting
     static class SupervisedUserInsertReply {
         final CountDownLatch mLatch = new CountDownLatch(1);
         boolean mResult;
-        @VisibleForTesting
+
         @CalledByNative("SupervisedUserInsertReply")
         void onInsertRequestSendComplete(boolean result) {
             // This must be called precisely once per query.
@@ -117,6 +142,7 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
             mResult = result;
             mLatch.countDown();
         }
+
         boolean getResult() throws InterruptedException {
             mLatch.await();
             return mResult;
@@ -149,14 +175,12 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         }
     }
 
-    @VisibleForTesting
     @Override
     public Bundle call(String method, String arg, Bundle bundle) {
         if (method.equals("setFilterForTesting")) setFilterForTesting();
         return null;
     }
 
-    @VisibleForTesting
     void setFilterForTesting() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -171,7 +195,6 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         });
     }
 
-    @VisibleForTesting
     @CalledByNative
     void onSupervisedUserFilterUpdated() {
         onFilterChanged();
@@ -230,15 +253,21 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
         setEnabled(true);
     }
 
-    @VisibleForTesting native long nativeCreateSupervisedUserContentProvider();
+    native long nativeCreateSupervisedUserContentProvider();
 
-    @VisibleForTesting
     native void nativeShouldProceed(long nativeSupervisedUserContentProvider,
             SupervisedUserQueryReply queryReply, String url);
 
-    @VisibleForTesting
     native void nativeRequestInsert(long nativeSupervisedUserContentProvider,
             SupervisedUserInsertReply insertReply, String url);
 
     private native void nativeSetFilterForTesting(long nativeSupervisedUserContentProvider);
+
+    @Override
+    protected String[] getErrorColumnNames() {
+        String result[] = {"Reason", "Allow access requests", "Is child account",
+                "Profile image URL", "Second profile image URL", "Custodian", "Custodian email",
+                "Second custodian", "Second custodian email"};
+        return result;
+    }
 }

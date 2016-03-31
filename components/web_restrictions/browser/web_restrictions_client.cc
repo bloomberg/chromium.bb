@@ -5,12 +5,13 @@
 #include "components/web_restrictions/browser/web_restrictions_client.h"
 
 #include "base/android/jni_string.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/WebRestrictionsClient_jni.h"
+
+using base::android::ScopedJavaGlobalRef;
 
 namespace web_restrictions {
 
@@ -95,10 +96,13 @@ UrlAccess WebRestrictionsClient::ShouldProceed(
   DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
   if (!initialized_)
     return ALLOW;
-  auto iter = url_access_cache_.find(url);
-  if (iter != url_access_cache_.end()) {
+  auto iter = cache_.find(url);
+  if (iter != cache_.end()) {
     RecordURLAccess(url);
-    return iter->second ? ALLOW : DISALLOW;
+    JNIEnv* env = base::android::AttachCurrentThread();
+    return Java_ShouldProceedResult_shouldProceed(env, iter->second.obj())
+               ? ALLOW
+               : DISALLOW;
   }
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
@@ -114,16 +118,58 @@ bool WebRestrictionsClient::SupportsRequest() const {
   return initialized_ && supports_request_;
 }
 
-bool WebRestrictionsClient::GetErrorHtml(const GURL& url,
-                                         std::string* error_page) const {
+int WebRestrictionsClient::GetResultColumnCount(const GURL& url) const {
   DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
   if (!initialized_)
-    return false;
-  auto iter = error_page_cache_.find(url);
-  if (iter == error_page_cache_.end())
-    return false;
-  *error_page = iter->second;
-  return true;
+    return 0;
+  auto iter = cache_.find(url);
+  if (iter == cache_.end())
+    return 0;
+  return Java_ShouldProceedResult_getColumnCount(
+      base::android::AttachCurrentThread(), iter->second.obj());
+}
+
+std::string WebRestrictionsClient::GetResultColumnName(const GURL& url,
+                                                       int column) const {
+  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
+  if (!initialized_)
+    return std::string();
+  auto iter = cache_.find(url);
+  if (iter == cache_.end())
+    return std::string();
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return base::android::ConvertJavaStringToUTF8(
+      env,
+      Java_ShouldProceedResult_getColumnName(env, iter->second.obj(), column)
+          .obj());
+}
+
+int WebRestrictionsClient::GetResultIntValue(const GURL& url,
+                                             int column) const {
+  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
+  if (!initialized_)
+    return 0;
+  auto iter = cache_.find(url);
+  if (iter == cache_.end())
+    return 0;
+  return Java_ShouldProceedResult_getInt(base::android::AttachCurrentThread(),
+                                         iter->second.obj(), column);
+}
+
+std::string WebRestrictionsClient::GetResultStringValue(const GURL& url,
+                                                        int column) const {
+  DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
+  if (!initialized_)
+    return std::string();
+  auto iter = cache_.find(url);
+  if (iter == cache_.end())
+    return std::string();
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return base::android::ConvertJavaStringToUTF8(
+      env, Java_ShouldProceedResult_getString(env, iter->second.obj(), column)
+               .obj());
 }
 
 void WebRestrictionsClient::RequestPermission(
@@ -153,8 +199,7 @@ void WebRestrictionsClient::RecordURLAccess(const GURL& url) {
 
 void WebRestrictionsClient::UpdateCache(std::string provider_authority,
                                         GURL url,
-                                        bool should_proceed,
-                                        std::string error_page) {
+                                        ScopedJavaGlobalRef<jobject> result) {
   DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
   // If the webrestrictions provider changed when the old one was being queried,
   // do not update the cache for the new provider.
@@ -162,16 +207,10 @@ void WebRestrictionsClient::UpdateCache(std::string provider_authority,
     return;
   RecordURLAccess(url);
   if (recent_urls_.size() >= kMaxCacheSize) {
-    url_access_cache_.erase(recent_urls_.back());
-    error_page_cache_.erase(recent_urls_.back());
+    cache_.erase(recent_urls_.back());
     recent_urls_.pop_back();
   }
-  url_access_cache_[url] = should_proceed;
-  if (!error_page.empty()) {
-    error_page_cache_[url] = error_page;
-  } else {
-    error_page_cache_.erase(url);
-  }
+  cache_[url] = result;
 }
 
 void WebRestrictionsClient::RequestSupportKnown(std::string provider_authority,
@@ -190,37 +229,27 @@ void WebRestrictionsClient::OnShouldProceedComplete(
     std::string provider_authority,
     const GURL& url,
     const base::Callback<void(bool)>& callback,
-    const ShouldProceedResult& result) {
-  UpdateCache(provider_authority, url, result.ok_to_proceed, result.error_page);
-  callback.Run(result.ok_to_proceed);
+    const ScopedJavaGlobalRef<jobject>& result) {
+  UpdateCache(provider_authority, url, result);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  callback.Run(Java_ShouldProceedResult_shouldProceed(env, result.obj()));
 }
 
 void WebRestrictionsClient::ClearCache() {
   DCHECK(single_thread_task_runner_->BelongsToCurrentThread());
-  error_page_cache_.clear();
-  url_access_cache_.clear();
+  cache_.clear();
   recent_urls_.clear();
 }
 
 // static
-WebRestrictionsClient::ShouldProceedResult
-WebRestrictionsClient::ShouldProceedTask(
+ScopedJavaGlobalRef<jobject> WebRestrictionsClient::ShouldProceedTask(
     const GURL& url,
     const base::android::JavaRef<jobject>& java_provider) {
-  WebRestrictionsClient::ShouldProceedResult result;
   JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> j_result =
+  base::android::ScopedJavaGlobalRef<jobject> result(
       Java_WebRestrictionsClient_shouldProceed(
           env, java_provider.obj(),
-          base::android::ConvertUTF8ToJavaString(env, url.spec()).obj());
-  result.ok_to_proceed =
-      Java_ShouldProceedResult_shouldProceed(env, j_result.obj());
-  base::android::ScopedJavaLocalRef<jstring> j_error_page =
-      Java_ShouldProceedResult_getErrorPage(env, j_result.obj());
-  if (!j_error_page.is_null()) {
-    base::android::ConvertJavaStringToUTF8(env, j_error_page.obj(),
-                                           &result.error_page);
-  }
+          base::android::ConvertUTF8ToJavaString(env, url.spec()).obj()));
   return result;
 }
 

@@ -14,8 +14,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import android.util.Pair;
-
+import org.chromium.components.webrestrictions.WebRestrictionsContentProvider.WebRestrictionsResult;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +49,7 @@ public class SupervisedUserContentProviderUnitTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 Object args[] = invocation.getArguments();
                 ((SupervisedUserContentProvider.SupervisedUserQueryReply) args[1])
-                        .onQueryComplete(true, null);
+                        .onQueryComplete();
                 return null;
             }
 
@@ -59,8 +58,8 @@ public class SupervisedUserContentProviderUnitTest {
                 .nativeShouldProceed(anyLong(),
                         any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
                         anyString());
-        assertThat(mSupervisedUserContentProvider.shouldProceed("url"),
-                is(new Pair<Boolean, String>(true, null)));
+        WebRestrictionsResult result = mSupervisedUserContentProvider.shouldProceed("url");
+        assertThat(result.shouldProceed(), is(true));
         verify(mSupervisedUserContentProvider)
                 .nativeShouldProceed(eq(1234L),
                         any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
@@ -72,7 +71,8 @@ public class SupervisedUserContentProviderUnitTest {
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 Object args[] = invocation.getArguments();
                 ((SupervisedUserContentProvider.SupervisedUserQueryReply) args[1])
-                        .onQueryComplete(false, "Hello");
+                        .onQueryFailed(1, 2, 3, "url1", "url2", "custodian", "custodianEmail",
+                                "secondCustodian", "secondCustodianEmail");
                 return null;
             }
 
@@ -81,8 +81,19 @@ public class SupervisedUserContentProviderUnitTest {
                 .nativeShouldProceed(anyLong(),
                         any(SupervisedUserContentProvider.SupervisedUserQueryReply.class),
                         anyString());
-        assertThat(mSupervisedUserContentProvider.shouldProceed("url"),
-                is(new Pair<Boolean, String>(false, "Hello")));
+        result = mSupervisedUserContentProvider.shouldProceed("url");
+        assertThat(result.shouldProceed(), is(false));
+        assertThat(result.errorIntCount(), is(3));
+        assertThat(result.getErrorInt(0), is(1));
+        assertThat(result.getErrorInt(1), is(2));
+        assertThat(result.getErrorInt(2), is(3));
+        assertThat(result.errorStringCount(), is(6));
+        assertThat(result.getErrorString(0), is("url1"));
+        assertThat(result.getErrorString(1), is("url2"));
+        assertThat(result.getErrorString(2), is("custodian"));
+        assertThat(result.getErrorString(3), is("custodianEmail"));
+        assertThat(result.getErrorString(4), is("secondCustodian"));
+        assertThat(result.getErrorString(5), is("secondCustodianEmail"));
     }
 
     @Test
