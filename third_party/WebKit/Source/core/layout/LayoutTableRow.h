@@ -145,7 +145,7 @@ private:
 
     PaintLayerType layerTypeRequired() const override
     {
-        if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations() || isStickyPositioned() || style()->hasCompositorProxy())
+        if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations() || style()->hasCompositorProxy())
             return NormalPaintLayer;
 
         if (hasOverflowClip())

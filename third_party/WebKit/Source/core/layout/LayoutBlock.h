@@ -344,7 +344,7 @@ protected:
     static void startDelayUpdateScrollInfo();
     static bool finishDelayUpdateScrollInfo(SubtreeLayoutScope*);
 
-    void updateAfterLayout();
+    void updateScrollInfoAfterLayout();
 
     void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

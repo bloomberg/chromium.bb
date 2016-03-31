@@ -99,7 +99,7 @@ static CompositingQueryMode gCompositingQueryMode =
 
 struct SameSizeAsPaintLayer : DisplayItemClient {
     int bitFields;
-    void* pointers[10];
+    void* pointers[9];
     LayoutUnit layoutUnits[4];
     IntSize size;
     OwnPtrWillBePersistent<PaintLayerScrollableArea> scrollableArea;
@@ -172,7 +172,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject, PaintLayerType type)
     , m_last(0)
     , m_staticInlinePosition(0)
     , m_staticBlockPosition(0)
-    , m_ancestorOverflowLayer(nullptr)
 {
     updateStackingNode();
 
@@ -350,8 +349,7 @@ void PaintLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus()
 
 bool PaintLayer::scrollsWithViewport() const
 {
-    return (layoutObject()->style()->position() == FixedPosition && layoutObject()->containerForFixedPosition() == layoutObject()->view())
-        || (layoutObject()->style()->position() == StickyPosition && !ancestorScrollingLayer());
+    return layoutObject()->style()->position() == FixedPosition && layoutObject()->containerForFixedPosition() == layoutObject()->view();
 }
 
 bool PaintLayer::scrollsWithRespectTo(const PaintLayer* other) const
@@ -749,7 +747,7 @@ bool PaintLayer::update3DTransformedDescendantStatus()
     return has3DTransform();
 }
 
-void PaintLayer::updateLayerPosition()
+bool PaintLayer::updateLayerPosition()
 {
     LayoutPoint localPoint;
     LayoutPoint inlineBoundingBoxOffset; // We don't put this into the Layer x/y for inlines, so we need to subtract it out when done.
@@ -800,8 +798,10 @@ void PaintLayer::updateLayerPosition()
         localPoint -= scrollOffset;
     }
 
+    bool positionOrOffsetChanged = false;
     if (layoutObject()->isInFlowPositioned()) {
         LayoutSize newOffset = layoutObject()->offsetForInFlowPosition();
+        positionOrOffsetChanged = newOffset != offsetForInFlowPosition();
         if (m_rareData || !newOffset.isZero())
             ensureRareData().offsetForInFlowPosition = newOffset;
         localPoint.move(newOffset);
@@ -813,6 +813,7 @@ void PaintLayer::updateLayerPosition()
     localPoint.moveBy(-inlineBoundingBoxOffset);
 
     if (m_location != localPoint) {
+        positionOrOffsetChanged = true;
         setNeedsRepaint();
     }
     m_location = localPoint;
@@ -820,6 +821,7 @@ void PaintLayer::updateLayerPosition()
 #if ENABLE(ASSERT)
     m_needsPositionUpdate = false;
 #endif
+    return positionOrOffsetChanged;
 }
 
 TransformationMatrix PaintLayer::perspectiveTransform() const
@@ -1182,9 +1184,6 @@ void PaintLayer::addChild(PaintLayer* child, PaintLayer* beforeChild)
 
     child->m_parent = this;
 
-    // The ancestor overflow layer is calculated during compositing inputs update and should not be set yet.
-    ASSERT(!child->ancestorOverflowLayer());
-
     setNeedsCompositingInputsUpdate();
 
     if (!child->stackingNode()->isStacked() && !layoutObject()->documentBeingDestroyed())
@@ -1238,9 +1237,6 @@ PaintLayer* PaintLayer::removeChild(PaintLayer* oldChild)
     oldChild->setPreviousSibling(0);
     oldChild->setNextSibling(0);
     oldChild->m_parent = 0;
-    if (oldChild->ancestorOverflowLayer())
-        oldChild->ancestorOverflowLayer()->getScrollableArea()->invalidateStickyConstraintsFor(oldChild);
-    oldChild->updateAncestorOverflowLayer(nullptr);
 
     dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 

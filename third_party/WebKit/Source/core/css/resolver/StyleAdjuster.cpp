@@ -199,7 +199,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         || style.hasFilter()
         || style.hasBlendMode()
         || style.hasIsolation()
-        || style.hasViewportConstrainedPosition()
+        || style.position() == FixedPosition
         || isInTopLayer(element, style)
         || hasWillChangeThatCreatesStackingContext(style)
         || style.containsPaint()))
@@ -437,12 +437,6 @@ void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedSt
     if ((style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_ROW_GROUP
         || style.display() == TABLE_FOOTER_GROUP || style.display() == TABLE_ROW)
         && style.position() == RelativePosition)
-        style.setPosition(StaticPosition);
-
-    // Cannot support position: sticky for table columns and column groups because current code is only doing
-    // background painting through columns / column groups
-    if ((style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_COLUMN)
-        && style.position() == StickyPosition)
         style.setPosition(StaticPosition);
 
     // writing-mode does not apply to table row groups, table column groups, table rows, and table columns.

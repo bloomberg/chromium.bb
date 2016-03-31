@@ -53,7 +53,7 @@ CSSOMSmoothScroll status=experimental
 CSSPaintAPI status=test, depends_on=Worklet
 CSSPropertyD status=experimental
 CSSSnapSize status=experimental
-CSSStickyPosition status=experimental
+CSSStickyPosition
 CSSTouchActionPanDirections status=experimental
 CSSTypedOM status=experimental
 CSSVariables status=stable

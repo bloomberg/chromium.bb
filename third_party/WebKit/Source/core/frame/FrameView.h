@@ -201,11 +201,6 @@ public:
     const ViewportConstrainedObjectSet* viewportConstrainedObjects() const { return m_viewportConstrainedObjects.get(); }
     bool hasViewportConstrainedObjects() const { return m_viewportConstrainedObjects && m_viewportConstrainedObjects->size() > 0; }
 
-    // Sticky objects.
-    void addStickyPositionObject() { ++m_stickyPositionObjectCount; }
-    void removeStickyPositionObject() { --m_stickyPositionObjectCount; }
-    bool hasStickyPositionObjects() const { return m_stickyPositionObjectCount; }
-
     // Objects with background-attachment:fixed.
     void addBackgroundAttachmentFixedObject(LayoutObject*);
     void removeBackgroundAttachmentFixedObject(LayoutObject*);
@@ -831,7 +826,6 @@ private:
     OwnPtrWillBeMember<ScrollableAreaSet> m_animatingScrollableAreas;
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
-    unsigned m_stickyPositionObjectCount;
     ViewportConstrainedObjectSet m_backgroundAttachmentFixedObjects;
     OwnPtrWillBeMember<FrameViewAutoSizeInfo> m_autoSizeInfo;
 
