@@ -87,6 +87,7 @@ template("android_lint") {
         "--jar-path",
         rebase_path(invoker.jar_path, root_build_dir),
         "--java-files=$_rebased_java_files",
+        "--can-fail-build",
       ]
     }
   }
