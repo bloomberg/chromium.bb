@@ -25,11 +25,15 @@ BluetoothBlacklist& BluetoothBlacklist::Get() {
   return g_singleton.Get();
 }
 
-void BluetoothBlacklist::AddOrDie(const device::BluetoothUUID& uuid,
-                                  Value value) {
+void BluetoothBlacklist::Add(const device::BluetoothUUID& uuid, Value value) {
   CHECK(uuid.IsValid());
   auto insert_result = blacklisted_uuids_.insert(std::make_pair(uuid, value));
-  CHECK(insert_result.second);
+  bool inserted = insert_result.second;
+  if (!inserted) {
+    Value& stored = insert_result.first->second;
+    if (stored != value)
+      stored = Value::EXCLUDE;
+  }
 }
 
 bool BluetoothBlacklist::IsExcluded(const BluetoothUUID& uuid) const {
@@ -111,22 +115,21 @@ void BluetoothBlacklist::PopulateWithDefaultValues() {
   DCHECK(BluetoothUUID("00001800-0000-1000-8000-00805f9b34fb") ==
          BluetoothUUID("1800"));
   // Services:
-  AddOrDie(BluetoothUUID("1812"), Value::EXCLUDE);
+  Add(BluetoothUUID("1812"), Value::EXCLUDE);
   // Characteristics:
-  AddOrDie(BluetoothUUID("2a02"), Value::EXCLUDE_WRITES);
-  AddOrDie(BluetoothUUID("2a03"), Value::EXCLUDE);
-  AddOrDie(BluetoothUUID("2a25"), Value::EXCLUDE);
+  Add(BluetoothUUID("2a02"), Value::EXCLUDE_WRITES);
+  Add(BluetoothUUID("2a03"), Value::EXCLUDE);
+  Add(BluetoothUUID("2a25"), Value::EXCLUDE);
   // Characteristics for Layout Tests:
-  AddOrDie(BluetoothUUID("bad1c9a2-9a5b-4015-8b60-1579bbbf2135"),
-           Value::EXCLUDE_READS);
+  Add(BluetoothUUID("bad1c9a2-9a5b-4015-8b60-1579bbbf2135"),
+      Value::EXCLUDE_READS);
   // Descriptors:
-  AddOrDie(BluetoothUUID("2902"), Value::EXCLUDE_WRITES);
-  AddOrDie(BluetoothUUID("2903"), Value::EXCLUDE_WRITES);
+  Add(BluetoothUUID("2902"), Value::EXCLUDE_WRITES);
+  Add(BluetoothUUID("2903"), Value::EXCLUDE_WRITES);
   // Descriptors for Layout Tests:
-  AddOrDie(BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c"),
-           Value::EXCLUDE);
-  AddOrDie(BluetoothUUID("bad3ec61-3cc3-4954-9702-7977df514114"),
-           Value::EXCLUDE_READS);
+  Add(BluetoothUUID("bad2ddcf-60db-45cd-bef9-fd72b153cf7c"), Value::EXCLUDE);
+  Add(BluetoothUUID("bad3ec61-3cc3-4954-9702-7977df514114"),
+      Value::EXCLUDE_READS);
 }
 
 }  // namespace content
