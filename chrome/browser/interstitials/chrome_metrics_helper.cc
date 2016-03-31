@@ -30,7 +30,9 @@ ChromeMetricsHelper::ChromeMetricsHelper(
           HistoryServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents->GetBrowserContext()),
               ServiceAccessType::EXPLICIT_ACCESS),
-          g_browser_process->rappor_service()),
+          g_browser_process->rappor_service()
+              ? g_browser_process->rappor_service()->AsWeakPtr()
+              : base::WeakPtr<rappor::RapporService>()),
       web_contents_(web_contents),
       request_url_(request_url),
       sampling_event_name_(sampling_event_name) {

@@ -23,7 +23,9 @@ IOSChromeMetricsHelper::IOSChromeMetricsHelper(
               ios::ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState()),
               ServiceAccessType::EXPLICIT_ACCESS),
-          GetApplicationContext()->GetRapporService()) {}
+          GetApplicationContext()->GetRapporService()
+              ? GetApplicationContext()->GetRapporService()->AsWeakPtr()
+              : base::WeakPtr<rappor::RapporService>()) {}
 
 IOSChromeMetricsHelper::~IOSChromeMetricsHelper() {}
 

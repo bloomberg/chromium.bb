@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "components/rappor/rappor_service.h"
@@ -86,8 +87,8 @@ class MetricsHelper {
   MetricsHelper(const GURL& url,
                 const ReportDetails settings,
                 history::HistoryService* history_service,
-                rappor::RapporService* rappor_service);
-  virtual ~MetricsHelper() {}
+                const base::WeakPtr<rappor::RapporService>& rappor_service);
+  virtual ~MetricsHelper();
 
   // Records a user decision or interaction to the appropriate UMA metrics
   // histogram and potentially in a RAPPOR metric.
@@ -115,7 +116,7 @@ class MetricsHelper {
   void RecordUserDecisionToRappor(Decision decision);
   const GURL request_url_;
   const ReportDetails settings_;
-  rappor::RapporService* rappor_service_;
+  base::WeakPtr<rappor::RapporService> rappor_service_;
   int num_visits_;
   base::CancelableTaskTracker request_tracker_;
 
