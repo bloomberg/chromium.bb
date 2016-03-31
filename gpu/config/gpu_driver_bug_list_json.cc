@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.57",
+  "version": "8.58",
   "entries": [
     {
       "id": 1,
@@ -1860,6 +1860,24 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "disable_texture_cube_map_seamless"
+      ]
+    },
+    {
+      "id": 156,
+      "cr_bugs": [598474],
+      "description": "glEGLImageTargetTexture2DOES crashes",
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "between",
+          "value": "4.4",
+          "value2": "4.4.4"
+        }
+      },
+      "gl_vendor": "Imagination.*",
+      "gl_renderer": "PowerVR SGX 544MP",
+      "features": [
+        "avda_dont_copy_pictures"
       ]
     }
   ]

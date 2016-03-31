@@ -84,7 +84,7 @@ void AndroidDeferredRenderingBackingStrategy::Cleanup(
 
   // If we're rendering to a SurfaceTexture we can make a copy of the current
   // front buffer so that the PictureBuffer textures are still valid.
-  if (surface_texture_ && have_context)
+  if (surface_texture_ && have_context && ShouldCopyPictures())
     CopySurfaceTextureToPictures(buffers);
 
   // Now that no AVDACodecImages refer to the SurfaceTexture's texture, delete
@@ -298,11 +298,6 @@ void AndroidDeferredRenderingBackingStrategy::CopySurfaceTextureToPictures(
   if (!gl_decoder)
     return;
 
-  // Mali + <= KitKat crashes when we try to do this.  We don't know if it's
-  // due to detaching a surface texture, but it's the same set of devices.
-  if (!DoesSurfaceTextureDetachWork())
-    return;
-
   const gfx::Size size = state_provider_->GetSize();
 
   // Create a 2D texture to hold a copy of the SurfaceTexture's front buffer.
@@ -397,6 +392,26 @@ bool AndroidDeferredRenderingBackingStrategy::DoesSurfaceTextureDetachWork()
   }
 
   return surface_texture_detach_works;
+}
+
+bool AndroidDeferredRenderingBackingStrategy::ShouldCopyPictures() const {
+  // Mali + <= KitKat crashes when we try to do this.  We don't know if it's
+  // due to detaching a surface texture, but it's the same set of devices.
+  if (!DoesSurfaceTextureDetachWork())
+      return false;
+
+  // Other devices are unreliable for other reasons (e.g., EGLImage).
+  if (gpu::gles2::GLES2Decoder* gl_decoder =
+          state_provider_->GetGlDecoder().get()) {
+    if (gpu::gles2::ContextGroup* group = gl_decoder->GetContextGroup()) {
+      if (gpu::gles2::FeatureInfo* feature_info = group->feature_info()) {
+          return !feature_info->workarounds().avda_dont_copy_pictures;
+      }
+    }
+  }
+
+  // Assume so.
+  return true;
 }
 
 }  // namespace content

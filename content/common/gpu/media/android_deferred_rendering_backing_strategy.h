@@ -80,6 +80,10 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
   // not set.
   bool DoesSurfaceTextureDetachWork() const;
 
+  // Return true if and only if CopySurfaceTextureToPictures is expected to work
+  // on this device.
+  bool ShouldCopyPictures() const;
+
   scoped_refptr<AVDASharedState> shared_state_;
 
   AVDAStateProvider* state_provider_;
