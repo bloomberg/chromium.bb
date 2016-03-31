@@ -83,11 +83,6 @@
 //#define SK_ZLIB_INCLUDE <zlib.h>
 #define SK_ZLIB_INCLUDE "third_party/zlib/zlib.h"
 
-/*  Define this to allow PDF scalars above 32k.  The PDF/A spec doesn't allow
-    them, but modern PDF interpreters should handle them just fine.
- */
-//#define SK_ALLOW_LARGE_PDF_SCALARS
-
 /*  Define this to provide font subsetter for font subsetting when generating
     PDF documents.
  */
