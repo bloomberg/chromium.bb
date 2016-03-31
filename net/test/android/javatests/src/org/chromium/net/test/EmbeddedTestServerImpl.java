@@ -5,6 +5,7 @@
 package org.chromium.net.test;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 
@@ -174,7 +175,18 @@ public class EmbeddedTestServerImpl extends IEmbeddedTestServerImpl.Stub {
             }
         });
 
-        mHandlerThread.quitSafely();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            mHandlerThread.quitSafely();
+        } else {
+            runOnHandlerThread(new Callable<Void>() {
+                @Override
+                public Void call() {
+                    mHandlerThread.quit();
+                    return null;
+                }
+            });
+        }
+
         try {
             mHandlerThread.join();
         } catch (InterruptedException e) {
