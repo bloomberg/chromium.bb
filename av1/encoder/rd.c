@@ -295,9 +295,26 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
         cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost, &cm->fc->nmvc,
         cm->allow_high_precision_mv);
 
+#if CONFIG_REF_MV
+    for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i) {
+      cpi->newmv_mode_cost[i][0] = av1_cost_bit(cm->fc->newmv_prob[i], 0);
+      cpi->newmv_mode_cost[i][1] = av1_cost_bit(cm->fc->newmv_prob[i], 1);
+    }
+
+    for (i = 0; i < ZEROMV_MODE_CONTEXTS; ++i) {
+      cpi->zeromv_mode_cost[i][0] = av1_cost_bit(cm->fc->zeromv_prob[i], 0);
+      cpi->zeromv_mode_cost[i][1] = av1_cost_bit(cm->fc->zeromv_prob[i], 1);
+    }
+
+    for (i = 0; i < REFMV_MODE_CONTEXTS; ++i) {
+      cpi->refmv_mode_cost[i][0] = av1_cost_bit(cm->fc->refmv_prob[i], 0);
+      cpi->refmv_mode_cost[i][1] = av1_cost_bit(cm->fc->refmv_prob[i], 1);
+    }
+#else
     for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
       av1_cost_tokens((int *)cpi->inter_mode_cost[i],
                        cm->fc->inter_mode_probs[i], av1_inter_mode_tree);
+#endif
   }
 }
 

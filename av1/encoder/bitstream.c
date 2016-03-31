@@ -51,9 +51,11 @@ static const struct av1_token switchable_interp_encodings[SWITCHABLE_FILTERS] =
 static const struct av1_token partition_encodings[PARTITION_TYPES] = {
   { 0, 1 }, { 2, 2 }, { 6, 3 }, { 7, 3 }
 };
+#if !CONFIG_REF_MV
 static const struct av1_token inter_mode_encodings[INTER_MODES] = {
   { 2, 2 }, { 6, 3 }, { 0, 1 }, { 7, 3 }
 };
+#endif
 
 static struct av1_token ext_tx_encodings[TX_TYPES];
 
@@ -66,11 +68,31 @@ static void write_intra_mode(aom_writer *w, PREDICTION_MODE mode,
   av1_write_token(w, av1_intra_mode_tree, probs, &intra_mode_encodings[mode]);
 }
 
-static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
-                             const aom_prob *probs) {
+static void write_inter_mode(AV1_COMMON *cm,
+                             aom_writer *w, PREDICTION_MODE mode,
+                             const uint8_t mode_ctx) {
+#if CONFIG_REF_MV
+  const uint8_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
+  const aom_prob newmv_prob = cm->fc->newmv_prob[newmv_ctx];
+  aom_write(w, mode != NEWMV, newmv_prob);
+
+  if (mode != NEWMV) {
+    const uint8_t zeromv_ctx = (mode_ctx >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
+    const aom_prob zeromv_prob = cm->fc->zeromv_prob[zeromv_ctx];
+    aom_write(w, mode != ZEROMV, zeromv_prob);
+
+    if (mode != ZEROMV) {
+      const uint8_t refmv_ctx = (mode_ctx >> REFMV_OFFSET);
+      const aom_prob refmv_prob = cm->fc->refmv_prob[refmv_ctx];
+      aom_write(w, mode != NEARESTMV, refmv_prob);
+    }
+  }
+#else
+  const aom_prob *const inter_probs = cm->fc->inter_mode_probs[mode_ctx];
   assert(is_inter_mode(mode));
-  av1_write_token(w, av1_inter_mode_tree, probs,
+  av1_write_token(w, av1_inter_mode_tree, inter_probs,
                    &inter_mode_encodings[INTER_OFFSET(mode)]);
+#endif
 }
 
 static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
@@ -124,6 +146,22 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       aom_write(w, tx_size != TX_16X16, tx_probs[2]);
   }
 }
+
+#if CONFIG_REF_MV
+static void update_inter_mode_probs(AV1_COMMON *cm, aom_writer *w,
+                                    FRAME_COUNTS *counts) {
+  int i;
+  for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i)
+    av1_cond_prob_diff_update(w, &cm->fc->newmv_prob[i],
+                              counts->newmv_mode[i]);
+  for (i = 0; i < ZEROMV_MODE_CONTEXTS; ++i)
+    av1_cond_prob_diff_update(w, &cm->fc->zeromv_prob[i],
+                              counts->zeromv_mode[i]);
+  for (i = 0; i < REFMV_MODE_CONTEXTS; ++i)
+    av1_cond_prob_diff_update(w, &cm->fc->refmv_prob[i],
+                              counts->refmv_mode[i]);
+}
+#endif
 
 static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       int segment_id, const MODE_INFO *mi, aom_writer *w) {
@@ -380,13 +418,12 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
     write_intra_mode(w, mbmi->uv_mode, cm->fc->uv_mode_prob[mode]);
   } else {
     const int mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
-    const aom_prob *const inter_probs = cm->fc->inter_mode_probs[mode_ctx];
     write_ref_frames(cm, xd, w);
 
     // If segment skip is not enabled code the mode.
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {
       if (bsize >= BLOCK_8X8) {
-        write_inter_mode(w, mode, inter_probs);
+        write_inter_mode(cm, w, mode, mode_ctx);
       }
     }
 
@@ -408,7 +445,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
         for (idx = 0; idx < 2; idx += num_4x4_w) {
           const int j = idy * 2 + idx;
           const PREDICTION_MODE b_mode = mi->bmi[j].as_mode;
-          write_inter_mode(w, b_mode, inter_probs);
+          write_inter_mode(cm, w, b_mode, mode_ctx);
           if (b_mode == NEWMV) {
             for (ref = 0; ref < 1 + is_compound; ++ref)
               av1_encode_mv(cpi, w, &mi->bmi[j].as_mv[ref].as_mv,
@@ -1403,10 +1440,13 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                          counts->kf_y_mode[i][j], INTRA_MODES, &header_bc);
 #endif
   } else {
+#if CONFIG_REF_MV
+    update_inter_mode_probs(cm, &header_bc, counts);
+#else
     for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
       prob_diff_update(av1_inter_mode_tree, cm->fc->inter_mode_probs[i],
                        counts->inter_mode[i], INTER_MODES, &header_bc);
-
+#endif
     if (cm->interp_filter == SWITCHABLE)
       update_switchable_interp_probs(cm, &header_bc, counts);
 

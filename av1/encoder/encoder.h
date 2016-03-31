@@ -450,6 +450,12 @@ typedef struct AV1_COMP {
 
   search_site_config ss_cfg;
 
+#if CONFIG_REF_MV
+  int newmv_mode_cost[NEWMV_MODE_CONTEXTS][2];
+  int zeromv_mode_cost[ZEROMV_MODE_CONTEXTS][2];
+  int refmv_mode_cost[REFMV_MODE_CONTEXTS][2];
+#endif
+
   int mbmode_cost[INTRA_MODES];
   unsigned int inter_mode_cost[INTER_MODE_CONTEXTS][INTER_MODES];
   int intra_uv_mode_cost[INTRA_MODES][INTRA_MODES];
