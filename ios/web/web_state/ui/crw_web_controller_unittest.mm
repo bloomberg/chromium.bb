@@ -347,6 +347,7 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
     id result = [[OCMockObject mockForClass:[WKWebView class]] retain];
 
     // Called by resetInjectedWebView
+    [[result stub] certificateChain];
     [[result stub] backForwardList];
     [[[result stub] andReturn:[NSURL URLWithString:kTestURLString]] URL];
     [[result stub] setNavigationDelegate:OCMOCK_ANY];

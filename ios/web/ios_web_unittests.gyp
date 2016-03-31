@@ -42,6 +42,7 @@
         'net/clients/crw_js_injection_network_client_unittest.mm',
         'net/clients/crw_passkit_network_client_unittest.mm',
         'net/crw_cert_verification_controller_unittest.mm',
+        'net/crw_ssl_status_updater_unittest.mm',
         'net/crw_url_verifying_protocol_handler_unittest.mm',
         'net/request_group_util_unittest.mm',
         'net/request_tracker_impl_unittest.mm',
