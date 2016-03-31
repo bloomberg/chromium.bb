@@ -182,6 +182,7 @@ std::vector<std::string> PluginObject::EnumerateNamedProperties(
 }
 
 void PluginObject::InstanceDeleted() {
+  ppp_class_->Deallocate(ppp_class_data_);
   instance_ = NULL;
 }
 
