@@ -84223,6 +84223,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="45" label="kErrorCodeUnsupportedMinorPayloadVersion"/>
   <int value="46" label="kErrorCodeOmahaRequestXMLHasEntityDecl"/>
   <int value="47" label="kErrorCodeFilesystemVerifierError"/>
+  <int value="48" label="kErrorCodeUserCanceled"/>
+  <int value="49" label="kErrorCodeNonCriticalUpdateInOOBE"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource" type="int">
