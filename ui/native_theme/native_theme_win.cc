@@ -720,12 +720,7 @@ void NativeThemeWin::PaintIndirect(SkCanvas* canvas,
   // Draw the theme controls using existing HDC-drawing code.
   PaintDirect(&offscreen_canvas, part, state, adjusted_rect, adjusted_extra);
 
-  // Copy the pixels to a bitmap that has ref-counted pixel storage, which is
-  // necessary to have when drawing to a SkPicture.
-  const SkBitmap& hdc_bitmap =
-      offscreen_canvas.getDevice()->accessBitmap(false);
-  SkBitmap bitmap;
-  hdc_bitmap.copyTo(&bitmap, kN32_SkColorType);
+  SkBitmap bitmap = skia::ReadPixels(&offscreen_canvas);
 
   // Post-process the pixels to fix up the alpha values (see big comment above).
   const SkPMColor placeholder_value = SkPreMultiplyColor(placeholder);
