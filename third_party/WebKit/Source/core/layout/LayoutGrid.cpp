@@ -397,7 +397,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
     }
 
     updateLayerTransformAfterLayout();
-    updateScrollInfoAfterLayout();
+    updateAfterLayout();
 
     clearNeedsLayout();
 }

@@ -51,6 +51,7 @@ struct LayoutGeometryMapStep {
         : m_layoutObject(o.m_layoutObject)
         , m_offset(o.m_offset)
         , m_offsetForFixedPosition(o.m_offsetForFixedPosition)
+        , m_offsetForStickyPosition(o.m_offsetForStickyPosition)
         , m_flags(o.m_flags)
     {
         ASSERT(!o.m_transform);
@@ -63,7 +64,10 @@ struct LayoutGeometryMapStep {
     const LayoutObject* m_layoutObject;
     LayoutSize m_offset;
     OwnPtr<TransformationMatrix> m_transform; // Includes offset if non-null.
+    // If m_offsetForFixedPosition could only apply to the fixed position steps, we may be able to merge
+    // with m_offsetForStickyPosition and simplify mapping.
     LayoutSize m_offsetForFixedPosition;
+    LayoutSize m_offsetForStickyPosition;
     GeometryInfoFlags m_flags;
 };
 

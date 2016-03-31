@@ -1,0 +1,2 @@
+Has sticky position objects
+

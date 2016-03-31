@@ -261,7 +261,7 @@ void LayoutDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
     }
 
     updateLayerTransformAfterLayout();
-    updateScrollInfoAfterLayout();
+    updateAfterLayout();
 
     if (view()->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));

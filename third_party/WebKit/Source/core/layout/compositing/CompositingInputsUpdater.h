@@ -34,6 +34,7 @@ private:
         AncestorInfo()
             : ancestorStackingContext(nullptr)
             , enclosingCompositedLayer(nullptr)
+            , lastOverflowClipLayer(nullptr)
             , lastScrollingAncestor(nullptr)
             , hasAncestorWithClipRelatedProperty(false)
             , hasAncestorWithClipPath(false)
@@ -42,6 +43,7 @@ private:
 
         PaintLayer* ancestorStackingContext;
         PaintLayer* enclosingCompositedLayer;
+        PaintLayer* lastOverflowClipLayer;
         // Notice that lastScrollingAncestor isn't the same thing as
         // ancestorScrollingLayer. The former is just the nearest scrolling
         // along the PaintLayer::parent() chain. The latter is the layer that

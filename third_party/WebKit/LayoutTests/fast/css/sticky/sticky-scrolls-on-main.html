@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<pre id="mainThreadScrollingReasons"></pre>
+<div style="position: sticky"></div>
+<script>
+ if (window.testRunner)
+     testRunner.dumpAsText(true);
+ window.addEventListener('load', function() {
+     document.getElementById("mainThreadScrollingReasons").innerText = window.internals.mainThreadScrollingReasons(document);
+ });
+</script>

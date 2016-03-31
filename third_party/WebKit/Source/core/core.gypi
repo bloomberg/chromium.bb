@@ -1997,6 +1997,8 @@
             'page/scrolling/ScrollState.h',
             'page/scrolling/ScrollStateCallback.cpp',
             'page/scrolling/ScrollStateCallback.h',
+            'page/scrolling/StickyPositionScrollingConstraints.cpp',
+            'page/scrolling/StickyPositionScrollingConstraints.h',
             'paint/BackgroundImageGeometry.cpp',
             'paint/BackgroundImageGeometry.h',
             'paint/BlockFlowPainter.cpp',
