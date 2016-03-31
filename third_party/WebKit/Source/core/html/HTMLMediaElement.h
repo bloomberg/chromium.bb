@@ -41,6 +41,10 @@
 #include "public/platform/WebMediaPlayerClient.h"
 #include "public/platform/WebMimeRegistry.h"
 
+#if !ENABLE(OILPAN)
+#include "wtf/WeakPtr.h"
+#endif
+
 namespace blink {
 
 class AudioSourceProviderClient;
@@ -264,6 +268,10 @@ public:
 
     WebRemotePlaybackClient* remotePlaybackClient() { return m_remotePlaybackClient; }
     void setRemotePlaybackClient(WebRemotePlaybackClient*);
+
+#if !ENABLE(OILPAN)
+    WeakPtr<HTMLMediaElement> createWeakPtr();
+#endif
 
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
@@ -640,6 +648,10 @@ private:
     OwnPtrWillBeMember<AutoplayExperimentHelper> m_autoplayHelper;
 
     WebRemotePlaybackClient* m_remotePlaybackClient;
+
+#if !ENABLE(OILPAN)
+    WeakPtrFactory<HTMLMediaElement> m_weakPtrFactory;
+#endif
 
     static URLRegistry* s_mediaStreamRegistry;
 };

@@ -20,6 +20,7 @@ class ExecutionContext;
 class HTMLMediaElement;
 class LocalFrame;
 class RemotePlaybackAvailability;
+class ScriptPromiseResolver;
 
 class RemotePlayback final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<RemotePlayback>
@@ -31,13 +32,14 @@ class RemotePlayback final
 public:
     static RemotePlayback* create(HTMLMediaElement&);
 
-    ~RemotePlayback() override = default;
+    ~RemotePlayback() override;
 
     // EventTarget implementation.
     const WTF::AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
 
     ScriptPromise getAvailability(ScriptState*);
+    ScriptPromise connect(ScriptState*);
 
     String state() const;
 
@@ -46,7 +48,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RemotePlayback(LocalFrame*, WebRemotePlaybackState, bool availability);
+    explicit RemotePlayback(HTMLMediaElement&);
 
     void stateChanged(WebRemotePlaybackState) override;
     void availabilityChanged(bool available) override;
@@ -54,6 +56,8 @@ private:
     WebRemotePlaybackState m_state;
     bool m_availability;
     HeapVector<Member<RemotePlaybackAvailability>> m_availabilityObjects;
+    WeakPtrWillBeMember<HTMLMediaElement> m_mediaElement;
+    HeapVector<Member<ScriptPromiseResolver>> m_connectPromiseResolvers;
 };
 
 } // namespace blink

@@ -10,6 +10,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "modules/EventTargetModules.h"
 #include "modules/remoteplayback/RemotePlaybackAvailability.h"
+#include "platform/UserGestureIndicator.h"
 
 namespace blink {
 
@@ -38,21 +39,32 @@ RemotePlayback* RemotePlayback::create(HTMLMediaElement& element)
 {
     ASSERT(element.document().frame());
 
-    RemotePlayback* remotePlayback = new RemotePlayback(
-        element.document().frame(),
-        element.isPlayingRemotely() ? WebRemotePlaybackState::Connected : WebRemotePlaybackState::Disconnected,
-        element.hasRemoteRoutes());
+    RemotePlayback* remotePlayback = new RemotePlayback(element);
     element.setRemotePlaybackClient(remotePlayback);
 
     return remotePlayback;
 }
 
-RemotePlayback::RemotePlayback(LocalFrame* frame, WebRemotePlaybackState state, bool availability)
-    : DOMWindowProperty(frame)
-    , m_state(state)
-    , m_availability(availability)
+RemotePlayback::RemotePlayback(HTMLMediaElement& element)
+    : DOMWindowProperty(element.document().frame())
+    , m_state(element.isPlayingRemotely() ? WebRemotePlaybackState::Connected : WebRemotePlaybackState::Disconnected)
+    , m_availability(element.hasRemoteRoutes())
+#if !ENABLE(OILPAN)
+    , m_mediaElement(element.createWeakPtr())
+#else
+    , m_mediaElement(&element)
+#endif
 {
 }
+
+#if ENABLE(OILPAN)
+RemotePlayback::~RemotePlayback() = default;
+#else
+RemotePlayback::~RemotePlayback()
+{
+    m_mediaElement->setRemotePlaybackClient(nullptr);
+}
+#endif
 
 const AtomicString& RemotePlayback::interfaceName() const
 {
@@ -82,6 +94,29 @@ ScriptPromise RemotePlayback::getAvailability(ScriptState* scriptState)
     return promise;
 }
 
+ScriptPromise RemotePlayback::connect(ScriptState* scriptState)
+{
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    // TODO(avayvod): should we have a separate flag to disable the user gesture
+    // requirement (for tests) or reuse the one for the PresentationRequest::start()?
+    if (!UserGestureIndicator::processingUserGesture()) {
+        resolver->reject(DOMException::create(InvalidAccessError, "RemotePlayback::connect() requires user gesture."));
+        return promise;
+    }
+
+    if (m_state == WebRemotePlaybackState::Disconnected) {
+        m_connectPromiseResolvers.append(resolver);
+        m_mediaElement->requestRemotePlayback();
+    } else {
+        m_mediaElement->requestRemotePlaybackControl();
+        resolver->resolve(false);
+    }
+
+    return promise;
+}
+
 String RemotePlayback::state() const
 {
     return remotePlaybackStateToString(m_state);
@@ -89,6 +124,20 @@ String RemotePlayback::state() const
 
 void RemotePlayback::stateChanged(WebRemotePlaybackState state)
 {
+    // We may get a "disconnected" state change while in the "disconnected"
+    // state if initiated connection fails. So cleanup the promise resolvers
+    // before checking if anything changed.
+    // TODO(avayvod): cleanup this logic when we implementing the "connecting"
+    // state.
+    if (state != WebRemotePlaybackState::Disconnected) {
+        for (auto& resolver : m_connectPromiseResolvers)
+            resolver->resolve(true);
+    } else {
+        for (auto& resolver : m_connectPromiseResolvers)
+            resolver->reject(DOMException::create(AbortError, "Failed to connect to the remote device."));
+    }
+    m_connectPromiseResolvers.clear();
+
     if (m_state == state)
         return;
 
@@ -109,6 +158,8 @@ void RemotePlayback::availabilityChanged(bool available)
 DEFINE_TRACE(RemotePlayback)
 {
     visitor->trace(m_availabilityObjects);
+    visitor->trace(m_mediaElement);
+    visitor->trace(m_connectPromiseResolvers);
     RefCountedGarbageCollectedEventTargetWithInlineData<RemotePlayback>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }

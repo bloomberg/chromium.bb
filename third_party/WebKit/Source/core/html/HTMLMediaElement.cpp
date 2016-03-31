@@ -418,6 +418,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_autoplayHelperClient(AutoplayHelperClientImpl::create(this))
     , m_autoplayHelper(AutoplayExperimentHelper::create(m_autoplayHelperClient.get()))
     , m_remotePlaybackClient(nullptr)
+#if !ENABLE(OILPAN)
+    , m_weakPtrFactory(this)
+#endif
 {
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
@@ -3861,5 +3864,12 @@ IntRect HTMLMediaElement::AutoplayHelperClientImpl::absoluteBoundingBoxRect() co
         result = object->absoluteBoundingBoxRect();
     return result;
 }
+
+#if !ENABLE(OILPAN)
+WeakPtr<HTMLMediaElement> HTMLMediaElement::createWeakPtr()
+{
+    return m_weakPtrFactory.createWeakPtr();
+}
+#endif
 
 } // namespace blink

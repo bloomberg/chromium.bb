@@ -17,4 +17,5 @@ enum RemotePlaybackState {
     attribute EventHandler onstatechange;
 
     [CallWith=ScriptState] Promise<RemotePlaybackAvailability> getAvailability();
+    [CallWith=ScriptState] Promise<bool> connect();
 };
