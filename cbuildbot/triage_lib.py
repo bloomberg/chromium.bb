@@ -666,8 +666,8 @@ class CalculateSuspects(object):
       if all(subsys_result_dicts):
         all_fail_subsys, all_pass_subsys = set(), set()
         for v in subsys_result_dicts:
-          all_fail_subsys |= set(v['fail_subsystems'])
-          all_pass_subsys |= set(v['pass_subsystems'])
+          all_fail_subsys |= set(v.get('fail_subsystems', []))
+          all_pass_subsys |= set(v.get('pass_subsystems', []))
         all_pass_subsys -= all_fail_subsys
         cl_subsys = set(GetTestSubsystemForChange(build_root, change))
         if (not cl_subsys & all_fail_subsys) and (cl_subsys <= all_pass_subsys):
