@@ -2,44 +2,24 @@
 <html>
 <body>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-battery-monitor.js"></script>
 <script>
 description("Test promise resolution and event listeners callbacks.");
 
 if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
-if (!window.internals)
-    debug('This test cannot be run without the window.internals');
 
 // Clean-up any unused battery manager objects from previous tests.
 gc();
 jsTestIsAsync = true;
 testRunner.waitUntilDone();
 
-var mockBatteryInfo;
-function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
-    mockBatteryInfo = { charging: charging,
-                        chargingTime: chargingTime,
-                        dischargingTime: dischargingTime,
-                        level: level };
-    window.internals.updateBatteryStatus(charging, chargingTime, dischargingTime, level);
-}
-
-// compare obtained battery values with the mock values
-function checkBatteryInfo(batteryManager) {
-    batteryInfo = batteryManager;
-    shouldBeDefined("batteryInfo");
-    shouldBeDefined("mockBatteryInfo");
-    shouldBe('batteryInfo.charging', 'mockBatteryInfo.charging');
-    shouldBe('batteryInfo.chargingTime', 'mockBatteryInfo.chargingTime');
-    shouldBe('batteryInfo.dischargingTime', 'mockBatteryInfo.dischargingTime');
-    shouldBe('batteryInfo.level', 'mockBatteryInfo.level');
-}
-
 var battery;
 function batteryStatusSuccess(batteryManager) {
     debug('batteryStatusSuccess invoked');
     battery = batteryManager;
-    checkBatteryInfo(battery);
+    testIfBatteryStatusIsUpToDate(battery);
 
     battery.addEventListener('chargingchange', onChargingChange);
     battery.addEventListener('dischargingtimechange', onDischargingTimeChange);
@@ -61,7 +41,7 @@ var levelChanged = 0;
 function onChargingChange() {
     debug('chargingchange invoked');
     if (this !== battery) { testFailed('this !== battery'); }
-    checkBatteryInfo(this);
+    testIfBatteryStatusIsUpToDate(this);
     chargingChanged++;
     finishIfReady();
 }
@@ -69,7 +49,7 @@ function onChargingChange() {
 function onChargingTimeChange() {
     debug('chargingtimechange invoked');
     if (this !== battery) { testFailed('this !== battery'); }
-    checkBatteryInfo(this);
+    testIfBatteryStatusIsUpToDate(this);
     chargingTimeChanged++;
     finishIfReady();
 }
@@ -77,7 +57,7 @@ function onChargingTimeChange() {
 function onDischargingTimeChange() {
     debug('dischargingtimechange invoked');
     if (this !== battery) { testFailed('this !== battery'); }
-    checkBatteryInfo(this);
+    testIfBatteryStatusIsUpToDate(this);
     dischargingTimeChanged++;
     finishIfReady();
 }
@@ -85,7 +65,7 @@ function onDischargingTimeChange() {
 function onLevelChange() {
     debug('levelchange invoked');
     if (this !== battery) { testFailed('this !== battery'); }
-    checkBatteryInfo(this);
+    testIfBatteryStatusIsUpToDate(this);
     levelChanged++;
     finishIfReady();
 }
@@ -100,13 +80,10 @@ function finishIfReady() {
     }
 }
 
-function batteryStatusFailure() {
-    testFailed('failed to successfully resolve the promise');
-    setTimeout(finishJSTest, 0);
-}
-
-navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);
-setAndFireMockBatteryInfo(false, 10, 20, 0.5);
+mockBatteryMonitorReady.then(() => {
+    navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);
+    setAndFireMockBatteryInfo(false, 10, 20, 0.5);
+});
 </script>
 </body>
 </html>

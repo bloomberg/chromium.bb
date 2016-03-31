@@ -34,10 +34,13 @@ define('Mojo Helpers', [
     'content/public/renderer/frame_service_registry',
     'content/public/renderer/service_registry',
 ], (core, router, support, frameServiceRegistry, serviceRegistry) => {
-  add_completion_callback(() => {
+  let tearDown = () => {
     frameServiceRegistry.clearServiceOverridesForTesting();
     serviceRegistry.clearServiceOverridesForTesting();
-  });
+  };
+  addEventListener('unload', tearDown);
+  if (window.add_completion_callback)
+    add_completion_callback(tearDown);
 
   return {
     core,
