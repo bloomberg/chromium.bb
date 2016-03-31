@@ -88,6 +88,9 @@
     ],
     "RenderingPipelineThrottling": [
         {
+            "enable_features": [
+                "RenderingPipelineThrottling"
+            ],
             "group_name": "Enabled"
         }
     ],
