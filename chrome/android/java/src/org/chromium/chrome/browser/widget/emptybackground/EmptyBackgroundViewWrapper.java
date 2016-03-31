@@ -69,7 +69,7 @@ public class EmptyBackgroundViewWrapper {
             }
 
             @Override
-            public void didCloseTab(Tab tab) {
+            public void didCloseTab(int tabId, boolean incognito) {
                 updateEmptyContainerState();
             }
 

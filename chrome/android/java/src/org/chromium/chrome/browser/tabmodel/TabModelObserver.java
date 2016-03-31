@@ -36,9 +36,10 @@ public interface TabModelObserver {
     /**
      * Called right after {@code tab} has been destroyed.
      *
-     * @param tab The tab that has been destroyed.
+     * @param tabId The ID of the tab that was destroyed.
+     * @param incognito True if the closed tab was incognito.
      */
-    void didCloseTab(Tab tab);
+    void didCloseTab(int tabId, boolean incognito);
 
     /**
      * Called before a tab will be added to the {@link TabModel}.

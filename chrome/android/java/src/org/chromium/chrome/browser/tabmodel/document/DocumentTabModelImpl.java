@@ -337,7 +337,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         mTabIdList.remove(index);
         mEntryMap.remove(tabId);
 
-        for (TabModelObserver obs : mObservers) obs.didCloseTab(tab);
+        for (TabModelObserver obs : mObservers) obs.didCloseTab(tabId, tab.isIncognito());
         return true;
     }
 

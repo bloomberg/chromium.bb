@@ -85,7 +85,7 @@ public class DocumentRecentTabsManager extends RecentTabsManager {
             }
 
             @Override
-            public void didCloseTab(Tab tab) {
+            public void didCloseTab(int tabId, boolean incognito) {
                 updateCurrentlyOpenTabsWhenDatabaseReady();
             }
         };

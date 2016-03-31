@@ -562,14 +562,14 @@ public class TabModelImpl extends TabModelJniBridge {
      * @param tab The {@link Tab} to close.
      */
     private void finalizeTabClosure(Tab tab) {
-        for (TabModelObserver obs : mObservers) obs.didCloseTab(tab);
-
         if (mTabContentManager != null) mTabContentManager.removeTabThumbnail(tab.getId());
         mTabSaver.removeTabFromQueues(tab);
 
         if (!isIncognito()) tab.createHistoricalTab();
 
         tab.destroy();
+
+        for (TabModelObserver obs : mObservers) obs.didCloseTab(tab.getId(), tab.isIncognito());
     }
 
     private class RewoundList implements TabList {

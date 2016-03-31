@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.preferences.HomepageEditor;
 import org.chromium.chrome.browser.preferences.HomepagePreferences;
 import org.chromium.chrome.browser.preferences.Preferences;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -217,7 +216,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
         final TabModel tabModel = getActivity().getCurrentTabModel();
         getActivity().getCurrentTabModel().addObserver(new EmptyTabModelObserver() {
             @Override
-            public void didCloseTab(Tab tab) {
+            public void didCloseTab(int tabId, boolean incognito) {
                 if (tabModel.getCount() == 0) tabClosed.notifyCalled();
             }
         });

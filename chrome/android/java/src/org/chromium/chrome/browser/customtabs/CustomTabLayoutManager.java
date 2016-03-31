@@ -36,9 +36,9 @@ public class CustomTabLayoutManager extends LayoutManagerDocument {
         }
 
         @Override
-        public void didCloseTab(Tab tab) {
+        public void didCloseTab(int tabId, boolean incognito) {
             getActiveLayout().onTabSelected(time(), getTabModelSelector().getCurrentTabId(),
-                    tab.getId(), false);
+                    tabId, false);
         }
     };
 

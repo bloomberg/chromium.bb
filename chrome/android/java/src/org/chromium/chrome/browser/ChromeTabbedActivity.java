@@ -229,7 +229,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             mTabModelObserver = new EmptyTabModelObserver() {
                 @Override
-                public void didCloseTab(Tab tab) {
+                public void didCloseTab(int tabId, boolean incognito) {
                     closeIfNoTabsAndHomepageEnabled();
                 }
 

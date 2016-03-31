@@ -118,13 +118,13 @@ public class LayoutManagerChrome
         }
 
         @Override
-        public void didCloseTab(Tab tab) {
-            tabClosed(tab);
+        public void didCloseTab(int tabId, boolean incognito) {
+            tabClosed(tabId, incognito);
         }
 
         @Override
         public void tabPendingClosure(Tab tab) {
-            tabClosed(tab);
+            tabClosed(tab.getId(), tab.isIncognito());
         }
 
         @Override
@@ -469,11 +469,11 @@ public class LayoutManagerChrome
         if (getActiveLayout() != null) getActiveLayout().onTabClosed(time(), id, nextId, incognito);
     }
 
-    private void tabClosed(Tab tab) {
+    private void tabClosed(int tabId, boolean incognito) {
         Tab currentTab =
                 getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null;
         int nextTabId = currentTab != null ? currentTab.getId() : Tab.INVALID_TAB_ID;
-        tabClosed(tab.getId(), nextTabId, tab.isIncognito());
+        tabClosed(tabId, nextTabId, incognito);
     }
 
     /**
