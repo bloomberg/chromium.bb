@@ -36,4 +36,4 @@ ProxyResolverV8TracingTest.*
 ProxyResolverV8TracingWrapperTest.*
 
 # https://crbug.com/598953
-SupportedVersion_QuicConnectionTest.TooManyReceivedPackets*
+*QuicConnectionTest.TooManyReceivedPackets*
