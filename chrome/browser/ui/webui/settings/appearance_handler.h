@@ -38,8 +38,8 @@ class AppearanceHandler : public SettingsPageUIHandler,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // Queries the enabled state of the reset-theme control.
-  base::FundamentalValue QueryResetThemeEnabledState();
+  // Whether the theme can be reset.
+  bool ResetThemeEnabled() const;
 
   // Resets the UI theme of the browser to the default theme.
   void ResetTheme(const base::ListValue*);
