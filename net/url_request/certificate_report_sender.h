@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/http/transport_security_state.h"
@@ -39,6 +40,17 @@ class NET_EXPORT CertificateReportSender
   CertificateReportSender(URLRequestContext* request_context,
                           CookiesPreference cookies_preference);
 
+  // Constructs a CertificateReportSender that sends reports with the
+  // given |request_context| and includes or excludes cookies based on
+  // |cookies_preference|. |request_context| must outlive the
+  // CertificateReportSender. When sending a report results in an error,
+  // |error_callback| is called with a pointer to the URLRequest as an
+  // argument.
+  CertificateReportSender(
+      URLRequestContext* request_context,
+      CookiesPreference cookies_preference,
+      const base::Callback<void(URLRequest*)>& error_callback);
+
   ~CertificateReportSender() override;
 
   // TransportSecurityState::ReportSender implementation.
@@ -55,6 +67,9 @@ class NET_EXPORT CertificateReportSender
 
   // Owns the contained requests.
   std::set<URLRequest*> inflight_requests_;
+
+  // Called when a sent report results in an error.
+  base::Callback<void(URLRequest* request)> error_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateReportSender);
 };

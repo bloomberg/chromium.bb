@@ -47,6 +47,13 @@ void CheckUploadData(const URLRequest& request,
   EXPECT_EQ(1u, expect_reports->erase(upload_data));
 }
 
+// Provides an error callback for report sending. If the callback is
+// called, it sets |called| to true.
+void ErrorCallback(bool* called, URLRequest* request) {
+  EXPECT_FALSE(request->status().is_success());
+  *called = true;
+}
+
 // A network delegate that lets tests check that a certificate report
 // was sent. It counts the number of requests and lets tests register a
 // callback to run when the request is destroyed. It also checks that
@@ -236,6 +243,31 @@ TEST_F(CertificateReportSenderTest, ErroredRequestGetsDeleted) {
       context(), CertificateReportSender::DO_NOT_SEND_COOKIES);
   // SendReport will block until the URLRequest is destroyed.
   SendReport(&reporter, kDummyReport, url, 0);
+}
+
+// Test that the error callback, if provided, gets called when a request
+// returns an error.
+TEST_F(CertificateReportSenderTest, ErroredRequestCallsCallback) {
+  bool error_callback_called = false;
+  GURL url = URLRequestFailedJob::GetMockHttpsUrl(ERR_FAILED);
+  CertificateReportSender reporter(
+      context(), CertificateReportSender::DO_NOT_SEND_COOKIES,
+      base::Bind(ErrorCallback, &error_callback_called));
+  // SendReport will block until the URLRequest is destroyed.
+  SendReport(&reporter, kDummyReport, url, 0);
+  EXPECT_TRUE(error_callback_called);
+}
+
+// Test that the error callback does not get called when a request
+// does not return an error.
+TEST_F(CertificateReportSenderTest, SuccessfulRequestDoesNotCallErrorCallback) {
+  bool error_callback_called = false;
+  GURL url = URLRequestMockDataJob::GetMockHttpsUrl("dummy data", 1);
+  CertificateReportSender reporter(
+      context(), CertificateReportSender::DO_NOT_SEND_COOKIES,
+      base::Bind(ErrorCallback, &error_callback_called));
+  SendReport(&reporter, kDummyReport, url, 0);
+  EXPECT_FALSE(error_callback_called);
 }
 
 // Test that cookies are sent or not sent according to the error
