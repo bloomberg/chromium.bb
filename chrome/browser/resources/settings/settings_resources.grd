@@ -413,9 +413,6 @@
       <structure name="IDR_SETTINGS_PASSWORDS_AND_FORMS_PAGE_JS"
                  file="passwords_and_forms_page/passwords_and_forms_page.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_PASSWORDS_SECTION_CSS"
-                 file="passwords_and_forms_page/passwords_section.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PASSWORDS_SECTION_HTML"
                  file="passwords_and_forms_page/passwords_section.html"
                  type="chrome_html" />
