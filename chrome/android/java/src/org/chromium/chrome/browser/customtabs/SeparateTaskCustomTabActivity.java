@@ -34,13 +34,25 @@ public class SeparateTaskCustomTabActivity extends CustomTabActivity {
     }
 
     @Override
-    public void finishForReparenting() {
+    public void onStop() {
+        super.onStop();
+
+        mDidFinishForReparenting = false;
+    }
+
+    @Override
+    public void finishAndClose() {
         if (mDidFinishForReparenting) return;
 
         mDidFinishForReparenting = true;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (getCallingActivity() != null) {
+            finish();
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             ApiCompatibilityUtils.finishAndRemoveTask(this);
         } else {
+            // TODO(tedchoc): This does not work reliably :-/.  Need to find a solution for the X
+            //                button and the Android back.  Seems to only somewhat work for the
+            //                open in Chrome case.
             Intent intent = new Intent(getIntent());
             intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
             startActivity(intent);

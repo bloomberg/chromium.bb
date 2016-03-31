@@ -282,7 +282,7 @@ public class CustomTabActivity extends ChromeActivity {
                             createHerbResultIntent(RESULT_CLOSED);
                         }
                         RecordUserAction.record("CustomTabs.CloseButtonClicked");
-                        CustomTabActivity.this.finish();
+                        finishAndClose();
                     }
                 });
 
@@ -541,9 +541,10 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     /**
-     * Finishes the activity after the tab has been reparented.
+     * Finishes the activity and removes the reference from the Android recents.
      */
-    public void finishForReparenting() {
+    public void finishAndClose() {
+        // When on top of another app, finish is all that is required.
         finish();
     }
 
@@ -562,7 +563,7 @@ public class CustomTabActivity extends ChromeActivity {
                 if (mIntentDataProvider.isOpenedByChrome() && isHerbResultNeeded()) {
                     createHerbResultIntent(RESULT_BACK_PRESSED);
                 }
-                finish();
+                finishAndClose();
             }
         }
         return true;
@@ -586,7 +587,7 @@ public class CustomTabActivity extends ChromeActivity {
                                 && TextUtils.equals(getPackageName(), creatorPackage)) {
                             RecordUserAction.record(
                                     "TaskManagement.OpenInChromeActionButtonClicked");
-                            if (openCurrentUrlInBrowser(false)) finishForReparenting();
+                            if (openCurrentUrlInBrowser(false)) finishAndClose();
                         } else {
                             mIntentDataProvider.sendButtonPendingIntentWithUrl(
                                     getApplicationContext(), getActivityTab().getUrl());
@@ -802,7 +803,7 @@ public class CustomTabActivity extends ChromeActivity {
                 Runnable finalizeCallback = new Runnable() {
                     @Override
                     public void run() {
-                        finishForReparenting();
+                        finishAndClose();
                     }
                 };
                 AsyncTabParamsManager.add(
