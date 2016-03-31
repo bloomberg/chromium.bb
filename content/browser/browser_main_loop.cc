@@ -695,9 +695,13 @@ int BrowserMainLoop::PreCreateThreads() {
     result_code_ = parts_->PreCreateThreads();
   }
 
-  // Initialize an instance of FeatureList. This will be a no-op if an instance
-  // was already set up by the embedder.
-  base::FeatureList::InitializeInstance();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  // Note that we do not initialize a new FeatureList when calling this for
+  // the second time.
+  base::FeatureList::InitializeInstance(
+      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
   // TODO(chrisha): Abstract away this construction mess to a helper function,
   // once MemoryPressureMonitor is made a concrete class.

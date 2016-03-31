@@ -35,7 +35,10 @@ bool IsValidFeatureOrFieldTrialName(const std::string& name) {
 
 }  // namespace
 
-FeatureList::FeatureList() : initialized_(false) {}
+FeatureList::FeatureList()
+  : initialized_(false),
+    initialized_from_command_line_(false) {
+}
 
 FeatureList::~FeatureList() {}
 
@@ -48,6 +51,8 @@ void FeatureList::InitializeFromCommandLine(
   // enabled ones (since RegisterOverride() uses insert()).
   RegisterOverridesFromCommandLine(disable_features, OVERRIDE_DISABLE_FEATURE);
   RegisterOverridesFromCommandLine(enable_features, OVERRIDE_ENABLE_FEATURE);
+
+  initialized_from_command_line_ = true;
 }
 
 bool FeatureList::IsFeatureOverriddenFromCommandLine(
@@ -138,10 +143,27 @@ std::vector<std::string> FeatureList::SplitFeatureListString(
 }
 
 // static
-void FeatureList::InitializeInstance() {
-  if (g_instance)
-    return;
-  SetInstance(make_scoped_ptr(new FeatureList));
+void FeatureList::InitializeInstance(const std::string& enable_features,
+                                     const std::string& disable_features) {
+  // We want to initialize a new instance here to support command-line features
+  // in testing better. For example, we initialize a dummy instance in
+  // base/test/test_suite.cc, and override it in content/browser/
+  // browser_main_loop.cc.
+  // On the other hand, we want to avoid re-initialization from command line.
+  // For example, we initialize an instance in chrome/browser/
+  // chrome_browser_main.cc and do not override it in content/browser/
+  // browser_main_loop.cc.
+  if (g_instance) {
+    if (g_instance->initialized_from_command_line_)
+      return;
+
+    delete g_instance;
+    g_instance = nullptr;
+  }
+
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(enable_features, disable_features);
+  base::FeatureList::SetInstance(std::move(feature_list));
 }
 
 // static

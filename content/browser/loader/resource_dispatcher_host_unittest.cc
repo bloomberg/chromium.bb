@@ -943,7 +943,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     base::FeatureList::ClearInstanceForTesting();
     switch (GetParam()) {
       case TestConfig::kDefault:
-        base::FeatureList::InitializeInstance();
+        base::FeatureList::InitializeInstance(std::string(), std::string());
         break;
       case TestConfig::kOptimizeIPCForSmallResourceEnabled: {
         scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);

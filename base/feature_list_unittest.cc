@@ -424,4 +424,23 @@ TEST_F(FeatureListTest, InitializeFromCommandLine_UseDefault) {
   EXPECT_TRUE(FieldTrialList::IsTrialActive("T2"));
 }
 
+TEST_F(FeatureListTest, InitializeInstance) {
+  ClearFeatureListInstance();
+
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  FeatureList::SetInstance(std::move(feature_list));
+  EXPECT_TRUE(FeatureList::IsEnabled(kFeatureOnByDefault));
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOffByDefault));
+
+  // Initialize from command line if we haven't yet.
+  FeatureList::InitializeInstance("", kFeatureOnByDefaultName);
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOnByDefault));
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOffByDefault));
+
+  // Do not initialize from commandline if we have already.
+  FeatureList::InitializeInstance(kFeatureOffByDefaultName, "");
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOnByDefault));
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOffByDefault));
+}
+
 }  // namespace base

@@ -145,9 +145,13 @@ class BASE_EXPORT FeatureList {
   static std::vector<std::string> SplitFeatureListString(
       const std::string& input);
 
-  // Initializes and sets a default instance of FeatureList if one has not yet
-  // already been set. No-op otherwise.
-  static void InitializeInstance();
+  // Initializes and sets an instance of FeatureList with feature overrides via
+  // command-line flags |enable_features| and |disable_features| if one has not
+  // already been set from command-line flags. No-op otherwise. See
+  // InitializeFromCommandLine for more details about |enable_features| and
+  // |disable_features| parameters.
+  static void InitializeInstance(const std::string& enable_features,
+                                 const std::string& disable_features);
 
   // Returns the singleton instance of FeatureList. Will return null until an
   // instance is registered via SetInstance().
@@ -234,6 +238,9 @@ class BASE_EXPORT FeatureList {
   // Whether this object has been fully initialized. This gets set to true as a
   // result of FinalizeInitialization().
   bool initialized_;
+
+  // Whether this object has been initialized from command line.
+  bool initialized_from_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureList);
 };
