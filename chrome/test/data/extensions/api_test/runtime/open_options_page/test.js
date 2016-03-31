@@ -7,7 +7,7 @@
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 var listenOnce = chrome.test.listenOnce;
-var pass = chrome.test.callbackPass;
+var callbackPass = chrome.test.callbackPass;
 
 var optionsTabUrl = 'chrome://extensions/?options=' + chrome.runtime.id;
 
@@ -15,7 +15,7 @@ var optionsTabUrl = 'chrome://extensions/?options=' + chrome.runtime.id;
 // Asserts that there is at most 1 options page open.
 // Result is passed to |callback|.
 function findOptionsTab(callback) {
-  chrome.tabs.query({url: optionsTabUrl}, pass(function(tabs) {
+  chrome.tabs.query({url: optionsTabUrl}, callbackPass(function(tabs) {
     assertTrue(tabs.length <= 1);
     callback(tabs.length == 0 ? null : tabs[0]);
   }));
@@ -30,14 +30,14 @@ function testNewOptionsPage() {
       assertEq(chrome.runtime.id, sender.id);
       assertEq(chrome.runtime.getURL('options.html'), sender.url);
     });
-    chrome.runtime.openOptionsPage();
+    chrome.runtime.openOptionsPage(callbackPass());
   });
 }
 
 // Gets the active tab, or null if no tab is active. Asserts that there is at
 // most 1 active tab. Result is passed to |callback|.
 function getActiveTab(callback) {
-  chrome.tabs.query({active: true}, pass(function(tabs) {
+  chrome.tabs.query({active: true}, callbackPass(function(tabs) {
     assertTrue(tabs.length <= 1);
     callback(tabs.length == 0 ? null : tabs[0]);
   }));
@@ -45,21 +45,24 @@ function getActiveTab(callback) {
 
 // Tests refocusing an existing page.
 function testRefocusExistingOptionsPage() {
-  var testUrl = 'chrome://chrome/';
+  // Note that using chrome://chrome/ as |testUrl| would be problematic here,
+  // because the options page will happily overwrite the tab pointing to it.
+  var testUrl = 'about:blank';
 
   // There will already be an options page open from the last test. Find it,
   // focus away from it, then make sure openOptionsPage() refocuses it.
   findOptionsTab(function(optionsTab) {
     assertTrue(optionsTab != null);
-    chrome.tabs.create({url: testUrl}, pass(function(tab) {
+    chrome.tabs.create({url: testUrl}, callbackPass(function(tab) {
       // Make sure the new tab is active.
       getActiveTab(function(activeTab) {
         assertEq(testUrl, activeTab.url);
         // Open options page should refocus it.
-        chrome.runtime.openOptionsPage();
-        getActiveTab(function(activeTab) {
-          assertEq(optionsTabUrl, activeTab.url);
-        });
+        chrome.runtime.openOptionsPage(callbackPass(function() {
+          getActiveTab(function(activeTab) {
+            assertEq(optionsTabUrl, activeTab.url);
+          });
+        }));
       });
     }));
   });

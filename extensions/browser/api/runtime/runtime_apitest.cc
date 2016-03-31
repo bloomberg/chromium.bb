@@ -44,9 +44,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallURL) {
 
 namespace extensions {
 
-// Flaky: crbug.com/599213
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       DISABLED_ChromeRuntimeOpenOptionsPage) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeOpenOptionsPage) {
   ASSERT_TRUE(RunExtensionTest("runtime/open_options_page"));
 }
 
