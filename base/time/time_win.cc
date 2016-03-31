@@ -511,6 +511,12 @@ bool TimeTicks::IsHighResolution() {
 }
 
 // static
+TimeTicks::Clock TimeTicks::GetClock() {
+  return IsHighResolution() ?
+      Clock::WIN_QPC : Clock::WIN_ROLLOVER_PROTECTED_TIME_GET_TIME;
+}
+
+// static
 ThreadTicks ThreadTicks::Now() {
   DCHECK(IsSupported());
 
