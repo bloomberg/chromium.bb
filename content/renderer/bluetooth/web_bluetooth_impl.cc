@@ -4,18 +4,20 @@
 
 #include "content/renderer/bluetooth/web_bluetooth_impl.h"
 
+#include "content/child/mojo/type_converters.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/public/common/service_registry.h"
 #include "content/renderer/bluetooth/bluetooth_dispatcher.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/array.h"
 
 namespace content {
 
-WebBluetoothImpl::WebBluetoothImpl(ThreadSafeSender* thread_safe_sender)
-    : WebBluetoothImpl(thread_safe_sender, MSG_ROUTING_NONE) {}
-
-WebBluetoothImpl::WebBluetoothImpl(ThreadSafeSender* thread_safe_sender,
+WebBluetoothImpl::WebBluetoothImpl(ServiceRegistry* service_registry,
+                                   ThreadSafeSender* thread_safe_sender,
                                    int frame_routing_id)
-    : thread_safe_sender_(thread_safe_sender),
+    : service_registry_(service_registry),
+      thread_safe_sender_(thread_safe_sender),
       frame_routing_id_(frame_routing_id) {}
 
 WebBluetoothImpl::~WebBluetoothImpl() {
@@ -72,8 +74,12 @@ void WebBluetoothImpl::writeValue(
     const blink::WebString& characteristic_instance_id,
     const blink::WebVector<uint8_t>& value,
     blink::WebBluetoothWriteValueCallbacks* callbacks) {
-  GetDispatcher()->writeValue(frame_routing_id_, characteristic_instance_id,
-                              value, callbacks);
+  GetWebBluetoothService().RemoteCharacteristicWriteValue(
+      mojo::String::From(characteristic_instance_id),
+      mojo::Array<uint8_t>::From(value),
+      base::Bind(&WebBluetoothImpl::OnWriteValueComplete,
+                 base::Unretained(this), value,
+                 base::Passed(make_scoped_ptr(callbacks))));
 }
 
 void WebBluetoothImpl::startNotifications(
@@ -106,9 +112,28 @@ void WebBluetoothImpl::registerCharacteristicObject(
       frame_routing_id_, characteristic_instance_id, characteristic);
 }
 
+void WebBluetoothImpl::OnWriteValueComplete(
+    const blink::WebVector<uint8_t>& value,
+    scoped_ptr<blink::WebBluetoothWriteValueCallbacks> callbacks,
+    blink::mojom::WebBluetoothError error) {
+  if (error == blink::mojom::WebBluetoothError::SUCCESS) {
+    callbacks->onSuccess(value);
+  } else {
+    callbacks->onError(error);
+  }
+}
+
 BluetoothDispatcher* WebBluetoothImpl::GetDispatcher() {
   return BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
       thread_safe_sender_.get());
+}
+
+blink::mojom::WebBluetoothService& WebBluetoothImpl::GetWebBluetoothService() {
+  if (!web_bluetooth_service_) {
+    service_registry_->ConnectToRemoteService(
+        mojo::GetProxy(&web_bluetooth_service_));
+  }
+  return *web_bluetooth_service_;
 }
 
 }  // namespace content

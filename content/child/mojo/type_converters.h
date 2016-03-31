@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/array.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace mojo {
@@ -17,6 +18,13 @@ struct TypeConverter<Array<T>, blink::WebVector<U>> {
     for (size_t i = 0; i < vector.size(); ++i)
       array[i] = TypeConverter<T, U>::Convert(vector[i]);
     return std::move(array);
+  }
+};
+
+template <>
+struct TypeConverter<String, blink::WebString> {
+  static String Convert(const blink::WebString& web_string) {
+    return String(web_string.utf8());
   }
 };
 

@@ -4286,7 +4286,8 @@ blink::WebBluetooth* RenderFrameImpl::bluetooth() {
   // ChildThreadImpl::current() is null in some tests.
   if (!bluetooth_ && ChildThreadImpl::current()) {
     bluetooth_.reset(new WebBluetoothImpl(
-        ChildThreadImpl::current()->thread_safe_sender(), routing_id_));
+        GetServiceRegistry(), ChildThreadImpl::current()->thread_safe_sender(),
+        routing_id_));
   }
 
   return bluetooth_.get();

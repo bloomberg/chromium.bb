@@ -21,10 +21,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
-#include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "content/browser/bluetooth/first_device_bluetooth_chooser.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/common/bluetooth/bluetooth_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -169,7 +167,7 @@ WebBluetoothError TranslateConnectError(
   return WebBluetoothError::UNTRANSLATED_CONNECT_ERROR_CODE;
 }
 
-blink::WebBluetoothError TranslateGATTError(
+WebBluetoothError TranslateGATTError(
     BluetoothGattService::GattErrorCode error_code,
     UMAGATTOperation operation) {
   switch (error_code) {
@@ -310,7 +308,6 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristic, OnGetCharacteristic)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristics, OnGetCharacteristics)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_ReadValue, OnReadValue)
-  IPC_MESSAGE_HANDLER(BluetoothHostMsg_WriteValue, OnWriteValue)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_StartNotifications, OnStartNotifications)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_StopNotifications, OnStopNotifications)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_RegisterCharacteristic,
@@ -409,40 +406,31 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
   scoped_ptr<device::BluetoothDiscoverySession> discovery_session;
 };
 
-struct BluetoothDispatcherHost::CacheQueryResult {
-  CacheQueryResult()
-      : device(nullptr),
-        service(nullptr),
-        characteristic(nullptr),
-        outcome(CacheQueryOutcome::SUCCESS) {}
-  CacheQueryResult(CacheQueryOutcome outcome)
-      : device(nullptr),
-        service(nullptr),
-        characteristic(nullptr),
-        outcome(outcome) {}
-  ~CacheQueryResult() {}
-  WebBluetoothError GetWebError() const {
-    switch (outcome) {
-      case CacheQueryOutcome::SUCCESS:
-      case CacheQueryOutcome::BAD_RENDERER:
-        NOTREACHED();
-        return WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
-      case CacheQueryOutcome::NO_DEVICE:
-        return WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
-      case CacheQueryOutcome::NO_SERVICE:
-        return WebBluetoothError::SERVICE_NO_LONGER_EXISTS;
-      case CacheQueryOutcome::NO_CHARACTERISTIC:
-        return WebBluetoothError::CHARACTERISTIC_NO_LONGER_EXISTS;
-    }
-    NOTREACHED();
-    return WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
-  }
+BluetoothDispatcherHost::CacheQueryResult::CacheQueryResult() {}
 
-  device::BluetoothDevice* device;
-  device::BluetoothGattService* service;
-  device::BluetoothGattCharacteristic* characteristic;
-  CacheQueryOutcome outcome;
-};
+BluetoothDispatcherHost::CacheQueryResult::CacheQueryResult(
+    CacheQueryOutcome outcome)
+    : outcome(outcome) {}
+
+BluetoothDispatcherHost::CacheQueryResult::~CacheQueryResult() {}
+
+WebBluetoothError BluetoothDispatcherHost::CacheQueryResult::GetWebError()
+    const {
+  switch (outcome) {
+    case CacheQueryOutcome::SUCCESS:
+    case CacheQueryOutcome::BAD_RENDERER:
+      NOTREACHED();
+      return WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
+    case CacheQueryOutcome::NO_DEVICE:
+      return WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
+    case CacheQueryOutcome::NO_SERVICE:
+      return WebBluetoothError::SERVICE_NO_LONGER_EXISTS;
+    case CacheQueryOutcome::NO_CHARACTERISTIC:
+      return WebBluetoothError::CHARACTERISTIC_NO_LONGER_EXISTS;
+  }
+  NOTREACHED();
+  return WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
+}
 
 struct BluetoothDispatcherHost::PrimaryServicesRequest {
   enum CallingFunction { GET_PRIMARY_SERVICE, GET_PRIMARY_SERVICES };
@@ -987,56 +975,6 @@ void BluetoothDispatcherHost::OnReadValue(
                  weak_ptr_on_ui_thread_, thread_id, request_id));
 }
 
-void BluetoothDispatcherHost::OnWriteValue(
-    int thread_id,
-    int request_id,
-    int frame_routing_id,
-    const std::string& characteristic_instance_id,
-    const std::vector<uint8_t>& value) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::CHARACTERISTIC_WRITE_VALUE);
-
-  // Length check per step 3 of writeValue algorithm:
-  // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothgattcharacteristic-writevalue
-  // We perform the length check on the renderer side. So if we
-  // get a value with length > 512, we can assume it's a hostile
-  // renderer and kill it.
-  if (value.size() > 512) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::BDH_INVALID_WRITE_VALUE_LENGTH);
-    return;
-  }
-
-  const CacheQueryResult query_result = QueryCacheForCharacteristic(
-      GetOrigin(frame_routing_id), characteristic_instance_id);
-
-  if (query_result.outcome == CacheQueryOutcome::BAD_RENDERER) {
-    return;
-  }
-
-  if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
-    RecordCharacteristicWriteValueOutcome(query_result.outcome);
-    Send(new BluetoothMsg_WriteCharacteristicValueError(
-        thread_id, request_id, query_result.GetWebError()));
-    return;
-  }
-
-  if (BluetoothBlacklist::Get().IsExcludedFromWrites(
-          query_result.characteristic->GetUUID())) {
-    RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::BLACKLISTED);
-    Send(new BluetoothMsg_WriteCharacteristicValueError(
-        thread_id, request_id, WebBluetoothError::BLACKLISTED_WRITE));
-    return;
-  }
-
-  query_result.characteristic->WriteRemoteCharacteristic(
-      value, base::Bind(&BluetoothDispatcherHost::OnWriteValueSuccess,
-                        weak_ptr_on_ui_thread_, thread_id, request_id),
-      base::Bind(&BluetoothDispatcherHost::OnWriteValueFailed,
-                 weak_ptr_on_ui_thread_, thread_id, request_id));
-}
-
 void BluetoothDispatcherHost::OnStartNotifications(
     int thread_id,
     int request_id,
@@ -1540,24 +1478,6 @@ void BluetoothDispatcherHost::OnCharacteristicReadValueError(
   Send(new BluetoothMsg_ReadCharacteristicValueError(
       thread_id, request_id,
       TranslateGATTError(error_code, UMAGATTOperation::CHARACTERISTIC_READ)));
-}
-
-void BluetoothDispatcherHost::OnWriteValueSuccess(int thread_id,
-                                                  int request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::SUCCESS);
-  Send(new BluetoothMsg_WriteCharacteristicValueSuccess(thread_id, request_id));
-}
-
-void BluetoothDispatcherHost::OnWriteValueFailed(
-    int thread_id,
-    int request_id,
-    device::BluetoothGattService::GattErrorCode error_code) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TranslateGATTError calls RecordGATTOperationOutcome.
-  Send(new BluetoothMsg_WriteCharacteristicValueError(
-      thread_id, request_id,
-      TranslateGATTError(error_code, UMAGATTOperation::CHARACTERISTIC_WRITE)));
 }
 
 void BluetoothDispatcherHost::OnStartNotifySessionSuccess(

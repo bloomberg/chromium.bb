@@ -14,6 +14,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
+#include "content/browser/bluetooth/bluetooth_metrics.h"
+#include "content/common/bluetooth/bluetooth_messages.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -53,6 +55,29 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void SetBluetoothAdapterForTesting(
       scoped_refptr<device::BluetoothAdapter> mock_adapter);
 
+  // TODO(ortuno): We temporarily make this a public struct so that
+  // both BluetoothDispatcherHost and WebBluetoothServiceImpl can use it,
+  // while we move functions from BluetoothDispatcherHost to
+  // WebBluetoothServiceImpl.
+  // https://crbug.com/508771
+  struct CacheQueryResult {
+    CacheQueryResult();
+    CacheQueryResult(CacheQueryOutcome outcome);
+    ~CacheQueryResult();
+    blink::WebBluetoothError GetWebError() const;
+    device::BluetoothDevice* device = nullptr;
+    device::BluetoothGattService* service = nullptr;
+    device::BluetoothGattCharacteristic* characteristic = nullptr;
+    CacheQueryOutcome outcome = CacheQueryOutcome::SUCCESS;
+  };
+
+  // Queries the platform cache for a characteristic with
+  // |characteristic_instance_id|. Fills in the |outcome| field, and |device|,
+  // |service| and |characteristic| fields if successful.
+  CacheQueryResult QueryCacheForCharacteristic(
+      const url::Origin& origin,
+      const std::string& characteristic_instance_id);
+
  protected:
   ~BluetoothDispatcherHost() override;
 
@@ -60,7 +85,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   friend class base::DeleteHelper<BluetoothDispatcherHost>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
 
-  struct CacheQueryResult;
   struct RequestDeviceSession;
   struct PrimaryServicesRequest;
 
@@ -129,11 +153,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                    int request_id,
                    int frame_routing_id,
                    const std::string& characteristic_instance_id);
-  void OnWriteValue(int thread_id,
-                    int request_id,
-                    int frame_routing_id,
-                    const std::string& characteristic_instance_id,
-                    const std::vector<uint8_t>& value);
   void OnStartNotifications(int thread_id,
                             int request_id,
                             int frame_routing_id,
@@ -211,12 +230,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       int request_id,
       device::BluetoothGattService::GattErrorCode);
 
-  // Callbacks for BluetoothGattCharacteristic::WriteRemoteCharacteristic.
-  void OnWriteValueSuccess(int thread_id, int request_id);
-  void OnWriteValueFailed(int thread_id,
-                          int request_id,
-                          device::BluetoothGattService::GattErrorCode);
-
   // Callbacks for BluetoothGattCharacteristic::StartNotifySession.
   void OnStartNotifySessionSuccess(
       int thread_id,
@@ -248,12 +261,6 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // in the |outcome| field, and |device| and |service| fields if successful.
   CacheQueryResult QueryCacheForService(const url::Origin& origin,
                                         const std::string& service_instance_id);
-  // Queries the platform cache for a characteristic with
-  // |characteristic_instance_id|. Fills in the |outcome| field, and |device|,
-  // |service| and |characteristic| fields if successful.
-  CacheQueryResult QueryCacheForCharacteristic(
-      const url::Origin& origin,
-      const std::string& characteristic_instance_id);
 
   // Adds the PrimaryServicesRequest to the vector of pending services requests
   // for that device.

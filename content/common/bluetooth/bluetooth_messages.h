@@ -193,19 +193,6 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_ReadCharacteristicValueError,
                      int /* request_id */,
                      blink::WebBluetoothError /* result */)
 
-// Informs the renderer that the value has been successfully written to
-// the characteristic.
-IPC_MESSAGE_CONTROL2(BluetoothMsg_WriteCharacteristicValueSuccess,
-                     int /* thread_id */,
-                     int /* request_id */)
-
-// Informs the renderer that an error occurred while writing a value to a
-// characteristic.
-IPC_MESSAGE_CONTROL3(BluetoothMsg_WriteCharacteristicValueError,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     blink::WebBluetoothError /* result */)
-
 // Informs the renderer that the user has successfully subscribed to
 // notifications from the device.
 IPC_MESSAGE_CONTROL2(BluetoothMsg_StartNotificationsSuccess,
@@ -284,14 +271,6 @@ IPC_MESSAGE_CONTROL4(BluetoothHostMsg_ReadValue,
                      int /* request_id */,
                      int /* frame_routing_id */,
                      std::string /* characteristic_instance_id */)
-
-// Writes a value to a bluetooth device's characteristic.
-IPC_MESSAGE_CONTROL5(BluetoothHostMsg_WriteValue,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     int /* frame_routing_id */,
-                     std::string /* characteristic_instance_id */,
-                     std::vector<uint8_t> /* value */)
 
 // Subscribes to notifications from a device's characteristic.
 IPC_MESSAGE_CONTROL4(BluetoothHostMsg_StartNotifications,

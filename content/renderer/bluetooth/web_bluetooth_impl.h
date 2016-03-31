@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
-#define CONTENT_CHILD_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
+#ifndef CONTENT_RENDERER_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
+#define CONTENT_RENDERER_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
 
 #include <stdint.h>
 
@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetooth.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 
 namespace blink {
 class WebBluetoothRemoteGATTCharacteristic;
@@ -23,14 +24,16 @@ namespace content {
 
 class BluetoothDispatcher;
 class ThreadSafeSender;
+class ServiceRegistry;
 
 // Implementation of blink::WebBluetooth. Passes calls through to the thread
 // specific BluetoothDispatcher.
 class CONTENT_EXPORT WebBluetoothImpl
     : NON_EXPORTED_BASE(public blink::WebBluetooth) {
  public:
-  explicit WebBluetoothImpl(ThreadSafeSender* thread_safe_sender);
-  WebBluetoothImpl(ThreadSafeSender* thread_safe_sender, int frame_routing_id);
+  WebBluetoothImpl(ServiceRegistry* service_registry,
+                   ThreadSafeSender* thread_safe_sender,
+                   int frame_routing_id);
   ~WebBluetoothImpl() override;
 
   // blink::WebBluetooth interface:
@@ -75,7 +78,16 @@ class CONTENT_EXPORT WebBluetoothImpl
       blink::WebBluetoothRemoteGATTCharacteristic* characteristic) override;
 
  private:
+  void OnWriteValueComplete(
+      const blink::WebVector<uint8_t>& value,
+      scoped_ptr<blink::WebBluetoothWriteValueCallbacks> callbacks,
+      blink::mojom::WebBluetoothError error);
+
   BluetoothDispatcher* GetDispatcher();
+
+  blink::mojom::WebBluetoothService& GetWebBluetoothService();
+  ServiceRegistry* const service_registry_;
+  blink::mojom::WebBluetoothServicePtr web_bluetooth_service_;
 
   const scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   const int frame_routing_id_;
@@ -85,4 +97,4 @@ class CONTENT_EXPORT WebBluetoothImpl
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_
+#endif  // CONTENT_RENDERER_BLUETOOTH_WEB_BLUETOOTH_IMPL_H_

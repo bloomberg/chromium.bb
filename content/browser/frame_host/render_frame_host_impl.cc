@@ -18,6 +18,7 @@
 #include "content/browser/accessibility/ax_tree_id_registry.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -1898,6 +1899,13 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   GetServiceRegistry()->AddService(base::Bind(
       &PresentationServiceImpl::CreateMojoService, base::Unretained(this)));
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebBluetooth)) {
+    GetServiceRegistry()->AddService(
+        base::Bind(&RenderFrameHostImpl::CreateWebBluetoothService,
+                   base::Unretained(this)));
+  }
+
   if (!frame_mojo_shell_)
     frame_mojo_shell_.reset(new FrameMojoShell(this));
 
@@ -2735,6 +2743,13 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
       focused_frame_tree_node->current_frame_host();
   DCHECK(focused_frame);
   dst->focused_tree_id = focused_frame->GetAXTreeID();
+}
+
+void RenderFrameHostImpl::CreateWebBluetoothService(
+    blink::mojom::WebBluetoothServiceRequest request) {
+  DCHECK(!web_bluetooth_service_);
+  web_bluetooth_service_.reset(
+      new WebBluetoothServiceImpl(this, std::move(request)));
 }
 
 }  // namespace content

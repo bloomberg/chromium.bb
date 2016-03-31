@@ -63,6 +63,12 @@ class FilePath;
 class ListValue;
 }
 
+namespace blink {
+namespace mojom {
+class WebBluetoothService;
+}
+}
+
 namespace content {
 
 class CrossProcessFrameConnector;
@@ -83,6 +89,7 @@ class RenderWidgetHostViewBase;
 class ResourceRequestBody;
 class StreamHandle;
 class TimeoutMonitor;
+class WebBluetoothServiceImpl;
 struct ContextMenuParams;
 struct GlobalRequestID;
 struct Referrer;
@@ -742,6 +749,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   FrameTreeNode* FindAndVerifyChild(int32_t child_frame_routing_id,
                                     bad_message::BadMessageReason reason);
 
+  // Creates a Web Bluetooth Service owned by the frame.
+  void CreateWebBluetoothService(
+      mojo::InterfaceRequest<blink::mojom::WebBluetoothService> request);
+
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
   void ResetSwapOutTimerForTesting();
@@ -884,6 +895,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
 #if defined(OS_ANDROID)
   scoped_ptr<ServiceRegistryAndroid> service_registry_android_;
 #endif
+
+  scoped_ptr<WebBluetoothServiceImpl> web_bluetooth_service_;
 
   // The object managing the accessibility tree for this frame.
   scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;

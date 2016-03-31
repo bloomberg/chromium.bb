@@ -34,7 +34,6 @@ class Message;
 struct BluetoothCharacteristicRequest;
 struct BluetoothCharacteristicsRequest;
 struct BluetoothPrimaryServiceRequest;
-struct BluetoothWriteValueRequest;
 struct BluetoothNotificationsRequest;
 
 namespace content {
@@ -88,10 +87,6 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void readValue(int frame_routing_id,
                  const blink::WebString& characteristic_instance_id,
                  blink::WebBluetoothReadValueCallbacks* callbacks);
-  void writeValue(int frame_routing_id,
-                  const blink::WebString& characteristic_instance_id,
-                  const blink::WebVector<uint8_t>& value,
-                  blink::WebBluetoothWriteValueCallbacks*);
   void startNotifications(int frame_routing_id,
                           const blink::WebString& characteristic_instance_id,
                           blink::WebBluetoothRemoteGATTCharacteristic* delegate,
@@ -216,10 +211,6 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void OnReadValueError(int thread_id,
                         int request_id,
                         blink::WebBluetoothError error);
-  void OnWriteValueSuccess(int thread_id, int request_id);
-  void OnWriteValueError(int thread_id,
-                         int request_id,
-                         blink::WebBluetoothError error);
   void OnStartNotificationsSuccess(int thread_id, int request_id);
   void OnStartNotificationsError(int thread_id,
                                  int request_id,
@@ -257,8 +248,6 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   // Tracks requests to read from a characteristics.
   IDMap<blink::WebBluetoothReadValueCallbacks, IDMapOwnPointer>
       pending_read_value_requests_;
-  IDMap<BluetoothWriteValueRequest, IDMapOwnPointer>
-      pending_write_value_requests_;
   IDMap<BluetoothNotificationsRequest, IDMapOwnPointer>
       pending_notifications_requests_;
 

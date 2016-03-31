@@ -483,6 +483,8 @@
       'browser/bluetooth/bluetooth_metrics.h',
       'browser/bluetooth/first_device_bluetooth_chooser.cc',
       'browser/bluetooth/first_device_bluetooth_chooser.h',
+      'browser/bluetooth/web_bluetooth_service_impl.cc',
+      'browser/bluetooth/web_bluetooth_service_impl.h',
       'browser/bootstrap_sandbox_manager_mac.cc',
       'browser/bootstrap_sandbox_manager_mac.h',
       'browser/browser_child_process_host_impl.cc',
