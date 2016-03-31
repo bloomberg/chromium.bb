@@ -131,6 +131,7 @@ public class SigninPromoScreen extends AlwaysDismissedDialog
                 public void onSignInComplete() {
                     SigninManager.get(getOwnerActivity()).logInSignedInUser();
                     SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED);
+                    dismiss();
                 }
 
                 @Override
