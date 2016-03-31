@@ -8,6 +8,7 @@ import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
 import("//media/media_options.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 import("//tools/grit/grit_rule.gni")
 if (is_android) {
@@ -55,6 +56,8 @@ static_library("content_shell_lib") {
     "browser/layout_test/layout_test_bluetooth_adapter_provider.h",
     "browser/layout_test/layout_test_bluetooth_chooser_factory.cc",
     "browser/layout_test/layout_test_bluetooth_chooser_factory.h",
+    "browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.cc",
+    "browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.h",
     "browser/layout_test/layout_test_browser_context.cc",
     "browser/layout_test/layout_test_browser_context.h",
     "browser/layout_test/layout_test_browser_main.cc",
@@ -204,6 +207,7 @@ static_library("content_shell_lib") {
     "//content/public/utility",
   ]
   deps = [
+    ":mojo_bindings",
     ":resources",
     "//base",
     "//base:base_static",
@@ -529,4 +533,10 @@ if (is_mac) {
       ":content_shell_lib",
     ]
   }
+}
+
+mojom("mojo_bindings") {
+  sources = [
+    "common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom",
+  ]
 }

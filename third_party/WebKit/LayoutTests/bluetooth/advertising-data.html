@@ -65,10 +65,11 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
   expected_rssi: null
 }].forEach(power_test => {
   promise_test(() => {
-    testRunner.setBluetoothMockDataSet('PowerValueAdapter:' +
-                                       power_test.tx_power +  ':' +
-                                       power_test.rssi);
-    return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    return setBluetoothFakeAdapter('PowerValueAdapter:' +
+                                   power_test.tx_power +  ':' +
+                                   power_test.rssi)
+      .then(() => requestDeviceWithKeyDown({
+        filters: [{services: ['heart_rate']}]}))
       .then(device => {
         let adv_data = device.adData;
         assert_equals(adv_data.txPower, power_test.expected_tx_power);
@@ -96,10 +97,11 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
   rssi_present: true
 }].forEach(power_test => {
   promise_test(() => {
-    testRunner.setBluetoothMockDataSet('PowerPresenceAdapter:' +
-                                       power_test.tx_power_present + ':' +
-                                       power_test.rssi_present);
-    return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    return setBluetoothFakeAdapter('PowerPresenceAdapter:' +
+                                   power_test.tx_power_present + ':' +
+                                   power_test.rssi_present)
+      .then(() => requestDeviceWithKeyDown({
+        filters: [{services: ['heart_rate']}]}))
       .then(device => {
         let adv_data = device.adData;
         let expected_tx_power = power_test.tx_power_present ?

@@ -34,6 +34,7 @@
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/media_stream_utils.h"
@@ -479,15 +480,13 @@ void BlinkTestRunner::SetDeviceColorProfile(const std::string& name) {
   content::SetDeviceColorProfile(render_view(), name);
 }
 
-void BlinkTestRunner::SetBluetoothMockDataSet(const std::string& name) {
-  Send(new LayoutTestHostMsg_SetBluetoothAdapter(name));
-  // Auto-reset the chooser type so we don't get order dependence when some
-  // tests forget to do it explicitly.
-  Send(new ShellViewHostMsg_SetBluetoothManualChooser(routing_id(), false));
+void BlinkTestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,
+                                              const base::Closure& callback) {
+  GetBluetoothFakeAdapterSetter().Set(adapter_name, callback);
 }
 
-void BlinkTestRunner::SetBluetoothManualChooser() {
-  Send(new ShellViewHostMsg_SetBluetoothManualChooser(routing_id(), true));
+void BlinkTestRunner::SetBluetoothManualChooser(bool enable) {
+  Send(new ShellViewHostMsg_SetBluetoothManualChooser(routing_id(), enable));
 }
 
 void BlinkTestRunner::GetBluetoothManualChooserEvents(
@@ -943,6 +942,15 @@ void BlinkTestRunner::CaptureDumpComplete() {
       FROM_HERE, base::Bind(base::IgnoreResult(&BlinkTestRunner::Send),
                             base::Unretained(this),
                             new ShellViewHostMsg_TestFinished(routing_id())));
+}
+
+mojom::LayoutTestBluetoothFakeAdapterSetter&
+BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
+  if (!bluetooth_fake_adapter_setter_) {
+    RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
+        mojo::GetProxy(&bluetooth_fake_adapter_setter_));
+  }
+  return *bluetooth_fake_adapter_setter_;
 }
 
 void BlinkTestRunner::OnReplicateTestConfiguration(

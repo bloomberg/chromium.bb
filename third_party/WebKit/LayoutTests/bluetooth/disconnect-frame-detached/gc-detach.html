@@ -13,6 +13,7 @@
           iframe.contentWindow.postMessage('Go', '*');
         });
       } else if (messageEvent.data === 'Connected') {
+        let iframe = document.querySelector('iframe');
         // GC
         runGarbageCollection().then(() => {
           // Detach
@@ -23,10 +24,12 @@
         assert_unreached('iframe sent invalid data: ' + messageEvent.data);
       }
     });
-    testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-    let iframe = document.createElement('iframe');
-    iframe.src = '../resources/connect-iframe.html';
-    document.body.appendChild(iframe);
+    setBluetoothFakeAdapter('HeartRateAdapter')
+      .then(() => {
+        let iframe = document.createElement('iframe');
+        iframe.src = '../resources/connect-iframe.html';
+        document.body.appendChild(iframe);
+      });
   }, 'Garbage collect then detach frame. We shouldn\'t crash.');
   </script>
 </body>

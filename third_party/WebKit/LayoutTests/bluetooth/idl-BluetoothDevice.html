@@ -14,8 +14,9 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('GlucoseHeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => {
       assert_equals(device.constructor.name, 'BluetoothDevice');
 

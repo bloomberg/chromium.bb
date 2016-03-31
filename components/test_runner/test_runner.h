@@ -530,13 +530,14 @@ class TestRunner : public WebTestRunner,
   void SetColorProfile(const std::string& name,
                        v8::Local<v8::Function> callback);
 
-  // Change the bluetooth test data while running a layout test and resets the
-  // chooser to accept the first device.
-  void SetBluetoothMockDataSet(const std::string& name);
+  // Change the bluetooth test data while running a layout test.
+  void SetBluetoothFakeAdapter(const std::string& adapter_name,
+                               v8::Local<v8::Function> callback);
 
-  // Makes the Bluetooth chooser record its input and wait for instructions from
-  // the test program on how to proceed.
-  void SetBluetoothManualChooser();
+  // If |enable| is true, makes the Bluetooth chooser record its input and wait
+  // for instructions from the test program on how to proceed. Otherwise falls
+  // back to the browser's default chooser.
+  void SetBluetoothManualChooser(bool enable);
 
   // Calls |callback| with a DOMString[] representing the events recorded since
   // the last call to this function.

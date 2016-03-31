@@ -8,8 +8,9 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('heart_rate'))
     .then(service => service.getCharacteristic('body_sensor_location'))
@@ -30,8 +31,9 @@ promise_test(() => {
 }, 'Reading a characteristic should fire an event.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('heart_rate'))
     .then(service => service.getCharacteristic('body_sensor_location'))
@@ -55,35 +57,39 @@ promise_test(() => {
 }, 'Add multiple event listeners then readValue().');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let char;
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.gatt.connect())
-   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
-   .then(service => service.getCharacteristic('heart_rate_measurement'))
-   .then(characteristic => {
-     char = characteristic;
-     return assert_event_fires_after_promise(characteristic,
-                                             'startNotifications',
-                                             'characteristicvaluechanged');
-   }).then(() => char.stopNotifications())
-   .then(() => assert_no_events(char, 'characteristicvaluechanged'));
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+    .then(service => service.getCharacteristic('heart_rate_measurement'))
+    .then(characteristic => {
+      char = characteristic;
+      return assert_event_fires_after_promise(characteristic,
+                                              'startNotifications',
+                                              'characteristicvaluechanged');
+    })
+    .then(() => char.stopNotifications())
+    .then(() => assert_no_events(char, 'characteristicvaluechanged'));
 }, 'Starting notifications should fire an event.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let char;
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.gatt.connect())
-   .then(gattServer => gattServer.getPrimaryService('heart_rate'))
-   .then(service => service.getCharacteristic('heart_rate_measurement'))
-   .then(characteristic => {
-     char = characteristic;
-     return assert_event_fires_after_promise(characteristic,
-                                             'startNotifications',
-                                             'characteristicvaluechanged',
-                                             3 /* add 3 listeners */);
-   }).then(() => char.stopNotifications())
-   .then(() => assert_no_events(char, 'characteristicvaluechanged'));
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
+    .then(service => service.getCharacteristic('heart_rate_measurement'))
+    .then(characteristic => {
+      char = characteristic;
+      return assert_event_fires_after_promise(characteristic,
+                                              'startNotifications',
+                                              'characteristicvaluechanged',
+                                              3 /* add 3 listeners */);
+    })
+    .then(() => char.stopNotifications())
+    .then(() => assert_no_events(char, 'characteristicvaluechanged'));
 }, 'Add multiple event listeners then startNotifications().');
 </script>

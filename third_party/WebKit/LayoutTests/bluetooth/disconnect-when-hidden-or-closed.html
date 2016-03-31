@@ -13,8 +13,9 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
 // https://crbug.com/579746
 promise_test(() => {
   testRunner.setPageVisibility("visible");
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
    .then(device => {
      return device.gatt.connect().then(gatt_server => {
        assert_true(gatt_server.connected);
@@ -34,8 +35,9 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setPageVisibility('visible');
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
    .then(device => device.gatt.connect())
    .then(gatt_server => {})
    .then(() => runGarbageCollection())
@@ -45,8 +47,9 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setPageVisibility('visible');
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
    .then(device => device.gatt.connect())
    .then(gatt_server => testRunner.setPageVisibility('hidden'))
    .then(() => runGarbageCollection());
@@ -55,8 +58,9 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setPageVisibility('visible');
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
    .then(device => {
      let connect_promise = device.gatt.connect();
      testRunner.setPageVisibility('hidden');

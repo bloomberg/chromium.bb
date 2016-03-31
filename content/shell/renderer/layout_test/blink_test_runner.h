@@ -17,6 +17,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
+#include "content/shell/common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom.h"
 #include "content/shell/common/shell_test_configuration.h"
 #include "v8/include/v8.h"
 
@@ -102,8 +103,9 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorProfile(const std::string& name) override;
   void EnableUseZoomForDSF() override;
-  void SetBluetoothMockDataSet(const std::string& name) override;
-  void SetBluetoothManualChooser() override;
+  void SetBluetoothFakeAdapter(const std::string& adapter_name,
+                               const base::Closure& callback) override;
+  void SetBluetoothManualChooser(bool enable) override;
   void GetBluetoothManualChooserEvents(
       const base::Callback<void(const std::vector<std::string>&)>& callback)
       override;
@@ -189,6 +191,10 @@ class BlinkTestRunner : public RenderViewObserver,
   void CaptureDumpContinued();
   void OnPixelsDumpCompleted(const SkBitmap& snapshot);
   void CaptureDumpComplete();
+
+  mojom::LayoutTestBluetoothFakeAdapterSetter&
+  GetBluetoothFakeAdapterSetter();
+  mojom::LayoutTestBluetoothFakeAdapterSetterPtr bluetooth_fake_adapter_setter_;
 
   test_runner::WebTestProxyBase* proxy_;
 

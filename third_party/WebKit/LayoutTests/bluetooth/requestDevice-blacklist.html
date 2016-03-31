@@ -10,24 +10,23 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('BlacklistTestAdapter');
-  return assert_promise_rejects_with_message(
-    requestDeviceWithKeyDown(
-      {filters: [{services: ['human_interface_device']}]}),
-    new DOMException(
-      'requestDevice() called with a filter containing a blacklisted UUID. ' +
+  return setBluetoothFakeAdapter('BlacklistTestAdapter')
+    .then(() => assert_promise_rejects_with_message(
+      requestDeviceWithKeyDown({
+        filters: [{services: ['human_interface_device']}]}),
+      new DOMException(
+        'requestDevice() called with a filter containing a blacklisted UUID. ' +
         'https://goo.gl/4NeimX',
-      'SecurityError'),
-    'Requesting blacklisted service rejects.');
+        'SecurityError'),
+      'Requesting blacklisted service rejects.'));
 }, 'Reject with SecurityError if requesting a blacklisted service.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('BlacklistTestAdapter');
-  return requestDeviceWithKeyDown(
-    {
+  return setBluetoothFakeAdapter('BlacklistTestAdapter')
+    .then(() => requestDeviceWithKeyDown({
       filters: [{services: [blacklist_test_service_uuid]}],
       optionalServices: ['human_interface_device']
-    })
+    }))
     .then(device => device.gatt.connect())
     .then(gattServer => {
       return assert_promise_rejects_with_message(

@@ -5,8 +5,9 @@
 <script>
 'use strict';
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('BlacklistTestAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['device_information']}]})
+  return setBluetoothFakeAdapter('BlacklistTestAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['device_information']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('device_information'))
     .then(service => {

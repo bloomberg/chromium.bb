@@ -36,12 +36,14 @@
       });
     });
 
-    testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-    for (let i = 0; i < numIframes; i++) {
-      let iframe = document.createElement('iframe');
-      iframe.src = 'resources/requestDevice-in-iframe.html';
-      document.body.appendChild(iframe);
-    }
+    return setBluetoothFakeAdapter('HeartRateAdapter')
+      .then(() => {
+        for (let i = 0; i < numIframes; i++) {
+          let iframe = document.createElement('iframe');
+          iframe.src = 'resources/requestDevice-in-iframe.html';
+          document.body.appendChild(iframe);
+        }
+      });
   }, 'Concurrent requestDevice calls in iframes work.');
   </script>
 </body>

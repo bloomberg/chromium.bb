@@ -5,9 +5,10 @@
 <script>
 'use strict';
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
-                                   optionalServices: ['generic_access']})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
     .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => {

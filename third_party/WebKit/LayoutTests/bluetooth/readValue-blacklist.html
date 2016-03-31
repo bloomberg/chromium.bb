@@ -9,9 +9,9 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('BlacklistTestAdapter');
-  return requestDeviceWithKeyDown(
-    {filters: [{services: [blacklist_test_service_uuid]}]})
+  return setBluetoothFakeAdapter('BlacklistTestAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: [blacklist_test_service_uuid]}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService(
       blacklist_test_service_uuid))

@@ -13,6 +13,7 @@
           iframe.contentWindow.postMessage('Go', '*');
         });
       } else if (messageEvent.data === 'Connected') {
+        let iframe = document.querySelector('iframe');
         // Hide
         testRunner.setPageVisibility('hidden');
         // Detach
@@ -22,10 +23,12 @@
         assert_unreached('iframe sent invalid data: ' + messageEvent.data);
       }
     });
-    testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-    let iframe = document.createElement('iframe');
-    iframe.src = '../resources/connect-iframe.html';
-    document.body.appendChild(iframe);
+    setBluetoothFakeAdapter('HeartRateAdapter')
+      .then(() => {
+        let iframe = document.createElement('iframe');
+        iframe.src = '../resources/connect-iframe.html';
+        document.body.appendChild(iframe);
+      });
   }, 'Hide then detach frame. We shouldn\'t crash.');
   </script>
 </body>

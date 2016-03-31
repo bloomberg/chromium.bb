@@ -9,26 +9,28 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
-                                   optionalServices: ['generic_access']})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
     .then(device => device.gatt.connect())
     .then(gattServer => {
-      testRunner.setBluetoothMockDataSet('EmptyAdapter');
-      return assert_promise_rejects_with_message(
-        gattServer.getPrimaryService('generic_access'),
-        new DOMException('Bluetooth Device is no longer in range.',
-                         'NetworkError'),
-        'Device went out of range.');
+      return setBluetoothFakeAdapter('EmptyAdapter')
+        .then(() => assert_promise_rejects_with_message(
+          gattServer.getPrimaryService('generic_access'),
+          new DOMException('Bluetooth Device is no longer in range.',
+                           'NetworkError'),
+          'Device went out of range.'));
     });
 }, 'Device goes out of range. Reject with NetworkError.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let expected = new DOMException('Service not found in device.',
                                   'NotFoundError');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
-                                   optionalServices: ['glucose']})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['glucose']}))
     .then(device => device.gatt.connect())
     .then(gattServer => Promise.all(
       [assert_promise_rejects_with_message(
@@ -40,8 +42,9 @@ promise_test(() => {
 }, 'Request for wrong service. Reject with NotFoundError.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('DelayedServicesDiscoveryAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('DelayedServicesDiscoveryAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('heart_rate'))
     .then(service => {
@@ -50,9 +53,10 @@ promise_test(() => {
 }, 'Request for service. Must return even when the services are not immediately discovered');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('DelayedServicesDiscoveryAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
-                                   optionalServices: ['battery_service']})
+  return setBluetoothFakeAdapter('DelayedServicesDiscoveryAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['battery_service']}))
     .then(device => device.gatt.connect())
     .then(gattServer => {
       return assert_promise_rejects_with_message(
@@ -63,13 +67,14 @@ promise_test(() => {
    ' are not immediately discovered');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let expected = new DOMException('Origin is not allowed to access the ' +
                                   'service. Remember to add the service to a ' +
                                   'filter or to optionalServices in ' +
                                   'requestDevice().',
                                   'SecurityError');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => Promise.all(
       [assert_promise_rejects_with_message(
@@ -81,13 +86,14 @@ promise_test(() => {
 }, 'Request for absent service without permission. Reject with SecurityError.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let expected = new DOMException('Origin is not allowed to access the ' +
                                   'service. Remember to add the service to a ' +
                                   'filter or to optionalServices in ' +
                                   'requestDevice().',
                                   'SecurityError');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => Promise.all(
       [assert_promise_rejects_with_message(
@@ -99,9 +105,10 @@ promise_test(() => {
 }, 'Request for present service without permission. Reject with SecurityError.');
 
 promise_test(function() {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
-                                   optionalServices: ['generic_access']})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
     .then(device => device.gatt.connect())
     .then(gattServer => Promise.all(
       [gattServer.getPrimaryService(generic_access.alias),
@@ -118,9 +125,10 @@ promise_test(function() {
 }, 'Request for service. Should return right service');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
-                                   optionalServices: ['generic_access']})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
     .then(device => device.gatt.connect())
     .then(gattServer => Promise.all(
       [gattServer.getPrimaryService(generic_access.alias),
@@ -141,8 +149,9 @@ promise_test(() => {
 }, 'Calls to get the same service should return the same object.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => {
       return assert_promise_rejects_with_message(

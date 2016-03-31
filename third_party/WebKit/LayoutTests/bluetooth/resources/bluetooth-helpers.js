@@ -150,6 +150,12 @@ function getBluetoothManualChooserEvents(expected_count) {
   });
 }
 
+function setBluetoothFakeAdapter(adapter_name) {
+  return new Promise(resolve => {
+    testRunner.setBluetoothFakeAdapter(adapter_name, resolve);
+  });
+}
+
 // errorUUID(alias) returns a UUID with the top 32 bits of
 // '00000000-97e5-4cd7-b9f1-f5a427670c59' replaced with the bits of |alias|.
 // For example, errorUUID(0xDEADBEEF) returns
@@ -318,5 +324,6 @@ add_result_callback(() => {
   // https://crbug.com/581855
   testRunner.setPageVisibility('hidden');
   testRunner.setPageVisibility('visible');
-  testRunner.setBluetoothMockDataSet('');
+  testRunner.setBluetoothManualChooser(false);
+  setBluetoothFakeAdapter('');
 });

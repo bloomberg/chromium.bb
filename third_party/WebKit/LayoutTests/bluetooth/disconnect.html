@@ -12,8 +12,9 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
 // called on the device.
 // http://crbug.com/569716
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => {
       gattServer.disconnect();
@@ -22,8 +23,9 @@ promise_test(() => {
 }, '\'connected\' is set to false after disconnect is called.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => {
       gattServer.disconnect();
@@ -35,8 +37,9 @@ promise_test(() => {
    'being false.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
     .then(device => {
       return device.gatt.connect().then(gattServer => {
         gattServer.disconnect();

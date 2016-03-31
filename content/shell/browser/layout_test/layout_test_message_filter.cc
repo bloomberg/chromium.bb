@@ -11,7 +11,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/test/layouttest_support.h"
-#include "content/shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h"
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/layout_test/layout_test_content_browser_client.h"
 #include "content/shell/browser/layout_test/layout_test_notification_manager.h"
@@ -52,8 +51,7 @@ void LayoutTestMessageFilter::OverrideThreadForMessage(
   if (message.type() == LayoutTestHostMsg_SimulateWebNotificationClick::ID ||
       message.type() == LayoutTestHostMsg_SimulateWebNotificationClose::ID ||
       message.type() == LayoutTestHostMsg_SetPermission::ID ||
-      message.type() == LayoutTestHostMsg_ResetPermissions::ID ||
-      message.type() == LayoutTestHostMsg_SetBluetoothAdapter::ID)
+      message.type() == LayoutTestHostMsg_ResetPermissions::ID)
     *thread = BrowserThread::UI;
 }
 
@@ -74,8 +72,6 @@ bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetPermission, OnSetPermission)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ResetPermissions, OnResetPermissions)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetBluetoothAdapter,
-                        OnSetBluetoothAdapter)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -180,13 +176,6 @@ void LayoutTestMessageFilter::OnResetPermissions() {
       ->GetLayoutTestBrowserContext()
       ->GetLayoutTestPermissionManager()
       ->ResetPermissions();
-}
-
-void LayoutTestMessageFilter::OnSetBluetoothAdapter(const std::string& name) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SetBluetoothAdapter(
-      render_process_id_,
-      LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(name));
 }
 
 }  // namespace content

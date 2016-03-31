@@ -10,50 +10,50 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('EmptyAdapter');
-  return assert_promise_rejects(requestDeviceWithKeyDown(),
-                                new TypeError());
+  return setBluetoothFakeAdapter('EmptyAdapter')
+    .then(() => assert_promise_rejects(requestDeviceWithKeyDown(),
+                                       new TypeError()));
 }, 'Requires an argument.');
 
 [{}, {
   optionalServices: ['wrong_service']
 }].forEach(args => {
   promise_test(() => {
-    testRunner.setBluetoothMockDataSet('EmptyAdapter');
-    return assert_promise_rejects(requestDeviceWithKeyDown(args),
-                                  new TypeError());
+    return setBluetoothFakeAdapter('EmptyAdapter')
+      .then(() => assert_promise_rejects(requestDeviceWithKeyDown(args),
+                                         new TypeError()));
   }, 'RequestDeviceOptions requires a |filters| member.');
 });
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return assert_promise_rejects_with_message(
-    requestDeviceWithKeyDown({filters: []}),
-    new TypeError('Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
-                  '\'filters\' member must be non-empty to find any devices.'))
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => assert_promise_rejects_with_message(
+      requestDeviceWithKeyDown({filters: []}),
+      new TypeError('Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+                    '\'filters\' member must be non-empty to find any devices.')));
 }, 'An empty |filters| member should result in a TypeError');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('EmptyAdapter');
-  return assert_promise_rejects(requestDeviceWithKeyDown({
+  return setBluetoothFakeAdapter('EmptyAdapter')
+    .then(() => assert_promise_rejects(
+      requestDeviceWithKeyDown({
     filters: [{}]
-  }), new TypeError());
+      }), new TypeError()));
 }, 'A filter must restrict the devices in some way.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('EmptyAdapter');
   let expected = new DOMException(
     'Failed to execute \'requestDevice\' on \'Bluetooth\': A device ' +
     'name can\'t be longer than 248 bytes.',
     'TypeError');
   let name_too_long = generate_string(249, 'a');
-  return assert_promise_rejects_with_message(
-    requestDeviceWithKeyDown({filters: [{name: name_too_long}]}),
-    expected, 'Device name longer than 29');
+  return setBluetoothFakeAdapter('EmptyAdapter')
+    .then(() => assert_promise_rejects_with_message(
+      requestDeviceWithKeyDown({filters: [{name: name_too_long}]}),
+    expected, 'Device name longer than 29'));
 }, 'A device name longer than 248 must reject.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('EmptyAdapter');
   let expected = new DOMException(
     'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
     'A \'name\' or \'namePrefix\' longer than 29 bytes ' +
@@ -61,17 +61,19 @@ promise_test(() => {
     'advertise a name longer than 29 bytes.',
     'NotFoundError');
   let name_too_long = generate_string(30, 'a');
-  return assert_promise_rejects_with_message(
-    requestDeviceWithKeyDown({filters: [{name: name_too_long}]}),
-    expected, 'Device name longer than 29');
+  return setBluetoothFakeAdapter('EmptyAdapter')
+    .then(() => assert_promise_rejects_with_message(
+      requestDeviceWithKeyDown({filters: [{name: name_too_long}]}),
+      expected, 'Device name longer than 29'));
 }, 'A device name longer than 29 must reject.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('UnicodeDeviceAdapter');
   let valid_unicode_name = generate_string(
     9, '\u2764'); // \u2764's UTF-8 representationis 3 bytes long.
                   // 9 chars * 3 bytes/char = 27 bytes
-  return requestDeviceWithKeyDown({filters: [{name: valid_unicode_name}]})
+  return setBluetoothFakeAdapter('UnicodeDeviceAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{name: valid_unicode_name}]}))
     .then(device => {
       assert_equals(device.name, valid_unicode_name);
     });
@@ -79,11 +81,12 @@ promise_test(() => {
    'must not throw an error.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('UnicodeDeviceAdapter');
   let valid_unicode_name = generate_string(
     9, '\u2764'); // \u2764's UTF-8 representationis 3 bytes long.
                   // 9 chars * 3 bytes/char = 27 bytes
-  return requestDeviceWithKeyDown({filters: [{namePrefix: valid_unicode_name}]})
+  return setBluetoothFakeAdapter('UnicodeDeviceAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{namePrefix: valid_unicode_name}]}))
     .then(device => {
       assert_equals(device.name, valid_unicode_name);
     });
@@ -113,23 +116,22 @@ promise_test(() => {
 }].forEach(t => {
   let unicode_name = generate_string(t.chars, '\u2764');
   promise_test(() => {
-    testRunner.setBluetoothMockDataSet('UnicodeDeviceAdapter');
-    return assert_promise_rejects_with_message(
-      requestDeviceWithKeyDown({filters: [{name: unicode_name}]}),
-      t.expected);
+    return setBluetoothFakeAdapter('UnicodeDeviceAdapter')
+      .then(() => assert_promise_rejects_with_message(
+        requestDeviceWithKeyDown({filters: [{name: unicode_name}]}),
+        t.expected));
   }, '\'name\': ' + t.test_name);
 
   promise_test(() => {
-    testRunner.setBluetoothMockDataSet('UnicodeDeviceAdapter');
-    return assert_promise_rejects_with_message(
-      requestDeviceWithKeyDown({filters: [{namePrefix: unicode_name}]}),
-      t.expected);
+    return setBluetoothFakeAdapter('UnicodeDeviceAdapter')
+      .then(() => assert_promise_rejects_with_message(
+        requestDeviceWithKeyDown({filters: [{namePrefix: unicode_name}]}),
+        t.expected));
   }, '\'namePrefix\': ' + t.test_name);
 });
 
 function generateRequestDeviceArgsWithServices(services) {
   services = (services === undefined) ? ['heart_rate'] : services;
-
   return [{
     filters: [{ services: services}]
   }, {
@@ -155,17 +157,19 @@ function generateRequestDeviceArgsWithServices(services) {
 
 generateRequestDeviceArgsWithServices([]).forEach(args => {
   promise_test(() => {
-    testRunner.setBluetoothMockDataSet('EmptyAdapter');
-    return assert_promise_rejects(requestDeviceWithKeyDown(args),
-                                  new TypeError());
+    return setBluetoothFakeAdapter('EmptyAdapter')
+      .then(() => assert_promise_rejects(
+        requestDeviceWithKeyDown(args),
+        new TypeError()));
   }, 'Services member must contain at least one service.');
 });
 
 generateRequestDeviceArgsWithServices(['wrong_service']).forEach(args => {
   promise_test(() => {
-    testRunner.setBluetoothMockDataSet('EmptyAdapter');
-    return assert_promise_rejects(requestDeviceWithKeyDown(args),
-                                  new SyntaxError());
+    return setBluetoothFakeAdapter('EmptyAdapter')
+      .then(() => assert_promise_rejects(
+        requestDeviceWithKeyDown(args),
+        new SyntaxError()));
   }, 'Invalid service must reject the promise.');
 });
 
@@ -191,9 +195,10 @@ generateRequestDeviceArgsWithServices(['wrong_service']).forEach(args => {
   optionalServices: ['heart_rate']
 }].forEach(args => {
   promise_test(() => {
-    testRunner.setBluetoothMockDataSet('EmptyAdapter');
-    return assert_promise_rejects(requestDeviceWithKeyDown(args),
-                                  new TypeError());
+    return setBluetoothFakeAdapter('EmptyAdapter')
+      .then(() => assert_promise_rejects(
+        requestDeviceWithKeyDown(args),
+        new TypeError()));
   }, 'A filter must restrict the devices in some way.');
 });
 
@@ -220,9 +225,10 @@ generateRequestDeviceArgsWithServices(['wrong_service']).forEach(args => {
   filters: [{ namePrefix: 'Pre'}]
 }].forEach(args => {
   promise_test(() => {
-    testRunner.setBluetoothMockDataSet('EmptyAdapter');
-    return assert_promise_rejects(requestDeviceWithKeyDown(args),
-                                  new SyntaxError());
+    return setBluetoothFakeAdapter('EmptyAdapter')
+      .then(() => assert_promise_rejects(
+        requestDeviceWithKeyDown(args),
+        new SyntaxError()));
   }, 'Invalid optional service must reject the promise.');
 });
 </script>

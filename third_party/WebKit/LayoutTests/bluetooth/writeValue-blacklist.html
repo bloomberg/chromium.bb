@@ -9,12 +9,10 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
 promise_test(() => {
-  testRunner.setBluetoothMockDataSet('BlacklistTestAdapter');
-  return requestDeviceWithKeyDown(
-    {
+  return setBluetoothFakeAdapter('BlacklistTestAdapter')
+    .then(() => requestDeviceWithKeyDown({
       filters: [{services: [blacklist_test_service_uuid]}],
-      optionalServices: ['generic_access']
-    })
+      optionalServices: ['generic_access']}))
     .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.peripheral_privacy_flag'))

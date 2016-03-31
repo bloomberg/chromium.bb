@@ -162,12 +162,15 @@ class WebTestDelegate {
   // Change the device color profile while running a layout test.
   virtual void SetDeviceColorProfile(const std::string& name) = 0;
 
-  // Change the bluetooth test data while running a layout test.
-  virtual void SetBluetoothMockDataSet(const std::string& data_set) = 0;
+  // Set the bluetooth adapter while running a layout test, uses Mojo to
+  // communicate with the browser.
+  virtual void SetBluetoothFakeAdapter(const std::string& adapter_name,
+                                       const base::Closure& callback) = 0;
 
-  // Makes the Bluetooth chooser record its input and wait for instructions from
-  // the test program on how to proceed.
-  virtual void SetBluetoothManualChooser() = 0;
+  // If |enable| is true makes the Bluetooth chooser record its input and wait
+  // for instructions from the test program on how to proceed. Otherwise
+  // fall backs to the browser's default chooser.
+  virtual void SetBluetoothManualChooser(bool enable) = 0;
 
   // Returns the events recorded since the last call to this function.
   virtual void GetBluetoothManualChooserEvents(

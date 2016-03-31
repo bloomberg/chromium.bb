@@ -19,11 +19,13 @@
         test.done();
       }
     });
-    testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-    let iframe = document.createElement('iframe');
-    iframe.sandbox.add('allow-scripts');
-    iframe.src = 'resources/requestDevice-in-sandboxed-iframe.html';
-    document.body.appendChild(iframe);
+    setBluetoothFakeAdapter('HeartRateAdapter')
+      .then(() => {
+        let iframe = document.createElement('iframe');
+        iframe.sandbox.add('allow-scripts');
+        iframe.src = 'resources/requestDevice-in-sandboxed-iframe.html';
+        document.body.appendChild(iframe);
+      });
   }, 'Request device from a unique origin. Should reject with SecurityError.');
   </script>
 </body>

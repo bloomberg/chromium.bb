@@ -31,6 +31,7 @@
         'content.gyp:content_resources',
         'content.gyp:content_utility',
         'content_shell_resources',
+        'content_shell_mojo_bindings',
         'content_test_mojo_bindings',
         'copy_test_netscape_plugin',
         'layouttest_support_content',
@@ -101,6 +102,8 @@
         'shell/browser/layout_test/blink_test_controller.h',
         'shell/browser/layout_test/layout_test_android.cc',
         'shell/browser/layout_test/layout_test_android.h',
+        'shell/browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.cc',
+        'shell/browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.h',
         'shell/browser/layout_test/layout_test_bluetooth_adapter_provider.cc',
         'shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h',
         'shell/browser/layout_test/layout_test_bluetooth_chooser_factory.cc',
@@ -643,7 +646,27 @@
           }],
         }],
       ],
-    }
+    },
+    {
+       'target_name': 'content_shell_mojo_bindings_mojom',
+       'type': 'none',
+       'variables': {
+         'mojom_files': [
+           'shell/common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom'
+         ],
+       },
+       'includes': [
+         '../mojo/mojom_bindings_generator_explicit.gypi',
+       ],
+    },
+    {
+        'target_name': 'content_shell_mojo_bindings',
+        'type': 'static_library',
+        'dependencies': [
+          'content_shell_mojo_bindings_mojom',
+          '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        ],
+    },
   ],
   'conditions': [
     ['OS=="mac"', {

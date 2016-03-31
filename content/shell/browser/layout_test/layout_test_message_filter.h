@@ -66,7 +66,6 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
                        const GURL& origin,
                        const GURL& embedding_origin);
   void OnResetPermissions();
-  void OnSetBluetoothAdapter(const std::string& name);
 
   int render_process_id_;
 

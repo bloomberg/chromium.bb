@@ -256,8 +256,9 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetAlwaysAcceptCookies(bool accept);
   void SetAudioData(const gin::ArrayBufferView& view);
   void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
-  void SetBluetoothManualChooser();
-  void SetBluetoothMockDataSet(const std::string& dataset_name);
+  void SetBluetoothFakeAdapter(const std::string& adapter_name,
+                               v8::Local<v8::Function> callback);
+  void SetBluetoothManualChooser(bool enable);
   void SetCanOpenWindows();
   void SetCloseRemainingWindowsWhenComplete(gin::Arguments* args);
   void SetColorProfile(const std::string& name,
@@ -573,13 +574,12 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
       .SetMethod("setBackingScaleFactor",
                  &TestRunnerBindings::SetBackingScaleFactor)
-
       // The Bluetooth functions are specified at
       // https://webbluetoothcg.github.io/web-bluetooth/tests/.
+      .SetMethod("setBluetoothFakeAdapter",
+                 &TestRunnerBindings::SetBluetoothFakeAdapter)
       .SetMethod("setBluetoothManualChooser",
                  &TestRunnerBindings::SetBluetoothManualChooser)
-      .SetMethod("setBluetoothMockDataSet",
-                 &TestRunnerBindings::SetBluetoothMockDataSet)
       .SetMethod("setCallCloseOnWebViews", &TestRunnerBindings::NotImplemented)
       .SetMethod("setCanOpenWindows", &TestRunnerBindings::SetCanOpenWindows)
       .SetMethod("setCloseRemainingWindowsWhenComplete",
@@ -1379,14 +1379,16 @@ void TestRunnerBindings::SetColorProfile(
     runner_->SetColorProfile(name, callback);
 }
 
-void TestRunnerBindings::SetBluetoothMockDataSet(const std::string& name) {
+void TestRunnerBindings::SetBluetoothFakeAdapter(
+    const std::string& adapter_name,
+    v8::Local<v8::Function> callback) {
   if (runner_)
-    runner_->SetBluetoothMockDataSet(name);
+    runner_->SetBluetoothFakeAdapter(adapter_name, callback);
 }
 
-void TestRunnerBindings::SetBluetoothManualChooser() {
+void TestRunnerBindings::SetBluetoothManualChooser(bool enable) {
   if (runner_)
-    runner_->SetBluetoothManualChooser();
+    runner_->SetBluetoothManualChooser(enable);
 }
 
 void TestRunnerBindings::GetBluetoothManualChooserEvents(
@@ -1722,7 +1724,7 @@ void TestRunner::Reset() {
     delegate_->UseUnfortunateSynchronousResizeMode(false);
     delegate_->DisableAutoResizeMode(WebSize());
     delegate_->DeleteAllCookies();
-    delegate_->SetBluetoothMockDataSet("");
+    delegate_->SetBluetoothManualChooser(false);
     delegate_->ClearGeofencingMockProvider();
     delegate_->ResetPermissions();
     ResetDeviceLight();
@@ -2901,12 +2903,17 @@ void TestRunner::SetColorProfile(const std::string& name,
   delegate_->PostTask(new InvokeCallbackTask(this, callback));
 }
 
-void TestRunner::SetBluetoothMockDataSet(const std::string& name) {
-  delegate_->SetBluetoothMockDataSet(name);
+void TestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,
+                                         v8::Local<v8::Function> callback) {
+  scoped_ptr<InvokeCallbackTask> task(new InvokeCallbackTask(this, callback));
+  delegate_->SetBluetoothFakeAdapter(
+      adapter_name,
+      base::Bind(&TestRunner::InvokeCallback, weak_factory_.GetWeakPtr(),
+                 base::Passed(&task)));
 }
 
-void TestRunner::SetBluetoothManualChooser() {
-  delegate_->SetBluetoothManualChooser();
+void TestRunner::SetBluetoothManualChooser(bool enable) {
+  delegate_->SetBluetoothManualChooser(enable);
 }
 
 void TestRunner::GetBluetoothManualChooserEvents(
