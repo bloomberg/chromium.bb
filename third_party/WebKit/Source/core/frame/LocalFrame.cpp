@@ -127,9 +127,6 @@ public:
             m_draggedNode->layoutObject()->updateDragState(false);
         context().getPaintController().endItem<EndTransformDisplayItem>(*m_localFrame);
         RefPtr<const SkPicture> recording = m_pictureBuilder->endRecording();
-        if (!recording)
-            return nullptr;
-
         RefPtr<SkImage> skImage = adoptRef(SkImage::NewFromPicture(recording.get(),
             SkISize::Make(m_bounds.width(), m_bounds.height()), nullptr, nullptr));
         RefPtr<Image> image = StaticBitmapImage::create(skImage.release());

@@ -832,9 +832,7 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, Gra
     // in order for the resulting DrawingDisplayItem to produce the correct visualRect (i.e., the
     // bounds of the involved GraphicsLayer).
     DrawingRecorder drawingRecorder(context, *graphicsLayer, DisplayItem::ScrollbarCompositedScrollbar, layerBounds);
-    RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
-    if (recording)
-        recording->playback(context.canvas());
+    pictureBuilder.endRecording()->playback(context.canvas());
 }
 
 Scrollbar* PaintLayerCompositor::graphicsLayerToScrollbar(const GraphicsLayer* graphicsLayer) const

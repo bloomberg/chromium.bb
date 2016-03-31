@@ -107,9 +107,8 @@ void WebFont::drawText(WebCanvas* canvas, const WebTextRun& run,
         context.drawText(m_private->getFont(), runInfo, leftBaseline);
         context.restore();
     }
-    RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
-    if (recording)
-        recording->playback(canvas);
+
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 int WebFont::calculateWidth(const WebTextRun& run) const

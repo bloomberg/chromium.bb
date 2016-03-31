@@ -43,7 +43,7 @@ public:
     GraphicsContext& context() { return *m_context; }
 
     // Returns a picture capturing all drawing performed on the builder's context since
-    // construction, or nullptr if the picture could not be created.
+    // construction.
     PassRefPtr<SkPicture> endRecording()
     {
         m_context->beginRecording(m_bounds);

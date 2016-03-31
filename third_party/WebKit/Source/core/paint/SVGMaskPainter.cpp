@@ -50,8 +50,6 @@ void SVGMaskPainter::drawMaskForLayoutObject(GraphicsContext& context, const Lay
 {
     AffineTransform contentTransformation;
     RefPtr<const SkPicture> maskContentPicture = m_mask.createContentPicture(contentTransformation, targetBoundingBox, context);
-    if (!maskContentPicture)
-        return;
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, layoutObject, DisplayItem::SVGMask))
         return;

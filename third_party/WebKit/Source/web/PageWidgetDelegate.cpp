@@ -93,9 +93,7 @@ static void paintInternal(Page& page, WebCanvas* canvas,
             paintContext.fillRect(dirtyRect, Color::white);
         }
     }
-    RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
-    if (recording)
-        recording->playback(canvas);
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 void PageWidgetDelegate::paint(Page& page, WebCanvas* canvas,

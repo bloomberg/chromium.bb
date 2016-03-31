@@ -47,8 +47,6 @@ public:
     SVGUnitTypes::SVGUnitType clipPathUnits() const { return toSVGClipPathElement(element())->clipPathUnits()->currentValue()->enumValue(); }
 
     bool asPath(const AffineTransform&, const FloatRect& referenceBox, Path&);
-    // Returns a picture to paint the contents of the resource, or nullptr if the picture couldn't be created.
-    // Pictures should only fail creation in certain testing situations.
     PassRefPtr<const SkPicture> createContentPicture();
 
     bool hasCycle() { return m_inClipExpansion; }

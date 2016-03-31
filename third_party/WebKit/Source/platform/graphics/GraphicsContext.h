@@ -212,8 +212,8 @@ public:
     // rectangle for the content in the list.
     void beginRecording(const FloatRect&);
     // Returns a picture with any recorded draw commands since the prerequisite call to
-    // beginRecording(), or nullptr if the canvas is disabled. The canvas should only be disabled in
-    // certain testing situations.
+    // beginRecording().  The picture is guaranteed to be non-null (but not necessarily non-empty),
+    // even when the context is disabled.
     PassRefPtr<SkPicture> endRecording();
 
     void setShadow(const FloatSize& offset, float blur, const Color&,

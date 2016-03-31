@@ -127,8 +127,7 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject
 
             TransformRecorder contentTransformRecorder(maskContext, layoutObject, contentTransform);
             RefPtr<const SkPicture> clipContentPicture = m_clip.createContentPicture();
-            if (clipContentPicture)
-                maskContext.getPaintController().createAndAppend<DrawingDisplayItem>(layoutObject, DisplayItem::SVGClip, clipContentPicture.get());
+            maskContext.getPaintController().createAndAppend<DrawingDisplayItem>(layoutObject, DisplayItem::SVGClip, clipContentPicture.get());
         }
 
         if (clipPathClipper)
@@ -137,8 +136,7 @@ bool SVGClipPainter::drawClipAsMask(GraphicsContext& context, const LayoutObject
 
     LayoutObjectDrawingRecorder drawingRecorder(context, layoutObject, DisplayItem::SVGClip, targetPaintInvalidationRect);
     RefPtr<SkPicture> maskPicture = maskPictureBuilder.endRecording();
-    if (maskPicture)
-        context.drawPicture(maskPicture.get());
+    context.drawPicture(maskPicture.get());
     return true;
 }
 
