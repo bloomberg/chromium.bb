@@ -550,9 +550,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Called when the layer's number of drawable descendants changes.
   void AddDrawableDescendants(int num);
 
-  void AddDependentNeedsPushProperties();
-  void RemoveDependentNeedsPushProperties();
-
   bool IsPropertyChangeAllowed() const;
 
   // Serialize all the necessary properties to be able to reconstruct this Layer

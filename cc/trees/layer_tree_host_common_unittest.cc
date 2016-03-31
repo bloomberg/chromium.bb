@@ -820,6 +820,9 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
                                gfx::Point3F(2.5f, 0.f, 0.f), gfx::PointF(),
                                gfx::Size(), true, false, false);
 
+  // We need to set parent on replica layers for property tree building.
+  replica_of_rs1->SetParent(render_surface1);
+  replica_of_rs2->SetParent(render_surface2);
   render_surface1->SetReplicaLayer(std::move(replica_of_rs1));
   render_surface2->SetReplicaLayer(std::move(replica_of_rs2));
   ExecuteCalculateDrawProperties(root);
@@ -4941,6 +4944,8 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   SetLayerPropertiesForTesting(replica.get(), replica_transform, gfx::Point3F(),
                                gfx::PointF(2.f, 2.f), gfx::Size(10, 10), false,
                                true, false);
+  // We need to set parent on replica layer for property tree building.
+  replica->SetParent(child);
   child->SetReplicaLayer(std::move(replica));
 
   // This layer should end up in the same surface as child, with the same draw

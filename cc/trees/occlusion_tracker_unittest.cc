@@ -298,6 +298,8 @@ class OcclusionTrackerTest : public testing::Test {
   }
 
   void SetReplica(LayerImpl* owning_layer, scoped_ptr<LayerImpl> layer) {
+    // We need to set parent on replica layer for property tree building.
+    layer->SetParent(owning_layer);
     owning_layer->SetReplicaLayer(std::move(layer));
   }
 

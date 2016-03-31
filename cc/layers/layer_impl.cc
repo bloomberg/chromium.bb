@@ -996,8 +996,6 @@ void LayerImpl::SetMaskLayer(scoped_ptr<LayerImpl> mask_layer) {
     layer_tree_impl_->AddLayer(std::move(mask_layer));
 
   mask_layer_id_ = new_layer_id;
-  if (mask_layer_)
-    mask_layer_->SetParent(this);
 }
 
 scoped_ptr<LayerImpl> LayerImpl::TakeMaskLayer() {
@@ -1026,8 +1024,6 @@ void LayerImpl::SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer) {
     layer_tree_impl_->AddLayer(std::move(replica_layer));
 
   replica_layer_id_ = new_layer_id;
-  if (replica_layer_)
-    replica_layer_->SetParent(this);
 }
 
 scoped_ptr<LayerImpl> LayerImpl::TakeReplicaLayer() {
