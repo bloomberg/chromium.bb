@@ -196,12 +196,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // Object for loading POST requests with body.
   base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
 
-  // Whether the web page is currently performing window.history.pushState or
-  // window.history.replaceState
-  // Set to YES on window.history.willChangeState message. To NO on
-  // window.history.didPushState or window.history.didReplaceState.
-  BOOL _changingHistoryState;
-
   // CRWWebUIManager object for loading WebUI pages.
   base::scoped_nsobject<CRWWebUIManager> _webUIManager;
 
@@ -1196,7 +1190,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // registering a load request logically comes before updating the document
   // URL, but also must come first since it uses state that is reset on URL
   // changes.
-  if (!_changingHistoryState) {
+  if (!self.changingHistoryState) {
     // If this wasn't a previously-expected load (e.g., certain back/forward
     // navigations), register the load request.
     if (![self isLoadRequestPendingForURL:newURL])
@@ -1205,7 +1199,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
   [self setDocumentURL:newURL];
 
-  if (!_changingHistoryState) {
+  if (!self.changingHistoryState) {
     [self didStartLoadingURL:_documentURL updateHistory:YES];
     [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation];
@@ -1270,25 +1264,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return NO;
 }
 
-- (SEL)selectorToHandleJavaScriptCommand:(const std::string&)command {
-  static std::map<std::string, SEL>* handlers = nullptr;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    handlers = new std::map<std::string, SEL>();
-    (*handlers)["window.history.didPushState"] =
-        @selector(handleWindowHistoryDidPushStateMessage:context:);
-    (*handlers)["window.history.didReplaceState"] =
-        @selector(handleWindowHistoryDidReplaceStateMessage:context:);
-    (*handlers)["window.history.willChangeState"] =
-        @selector(handleWindowHistoryWillChangeStateMessage:context:);
-  });
-  DCHECK(handlers);
-  auto iter = handlers->find(command);
-  return iter != handlers->end()
-             ? iter->second
-             : [super selectorToHandleJavaScriptCommand:command];
-}
-
 - (BOOL)shouldAbortLoadForCancelledError:(NSError*)error {
   DCHECK_EQ(error.code, NSURLErrorCancelled);
   // Do not abort the load if it is for an app specific URL, as such errors
@@ -1350,33 +1325,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                          willDecelerate:(BOOL)decelerate {
   [self evaluateJavaScript:@"__gCrWeb.setWebViewScrollViewIsDragging(false)"
        stringResultHandler:nil];
-}
-
-#pragma mark -
-#pragma mark JavaScript message handlers
-
-- (BOOL)handleWindowHistoryWillChangeStateMessage:
-    (base::DictionaryValue*)message
-                                          context:(NSDictionary*)context {
-  _changingHistoryState = YES;
-  return
-      [super handleWindowHistoryWillChangeStateMessage:message context:context];
-}
-
-- (BOOL)handleWindowHistoryDidPushStateMessage:(base::DictionaryValue*)message
-                                       context:(NSDictionary*)context {
-  DCHECK(_changingHistoryState);
-  _changingHistoryState = NO;
-  return [super handleWindowHistoryDidPushStateMessage:message context:context];
-}
-
-- (BOOL)handleWindowHistoryDidReplaceStateMessage:
-    (base::DictionaryValue*)message
-                                         context:(NSDictionary*)context {
-  DCHECK(_changingHistoryState);
-  _changingHistoryState = NO;
-  return [super handleWindowHistoryDidReplaceStateMessage:message
-                                                  context:context];
 }
 
 #pragma mark -

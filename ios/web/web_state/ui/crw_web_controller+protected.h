@@ -90,10 +90,6 @@ enum WebViewDocumentType {
 // Cancels any load in progress in the web view.
 - (void)abortWebLoad;
 
-// Returns selector to handle JavaScript message with command property
-// |command|. Subclasses may override to handle class-specific messages.
-- (SEL)selectorToHandleJavaScriptCommand:(const std::string&)command;
-
 // Sets zoom scale value for webview scroll view from |zoomState|.
 - (void)applyWebViewScrollZoomScaleFromZoomState:
     (const web::PageZoomState&)zoomState;
@@ -183,6 +179,10 @@ enum WebViewDocumentType {
 // YES if a user interaction has been registered at any time since the page has
 // loaded.
 @property(nonatomic, readwrite) BOOL userInteractionRegistered;
+
+// Whether the web page is currently performing window.history.pushState or
+// window.history.replaceState
+@property(nonatomic, readonly) BOOL changingHistoryState;
 
 // Returns the current window id.
 @property(nonatomic, readonly) NSString* windowId;

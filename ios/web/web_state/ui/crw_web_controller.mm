@@ -258,6 +258,11 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
   // if the next load request is for that URL, it should be treated as a
   // reconstruction that should use cache aggressively.
   GURL _expectedReconstructionURL;
+  // Whether the web page is currently performing window.history.pushState or
+  // window.history.replaceState
+  // Set to YES on window.history.willChangeState message. To NO on
+  // window.history.didPushState or window.history.didReplaceState.
+  BOOL _changingHistoryState;
 
   scoped_ptr<web::NewWindowInfo> _externalRequest;
 
@@ -1899,6 +1904,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return _isHalted;
 }
 
+- (BOOL)changingHistoryState {
+  return _changingHistoryState;
+}
+
 - (web::ReferrerPolicy)referrerPolicyFromString:(const std::string&)policy {
   // TODO(stuartmorgan): Remove this temporary bridge to the helper function
   // once the referrer handling moves into the subclasses.
@@ -2397,22 +2406,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)handleWindowHistoryWillChangeStateMessage:(base::DictionaryValue*)unused
                                           context:(NSDictionary*)unusedContext {
-  // This dummy handler is a workaround for crbug.com/490673. Issue was
-  // happening when two sequential calls of window.history.pushState were
-  // performed by the page. In that case state was changed twice before
-  // first change was reported to embedder (and first URL change was reported
-  // incorrectly).
-
-  // Using dummy handler for window.history.willChangeState message holds
-  // second state change until the first change is reported, because messages
-  // are queued. This is essentially a sleep, and not the real fix of the
-  // problem. TODO(eugenebut): refactor handleWindowHistoryDidPushStateMessage:
-  // to avoid this "sleep".
+  _changingHistoryState = YES;
   return YES;
 }
 
 - (BOOL)handleWindowHistoryDidPushStateMessage:(base::DictionaryValue*)message
                                        context:(NSDictionary*)context {
+  DCHECK(_changingHistoryState);
+  _changingHistoryState = NO;
+
   // If there is a pending entry, a new navigation has been registered but
   // hasn't begun loading.  Since the pushState message is coming from the
   // previous page, ignore it and allow the previously registered navigation to
@@ -2494,6 +2496,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)handleWindowHistoryDidReplaceStateMessage:
     (base::DictionaryValue*)message
                                           context:(NSDictionary*)context {
+  DCHECK(_changingHistoryState);
+  _changingHistoryState = NO;
+
   std::string pageURL;
   std::string baseURL;
   if (!message->GetString("pageUrl", &pageURL) ||
