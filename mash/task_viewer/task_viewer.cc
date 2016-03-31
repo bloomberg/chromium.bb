@@ -88,6 +88,9 @@ class TaskViewerContents : public views::WidgetDelegateView,
     // TODO(beng): use resources.
     return base::ASCIIToUTF16("Tasks");
   }
+  bool CanResize() const override { return true; }
+  bool CanMaximize() const override { return true; }
+  bool CanMinimize() const override { return true; }
 
   gfx::ImageSkia GetWindowAppIcon() override {
     // TODO(jamescook): Create a new .pak file for this app and make a custom

@@ -172,7 +172,7 @@ class Window {
   void MoveToBack();
 
   // Returns true if |child| is this or a descendant of this.
-  bool Contains(Window* child) const;
+  bool Contains(const Window* child) const;
 
   void AddTransientWindow(Window* transient_window);
   void RemoveTransientWindow(Window* transient_window);

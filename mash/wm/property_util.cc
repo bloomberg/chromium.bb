@@ -20,6 +20,12 @@ MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Shadow*, kLocalShadowProperty, nullptr);
 
 }  // namespace
 
+void SetWindowShowState(mus::Window* window, mus::mojom::ShowState show_state) {
+  window->SetSharedProperty<int32_t>(
+      mus::mojom::WindowManager::kShowState_Property,
+      static_cast<uint32_t>(show_state));
+}
+
 mus::mojom::ShowState GetWindowShowState(const mus::Window* window) {
   if (window->HasSharedProperty(
           mus::mojom::WindowManager::kShowState_Property)) {
@@ -98,12 +104,18 @@ void SetShadow(mus::Window* window, Shadow* shadow) {
   window->SetLocalProperty(kLocalShadowProperty, shadow);
 }
 
-Shadow* GetShadow(mus::Window* window) {
+Shadow* GetShadow(const mus::Window* window) {
   return window->GetLocalProperty(kLocalShadowProperty);
 }
 
-mus::mojom::WindowType GetWindowType(mus::Window* window) {
-  return GetWindowType(window->shared_properties());
+mus::mojom::WindowType GetWindowType(const mus::Window* window) {
+  if (window->HasSharedProperty(
+          mus::mojom::WindowManager::kWindowType_Property)) {
+    return static_cast<mus::mojom::WindowType>(
+        window->GetSharedProperty<int32_t>(
+            mus::mojom::WindowManager::kWindowType_Property));
+  }
+  return mus::mojom::WindowType::POPUP;
 }
 
 mus::mojom::WindowType GetWindowType(
@@ -115,6 +127,16 @@ mus::mojom::WindowType GetWindowType(
         mojo::ConvertTo<int32_t>(iter->second));
   }
   return mus::mojom::WindowType::POPUP;
+}
+
+base::string16 GetWindowTitle(const mus::Window* window) {
+  if (!window->HasSharedProperty(
+          mus::mojom::WindowManager::kWindowTitle_Property)) {
+    return base::string16();
+  }
+
+  return window->GetSharedProperty<base::string16>(
+      mus::mojom::WindowManager::kWindowTitle_Property);
 }
 
 }  // namespace wm

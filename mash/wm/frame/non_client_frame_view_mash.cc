@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "grit/mash_wm_resources.h"
 #include "mash/wm/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "mash/wm/frame/default_header_painter.h"
@@ -36,7 +37,7 @@ namespace wm {
 class NonClientFrameViewMash::HeaderView : public views::View {
  public:
   // |frame| is the widget that the caption buttons act on.
-  explicit HeaderView(views::Widget* frame);
+  HeaderView(views::Widget* frame, mus::Window* window);
   ~HeaderView() override;
 
   // Schedules a repaint for the entire title.
@@ -74,13 +75,17 @@ class NonClientFrameViewMash::HeaderView : public views::View {
   // View which contains the window caption buttons.
   FrameCaptionButtonContainerView* caption_button_container_;
 
+  mus::Window* window_;
+
   DISALLOW_COPY_AND_ASSIGN(HeaderView);
 };
 
-NonClientFrameViewMash::HeaderView::HeaderView(views::Widget* frame)
+NonClientFrameViewMash::HeaderView::HeaderView(views::Widget* frame,
+                                               mus::Window* window)
     : frame_(frame),
       header_painter_(new DefaultHeaderPainter),
-      caption_button_container_(nullptr) {
+      caption_button_container_(nullptr),
+      window_(window) {
   caption_button_container_ = new FrameCaptionButtonContainerView(frame_);
   caption_button_container_->UpdateSizeButtonVisibility();
   AddChildView(caption_button_container_);
@@ -126,8 +131,9 @@ void NonClientFrameViewMash::HeaderView::Layout() {
 }
 
 void NonClientFrameViewMash::HeaderView::OnPaint(gfx::Canvas* canvas) {
-  bool paint_as_active =
-      frame_->non_client_view()->frame_view()->ShouldPaintAsActive();
+  const mus::Window* focused_window = window_->connection()->GetFocusedWindow();
+  const bool paint_as_active =
+      focused_window && window_->Contains(focused_window);
   caption_button_container_->SetPaintAsActive(paint_as_active);
 
   HeaderPainter::Mode header_mode = paint_as_active
@@ -155,16 +161,18 @@ const char NonClientFrameViewMash::kViewClassName[] = "NonClientFrameViewMash";
 
 NonClientFrameViewMash::NonClientFrameViewMash(views::Widget* frame,
                                                mus::Window* window)
-    : frame_(frame), window_(window), header_view_(new HeaderView(frame)) {
+    : frame_(frame),
+      window_(window),
+      header_view_(new HeaderView(frame, window)) {
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   AddChildView(header_view_);
   window_->AddObserver(this);
+  window_->connection()->AddObserver(this);
 }
 
 NonClientFrameViewMash::~NonClientFrameViewMash() {
-  if (window_)
-    window_->RemoveObserver(this);
+  RemoveObservers();
 }
 
 // static
@@ -308,8 +316,18 @@ void NonClientFrameViewMash::OnWindowClientAreaChanged(
 }
 
 void NonClientFrameViewMash::OnWindowDestroyed(mus::Window* window) {
-  window_->RemoveObserver(this);
-  window_ = nullptr;
+  RemoveObservers();
+}
+
+void NonClientFrameViewMash::OnWindowSharedPropertyChanged(
+    mus::Window* window,
+    const std::string& name,
+    const std::vector<uint8_t>* old_data,
+    const std::vector<uint8_t>* new_data) {
+  if (name == mus::mojom::WindowManager::kResizeBehavior_Property)
+    header_view_->SizeConstraintsChanged();
+  else if (name == mus::mojom::WindowManager::kWindowTitle_Property)
+    header_view_->SchedulePaintForTitle();
 }
 
 views::View* NonClientFrameViewMash::GetHeaderView() {
@@ -321,6 +339,23 @@ views::View* NonClientFrameViewMash::GetHeaderView() {
 
 int NonClientFrameViewMash::NonClientTopBorderHeight() const {
   return header_view_->GetPreferredHeight();
+}
+
+void NonClientFrameViewMash::RemoveObservers() {
+  if (!window_)
+    return;
+
+  window_->RemoveObserver(this);
+  window_->connection()->RemoveObserver(this);
+  window_ = nullptr;
+}
+
+void NonClientFrameViewMash::OnWindowTreeFocusChanged(mus::Window* gained_focus,
+                                                      mus::Window* lost_focus) {
+  const bool had_focus = lost_focus && window_->Contains(lost_focus);
+  const bool has_focus = gained_focus && window_->Contains(gained_focus);
+  if (had_focus != has_focus)
+    SchedulePaint();
 }
 
 }  // namespace wm

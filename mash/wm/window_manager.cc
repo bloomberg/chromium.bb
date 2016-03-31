@@ -113,9 +113,8 @@ mus::Window* WindowManager::NewTopLevelWindow(
   root_controller_->GetWindowForContainer(container)->AddChild(window);
 
   if (provide_non_client_frame) {
-    // NonClientFrameController deletes itself when |window| is destroyed.
-    new NonClientFrameController(root_controller_->GetConnector(), window,
-                                 root_controller_->window_manager_client());
+    NonClientFrameController::Create(root_controller_->GetConnector(), window,
+                                     root_controller_->window_manager_client());
   }
 
   root_controller_->IncrementWindowCount();

@@ -26,6 +26,7 @@ class Shadow;
 // Utility functions to read values from properties & convert them to the
 // appropriate types.
 
+void SetWindowShowState(mus::Window* window, mus::mojom::ShowState show_state);
 mus::mojom::ShowState GetWindowShowState(const mus::Window* window);
 
 void SetWindowUserSetBounds(mus::Window* window, const gfx::Rect& bounds);
@@ -44,11 +45,13 @@ void SetRestoreBounds(mus::Window* window, const gfx::Rect& bounds);
 gfx::Rect GetRestoreBounds(const mus::Window* window);
 
 void SetShadow(mus::Window* window, Shadow* shadow);
-Shadow* GetShadow(mus::Window* window);
+Shadow* GetShadow(const mus::Window* window);
 
-mus::mojom::WindowType GetWindowType(mus::Window* window);
+mus::mojom::WindowType GetWindowType(const mus::Window* window);
 mus::mojom::WindowType GetWindowType(
     const mus::Window::SharedProperties& window);
+
+base::string16 GetWindowTitle(const mus::Window* window);
 
 }  // namespace wm
 }  // namespace mash

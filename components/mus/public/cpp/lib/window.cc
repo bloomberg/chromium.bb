@@ -316,14 +316,14 @@ void Window::MoveToBack() {
   Reorder(parent_->children_.front(), mojom::OrderDirection::BELOW);
 }
 
-bool Window::Contains(Window* child) const {
+bool Window::Contains(const Window* child) const {
   if (!child)
     return false;
   if (child == this)
     return true;
   if (connection_)
-    CHECK_EQ(child->connection(), connection_);
-  for (Window* p = child->parent(); p; p = p->parent()) {
+    CHECK_EQ(child->connection_, connection_);
+  for (const Window* p = child->parent(); p; p = p->parent()) {
     if (p == this)
       return true;
   }

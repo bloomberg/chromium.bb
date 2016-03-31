@@ -33,9 +33,9 @@ class NonClientFrameController : public views::WidgetDelegateView,
                                  public mus::WindowObserver {
  public:
   // NonClientFrameController deletes itself when |window| is destroyed.
-  NonClientFrameController(mojo::Connector* connector,
-                           mus::Window* window,
-                           mus::WindowManagerClient* window_manager_client);
+  static void Create(mojo::Connector* connector,
+                     mus::Window* window,
+                     mus::WindowManagerClient* window_manager_client);
 
   // Returns the preferred client area insets.
   static gfx::Insets GetPreferredClientAreaInsets();
@@ -47,6 +47,9 @@ class NonClientFrameController : public views::WidgetDelegateView,
   mus::Window* window() { return window_; }
 
  private:
+  NonClientFrameController(mojo::Connector* connector,
+                           mus::Window* window,
+                           mus::WindowManagerClient* window_manager_client);
   ~NonClientFrameController() override;
 
   // views::WidgetDelegateView:

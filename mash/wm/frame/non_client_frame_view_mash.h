@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/views/window/non_client_view.h"
@@ -30,7 +31,8 @@ namespace wm {
 class FrameCaptionButtonContainerView;
 
 class NonClientFrameViewMash : public views::NonClientFrameView,
-                               public mus::WindowObserver {
+                               public mus::WindowObserver,
+                               public mus::WindowTreeConnectionObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -71,6 +73,11 @@ class NonClientFrameViewMash : public views::NonClientFrameView,
       const gfx::Insets& old_client_area,
       const std::vector<gfx::Rect>& old_additional_client_area) override;
   void OnWindowDestroyed(mus::Window* window) override;
+  void OnWindowSharedPropertyChanged(
+      mus::Window* window,
+      const std::string& name,
+      const std::vector<uint8_t>* old_data,
+      const std::vector<uint8_t>* new_data) override;
 
   // Get the view of the header.
   views::View* GetHeaderView();
@@ -80,6 +87,12 @@ class NonClientFrameViewMash : public views::NonClientFrameView,
 
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
+
+  void RemoveObservers();
+
+  // mus::WindowTreeConnectionObserver:
+  void OnWindowTreeFocusChanged(mus::Window* gained_focus,
+                                mus::Window* lost_focus) override;
 
   // Not owned.
   views::Widget* frame_;

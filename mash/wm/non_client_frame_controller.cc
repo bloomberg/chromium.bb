@@ -173,6 +173,24 @@ class ClientViewMus : public views::ClientView {
 
 }  // namespace
 
+// static
+void NonClientFrameController::Create(
+    mojo::Connector* connector,
+    mus::Window* window,
+    mus::WindowManagerClient* window_manager_client) {
+  new NonClientFrameController(connector, window, window_manager_client);
+}
+
+// static
+gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
+  return NonClientFrameViewMash::GetPreferredClientAreaInsets();
+}
+
+// static
+int NonClientFrameController::GetMaxTitleBarButtonWidth() {
+  return NonClientFrameViewMash::GetMaxTitleBarButtonWidth();
+}
+
 NonClientFrameController::NonClientFrameController(
     mojo::Connector* connector,
     mus::Window* window,
@@ -180,6 +198,10 @@ NonClientFrameController::NonClientFrameController(
     : widget_(new views::Widget), window_(window) {
   window_->AddObserver(this);
 
+  // To simplify things this code creates a Widget. While a Widget is created
+  // we need to ensure we don't inadvertently change random properties of the
+  // underlying mus::Window. For example, showing the Widget shouldn't change
+  // the bounds of the mus::Window in anyway.
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   // We initiate focus at the mus level, not at the views level.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
@@ -193,16 +215,6 @@ NonClientFrameController::NonClientFrameController(
   window_manager_client->SetUnderlaySurfaceOffsetAndExtendedHitArea(
       window, gfx::Vector2d(shadow_inset, shadow_inset),
       FrameBorderHitTestController::GetResizeOutsideBoundsSize());
-}
-
-// static
-gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
-  return NonClientFrameViewMash::GetPreferredClientAreaInsets();
-}
-
-// static
-int NonClientFrameController::GetMaxTitleBarButtonWidth() {
-  return NonClientFrameViewMash::GetMaxTitleBarButtonWidth();
 }
 
 NonClientFrameController::~NonClientFrameController() {
