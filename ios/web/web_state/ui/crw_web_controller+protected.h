@@ -12,6 +12,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/web_state/page_display_state.h"
+#import "ios/web/web_state/crw_pass_kit_downloader.h"
 
 @class CRWSessionController;
 namespace web {
@@ -55,6 +56,9 @@ enum WebViewDocumentType {
 // A set of script managers whose scripts have been injected into the current
 // page.
 @property(nonatomic, readonly) NSMutableSet* injectedScriptManagers;
+
+// Downloader for PassKit files. Lazy initialized.
+@property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
 
 // Designated initializer.
 - (instancetype)initWithWebState:(scoped_ptr<web::WebStateImpl>)webState;

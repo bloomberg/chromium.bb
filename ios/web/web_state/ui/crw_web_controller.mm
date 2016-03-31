@@ -281,6 +281,9 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 
   // The receiver of JavaScripts.
   base::scoped_nsobject<CRWJSInjectionReceiver> _jsInjectionReceiver;
+
+  // Handles downloading PassKit data for WKWebView. Lazy initialized.
+  base::scoped_nsobject<CRWPassKitDownloader> _passKitDownloader;
 }
 
 // The container view.  The container view should be accessed through this
@@ -1624,6 +1627,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)loadCancelled {
+  [_passKitDownloader cancelPendingDownload];
+
   // Current load will not complete; this should be communicated upstream to the
   // delegate.
   switch (_loadPhase) {
@@ -1912,6 +1917,33 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // TODO(stuartmorgan): Remove this temporary bridge to the helper function
   // once the referrer handling moves into the subclasses.
   return web::ReferrerPolicyFromString(policy);
+}
+
+- (CRWPassKitDownloader*)passKitDownloader {
+  if (_passKitDownloader) {
+    return _passKitDownloader.get();
+  }
+  base::WeakNSObject<CRWWebController> weakSelf(self);
+  web::PassKitCompletionHandler passKitCompletion = ^(NSData* data) {
+    base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
+    if (!strongSelf) {
+      return;
+    }
+    // Cancel load to update web state, since the PassKit download happens
+    // through a separate flow. This follows the same flow as when PassKit is
+    // downloaded through UIWebView.
+    [strongSelf loadCancelled];
+    SEL didLoadPassKitObject = @selector(webController:didLoadPassKitObject:);
+    id<CRWWebDelegate> delegate = [strongSelf delegate];
+    if ([delegate respondsToSelector:didLoadPassKitObject]) {
+      [delegate webController:strongSelf didLoadPassKitObject:data];
+    }
+  };
+  web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
+  _passKitDownloader.reset([[CRWPassKitDownloader alloc]
+      initWithContextGetter:browserState->GetRequestContext()
+          completionHandler:passKitCompletion]);
+  return _passKitDownloader.get();
 }
 
 #pragma mark -

@@ -40,7 +40,6 @@
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/ui_web_view_util.h"
 #include "ios/web/web_state/blocked_popup_info.h"
-#import "ios/web/web_state/crw_pass_kit_downloader.h"
 #import "ios/web/web_state/error_translation_util.h"
 #include "ios/web/web_state/frame_info.h"
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
@@ -190,9 +189,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // Referrer for the current page.
   base::scoped_nsobject<NSString> _currentReferrerString;
 
-  // Handles downloading PassKit data for WKWebView. Lazy initialized.
-  base::scoped_nsobject<CRWPassKitDownloader> _passKitDownloader;
-
   // Object for loading POST requests with body.
   base::scoped_nsobject<CRWJSPOSTRequestLoader> _POSTRequestLoader;
 
@@ -243,9 +239,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 // Identifier used for storing and retrieving certificates.
 @property(nonatomic, readonly) int certGroupID;
-
-// Downloader for PassKit files. Lazy initialized.
-@property(nonatomic, readonly) CRWPassKitDownloader* passKitDownloader;
 
 // Loads POST request with body in |_wkWebView| by constructing an HTML page
 // that executes the request through JavaScript and replaces document with the
@@ -651,13 +644,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   if ([self.passKitDownloader isMIMETypePassKitType:MIMEType])
     return;
   [super handleLoadError:error inMainFrame:inMainFrame];
-}
-
-// Override |loadCancelled| to |cancelPendingDownload| for the
-// CRWPassKitDownloader.
-- (void)loadCancelled {
-  [_passKitDownloader cancelPendingDownload];
-  [super loadCancelled];
 }
 
 - (BOOL)isViewAlive {
@@ -1276,34 +1262,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // as the WKWebView will automatically retry these loads.
   WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
   return source != NAVIGATION;
-}
-
-- (CRWPassKitDownloader*)passKitDownloader {
-  if (_passKitDownloader) {
-    return _passKitDownloader.get();
-  }
-  base::WeakNSObject<CRWWKWebViewWebController> weakSelf(self);
-  web::PassKitCompletionHandler passKitCompletion = ^(NSData* data) {
-    base::scoped_nsobject<CRWWKWebViewWebController> strongSelf(
-        [weakSelf retain]);
-    if (!strongSelf) {
-      return;
-    }
-    // Cancel load to update web state, since the PassKit download happens
-    // through a separate flow. This follows the same flow as when PassKit is
-    // downloaded through UIWebView.
-    [strongSelf loadCancelled];
-    SEL didLoadPassKitObject = @selector(webController:didLoadPassKitObject:);
-    id<CRWWebDelegate> delegate = [strongSelf delegate];
-    if ([delegate respondsToSelector:didLoadPassKitObject]) {
-      [delegate webController:strongSelf didLoadPassKitObject:data];
-    }
-  };
-  web::BrowserState* browserState = self.webStateImpl->GetBrowserState();
-  _passKitDownloader.reset([[CRWPassKitDownloader alloc]
-      initWithContextGetter:browserState->GetRequestContext()
-          completionHandler:passKitCompletion]);
-  return _passKitDownloader.get();
 }
 
 #pragma mark -
