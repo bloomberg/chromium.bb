@@ -307,8 +307,8 @@ void HostContentSettingsMap::SetDefaultContentSetting(
 }
 
 void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
-    const GURL& requesting_url,
-    const GURL& top_level_url,
+    const GURL& primary_url,
+    const GURL& secondary_url,
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     base::Value* value) {
@@ -316,7 +316,7 @@ void HostContentSettingsMap::SetWebsiteSettingDefaultScope(
       content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
           content_type);
   content_settings::PatternPair patterns = GetPatternsFromScopingType(
-      info->scoping_type(), requesting_url, top_level_url);
+      info->scoping_type(), primary_url, secondary_url);
   ContentSettingsPattern primary_pattern = patterns.first;
   ContentSettingsPattern secondary_pattern = patterns.second;
   if (!primary_pattern.IsValid() || !secondary_pattern.IsValid())
@@ -353,39 +353,6 @@ void HostContentSettingsMap::SetNarrowestContentSetting(
     const GURL& secondary_url,
     ContentSettingsType type,
     ContentSetting setting) {
-  // TODO(raymes): The scoping here should be a property of ContentSettingsInfo.
-  // Make this happen! crbug.com/444742.
-  ContentSettingsPattern primary_pattern;
-  ContentSettingsPattern secondary_pattern;
-  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-      type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX ||
-      type == CONTENT_SETTINGS_TYPE_FULLSCREEN) {
-    // TODO(markusheintz): The rule we create here should also change the
-    // location permission for iframed content.
-    primary_pattern = ContentSettingsPattern::FromURLNoWildcard(primary_url);
-    secondary_pattern =
-        ContentSettingsPattern::FromURLNoWildcard(secondary_url);
-  } else if (type == CONTENT_SETTINGS_TYPE_COOKIES ||
-             type == CONTENT_SETTINGS_TYPE_IMAGES ||
-             type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-             type == CONTENT_SETTINGS_TYPE_PLUGINS ||
-             type == CONTENT_SETTINGS_TYPE_POPUPS ||
-             type == CONTENT_SETTINGS_TYPE_MOUSELOCK ||
-             type == CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS ||
-             type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING) {
-    primary_pattern = ContentSettingsPattern::FromURL(primary_url);
-    secondary_pattern = ContentSettingsPattern::Wildcard();
-  } else if (type == CONTENT_SETTINGS_TYPE_KEYGEN ||
-             type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-             type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
-             type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
-             type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {
-    primary_pattern = ContentSettingsPattern::FromURLNoWildcard(primary_url);
-    secondary_pattern = ContentSettingsPattern::Wildcard();
-  } else {
-    NOTREACHED() << "ContentSettingsType " << type << "is not supported.";
-  }
-
   // Permission settings are specified via rules. There exists always at least
   // one rule for the default setting. Get the rule that currently defines
   // the permission for the given permission |type|. Then test whether the
@@ -397,16 +364,21 @@ void HostContentSettingsMap::SetNarrowestContentSetting(
       primary_url, secondary_url, type, std::string(), &info);
   DCHECK_EQ(content_settings::SETTING_SOURCE_USER, info.source);
 
-  ContentSettingsPattern narrow_primary = primary_pattern;
-  ContentSettingsPattern narrow_secondary = secondary_pattern;
+  const WebsiteSettingsInfo* website_settings_info =
+      content_settings::WebsiteSettingsRegistry::GetInstance()->Get(type);
+  content_settings::PatternPair patterns = GetPatternsFromScopingType(
+      website_settings_info->scoping_type(), primary_url, secondary_url);
+
+  ContentSettingsPattern narrow_primary = patterns.first;
+  ContentSettingsPattern narrow_secondary = patterns.second;
 
   ContentSettingsPattern::Relation r1 =
-      info.primary_pattern.Compare(primary_pattern);
+      info.primary_pattern.Compare(patterns.first);
   if (r1 == ContentSettingsPattern::PREDECESSOR) {
     narrow_primary = info.primary_pattern;
   } else if (r1 == ContentSettingsPattern::IDENTITY) {
     ContentSettingsPattern::Relation r2 =
-        info.secondary_pattern.Compare(secondary_pattern);
+        info.secondary_pattern.Compare(patterns.second);
     DCHECK(r2 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
            r2 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
     if (r2 == ContentSettingsPattern::PREDECESSOR)
