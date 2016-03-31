@@ -116,6 +116,7 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when the connection is closed either locally by the framer, or
   // remotely by the peer.
   virtual void OnConnectionClosed(QuicErrorCode error,
+                                  const std::string& error_details,
                                   ConnectionCloseSource source) = 0;
 
   // Called when the connection failed to write because the socket was blocked.
@@ -235,6 +236,7 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when the connection is closed.
   virtual void OnConnectionClosed(QuicErrorCode error,
+                                  const std::string& error_details,
                                   ConnectionCloseSource source) {}
 
   // Called when the version negotiation is successful.
@@ -365,18 +367,13 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Send a PATH_CLOSE frame to the peer.
   virtual void SendPathClose(QuicPathId path_id);
 
-  // Sends the connection close packet without affecting the state of the
-  // connection.  This should only be called if the session is actively being
-  // destroyed: otherwise call SendConnectionCloseWithDetails instead.
-  virtual void SendConnectionClosePacket(QuicErrorCode error,
-                                         const std::string& details);
-
-  // Sends a connection close frame to the peer, and closes the connection by
-  // calling CloseConnection(notifying the visitor as it does so).
-  virtual void SendConnectionCloseWithDetails(QuicErrorCode error,
-                                              const std::string& details);
-  // Notifies the visitor of the close and marks the connection as disconnected.
-  void CloseConnection(QuicErrorCode error, ConnectionCloseSource source);
+  // Closes the connection.
+  // |connection_close_behavior| determines whether or not a connection close
+  // packet is sent to the peer.
+  virtual void CloseConnection(
+      QuicErrorCode error,
+      const std::string& details,
+      ConnectionCloseBehavior connection_close_behavior);
 
   // Sends a GOAWAY frame. Does nothing if a GOAWAY frame has already been sent.
   virtual void SendGoAway(QuicErrorCode error,
@@ -465,6 +462,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // QuicPacketCreator::DelegateInterface
   void OnSerializedPacket(SerializedPacket* packet) override;
   void OnUnrecoverableError(QuicErrorCode error,
+                            const std::string& error_details,
                             ConnectionCloseSource source) override;
 
   // QuicSentPacketManager::NetworkChangeVisitor
@@ -671,14 +669,23 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   base::StringPiece GetCurrentPacket();
 
+  const QuicPacketGenerator& packet_generator() const {
+    return packet_generator_;
+  }
+
+  EncryptionLevel encryption_level() const { return encryption_level_; }
+
  protected:
   // Send a packet to the peer, and takes ownership of the packet if the packet
   // cannot be written immediately.
   virtual void SendOrQueuePacket(SerializedPacket* packet);
 
-  // Migrate the connection if peer address changes. This function should only
-  // be called after the packet is validated.
-  virtual void MaybeMigrateConnectionToNewPeerAddress();
+  // Called after a packet is received from a new peer address and is
+  // decrypted. Starts validation of peer's address change.
+  virtual void StartPeerMigration(PeerAddressChangeType peer_migration_type);
+
+  // Called when a peer migration is validated.
+  virtual void OnPeerMigrationValidated();
 
   // Selects and updates the version of the protocol being used by selecting a
   // version from |available_versions| which is also supported. Returns true if
@@ -705,11 +712,25 @@ class NET_EXPORT_PRIVATE QuicConnection
     defer_send_in_response_to_packets_ = defer;
   }
 
+  PeerAddressChangeType active_peer_migration_type() {
+    return active_peer_migration_type_;
+  }
+
+  // Sends the connection close packet to the peer.
+  virtual void SendConnectionClosePacket(QuicErrorCode error,
+                                         const std::string& details);
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::PacketSavingConnection;
 
   typedef std::list<SerializedPacket> QueuedPacketList;
+
+  // Notifies the visitor of the close and marks the connection as disconnected.
+  // Does not send a connection close frame to the peer.
+  void TearDownLocalConnectionState(QuicErrorCode error,
+                                    const std::string& details,
+                                    ConnectionCloseSource source);
 
   // Writes the given packet to socket, encrypted with packet's
   // encryption_level. Returns true on successful write, and false if the writer
@@ -839,6 +860,13 @@ class NET_EXPORT_PRIVATE QuicConnection
   IPEndPoint self_address_;
   IPEndPoint peer_address_;
 
+  // Records change type when the peer initiates migration to a new peer
+  // address. Reset to NO_CHANGE after peer migration is validated.
+  PeerAddressChangeType active_peer_migration_type_;
+
+  // Records highest sent packet number when peer migration is started.
+  QuicPacketNumber highest_packet_sent_before_peer_migration_;
+
   // True if the last packet has gotten far enough in the framer to be
   // decrypted.
   bool last_packet_decrypted_;
@@ -884,10 +912,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Contains the connection close packets if the connection has been closed.
   scoped_ptr<std::vector<QuicEncryptedPacket*>> termination_packets_;
 
-  // When true, the connection does not send a close packet on idle timeout due
-  // to lack of network activity.
-  // This is particularly important on mobile, where connections are short.
-  bool silent_close_enabled_;
+  // Determines whether or not a connection close packet is sent to the peer
+  // after idle timeout due to lack of network activity.
+  // This is particularly important on mobile, where waking up the radio is
+  // undesirable.
+  ConnectionCloseBehavior idle_timeout_connection_close_behavior_;
 
   // When true, close the QUIC connection after 5 RTOs.  Due to the min rto of
   // 200ms, this is over 5 seconds.

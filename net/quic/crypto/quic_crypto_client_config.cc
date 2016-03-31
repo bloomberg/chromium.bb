@@ -701,10 +701,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(out_params->hkdf_input_suffix);
 
-  string* subkey_secret = nullptr;
-  if (FLAGS_quic_save_initial_subkey_secret) {
-    subkey_secret = &out_params->initial_subkey_secret;
-  }
+  string* subkey_secret = &out_params->initial_subkey_secret;
   if (!CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
                                out_params->aead, out_params->client_nonce,
                                out_params->server_nonce, hkdf_input,

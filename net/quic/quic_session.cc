@@ -93,8 +93,9 @@ void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
 
 void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
   if (ContainsKey(static_stream_map_, frame.stream_id)) {
-    connection()->SendConnectionCloseWithDetails(
-        QUIC_INVALID_STREAM_ID, "Attempt to reset a static stream");
+    connection()->CloseConnection(
+        QUIC_INVALID_STREAM_ID, "Attempt to reset a static stream",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
 
@@ -112,6 +113,7 @@ void QuicSession::OnGoAway(const QuicGoAwayFrame& frame) {
 }
 
 void QuicSession::OnConnectionClosed(QuicErrorCode error,
+                                     const string& /*error_details*/,
                                      ConnectionCloseSource source) {
   DCHECK(!connection_->connected());
   if (error_ == QUIC_NO_ERROR) {
@@ -192,7 +194,8 @@ void QuicSession::OnCanWrite() {
       // Writing one stream removed another!? Something's broken.
       QUIC_BUG << "WriteBlockedStream is missing";
       connection_->CloseConnection(QUIC_INTERNAL_ERROR,
-                                   ConnectionCloseSource::FROM_SELF);
+                                   "WriteBlockedStream is missing",
+                                   ConnectionCloseBehavior::SILENT_CLOSE);
       return;
     }
     if (!connection_->CanWriteStreamData()) {
@@ -347,9 +350,10 @@ void QuicSession::UpdateFlowControlOnFinalReceivedByteOffset(
           flow_controller_.highest_received_byte_offset() + offset_diff)) {
     // If the final offset violates flow control, close the connection now.
     if (flow_controller_.FlowControlViolation()) {
-      connection_->SendConnectionCloseWithDetails(
+      connection_->CloseConnection(
           QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA,
-          "Connection level flow control violation");
+          "Connection level flow control violation",
+          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
       return;
     }
   }
@@ -469,8 +473,9 @@ void QuicSession::HandleFrameOnNonexistentOutgoingStream(
   DCHECK(!IsClosedStream(stream_id));
   // Received a frame for a locally-created stream that is not currently
   // active. This is an error.
-  connection()->SendConnectionCloseWithDetails(QUIC_INVALID_STREAM_ID,
-                                               "Data for nonexistent stream");
+  connection()->CloseConnection(
+      QUIC_INVALID_STREAM_ID, "Data for nonexistent stream",
+      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
 void QuicSession::HandleRstOnValidNonexistentStream(
@@ -492,8 +497,9 @@ void QuicSession::OnNewStreamFlowControlWindow(QuicStreamOffset new_window) {
                << new_window
                << ", below default: " << kMinimumFlowControlSendWindow;
     if (connection_->connected()) {
-      connection_->SendConnectionCloseWithDetails(
-          QUIC_FLOW_CONTROL_INVALID_WINDOW, "New stream window too low");
+      connection_->CloseConnection(
+          QUIC_FLOW_CONTROL_INVALID_WINDOW, "New stream window too low",
+          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     }
     return;
   }
@@ -513,8 +519,9 @@ void QuicSession::OnNewSessionFlowControlWindow(QuicStreamOffset new_window) {
                << new_window
                << ", below default: " << kMinimumFlowControlSendWindow;
     if (connection_->connected()) {
-      connection_->SendConnectionCloseWithDetails(
-          QUIC_FLOW_CONTROL_INVALID_WINDOW, "New connection window too low");
+      connection_->CloseConnection(
+          QUIC_FLOW_CONTROL_INVALID_WINDOW, "New connection window too low",
+          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     }
     return;
   }
@@ -620,8 +627,9 @@ bool QuicSession::MaybeIncreaseLargestPeerStreamId(
              << MaxAvailableStreams() << ".";
     string details = IntToString(new_num_available_streams) + " above " +
                      IntToString(MaxAvailableStreams());
-    connection()->SendConnectionCloseWithDetails(
-        QUIC_TOO_MANY_AVAILABLE_STREAMS, details.c_str());
+    connection()->CloseConnection(
+        QUIC_TOO_MANY_AVAILABLE_STREAMS, details.c_str(),
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
   for (QuicStreamId id = largest_peer_created_stream_id_ + 2; id < stream_id;
@@ -671,8 +679,9 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
   // open streams to exceed the limit.
   if (GetNumOpenIncomingStreams() >= max_open_incoming_streams()) {
     if (connection()->version() <= QUIC_VERSION_27) {
-      connection()->SendConnectionCloseWithDetails(
-          QUIC_TOO_MANY_OPEN_STREAMS, "Old style stream rejection");
+      connection()->CloseConnection(
+          QUIC_TOO_MANY_OPEN_STREAMS, "Old style stream rejection",
+          ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     } else {
       // Refuse to open the stream.
       SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0);

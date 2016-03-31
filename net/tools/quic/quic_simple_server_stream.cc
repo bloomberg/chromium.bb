@@ -4,6 +4,8 @@
 
 #include "net/tools/quic/quic_simple_server_stream.h"
 
+#include <list>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -146,7 +148,7 @@ void QuicSimpleServerStream::SendResponse() {
                        request_headers_[":path"].as_string();
   int response_code;
   SpdyHeaderBlock response_headers = response->headers();
-  if (!base::StringToInt(response_headers[":status"], &response_code)) {
+  if (!ParseHeaderStatusCode(&response_headers, &response_code)) {
     DVLOG(1) << "Illegal (non-integer) response :status from cache: "
              << response_headers[":status"].as_string() << " for request "
              << request_url;
@@ -166,7 +168,7 @@ void QuicSimpleServerStream::SendResponse() {
       return;
     }
   }
-  list<QuicInMemoryCache::ServerPushInfo> resources =
+  std::list<QuicInMemoryCache::ServerPushInfo> resources =
       QuicInMemoryCache::GetInstance()->GetServerPushResources(request_url);
   DVLOG(1) << "Found " << resources.size() << " push resources for stream "
            << id();

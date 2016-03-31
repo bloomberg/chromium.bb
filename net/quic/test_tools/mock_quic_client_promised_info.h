@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_TEST_TOOLS_MOCK_QUIC_CLIENT_PROMISED_INFO_H_
 #define NET_QUIC_TEST_TOOLS_MOCK_QUIC_CLIENT_PROMISED_INFO_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "net/quic/quic_client_promised_info.h"
 #include "net/quic/quic_protocol.h"

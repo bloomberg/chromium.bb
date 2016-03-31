@@ -61,10 +61,11 @@ void QuicClientSessionBase::OnPromiseHeadersComplete(
     size_t frame_len) {
   if (promised_stream_id != kInvalidStreamId &&
       promised_stream_id <= largest_promised_stream_id_) {
-    connection()->SendConnectionCloseWithDetails(
+    connection()->CloseConnection(
         QUIC_INVALID_STREAM_ID,
         "Received push stream id lesser or equal to the"
-        " last accepted before");
+        " last accepted before",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
   largest_promised_stream_id_ = promised_stream_id;

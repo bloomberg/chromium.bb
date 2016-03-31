@@ -110,7 +110,7 @@ void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
     // violation of flow control.
     if (flow_controller_.FlowControlViolation() ||
         connection_flow_controller_->FlowControlViolation()) {
-      session_->connection()->SendConnectionCloseWithDetails(
+      CloseConnectionWithDetails(
           QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA,
           "Flow control violation after increasing offset");
       return;
@@ -175,7 +175,8 @@ void ReliableQuicStream::Reset(QuicRstStreamErrorCode error) {
 
 void ReliableQuicStream::CloseConnectionWithDetails(QuicErrorCode error,
                                                     const string& details) {
-  session()->connection()->SendConnectionCloseWithDetails(error, details);
+  session()->connection()->CloseConnection(
+      error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
 void ReliableQuicStream::WriteOrBufferData(

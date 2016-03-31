@@ -95,10 +95,6 @@ bool FLAGS_quic_log_received_parameters = true;
 // If true, QUIC will use newly refactored TCP sender code.
 bool FLAGS_quic_use_new_tcp_sender = true;
 
-// Saves the initial subkey secret in QUIC crypto when deriving keys from the
-// initial premaster secret.
-bool FLAGS_quic_save_initial_subkey_secret = true;
-
 // If true, the QUIC dispatcher will directly send version negotiation packets
 // without needing to create a QUIC session first.
 bool FLAGS_quic_stateless_version_negotiation = false;
@@ -127,9 +123,6 @@ bool FLAGS_quic_use_cached_compressed_certs = true;
 // Enable a connection option allowing connections to time out if more than 5
 // consecutive RTOs are sent.
 bool FLAGS_quic_enable_rto_timeout = true;
-
-// Do not limit the max CWND to 200 packets in QUIC.
-bool FLAGS_quic_dont_limit_max_cwnd = true;
 
 // Don't copy QuicAckFrame or QuicStopWaitingFrame into the
 // QuicPacketGenerator.

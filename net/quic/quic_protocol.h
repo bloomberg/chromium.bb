@@ -234,9 +234,14 @@ enum class Perspective { IS_SERVER, IS_CLIENT };
 // Describes whether a ConnectionClose was originated by the peer.
 enum class ConnectionCloseSource { FROM_PEER, FROM_SELF };
 
+// Should a connection be closed silently or not.
+enum class ConnectionCloseBehavior {
+  SILENT_CLOSE,
+  SEND_CONNECTION_CLOSE_PACKET
+};
+
 NET_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                             const Perspective& s);
-
 enum QuicFrameType {
   // Regular frame types. The values set here cannot change without the
   // introduction of a new QUIC version.
@@ -500,8 +505,10 @@ enum QuicErrorCode {
   QUIC_INVALID_STREAM_DATA = 46,
   // STREAM frame data overlaps with buffered data.
   QUIC_OVERLAPPING_STREAM_DATA = 87,
-  // STREAM frame data is not encrypted.
+  // Received STREAM frame data is not encrypted.
   QUIC_UNENCRYPTED_STREAM_DATA = 61,
+  // Attempt to send unencrypted STREAM frame.
+  QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA = 88,
   // FEC frame data is not encrypted.
   QUIC_UNENCRYPTED_FEC_DATA = 77,
   // RST_STREAM frame data is malformed.
@@ -668,7 +675,7 @@ enum QuicErrorCode {
   QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM = 84,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 88,
+  QUIC_LAST_ERROR = 89,
 };
 
 // Must be updated any time a QuicErrorCode is deprecated.

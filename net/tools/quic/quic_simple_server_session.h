@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#include <deque>
+#include <list>
 #include <set>
 #include <string>
 #include <vector>
@@ -77,8 +79,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   // And enqueue HEADERS block in those PUSH_PROMISED for sending push response
   // later.
   virtual void PromisePushResources(
-      const string& request_url,
-      const list<QuicInMemoryCache::ServerPushInfo>& resources,
+      const std::string& request_url,
+      const std::list<QuicInMemoryCache::ServerPushInfo>& resources,
       QuicStreamId original_stream_id,
       const SpdyHeaderBlock& original_request_headers);
 

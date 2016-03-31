@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <map>
-#include <string>
 
 #include "base/macros.h"
 #include "net/quic/quic_protocol.h"

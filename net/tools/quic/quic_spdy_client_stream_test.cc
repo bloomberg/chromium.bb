@@ -95,6 +95,17 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
   string body_;
 };
 
+TEST_F(QuicSpdyClientStreamTest, TestReceivingIllegalResponseStatusCode) {
+  headers_.ReplaceOrAppendHeader(":status", "200 ok");
+  headers_string_ = SpdyBalsaUtils::SerializeResponseHeaders(headers_);
+
+  stream_->OnStreamHeaders(headers_string_);
+  EXPECT_CALL(*connection_,
+              SendRstStream(stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD, 0));
+  stream_->OnStreamHeadersComplete(false, headers_string_.size());
+  EXPECT_EQ(QUIC_BAD_APPLICATION_PAYLOAD, stream_->stream_error());
+}
+
 TEST_F(QuicSpdyClientStreamTest, TestFraming) {
   stream_->OnStreamHeaders(headers_string_);
   stream_->OnStreamHeadersComplete(false, headers_string_.size());

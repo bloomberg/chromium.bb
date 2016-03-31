@@ -102,7 +102,7 @@ class QuicConnectionPeer {
   static void SetWriter(QuicConnection* connection,
                         QuicPacketWriter* writer,
                         bool owns_writer);
-  static void CloseConnection(QuicConnection* connection);
+  static void TearDownLocalConnectionState(QuicConnection* connection);
   static QuicEncryptedPacket* GetConnectionClosePacket(
       QuicConnection* connection);
 

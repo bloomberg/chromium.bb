@@ -529,8 +529,8 @@ TEST_F(ReliableQuicStreamTest,
                               stream_->flow_controller()));
 
   // Stream should not accept the frame, and the connection should be closed.
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _));
   stream_->OnStreamFrame(frame);
 }
 
@@ -542,8 +542,8 @@ TEST_F(ReliableQuicStreamTest, StopReadingSendsFlowControl) {
   stream_->StopReading();
 
   // Connection should not get terminated due to flow control errors.
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _))
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _))
       .Times(0);
   EXPECT_CALL(*connection_, SendWindowUpdate(_, _)).Times(AtLeast(1));
 
@@ -641,7 +641,7 @@ TEST_F(ReliableQuicStreamTest, EarlyResponseFinHandling) {
   // the request, the received FIN is recorded.
 
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillRepeatedly(Invoke(MockQuicSpdySession::ConsumeAllData));
 

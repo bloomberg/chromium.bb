@@ -77,7 +77,8 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // QuicServerSessionVisitor interface implementation:
   // Ensure that the closed connection is cleaned up asynchronously.
   void OnConnectionClosed(QuicConnectionId connection_id,
-                          QuicErrorCode error) override;
+                          QuicErrorCode error,
+                          const std::string& error_details) override;
 
   // Queues the blocked writer for later resumption.
   void OnWriteBlocked(QuicBlockedWriterInterface* blocked_writer) override;

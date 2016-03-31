@@ -110,20 +110,23 @@ bool SpdyUtils::ParseTrailers(const char* data,
 // static
 string SpdyUtils::GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers) {
   SpdyHeaderBlock::const_iterator it = headers.find(":scheme");
-  if (it == headers.end())
+  if (it == headers.end()) {
     return "";
+  }
   std::string url = it->second.as_string();
 
   url.append("://");
 
   it = headers.find(":authority");
-  if (it == headers.end())
+  if (it == headers.end()) {
     return "";
+  }
   url.append(it->second.as_string());
 
   it = headers.find(":path");
-  if (it == headers.end())
+  if (it == headers.end()) {
     return "";
+  }
   url.append(it->second.as_string());
   return url;
 }

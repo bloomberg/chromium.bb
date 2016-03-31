@@ -103,6 +103,17 @@ void QuicClientBase::UpdateStats() {
   }
 }
 
+int QuicClientBase::GetNumReceivedServerConfigUpdates() {
+  // If we are not actively attempting to connect, the session object
+  // corresponds to the previous connection and should not be used.
+  // We do not need to take stateless rejects into account, since we
+  // don't expect any scup messages to be sent during a
+  // statelessly-rejected connection.
+  return !connected_or_attempting_connect_
+             ? 0
+             : session_->GetNumReceivedServerConfigUpdates();
+}
+
 QuicErrorCode QuicClientBase::connection_error() const {
   // Return the high-level error if there was one.  Otherwise, return the
   // connection error from the last session.

@@ -69,8 +69,9 @@ QuicP2PStream* QuicP2PSession::CreateOutgoingDynamicStream(
 }
 
 void QuicP2PSession::OnConnectionClosed(QuicErrorCode error,
+                                        const string& error_details,
                                         ConnectionCloseSource source) {
-  QuicSession::OnConnectionClosed(error, source);
+  QuicSession::OnConnectionClosed(error, error_details, source);
 
   socket_.reset();
 
@@ -119,8 +120,8 @@ int QuicP2PSession::DoReadComplete(int result) {
   read_state_ = READ_STATE_DO_READ;
 
   if (result <= 0) {
-    connection()->CloseConnection(QUIC_PACKET_READ_ERROR,
-                                  ConnectionCloseSource::FROM_SELF);
+    connection()->CloseConnection(QUIC_PACKET_READ_ERROR, "packet read error",
+                                  ConnectionCloseBehavior::SILENT_CLOSE);
     return result;
   }
 

@@ -77,14 +77,16 @@ void QuicServerSessionBase::OnConfigNegotiated() {
 }
 
 void QuicServerSessionBase::OnConnectionClosed(QuicErrorCode error,
+                                               const string& error_details,
                                                ConnectionCloseSource source) {
-  QuicSession::OnConnectionClosed(error, source);
+  QuicSession::OnConnectionClosed(error, error_details, source);
   // In the unlikely event we get a connection close while doing an asynchronous
   // crypto event, make sure we cancel the callback.
   if (crypto_stream_.get() != nullptr) {
     crypto_stream_->CancelOutstandingCallbacks();
   }
-  visitor_->OnConnectionClosed(connection()->connection_id(), error);
+  visitor_->OnConnectionClosed(connection()->connection_id(), error,
+                               error_details);
 }
 
 void QuicServerSessionBase::OnWriteBlocked() {
@@ -187,8 +189,9 @@ bool QuicServerSessionBase::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
 
   if (id % 2 == 0) {
     DVLOG(1) << "Invalid incoming even stream_id:" << id;
-    connection()->SendConnectionCloseWithDetails(
-        QUIC_INVALID_STREAM_ID, "Client created even numbered stream");
+    connection()->CloseConnection(
+        QUIC_INVALID_STREAM_ID, "Client created even numbered stream",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
   return true;

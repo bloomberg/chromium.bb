@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 #include "net/quic/quic_stream_sequencer_buffer.h"
 
+#include <algorithm>
+#include <map>
+#include <string>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"

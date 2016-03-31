@@ -71,6 +71,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   void OnBlockedFrame(const QuicBlockedFrame& frame) override;
   void OnConnectionClosed(QuicErrorCode error,
+                          const std::string& error_details,
                           ConnectionCloseSource source) override;
   void OnWriteBlocked() override {}
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;

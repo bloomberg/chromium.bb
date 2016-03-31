@@ -962,7 +962,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
 
   void TriggerConnectionClose() {
     // Send an erroneous packet to close the connection.
-    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_PACKET_HEADER,
+    EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_PACKET_HEADER, _,
                                              ConnectionCloseSource::FROM_SELF));
     // Call ProcessDataPacket rather than ProcessPacket, as we should not get a
     // packet call to the visitor.
@@ -1057,7 +1057,7 @@ TEST_P(QuicConnectionTest, SelfAddressChangeAtServer) {
                                   kPeerAddress);
   // Cause change in self_address.
   IPEndPoint self_address(IPAddress(1, 1, 1, 1), 123);
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_ERROR_MIGRATING_ADDRESS, _));
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_ERROR_MIGRATING_ADDRESS, _, _));
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), self_address,
                                   kPeerAddress);
   EXPECT_FALSE(connection_.connected());
@@ -1246,7 +1246,7 @@ TEST_P(QuicConnectionTest, PacketsOutOfOrderWithAdditionsAndLeastAwaiting) {
 }
 
 TEST_P(QuicConnectionTest, RejectPacketTooFarOut) {
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_PACKET_HEADER,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_PACKET_HEADER, _,
                                            ConnectionCloseSource::FROM_SELF));
   // Call ProcessDataPacket rather than ProcessPacket, as we should not get a
   // packet call to the visitor.
@@ -1259,7 +1259,7 @@ TEST_P(QuicConnectionTest, RejectUnencryptedStreamData) {
   // Process an unencrypted packet from the non-crypto stream.
   frame1_.stream_id = 3;
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_UNENCRYPTED_STREAM_DATA,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_UNENCRYPTED_STREAM_DATA, _,
                                            ConnectionCloseSource::FROM_SELF));
   EXPECT_DFATAL(ProcessDataPacket(kDefaultPathId, 1, !kEntropyFlag), "");
   EXPECT_FALSE(QuicConnectionPeer::GetConnectionClosePacket(&connection_) ==
@@ -1462,7 +1462,7 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
   // one.  This should cause a connection error.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   QuicPacketCreatorPeer::SetPacketNumber(&peer_creator_, 7);
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_STOP_WAITING_DATA,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_STOP_WAITING_DATA, _,
                                            ConnectionCloseSource::FROM_SELF));
   QuicStopWaitingFrame frame3 = InitStopWaitingFrame(1);
   ProcessStopWaitingPacket(&frame3);
@@ -1479,7 +1479,7 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
   // Ack packet 1, which leaves more than the limit outstanding.
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   EXPECT_CALL(visitor_,
-              OnConnectionClosed(QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS,
+              OnConnectionClosed(QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS, _,
                                  ConnectionCloseSource::FROM_SELF));
   // We're receive buffer limited, so the connection won't try to write more.
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
@@ -1493,7 +1493,7 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
 TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(visitor_,
-              OnConnectionClosed(QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS,
+              OnConnectionClosed(QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS, _,
                                  ConnectionCloseSource::FROM_SELF));
 
   // Miss 99 of every 100 packets for 5500 packets.
@@ -1519,7 +1519,7 @@ TEST_P(QuicConnectionTest, LargestObservedLower) {
   ProcessAckPacket(&frame2);
 
   // Now change it to 1, and it should cause a connection error.
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, _,
                                            ConnectionCloseSource::FROM_SELF));
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
   ProcessAckPacket(&frame1);
@@ -1527,7 +1527,7 @@ TEST_P(QuicConnectionTest, LargestObservedLower) {
 
 TEST_P(QuicConnectionTest, AckUnsentData) {
   // Ack a packet which has not been sent.
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_INVALID_ACK_DATA, _,
                                            ConnectionCloseSource::FROM_SELF));
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
@@ -2796,7 +2796,7 @@ TEST_P(QuicConnectionTest, InitialTimeout) {
       QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1));
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
                                            ConnectionCloseSource::FROM_SELF));
   // Simulate the timeout alarm firing.
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(kInitialIdleTimeoutSecs - 1));
@@ -2840,7 +2840,7 @@ TEST_P(QuicConnectionTest, HandshakeTimeout) {
 
   clock_.AdvanceTime(timeout.Subtract(QuicTime::Delta::FromSeconds(2)));
 
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_HANDSHAKE_TIMEOUT,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_HANDSHAKE_TIMEOUT, _,
                                            ConnectionCloseSource::FROM_SELF));
   // Simulate the timeout alarm firing.
   connection_.GetTimeoutAlarm()->Fire();
@@ -3124,9 +3124,9 @@ TEST_P(QuicConnectionTest, NoMtuDiscoveryAfterConnectionClosed) {
                        /*fin=*/false, nullptr);
   EXPECT_TRUE(connection_.GetMtuDiscoveryAlarm()->IsSet());
 
-  EXPECT_CALL(visitor_, OnConnectionClosed(_, _));
-  connection_.CloseConnection(QUIC_INTERNAL_ERROR,
-                              ConnectionCloseSource::FROM_SELF);
+  EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _));
+  connection_.CloseConnection(QUIC_PEER_GOING_AWAY, "no reason",
+                              ConnectionCloseBehavior::SILENT_CLOSE);
   EXPECT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
 }
 
@@ -3165,7 +3165,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
             connection_.GetTimeoutAlarm()->deadline());
 
   // This time, we should time out.
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
                                            ConnectionCloseSource::FROM_SELF));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   clock_.AdvanceTime(five_ms);
@@ -3229,7 +3229,7 @@ TEST_P(QuicConnectionTest, NewTimeoutAfterSendSilentClose) {
             connection_.GetTimeoutAlarm()->deadline());
 
   // This time, we should time out.
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
                                            ConnectionCloseSource::FROM_SELF));
   clock_.AdvanceTime(five_ms);
   EXPECT_EQ(default_timeout.Add(five_ms), clock_.ApproximateNow());
@@ -3276,7 +3276,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterReceive) {
             connection_.GetTimeoutAlarm()->deadline());
 
   // This time, we should time out.
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
                                            ConnectionCloseSource::FROM_SELF));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   clock_.AdvanceTime(five_ms);
@@ -3331,7 +3331,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterReceiveNotSendWhenUnacked) {
 
   // Now, send packets while advancing the time and verify that the connection
   // eventually times out.
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_NETWORK_IDLE_TIMEOUT, _,
                                            ConnectionCloseSource::FROM_SELF));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(AnyNumber());
   for (int i = 0; i < 100 && connection_.connected(); ++i) {
@@ -3371,7 +3371,7 @@ TEST_P(QuicConnectionTest, TimeoutAfter5RTOs) {
   EXPECT_EQ(2u, connection_.sent_packet_manager().consecutive_tlp_count());
   EXPECT_EQ(4u, connection_.sent_packet_manager().consecutive_rto_count());
   // This time, we should time out.
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_TOO_MANY_RTOS,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_TOO_MANY_RTOS, _,
                                            ConnectionCloseSource::FROM_SELF));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
   connection_.GetRetransmissionAlarm()->Fire();
@@ -3393,7 +3393,7 @@ TEST_P(QuicConnectionTest, SendScheduler) {
 TEST_P(QuicConnectionTest, FailToSendFirstPacket) {
   // Test that the connection does not crash when it fails to send the first
   // packet at which point self_address_ might be uninitialized.
-  EXPECT_CALL(visitor_, OnConnectionClosed(_, _)).Times(1);
+  EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(1);
   QuicPacket* packet =
       ConstructDataPacket(kDefaultPathId, 1, !kEntropyFlag, !kHasStopWaiting);
   writer_->SetShouldWriteFail();
@@ -3886,7 +3886,7 @@ TEST_P(QuicConnectionTest, BundleAckWithDataOnIncomingAck) {
 TEST_P(QuicConnectionTest, NoAckSentForClose) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   ProcessPacket(kDefaultPathId, 1);
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, _,
                                            ConnectionCloseSource::FROM_PEER));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
   ProcessClosePacket(kDefaultPathId, 2);
@@ -3894,10 +3894,10 @@ TEST_P(QuicConnectionTest, NoAckSentForClose) {
 
 TEST_P(QuicConnectionTest, SendWhenDisconnected) {
   EXPECT_TRUE(connection_.connected());
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, _,
                                            ConnectionCloseSource::FROM_SELF));
-  connection_.CloseConnection(QUIC_PEER_GOING_AWAY,
-                              ConnectionCloseSource::FROM_SELF);
+  connection_.CloseConnection(QUIC_PEER_GOING_AWAY, "no reason",
+                              ConnectionCloseBehavior::SILENT_CLOSE);
   EXPECT_FALSE(connection_.connected());
   EXPECT_FALSE(connection_.CanWriteStreamData());
   QuicPacket* packet =
@@ -3918,7 +3918,7 @@ TEST_P(QuicConnectionTest, PublicReset) {
       framer_.BuildPublicResetPacket(header));
   scoped_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*packet, QuicTime::Zero()));
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PUBLIC_RESET,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PUBLIC_RESET, _,
                                            ConnectionCloseSource::FROM_PEER));
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *received);
 }
@@ -3964,7 +3964,7 @@ TEST_P(QuicConnectionTest, PathClose) {
 
 TEST_P(QuicConnectionTest, ZeroBytePacket) {
   // Don't close the connection for zero byte packets.
-  EXPECT_CALL(visitor_, OnConnectionClosed(_, _)).Times(0);
+  EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(0);
   QuicReceivedPacket encrypted(nullptr, 0, QuicTime::Zero());
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, encrypted);
 }
@@ -4200,7 +4200,7 @@ TEST_P(QuicConnectionTest, BadVersionNegotiation) {
   // Send a version negotiation packet with the version the client started with.
   // It should be rejected.
   EXPECT_CALL(visitor_,
-              OnConnectionClosed(QUIC_INVALID_VERSION_NEGOTIATION_PACKET,
+              OnConnectionClosed(QUIC_INVALID_VERSION_NEGOTIATION_PACKET, _,
                                  ConnectionCloseSource::FROM_SELF));
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.BuildVersionNegotiationPacket(connection_id_,
@@ -4276,7 +4276,7 @@ TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
   size_t encrypted_length = framer_.EncryptPayload(
       ENCRYPTION_NONE, kDefaultPathId, 1, *packet, buffer, kMaxPacketSize);
 
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, _,
                                            ConnectionCloseSource::FROM_PEER));
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -4611,8 +4611,9 @@ TEST_P(QuicConnectionTest, SendPingImmediately) {
 
 TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
   FLAGS_quic_never_write_unencrypted_data = true;
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_UNENCRYPTED_STREAM_DATA,
-                                           ConnectionCloseSource::FROM_SELF));
+  EXPECT_CALL(visitor_,
+              OnConnectionClosed(QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA,
+                                 _, ConnectionCloseSource::FROM_SELF));
   EXPECT_DFATAL(connection_.SendStreamDataWithString(3, "", 0, kFin, nullptr),
                 "Cannot send stream data without encryption.");
   EXPECT_FALSE(connection_.connected());
@@ -4652,7 +4653,7 @@ TEST_P(QuicConnectionTest, ClosePath) {
 }
 
 TEST_P(QuicConnectionTest, BadMultipathFlag) {
-  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_BAD_MULTIPATH_FLAG,
+  EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_BAD_MULTIPATH_FLAG, _,
                                            ConnectionCloseSource::FROM_SELF));
 
   // Receieve a packet with multipath flag on when multipath is not enabled.
@@ -4660,9 +4661,9 @@ TEST_P(QuicConnectionTest, BadMultipathFlag) {
   EXPECT_FALSE(QuicConnectionPeer::IsMultipathEnabled(&connection_));
   peer_creator_.SetCurrentPath(/*path_id=*/1u, 1u, 10u);
   QuicStreamFrame stream_frame(1u, false, 0u, StringPiece());
-  EXPECT_DFATAL(ProcessFramePacket(QuicFrame(&stream_frame)),
-                "Received a packet with multipath flag on when multipath is "
-                "not enabled.");
+  EXPECT_DFATAL(
+      ProcessFramePacket(QuicFrame(&stream_frame)),
+      "Received a packet with multipath flag but multipath is not enabled.");
   EXPECT_FALSE(connection_.connected());
 }
 
@@ -4694,13 +4695,15 @@ TEST_P(QuicConnectionTest, OnPathDegrading) {
   connection_.GetRetransmissionAlarm()->Fire();
 }
 
-TEST_P(QuicConnectionTest, MultipleCallsToSendConnectionCloseWithDetails) {
-  // Verifies that multiple calls to SendConnectionCloseWithDetails do not
+TEST_P(QuicConnectionTest, MultipleCallsToCloseConnection) {
+  // Verifies that multiple calls to CloseConnection do not
   // result in multiple attempts to close the connection - it will be marked as
   // disconnected after the first call.
-  EXPECT_CALL(visitor_, OnConnectionClosed(_, _)).Times(1);
-  connection_.SendConnectionCloseWithDetails(QUIC_NO_ERROR, "no reason");
-  connection_.SendConnectionCloseWithDetails(QUIC_NO_ERROR, "no reason");
+  EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(1);
+  connection_.CloseConnection(QUIC_NO_ERROR, "no reason",
+                              ConnectionCloseBehavior::SILENT_CLOSE);
+  connection_.CloseConnection(QUIC_NO_ERROR, "no reason",
+                              ConnectionCloseBehavior::SILENT_CLOSE);
 }
 
 }  // namespace

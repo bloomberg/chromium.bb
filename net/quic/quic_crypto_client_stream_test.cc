@@ -84,9 +84,9 @@ TEST_F(QuicCryptoClientStreamTest, ConnectedAfterSHLO) {
 TEST_F(QuicCryptoClientStreamTest, MessageAfterHandshake) {
   CompleteCryptoHandshake();
 
-  EXPECT_CALL(*connection_,
-              SendConnectionCloseWithDetails(
-                  QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE, _));
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE, _, _));
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
   stream()->OnStreamFrame(QuicStreamFrame(kCryptoStreamId, /*fin=*/false,
@@ -100,9 +100,8 @@ TEST_F(QuicCryptoClientStreamTest, BadMessageType) {
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
 
-  EXPECT_CALL(*connection_,
-              SendConnectionCloseWithDetails(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
-                                             "Expected REJ"));
+  EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_CRYPTO_MESSAGE_TYPE,
+                                            "Expected REJ", _));
   stream()->OnStreamFrame(QuicStreamFrame(kCryptoStreamId, /*fin=*/false,
                                           /*offset=*/0,
                                           message_data_->AsStringPiece()));
@@ -209,9 +208,9 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdate) {
 }
 
 TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateBeforeHandshake) {
-  EXPECT_CALL(*connection_,
-              SendConnectionCloseWithDetails(
-                  QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE, _));
+  EXPECT_CALL(
+      *connection_,
+      CloseConnection(QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE, _, _));
   CryptoHandshakeMessage server_config_update;
   server_config_update.set_tag(kSCUP);
   scoped_ptr<QuicData> data(

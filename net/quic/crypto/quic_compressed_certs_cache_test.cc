@@ -4,9 +4,6 @@
 
 #include "net/quic/crypto/quic_compressed_certs_cache.h"
 
-#include <string>
-#include <vector>
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"

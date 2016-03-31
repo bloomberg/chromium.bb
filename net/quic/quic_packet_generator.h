@@ -168,6 +168,8 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
     packet_creator_.set_debug_delegate(debug_delegate);
   }
 
+  const QuicAckFrame& pending_ack_frame() const { return pending_ack_frame_; }
+
  private:
   friend class test::QuicPacketGeneratorPeer;
 

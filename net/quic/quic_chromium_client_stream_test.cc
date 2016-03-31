@@ -58,8 +58,10 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
   QuicCryptoStream* GetCryptoStream() override { return crypto_stream_.get(); }
 
   // From QuicSession.
-  MOCK_METHOD2(OnConnectionClosed,
-               void(QuicErrorCode error, ConnectionCloseSource source));
+  MOCK_METHOD3(OnConnectionClosed,
+               void(QuicErrorCode error,
+                    const string& error_details,
+                    ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicChromiumClientStream*(SpdyPriority priority));

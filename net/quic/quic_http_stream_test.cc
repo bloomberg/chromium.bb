@@ -696,8 +696,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeSendRequest) {
             stream_->InitializeStream(&request_, DEFAULT_PRIORITY,
                                       net_log_.bound(), callback_.callback()));
 
-  session_->connection()->CloseConnection(QUIC_NO_ERROR,
-                                          ConnectionCloseSource::FROM_PEER);
+  session_->connection()->CloseConnection(
+      QUIC_NO_ERROR, "test", ConnectionCloseBehavior::SILENT_CLOSE);
 
   EXPECT_EQ(ERR_CONNECTION_CLOSED,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
@@ -723,8 +723,8 @@ TEST_P(QuicHttpStreamTest, GetSSLInfoAfterSessionClosed) {
   stream_->GetSSLInfo(&ssl_info);
   EXPECT_TRUE(ssl_info.is_valid());
 
-  session_->connection()->CloseConnection(QUIC_NO_ERROR,
-                                          ConnectionCloseSource::FROM_PEER);
+  session_->connection()->CloseConnection(
+      QUIC_NO_ERROR, "test", ConnectionCloseBehavior::SILENT_CLOSE);
 
   SSLInfo ssl_info2;
   stream_->GetSSLInfo(&ssl_info2);
@@ -816,8 +816,8 @@ TEST_P(QuicHttpStreamTest, SessionClosedBeforeReadResponseHeaders) {
   EXPECT_EQ(OK,
             stream_->SendRequest(headers_, &response_, callback_.callback()));
 
-  session_->connection()->CloseConnection(QUIC_NO_ERROR,
-                                          ConnectionCloseSource::FROM_PEER);
+  session_->connection()->CloseConnection(
+      QUIC_NO_ERROR, "test", ConnectionCloseBehavior::SILENT_CLOSE);
 
   EXPECT_NE(OK, stream_->ReadResponseHeaders(callback_.callback()));
 

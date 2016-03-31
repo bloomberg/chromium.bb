@@ -96,17 +96,19 @@ QuicSpdyStream* QuicSpdySession::GetSpdyDataStream(
 
 void QuicSpdySession::OnPromiseHeaders(QuicStreamId stream_id,
                                        StringPiece headers_data) {
-  QUIC_BUG << "OnPromiseHeaders should be overriden in client code.";
-  connection()->CloseConnection(QUIC_INTERNAL_ERROR,
-                                ConnectionCloseSource::FROM_SELF);
+  string error = "OnPromiseHeaders should be overriden in client code.";
+  QUIC_BUG << error;
+  connection()->CloseConnection(QUIC_INTERNAL_ERROR, error,
+                                ConnectionCloseBehavior::SILENT_CLOSE);
 }
 
 void QuicSpdySession::OnPromiseHeadersComplete(QuicStreamId stream_id,
                                                QuicStreamId promised_stream_id,
                                                size_t frame_len) {
-  QUIC_BUG << "OnPromiseHeadersComplete shoule be overriden in client code.";
-  connection()->CloseConnection(QUIC_INTERNAL_ERROR,
-                                ConnectionCloseSource::FROM_SELF);
+  string error = "OnPromiseHeadersComplete should be overriden in client code.";
+  QUIC_BUG << error;
+  connection()->CloseConnection(QUIC_INTERNAL_ERROR, error,
+                                ConnectionCloseBehavior::SILENT_CLOSE);
 }
 
 }  // namespace net

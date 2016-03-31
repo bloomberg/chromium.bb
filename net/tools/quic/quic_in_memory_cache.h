@@ -5,9 +5,11 @@
 #ifndef NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_
 #define NET_TOOLS_QUIC_QUIC_IN_MEMORY_CACHE_H_
 
+#include <list>
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"

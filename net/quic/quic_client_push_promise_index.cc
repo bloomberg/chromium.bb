@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_client_push_promise_index.h"
 
+#include <string>
+
 #include "net/quic/quic_client_promised_info.h"
 #include "net/quic/spdy_utils.h"
 

@@ -120,6 +120,11 @@ class QuicClientBase {
   // connection.
   void UpdateStats();
 
+  // The number of server config updates received.  We assume no
+  // updates can be sent during a previously, statelessly rejected
+  // connection, so only the latest session is taken into account.
+  int GetNumReceivedServerConfigUpdates();
+
   // Returns any errors that occurred at the connection-level (as
   // opposed to the session-level).  When a stateless reject occurs,
   // the error of the last session may not reflect the overall state

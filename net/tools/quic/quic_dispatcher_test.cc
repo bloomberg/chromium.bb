@@ -60,8 +60,10 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
         crypto_stream_(QuicServerSessionBase::GetCryptoStream()) {}
   ~TestQuicSpdyServerSession() override{};
 
-  MOCK_METHOD2(OnConnectionClosed,
-               void(QuicErrorCode error, ConnectionCloseSource source));
+  MOCK_METHOD3(OnConnectionClosed,
+               void(QuicErrorCode error,
+                    const string& error_details,
+                    ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicSpdyStream*(SpdyPriority priority));
@@ -120,7 +122,8 @@ class MockServerConnection : public MockConnection {
 
   void UnregisterOnConnectionClosed() {
     LOG(ERROR) << "Unregistering " << connection_id();
-    dispatcher_->OnConnectionClosed(connection_id(), QUIC_NO_ERROR);
+    dispatcher_->OnConnectionClosed(connection_id(), QUIC_NO_ERROR,
+                                    "Unregistering.");
   }
 
  private:
@@ -141,7 +144,7 @@ QuicServerSessionBase* CreateSession(
   *session = new TestQuicSpdyServerSession(config, connection, crypto_config,
                                            compressed_certs_cache);
   connection->set_visitor(*session);
-  ON_CALL(*connection, SendConnectionCloseWithDetails(_, _))
+  ON_CALL(*connection, CloseConnection(_, _, _))
       .WillByDefault(WithoutArgs(Invoke(
           connection, &MockServerConnection::UnregisterOnConnectionClosed)));
   EXPECT_CALL(*reinterpret_cast<MockConnection*>((*session)->connection()),
@@ -329,7 +332,7 @@ TEST_F(QuicDispatcherTest, Shutdown) {
   ProcessPacket(client_address, 1, true, false, "foo");
 
   EXPECT_CALL(*reinterpret_cast<MockConnection*>(session1_->connection()),
-              SendConnectionCloseWithDetails(QUIC_PEER_GOING_AWAY, _));
+              CloseConnection(QUIC_PEER_GOING_AWAY, _, _));
 
   dispatcher_.Shutdown();
 }
@@ -358,7 +361,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
       QuicFramer::BuildPublicResetPacket(packet));
   scoped_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*encrypted, helper_.GetClock()->Now()));
-  EXPECT_CALL(*session1_, OnConnectionClosed(QUIC_PUBLIC_RESET,
+  EXPECT_CALL(*session1_, OnConnectionClosed(QUIC_PUBLIC_RESET, _,
                                              ConnectionCloseSource::FROM_PEER))
       .Times(1)
       .WillOnce(WithoutArgs(Invoke(
@@ -584,14 +587,9 @@ TEST_P(QuicDispatcherStatelessRejectTest, ParameterizedBasicTest) {
   if (ExpectStatelessReject()) {
     // If this is a stateless reject, the crypto stream will close the
     // connection.
-    EXPECT_CALL(*session1_, OnConnectionClosed(_, _))
-        .Times(1)
-        .WillOnce(WithoutArgs(Invoke(
-            reinterpret_cast<MockServerConnection*>(session1_->connection()),
-            &MockServerConnection::UnregisterOnConnectionClosed)));
     session1_->connection()->CloseConnection(
-        QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT,
-        ConnectionCloseSource::FROM_SELF);
+        QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, "stateless reject",
+        ConnectionCloseBehavior::SILENT_CLOSE);
   }
 
   // Send a second packet and check the results.  If this is a stateless reject,
@@ -692,10 +690,8 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
   }
 
   void TearDown() override {
-    EXPECT_CALL(*connection1(),
-                SendConnectionCloseWithDetails(QUIC_PEER_GOING_AWAY, _));
-    EXPECT_CALL(*connection2(),
-                SendConnectionCloseWithDetails(QUIC_PEER_GOING_AWAY, _));
+    EXPECT_CALL(*connection1(), CloseConnection(QUIC_PEER_GOING_AWAY, _, _));
+    EXPECT_CALL(*connection2(), CloseConnection(QUIC_PEER_GOING_AWAY, _, _));
     dispatcher_.Shutdown();
   }
 

@@ -159,8 +159,8 @@ void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
                << session()->connection()->connection_id()
                << " because of a stateless reject.";
       session()->connection()->CloseConnection(
-          QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT,
-          ConnectionCloseSource::FROM_SELF);
+          QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, "stateless reject",
+          ConnectionCloseBehavior::SILENT_CLOSE);
     }
     return;
   }

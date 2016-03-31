@@ -130,7 +130,8 @@ void QuicConnectionPeer::SetPeerAddress(QuicConnection* connection,
 
 // static
 bool QuicConnectionPeer::IsSilentCloseEnabled(QuicConnection* connection) {
-  return connection->silent_close_enabled_;
+  return connection->idle_timeout_connection_close_behavior_ ==
+         ConnectionCloseBehavior::SILENT_CLOSE;
 }
 
 // static
@@ -210,7 +211,8 @@ void QuicConnectionPeer::SetWriter(QuicConnection* connection,
 }
 
 // static
-void QuicConnectionPeer::CloseConnection(QuicConnection* connection) {
+void QuicConnectionPeer::TearDownLocalConnectionState(
+    QuicConnection* connection) {
   connection->connected_ = false;
 }
 

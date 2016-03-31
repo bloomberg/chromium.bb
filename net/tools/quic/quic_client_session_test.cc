@@ -249,7 +249,7 @@ TEST_P(QuicClientSessionTest, InvalidPacketReceived) {
 
   // Verify that empty packets don't close the connection.
   QuicReceivedPacket zero_length_packet(nullptr, 0, QuicTime::Zero(), false);
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   session_->ProcessUdpPacket(client_address, server_address,
                              zero_length_packet);
 
@@ -257,7 +257,7 @@ TEST_P(QuicClientSessionTest, InvalidPacketReceived) {
   char buf[2] = {0x00, 0x01};
   QuicReceivedPacket valid_packet(buf, 2, QuicTime::Zero(), false);
   // Close connection shouldn't be called.
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   session_->ProcessUdpPacket(client_address, server_address, valid_packet);
 
   // Verify that a non-decryptable packet doesn't close the connection.
@@ -268,7 +268,7 @@ TEST_P(QuicClientSessionTest, InvalidPacketReceived) {
       ConstructReceivedPacket(*packet, QuicTime::Zero()));
   // Change the last byte of the encrypted data.
   *(const_cast<char*>(received->data() + received->length() - 1)) += 1;
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   EXPECT_CALL(*connection_, OnError(Truly(CheckForDecryptionError))).Times(1);
   session_->ProcessUdpPacket(client_address, server_address, *received);
 }
@@ -290,7 +290,7 @@ TEST_P(QuicClientSessionTest, InvalidFramedPacketReceived) {
       PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER, nullptr));
   scoped_ptr<QuicReceivedPacket> received(
       ConstructReceivedPacket(*packet, QuicTime::Zero()));
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(1);
+  EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(1);
   session_->ProcessUdpPacket(client_address, server_address, *received);
 }
 
@@ -344,10 +344,11 @@ TEST_P(QuicClientSessionTest, PushPromiseOutOfOrder) {
   session_->OnPromiseHeadersComplete(associated_stream_id_, promised_stream_id_,
                                      0);
   associated_stream_id_ += 2;
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_INVALID_STREAM_ID,
-                                "Received push stream id lesser or equal to the"
-                                " last accepted before"));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_STREAM_ID,
+                              "Received push stream id lesser or equal to the"
+                              " last accepted before",
+                              _));
   session_->OnPromiseHeadersComplete(associated_stream_id_, promised_stream_id_,
                                      0);
 }

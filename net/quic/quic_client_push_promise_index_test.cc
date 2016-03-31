@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_client_push_promise_index.h"
 
+#include <string>
+
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_quic_client_promised_info.h"

@@ -278,10 +278,10 @@ TEST_P(QuicServerSessionBaseTest, MaxOpenStreams) {
   stream_id += 2;
   if (connection_->version() <= QUIC_VERSION_27) {
     EXPECT_CALL(*connection_,
-                SendConnectionCloseWithDetails(QUIC_TOO_MANY_OPEN_STREAMS, _));
+                CloseConnection(QUIC_TOO_MANY_OPEN_STREAMS, _, _));
     EXPECT_CALL(*connection_, SendRstStream(_, _, _)).Times(0);
   } else {
-    EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
+    EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
     EXPECT_CALL(*connection_, SendRstStream(stream_id, QUIC_REFUSED_STREAM, 0));
   }
   // Even if the connection remains open, the stream creation should fail.
@@ -316,8 +316,8 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableStreams) {
       session_.get(), kLimitingStreamId));
 
   // A further available stream will result in connection close.
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_TOO_MANY_AVAILABLE_STREAMS, _));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_TOO_MANY_AVAILABLE_STREAMS, _, _));
   // This forces stream kLimitingStreamId + 2 to become available, which
   // violates the quota.
   EXPECT_FALSE(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
@@ -326,15 +326,14 @@ TEST_P(QuicServerSessionBaseTest, MaxAvailableStreams) {
 
 TEST_P(QuicServerSessionBaseTest, GetEvenIncomingError) {
   // Incoming streams on the server session must be odd.
-  EXPECT_CALL(*connection_,
-              SendConnectionCloseWithDetails(QUIC_INVALID_STREAM_ID, _));
+  EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID, _, _));
   EXPECT_EQ(nullptr, QuicServerSessionBasePeer::GetOrCreateDynamicStream(
                          session_.get(), 4));
 }
 
 TEST_P(QuicServerSessionBaseTest, GetStreamDisconnected) {
   // Don't create new streams if the connection is disconnected.
-  QuicConnectionPeer::CloseConnection(connection_);
+  QuicConnectionPeer::TearDownLocalConnectionState(connection_);
   EXPECT_DFATAL(
       QuicServerSessionBasePeer::GetOrCreateDynamicStream(session_.get(), 5),
       "ShouldCreateIncomingDynamicStream called when disconnected");

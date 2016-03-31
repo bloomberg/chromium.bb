@@ -46,7 +46,8 @@ void MockCryptoClientStream::CryptoConnect() {
       handshake_confirmed_ = false;
       encryption_established_ = false;
       session()->connection()->CloseConnection(
-          QUIC_PROOF_INVALID, ConnectionCloseSource::FROM_SELF);
+          QUIC_PROOF_INVALID, "proof invalid",
+          ConnectionCloseBehavior::SILENT_CLOSE);
       return;
     }
   }

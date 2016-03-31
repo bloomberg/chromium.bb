@@ -29,6 +29,9 @@ const struct QuicErrorMapping {
   { net::QUIC_INVALID_STREAM_DATA, "quic.invalid.stream_data" },
   // STREAM frame data is not encrypted.
   { net::QUIC_UNENCRYPTED_STREAM_DATA, "quic.unencrypted.stream_data" },
+  // Attempt to send unencrypted STREAM frame.
+  { net::QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA,
+    "quic.attempt.to.unencrypted.stream.data" },
   // FEC frame data is not encrypted.
   { net::QUIC_UNENCRYPTED_FEC_DATA, "quic.unencrypted.fec.data" },
   // RST_STREAM frame data is malformed.

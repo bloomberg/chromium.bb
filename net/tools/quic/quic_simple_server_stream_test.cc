@@ -102,8 +102,10 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
 
   ~MockQuicSimpleServerSession() override {}
 
-  MOCK_METHOD2(OnConnectionClosed,
-               void(QuicErrorCode error, ConnectionCloseSource source));
+  MOCK_METHOD3(OnConnectionClosed,
+               void(QuicErrorCode error,
+                    const string& error_details,
+                    ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStreamId id,
@@ -287,7 +289,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingExtraData) {
 }
 
 TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
-  // Send a illegal response with response status not supported by HTTP/2.
+  // Send an illegal response with response status not supported by HTTP/2.
   SpdyHeaderBlock* request_headers = stream_->mutable_headers();
   (*request_headers)[":path"] = "/bar";
   (*request_headers)[":authority"] = "www.google.com";
@@ -297,6 +299,37 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
   response_headers_[":version"] = "HTTP/1.1";
   // HTTP/2 only supports integer responsecode, so "200 OK" is illegal.
   response_headers_[":status"] = "200 OK";
+  response_headers_["content-length"] = "5";
+  string body = "Yummm";
+  QuicInMemoryCache::GetInstance()->AddResponse("www.google.com", "/bar",
+                                                response_headers_, body);
+
+  stream_->set_fin_received(true);
+
+  InSequence s;
+  EXPECT_CALL(session_, WriteHeaders(stream_->id(), _, false, _, nullptr));
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
+      .Times(1)
+      .WillOnce(Return(QuicConsumedData(
+          strlen(QuicSimpleServerStream::kErrorResponseBody), true)));
+
+  QuicSimpleServerStreamPeer::SendResponse(stream_);
+  EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
+  EXPECT_TRUE(stream_->reading_stopped());
+  EXPECT_TRUE(stream_->write_side_closed());
+}
+
+TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
+  // Send an illegal response with response status not supported by HTTP/2.
+  SpdyHeaderBlock* request_headers = stream_->mutable_headers();
+  (*request_headers)[":path"] = "/bar";
+  (*request_headers)[":authority"] = "www.google.com";
+  (*request_headers)[":version"] = "HTTP/1.1";
+  (*request_headers)[":method"] = "GET";
+
+  response_headers_[":version"] = "HTTP/1.1";
+  // HTTP/2 only supports 3-digit-integer, so "+200" is illegal.
+  response_headers_[":status"] = "+200";
   response_headers_["content-length"] = "5";
   string body = "Yummm";
   QuicInMemoryCache::GetInstance()->AddResponse("www.google.com", "/bar",

@@ -921,8 +921,8 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   TestCompletionCallback cb;
   int rv = delegate->ReadData(cb.callback());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  session()->connection()->CloseConnection(QUIC_NO_ERROR,
-                                           ConnectionCloseSource::FROM_PEER);
+  session()->connection()->CloseConnection(
+      QUIC_NO_ERROR, "test", ConnectionCloseBehavior::SILENT_CLOSE);
   delegate->WaitUntilNextCallback();  // OnFailed
 
   base::MessageLoop::current()->RunUntilIdle();

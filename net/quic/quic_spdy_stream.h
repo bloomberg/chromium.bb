@@ -128,6 +128,10 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   virtual int GetReadableRegions(iovec* iov, size_t iov_len) const;
   void MarkConsumed(size_t num_bytes);
 
+  // Returns true if header contains a valid 3-digit status and parse the status
+  // code to |status_code|.
+  bool ParseHeaderStatusCode(SpdyHeaderBlock* header, int* status_code) const;
+
   // Returns true when all data has been read from the peer, including the fin.
   bool IsDoneReading() const;
   bool HasBytesToRead() const;

@@ -154,6 +154,50 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersWithFin) {
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }
 
+TEST_P(QuicSpdyStreamTest, ParseHeaderStatusCode) {
+  // A valid status code should be 3-digit integer. The first digit should be in
+  // the range of [1, 5]. All the others are invalid.
+  Initialize(kShouldProcessData);
+  int status_code = 0;
+
+  // Valid status code.
+  headers_.ReplaceOrAppendHeader(":status", "404");
+  EXPECT_TRUE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+  EXPECT_EQ(404, status_code);
+
+  // Invalid status codes.
+  headers_.ReplaceOrAppendHeader(":status", "010");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+
+  headers_.ReplaceOrAppendHeader(":status", "600");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+
+  headers_.ReplaceOrAppendHeader(":status", "200 ok");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+
+  headers_.ReplaceOrAppendHeader(":status", "2000");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+
+  headers_.ReplaceOrAppendHeader(":status", "+200");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+
+  headers_.ReplaceOrAppendHeader(":status", "+20");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+
+  // Leading or trailing spaces are also invalid.
+  headers_.ReplaceOrAppendHeader(":status", " 200");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+
+  headers_.ReplaceOrAppendHeader(":status", "200 ");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+
+  headers_.ReplaceOrAppendHeader(":status", " 200 ");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+
+  headers_.ReplaceOrAppendHeader(":status", "  ");
+  EXPECT_FALSE(stream_->ParseHeaderStatusCode(&headers_, &status_code));
+}
+
 TEST_P(QuicSpdyStreamTest, MarkHeadersConsumed) {
   Initialize(kShouldProcessData);
 
@@ -537,8 +581,8 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlViolation) {
   string body;
   GenerateBody(&body, kWindow + 1);
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, StringPiece(body));
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _));
   stream_->OnStreamFrame(frame);
 }
 
@@ -588,8 +632,8 @@ TEST_P(QuicSpdyStreamTest, ConnectionFlowControlViolation) {
   EXPECT_LT(body.size(), kStreamWindow);
   QuicStreamFrame frame(kClientDataStreamId1, false, 0, StringPiece(body));
 
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _));
   stream_->OnStreamFrame(frame);
 }
 
@@ -669,8 +713,8 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutOffset) {
   EXPECT_EQ("", trailers_block[kFinalOffsetHeaderKey].as_string());
 
   // Receipt of the malformed trailers will close the connection.
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_INVALID_HEADERS_STREAM_DATA, _))
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA, _, _))
       .Times(1);
   stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
 }
@@ -689,8 +733,8 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutFin) {
   string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
   stream_->OnStreamHeaders(trailers);
 
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_INVALID_HEADERS_STREAM_DATA, _))
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA, _, _))
       .Times(1);
   stream_->OnStreamHeadersComplete(/*fin=*/false, trailers.size());
 }
@@ -709,8 +753,8 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterFin) {
   string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
   stream_->OnStreamHeaders(trailers);
 
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_INVALID_HEADERS_STREAM_DATA, _))
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA, _, _))
       .Times(1);
   stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
 }
@@ -733,8 +777,8 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersAfterBodyWithFin) {
   string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
   stream_->OnStreamHeaders(trailers);
 
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_INVALID_HEADERS_STREAM_DATA, _))
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA, _, _))
       .Times(1);
   stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
 }

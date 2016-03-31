@@ -234,6 +234,9 @@ TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
                               true);
   Initialize();
 
+  EXPECT_CALL(*server_connection_,
+              CloseConnection(QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT, _, _));
+
   InitializeFakeClient(/* supports_stateless_rejects= */ true);
   AdvanceHandshakeWithFakeClient();
 
@@ -258,7 +261,6 @@ TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
   EXPECT_EQ(expected_id, server_designated_connection_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
   ASSERT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));
-  EXPECT_FALSE(server_connection_->connected());
 }
 
 TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
@@ -388,9 +390,9 @@ TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {
   FLAGS_quic_require_fix = false;
   Initialize();
   CompleteCryptoHandshake();
-  EXPECT_CALL(*server_connection_,
-              SendConnectionCloseWithDetails(
-                  QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE, _));
+  EXPECT_CALL(
+      *server_connection_,
+      CloseConnection(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE, _, _));
   message_.set_tag(kCHLO);
   ConstructHandshakeMessage();
   server_stream()->OnStreamFrame(
@@ -404,8 +406,8 @@ TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
 
   message_.set_tag(kSHLO);
   ConstructHandshakeMessage();
-  EXPECT_CALL(*server_connection_, SendConnectionCloseWithDetails(
-                                       QUIC_INVALID_CRYPTO_MESSAGE_TYPE, _));
+  EXPECT_CALL(*server_connection_,
+              CloseConnection(QUIC_INVALID_CRYPTO_MESSAGE_TYPE, _, _));
   server_stream()->OnStreamFrame(
       QuicStreamFrame(kCryptoStreamId, /*fin=*/false, /*offset=*/0,
                       message_data_->AsStringPiece()));
@@ -517,7 +519,7 @@ TEST_P(QuicCryptoServerStreamTest, CancelRPCBeforeVerificationCompletes) {
   // While waiting for the asynchronous verification to complete, the client
   // decides to close the connection.
   server_session_->connection()->CloseConnection(
-      QUIC_NO_ERROR, ConnectionCloseSource::FROM_PEER);
+      QUIC_NO_ERROR, "", ConnectionCloseBehavior::SILENT_CLOSE);
 
   // The outstanding nonce verification RPC now completes.
   strike_register_client_->RunPendingVerifications();

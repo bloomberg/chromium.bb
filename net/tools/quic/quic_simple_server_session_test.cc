@@ -271,7 +271,7 @@ TEST_P(QuicSimpleServerSessionTest, AcceptClosedStream) {
 TEST_P(QuicSimpleServerSessionTest, CreateIncomingDynamicStreamDisconnected) {
   // Tests that incoming stream creation fails when connection is not connected.
   size_t initial_num_open_stream = session_->GetNumOpenIncomingStreams();
-  QuicConnectionPeer::CloseConnection(connection_);
+  QuicConnectionPeer::TearDownLocalConnectionState(connection_);
   EXPECT_DFATAL(QuicSimpleServerSessionPeer::CreateIncomingDynamicStream(
                     session_.get(), kClientDataStreamId1),
                 "ShouldCreateIncomingDynamicStream called when disconnected");
@@ -281,9 +281,9 @@ TEST_P(QuicSimpleServerSessionTest, CreateIncomingDynamicStreamDisconnected) {
 TEST_P(QuicSimpleServerSessionTest, CreateEvenIncomingDynamicStream) {
   // Tests that incoming stream creation fails when given stream id is even.
   size_t initial_num_open_stream = session_->GetNumOpenIncomingStreams();
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_INVALID_STREAM_ID,
-                                "Client created even numbered stream"));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_STREAM_ID,
+                              "Client created even numbered stream", _));
   QuicSimpleServerSessionPeer::CreateIncomingDynamicStream(session_.get(), 2);
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenIncomingStreams());
 }
@@ -299,7 +299,7 @@ TEST_P(QuicSimpleServerSessionTest, CreateIncomingDynamicStream) {
 TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamDisconnected) {
   // Tests that outgoing stream creation fails when connection is not connected.
   size_t initial_num_open_stream = session_->GetNumOpenOutgoingStreams();
-  QuicConnectionPeer::CloseConnection(connection_);
+  QuicConnectionPeer::TearDownLocalConnectionState(connection_);
   EXPECT_DFATAL(QuicSimpleServerSessionPeer::CreateOutgoingDynamicStream(
                     session_.get(), kDefaultPriority),
                 "ShouldCreateOutgoingDynamicStream called when disconnected");
@@ -357,18 +357,17 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
 
 TEST_P(QuicSimpleServerSessionTest, OnStreamFrameWithEvenStreamId) {
   QuicStreamFrame frame(2, false, 0, StringPiece());
-  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
-                                QUIC_INVALID_STREAM_ID,
-                                "Client sent data on server push stream"));
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_INVALID_STREAM_ID,
+                              "Client sent data on server push stream", _));
   session_->OnStreamFrame(frame);
 }
 
 TEST_P(QuicSimpleServerSessionTest, GetEvenIncomingError) {
   // Tests that calling GetOrCreateDynamicStream() on an outgoing stream not
   // promised yet should result close connection.
-  EXPECT_CALL(*connection_,
-              SendConnectionCloseWithDetails(QUIC_INVALID_STREAM_ID,
-                                             "Data for nonexistent stream"));
+  EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID,
+                                            "Data for nonexistent stream", _));
   EXPECT_EQ(nullptr,
             QuicSessionPeer::GetOrCreateDynamicStream(session_.get(), 4));
 }
@@ -439,7 +438,7 @@ class QuicSimpleServerSessionServerPushTest
     SpdyHeaderBlock request_headers;
     string resource_host = "www.google.com";
     string partial_push_resource_path = "/server_push_src";
-    list<QuicInMemoryCache::ServerPushInfo> push_resources;
+    std::list<QuicInMemoryCache::ServerPushInfo> push_resources;
     string scheme = "http";
     for (unsigned int i = 1; i <= num_resources; ++i) {
       QuicStreamId stream_id = i * 2;

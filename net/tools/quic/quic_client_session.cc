@@ -84,6 +84,10 @@ int QuicClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
+int QuicClientSession::GetNumReceivedServerConfigUpdates() const {
+  return crypto_stream_->num_scup_messages_received();
+}
+
 bool QuicClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   if (!connection()->connected()) {
     LOG(DFATAL) << "ShouldCreateIncomingDynamicStream called when disconnected";
@@ -96,8 +100,9 @@ bool QuicClientSession::ShouldCreateIncomingDynamicStream(QuicStreamId id) {
   }
   if (id % 2 != 0) {
     LOG(WARNING) << "Received invalid push stream id " << id;
-    connection()->SendConnectionCloseWithDetails(
-        QUIC_INVALID_STREAM_ID, "Server created odd numbered stream");
+    connection()->CloseConnection(
+        QUIC_INVALID_STREAM_ID, "Server created odd numbered stream",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
   return true;

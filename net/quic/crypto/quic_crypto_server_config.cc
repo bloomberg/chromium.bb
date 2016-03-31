@@ -780,10 +780,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(hkdf_suffix);
 
-  string* subkey_secret = nullptr;
-  if (FLAGS_quic_save_initial_subkey_secret) {
-    subkey_secret = &params->initial_subkey_secret;
-  }
+  string* subkey_secret = &params->initial_subkey_secret;
   if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
                                info.client_nonce, info.server_nonce, hkdf_input,
                                Perspective::IS_SERVER,

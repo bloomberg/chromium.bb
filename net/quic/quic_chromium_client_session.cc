@@ -289,8 +289,8 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   if (connection()->connected()) {
     // Ensure that the connection is closed by the time the session is
     // destroyed.
-    connection()->CloseConnection(QUIC_INTERNAL_ERROR,
-                                  ConnectionCloseSource::FROM_SELF);
+    connection()->CloseConnection(QUIC_INTERNAL_ERROR, "session torn down",
+                                  ConnectionCloseBehavior::SILENT_CLOSE);
   }
 
   if (IsEncryptionEstablished())
@@ -671,8 +671,9 @@ bool QuicChromiumClientSession::ShouldCreateIncomingDynamicStream(
   }
   if (id % 2 != 0) {
     LOG(WARNING) << "Received invalid push stream id " << id;
-    connection()->SendConnectionCloseWithDetails(
-        QUIC_INVALID_STREAM_ID, "Server created odd numbered stream");
+    connection()->CloseConnection(
+        QUIC_INVALID_STREAM_ID, "Server created odd numbered stream",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return false;
   }
   return true;
@@ -811,9 +812,10 @@ void QuicChromiumClientSession::OnRstStream(const QuicRstStreamFrame& frame) {
 
 void QuicChromiumClientSession::OnConnectionClosed(
     QuicErrorCode error,
+    const string& error_details,
     ConnectionCloseSource source) {
   DCHECK(!connection()->connected());
-  logger_->OnConnectionClosed(error, source);
+  logger_->OnConnectionClosed(error, error_details, source);
   if (source == ConnectionCloseSource::FROM_PEER) {
     if (IsCryptoHandshakeConfirmed()) {
       UMA_HISTOGRAM_SPARSE_SLOWLY(
@@ -892,7 +894,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",
                               connection()->version());
   NotifyFactoryOfSessionGoingAway();
-  QuicSession::OnConnectionClosed(error, source);
+  QuicSession::OnConnectionClosed(error, error_details, source);
 
   if (!callback_.is_null()) {
     base::ResetAndReturn(&callback_).Run(ERR_QUIC_PROTOCOL_ERROR);
@@ -988,7 +990,8 @@ void QuicChromiumClientSession::CloseSessionOnErrorInner(
                     NetLog::IntCallback("net_error", net_error));
 
   if (connection()->connected())
-    connection()->CloseConnection(quic_error, ConnectionCloseSource::FROM_SELF);
+    connection()->CloseConnection(quic_error, "net error",
+                                  ConnectionCloseBehavior::SILENT_CLOSE);
   DCHECK(!connection()->connected());
 }
 

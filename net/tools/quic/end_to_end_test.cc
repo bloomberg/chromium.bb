@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 #include <sys/epoll.h>
+
+#include <list>
 #include <string>
 #include <vector>
 

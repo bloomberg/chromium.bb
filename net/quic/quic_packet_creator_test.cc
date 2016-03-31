@@ -82,8 +82,10 @@ class MockDelegate : public QuicPacketCreator::DelegateInterface {
   ~MockDelegate() override {}
 
   MOCK_METHOD1(OnSerializedPacket, void(SerializedPacket* packet));
-  MOCK_METHOD2(OnUnrecoverableError,
-               void(QuicErrorCode, ConnectionCloseSource source));
+  MOCK_METHOD3(OnUnrecoverableError,
+               void(QuicErrorCode,
+                    const string&,
+                    ConnectionCloseSource source));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -1135,7 +1137,7 @@ TEST_P(QuicPacketCreatorTest, SerializePacketOnDifferentPath) {
 
 TEST_P(QuicPacketCreatorTest, AddUnencryptedStreamDataClosesConnection) {
   FLAGS_quic_never_write_unencrypted_data = true;
-  EXPECT_CALL(delegate_, OnUnrecoverableError(_, _));
+  EXPECT_CALL(delegate_, OnUnrecoverableError(_, _, _));
   QuicStreamFrame stream_frame(kHeadersStreamId, /*fin=*/false, 0u,
                                StringPiece());
   EXPECT_DFATAL(creator_.AddSavedFrame(QuicFrame(&stream_frame)),
