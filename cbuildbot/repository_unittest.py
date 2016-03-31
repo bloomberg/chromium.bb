@@ -14,6 +14,7 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import cros_build_lib
 
 
 site_config = config_lib.GetConfig()
@@ -47,7 +48,7 @@ class RepositoryTests(cros_build_lib_unittest.RunCommandTestCase):
       self.assertTrue(repository.IsInternalRepoCheckout('.'))
 
 
-class RepoInitTests(cros_test_lib.TempDirTestCase):
+class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
   """Test cases related to repository initialization."""
 
   def _Initialize(self, branch='master'):
@@ -124,3 +125,35 @@ class PrepManifestForRepoTests(cros_test_lib.TempDirTestCase):
     repository.PrepManifestForRepo(git_repo, src_manifest)
 
     self.assertEqual(CONTENTS2, osutils.ReadFile(dst_manifest))
+
+
+class RepoSyncTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
+  """Test cases related to repository Sync"""
+
+  def setUp(self):
+    self.repo = repository.RepoRepository(site_config.params.MANIFEST_URL,
+                                          self.tempdir, branch='master')
+    self.PatchObject(repository.RepoRepository, 'Initialize')
+    self.PatchObject(repository.RepoRepository, '_EnsureMirroring')
+
+  def testSyncWithOneException(self):
+    """Test Sync retry on repo network sync failure"""
+    ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
+    self.PatchObject(cros_build_lib, 'RunCommand', side_effect=ex)
+    clean_up_run_command_mock = self.PatchObject(repository.RepoRepository,
+                                                 '_CleanUpAndRunCommand')
+    self.repo.Sync(local_manifest='local_manifest', network_only=True)
+    cmd = ['repo', '--time', 'sync', '-n']
+
+    # _CleanUpAndRunCommand should be called once in exception handler
+    clean_up_run_command_mock.assert_called_once_with(cmd, cwd=self.tempdir)
+
+  def testSyncWithoutException(self):
+    """Test successful repo sync without exception and retry"""
+    self.PatchObject(cros_build_lib, 'RunCommand')
+    clean_up_run_command_mock = self.PatchObject(repository.RepoRepository,
+                                                 '_CleanUpAndRunCommand')
+    self.repo.Sync(local_manifest='local_manifest', network_only=True)
+
+    # _CleanUpAndRunCommand should not be called if repo sync succeeded
+    self.assertFalse(clean_up_run_command_mock.called)

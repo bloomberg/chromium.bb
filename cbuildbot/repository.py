@@ -179,7 +179,8 @@ class RepoRepository(object):
   def __init__(self, manifest_repo_url, directory, branch=None,
                referenced_repo=None, manifest=constants.DEFAULT_MANIFEST,
                depth=None, repo_url=site_config.params.REPO_URL,
-               repo_branch=None, groups=None, repo_cmd='repo'):
+               repo_branch=None, groups=None, repo_cmd='repo',
+               preserve_paths=()):
     """Initialize.
 
     Args:
@@ -195,6 +196,8 @@ class RepoRepository(object):
       repo_branch: Branch to check out the repo tool at.
       groups: Only sync projects that match this filter.
       repo_cmd: Name of repo_cmd to use.
+      preserve_paths: paths need to be preserved in repo clean
+        in case we want to clean and retry repo sync.
     """
     self.manifest_repo_url = manifest_repo_url
     self.repo_url = repo_url
@@ -203,6 +206,7 @@ class RepoRepository(object):
     self.branch = branch
     self.groups = groups
     self.repo_cmd = repo_cmd
+    self.preserve_paths = preserve_paths
 
     # It's perfectly acceptable to pass in a reference pathway that isn't
     # usable.  Detect it, and suppress the setting so that any depth
@@ -353,6 +357,11 @@ class RepoRepository(object):
            self._referenced_repo]
     git.RunGit('.', cmd)
 
+  def _CleanUpAndRunCommand(self, *args, **kwargs):
+    """Clean up repository and run command"""
+    ClearBuildRoot(self.directory, self.preserve_paths)
+    cros_build_lib.RunCommand(*args, **kwargs)
+
   def Sync(self, local_manifest=None, jobs=None, all_branches=True,
            network_only=False, detach=False):
     """Sync/update the source.  Changes manifest if specified.
@@ -387,8 +396,18 @@ class RepoRepository(object):
         # Note that this option can break kernel checkouts. crbug.com/464536
         cmd.append('-c')
       # Do the network half of the sync; retry as necessary to get the content.
-      retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd + ['-n'],
-                                       cwd=self.directory)
+      try:
+        cros_build_lib.RunCommand(cmd + ['-n'], cwd=self.directory)
+      except cros_build_lib.RunCommandError:
+        if constants.SYNC_RETRIES > 0:
+          # Retry on clean up and repo sync commands,
+          # decrement max_retry for this command
+          retry_util.RetryCommand(self._CleanUpAndRunCommand,
+                                  constants.SYNC_RETRIES - 1,
+                                  cmd + ['-n'], cwd=self.directory)
+        else:
+          # No need to retry
+          raise
 
       if network_only:
         return

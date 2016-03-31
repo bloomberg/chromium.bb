@@ -249,6 +249,11 @@ class BuilderStage(object):
     kwargs.setdefault('branch', manifest_branch)
     kwargs.setdefault('manifest', self._run.config.manifest)
 
+    # pass in preserve_paths so that repository.RepoRepository
+    # knows what paths to preserve when executing clean_up_repo
+    if hasattr(self._run.options, 'preserve_paths'):
+      kwargs.setdefault('preserve_paths', self._run.options.preserve_paths)
+
     return repository.RepoRepository(manifest_url, self._build_root, **kwargs)
 
   def _Print(self, msg):
