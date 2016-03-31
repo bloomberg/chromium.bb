@@ -824,7 +824,9 @@ void BluetoothAdapterBlueZ::SetAdapter(const dbus::ObjectPath& object_path) {
                       base::Bind(&BluetoothAdapterBlueZ::OnRegisterAgentError,
                                  weak_ptr_factory_.GetWeakPtr()));
 
-  SetDefaultAdapterName();
+#if defined(OS_CHROMEOS)
+  SetStandardChromeOSAdapterName();
+#endif
 
   bluez::BluetoothAdapterClient::Properties* properties =
       bluez::BluezDBusManager::Get()
@@ -851,11 +853,11 @@ void BluetoothAdapterBlueZ::SetAdapter(const dbus::ObjectPath& object_path) {
   }
 }
 
-void BluetoothAdapterBlueZ::SetDefaultAdapterName() {
+#if defined(OS_CHROMEOS)
+void BluetoothAdapterBlueZ::SetStandardChromeOSAdapterName() {
   DCHECK(IsPresent());
 
   std::string alias;
-#if defined(OS_CHROMEOS)
   switch (chromeos::GetDeviceType()) {
     case chromeos::DeviceType::kChromebase:
       alias = "Chromebase";
@@ -873,10 +875,6 @@ void BluetoothAdapterBlueZ::SetDefaultAdapterName() {
       alias = "Chromebook";
       break;
   }
-#elif defined(OS_LINUX)
-  alias = "ChromeLinux";
-#endif
-
   // Take the lower 2 bytes of hashed Bluetooth address and combine it with the
   // device type to create a more identifiable device name.
   const std::string address = GetAddress();
@@ -885,6 +883,7 @@ void BluetoothAdapterBlueZ::SetDefaultAdapterName() {
       base::SuperFastHash(address.data(), address.size()) & 0xFFFF);
   SetName(alias, base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
 }
+#endif
 
 void BluetoothAdapterBlueZ::RemoveAdapter() {
   DCHECK(IsPresent());

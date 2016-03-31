@@ -248,8 +248,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // subsequently operate on that adapter until it is removed.
   void SetAdapter(const dbus::ObjectPath& object_path);
 
+#if defined(OS_CHROMEOS)
   // Set the adapter name to one chosen from the system information.
-  void SetDefaultAdapterName();
+  void SetStandardChromeOSAdapterName();
+#endif
 
   // Remove the currently tracked adapter. IsPresent() will return false after
   // this is called.
