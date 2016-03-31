@@ -1,0 +1,6 @@
+{
+  "name": "mojo:mus_demo",
+  "display_name": "MUS Demo",
+  "capabilities": { "*": ["*"] }
+}
+

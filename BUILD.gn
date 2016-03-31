@@ -617,6 +617,7 @@ group("gn_only") {
   if (is_win || is_linux) {
     deps += [
       ":mojo_apptests",
+      "//components/mus/demo",
       "//components/mus/ws:tests",
       "//mash:all",
       "//mojo",
