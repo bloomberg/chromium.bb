@@ -303,6 +303,24 @@ static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
 }
 
 #if CONFIG_REF_MV
+static int8_t av1_ref_frame_type(const MV_REFERENCE_FRAME *const rf) {
+  if (rf[1] > INTRA_FRAME)
+    return rf[0] + ALTREF_FRAME;
+
+  return rf[0];
+}
+
+static void av1_set_ref_frame(MV_REFERENCE_FRAME *rf, int8_t ref_frame_type) {
+  if (ref_frame_type > ALTREF_FRAME) {
+    rf[0] = ref_frame_type - ALTREF_FRAME;
+    rf[1] = ALTREF_FRAME;
+  } else {
+    rf[0] = ref_frame_type;
+    rf[1] = NONE;
+    assert(ref_frame_type > INTRA_FRAME && ref_frame_type < MAX_REF_FRAMES);
+  }
+}
+
 static int16_t av1_mode_context_analyzer(const int16_t *const mode_context,
                                          const MV_REFERENCE_FRAME *const rf,
                                          BLOCK_SIZE bsize, int block) {

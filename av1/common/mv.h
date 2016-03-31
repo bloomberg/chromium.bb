@@ -38,6 +38,7 @@ typedef struct mv32 {
 #if CONFIG_REF_MV
 typedef struct candidate_mv {
   int_mv this_mv;
+  int_mv comp_mv;
   int weight;
 } CANDIDATE_MV;
 #endif
