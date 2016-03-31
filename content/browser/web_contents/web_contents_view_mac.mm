@@ -525,8 +525,6 @@ void WebContentsViewMac::CloseTab() {
 
 // NSDraggingSource methods
 
-// Returns what kind of drag operations are available. This is a required
-// method for NSDraggingSource.
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
   if (dragSource_)
     return [dragSource_ draggingSourceOperationMaskForLocal:isLocal];
