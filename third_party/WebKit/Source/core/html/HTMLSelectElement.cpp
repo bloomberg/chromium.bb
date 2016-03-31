@@ -444,18 +444,6 @@ void HTMLSelectElement::accessKeyAction(bool sendMouseEvents)
     dispatchSimulatedClick(nullptr, sendMouseEvents ? SendMouseUpDownEvents : SendNoEvents);
 }
 
-void HTMLSelectElement::setMultiple(bool multiple)
-{
-    bool oldMultiple = this->multiple();
-    int oldSelectedIndex = selectedIndex();
-    setAttribute(multipleAttr, multiple ? emptyAtom : nullAtom);
-
-    // Restore selectedIndex after changing the multiple flag to preserve
-    // selection as single-line and multi-line has different defaults.
-    if (oldMultiple != this->multiple())
-        selectOption(oldSelectedIndex, DeselectOtherOptions);
-}
-
 void HTMLSelectElement::setSize(unsigned size)
 {
     setUnsignedIntegralAttribute(sizeAttr, size);
@@ -1234,10 +1222,22 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
 
 void HTMLSelectElement::parseMultipleAttribute(const AtomicString& value)
 {
+    bool oldMultiple = m_multiple;
+    int oldSelectedIndex = selectedIndex();
     m_multiple = !value.isNull();
     setNeedsValidityCheck();
-
     lazyReattachIfAttached();
+    // Restore selectedIndex after changing the multiple flag to preserve
+    // selection as single-line and multi-line has different defaults.
+    if (oldMultiple != m_multiple) {
+        // Preserving the first selection is compatible with Firefox and
+        // WebKit. However Edge seems to "ask for a reset" simply.  As of 2016
+        // March, the HTML specification says nothing about this.
+        if (oldSelectedIndex >= 0)
+            selectOption(oldSelectedIndex, DeselectOtherOptions);
+        else
+            resetToDefaultSelection();
+    }
 }
 
 void HTMLSelectElement::appendToFormData(FormData& formData)

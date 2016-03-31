@@ -49,5 +49,21 @@ test(function() {
     select.removeChild(select.lastChild);
     assert_equals(select.selectedIndex, 0);
 }, 'Removing an OPTION from a SELECT element should reset selection.');
+
+test(function() {
+    var select = document.createElement('select');
+    select.multiple = true;
+    select.innerHTML = '<option selected>foo</option><option selected>bar</option>';
+    document.body.appendChild(select);
+    select.removeAttribute('multiple');
+    assert_equals(select.selectedOptions.length, 1);
+    assert_equals(select.selectedIndex, 0, 'The first selected OPTION should be chosen.');
+
+    select.selectedIndex = -1;
+    select.multiple = true;
+    select.multiple = false;
+    assert_equals(select.selectedOptions.length, 1);
+    assert_equals(select.selectedIndex, 0);
+}, 'Changing multiple SELECT to single should reset selection.');
 </script>
 </body>

@@ -70,7 +70,6 @@ public:
     unsigned size() const { return m_size; }
     void setSize(unsigned);
     bool multiple() const { return m_multiple; }
-    void setMultiple(bool);
 
     bool usesMenuList() const;
 
