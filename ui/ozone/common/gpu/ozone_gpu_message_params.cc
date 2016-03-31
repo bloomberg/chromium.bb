@@ -6,6 +6,7 @@
 
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 namespace ui {
 

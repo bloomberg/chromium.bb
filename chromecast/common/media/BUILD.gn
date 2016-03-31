@@ -56,6 +56,7 @@ if (enable_cma) {
       "//media",
       "//media:shared_memory_support",
       "//ui/gfx/ipc",
+      "//ui/gfx/ipc/skia",
     ]
   }
 }

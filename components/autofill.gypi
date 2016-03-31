@@ -320,6 +320,7 @@
             '../third_party/WebKit/public/blink.gyp:blink_minimal',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
+            '../ui/gfx/ipc/skia/gfx_ipc_skia.gyp:gfx_ipc_skia',
             '../url/url.gyp:url_lib',
             '../url/ipc/url_ipc.gyp:url_ipc',
           ],

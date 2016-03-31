@@ -18,7 +18,6 @@
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/ipc/gfx_param_traits.h"
 
 namespace {
 

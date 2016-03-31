@@ -26,6 +26,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::CauseForGpuLaunch,
                           content::CAUSE_FOR_GPU_LAUNCH_MAX_ENUM - 1)

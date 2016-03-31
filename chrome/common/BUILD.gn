@@ -112,6 +112,7 @@ static_library("common") {
     "//ui/accessibility",
     "//ui/base",
     "//ui/gfx/ipc",
+    "//ui/gfx/ipc/skia",
     "//ui/gl",
     "//ui/message_center",
     "//ui/resources:resources",

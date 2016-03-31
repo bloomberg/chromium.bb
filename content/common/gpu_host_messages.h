@@ -23,6 +23,7 @@
 #include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 

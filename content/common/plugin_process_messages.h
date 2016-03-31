@@ -14,6 +14,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 #include "ui/gfx/native_widget_types.h"
 
 #undef IPC_MESSAGE_EXPORT

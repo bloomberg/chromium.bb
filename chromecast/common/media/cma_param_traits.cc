@@ -15,6 +15,7 @@
 #include "media/base/encryption_scheme.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 // Note(gunsch): these are currently defined in content/, but not declared in
 // content/public/. These headers need to be forward-declared for chromecast/,

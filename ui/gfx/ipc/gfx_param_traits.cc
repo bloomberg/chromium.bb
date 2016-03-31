@@ -9,56 +9,15 @@
 
 #include <string>
 
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/transform.h"
 
 #if defined(OS_MACOSX)
 #include "ipc/mach_port_mac.h"
 #endif
-
-namespace {
-
-struct SkBitmap_Data {
-  // The color type for the bitmap (bits per pixel, etc).
-  SkColorType fColorType;
-
-  // The alpha type for the bitmap (opaque, premul, unpremul).
-  SkAlphaType fAlphaType;
-
-  // The width of the bitmap in pixels.
-  uint32_t fWidth;
-
-  // The height of the bitmap in pixels.
-  uint32_t fHeight;
-
-  void InitSkBitmapDataForTransfer(const SkBitmap& bitmap) {
-    const SkImageInfo& info = bitmap.info();
-    fColorType = info.colorType();
-    fAlphaType = info.alphaType();
-    fWidth = info.width();
-    fHeight = info.height();
-  }
-
-  // Returns whether |bitmap| successfully initialized.
-  bool InitSkBitmapFromData(SkBitmap* bitmap,
-                            const char* pixels,
-                            size_t pixels_size) const {
-    if (!bitmap->tryAllocPixels(
-            SkImageInfo::Make(fWidth, fHeight, fColorType, fAlphaType)))
-      return false;
-    if (pixels_size != bitmap->getSize())
-      return false;
-    memcpy(bitmap->getPixels(), pixels, pixels_size);
-    return true;
-  }
-};
-
-}  // namespace
 
 namespace IPC {
 
@@ -275,47 +234,6 @@ void ParamTraits<gfx::RectF>::Log(const gfx::RectF& p, std::string* l) {
                                p.width(), p.height()));
 }
 
-void ParamTraits<SkBitmap>::Write(base::Pickle* m, const SkBitmap& p) {
-  size_t fixed_size = sizeof(SkBitmap_Data);
-  SkBitmap_Data bmp_data;
-  bmp_data.InitSkBitmapDataForTransfer(p);
-  m->WriteData(reinterpret_cast<const char*>(&bmp_data),
-               static_cast<int>(fixed_size));
-  size_t pixel_size = p.getSize();
-  SkAutoLockPixels p_lock(p);
-  m->WriteData(reinterpret_cast<const char*>(p.getPixels()),
-               static_cast<int>(pixel_size));
-}
-
-bool ParamTraits<SkBitmap>::Read(const base::Pickle* m,
-                                 base::PickleIterator* iter,
-                                 SkBitmap* r) {
-  const char* fixed_data;
-  int fixed_data_size = 0;
-  if (!iter->ReadData(&fixed_data, &fixed_data_size) ||
-     (fixed_data_size <= 0)) {
-    NOTREACHED();
-    return false;
-  }
-  if (fixed_data_size != sizeof(SkBitmap_Data))
-    return false;  // Message is malformed.
-
-  const char* variable_data;
-  int variable_data_size = 0;
-  if (!iter->ReadData(&variable_data, &variable_data_size) ||
-     (variable_data_size < 0)) {
-    NOTREACHED();
-    return false;
-  }
-  const SkBitmap_Data* bmp_data =
-      reinterpret_cast<const SkBitmap_Data*>(fixed_data);
-  return bmp_data->InitSkBitmapFromData(r, variable_data, variable_data_size);
-}
-
-void ParamTraits<SkBitmap>::Log(const SkBitmap& p, std::string* l) {
-  l->append("<SkBitmap>");
-}
-
 void ParamTraits<gfx::Range>::Write(base::Pickle* m, const gfx::Range& r) {
   m->WriteUInt32(r.start());
   m->WriteUInt32(r.end());
@@ -362,47 +280,6 @@ void ParamTraits<gfx::ScrollOffset>::Log(const param_type& p, std::string* l) {
   l->append(", ");
   LogParam(p.y(), l);
   l->append(")");
-}
-
-void ParamTraits<gfx::Transform>::Write(base::Pickle* m, const param_type& p) {
-#ifdef SK_MSCALAR_IS_FLOAT
-  float column_major_data[16];
-  p.matrix().asColMajorf(column_major_data);
-#else
-  double column_major_data[16];
-  p.matrix().asColMajord(column_major_data);
-#endif
-  // We do this in a single write for performance reasons.
-  m->WriteBytes(&column_major_data, sizeof(SkMScalar) * 16);
-}
-
-bool ParamTraits<gfx::Transform>::Read(const base::Pickle* m,
-                                       base::PickleIterator* iter,
-                                       param_type* r) {
-  const char* column_major_data;
-  if (!iter->ReadBytes(&column_major_data, sizeof(SkMScalar) * 16))
-    return false;
-  r->matrix().setColMajor(
-      reinterpret_cast<const SkMScalar*>(column_major_data));
-  return true;
-}
-
-void ParamTraits<gfx::Transform>::Log(
-    const param_type& p, std::string* l) {
-#ifdef SK_MSCALAR_IS_FLOAT
-  float row_major_data[16];
-  p.matrix().asRowMajorf(row_major_data);
-#else
-  double row_major_data[16];
-  p.matrix().asRowMajord(row_major_data);
-#endif
-  l->append("(");
-  for (int i = 0; i < 16; ++i) {
-    if (i > 0)
-      l->append(", ");
-    LogParam(row_major_data[i], l);
-  }
-  l->append(") ");
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

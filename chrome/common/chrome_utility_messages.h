@@ -20,6 +20,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/common/safe_browsing/ipc_protobuf_message_macros.h"

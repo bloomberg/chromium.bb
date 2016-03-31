@@ -37,6 +37,7 @@
         '<(DEPTH)/ui/display/display.gyp:display_util',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
+        '<(DEPTH)/ui/gfx/ipc/skia/gfx_ipc_skia.gyp:gfx_ipc_skia',
       ],
       'defines': [
         'OZONE_BASE_IMPLEMENTATION',
@@ -77,7 +78,7 @@
         '<(DEPTH)/ui/display/display.gyp:display_types',
         '<(DEPTH)/ui/display/display.gyp:display_util',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
-        '<(DEPTH)/ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
+        '<(DEPTH)/ui/gfx/ipc/skia/gfx_ipc_skia.gyp:gfx_ipc_skia',
       ],
       'sources': [
         'common/display_mode_proxy.cc',
@@ -114,7 +115,7 @@
         '<(DEPTH)/ui/events/ozone/events_ozone.gyp:events_ozone',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
-        '<(DEPTH)/ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
+        '<(DEPTH)/ui/gfx/ipc/skia/gfx_ipc_skia.gyp:gfx_ipc_skia',
         '<@(external_ozone_platform_deps)',
         '<@(internal_ozone_platform_deps)',
         'ozone_base',
