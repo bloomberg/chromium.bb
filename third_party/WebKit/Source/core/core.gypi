@@ -3840,7 +3840,6 @@
             '<(blink_core_output_dir)/testing/InternalSettingsGenerated.h',
             'origin_trials/testing/InternalsFrobulate.cpp',
             'origin_trials/testing/InternalsFrobulate.h',
-            'testing/CoreTestPrinters.cpp',
             'testing/DictionaryTest.cpp',
             'testing/DictionaryTest.h',
             'testing/DummyPageHolder.cpp',

@@ -30,6 +30,7 @@
 #include "core/editing/TextAffinity.h"
 #include "wtf/text/CString.h"
 #include <stdio.h>
+#include <ostream> // NOLINT
 
 namespace blink {
 
@@ -522,6 +523,45 @@ void PositionTemplate<Strategy>::showTreeForThisInFlatTree() const
 }
 
 #endif
+
+template <typename PositionType>
+static std::ostream& printPosition(std::ostream& ostream, const PositionType& position)
+{
+    if (position.isNull())
+        return ostream << "null";
+    ostream << position.anchorNode() << "@";
+    if (position.isOffsetInAnchor())
+        return ostream << position.offsetInContainerNode();
+    return ostream << position.anchorType();
+}
+
+std::ostream& operator<<(std::ostream& ostream, PositionAnchorType anchorType)
+{
+    switch (anchorType) {
+    case PositionAnchorType::AfterAnchor:
+        return ostream << "afterAnchor";
+    case PositionAnchorType::AfterChildren:
+        return ostream << "afterChildren";
+    case PositionAnchorType::BeforeAnchor:
+        return ostream << "beforeAnchor";
+    case PositionAnchorType::BeforeChildren:
+        return ostream << "beforeChildren";
+    case PositionAnchorType::OffsetInAnchor:
+        return ostream << "offsetInAnchor";
+    }
+    NOTREACHED();
+    return ostream << "anchorType=" << static_cast<int>(anchorType);
+}
+
+std::ostream& operator<<(std::ostream& ostream, const Position& position)
+{
+    return printPosition(ostream, position);
+}
+
+std::ostream& operator<<(std::ostream& ostream, const PositionInFlatTree& position)
+{
+    return printPosition(ostream, position);
+}
 
 template class CORE_TEMPLATE_EXPORT PositionTemplate<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT PositionTemplate<EditingInFlatTreeStrategy>;

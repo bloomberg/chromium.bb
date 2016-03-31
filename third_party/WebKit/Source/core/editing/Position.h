@@ -390,11 +390,9 @@ inline PositionInFlatTree fromPositionInDOMTree<EditingInFlatTreeStrategy>(const
     return toPositionInFlatTree(position);
 }
 
-// These printers are available only for testing in "webkit_unit_tests", and
-// implemented in "core/testing/CoreTestPrinters.cpp".
-std::ostream& operator<<(std::ostream&, PositionAnchorType);
-std::ostream& operator<<(std::ostream&, const Position&);
-std::ostream& operator<<(std::ostream&, const PositionInFlatTree&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, PositionAnchorType);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const Position&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const PositionInFlatTree&);
 
 } // namespace blink
 
