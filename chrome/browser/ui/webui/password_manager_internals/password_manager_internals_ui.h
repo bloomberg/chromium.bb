@@ -29,6 +29,8 @@ class PasswordManagerInternalsUI : public content::WebUIController,
   // |this|. Otherwise this is a no-op.
   void UnregisterFromLoggingServiceIfNecessary();
 
+  void ResetAutoSignInFirstRunExperience();
+
   // Whether |this| registered as a log receiver with the
   // PasswordManagerInternalsService.
   bool registered_with_logging_service_;
