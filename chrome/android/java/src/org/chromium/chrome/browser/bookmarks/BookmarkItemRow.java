@@ -27,7 +27,7 @@ import org.chromium.components.bookmarks.BookmarkId;
 /**
  * A row view that shows bookmark info in the bookmarks UI.
  */
-public class BookmarkBookmarkRow extends BookmarkRow implements LargeIconCallback {
+public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
 
     private String mUrl;
     private RoundedIconGenerator mIconGenerator;
@@ -38,7 +38,7 @@ public class BookmarkBookmarkRow extends BookmarkRow implements LargeIconCallbac
     /**
      * Constructor for inflating from XML.
      */
-    public BookmarkBookmarkRow(Context context, AttributeSet attrs) {
+    public BookmarkItemRow(Context context, AttributeSet attrs) {
         super(context, attrs);
         mCornerRadius = getResources().getDimensionPixelSize(R.dimen.bookmark_item_corner_radius);
         mMinIconSize = (int) getResources().getDimension(R.dimen.bookmark_item_min_icon_size);

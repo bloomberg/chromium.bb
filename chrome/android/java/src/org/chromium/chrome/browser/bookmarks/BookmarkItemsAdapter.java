@@ -221,8 +221,8 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 folder.onBookmarkDelegateInitialized(mDelegate);
                 return new ItemViewHolder(folder);
             case BOOKMARK_VIEW:
-                BookmarkBookmarkRow item = (BookmarkBookmarkRow) LayoutInflater.from(
-                        parent.getContext()).inflate(R.layout.bookmark_bookmark_row, parent, false);
+                BookmarkItemRow item = (BookmarkItemRow) LayoutInflater.from(
+                        parent.getContext()).inflate(R.layout.bookmark_item_row, parent, false);
                 item.onBookmarkDelegateInitialized(mDelegate);
                 return new ItemViewHolder(item);
             default:

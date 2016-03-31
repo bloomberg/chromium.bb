@@ -14,7 +14,7 @@ import org.chromium.components.bookmarks.BookmarkId;
  * A view representing each row shown in {@link BookmarkSearchRow}. Note this type of row is
  * not selectable for now.
  */
-public class BookmarkSearchRow extends BookmarkBookmarkRow {
+public class BookmarkSearchRow extends BookmarkItemRow {
 
     /**
      * A listener that is triggered when a search result is selected.
