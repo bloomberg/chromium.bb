@@ -168,11 +168,6 @@ typedef void (*surface_configure_notification_func)(
 			struct ivi_layout_surface *ivisurf,
 			void *userdata);
 
-typedef void (*ivi_controller_surface_content_callback)(
-			struct ivi_layout_surface *ivisurf,
-			int32_t content,
-			void *userdata);
-
 struct ivi_layout_interface {
 
 	/**
