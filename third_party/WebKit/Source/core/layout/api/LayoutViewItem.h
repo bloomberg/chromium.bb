@@ -65,6 +65,11 @@ public:
         return toView()->overflowClipRect(location, scrollbars);
     }
 
+    void clearSelection()
+    {
+        return toView()->clearSelection();
+    }
+
 private:
     LayoutView* toView() { return toLayoutView(layoutObject()); }
     const LayoutView* toView() const { return toLayoutView(layoutObject()); }

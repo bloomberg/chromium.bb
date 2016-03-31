@@ -638,9 +638,9 @@ void FrameSelection::prepareForDestruction()
 
     m_caretBlinkTimer.stop();
 
-    LayoutView* view = m_frame->contentLayoutObject();
-    if (view)
-        view->clearSelection();
+    LayoutViewItem view = m_frame->contentLayoutItem();
+    if (!view.isNull())
+        view.clearSelection();
 
     setSelection(VisibleSelection(), CloseTyping | ClearTypingStyle | DoNotUpdateAppearance);
     m_selectionEditor->dispose();
