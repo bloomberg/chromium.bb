@@ -10,7 +10,7 @@
 <link rel="import" href="chrome://md-settings/i18n_setup.html">
 <link rel="import" href="chrome://md-settings/prefs/prefs.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
-<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subpage.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-device-page">
@@ -30,16 +30,16 @@
           <div class="middle">[[i18n('keyboardTitle')]]</div>
         </div>
       </neon-animatable>
-      <neon-animatable id="touchpad">
-        <settings-subheader page-title="[[i18n('touchpadTitle')]]">
-        </settings-subheader>
-        <settings-touchpad prefs="{{prefs}}"></settings-touchpad>
-      </neon-animatable>
-      <neon-animatable id="keyboard">
-        <settings-subheader page-title="[[i18n('keyboardTitle')]]">
-        </settings-subheader>
-        <settings-keyboard prefs="{{prefs}}"></settings-keyboard>
-      </neon-animatable>
+      <template is="dom-if" name="touchpad">
+        <settings-subpage page-title="[[i18n('touchpadTitle')]]">
+          <settings-touchpad prefs="{{prefs}}"></settings-touchpad>
+        </settings-subpage>
+      </template>
+      <template is="dom-if" name="keyboard">
+        <settings-subpage page-title="[[i18n('keyboardTitle')]]">
+          <settings-keyboard prefs="{{prefs}}"></settings-keyboard>
+        </settings-subpage>
+      </template>
     </settings-animated-pages>
   </template>
   <script src="device_page.js"></script>

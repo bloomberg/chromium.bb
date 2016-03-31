@@ -1,9 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
-<dom-module id="settings-subheader">
+<dom-module id="settings-subpage">
   <template>
     <style include="settings-shared">
       :host {
@@ -33,6 +35,7 @@
       </paper-icon-button>
       <h2>[[pageTitle]]</h2>
     </div>
+    <content></content>
   </template>
-  <script src="settings_subheader.js"></script>
+  <script src="settings_subpage.js"></script>
 </dom-module>

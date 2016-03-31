@@ -24,7 +24,6 @@ Polymer({
     guid: {
       type: String,
       value: '',
-      observer: 'guidChanged_',
     },
 
     /**
@@ -95,6 +94,10 @@ Polymer({
       type: Object,
     },
   },
+
+  observers: [
+    'guidChanged_(guid, networkingPrivate)',
+  ],
 
   /**
    * Listener function for chrome.networkingPrivate.onNetworksChanged event.

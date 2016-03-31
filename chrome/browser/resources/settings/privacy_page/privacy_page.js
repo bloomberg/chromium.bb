@@ -18,6 +18,10 @@
 Polymer({
   is: 'settings-privacy-page',
 
+  behaviors: [
+    I18nBehavior,
+  ],
+
   properties: {
     /**
      * Preferences state.

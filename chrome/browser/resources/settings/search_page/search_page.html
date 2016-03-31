@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -6,7 +7,7 @@
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
-<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subpage.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-search-page">
@@ -55,11 +56,11 @@
           </paper-button>
         </div>
       </neon-animatable>
-      <neon-animatable id="search-engines">
-        <settings-subheader i18n-values="page-title:searchEnginesManage">
-        </settings-subheader>
-        <settings-search-engines-page></settings-search-engines-page>
-      </neon-animatable>
+      <template is="dom-if" name="search-engines">
+        <settings-subpage page-title="[[i18n('searchEnginesManage')]]">
+          <settings-search-engines-page></settings-search-engines-page>
+        </settings-subpage>
+      </template>
     </settings-animated-pages>
   </template>
   <script src="search_page.js"></script>

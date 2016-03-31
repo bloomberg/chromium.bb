@@ -12,7 +12,7 @@
 <link rel="import" href="chrome://md-settings/controls/settings_input.html">
 <link rel="import" href="chrome://md-settings/controls/settings_radio_group.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
-<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subpage.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 <link rel="import" href="appearance_fonts_page.html">
 
@@ -91,15 +91,12 @@
           </settings-dropdown-menu>
         </div>
       </neon-animatable>
-      <neon-animatable id="appearance-fonts">
-        <settings-subheader i18n-values="page-title:customizeFonts">
-        </settings-subheader>
-        <template is="dom-if" if="[[showFontsPage_(currentRoute.subpage.*)]]"
-            restamp>
+      <template is="dom-if" name="appearance-fonts">
+        <settings-subpage page-title="[[i18n('customizeFonts')]]">
           <settings-appearance-fonts-page prefs="{{prefs}}">
           </settings-appearance-fonts-page>
-        </template>
-      </neon-animatable>
+        </settings-subpage>
+      </template>
     </settings-animated-pages>
   </template>
   <script src="appearance_page.js"></script>

@@ -18,6 +18,10 @@
 Polymer({
   is: 'settings-internet-page',
 
+  behaviors: [
+    I18nBehavior,
+  ],
+
   properties: {
     /**
      * The current active route.

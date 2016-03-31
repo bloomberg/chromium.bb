@@ -124,9 +124,10 @@ Polymer({
    * @private
    */
   onCategoryChanged_: function() {
-    this.prefsProxy_.getDefaultValueForContentType(
-        this.category).then(function(enabled) {
-          this.categoryEnabled = enabled;
-        }.bind(this));
+    settings.SiteSettingsPrefsBrowserProxyImpl.getInstance()
+        .getDefaultValueForContentType(
+            this.category).then(function(enabled) {
+              this.categoryEnabled = enabled;
+            }.bind(this));
   },
 });

@@ -129,11 +129,11 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_SECTION_JS"
                  file="settings_page/settings_section.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_SUBHEADER_HTML"
-                 file="settings_page/settings_subheader.html"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_SUBPAGE_HTML"
+                 file="settings_page/settings_subpage.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_SUBHEADER_JS"
-                 file="settings_page/settings_subheader.js"
+      <structure name="IDR_SETTINGS_CR_SETTINGS_SUBPAGE_JS"
+                 file="settings_page/settings_subpage.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_DIALOG_HTML"
                  file="settings_dialog.html"

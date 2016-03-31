@@ -53,11 +53,16 @@ cr.define('settings_device_page', function() {
       value: false,
     }];
 
-    test('keyboard subpage', function() {
-      var devicePage = document.createElement('settings-device-page');
+    var devicePage;
+
+    setup(function() {
+      devicePage = document.createElement('settings-device-page');
       devicePage.currentRoute = {page: 'basic', section: '', subpage: []};
       devicePage.prefs = fakePrefs;
+      Polymer.dom.flush();
+    });
 
+    test('keyboard subpage', function() {
       // Open the keyboard subpage.
       var keyboardRow = devicePage.$$('#main #keyboardRow');
       assertTrue(!!keyboardRow);

@@ -41,6 +41,10 @@ Polymer({
 
   /** @override */
   created: function() {
+    // Observe the light DOM so we know when it's ready.
+    this.lightDomObserver_ = Polymer.dom(this).observeNodes(
+        this.lightDomChanged_.bind(this));
+
     this.addEventListener('subpage-back', function() {
       assert(this.currentRoute.section == this.section);
       assert(this.currentRoute.subpage.length >= 1);
@@ -49,13 +53,49 @@ Polymer({
     }.bind(this));
   },
 
+  /**
+   * Called initially once the effective children are ready.
+   * @private
+   */
+  lightDomChanged_: function() {
+    if (this.lightDomReady_)
+      return;
+
+    this.lightDomReady_ = true;
+    Polymer.dom(this).unobserveNodes(this.lightDomObserver_);
+    this.runQueuedRouteChange_();
+  },
+
+  /**
+   * Calls currentRouteChanged_ with the deferred route change info.
+   * @private
+   */
+  runQueuedRouteChange_: function() {
+    if (!this.queuedRouteChange_)
+      return;
+    this.async(this.currentRouteChanged_.bind(
+        this,
+        this.queuedRouteChange_.newRoute,
+        this.queuedRouteChange_.oldRoute));
+  },
+
   /** @private */
   currentRouteChanged_: function(newRoute, oldRoute) {
+    // Don't manipulate the light DOM until it's ready.
+    if (!this.lightDomReady_) {
+      this.queuedRouteChange_ = this.queuedRouteChange_ || {oldRoute: oldRoute};
+      this.queuedRouteChange_.newRoute = newRoute;
+      return;
+    }
+
     // route.section is only non-empty when the user is within a subpage.
     // When the user is not in a subpage, but on the Basic page, route.section
     // is an empty string.
     var newRouteIsSubpage = newRoute && newRoute.section == this.section;
     var oldRouteIsSubpage = oldRoute && oldRoute.section == this.section;
+
+    if (newRouteIsSubpage)
+      this.ensureSubpageInstance_();
 
     if (!newRouteIsSubpage || !oldRouteIsSubpage ||
         newRoute.subpage.length == oldRoute.subpage.length) {
@@ -76,6 +116,30 @@ Polymer({
 
     this.$.animatedPages.selected =
         newRouteIsSubpage ? newRoute.subpage.slice(-1)[0] : 'main';
+  },
+
+  /**
+   * Ensures that the template enclosing the subpage is stamped.
+   * @private
+   */
+  ensureSubpageInstance_: function() {
+    var id = this.currentRoute.subpage.slice(-1)[0];
+    var template = Polymer.dom(this).querySelector(
+        'template[name="' + id + '"]');
+
+    // Do nothing if the subpage is already stamped.
+    if (template.if)
+      return;
+
+    // Set the subpage's id for use by neon-animated-pages.
+    var subpage = /** @type {{_content: DocumentFragment}} */(template)._content
+        .querySelector('settings-subpage');
+    if (!subpage.id)
+      subpage.id = id;
+
+    // Render synchronously so neon-animated-pages can select the subpage.
+    template.if = true;
+    template.render();
   },
 
   /**

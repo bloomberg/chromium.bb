@@ -20,9 +20,9 @@ SettingsBasicPageBrowserTest.prototype = {
 // the Settings page can take several seconds to load in a Release build
 // and several times that in a Debug build. See https://crbug.com/558434.
 GEN('#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)');
-GEN('#define MAYBE_Load DISABLED_Main');
+GEN('#define MAYBE_Load DISABLED_Load');
 GEN('#else');
-GEN('#define MAYBE_Load Main');
+GEN('#define MAYBE_Load Load');
 GEN('#endif');
 
 TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
@@ -38,15 +38,17 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
 
     test('basic pages', function() {
       var page = self.getPage('basic');
+      var sections = ['appearance', 'onStartup', 'people', 'search'];
       expectTrue(!!self.getSection(page, 'appearance'));
-      expectTrue(!!self.getSection(page, 'onStartup'));
-      expectTrue(!!self.getSection(page, 'people'));
-      expectTrue(!!self.getSection(page, 'search'));
-      if (!cr.isChromeOS) {
-        expectTrue(!!self.getSection(page, 'defaultBrowser'));
-      } else {
-        expectTrue(!!self.getSection(page, 'internet'));
-        expectTrue(!!self.getSection(page, 'device'));
+      if (!cr.isChromeOS)
+        sections.push('defaultBrowser');
+      else
+        sections = sections.concat(['internet', 'device']);
+
+      for (var i = 0; i < sections.length; i++) {
+        var section = self.getSection(page, sections[i]);
+        expectTrue(!!section);
+        self.verifySubpagesHidden(section);
       }
     });
   });
