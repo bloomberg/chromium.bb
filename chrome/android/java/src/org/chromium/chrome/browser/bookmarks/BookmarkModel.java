@@ -212,6 +212,12 @@ public class BookmarkModel extends BookmarkBridge {
         url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         final BookmarkId bookmarkId = addBookmark(parent, index, title, url);
 
+        // If bookmark was not created return an error.
+        if (bookmarkId == null) {
+            callback.onBookmarkAdded(null, AddBookmarkCallback.ERROR);
+            return;
+        }
+
         // If there is no need to save offline page, return now.
         if (mOfflinePageBridge == null || webContents == null) {
             callback.onBookmarkAdded(bookmarkId, AddBookmarkCallback.SKIPPED);
