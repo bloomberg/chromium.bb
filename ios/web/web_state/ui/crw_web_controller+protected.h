@@ -281,6 +281,11 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // may be called multiple times and thus must be idempotent.
 - (void)loadCompleteWithSuccess:(BOOL)loadSuccess;
 
+// Adds an activity indicator tasks for this web controller.
+- (void)addActivityIndicatorTask;
+// Clears all activity indicator tasks for this web controller.
+- (void)clearActivityIndicatorTasks;
+
 // Creates a new opened by DOM window and returns its autoreleased web
 // controller.
 - (CRWWebController*)createChildWebController;

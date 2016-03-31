@@ -19,7 +19,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #import "ios/net/http_response_headers_util.h"
-#import "ios/web/crw_network_activity_indicator_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_item_impl.h"
@@ -231,9 +230,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // changed.
 @property(nonatomic, readonly) NSDictionary* wkWebViewObservers;
 
-// Activity indicator group ID for this web controller.
-@property(nonatomic, readonly) NSString* activityIndicatorGroupID;
-
 // Identifier used for storing and retrieving certificates.
 @property(nonatomic, readonly) int certGroupID;
 
@@ -304,12 +300,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 // Called when a load ends in an SSL error and certificate chain.
 - (void)handleSSLCertError:(NSError*)error;
-
-// Adds an activity indicator tasks for this web controller.
-- (void)addActivityIndicatorTask;
-
-// Clears all activity indicator tasks for this web controller.
-- (void)clearActivityIndicatorTasks;
 
 // Updates SSL status for the current navigation item based on the information
 // provided by web view.
@@ -654,12 +644,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   };
 }
 
-- (NSString*)activityIndicatorGroupID {
-  return [NSString stringWithFormat:
-      @"WKWebViewWebController.NetworkActivityIndicatorKey.%@",
-          self.webStateImpl->GetRequestGroupID()];
-}
-
 - (int)certGroupID {
   DCHECK(self.webStateImpl);
   // Request tracker IDs are used as certificate groups.
@@ -961,16 +945,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
                           }
                         }];
   [self loadCancelled];
-}
-
-- (void)addActivityIndicatorTask {
-  [[CRWNetworkActivityIndicatorManager sharedInstance]
-      startNetworkTaskForGroup:[self activityIndicatorGroupID]];
-}
-
-- (void)clearActivityIndicatorTasks {
-  [[CRWNetworkActivityIndicatorManager sharedInstance]
-      clearNetworkTasksForGroup:[self activityIndicatorGroupID]];
 }
 
 - (void)updateSSLStatusForCurrentNavigationItem {

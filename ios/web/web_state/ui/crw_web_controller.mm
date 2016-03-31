@@ -34,6 +34,7 @@
 #include "components/url_formatter/url_formatter.h"
 #import "ios/net/nsurlrequest_util.h"
 #include "ios/public/provider/web/web_ui_ios.h"
+#import "ios/web/crw_network_activity_indicator_manager.h"
 #import "ios/web/history_state_util.h"
 #include "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
@@ -297,6 +298,8 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
 // The currently displayed native controller, if any.
 @property(nonatomic, readwrite) id<CRWNativeContent> nativeController;
+// Activity indicator group ID for this web controller.
+@property(nonatomic, readonly) NSString* activityIndicatorGroupID;
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
 // Resets any state that is associated with a specific document object (e.g.,
@@ -724,6 +727,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   [self.containerView displayNativeContent:nativeController];
   [self setNativeControllerWebUsageEnabled:_webUsageEnabled];
+}
+
+- (NSString*)activityIndicatorGroupID {
+  return [NSString
+      stringWithFormat:@"WKWebViewWebController.NetworkActivityIndicatorKey.%@",
+                       self.webStateImpl->GetRequestGroupID()];
 }
 
 // NativeControllerDelegate method, called to inform that title has changed.
@@ -1946,6 +1955,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       initWithContextGetter:browserState->GetRequestContext()
           completionHandler:passKitCompletion]);
   return _passKitDownloader.get();
+}
+
+- (void)addActivityIndicatorTask {
+  [[CRWNetworkActivityIndicatorManager sharedInstance]
+      startNetworkTaskForGroup:[self activityIndicatorGroupID]];
+}
+
+- (void)clearActivityIndicatorTasks {
+  [[CRWNetworkActivityIndicatorManager sharedInstance]
+      clearNetworkTasksForGroup:[self activityIndicatorGroupID]];
 }
 
 #pragma mark -
