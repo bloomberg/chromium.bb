@@ -709,7 +709,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for name, url in deps.iteritems():
       should_process = self.recursion_limit and self.should_process
       deps_to_add.append(Dependency(
-          self, name, url, None, None, None, None, None,
+          self, name, url, None, None, None, self.custom_vars, None,
           self.deps_file, should_process))
     deps_to_add.sort(key=lambda x: x.name)
 
