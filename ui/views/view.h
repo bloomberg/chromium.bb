@@ -489,7 +489,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // transformations are applied to it to convert it into the parent coordinate
   // system before propagating SchedulePaint up the view hierarchy.
   // TODO(beng): Make protected.
-  virtual void SchedulePaint();
+  void SchedulePaint();
   virtual void SchedulePaintInRect(const gfx::Rect& r);
 
   // Called by the framework to paint a View. Performs translation and clipping
