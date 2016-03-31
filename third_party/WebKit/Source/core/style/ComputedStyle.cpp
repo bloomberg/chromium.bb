@@ -856,74 +856,50 @@ void ComputedStyle::clearContent()
 void ComputedStyle::appendContent(PassOwnPtrWillBeRawPtr<ContentData> contentData)
 {
     OwnPtrWillBePersistent<ContentData>& content = rareNonInheritedData.access()->m_content;
-    ContentData* lastContent = content.get();
-    while (lastContent && lastContent->next())
-        lastContent = lastContent->next();
-
-    if (lastContent)
-        lastContent->setNext(contentData);
-    else
+    if (!content) {
         content = contentData;
-}
-
-void ComputedStyle::setContent(PassRefPtrWillBeRawPtr<StyleImage> image, bool add)
-{
-    if (!image)
-        return;
-
-    if (add) {
-        appendContent(ContentData::create(image));
         return;
     }
-
-    rareNonInheritedData.access()->m_content = ContentData::create(image);
+    ContentData* lastContent = content.get();
+    while (lastContent->next())
+        lastContent = lastContent->next();
+    lastContent->setNext(contentData);
 }
 
-void ComputedStyle::setContent(const String& string, bool add)
+void ComputedStyle::setContent(PassRefPtrWillBeRawPtr<StyleImage> image)
+{
+    appendContent(ContentData::create(image));
+}
+
+void ComputedStyle::setContent(const String& string)
 {
     OwnPtrWillBePersistent<ContentData>& content = rareNonInheritedData.access()->m_content;
-    if (add) {
-        ContentData* lastContent = content.get();
-        while (lastContent && lastContent->next())
-            lastContent = lastContent->next();
-
-        if (lastContent) {
-            // We attempt to merge with the last ContentData if possible.
-            if (lastContent->isText()) {
-                TextContentData* textContent = toTextContentData(lastContent);
-                textContent->setText(textContent->text() + string);
-            } else {
-                lastContent->setNext(ContentData::create(string));
-            }
-
-            return;
-        }
+    if (!content) {
+        content = ContentData::create(string);
+        return;
     }
 
-    content = ContentData::create(string);
+    ContentData* lastContent = content.get();
+    while (lastContent->next())
+        lastContent = lastContent->next();
+
+    // We attempt to merge with the last ContentData if possible.
+    if (lastContent->isText()) {
+        TextContentData* textContent = toTextContentData(lastContent);
+        textContent->setText(textContent->text() + string);
+    } else {
+        lastContent->setNext(ContentData::create(string));
+    }
 }
 
-void ComputedStyle::setContent(PassOwnPtr<CounterContent> counter, bool add)
+void ComputedStyle::setContent(PassOwnPtr<CounterContent> counter)
 {
-    if (!counter)
-        return;
-
-    if (add) {
-        appendContent(ContentData::create(counter));
-        return;
-    }
-
-    rareNonInheritedData.access()->m_content = ContentData::create(counter);
+    appendContent(ContentData::create(counter));
 }
 
-void ComputedStyle::setContent(QuoteType quote, bool add)
+void ComputedStyle::setContent(QuoteType quote)
 {
-    if (add) {
-        appendContent(ContentData::create(quote));
-        return;
-    }
-
-    rareNonInheritedData.access()->m_content = ContentData::create(quote);
+    appendContent(ContentData::create(quote));
 }
 
 bool ComputedStyle::hasWillChangeCompositingHint() const

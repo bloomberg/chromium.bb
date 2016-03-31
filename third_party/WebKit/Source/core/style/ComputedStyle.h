@@ -1586,10 +1586,10 @@ public:
     ContentData* contentData() const { return rareNonInheritedData->m_content.get(); }
     bool contentDataEquivalent(const ComputedStyle* otherStyle) const { return const_cast<ComputedStyle*>(this)->rareNonInheritedData->contentDataEquivalent(*const_cast<ComputedStyle*>(otherStyle)->rareNonInheritedData); }
     void clearContent();
-    void setContent(const String&, bool add = false);
-    void setContent(PassRefPtrWillBeRawPtr<StyleImage>, bool add = false);
-    void setContent(PassOwnPtr<CounterContent>, bool add = false);
-    void setContent(QuoteType, bool add = false);
+    void setContent(const String&);
+    void setContent(PassRefPtrWillBeRawPtr<StyleImage>);
+    void setContent(PassOwnPtr<CounterContent>);
+    void setContent(QuoteType);
 
     const CounterDirectiveMap* counterDirectives() const;
     CounterDirectiveMap& accessCounterDirectives();

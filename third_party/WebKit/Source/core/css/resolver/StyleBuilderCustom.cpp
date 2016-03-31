@@ -657,41 +657,29 @@ void StyleBuilderFunctions::applyInheritCSSPropertyContent(StyleResolverState&)
 
 void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& state, CSSValue* value)
 {
+    state.style()->clearContent();
     if (value->isPrimitiveValue()) {
         ASSERT(toCSSPrimitiveValue(*value).getValueID() == CSSValueNormal || toCSSPrimitiveValue(*value).getValueID() == CSSValueNone);
-        state.style()->clearContent();
         return;
     }
-    // list of string, uri, counter, attr, i
 
-    bool didSet = false;
+    // TODO(timloh): This logic shouldn't be split across here and ComputedStyle.cpp
     for (auto& item : toCSSValueList(*value)) {
         if (item->isImageGeneratorValue()) {
-            state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(*item)), didSet);
-            didSet = true;
+            state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(*item)));
         } else if (item->isImageSetValue()) {
-            state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(*item)), didSet);
-            didSet = true;
-        }
-
-        if (item->isImageValue()) {
-            state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(CSSPropertyContent, toCSSImageValue(*item)), didSet);
-            didSet = true;
-            continue;
-        }
-
-        if (item->isCounterValue()) {
+            state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(*item)));
+        } else if (item->isImageValue()) {
+            state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(CSSPropertyContent, toCSSImageValue(*item)));
+        } else if (item->isCounterValue()) {
             CSSCounterValue* counterValue = toCSSCounterValue(item.get());
             EListStyleType listStyleType = NoneListStyle;
             CSSValueID listStyleIdent = counterValue->listStyle();
             if (listStyleIdent != CSSValueNone)
                 listStyleType = static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
             OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));
-            state.style()->setContent(counter.release(), didSet);
-            didSet = true;
-        }
-
-        if (item->isFunctionValue()) {
+            state.style()->setContent(counter.release());
+        } else if (item->isFunctionValue()) {
             CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
             ASSERT(functionValue->functionType() == CSSValueAttr);
             // FIXME: Can a namespace be specified for an attr(foo)?
@@ -701,40 +689,28 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
                 state.parentStyle()->setUnique();
             QualifiedName attr(nullAtom, AtomicString(toCSSCustomIdentValue(functionValue->item(0))->value()), nullAtom);
             const AtomicString& value = state.element()->getAttribute(attr);
-            state.style()->setContent(value.isNull() ? emptyString() : value.getString(), didSet);
-            didSet = true;
-        }
-
-        if (!item->isPrimitiveValue() && !item->isStringValue())
-            continue;
-
-        if (item->isStringValue()) {
-            state.style()->setContent(toCSSStringValue(*item).value().impl(), didSet);
-            didSet = true;
+            state.style()->setContent(value.isNull() ? emptyString() : value.getString());
+        } else if (item->isStringValue()) {
+            state.style()->setContent(toCSSStringValue(*item).value().impl());
         } else {
             switch (toCSSPrimitiveValue(*item).getValueID()) {
             case CSSValueOpenQuote:
-                state.style()->setContent(OPEN_QUOTE, didSet);
-                didSet = true;
+                state.style()->setContent(OPEN_QUOTE);
                 break;
             case CSSValueCloseQuote:
-                state.style()->setContent(CLOSE_QUOTE, didSet);
-                didSet = true;
+                state.style()->setContent(CLOSE_QUOTE);
                 break;
             case CSSValueNoOpenQuote:
-                state.style()->setContent(NO_OPEN_QUOTE, didSet);
-                didSet = true;
+                state.style()->setContent(NO_OPEN_QUOTE);
                 break;
             case CSSValueNoCloseQuote:
-                state.style()->setContent(NO_CLOSE_QUOTE, didSet);
-                didSet = true;
+                state.style()->setContent(NO_CLOSE_QUOTE);
                 break;
             default:
                 ASSERT_NOT_REACHED();
             }
         }
     }
-    ASSERT(didSet);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState& state, CSSValue* value)
