@@ -313,6 +313,8 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
     if (!document().isActive())
         return;
 
+    TRACE_EVENT0("blink,blink_style", "StyleEngine::updateActiveStyleSheets");
+
     if (shouldUpdateDocumentStyleSheetCollection(updateMode))
         documentStyleSheetCollection()->updateActiveStyleSheets(*this, updateMode);
 
