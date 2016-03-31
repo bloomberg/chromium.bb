@@ -40,9 +40,9 @@
 #endif
 
 #if defined(OS_MACOSX)
-// Mac/QTKit will always give you the size you ask for and this case will fail.
+// Mac will always give you the size you ask for and this case will fail.
 #define MAYBE_AllocateBadSize DISABLED_AllocateBadSize
-// We will always get YUYV from the Mac QTKit/AVFoundation implementations.
+// We will always get YUYV from the Mac AVFoundation implementations.
 #define MAYBE_CaptureMjpeg DISABLED_CaptureMjpeg
 #elif defined(OS_WIN)
 #define MAYBE_AllocateBadSize AllocateBadSize
@@ -280,32 +280,27 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
           : VideoCaptureDevice::Name::DIRECT_SHOW;
   VideoCaptureDevice::Name device_name("jibberish", "jibberish", api_type);
 #elif defined(OS_MACOSX)
-  VideoCaptureDevice::Name device_name(
-      "jibberish", "jibberish", AVFoundationGlue::IsAVFoundationSupported()
-                                    ? VideoCaptureDevice::Name::AVFOUNDATION
-                                    : VideoCaptureDevice::Name::QTKIT);
+  VideoCaptureDevice::Name device_name("jibberish", "jibberish",
+                                       VideoCaptureDevice::Name::AVFOUNDATION);
 #else
   VideoCaptureDevice::Name device_name("jibberish", "jibberish");
 #endif
   scoped_ptr<VideoCaptureDevice> device =
       video_capture_device_factory_->Create(device_name);
+
 #if !defined(OS_MACOSX)
   EXPECT_TRUE(device == NULL);
 #else
-  if (AVFoundationGlue::IsAVFoundationSupported()) {
-    EXPECT_TRUE(device == NULL);
-  } else {
-    // The presence of the actual device is only checked on AllocateAndStart()
-    // and not on creation for QTKit API in Mac OS X platform.
-    EXPECT_CALL(*client_, OnError(_, _)).Times(1);
+  // The presence of the actual device is only checked on AllocateAndStart()
+  // and not on creation.
+  EXPECT_CALL(*client_, OnError(_, _)).Times(1);
 
-    VideoCaptureParams capture_params;
-    capture_params.requested_format.frame_size.SetSize(640, 480);
-    capture_params.requested_format.frame_rate = 30;
-    capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-    device->AllocateAndStart(capture_params, std::move(client_));
-    device->StopAndDeAllocate();
-  }
+  VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(640, 480);
+  capture_params.requested_format.frame_rate = 30;
+  capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
+  device->AllocateAndStart(capture_params, std::move(client_));
+  device->StopAndDeAllocate();
 #endif
 }
 

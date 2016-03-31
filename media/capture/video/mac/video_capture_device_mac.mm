@@ -27,7 +27,6 @@
 #include "media/base/timestamp_constants.h"
 #import "media/capture/video/mac/platform_video_capturing_mac.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
-#import "media/capture/video/mac/video_capture_device_qtkit_mac.h"
 #include "ui/gfx/geometry/size.h"
 
 @implementation DeviceNameAndTransportType
@@ -59,23 +58,6 @@ const float kMaxFrameRate = 30.0f;
 // In device identifiers, the USB VID and PID are stored in 4 bytes each.
 const size_t kVidPidSize = 4;
 
-const struct Resolution {
-  const int width;
-  const int height;
-} kQVGA = {320, 240}, kVGA = {640, 480}, kHD = {1280, 720};
-
-const struct Resolution* const kWellSupportedResolutions[] = {
-    &kQVGA,
-    &kVGA,
-    &kHD,
-};
-
-// Rescaling the image to fix the pixel aspect ratio runs the risk of making
-// the aspect ratio worse, if QTKit selects a new source mode with a different
-// shape. This constant ensures that we don't take this risk if the current
-// aspect ratio is tolerable.
-const float kMaxPixelAspectRatio = 1.15;
-
 // The following constants are extracted from the specification "Universal
 // Serial Bus Device Class Definition for Video Devices", Rev. 1.1 June 1, 2005.
 // http://www.usb.org/developers/devclass_docs/USB_Video_Class_1_1.zip
@@ -100,21 +82,6 @@ typedef struct IOUSBInterfaceDescriptor {
   UInt8 bDescriptorSubType;
   UInt8 bUnitID;
 } IOUSBInterfaceDescriptor;
-
-static void GetBestMatchSupportedResolution(gfx::Size* resolution) {
-  int min_diff = std::numeric_limits<int32_t>::max();
-  const int desired_area = resolution->GetArea();
-  for (size_t i = 0; i < arraysize(kWellSupportedResolutions); ++i) {
-    const int area = kWellSupportedResolutions[i]->width *
-                     kWellSupportedResolutions[i]->height;
-    const int diff = std::abs(desired_area - area);
-    if (diff < min_diff) {
-      min_diff = diff;
-      resolution->SetSize(kWellSupportedResolutions[i]->width,
-                          kWellSupportedResolutions[i]->height);
-    }
-  }
-}
 
 // Tries to create a user-side device interface for a given USB device. Returns
 // true if interface was found and passes it back in |device_interface|. The
@@ -347,15 +314,11 @@ const std::string VideoCaptureDevice::Name::GetModel() const {
 
 VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
     : device_name_(device_name),
-      tried_to_square_pixels_(false),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       state_(kNotInitialized),
       capture_device_(nil),
       first_timestamp_(media::kNoTimestamp()),
       weak_factory_(this) {
-  // Avoid reconfiguring AVFoundation or blacklisted devices.
-  final_resolution_selected_ = AVFoundationGlue::IsAVFoundationSupported() ||
-                               device_name.is_blacklisted();
 }
 
 VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
@@ -371,18 +334,10 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     return;
   }
 
-  // QTKit API can scale captured frame to any size requested, which would lead
-  // to undesired aspect ratio changes. Try to open the camera with a known
-  // supported format and let the client crop/pad the captured frames.
-  gfx::Size resolution = params.requested_format.frame_size;
-  if (!AVFoundationGlue::IsAVFoundationSupported())
-    GetBestMatchSupportedResolution(&resolution);
-
   client_ = std::move(client);
   if (device_name_.capture_api_type() == Name::AVFOUNDATION)
     LogMessage("Using AVFoundation for device: " + device_name_.name());
-  else
-    LogMessage("Using QTKit for device: " + device_name_.name());
+
   NSString* deviceId =
       [NSString stringWithUTF8String:device_name_.id().c_str()];
 
@@ -393,26 +348,16 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     return;
   }
 
-  capture_format_.frame_size = resolution;
+  capture_format_.frame_size = params.requested_format.frame_size;
   capture_format_.frame_rate =
       std::max(kMinFrameRate,
                std::min(params.requested_format.frame_rate, kMaxFrameRate));
-  // Leave the pixel format selection to AVFoundation/QTKit. The pixel format
+  // Leave the pixel format selection to AVFoundation. The pixel format
   // will be passed to |ReceiveFrame|.
   capture_format_.pixel_format = PIXEL_FORMAT_UNKNOWN;
 
-  // QTKit: Set the capture resolution only if this is VGA or smaller, otherwise
-  // leave it unconfigured and start capturing: QTKit will produce frames at the
-  // native resolution, allowing us to identify cameras whose native resolution
-  // is too low for HD. This additional information comes at a cost in startup
-  // latency, because the webcam will need to be reopened if its default
-  // resolution is not HD or VGA.
-  // AVfoundation is configured for all resolutions.
-  if (AVFoundationGlue::IsAVFoundationSupported() ||
-      resolution.width() <= kVGA.width || resolution.height() <= kVGA.height) {
     if (!UpdateCaptureResolution())
       return;
-  }
 
   // Try setting the power line frequency removal (anti-flicker). The built-in
   // cameras are normally suspended so the configuration must happen right
@@ -445,7 +390,6 @@ void VideoCaptureDeviceMac::StopAndDeAllocate() {
   [capture_device_ setFrameReceiver:nil];
   client_.reset();
   state_ = kIdle;
-  tried_to_square_pixels_ = false;
 }
 
 bool VideoCaptureDeviceMac::Init(
@@ -456,9 +400,6 @@ bool VideoCaptureDeviceMac::Init(
   if (capture_api_type == Name::AVFOUNDATION) {
     capture_device_ =
         [[VideoCaptureDeviceAVFoundation alloc] initWithFrameReceiver:this];
-  } else {
-    capture_device_ =
-        [[VideoCaptureDeviceQTKit alloc] initWithFrameReceiver:this];
   }
 
   if (!capture_device_)
@@ -475,70 +416,8 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8_t* video_frame,
                                          int aspect_denominator,
                                          base::TimeDelta timestamp) {
   // This method is safe to call from a device capture thread, i.e. any thread
-  // controlled by QTKit/AVFoundation.
-  if (!final_resolution_selected_) {
-    DCHECK(!AVFoundationGlue::IsAVFoundationSupported());
-    if (capture_format_.frame_size.width() > kVGA.width ||
-        capture_format_.frame_size.height() > kVGA.height) {
-      // We are requesting HD.  Make sure that the picture is good, otherwise
-      // drop down to VGA.
-      bool change_to_vga = false;
-      if (frame_format.frame_size.width() <
-              capture_format_.frame_size.width() ||
-          frame_format.frame_size.height() <
-              capture_format_.frame_size.height()) {
-        // These are the default capture settings, not yet configured to match
-        // |capture_format_|.
-        DCHECK(frame_format.frame_rate == 0);
-        DVLOG(1) << "Switching to VGA because the default resolution is "
-                 << frame_format.frame_size.ToString();
-        change_to_vga = true;
-      }
-
-      if (capture_format_.frame_size == frame_format.frame_size &&
-          aspect_numerator != aspect_denominator) {
-        DVLOG(1) << "Switching to VGA because HD has nonsquare pixel "
-                 << "aspect ratio " << aspect_numerator << ":"
-                 << aspect_denominator;
-        change_to_vga = true;
-      }
-
-      if (change_to_vga)
-        capture_format_.frame_size.SetSize(kVGA.width, kVGA.height);
-    }
-
-    if (capture_format_.frame_size == frame_format.frame_size &&
-        !tried_to_square_pixels_ &&
-        (aspect_numerator > kMaxPixelAspectRatio * aspect_denominator ||
-         aspect_denominator > kMaxPixelAspectRatio * aspect_numerator)) {
-      // The requested size results in non-square PAR. Shrink the frame to 1:1
-      // PAR (assuming QTKit selects the same input mode, which is not
-      // guaranteed).
-      int new_width = capture_format_.frame_size.width();
-      int new_height = capture_format_.frame_size.height();
-      if (aspect_numerator < aspect_denominator)
-        new_width = (new_width * aspect_numerator) / aspect_denominator;
-      else
-        new_height = (new_height * aspect_denominator) / aspect_numerator;
-      capture_format_.frame_size.SetSize(new_width, new_height);
-      tried_to_square_pixels_ = true;
-    }
-
-    if (capture_format_.frame_size == frame_format.frame_size) {
-      final_resolution_selected_ = true;
-    } else {
-      UpdateCaptureResolution();
-      // Let the resolution update sink through QTKit and wait for next frame.
-      return;
-    }
-  }
-
-  // QTKit capture source can change resolution if someone else reconfigures the
-  // camera, and that is fine: http://crbug.com/353620. In AVFoundation, this
-  // should not happen, it should resize internally.
-  if (!AVFoundationGlue::IsAVFoundationSupported()) {
-    capture_format_.frame_size = frame_format.frame_size;
-  } else if (capture_format_.frame_size != frame_format.frame_size) {
+  // controlled by AVFoundation.
+  if (capture_format_.frame_size != frame_format.frame_size) {
     ReceiveError(FROM_HERE,
                  "Captured resolution " + frame_format.frame_size.ToString() +
                      ", and expected " + capture_format_.frame_size.ToString());

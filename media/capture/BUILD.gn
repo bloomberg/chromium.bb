@@ -54,8 +54,6 @@ source_set("capture") {
     "video/mac/video_capture_device_factory_mac.mm",
     "video/mac/video_capture_device_mac.h",
     "video/mac/video_capture_device_mac.mm",
-    "video/mac/video_capture_device_qtkit_mac.h",
-    "video/mac/video_capture_device_qtkit_mac.mm",
     "video/video_capture_device.cc",
     "video/video_capture_device.h",
     "video/video_capture_device_factory.cc",
@@ -105,7 +103,6 @@ source_set("capture") {
       "//media/base/mac",
       "//third_party/decklink",
     ]
-    libs = [ "QTKit.framework" ]
   }
 
   if (use_udev) {

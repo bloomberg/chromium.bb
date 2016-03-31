@@ -62,7 +62,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     enum CaptureApiType { MEDIA_FOUNDATION, DIRECT_SHOW, API_TYPE_UNKNOWN };
 #elif defined(OS_MACOSX)
     // Mac targets Capture Api type: it can only be set on construction.
-    enum CaptureApiType { AVFOUNDATION, QTKIT, DECKLINK, API_TYPE_UNKNOWN };
+    enum CaptureApiType { AVFOUNDATION, DECKLINK, API_TYPE_UNKNOWN };
     // For AVFoundation Api, identify devices that are built-in or USB.
     enum TransportType { USB_OR_BUILT_IN, OTHER_TRANSPORT };
 #elif defined(OS_ANDROID)
@@ -133,10 +133,6 @@ class MEDIA_EXPORT VideoCaptureDevice {
 #endif  // if defined(OS_WIN)
 #if defined(OS_MACOSX)
     TransportType transport_type() const { return transport_type_; }
-    bool is_blacklisted() const { return is_blacklisted_; }
-    void set_is_blacklisted(bool is_blacklisted) {
-      is_blacklisted_ = is_blacklisted;
-    }
 #endif  // if defined(OS_MACOSX)
 
    private:
@@ -168,8 +164,6 @@ class MEDIA_EXPORT VideoCaptureDevice {
 #endif
 #if defined(OS_MACOSX)
     TransportType transport_type_;
-    // Flag used to mark blacklisted devices for QTKit Api.
-    bool is_blacklisted_;
 #endif
     // Allow generated copy constructor and assignment.
   };

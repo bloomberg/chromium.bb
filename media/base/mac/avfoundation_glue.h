@@ -28,10 +28,6 @@ class MEDIA_EXPORT AVFoundationGlue {
   // AVFoundation methods.
   static void InitializeAVFoundation();
 
-  // This method returns true if the OS version supports AVFoundation and the
-  // AVFoundation bundle could be loaded correctly, or false otherwise.
-  static bool IsAVFoundationSupported();
-
 #if defined(__OBJC__)
   static NSBundle const* AVFoundationBundle();
 

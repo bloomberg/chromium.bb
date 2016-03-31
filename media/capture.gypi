@@ -56,8 +56,6 @@
       'capture/video/mac/video_capture_device_factory_mac.mm',
       'capture/video/mac/video_capture_device_mac.h',
       'capture/video/mac/video_capture_device_mac.mm',
-      'capture/video/mac/video_capture_device_qtkit_mac.h',
-      'capture/video/mac/video_capture_device_qtkit_mac.mm',
       'capture/video/video_capture_device.cc',
       'capture/video/video_capture_device.h',
       'capture/video/video_capture_device_factory.cc',

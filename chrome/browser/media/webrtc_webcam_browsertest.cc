@@ -27,9 +27,6 @@ static const char* kTestConfigFlags[] = {
   // Media Foundation is only available in Windows versions >= 7, below that the
   // following flag has no effect; the test would run twice using DirectShow.
   switches::kForceMediaFoundationVideoCapture
-#elif defined(OS_MACOSX)
-  switches::kForceQTKit,
-  switches::kEnableAVFoundation
 #else
   NULL
 #endif
@@ -69,14 +66,6 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase,
     }
     return actual_stream_size;
   }
-
-  bool IsOnQtKit() const {
-#if defined(OS_MACOSX)
-    return GetParam() && std::string(GetParam()) == switches::kForceQTKit;
-#else
-    return false;
-#endif
-  }
 };
 
 // This test is manual because the test results can vary heavily depending on
@@ -94,22 +83,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcWebcamBrowserTest,
     return;
   }
 
-  if (!IsOnQtKit()) {
-    // "Temporarily" disabled on QtKit due to http://crbug.com/375185.
-    EXPECT_EQ("320x240",
-              GetUserMediaAndGetStreamSize(tab,
-                                           kVideoCallConstraintsQVGA));
-  }
-
+  EXPECT_EQ("320x240",
+            GetUserMediaAndGetStreamSize(tab, kVideoCallConstraintsQVGA));
   EXPECT_EQ("640x480",
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraintsVGA));
   EXPECT_EQ("640x360",
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraints360p));
-
-  // QTKit supports up to 480p (used to support 720p until crbug.com/440762).
-  if (IsOnQtKit())
-    return;
-
   EXPECT_EQ("1280x720",
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraints720p));
   EXPECT_EQ("1920x1080",

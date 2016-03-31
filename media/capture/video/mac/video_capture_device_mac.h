@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MacOSX implementation of generic VideoCaptureDevice, using either QTKit or
-// AVFoundation as native capture API. QTKit is available in all OSX versions,
-// although namely deprecated in 10.9, and AVFoundation is available in versions
-// 10.7 (Lion) and later.
+// MacOSX implementation of generic VideoCaptureDevice, using AVFoundation as
+// native capture API. AVFoundation is available in versions 10.7 (Lion) and
+// later.
 
 #ifndef MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_H_
 #define MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_H_
@@ -51,12 +50,6 @@ MEDIA_EXPORT
 
 namespace media {
 
-enum {
-  // Unknown transport type, addition to the kIOAudioDeviceTransportType*
-  // family for QTKit devices where this attribute isn't published.
-  kIOAudioDeviceTransportTypeUnknown = 'unkn'
-};
-
 // Called by VideoCaptureManager to open, close and start, stop Mac video
 // capture devices.
 class VideoCaptureDeviceMac : public VideoCaptureDevice {
@@ -98,12 +91,6 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   scoped_ptr<VideoCaptureDevice::Client> client_;
 
   VideoCaptureFormat capture_format_;
-  // These variables control the two-step configure-start process for QTKit HD:
-  // the device is first started with no configuration and the captured frames
-  // are inspected to check if the camera really supports HD. AVFoundation does
-  // not need this process so |final_resolution_selected_| is false then.
-  bool final_resolution_selected_;
-  bool tried_to_square_pixels_;
 
   // Only read and write state_ from inside this loop.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

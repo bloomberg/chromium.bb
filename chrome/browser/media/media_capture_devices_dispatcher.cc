@@ -82,15 +82,6 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
       media_stream_capture_indicator_(new MediaStreamCaptureIndicator()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(OS_MACOSX)
-  // AVFoundation is used for video/audio device monitoring and video capture.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceQTKit)) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableAVFoundation);
-  }
-#endif
-
 #if defined(ENABLE_EXTENSIONS)
   media_access_handlers_.push_back(new ExtensionMediaAccessHandler());
   media_access_handlers_.push_back(new DesktopCaptureAccessHandler());

@@ -252,7 +252,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // Once initialization is done, and_then will be run on the IO thread.
   void InitializeCaptureDeviceApiOnUIThread(const base::Closure& and_then);
 
-  // Due to initialization issues with AVFoundation and QTKit on Mac, we need
+  // Due to initialization issues with AVFoundation on Mac, we need
   // to make sure we initialize the APIs on the UI thread before we can reliably
   // use them.  This variable is only checked and set on the IO thread.
   bool capture_device_api_initialized_ = false;

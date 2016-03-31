@@ -127,7 +127,6 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   m[VideoCaptureDeviceName::DIRECT_SHOW] = "Direct Show";
 #elif defined(OS_MACOSX)
   m[VideoCaptureDeviceName::AVFOUNDATION] = "AV Foundation";
-  m[VideoCaptureDeviceName::QTKIT] = "QTKit";
   m[VideoCaptureDeviceName::DECKLINK] = "DeckLink";
 #elif defined(OS_ANDROID)
   m[VideoCaptureDeviceName::API1] = "Camera API1";
@@ -180,8 +179,8 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   formats.push_back(format_hd);
   const media::VideoCaptureDeviceInfo device_info(
 #if defined(OS_MACOSX)
-      media::VideoCaptureDevice::Name("dummy", "dummy",
-          media::VideoCaptureDevice::Name::QTKIT),
+      media::VideoCaptureDevice::Name(
+          "dummy", "dummy", media::VideoCaptureDevice::Name::AVFOUNDATION),
 #elif defined(OS_WIN)
       media::VideoCaptureDevice::Name("dummy", "dummy",
           media::VideoCaptureDevice::Name::DIRECT_SHOW),
@@ -219,7 +218,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
 #elif defined(OS_WIN)
   ExpectString("captureApi", "Direct Show");
 #elif defined(OS_MACOSX)
-  ExpectString("captureApi", "QTKit");
+  ExpectString("captureApi", "AV Foundation");
 #elif defined(OS_ANDROID)
   ExpectString("captureApi", "Camera API2 Legacy");
 #endif

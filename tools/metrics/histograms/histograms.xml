@@ -61659,6 +61659,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="CaptureApiMac" type="int">
+  <obsolete>
+    Deprecated as of 04/2016.
+  </obsolete>
   <int value="0" label="QTKit used due to Mac OS X previous to 10.7.x Lion"/>
   <int value="1" label="QTKit forced, on OS X supporting AVFoundation"/>
   <int value="2" label="QTKit used due to no flag specified"/>

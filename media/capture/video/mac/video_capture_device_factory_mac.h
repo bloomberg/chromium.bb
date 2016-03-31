@@ -16,8 +16,7 @@ namespace media {
 class MEDIA_EXPORT VideoCaptureDeviceFactoryMac
     : public VideoCaptureDeviceFactory {
  public:
-  explicit VideoCaptureDeviceFactoryMac(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  VideoCaptureDeviceFactoryMac();
   ~VideoCaptureDeviceFactoryMac() override;
 
   scoped_ptr<VideoCaptureDevice> Create(
@@ -30,9 +29,6 @@ class MEDIA_EXPORT VideoCaptureDeviceFactoryMac
       VideoCaptureFormats* supported_formats) override;
 
  private:
-  // Cache of |ui_task_runner| for enumerating devices there for QTKit.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactoryMac);
 };
 

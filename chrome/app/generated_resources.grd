@@ -6056,14 +6056,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DRIVE_SEARCH_IN_CHROME_LAUNCHER_DESCRIPTION" desc="Description for the flag for drive search in chrome launcher.">
         Files from Drive will show up when searching the Chrome App Launcher.
       </message>
-      <if expr="is_macosx">
-        <message name="IDS_FLAGS_AVFOUNDATION_NAME" desc="Name of the flag to enable Mac AVFoundation.">
-          Use of Mac OS X AVFoundation APIs, instead of QTKit
-        </message>
-        <message name="IDS_FLAGS_AVFOUNDATION_DESCRIPTION" desc="Description of flag to enable Mac AVFoundation.">
-          Enable AVFoundation use for video capture and video device monitoring on OS X >= 10.7. QTKit will be used otherwise.
-        </message>
-      </if>
       <message name="IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_NAME" desc="Name of the flag to enable out-of-process V8 proxy resolver.">
         Out-of-process V8 Proxy Resolver.
       </message>

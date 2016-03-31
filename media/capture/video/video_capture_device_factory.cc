@@ -31,7 +31,7 @@ scoped_ptr<VideoCaptureDeviceFactory> VideoCaptureDeviceFactory::CreateFactory(
     }
   } else {
     // |ui_task_runner| is needed for the Linux ChromeOS factory to retrieve
-    // screen rotations and for the Mac factory to run QTKit device enumeration.
+    // screen rotations.
     return scoped_ptr<VideoCaptureDeviceFactory>(
         CreateVideoCaptureDeviceFactory(ui_task_runner));
   }

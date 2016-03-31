@@ -139,7 +139,6 @@ size_t RegisterChromeCrashKeys() {
     { "remove_route_bt", kMediumSize },
     { "rwhvm_window", kMediumSize },
     // media/:
-    { "VideoCaptureDeviceQTKit", kSmallSize },
 #endif
 #if BUILDFLAG(ENABLE_KASKO)
     { kKaskoGuid, kSmallSize },

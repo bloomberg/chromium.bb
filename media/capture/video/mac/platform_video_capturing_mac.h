@@ -11,8 +11,7 @@ namespace media {
 class VideoCaptureDeviceMac;
 }
 
-// Protocol representing platform-dependent video capture on Mac, implemented
-// by both QTKit and AVFoundation APIs.
+// Protocol representing platform-dependent video capture on Mac.
 @protocol PlatformVideoCapturingMac<NSObject>
 
 // This method initializes the instance by calling NSObject |init| and registers

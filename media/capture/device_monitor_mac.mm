@@ -4,8 +4,6 @@
 
 #include "media/capture/device_monitor_mac.h"
 
-#import <QTKit/QTKit.h>
-
 #include <set>
 
 #include "base/bind_helpers.h"
@@ -44,8 +42,7 @@ class DeviceInfo {
   // Allow generated copy constructor and assignment.
 };
 
-// Base abstract class used by DeviceMonitorMac to interact with either a QTKit
-// or an AVFoundation implementation of events and notifications.
+// Base abstract class used by DeviceMonitorMac.
 class DeviceMonitorMacImpl {
  public:
   explicit DeviceMonitorMacImpl(media::DeviceMonitorMac* monitor)
@@ -125,87 +122,6 @@ void DeviceMonitorMacImpl::ConsolidateDevicesListAndNotify(
     monitor_->NotifyDeviceChanged(base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
   if (audio_device_added || audio_device_removed)
     monitor_->NotifyDeviceChanged(base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE);
-}
-
-class QTKitMonitorImpl : public DeviceMonitorMacImpl {
- public:
-  explicit QTKitMonitorImpl(media::DeviceMonitorMac* monitor);
-  ~QTKitMonitorImpl() override;
-
-  void OnDeviceChanged() override;
-
- private:
-  void CountDevices();
-  void OnAttributeChanged(NSNotification* notification);
-
-  id device_change_;
-};
-
-QTKitMonitorImpl::QTKitMonitorImpl(media::DeviceMonitorMac* monitor)
-    : DeviceMonitorMacImpl(monitor) {
-  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-  device_arrival_ =
-      [nc addObserverForName:QTCaptureDeviceWasConnectedNotification
-                      object:nil
-                       queue:nil
-                  usingBlock:^(NSNotification* notification) {
-                    OnDeviceChanged();
-                  }];
-  device_removal_ =
-      [nc addObserverForName:QTCaptureDeviceWasDisconnectedNotification
-                      object:nil
-                       queue:nil
-                  usingBlock:^(NSNotification* notification) {
-                    OnDeviceChanged();
-                  }];
-  device_change_ =
-      [nc addObserverForName:QTCaptureDeviceAttributeDidChangeNotification
-                      object:nil
-                       queue:nil
-                  usingBlock:^(NSNotification* notification) {
-                    OnAttributeChanged(notification);
-                  }];
-}
-
-QTKitMonitorImpl::~QTKitMonitorImpl() {
-  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-  [nc removeObserver:device_arrival_];
-  [nc removeObserver:device_removal_];
-  [nc removeObserver:device_change_];
-}
-
-void QTKitMonitorImpl::OnAttributeChanged(NSNotification* notification) {
-  if ([[[notification userInfo] objectForKey:QTCaptureDeviceChangedAttributeKey]
-          isEqualToString:QTCaptureDeviceSuspendedAttribute]) {
-    OnDeviceChanged();
-  }
-}
-
-void QTKitMonitorImpl::OnDeviceChanged() {
-  std::vector<DeviceInfo> snapshot_devices;
-
-  NSArray* devices = [QTCaptureDevice inputDevices];
-  for (QTCaptureDevice* device in devices) {
-    DeviceInfo::DeviceType device_type = DeviceInfo::kUnknown;
-    // Act as if suspended video capture devices are not attached.  For
-    // example, a laptop's internal webcam is suspended when the lid is closed.
-    if ([device hasMediaType:QTMediaTypeVideo] &&
-        ![[device attributeForKey:QTCaptureDeviceSuspendedAttribute]
-            boolValue]) {
-      device_type = DeviceInfo::kVideo;
-    } else if ([device hasMediaType:QTMediaTypeMuxed] &&
-               ![[device attributeForKey:QTCaptureDeviceSuspendedAttribute]
-                   boolValue]) {
-      device_type = DeviceInfo::kMuxed;
-    } else if ([device hasMediaType:QTMediaTypeSound] &&
-               ![[device attributeForKey:QTCaptureDeviceSuspendedAttribute]
-                   boolValue]) {
-      device_type = DeviceInfo::kAudio;
-    }
-    snapshot_devices.push_back(
-        DeviceInfo([[device uniqueID] UTF8String], device_type));
-  }
-  ConsolidateDevicesListAndNotify(snapshot_devices);
 }
 
 // Forward declaration for use by CrAVFoundationDeviceObserver.
@@ -524,7 +440,7 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
 namespace media {
 
 DeviceMonitorMac::DeviceMonitorMac() {
-  // Both QTKit and AVFoundation do not need to be fired up until the user
+  // AVFoundation do not need to be fired up until the user
   // exercises a GetUserMedia. Bringing up either library and enumerating the
   // devices in the system is an operation taking in the range of hundred of ms,
   // so it is triggered explicitly from MediaStreamManager::StartMonitoring().
@@ -536,12 +452,9 @@ void DeviceMonitorMac::StartMonitoring(
     const scoped_refptr<base::SingleThreadTaskRunner>& device_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // We're on the UI thread so let's try to initialize AVFoundation and then
-  // see if it's supported.  IsAVFoundationSupported can't implicitly initialize
-  // the library since it can be called on different threads.
+  // We're on the UI thread so let's try to initialize AVFoundation.
   AVFoundationGlue::InitializeAVFoundation();
 
-  if (AVFoundationGlue::IsAVFoundationSupported()) {
     // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458404
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile(
@@ -550,15 +463,6 @@ void DeviceMonitorMac::StartMonitoring(
     DVLOG(1) << "Monitoring via AVFoundation";
     device_monitor_impl_.reset(
         new AVFoundationMonitorImpl(this, device_task_runner));
-  } else {
-    // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/458404
-    // is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "458404 DeviceMonitorMac::StartMonitoring::QTKit"));
-    DVLOG(1) << "Monitoring via QTKit";
-    device_monitor_impl_.reset(new QTKitMonitorImpl(this));
-  }
 }
 
 void DeviceMonitorMac::NotifyDeviceChanged(

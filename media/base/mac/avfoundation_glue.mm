@@ -31,24 +31,6 @@ extern NSString* const AVVideoScalingModeKey;
 extern NSString* const AVVideoScalingModeResizeAspectFill;
 
 namespace {
-// Used for logging capture API usage. Classes are a partition. Elements in this
-// enum should not be deleted or rearranged; the only permitted operation is to
-// add new elements before CAPTURE_API_MAX, that must be equal to the last item.
-enum CaptureApi {
-  CAPTURE_API_QTKIT_DUE_TO_OS_PREVIOUS_TO_LION = 0,
-  CAPTURE_API_QTKIT_FORCED_BY_FLAG = 1,
-  CAPTURE_API_QTKIT_DUE_TO_NO_FLAG = 2,
-  CAPTURE_API_QTKIT_DUE_TO_AVFOUNDATION_LOAD_ERROR = 3,
-  CAPTURE_API_AVFOUNDATION_LOADED_OK = 4,
-  CAPTURE_API_MAX = CAPTURE_API_AVFOUNDATION_LOADED_OK
-};
-
-void LogCaptureApi(CaptureApi api) {
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoCaptureApi.Mac",
-                            api,
-                            CAPTURE_API_MAX + 1);
-}
-
 // This class is used to retrieve AVFoundation NSBundle and library handle. It
 // must be used as a LazyInstance so that it is initialised once and in a
 // thread-safe way. Normally no work is done in constructors: LazyInstance is
@@ -122,30 +104,10 @@ AVFoundationInternal* GetAVFoundationInternal() {
 // This contains the logic of checking whether AVFoundation is supported.
 // It's called only once and the results are cached in a static bool.
 bool LoadAVFoundationInternal() {
-  // AVFoundation is only available on OS Lion and above.
-  if (!base::mac::IsOSLionOrLater()) {
-    LogCaptureApi(CAPTURE_API_QTKIT_DUE_TO_OS_PREVIOUS_TO_LION);
-    return false;
-  }
-
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  // The force-qtkit flag takes precedence over enable-avfoundation.
-  if (command_line->HasSwitch(switches::kForceQTKit)) {
-    LogCaptureApi(CAPTURE_API_QTKIT_FORCED_BY_FLAG);
-    return false;
-  }
-
-  if (!command_line->HasSwitch(switches::kEnableAVFoundation)) {
-    LogCaptureApi(CAPTURE_API_QTKIT_DUE_TO_NO_FLAG);
-    return false;
-  }
   g_avfoundation_handle.Initialize(TlsCleanup);
   g_avfoundation_handle.Set(new AVFoundationInternal());
   const bool ret = [AVFoundationGlue::AVFoundationBundle() load];
-  LogCaptureApi(ret ? CAPTURE_API_AVFOUNDATION_LOADED_OK
-                    : CAPTURE_API_QTKIT_DUE_TO_AVFOUNDATION_LOAD_ERROR);
-
+  CHECK(ret);
   return ret;
 }
 
@@ -164,11 +126,6 @@ void AVFoundationGlue::InitializeAVFoundation() {
     return;
   g_avfoundation_initialization = LoadAVFoundationInternal() ?
       AVFOUNDATION_IS_SUPPORTED : AVFOUNDATION_NOT_SUPPORTED;
-}
-
-bool AVFoundationGlue::IsAVFoundationSupported() {
-  CHECK_NE(g_avfoundation_initialization, INITIALIZE_NOT_CALLED);
-  return g_avfoundation_initialization == AVFOUNDATION_IS_SUPPORTED;
 }
 
 NSBundle const* AVFoundationGlue::AVFoundationBundle() {

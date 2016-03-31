@@ -1005,12 +1005,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(app_list::switches::kEnableSyncAppList,
                                app_list::switches::kDisableSyncAppList)},
 #endif
-#if defined(OS_MACOSX)
-    {"enable-avfoundation", IDS_FLAGS_AVFOUNDATION_NAME,
-     IDS_FLAGS_AVFOUNDATION_DESCRIPTION, kOsMac,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAVFoundation,
-                               switches::kForceQTKit)},
-#endif
     {"lcd-text-aa", IDS_FLAGS_LCD_TEXT_NAME, IDS_FLAGS_LCD_TEXT_DESCRIPTION,
      kOsDesktop, ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLCDText,
                                            switches::kDisableLCDText)},

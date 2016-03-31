@@ -43,22 +43,6 @@ const char kAlsaOutputDevice[] = "alsa-output-device";
 const char kUseGpuMemoryBuffersForCapture[] =
     "use-gpu-memory-buffers-for-capture";
 
-#if defined(OS_MACOSX)
-// AVFoundation is available in versions 10.7 and onwards, and is to be used
-// http://crbug.com/288562 for both audio and video device monitoring and for
-// video capture. Being a dynamically loaded NSBundle and library, it hits the
-// Chrome startup time (http://crbug.com/311325 and http://crbug.com/311437);
-// for experimentation purposes, in particular library load time issue, the
-// usage of this library can be enabled by using this flag.
-const char kEnableAVFoundation[] = "enable-avfoundation";
-
-// QTKit is the media capture API predecessor to AVFoundation, available up and
-// until Mac OS X 10.9 (despite being deprecated in this last one). This flag
-// is used for troubleshooting and testing, and forces QTKit in builds and
-// configurations where AVFoundation would be used otherwise.
-const char kForceQTKit[] = "force-qtkit";
-#endif
-
 #if defined(OS_WIN)
 // Use exclusive mode audio streaming for Windows Vista and higher.
 // Leads to lower latencies for audio streams which uses the

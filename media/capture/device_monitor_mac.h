@@ -33,8 +33,7 @@ class MEDIA_EXPORT DeviceMonitorMac {
 
   // Method called by the internal DeviceMonitorMacImpl object
   // |device_monitor_impl_| when a device of type |type| has been added to or
-  // removed from the system. This code executes in the notification thread
-  // (QTKit or AVFoundation).
+  // removed from the system. This code executes in the notification thread.
   void NotifyDeviceChanged(base::SystemMonitor::DeviceType type);
 
  private:
