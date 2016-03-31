@@ -29,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
@@ -833,6 +834,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   RenderFrameImpl* render_frame =
       RenderFrameImpl::Create(render_view, routing_id);
+  render_frame->InitializeBlameContext(nullptr);
   WebLocalFrame* web_frame = WebLocalFrame::create(
       blink::WebTreeScopeType::Document, render_frame, opener);
   render_frame->BindToWebFrame(web_frame);
@@ -879,6 +881,7 @@ void RenderFrameImpl::CreateFrame(
     // Create the RenderFrame and WebLocalFrame, linking the two.
     render_frame =
         RenderFrameImpl::Create(parent_proxy->render_view(), routing_id);
+    render_frame->InitializeBlameContext(FromRoutingID(parent_routing_id));
     web_frame = parent_web_frame->createLocalChild(
         replicated_state.scope, WebString::fromUTF8(replicated_state.name),
         WebString::fromUTF8(replicated_state.unique_name),
@@ -900,6 +903,7 @@ void RenderFrameImpl::CreateFrame(
       return;
 
     render_frame = RenderFrameImpl::Create(proxy->render_view(), routing_id);
+    render_frame->InitializeBlameContext(nullptr);
     render_frame->proxy_routing_id_ = proxy_routing_id;
     web_frame = blink::WebLocalFrame::createProvisional(
         render_frame, proxy->web_frame(), replicated_state.sandbox_flags,
@@ -1024,6 +1028,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       media_player_delegate_(NULL),
       is_using_lofi_(false),
       is_pasting_(false),
+      blame_context_(nullptr),
       weak_factory_(this) {
   std::pair<RoutingIDFrameMap::iterator, bool> result =
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
@@ -1116,6 +1121,12 @@ void RenderFrameImpl::Initialize() {
   // We delay calling this until we have the WebFrame so that any observer or
   // embedder can call GetWebFrame on any RenderFrame.
   GetContentClient()->renderer()->RenderFrameCreated(this);
+}
+
+void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
+  DCHECK(!blame_context_);
+  blame_context_ = new FrameBlameContext(this, parent_frame);
+  blame_context_->Initialize();
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
@@ -2536,6 +2547,11 @@ blink::WebCookieJar* RenderFrameImpl::cookieJar() {
   return &cookie_jar_;
 }
 
+blink::BlameContext* RenderFrameImpl::frameBlameContext() {
+  DCHECK(blame_context_);
+  return blame_context_;
+}
+
 blink::WebServiceWorkerProvider*
 RenderFrameImpl::createServiceWorkerProvider() {
   // At this point we should have non-null data source.
@@ -2609,6 +2625,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   // Create the RenderFrame and WebLocalFrame, linking the two.
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
       render_view_.get(), child_routing_id);
+  child_render_frame->InitializeBlameContext(this);
   blink::WebLocalFrame* web_frame =
       WebLocalFrame::create(scope, child_render_frame);
   child_render_frame->BindToWebFrame(web_frame);

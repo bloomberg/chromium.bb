@@ -1051,6 +1051,13 @@ void FrameLoaderClientImpl::suddenTerminationDisablerChanged(bool present, Sudde
     }
 }
 
+BlameContext* FrameLoaderClientImpl::frameBlameContext()
+{
+    if (!m_webFrame->client())
+        return nullptr;
+    return m_webFrame->client()->frameBlameContext();
+}
+
 PassOwnPtrWillBeRawPtr<LinkResource> FrameLoaderClientImpl::createServiceWorkerLinkResource(HTMLLinkElement* owner)
 {
     return ServiceWorkerLinkResource::create(owner);

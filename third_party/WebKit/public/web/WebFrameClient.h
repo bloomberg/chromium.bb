@@ -45,6 +45,7 @@
 #include "WebNavigatorContentUtilsClient.h"
 #include "WebSandboxFlags.h"
 #include "WebTextDirection.h"
+#include "public/platform/BlameContext.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
@@ -140,6 +141,8 @@ public:
     // WebKitPlatformSupport::cookieJar() will be called to access cookies.
     virtual WebCookieJar* cookieJar() { return 0; }
 
+    // Returns a blame context for attributing work belonging to this frame.
+    virtual BlameContext* frameBlameContext() { return nullptr; }
 
     // General notifications -----------------------------------------------
 

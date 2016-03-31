@@ -15,6 +15,9 @@
 #include "third_party/WebKit/public/platform/WebViewScheduler.h"
 
 namespace base {
+namespace trace_event {
+class BlameContext;
+}  // namespace trace_event
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -38,8 +41,8 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
 
   // blink::WebViewScheduler implementation:
   void setPageVisible(bool page_visible) override;
-  blink::WebPassOwnPtr<blink::WebFrameScheduler> createFrameScheduler()
-      override;
+  blink::WebPassOwnPtr<blink::WebFrameScheduler> createFrameScheduler(
+      blink::BlameContext* blame_context) override;
   void enableVirtualTime() override;
   void setAllowVirtualTimeToAdvance(
       bool allow_virtual_time_to_advance) override;
@@ -47,7 +50,8 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   // Virtual for testing.
   virtual void AddConsoleWarning(const std::string& message);
 
-  scoped_ptr<WebFrameSchedulerImpl> createWebFrameSchedulerImpl();
+  scoped_ptr<WebFrameSchedulerImpl> createWebFrameSchedulerImpl(
+      base::trace_event::BlameContext* blame_context);
 
  private:
   friend class WebFrameSchedulerImpl;

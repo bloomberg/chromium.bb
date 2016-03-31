@@ -11,7 +11,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "components/scheduler/scheduler_export.h"
+
+namespace base {
+namespace trace_event {
+class BlameContext;
+}
+}
 
 namespace scheduler {
 
@@ -67,6 +74,8 @@ class SingleThreadIdleTaskRunner
 
   bool RunsTasksOnCurrentThread() const;
 
+  void SetBlameContext(base::trace_event::BlameContext* blame_context);
+
  protected:
   virtual ~SingleThreadIdleTaskRunner();
 
@@ -79,6 +88,7 @@ class SingleThreadIdleTaskRunner
   scoped_refptr<base::SingleThreadTaskRunner> after_wakeup_task_runner_;
   Delegate* delegate_;  // NOT OWNED
   const char* tracing_category_;
+  base::trace_event::BlameContext* blame_context_;  // Not owned.
   base::WeakPtr<SingleThreadIdleTaskRunner> weak_scheduler_ptr_;
   base::WeakPtrFactory<SingleThreadIdleTaskRunner> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(SingleThreadIdleTaskRunner);

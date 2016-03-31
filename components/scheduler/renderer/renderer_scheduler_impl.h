@@ -76,6 +76,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
+  void SetTopLevelBlameContext(
+      base::trace_event::BlameContext* blame_context) override;
 
   // RenderWidgetSignals::Observer implementation:
   void SetAllRenderWidgetsHidden(bool hidden) override;

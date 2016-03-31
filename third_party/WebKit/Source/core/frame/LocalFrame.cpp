@@ -80,7 +80,6 @@
 #include "platform/text/TextStream.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
-#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebViewScheduler.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassOwnPtr.h"
@@ -848,7 +847,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
 WebFrameScheduler* LocalFrame::frameScheduler()
 {
     if (!m_frameScheduler.get())
-        m_frameScheduler = page()->chromeClient().createFrameScheduler();
+        m_frameScheduler = page()->chromeClient().createFrameScheduler(client()->frameBlameContext());
 
     ASSERT(m_frameScheduler.get());
     return m_frameScheduler.get();
@@ -864,7 +863,6 @@ void LocalFrame::scheduleVisualUpdateUnlessThrottled()
 void LocalFrame::updateSecurityOrigin(SecurityOrigin* origin)
 {
     script().updateSecurityOrigin(origin);
-    frameScheduler()->setFrameOrigin(WebSecurityOrigin(origin));
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);

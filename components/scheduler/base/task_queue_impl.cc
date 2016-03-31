@@ -4,6 +4,7 @@
 
 #include "components/scheduler/base/task_queue_impl.h"
 
+#include "base/trace_event/blame_context.h"
 #include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
 #include "components/scheduler/base/time_domain.h"
@@ -109,7 +110,8 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(
       delayed_work_queue(new WorkQueue(task_queue, "delayed")),
       immediate_work_queue(new WorkQueue(task_queue, "immediate")),
       set_index(0),
-      is_enabled(true) {}
+      is_enabled(true),
+      blame_context(nullptr) {}
 
 TaskQueueImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -611,6 +613,8 @@ void TaskQueueImpl::RemoveTaskObserver(
 void TaskQueueImpl::NotifyWillProcessTask(
     const base::PendingTask& pending_task) {
   DCHECK(should_notify_observers_);
+  if (main_thread_only().blame_context)
+    main_thread_only().blame_context->Enter();
   FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver,
                     main_thread_only().task_observers,
                     WillProcessTask(pending_task));
@@ -622,6 +626,8 @@ void TaskQueueImpl::NotifyDidProcessTask(
   FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver,
                     main_thread_only().task_observers,
                     DidProcessTask(pending_task));
+  if (main_thread_only().blame_context)
+    main_thread_only().blame_context->Leave();
 }
 
 void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
@@ -649,6 +655,11 @@ TimeDomain* TaskQueueImpl::GetTimeDomain() const {
 
   base::AutoLock lock(any_thread_lock_);
   return any_thread().time_domain;
+}
+
+void TaskQueueImpl::SetBlameContext(
+    base::trace_event::BlameContext* blame_context) {
+  main_thread_only().blame_context = blame_context;
 }
 
 // static

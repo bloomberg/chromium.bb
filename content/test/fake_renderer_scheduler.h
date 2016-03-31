@@ -53,6 +53,8 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
+  void SetTopLevelBlameContext(
+      base::trace_event::BlameContext* blame_context) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeRendererScheduler);

@@ -182,6 +182,8 @@ public:
 
     void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) override;
 
+    BlameContext* frameBlameContext() override;
+
     PassOwnPtrWillBeRawPtr<LinkResource> createServiceWorkerLinkResource(HTMLLinkElement*) override;
 
 private:

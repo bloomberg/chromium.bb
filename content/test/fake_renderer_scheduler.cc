@@ -123,4 +123,7 @@ void FakeRendererScheduler::ResumeTimerQueue() {
 void FakeRendererScheduler::SetTimerQueueSuspensionWhenBackgroundedEnabled(
     bool enabled) {}
 
+void FakeRendererScheduler::SetTopLevelBlameContext(
+    base::trace_event::BlameContext* blame_context) {}
+
 }  // namespace content

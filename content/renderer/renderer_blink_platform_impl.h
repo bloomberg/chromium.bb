@@ -17,6 +17,7 @@
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
 #include "content/renderer/origin_trials/web_trial_token_validator_impl.h"
+#include "content/renderer/top_level_blame_context.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "device/vibration/vibration_manager.mojom.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -189,6 +190,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void vibrate(unsigned int milliseconds) override;
   void cancelVibration() override;
   blink::WebThread* currentThread() override;
+  blink::BlameContext* topLevelBlameContext() override;
   void recordRappor(const char* metric,
                     const blink::WebString& sample) override;
   void recordRapporURL(const char* metric, const blink::WebURL& url) override;
@@ -294,6 +296,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   IDMap<PlatformEventObserverBase, IDMapOwnPointer> platform_event_observers_;
 
   scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
+  TopLevelBlameContext top_level_blame_context_;
 
   WebTrialTokenValidatorImpl trial_token_validator_;
 

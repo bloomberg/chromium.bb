@@ -35,6 +35,7 @@
 #include "platform/PopupMenu.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "public/platform/BlameContext.h"
 #include "public/platform/WebEventListenerProperties.h"
 #include "public/platform/WebFocusType.h"
 #include "wtf/Forward.h"
@@ -258,7 +259,7 @@ public:
     // that this is comprehensive.
     virtual void didObserveNonGetFetchFromScript() const {}
 
-    virtual PassOwnPtr<WebFrameScheduler> createFrameScheduler() = 0;
+    virtual PassOwnPtr<WebFrameScheduler> createFrameScheduler(BlameContext*) = 0;
 
 protected:
     ~ChromeClient() override { }

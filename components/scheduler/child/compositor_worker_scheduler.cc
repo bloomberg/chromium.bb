@@ -96,6 +96,10 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     return nullptr;
   }
 
+  void SetBlameContext(base::trace_event::BlameContext*) override {
+    NOTREACHED();
+  }
+
  private:
   ~CompositorWorkerTaskRunnerWrapper() override {}
 

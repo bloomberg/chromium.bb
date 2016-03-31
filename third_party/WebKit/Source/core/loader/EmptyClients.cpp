@@ -74,7 +74,6 @@ public:
     void setFrameVisible(bool) override { }
     WebTaskRunner* loadingTaskRunner() override;
     WebTaskRunner* timerTaskRunner() override;
-    void setFrameOrigin(const WebSecurityOrigin&) override { }
 };
 
 WebTaskRunner* EmptyFrameScheduler::loadingTaskRunner()
@@ -115,7 +114,7 @@ String EmptyChromeClient::acceptLanguages()
     return String();
 }
 
-PassOwnPtr<WebFrameScheduler> EmptyChromeClient::createFrameScheduler()
+PassOwnPtr<WebFrameScheduler> EmptyChromeClient::createFrameScheduler(BlameContext*)
 {
     return adoptPtr(new EmptyFrameScheduler());
 }

@@ -5,6 +5,7 @@
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
 
 #include "base/location.h"
+#include "base/trace_event/blame_context.h"
 #include "base/trace_event/trace_event.h"
 
 namespace scheduler {
@@ -18,6 +19,7 @@ SingleThreadIdleTaskRunner::SingleThreadIdleTaskRunner(
       after_wakeup_task_runner_(after_wakeup_task_runner),
       delegate_(delegate),
       tracing_category_(tracing_category),
+      blame_context_(nullptr),
       weak_factory_(this) {
   DCHECK(!idle_priority_task_runner_ ||
          idle_priority_task_runner_->RunsTasksOnCurrentThread());
@@ -72,8 +74,17 @@ void SingleThreadIdleTaskRunner::RunTask(IdleTask idle_task) {
   TRACE_EVENT1(tracing_category_, "SingleThreadIdleTaskRunner::RunTask",
                "allotted_time_ms",
                (deadline - base::TimeTicks::Now()).InMillisecondsF());
+  if (blame_context_)
+    blame_context_->Enter();
   idle_task.Run(deadline);
+  if (blame_context_)
+    blame_context_->Leave();
   delegate_->DidProcessIdleTask();
+}
+
+void SingleThreadIdleTaskRunner::SetBlameContext(
+    base::trace_event::BlameContext* blame_context) {
+  blame_context_ = blame_context;
 }
 
 }  // namespace scheduler

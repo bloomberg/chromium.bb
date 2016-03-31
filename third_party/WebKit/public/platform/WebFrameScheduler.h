@@ -32,9 +32,6 @@ public:
     // Returns the WebTaskRunner for timer tasks.
     // WebFrameScheduler owns the returned WebTaskRunner.
     virtual WebTaskRunner* timerTaskRunner() { return nullptr; }
-
-    // Record the current origin. This is for task attribution in tracing.
-    virtual void setFrameOrigin(const WebSecurityOrigin&) { }
 };
 
 } // namespace blink

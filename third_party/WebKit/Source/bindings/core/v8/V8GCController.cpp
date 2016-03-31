@@ -50,6 +50,8 @@
 #include "core/svg/SVGElement.h"
 #include "platform/Histogram.h"
 #include "platform/TraceEvent.h"
+#include "public/platform/BlameContext.h"
+#include "public/platform/Platform.h"
 #include "wtf/Partitions.h"
 #include "wtf/Vector.h"
 #include <algorithm>
@@ -267,6 +269,11 @@ void V8GCController::gcPrologue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
     if (isMainThread())
         ScriptForbiddenScope::enter();
 
+    // Attribute garbage collection to the all frames instead of a specific
+    // frame.
+    if (BlameContext* blameContext = Platform::current()->topLevelBlameContext())
+        blameContext->Enter();
+
     // TODO(haraken): A GC callback is not allowed to re-enter V8. This means
     // that it's unsafe to run Oilpan's GC in the GC callback because it may
     // run finalizers that call into V8. To avoid the risk, we should post
@@ -330,6 +337,9 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
 
     if (isMainThread())
         ScriptForbiddenScope::exit();
+
+    if (BlameContext* blameContext = Platform::current()->topLevelBlameContext())
+        blameContext->Leave();
 
     // v8::kGCCallbackFlagForced forces a Blink heap garbage collection
     // when a garbage collection was forced from V8. This is either used

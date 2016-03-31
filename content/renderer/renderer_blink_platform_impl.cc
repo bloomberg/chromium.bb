@@ -83,6 +83,7 @@
 #include "media/filters/stream_parser_factory.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/public/platform/BlameContext.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
@@ -269,10 +270,14 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     web_database_observer_impl_.reset(
         new WebDatabaseObserverImpl(sync_message_filter_.get()));
   }
+
+  top_level_blame_context_.Initialize();
+  renderer_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
   WebFileSystemImpl::DeleteThreadSpecificInstance();
+  renderer_scheduler_->SetTopLevelBlameContext(nullptr);
 }
 
 void RendererBlinkPlatformImpl::Shutdown() {
@@ -299,6 +304,10 @@ blink::WebThread* RendererBlinkPlatformImpl::currentThread() {
   if (main_thread_->isCurrentThread())
     return main_thread_.get();
   return BlinkPlatformImpl::currentThread();
+}
+
+blink::BlameContext* RendererBlinkPlatformImpl::topLevelBlameContext() {
+  return &top_level_blame_context_;
 }
 
 blink::WebClipboard* RendererBlinkPlatformImpl::clipboard() {

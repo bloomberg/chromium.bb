@@ -1153,6 +1153,22 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
+void RendererSchedulerImpl::SetTopLevelBlameContext(
+    base::trace_event::BlameContext* blame_context) {
+  // Any task that runs in the default task runners belongs to the context of
+  // all frames (as opposed to a particular frame). Note that the task itself
+  // may still enter a more specific blame context if necessary.
+  //
+  // Per-frame task runners (loading, timers, etc.) are configured with a more
+  // specific blame context by WebFrameSchedulerImpl.
+  control_task_runner_->SetBlameContext(blame_context);
+  DefaultTaskRunner()->SetBlameContext(blame_context);
+  default_loading_task_runner_->SetBlameContext(blame_context);
+  default_timer_task_runner_->SetBlameContext(blame_context);
+  compositor_task_runner_->SetBlameContext(blame_context);
+  idle_helper_.IdleTaskRunner()->SetBlameContext(blame_context);
+}
+
 void RendererSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
   helper_.RegisterTimeDomain(time_domain);
 }

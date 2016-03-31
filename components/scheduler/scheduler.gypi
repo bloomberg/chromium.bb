@@ -17,7 +17,6 @@
       'base/lazy_now.h',
       'base/real_time_domain.cc',
       'base/real_time_domain.h',
-      'base/task_queue.cc',
       'base/task_queue.h',
       'base/task_queue_impl.cc',
       'base/task_queue_impl.h',

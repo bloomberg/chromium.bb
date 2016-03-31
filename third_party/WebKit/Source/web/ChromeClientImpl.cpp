@@ -1090,9 +1090,9 @@ void ChromeClientImpl::didObserveNonGetFetchFromScript() const
         m_webView->pageImportanceSignals()->setIssuedNonGetFetchFromScript();
 }
 
-PassOwnPtr<WebFrameScheduler> ChromeClientImpl::createFrameScheduler()
+PassOwnPtr<WebFrameScheduler> ChromeClientImpl::createFrameScheduler(BlameContext* blameContext)
 {
-    return m_webView->scheduler()->createFrameScheduler().release();
+    return m_webView->scheduler()->createFrameScheduler(blameContext).release();
 }
 
 } // namespace blink

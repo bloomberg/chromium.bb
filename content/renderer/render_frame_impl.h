@@ -29,6 +29,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/frame_blame_context.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
@@ -429,6 +430,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebPopupMenuInfo& popup_menu_info,
       blink::WebExternalPopupMenuClient* popup_menu_client) override;
   blink::WebCookieJar* cookieJar() override;
+  blink::BlameContext* frameBlameContext() override;
   blink::WebServiceWorkerProvider* createServiceWorkerProvider() override;
   void didAccessInitialDocument() override;
   blink::WebFrame* createChildFrame(
@@ -979,6 +981,8 @@ class CONTENT_EXPORT RenderFrameImpl
                      const blink::WebRect& selection_rect,
                      bool final_status_update);
 
+  void InitializeBlameContext(RenderFrameImpl* parent_frame);
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToWebFrame is called, and it is null after
   // frameDetached is called until destruction (which is asynchronous in the
@@ -1202,6 +1206,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // The external popup for the currently showing select popup.
   scoped_ptr<ExternalPopupMenu> external_popup_menu_;
 #endif
+
+  FrameBlameContext* blame_context_;  // Not owned.
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

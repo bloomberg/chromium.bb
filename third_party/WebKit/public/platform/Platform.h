@@ -35,6 +35,7 @@
 #include <windows.h>
 #endif
 
+#include "BlameContext.h"
 #include "UserMetricsAction.h"
 #include "WebAudioDevice.h"
 #include "WebCommon.h"
@@ -357,6 +358,10 @@ public:
     // Returns an interface to the current thread. This is owned by the
     // embedder.
     virtual WebThread* currentThread() { return nullptr; }
+
+    // Returns a blame context for attributing top-level work which does not
+    // belong to a particular frame scope.
+    virtual BlameContext* topLevelBlameContext() { return nullptr; }
 
     // Resources -----------------------------------------------------------
 

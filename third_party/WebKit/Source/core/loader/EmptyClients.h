@@ -170,7 +170,7 @@ public:
     void registerPopupOpeningObserver(PopupOpeningObserver*) override {}
     void unregisterPopupOpeningObserver(PopupOpeningObserver*) override {}
 
-    PassOwnPtr<WebFrameScheduler> createFrameScheduler() override;
+    PassOwnPtr<WebFrameScheduler> createFrameScheduler(BlameContext*) override;
 };
 
 class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
