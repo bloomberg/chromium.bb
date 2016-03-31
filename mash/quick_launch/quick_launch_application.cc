@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/c/system/main.h"
@@ -31,11 +32,15 @@ namespace quick_launch {
 class QuickLaunchUI : public views::WidgetDelegateView,
                       public views::TextfieldController {
  public:
-  QuickLaunchUI(mojo::Connector* connector)
-      : connector_(connector), prompt_(new views::Textfield) {
+  QuickLaunchUI(mojo::Connector* connector, catalog::mojom::CatalogPtr catalog)
+      : connector_(connector),
+        prompt_(new views::Textfield),
+        catalog_(std::move(catalog)) {
     set_background(views::Background::CreateStandardPanelBackground());
     prompt_->set_controller(this);
     AddChildView(prompt_);
+
+    UpdateEntries();
   }
   ~QuickLaunchUI() override {}
 
@@ -62,12 +67,44 @@ class QuickLaunchUI : public views::WidgetDelegateView,
   // Overridden from views::TextFieldController:
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override {
-    if (key_event.key_code() == ui::VKEY_RETURN) {
-      std::string url = Canonicalize(prompt_->text());
-      connections_.push_back(connector_->Connect(url));
-      prompt_->SetText(base::string16());
+    suggestion_rejected_ = false;
+    switch (key_event.key_code()) {
+      case ui::VKEY_RETURN: {
+        std::string url = Canonicalize(prompt_->text());
+        connections_.push_back(connector_->Connect(url));
+        prompt_->SetText(base::string16());
+        UpdateEntries();
+      } break;
+      case ui::VKEY_BACK:
+      case ui::VKEY_DELETE:
+        // The user didn't like our suggestion, don't make another until they
+        // type another character.
+        suggestion_rejected_ = true;
+        break;
+      default:
+        break;
     }
     return false;
+  }
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override {
+    // Don't keep making a suggestion if the user didn't like what we offered.
+    if (suggestion_rejected_)
+      return;
+
+    // TODO(beng): it'd be nice if we persisted some history/scoring here.
+    for (const auto& name : app_names_) {
+      if (base::StartsWith(name, new_contents,
+                           base::CompareCase::INSENSITIVE_ASCII)) {
+        base::string16 suffix = name;
+        base::ReplaceSubstringsAfterOffset(&suffix, 0, new_contents,
+                                           base::string16());
+        gfx::Range range(new_contents.size(), name.size());
+        prompt_->SetText(name);
+        prompt_->SelectRange(range);
+        break;
+      }
+    }
   }
 
   std::string Canonicalize(const base::string16& input) const {
@@ -79,9 +116,24 @@ class QuickLaunchUI : public views::WidgetDelegateView,
     return base::UTF16ToUTF8(working);
   }
 
+  void UpdateEntries() {
+    catalog_->GetEntries(nullptr,
+                         base::Bind(&QuickLaunchUI::OnGotCatalogEntries,
+                                    base::Unretained(this)));
+  }
+
+  void OnGotCatalogEntries(
+      mojo::Map<mojo::String, catalog::mojom::CatalogEntryPtr> entries) {
+    for (const auto& entry : entries)
+      app_names_.insert(base::UTF8ToUTF16(entry.first.get()));
+  }
+
   mojo::Connector* connector_;
   views::Textfield* prompt_;
   std::vector<scoped_ptr<mojo::Connection>> connections_;
+  catalog::mojom::CatalogPtr catalog_;
+  std::set<base::string16> app_names_;
+  bool suggestion_rejected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(QuickLaunchUI);
 };
@@ -97,13 +149,13 @@ void QuickLaunchApplication::Initialize(mojo::Connector* connector,
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(connector);
 
-  views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-      new QuickLaunchUI(connector), nullptr, gfx::Rect(10, 640, 0, 0));
-  window->Show();
-}
+  catalog::mojom::CatalogPtr catalog;
+  connector->ConnectToInterface("mojo:catalog", &catalog);
 
-bool QuickLaunchApplication::AcceptConnection(mojo::Connection* connection) {
-  return true;
+  views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
+      new QuickLaunchUI(connector, std::move(catalog)), nullptr,
+      gfx::Rect(10, 640, 0, 0));
+  window->Show();
 }
 
 }  // namespace quick_launch

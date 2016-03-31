@@ -9,5 +9,6 @@ struct CatalogEntry {
 };
 
 interface Catalog {
-  GetEntries(array<string> urls) => (map<string, CatalogEntry> entries);
+  // If |names| is null, all available entries are returned.
+  GetEntries(array<string>? names) => (map<string, CatalogEntry> entries);
 };

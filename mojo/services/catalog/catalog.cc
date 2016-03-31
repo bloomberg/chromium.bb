@@ -65,6 +65,13 @@ scoped_ptr<ReadManifestResult> ReadManifest(
   return result;
 }
 
+void AddEntryToMap(const Entry& entry,
+                   mojo::Map<mojo::String, mojom::CatalogEntryPtr>* map) {
+  mojom::CatalogEntryPtr entry_ptr(mojom::CatalogEntry::New());
+  entry_ptr->display_name = entry.display_name();
+  (*map)[entry.name()] = std::move(entry_ptr);
+}
+
 }  // namespace
 
 ReadManifestResult::ReadManifestResult() {}
@@ -159,18 +166,23 @@ void Catalog::ResolveMojoName(const mojo::String& mojo_name,
 void Catalog::GetEntries(mojo::Array<mojo::String> names,
                          const GetEntriesCallback& callback) {
   mojo::Map<mojo::String, mojom::CatalogEntryPtr> entries;
-  std::vector<mojo::String> names_vec = names.PassStorage();
-  for (const std::string& name : names_vec) {
-    Entry* entry = nullptr;
-    if (user_catalog_.find(name) != user_catalog_.end())
-      entry = user_catalog_[name].get();
-    else if (system_catalog_->find(name) != system_catalog_->end())
-      entry = (*system_catalog_)[name].get();
-    else
-      continue;
-    mojom::CatalogEntryPtr entry_ptr(mojom::CatalogEntry::New());
-    entry_ptr->display_name = entry->display_name();
-    entries[entry->name()] = std::move(entry_ptr);
+  if (names.is_null()) {
+    for (const auto& entry : user_catalog_)
+      AddEntryToMap(*entry.second, &entries);
+    for (const auto& entry : *system_catalog_)
+      AddEntryToMap(*entry.second, &entries);
+  } else {
+    std::vector<mojo::String> names_vec = names.PassStorage();
+    for (const std::string& name : names_vec) {
+      Entry* entry = nullptr;
+      if (user_catalog_.find(name) != user_catalog_.end())
+        entry = user_catalog_[name].get();
+      else if (system_catalog_->find(name) != system_catalog_->end())
+        entry = (*system_catalog_)[name].get();
+      else
+        continue;
+      AddEntryToMap(*entry, &entries);
+    }
   }
   callback.Run(std::move(entries));
 }
@@ -220,8 +232,7 @@ void Catalog::OnReadManifest(base::WeakPtr<Catalog> catalog,
   callback.Run(mojo::shell::mojom::ResolveResult::From(*entry));
   if (catalog) {
     catalog->AddEntryToCatalog(
-       std::move(entry),
-        result->package_dir == catalog->system_package_dir_);
+        std::move(entry), result->package_dir == catalog->system_package_dir_);
   }
 }
 
