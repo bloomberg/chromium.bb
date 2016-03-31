@@ -844,10 +844,12 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK(!picture_info_map_.count(picture.id()));
     assigned_picture_ids_.insert(picture.id());
     available_picture_ids_.push_back(picture.id());
+    DCHECK_LE(1u, picture.internal_texture_ids().size());
+    DCHECK_LE(1u, picture.texture_ids().size());
     picture_info_map_.insert(std::make_pair(
         picture.id(),
-        make_scoped_ptr(new PictureInfo(picture.internal_texture_id(),
-                                        picture.texture_id()))));
+        make_scoped_ptr(new PictureInfo(picture.internal_texture_ids()[0],
+                                        picture.texture_ids()[0]))));
   }
 
   // Pictures are not marked as uncleared until after this method returns, and
@@ -1004,8 +1006,8 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
 
       // Request new pictures.
       picture_size_ = frame.coded_size;
-      client_->ProvidePictureBuffers(
-          kNumPictureBuffers, coded_size_, GL_TEXTURE_RECTANGLE_ARB);
+      client_->ProvidePictureBuffers(kNumPictureBuffers, 1, coded_size_,
+                                     GL_TEXTURE_RECTANGLE_ARB);
       return false;
     }
     if (!SendFrame(frame))

@@ -2,31 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "media/video/picture.h"
 
 namespace media {
 
-PictureBuffer::PictureBuffer(int32_t id, gfx::Size size, uint32_t texture_id)
-    : id_(id), size_(size), texture_id_(texture_id), internal_texture_id_(0) {}
+PictureBuffer::PictureBuffer(int32_t id,
+                             gfx::Size size,
+                             const TextureIds& texture_ids)
+    : id_(id), size_(size), texture_ids_(texture_ids) {}
 
 PictureBuffer::PictureBuffer(int32_t id,
                              gfx::Size size,
-                             uint32_t texture_id,
-                             uint32_t internal_texture_id)
+                             const TextureIds& texture_ids,
+                             const TextureIds& internal_texture_ids)
     : id_(id),
       size_(size),
-      texture_id_(texture_id),
-      internal_texture_id_(internal_texture_id) {}
+      texture_ids_(texture_ids),
+      internal_texture_ids_(internal_texture_ids) {
+  DCHECK_EQ(texture_ids.size(), internal_texture_ids.size());
+}
 
 PictureBuffer::PictureBuffer(int32_t id,
                              gfx::Size size,
-                             uint32_t texture_id,
-                             const gpu::Mailbox& texture_mailbox)
+                             const TextureIds& texture_ids,
+                             const std::vector<gpu::Mailbox>& texture_mailboxes)
     : id_(id),
       size_(size),
-      texture_id_(texture_id),
-      internal_texture_id_(0),
-      texture_mailbox_(texture_mailbox) {}
+      texture_ids_(texture_ids),
+      texture_mailboxes_(texture_mailboxes) {
+  DCHECK_EQ(texture_ids.size(), texture_mailboxes.size());
+}
+
+PictureBuffer::~PictureBuffer() {}
 
 Picture::Picture(int32_t picture_buffer_id,
                  int32_t bitstream_buffer_id,

@@ -213,7 +213,8 @@ void AndroidDeferredRenderingBackingStrategy::AssignOnePictureBuffer(
     // unless we make the texture transparent.
     static const uint8_t rgba[] = {0, 0, 0, 0};
     const gfx::Size size(1, 1);
-    glBindTexture(GL_TEXTURE_2D, picture_buffer.texture_id());
+    DCHECK_LE(1u, picture_buffer.texture_ids().size());
+    glBindTexture(GL_TEXTURE_2D, picture_buffer.texture_ids()[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, rgba);
   }

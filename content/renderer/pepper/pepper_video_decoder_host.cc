@@ -280,10 +280,11 @@ int32_t PepperVideoDecoderHost::OnHostMsgAssignTextures(
 
   std::vector<media::PictureBuffer> picture_buffers;
   for (uint32_t i = 0; i < texture_ids.size(); i++) {
+    media::PictureBuffer::TextureIds ids;
+    ids.push_back(texture_ids[i]);
     media::PictureBuffer buffer(
         texture_ids[i],  // Use the texture_id to identify the buffer.
-        gfx::Size(size.width, size.height),
-        texture_ids[i]);
+        gfx::Size(size.width, size.height), ids);
     picture_buffers.push_back(buffer);
   }
   decoder_->AssignPictureBuffers(picture_buffers);
@@ -352,8 +353,10 @@ int32_t PepperVideoDecoderHost::OnHostMsgReset(
 
 void PepperVideoDecoderHost::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
+    uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
+  DCHECK_EQ(1u, textures_per_buffer);
   RequestTextures(std::max(min_picture_count_, requested_num_of_buffers),
                   dimensions,
                   texture_target,

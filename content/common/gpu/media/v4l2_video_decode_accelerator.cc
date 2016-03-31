@@ -362,14 +362,11 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
     DCHECK_EQ(output_record.picture_id, -1);
     DCHECK_EQ(output_record.cleared, false);
+    DCHECK_LE(1u, buffers[i].texture_ids().size());
 
-    EGLImageKHR egl_image = device_->CreateEGLImage(egl_display_,
-                                                    egl_context_,
-                                                    buffers[i].texture_id(),
-                                                    coded_size_,
-                                                    i,
-                                                    output_format_fourcc_,
-                                                    output_planes_count_);
+    EGLImageKHR egl_image = device_->CreateEGLImage(
+        egl_display_, egl_context_, buffers[i].texture_ids()[0], coded_size_, i,
+        output_format_fourcc_, output_planes_count_);
     if (egl_image == EGL_NO_IMAGE_KHR) {
       LOG(ERROR) << "AssignPictureBuffers(): could not create EGLImageKHR";
       // Ownership of EGLImages allocated in previous iterations of this loop
@@ -1874,9 +1871,9 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
            << "buffer_count=" << buffer_count
            << ", coded_size=" << coded_size_.ToString();
   child_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
-                            buffer_count, coded_size_,
-                            device_->GetTextureTarget()));
+      FROM_HERE,
+      base::Bind(&Client::ProvidePictureBuffers, client_, buffer_count, 1,
+                 coded_size_, device_->GetTextureTarget()));
 
   // Wait for the client to call AssignPictureBuffers() on the Child thread.
   // We do this, because if we continue decoding without finishing buffer

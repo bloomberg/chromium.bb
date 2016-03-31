@@ -135,7 +135,7 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
     return;
   // Rearrange data for IPC command.
   std::vector<int32_t> buffer_ids;
-  std::vector<uint32_t> texture_ids;
+  std::vector<media::PictureBuffer::TextureIds> texture_ids;
   for (uint32_t i = 0; i < buffers.size(); i++) {
     const media::PictureBuffer& buffer = buffers[i];
     if (buffer.size() != picture_buffer_dimensions_) {
@@ -145,7 +145,7 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
       PostNotifyError(INVALID_ARGUMENT);
       return;
     }
-    texture_ids.push_back(buffer.texture_id());
+    texture_ids.push_back(buffer.texture_ids());
     buffer_ids.push_back(buffer.id());
   }
   Send(new AcceleratedVideoDecoderMsg_AssignPictureBuffers(
@@ -223,13 +223,21 @@ void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
 
 void GpuVideoDecodeAcceleratorHost::OnProvidePictureBuffer(
     uint32_t num_requested_buffers,
+    uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
   DCHECK(CalledOnValidThread());
   picture_buffer_dimensions_ = dimensions;
+
+  const int kMaxVideoPlanes = 4;
+  if (textures_per_buffer > kMaxVideoPlanes) {
+    PostNotifyError(PLATFORM_FAILURE);
+    return;
+  }
+
   if (client_) {
-    client_->ProvidePictureBuffers(
-        num_requested_buffers, dimensions, texture_target);
+    client_->ProvidePictureBuffers(num_requested_buffers, textures_per_buffer,
+                                   dimensions, texture_target);
   }
 }
 

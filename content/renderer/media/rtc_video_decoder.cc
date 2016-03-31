@@ -293,10 +293,12 @@ int32_t RTCVideoDecoder::Release() {
 }
 
 void RTCVideoDecoder::ProvidePictureBuffers(uint32_t count,
+                                            uint32_t textures_per_buffer,
                                             const gfx::Size& size,
                                             uint32_t texture_target) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DVLOG(3) << "ProvidePictureBuffers. texture_target=" << texture_target;
+  DCHECK_EQ(1u, textures_per_buffer);
 
   if (!vda_)
     return;
@@ -317,8 +319,13 @@ void RTCVideoDecoder::ProvidePictureBuffers(uint32_t count,
 
   std::vector<media::PictureBuffer> picture_buffers;
   for (size_t i = 0; i < texture_ids.size(); ++i) {
-    picture_buffers.push_back(media::PictureBuffer(
-        next_picture_buffer_id_++, size, texture_ids[i], texture_mailboxes[i]));
+    media::PictureBuffer::TextureIds ids;
+    ids.push_back(texture_ids[i]);
+    std::vector<gpu::Mailbox> mailboxes;
+    mailboxes.push_back(texture_mailboxes[i]);
+
+    picture_buffers.push_back(
+        media::PictureBuffer(next_picture_buffer_id_++, size, ids, mailboxes));
     bool inserted = assigned_picture_buffers_.insert(std::make_pair(
         picture_buffers.back().id(), picture_buffers.back())).second;
     DCHECK(inserted);
@@ -342,7 +349,7 @@ void RTCVideoDecoder::DismissPictureBuffer(int32_t id) {
 
   if (!picture_buffers_at_display_.count(id)) {
     // We can delete the texture immediately as it's not being displayed.
-    factories_->DeleteTexture(buffer_to_dismiss.texture_id());
+    factories_->DeleteTexture(buffer_to_dismiss.texture_ids()[0]);
     return;
   }
   // Not destroying a texture in display in |picture_buffers_at_display_|.
@@ -381,10 +388,10 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
-  bool inserted =
-      picture_buffers_at_display_.insert(std::make_pair(
-                                             picture.picture_buffer_id(),
-                                             pb.texture_id())).second;
+  bool inserted = picture_buffers_at_display_
+                      .insert(std::make_pair(picture.picture_buffer_id(),
+                                             pb.texture_ids()[0]))
+                      .second;
   DCHECK(inserted);
 
   // Create a WebRTC video frame.
@@ -418,11 +425,11 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   // correct format is used and everyone down the line understands it.
   scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapNativeTexture(
       media::PIXEL_FORMAT_ARGB,
-      gpu::MailboxHolder(pb.texture_mailbox(), gpu::SyncToken(),
+      gpu::MailboxHolder(pb.texture_mailbox(0), gpu::SyncToken(),
                          decoder_texture_target_),
       media::BindToCurrentLoop(base::Bind(
           &RTCVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
-          factories_, picture.picture_buffer_id(), pb.texture_id())),
+          factories_, picture.picture_buffer_id(), pb.texture_ids()[0])),
       pb.size(), visible_rect, visible_rect.size(), timestamp_ms);
   if (frame && picture.allow_overlay()) {
     frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
@@ -712,7 +719,7 @@ void RTCVideoDecoder::DestroyTextures() {
     assigned_picture_buffers_.erase(picture_buffer_at_display.first);
 
   for (const auto& assigned_picture_buffer : assigned_picture_buffers_)
-    factories_->DeleteTexture(assigned_picture_buffer.second.texture_id());
+    factories_->DeleteTexture(assigned_picture_buffer.second.texture_ids()[0]);
 
   assigned_picture_buffers_.clear();
 }

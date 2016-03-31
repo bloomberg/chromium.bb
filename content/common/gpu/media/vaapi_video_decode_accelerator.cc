@@ -660,7 +660,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&Client::ProvidePictureBuffers, client_, requested_num_pics_,
-                 requested_pic_size_, VaapiPicture::GetGLTextureTarget()));
+                 1, requested_pic_size_, VaapiPicture::GetGLTextureTarget()));
 }
 
 void VaapiVideoDecodeAccelerator::Decode(
@@ -737,17 +737,19 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK_EQ(va_surface_ids.size(), buffers.size());
 
   for (size_t i = 0; i < buffers.size(); ++i) {
+    DCHECK_LE(1u, buffers[i].texture_ids().size());
     DVLOG(2) << "Assigning picture id: " << buffers[i].id()
-             << " to texture id: " << buffers[i].texture_id()
+             << " to texture id: " << buffers[i].texture_ids()[0]
              << " VASurfaceID: " << va_surface_ids[i];
 
     linked_ptr<VaapiPicture> picture(VaapiPicture::CreatePicture(
         vaapi_wrapper_, make_context_current_, buffers[i].id(),
-        buffers[i].texture_id(), requested_pic_size_));
+        buffers[i].texture_ids()[0], requested_pic_size_));
 
     scoped_refptr<gl::GLImage> image = picture->GetImageToBind();
     if (image) {
-      bind_image_.Run(buffers[i].internal_texture_id(),
+      DCHECK_LE(1u, buffers[i].internal_texture_ids().size());
+      bind_image_.Run(buffers[i].internal_texture_ids()[0],
                       VaapiPicture::GetGLTextureTarget(), image);
     }
 

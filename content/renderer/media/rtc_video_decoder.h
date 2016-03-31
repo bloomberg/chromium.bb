@@ -82,6 +82,7 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // VideoDecodeAccelerator::Client implementation.
   void ProvidePictureBuffers(uint32_t count,
+                             uint32_t textures_per_buffer,
                              const gfx::Size& size,
                              uint32_t texture_target) override;
   void DismissPictureBuffer(int32_t id) override;

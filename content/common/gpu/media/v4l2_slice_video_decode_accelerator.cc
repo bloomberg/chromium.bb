@@ -741,7 +741,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   child_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoDecodeAccelerator::Client::ProvidePictureBuffers,
-                 client_, num_pictures, coded_size_,
+                 client_, num_pictures, 1, coded_size_,
                  device_->GetTextureTarget()));
 
   return true;
@@ -1498,13 +1498,10 @@ void V4L2SliceVideoDecodeAccelerator::CreateEGLImages(
 
   std::vector<EGLImageKHR> egl_images;
   for (size_t i = 0; i < buffers.size(); ++i) {
-    EGLImageKHR egl_image = device_->CreateEGLImage(egl_display_,
-                                                    egl_context_,
-                                                    buffers[i].texture_id(),
-                                                    buffers[i].size(),
-                                                    i,
-                                                    output_format_fourcc,
-                                                    output_planes_count);
+    DCHECK_LE(1u, buffers[i].texture_ids().size());
+    EGLImageKHR egl_image = device_->CreateEGLImage(
+        egl_display_, egl_context_, buffers[i].texture_ids()[0],
+        buffers[i].size(), i, output_format_fourcc, output_planes_count);
     if (egl_image == EGL_NO_IMAGE_KHR) {
       LOGF(ERROR) << "Could not create EGLImageKHR";
       for (const auto& image_to_destroy : egl_images)

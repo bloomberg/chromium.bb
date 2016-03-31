@@ -781,7 +781,7 @@ void AndroidVideoDecodeAccelerator::DecodeBuffer(
 }
 
 void AndroidVideoDecodeAccelerator::RequestPictureBuffers() {
-  client_->ProvidePictureBuffers(kNumPictureBuffers,
+  client_->ProvidePictureBuffers(kNumPictureBuffers, 1,
                                  strategy_->GetPictureBufferSize(),
                                  strategy_->GetTextureTarget());
 }
@@ -1001,8 +1001,10 @@ gpu::gles2::TextureRef* AndroidVideoDecodeAccelerator::GetTextureForPicture(
       gl_decoder_->GetContextGroup()->texture_manager();
   RETURN_ON_FAILURE(this, texture_manager, "Null texture_manager",
                     ILLEGAL_STATE, nullptr);
+
+  DCHECK_LE(1u, picture_buffer.internal_texture_ids().size());
   gpu::gles2::TextureRef* texture_ref =
-      texture_manager->GetTexture(picture_buffer.internal_texture_id());
+      texture_manager->GetTexture(picture_buffer.internal_texture_ids()[0]);
   RETURN_ON_FAILURE(this, texture_manager, "Null texture_ref", ILLEGAL_STATE,
                     nullptr);
 

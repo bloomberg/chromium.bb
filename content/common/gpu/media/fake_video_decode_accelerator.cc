@@ -59,8 +59,7 @@ bool FakeVideoDecodeAccelerator::Initialize(const Config& config,
   // V4L2VideoDecodeAccelerator waits until first decode call to ask for buffers
   // This class asks for it on initialization instead.
   client_ = client;
-  client_->ProvidePictureBuffers(kNumBuffers,
-                                 frame_buffer_size_,
+  client_->ProvidePictureBuffers(kNumBuffers, 1, frame_buffer_size_,
                                  kDefaultTextureTarget);
   return true;
 }
@@ -108,7 +107,8 @@ void FakeVideoDecodeAccelerator::AssignPictureBuffers(
     return;
   }
   for (size_t index = 0; index < buffers.size(); ++index) {
-    glBindTexture(GL_TEXTURE_2D, buffers[index].texture_id());
+    DCHECK_LE(1u, buffers[index].texture_ids().size());
+    glBindTexture(GL_TEXTURE_2D, buffers[index].texture_ids()[0]);
     // Every other frame white and the rest black.
     uint8_t* data = index % 2 ? white_data.get() : black_data.get();
     glTexImage2D(GL_TEXTURE_2D,

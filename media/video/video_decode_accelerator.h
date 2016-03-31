@@ -126,6 +126,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // Note that the actual count provided through AssignPictureBuffers() can be
     // larger than the value requested.
     virtual void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
+                                       uint32_t textures_per_buffer,
                                        const gfx::Size& dimensions,
                                        uint32_t texture_target) = 0;
 

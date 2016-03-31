@@ -117,7 +117,8 @@ void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
   float transform_matrix[16];
   surface_texture_->GetTransformMatrix(transform_matrix);
 
-  uint32_t picture_buffer_texture_id = picture_buffer.texture_id();
+  DCHECK_LE(1u, picture_buffer.texture_ids().size());
+  uint32_t picture_buffer_texture_id = picture_buffer.texture_ids()[0];
 
   // Defer initializing the CopyTextureCHROMIUMResourceManager until it is
   // needed because it takes 10s of milliseconds to initialize.
@@ -169,7 +170,8 @@ void AndroidCopyingBackingStrategy::UpdatePictureBufferSize(
 
   // 2) Update the GL texture via glTexImage2D. This step assumes the caller
   // has made our GL context current.
-  glBindTexture(GL_TEXTURE_2D, picture_buffer->texture_id());
+  DCHECK_LE(1u, picture_buffer->texture_ids().size());
+  glBindTexture(GL_TEXTURE_2D, picture_buffer->texture_ids()[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, new_size.width(), new_size.height(),
                0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   state_provider_->GetGlDecoder()->RestoreActiveTextureUnitBinding(

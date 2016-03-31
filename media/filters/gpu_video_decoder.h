@@ -67,6 +67,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // VideoDecodeAccelerator::Client implementation.
   void NotifyCdmAttached(bool success) override;
   void ProvidePictureBuffers(uint32_t count,
+                             uint32_t textures_per_buffer,
                              const gfx::Size& size,
                              uint32_t texture_target) override;
   void DismissPictureBuffer(int32_t id) override;
@@ -117,7 +118,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   static void ReleaseMailbox(base::WeakPtr<GpuVideoDecoder> decoder,
                              media::GpuVideoAcceleratorFactories* factories,
                              int64_t picture_buffer_id,
-                             uint32_t texture_id,
+                             PictureBuffer::TextureIds ids,
                              const gpu::SyncToken& release_sync_token);
   // Indicate the picture buffer can be reused by the decoder.
   void ReusePictureBuffer(int64_t picture_buffer_id);
@@ -186,7 +187,8 @@ class MEDIA_EXPORT GpuVideoDecoder
   // PictureBuffers given to us by VDA via PictureReady, which we sent forward
   // as VideoFrames to be rendered via decode_cb_, and which will be returned
   // to us via ReusePictureBuffer.
-  typedef std::map<int32_t /* picture_buffer_id */, uint32_t /* texture_id */>
+  typedef std::map<int32_t /* picture_buffer_id */,
+                   PictureBuffer::TextureIds /* texture_id */>
       PictureBufferTextureMap;
   PictureBufferTextureMap picture_buffers_at_display_;
 

@@ -184,10 +184,10 @@ void PPB_VideoDecoder_Impl::AssignPictureBuffers(
   for (uint32_t i = 0; i < no_of_buffers; i++) {
     PP_PictureBuffer_Dev in_buf = buffers[i];
     DCHECK_GE(in_buf.id, 0);
+    media::PictureBuffer::TextureIds ids;
+    ids.push_back(in_buf.texture_id);
     media::PictureBuffer buffer(
-        in_buf.id,
-        gfx::Size(in_buf.size.width, in_buf.size.height),
-        in_buf.texture_id);
+        in_buf.id, gfx::Size(in_buf.size.width, in_buf.size.height), ids);
     wrapped_buffers.push_back(buffer);
     UMA_HISTOGRAM_COUNTS_10000("Media.PepperVideoDecoderPictureHeight",
                                in_buf.size.height);
@@ -240,9 +240,11 @@ void PPB_VideoDecoder_Impl::Destroy() {
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
+    uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
   DCHECK(RenderThreadImpl::current());
+  DCHECK_EQ(1u, textures_per_buffer);
   if (!GetPPP())
     return;
 

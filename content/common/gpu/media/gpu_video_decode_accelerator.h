@@ -55,6 +55,7 @@ class GpuVideoDecodeAccelerator
   // media::VideoDecodeAccelerator::Client implementation.
   void NotifyCdmAttached(bool success) override;
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
+                             uint32_t textures_per_buffer,
                              const gfx::Size& dimensions,
                              uint32_t texture_target) override;
   void DismissPictureBuffer(int32_t picture_buffer_id) override;
@@ -108,8 +109,9 @@ class GpuVideoDecodeAccelerator
   // Handlers for IPC messages.
   void OnSetCdm(int cdm_id);
   void OnDecode(const media::BitstreamBuffer& bitstream_buffer);
-  void OnAssignPictureBuffers(const std::vector<int32_t>& buffer_ids,
-                              const std::vector<uint32_t>& texture_ids);
+  void OnAssignPictureBuffers(
+      const std::vector<int32_t>& buffer_ids,
+      const std::vector<media::PictureBuffer::TextureIds>& texture_ids);
   void OnReusePictureBuffer(int32_t picture_buffer_id);
   void OnFlush();
   void OnReset();
@@ -148,6 +150,10 @@ class GpuVideoDecodeAccelerator
 
   // The texture target as requested by ProvidePictureBuffers().
   uint32_t texture_target_;
+
+  // The number of textures per picture buffer as requests by
+  // ProvidePictureBuffers()
+  uint32_t textures_per_buffer_;
 
   // The message filter to run VDA::Decode on IO thread if VDA supports it.
   scoped_refptr<MessageFilter> filter_;

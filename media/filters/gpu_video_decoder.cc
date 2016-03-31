@@ -267,7 +267,8 @@ void GpuVideoDecoder::DestroyPictureBuffers(PictureBufferMap* buffers) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   for (PictureBufferMap::iterator it = buffers->begin(); it != buffers->end();
        ++it) {
-    factories_->DeleteTexture(it->second.texture_id());
+    for (uint32_t id : it->second.texture_ids())
+      factories_->DeleteTexture(id);
   }
 
   buffers->clear();
@@ -407,6 +408,7 @@ int GpuVideoDecoder::GetMaxDecodeRequests() const {
 }
 
 void GpuVideoDecoder::ProvidePictureBuffers(uint32_t count,
+                                            uint32_t textures_per_buffer,
                                             const gfx::Size& size,
                                             uint32_t texture_target) {
   DVLOG(3) << "ProvidePictureBuffers(" << count << ", "
@@ -416,24 +418,31 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32_t count,
   std::vector<uint32_t> texture_ids;
   std::vector<gpu::Mailbox> texture_mailboxes;
   decoder_texture_target_ = texture_target;
-  if (!factories_->CreateTextures(count,
-                                  size,
-                                  &texture_ids,
-                                  &texture_mailboxes,
+  if (!factories_->CreateTextures(count * textures_per_buffer, size,
+                                  &texture_ids, &texture_mailboxes,
                                   decoder_texture_target_)) {
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
-  DCHECK_EQ(count, texture_ids.size());
-  DCHECK_EQ(count, texture_mailboxes.size());
+  DCHECK_EQ(count * textures_per_buffer, texture_ids.size());
+  DCHECK_EQ(count * textures_per_buffer, texture_mailboxes.size());
 
   if (!vda_)
     return;
 
   std::vector<PictureBuffer> picture_buffers;
-  for (size_t i = 0; i < texture_ids.size(); ++i) {
-    picture_buffers.push_back(PictureBuffer(
-        next_picture_buffer_id_++, size, texture_ids[i], texture_mailboxes[i]));
+  size_t index = 0;
+  for (size_t i = 0; i < count; ++i) {
+    PictureBuffer::TextureIds ids;
+    std::vector<gpu::Mailbox> mailboxes;
+    for (size_t j = 0; j < textures_per_buffer; j++) {
+      ids.push_back(texture_ids[index]);
+      mailboxes.push_back(texture_mailboxes[index]);
+      index++;
+    }
+
+    picture_buffers.push_back(
+        PictureBuffer(next_picture_buffer_id_++, size, ids, mailboxes));
     bool inserted = assigned_picture_buffers_.insert(std::make_pair(
         picture_buffers.back().id(), picture_buffers.back())).second;
     DCHECK(inserted);
@@ -459,7 +468,8 @@ void GpuVideoDecoder::DismissPictureBuffer(int32_t id) {
 
   if (!picture_buffers_at_display_.count(id)) {
     // We can delete the texture immediately as it's not being displayed.
-    factories_->DeleteTexture(buffer_to_dismiss.texture_id());
+    for (uint32_t id : buffer_to_dismiss.texture_ids())
+      factories_->DeleteTexture(id);
     CHECK_GT(available_pictures_, 0);
     --available_pictures_;
   }
@@ -516,11 +526,11 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
       opaque ? PIXEL_FORMAT_XRGB : PIXEL_FORMAT_ARGB,
-      gpu::MailboxHolder(pb.texture_mailbox(), gpu::SyncToken(),
+      gpu::MailboxHolder(pb.texture_mailbox(0), gpu::SyncToken(),
                          decoder_texture_target_),
       BindToCurrentLoop(base::Bind(
           &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
-          factories_, picture.picture_buffer_id(), pb.texture_id())),
+          factories_, picture.picture_buffer_id(), pb.texture_ids())),
       pb.size(), visible_rect, natural_size, timestamp));
   if (!frame) {
     DLOG(ERROR) << "Create frame failed for: " << picture.picture_buffer_id();
@@ -531,10 +541,11 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
     frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
   CHECK_GT(available_pictures_, 0);
   --available_pictures_;
+
   bool inserted =
-      picture_buffers_at_display_.insert(std::make_pair(
-                                             picture.picture_buffer_id(),
-                                             pb.texture_id())).second;
+      picture_buffers_at_display_
+          .insert(std::make_pair(picture.picture_buffer_id(), pb.texture_ids()))
+          .second;
   DCHECK(inserted);
 
   DeliverFrame(frame);
@@ -557,7 +568,7 @@ void GpuVideoDecoder::ReleaseMailbox(
     base::WeakPtr<GpuVideoDecoder> decoder,
     media::GpuVideoAcceleratorFactories* factories,
     int64_t picture_buffer_id,
-    uint32_t texture_id,
+    PictureBuffer::TextureIds ids,
     const gpu::SyncToken& release_sync_token) {
   DCHECK(factories->GetTaskRunner()->BelongsToCurrentThread());
   factories->WaitSyncToken(release_sync_token);
@@ -568,7 +579,8 @@ void GpuVideoDecoder::ReleaseMailbox(
   }
   // It's the last chance to delete the texture after display,
   // because GpuVideoDecoder was destructed.
-  factories->DeleteTexture(texture_id);
+  for (uint32_t id : ids)
+    factories->DeleteTexture(id);
 }
 
 void GpuVideoDecoder::ReusePictureBuffer(int64_t picture_buffer_id) {
@@ -578,13 +590,14 @@ void GpuVideoDecoder::ReusePictureBuffer(int64_t picture_buffer_id) {
   DCHECK(!picture_buffers_at_display_.empty());
   PictureBufferTextureMap::iterator display_iterator =
       picture_buffers_at_display_.find(picture_buffer_id);
-  uint32_t texture_id = display_iterator->second;
+  PictureBuffer::TextureIds ids = display_iterator->second;
   DCHECK(display_iterator != picture_buffers_at_display_.end());
   picture_buffers_at_display_.erase(display_iterator);
 
   if (!assigned_picture_buffers_.count(picture_buffer_id)) {
     // This picture was dismissed while in display, so we postponed deletion.
-    factories_->DeleteTexture(texture_id);
+    for (uint32_t id : ids)
+      factories_->DeleteTexture(id);
     return;
   }
 

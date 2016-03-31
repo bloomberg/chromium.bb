@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -18,15 +20,18 @@ namespace media {
 // This is the media-namespace equivalent of PP_PictureBuffer_Dev.
 class MEDIA_EXPORT PictureBuffer {
  public:
-  PictureBuffer(int32_t id, gfx::Size size, uint32_t texture_id);
+  using TextureIds = std::vector<uint32_t>;
+
+  PictureBuffer(int32_t id, gfx::Size size, const TextureIds& texture_ids);
   PictureBuffer(int32_t id,
                 gfx::Size size,
-                uint32_t texture_id,
-                uint32_t internal_texture_id);
+                const TextureIds& texture_ids,
+                const TextureIds& internal_texture_ids);
   PictureBuffer(int32_t id,
                 gfx::Size size,
-                uint32_t texture_id,
-                const gpu::Mailbox& texture_mailbox);
+                const TextureIds& texture_ids,
+                const std::vector<gpu::Mailbox>& texture_mailboxes);
+  ~PictureBuffer();
 
   // Returns the client-specified id of the buffer.
   int32_t id() const { return id_; }
@@ -40,20 +45,22 @@ class MEDIA_EXPORT PictureBuffer {
   // Returns the id of the texture.
   // NOTE: The texture id in the renderer process corresponds to a different
   // texture id in the GPU process.
-  uint32_t texture_id() const { return texture_id_; }
+  const TextureIds& texture_ids() const { return texture_ids_; }
 
-  uint32_t internal_texture_id() const { return internal_texture_id_; }
+  const TextureIds& internal_texture_ids() const {
+    return internal_texture_ids_;
+  }
 
-  const gpu::Mailbox& texture_mailbox() const {
-    return texture_mailbox_;
+  const gpu::Mailbox& texture_mailbox(size_t plane) const {
+    return texture_mailboxes_[plane];
   }
 
  private:
   int32_t id_;
   gfx::Size size_;
-  uint32_t texture_id_;
-  uint32_t internal_texture_id_;
-  gpu::Mailbox texture_mailbox_;
+  TextureIds texture_ids_;
+  TextureIds internal_texture_ids_;
+  std::vector<gpu::Mailbox> texture_mailboxes_;
 };
 
 // A decoded picture frame.

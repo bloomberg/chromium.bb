@@ -774,7 +774,7 @@ bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::CopySurfaceComplete(
   GLint current_texture = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_2D, &current_texture);
 
-  glBindTexture(GL_TEXTURE_2D, picture_buffer_.texture_id());
+  glBindTexture(GL_TEXTURE_2D, picture_buffer_.texture_ids()[0]);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
@@ -1150,6 +1150,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
   // and mark these buffers as available for use.
   for (size_t buffer_index = 0; buffer_index < buffers.size();
        ++buffer_index) {
+    DCHECK_LE(1u, buffers[buffer_index].texture_ids().size());
     linked_ptr<DXVAPictureBuffer> picture_buffer =
         DXVAPictureBuffer::Create(*this, buffers[buffer_index], egl_config_);
     RETURN_AND_NOTIFY_ON_FAILURE(picture_buffer.get(),
@@ -1886,10 +1887,8 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
   if (GetState() != kUninitialized && client_) {
-    client_->ProvidePictureBuffers(
-        kNumPictureBuffers,
-        gfx::Size(width, height),
-        GL_TEXTURE_2D);
+    client_->ProvidePictureBuffers(kNumPictureBuffers, 1,
+                                   gfx::Size(width, height), GL_TEXTURE_2D);
   }
 }
 

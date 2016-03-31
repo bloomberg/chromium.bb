@@ -111,9 +111,10 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_SetCdm, int32_t /* CDM ID */)
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_Decode, media::BitstreamBuffer)
 
 // Give the texture IDs for the textures the decoder will use for output.
-IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderMsg_AssignPictureBuffers,
-                    std::vector<int32_t>,  /* Picture buffer ID */
-                    std::vector<uint32_t>) /* Texture ID */
+IPC_MESSAGE_ROUTED2(
+    AcceleratedVideoDecoderMsg_AssignPictureBuffers,
+    std::vector<int32_t>,                          /* Picture buffer ID */
+    std::vector<media::PictureBuffer::TextureIds>) /* Texture ID */
 
 // Send from Renderer process to the GPU process to recycle the given picture
 // buffer for further decoding.
@@ -144,8 +145,9 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed,
                     int32_t) /* Processed buffer ID */
 
 // Allocate video frames for output of the hardware video decoder.
-IPC_MESSAGE_ROUTED3(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
+IPC_MESSAGE_ROUTED4(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
                     int32_t,   /* Number of video frames to generate */
+                    uint32_t,  /* Number of textures per frame */
                     gfx::Size, /* Requested size of buffer */
                     uint32_t)  /* Texture target */
 

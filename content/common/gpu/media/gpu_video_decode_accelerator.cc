@@ -132,6 +132,7 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     : host_route_id_(host_route_id),
       stub_(stub),
       texture_target_(0),
+      textures_per_buffer_(0),
       filter_removed_(true, false),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(io_task_runner),
@@ -216,6 +217,7 @@ void GpuVideoDecodeAccelerator::NotifyCdmAttached(bool success) {
 
 void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
+    uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
   if (dimensions.width() > media::limits::kMaxDimension ||
@@ -225,14 +227,13 @@ void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
     return;
   }
   if (!Send(new AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers(
-           host_route_id_,
-           requested_num_of_buffers,
-           dimensions,
-           texture_target))) {
+          host_route_id_, requested_num_of_buffers, textures_per_buffer,
+          dimensions, texture_target))) {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers) "
                 << "failed";
   }
   texture_dimensions_ = dimensions;
+  textures_per_buffer_ = textures_per_buffer;
   texture_target_ = texture_target;
 }
 
@@ -501,7 +502,7 @@ void GpuVideoDecodeAccelerator::OnDecode(
 
 void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     const std::vector<int32_t>& buffer_ids,
-    const std::vector<uint32_t>& texture_ids) {
+    const std::vector<media::PictureBuffer::TextureIds>& texture_ids) {
   if (buffer_ids.size() != texture_ids.size()) {
     NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
     return;
@@ -519,51 +520,65 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
-    gpu::gles2::TextureRef* texture_ref = texture_manager->GetTexture(
-        texture_ids[i]);
-    if (!texture_ref) {
-      DLOG(ERROR) << "Failed to find texture id " << texture_ids[i];
+    media::PictureBuffer::TextureIds buffer_texture_ids = texture_ids[i];
+    media::PictureBuffer::TextureIds service_ids;
+    if (buffer_texture_ids.size() != textures_per_buffer_) {
+      DLOG(ERROR) << "Requested " << textures_per_buffer_
+                  << " textures per picture buffer, got "
+                  << buffer_texture_ids.size();
       NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
       return;
     }
-    gpu::gles2::Texture* info = texture_ref->texture();
-    if (info->target() != texture_target_) {
-      DLOG(ERROR) << "Texture target mismatch for texture id "
-                  << texture_ids[i];
-      NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
-      return;
-    }
-    if (texture_target_ == GL_TEXTURE_EXTERNAL_OES ||
-        texture_target_ == GL_TEXTURE_RECTANGLE_ARB) {
-      // These textures have their dimensions defined by the underlying storage.
-      // Use |texture_dimensions_| for this size.
-      texture_manager->SetLevelInfo(
-          texture_ref, texture_target_, 0, GL_RGBA, texture_dimensions_.width(),
-          texture_dimensions_.height(), 1, 0, GL_RGBA, 0, gfx::Rect());
-    } else {
-      // For other targets, texture dimensions should already be defined.
-      GLsizei width = 0, height = 0;
-      info->GetLevelSize(texture_target_, 0, &width, &height, nullptr);
-      if (width != texture_dimensions_.width() ||
-          height != texture_dimensions_.height()) {
-        DLOG(ERROR) << "Size mismatch for texture id " << texture_ids[i];
+    for (size_t j = 0; j < textures_per_buffer_; j++) {
+      gpu::gles2::TextureRef* texture_ref =
+          texture_manager->GetTexture(buffer_texture_ids[j]);
+      if (!texture_ref) {
+        DLOG(ERROR) << "Failed to find texture id " << buffer_texture_ids[j];
         NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
         return;
       }
-
-      // TODO(dshwang): after moving to D3D11, remove this. crbug.com/438691
-      GLenum format =
-          video_decode_accelerator_.get()->GetSurfaceInternalFormat();
-      if (format != GL_RGBA) {
-        texture_manager->SetLevelInfo(texture_ref, texture_target_, 0, format,
-                                      width, height, 1, 0, format, 0,
-                                      gfx::Rect());
+      gpu::gles2::Texture* info = texture_ref->texture();
+      if (info->target() != texture_target_) {
+        DLOG(ERROR) << "Texture target mismatch for texture id "
+                    << buffer_texture_ids[j];
+        NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+        return;
       }
+      if (texture_target_ == GL_TEXTURE_EXTERNAL_OES ||
+          texture_target_ == GL_TEXTURE_RECTANGLE_ARB) {
+        // These textures have their dimensions defined by the underlying
+        // storage.
+        // Use |texture_dimensions_| for this size.
+        texture_manager->SetLevelInfo(texture_ref, texture_target_, 0, GL_RGBA,
+                                      texture_dimensions_.width(),
+                                      texture_dimensions_.height(), 1, 0,
+                                      GL_RGBA, 0, gfx::Rect());
+      } else {
+        // For other targets, texture dimensions should already be defined.
+        GLsizei width = 0, height = 0;
+        info->GetLevelSize(texture_target_, 0, &width, &height, nullptr);
+        if (width != texture_dimensions_.width() ||
+            height != texture_dimensions_.height()) {
+          DLOG(ERROR) << "Size mismatch for texture id "
+                      << buffer_texture_ids[j];
+          NotifyError(media::VideoDecodeAccelerator::INVALID_ARGUMENT);
+          return;
+        }
+
+        // TODO(dshwang): after moving to D3D11, remove this. crbug.com/438691
+        GLenum format =
+            video_decode_accelerator_.get()->GetSurfaceInternalFormat();
+        if (format != GL_RGBA) {
+          texture_manager->SetLevelInfo(texture_ref, texture_target_, 0, format,
+                                        width, height, 1, 0, format, 0,
+                                        gfx::Rect());
+        }
+      }
+      service_ids.push_back(texture_ref->service_id());
+      textures.push_back(texture_ref);
     }
     buffers.push_back(media::PictureBuffer(buffer_ids[i], texture_dimensions_,
-                                           texture_ref->service_id(),
-                                           texture_ids[i]));
-    textures.push_back(texture_ref);
+                                           service_ids, buffer_texture_ids));
   }
   video_decode_accelerator_->AssignPictureBuffers(buffers);
   DebugAutoLock auto_lock(debug_uncleared_textures_lock_);

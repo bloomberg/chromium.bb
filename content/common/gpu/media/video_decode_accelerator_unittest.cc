@@ -333,6 +333,7 @@ class GLRenderingVDAClient
   // VideoDecodeAccelerator::Client implementation.
   // The heart of the Client.
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
+                             uint32_t textures_per_buffer,
                              const gfx::Size& dimensions,
                              uint32_t texture_target) override;
   void DismissPictureBuffer(int32_t picture_buffer_id) override;
@@ -612,10 +613,12 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
 
 void GLRenderingVDAClient::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
+    uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
   if (decoder_deleted())
     return;
+  LOG_ASSERT(textures_per_buffer == 1u);
   std::vector<media::PictureBuffer> buffers;
 
   requested_num_of_buffers += kExtraPictureBuffers;
@@ -638,8 +641,9 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
                                             texture_id))))
               .second);
 
-    buffers.push_back(
-        media::PictureBuffer(picture_buffer_id, dimensions, texture_id));
+    media::PictureBuffer::TextureIds ids;
+    ids.push_back(texture_id);
+    buffers.push_back(media::PictureBuffer(picture_buffer_id, dimensions, ids));
   }
   decoder_->AssignPictureBuffers(buffers);
 }
