@@ -174,11 +174,13 @@ bool StreamTexture::CopyTexImage(unsigned target) {
 
   GLint texture_id;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &texture_id);
-  DCHECK(texture_id);
 
   // The following code only works if we're being asked to copy into
   // |texture_id_|. Copying into a different texture is not supported.
-  if (static_cast<unsigned>(texture_id) != texture_id_)
+  // On some devices GL_TEXTURE_BINDING_EXTERNAL_OES is not supported as
+  // glGetIntegerv() parameter. In this case the value of |texture_id| will be
+  // zero and we assume that it is properly bound to |texture_id_|.
+  if (texture_id > 0 && static_cast<unsigned>(texture_id) != texture_id_)
     return false;
 
   UpdateTexImage();
