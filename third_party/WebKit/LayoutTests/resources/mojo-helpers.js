@@ -34,12 +34,10 @@ define('Mojo Helpers', [
     'content/public/renderer/frame_service_registry',
     'content/public/renderer/service_registry',
 ], (core, router, support, frameServiceRegistry, serviceRegistry) => {
-  if (window.add_completion_callback) {
-    add_completion_callback(() => {
-      frameServiceRegistry.clearServiceOverridesForTesting();
-      serviceRegistry.clearServiceOverridesForTesting();
-    });
-  }
+  add_completion_callback(() => {
+    frameServiceRegistry.clearServiceOverridesForTesting();
+    serviceRegistry.clearServiceOverridesForTesting();
+  });
 
   return {
     core,

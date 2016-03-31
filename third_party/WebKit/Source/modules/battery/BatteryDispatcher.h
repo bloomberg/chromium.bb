@@ -25,6 +25,11 @@ public:
         return m_hasLatestData ? &m_batteryStatus : nullptr;
     }
 
+    void updateBatteryStatusForTesting(const BatteryStatus& batteryStatus)
+    {
+        updateBatteryStatus(batteryStatus);
+    }
+
 private:
     BatteryDispatcher();
 
