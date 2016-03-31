@@ -25,7 +25,7 @@ class InputImeEventRouterBase {
   virtual input_method::InputMethodEngineBase* GetActiveEngine(
       const std::string& extension_id) = 0;
 
-  Profile* profile() const { return profile_; }
+  Profile* GetProfile() const { return profile_; }
 
  private:
   Profile* profile_;

@@ -166,8 +166,8 @@ void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
   scoped_ptr<input_method::InputMethodEngine> engine(
       new input_method::InputMethodEngine());
   scoped_ptr<InputMethodEngineBase::Observer> observer(
-      new ImeObserverNonChromeOS(extension_id, profile()));
-  engine->Initialize(std::move(observer), extension_id.c_str(), profile());
+      new ImeObserverNonChromeOS(extension_id, GetProfile()));
+  engine->Initialize(std::move(observer), extension_id.c_str(), GetProfile());
   engine->Enable(std::string());
   active_engine_ = engine.release();
   ui::IMEBridge::Get()->SetCurrentEngineHandler(active_engine_);

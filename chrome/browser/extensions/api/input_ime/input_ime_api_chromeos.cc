@@ -308,13 +308,21 @@ bool InputImeEventRouter::RegisterImeExtension(
     }
   }
 
+  Profile* profile = GetProfile();
+
+  if (chromeos::input_method::InputMethodManager::Get()->GetUISessionState() ==
+          chromeos::input_method::InputMethodManager::STATE_LOGIN_SCREEN &&
+      profile->HasOffTheRecordProfile()) {
+    profile = profile->GetOffTheRecordProfile();
+  }
+
   scoped_ptr<InputMethodEngineBase::Observer> observer(
-      new ImeObserverChromeOS(extension_id, profile()));
+      new ImeObserverChromeOS(extension_id, profile));
   chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
-  engine->Initialize(std::move(observer), extension_id.c_str(), profile());
+  engine->Initialize(std::move(observer), extension_id.c_str(), profile);
   engine_map_[extension_id] = engine;
   chromeos::UserSessionManager::GetInstance()
-      ->GetDefaultIMEState(profile())
+      ->GetDefaultIMEState(profile)
       ->AddInputMethodExtension(extension_id, descriptors, engine);
 
   return true;
