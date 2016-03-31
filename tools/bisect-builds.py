@@ -316,21 +316,12 @@ class PathContext(object):
         for prefix in all_prefixes:
           revnum = prefix.text[prefix_len:-1]
           try:
-            if not revnum.isdigit():
-              # During the svn-git migration, some items were stored by hash.
-              # These items may appear anywhere in the list of items.
-              # If |last_known_rev| is set, assume that the full list has been
-              # retrieved before (including the hashes), so we can safely skip
-              # all git hashes and focus on the numeric revision numbers.
-              if last_known_rev:
-                revnum = None
-              else:
-                git_hash = revnum
-                revnum = self.GetSVNRevisionFromGitHash(git_hash)
-                githash_svn_dict[revnum] = git_hash
-            if revnum is not None:
-              revnum = int(revnum)
-              revisions.append(revnum)
+            revnum = int(revnum)
+            revisions.append(revnum)
+          # Notes:
+          # Ignore hash in chromium-browser-snapshots as they are invalid
+          # Resulting in 404 error in fetching pages:
+          # https://chromium.googlesource.com/chromium/src/+/[rev_hash]
           except ValueError:
             pass
       return (revisions, next_marker, githash_svn_dict)
