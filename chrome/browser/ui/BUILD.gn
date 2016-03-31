@@ -63,7 +63,6 @@ source_set("ui") {
     "//components/dom_distiller/content/browser",
     "//components/dom_distiller/webui",
     "//components/domain_reliability",
-    "//components/drive",
     "//components/favicon/content",
     "//components/favicon/core",
     "//components/feedback",
