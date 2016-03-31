@@ -65,9 +65,9 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(const VisibleS
     bool paintBlockCursor = m_frameSelection->shouldShowBlockCursor() && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(createVisiblePosition(end, affinity));
     VisibleSelectionInFlatTree selection;
     if (enclosingTextFormControl(start.computeContainerNode())) {
-        // TODO(yosin) We should use |PositionMoveType::Character| to avoid
+        // TODO(yosin) We should use |PositionMoveType::CodePoint| to avoid
         // ending paint at middle of character.
-        PositionInFlatTree endPosition = paintBlockCursor ? nextPositionOf(originalSelection.extent(), PositionMoveType::CodePoint) : end;
+        PositionInFlatTree endPosition = paintBlockCursor ? nextPositionOf(originalSelection.extent(), PositionMoveType::CodeUnit) : end;
         selection.setWithoutValidation(start, endPosition);
         return selection;
     }

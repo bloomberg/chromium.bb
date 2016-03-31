@@ -632,9 +632,9 @@ PositionTemplate<Strategy> previousPositionOfAlgorithm(const PositionTemplate<St
         //   2) The old offset was a bogus offset like (<br>, 1), and there is
         //      no child. Going from 1 to 0 is correct.
         switch (moveType) {
-        case PositionMoveType::CodePoint:
+        case PositionMoveType::CodeUnit:
             return PositionTemplate<Strategy>(node, offset - 1);
-        case PositionMoveType::Character:
+        case PositionMoveType::CodePoint:
             return PositionTemplate<Strategy>(node, uncheckedPreviousOffset(node, offset));
         case PositionMoveType::BackwardDeletion:
             return PositionTemplate<Strategy>(node, uncheckedPreviousOffsetForBackwardDeletion(node, offset));
@@ -684,7 +684,7 @@ PositionTemplate<Strategy> nextPositionOfAlgorithm(const PositionTemplate<Strate
         //      is correct.
         //   2) The new offset is a bogus offset like (<br>, 1), and there is no
         //      child. Going from 0 to 1 is correct.
-        return PositionTemplate<Strategy>::editingPositionOf(node, (moveType == PositionMoveType::Character) ? uncheckedNextOffset(node, offset) : offset + 1);
+        return PositionTemplate<Strategy>::editingPositionOf(node, (moveType == PositionMoveType::CodePoint) ? uncheckedNextOffset(node, offset) : offset + 1);
     }
 
     if (ContainerNode* parent = Strategy::parent(*node))
@@ -1368,7 +1368,7 @@ static Position previousCharacterPosition(const Position& position, TextAffinity
         // TODO(yosin) When we use |previousCharacterPosition()| other than
         // finding leading whitespace, we should use |Character| instead of
         // |CodePoint|.
-        currentPos = previousPositionOf(currentPos, PositionMoveType::CodePoint);
+        currentPos = previousPositionOf(currentPos, PositionMoveType::CodeUnit);
 
         if (currentPos.anchorNode()->rootEditableElement() != fromRootEditableElement)
             return position;

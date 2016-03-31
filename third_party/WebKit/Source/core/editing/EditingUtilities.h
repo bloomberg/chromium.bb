@@ -40,9 +40,21 @@
 namespace blink {
 
 enum class PositionMoveType {
-    CodePoint, // Move by a single code point.
-    Character, // Move to the next Unicode character break.
-    BackwardDeletion // Subject to platform conventions.
+    // Move by a single code unit. |PositionMoveType::CodeUnit| is used for
+    // implementing other |PositionMoveType|. You should not use this.
+    CodeUnit,
+    // Move to the next Unicode code point. At most two code unit when we are
+    // at surrogate pair. Please consider using |GraphemeCluster|.
+    CodePoint,
+    // Used with |previousPositionOf()| to compute number of code units as
+    // backward deletion, e.g Backspace key. This is similar to
+    // |GraphemeCluster| but some tailoring with platform dependent behavior.
+    BackwardDeletion,
+    // TODO(yosin): We'll have |GraphemeCluster| move type.
+    // Move by a grapheme cluster for user-perceived character in Unicode
+    // Standard Annex #29, Unicode text segmentation[1].
+    // [1] http://www.unicode.org/reports/tr29/
+    // GraphemeCluster,
 };
 
 class Document;

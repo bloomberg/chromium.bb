@@ -195,9 +195,9 @@ void InsertTextCommand::doApply(EditingState* editingState)
         endPosition = insertTab(startPosition, editingState);
         if (editingState->isAborted())
             return;
-        // TODO(yosin) We should use |PositionMoveType::Character| for
+        // TODO(yosin) We should use |PositionMoveType::CodePoint| for
         // |previousPositionOf()|.
-        startPosition = previousPositionOf(endPosition, PositionMoveType::Character);
+        startPosition = previousPositionOf(endPosition, PositionMoveType::CodePoint);
         if (placeholder.isNotNull())
             removePlaceholderAt(placeholder);
     } else {

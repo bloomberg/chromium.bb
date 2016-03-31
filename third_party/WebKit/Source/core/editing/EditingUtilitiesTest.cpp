@@ -156,8 +156,8 @@ TEST_F(EditingUtilitiesTest, NextNodeIndex)
     Node* host = document().getElementById("host");
     Node* two = document().getElementById("two");
 
-    EXPECT_EQ(Position(host, 3), nextPositionOf(Position(two, 2), PositionMoveType::CodePoint));
-    EXPECT_EQ(PositionInFlatTree(host, 1), nextPositionOf(PositionInFlatTree(two, 2), PositionMoveType::CodePoint));
+    EXPECT_EQ(Position(host, 3), nextPositionOf(Position(two, 2), PositionMoveType::CodeUnit));
+    EXPECT_EQ(PositionInFlatTree(host, 1), nextPositionOf(PositionInFlatTree(two, 2), PositionMoveType::CodeUnit));
 }
 
 TEST_F(EditingUtilitiesTest, NextVisuallyDistinctCandidate)
