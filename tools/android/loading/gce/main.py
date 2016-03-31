@@ -123,9 +123,12 @@ class ServerApp(object):
                             stdout = log_file)
     return ret == 0
 
-  def _ProcessTasks(self):
+  def _ProcessTasks(self, repeat_count):
     """Iterates over _tasks and runs analyze.py on each of them. Uploads the
     resulting traces to Google Cloud Storage.
+
+    Args:
+      repeat_count: The number of traces generated for each URL.
     """
     failures_dir = self._base_path_in_bucket + 'failures/'
     traces_dir = self._base_path_in_bucket + 'traces/'
@@ -136,17 +139,20 @@ class ServerApp(object):
     failed_tasks = []
     while len(self._tasks) > 0:
       url = self._tasks.pop()
-      print 'Generating trace for URL: %s' % url
-      filename = pattern.sub('_', url)
-      if self._GenerateTrace(url, filename, log_filename):
-        self._UploadFile(filename, traces_dir + filename)
-      else:
-        print 'analyze.py failed'
-        failed_tasks.append(url)
-        if os.path.isfile(filename):
-          self._UploadFile(filename, failures_dir + filename)
-      print 'Uploading analyze log'
-      self._UploadFile(log_filename, logs_dir + filename)
+      local_filename = pattern.sub('_', url)
+      for repeat in range(repeat_count):
+        print 'Generating trace for URL: %s' % url
+        remote_filename = local_filename + '/' + str(repeat)
+        if self._GenerateTrace(url, local_filename, log_filename):
+          print 'Uploading: %s' % remote_filename
+          self._UploadFile(local_filename, traces_dir + remote_filename)
+        else:
+          print 'analyze.py failed for URL: %s' % url
+          failed_tasks.append({ "url": url, "repeat": repeat})
+          if os.path.isfile(local_filename):
+            self._UploadFile(local_filename, failures_dir + remote_filename)
+        print 'Uploading analyze log'
+        self._UploadFile(log_filename, logs_dir + remote_filename)
 
     if len(failed_tasks) > 0:
       print 'Uploading failing URLs'
@@ -157,19 +163,29 @@ class ServerApp(object):
     """Sets the list of tasks and starts processing them
 
     Args:
-      http_body: List of URLs as a string representing a JSON array.
+      http_body: JSON dictionary. See README.md for a description of the format.
 
     Returns:
       A string to be sent back to the client, describing the success status of
       the request.
     """
-    self._tasks = json.loads(http_body)
+    load_parameters = json.loads(http_body)
+    try:
+      self._tasks = load_parameters['urls']
+    except KeyError:
+      return 'Error: invalid urls'
+    try:
+      repeat_count = int(load_parameters['repeat_count'])
+    except (KeyError, ValueError):
+      return 'Error: invalid repeat_count'
+
     if len(self._tasks) == 0:
       return 'Error: Empty task list'
     elif self._thread is not None and self._thread.is_alive():
       return 'Error: Already running'
     else:
-      self._thread = threading.Thread(target = self._ProcessTasks)
+      self._thread = threading.Thread(target = self._ProcessTasks,
+                                      args = (repeat_count,))
       self._thread.start()
       return 'Starting generation of ' + str(len(self._tasks)) + 'tasks'
 

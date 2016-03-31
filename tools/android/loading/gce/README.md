@@ -70,7 +70,11 @@ To send a list of URLs to process:
 curl -X POST -d @urls.json http://<instance-ip>:8080/set_tasks
 ```
 
-where `urls.json` is a file containing URLs as a JSON array.
+where `urls.json` is a JSON dictionary with the keys:
+
+*   `urls`: array of URLs
+*   `repeat_count`: Number of times each URL will be loaded. Each load of a URL
+    generates a separate trace file.
 
 ## Stop the app in the cloud
 
