@@ -614,6 +614,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUIProfilerHost,
   kChromeUISignInInternalsHost,
   kChromeUISuggestionsHost,
+  kChromeUISupervisedUserInternalsHost,
   kChromeUISyncInternalsHost,
   kChromeUITermsHost,
   kChromeUIThumbnailListHost,
@@ -650,6 +651,7 @@ const char* const kChromeHostURLs[] = {
 #endif
 #if defined(OS_ANDROID)
   kChromeUINetExportHost,
+  kChromeUIPopularSitesInternalsHost,
 #else  // non-mobile
   kChromeUICopresenceHost,
 #endif
