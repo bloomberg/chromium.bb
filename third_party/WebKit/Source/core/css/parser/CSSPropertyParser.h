@@ -125,8 +125,6 @@ private:
     bool parseGridTrackRepeatFunction(CSSValueList&, bool& isAutoRepeat);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackSize(CSSParserValueList& inputList, TrackSizeRestriction = AllowAll);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*, TrackSizeRestriction = AllowAll);
-    bool parseGridTemplateAreasRow(NamedGridAreaMap&, const size_t, size_t&);
-    PassRefPtrWillBeRawPtr<CSSValue> parseGridTemplateAreas();
     bool parseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = nullptr);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridAutoFlow(CSSParserValueList&);
 
@@ -199,6 +197,7 @@ private:
 
 // TODO(rob.buis): should move to CSSPropertyParser after conversion.
 bool allTracksAreFixedSized(CSSValueList&);
+bool parseGridTemplateAreasRow(const String&, NamedGridAreaMap&, const size_t, size_t&);
 
 CSSPropertyID unresolvedCSSPropertyID(const CSSParserString&);
 CSSValueID cssValueKeywordID(const CSSParserString&);

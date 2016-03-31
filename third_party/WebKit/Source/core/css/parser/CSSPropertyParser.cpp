@@ -3218,6 +3218,27 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeGridTemplatesRowsOrColumns(CSSPar
     return consumeGridTrackList(range, cssParserMode);
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeGridTemplateAreas(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+
+    NamedGridAreaMap gridAreaMap;
+    size_t rowCount = 0;
+    size_t columnCount = 0;
+
+    while (range.peek().type() == StringToken) {
+        if (!parseGridTemplateAreasRow(range.consumeIncludingWhitespace().value(), gridAreaMap, rowCount, columnCount))
+            return nullptr;
+        ++rowCount;
+    }
+
+    if (rowCount == 0)
+        return nullptr;
+    ASSERT(columnCount);
+    return CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3594,6 +3615,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyGridTemplateRows:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return consumeGridTemplatesRowsOrColumns(m_range, m_context.mode());
+    case CSSPropertyGridTemplateAreas:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return consumeGridTemplateAreas(m_range);
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {

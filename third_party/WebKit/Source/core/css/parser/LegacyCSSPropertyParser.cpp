@@ -265,11 +265,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         parsedValue = parseGridAutoFlow(*m_valueList);
         break;
 
-    case CSSPropertyGridTemplateAreas:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        parsedValue = parseGridTemplateAreas();
-        break;
-
     // Everything else is handled in CSSPropertyParser.cpp
     default:
         return nullptr;
@@ -342,8 +337,12 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreasAndColumns(bool important)
             return false;
 
         // Handle a template-area's row.
-        if (!parseGridTemplateAreasRow(gridAreaMap, rowCount, columnCount))
+        CSSParserValue* currentValue = m_valueList->current();
+        if (!currentValue || currentValue->m_unit != CSSParserValue::String)
             return false;
+        if (!parseGridTemplateAreasRow(currentValue->string, gridAreaMap, rowCount, columnCount))
+            return false;
+        m_valueList->next();
         ++rowCount;
 
         // Handle template-rows's track-size.
@@ -767,13 +766,8 @@ static Vector<String> parseGridTemplateAreasColumnNames(const String& gridRowNam
     return columnNames;
 }
 
-bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap, const size_t rowCount, size_t& columnCount)
+bool parseGridTemplateAreasRow(const String& gridRowNames, NamedGridAreaMap& gridAreaMap, const size_t rowCount, size_t& columnCount)
 {
-    CSSParserValue* currentValue = m_valueList->current();
-    if (!currentValue || currentValue->m_unit != CSSParserValue::String)
-        return false;
-
-    String gridRowNames = currentValue->string;
     if (gridRowNames.isEmpty() || gridRowNames.containsOnlyWhitespace())
         return false;
 
@@ -824,31 +818,7 @@ bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap,
         currentCol = lookAheadCol - 1;
     }
 
-    m_valueList->next();
     return true;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTemplateAreas()
-{
-    if (m_valueList->current() && m_valueList->current()->id == CSSValueNone) {
-        m_valueList->next();
-        return cssValuePool().createIdentifierValue(CSSValueNone);
-    }
-
-    NamedGridAreaMap gridAreaMap;
-    size_t rowCount = 0;
-    size_t columnCount = 0;
-
-    while (m_valueList->current()) {
-        if (!parseGridTemplateAreasRow(gridAreaMap, rowCount, columnCount))
-            return nullptr;
-        ++rowCount;
-    }
-
-    if (!rowCount || !columnCount)
-        return nullptr;
-
-    return CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserValueList& list)
