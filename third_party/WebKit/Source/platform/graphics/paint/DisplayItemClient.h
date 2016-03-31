@@ -28,7 +28,7 @@ public:
     virtual String debugName() const = 0;
 
     // The visual rect of this DisplayItemClient, in object space of the object that owns the GraphicsLayer, i.e.
-    // offset by offsetFromLayoutObjectPlusSubpixelAccumulation().
+    // offset by offsetFromLayoutObjectWithSubpixelAccumulation().
     virtual LayoutRect visualRect() const = 0;
 
 #if ENABLE(ASSERT)
