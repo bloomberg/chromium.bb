@@ -1,14 +1,6 @@
-chcunningham@chromium.org
-dalecurtis@chromium.org
-ddorwin@chromium.org
-hubbe@chromium.org
-jrummell@chromium.org
-sandersd@chromium.org
+file://media/OWNERS
 sergeyu@chromium.org
 tommi@chromium.org
-watk@chromium.org
-wolenetz@chromium.org
-xhwang@chromium.org
 
 # For Cast streaming changes.
 per-file cast_*=hubbe@chromium.org

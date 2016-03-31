@@ -1,13 +1,5 @@
-chcunningham@chromium.org
-dalecurtis@chromium.org
-ddorwin@chromium.org
-hubbe@chromium.org
-jrummell@chromium.org
-sandersd@chromium.org
+file://media/OWNERS
 tommi@chromium.org
-watk@chromium.org
-wolenetz@chromium.org
-xhwang@chromium.org
 
 # For security review of IPC message files.
 per-file *_messages*.h=set noparent
