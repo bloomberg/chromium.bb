@@ -133,7 +133,7 @@ void V8RuntimeAgentImpl::evaluate(
 
 v8::MaybeLocal<v8::Value> V8RuntimeAgentImpl::evaluateInternal(InjectedScript* injectedScript, bool doNotPauseOnExceptionsAndMuteConsole, const String& expression, v8::MaybeLocal<v8::Object> extension)
 {
-    InjectedScriptManager::ScopedGlobalObjectExtension scopeExtension(injectedScript, nullptr, extension);
+    InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, extension);
     IgnoreExceptionsScope ignoreExceptionsScope(doNotPauseOnExceptionsAndMuteConsole ? m_debugger : nullptr);
     return m_debugger->compileAndRunInternalScript(injectedScript->context(), toV8String(injectedScript->isolate(), expression));
 }
@@ -391,7 +391,7 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     if (includeCommandLineAPI.fromMaybe(false) && commandLineAPI.IsEmpty())
         return;
 
-    InjectedScriptManager::ScopedGlobalObjectExtension scopeExtension(injectedScript, nullptr, commandLineAPI);
+    InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, commandLineAPI);
 
     v8::TryCatch tryCatch(isolate);
     v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->runCompiledScript(context, script);

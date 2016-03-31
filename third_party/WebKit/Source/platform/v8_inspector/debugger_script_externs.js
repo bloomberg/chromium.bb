@@ -403,6 +403,8 @@ FunctionMirror.prototype.script = function() {}
 /** @return {!SourceLocation|undefined} */
 FunctionMirror.prototype.sourceLocation = function() {}
 
+/** @return {!ContextMirror|undefined} */
+FunctionMirror.prototype.context = function() {}
 
 /**
  * @constructor
@@ -543,3 +545,12 @@ ScopeMirror.prototype.details = function() {}
  * @param {*} newValue
  */
 ScopeMirror.prototype.setVariableValue = function(name, newValue) {}
+
+/**
+ * @interface
+ * @extends {Mirror}
+ */
+function ContextMirror() {}
+
+/** @return {string|undefined} */
+ContextMirror.prototype.data = function() {}

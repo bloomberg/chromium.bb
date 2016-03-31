@@ -1000,7 +1000,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     if (includeCommandLineAPI.fromMaybe(false) && commandLineAPI.IsEmpty())
         return;
 
-    InjectedScriptManager::ScopedGlobalObjectExtension scopeExtension(injectedScript, m_injectedScriptManager, commandLineAPI);
+    InjectedScript::ScopedGlobalObjectExtension scopeExtension(injectedScript, commandLineAPI);
 
     v8::TryCatch tryCatch(injectedScript->isolate());
 
@@ -1346,15 +1346,15 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
 {
     if (m_pausedContext.IsEmpty() || !m_pausedCallFrames.size())
         return Array<CallFrame>::create();
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedContext.Get(m_isolate));
-    if (!injectedScript) {
+    InjectedScript* topFrameInjectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedContext.Get(m_isolate));
+    if (!topFrameInjectedScript) {
         // Context has been reported as removed while on pause.
         return Array<CallFrame>::create();
     }
 
-    v8::Isolate* isolate = injectedScript->isolate();
+    v8::Isolate* isolate = topFrameInjectedScript->isolate();
     v8::HandleScope handles(isolate);
-    v8::Local<v8::Context> context = injectedScript->context();
+    v8::Local<v8::Context> context = topFrameInjectedScript->context();
     v8::Context::Scope contextScope(context);
 
     v8::Local<v8::Array> objects = v8::Array::New(isolate);
@@ -1365,7 +1365,14 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
         if (hasInternalError(errorString, details.IsEmpty()))
             return Array<CallFrame>::create();
 
+        int contextId = currentCallFrame->contextId();
+        ErrorString ignoredErrorString;
+        InjectedScript* injectedScript = contextId ? m_injectedScriptManager->findInjectedScript(&ignoredErrorString, contextId) : nullptr;
+        if (!injectedScript)
+            injectedScript = topFrameInjectedScript;
+
         String16 callFrameId = RemoteCallFrameId::serialize(injectedScript->contextId(), frameOrdinal);
+
         if (hasInternalError(errorString, !details->Set(context, toV8StringInternalized(isolate, "callFrameId"), toV8String(isolate, callFrameId)).FromMaybe(false)))
             return Array<CallFrame>::create();
 

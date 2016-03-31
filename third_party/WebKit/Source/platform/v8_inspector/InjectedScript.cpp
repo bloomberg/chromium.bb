@@ -423,4 +423,25 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
     }
 }
 
+InjectedScript::ScopedGlobalObjectExtension::ScopedGlobalObjectExtension(InjectedScript* current, v8::MaybeLocal<v8::Object> extension)
+    : m_context(current->context())
+{
+    v8::Local<v8::Object> extensionObject;
+    if (!extension.ToLocal(&extensionObject))
+        return;
+
+    m_symbol = V8Debugger::scopeExtensionSymbol(current->isolate());
+    v8::Local<v8::Object> global = current->context()->Global();
+    if (global->Set(m_context, m_symbol, extensionObject).FromMaybe(false))
+        m_global = global;
+}
+
+InjectedScript::ScopedGlobalObjectExtension::~ScopedGlobalObjectExtension()
+{
+    v8::Local<v8::Object> global;
+    if (!m_global.ToLocal(&global))
+        return;
+    global->Delete(m_context, m_symbol);
+}
+
 } // namespace blink

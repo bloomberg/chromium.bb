@@ -75,6 +75,11 @@ int JavaScriptCallFrame::column() const
     return callV8FunctionReturnInt("column");
 }
 
+int JavaScriptCallFrame::contextId() const
+{
+    return callV8FunctionReturnInt("contextId");
+}
+
 bool JavaScriptCallFrame::isAtReturn() const
 {
     v8::HandleScope handleScope(m_isolate);

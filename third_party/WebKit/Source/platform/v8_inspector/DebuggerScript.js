@@ -139,6 +139,24 @@ DebuggerScript.getCollectionEntries = function(object)
 }
 
 /**
+ * @param {string|undefined} contextData
+ * @return {number}
+ */
+DebuggerScript._executionContextId = function(contextData)
+{
+    if (!contextData)
+        return 0;
+    var firstComma = contextData.indexOf(",");
+    if (firstComma === -1)
+        return 0;
+    var secondComma = contextData.indexOf(",", firstComma + 1);
+    if (secondComma === -1)
+        return 0;
+
+    return parseInt(contextData.substring(firstComma + 1, secondComma), 10) || 0;
+}
+
+/**
  * @param {string} contextGroupId
  * @return {!Array<!FormattedScript>}
  */
@@ -184,25 +202,6 @@ DebuggerScript._formatScript = function(script)
         else
             endColumn = script.source.length - (lineEnds[lineCount - 2] + 1);
     }
-
-    /**
-     * @return {number}
-     */
-    function executionContextId()
-    {
-        var context_data = script.context_data;
-        if (!context_data)
-            return 0;
-        var firstComma = context_data.indexOf(",");
-        if (firstComma === -1)
-            return 0;
-        var secondComma = context_data.indexOf(",", firstComma + 1);
-        if (secondComma === -1)
-            return 0;
-
-        return parseInt(context_data.substring(firstComma + 1, secondComma), 10) || 0;
-    }
-
     return {
         id: script.id,
         name: script.nameOrSourceURL(),
@@ -213,7 +212,7 @@ DebuggerScript._formatScript = function(script)
         startColumn: script.column_offset,
         endLine: endLine,
         endColumn: endColumn,
-        executionContextId: executionContextId(),
+        executionContextId: DebuggerScript._executionContextId(script.context_data),
         isContentScript: !!script.context_data && script.context_data.endsWith(",nondefault"),
         isInternalScript: script.is_debugger_script
     };
@@ -595,6 +594,17 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror)
     }
 
     /**
+     * @return {number}
+     */
+    function contextId()
+    {
+        var context = ensureFuncMirror().context();
+        if (context)
+            return DebuggerScript._executionContextId(context.data());
+        return 0;
+    }
+
+    /**
      * @return {number|undefined}
      */
     function sourceID()
@@ -635,6 +645,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror)
         "sourceID": sourceID,
         "line": line,
         "column": column,
+        "contextId": contextId,
         "thisObject": thisObject,
         "evaluate": evaluate,
         "restart": restart,

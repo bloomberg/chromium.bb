@@ -49,6 +49,7 @@ public:
     int sourceID() const;
     int line() const;
     int column() const;
+    int contextId() const;
 
     bool isAtReturn() const;
     v8::Local<v8::Object> details() const;

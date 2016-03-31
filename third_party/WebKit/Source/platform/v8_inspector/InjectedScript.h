@@ -93,6 +93,18 @@ public:
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*);
 
+    class ScopedGlobalObjectExtension {
+        PROTOCOL_DISALLOW_COPY(ScopedGlobalObjectExtension);
+    public:
+        ScopedGlobalObjectExtension(InjectedScript* current, v8::MaybeLocal<v8::Object> extension);
+        ~ScopedGlobalObjectExtension();
+
+    private:
+        v8::Local<v8::Symbol> m_symbol;
+        v8::Local<v8::Context> m_context;
+        v8::MaybeLocal<v8::Object> m_global;
+    };
+
 private:
     friend InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context>);
     InjectedScript(InjectedScriptManager*, v8::Local<v8::Context>, v8::Local<v8::Object>, PassOwnPtr<InjectedScriptNative>, int contextId);
