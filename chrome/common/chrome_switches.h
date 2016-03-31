@@ -122,6 +122,9 @@ extern const char kEnableExperimentalHotwordHardware[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];
 extern const char kEnableFastUnload[];
+#if defined(GOOGLE_CHROME_BUILD)
+extern const char kEnableGoogleBrandedContextMenu[];
+#endif  // defined(GOOGLE_CHROME_BUILD)
 extern const char kEnableMaterialDesignExtensions[];
 extern const char kEnableMaterialDesignPolicyPage[];
 extern const char kEnableNaCl[];

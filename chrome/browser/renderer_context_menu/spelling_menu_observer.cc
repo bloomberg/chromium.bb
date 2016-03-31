@@ -165,11 +165,7 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
   // suggestions".
   proxy_->AddMenuItem(IDC_SPELLCHECK_ADD_TO_DICTIONARY,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY));
-
-  proxy_->AddCheckItem(
-      IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
-
+  proxy_->AddSpellCheckServiceItem(integrate_spelling_service_.GetValue());
   proxy_->AddSeparator();
 }
 

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "components/prefs/pref_member.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -48,6 +49,9 @@ class SpellingOptionsSubMenuObserver : public RenderViewContextMenuObserver {
 
   // The number of dictionaries currently selected for spellchecking.
   size_t num_selected_dictionaries_;
+
+  // Flag indicating whether the server-powered spellcheck service is enabled.
+  BooleanPrefMember use_spelling_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellingOptionsSubMenuObserver);
 };

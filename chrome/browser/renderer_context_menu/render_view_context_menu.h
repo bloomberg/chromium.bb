@@ -66,10 +66,15 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // WebContents and the frame's WebContents.
   static gfx::Vector2d GetOffset(content::RenderFrameHost* render_frame_host);
 
-  // SimpleMenuModel::Delegate:
+  // Adds the spell check service item to the context menu.
+  static void AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
+                                       bool is_checked);
+
+  // RenderViewContextMenuBase:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
+  void AddSpellCheckServiceItem(bool is_checked) override;
 
  protected:
   Profile* GetProfile();
