@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -64,7 +65,7 @@ class ChromeVoxPanelWebContentsObserver : public content::WebContentsObserver {
 };
 
 ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)
-    : widget_(nullptr), web_view_(nullptr), fullscreen_(false) {
+    : widget_(nullptr), web_view_(nullptr), panel_fullscreen_(false) {
   std::string url("chrome-extension://");
   url += extension_misc::kChromeVoxExtensionId;
   url += kChromeVoxPanelRelativeUrl;
@@ -124,13 +125,14 @@ void ChromeVoxPanel::UpdatePanelHeight() {
 
 void ChromeVoxPanel::EnterFullscreen() {
   Focus();
-  fullscreen_ = true;
+  panel_fullscreen_ = true;
   UpdateWidgetBounds();
 }
 
 void ChromeVoxPanel::ExitFullscreen() {
+  widget_->Deactivate();
   widget_->widget_delegate()->set_can_activate(false);
-  fullscreen_ = false;
+  panel_fullscreen_ = false;
   UpdateWidgetBounds();
 }
 
@@ -168,7 +170,16 @@ void ChromeVoxPanel::OnDisplayMetricsChanged(const gfx::Display& display,
 
 void ChromeVoxPanel::UpdateWidgetBounds() {
   gfx::Rect bounds(GetRootWindow()->bounds().size());
-  if (!fullscreen_)
+  if (!panel_fullscreen_)
     bounds.set_height(kPanelHeight);
+
+  // If we're in full-screen mode, give the panel a height of 0 unless
+  // it's active.
+  if (ash::GetRootWindowController(GetRootWindow())
+          ->GetWindowForFullscreenMode() &&
+      !widget_->IsActive()) {
+    bounds.set_height(0);
+  }
+
   widget_->SetBounds(bounds);
 }
