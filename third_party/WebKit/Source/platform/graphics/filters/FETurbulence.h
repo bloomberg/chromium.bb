@@ -65,7 +65,7 @@ private:
     FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
 
     PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) override;
-    SkShader* createShader();
+    sk_sp<SkShader> createShader() const;
 
     TurbulenceType m_type;
     float m_baseFrequencyX;

@@ -500,9 +500,8 @@ bool Canvas::InitSkPaintForTiling(const ImageSkia& image,
   shader_scale.preTranslate(SkIntToScalar(-src_x), SkIntToScalar(-src_y));
   shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
 
-  // setShader() takes ownership of the created shader.
   paint->setShader(CreateImageRepShader(image_rep, SkShader::kRepeat_TileMode,
-                                        shader_scale).get());
+                                        shader_scale));
   paint->setXfermodeMode(SkXfermode::kSrcOver_Mode);
   return true;
 }
@@ -555,8 +554,6 @@ void Canvas::DrawImageIntHelper(const ImageSkiaRep& image_rep,
   shader_scale.preTranslate(SkIntToScalar(-src_x), SkIntToScalar(-src_y));
   shader_scale.postTranslate(SkIntToScalar(dest_x), SkIntToScalar(dest_y));
 
-  // Set up our paint to use the shader & release our reference (now just owned
-  // by the paint).
   SkPaint p(paint);
   p.setFilterQuality(filter ? kLow_SkFilterQuality : kNone_SkFilterQuality);
   p.setShader(CreateImageRepShaderForScale(

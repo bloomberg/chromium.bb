@@ -127,7 +127,7 @@ bool FETurbulence::setStitchTiles(bool stitch)
     return true;
 }
 
-SkShader* FETurbulence::createShader()
+sk_sp<SkShader> FETurbulence::createShader() const
 {
     const SkISize size = SkISize::Make(effectBoundaries().width(), effectBoundaries().height());
     // Frequency should be scaled by page zoom, but not by primitiveUnits.
@@ -138,10 +138,10 @@ SkShader* FETurbulence::createShader()
     float baseFrequencyX = m_baseFrequencyX / getFilter()->scale();
     float baseFrequencyY = m_baseFrequencyY / getFilter()->scale();
     return (type() == FETURBULENCE_TYPE_FRACTALNOISE) ?
-        SkPerlinNoiseShader::CreateFractalNoise(SkFloatToScalar(baseFrequencyX),
+        SkPerlinNoiseShader::MakeFractalNoise(SkFloatToScalar(baseFrequencyX),
             SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),
             stitchTiles() ? &size : 0) :
-        SkPerlinNoiseShader::CreateTurbulence(SkFloatToScalar(baseFrequencyX),
+        SkPerlinNoiseShader::MakeTurbulence(SkFloatToScalar(baseFrequencyX),
             SkFloatToScalar(baseFrequencyY), numOctaves(), SkFloatToScalar(seed()),
             stitchTiles() ? &size : 0);
 }
@@ -151,9 +151,8 @@ PassRefPtr<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder
     if (m_baseFrequencyX < 0 || m_baseFrequencyY < 0)
         return createTransparentBlack(builder);
 
-    SkAutoTUnref<SkShader> shader(createShader());
     SkPaint paint;
-    paint.setShader(shader);
+    paint.setShader(createShader());
     SkImageFilter::CropRect rect = getCropRect();
     return adoptRef(SkPaintImageFilter::Create(paint, &rect));
 }
