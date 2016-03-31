@@ -42,6 +42,7 @@
 #include "components/signin/core/common/signin_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
+#include "net/base/escape.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -205,13 +206,11 @@ void OnUserManagerSystemProfileCreated(
   if (tutorial_mode == profiles::USER_MANAGER_TUTORIAL_OVERVIEW) {
     page += profiles::kUserManagerDisplayTutorial;
   } else if (!profile_path_to_focus.empty()) {
-    const ProfileInfoCache& cache =
-        g_browser_process->profile_manager()->GetProfileInfoCache();
-    size_t index = cache.GetIndexOfProfileWithPath(profile_path_to_focus);
-    if (index != std::string::npos) {
-      page += "#";
-      page += base::SizeTToString(index);
-    }
+    // The file path is processed in the same way as base::CreateFilePathValue
+    // (i.e. convert to std::string with AsUTF8Unsafe()), and then URI encoded.
+    page += "#";
+    page += net::EscapeUrlEncodedData(profile_path_to_focus.AsUTF8Unsafe(),
+                                      false);
   } else if (profile_open_action ==
              profiles::USER_MANAGER_SELECT_PROFILE_TASK_MANAGER) {
     page += profiles::kUserManagerSelectProfileTaskManager;

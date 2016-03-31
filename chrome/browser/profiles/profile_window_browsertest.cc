@@ -9,12 +9,15 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -25,6 +28,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/base/web_ui_browser_test.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -33,6 +37,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "url/gurl.h"
 
 // This test verifies the Desktop implementation of Guest only.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
@@ -86,6 +91,21 @@ class EmptyAcceleratorHandler : public ui::AcceleratorProvider {
     return false;
   }
 };
+
+base::FilePath CreateTestingProfile(const std::string& name,
+                                    const std::string& relative_path) {
+  ProfileManager* manager = g_browser_process->profile_manager();
+  ProfileAttributesStorage& storage = manager->GetProfileAttributesStorage();
+  size_t starting_number_of_profiles = storage.GetNumberOfProfiles();
+
+  base::FilePath profile_path =
+      manager->user_data_dir().AppendASCII(relative_path);
+  storage.AddProfile(profile_path, base::ASCIIToUTF16(name), std::string(),
+                     base::string16(), 0u, std::string());
+
+  EXPECT_EQ(starting_number_of_profiles + 1u, storage.GetNumberOfProfiles());
+  return profile_path;
+}
 
 }  // namespace
 
@@ -210,6 +230,66 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestAppMenuLacksBookmarks) {
   Browser* guest_browser = OpenGuestBrowser();
   AppMenuModel model_guest_profile(&accelerator_handler, guest_browser);
   EXPECT_EQ(-1, model_guest_profile.GetIndexOfCommandId(IDC_BOOKMARKS_MENU));
+}
+
+class ProfileWindowWebUIBrowserTest : public WebUIBrowserTest {
+ public:
+  void OnSystemProfileCreated(std::string* url_to_test,
+                              const base::Closure& quit_loop,
+                              Profile* profile,
+                              const std::string& url) {
+    *url_to_test = url;
+    quit_loop.Run();
+  }
+
+ private:
+  void SetUpOnMainThread() override {
+    WebUIBrowserTest::SetUpOnMainThread();
+    AddLibrary(base::FilePath(
+        FILE_PATH_LITERAL("profile_window_browsertest.js")));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ProfileWindowWebUIBrowserTest,
+                       UserManagerFocusSingleProfile) {
+  std::string url_to_test;
+  base::RunLoop run_loop;
+  profiles::CreateSystemProfileForUserManager(
+      browser()->profile()->GetPath(),
+      profiles::USER_MANAGER_NO_TUTORIAL,
+      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION,
+      base::Bind(&ProfileWindowWebUIBrowserTest::OnSystemProfileCreated,
+                 base::Unretained(this),
+                 &url_to_test,
+                 run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ui_test_utils::NavigateToURL(browser(), GURL(url_to_test));
+  EXPECT_TRUE(RunJavascriptTest("testNoPodFocused"));
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileWindowWebUIBrowserTest,
+                       UserManagerFocusMultipleProfiles) {
+  // The profile names are meant to sort differently by ICU collation and by
+  // naive sorting. See crbug/596280.
+  base::FilePath expected_path = CreateTestingProfile("#abc", "Profile 1");
+  CreateTestingProfile("?abc", "Profile 2");
+
+  std::string url_to_test;
+  base::RunLoop run_loop;
+  profiles::CreateSystemProfileForUserManager(
+      expected_path,
+      profiles::USER_MANAGER_NO_TUTORIAL,
+      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION,
+      base::Bind(&ProfileWindowWebUIBrowserTest::OnSystemProfileCreated,
+                 base::Unretained(this),
+                 &url_to_test,
+                 run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ui_test_utils::NavigateToURL(browser(), GURL(url_to_test));
+  EXPECT_TRUE(RunJavascriptTest(
+      "testPodFocused", new base::StringValue(expected_path.AsUTF8Unsafe())));
 }
 
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
