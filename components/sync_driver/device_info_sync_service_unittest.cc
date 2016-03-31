@@ -164,6 +164,7 @@ class DeviceInfoSyncServiceTest : public testing::Test,
                      const syncer::SyncData& sync_data) {
     sync_service_->StoreSyncData(client_id, sync_data);
   }
+  bool IsPulseTimerRunning() { return sync_service_->pulse_timer_.IsRunning(); }
 
   // Needs to be created for OneShotTimer to grab the current task runner.
   base::MessageLoop message_loop_;
@@ -210,9 +211,11 @@ TEST_F(DeviceInfoSyncServiceTest, StopSyncing) {
       CreateAndPassSyncErrorFactory());
   EXPECT_TRUE(sync_service_->IsSyncing());
   EXPECT_EQ(1, num_device_info_changed_callbacks_);
+  EXPECT_TRUE(IsPulseTimerRunning());
   sync_service_->StopSyncing(syncer::DEVICE_INFO);
   EXPECT_FALSE(sync_service_->IsSyncing());
   EXPECT_EQ(2, num_device_info_changed_callbacks_);
+  EXPECT_FALSE(IsPulseTimerRunning());
 }
 
 // Sync with initial data matching the local device data.

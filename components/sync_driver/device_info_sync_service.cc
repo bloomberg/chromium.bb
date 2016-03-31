@@ -179,6 +179,7 @@ bool DeviceInfoSyncService::IsSyncing() const {
 void DeviceInfoSyncService::StopSyncing(syncer::ModelType type) {
   bool was_syncing = IsSyncing();
 
+  pulse_timer_.Stop();
   all_data_.clear();
   sync_processor_.reset();
   error_handler_.reset();
@@ -376,6 +377,7 @@ TimeDelta DeviceInfoSyncService::CalculatePulseDelay(
 void DeviceInfoSyncService::SendLocalData(
     const SyncChange::SyncChangeType change_type) {
   DCHECK_NE(change_type, SyncChange::ACTION_INVALID);
+  DCHECK(sync_processor_);
 
   const DeviceInfo* device_info =
       local_device_info_provider_->GetLocalDeviceInfo();
