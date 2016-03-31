@@ -63,38 +63,12 @@ class SK_API PlatformDevice {
 #endif
 
 #if defined(OS_WIN)
-  // Loads a SkPath into the GDI context. The path can there after be used for
-  // clipping or as a stroke. Returns false if the path failed to be loaded.
-  static bool LoadPathToDC(HDC context, const SkPath& path);
-
-  // Loads a SkRegion into the GDI context.
-  static void LoadClippingRegionToDC(HDC context, const SkRegion& region,
-                                     const SkMatrix& transformation);
-
   // Draws to the given screen DC, if the bitmap DC doesn't exist, this will
   // temporarily create it. However, if you have created the bitmap DC, it will
   // be more efficient if you don't free it until after this call so it doesn't
   // have to be created twice.  If src_rect is null, then the entirety of the
   // source device will be copied.
   virtual void DrawToHDC(HDC, int x, int y, const RECT* src_rect);
-#endif
-
- protected:
-
-#if defined(OS_WIN)
-  // Arrays must be inside structures.
-  struct CubicPoints {
-    SkPoint p[4];
-  };
-  typedef std::vector<CubicPoints> CubicPath;
-  typedef std::vector<CubicPath> CubicPaths;
-
-  // Loads the specified Skia transform into the device context, excluding
-  // perspective (which GDI doesn't support).
-  static void LoadTransformToDC(HDC dc, const SkMatrix& matrix);
-
-  // Transforms SkPath's paths into a series of cubic path.
-  static bool SkPathToCubicPaths(CubicPaths* paths, const SkPath& skpath);
 #endif
 
  private:
