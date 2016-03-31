@@ -102,6 +102,7 @@ PULL_LIBS_DIR=
 SANDBOXED=
 SANDBOXED_INDEX=
 START=
+START_URL=
 ATTACH_DELAY=1
 SU_PREFIX=
 SYMBOL_DIR=
@@ -177,6 +178,9 @@ for opt; do
     --script=*)
       GDBINIT=$optarg
       ;;
+    --start=*)
+      START_URL=$optarg
+      ;& # fallthrough
     --start)
       START=true
       ;;
@@ -311,7 +315,7 @@ Valid options:
   --program-name=<name> Specify program name (cosmetic only).
   --pid=<pid>           Specify application process pid.
   --force               Kill any previous debugging session, if any.
-  --start               Start package's activity on device.
+  --start[=<url>]       Start package's activity on device.
   --attach-delay=<num>  Seconds to wait for gdbserver to attach to the
                         remote process before starting gdb. Default 1.
                         <num> may be a float if your sleep(1) supports it.
@@ -719,7 +723,7 @@ fi
 
 if [ "$START" ]; then
   log "Starting $PROGRAM_NAME on device."
-  adb_shell am start -n $PACKAGE_NAME/$ACTIVITY 2>/dev/null
+  adb_shell am start -n $PACKAGE_NAME/$ACTIVITY ${START_URL:+-d "$START_URL"}
   adb_shell ps | grep -q $PACKAGE_NAME
   fail_panic "Could not start $PROGRAM_NAME on device. Are you sure the \
 package is installed?"
