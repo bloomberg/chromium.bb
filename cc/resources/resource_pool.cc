@@ -171,8 +171,43 @@ Resource* ResourcePool::TryAcquireResourceWithContentId(uint64_t content_id) {
 }
 
 void ResourcePool::ReleaseResource(Resource* resource, uint64_t content_id) {
+  // Ensure that the provided resource is valid.
+  // TODO(ericrk): Remove this once we've investigated further.
+  // crbug.com/598286.
+  CHECK(resource);
+  CHECK(resource->id());
+
   auto it = in_use_resources_.find(resource->id());
-  DCHECK(it != in_use_resources_.end());
+  if (it == in_use_resources_.end()) {
+    // We should never hit this. Do some digging to try to determine the cause.
+    // TODO(ericrk): Remove this once we've investigated further.
+    // crbug.com/598286.
+
+    // Maybe this is a double free - see if the resource exists in our busy
+    // list.
+    auto found_busy =
+        std::find_if(busy_resources_.begin(), busy_resources_.end(),
+                     [resource](const scoped_ptr<PoolResource>& busy_resource) {
+                       return busy_resource->id() == resource->id();
+                     });
+    CHECK(found_busy == busy_resources_.end());
+
+    // Also check if the resource exists in our unused resources list.
+    auto found_unused =
+        std::find_if(unused_resources_.begin(), unused_resources_.end(),
+                     [resource](const scoped_ptr<PoolResource>& pool_resource) {
+                       return pool_resource->id() == resource->id();
+                     });
+    CHECK(found_unused == unused_resources_.end());
+
+    // Resource doesn't exist in any of our lists. CHECK.
+    CHECK(false);
+  }
+
+  // Also ensure that the resource wasn't null in our list.
+  // TODO(ericrk): Remove this once we've investigated further.
+  // crbug.com/598286.
+  CHECK(it->second.get());
 
   PoolResource* pool_resource = it->second.get();
   pool_resource->set_content_id(content_id);
