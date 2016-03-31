@@ -58,12 +58,6 @@ goto :END
 
 :GIT_CHECK
 
-:: See if we're on XP
-for /f "tokens=2 delims=[]" %%i in ('ver') do set VERSTR=%%i
-for /f "tokens=2,3 delims=. " %%i in ("%VERSTR%") do (set VERMAJOR=%%i & set VERMINOR=%%j)
-if %VERMAJOR% lss 5 set GIT_VERSION=%GIT_VERSION%-xp
-if %VERMAJOR% equ 5 if %VERMINOR% lss 2 set XP_SUFFIX=-xp
-
 :: must explicitly use FIND_EXE to prevent this from grabbing e.g. gnuwin32 or
 :: msys versions.
 set FIND_EXE=%SYSTEMROOT%\System32\find.exe
@@ -72,25 +66,19 @@ set FIND_EXE=%SYSTEMROOT%\System32\find.exe
 :: (parens) are necessary, otherwise batch puts an extra space after 32.
 reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | %FIND_EXE% /i "x86" > NUL && (set OS_BITS=32) || (set OS_BITS=64)
 
-if not exist "%WIN_TOOLS_ROOT_DIR%\.git_bleeding_edge" goto :GIT_OLD_FLOW
-set GIT_PORTABLE_FLOW=1
-set GIT_VERSION=2.7.4-%OS_BITS%
+if not exist "%WIN_TOOLS_ROOT_DIR%\.git_bleeding_edge" (
+  set GIT_VERSION=2.7.4
+) else (
+  set GIT_VERSION=2.7.4
+)
+set GIT_VERSION=%GIT_VERSION%-%OS_BITS%
+
 set GIT_FETCH_URL=https://commondatastorage.googleapis.com/chrome-infra/PortableGit-%GIT_VERSION%-bit.7z.exe
 set GIT_DOWNLOAD_PATH=%ZIP_DIR%\git.7z.exe
 set GIT_BIN_DIR=git-%GIT_VERSION%_bin
 set GIT_INST_DIR=%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%
 set GIT_EXE_PATH=%GIT_INST_DIR%\bin\git.exe
-goto :GIT_CLEANUP
 
-:GIT_OLD_FLOW
-set GIT_VERSION=1.9.5.chromium.6%XP_SUFFIX%
-set GIT_BIN_DIR=git-%GIT_VERSION%_bin
-set GIT_FETCH_URL=https://commondatastorage.googleapis.com/chrome-infra/%GIT_BIN_DIR%.zip
-set GIT_DOWNLOAD_PATH=%ZIP_DIR%\git.zip
-set GIT_INST_DIR=%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%
-set GIT_EXE_PATH=%GIT_INST_DIR%\cmd\git.cmd
-
-:GIT_CLEANUP
 :: Clean up any release which doesn't match the one we want.
 for /d %%i in ("%WIN_TOOLS_ROOT_DIR%\git-*_bin") do (
   if not "%%i" == "%WIN_TOOLS_ROOT_DIR%\git-%GIT_VERSION%_bin" (
@@ -110,15 +98,10 @@ if exist "%GIT_EXE_PATH%" (
   if errorlevel 1 goto :GIT_MAKE_BATCH_FILES
   goto :SYNC_GIT_HELP_FILES
 )
-goto :GIT_INSTALL
 
 :GIT_INSTALL
 echo Installing git %GIT_VERSION% (avg 1-2 min download) ...
-echo Detected: %OS_BITS% bits
-if defined XP_SUFFIX         echo ... Windows XP
-if defined GIT_PORTABLE_FLOW echo ... Portable installation flow
 
-:: git is not accessible; check it out and create 'proxy' files.
 if exist "%GIT_DOWNLOAD_PATH%" del "%GIT_DOWNLOAD_PATH%"
 echo Fetching from %GIT_FETCH_URL%
 cscript //nologo //e:jscript "%~dp0get_file.js" %GIT_FETCH_URL% "%GIT_DOWNLOAD_PATH%"
@@ -126,19 +109,14 @@ if errorlevel 1 goto :GIT_FAIL
 :: Cleanup git directory if it already exists.
 if exist "%GIT_INST_DIR%\." rd /q /s "%GIT_INST_DIR%"
 
-if defined GIT_PORTABLE_FLOW (
-  rem run PortableGit self-extractor
-  rem -y : Be Quiet ("yes")
-  rem -sd1 : Self delete SFX archive
-  rem -InstallPath : Where to put the files
-  rem -Directory : Run the post-extract program with this current-working-directory
-  call "%GIT_DOWNLOAD_PATH%" -y -sd1 -InstallPath="%GIT_INST_DIR%" -Directory="%GIT_INST_DIR%"
-) else (
-  rem Will create %GIT_INST_DIR%\...
-  cscript //nologo //e:jscript "%~dp0unzip.js" "%GIT_DOWNLOAD_PATH%" "%WIN_TOOLS_ROOT_DIR%"
-)
-
+:: run PortableGit self-extractor
+:: -y : Be Quiet ("yes")
+:: -sd1 : Self delete SFX archive
+:: -InstallPath : Where to put the files
+:: -Directory : Run the post-extract program with this current-working-directory
+call "%GIT_DOWNLOAD_PATH%" -y -sd1 -InstallPath="%GIT_INST_DIR%" -Directory="%GIT_INST_DIR%"
 if errorlevel 1 goto :GIT_FAIL
+
 del "%GIT_DOWNLOAD_PATH%"
 if not exist "%GIT_INST_DIR%\." goto :GIT_FAIL
 
@@ -146,20 +124,12 @@ if not exist "%GIT_INST_DIR%\." goto :GIT_FAIL
 :: Create the batch files.
 set GIT_TEMPL=%~dp0git.template.bat
 set SED=%GIT_INST_DIR%\usr\bin\sed.exe
-if defined GIT_PORTABLE_FLOW (
-  rem turns out we just installed sed :)
-  call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/cmd\\\\git.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\git.bat"
-  call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/cmd\\\\gitk.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\gitk.bat"
-  call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh.bat"
-  call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh-keygen.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat"
-) else (
-  call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\git.bat" "%WIN_TOOLS_ROOT_DIR%\git.bat" 1>nul
-  call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\gitk.bat" "%WIN_TOOLS_ROOT_DIR%\gitk.bat" 1>nul
-  call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\ssh.bat" "%WIN_TOOLS_ROOT_DIR%\ssh.bat" 1>nul
-  call copy /y "%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%\ssh-keygen.bat" "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat" 1>nul
-)
+call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/cmd\\\\git.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\git.bat"
+call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/cmd\\\\gitk.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\gitk.bat"
+call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh.bat"
+call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh-keygen.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat"
 
-:: Ensure autocrlf and filemode are set correctly.
+:: Ensure various git configurations are set correctly at they system level.
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.autocrlf false
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.filemode false
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.preloadindex true
@@ -174,9 +144,8 @@ call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.fscache true
 ::      files only. This prevents excessive copying when none of the docs
 ::      actually changed.
 :: /y : Don't prompt for overwrites (yes)
-if defined GIT_PORTABLE_FLOW (
-  xcopy /i /q /d /y "%WIN_TOOLS_ROOT_DIR%\man\html\*" "%GIT_INST_DIR%\mingw64\share\doc\git-doc" > NUL
-)
+xcopy /i /q /d /y "%WIN_TOOLS_ROOT_DIR%\man\html\*" "%GIT_INST_DIR%\mingw64\share\doc\git-doc" > NUL
+
 goto :SVN_CHECK
 
 :GIT_FAIL
