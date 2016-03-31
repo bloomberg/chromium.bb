@@ -29,7 +29,6 @@
 import unittest
 
 from webkitpy.layout_tests.layout_package import bot_test_expectations
-from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.port import builders
 
 

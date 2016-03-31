@@ -26,19 +26,15 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import StringIO
 import optparse
-import sys
 import time
 import unittest
 
-from webkitpy.common.system import executive_mock
 from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 
 from webkitpy.layout_tests.port import android
 from webkitpy.layout_tests.port import port_testcase
-from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import driver_unittest
 from webkitpy.tool.mocktool import MockOptions
 

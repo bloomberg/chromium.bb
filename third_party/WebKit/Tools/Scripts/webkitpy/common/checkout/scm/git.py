@@ -29,10 +29,8 @@
 
 import datetime
 import logging
-import os
 import re
 
-import webkitpy.common.config
 from webkitpy.common.checkout.scm.scm import SCM
 from webkitpy.common.memoized import memoized
 from webkitpy.common.system.executive import Executive, ScriptError

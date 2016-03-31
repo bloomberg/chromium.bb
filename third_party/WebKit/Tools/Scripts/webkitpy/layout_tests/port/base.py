@@ -54,7 +54,6 @@ from webkitpy.common.memoized import memoized
 from webkitpy.common.system import path
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.path import cygpath
-from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models import test_run_results

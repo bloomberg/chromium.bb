@@ -37,7 +37,6 @@ from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import mac
 from webkitpy.layout_tests.port import win
 from webkitpy.layout_tests.port import factory
-from webkitpy.layout_tests.port import test
 
 
 class FactoryTest(unittest.TestCase):

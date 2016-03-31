@@ -27,13 +27,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-import os
-import optparse
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
-from webkitpy.layout_tests.models.test_expectations import TestExpectationParser, TestExpectationsModel, TestExpectations
+from webkitpy.layout_tests.models.test_expectations import TestExpectations
+from webkitpy.layout_tests.models.test_expectations import TestExpectationsModel
 from webkitpy.layout_tests.port import builders
-from webkitpy.common.net import sheriff_calendar
 
 
 _log = logging.getLogger(__name__)

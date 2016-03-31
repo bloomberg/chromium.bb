@@ -26,7 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import re
 import sys
 import unittest
 
@@ -35,7 +34,6 @@ from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests.port import test
 from webkitpy.layout_tests.servers.apache_http import ApacheHTTP
-from webkitpy.layout_tests.servers.server_base import ServerError
 
 
 class TestApacheHTTP(unittest.TestCase):

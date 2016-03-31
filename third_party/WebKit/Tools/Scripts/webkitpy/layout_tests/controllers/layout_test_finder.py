@@ -30,7 +30,6 @@ import errno
 import json
 import logging
 import re
-import urllib2
 
 from webkitpy.layout_tests.layout_package.json_results_generator import convert_times_trie_to_flat_paths
 from webkitpy.layout_tests.models import test_expectations

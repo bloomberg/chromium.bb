@@ -38,7 +38,7 @@ import os
 import unittest
 
 import checker as style
-from webkitpy.common.system.logtesting import LogTesting, TestLogStream
+from webkitpy.common.system.logtesting import TestLogStream
 from checker import _BASE_FILTER_RULES
 from checker import _MAX_REPORTS_PER_CATEGORY
 from checker import _PATH_RULES_SPECIFIER as PATH_RULES_SPECIFIER
@@ -47,7 +47,6 @@ from checker import check_webkit_style_configuration
 from checker import check_webkit_style_parser
 from checker import configure_logging
 from checker import CheckerDispatcher
-from checker import ProcessorBase
 from checker import StyleProcessor
 from checker import StyleProcessorConfiguration
 from checkers.cpp import CppChecker
@@ -61,7 +60,6 @@ from filter import FilterConfiguration
 from optparser import ArgumentParser
 from optparser import CommandOptionValues
 from webkitpy.common.system.logtesting import LoggingTestCase
-from webkitpy.style.filereader import TextFileReader
 
 
 class ConfigureLoggingTestBase(unittest.TestCase):

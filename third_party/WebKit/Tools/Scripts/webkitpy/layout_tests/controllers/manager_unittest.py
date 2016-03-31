@@ -29,7 +29,6 @@
 
 """Unit tests for manager.py."""
 
-import sys
 import time
 import unittest
 

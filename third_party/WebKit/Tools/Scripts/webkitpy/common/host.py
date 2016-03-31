@@ -32,7 +32,6 @@ import os
 import sys
 
 from webkitpy.common.checkout.scm.detection import SCMDetector
-from webkitpy.common.memoized import memoized
 from webkitpy.common.net import buildbot, web
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.layout_tests.port.factory import PortFactory

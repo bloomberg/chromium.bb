@@ -28,11 +28,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import errno
-import signal
 import subprocess
 import sys
-import time
 import unittest
 
 # Since we execute this script directly as part of the unit tests, we need to ensure

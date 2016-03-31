@@ -29,7 +29,7 @@ import time
 import traceback
 
 from webkitpy.common.config.irc import update_wait_seconds
-from webkitpy.tool.bot.commitannouncer import CommitAnnouncer, CommitAnnouncerThread
+from webkitpy.tool.bot.commitannouncer import CommitAnnouncerThread
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
 
 _log = logging.getLogger(__name__)

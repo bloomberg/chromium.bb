@@ -29,7 +29,6 @@
 
 import logging
 import re
-import time
 
 from webkitpy.layout_tests.controllers import repaint_overlay
 from webkitpy.layout_tests.controllers import test_result_writer

@@ -35,7 +35,6 @@ import sys
 import traceback
 
 from webkitpy.common.host import Host
-from webkitpy.common.system.executive import Executive
 from webkitpy.layout_tests.controllers.manager import Manager
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.factory import configuration_options, platform_options

@@ -45,7 +45,6 @@ import logging
 import multiprocessing
 import Queue
 import sys
-import time
 import traceback
 
 

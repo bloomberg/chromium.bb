@@ -28,33 +28,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import Queue
 import StringIO
-import codecs
 import json
-import logging
 import os
-import platform
 import re
 import sys
-import thread
-import time
-import threading
 import unittest
 
 from webkitpy.common.system import outputcapture, path
-from webkitpy.common.system.crashlogs_unittest import make_mock_crash_report_darwin
 from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.host import Host
 from webkitpy.common.host_mock import MockHost
 
-from webkitpy.layout_tests import port
 from webkitpy.layout_tests import run_webkit_tests
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import test
-from webkitpy.layout_tests.port.base import Port
-from webkitpy.tool import grammar
-from webkitpy.tool.mocktool import MockOptions
 
 
 def parse_args(extra_args=None, tests_included=False, new_results=False, print_nothing=True):

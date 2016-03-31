@@ -26,7 +26,6 @@ from contextlib import contextmanager
 import filecmp
 import fnmatch
 import os
-import re
 import shutil
 import sys
 import tempfile
@@ -41,13 +40,12 @@ source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
 sys.path.append(source_path)  # for Source/bindings imports
 
 from bindings.scripts.code_generator_v8 import CodeGeneratorUnionType
-import bindings.scripts.compute_interfaces_info_individual
 from bindings.scripts.compute_interfaces_info_individual import InterfaceInfoCollector
-import bindings.scripts.compute_interfaces_info_overall
 from bindings.scripts.compute_interfaces_info_overall import compute_interfaces_info_overall, interfaces_info
 from bindings.scripts.idl_compiler import IdlCompilerDictionaryImpl, IdlCompilerV8
-from bindings.scripts.idl_reader import IdlReader
-from bindings.scripts.utilities import ComponentInfoProviderCore, ComponentInfoProviderModules, idl_filename_to_component, write_file
+from bindings.scripts.utilities import ComponentInfoProviderCore
+from bindings.scripts.utilities import ComponentInfoProviderModules
+from bindings.scripts.utilities import write_file
 
 
 PASS_MESSAGE = 'All tests PASS!'

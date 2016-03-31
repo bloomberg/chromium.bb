@@ -34,7 +34,6 @@ import sys
 import time
 
 from webkitpy.layout_tests.servers import server_base
-from webkitpy.thirdparty import mod_pywebsocket
 
 _log = logging.getLogger(__name__)
 

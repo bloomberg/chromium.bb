@@ -4,7 +4,6 @@
 
 import unittest
 
-from webkitpy.layout_tests.servers import server_base
 from webkitpy.layout_tests.servers import cli_wrapper
 
 
