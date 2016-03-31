@@ -9,6 +9,7 @@ static_library("browsing_data_ui") {
   ]
 
   deps = [
+    "//base",
     "//components/browser_sync/browser",
     "//components/history/core/browser",
   ]
