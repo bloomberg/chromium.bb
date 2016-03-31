@@ -51,8 +51,9 @@ DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothErr
         MAP_ERROR(NO_BLUETOOTH_ADAPTER, NotFoundError, "Bluetooth adapter not available.");
         MAP_ERROR(CHOSEN_DEVICE_VANISHED, NotFoundError, "User selected a device that doesn't exist anymore.");
         MAP_ERROR(CHOOSER_CANCELLED, NotFoundError, "User cancelled the requestDevice() chooser.");
-        MAP_ERROR(CHOOSER_DISABLED, NotFoundError, "User or their enterprise policy has disabled Web Bluetooth globally.");
-        MAP_ERROR(CHOOSER_DENIED_PERMISSION, NotFoundError, "User denied the browser permission to scan for Bluetooth devices.");
+        MAP_ERROR(CHOOSER_NOT_SHOWN_API_GLOBALLY_DISABLED, NotFoundError, "Web Bluetooth API globally disabled.");
+        MAP_ERROR(CHOOSER_NOT_SHOWN_API_LOCALLY_DISABLED, NotFoundError, "User or their enterprise policy has disabled Web Bluetooth.");
+        MAP_ERROR(CHOOSER_NOT_SHOWN_USER_DENIED_PERMISSION_TO_SCAN, NotFoundError, "User denied the browser permission to scan for Bluetooth devices.");
         MAP_ERROR(SERVICE_NOT_FOUND, NotFoundError, "Service not found in device.");
         MAP_ERROR(CHARACTERISTIC_NOT_FOUND, NotFoundError, "No Characteristics with specified UUID found in Service.");
         MAP_ERROR(NO_CHARACTERISTICS_FOUND, NotFoundError, "No Characteristics found in service.");

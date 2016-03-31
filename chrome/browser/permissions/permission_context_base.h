@@ -62,11 +62,13 @@ class PermissionContextBase : public KeyedService {
   ~PermissionContextBase() override;
 
   // A field trial used to enable the global permissions kill switch.
-  // This is public for testing purposes.
+  // This is public so permissions that don't yet inherit from
+  // PermissionContextBase can use it.
   static const char kPermissionsKillSwitchFieldStudy[];
 
   // The field trial param to enable the global permissions kill switch.
-  // This is public for testing purposes.
+  // This is public so permissions that don't yet inherit from
+  // PermissionContextBase can use it.
   static const char kPermissionsKillSwitchBlockedValue[];
 
   // The renderer is requesting permission to push messages.

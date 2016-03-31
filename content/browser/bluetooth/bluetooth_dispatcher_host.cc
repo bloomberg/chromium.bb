@@ -1230,14 +1230,32 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
     return;
   }
 
-  if (!GetContentClient()->browser()->AllowWebBluetooth(
-          web_contents->GetBrowserContext(), requesting_origin,
-          embedding_origin)) {
-    RecordRequestDeviceOutcome(
-        UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_GLOBALLY_DISABLED);
-    Send(new BluetoothMsg_RequestDeviceError(
-        thread_id, request_id, WebBluetoothError::CHOOSER_DISABLED));
-    return;
+  switch (GetContentClient()->browser()->AllowWebBluetooth(
+      web_contents->GetBrowserContext(), requesting_origin, embedding_origin)) {
+    case ContentBrowserClient::AllowWebBluetoothResult::BLOCK_POLICY: {
+      RecordRequestDeviceOutcome(
+          UMARequestDeviceOutcome::BLUETOOTH_CHOOSER_POLICY_DISABLED);
+      Send(new BluetoothMsg_RequestDeviceError(
+          thread_id, request_id,
+          WebBluetoothError::CHOOSER_NOT_SHOWN_API_LOCALLY_DISABLED));
+      return;
+    }
+    case ContentBrowserClient::AllowWebBluetoothResult::
+        BLOCK_GLOBALLY_DISABLED: {
+      // Log to the developer console.
+      web_contents->GetMainFrame()->AddMessageToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_LOG,
+          "Bluetooth permission has been blocked.");
+      // Block requests.
+      RecordRequestDeviceOutcome(
+          UMARequestDeviceOutcome::BLUETOOTH_GLOBALLY_DISABLED);
+      Send(new BluetoothMsg_RequestDeviceError(
+          thread_id, request_id,
+          WebBluetoothError::CHOOSER_NOT_SHOWN_API_GLOBALLY_DISABLED));
+      return;
+    }
+    case ContentBrowserClient::AllowWebBluetoothResult::ALLOW:
+      break;
   }
 
   // Create storage for the information that backs the chooser, and show the
@@ -1390,7 +1408,7 @@ void BluetoothDispatcherHost::FinishClosingChooser(
     VLOG(1) << "Bluetooth chooser denied permission";
     Send(new BluetoothMsg_RequestDeviceError(
         session->thread_id, session->request_id,
-        WebBluetoothError::CHOOSER_DENIED_PERMISSION));
+        WebBluetoothError::CHOOSER_NOT_SHOWN_USER_DENIED_PERMISSION_TO_SCAN));
     request_device_sessions_.Remove(chooser_id);
     return;
   }

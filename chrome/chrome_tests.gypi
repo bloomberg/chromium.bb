@@ -549,6 +549,7 @@
       'browser/ui/webui/webui_webview_browsertest.cc',
       'browser/ui/zoom/zoom_controller_browsertest.cc',
       'browser/unload_browsertest.cc',
+      'browser/web_bluetooth_browsertest.cc',
       'common/mac/app_mode_chrome_locator_browsertest.mm',
       'common/mac/mock_launchd.cc',
       'common/mac/mock_launchd.h',

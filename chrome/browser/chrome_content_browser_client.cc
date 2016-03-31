@@ -53,6 +53,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -1985,19 +1986,34 @@ bool ChromeContentBrowserClient::AllowKeygen(
          CONTENT_SETTING_ALLOW;
 }
 
-bool ChromeContentBrowserClient::AllowWebBluetooth(
+ChromeContentBrowserClient::AllowWebBluetoothResult
+ChromeContentBrowserClient::AllowWebBluetooth(
     content::BrowserContext* browser_context,
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin) {
+  // TODO(crbug.com/598890): Don't disable if
+  // base::CommandLine::ForCurrentProcess()->
+  // HasSwitch(switches::kEnableWebBluetooth) is true.
+  if (variations::GetVariationParamValue(
+          PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+          "Bluetooth") ==
+      PermissionContextBase::kPermissionsKillSwitchBlockedValue) {
+    // The kill switch is enabled for this permission. Block requests.
+    return AllowWebBluetoothResult::BLOCK_GLOBALLY_DISABLED;
+  }
+
   const HostContentSettingsMap* const content_settings =
       HostContentSettingsMapFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context));
 
-  return content_settings->GetContentSetting(
-             GURL(requesting_origin.Serialize()),
-             GURL(embedding_origin.Serialize()),
-             CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD,
-             std::string()) != CONTENT_SETTING_BLOCK;
+  if (content_settings->GetContentSetting(GURL(requesting_origin.Serialize()),
+                                          GURL(embedding_origin.Serialize()),
+                                          CONTENT_SETTINGS_TYPE_BLUETOOTH_GUARD,
+                                          std::string()) ==
+      CONTENT_SETTING_BLOCK) {
+    return AllowWebBluetoothResult::BLOCK_POLICY;
+  }
+  return AllowWebBluetoothResult::ALLOW;
 }
 
 net::URLRequestContext*

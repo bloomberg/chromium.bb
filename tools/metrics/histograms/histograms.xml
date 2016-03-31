@@ -84962,6 +84962,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="15"
       label="Chooser insta-closed because user or enterprise policy has
              disabled it"/>
+  <int value="16" label="Web Bluetooth kill switch enabled"/>
 </enum>
 
 <enum name="WebCertVerifyAgreement" type="int">
