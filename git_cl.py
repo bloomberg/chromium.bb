@@ -2160,7 +2160,7 @@ def upload_branch_deps(cl, args):
   ask_for_data('[Press enter to continue or ctrl-C to quit]')
 
   # Add a default patchset title to all upload calls in Rietveld.
-  if not settings.GetIsGerrit():
+  if not cl.IsGerrit():
     args.extend(['-t', 'Updated patchset dependency'])
 
   # Record all dependents that failed to upload.
@@ -3068,7 +3068,7 @@ def CMDupload(parser, args):
   # Make sure authenticated to Rietveld before running expensive hooks. It is
   # a fast, best efforts check. Rietveld still can reject the authentication
   # during the actual upload.
-  if not settings.GetIsGerrit() and auth_config.use_oauth2:
+  if not cl.IsGerrit() and auth_config.use_oauth2:
     authenticator = auth.get_authenticator_for_host(
         cl.GetCodereviewServer(), auth_config)
     if not authenticator.has_cached_credentials():
@@ -3111,7 +3111,7 @@ def CMDupload(parser, args):
       ask_for_data('About to upload; enter to confirm.')
 
   print_stats(options.similarity, options.find_copies, args)
-  if settings.GetIsGerrit():
+  if cl.IsGerrit():
     if options.squash and options.no_squash:
       DieWithError('Can only use one of --squash or --no-squash')
 

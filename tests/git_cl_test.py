@@ -784,9 +784,6 @@ class TestGitCl(TestCase):
         return '\n'.join(branch_deps)
     self.mock(git_cl, 'RunGit', mock_run_git)
 
-    git_cl.settings = git_cl.Settings()
-    self.mock(git_cl.settings, 'GetIsGerrit', lambda: False)
-
     class RecordCalls:
       times_called = 0
     record_calls = RecordCalls()
@@ -808,6 +805,8 @@ class TestGitCl(TestCase):
         return '123'
       def GetPatchset(self):
         return '1001'
+      def IsGerrit(self):
+        return False
 
     ret = git_cl.upload_branch_deps(MockChangelist(), [])
     # CMDupload should have been called 5 times because of 5 dependent branches.
