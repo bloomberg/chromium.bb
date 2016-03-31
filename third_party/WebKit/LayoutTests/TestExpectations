@@ -1586,3 +1586,5 @@ crbug.com/599560 [ Mac10.9 ] fast/text/word-space.html [ NeedsRebaseline ]
 crbug.com/599560 [ Mac10.9 ] fast/text/zero-font-size.html [ NeedsRebaseline ]
 crbug.com/599560 [ Mac10.9 ] ietestcenter/css3/text/textshadow-003.htm [ NeedsRebaseline ]
 crbug.com/599560 [ Mac10.9 ] ietestcenter/css3/text/textshadow-004.htm [ NeedsRebaseline ]
+
+crbug.com/599662 inspector/sources/debugger-ui/debugger-save-to-temp-var.html [ Failure ]
