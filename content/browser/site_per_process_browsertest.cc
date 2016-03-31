@@ -4176,12 +4176,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-  RenderViewHostImpl* rvh_a = root->current_frame_host()->render_view_host();
-  int rvh_a_routing_id = rvh_a->GetRoutingID();
-
   std::string script =
       "window.onunload = function() { "
       "  var start = Date.now();"
@@ -4189,14 +4183,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       "}";
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
 
+  // Navigating cross-site with an iframe to the original site shouldn't crash.
   GURL second_url(embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), second_url));
 
-  // We should have a different RVH for a.com.
-  RenderViewHostImpl* rvh_a2 =
-      root->child_at(0)->current_frame_host()->render_view_host();
-  EXPECT_NE(rvh_a_routing_id, rvh_a2->GetRoutingID());
+  // If the subframe is created while the main frame is pending deletion, then
+  // the RVH will be different.
+  // TODO(creis, alexmos): Find a way to assert this that isn't flaky.  For now,
+  // the test is just likely (not certain) to catch regressions by crashing.
 }
 
 // Check that when a cross-process frame acquires focus, the old focused frame
