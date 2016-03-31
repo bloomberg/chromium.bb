@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -94,8 +95,17 @@ class WebrtcTransportTest : public testing::Test {
   }
 
   void ProcessTransportInfo(scoped_ptr<WebrtcTransport>* target_transport,
+                            bool normalize_line_endings,
                             scoped_ptr<buzz::XmlElement> transport_info) {
     ASSERT_TRUE(target_transport);
+
+    // Reformat the message to normalize line endings by removing CR symbol.
+    if (normalize_line_endings) {
+      std::string xml = transport_info->Str();
+      base::ReplaceChars(xml, "\r", std::string(), &xml);
+      transport_info.reset(buzz::XmlElement::ForStr(xml));
+    }
+
     EXPECT_TRUE(
         (*target_transport)->ProcessTransportInfo(transport_info.get()));
   }
@@ -133,11 +143,11 @@ class WebrtcTransportTest : public testing::Test {
     host_transport_->Start(
         host_authenticator_.get(),
         base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
-                   base::Unretained(this), &client_transport_));
+                   base::Unretained(this), &client_transport_, true));
     client_transport_->Start(
         client_authenticator_.get(),
         base::Bind(&WebrtcTransportTest::ProcessTransportInfo,
-                   base::Unretained(this), &host_transport_));
+                   base::Unretained(this), &host_transport_, false));
   }
 
   void WaitUntilConnected() {

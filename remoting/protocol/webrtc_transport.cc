@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
@@ -44,6 +46,17 @@ const char kTransportNamespace[] = "google:remoting:webrtc";
 // TODO(sergeyu): Remove this flag.
 const char kDisableAuthenticationSwitchName[] = "disable-authentication";
 #endif
+
+// Normalizes the SDP message to make sure the text used for HMAC signatures
+// verifications is the same that was signed on the sending side. This is
+// necessary because WebRTC generates SDP with CRLF line endings which are
+// sometimes converted to LF after passing the signaling channel.
+std::string NormalizeSessionDescription(const std::string& sdp) {
+  // Split SDP lines. The CR symbols is removed by the TRIM_WHITESPACE flag.
+  std::vector<std::string> lines =
+      SplitString(sdp, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return base::JoinString(lines, "\n") + "\n";
+}
 
 // A webrtc::CreateSessionDescriptionObserver implementation used to receive the
 // results of creating descriptions for this end of the PeerConnection.
@@ -206,7 +219,8 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     }
 
     std::string type = session_description->Attr(QName(std::string(), "type"));
-    std::string sdp = session_description->BodyText();
+    std::string sdp =
+        NormalizeSessionDescription(session_description->BodyText());
     if (type.empty() || sdp.empty()) {
       LOG(ERROR) << "Incorrect session description format.";
       return false;
@@ -307,6 +321,7 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
     Close(CHANNEL_CONNECTION_ERROR);
     return;
   }
+  description_sdp = NormalizeSessionDescription(description_sdp);
 
   // Format and send the session description to the peer.
   scoped_ptr<XmlElement> transport_info(
@@ -320,8 +335,8 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
   std::string digest;
   digest.resize(handshake_hmac_.DigestLength());
   CHECK(handshake_hmac_.Sign(description_sdp,
-                              reinterpret_cast<uint8_t*>(&(digest[0])),
-                              digest.size()));
+                             reinterpret_cast<uint8_t*>(&(digest[0])),
+                             digest.size()));
   std::string digest_base64;
   base::Base64Encode(digest, &digest_base64);
   offer_tag->SetAttr(QName(std::string(), "signature"), digest_base64);
