@@ -145,11 +145,6 @@
 #include "chrome/browser/media/router/media_router_metrics.h"
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "grit/theme_resources.h"
-#include "ui/base/resource/resource_bundle.h"
-#endif
-
 using base::UserMetricsAction;
 using blink::WebContextMenuData;
 using blink::WebMediaPlayerAction;
@@ -415,7 +410,7 @@ void WriteTextToClipboard(const base::string16& text) {
 bool g_custom_id_ranges_initialized = false;
 
 #if !defined(OS_CHROMEOS)
-void AddAvatarToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
+void AddIconToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
   int width = icon.Width();
   int height = icon.Height();
 
@@ -441,19 +436,6 @@ void AddAvatarToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
   menu->SetIcon(menu->GetItemCount() - 1, sized_icon);
 }
 #endif  // !defined(OS_CHROMEOS)
-
-// Adds Google icon to the last added menu item. Used for Google-powered
-// services like translate and search.
-void AddGoogleIconToLastMenuItem(ui::SimpleMenuModel* menu) {
-#if defined(GOOGLE_CHROME_BUILD)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableGoogleBrandedContextMenu)) {
-    menu->SetIcon(
-        menu->GetItemCount() - 1,
-        ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_GOOGLE_ICON));
-  }
-#endif  // defined(GOOGLE_CHROME_BUILD)
-}
 
 void OnProfileCreated(const GURL& link_url,
                       const content::Referrer& referrer,
@@ -501,25 +483,6 @@ bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
   if (!url.SchemeIs(content::kChromeUIScheme))
     return false;
   return url.host() == chrome::kChromeUISyncResourcesHost;
-}
-
-// static
-void RenderViewContextMenu::AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
-                                                     bool is_checked) {
-  // When the Google branding experiment is enabled, we want to show an icon
-  // next to this item, but we can't show icons on check items.  So when the
-  // item is enabled show it as checked, and otherwise add it as a normal item
-  // (instead of a check item) so that, if necessary, we can add the Google
-  // icon.  (If the experiment is off, there's no harm in adding this as a
-  // normal item, as it will look identical to an unchecked check item.)
-  if (is_checked) {
-    menu->AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-                                   IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
-  } else {
-    menu->AddItemWithStringId(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-                              IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
-    AddGoogleIconToLastMenuItem(menu);
-  }
 }
 
 RenderViewContextMenu::RenderViewContextMenu(
@@ -975,7 +938,7 @@ void RenderViewContextMenu::AppendLinkItems() {
             IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index,
             l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_OPENLINKINPROFILE,
                                        entry->GetName()));
-        AddAvatarToLastMenuItem(entry->GetAvatarIcon(), &menu_model_);
+        AddIconToLastMenuItem(entry->GetAvatarIcon(), &menu_model_);
       } else if (target_profiles_entries.size() > 1u) {
         for (ProfileAttributesEntry* entry : target_profiles_entries) {
           int menu_index = static_cast<int>(profile_link_paths_.size());
@@ -989,8 +952,8 @@ void RenderViewContextMenu::AppendLinkItems() {
           profile_link_paths_.push_back(entry->GetPath());
           profile_link_submenu_model_.AddItem(
               IDC_OPEN_LINK_IN_PROFILE_FIRST + menu_index, entry->GetName());
-          AddAvatarToLastMenuItem(entry->GetAvatarIcon(),
-                                  &profile_link_submenu_model_);
+          AddIconToLastMenuItem(entry->GetAvatarIcon(),
+                                &profile_link_submenu_model_);
         }
         menu_model_.AddSubMenuWithStringId(
             IDC_CONTENT_CONTEXT_OPENLINKINPROFILE,
@@ -1058,10 +1021,6 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
         IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
                                    default_provider->short_name()));
-    if (default_provider->image_url_ref().HasGoogleBaseURLs(
-            service->search_terms_data())) {
-      AddGoogleIconToLastMenuItem(&menu_model_);
-    }
   }
 }
 
@@ -1139,7 +1098,6 @@ void RenderViewContextMenu::AppendPageItems() {
     menu_model_.AddItem(
         IDC_CONTENT_CONTEXT_TRANSLATE,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
-    AddGoogleIconToLastMenuItem(&menu_model_);
   }
 }
 
@@ -1212,12 +1170,6 @@ void RenderViewContextMenu::AppendSearchProvider() {
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
                                    default_provider->short_name(),
                                    printable_selection_text));
-    TemplateURLService* service =
-        TemplateURLServiceFactory::GetForProfile(GetProfile());
-    if (default_provider->url_ref().HasGoogleBaseURLs(
-            service->search_terms_data())) {
-      AddGoogleIconToLastMenuItem(&menu_model_);
-    }
   } else {
     if ((selection_navigation_url_ != params_.link_url) &&
         ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
@@ -2149,10 +2101,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       NOTREACHED();
       break;
   }
-}
-
-void RenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
-  AddSpellCheckServiceItem(&menu_model_, is_checked);
 }
 
 ProtocolHandlerRegistry::ProtocolHandlerList

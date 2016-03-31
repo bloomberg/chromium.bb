@@ -14627,15 +14627,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
     </if>
 
-    <if expr="not is_android and not is_ios and _google_chrome">
-      <message name="IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_NAME" desc="Name for the flag to enable Google branding in the context menu.">
-        Google branding in the context menu
-      </message>
-      <message name="IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_DESCRIPTION" desc="Description for the flag to enable Google branding in the context menu.">
-        Shows a Google icon next to context menu items powered by Google services.
-      </message>
-    </if>
-
     <message name="IDS_FLAGS_ENABLE_WEB_USB_NAME" desc="Title for the flag to enable WebUSB.">
       WebUSB
     </message>
