@@ -14,7 +14,7 @@ print "    window.parent.postMessage('loaded', '*');\n";
 print "}\n";
 print "</script>\n";
 print "<body>\n";
-print "<object id=\"object\" name=\"plugin\" type=\"application/x-webkit-test-netscape\">\n";
+print "<object id=\"object\" name=\"plugin\" type=\"application/x-blink-test-plugin\">\n";
 print "<param name=\"movie\" value=\"".$cgi->param('q')."\" />\n";
 print "</object>\n";
 print "</body>\n";
