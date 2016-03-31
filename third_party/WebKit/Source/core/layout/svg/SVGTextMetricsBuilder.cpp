@@ -36,6 +36,15 @@ namespace blink {
 
 namespace {
 
+inline bool characterStartsSurrogatePair(const TextRun& run, unsigned index)
+{
+    if (!U16_IS_LEAD(run[index]))
+        return false;
+    if (index + 1 >= static_cast<unsigned>(run.charactersLength()))
+        return false;
+    return U16_IS_TRAIL(run[index + 1]);
+}
+
 class SVGTextMetricsCalculator {
 public:
     SVGTextMetricsCalculator(LineLayoutSVGInlineText);
@@ -50,7 +59,7 @@ public:
     // should be unified under a single concept. See: https://crbug.com/593570
     bool currentCharacterStartsSurrogatePair() const
     {
-        return U16_IS_LEAD(m_run[m_currentPosition]) && m_currentPosition + 1 < characterCount() && U16_IS_TRAIL(m_run[m_currentPosition + 1]);
+        return characterStartsSurrogatePair(m_run, m_currentPosition);
     }
     bool currentCharacterIsWhiteSpace() const
     {
@@ -158,6 +167,41 @@ bool SVGTextMetricsCalculator::advancePosition()
     return m_currentPosition < characterCount();
 }
 
+// TODO(pdr): We only have per-glyph data so we need to synthesize per-grapheme
+// data. E.g., if 'fi' is shaped into a single glyph, we do not know the 'i'
+// position. The code below synthesizes an average glyph width when characters
+// share a single position. This will incorrectly split combining diacritics.
+// See: https://crbug.com/473476.
+static void synthesizeGraphemeWidths(const TextRun& run, Vector<CharacterRange>& ranges)
+{
+    unsigned distributeCount = 0;
+    for (int rangeIndex = static_cast<int>(ranges.size()) - 1; rangeIndex >= 0; --rangeIndex) {
+        CharacterRange& currentRange = ranges[rangeIndex];
+        if (currentRange.width() == 0) {
+            distributeCount++;
+        } else if (distributeCount != 0) {
+            // Only count surrogate pairs as a single character.
+            bool surrogatePair = characterStartsSurrogatePair(run, rangeIndex);
+            if (!surrogatePair)
+                distributeCount++;
+
+            float newWidth = currentRange.width() / distributeCount;
+            currentRange.end = currentRange.start + newWidth;
+            float lastEndPosition = currentRange.end;
+            for (unsigned distribute = 1; distribute < distributeCount; distribute++) {
+                // This surrogate pair check will skip processing of the second
+                // character forming the surrogate pair.
+                unsigned distributeIndex = rangeIndex + distribute + (surrogatePair ? 1 : 0);
+                ranges[distributeIndex].start = lastEndPosition;
+                ranges[distributeIndex].end = lastEndPosition + newWidth;
+                lastEndPosition = ranges[distributeIndex].end;
+            }
+
+            distributeCount = 0;
+        }
+    }
+}
+
 unsigned SVGTextMetricsCalculator::updateSubrunRangesForCurrentPosition()
 {
     ASSERT(m_bidiRun);
@@ -171,33 +215,10 @@ unsigned SVGTextMetricsCalculator::updateSubrunRangesForCurrentPosition()
 
     unsigned positionInRun = m_currentPosition - m_bidiRun->start();
     if (positionInRun >= m_subrunRanges.size()) {
-        TextRun subRun = constructTextRun(m_text,
-            m_bidiRun->start(), m_bidiRun->stop() - m_bidiRun->start(), m_bidiRun->direction());
+        TextRun subRun = constructTextRun(m_text, m_bidiRun->start(),
+            m_bidiRun->stop() - m_bidiRun->start(), m_bidiRun->direction());
         m_subrunRanges = m_text.scaledFont().individualCharacterRanges(subRun);
-
-        // TODO(pdr): We only have per-glyph data so we need to synthesize per-
-        // grapheme data. E.g., if 'fi' is shaped into a single glyph, we do not
-        // know the 'i' position. The code below synthesizes an average glyph
-        // width when characters share a position. This will incorrectly split
-        // combining diacritics. See: https://crbug.com/473476.
-        unsigned distributeCount = 0;
-        for (int rangeIndex = static_cast<int>(m_subrunRanges.size()) - 1; rangeIndex >= 0; --rangeIndex) {
-            CharacterRange& currentRange = m_subrunRanges[rangeIndex];
-            if (currentRange.width() == 0) {
-                distributeCount++;
-            } else if (distributeCount != 0) {
-                distributeCount++;
-                float newWidth = currentRange.width() / distributeCount;
-                currentRange.end = currentRange.start + newWidth;
-                for (unsigned distribute = 1; distribute < distributeCount; distribute++) {
-                    unsigned distributeIndex = rangeIndex + distribute;
-                    float newStartPosition = m_subrunRanges[distributeIndex - 1].end;
-                    m_subrunRanges[distributeIndex].start = newStartPosition;
-                    m_subrunRanges[distributeIndex].end = newStartPosition + newWidth;
-                }
-                distributeCount = 0;
-            }
-        }
+        synthesizeGraphemeWidths(subRun, m_subrunRanges);
     }
 
     ASSERT(m_subrunRanges.size() && positionInRun < m_subrunRanges.size());

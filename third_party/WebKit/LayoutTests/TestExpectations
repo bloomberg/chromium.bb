@@ -937,6 +937,11 @@ crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-sc
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/552556 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
 
+crbug.com/597311 svg/text/bidi-text-query.svg [ NeedsRebaseline ]
+crbug.com/597311 svg/text/combining-character-queries.html [ NeedsRebaseline ]
+crbug.com/597311 svg/text/ligature-queries.html [ NeedsRebaseline ]
+crbug.com/597311 svg/text/surrogate-pair-queries.html [ NeedsRebaseline ]
+
 crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-change-color.html [ Failure ]
 crbug.com/524596 paint/invalidation/composited-non-stacking-context-descendant-move.html [ Failure ]
 crbug.com/524596 paint/invalidation/fixed-position-descendant-paint-offset-indirect.html [ Failure ]
