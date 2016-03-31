@@ -1011,7 +1011,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, Exc
 
     // Remove previous region (with id or control)
     m_hitRegionManager->removeHitRegionById(options.id());
-    m_hitRegionManager->removeHitRegionByControl(options.control().get());
+    m_hitRegionManager->removeHitRegionByControl(options.control());
 
     RefPtrWillBeRawPtr<HitRegion> hitRegion = HitRegion::create(hitRegionPath, options);
     Element* element = hitRegion->control();

@@ -667,7 +667,7 @@ void XMLHttpRequest::send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrSt
     }
 
     if (body.isDocument()) {
-        send(body.getAsDocument().get(), exceptionState);
+        send(body.getAsDocument(), exceptionState);
         return;
     }
 

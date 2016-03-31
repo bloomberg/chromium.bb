@@ -55,9 +55,9 @@ protected:
     {
     }
 
-    UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
+    UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, PlatformEvent::Modifiers, double platformTimeStamp, InputDeviceCapabilities* sourceCapabilities = nullptr);
-    UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, PassRefPtrWillBeRawPtr<AbstractView> view,
+    UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, PlatformEvent::Modifiers, double platformTimeStamp, InputDeviceCapabilities* sourceCapabilities = nullptr);
     UIEventWithKeyState(const AtomicString& type, const EventModifierInit& initializer);
     void initModifiers(bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);

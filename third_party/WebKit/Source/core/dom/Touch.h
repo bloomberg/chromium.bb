@@ -50,8 +50,7 @@ public:
         int identifier, const FloatPoint& screenPos, const FloatPoint& pagePos,
         const FloatSize& radius, float rotationAngle, float force, String region)
     {
-        return adoptRefWillBeNoop(
-            new Touch(frame, target, identifier, screenPos, pagePos, radius, rotationAngle, force, region));
+        return adoptRefWillBeNoop(new Touch(frame, target, identifier, screenPos, pagePos, radius, rotationAngle, force, region));
     }
 
     static PassRefPtrWillBeRawPtr<Touch> create(const Document& document, const TouchInit& initializer)

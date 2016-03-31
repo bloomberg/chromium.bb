@@ -842,13 +842,13 @@ static inline void clipRectsToImageRect(const FloatRect& imageRect, FloatRect* s
 static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUnion& value)
 {
     if (value.isHTMLImageElement())
-        return value.getAsHTMLImageElement().get();
+        return value.getAsHTMLImageElement();
     if (value.isHTMLVideoElement())
-        return value.getAsHTMLVideoElement().get();
+        return value.getAsHTMLVideoElement();
     if (value.isHTMLCanvasElement())
-        return value.getAsHTMLCanvasElement().get();
+        return value.getAsHTMLCanvasElement();
     if (value.isImageBitmap())
-        return value.getAsImageBitmap().get();
+        return value.getAsImageBitmap();
     ASSERT_NOT_REACHED();
     return nullptr;
 }

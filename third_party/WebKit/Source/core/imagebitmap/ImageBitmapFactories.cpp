@@ -56,17 +56,17 @@ namespace blink {
 static inline ImageBitmapSource* toImageBitmapSourceInternal(const ImageBitmapSourceUnion& value)
 {
     if (value.isHTMLImageElement())
-        return value.getAsHTMLImageElement().get();
+        return value.getAsHTMLImageElement();
     if (value.isHTMLVideoElement())
-        return value.getAsHTMLVideoElement().get();
+        return value.getAsHTMLVideoElement();
     if (value.isHTMLCanvasElement())
-        return value.getAsHTMLCanvasElement().get();
+        return value.getAsHTMLCanvasElement();
     if (value.isBlob())
         return value.getAsBlob();
     if (value.isImageData())
         return value.getAsImageData();
     if (value.isImageBitmap())
-        return value.getAsImageBitmap().get();
+        return value.getAsImageBitmap();
     ASSERT_NOT_REACHED();
     return nullptr;
 }

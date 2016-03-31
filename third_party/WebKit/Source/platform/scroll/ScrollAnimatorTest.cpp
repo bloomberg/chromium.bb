@@ -134,10 +134,8 @@ static void reset(ScrollAnimator& scrollAnimator)
 
 TEST(ScrollAnimatorTest, MainThreadStates)
 {
-    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea =
-        MockScrollableArea::create(true);
-    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(
-        new ScrollAnimator(scrollableArea.get(), getMockedTime));
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
+    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(new ScrollAnimator(scrollableArea.get(), getMockedTime));
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint()));
@@ -260,10 +258,8 @@ TEST(ScrollAnimatorTest, MainThreadEnabled)
 // non-smooth scroll offset animation.
 TEST(ScrollAnimatorTest, AnimatedScrollAborted)
 {
-    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea =
-        MockScrollableArea::create(true);
-    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(
-        new ScrollAnimator(scrollableArea.get(), getMockedTime));
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
+    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(new ScrollAnimator(scrollableArea.get(), getMockedTime));
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint()));
@@ -309,10 +305,8 @@ TEST(ScrollAnimatorTest, AnimatedScrollAborted)
 // completed on the main thread.
 TEST(ScrollAnimatorTest, AnimatedScrollTakeover)
 {
-    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea =
-        MockScrollableArea::create(true);
-    OwnPtrWillBeRawPtr<TestScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(
-        new TestScrollAnimator(scrollableArea.get(), getMockedTime));
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
+    OwnPtrWillBeRawPtr<TestScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(new TestScrollAnimator(scrollableArea.get(), getMockedTime));
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint()));

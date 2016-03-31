@@ -54,7 +54,7 @@ MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& ini
         m_origin = initializer.origin();
     if (initializer.hasLastEventId())
         m_lastEventId = initializer.lastEventId();
-    if (initializer.hasSource() && isValidSource(initializer.source().get()))
+    if (initializer.hasSource() && isValidSource(initializer.source()))
         m_source = initializer.source();
     if (initializer.hasPorts())
         m_ports = new MessagePortArray(initializer.ports());
@@ -131,7 +131,7 @@ MessageEvent::~MessageEvent()
 
 PassRefPtrWillBeRawPtr<MessageEvent> MessageEvent::create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState& exceptionState)
 {
-    if (initializer.source().get() && !isValidSource(initializer.source().get())) {
+    if (initializer.source() && !isValidSource(initializer.source())) {
         exceptionState.throwTypeError("The optional 'source' property is neither a Window nor MessagePort.");
         return nullptr;
     }
