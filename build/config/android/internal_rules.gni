@@ -240,9 +240,10 @@ template("java_binary_script") {
       args += [ "--" ] + invoker.wrapper_script_args
     }
     if (defined(invoker.bootclasspath)) {
+      inputs += [ invoker.bootclasspath ]
       args += [
         "--bootclasspath",
-        invoker.bootclasspath,
+        rebase_path(invoker.bootclasspath, root_build_dir),
       ]
     }
   }
@@ -1327,9 +1328,11 @@ template("java_prebuilt_impl") {
   if (defined(invoker.main_class)) {
     _binary_script_target_name = "${_template_name}__java_binary_script"
     java_binary_script(_binary_script_target_name) {
+      deps = []
       forward_variables_from(invoker,
                              [
                                "bootclasspath",
+                               "deps",
                                "main_class",
                                "wrapper_script_args",
                              ])
@@ -1339,29 +1342,23 @@ template("java_prebuilt_impl") {
       if (defined(invoker.wrapper_script_name)) {
         script_name = invoker.wrapper_script_name
       }
-      deps = [
-        ":$_build_config_target_name",
-      ]
+      deps += [ ":$_build_config_target_name" ]
     }
   }
 
   group(target_name) {
     forward_variables_from(invoker, [ "data_deps" ])
-    deps = [
+    public_deps = [
       ":$_ijar_target_name",
       ":$_process_jar_target_name",
     ]
     if (_supports_android) {
-      deps += [ ":$_dex_target_name" ]
-    }
-    data_deps = []
-    if (defined(invoker.data_deps)) {
-      data_deps += invoker.data_deps
+      public_deps += [ ":$_dex_target_name" ]
     }
     if (defined(invoker.main_class)) {
       # Some targets use the generated script while building, so make it a dep
       # rather than a data_dep.
-      deps += [ ":$_binary_script_target_name" ]
+      public_deps += [ ":$_binary_script_target_name" ]
     }
   }
 }
