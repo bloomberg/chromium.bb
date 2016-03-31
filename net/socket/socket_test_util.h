@@ -746,10 +746,11 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   const BoundNetLog& NetLog() const override;
 
   // DatagramClientSocket implementation.
-  int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) override;
-  int BindToDefaultNetwork() override;
-  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override;
   int Connect(const IPEndPoint& address) override;
+  int ConnectUsingNetwork(NetworkChangeNotifier::NetworkHandle network,
+                          const IPEndPoint& address) override;
+  int ConnectUsingDefaultNetwork(const IPEndPoint& address) override;
+  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override;
 
   // AsyncSocket implementation.
   void OnReadComplete(const MockRead& data) override;

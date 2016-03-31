@@ -58,11 +58,12 @@ class TestUDPClientSocket : public DatagramClientSocket {
     *address = local_endpoint_;
     return OK;
   }
-  int BindToNetwork(NetworkChangeNotifier::NetworkHandle network) override {
+  int ConnectUsingNetwork(NetworkChangeNotifier::NetworkHandle network,
+                          const IPEndPoint& address) override {
     NOTIMPLEMENTED();
     return ERR_NOT_IMPLEMENTED;
   }
-  int BindToDefaultNetwork() override {
+  int ConnectUsingDefaultNetwork(const IPEndPoint& address) override {
     NOTIMPLEMENTED();
     return ERR_NOT_IMPLEMENTED;
   }

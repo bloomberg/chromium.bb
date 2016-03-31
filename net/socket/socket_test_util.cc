@@ -1357,28 +1357,39 @@ const BoundNetLog& MockUDPClientSocket::NetLog() const {
   return net_log_;
 }
 
-int MockUDPClientSocket::BindToNetwork(
-    NetworkChangeNotifier::NetworkHandle network) {
-  network_ = network;
-  return OK;
-}
-
-int MockUDPClientSocket::BindToDefaultNetwork() {
-  network_ = kDefaultNetworkForTests;
-  return OK;
-}
-
-NetworkChangeNotifier::NetworkHandle MockUDPClientSocket::GetBoundNetwork()
-    const {
-  return network_;
-}
-
 int MockUDPClientSocket::Connect(const IPEndPoint& address) {
   if (!data_)
     return ERR_UNEXPECTED;
   connected_ = true;
   peer_addr_ = address;
   return data_->connect_data().result;
+}
+
+int MockUDPClientSocket::ConnectUsingNetwork(
+    NetworkChangeNotifier::NetworkHandle network,
+    const IPEndPoint& address) {
+  DCHECK(!connected_);
+  if (!data_)
+    return ERR_UNEXPECTED;
+  network_ = network;
+  connected_ = true;
+  peer_addr_ = address;
+  return data_->connect_data().result;
+}
+
+int MockUDPClientSocket::ConnectUsingDefaultNetwork(const IPEndPoint& address) {
+  DCHECK(!connected_);
+  if (!data_)
+    return ERR_UNEXPECTED;
+  network_ = kDefaultNetworkForTests;
+  connected_ = true;
+  peer_addr_ = address;
+  return data_->connect_data().result;
+}
+
+NetworkChangeNotifier::NetworkHandle MockUDPClientSocket::GetBoundNetwork()
+    const {
+  return network_;
 }
 
 void MockUDPClientSocket::OnReadComplete(const MockRead& data) {
