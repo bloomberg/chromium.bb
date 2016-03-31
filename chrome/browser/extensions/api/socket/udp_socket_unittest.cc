@@ -17,6 +17,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -41,8 +42,8 @@ static const char test_message[] = "$$TESTMESSAGETESTMESSAGETESTMESSAGETEST$$";
 static const int test_message_length = arraysize(test_message);
 
 net::AddressList CreateAddressList(const char* address_string, int port) {
-  net::IPAddressNumber ip;
-  EXPECT_TRUE(net::ParseIPLiteralToNumber(address_string, &ip));
+  net::IPAddress ip;
+  EXPECT_TRUE(ip.AssignFromIPLiteral(address_string));
   return net::AddressList::CreateFromIPAddress(ip, port);
 }
 

@@ -15,12 +15,12 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "net/base/ip_address.h"
 #include "net/log/net_log.h"
 #include "net/udp/udp_socket.h"
 
 namespace net {
 class IPEndPoint;
-class IPAddress;
 class IOBuffer;
 class StringIOBuffer;
 struct NetworkInterface;
@@ -123,7 +123,7 @@ class DialServiceImpl : public DialService,
 
     // Creates a socket using |net_log| and |net_log_source| and binds it to
     // |bind_ip_address|.
-    bool CreateAndBindSocket(const net::IPAddressNumber& bind_ip_address,
+    bool CreateAndBindSocket(const net::IPAddress& bind_ip_address,
                              net::NetLog* net_log,
                              net::NetLog::Source net_log_source);
 
@@ -211,12 +211,11 @@ class DialServiceImpl : public DialService,
   // |SendOneRequest()|, and start the timer to finish discovery if needed.
   // The (Address family, interface index) of each address in |ip_addresses|
   // must be unique. If |ip_address| is empty, calls |FinishDiscovery()|.
-  void DiscoverOnAddresses(
-      const std::vector<net::IPAddressNumber>& ip_addresses);
+  void DiscoverOnAddresses(const net::IPAddressList& ip_addresses);
 
   // Creates a DialSocket, binds it to |bind_ip_address| and if
   // successful, add the DialSocket to |dial_sockets_|.
-  void BindAndAddSocket(const net::IPAddressNumber& bind_ip_address);
+  void BindAndAddSocket(const net::IPAddress& bind_ip_address);
 
   // Creates a DialSocket with callbacks to this object.
   scoped_ptr<DialSocket> CreateDialSocket();

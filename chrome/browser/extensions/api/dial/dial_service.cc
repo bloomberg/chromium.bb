@@ -44,7 +44,7 @@ using content::BrowserThread;
 using net::HttpResponseHeaders;
 using net::HttpUtil;
 using net::IOBufferWithSize;
-using net::IPAddressNumber;
+using net::IPAddress;
 using net::NetworkInterface;
 using net::NetworkInterfaceList;
 using net::StringIOBuffer;
@@ -131,15 +131,13 @@ void GetNetworkListOnFileThread(
 // Finds the IP address of the preferred interface of network type |type|
 // to bind the socket and inserts the address into |bind_address_list|. This
 // ChromeOS version can prioritize wifi and ethernet interfaces.
-void InsertBestBindAddressChromeOS(
-    const chromeos::NetworkTypePattern& type,
-    std::vector<IPAddressNumber>* bind_address_list) {
+void InsertBestBindAddressChromeOS(const chromeos::NetworkTypePattern& type,
+                                   net::IPAddressList* bind_address_list) {
   const chromeos::NetworkState* state = chromeos::NetworkHandler::Get()
       ->network_state_handler()->ConnectedNetworkByType(type);
-  IPAddressNumber bind_ip_address;
-  if (state
-      && net::ParseIPLiteralToNumber(state->ip_address(), &bind_ip_address)
-      && bind_ip_address.size() == net::kIPv4AddressSize) {
+  IPAddress bind_ip_address;
+  if (state && bind_ip_address.AssignFromIPLiteral(state->ip_address()) &&
+      bind_ip_address.IsIPv4()) {
     VLOG(2) << "Found " << state->type() << ", " << state->name() << ": "
             << state->ip_address();
     bind_address_list->push_back(bind_ip_address);
@@ -165,12 +163,12 @@ DialServiceImpl::DialSocket::~DialSocket() {
 }
 
 bool DialServiceImpl::DialSocket::CreateAndBindSocket(
-    const IPAddressNumber& bind_ip_address,
+    const IPAddress& bind_ip_address,
     net::NetLog* net_log,
     net::NetLog::Source net_log_source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!socket_.get());
-  DCHECK(bind_ip_address.size() == net::kIPv4AddressSize);
+  DCHECK(bind_ip_address.IsIPv4());
 
   net::RandIntCallback rand_cb = base::Bind(&base::RandInt);
   socket_.reset(new UDPSocket(net::DatagramSocket::RANDOM_BIND,
@@ -390,8 +388,8 @@ DialServiceImpl::DialServiceImpl(net::NetLog* net_log)
                     TimeDelta::FromSeconds(kDialResponseTimeoutSecs)),
       request_interval_(
           TimeDelta::FromMilliseconds(kDialRequestIntervalMillis)) {
-  IPAddressNumber address;
-  bool success = net::ParseIPLiteralToNumber(kDialRequestAddress, &address);
+  IPAddress address;
+  bool success = address.AssignFromIPLiteral(kDialRequestAddress);
   DCHECK(success);
   send_address_ = net::IPEndPoint(address, kDialRequestPort);
   send_buffer_ = new StringIOBuffer(BuildRequest());
@@ -445,7 +443,7 @@ void DialServiceImpl::StartDiscovery() {
   // The ChromeOS specific version of getting network interfaces does not
   // require trampolining to another thread, and contains additional interface
   // information such as interface types (i.e. wifi vs cellular).
-  std::vector<IPAddressNumber> chrome_os_address_list;
+  net::IPAddressList chrome_os_address_list;
   InsertBestBindAddressChromeOS(chromeos::NetworkTypePattern::Ethernet(),
                                 &chrome_os_address_list);
   InsertBestBindAddressChromeOS(chromeos::NetworkTypePattern::WiFi(),
@@ -465,7 +463,7 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
   DCHECK(thread_checker_.CalledOnValidThread());
   typedef std::pair<uint32_t, net::AddressFamily> InterfaceIndexAddressFamily;
   std::set<InterfaceIndexAddressFamily> interface_index_addr_family_seen;
-  std::vector<IPAddressNumber> ip_addresses;
+  net::IPAddressList ip_addresses;
 
   // Binds a socket to each IPv4 network interface found. Note that
   // there may be duplicates in |networks|, so address family + interface index
@@ -490,7 +488,7 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
                 << "address family: " << addr_family << " for the first time, "
                 << "adding IP address " << iter->address.ToString()
                 << " to list.";
-        ip_addresses.push_back(iter->address.bytes());
+        ip_addresses.push_back(iter->address);
       } else {
         VLOG(2) << "Already encountered "
                 << "interface index: " << iter->interface_index << ", "
@@ -503,7 +501,7 @@ void DialServiceImpl::SendNetworkList(const NetworkInterfaceList& networks) {
 }
 
 void DialServiceImpl::DiscoverOnAddresses(
-    const std::vector<IPAddressNumber>& ip_addresses) {
+    const net::IPAddressList& ip_addresses) {
   if (ip_addresses.empty()) {
     VLOG(1) << "Could not find a valid interface to bind. Finishing discovery";
     FinishDiscovery();
@@ -519,15 +517,14 @@ void DialServiceImpl::DiscoverOnAddresses(
                         &DialServiceImpl::FinishDiscovery);
   }
 
-  for (std::vector<IPAddressNumber>::const_iterator iter = ip_addresses.begin();
-       iter != ip_addresses.end();
-       ++iter)
-    BindAndAddSocket(*iter);
+  for (const auto& address : ip_addresses) {
+    BindAndAddSocket(address);
+  }
 
   SendOneRequest();
 }
 
-void DialServiceImpl::BindAndAddSocket(const IPAddressNumber& bind_ip_address) {
+void DialServiceImpl::BindAndAddSocket(const IPAddress& bind_ip_address) {
   scoped_ptr<DialServiceImpl::DialSocket> dial_socket(CreateDialSocket());
   if (dial_socket->CreateAndBindSocket(bind_ip_address, net_log_,
                                        net_log_source_))

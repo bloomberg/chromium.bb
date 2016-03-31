@@ -43,6 +43,7 @@
 #include "media/cast/test/utility/in_process_receiver.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "media/cast/test/utility/udp_proxy.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
@@ -334,15 +335,11 @@ class CastV2PerformanceTest
     // Determine a unused UDP port for the in-process receiver to listen on.
     // Method: Bind a UDP socket on port 0, and then check which port the
     // operating system assigned to it.
-    net::IPAddressNumber localhost;
-    localhost.push_back(127);
-    localhost.push_back(0);
-    localhost.push_back(0);
-    localhost.push_back(1);
     scoped_ptr<net::UDPServerSocket> receive_socket(
         new net::UDPServerSocket(NULL, net::NetLog::Source()));
     receive_socket->AllowAddressReuse();
-    CHECK_EQ(net::OK, receive_socket->Listen(net::IPEndPoint(localhost, 0)));
+    CHECK_EQ(net::OK, receive_socket->Listen(
+                          net::IPEndPoint(net::IPAddress::IPv4Localhost(), 0)));
     net::IPEndPoint endpoint;
     CHECK_EQ(net::OK, receive_socket->GetLocalAddress(&endpoint));
     return endpoint;
