@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "build/build_config.h"
-#include "content/child/plugin_param_traits.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
@@ -78,9 +77,6 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_Paint,
 // plugin knows it can send more invalidates.
 IPC_MESSAGE_ROUTED0(PluginMsg_DidPaint)
 
-IPC_SYNC_MESSAGE_ROUTED0_1(PluginMsg_GetPluginScriptableObject,
-                           int /* route_id */)
-
 // Gets the form value of the plugin instance synchronously.
 IPC_SYNC_MESSAGE_ROUTED0_2(PluginMsg_GetFormValue,
                            base::string16 /* value */,
@@ -138,14 +134,6 @@ IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
 IPC_MESSAGE_ROUTED1(PluginHostMsg_InvalidateRect,
                     gfx::Rect /* rect */)
 
-IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_GetWindowScriptNPObject,
-                           int /* route id */,
-                           bool /* success */)
-
-IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_GetPluginElement,
-                           int /* route id */,
-                           bool /* success */)
-
 IPC_SYNC_MESSAGE_ROUTED1_2(PluginHostMsg_ResolveProxy,
                            GURL /* url */,
                            bool /* result */,
@@ -165,9 +153,6 @@ IPC_MESSAGE_ROUTED0(PluginHostMsg_CancelDocumentLoad)
 
 IPC_MESSAGE_ROUTED0(PluginHostMsg_DidStartLoading)
 IPC_MESSAGE_ROUTED0(PluginHostMsg_DidStopLoading)
-
-IPC_SYNC_MESSAGE_CONTROL1_0(PluginHostMsg_SetException,
-                            std::string /* message */)
 
 IPC_MESSAGE_CONTROL0(PluginHostMsg_PluginShuttingDown)
 
@@ -200,56 +185,3 @@ IPC_MESSAGE_ROUTED3(PluginHostMsg_AcceleratedPluginAllocatedIOSurface,
 // needs to redraw.
 IPC_MESSAGE_ROUTED0(PluginHostMsg_AcceleratedPluginSwappedIOSurface)
 #endif
-
-
-//-----------------------------------------------------------------------------
-// NPObject messages
-// These are messages used to marshall NPObjects.  They are sent both from the
-// plugin to the renderer and from the renderer to the plugin.
-IPC_SYNC_MESSAGE_ROUTED0_0(NPObjectMsg_Release)
-
-IPC_SYNC_MESSAGE_ROUTED1_1(NPObjectMsg_HasMethod,
-                           content::NPIdentifier_Param /* name */,
-                           bool /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED3_2(NPObjectMsg_Invoke,
-                           bool /* is_default */,
-                           content::NPIdentifier_Param /* method */,
-                           std::vector<content::NPVariant_Param> /* args */,
-                           content::NPVariant_Param /* result_param */,
-                           bool /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED1_1(NPObjectMsg_HasProperty,
-                           content::NPIdentifier_Param /* name */,
-                           bool /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED1_2(NPObjectMsg_GetProperty,
-                           content::NPIdentifier_Param /* name */,
-                           content::NPVariant_Param /* property */,
-                           bool /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED2_1(NPObjectMsg_SetProperty,
-                           content::NPIdentifier_Param /* name */,
-                           content::NPVariant_Param /* property */,
-                           bool /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED1_1(NPObjectMsg_RemoveProperty,
-                           content::NPIdentifier_Param /* name */,
-                           bool /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED0_0(NPObjectMsg_Invalidate)
-
-IPC_SYNC_MESSAGE_ROUTED0_2(NPObjectMsg_Enumeration,
-                           std::vector<content::NPIdentifier_Param> /* value */,
-                           bool /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED1_2(NPObjectMsg_Construct,
-                           std::vector<content::NPVariant_Param> /* args */,
-                           content::NPVariant_Param /* result_param */,
-                           bool /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED2_2(NPObjectMsg_Evaluate,
-                           std::string /* script */,
-                           bool /* popups_allowed */,
-                           content::NPVariant_Param /* result_param */,
-                           bool /* result */)

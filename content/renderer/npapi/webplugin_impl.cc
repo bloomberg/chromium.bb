@@ -98,10 +98,6 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   WebPluginDelegateProxy* plugin_delegate = new WebPluginDelegateProxy(
       this, mime_type_, render_view_, render_frame_);
 
-  // Store the plugin's unique identifier, used by the container to track its
-  // script objects.
-  npp_ = plugin_delegate->GetPluginNPP();
-
   // Set the container before Initialize because the plugin may
   // synchronously call NPN_GetValue to get its container, or make calls
   // passing script objects that need to be tracked, during initialization.
@@ -145,17 +141,6 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 void WebPluginImpl::destroy() {
   SetContainer(NULL);
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-}
-
-NPObject* WebPluginImpl::scriptableObject() {
-  if (!delegate_)
-    return NULL;
-
-  return delegate_->GetPluginScriptableObject();
-}
-
-NPP WebPluginImpl::pluginNPP() {
-  return npp_;
 }
 
 bool WebPluginImpl::getFormValue(blink::WebString& value) {
@@ -275,7 +260,6 @@ WebPluginImpl::WebPluginImpl(
       webframe_(webframe),
       delegate_(NULL),
       container_(NULL),
-      npp_(NULL),
       plugin_url_(params.url),
       load_manually_(params.loadManually),
       first_geometry_update_(true),
@@ -436,18 +420,6 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
   return ROUTED;
 }
 
-NPObject* WebPluginImpl::GetWindowScriptNPObject() {
-  if (!webframe_) {
-    NOTREACHED();
-    return NULL;
-  }
-  return webframe_->windowObject();
-}
-
-NPObject* WebPluginImpl::GetPluginElement() {
-  return container_->scriptableObjectForElement();
-}
-
 bool WebPluginImpl::FindProxyForUrl(const GURL& url, std::string* proxy_list) {
   // Proxy resolving doesn't work in single-process mode.
   return false;
@@ -549,8 +521,6 @@ void WebPluginImpl::SetContainer(WebPluginContainer* container) {
   if (!container)
     TearDownPluginInstance(NULL);
   container_ = container;
-  if (container_)
-    container_->allowScriptObjects();
 }
 
 unsigned long WebPluginImpl::GetNextResourceId() {
@@ -608,17 +578,10 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   WebPluginDelegateProxy* plugin_delegate = new WebPluginDelegateProxy(
       this, mime_type_, render_view_, render_frame_);
 
-  // Store the plugin's unique identifier, used by the container to track its
-  // script objects, and enable script objects (since Initialize may use them
-  // even if it fails).
-  npp_ = plugin_delegate->GetPluginNPP();
-  container_->allowScriptObjects();
-
   bool ok = plugin_delegate && plugin_delegate->Initialize(
       plugin_url_, arg_names_, arg_values_, load_manually_);
 
   if (!ok) {
-    container_->clearScriptObjects();
     container_ = NULL;
     // TODO(iyengar) Should we delete the current plugin instance here?
     return false;
@@ -647,7 +610,6 @@ void WebPluginImpl::TearDownPluginInstance(
   // us invalidate them, releasing the references to them held by the JavaScript
   // runtime.
   if (container_) {
-    container_->clearScriptObjects();
     container_->setWebLayer(NULL);
   }
 
@@ -657,14 +619,9 @@ void WebPluginImpl::TearDownPluginInstance(
     // The plugin may call into the browser and pass script objects even during
     // teardown, so temporarily re-enable plugin script objects.
     DCHECK(container_);
-    container_->allowScriptObjects();
 
     delegate_->PluginDestroyed();
     delegate_ = NULL;
-
-    // Invalidate any script objects created during teardown here, before the
-    // plugin might actually be unloaded.
-    container_->clearScriptObjects();
   }
 
   // This needs to be called now and not in the destructor since the

@@ -21,24 +21,16 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
-#include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
-using blink::WebBindings;
 using blink::WebCursorInfo;
 
 namespace content {
 
 static void DestroyWebPluginAndDelegate(
-    base::WeakPtr<NPObjectStub> scriptable_object,
     WebPluginDelegateImpl* delegate,
     WebPlugin* webplugin) {
-  // The plugin may not expect us to try to release the scriptable object
-  // after calling NPP_Destroy on the instance, so delete the stub now.
-  if (scriptable_object.get())
-    scriptable_object->DeleteSoon();
-
   if (delegate)
     delegate->PluginDestroyed();
 
@@ -66,18 +58,12 @@ WebPluginDelegateStub::~WebPluginDelegateStub() {
     base::MessageLoop::current()->PostNonNestableTask(
         FROM_HERE,
         base::Bind(&DestroyWebPluginAndDelegate,
-                   plugin_scriptable_object_,
                    delegate_,
                    webplugin_));
   } else {
     // Safe to delete right away.
-    DestroyWebPluginAndDelegate(
-        plugin_scriptable_object_, delegate_, webplugin_);
+    DestroyWebPluginAndDelegate(delegate_, webplugin_);
   }
-
-  // Remove the NPObject owner mapping for this instance.
-  if (delegate_)
-    channel_->RemoveMappingForNPObjectOwner(instance_id_);
 }
 
 bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
@@ -97,8 +83,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_HandleInputEvent, OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(PluginMsg_Paint, OnPaint)
     IPC_MESSAGE_HANDLER(PluginMsg_DidPaint, OnDidPaint)
-    IPC_MESSAGE_HANDLER(PluginMsg_GetPluginScriptableObject,
-                        OnGetPluginScriptableObject)
     IPC_MESSAGE_HANDLER(PluginMsg_GetFormValue, OnGetFormValue)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometry, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometrySync, OnUpdateGeometry)
@@ -158,11 +142,6 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
     std::vector<std::string> arg_names = params.arg_names;
     std::vector<std::string> arg_values = params.arg_values;
 
-    // Add an NPObject owner mapping for this instance, to support ownership
-    // tracking in the renderer.
-    channel_->AddMappingForNPObjectOwner(instance_id_,
-                                         delegate_->GetPluginNPP());
-
     *result = delegate_->Initialize(params.url,
                                     arg_names,
                                     arg_values,
@@ -198,26 +177,6 @@ void WebPluginDelegateStub::OnUpdateGeometry(
       param.window_rect, param.clip_rect,
       param.windowless_buffer0, param.windowless_buffer1,
       param.windowless_buffer_index);
-}
-
-void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id) {
-  NPObject* object = delegate_->GetPluginScriptableObject();
-  if (!object) {
-    *route_id = MSG_ROUTING_NONE;
-    return;
-  }
-
-  *route_id = channel_->GenerateRouteID();
-  // We will delete the stub immediately before calling PluginDestroyed on the
-  // delegate. It will delete itself sooner if the proxy tells it that it has
-  // been released, or if the channel to the proxy is closed.
-  NPObjectStub* scriptable_stub = new NPObjectStub(
-      object, channel_.get(), *route_id,
-      webplugin_->host_render_view_routing_id(), page_url_);
-  plugin_scriptable_object_ = scriptable_stub->AsWeakPtr();
-
-  // Release ref added by GetPluginScriptableObject (our stub holds its own).
-  WebBindings::releaseObject(object);
 }
 
 void WebPluginDelegateStub::OnGetFormValue(base::string16* value,

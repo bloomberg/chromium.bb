@@ -29,12 +29,10 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "bindings/core/v8/NPV8Object.h"
 #include "bindings/core/v8/SharedPersistent.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HTMLEmbedElement.h"
 #include "bindings/core/v8/V8HTMLObjectElement.h"
-#include "bindings/core/v8/V8NPObject.h"
 #include "core/frame/UseCounter.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -67,18 +65,6 @@ void getScriptableObjectProperty(PropertyType property, const v8::PropertyCallba
     v8SetReturnValue(info, value);
 }
 
-namespace {
-void callNpObjectSetter(v8::Local<v8::Object> self, v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    npObjectSetNamedProperty(self, name, value, info);
-}
-
-void callNpObjectSetter(v8::Local<v8::Object> self, uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    npObjectSetIndexedProperty(self, index, value, info);
-}
-} // namespace
-
 template <typename ElementType, typename PropertyType>
 void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -91,15 +77,6 @@ void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> val
     v8::Local<v8::Object> instance = wrapper->newLocal(info.GetIsolate());
     if (instance.IsEmpty())
         return;
-
-    // We need to directly call setter on NPObject to be able to detect
-    // situation where NPObject notifies it does not possess the property
-    // to be able to lookup standard DOM property.
-    // This information is lost when retrieving it through v8::Object.
-    if (isWrappedNPObject(instance)) {
-        callNpObjectSetter(instance, property, value, info);
-        return;
-    }
 
     // FIXME: The gTalk pepper plugin is the only plugin to make use of
     // SetProperty and that is being deprecated. This can be removed as soon as

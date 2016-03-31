@@ -20,7 +20,6 @@
 #include "base/threading/thread_local.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/child/child_process.h"
-#include "content/child/npapi/npobject_util.h"
 #include "content/child/npapi/plugin_lib.h"
 #include "content/common/plugin_process_messages.h"
 #include "content/public/common/content_switches.h"
@@ -73,8 +72,6 @@ PluginThread::PluginThread()
           switches::kPluginPath);
 
   lazy_tls.Pointer()->Set(this);
-
-  PatchNPNFunctions();
 
   // Preload the library to avoid loading, unloading then reloading
   preloaded_plugin_module_ = base::LoadNativeLibrary(plugin_path, NULL);

@@ -29,7 +29,6 @@
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/indexed_db/webidbfactory_impl.h"
-#include "content/child/npapi/npobject_util.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/simple_webmimeregistry_impl.h"
@@ -483,9 +482,6 @@ bool RendererBlinkPlatformImpl::MimeRegistry::supportsMediaSourceMIMEType(
 
 WebString RendererBlinkPlatformImpl::MimeRegistry::mimeTypeForExtension(
     const WebString& file_extension) {
-  if (IsPluginProcess())
-    return SimpleWebMimeRegistryImpl::mimeTypeForExtension(file_extension);
-
   // The sandbox restricts our access to the registry, so we need to proxy
   // these calls over to the browser process.
   std::string mime_type;

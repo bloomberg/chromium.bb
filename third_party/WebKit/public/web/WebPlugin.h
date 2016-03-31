@@ -83,12 +83,6 @@ public:
     virtual WebPluginContainer* container() const { return nullptr; }
     virtual void containerDidDetachFromParent() { }
 
-    virtual NPObject* scriptableObject() { return nullptr; }
-    virtual struct _NPP* pluginNPP() { return nullptr; }
-
-    // The same as scriptableObject() but allows to expose scriptable interface
-    // through plain v8 object instead of NPObject.
-    // If you override this function, you must return nullptr in scriptableObject().
     virtual v8::Local<v8::Object> v8ScriptableObject(v8::Isolate*) { return v8::Local<v8::Object>(); }
 
     // Returns true if the form submission value is successfully obtained

@@ -59,7 +59,6 @@
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_message_filter.h"
-#include "content/child/npapi/npobject_util.h"
 #include "content/child/plugin_messages.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/resource_scheduling_filter.h"

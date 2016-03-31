@@ -10,14 +10,11 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/child/npapi/npobject_base.h"
 #include "content/child/plugin_messages.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
 #endif
-
-#include "third_party/WebKit/public/web/WebBindings.h"
 
 // TODO(shess): Debugging for http://crbug.com/97285
 //
@@ -90,13 +87,9 @@ int PluginChannelHost::GenerateRouteID() {
   return route_id;
 }
 
-void PluginChannelHost::AddRoute(int route_id,
-                                 IPC::Listener* listener,
-                                 NPObjectBase* npobject) {
-  NPChannelBase::AddRoute(route_id, listener, npobject);
-
-  if (!npobject)
-    proxies_[route_id] = listener;
+void PluginChannelHost::AddRoute(int route_id, IPC::Listener* listener) {
+  NPChannelBase::AddRoute(route_id, listener);
+  proxies_[route_id] = listener;
 }
 
 void PluginChannelHost::RemoveRoute(int route_id) {
@@ -117,16 +110,11 @@ void PluginChannelHost::RemoveRoute(int route_id) {
 bool PluginChannelHost::OnControlMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PluginChannelHost, message)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_SetException, OnSetException)
     IPC_MESSAGE_HANDLER(PluginHostMsg_PluginShuttingDown, OnPluginShuttingDown)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
   return handled;
-}
-
-void PluginChannelHost::OnSetException(const std::string& message) {
-  blink::WebBindings::setException(NULL, message.c_str());
 }
 
 void PluginChannelHost::OnPluginShuttingDown() {

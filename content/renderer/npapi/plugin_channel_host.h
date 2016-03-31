@@ -12,8 +12,6 @@
 #include "ipc/ipc_channel_handle.h"
 
 namespace content {
-class NPObjectBase;
-
 // Encapsulates an IPC channel between the renderer and one plugin process.
 // On the plugin side there's a corresponding PluginChannel.
 class PluginChannelHost : public NPChannelBase {
@@ -33,8 +31,7 @@ class PluginChannelHost : public NPChannelBase {
 
   int GenerateRouteID() override;
 
-  void AddRoute(int route_id, IPC::Listener* listener,
-                NPObjectBase* npobject);
+  void AddRoute(int route_id, IPC::Listener* listener);
   void RemoveRoute(int route_id);
 
   // NPChannelBase override:
@@ -57,7 +54,6 @@ class PluginChannelHost : public NPChannelBase {
   static NPChannelBase* ClassFactory() { return new PluginChannelHost(); }
 
   bool OnControlMessageReceived(const IPC::Message& message) override;
-  void OnSetException(const std::string& message);
   void OnPluginShuttingDown();
 
   // Keep track of all the registered WebPluginDelegeProxies to

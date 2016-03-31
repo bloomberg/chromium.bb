@@ -236,15 +236,11 @@ PluginChannel::PluginChannel()
     : renderer_id_(-1),
       in_send_(0),
       incognito_(false),
-      filter_(new MessageFilter()),
-      npp_(new struct _NPP) {
+      filter_(new MessageFilter()) {
   set_send_unblocking_only_during_unblock_dispatch();
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
-
-  // Register |npp_| as the default owner for any object we receive via IPC.
-  SetDefaultNPObjectOwner(npp_.get());
 }
 
 bool PluginChannel::OnControlMessageReceived(const IPC::Message& msg) {
@@ -266,7 +262,7 @@ void PluginChannel::OnCreateInstance(const std::string& mime_type,
   *instance_id = GenerateRouteID();
   scoped_refptr<WebPluginDelegateStub> stub(new WebPluginDelegateStub(
       mime_type, *instance_id, this));
-  AddRoute(*instance_id, stub.get(), NULL);
+  AddRoute(*instance_id, stub.get());
   plugin_stubs_.push_back(stub);
 }
 

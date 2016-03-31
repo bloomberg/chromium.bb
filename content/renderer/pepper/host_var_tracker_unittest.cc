@@ -16,7 +16,6 @@
 #include "gin/wrappable.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
-#include "third_party/WebKit/public/web/WebBindings.h"
 
 using ppapi::V8ObjectVar;
 

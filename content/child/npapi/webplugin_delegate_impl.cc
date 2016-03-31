@@ -161,14 +161,6 @@ void WebPluginDelegateImpl::SetContentAreaHasFocus(bool has_focus) {
 #endif
 }
 
-NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
-  return instance_->GetPluginScriptableObject();
-}
-
-NPP WebPluginDelegateImpl::GetPluginNPP() {
-  return instance_->npp();
-}
-
 bool WebPluginDelegateImpl::GetFormValue(base::string16* value) {
   return instance_->GetFormValue(value);
 }

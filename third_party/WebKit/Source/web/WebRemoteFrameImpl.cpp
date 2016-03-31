@@ -198,22 +198,6 @@ void WebRemoteFrameImpl::dispatchUnloadEvent()
     ASSERT_NOT_REACHED();
 }
 
-NPObject* WebRemoteFrameImpl::windowObject() const
-{
-    ASSERT_NOT_REACHED();
-    return nullptr;
-}
-
-void WebRemoteFrameImpl::bindToWindowObject(const WebString& name, NPObject*)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void WebRemoteFrameImpl::bindToWindowObject(const WebString& name, NPObject*, void*)
-{
-    ASSERT_NOT_REACHED();
-}
-
 void WebRemoteFrameImpl::executeScript(const WebScriptSource&)
 {
     ASSERT_NOT_REACHED();

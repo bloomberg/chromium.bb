@@ -219,10 +219,6 @@ void TestPlugin::destroy() {
       new DeferredDeleteTask(make_scoped_ptr(this)));
 }
 
-NPObject* TestPlugin::scriptableObject() {
-  return 0;
-}
-
 bool TestPlugin::canProcessDrag() const {
   return can_process_drag_;
 }

@@ -72,21 +72,6 @@ public:
     // WebPlugin::updateGeometry.
     virtual void reportGeometry() = 0;
 
-    // Allow the plugin to pass script objects to the browser. The container
-    // tracks ownership of script objects in order to allow browser references
-    // to them to be dropped when clearScriptObjects is called.
-    virtual void allowScriptObjects() = 0;
-
-    // Drop any references to script objects allocated by the plugin.
-    // These are objects derived from WebPlugin::scriptableObject.  This is
-    // called when the plugin is being destroyed or if it needs to be
-    // re-initialized.
-    virtual void clearScriptObjects() = 0;
-
-    // Returns the scriptable object associated with the DOM element
-    // containing the plugin.
-    virtual NPObject* scriptableObjectForElement() = 0;
-
     // Returns the scriptable object associated with the DOM element
     // containing the plugin as a native v8 object.
     virtual v8::Local<v8::Object> v8ObjectForElement() = 0;

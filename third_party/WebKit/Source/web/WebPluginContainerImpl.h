@@ -104,9 +104,6 @@ public:
     void scrollRect(const WebRect&) override;
     void scheduleAnimation() override;
     void reportGeometry() override;
-    void allowScriptObjects() override;
-    void clearScriptObjects() override;
-    NPObject* scriptableObjectForElement() override;
     v8::Local<v8::Object> v8ObjectForElement() override;
     WebString executeScriptURL(const WebURL&, bool popupsAllowed) override;
     void loadFrameRequest(const WebURLRequest&, const WebString& target) override;

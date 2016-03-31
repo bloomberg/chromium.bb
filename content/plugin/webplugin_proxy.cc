@@ -8,15 +8,12 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "content/child/npapi/npobject_proxy.h"
-#include "content/child/npapi/npobject_util.h"
 #include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/child/plugin_messages.h"
 #include "content/plugin/plugin_channel.h"
 #include "content/plugin/plugin_thread.h"
 #include "content/public/common/content_client.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/public/web/WebBindings.h"
 #include "ui/gfx/canvas.h"
 #include "url/url_constants.h"
 
@@ -30,8 +27,6 @@
 #include "content/common/plugin_process_messages.h"
 #include "content/public/common/sandbox_init.h"
 #endif
-
-using blink::WebBindings;
 
 namespace content {
 
@@ -49,8 +44,6 @@ WebPluginProxy::WebPluginProxy(
     int host_render_view_routing_id)
     : channel_(channel),
       route_id_(route_id),
-      window_npobject_(NULL),
-      plugin_element_(NULL),
       delegate_(NULL),
       waiting_for_paint_(false),
       page_url_(page_url),
@@ -65,11 +58,6 @@ WebPluginProxy::~WebPluginProxy() {
   if (accelerated_surface_)
     accelerated_surface_.reset();
 #endif
-
-  if (plugin_element_)
-    WebBindings::releaseObject(plugin_element_);
-  if (window_npobject_)
-    WebBindings::releaseObject(window_npobject_);
 }
 
 bool WebPluginProxy::Send(IPC::Message* msg) {
@@ -128,54 +116,6 @@ void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
                    damaged_rect_));
     damaged_rect_ = gfx::Rect();
   }
-}
-
-NPObject* WebPluginProxy::GetWindowScriptNPObject() {
-  if (window_npobject_)
-    return window_npobject_;
-
-  int npobject_route_id = channel_->GenerateRouteID();
-  bool success = false;
-  Send(new PluginHostMsg_GetWindowScriptNPObject(
-      route_id_, npobject_route_id, &success));
-  if (!success)
-    return NULL;
-
-  // PluginChannel creates a dummy owner identifier for unknown owners, so
-  // use that.
-  NPP owner = channel_->GetExistingNPObjectOwner(MSG_ROUTING_NONE);
-
-  window_npobject_ = NPObjectProxy::Create(channel_.get(),
-                                           npobject_route_id,
-                                           host_render_view_routing_id_,
-                                           page_url_,
-                                           owner);
-
-  return window_npobject_;
-}
-
-NPObject* WebPluginProxy::GetPluginElement() {
-  if (plugin_element_)
-    return plugin_element_;
-
-  int npobject_route_id = channel_->GenerateRouteID();
-  bool success = false;
-  Send(new PluginHostMsg_GetPluginElement(route_id_, npobject_route_id,
-                                          &success));
-  if (!success)
-    return NULL;
-
-  // PluginChannel creates a dummy owner identifier for unknown owners, so
-  // use that.
-  NPP owner = channel_->GetExistingNPObjectOwner(MSG_ROUTING_NONE);
-
-  plugin_element_ = NPObjectProxy::Create(channel_.get(),
-                                          npobject_route_id,
-                                          host_render_view_routing_id_,
-                                          page_url_,
-                                          owner);
-
-  return plugin_element_;
 }
 
 bool WebPluginProxy::FindProxyForUrl(const GURL& url, std::string* proxy_list) {

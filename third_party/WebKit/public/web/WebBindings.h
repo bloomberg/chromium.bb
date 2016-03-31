@@ -54,9 +54,6 @@ public:
     // NPN_Evaluate
     BLINK_EXPORT static bool evaluate(NPP, NPObject*, NPString* script, NPVariant* result);
 
-    // NPN_EvaluateHelper
-    BLINK_EXPORT static bool evaluateHelper(NPP, bool popupsAllowed, NPObject*, NPString* script, NPVariant* result);
-
     // NPN_GetIntIdentifier
     BLINK_EXPORT static NPIdentifier getIntIdentifier(int32_t number);
 
@@ -107,13 +104,6 @@ public:
 
     // NPN_UTF8FromIdentifier
     BLINK_EXPORT static NPUTF8* utf8FromIdentifier(NPIdentifier);
-
-    // Miscellaneous utility functions ----------------------------------------
-
-    // Complement to NPN_Get___Identifier functions.  Extracts data from the NPIdentifier data
-    // structure.  If isString is true upon return, string will be set but number's value is
-    // undefined.  If iString is false, the opposite is true.
-    BLINK_EXPORT static void extractIdentifierData(const NPIdentifier&, const NPUTF8*& string, int32_t& number, bool& isString);
 };
 
 } // namespace blink

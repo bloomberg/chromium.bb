@@ -277,9 +277,6 @@ inline void dispatchEventsOnWindowAndFocusedElement(Document* document, bool foc
     // If we have a focused element we should dispatch focus on it after we focus the window.
     // https://bugs.webkit.org/show_bug.cgi?id=27105
 
-    if (document->focusedElement() && isHTMLPlugInElement(document->focusedElement()))
-        toHTMLPlugInElement(document->focusedElement())->setPluginFocus(focused);
-
     // Do not fire events while modal dialogs are up.  See https://bugs.webkit.org/show_bug.cgi?id=33962
     if (Page* page = document->page()) {
         if (page->defersLoading())

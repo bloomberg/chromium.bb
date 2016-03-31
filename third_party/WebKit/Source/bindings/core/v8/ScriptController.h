@@ -44,8 +44,6 @@
 #include "wtf/text/TextPosition.h"
 #include <v8.h>
 
-struct NPObject;
-
 namespace blink {
 
 class DOMWrapperWorld;
@@ -115,9 +113,6 @@ public:
     // ignored when evaluating resources injected into the DOM.
     bool shouldBypassMainWorldCSP();
 
-    // Creates a property of the global object of a frame.
-    bool bindToWindowObject(LocalFrame*, const String& key, NPObject*);
-
     PassRefPtr<SharedPersistent<v8::Object>> createPluginWrapper(Widget*);
 
     void enableEval();
@@ -139,13 +134,8 @@ public:
     void namedItemRemoved(HTMLDocument*, const AtomicString&);
 
     void updateSecurityOrigin(SecurityOrigin*);
-    void clearScriptObjects();
-    void cleanupScriptObjectsForPlugin(Widget*);
 
     void clearForClose();
-
-    NPObject* createScriptObjectForPluginElement(HTMLPlugInElement*);
-    NPObject* windowScriptNPObject();
 
     // Registers a v8 extension to be available on webpages. Will only
     // affect v8 contexts initialized after this call. Takes ownership of
@@ -162,20 +152,10 @@ private:
 
     LocalFrame* frame() const { return toLocalFrame(m_windowProxyManager->frame()); }
 
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<Widget>, NPObject*> PluginObjectMap;
-
     v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy, double* compilationFinishTime = 0);
 
     OwnPtrWillBeMember<WindowProxyManager> m_windowProxyManager;
     const String* m_sourceURL;
-
-    // A mapping between Widgets and their corresponding script object.
-    // This list is used so that when the plugin dies, we can immediately
-    // invalidate all sub-objects which are associated with that plugin.
-    // The frame keeps a NPObject reference for each item on the list.
-    PluginObjectMap m_pluginObjects;
-
-    NPObject* m_windowScriptNPObject;
 };
 
 } // namespace blink

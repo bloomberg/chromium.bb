@@ -68,7 +68,6 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   // WebPlugin methods:
   bool initialize(blink::WebPluginContainer* container) override;
   void destroy() override;
-  NPObject* scriptableObject() override;
   bool canProcessDrag() const override;
   bool supportsKeyboardFocus() const override;
   void updateAllLifecyclePhases() override {}

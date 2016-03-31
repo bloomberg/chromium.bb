@@ -31,7 +31,6 @@
 #include "bindings/core/v8/V8GCController.h"
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/NPV8Object.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -119,8 +118,7 @@ public:
 
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
-        const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-        if (type != npObjectTypeInfo() && type->hasPendingActivity(wrapper)) {
+        if (toWrapperTypeInfo(wrapper)->hasPendingActivity(wrapper)) {
             v8::Persistent<v8::Object>::Cast(*value).MarkActive();
             return;
         }
@@ -165,7 +163,7 @@ public:
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
 
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-        if (type != npObjectTypeInfo() && type->hasPendingActivity(wrapper)) {
+        if (type->hasPendingActivity(wrapper)) {
             // If you hit this assert, you'll need to add a [DependentiLifetime]
             // extended attribute to the DOM interface. A DOM interface that
             // overrides hasPendingActivity must be marked as [DependentiLifetime].
@@ -456,10 +454,8 @@ public:
 
         v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::New(m_isolate, v8::Persistent<v8::Object>::Cast(*value));
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
-        const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
         // The ExecutionContext check is heavy, so it should be done at the last.
-        if (type != npObjectTypeInfo()
-            && type->hasPendingActivity(wrapper)
+        if (toWrapperTypeInfo(wrapper)->hasPendingActivity(wrapper)
             // TODO(haraken): Currently we don't have a way to get a creation
             // context from a wrapper. We should implement the way and enable
             // the following condition.

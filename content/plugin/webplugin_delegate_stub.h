@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "content/child/npapi/npobject_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/npapi/bindings/npapi.h"
@@ -67,7 +66,6 @@ class WebPluginDelegateStub : public IPC::Listener,
   void OnPaint(const gfx::Rect& damaged_rect);
   void OnDidPaint();
   void OnUpdateGeometry(const PluginMsg_UpdateGeometry_Param& param);
-  void OnGetPluginScriptableObject(int* route_id);
   void OnGetFormValue(base::string16* value, bool* success);
 
   void OnSetContentAreaFocus(bool has_focus);
@@ -86,7 +84,6 @@ class WebPluginDelegateStub : public IPC::Listener,
 
   scoped_refptr<PluginChannel> channel_;
 
-  base::WeakPtr<NPObjectStub> plugin_scriptable_object_;
   WebPluginDelegateImpl* delegate_;
   WebPluginProxy* webplugin_;
   bool in_destructor_;

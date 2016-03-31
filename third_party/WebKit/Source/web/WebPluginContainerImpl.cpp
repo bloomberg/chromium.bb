@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Element.h"
-#include "bindings/core/v8/V8NPObject.h"
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
@@ -444,23 +443,6 @@ void WebPluginContainerImpl::reportGeometry()
     m_webPlugin->updateGeometry(windowRect, clipRect, unobscuredRect, cutOutRects, isVisible());
 }
 
-void WebPluginContainerImpl::allowScriptObjects()
-{
-}
-
-void WebPluginContainerImpl::clearScriptObjects()
-{
-    if (!frame())
-        return;
-
-    frame()->script().cleanupScriptObjectsForPlugin(this);
-}
-
-NPObject* WebPluginContainerImpl::scriptableObjectForElement()
-{
-    return m_element->getNPObject();
-}
-
 v8::Local<v8::Object> WebPluginContainerImpl::v8ObjectForElement()
 {
     LocalFrame* frame = m_element->document().frame();
@@ -655,16 +637,7 @@ v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isol
 #endif
         return v8::Local<v8::Object>();
 
-    if (!object.IsEmpty()) {
-        // WebPlugin implementation can't provide the obsolete NPObject at the same time:
-        ASSERT(!m_webPlugin->scriptableObject());
-        return object;
-    }
-
-    NPObject* npObject = m_webPlugin->scriptableObject();
-    if (npObject)
-        return createV8ObjectForNPObject(isolate, npObject, 0);
-    return v8::Local<v8::Object>();
+    return object;
 }
 
 bool WebPluginContainerImpl::getFormValue(String& value)

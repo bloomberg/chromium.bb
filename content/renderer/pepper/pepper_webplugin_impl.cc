@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
-#include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -98,9 +97,6 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
   if (!instance_.get())
     return false;
 
-  // Enable script objects for this plugin.
-  container->allowScriptObjects();
-
   auto weak_this = weak_factory_.GetWeakPtr();
   bool success =
       instance_->Initialize(init_data_->arg_names, init_data_->arg_values,
@@ -154,12 +150,6 @@ void PepperWebPluginImpl::destroy() {
   // TODO(tommycli): Remove once we fix https://crbug.com/588624.
   CHECK(!destroyed_);
   destroyed_ = true;
-
-  // Tell |container_| to clear references to this plugin's script objects.
-  if (container_)
-    container_->clearScriptObjects();
-
-  container_ = nullptr;
 
   if (instance_.get()) {
     ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);

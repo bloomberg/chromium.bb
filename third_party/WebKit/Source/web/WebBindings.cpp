@@ -30,136 +30,107 @@
 
 #include "public/web/WebBindings.h"
 
-#include "bindings/core/v8/NPV8Object.h"
-#include "bindings/core/v8/npruntime_impl.h"
-#include "bindings/core/v8/npruntime_priv.h"
-
 namespace blink {
 
 bool WebBindings::construct(NPP npp, NPObject* object, const NPVariant* args, uint32_t argCount, NPVariant* result)
 {
-    return _NPN_Construct(npp, object, args, argCount, result);
+    return false;
 }
 
 NPObject* WebBindings::createObject(NPP npp, NPClass* npClass)
 {
-    return _NPN_CreateObject(npp, npClass);
+    return nullptr;
 }
 
 bool WebBindings::enumerate(NPP npp, NPObject* object, NPIdentifier** identifier, uint32_t* identifierCount)
 {
-    return _NPN_Enumerate(npp, object, identifier, identifierCount);
+    return false;
 }
 
 bool WebBindings::evaluate(NPP npp, NPObject* object, NPString* script, NPVariant* result)
 {
-    return _NPN_Evaluate(npp, object, script, result);
-}
-
-bool WebBindings::evaluateHelper(NPP npp, bool popupsAllowed, NPObject* object, NPString* script, NPVariant* result)
-{
-    return _NPN_EvaluateHelper(npp, popupsAllowed, object, script, result);
+    return false;
 }
 
 NPIdentifier WebBindings::getIntIdentifier(int32_t number)
 {
-    return _NPN_GetIntIdentifier(number);
+    return nullptr;
 }
 
 bool WebBindings::getProperty(NPP npp, NPObject* object, NPIdentifier property, NPVariant* result)
 {
-    return _NPN_GetProperty(npp, object, property, result);
+    return false;
 }
 
 NPIdentifier WebBindings::getStringIdentifier(const NPUTF8* string)
 {
-    return _NPN_GetStringIdentifier(string);
+    return nullptr;
 }
 
 void WebBindings::getStringIdentifiers(const NPUTF8** names, int32_t nameCount, NPIdentifier* identifiers)
 {
-    _NPN_GetStringIdentifiers(names, nameCount, identifiers);
 }
 
 bool WebBindings::hasMethod(NPP npp, NPObject* object, NPIdentifier method)
 {
-    return _NPN_HasMethod(npp, object, method);
+    return false;
 }
 
 bool WebBindings::hasProperty(NPP npp, NPObject* object, NPIdentifier property)
 {
-    return _NPN_HasProperty(npp, object, property);
+    return false;
 }
 
 bool WebBindings::identifierIsString(NPIdentifier identifier)
 {
-    return _NPN_IdentifierIsString(identifier);
+    return false;
 }
 
 int32_t WebBindings::intFromIdentifier(NPIdentifier identifier)
 {
-    return _NPN_IntFromIdentifier(identifier);
+    return 0;
 }
 
 bool WebBindings::invoke(NPP npp, NPObject* object, NPIdentifier method, const NPVariant* args, uint32_t argCount, NPVariant* result)
 {
-    return _NPN_Invoke(npp, object, method, args, argCount, result);
+    return false;
 }
 
 bool WebBindings::invokeDefault(NPP npp, NPObject* object, const NPVariant* args, uint32_t argCount, NPVariant* result)
 {
-    return _NPN_InvokeDefault(npp, object, args, argCount, result);
+    return false;
 }
 
 void WebBindings::releaseObject(NPObject* object)
 {
-    return _NPN_ReleaseObject(object);
 }
 
 void WebBindings::releaseVariantValue(NPVariant* variant)
 {
-    _NPN_ReleaseVariantValue(variant);
 }
 
 bool WebBindings::removeProperty(NPP npp, NPObject* object, NPIdentifier identifier)
 {
-    return _NPN_RemoveProperty(npp, object, identifier);
+    return false;
 }
 
 NPObject* WebBindings::retainObject(NPObject* object)
 {
-    return _NPN_RetainObject(object);
+    return nullptr;
 }
 
 void WebBindings::setException(NPObject* object, const NPUTF8* message)
 {
-    _NPN_SetException(object, message);
 }
 
 bool WebBindings::setProperty(NPP npp, NPObject* object, NPIdentifier identifier, const NPVariant* value)
 {
-    return _NPN_SetProperty(npp, object, identifier, value);
+    return false;
 }
 
 NPUTF8* WebBindings::utf8FromIdentifier(NPIdentifier identifier)
 {
-    return _NPN_UTF8FromIdentifier(identifier);
-}
-
-void WebBindings::extractIdentifierData(const NPIdentifier& identifier, const NPUTF8*& string, int32_t& number, bool& isString)
-{
-    PrivateIdentifier* data = static_cast<PrivateIdentifier*>(identifier);
-    if (!data) {
-        isString = false;
-        number = 0;
-        return;
-    }
-
-    isString = data->isString;
-    if (isString)
-        string = data->value.string;
-    else
-        number = data->value.number;
+    return nullptr;
 }
 
 } // namespace blink

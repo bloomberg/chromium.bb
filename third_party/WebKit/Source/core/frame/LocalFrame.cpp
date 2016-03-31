@@ -405,7 +405,6 @@ void LocalFrame::willDetachFrameHost()
     // so page() could be null.
     if (page() && page()->focusController().focusedFrame() == this)
         page()->focusController().setFocusedFrame(nullptr);
-    script().clearScriptObjects();
 
     if (page() && page()->scrollingCoordinator() && m_view)
         page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());

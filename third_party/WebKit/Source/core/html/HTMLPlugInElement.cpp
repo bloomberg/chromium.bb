@@ -23,7 +23,6 @@
 #include "core/html/HTMLPlugInElement.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/npruntime_impl.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
@@ -61,7 +60,6 @@ using namespace HTMLNames;
 HTMLPlugInElement::HTMLPlugInElement(const QualifiedName& tagName, Document& doc, bool createdByParser, PreferPlugInsForImagesOption preferPlugInsForImagesOption)
     : HTMLFrameOwnerElement(tagName, doc)
     , m_isDelayingLoadEvent(false)
-    , m_NPObject(0)
     // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
     // widget updates until after all children are parsed. For HTMLEmbedElement
     // this delay is unnecessary, but it is simpler to make both classes share
@@ -75,11 +73,6 @@ HTMLPlugInElement::~HTMLPlugInElement()
 {
     ASSERT(!m_pluginWrapper); // cleared in detach()
     ASSERT(!m_isDelayingLoadEvent);
-
-    if (m_NPObject) {
-        _NPN_ReleaseObject(m_NPObject);
-        m_NPObject = 0;
-    }
 }
 
 DEFINE_TRACE(HTMLPlugInElement)
@@ -248,11 +241,6 @@ void HTMLPlugInElement::detach(const AttachContext& context)
 
     resetInstance();
 
-    if (m_NPObject) {
-        _NPN_ReleaseObject(m_NPObject);
-        m_NPObject = 0;
-    }
-
     HTMLFrameOwnerElement::detach(context);
 }
 
@@ -408,21 +396,6 @@ bool HTMLPlugInElement::layoutObjectIsFocusable() const
     if (useFallbackContent() || !HTMLFrameOwnerElement::layoutObjectIsFocusable())
         return false;
     return layoutObject() && layoutObject()->isEmbeddedObject() && !layoutEmbeddedItem().showsUnavailablePluginIndicator();
-}
-
-NPObject* HTMLPlugInElement::getNPObject()
-{
-    ASSERT(document().frame());
-    if (!m_NPObject)
-        m_NPObject = document().frame()->script().createScriptObjectForPluginElement(this);
-    return m_NPObject;
-}
-
-void HTMLPlugInElement::setPluginFocus(bool focused)
-{
-    // NPAPI flash requires to receive messages when web contents focus changes.
-    if (getNPObject() && pluginWidget() && pluginWidget()->isPluginView())
-        toPluginView(pluginWidget())->setFocus(focused, WebFocusTypeNone);
 }
 
 bool HTMLPlugInElement::isImageType()

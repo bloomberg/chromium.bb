@@ -46,9 +46,6 @@ public:
     WebPerformance performance() const override;
     bool dispatchBeforeUnloadEvent() override;
     void dispatchUnloadEvent() override;
-    NPObject* windowObject() const override;
-    void bindToWindowObject(const WebString& name, NPObject*) override;
-    void bindToWindowObject(const WebString& name, NPObject*, void*) override;
     void executeScript(const WebScriptSource&) override;
     void executeScriptInIsolatedWorld(
         int worldID, const WebScriptSource* sources, unsigned numSources,

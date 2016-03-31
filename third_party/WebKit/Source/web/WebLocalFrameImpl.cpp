@@ -711,25 +711,6 @@ void WebLocalFrameImpl::dispatchUnloadEvent()
     frame()->loader().dispatchUnloadEvent();
 }
 
-NPObject* WebLocalFrameImpl::windowObject() const
-{
-    if (!frame() || ScriptForbiddenScope::isScriptForbidden())
-        return 0;
-    return frame()->script().windowScriptNPObject();
-}
-
-void WebLocalFrameImpl::bindToWindowObject(const WebString& name, NPObject* object)
-{
-    bindToWindowObject(name, object, 0);
-}
-
-void WebLocalFrameImpl::bindToWindowObject(const WebString& name, NPObject* object, void*)
-{
-    if (!frame() || !frame()->script().canExecuteScripts(NotAboutToExecuteScript))
-        return;
-    frame()->script().bindToWindowObject(frame(), String(name), object);
-}
-
 void WebLocalFrameImpl::executeScript(const WebScriptSource& source)
 {
     ASSERT(frame());

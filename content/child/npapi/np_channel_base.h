@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
-#include "content/child/npapi/npobject_base.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_router.h"
@@ -31,39 +30,16 @@ class NPChannelBase : public IPC::Listener,
                       public IPC::Sender,
                       public base::RefCountedThreadSafe<NPChannelBase> {
  public:
-
   // WebPlugin[Delegate] call these on construction and destruction to setup
-  // the routing and manage lifetime of this object (they pass NULL for
-  // npobject). These are also called by NPObjectProxy and NPObjectStub (which
-  // pass themselves for npobject).  However the latter don't control the
-  // lifetime of this object because we don't want a leak of an NPObject to
-  // keep the channel around longer than necessary.
-  void AddRoute(int route_id, IPC::Listener* listener, NPObjectBase* npobject);
+  // the routing and manage lifetime of this object.
+  void AddRoute(int route_id, IPC::Listener* listener);
   void RemoveRoute(int route_id);
-
-  void AddMappingForNPObjectProxy(int route_id, NPObject* object);
-  void RemoveMappingForNPObjectProxy(int route_id);
-
-  void AddMappingForNPObjectStub(int route_id, NPObject* object);
-  void RemoveMappingForNPObjectStub(int route_id, NPObject* object);
-
-  void AddMappingForNPObjectOwner(int route_id, struct _NPP* owner);
-  void SetDefaultNPObjectOwner(struct _NPP* owner);
-  void RemoveMappingForNPObjectOwner(int route_id);
-
-  NPObject* GetExistingNPObjectProxy(int route_id);
-  int GetExistingRouteForNPObjectStub(NPObject* npobject);
-  struct _NPP* GetExistingNPObjectOwner(int route_id);
-  int GetExistingRouteForNPObjectOwner(struct _NPP* owner);
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
 
   base::ProcessId peer_pid() { return channel_->GetPeerPID(); }
   IPC::ChannelHandle channel_handle() const { return channel_handle_; }
-
-  // Returns the number of open NPObject channels in this process.
-  static int Count();
 
   // Returns a new route id.
   virtual int GenerateRouteID() = 0;
@@ -79,10 +55,6 @@ class NPChannelBase : public IPC::Listener,
   static NPChannelBase* GetCurrentChannel();
 
   static void CleanupChannels();
-
-  // Returns the NPObjectBase object for the route id passed in.
-  // Returns NULL on failure.
-  NPObjectBase* GetNPObjectListenerForRoute(int route_id);
 
   // Returns the event that's set when a call to the renderer causes a modal
   // dialog to come up. The default implementation returns NULL. Derived
@@ -146,27 +118,6 @@ class NPChannelBase : public IPC::Listener,
 
   // true when in the middle of a RemoveRoute call
   bool in_remove_route_;
-
-  // Keep track of all the registered NPObjects proxies/stubs so that when the
-  // channel is closed we can inform them.
-  typedef base::hash_map<int, NPObjectBase*> ListenerMap;
-  ListenerMap npobject_listeners_;
-
-  typedef base::hash_map<int, NPObject*> ProxyMap;
-  ProxyMap proxy_map_;
-
-  typedef base::hash_map<NPObject*, int> StubMap;
-  StubMap stub_map_;
-
-  typedef base::hash_map<struct _NPP*, int> OwnerToRouteMap;
-  OwnerToRouteMap owner_to_route_;
-
-  typedef base::hash_map<int, struct _NPP*> RouteToOwnerMap;
-  RouteToOwnerMap route_to_owner_;
-
-  // Used on the plugin side to represent any object received that does
-  // not belong to a plugin instance.
-  struct _NPP* default_owner_;
 
   // Used to implement message routing functionality to WebPlugin[Delegate]
   // objects

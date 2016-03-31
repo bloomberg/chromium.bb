@@ -25,9 +25,6 @@
 #include "cc/resources/shared_bitmap.h"
 #include "content/child/child_process.h"
 #include "content/child/child_shared_bitmap_manager.h"
-#include "content/child/npapi/npobject_proxy.h"
-#include "content/child/npapi/npobject_stub.h"
-#include "content/child/npapi/npobject_util.h"
 #include "content/child/npapi/webplugin_resource_client.h"
 #include "content/child/plugin_messages.h"
 #include "content/common/content_constants_internal.h"
@@ -45,7 +42,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -64,7 +60,6 @@
 #include "content/public/common/sandbox_init.h"
 #endif
 
-using blink::WebBindings;
 using blink::WebCursorInfo;
 using blink::WebDragData;
 using blink::WebInputEvent;
@@ -111,8 +106,6 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
 #endif
       mime_type_(mime_type),
       instance_id_(MSG_ROUTING_NONE),
-      npobject_(NULL),
-      npp_(new NPP_t),
       sad_plugin_(NULL),
       invalidate_pending_(false),
       transparent_(false),
@@ -121,8 +114,6 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
 }
 
 WebPluginDelegateProxy::~WebPluginDelegateProxy() {
-  if (npobject_)
-    WebBindings::releaseObject(npobject_);
 }
 
 WebPluginDelegateProxy::SharedBitmap::SharedBitmap() {}
@@ -146,10 +137,6 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     // before, since RemoveRoute can lead to all the outstanding NPObjects
     // being told the channel went away if this was the last instance.
     channel_host_->RemoveRoute(instance_id_);
-
-    // Remove the mapping between our instance-Id and NPP identifiers, used by
-    // the channel to track object ownership, before releasing it.
-    channel_host_->RemoveMappingForNPObjectOwner(instance_id_);
 
     // Release the channel host now. If we are is the last reference to the
     // channel, this avoids a race where this renderer asks a new connection to
@@ -243,11 +230,7 @@ bool WebPluginDelegateProxy::Initialize(
   channel_host_ = channel_host;
   instance_id_ = instance_id;
 
-  channel_host_->AddRoute(instance_id_, this, NULL);
-
-  // Inform the channel of the mapping between our instance-Id and dummy NPP
-  // identifier, for use in object ownership tracking.
-  channel_host_->AddMappingForNPObjectOwner(instance_id_, GetPluginNPP());
+  channel_host_->AddRoute(instance_id_, this);
 
   // Now tell the PluginInstance in the plugin process to initialize.
   PluginMsg_Init_Params params;
@@ -285,9 +268,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateProxy, msg)
     IPC_MESSAGE_HANDLER(PluginHostMsg_InvalidateRect, OnInvalidateRect)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_GetWindowScriptNPObject,
-                        OnGetWindowScriptNPObject)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_GetPluginElement, OnGetPluginElement)
     IPC_MESSAGE_HANDLER(PluginHostMsg_ResolveProxy, OnResolveProxy)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetCookie, OnSetCookie)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetCookies, OnGetCookies)
@@ -543,32 +523,6 @@ void WebPluginDelegateProxy::Paint(SkCanvas* canvas,
   }
 }
 
-NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
-  if (npobject_)
-    return WebBindings::retainObject(npobject_);
-
-  if (!channel_host_.get())
-    return NULL;
-
-  int route_id = MSG_ROUTING_NONE;
-  Send(new PluginMsg_GetPluginScriptableObject(instance_id_, &route_id));
-  if (route_id == MSG_ROUTING_NONE)
-    return NULL;
-
-  if (!channel_host_.get())
-    return nullptr;
-
-  npobject_ = NPObjectProxy::Create(
-      channel_host_.get(), route_id, 0, page_url_, GetPluginNPP());
-
-  return WebBindings::retainObject(npobject_);
-}
-
-NPP WebPluginDelegateProxy::GetPluginNPP() {
-  // Return a dummy NPP for WebKit to use to identify this plugin.
-  return npp_.get();
-}
-
 bool WebPluginDelegateProxy::GetFormValue(base::string16* value) {
   bool success = false;
   Send(new PluginMsg_GetFormValue(instance_id_, value, &success));
@@ -669,41 +623,10 @@ void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
   plugin_->InvalidateRect(clipped_rect);
 }
 
-void WebPluginDelegateProxy::OnGetWindowScriptNPObject(
-    int route_id, bool* success) {
-  *success = false;
-  NPObject* npobject = NULL;
-  if (plugin_)
-    npobject = plugin_->GetWindowScriptNPObject();
-
-  if (!npobject)
-    return;
-
-  // The stub will delete itself when the proxy tells it that it's released, or
-  // otherwise when the channel is closed.
-  new NPObjectStub(npobject, channel_host_.get(), route_id, 0, page_url_);
-  *success = true;
-}
-
 void WebPluginDelegateProxy::OnResolveProxy(const GURL& url,
                                             bool* result,
                                             std::string* proxy_list) {
   *result = RenderThreadImpl::current()->ResolveProxy(url, proxy_list);
-}
-
-void WebPluginDelegateProxy::OnGetPluginElement(int route_id, bool* success) {
-  *success = false;
-  NPObject* npobject = NULL;
-  if (plugin_)
-    npobject = plugin_->GetPluginElement();
-  if (!npobject)
-    return;
-
-  // The stub will delete itself when the proxy tells it that it's released, or
-  // otherwise when the channel is closed.
-  new NPObjectStub(
-      npobject, channel_host_.get(), route_id, 0, page_url_);
-  *success = true;
 }
 
 void WebPluginDelegateProxy::OnSetCookie(const GURL& url,

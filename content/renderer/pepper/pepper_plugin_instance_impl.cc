@@ -103,7 +103,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -157,7 +156,6 @@ using ppapi::thunk::PPB_ImageData_API;
 using ppapi::Var;
 using ppapi::ArrayBufferVar;
 using ppapi::ViewData;
-using blink::WebBindings;
 using blink::WebCanvas;
 using blink::WebCursorInfo;
 using blink::WebDocument;
@@ -2362,8 +2360,8 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
   RecordFlashJavaScriptUse();
 
   // Executing the script may remove the plugin from the DOM, so we need to keep
-  // a reference to ourselves so that we can still process the result after the
-  // WebBindings::evaluate() below.
+  // a reference to ourselves so that we can still process the result after
+  // running the script below.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
   V8VarConverter converter(pp_instance_, V8VarConverter::kAllowObjectVars);
   PepperTryCatchVar try_catch(this, &converter, exception);

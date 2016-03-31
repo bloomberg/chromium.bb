@@ -55,8 +55,6 @@ class WebPluginProxy : public WebPlugin,
   // WebPlugin overrides
   void Invalidate() override;
   void InvalidateRect(const gfx::Rect& rect) override;
-  NPObject* GetWindowScriptNPObject() override;
-  NPObject* GetPluginElement() override;
   bool FindProxyForUrl(const GURL& url, std::string* proxy_list) override;
   void SetCookie(const GURL& url,
                  const GURL& first_party_for_cookies,
@@ -147,8 +145,6 @@ class WebPluginProxy : public WebPlugin,
 
   scoped_refptr<PluginChannel> channel_;
   int route_id_;
-  NPObject* window_npobject_;
-  NPObject* plugin_element_;
   WebPluginDelegateImpl* delegate_;
   gfx::Rect damaged_rect_;
   bool waiting_for_paint_;

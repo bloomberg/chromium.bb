@@ -72,8 +72,6 @@ class WebPluginImpl : public WebPlugin,
   // blink::WebPlugin methods:
   bool initialize(blink::WebPluginContainer* container) override;
   void destroy() override;
-  NPObject* scriptableObject() override;
-  struct _NPP* pluginNPP() override;
   bool getFormValue(blink::WebString& value) override;
   void updateAllLifecyclePhases() override;
   void paint(blink::WebCanvas* canvas,
@@ -98,8 +96,6 @@ class WebPluginImpl : public WebPlugin,
   // WebPlugin implementation:
   void Invalidate() override;
   void InvalidateRect(const gfx::Rect& rect) override;
-  NPObject* GetWindowScriptNPObject() override;
-  NPObject* GetPluginElement() override;
   bool FindProxyForUrl(const GURL& url, std::string* proxy_list) override;
   void SetCookie(const GURL& url,
                  const GURL& first_party_for_cookies,
@@ -192,9 +188,6 @@ class WebPluginImpl : public WebPlugin,
 
   // This is just a weak reference.
   blink::WebPluginContainer* container_;
-
-  // Unique identifier for this plugin, used to track script objects.
-  struct _NPP* npp_;
 
   // The plugin source URL.
   GURL plugin_url_;

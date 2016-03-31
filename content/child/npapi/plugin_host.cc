@@ -509,46 +509,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   NPError rv = NPERR_GENERIC_ERROR;
 
   switch (static_cast<int>(variable)) {
-    case NPNVWindowNPObject: {
-      scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin.get()) {
-        NOTREACHED();
-        return NPERR_INVALID_INSTANCE_ERROR;
-      }
-      NPObject *np_object = plugin->webplugin()->GetWindowScriptNPObject();
-      // Return value is expected to be retained, as
-      // described here:
-      // <http://www.mozilla.org/projects/plugins/npruntime.html#browseraccess>
-      if (np_object) {
-        WebBindings::retainObject(np_object);
-        void **v = (void **)value;
-        *v = np_object;
-        rv = NPERR_NO_ERROR;
-      } else {
-        NOTREACHED();
-      }
-      break;
-    }
-    case NPNVPluginElementNPObject: {
-      scoped_refptr<PluginInstance> plugin(FindInstance(id));
-      if (!plugin.get()) {
-        NOTREACHED();
-        return NPERR_INVALID_INSTANCE_ERROR;
-      }
-      NPObject *np_object = plugin->webplugin()->GetPluginElement();
-      // Return value is expected to be retained, as
-      // described here:
-      // <http://www.mozilla.org/projects/plugins/npruntime.html#browseraccess>
-      if (np_object) {
-        WebBindings::retainObject(np_object);
-        void** v = static_cast<void**>(value);
-        *v = np_object;
-        rv = NPERR_NO_ERROR;
-      } else {
-        NOTREACHED();
-      }
-      break;
-    }
     case NPNVjavascriptEnabledBool: {
       // yes, JS is enabled.
       *((void**)value) = (void*)1;

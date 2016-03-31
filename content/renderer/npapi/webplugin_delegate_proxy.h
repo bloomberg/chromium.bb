@@ -40,7 +40,6 @@ class WaitableEvent;
 
 
 namespace content {
-class NPObjectStub;
 class PluginChannelHost;
 class RenderFrameImpl;
 class RenderViewImpl;
@@ -69,8 +68,6 @@ class WebPluginDelegateProxy
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect) override;
   void Paint(SkCanvas* canvas, const gfx::Rect& rect) override;
-  NPObject* GetPluginScriptableObject() override;
-  struct _NPP* GetPluginNPP() override;
   bool GetFormValue(base::string16* value) override;
   void SetFocus(bool focused) override;
   bool HandleInputEvent(const blink::WebInputEvent& event,
@@ -119,9 +116,7 @@ class WebPluginDelegateProxy
                      bool* result);
   void OnHandleURLRequest(const PluginHostMsg_URLRequest_Params& params);
   void OnInvalidateRect(const gfx::Rect& rect);
-  void OnGetWindowScriptNPObject(int route_id, bool* success);
   void OnResolveProxy(const GURL& url, bool* result, std::string* proxy_list);
-  void OnGetPluginElement(int route_id, bool* success);
   void OnSetCookie(const GURL& url,
                    const GURL& first_party_for_cookies,
                    const std::string& cookie);
@@ -216,11 +211,6 @@ class WebPluginDelegateProxy
 
   gfx::Rect plugin_rect_;
   gfx::Rect clip_rect_;
-
-  NPObject* npobject_;
-
-  // Dummy NPP used to uniquely identify this plugin.
-  scoped_ptr<NPP_t> npp_;
 
   // Bitmap for crashed plugin
   SkBitmap* sad_plugin_;

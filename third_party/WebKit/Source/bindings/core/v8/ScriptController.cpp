@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ScriptController.h"
 
 #include "bindings/core/v8/BindingSecurity.h"
-#include "bindings/core/v8/NPV8Object.h"
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -41,13 +40,10 @@
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8HTMLElement.h"
-#include "bindings/core/v8/V8NPObject.h"
 #include "bindings/core/v8/V8PerContextData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/WindowProxy.h"
-#include "bindings/core/v8/npruntime_impl.h"
-#include "bindings/core/v8/npruntime_priv.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
 #include "core/dom/ScriptableDocumentParser.h"
@@ -93,7 +89,6 @@ bool ScriptController::canAccessFromCurrentOrigin(v8::Isolate* isolate, Frame* f
 ScriptController::ScriptController(LocalFrame* frame)
     : m_windowProxyManager(WindowProxyManager::create(*frame))
     , m_sourceURL(0)
-    , m_windowScriptNPObject(0)
 {
 }
 
@@ -105,28 +100,7 @@ DEFINE_TRACE(ScriptController)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_windowProxyManager);
-    visitor->trace(m_pluginObjects);
 #endif
-}
-
-void ScriptController::clearScriptObjects()
-{
-    PluginObjectMap::iterator it = m_pluginObjects.begin();
-    for (; it != m_pluginObjects.end(); ++it) {
-        _NPN_UnregisterObject(it->value);
-        _NPN_ReleaseObject(it->value);
-    }
-    m_pluginObjects.clear();
-
-    if (m_windowScriptNPObject) {
-        // Dispose of the underlying V8 object before releasing our reference
-        // to it, so that if a plugin fails to release it properly we will
-        // only leak the NPObject wrapper, not the object, its document, or
-        // anything else they reference.
-        disposeUnderlyingV8Object(isolate(), m_windowScriptNPObject);
-        _NPN_ReleaseObject(m_windowScriptNPObject);
-        m_windowScriptNPObject = 0;
-    }
 }
 
 void ScriptController::clearForClose()
@@ -236,20 +210,6 @@ TextPosition ScriptController::eventHandlerPosition() const
     return TextPosition::minimumPosition();
 }
 
-// Create a V8 object with an interceptor of NPObjectPropertyGetter.
-bool ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, NPObject* object)
-{
-    ScriptState* scriptState = ScriptState::forMainWorld(frame);
-    if (!scriptState)
-        return false;
-
-    ScriptState::Scope scope(scriptState);
-    v8::Local<v8::Object> value = createV8ObjectForNPObject(isolate(), object, 0);
-
-    // Attach to the global object.
-    return v8CallBoolean(scriptState->context()->Global()->Set(scriptState->context(), v8String(isolate(), key), value));
-}
-
 void ScriptController::enableEval()
 {
     v8::HandleScope handleScope(isolate());
@@ -282,46 +242,7 @@ PassRefPtr<SharedPersistent<v8::Object>> ScriptController::createPluginWrapper(W
     if (scriptableObject.IsEmpty())
         return nullptr;
 
-    // LocalFrame Memory Management for NPObjects
-    // -------------------------------------
-    // NPObjects are treated differently than other objects wrapped by JS.
-    // NPObjects can be created either by the browser (e.g. the main
-    // window object) or by the plugin (the main plugin object
-    // for a HTMLEmbedElement). Further, unlike most DOM Objects, the frame
-    // is especially careful to ensure NPObjects terminate at frame teardown because
-    // if a plugin leaks a reference, it could leak its objects (or the browser's objects).
-    //
-    // The LocalFrame maintains a list of plugin objects (m_pluginObjects)
-    // which it can use to quickly find the wrapped embed object.
-    //
-    // Inside the NPRuntime, we've added a few methods for registering
-    // wrapped NPObjects. The purpose of the registration is because
-    // javascript garbage collection is non-deterministic, yet we need to
-    // be able to tear down the plugin objects immediately. When an object
-    // is registered, javascript can use it. When the object is destroyed,
-    // or when the object's "owning" object is destroyed, the object will
-    // be un-registered, and the javascript engine must not use it.
-    //
-    // Inside the javascript engine, the engine can keep a reference to the
-    // NPObject as part of its wrapper. However, before accessing the object
-    // it must consult the _NPN_Registry.
-
-    if (isWrappedNPObject(scriptableObject)) {
-        // Track the plugin object. We've been given a reference to the object.
-        m_pluginObjects.set(widget, v8ObjectToNPObject(scriptableObject));
-    }
-
     return SharedPersistent<v8::Object>::create(scriptableObject, isolate());
-}
-
-void ScriptController::cleanupScriptObjectsForPlugin(Widget* nativeHandle)
-{
-    PluginObjectMap::iterator it = m_pluginObjects.find(nativeHandle);
-    if (it == m_pluginObjects.end())
-        return;
-    _NPN_UnregisterObject(it->value);
-    _NPN_ReleaseObject(it->value);
-    m_pluginObjects.remove(it);
 }
 
 V8Extensions& ScriptController::registeredExtensions()
@@ -341,74 +262,12 @@ void ScriptController::registerExtensionIfNeeded(v8::Extension* extension)
     registeredExtensions().append(extension);
 }
 
-static NPObject* createNoScriptObject()
-{
-    NOTIMPLEMENTED();
-    return nullptr;
-}
-
-static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)
-{
-    ScriptState* scriptState = ScriptState::forMainWorld(frame);
-    if (!scriptState)
-        return createNoScriptObject();
-
-    ScriptState::Scope scope(scriptState);
-    LocalDOMWindow* window = frame->localDOMWindow();
-    v8::Local<v8::Value> global = toV8(window, scriptState->context()->Global(), scriptState->isolate());
-    if (global.IsEmpty())
-        return createNoScriptObject();
-    ASSERT(global->IsObject());
-    return npCreateV8ScriptObject(isolate, 0, v8::Local<v8::Object>::Cast(global), window);
-}
-
-NPObject* ScriptController::windowScriptNPObject()
-{
-    if (m_windowScriptNPObject)
-        return m_windowScriptNPObject;
-
-    if (canExecuteScripts(NotAboutToExecuteScript)) {
-        // JavaScript is enabled, so there is a JavaScript window object.
-        // Return an NPObject bound to the window object.
-        m_windowScriptNPObject = createScriptObject(frame(), isolate());
-        _NPN_RegisterObject(m_windowScriptNPObject, 0);
-    } else {
-        // JavaScript is not enabled, so we cannot bind the NPObject to the
-        // JavaScript window object. Instead, we create an NPObject of a
-        // different class, one which is not bound to a JavaScript object.
-        m_windowScriptNPObject = createNoScriptObject();
-    }
-    return m_windowScriptNPObject;
-}
-
-NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement* plugin)
-{
-    // Can't create NPObjects when JavaScript is disabled.
-    if (!canExecuteScripts(NotAboutToExecuteScript))
-        return createNoScriptObject();
-
-    ScriptState* scriptState = ScriptState::forMainWorld(frame());
-    if (!scriptState)
-        return createNoScriptObject();
-
-    ScriptState::Scope scope(scriptState);
-    LocalDOMWindow* window = frame()->localDOMWindow();
-    v8::Local<v8::Value> v8plugin = toV8(plugin, scriptState->context()->Global(), scriptState->isolate());
-    if (v8plugin.IsEmpty() || !v8plugin->IsObject())
-        return createNoScriptObject();
-
-    return npCreateV8ScriptObject(scriptState->isolate(), 0, v8::Local<v8::Object>::Cast(v8plugin), window);
-}
-
 void ScriptController::clearWindowProxy()
 {
     // V8 binding expects ScriptController::clearWindowProxy only be called
     // when a frame is loading a new page. This creates a new context for the new page.
 
     double start = currentTime();
-    // The V8 context must be available for |clearScriptObjects()|.
-    // The below call must be before |clearForNavigation()| which disposes the V8 context.
-    clearScriptObjects();
 
     m_windowProxyManager->clearForNavigation();
     double end = currentTime();

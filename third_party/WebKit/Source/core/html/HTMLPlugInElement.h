@@ -30,8 +30,6 @@
 
 #include <v8.h>
 
-struct NPObject;
-
 namespace blink {
 
 class HTMLImageLoader;
@@ -49,10 +47,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void resetInstance();
+    // TODO(dcheng): Consider removing this, since HTMLEmbedElementLegacyCall
+    // and HTMLObjectElementLegacyCall usage is extremely low.
     SharedPersistent<v8::Object>* pluginWrapper();
     Widget* pluginWidget() const;
-    NPObject* getNPObject();
-    void setPluginFocus(bool focused);
     bool canProcessDrag() const;
     const String& url() const { return m_url; }
 
@@ -140,7 +138,6 @@ private:
     void setPersistedPluginWidget(Widget*);
 
     mutable RefPtr<SharedPersistent<v8::Object>> m_pluginWrapper;
-    NPObject* m_NPObject;
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
 

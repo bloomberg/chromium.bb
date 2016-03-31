@@ -39,14 +39,6 @@ class WebPlugin {
   virtual void Invalidate() = 0;
   virtual void InvalidateRect(const gfx::Rect& rect) = 0;
 
-  // Returns the NPObject for the browser's window object. Does not
-  // take a reference.
-  virtual NPObject* GetWindowScriptNPObject() = 0;
-
-  // Returns the DOM element that loaded the plugin. Does not take a
-  // reference.
-  virtual NPObject* GetPluginElement() = 0;
-
   // Resolves the proxies for the url, returns true on success.
   virtual bool FindProxyForUrl(const GURL& url, std::string* proxy_list) = 0;
 

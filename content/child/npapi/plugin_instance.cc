@@ -89,14 +89,6 @@ bool PluginInstance::Start(const GURL& url,
   return err == NPERR_NO_ERROR;
 }
 
-NPObject *PluginInstance::GetPluginScriptableObject() {
-  NPObject *value = NULL;
-  NPError error = NPP_GetValue(NPPVpluginScriptableNPObject, &value);
-  if (error != NPERR_NO_ERROR || value == NULL)
-    return NULL;
-  return value;
-}
-
 bool PluginInstance::GetFormValue(base::string16* value) {
   // Plugins will allocate memory for the return value by using NPN_MemAlloc().
   char *plugin_value = NULL;

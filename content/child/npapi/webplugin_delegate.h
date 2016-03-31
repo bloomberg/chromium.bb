@@ -77,12 +77,6 @@ class WebPluginDelegate {
   virtual bool HandleInputEvent(const blink::WebInputEvent& event,
                                 WebCursor::CursorInfo* cursor) = 0;
 
-  // Gets the NPObject associated with the plugin for scripting.
-  virtual NPObject* GetPluginScriptableObject() = 0;
-
-  // Gets the NPP instance uniquely identifying the plugin for its lifetime.
-  virtual struct _NPP* GetPluginNPP() = 0;
-
   // Gets the form value associated with the plugin instance.
   // Returns false if the value is not available.
   virtual bool GetFormValue(base::string16* value) = 0;

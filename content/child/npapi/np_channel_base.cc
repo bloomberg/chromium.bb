@@ -11,7 +11,6 @@
 #include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
 #include "ipc/ipc_sync_message.h"
@@ -124,20 +123,12 @@ NPChannelBase::NPChannelBase()
     : mode_(IPC::Channel::MODE_NONE),
       non_npobject_count_(0),
       peer_pid_(0),
-      in_remove_route_(false),
-      default_owner_(NULL),
       channel_valid_(false),
       in_unblock_dispatch_(0),
       send_unblocking_only_during_unblock_dispatch_(false) {
 }
 
 NPChannelBase::~NPChannelBase() {
-  // TODO(wez): Establish why these would ever be non-empty at teardown.
-  //DCHECK(npobject_listeners_.empty());
-  //DCHECK(proxy_map_.empty());
-  //DCHECK(stub_map_.empty());
-  DCHECK(owner_to_route_.empty());
-  DCHECK(route_to_owner_.empty());
 }
 
 NPChannelBase* NPChannelBase::GetCurrentChannel() {
@@ -160,15 +151,6 @@ void NPChannelBase::CleanupChannels() {
   // This will clean up channels added to the map for which subsequent
   // AddRoute wasn't called
   GetChannelMap()->clear();
-}
-
-NPObjectBase* NPChannelBase::GetNPObjectListenerForRoute(int route_id) {
-  ListenerMap::iterator iter = npobject_listeners_.find(route_id);
-  if (iter == npobject_listeners_.end()) {
-    DLOG(WARNING) << "Invalid route id passed in:" << route_id;
-    return NULL;
-  }
-  return iter->second;
 }
 
 base::WaitableEvent* NPChannelBase::GetModalDialogEvent(int render_view_id) {
@@ -216,10 +198,6 @@ bool NPChannelBase::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
-int NPChannelBase::Count() {
-  return static_cast<int>(GetChannelMap()->size());
-}
-
 bool NPChannelBase::OnMessageReceived(const IPC::Message& message) {
   // Push this channel as the current channel being processed. This also forms
   // a stack of scoped_refptr avoiding ourselves (or any instance higher
@@ -252,49 +230,18 @@ void NPChannelBase::OnChannelConnected(int32_t peer_pid) {
   peer_pid_ = peer_pid;
 }
 
-void NPChannelBase::AddRoute(int route_id,
-                             IPC::Listener* listener,
-                             NPObjectBase* npobject) {
-  if (npobject) {
-    npobject_listeners_[route_id] = npobject;
-  } else {
-    non_npobject_count_++;
-  }
-
+void NPChannelBase::AddRoute(int route_id, IPC::Listener* listener) {
+  non_npobject_count_++;
   router_.AddRoute(route_id, listener);
 }
 
 void NPChannelBase::RemoveRoute(int route_id) {
   router_.RemoveRoute(route_id);
 
-  ListenerMap::iterator iter = npobject_listeners_.find(route_id);
-  if (iter != npobject_listeners_.end()) {
-    // This was an NPObject proxy or stub, it's not involved in the refcounting.
-
-    // If this RemoveRoute call from the NPObject is a result of us calling
-    // OnChannelError below, don't call erase() here because that'll corrupt
-    // the iterator below.
-    if (in_remove_route_) {
-      iter->second = NULL;
-    } else {
-      npobject_listeners_.erase(iter);
-    }
-
-    return;
-  }
-
   non_npobject_count_--;
   DCHECK(non_npobject_count_ >= 0);
 
   if (!non_npobject_count_) {
-    base::AutoReset<bool> auto_reset_in_remove_route(&in_remove_route_, true);
-    for (ListenerMap::iterator npobj_iter = npobject_listeners_.begin();
-         npobj_iter != npobject_listeners_.end(); ++npobj_iter) {
-      if (npobj_iter->second) {
-        npobj_iter->second->GetChannelListener()->OnChannelError();
-      }
-    }
-
     for (ChannelMap::iterator iter = GetChannelMap()->begin();
          iter != GetChannelMap()->end(); ++iter) {
       if (iter->second.get() == this) {
@@ -329,65 +276,6 @@ void NPChannelBase::OnChannelError() {
       break;
     }
   }
-}
-
-void NPChannelBase::AddMappingForNPObjectProxy(int route_id,
-                                               NPObject* object) {
-  proxy_map_[route_id] = object;
-}
-
-void NPChannelBase::RemoveMappingForNPObjectProxy(int route_id) {
-  proxy_map_.erase(route_id);
-}
-
-void NPChannelBase::AddMappingForNPObjectStub(int route_id,
-                                              NPObject* object) {
-  DCHECK(object != NULL);
-  stub_map_[object] = route_id;
-}
-
-void NPChannelBase::RemoveMappingForNPObjectStub(int route_id,
-                                                 NPObject* object) {
-  DCHECK(object != NULL);
-  stub_map_.erase(object);
-}
-
-void NPChannelBase::AddMappingForNPObjectOwner(int route_id,
-                                               struct _NPP* owner) {
-  DCHECK(owner != NULL);
-  route_to_owner_[route_id] = owner;
-  owner_to_route_[owner] = route_id;
-}
-
-void NPChannelBase::SetDefaultNPObjectOwner(struct _NPP* owner) {
-  DCHECK(owner != NULL);
-  default_owner_ = owner;
-}
-
-void NPChannelBase::RemoveMappingForNPObjectOwner(int route_id) {
-  DCHECK(route_to_owner_.find(route_id) != route_to_owner_.end());
-  owner_to_route_.erase(route_to_owner_[route_id]);
-  route_to_owner_.erase(route_id);
-}
-
-NPObject* NPChannelBase::GetExistingNPObjectProxy(int route_id) {
-  ProxyMap::iterator iter = proxy_map_.find(route_id);
-  return iter != proxy_map_.end() ? iter->second : NULL;
-}
-
-int NPChannelBase::GetExistingRouteForNPObjectStub(NPObject* npobject) {
-  StubMap::iterator iter = stub_map_.find(npobject);
-  return iter != stub_map_.end() ? iter->second : MSG_ROUTING_NONE;
-}
-
-NPP NPChannelBase::GetExistingNPObjectOwner(int route_id) {
-  RouteToOwnerMap::iterator iter = route_to_owner_.find(route_id);
-  return iter != route_to_owner_.end() ? iter->second : default_owner_;
-}
-
-int NPChannelBase::GetExistingRouteForNPObjectOwner(NPP owner) {
-  OwnerToRouteMap::iterator iter = owner_to_route_.find(owner);
-  return iter != owner_to_route_.end() ? iter->second : MSG_ROUTING_NONE;
 }
 
 }  // namespace content

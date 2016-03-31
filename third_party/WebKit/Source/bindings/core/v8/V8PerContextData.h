@@ -50,9 +50,6 @@ namespace blink {
 
 class V8DOMActivityLogger;
 class V8PerContextData;
-struct V8NPObject;
-typedef WTF::Vector<V8NPObject*> V8NPObjectVector;
-typedef WTF::HashMap<int, V8NPObjectVector> V8NPObjectMap;
 
 enum V8ContextEmbedderDataField {
     v8ContextPerContextDataIndex = static_cast<int>(gin::kPerContextDataStartIndex + gin::kEmbedderBlink),
@@ -87,8 +84,6 @@ public:
 
     v8::Local<v8::Object> prototypeForType(const WrapperTypeInfo*);
 
-    V8NPObjectMap* getV8NPObjectMap() { return &m_v8NPObjectMap; }
-
     void addCustomElementBinding(PassOwnPtr<CustomElementBinding>);
 
     V8DOMActivityLogger* activityLogger() const { return m_activityLogger; }
@@ -112,8 +107,6 @@ private:
 
     typedef V8GlobalValueMap<const WrapperTypeInfo*, v8::Function, v8::kNotWeak> ConstructorMap;
     ConstructorMap m_constructorMap;
-
-    V8NPObjectMap m_v8NPObjectMap;
 
     OwnPtr<gin::ContextHolder> m_contextHolder;
 

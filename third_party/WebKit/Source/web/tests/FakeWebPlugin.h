@@ -50,7 +50,6 @@ public:
     // WebPlugin methods:
     bool initialize(WebPluginContainer*) override;
     void destroy() override;
-    NPObject* scriptableObject() override { return 0; }
     bool canProcessDrag() const override { return false; }
     void updateAllLifecyclePhases() override { }
     void paint(WebCanvas*, const WebRect&) override { }
