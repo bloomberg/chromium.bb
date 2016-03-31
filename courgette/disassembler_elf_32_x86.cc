@@ -127,7 +127,6 @@ CheckBool DisassemblerElf32X86::ParseRelocationSection(
   return ParseSimpleRegion(file_offset, section_end, program);
 }
 
-// TODO(huangs): Detect and avoid overlap with abs32 addresses.
 CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
     const Elf32_Shdr* section_header) {
   FileOffset start_file_offset = section_header->sh_offset;
@@ -140,6 +139,8 @@ CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
   // subtract |pointer_to_rva|.
   const uint8_t* const adjust_pointer_to_rva =
       start_pointer - section_header->sh_addr;
+
+  std::vector<RVA>::iterator abs32_pos = abs32_locations_.begin();
 
   // Find the rel32 relocations.
   const uint8_t* p = start_pointer;
@@ -161,15 +162,30 @@ CheckBool DisassemblerElf32X86::ParseRel32RelocsFromSection(
       }
     }
     if (rel32) {
-      RVA rva = static_cast<RVA>(rel32 - adjust_pointer_to_rva);
-      scoped_ptr<TypedRVAX86> rel32_rva(new TypedRVAX86(rva));
+      RVA rel32_rva = static_cast<RVA>(rel32 - adjust_pointer_to_rva);
+      // Is there an abs32 reloc overlapping the candidate?
+      while (abs32_pos != abs32_locations_.end() && *abs32_pos < rel32_rva - 3)
+        ++abs32_pos;
+      // Now: (*abs32_pos > rel32_rva - 4) i.e. the lowest addressed 4-byte
+      // region that could overlap rel32_rva.
+      if (abs32_pos != abs32_locations_.end()) {
+        if (*abs32_pos < rel32_rva + 4) {
+          // Beginning of abs32 reloc is before end of rel32 reloc so they
+          // overlap.  Skip four bytes past the abs32 reloc.
+          RVA current_rva = static_cast<RVA>(p - adjust_pointer_to_rva);
+          p += (*abs32_pos + 4) - current_rva;
+          continue;
+        }
+      }
 
-      if (!rel32_rva->ComputeRelativeTarget(rel32))
+      scoped_ptr<TypedRVAX86> typed_rel32_rva(new TypedRVAX86(rel32_rva));
+      if (!typed_rel32_rva->ComputeRelativeTarget(rel32))
         return false;
 
-      RVA target_rva = rel32_rva->rva() + rel32_rva->relative_target();
+      RVA target_rva = typed_rel32_rva->rva() +
+          typed_rel32_rva->relative_target();
       if (IsValidTargetRVA(target_rva)) {
-        rel32_locations_.push_back(rel32_rva.release());
+        rel32_locations_.push_back(typed_rel32_rva.release());
 #if COURGETTE_HISTOGRAM_TARGETS
         ++rel32_target_rvas_[target_rva];
 #endif

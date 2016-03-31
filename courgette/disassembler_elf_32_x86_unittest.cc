@@ -89,7 +89,7 @@ void DisassemblerElf32X86Test::TestExe(const char* file_name,
 }  // namespace
 
 TEST_F(DisassemblerElf32X86Test, All) {
-  TestExe("elf-32-1", 200, 3442);
+  TestExe("elf-32-1", 200, 3441);
 }
 
 }  // namespace courgette
