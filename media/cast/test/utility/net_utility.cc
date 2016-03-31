@@ -4,6 +4,7 @@
 
 #include "media/cast/test/utility/net_utility.h"
 
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"
 
@@ -13,15 +14,11 @@ namespace test {
 
 // TODO(hubbe): Move to /net/.
 net::IPEndPoint GetFreeLocalPort() {
-  net::IPAddressNumber localhost;
-  localhost.push_back(127);
-  localhost.push_back(0);
-  localhost.push_back(0);
-  localhost.push_back(1);
   scoped_ptr<net::UDPServerSocket> receive_socket(
       new net::UDPServerSocket(NULL, net::NetLog::Source()));
   receive_socket->AllowAddressReuse();
-  CHECK_EQ(net::OK, receive_socket->Listen(net::IPEndPoint(localhost, 0)));
+  CHECK_EQ(net::OK, receive_socket->Listen(
+                        net::IPEndPoint(net::IPAddress::IPv4Localhost(), 0)));
   net::IPEndPoint endpoint;
   CHECK_EQ(net::OK, receive_socket->GetLocalAddress(&endpoint));
   return endpoint;

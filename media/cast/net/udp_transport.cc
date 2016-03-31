@@ -30,10 +30,7 @@ const char kOptionSendBufferMinSize[] = "send_buffer_min_size";
 const char kOptionPacerMaxBurstSize[] = "pacer_max_burst_size";
 
 bool IsEmpty(const net::IPEndPoint& addr) {
-  net::IPAddressNumber empty_addr(addr.address().size());
-  return std::equal(empty_addr.begin(), empty_addr.end(),
-                    addr.address().bytes().begin()) &&
-         !addr.port();
+  return (addr.address().empty() || addr.address().IsZero()) && !addr.port();
 }
 
 int LookupOptionWithDefault(const base::DictionaryValue& options,

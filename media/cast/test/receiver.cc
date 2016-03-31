@@ -44,6 +44,7 @@
 #include "media/cast/test/utility/in_process_receiver.h"
 #include "media/cast/test/utility/input_builder.h"
 #include "media/cast/test/utility/standalone_cast_environment.h"
+#include "net/base/ip_address.h"
 
 #if defined(USE_X11)
 #include "media/cast/test/linux_output_window.h"
@@ -571,18 +572,18 @@ int main(int argc, char** argv) {
   }
   std::string remote_ip_address = media::cast::GetIpAddress("Enter remote IP.");
   std::string local_ip_address = media::cast::GetIpAddress("Enter local IP.");
-  net::IPAddressNumber remote_ip_number;
-  net::IPAddressNumber local_ip_number;
-  if (!net::ParseIPLiteralToNumber(remote_ip_address, &remote_ip_number)) {
+  net::IPAddress remote_ip;
+  net::IPAddress local_ip;
+  if (!remote_ip.AssignFromIPLiteral(remote_ip_address)) {
     LOG(ERROR) << "Invalid remote IP address.";
     return 1;
   }
-  if (!net::ParseIPLiteralToNumber(local_ip_address, &local_ip_number)) {
+  if (!local_ip.AssignFromIPLiteral(local_ip_address)) {
     LOG(ERROR) << "Invalid local IP address.";
     return 1;
   }
-  net::IPEndPoint remote_end_point(remote_ip_number, remote_port);
-  net::IPEndPoint local_end_point(local_ip_number, local_port);
+  net::IPEndPoint remote_end_point(remote_ip, remote_port);
+  net::IPEndPoint local_end_point(local_ip, local_port);
 
   // Create and start the player.
   int window_width = 0;

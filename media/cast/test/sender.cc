@@ -79,9 +79,9 @@ void QuitLoopOnInitializationResult(media::cast::OperationalStatus result) {
 }
 
 net::IPEndPoint CreateUDPAddress(const std::string& ip_str, uint16_t port) {
-  net::IPAddressNumber ip_number;
-  CHECK(net::ParseIPLiteralToNumber(ip_str, &ip_number));
-  return net::IPEndPoint(ip_number, port);
+  net::IPAddress ip_address;
+  CHECK(ip_address.AssignFromIPLiteral(ip_str));
+  return net::IPEndPoint(ip_address, port);
 }
 
 void DumpLoggingData(const media::cast::proto::LogMetadata& log_metadata,

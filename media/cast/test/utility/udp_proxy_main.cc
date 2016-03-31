@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "media/cast/test/utility/udp_proxy.h"
+#include "net/base/ip_address.h"
 
 class ByteCounter {
  public:
@@ -140,16 +141,14 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
-  net::IPAddressNumber remote_ip_number;
-  net::IPAddressNumber local_ip_number;
+  net::IPAddress remote_ip_address;
   std::string network_type;
   int local_port = atoi(argv[1]);
   int remote_port = 0;
-  CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &local_ip_number));
 
   if (argc == 5) {
     // V2 proxy
-    CHECK(net::ParseIPLiteralToNumber(argv[2], &remote_ip_number));
+    CHECK(remote_ip_address.AssignFromIPLiteral(argv[2]));
     remote_port = atoi(argv[3]);
     network_type = argv[4];
   } else {
@@ -161,9 +160,9 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Port numbers must be between 0 and 65535\n");
     exit(1);
   }
-  net::IPEndPoint remote_endpoint(remote_ip_number,
+  net::IPEndPoint remote_endpoint(remote_ip_address,
                                   static_cast<uint16_t>(remote_port));
-  net::IPEndPoint local_endpoint(local_ip_number,
+  net::IPEndPoint local_endpoint(net::IPAddress::IPv4AllZeros(),
                                  static_cast<uint16_t>(local_port));
   scoped_ptr<media::cast::test::PacketPipe> in_pipe, out_pipe;
   scoped_ptr<media::cast::test::InterruptedPoissonProcess> ipp(

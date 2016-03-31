@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/test/utility/net_utility.h"
+#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -59,8 +60,6 @@ TEST(UdpTransport, SendAndReceive) {
 
   net::IPEndPoint free_local_port1 = test::GetFreeLocalPort();
   net::IPEndPoint free_local_port2 = test::GetFreeLocalPort();
-  net::IPAddressNumber empty_addr_number;
-  net::ParseIPLiteralToNumber("0.0.0.0", &empty_addr_number);
 
   UdpTransport send_transport(NULL,
                               message_loop.task_runner(),
@@ -68,11 +67,10 @@ TEST(UdpTransport, SendAndReceive) {
                               free_local_port2,
                               base::Bind(&UpdateCastTransportStatus));
   send_transport.SetSendBufferSize(65536);
-  UdpTransport recv_transport(NULL,
-                              message_loop.task_runner(),
-                              free_local_port2,
-                              net::IPEndPoint(empty_addr_number, 0),
-                              base::Bind(&UpdateCastTransportStatus));
+  UdpTransport recv_transport(
+      NULL, message_loop.task_runner(), free_local_port2,
+      net::IPEndPoint(net::IPAddress::IPv4AllZeros(), 0),
+      base::Bind(&UpdateCastTransportStatus));
   recv_transport.SetSendBufferSize(65536);
 
   Packet packet;
