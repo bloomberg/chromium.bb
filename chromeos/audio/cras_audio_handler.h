@@ -66,6 +66,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
     // Called when active audio input node changed.
     virtual void OnActiveInputNodeChanged();
 
+    // Called when output channel remixing changed.
+    virtual void OnOuputChannelRemixingChanged(bool mono_on);
+
    protected:
     AudioObserver();
     virtual ~AudioObserver();
@@ -205,6 +208,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // and right channel back to the normal mode.
   // If the feature is not supported on the device, nothing happens.
   virtual void SwapInternalSpeakerLeftRightChannel(bool swap);
+
+  // Accessibility audio setting: sets the output mono or not.
+  virtual void SetOutputMono(bool mono_on);
+
+  // Returns true if output mono is enabled.
+  virtual bool IsOutputMonoEnabled() const;
 
   // Enables error logging.
   virtual void LogErrors();
@@ -407,6 +416,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   bool has_alternative_output_;
 
   bool output_mute_locked_;
+
+  // Audio output channel counts.
+  int32_t output_channels_;
+  bool output_mono_on_;
 
   // Failures are not logged at startup, since CRAS may not be running yet.
   bool log_errors_;

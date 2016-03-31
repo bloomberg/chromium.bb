@@ -206,7 +206,8 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
         input_mute_changed_count_(0),
         output_volume_changed_count_(0),
         input_gain_changed_count_(0),
-        output_mute_by_system_(false) {}
+        output_mute_by_system_(false),
+        output_channel_remixing_changed_count_(0) {}
 
   int active_output_node_changed_count() const {
     return active_output_node_changed_count_;
@@ -248,6 +249,10 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
   bool output_mute_by_system() const { return output_mute_by_system_; }
 
+  int output_channel_remixing_changed_count() const {
+    return output_channel_remixing_changed_count_;
+  }
+
   ~TestObserver() override {}
 
  protected:
@@ -280,6 +285,10 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
     ++input_gain_changed_count_;
   }
 
+  void OnOuputChannelRemixingChanged(bool /* mono_on */) override {
+    ++output_channel_remixing_changed_count_;
+  }
+
  private:
   int active_output_node_changed_count_;
   int active_input_node_changed_count_;
@@ -289,6 +298,7 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
   int output_volume_changed_count_;
   int input_gain_changed_count_;
   bool output_mute_by_system_;  // output mute state adjusted by system.
+  int output_channel_remixing_changed_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -1884,6 +1894,26 @@ TEST_F(CrasAudioHandlerTest,
   EXPECT_EQ(internal_mic.id, cras_audio_handler_->GetPrimaryActiveInputNode());
   const AudioDevice* changed_active_input = GetDeviceFromId(internal_mic.id);
   EXPECT_TRUE(changed_active_input->active);
+}
+
+TEST_F(CrasAudioHandlerTest, SetOutputMono) {
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kHeadphone);
+  SetUpCrasAudioHandler(audio_nodes);
+  EXPECT_EQ(0, test_observer_->output_channel_remixing_changed_count());
+
+  // Set output mono
+  cras_audio_handler_->SetOutputMono(true);
+
+  // Verify the output is in mono mode, OnOuputChannelRemixingChanged event
+  // is fired.
+  EXPECT_TRUE(cras_audio_handler_->IsOutputMonoEnabled());
+  EXPECT_EQ(1, test_observer_->output_channel_remixing_changed_count());
+
+  // Set output stereo
+  cras_audio_handler_->SetOutputMono(false);
+  EXPECT_FALSE(cras_audio_handler_->IsOutputMonoEnabled());
+  EXPECT_EQ(2, test_observer_->output_channel_remixing_changed_count());
 }
 
 TEST_F(CrasAudioHandlerTest, SetOutputMute) {

@@ -34,6 +34,11 @@ const int kMuteThresholdPercent = 1;
 // The duration of HDMI output re-discover grace period in milliseconds.
 const int kHDMIRediscoverGracePeriodDurationInMs = 2000;
 
+// Mixer matrix, [0.5, 0.5; 0.5, 0.5]
+const std::vector<double> kStereoToMono = {0.5, 0.5, 0.5, 0.5};
+// Mixer matrix, [1, 0; 0, 1]
+const std::vector<double> kStereoToStereo = {1, 0, 0, 1};
+
 static CrasAudioHandler* g_cras_audio_handler = NULL;
 
 bool IsSameAudioDevice(const AudioDevice& a, const AudioDevice& b) {
@@ -86,6 +91,10 @@ void CrasAudioHandler::AudioObserver::OnActiveOutputNodeChanged() {
 }
 
 void CrasAudioHandler::AudioObserver::OnActiveInputNodeChanged() {
+}
+
+void CrasAudioHandler::AudioObserver::OnOuputChannelRemixingChanged(
+    bool /* mono_on */) {
 }
 
 // static
@@ -328,6 +337,25 @@ void CrasAudioHandler::SwapInternalSpeakerLeftRightChannel(bool swap) {
   }
 }
 
+void CrasAudioHandler::SetOutputMono(bool mono_on) {
+  output_mono_on_ = mono_on;
+  if (mono_on) {
+    chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
+        SetGlobalOutputChannelRemix(output_channels_, kStereoToMono);
+  } else {
+    chromeos::DBusThreadManager::Get()->GetCrasAudioClient()->
+        SetGlobalOutputChannelRemix(output_channels_, kStereoToStereo);
+  }
+
+  FOR_EACH_OBSERVER(
+      AudioObserver, observers_,
+      OnOuputChannelRemixingChanged(mono_on));
+}
+
+bool CrasAudioHandler::IsOutputMonoEnabled() const {
+  return output_mono_on_;
+}
+
 bool CrasAudioHandler::has_alternative_input() const {
   return has_alternative_input_;
 }
@@ -513,6 +541,8 @@ CrasAudioHandler::CrasAudioHandler(
       has_alternative_input_(false),
       has_alternative_output_(false),
       output_mute_locked_(false),
+      output_channels_(2),
+      output_mono_on_(false),
       log_errors_(false),
       hdmi_rediscover_grace_period_duration_in_ms_(
           kHDMIRediscoverGracePeriodDurationInMs),
