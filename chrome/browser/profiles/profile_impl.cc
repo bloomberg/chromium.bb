@@ -926,14 +926,6 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter* ProfileImpl::GetRequestContextForRenderProcess(
-    int renderer_child_id) {
-  content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
-      renderer_child_id);
-
-  return rph->GetStoragePartition()->GetURLRequestContext();
-}
-
 net::URLRequestContextGetter* ProfileImpl::GetMediaRequestContext() {
   // Return the default media context.
   return io_data_.GetMediaRequestContextGetter().get();

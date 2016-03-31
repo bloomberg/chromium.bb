@@ -868,10 +868,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       new BrowserPluginMessageFilter(GetID()));
   AddFilter(bp_message_filter.get());
 
+  scoped_refptr<net::URLRequestContextGetter> request_context(
+      storage_partition_impl_->GetURLRequestContext());
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(
           GetID(), GetBrowserContext(),
-          GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
+          request_context.get(),
           widget_helper_.get(), audio_manager, media_internals,
           storage_partition_impl_->GetDOMStorageContext()));
   AddFilter(render_message_filter.get());
@@ -883,13 +885,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       nullptr,
 #endif
       GetBrowserContext(),
-      GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
+      request_context.get(),
       widget_helper_.get()));
   BrowserContext* browser_context = GetBrowserContext();
   ResourceContext* resource_context = browser_context->GetResourceContext();
 
-  scoped_refptr<net::URLRequestContextGetter> request_context(
-      browser_context->GetRequestContextForRenderProcess(GetID()));
   scoped_refptr<net::URLRequestContextGetter> media_request_context(
       browser_context->GetMediaRequestContextForRenderProcess(GetID()));
 
@@ -1022,14 +1022,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
 #if defined(ENABLE_WEBRTC)
   p2p_socket_dispatcher_host_ = new P2PSocketDispatcherHost(
-      resource_context,
-      browser_context->GetRequestContextForRenderProcess(GetID()));
+      resource_context, request_context.get());
   AddFilter(p2p_socket_dispatcher_host_.get());
 #endif
 
   AddFilter(new TraceMessageFilter(GetID()));
-  AddFilter(new ResolveProxyMsgHelper(
-      browser_context->GetRequestContextForRenderProcess(GetID())));
+  AddFilter(new ResolveProxyMsgHelper(request_context.get()));
   AddFilter(new QuotaDispatcherHost(
       GetID(), storage_partition_impl_->GetQuotaManager(),
       GetContentClient()->browser()->CreateQuotaPermissionContext()));

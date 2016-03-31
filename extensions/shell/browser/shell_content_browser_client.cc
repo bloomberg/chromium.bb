@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -102,7 +103,7 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
       render_process_id,
       browser_context->IsOffTheRecord(),
       browser_context->GetPath(),
-      browser_context->GetRequestContextForRenderProcess(render_process_id)));
+      host->GetStoragePartition()->GetURLRequestContext()));
 #endif
 }
 

@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -70,13 +71,9 @@ PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
                                                   bool is_external_plugin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PepperNetworkProxyHost::UIThreadData result;
-  RenderProcessHost* render_process_host =
-      RenderProcessHost::FromID(render_process_id);
-  if (render_process_host && render_process_host->GetBrowserContext()) {
-    result.context_getter =
-        render_process_host->GetBrowserContext()
-            ->GetRequestContextForRenderProcess(render_process_id);
-  }
+  RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
+  if (rph)
+    result.context_getter = rph->GetStoragePartition()->GetURLRequestContext();
 
   SocketPermissionRequest request(
       content::SocketPermissionRequest::RESOLVE_PROXY, std::string(), 0);

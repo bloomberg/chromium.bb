@@ -156,13 +156,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // TODO(creis): Remove this version in favor of the one below.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
 
-  // Returns the request context appropriate for the given renderer. If the
-  // renderer process doesn't have an associated installed app, or if the
-  // installed app doesn't have isolated storage, this is equivalent to calling
-  // GetRequestContext().
-  virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(
-      int renderer_child_id) = 0;
-
   // Returns the default request context for media resources associated with
   // this context.
   // TODO(creis): Remove this version in favor of the one below.

@@ -41,6 +41,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
@@ -227,6 +228,14 @@ class WebContentsImplTestBrowserClient : public TestContentBrowserClient {
       : assign_site_for_url_(false) {}
 
   ~WebContentsImplTestBrowserClient() override {}
+
+  net::URLRequestContextGetter* CreateRequestContext(
+      BrowserContext* browser_context,
+      ProtocolHandlerMap* protocol_handlers,
+      URLRequestInterceptorScopedVector request_interceptors) override {
+    return static_cast<TestBrowserContext*>(browser_context)->
+        GetRequestContext();
+  }
 
   bool ShouldAssignSiteForURL(const GURL& url) override {
     return assign_site_for_url_;
@@ -3364,6 +3373,9 @@ TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithBadSecurityInfo) {
 // does not mistakenly think it has seen a good certificate and thus forget any
 // user exceptions for that host. See https://crbug.com/516808.
 TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithEmptySecurityInfo) {
+  WebContentsImplTestBrowserClient browser_client;
+  SetBrowserClientForTesting(&browser_client);
+
   scoped_refptr<net::X509Certificate> cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
   SSLPolicyBackend* backend = contents()->controller_.ssl_manager()->backend();
@@ -3376,6 +3388,8 @@ TEST_F(WebContentsImplTest, LoadResourceFromMemoryCacheWithEmptySecurityInfo) {
                                                RESOURCE_TYPE_MAIN_FRAME);
 
   EXPECT_TRUE(backend->HasAllowException(test_url.host()));
+
+  DeleteContents();
 }
 
 class TestJavaScriptDialogManager : public JavaScriptDialogManager {

@@ -326,14 +326,6 @@ net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(
 }
 
 net::URLRequestContextGetter*
-    OffTheRecordProfileImpl::GetRequestContextForRenderProcess(
-        int renderer_child_id) {
-  content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
-      renderer_child_id);
-  return rph->GetStoragePartition()->GetURLRequestContext();
-}
-
-net::URLRequestContextGetter*
     OffTheRecordProfileImpl::GetMediaRequestContext() {
   // In OTR mode, media request context is the same as the original one.
   return GetRequestContext();
@@ -343,7 +335,8 @@ net::URLRequestContextGetter*
     OffTheRecordProfileImpl::GetMediaRequestContextForRenderProcess(
         int renderer_child_id) {
   // In OTR mode, media request context is the same as the original one.
-  return GetRequestContextForRenderProcess(renderer_child_id);
+  return content::RenderProcessHost::FromID(renderer_child_id)->
+      GetStoragePartition()->GetURLRequestContext();
 }
 
 net::URLRequestContextGetter*

@@ -806,13 +806,6 @@ net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }
 
-net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
-    int renderer_child_id) {
-  content::RenderProcessHost* rph = content::RenderProcessHost::FromID(
-      renderer_child_id);
-  return rph->GetStoragePartition()->GetURLRequestContext();
-}
-
 net::URLRequestContextGetter* TestingProfile::GetMediaRequestContext() {
   return NULL;
 }

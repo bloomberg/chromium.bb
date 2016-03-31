@@ -41,11 +41,6 @@ content::DownloadManagerDelegate* FakeProfile::GetDownloadManagerDelegate() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* FakeProfile::GetRequestContextForRenderProcess(
-    int renderer_child_id) {
-  return nullptr;
-}
-
 net::URLRequestContextGetter* FakeProfile::GetMediaRequestContext() {
   return nullptr;
 }

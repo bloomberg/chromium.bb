@@ -98,11 +98,6 @@ net::URLRequestContextGetter* CastBrowserContext::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter*
-CastBrowserContext::GetRequestContextForRenderProcess(int renderer_child_id) {
-  return GetRequestContext();
-}
-
 net::URLRequestContextGetter* CastBrowserContext::GetMediaRequestContext() {
   return url_request_context_factory_->GetMediaGetter();
 }

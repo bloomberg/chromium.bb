@@ -376,12 +376,6 @@ net::URLRequestContextGetter* AwBrowserContext::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter*
-AwBrowserContext::GetRequestContextForRenderProcess(
-    int renderer_child_id) {
-  return GetRequestContext();
-}
-
 net::URLRequestContextGetter* AwBrowserContext::GetMediaRequestContext() {
   return GetRequestContext();
 }

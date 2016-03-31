@@ -147,6 +147,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
@@ -925,7 +926,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
   int id = host->GetID();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   net::URLRequestContextGetter* context =
-      profile->GetRequestContextForRenderProcess(id);
+      host->GetStoragePartition()->GetURLRequestContext();
 
   host->AddFilter(new ChromeRenderMessageFilter(id, profile));
 #if defined(ENABLE_EXTENSIONS)

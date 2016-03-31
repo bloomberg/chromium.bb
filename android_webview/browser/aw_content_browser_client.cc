@@ -476,8 +476,7 @@ bool AwContentBrowserClient::IsFastShutdownPossible() {
 }
 
 void AwContentBrowserClient::ClearCache(content::RenderFrameHost* rfh) {
-  RemoveHttpDiskCache(rfh->GetProcess()->GetBrowserContext(),
-                      rfh->GetProcess()->GetID());
+  RemoveHttpDiskCache(rfh->GetProcess());
 }
 
 void AwContentBrowserClient::ClearCookies(content::RenderFrameHost* rfh) {

@@ -3258,8 +3258,8 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
         resource_type == RESOURCE_TYPE_MEDIA ?
             GetBrowserContext()->GetMediaRequestContextForRenderProcess(
                 GetRenderProcessHost()->GetID()) :
-            GetBrowserContext()->GetRequestContextForRenderProcess(
-                GetRenderProcessHost()->GetID()));
+            GetRenderProcessHost()->GetStoragePartition()->
+                GetURLRequestContext());
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,

@@ -118,11 +118,6 @@ BlimpBrowserContext::CreateRequestContext(
   return resource_context_->url_request_context_getter();
 }
 
-net::URLRequestContextGetter*
-BlimpBrowserContext::GetRequestContextForRenderProcess(int renderer_child_id) {
-  return GetRequestContext();
-}
-
 net::URLRequestContextGetter* BlimpBrowserContext::GetMediaRequestContext() {
   return GetRequestContext();
 }

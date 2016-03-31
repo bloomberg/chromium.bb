@@ -36,8 +36,6 @@ class BlimpBrowserContext : public content::BrowserContext {
   base::FilePath GetPath() const override;
   bool IsOffTheRecord() const override;
   net::URLRequestContextGetter* GetRequestContext() override;
-  net::URLRequestContextGetter* GetRequestContextForRenderProcess(
-      int renderer_child_id) override;
   net::URLRequestContextGetter* GetMediaRequestContext() override;
   net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(
       int renderer_child_id) override;

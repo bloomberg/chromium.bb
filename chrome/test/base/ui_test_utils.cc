@@ -53,6 +53,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/geoposition.h"
@@ -394,8 +395,8 @@ void GetCookies(const GURL& url,
   *value_size = -1;
   if (url.is_valid() && contents) {
     scoped_refptr<net::URLRequestContextGetter> context_getter =
-        contents->GetBrowserContext()->GetRequestContextForRenderProcess(
-            contents->GetRenderProcessHost()->GetID());
+        contents->GetRenderProcessHost()->GetStoragePartition()->
+            GetURLRequestContext();
     base::WaitableEvent event(true /* manual reset */,
                               false /* not initially signaled */);
     CHECK(content::BrowserThread::PostTask(

@@ -90,14 +90,6 @@ net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
   return request_context_.get();
 }
 
-net::URLRequestContextGetter*
-TestBrowserContext::GetRequestContextForRenderProcess(int renderer_child_id) {
-  // TODO(creis): This should return a request context based on
-  // |render_child_id|'s StoragePartition. For now, it returns the single
-  // context for simplicity.
-  return GetRequestContext();
-}
-
 net::URLRequestContextGetter* TestBrowserContext::GetMediaRequestContext() {
   return NULL;
 }

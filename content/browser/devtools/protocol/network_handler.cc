@@ -15,8 +15,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
@@ -133,8 +135,6 @@ class GetCookiesCommand {
         request_count_(0) {
     CookieListCallback got_cookies_callback = base::Bind(
         &GetCookiesCommand::GotCookiesForURL, base::Unretained(this));
-    BrowserContext* browser_context =
-        frame_host->GetSiteInstance()->GetBrowserContext();
 
     std::queue<FrameTreeNode*> queue;
     queue.push(frame_host->frame_tree_node());
@@ -145,11 +145,12 @@ class GetCookiesCommand {
       // Only traverse nodes with the same local root.
       if (node->current_frame_host()->IsCrossProcessSubframe())
         continue;
-      int process_id = node->current_frame_host()->GetProcess()->GetID();
       ++request_count_;
       GetCookiesForURLOnUI(
-          browser_context->GetResourceContext(),
-          browser_context->GetRequestContextForRenderProcess(process_id),
+          frame_host->GetSiteInstance()->GetBrowserContext()->
+              GetResourceContext(),
+          frame_host->GetProcess()->GetStoragePartition()->
+              GetURLRequestContext(),
           node->current_url(),
           got_cookies_callback);
 
@@ -254,12 +255,9 @@ Response NetworkHandler::DeleteCookie(
     const std::string& url) {
   if (!host_)
     return Response::InternalError("Could not connect to view");
-  BrowserContext* browser_context =
-      host_->GetSiteInstance()->GetBrowserContext();
-  int process_id = host_->GetProcess()->GetID();
   DeleteCookieOnUI(
-      browser_context->GetResourceContext(),
-      browser_context->GetRequestContextForRenderProcess(process_id),
+      host_->GetSiteInstance()->GetBrowserContext()->GetResourceContext(),
+      host_->GetProcess()->GetStoragePartition()->GetURLRequestContext(),
       GURL(url),
       cookie_name,
       base::Bind(&NetworkHandler::SendDeleteCookieResponse,

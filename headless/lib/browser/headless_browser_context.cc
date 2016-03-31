@@ -95,12 +95,6 @@ net::URLRequestContextGetter* HeadlessBrowserContext::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-net::URLRequestContextGetter*
-HeadlessBrowserContext::GetRequestContextForRenderProcess(
-    int renderer_child_id) {
-  return GetRequestContext();
-}
-
 net::URLRequestContextGetter* HeadlessBrowserContext::GetMediaRequestContext() {
   return GetRequestContext();
 }
