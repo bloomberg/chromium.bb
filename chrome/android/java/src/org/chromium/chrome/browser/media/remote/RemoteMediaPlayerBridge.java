@@ -54,6 +54,12 @@ public class RemoteMediaPlayerBridge {
         }
 
         @Override
+        public void onRouteDialogCancelled() {
+            if (mNativeRemoteMediaPlayerBridge == 0) return;
+            nativeOnCancelledRemotePlaybackRequest(mNativeRemoteMediaPlayerBridge);
+        }
+
+        @Override
         public void onError() {
             if (mActive && mNativeRemoteMediaPlayerBridge != 0) {
                 nativeOnError(mNativeRemoteMediaPlayerBridge);
@@ -339,6 +345,7 @@ public class RemoteMediaPlayerBridge {
     private native void nativeOnPlaybackFinished(long nativeRemoteMediaPlayerBridge);
     private native void nativeOnRouteAvailabilityChanged(long nativeRemoteMediaPlayerBridge,
             boolean available);
+    private native void nativeOnCancelledRemotePlaybackRequest(long nativeRemoteMediaPlayerBridge);
     private native String nativeGetTitle(long nativeRemoteMediaPlayerBridge);
     private native void nativePauseLocal(long nativeRemoteMediaPlayerBridge);
     private native int nativeGetLocalPosition(long nativeRemoteMediaPlayerBridge);

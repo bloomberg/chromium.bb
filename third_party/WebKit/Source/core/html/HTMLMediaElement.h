@@ -345,6 +345,7 @@ private:
     void remoteRouteAvailabilityChanged(bool) final;
     void connectedToRemoteDevice() final;
     void disconnectedFromRemoteDevice() final;
+    void cancelledRemotePlaybackRequest() final;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);

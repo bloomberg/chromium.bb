@@ -40,6 +40,9 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   // Callback to trigger when the availability of remote routes changes.
   void OnRouteAvailabilityChanged(int tab_id, bool routes_available);
 
+  // Callback to trigger when the device picker dialog was dismissed.
+  void OnCancelledRemotePlaybackRequest(int player_id);
+
   void OnMediaMetadataChanged(int player_id,
                               base::TimeDelta duration,
                               int width,

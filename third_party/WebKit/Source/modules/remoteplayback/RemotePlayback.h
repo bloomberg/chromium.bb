@@ -52,6 +52,7 @@ private:
 
     void stateChanged(WebRemotePlaybackState) override;
     void availabilityChanged(bool available) override;
+    void connectCancelled() override;
 
     WebRemotePlaybackState m_state;
     bool m_availability;

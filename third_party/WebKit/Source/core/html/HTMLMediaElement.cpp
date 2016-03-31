@@ -2936,6 +2936,12 @@ void HTMLMediaElement::disconnectedFromRemoteDevice()
         remotePlaybackClient()->stateChanged(WebRemotePlaybackState::Disconnected);
 }
 
+void HTMLMediaElement::cancelledRemotePlaybackRequest()
+{
+    if (remotePlaybackClient())
+        remotePlaybackClient()->connectCancelled();
+}
+
 // MediaPlayerPresentation methods
 void HTMLMediaElement::repaint()
 {

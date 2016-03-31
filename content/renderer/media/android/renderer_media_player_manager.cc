@@ -51,6 +51,8 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
                         OnConnectedToRemoteDevice)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DisconnectedFromRemoteDevice,
                         OnDisconnectedFromRemoteDevice)
+    IPC_MESSAGE_HANDLER(MediaPlayerMsg_CancelledRemotePlaybackRequest,
+                        OnCancelledRemotePlaybackRequest)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidExitFullscreen, OnDidExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
@@ -213,6 +215,13 @@ void RendererMediaPlayerManager::OnDisconnectedFromRemoteDevice(int player_id) {
   media::RendererMediaPlayerInterface* player = GetMediaPlayer(player_id);
   if (player)
     player->OnDisconnectedFromRemoteDevice();
+}
+
+void RendererMediaPlayerManager::OnCancelledRemotePlaybackRequest(
+    int player_id) {
+  media::RendererMediaPlayerInterface* player = GetMediaPlayer(player_id);
+  if (player)
+    player->OnCancelledRemotePlaybackRequest();
 }
 
 void RendererMediaPlayerManager::OnDidExitFullscreen(int player_id) {

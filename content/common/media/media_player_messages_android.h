@@ -195,6 +195,10 @@ IPC_MESSAGE_ROUTED2(MediaPlayerMsg_ConnectedToRemoteDevice,
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DisconnectedFromRemoteDevice,
                     int /* player_id */)
 
+// The remote playback device selection has been cancelled.
+IPC_MESSAGE_ROUTED1(MediaPlayerMsg_CancelledRemotePlaybackRequest,
+                    int /* player_id */)
+
 // The availability of remote devices has changed
 IPC_MESSAGE_ROUTED2(MediaPlayerMsg_RemoteRouteAvailabilityChanged,
                     int /* player_id */,

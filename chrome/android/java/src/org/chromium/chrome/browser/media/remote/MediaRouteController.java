@@ -31,6 +31,11 @@ public interface MediaRouteController {
         void onRouteAvailabilityChanged(boolean available);
 
         /**
+         * Called when the {@link MediaRouteChooserDialog} is closed with no device selected.
+         */
+        void onRouteDialogCancelled();
+
+        /**
          * Called when an error is detected by the media route controller
          */
         void onError();

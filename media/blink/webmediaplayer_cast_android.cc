@@ -296,6 +296,11 @@ void WebMediaPlayerCast::OnDisconnectedFromRemoteDevice() {
   webmediaplayer_->OnDisconnectedFromRemoteDevice(t);
 }
 
+void WebMediaPlayerCast::OnCancelledRemotePlaybackRequest() {
+  DVLOG(1) << __FUNCTION__;
+  client_->cancelledRemotePlaybackRequest();
+}
+
 void WebMediaPlayerCast::OnDidExitFullscreen() {
   DVLOG(1) << __FUNCTION__;
 }

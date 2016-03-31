@@ -91,7 +91,11 @@ public class MediaRouteChooserDialogFactory extends MediaRouteDialogFactory {
             public void onDismiss(DialogInterface dialog) {
                 super.onDismiss(dialog);
 
-                if (mCancelled) return;
+                if (mCancelled) {
+                    mPlayer.onRouteDialogCancelled();
+                    return;
+                }
+
                 MediaRouter router = MediaRouter.getInstance(mContext);
                 mController.onRouteSelected(mPlayer, router, router.getSelectedRoute());
             }

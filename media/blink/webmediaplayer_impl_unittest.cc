@@ -76,6 +76,7 @@ class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   void remoteRouteAvailabilityChanged(bool) override {}
   void connectedToRemoteDevice() override {}
   void disconnectedFromRemoteDevice() override {}
+  void cancelledRemotePlaybackRequest() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyWebMediaPlayerClient);

@@ -155,6 +155,13 @@ void RemotePlayback::availabilityChanged(bool available)
         availabilityObject->availabilityChanged(available);
 }
 
+void RemotePlayback::connectCancelled()
+{
+    for (auto& resolver : m_connectPromiseResolvers)
+        resolver->resolve(false);
+    m_connectPromiseResolvers.clear();
+}
+
 DEFINE_TRACE(RemotePlayback)
 {
     visitor->trace(m_availabilityObjects);

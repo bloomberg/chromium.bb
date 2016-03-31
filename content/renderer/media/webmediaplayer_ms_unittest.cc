@@ -388,6 +388,7 @@ class WebMediaPlayerMSTest : public testing::TestWithParam<bool>,
   void remoteRouteAvailabilityChanged(bool) override {}
   void connectedToRemoteDevice() override {}
   void disconnectedFromRemoteDevice() override {}
+  void cancelledRemotePlaybackRequest() override {}
 
   // Implementation of cc::VideoFrameProvider::Client
   void StopUsingProvider() override;

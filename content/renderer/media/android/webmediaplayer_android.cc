@@ -1021,6 +1021,11 @@ void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
   client_->disconnectedFromRemoteDevice();
 }
 
+void WebMediaPlayerAndroid::OnCancelledRemotePlaybackRequest() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  client_->cancelledRemotePlaybackRequest();
+}
+
 void WebMediaPlayerAndroid::OnDidExitFullscreen() {
   // |needs_external_surface_| is always false on non-TV devices.
   if (!needs_external_surface_)

@@ -463,6 +463,12 @@ void RemoteMediaPlayerBridge::OnError(
       manager()->OnError(player_id(), MEDIA_ERROR_INVALID_CODE);
 }
 
+void RemoteMediaPlayerBridge::OnCancelledRemotePlaybackRequest(
+    JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
+  static_cast<RemoteMediaPlayerManager*>(manager())
+      ->OnCancelledRemotePlaybackRequest(player_id());
+}
+
 
 void RemoteMediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

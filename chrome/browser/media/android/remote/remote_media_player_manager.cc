@@ -203,6 +203,12 @@ void RemoteMediaPlayerManager::OnRouteAvailabilityChanged(
                                                         routes_available));
 }
 
+void RemoteMediaPlayerManager::OnCancelledRemotePlaybackRequest(int player_id) {
+  Send(new MediaPlayerMsg_CancelledRemotePlaybackRequest(
+      RoutingID(), player_id));
+}
+
+
 void RemoteMediaPlayerManager::ReleaseFullscreenPlayer(
     MediaPlayerAndroid* player) {
   int player_id = player->player_id();
