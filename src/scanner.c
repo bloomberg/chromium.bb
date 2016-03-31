@@ -1148,7 +1148,7 @@ emit_event_wrappers(struct wl_list *message_list, struct interface *interface)
 		       " * Sends an %s event to the client owning the resource.\n",
 		       interface->name,
 		       m->name);
-		printf("* @param resource_ The client's resource\n");
+		printf(" * @param resource_ The client's resource\n");
 		wl_list_for_each(a, &m->arg_list, link) {
 			if (a->summary)
 				printf(" * @param %s %s\n", a->name, a->summary);
