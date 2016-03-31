@@ -128,6 +128,13 @@ class Target : public Item {
   bool testonly() const { return testonly_; }
   void set_testonly(bool value) { testonly_ = value; }
 
+  OutputFile write_runtime_deps_output() const {
+    return write_runtime_deps_output_;
+  }
+  void set_write_runtime_deps_output(const OutputFile& value) {
+    write_runtime_deps_output_ = value;
+  }
+
   // Compile-time extra dependencies.
   const FileList& inputs() const { return inputs_; }
   FileList& inputs() { return inputs_; }
@@ -322,6 +329,7 @@ class Target : public Item {
   FileList inputs_;
   std::vector<std::string> data_;
   BundleData bundle_data_;
+  OutputFile write_runtime_deps_output_;
 
   LabelTargetVector private_deps_;
   LabelTargetVector public_deps_;

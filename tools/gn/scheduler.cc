@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/switches.h"
+#include "tools/gn/target.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -151,6 +152,28 @@ void Scheduler::AddUnknownGeneratedInput(const Target* target,
                                          const SourceFile& file) {
   base::AutoLock lock(lock_);
   unknown_generated_inputs_.insert(std::make_pair(file, target));
+}
+
+void Scheduler::AddWriteRuntimeDepsTarget(const Target* target) {
+  base::AutoLock lock(lock_);
+  write_runtime_deps_targets_.push_back(target);
+}
+
+std::vector<const Target*> Scheduler::GetWriteRuntimeDepsTargets() const {
+  base::AutoLock lock(lock_);
+  return write_runtime_deps_targets_;
+}
+
+bool Scheduler::IsFileGeneratedByWriteRuntimeDeps(
+    const OutputFile& file) const {
+  base::AutoLock lock(lock_);
+  // Number of targets should be quite small, so brute-force search is fine.
+  for (const Target* target : write_runtime_deps_targets_) {
+    if (file == target->write_runtime_deps_output()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 std::multimap<SourceFile, const Target*>

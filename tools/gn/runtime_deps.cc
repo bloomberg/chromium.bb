@@ -17,6 +17,7 @@
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/loader.h"
 #include "tools/gn/output_file.h"
+#include "tools/gn/scheduler.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/switches.h"
 #include "tools/gn/target.h"
@@ -118,25 +119,72 @@ void RecursiveCollectRuntimeDeps(const Target* target,
   }
 }
 
-bool WriteRuntimeDepsFile(const Target* target) {
-  SourceFile target_output_as_source =
-      GetMainOutput(target).AsSourceFile(target->settings()->build_settings());
-  std::string data_deps_file_as_str = target_output_as_source.value();
-  data_deps_file_as_str.append(".runtime_deps");
+bool CollectRuntimeDepsFromFlag(const Builder& builder,
+                                RuntimeDepsVector* files_to_write,
+                                Err* err) {
+  std::string deps_target_list_file =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kRuntimeDepsListFile);
+
+  if (deps_target_list_file.empty())
+    return true;
+
+  std::string list_contents;
+  ScopedTrace load_trace(TraceItem::TRACE_FILE_LOAD, deps_target_list_file);
+  if (!base::ReadFileToString(UTF8ToFilePath(deps_target_list_file),
+                              &list_contents)) {
+    *err = Err(Location(),
+        std::string("File for --") + switches::kRuntimeDepsListFile +
+            " doesn't exist.",
+        "The file given was \"" + deps_target_list_file + "\"");
+    return false;
+  }
+  load_trace.Done();
+
+  SourceDir root_dir("//");
+  Label default_toolchain_label = builder.loader()->GetDefaultToolchain();
+  for (const auto& line :
+       base::SplitString(list_contents, "\n", base::TRIM_WHITESPACE,
+                         base::SPLIT_WANT_ALL)) {
+    if (line.empty())
+      continue;
+    Label label = Label::Resolve(root_dir, default_toolchain_label,
+                                 Value(nullptr, line), err);
+    if (err->has_error())
+      return false;
+
+    const Item* item = builder.GetItem(label);
+    const Target* target = item ? item->AsTarget() : nullptr;
+    if (!target) {
+      *err = Err(Location(), "The label \"" + label.GetUserVisibleName(true) +
+          "\" isn't a target.",
+          "When reading the line:\n  " + line + "\n"
+          "from the --" + switches::kRuntimeDepsListFile + "=" +
+          deps_target_list_file);
+      return false;
+    }
+
+    OutputFile output_file =
+        OutputFile(GetMainOutput(target).value() + ".runtime_deps");
+    files_to_write->push_back(std::make_pair(output_file, target));
+  }
+  return true;
+}
+
+bool WriteRuntimeDepsFile(const OutputFile& output_file,
+                          const Target* target,
+                          Err* err) {
+  SourceFile output_as_source =
+      output_file.AsSourceFile(target->settings()->build_settings());
   base::FilePath data_deps_file =
-      target->settings()->build_settings()->GetFullPath(
-          SourceFile(SourceFile::SwapIn(), &data_deps_file_as_str));
+      target->settings()->build_settings()->GetFullPath(output_as_source);
 
   std::stringstream contents;
   for (const auto& pair : ComputeRuntimeDeps(target))
     contents << pair.first.value() << std::endl;
 
-  ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, data_deps_file_as_str);
-  base::CreateDirectory(data_deps_file.DirName());
-
-  std::string contents_str = contents.str();
-  return base::WriteFile(data_deps_file, contents_str.c_str(),
-                         static_cast<int>(contents_str.size())) > -1;
+  ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, output_as_source.value());
+  return WriteFileIfChanged(data_deps_file, contents.str(), err);
 }
 
 }  // namespace
@@ -146,8 +194,8 @@ const char kRuntimeDeps_Help[] =
     "\n"
     "  Runtime dependencies of a target are exposed via the \"runtime_deps\"\n"
     "  category of \"gn desc\" (see \"gn help desc\") or they can be written\n"
-    "  at build generation time via \"--runtime-deps-list-file\"\n"
-    "  (see \"gn help --runtime-deps-list-file\").\n"
+    "  at build generation time via write_runtime_deps(), or\n"
+    "  --runtime-deps-list-file (see \"gn help --runtime-deps-list-file\").\n"
     "\n"
     "  To a first approximation, the runtime dependencies of a target are\n"
     "  the set of \"data\" files, data directories, and the shared libraries\n"
@@ -225,50 +273,22 @@ RuntimeDepsVector ComputeRuntimeDeps(const Target* target) {
 }
 
 bool WriteRuntimeDepsFilesIfNecessary(const Builder& builder, Err* err) {
-  std::string deps_target_list_file =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kRuntimeDepsListFile);
-  if (deps_target_list_file.empty())
-    return true;  // Nothing to do.
-
-  std::string list_contents;
-  ScopedTrace load_trace(TraceItem::TRACE_FILE_LOAD, deps_target_list_file);
-  if (!base::ReadFileToString(UTF8ToFilePath(deps_target_list_file),
-                              &list_contents)) {
-    *err = Err(Location(),
-        std::string("File for --") + switches::kRuntimeDepsListFile +
-            " doesn't exist.",
-        "The file given was \"" + deps_target_list_file + "\"");
+  RuntimeDepsVector files_to_write;
+  if (!CollectRuntimeDepsFromFlag(builder, &files_to_write, err))
     return false;
+
+  // Files scheduled by write_runtime_deps.
+  for (const Target* target : g_scheduler->GetWriteRuntimeDepsTargets()) {
+    files_to_write.push_back(
+        std::make_pair(target->write_runtime_deps_output(), target));
   }
-  load_trace.Done();
 
-  SourceDir root_dir("//");
-  Label default_toolchain_label = builder.loader()->GetDefaultToolchain();
-  for (const auto& line : base::SplitString(
-           list_contents, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    if (line.empty())
-      continue;
-    Label label = Label::Resolve(root_dir, default_toolchain_label,
-                                 Value(nullptr, line), err);
-    if (err->has_error())
-      return false;
-
-    const Item* item = builder.GetItem(label);
-    const Target* target = item ? item->AsTarget() : nullptr;
-    if (!target) {
-      *err = Err(Location(), "The label \"" + label.GetUserVisibleName(true) +
-          "\" isn't a target.",
-          "When reading the line:\n  " + line + "\n"
-          "from the --" + switches::kRuntimeDepsListFile + "=" +
-          deps_target_list_file);
-      return false;
-    }
-
+  for (const auto& entry : files_to_write) {
     // Currently this writes all runtime deps files sequentially. We generally
     // expect few of these. We can run this on the worker pool if it looks
     // like it's talking a long time.
-    WriteRuntimeDepsFile(target);
+    if (!WriteRuntimeDepsFile(entry.first, entry.second, err))
+      return false;
   }
   return true;
 }

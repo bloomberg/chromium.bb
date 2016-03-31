@@ -235,6 +235,10 @@ extern const char kVisibility[];
 extern const char kVisibility_HelpShort[];
 extern const char kVisibility_Help[];
 
+extern const char kWriteRuntimeDeps[];
+extern const char kWriteRuntimeDeps_HelpShort[];
+extern const char kWriteRuntimeDeps_Help[];
+
 // -----------------------------------------------------------------------------
 
 struct VariableInfo {

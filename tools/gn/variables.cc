@@ -1516,6 +1516,30 @@ const char kVisibility_Help[] =
     "  any targets in \"//bar/\" and any subdirectory thereof.\n"
     "    visibility = [ \"./*\", \"//bar/*\" ]\n";
 
+const char kWriteRuntimeDeps[] = "write_runtime_deps";
+const char kWriteRuntimeDeps_HelpShort[] =
+    "write_runtime_deps: Writes the target's runtime_deps to the given path.";
+const char kWriteRuntimeDeps_Help[] =
+    "write_runtime_deps: Writes the target's runtime_deps to the given path.\n"
+    "\n"
+    "  Does not synchronously write the file, but rather schedules it\n"
+    "  to be written at the end of generation.\n"
+    "\n"
+    "  If the file exists and the contents are identical to that being\n"
+    "  written, the file will not be updated. This will prevent unnecessary\n"
+    "  rebuilds of targets that depend on this file.\n"
+    "\n"
+    "  Path must be within the output directory.\n"
+    "\n"
+    "  See \"gn help runtime_deps\" for how the runtime dependencies are\n"
+    "  computed.\n"
+    "\n"
+    "  The format of this file will list one file per line with no escaping.\n"
+    "  The files will be relative to the root_build_dir. The first line of\n"
+    "  the file will be the main output file of the target itself. The file\n"
+    "  contents will be the same as requesting the runtime deps be written on\n"
+    "  the command line (see \"gn help --runtime-deps-list-file\").\n";
+
 // -----------------------------------------------------------------------------
 
 VariableInfo::VariableInfo()
@@ -1596,6 +1620,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Sources)
     INSERT_VARIABLE(Testonly)
     INSERT_VARIABLE(Visibility)
+    INSERT_VARIABLE(WriteRuntimeDeps)
   }
   return info_map;
 }

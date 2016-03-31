@@ -58,6 +58,9 @@ void TargetGenerator::Run() {
   if (!Visibility::FillItemVisibility(target_, scope_, err_))
     return;
 
+  if (!FillWriteRuntimeDeps())
+    return;
+
   // Do type-specific generation.
   DoRun();
 }
@@ -382,4 +385,24 @@ bool TargetGenerator::FillGenericDeps(const char* var_name,
                         ToolchainLabelForScope(scope_), dest, err_);
   }
   return !err_->has_error();
+}
+
+bool TargetGenerator::FillWriteRuntimeDeps() {
+  const Value* value = scope_->GetValue(variables::kWriteRuntimeDeps, true);
+  if (!value)
+    return true;
+
+  // Compute the file name and make sure it's in the output dir.
+  SourceFile source_file = scope_->GetSourceDir().ResolveRelativeFile(
+      *value, err_, GetBuildSettings()->root_path_utf8());
+  if (err_->has_error())
+    return false;
+  if (!EnsureStringIsInOutputDir(GetBuildSettings()->build_dir(),
+          source_file.value(), value->origin(), err_))
+    return false;
+  OutputFile output_file(GetBuildSettings(), source_file);
+  target_->set_write_runtime_deps_output(output_file);
+
+  g_scheduler->AddWriteRuntimeDepsTarget(target_);
+  return true;
 }
