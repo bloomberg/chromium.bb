@@ -46,12 +46,12 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
     // use the legacy menu as a fallback.
     private LegacyPastePopupMenu mFallbackPastePopupMenu;
 
-    public FloatingPastePopupMenu(View parent, PastePopupMenuDelegate delegate) {
+    public FloatingPastePopupMenu(Context context, View parent, PastePopupMenuDelegate delegate) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 
         mParent = parent;
         mDelegate = delegate;
-        mContext = parent.getContext();
+        mContext = context;
 
         mContentRectOffset = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 CONTENT_RECT_OFFSET_DIP, mContext.getResources().getDisplayMetrics());
@@ -113,7 +113,7 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
             assert actionMode.getType() == ActionMode.TYPE_FLOATING;
             mActionMode = actionMode;
         } else {
-            mFallbackPastePopupMenu = new LegacyPastePopupMenu(mParent, mDelegate);
+            mFallbackPastePopupMenu = new LegacyPastePopupMenu(mContext, mParent, mDelegate);
             mFallbackPastePopupMenu.show(mRawPositionX, mRawPositionY);
         }
     }

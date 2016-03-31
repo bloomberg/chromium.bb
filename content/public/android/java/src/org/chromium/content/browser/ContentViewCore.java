@@ -34,6 +34,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStructure;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.AccessibilityNodeProvider;
@@ -819,6 +820,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     public void updateWindowAndroid(WindowAndroid windowAndroid) {
         long windowNativePointer = windowAndroid == null ? 0 : windowAndroid.getNativePointer();
         nativeUpdateWindowAndroid(mNativeContentViewCore, windowNativePointer);
+
+        // TODO(yusufo): Rename this call to be general for tab reparenting.
+        // Clean up cached popups that may have been created with an old activity.
+        mSelectPopup = null;
+        mPastePopupMenu = null;
     }
 
     @VisibleForTesting
@@ -2634,7 +2640,13 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
         if (!mHasInsertion || !canPaste()) return false;
         final float contentOffsetYPix = mRenderCoordinates.getContentOffsetYPix();
-        getPastePopup().show(x, (int) (y + contentOffsetYPix));
+        PastePopupMenu pastePopupMenu = getPastePopup();
+        if (pastePopupMenu == null) return false;
+        try {
+            pastePopupMenu.show(x, (int) (y + contentOffsetYPix));
+        } catch (WindowManager.BadTokenException e) {
+            return false;
+        }
         return true;
     }
 
@@ -2656,10 +2668,14 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                     if (mWebContents != null) mWebContents.onContextMenuClosed();
                 }
             };
+            Context windowContext = getWindowAndroid().getContext().get();
+            if (windowContext == null) return null;
             if (supportsFloatingActionMode()) {
-                mPastePopupMenu = new FloatingPastePopupMenu(getContainerView(), delegate);
+                mPastePopupMenu = new FloatingPastePopupMenu(
+                        windowContext, getContainerView(), delegate);
             } else {
-                mPastePopupMenu = new LegacyPastePopupMenu(getContainerView(), delegate);
+                mPastePopupMenu = new LegacyPastePopupMenu(
+                        windowContext, getContainerView(), delegate);
             }
         }
         return mPastePopupMenu;

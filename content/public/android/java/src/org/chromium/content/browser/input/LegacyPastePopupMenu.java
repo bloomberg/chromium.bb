@@ -34,10 +34,11 @@ public class LegacyPastePopupMenu implements OnClickListener, PastePopupMenu {
     private final int mLineOffsetY;
     private final int mWidthOffsetX;
 
-    public LegacyPastePopupMenu(View parent, final PastePopupMenuDelegate delegate) {
+    public LegacyPastePopupMenu(
+            Context context, View parent, final PastePopupMenuDelegate delegate) {
         mParent = parent;
         mDelegate = delegate;
-        mContext = parent.getContext();
+        mContext = context;
         mContainer = new PopupWindow(mContext, null, android.R.attr.textSelectHandleWindowStyle);
         mContainer.setSplitTouchEnabled(true);
         mContainer.setClippingEnabled(false);
