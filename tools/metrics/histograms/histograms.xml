@@ -34413,6 +34413,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.AccountChooserDialog"
+    enum="AccountChooserDismissalReason">
+  <owner>vasilii@chromium.org</owner>
+  <summary>The dismissal reason of the account chooser.</summary>
+</histogram>
+
 <histogram name="PasswordManager.AccountsPerSite">
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
@@ -34569,6 +34575,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     If the password manager UI was suppressed because generation UI was already
     being displayed for the same field.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AutoSigninFirstRunDialog"
+    enum="AutoSigninFirstRun">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The dismissal reason of the auto-signin first run experience.
   </summary>
 </histogram>
 
@@ -59474,6 +59488,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="ScrolledMainFrameWithUnacceleratedFixedRootBackground"/>
 </enum>
 
+<enum name="AccountChooserDismissalReason" type="int">
+  <int value="0" label="Canceled"/>
+  <int value="1" label="Credential chosen"/>
+</enum>
+
 <enum name="ActionAfterDoubleTap" type="int">
   <int value="0" label="Navigated Back"/>
   <int value="1" label="Stopped Navigation"/>
@@ -60601,6 +60620,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="AUTO_LAUNCH_BACKGROUND"/>
   <int value="2" label="[Deprecated] AUTO_LAUNCH_FOREGROUND"/>
   <int value="3" label="[Deprecated] AUTO_LAUNCH_FOREGROUND_USELESS"/>
+</enum>
+
+<enum name="AutoSigninFirstRun" type="int">
+  <int value="0" label="No action"/>
+  <int value="1" label="Turn off"/>
+  <int value="2" label="Ok, got it"/>
 </enum>
 
 <enum name="BackgroundModeMenuItem" type="int">

@@ -83,6 +83,16 @@ void LogMultiAccountUpdateBubbleUserAction(
                             MULTI_ACCOUNT_UPDATE_BUBBLE_USER_ACTION_COUNT);
 }
 
+void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AutoSigninFirstRunDialog", action,
+                            AUTO_SIGNIN_PROMO_ACTION_COUNT);
+}
+
+void LogAccountChooserUserAction(AccountChooserUserAction action) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialog", action,
+                            ACCOUNT_CHOOSER_ACTION_COUNT);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

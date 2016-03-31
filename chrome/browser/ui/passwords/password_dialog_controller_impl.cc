@@ -13,6 +13,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -107,6 +108,8 @@ void PasswordDialogControllerImpl::OnSmartLockLinkClicked() {
 void PasswordDialogControllerImpl::OnChooseCredentials(
     const autofill::PasswordForm& password_form,
     password_manager::CredentialType credential_type) {
+  password_manager::metrics_util::LogAccountChooserUserAction(
+      password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN);
   ResetDialog();
   delegate_->ChooseCredential(password_form, credential_type);
 }
@@ -114,6 +117,8 @@ void PasswordDialogControllerImpl::OnChooseCredentials(
 void PasswordDialogControllerImpl::OnAutoSigninOK() {
   password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
       profile_->GetPrefs());
+  password_manager::metrics_util::LogAutoSigninPromoUserAction(
+      password_manager::metrics_util::AUTO_SIGNIN_OK_GOT_IT);
   ResetDialog();
   OnCloseDialog();
 }
@@ -123,13 +128,23 @@ void PasswordDialogControllerImpl::OnAutoSigninTurnOff() {
       password_manager::prefs::kCredentialsEnableAutosignin, false);
   password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
       profile_->GetPrefs());
+  password_manager::metrics_util::LogAutoSigninPromoUserAction(
+      password_manager::metrics_util::AUTO_SIGNIN_TURN_OFF);
   ResetDialog();
   OnCloseDialog();
 }
 
 void PasswordDialogControllerImpl::OnCloseDialog() {
-  account_chooser_dialog_ = nullptr;
-  autosignin_dialog_ = nullptr;
+  if (account_chooser_dialog_) {
+    password_manager::metrics_util::LogAccountChooserUserAction(
+        password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED);
+    account_chooser_dialog_ = nullptr;
+  }
+  if (autosignin_dialog_) {
+    password_manager::metrics_util::LogAutoSigninPromoUserAction(
+        password_manager::metrics_util::AUTO_SIGNIN_NO_ACTION);
+    autosignin_dialog_ = nullptr;
+  }
   delegate_->OnDialogHidden();
 }
 

@@ -9,11 +9,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -84,6 +86,7 @@ class PasswordDialogControllerTest : public testing::Test {
 };
 
 TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
+  base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   autofill::PasswordForm local_form = GetLocalForm();
   autofill::PasswordForm idp_form = GetFederationProviderForm();
@@ -108,9 +111,13 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
   controller().OnChooseCredentials(
       *local_form_ptr,
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountChooserDialog",
+       password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
 }
 
 TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
+  base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   EXPECT_CALL(prompt, ShowAccountChooser());
   controller().ShowAccountChooser(&prompt,
@@ -119,9 +126,13 @@ TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
 
   EXPECT_CALL(ui_controller_mock(), OnDialogHidden());
   controller().OnCloseDialog();
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountChooserDialog",
+       password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED, 1);
 }
 
 TEST_F(PasswordDialogControllerTest, AutoSigninPromo) {
+  base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   EXPECT_CALL(prompt, ShowAutoSigninPrompt());
   controller().ShowAutosigninPrompt(&prompt);
@@ -133,9 +144,13 @@ TEST_F(PasswordDialogControllerTest, AutoSigninPromo) {
   EXPECT_TRUE(
       password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
           prefs()));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AutoSigninFirstRunDialog",
+       password_manager::metrics_util::AUTO_SIGNIN_NO_ACTION, 1);
 }
 
 TEST_F(PasswordDialogControllerTest, AutoSigninPromoOkGotIt) {
+  base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   EXPECT_CALL(prompt, ShowAutoSigninPrompt());
   controller().ShowAutosigninPrompt(&prompt);
@@ -152,9 +167,13 @@ TEST_F(PasswordDialogControllerTest, AutoSigninPromoOkGotIt) {
           prefs()));
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kCredentialsEnableAutosignin));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AutoSigninFirstRunDialog",
+       password_manager::metrics_util::AUTO_SIGNIN_OK_GOT_IT, 1);
 }
 
 TEST_F(PasswordDialogControllerTest, AutoSigninPromoTurnOff) {
+  base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
   EXPECT_CALL(prompt, ShowAutoSigninPrompt());
   controller().ShowAutosigninPrompt(&prompt);
@@ -171,6 +190,9 @@ TEST_F(PasswordDialogControllerTest, AutoSigninPromoTurnOff) {
           prefs()));
   EXPECT_FALSE(prefs()->GetBoolean(
       password_manager::prefs::kCredentialsEnableAutosignin));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AutoSigninFirstRunDialog",
+       password_manager::metrics_util::AUTO_SIGNIN_TURN_OFF, 1);
 }
 
 TEST_F(PasswordDialogControllerTest, OnBrandLinkClicked) {

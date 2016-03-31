@@ -121,6 +121,19 @@ enum MultiAccountUpdateBubbleUserAction {
   MULTI_ACCOUNT_UPDATE_BUBBLE_USER_ACTION_COUNT
 };
 
+enum AutoSigninPromoUserAction {
+  AUTO_SIGNIN_NO_ACTION,
+  AUTO_SIGNIN_TURN_OFF,
+  AUTO_SIGNIN_OK_GOT_IT,
+  AUTO_SIGNIN_PROMO_ACTION_COUNT
+};
+
+enum AccountChooserUserAction {
+  ACCOUNT_CHOOSER_DISMISSED,
+  ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN,
+  ACCOUNT_CHOOSER_ACTION_COUNT
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);
@@ -154,6 +167,12 @@ void LogUpdatePasswordSubmissionEvent(UpdatePasswordSubmissionEvent event);
 // accounts.
 void LogMultiAccountUpdateBubbleUserAction(
     MultiAccountUpdateBubbleUserAction action);
+
+// Log a user action on showing the autosignin first run experience.
+void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action);
+
+// Log a user action on showing the account chooser.
+void LogAccountChooserUserAction(AccountChooserUserAction action);
 
 }  // namespace metrics_util
 
