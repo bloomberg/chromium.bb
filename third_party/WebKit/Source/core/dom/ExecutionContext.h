@@ -154,7 +154,7 @@ public:
     virtual bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const = 0;
     virtual bool isSecureContext(const SecureContextCheck = StandardSecureContextCheck) const;
 
-    virtual void setReferrerPolicy(ReferrerPolicy);
+    void setReferrerPolicy(ReferrerPolicy);
     ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
 
     // Override to enable experimental features through origin trials
