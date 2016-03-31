@@ -79,7 +79,6 @@ Element* enclosingBlock(Node*, EditingBoundaryCrossingRule = CannotCrossEditingB
 CORE_EXPORT Element* enclosingBlock(const Position&, EditingBoundaryCrossingRule);
 CORE_EXPORT Element* enclosingBlock(const PositionInFlatTree&, EditingBoundaryCrossingRule);
 Element* enclosingBlockFlowElement(const Node&); // Deprecated, use enclosingBlock instead.
-bool inSameContainingBlockFlowElement(Node*, Node*);
 Element* enclosingTableCell(const Position&);
 Element* associatedElementOf(const Position&);
 Node* enclosingEmptyListItem(const VisiblePosition&);

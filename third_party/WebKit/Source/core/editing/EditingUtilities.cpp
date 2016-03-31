@@ -730,11 +730,6 @@ Element* enclosingBlockFlowElement(const Node& node)
     return nullptr;
 }
 
-bool inSameContainingBlockFlowElement(Node* a, Node* b)
-{
-    return a && b && enclosingBlockFlowElement(*a) == enclosingBlockFlowElement(*b);
-}
-
 bool nodeIsUserSelectAll(const Node* node)
 {
     return RuntimeEnabledFeatures::userSelectAllEnabled() && node && node->layoutObject() && node->layoutObject()->style()->userSelect() == SELECT_ALL;
@@ -1377,16 +1372,22 @@ Position leadingWhitespacePosition(const Position& position, TextAffinity affini
     if (isHTMLBRElement(*mostBackwardCaretPosition(position).anchorNode()))
         return Position();
 
-    Position prev = previousCharacterPosition(position, affinity);
-    if (prev != position && inSameContainingBlockFlowElement(prev.anchorNode(), position.anchorNode()) && prev.anchorNode()->isTextNode()) {
-        String string = toText(prev.anchorNode())->data();
-        UChar previousCharacter = string[prev.computeOffsetInContainerNode()];
-        bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(previousCharacter) || previousCharacter == noBreakSpaceCharacter) : isCollapsibleWhitespace(previousCharacter);
-        if (isSpace && isEditablePosition(prev))
-            return prev;
-    }
-
-    return Position();
+    const Position& prev = previousCharacterPosition(position, affinity);
+    if (prev == position)
+        return Position();
+    const Node* const anchorNode = prev.anchorNode();
+    if (!anchorNode || !anchorNode->isTextNode())
+        return Position();
+    if (enclosingBlockFlowElement(*anchorNode) != enclosingBlockFlowElement(*position.anchorNode()))
+        return Position();
+    if (!anchorNode->isTextNode())
+        return Position();
+    const String& string = toText(anchorNode)->data();
+    const UChar previousCharacter = string[prev.computeOffsetInContainerNode()];
+    const bool isSpace = option == ConsiderNonCollapsibleWhitespace ? (isSpaceOrNewline(previousCharacter) || previousCharacter == noBreakSpaceCharacter) : isCollapsibleWhitespace(previousCharacter);
+    if (!isSpace || !isEditablePosition(prev))
+        return Position();
+    return prev;
 }
 
 // This assumes that it starts in editable content.
