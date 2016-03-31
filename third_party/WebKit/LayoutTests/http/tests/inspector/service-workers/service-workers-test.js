@@ -38,7 +38,7 @@ function replaceInnerTextAll(rootElement, selectors, replacementString)
 {
     var elements = rootElement.querySelectorAll(selectors);
     for (var i = 0; i < elements.length; i++)
-        elements[i].innerText = replacementString;
+        elements[i].textContent = replacementString;
 }
 
 function modifyTestUnfriendlyText(rootElement)
@@ -55,20 +55,8 @@ InspectorTest.dumpServiceWorkersView = function(scopes)
     var results = [];
     var expectedTitles = scopes.map(function(scope) {return "Scope: " + (new URL(scope).pathname)});
     results.push("==== ServiceWorkersView ====");
-    results.push(swView._root.querySelector(".service-workers-origin-title").innerText);
-    var registrationElements = swView._root.querySelectorAll(".service-workers-registration");
-    for (var i = 0; i < registrationElements.length; i++) {
-        var registrationElement = registrationElements[i];
-        var title = registrationElement.querySelector(".service-workers-registration-title").innerText;
-        if (!expectedTitles.some(function(expectedTitle) { return title.indexOf(expectedTitle) != -1; }))
-            continue;
-        results.push(title);
-        var versionElements = registrationElement.querySelectorAll(".service-workers-versions-panel");
-        for (var j = 0; j < versionElements.length; j++) {
-            if (versionElements[j].innerText.length)
-                results.push(versionElements[j].innerText);
-        }
-    }
+    for (var childView of swView.children())
+        results.push(childView.element.innerText);
     results.push("============================");
     return results;
 }

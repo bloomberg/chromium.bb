@@ -3,9 +3,7 @@ Tests ServiceWorkersView on resources panel.
 Select ServiceWorkers tree element.
 Register ServiceWorker for scope1
 ==== ServiceWorkersView ====
-127.0.0.1
-
-Scope: /inspector/service-workers/resources/scope1/
+127.0.0.1/inspector/service-workers/resources/scope1/
 State
 activated
 Worker
@@ -24,9 +22,7 @@ RESPONSE-TIME
 ============================
 Register ServiceWorker for scope2
 ==== ServiceWorkersView ====
-127.0.0.1
-
-Scope: /inspector/service-workers/resources/scope1/
+127.0.0.1/inspector/service-workers/resources/scope2/
 State
 activated
 Worker
@@ -41,8 +37,6 @@ LAST-MODIFIED
 Recent messages
 LAST-MODIFIED
 RESPONSE-TIME
-
-Scope: /inspector/service-workers/resources/scope2/
 State
 activated
 Worker
@@ -61,9 +55,7 @@ RESPONSE-TIME
 ============================
 Unegister ServiceWorker for scope1
 ==== ServiceWorkersView ====
-127.0.0.1
-
-Scope: /inspector/service-workers/resources/scope1/ - deleted
+127.0.0.1/inspector/service-workers/resources/scope1/ - deleted
 State
 redundant
 Worker
@@ -78,8 +70,6 @@ LAST-MODIFIED
 Recent messages
 LAST-MODIFIED
 RESPONSE-TIME
-
-Scope: /inspector/service-workers/resources/scope2/
 State
 activated
 Worker
