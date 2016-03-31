@@ -21,22 +21,22 @@
 
     'chromium.android': {
       'Android Cronet ARM64 Builder':
-          'android_cronet_gn_release_bot_minimal_symbols_arm64',
+          'android_cronet_gyp_release_bot_minimal_symbols_arm64',
       'Android Cronet ARM64 Builder (dbg)':
-          'android_cronet_gn_debug_static_bot_arm64',
+          'android_cronet_gyp_debug_static_bot_arm64',
       'Android Cronet ARMv6 Builder':
-          'android_cronet_gn_release_bot_minimal_symbols_armv6',
+          'android_cronet_gyp_release_bot_minimal_symbols_armv6',
       'Android Cronet Builder':
-          'android_cronet_gn_release_bot_minimal_symbols',
-      'Android Cronet Builder (dbg)': 'android_cronet_gn_debug_static_bot',
+          'android_cronet_gyp_release_bot_minimal_symbols',
+      'Android Cronet Builder (dbg)': 'android_cronet_gyp_debug_static_bot',
       'Android Cronet Data Reduction Proxy Builder':
-          'android_cronet_data_reduction_proxy_gn_release_bot_minimal_symbols',
+          'android_cronet_data_reduction_proxy_gyp_release_bot_minimal_symbols',
       'Android Cronet MIPS Builder':
-          'android_cronet_gn_release_bot_minimal_symbols_mipsel',
+          'android_cronet_gyp_release_bot_minimal_symbols_mipsel',
       'Android Cronet x86 Builder':
-          'android_cronet_gn_release_bot_minimal_symbols_x86',
+          'android_cronet_gyp_release_bot_minimal_symbols_x86',
       'Android Cronet x86 Builder (dbg)':
-          'android_cronet_gn_debug_static_bot_x86',
+          'android_cronet_gyp_debug_static_bot_x86',
 
       'Android GN Builder (dbg)': 'android_gn_debug_bot_minimal_symbols',
       'Android MIPS Builder (dbg)': 'android_gn_debug_static_bot_mipsel',
@@ -659,7 +659,7 @@
       'android_compile_x86_dbg': 'android_gn_debug_trybot_x86',
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
-      'android_cronet_tester': 'android_cronet_gn_debug_static_bot',
+      'android_cronet_tester': 'android_cronet_gyp_debug_static_bot',
       'linux_android_dbg_ng': 'swarming_android_gyp_debug_trybot',
       'linux_android_rel_ng': 'swarming_android_gyp_release_trybot',
     },
@@ -862,41 +862,41 @@
       'android', 'clang', 'asan', 'findbugs', 'gyp', 'debug_trybot',
     ],
 
-    'android_cronet_data_reduction_proxy_gn_release_bot_minimal_symbols': [
-      'android', 'cronet', 'data_reduction_proxy', 'gn',
+    'android_cronet_data_reduction_proxy_gyp_release_bot_minimal_symbols': [
+      'android', 'cronet', 'data_reduction_proxy', 'gyp',
       'release_bot_minimal_symbols', 'arm'
     ],
 
-    'android_cronet_gn_debug_static_bot': [
-      'android', 'cronet', 'gn', 'debug_static_bot', 'arm'
+    'android_cronet_gyp_debug_static_bot': [
+      'android', 'cronet', 'gyp', 'debug_static_bot', 'arm'
     ],
 
-    'android_cronet_gn_debug_static_bot_arm64': [
-      'android', 'cronet', 'gn', 'debug_static_bot', 'arm64'
+    'android_cronet_gyp_debug_static_bot_arm64': [
+      'android', 'cronet', 'gyp', 'debug_static_bot', 'arm64'
     ],
 
-    'android_cronet_gn_debug_static_bot_x86': [
-      'android', 'cronet', 'gn', 'debug_static_bot', 'x86'
+    'android_cronet_gyp_debug_static_bot_x86': [
+      'android', 'cronet', 'gyp', 'debug_static_bot', 'x86'
     ],
 
-    'android_cronet_gn_release_bot_minimal_symbols': [
-      'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'arm'
+    'android_cronet_gyp_release_bot_minimal_symbols': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'arm'
     ],
 
-    'android_cronet_gn_release_bot_minimal_symbols_arm64': [
-      'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'arm64'
+    'android_cronet_gyp_release_bot_minimal_symbols_arm64': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'arm64'
     ],
 
-    'android_cronet_gn_release_bot_minimal_symbols_armv6': [
-      'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'armv6'
+    'android_cronet_gyp_release_bot_minimal_symbols_armv6': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'armv6'
     ],
 
-    'android_cronet_gn_release_bot_minimal_symbols_mipsel': [
-      'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'mipsel'
+    'android_cronet_gyp_release_bot_minimal_symbols_mipsel': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'mipsel'
     ],
 
-    'android_cronet_gn_release_bot_minimal_symbols_x86': [
-      'android', 'cronet', 'gn', 'release_bot_minimal_symbols', 'x86'
+    'android_cronet_gyp_release_bot_minimal_symbols_x86': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'x86'
     ],
 
     'android_gn_debug_bot': [
@@ -1555,7 +1555,7 @@
     },
 
     'data_reduction_proxy': {
-      'gn_args': 'cronet_enable_data_reduction_proxy_support=true',
+      'gn_args': 'enable_data_reduction_proxy_support=true',
       'gyp_defines': 'enable_data_reduction_proxy_support=1',
     },
 
