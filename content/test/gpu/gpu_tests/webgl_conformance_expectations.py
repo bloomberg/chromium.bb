@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
+import platform
 
 from gpu_tests.gpu_test_expectations import GpuTestExpectations
 
@@ -25,8 +26,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     if not '*' in pattern:
       full_path = os.path.normpath(os.path.join(self.conformance_path, pattern))
       if not os.path.exists(full_path):
-        raise Exception('The WebGL conformance test path specified in' +
+        err_msg = ('The WebGL conformance test path specified in ' +
           'expectation does not exist: ' + full_path)
+        # Seeing problems on some Windows bots where the full path doesn't
+        # seem to exist if it's over 255 characters. http://crbug.com/599333
+        if platform.system().startswith('Windows') and len(full_path) > 255:
+          print err_msg
+        else:
+          raise Exception(err_msg)
 
   def SetExpectations(self):
     # Fails on all platforms
