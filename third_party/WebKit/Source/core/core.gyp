@@ -289,6 +289,13 @@
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
+      'conditions': [
+        # Shard this target into parts to work around linker limitations.
+        # on link time code generation builds. See crbug.com/599186
+        ['OS=="win" and buildtype=="Official"', {
+          'msvs_shard': 5,
+        }],
+      ],
     },
     {
       # GN version: //third_party/WebKit/Source/core:html
@@ -301,7 +308,7 @@
         '<@(webcore_html_files)',
       ],
       'conditions': [
-        # Shard this taret into parts to work around linker limitations.
+        # Shard this target into parts to work around linker limitations.
         # on link time code generation builds.
         ['OS=="win" and buildtype=="Official"', {
           'msvs_shard': 5,
@@ -340,7 +347,7 @@
         '<@(webcore_rendering_files)',
       ],
       'conditions': [
-        # Shard this taret into parts to work around linker limitations.
+        # Shard this target into parts to work around linker limitations.
         # on link time code generation builds.
         ['OS=="win" and buildtype=="Official"', {
           'msvs_shard': 5,
