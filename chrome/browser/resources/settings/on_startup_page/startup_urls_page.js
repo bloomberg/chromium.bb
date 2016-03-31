@@ -26,6 +26,8 @@ var StartupPageInfo;
 Polymer({
   is: 'settings-startup-urls-page',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /**
      * Preferences state.
@@ -34,6 +36,9 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /** @type {settings.StartupUrlsPageBrowserProxy} */
+    browserProxy_: Object,
 
     /** @private {string} */
     newUrl_: {
@@ -48,18 +53,21 @@ Polymer({
     startupPages_: Array,
   },
 
-  attached: function() {
-    var self = this;
-    cr.define('Settings', function() {
-      return {
-        updateStartupPages: function() {
-          return self.updateStartupPages_.apply(self, arguments);
-        },
-      };
-    });
-    chrome.send('onStartupPrefsPageLoad');
+  created: function() {
+    this.browserProxy_ = settings.StartupUrlsPageBrowserProxyImpl.getInstance();
   },
 
+  attached: function() {
+    this.addWebUIListener('update-startup-pages',
+                          this.updateStartupPages_.bind(this));
+    this.browserProxy_.loadStartupPages();
+  },
+
+  /**
+   * @param {string} url Location of an image to get a set of icons fors.
+   * @return {string} A set of icon URLs.
+   * @private
+   */
   getIconSet_: function(url) {
     return getFaviconImageSet(url);
   },
@@ -77,7 +85,7 @@ Polymer({
 
   /** @private */
   onUseCurrentPagesTap_: function() {
-    chrome.send('setStartupPagesToCurrentPages');
+    this.browserProxy_.useCurrentPages();
   },
 
   /** @private */
@@ -90,13 +98,13 @@ Polymer({
    * @private
    */
   isAddEnabled_: function() {
-    return this.newUrl_.trim().length > 0;
+    return this.browserProxy_.canAddPage(this.newUrl_);
   },
 
   /** @private */
   onAddTap_: function() {
     assert(this.isAddEnabled_());
-    chrome.send('addStartupPage', [this.newUrl_.trim()]);
+    this.browserProxy_.addStartupPage(this.newUrl_);
     this.$.addUrlDialog.close();
   },
 
@@ -105,6 +113,6 @@ Polymer({
    * @private
    */
   onRemoveUrlTap_: function(e) {
-    chrome.send('removeStartupPage', [e.model.index]);
+    this.browserProxy_.removeStartupPage(e.model.index);
   },
 });

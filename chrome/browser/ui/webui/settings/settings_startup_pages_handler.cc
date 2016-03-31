@@ -59,7 +59,8 @@ void StartupPagesHandler::OnModelChanged() {
     startup_pages.Append(entry.release());
   }
 
-  web_ui()->CallJavascriptFunction("Settings.updateStartupPages",
+  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
+                                   base::StringValue("update-startup-pages"),
                                    startup_pages);
 }
 
