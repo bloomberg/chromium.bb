@@ -5,7 +5,9 @@
 #include "cc/layers/picture_image_layer.h"
 
 #include "cc/playback/display_item.h"
+#include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -17,6 +19,11 @@ namespace {
 
 TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   scoped_refptr<PictureImageLayer> layer = PictureImageLayer::Create();
+  FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
+  TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<FakeLayerTreeHost> host =
+      FakeLayerTreeHost::Create(&client, &task_graph_runner);
+  layer->SetLayerTreeHost(host.get());
   gfx::Rect layer_rect(200, 200);
 
   unsigned char image_pixels[4 * 200 * 200] = {0};
@@ -43,6 +50,8 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   DrawDisplayList(actual_pixels, layer_rect, display_list);
 
   EXPECT_EQ(0, memcmp(actual_pixels, image_pixels, 4 * 200 * 200));
+
+  layer->SetLayerTreeHost(nullptr);
 }
 
 }  // namespace

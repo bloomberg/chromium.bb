@@ -69,4 +69,5 @@ message LayerTreeSettings {
   optional ManagedMemoryPolicy memory_policy = 48;
   optional LayerTreeDebugState initial_debug_state = 49;
   optional bool use_mouse_wheel_gestures = 50;
+  optional bool use_cached_picture_raster = 51;
 }

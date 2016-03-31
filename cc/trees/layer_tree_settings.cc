@@ -103,7 +103,8 @@ LayerTreeSettings::LayerTreeSettings()
       max_staging_buffer_usage_in_bytes(32 * 1024 * 1024),
       memory_policy_(64 * 1024 * 1024,
                      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
-                     ManagedMemoryPolicy::kDefaultNumResourcesLimit) {}
+                     ManagedMemoryPolicy::kDefaultNumResourcesLimit),
+      use_cached_picture_raster(true) {}
 
 LayerTreeSettings::LayerTreeSettings(const LayerTreeSettings& other) = default;
 
@@ -168,7 +169,8 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
              other.max_staging_buffer_usage_in_bytes &&
          memory_policy_ == other.memory_policy_ &&
          LayerTreeDebugState::Equal(initial_debug_state,
-                                    other.initial_debug_state);
+                                    other.initial_debug_state) &&
+         use_cached_picture_raster == other.use_cached_picture_raster;
 }
 
 void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
@@ -226,6 +228,7 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
       max_staging_buffer_usage_in_bytes);
   memory_policy_.ToProtobuf(proto->mutable_memory_policy());
   initial_debug_state.ToProtobuf(proto->mutable_initial_debug_state());
+  proto->set_use_cached_picture_raster(use_cached_picture_raster);
 
   for (unsigned u : use_image_texture_targets)
     proto->add_use_image_texture_targets(u);
@@ -287,6 +290,7 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
   max_staging_buffer_usage_in_bytes = proto.max_staging_buffer_usage_in_bytes();
   memory_policy_.FromProtobuf(proto.memory_policy());
   initial_debug_state.FromProtobuf(proto.initial_debug_state());
+  use_cached_picture_raster = proto.use_cached_picture_raster();
 
   for (int i = 0; i < proto.use_image_texture_targets_size(); ++i)
     use_image_texture_targets.push_back(proto.use_image_texture_targets(i));

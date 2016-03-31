@@ -9,6 +9,7 @@
 #include "cc/layers/picture_image_layer_impl.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
+#include "cc/trees/layer_tree_host.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -57,11 +58,11 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   DCHECK(image_);
   DCHECK_GT(image_->width(), 0);
   DCHECK_GT(image_->height(), 0);
+  DCHECK(layer_tree_host());
 
-  // Picture image layers can be used with GatherPixelRefs, so cached SkPictures
-  // are currently required.
   DisplayItemListSettings settings;
-  settings.use_cached_picture = true;
+  settings.use_cached_picture =
+      layer_tree_host()->settings().use_cached_picture_raster;
   scoped_refptr<DisplayItemList> display_list =
       DisplayItemList::Create(PaintableRegion(), settings);
 

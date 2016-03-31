@@ -463,6 +463,9 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   cc::ManagedMemoryPolicy current = settings.memory_policy_;
   settings.memory_policy_ = GetGpuMemoryPolicy(current);
 
+  settings.use_cached_picture_raster = !cmd->HasSwitch(
+      cc::switches::kDisableCachedPictureRaster);
+
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
       compositor_deps_->GetCompositorImplThreadTaskRunner();
   scoped_refptr<base::SingleThreadTaskRunner>
