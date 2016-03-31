@@ -41,6 +41,8 @@
 
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/ui/webui/settings/certificates_handler.h"
+#elif defined(OS_WIN) || defined(OS_MACOSX)
+#include "chrome/browser/ui/webui/settings/native_certificates_handler.h"
 #endif  // defined(USE_NSS_CERTS)
 
 namespace settings {
@@ -53,6 +55,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
 #if defined(USE_NSS_CERTS)
   AddSettingsPageUIHandler(new CertificatesHandler(false));
+#elif defined(OS_WIN) || defined(OS_MACOSX)
+  AddSettingsPageUIHandler(new NativeCertificatesHandler());
 #endif  // defined(USE_NSS_CERTS)
 
   AddSettingsPageUIHandler(new ClearBrowsingDataHandler(web_ui));

@@ -2805,6 +2805,10 @@
       'browser/ui/webui/settings/certificates_handler.cc',
       'browser/ui/webui/settings/certificates_handler.h',
     ],
+    'chrome_browser_ui_non_nss_sources': [
+      'browser/ui/webui/settings/native_certificates_handler.cc',
+      'browser/ui/webui/settings/native_certificates_handler.h',
+    ],
     'chrome_browser_ui_omnibox_non_mobile_sources': [
       'browser/ui/omnibox/alternate_nav_infobar_delegate.cc',
       'browser/ui/omnibox/alternate_nav_infobar_delegate.h',
@@ -3121,6 +3125,9 @@
         }],
         ['use_nss_certs==1', {
           'sources': [ '<@(chrome_browser_ui_nss_sources)' ],
+        }],
+        ['OS=="win" or OS=="mac"', {
+          'sources': [ '<@(chrome_browser_ui_non_nss_sources)' ],
         }],
         ['enable_themes==0', {
           'sources!': [

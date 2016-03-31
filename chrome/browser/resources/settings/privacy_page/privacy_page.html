@@ -3,9 +3,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<if expr="use_nss_certs">
-<link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
-</if>
 <link rel="import" href="chrome://md-settings/clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
@@ -14,6 +11,13 @@
 <link rel="import" href="chrome://md-settings/site_settings/all_sites.html">
 <link rel="import" href="chrome://md-settings/site_settings/constants.html">
 <link rel="import" href="chrome://md-settings/site_settings_page/site_settings_page.html">
+
+<if expr="use_nss_certs">
+<link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
+</if>
+<if expr="is_win or is_macosx">
+<link rel="import" href="chrome://md-settings/privacy_page/privacy_page_browser_proxy.html">
+</if>
 
 <dom-module id="settings-privacy-page">
   <template>
@@ -73,7 +77,9 @@
           </settings-checkbox>
 </if>
         </div>
-        <div class="settings-box two-line" on-tap="onManageCertificatesTap_">
+<if expr="use_nss_certs or is_win or is_macosx">
+        <div id="manageCertificates" class="settings-box two-line"
+            on-tap="onManageCertificatesTap_">
           <div class="start">
             <div i18n-content="manageCertificates"></div>
             <div class="secondary">
@@ -82,6 +88,7 @@
             </div>
           </div>
         </div>
+</if>
         <div class="settings-box two-line" on-tap="onSiteSettingsTap_">
           <div class="start">
             <div i18n-content="siteSettings"></div>

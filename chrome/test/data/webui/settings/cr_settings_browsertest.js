@@ -179,6 +179,32 @@ TEST_F('CrSettingsCertificateManagerTest', 'CertificateManager', function() {
   certificate_manager_page.registerTests();
   mocha.run();
 });
+
+GEN('#elif defined(OS_WIN) || defined(OS_MACOSX)');
+/**
+ * Test fixture for chrome/browser/resources/settings/privacy_page/.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsPrivacyPageTest() {}
+
+CrSettingsPrivacyPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'privacy_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPage', function() {
+  mocha.run();
+});
 GEN('#endif');
 
 /**

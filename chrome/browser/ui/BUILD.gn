@@ -361,6 +361,11 @@ source_set("ui") {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_nss_sources, ".", "//chrome")
   }
+  if (is_mac || is_win) {
+    sources += rebase_path(gypi_values.chrome_browser_ui_non_nss_sources,
+                           ".",
+                           "//chrome")
+  }
   if (!enable_themes) {
     sources -= [ "webui/theme_source.cc" ]
   }

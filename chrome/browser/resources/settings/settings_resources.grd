@@ -484,6 +484,14 @@
                  file="privacy_page/privacy_page.js"
                  flattenhtml="true"
                  type="chrome_html" />
+      <if expr="is_win or is_macosx">
+        <structure name="IDR_SETTINGS_PRIVACY_PAGE_BROWSER_PROXY_HTML"
+                   file="privacy_page/privacy_page_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_PRIVACY_PAGE_BROWSER_PROXY_JS"
+                   file="privacy_page/privacy_page_browser_proxy.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_CR_SETTINGS_ROUTER_HTML"
                  file="settings_page/settings_router.html"
                  type="chrome_html" />

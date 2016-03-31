@@ -49,8 +49,9 @@ Polymer({
 <if expr="use_nss_certs">
     this.$.pages.setSubpageChain(['manage-certificates']);
 </if>
-<if expr="not use_nss_certs">
-    // TODO(dpapad): Launch native certificate manager here.
+<if expr="is_win or is_macosx">
+    settings.PrivacyPageBrowserProxyImpl.getInstance().
+      showManageSSLCertificates();
 </if>
   },
 
