@@ -6,6 +6,7 @@
   'conditions': [
     ['OS=="ios"', {
       'variables': {
+        'bundle_identifier' : 'org.chromium.ChromotingDemo',
         'remoting_ios_locales': [
           'ar', 'ca', 'cs', 'da', 'de', 'el', 'en', 'en-GB', 'es', 'es-MX',
           'fi', 'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko', 'ms',
@@ -25,6 +26,72 @@
       },  # variables
 
       'targets': [
+        {
+          'target_name': 'remoting_client_ios_demo',
+          'type': 'executable',
+          'mac_bundle': 1,
+          'product_name': 'Chromoting Demo',
+          'sources': [
+            'client/ios/main.mm',
+          ],
+          'xcode_settings': {
+            'CLANG_ENABLE_OBJC_ARC': 'YES',
+            'INFOPLIST_FILE': 'client/ios/remoting_ios-Info.plist',
+            'BUNDLE_SHORT_VERSION': '<(version_short)',
+            'BUNDLE_VERSION': '<(version_full)',
+            'BUNDLE_IDENTIFIER': '<(bundle_identifier)',
+          },
+          'include_dirs': [
+            '<(DEPTH)',
+          ],
+          'mac_bundle_resources': [
+          ],
+          'dependencies': [
+            'remoting_client_ios_static',
+          ],
+        },  # end of target 'remoting_client_ios_demo'
+
+        {
+          'target_name': 'remoting_client_ios_static',
+          'type': 'static_library',
+          'sources': [
+            'client/ios/app_delegate.h',
+            'client/ios/app_delegate.mm',
+            'client/ios/example_view_controller.h',
+            'client/ios/example_view_controller.mm',
+          ],
+          'xcode_settings': {
+            'CLANG_ENABLE_OBJC_ARC': 'YES',
+            'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++11',
+          },
+          'include_dirs': [
+            '<(DEPTH)',
+            '<(DEPTH)/third_party',
+          ],
+          'dependencies': [
+            'remoting_base',
+            'remoting_client',
+            'remoting_protocol',
+            '<(DEPTH)/base/base.gyp:base',
+            '<(DEPTH)/base/base.gyp:base_i18n',
+            '<(DEPTH)/base/base.gyp:base_static',
+            '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
+              '$(SDKROOT)/System/Library/Frameworks/AudioToolbox.framework',
+              '$(SDKROOT)/System/Library/Frameworks/CoreAudio.framework',
+              '$(SDKROOT)/System/Library/Frameworks/CoreData.framework',
+              '$(SDKROOT)/System/Library/Frameworks/CoreMIDI.framework',
+              '$(SDKROOT)/System/Library/Frameworks/CoreVideo.framework',
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+              '$(SDKROOT)/System/Library/Frameworks/GLKit.framework',
+              '$(SDKROOT)/System/Library/Frameworks/OpenGLES.framework',
+            ],
+          },
+        },  # end of target 'remoting_client_ios_static'
+
         {
           'target_name': 'remoting_ios_l10n',
           'type': 'none',
