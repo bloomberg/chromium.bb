@@ -124,8 +124,9 @@ void SynchronizeTreesRecursive(OwnedLayerImplMap* old_layers,
       SynchronizeTreesRecursiveInternal(old_layers, old_root, tree_impl));
 }
 
-static void CheckScrollAndClipPointersRecursive(Layer* layer,
-                                                LayerImpl* layer_impl) {
+#if DCHECK_IS_ON()
+static void CheckScrollAndClipPointersForLayer(Layer* layer,
+                                               LayerImpl* layer_impl) {
   DCHECK_EQ(!!layer, !!layer_impl);
   if (!layer)
     return;
@@ -169,12 +170,16 @@ static void CheckScrollAndClipPointersRecursive(Layer* layer,
       DCHECK_EQ((*it)->clip_parent(), layer_impl);
     }
   }
+}
 
-  for (size_t i = 0u; i < layer->children().size(); ++i) {
-    CheckScrollAndClipPointersRecursive(layer->child_at(i),
-                                        layer_impl->child_at(i));
+static void CheckScrollAndClipPointers(LayerTreeHost* host,
+                                       LayerTreeImpl* host_impl) {
+  for (auto* layer_impl : *host_impl) {
+    Layer* layer = host->LayerById(layer_impl->id());
+    CheckScrollAndClipPointersForLayer(layer, layer_impl);
   }
 }
+#endif
 
 template <typename LayerType>
 static void PushLayerPropertiesInternal(
@@ -200,8 +205,7 @@ void TreeSynchronizer::PushLayerProperties(LayerTreeHost* host_tree,
 
 #if DCHECK_IS_ON()
   if (host_tree->root_layer() && impl_tree->root_layer())
-    CheckScrollAndClipPointersRecursive(host_tree->root_layer(),
-                                        impl_tree->root_layer());
+    CheckScrollAndClipPointers(host_tree, impl_tree);
 #endif
 }
 
