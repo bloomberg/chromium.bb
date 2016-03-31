@@ -33,7 +33,7 @@ FirstRunBubble* FirstRunBubble::ShowBubble(Browser* browser,
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
 
   FirstRunBubble* delegate = new FirstRunBubble(browser, anchor_view);
-  views::BubbleDelegateView::CreateBubble(delegate)->ShowInactive();
+  views::BubbleDialogDelegateView::CreateBubble(delegate)->ShowInactive();
   return delegate;
 }
 
@@ -80,12 +80,17 @@ void FirstRunBubble::Init() {
 }
 
 FirstRunBubble::FirstRunBubble(Browser* browser, views::View* anchor_view)
-    : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
+    : views::BubbleDialogDelegateView(anchor_view,
+                                      views::BubbleBorder::TOP_LEFT),
       browser_(browser),
       bubble_closer_(this, anchor_view) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(
       gfx::Insets(kAnchorVerticalInset, 0, kAnchorVerticalInset, 0));
+}
+
+int FirstRunBubble::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 FirstRunBubble::~FirstRunBubble() {

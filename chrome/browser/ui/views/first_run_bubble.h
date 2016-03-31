@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/link_listener.h"
 
 namespace views {
@@ -17,15 +17,16 @@ class EventMonitor;
 
 class Browser;
 
-class FirstRunBubble : public views::BubbleDelegateView,
+class FirstRunBubble : public views::BubbleDialogDelegateView,
                        public views::LinkListener {
  public:
   // |browser| is the opening browser and is NULL in unittests.
   static FirstRunBubble* ShowBubble(Browser* browser, views::View* anchor_view);
 
  protected:
-  // views::BubbleDelegateView overrides:
+  // views::BubbleDialogDelegateView overrides:
   void Init() override;
+  int GetDialogButtons() const override;
 
  private:
   FirstRunBubble(Browser* browser, views::View* anchor_view);
