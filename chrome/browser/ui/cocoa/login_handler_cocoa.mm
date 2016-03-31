@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/login_prompt_cocoa.h"
+#import "chrome/browser/ui/cocoa/login_handler_cocoa.h"
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsobject.h"
@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
-#include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/login/login_handler.h"
 #include "components/password_manager/core/browser/login_model.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/browser_thread.h"

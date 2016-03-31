@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/login/login_handler.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/login_model.h"
 #include "ui/views/view.h"

@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/login/login_handler.h"
 #include "net/base/auth.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

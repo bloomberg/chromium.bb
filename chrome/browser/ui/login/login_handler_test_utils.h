@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LOGIN_LOGIN_PROMPT_TEST_UTILS_H_
-#define CHROME_BROWSER_UI_LOGIN_LOGIN_PROMPT_TEST_UTILS_H_
+#ifndef CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_TEST_UTILS_H_
+#define CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_TEST_UTILS_H_
 
 #include <list>
 
@@ -101,4 +101,4 @@ class WindowedLoadStopObserver
   DISALLOW_COPY_AND_ASSIGN(WindowedLoadStopObserver);
 };
 
-#endif  // CHROME_BROWSER_UI_LOGIN_LOGIN_PROMPT_TEST_UTILS_H_
+#endif  // CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_TEST_UTILS_H_

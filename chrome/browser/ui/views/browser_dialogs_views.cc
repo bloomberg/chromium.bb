@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 
-#include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/login/login_handler.h"
 
 // This file provides definitions of desktop browser dialog-creation methods for
 // all toolkit-views platforms other than Mac. It also provides the definitions

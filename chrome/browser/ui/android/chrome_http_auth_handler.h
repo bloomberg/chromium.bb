@@ -10,7 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/login/login_handler.h"
 
 // This class facilitates communication between a native LoginHandler
 // and a Java land ChromeHttpAuthHandler, which is passed to a
