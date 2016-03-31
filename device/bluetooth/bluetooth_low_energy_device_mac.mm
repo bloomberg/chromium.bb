@@ -35,11 +35,13 @@ BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
     CBPeripheral* peripheral,
     NSDictionary* advertisement_data,
     int rssi)
-    : BluetoothDeviceMac(adapter) {
+    : BluetoothDeviceMac(adapter),
+      peripheral_(peripheral, base::scoped_policy::RETAIN) {
   DCHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
+  DCHECK(peripheral_.get());
   identifier_ = GetPeripheralIdentifier(peripheral);
   hash_address_ = GetPeripheralHashAddress(peripheral);
-  Update(peripheral, advertisement_data, rssi);
+  Update(advertisement_data, rssi);
 }
 
 BluetoothLowEnergyDeviceMac::~BluetoothLowEnergyDeviceMac() {
@@ -48,11 +50,9 @@ BluetoothLowEnergyDeviceMac::~BluetoothLowEnergyDeviceMac() {
   }
 }
 
-void BluetoothLowEnergyDeviceMac::Update(CBPeripheral* peripheral,
-                                         NSDictionary* advertisement_data,
+void BluetoothLowEnergyDeviceMac::Update(NSDictionary* advertisement_data,
                                          int rssi) {
   last_update_time_.reset([[NSDate date] retain]);
-  peripheral_.reset([peripheral retain]);
   rssi_ = rssi;
   NSNumber* connectable =
       [advertisement_data objectForKey:CBAdvertisementDataIsConnectable];

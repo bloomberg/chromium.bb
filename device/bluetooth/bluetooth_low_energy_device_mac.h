@@ -90,9 +90,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   void DisconnectGatt() override;
 
   // Updates information about the device.
-  virtual void Update(CBPeripheral* peripheral,
-                      NSDictionary* advertisement_data,
-                      int rssi);
+  virtual void Update(NSDictionary* advertisement_data, int rssi);
 
   static std::string GetPeripheralIdentifier(CBPeripheral* peripheral);
 
