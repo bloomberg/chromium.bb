@@ -178,16 +178,24 @@ cr.define('options', function() {
       var columnWidth = entry.urlDiv.offsetWidth -
           parseInt(computedStyle.webkitMarginStart, 10) -
           parseInt(computedStyle.webkitPaddingStart, 10);
-      if (columnWidth <= 0) {
-        console.error('Estimated column width <= 0. Skip origins eliding.');
-        return;
-      }
       for (var i = 0; i < entries.length; ++i) {
-        var urlLink = entries[i].urlLink;
-        if (entries[i].isAndroidUri || urlLink.offsetWidth <= columnWidth)
+        entry = entries[i];
+        // For android://com.example, elide from the right.
+        if (!entry.isClickable)
+          continue;
+        var cellWidth = columnWidth;
+        if (entry.androidUriSuffix)
+          cellWidth -= entry.androidUriSuffix.offsetWidth;
+        var urlLink = entry.urlLink;
+        if (cellWidth <= 0) {
+          console.error('cellWidth <= 0. Skip origins eliding for ' +
+              urlLink.textContent);
+          continue;
+        }
+        if (urlLink.offsetWidth <= cellWidth)
           continue;
         urlLink.textContent = '…' + urlLink.textContent.substring(1);
-        while (urlLink.offsetWidth > columnWidth)
+        while (urlLink.offsetWidth > cellWidth)
           urlLink.textContent = '…' + urlLink.textContent.substring(2);
       }
     },
@@ -204,9 +212,9 @@ cr.define('options', function() {
         var query = this.lastQuery_;
         var filter = function(entry, index, list) {
           // Search both shown URL and username.
-          var shownUrl = entry[options.passwordManager.SHOWN_URL_FIELD];
+          var shownOrigin = entry[options.passwordManager.SHOWN_ORIGIN_FIELD];
           var username = entry[options.passwordManager.USERNAME_FIELD];
-          if (shownUrl.toLowerCase().indexOf(query.toLowerCase()) >= 0 ||
+          if (shownOrigin.toLowerCase().indexOf(query.toLowerCase()) >= 0 ||
               username.toLowerCase().indexOf(query.toLowerCase()) >= 0) {
             // Keep the original index so we can delete correctly. See also
             // deleteItemAtIndex() in password_manager_list.js that uses this.

@@ -54,6 +54,9 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   typedef base::Callback<void(const std::vector<std::string>&)>
       AffiliatedRealmsCallback;
 
+  typedef base::Callback<void(ScopedVector<autofill::PasswordForm>)>
+      PasswordFormsCallback;
+
   // The |password_store| must outlive |this|. Both arguments must be non-NULL,
   // except in tests which do not Initialize() the object.
   AffiliatedMatchHelper(PasswordStore* password_store,
@@ -80,6 +83,15 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   virtual void GetAffiliatedWebRealms(
       const autofill::PasswordForm& android_form,
       const AffiliatedRealmsCallback& result_callback);
+
+  // Retrieves realms of web sites affiliated with the Android credentials in
+  // |forms|, sets |affiliated_web_realm| of forms, and invokes
+  // |result_callback|.
+  // NOTE: This will not issue an on-demand network request. If a request to
+  // cache fails, no web realm will be injected into corresponding form.
+  virtual void InjectAffiliatedWebRealms(
+      ScopedVector<autofill::PasswordForm> forms,
+      const PasswordFormsCallback& result_callback);
 
   // Removes cached affiliation data that is no longer needed.
   void TrimAffiliationCache();
@@ -124,6 +136,14 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
       const AffiliatedRealmsCallback& result_callback,
       const AffiliatedFacets& results,
       bool success);
+
+  // Called back by AffiliationService to supply the list of facets affiliated
+  // with the Android credential in |form|. Sets |form->affiliated_web_realm|,
+  // if |success| is true and |results| is non-empty. Invokes |barrier_closure|.
+  void CompleteInjectAffiliatedWebRealm(autofill::PasswordForm* form,
+                                        base::Closure barrier_closure,
+                                        const AffiliatedFacets& results,
+                                        bool success);
 
   // PasswordStore::Observer:
   void OnLoginsChanged(const PasswordStoreChangeList& changes) override;

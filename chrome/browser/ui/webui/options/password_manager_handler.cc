@@ -45,9 +45,10 @@ namespace options {
 namespace {
 // The following constants should be synchronized with the constants in
 // chrome/browser/resources/options/password_manager_list.js.
-const char kOriginField[] = "origin";
-const char kShownUrlField[] = "shownUrl";
+const char kUrlField[] = "url";
+const char kShownOriginField[] = "shownOrigin";
 const char kIsAndroidUriField[] = "isAndroidUri";
+const char kIsClickable[] = "isClickable";
 const char kIsSecureField[] = "isSecure";
 const char kUsernameField[] = "username";
 const char kPasswordField[] = "password";
@@ -58,16 +59,21 @@ const char kFederationField[] = "federation";
 void CopyOriginInfoOfPasswordForm(const autofill::PasswordForm& form,
                                   const std::string& languages,
                                   base::DictionaryValue* entry) {
-  entry->SetString(
-      kOriginField,
-      url_formatter::FormatUrl(
-          form.origin, languages, url_formatter::kFormatUrlOmitNothing,
-          net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
   bool is_android_uri = false;
-  entry->SetString(kShownUrlField, password_manager::GetShownOrigin(
-                                       form, languages, &is_android_uri));
+  bool origin_is_clickable = false;
+  GURL link_url;
+  entry->SetString(
+      kShownOriginField,
+      password_manager::GetShownOriginAndLinkUrl(
+          form, languages, &is_android_uri, &link_url, &origin_is_clickable));
+  DCHECK(link_url.is_valid());
+  entry->SetString(
+      kUrlField, url_formatter::FormatUrl(
+                     link_url, languages, url_formatter::kFormatUrlOmitNothing,
+                     net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
   entry->SetBoolean(kIsAndroidUriField, is_android_uri);
-  entry->SetBoolean(kIsSecureField, content::IsOriginSecure(form.origin));
+  entry->SetBoolean(kIsClickable, origin_is_clickable);
+  entry->SetBoolean(kIsSecureField, content::IsOriginSecure(link_url));
 }
 
 }  // namespace
@@ -92,6 +98,7 @@ void PasswordManagerHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static const OptionsStringResource resources[] = {
+      {"androidUriSuffix", IDS_PASSWORDS_ANDROID_URI_SUFFIX},
       {"autoSigninTitle", IDS_PASSWORDS_AUTO_SIGNIN_TITLE},
       {"autoSigninDescription", IDS_PASSWORDS_AUTO_SIGNIN_DESCRIPTION},
       {"savedPasswordsTitle", IDS_PASSWORD_MANAGER_SHOW_PASSWORDS_TAB_TITLE},

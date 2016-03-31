@@ -158,6 +158,11 @@ class PasswordStore : protected PasswordStoreSync,
   // The request will be cancelled if the consumer is destroyed.
   virtual void GetAutofillableLogins(PasswordStoreConsumer* consumer);
 
+  // Same as above, but also fills in |affiliated_web_realm| for Android
+  // credentials.
+  virtual void GetAutofillableLoginsWithAffiliatedRealms(
+      PasswordStoreConsumer* consumer);
+
   // Gets the complete list of PasswordForms that are blacklist entries,
   // and notify |consumer| on completion. The request will be cancelled if the
   // consumer is destroyed.
@@ -366,12 +371,23 @@ class PasswordStore : protected PasswordStoreSync,
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
   void GetAutofillableLoginsImpl(scoped_ptr<GetLoginsRequest> request);
 
+  // Same as above, but also fills in |affiliated_web_realm| for Android
+  // credentials.
+  void GetAutofillableLoginsWithAffiliatedRealmsImpl(
+      scoped_ptr<GetLoginsRequest> request);
+
   // Finds all blacklist PasswordForms, and notifies the consumer.
   void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request);
 
   // Notifies |request| about the stats for |origin_domain|.
   void NotifySiteStats(const GURL& origin_domain,
                        scoped_ptr<GetLoginsRequest> request);
+
+  // Notifies |request| about the autofillable logins with affiliated web
+  // realms for Android credentials.
+  void NotifyLoginsWithAffiliatedRealms(
+      scoped_ptr<GetLoginsRequest> request,
+      ScopedVector<autofill::PasswordForm> obtained_forms);
 
   // Extended version of GetLoginsImpl that also returns credentials stored for
   // the specified affiliated Android applications. That is, it finds all
@@ -384,6 +400,11 @@ class PasswordStore : protected PasswordStoreSync,
       const autofill::PasswordForm& form,
       scoped_ptr<GetLoginsRequest> request,
       const std::vector<std::string>& additional_android_realms);
+
+  // Retrieves and fills in |affiliated_web_realm| values for Android
+  // credentials in |forms|. Called on the main thread.
+  void InjectAffiliatedWebRealms(ScopedVector<autofill::PasswordForm> forms,
+                                 scoped_ptr<GetLoginsRequest> request);
 
   // Schedules GetLoginsWithAffiliationsImpl() to be run on the DB thread.
   void ScheduleGetLoginsWithAffiliations(

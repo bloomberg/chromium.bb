@@ -248,7 +248,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(expecting_result_callback_);
-    return last_result_;
+    return last_result_realms_;
   }
 
   std::vector<std::string> GetAffiliatedWebRealms(
@@ -260,7 +260,19 @@ class AffiliatedMatchHelperTest : public testing::Test {
                    base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(expecting_result_callback_);
-    return last_result_;
+    return last_result_realms_;
+  }
+
+  ScopedVector<autofill::PasswordForm> InjectAffiliatedWebRealms(
+      ScopedVector<autofill::PasswordForm> forms) {
+    expecting_result_callback_ = true;
+    match_helper()->InjectAffiliatedWebRealms(
+        std::move(forms),
+        base::Bind(&AffiliatedMatchHelperTest::OnFormsCallback,
+                   base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(expecting_result_callback_);
+    return std::move(last_result_forms_);
   }
 
   void DestroyMatchHelper() { match_helper_.reset(); }
@@ -282,7 +294,13 @@ class AffiliatedMatchHelperTest : public testing::Test {
       const std::vector<std::string>& affiliated_realms) {
     EXPECT_TRUE(expecting_result_callback_);
     expecting_result_callback_ = false;
-    last_result_ = affiliated_realms;
+    last_result_realms_ = affiliated_realms;
+  }
+
+  void OnFormsCallback(ScopedVector<autofill::PasswordForm> forms) {
+    EXPECT_TRUE(expecting_result_callback_);
+    expecting_result_callback_ = false;
+    last_result_forms_.swap(forms);
   }
 
   // testing::Test:
@@ -305,7 +323,8 @@ class AffiliatedMatchHelperTest : public testing::Test {
 
   scoped_refptr<base::TestSimpleTaskRunner> waiting_task_runner_;
   base::MessageLoop message_loop_;
-  std::vector<std::string> last_result_;
+  std::vector<std::string> last_result_realms_;
+  ScopedVector<autofill::PasswordForm> last_result_forms_;
   bool expecting_result_callback_;
 
   scoped_refptr<TestPasswordStore> password_store_;
@@ -421,6 +440,44 @@ TEST_F(AffiliatedMatchHelperTest,
   autofill::PasswordForm web_form(
       GetTestObservedWebForm(kTestWebRealmBeta1, nullptr));
   EXPECT_THAT(GetAffiliatedWebRealms(web_form), testing::IsEmpty());
+}
+
+// Verifies that InjectAffiliatedWebRealms() injects the realms of web sites
+// affiliated with the given Android application into password forms, if any.
+TEST_F(AffiliatedMatchHelperTest, InjectAffiliatedWebRealms) {
+  ScopedVector<autofill::PasswordForm> forms;
+
+  forms.push_back(new autofill::PasswordForm(
+      GetTestAndroidCredentials(kTestAndroidRealmAlpha3)));
+  mock_affiliation_service()->ExpectCallToGetAffiliationsAndSucceedWithResult(
+      FacetURI::FromCanonicalSpec(kTestAndroidFacetURIAlpha3),
+      StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassAlpha());
+
+  forms.push_back(new autofill::PasswordForm(
+      GetTestAndroidCredentials(kTestAndroidRealmBeta2)));
+  mock_affiliation_service()->ExpectCallToGetAffiliationsAndSucceedWithResult(
+      FacetURI::FromCanonicalSpec(kTestAndroidFacetURIBeta2),
+      StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassBeta());
+
+  forms.push_back(new autofill::PasswordForm(
+      GetTestAndroidCredentials(kTestAndroidRealmGamma)));
+  mock_affiliation_service()->ExpectCallToGetAffiliationsAndEmulateFailure(
+      FacetURI::FromCanonicalSpec(kTestAndroidFacetURIGamma),
+      StrategyOnCacheMiss::FAIL);
+
+  forms.push_back(new autofill::PasswordForm(
+      GetTestObservedWebForm(kTestWebRealmBeta1, nullptr)));
+
+  size_t expected_form_count = forms.size();
+  ScopedVector<autofill::PasswordForm> results(
+      InjectAffiliatedWebRealms(std::move(forms)));
+  ASSERT_EQ(expected_form_count, results.size());
+  EXPECT_THAT(results[0]->affiliated_web_realm,
+              testing::AnyOf(kTestWebRealmAlpha1, kTestWebRealmAlpha2));
+  EXPECT_THAT(results[1]->affiliated_web_realm,
+              testing::Eq(kTestWebRealmBeta1));
+  EXPECT_THAT(results[2]->affiliated_web_realm, testing::IsEmpty());
+  EXPECT_THAT(results[3]->affiliated_web_realm, testing::IsEmpty());
 }
 
 // Note: IsValidWebCredential() is tested as part of GetAffiliatedAndroidRealms

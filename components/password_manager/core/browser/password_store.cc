@@ -195,6 +195,12 @@ void PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
   Schedule(&PasswordStore::GetAutofillableLoginsImpl, consumer);
 }
 
+void PasswordStore::GetAutofillableLoginsWithAffiliatedRealms(
+    PasswordStoreConsumer* consumer) {
+  Schedule(&PasswordStore::GetAutofillableLoginsWithAffiliatedRealmsImpl,
+           consumer);
+}
+
 void PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
   Schedule(&PasswordStore::GetBlacklistLoginsImpl, consumer);
 }
@@ -415,6 +421,25 @@ void PasswordStore::GetAutofillableLoginsImpl(
   request->NotifyConsumerWithResults(std::move(obtained_forms));
 }
 
+void PasswordStore::GetAutofillableLoginsWithAffiliatedRealmsImpl(
+    scoped_ptr<GetLoginsRequest> request) {
+  ScopedVector<PasswordForm> obtained_forms;
+  if (!FillAutofillableLogins(&obtained_forms))
+    obtained_forms.clear();
+  // Since AffiliatedMatchHelper's requests should be sent from UI thread,
+  // post a request to UI thread.
+  main_thread_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PasswordStore::InjectAffiliatedWebRealms, this,
+                 base::Passed(&obtained_forms), base::Passed(&request)));
+}
+
+void PasswordStore::NotifyLoginsWithAffiliatedRealms(
+    scoped_ptr<GetLoginsRequest> request,
+    ScopedVector<PasswordForm> obtained_forms) {
+  request->NotifyConsumerWithResults(std::move(obtained_forms));
+}
+
 void PasswordStore::GetBlacklistLoginsImpl(
     scoped_ptr<GetLoginsRequest> request) {
   ScopedVector<PasswordForm> obtained_forms;
@@ -450,6 +475,19 @@ void PasswordStore::GetLoginsWithAffiliationsImpl(
     more_results.weak_clear();
   }
   request->NotifyConsumerWithResults(std::move(results));
+}
+
+void PasswordStore::InjectAffiliatedWebRealms(
+    ScopedVector<PasswordForm> forms,
+    scoped_ptr<GetLoginsRequest> request) {
+  if (affiliated_match_helper_) {
+    affiliated_match_helper_->InjectAffiliatedWebRealms(
+        std::move(forms),
+        base::Bind(&PasswordStore::GetLoginsRequest::NotifyConsumerWithResults,
+                   base::Owned(request.release())));
+  } else {
+    request->NotifyConsumerWithResults(std::move(forms));
+  }
 }
 
 void PasswordStore::ScheduleGetLoginsWithAffiliations(

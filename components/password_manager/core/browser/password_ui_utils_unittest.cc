@@ -31,28 +31,68 @@ TEST(GetShownOriginTest, RemovePrefixes) {
 
   for (const auto& test_case : kTestCases) {
     autofill::PasswordForm password_form;
-    password_form.signon_realm = "https://non.android.signon.com";
     password_form.origin = GURL(test_case.input);
-    bool is_android_uri;
     EXPECT_EQ(test_case.output,
-              GetShownOrigin(password_form, "", &is_android_uri))
+              GetShownOrigin(password_form.origin, std::string()))
         << "for input " << test_case.input;
-    EXPECT_FALSE(is_android_uri) << "for input " << test_case.input;
-    EXPECT_EQ(test_case.output, GetShownOrigin(password_form.origin, ""));
   }
 }
 
-TEST(GetShownOriginTest, OriginFromAndroidForm) {
+TEST(GetShownOriginAndLinkUrlTest, OriginFromAndroidForm_NoAffiliatedRealm) {
   autofill::PasswordForm android_form;
   android_form.signon_realm =
       "android://"
       "m3HSJL1i83hdltRq0-o9czGb-8KJDKra4t_"
       "3JRlnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw=="
       "@com.example.android";
+  android_form.affiliated_web_realm = std::string();
+
   bool is_android_uri;
-  EXPECT_EQ(GetShownOrigin(android_form, "", &is_android_uri),
-            "android://com.example.android");
+  GURL link_url;
+  bool origin_is_clickable;
+  EXPECT_EQ(
+      "android://com.example.android",
+      GetShownOriginAndLinkUrl(android_form, std::string(), &is_android_uri,
+                               &link_url, &origin_is_clickable));
   EXPECT_TRUE(is_android_uri);
+  EXPECT_FALSE(origin_is_clickable);
+  EXPECT_EQ(GURL(android_form.signon_realm), link_url);
+}
+
+TEST(GetShownOriginAndLinkUrlTest, OriginFromAndroidForm_WithAffiliatedRealm) {
+  autofill::PasswordForm android_form;
+  android_form.signon_realm =
+      "android://"
+      "m3HSJL1i83hdltRq0-o9czGb-8KJDKra4t_"
+      "3JRlnPKcjI8PZm6XBHXx6zG4UuMXaDEZjR1wuXDre9G9zvN7AQw=="
+      "@com.example.android";
+  android_form.affiliated_web_realm = "https://example.com/";
+
+  bool is_android_uri;
+  GURL link_url;
+  bool origin_is_clickable;
+  EXPECT_EQ("example.com", GetShownOriginAndLinkUrl(android_form, std::string(),
+                                                    &is_android_uri, &link_url,
+                                                    &origin_is_clickable));
+  EXPECT_TRUE(is_android_uri);
+  EXPECT_TRUE(origin_is_clickable);
+  EXPECT_EQ(GURL(android_form.affiliated_web_realm), link_url);
+}
+
+TEST(GetShownOriginAndLinkUrlTest, OriginFromNonAndroidForm) {
+  autofill::PasswordForm form;
+  form.signon_realm = "https://example.com/";
+  form.origin = GURL("https://example.com/login?ref=1");
+
+  bool is_android_uri;
+  GURL link_url;
+  bool origin_is_clickable;
+  EXPECT_EQ("example.com",
+            GetShownOriginAndLinkUrl(form, std::string(), &is_android_uri,
+                                     &link_url, &origin_is_clickable));
+  EXPECT_FALSE(is_android_uri);
+  EXPECT_TRUE(origin_is_clickable);
+  EXPECT_EQ(form.origin, link_url);
 }
 
 }  // namespace password_manager

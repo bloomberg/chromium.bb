@@ -21,18 +21,34 @@ const char* const kRemovedPrefixes[] = {"m.", "mobile.", "www."};
 
 }  // namespace
 
-std::string GetShownOrigin(const autofill::PasswordForm& password_form,
-                           const std::string& languages,
-                           bool* is_android_uri) {
-  DCHECK(is_android_uri != nullptr);
+std::string GetShownOriginAndLinkUrl(
+    const autofill::PasswordForm& password_form,
+    const std::string& languages,
+    bool* is_android_uri,
+    GURL* link_url,
+    bool* origin_is_clickable) {
+  DCHECK(is_android_uri);
+  DCHECK(origin_is_clickable);
+  DCHECK(link_url);
 
   password_manager::FacetURI facet_uri =
       password_manager::FacetURI::FromPotentiallyInvalidSpec(
           password_form.signon_realm);
   *is_android_uri = facet_uri.IsValidAndroidFacetURI();
-  if (*is_android_uri)
-    return GetHumanReadableOriginForAndroidUri(facet_uri);
-
+  if (*is_android_uri) {
+    if (password_form.affiliated_web_realm.empty()) {
+      *origin_is_clickable = false;
+      // Since the full url should be shown in the tooltip even for
+      // non-clickable origins, return it as |link_url|.
+      *link_url = GURL(password_form.signon_realm);
+      return GetHumanReadableOriginForAndroidUri(facet_uri);
+    }
+    *origin_is_clickable = true;
+    *link_url = GURL(password_form.affiliated_web_realm);
+    return GetShownOrigin(*link_url, languages);
+  }
+  *origin_is_clickable = true;
+  *link_url = password_form.origin;
   return GetShownOrigin(password_form.origin, languages);
 }
 

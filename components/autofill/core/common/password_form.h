@@ -107,6 +107,13 @@ struct PasswordForm {
   // When parsing an HTML form, this must always be set.
   GURL action;
 
+  // The web realm affiliated with the Android application, if the form is an
+  // Android credential. Otherwise, the string is empty. If there are several
+  // realms affiliated with the application, an arbitrary realm is chosen.
+  // The field is filled out in PasswordStore's InjectAffiliatedWebRealms.
+  // If there was no call of InjectAffiliatedWebRealms, the string is empty.
+  std::string affiliated_web_realm;
+
   // The name of the submit button used. Optional; only used in scoring
   // of PasswordForm results from the database to make matches as tight as
   // possible.

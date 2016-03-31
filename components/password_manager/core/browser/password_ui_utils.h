@@ -19,13 +19,21 @@ namespace password_manager {
 
 // Returns a string suitable for security display to the user (just like
 // |FormatUrlForSecurityDisplayOmitScheme| based on origin of |password_form|
-// and |languages|) and without prefixes "m.", "mobile." or "www.". For Android
-// URIs, returns the result of GetHumanReadableOriginForAndroidUri and sets
-// |*is_android_uri| to true, otherwise |*is_android_uri| is set to false.
-// |is_android_uri| is required to be non-null.
-std::string GetShownOrigin(const autofill::PasswordForm& password_form,
-                           const std::string& languages,
-                           bool* is_android_uri);
+// and |languages|) and without prefixes "m.", "mobile." or "www.". Also returns
+// the full URL of the origin as |link_url|. |link_url| will be also shown as
+// tooltip on the password page.
+// For Android forms with empty |password_form.affiliated_web_realm|,
+// returns the result of GetHumanReadableOriginForAndroidUri. For other Android
+// forms, returns |password_form.affiliated_web_realm|.
+// |*origin_is_clickable| is set to true, except for Android forms with empty
+// |password_form.affiliated_web_realm|.
+// |is_android_url|, |link_url|, |origin_is_clickable| are required to non-null.
+std::string GetShownOriginAndLinkUrl(
+    const autofill::PasswordForm& password_form,
+    const std::string& languages,
+    bool* is_android_uri,
+    GURL* link_url,
+    bool* origin_is_clickable);
 
 // Returns a string suitable for security display to the user (just like
 // |FormatUrlForSecurityDisplayOmitScheme| based on origin of |password_form|

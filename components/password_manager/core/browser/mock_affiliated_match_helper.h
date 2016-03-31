@@ -35,11 +35,15 @@ class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
       const autofill::PasswordForm& expected_android_form,
       const std::vector<std::string>& results_to_return);
 
+  void ExpectCallToInjectAffiliatedWebRealms(
+      const std::vector<std::string>& results_to_inject);
+
  private:
   MOCK_METHOD1(OnGetAffiliatedAndroidRealmsCalled,
                std::vector<std::string>(const autofill::PasswordForm&));
   MOCK_METHOD1(OnGetAffiliatedWebRealmsCalled,
                std::vector<std::string>(const autofill::PasswordForm&));
+  MOCK_METHOD0(OnInjectAffiliatedWebRealmsCalled, std::vector<std::string>());
 
   void GetAffiliatedAndroidRealms(
       const autofill::PasswordForm& observed_form,
@@ -47,6 +51,10 @@ class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
   void GetAffiliatedWebRealms(
       const autofill::PasswordForm& android_form,
       const AffiliatedRealmsCallback& result_callback) override;
+
+  void InjectAffiliatedWebRealms(
+      ScopedVector<autofill::PasswordForm> forms,
+      const PasswordFormsCallback& result_callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(MockAffiliatedMatchHelper);
 };

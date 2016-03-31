@@ -236,7 +236,7 @@ void PasswordManagerPresenter::PasswordListPopulater::Populate() {
   PasswordStore* store = page_->GetPasswordStore();
   if (store != NULL) {
     cancelable_task_tracker()->TryCancelAll();
-    store->GetAutofillableLogins(this);
+    store->GetAutofillableLoginsWithAffiliatedRealms(this);
   } else {
     LOG(ERROR) << "No password store! Cannot display passwords.";
   }
