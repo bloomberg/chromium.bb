@@ -307,6 +307,7 @@ scoped_refptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
 }
 
 CacheStorageCache::~CacheStorageCache() {
+  quota_manager_proxy_->NotifyOriginNoLongerInUse(origin_);
 }
 
 base::WeakPtr<CacheStorageCache> CacheStorageCache::AsWeakPtr() {
@@ -493,7 +494,12 @@ CacheStorageCache::CacheStorageCache(
       blob_storage_context_(blob_context),
       scheduler_(new CacheStorageScheduler()),
       memory_only_(path.empty()),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(!origin_.is_empty());
+  DCHECK(quota_manager_proxy_.get());
+
+  quota_manager_proxy_->NotifyOriginInUse(origin_);
+}
 
 bool CacheStorageCache::LazyInitialize() {
   switch (backend_state_) {
