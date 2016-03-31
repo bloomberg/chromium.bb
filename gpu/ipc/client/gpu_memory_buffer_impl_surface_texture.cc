@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_surface_texture.h"
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
@@ -12,7 +12,7 @@
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace content {
+namespace gpu {
 namespace {
 
 int WindowFormat(gfx::BufferFormat format) {
@@ -75,8 +75,8 @@ GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
   if (!native_window)
     return nullptr;
 
-  ANativeWindow_setBuffersGeometry(
-      native_window, size.width(), size.height(), WindowFormat(format));
+  ANativeWindow_setBuffersGeometry(native_window, size.width(), size.height(),
+                                   WindowFormat(format));
 
   return make_scoped_ptr(new GpuMemoryBufferImplSurfaceTexture(
       handle.id, size, format, callback, native_window));
@@ -139,12 +139,12 @@ int GpuMemoryBufferImplSurfaceTexture::stride(size_t plane) const {
   return gfx::RowSizeForBufferFormat(buffer_.stride, format_, 0);
 }
 
-gfx::GpuMemoryBufferHandle
-GpuMemoryBufferImplSurfaceTexture::GetHandle() const {
+gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSurfaceTexture::GetHandle()
+    const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::SURFACE_TEXTURE_BUFFER;
   handle.id = id_;
   return handle;
 }
 
-}  // namespace content
+}  // namespace gpu

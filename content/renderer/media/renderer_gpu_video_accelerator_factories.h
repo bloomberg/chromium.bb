@@ -24,12 +24,12 @@ class WaitableEvent;
 }
 
 namespace gpu {
+class GpuChannelHost;
 class GpuMemoryBufferManager;
 }
 
 namespace content {
 class ContextProviderCommandBuffer;
-class GpuChannelHost;
 class WebGraphicsContext3DCommandBufferImpl;
 
 // Glue code to expose functionality needed by media::GpuVideoAccelerator to
@@ -46,7 +46,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   // Takes a ref on |gpu_channel_host| and tests |context| for loss before each
   // use.  Safe to call from any thread.
   static scoped_ptr<RendererGpuVideoAcceleratorFactories> Create(
-      GpuChannelHost* gpu_channel_host,
+      gpu::GpuChannelHost* gpu_channel_host,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -97,7 +97,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
  private:
   RendererGpuVideoAcceleratorFactories(
-      GpuChannelHost* gpu_channel_host,
+      gpu::GpuChannelHost* gpu_channel_host,
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
@@ -108,7 +108,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<GpuChannelHost> gpu_channel_host_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
 
   // Shared pointer to a shared context provider that should be accessed
   // and set only on the main thread.

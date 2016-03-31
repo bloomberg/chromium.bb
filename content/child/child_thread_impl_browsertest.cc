@@ -15,12 +15,12 @@
 #include "base/time/time.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "url/gurl.h"
 

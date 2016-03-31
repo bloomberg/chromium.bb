@@ -280,7 +280,7 @@ BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
 // (Opening the initial channel to a child process involves handling a reply
 // task on the UI thread first, so we cannot block here.)
 #if !defined(OS_ANDROID)
-GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
+gpu::GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
   EstablishGpuChannel(cause_for_gpu_launch, base::Closure());
 
@@ -317,7 +317,7 @@ void BrowserGpuChannelHostFactory::EstablishGpuChannel(
   }
 }
 
-GpuChannelHost* BrowserGpuChannelHostFactory::GetGpuChannel() {
+gpu::GpuChannelHost* BrowserGpuChannelHostFactory::GetGpuChannel() {
   if (gpu_channel_.get() && !gpu_channel_->IsLost())
     return gpu_channel_.get();
 
@@ -336,7 +336,7 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "466866 BrowserGpuChannelHostFactory::GpuChannelEstablished1"));
     GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
-    gpu_channel_ = GpuChannelHost::Create(
+    gpu_channel_ = gpu::GpuChannelHost::Create(
         this, gpu_client_id_, pending_request_->gpu_info(),
         pending_request_->channel_handle(), shutdown_event_.get(),
         gpu_memory_buffer_manager_.get());

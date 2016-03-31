@@ -13,7 +13,6 @@
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
@@ -21,6 +20,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -45,7 +45,7 @@ void RecordContextProviderPhaseUmaEnum(const ContextProviderPhase phase) {
 // static
 scoped_ptr<RendererGpuVideoAcceleratorFactories>
 RendererGpuVideoAcceleratorFactories::Create(
-    GpuChannelHost* gpu_channel_host,
+    gpu::GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
@@ -61,7 +61,7 @@ RendererGpuVideoAcceleratorFactories::Create(
 }
 
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
-    GpuChannelHost* gpu_channel_host,
+    gpu::GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
@@ -77,8 +77,8 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
           enable_gpu_memory_buffer_video_frames),
       image_texture_targets_(image_texture_targets),
       video_accelerator_enabled_(enable_video_accelerator),
-      gpu_memory_buffer_manager_(ChildThreadImpl::current()
-                                     ->gpu_memory_buffer_manager()),
+      gpu_memory_buffer_manager_(
+          ChildThreadImpl::current()->gpu_memory_buffer_manager()),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {
   DCHECK(main_thread_task_runner_);
   DCHECK(gpu_channel_host_);
@@ -114,7 +114,7 @@ RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
-  GpuChannelHost* channel =
+  gpu::GpuChannelHost* channel =
       context_provider_->GetCommandBufferProxy()->channel();
   DCHECK(channel);
 
@@ -130,7 +130,7 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   if (CheckContextLost())
     return nullptr;
 
-  GpuChannelHost* channel =
+  gpu::GpuChannelHost* channel =
       context_provider_->GetCommandBufferProxy()->channel();
   DCHECK(channel);
 

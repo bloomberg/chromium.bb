@@ -49,9 +49,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/host_shared_bitmap_manager.h"
@@ -61,6 +59,8 @@
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
@@ -128,11 +128,11 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
   }
 
  private:
-  CommandBufferProxyImpl* GetCommandBufferProxy() {
+  gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
     ContextProviderCommandBuffer* provider_command_buffer =
         static_cast<content::ContextProviderCommandBuffer*>(
             context_provider_.get());
-    CommandBufferProxyImpl* command_buffer_proxy =
+    gpu::CommandBufferProxyImpl* command_buffer_proxy =
         provider_command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
     return command_buffer_proxy;
@@ -411,7 +411,7 @@ void CompositorImpl::SetNeedsComposite() {
 
 static scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 CreateGpuProcessViewContext(
-    const scoped_refptr<GpuChannelHost>& gpu_channel_host,
+    const scoped_refptr<gpu::GpuChannelHost>& gpu_channel_host,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     int surface_id) {
   GURL url("chrome://gpu/Compositor::createContext3D");
@@ -539,7 +539,7 @@ void CompositorImpl::CreateOutputSurface() {
   // still get marked as lost from the IO thread, at any point in time really).
   // But from here on just try and always lead to either
   // DidInitializeOutputSurface() or DidFailToInitializeOutputSurface().
-  scoped_refptr<GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
   scoped_refptr<ContextProviderCommandBuffer> context_provider(
       ContextProviderCommandBuffer::Create(
           CreateGpuProcessViewContext(gpu_channel_host, attributes,

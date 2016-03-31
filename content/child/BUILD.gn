@@ -30,6 +30,7 @@ source_set("child") {
   ]
 
   public_deps = [
+    "//gpu/ipc/client:client",
     "//mojo/edk/system",
   ]
 

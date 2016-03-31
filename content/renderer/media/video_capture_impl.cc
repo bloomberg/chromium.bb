@@ -19,8 +19,8 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/media/video_capture_messages.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
@@ -63,7 +63,7 @@ class VideoCaptureImpl::ClientBuffer2
     for (size_t i = 0; i < handles_.size(); ++i) {
       const size_t width = media::VideoFrame::Columns(i, format, size_.width());
       const size_t height = media::VideoFrame::Rows(i, format, size_.height());
-      buffers_.push_back(GpuMemoryBufferImpl::CreateFromHandle(
+      buffers_.push_back(gpu::GpuMemoryBufferImpl::CreateFromHandle(
           handles_[i], gfx::Size(width, height), gfx::BufferFormat::R_8,
           gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
           base::Bind(&ClientBuffer2::DestroyGpuMemoryBuffer,

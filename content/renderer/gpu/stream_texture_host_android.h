@@ -17,16 +17,19 @@ namespace gfx {
 class Size;
 }
 
+namespace gpu {
+class GpuChannelHost;
+}
+
 struct GpuStreamTextureMsg_MatrixChanged_Params;
 
 namespace content {
-class GpuChannelHost;
 
 // Class for handling all the IPC messages between the GPU process and
 // StreamTextureProxy.
 class StreamTextureHost : public IPC::Listener {
  public:
-  explicit StreamTextureHost(GpuChannelHost* channel);
+  explicit StreamTextureHost(gpu::GpuChannelHost* channel);
   ~StreamTextureHost() override;
 
   // Listener class that is listening to the stream texture updates. It is
@@ -49,7 +52,7 @@ class StreamTextureHost : public IPC::Listener {
 
   int stream_id_;
   Listener* listener_;
-  scoped_refptr<GpuChannelHost> channel_;
+  scoped_refptr<gpu::GpuChannelHost> channel_;
   base::WeakPtrFactory<StreamTextureHost> weak_ptr_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureHost);

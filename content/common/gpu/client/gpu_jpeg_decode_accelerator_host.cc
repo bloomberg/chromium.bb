@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/media/media_messages.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -97,7 +97,7 @@ class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener,
 };
 
 GpuJpegDecodeAcceleratorHost::GpuJpegDecodeAcceleratorHost(
-    GpuChannelHost* channel,
+    gpu::GpuChannelHost* channel,
     int32_t route_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : channel_(channel),

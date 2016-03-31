@@ -21,12 +21,15 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
+namespace gpu {
+class GpuChannelHost;
+}
+
 namespace media {
 class VideoFrame;
 }
 
 namespace content {
-class GpuChannelHost;
 
 // Adapter to GpuJpegDecodeAccelerator for VideoCaptureDevice::Client. It takes
 // care of GpuJpegDecodeAccelerator creation, shared memory, and threading
@@ -90,7 +93,8 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this);
 
-  void FinishInitialization(scoped_refptr<GpuChannelHost> gpu_channel_host);
+  void FinishInitialization(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
 
   // Returns true if the decoding of last frame is not finished yet.
   bool IsDecoding_Locked() const;
@@ -98,7 +102,7 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
   // Records |decoder_status_| to histogram.
   void RecordInitDecodeUMA_Locked();
 
-  scoped_refptr<GpuChannelHost> gpu_channel_host_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host_;
 
   // The underlying JPEG decode accelerator.
   scoped_ptr<media::JpegDecodeAccelerator> decoder_;

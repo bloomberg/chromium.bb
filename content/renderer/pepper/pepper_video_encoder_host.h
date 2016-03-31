@@ -21,14 +21,17 @@
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/media_stream_buffer_manager.h"
 
+namespace gpu {
+class CommandBufferProxyImpl;
+class GpuChannelHost;
+}
+
 namespace media {
 class GpuVideoAcceleratorFactories;
 }
 
 namespace content {
 
-class CommandBufferProxyImpl;
-class GpuChannelHost;
 class RendererPpapiHost;
 class VideoEncoderShim;
 
@@ -126,8 +129,8 @@ class CONTENT_EXPORT PepperVideoEncoderHost
   // Buffer manager for shared memory that holds video frames.
   ppapi::MediaStreamBufferManager buffer_manager_;
 
-  scoped_refptr<GpuChannelHost> channel_;
-  scoped_ptr<CommandBufferProxyImpl> command_buffer_;
+  scoped_refptr<gpu::GpuChannelHost> channel_;
+  scoped_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
 
   scoped_ptr<media::VideoEncodeAccelerator> encoder_;
 

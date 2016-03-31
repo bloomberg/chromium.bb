@@ -8,7 +8,7 @@
 
 #include "content/common/child_process_messages.h"
 #include "content/common/generic_shared_memory_id_generator.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 
 namespace content {
 namespace {
@@ -50,10 +50,11 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
   if (!success || handle.is_null())
     return nullptr;
 
-  scoped_ptr<GpuMemoryBufferImpl> buffer(GpuMemoryBufferImpl::CreateFromHandle(
-      handle, size, format, usage,
-      base::Bind(&DeletedGpuMemoryBuffer, base::RetainedRef(sender_),
-                 handle.id)));
+  scoped_ptr<gpu::GpuMemoryBufferImpl> buffer(
+      gpu::GpuMemoryBufferImpl::CreateFromHandle(
+          handle, size, format, usage,
+          base::Bind(&DeletedGpuMemoryBuffer, base::RetainedRef(sender_),
+                     handle.id)));
   if (!buffer) {
     sender_->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(
         handle.id, gpu::SyncToken()));
@@ -75,14 +76,14 @@ ChildGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
 gfx::GpuMemoryBuffer*
 ChildGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {
-  return GpuMemoryBufferImpl::FromClientBuffer(buffer);
+  return gpu::GpuMemoryBufferImpl::FromClientBuffer(buffer);
 }
 
 void ChildGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {
-  static_cast<GpuMemoryBufferImpl*>(buffer)
-      ->set_destruction_sync_token(sync_token);
+  static_cast<gpu::GpuMemoryBufferImpl*>(buffer)->set_destruction_sync_token(
+      sync_token);
 }
 
 }  // namespace content

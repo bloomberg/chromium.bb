@@ -10,8 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -20,6 +18,8 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -123,7 +123,7 @@ void PPB_Graphics3D_Impl::ViewInitiatedPaint() {
     SwapBuffersACK(PP_OK);
 }
 
-CommandBufferProxyImpl* PPB_Graphics3D_Impl::GetCommandBufferProxy() {
+gpu::CommandBufferProxyImpl* PPB_Graphics3D_Impl::GetCommandBufferProxy() {
   DCHECK(command_buffer_);
   return command_buffer_.get();
 }
@@ -230,7 +230,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
     attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
   }
 
-  CommandBufferProxyImpl* share_buffer = NULL;
+  gpu::CommandBufferProxyImpl* share_buffer = NULL;
   if (share_context) {
     PPB_Graphics3D_Impl* share_graphics =
         static_cast<PPB_Graphics3D_Impl*>(share_context);
@@ -239,8 +239,9 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
 
   command_buffer_ = channel_->CreateCommandBuffer(
       gpu::kNullSurfaceHandle, surface_size, share_buffer,
-      GpuChannelHost::kDefaultStreamId, GpuChannelHost::kDefaultStreamPriority,
-      attribs, GURL::EmptyGURL(), gpu_preference);
+      gpu::GpuChannelHost::kDefaultStreamId,
+      gpu::GpuChannelHost::kDefaultStreamPriority, attribs, GURL::EmptyGURL(),
+      gpu_preference);
   if (!command_buffer_)
     return false;
   if (!command_buffer_->Initialize())

@@ -15,7 +15,6 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/view_messages.h"
@@ -24,6 +23,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "ipc/ipc_sync_channel.h"
 
 namespace content {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_CHANNEL_HOST_H_
-#define CONTENT_COMMON_GPU_CLIENT_GPU_CHANNEL_HOST_H_
+#ifndef GPU_IPC_CLIENT_GPU_CHANNEL_HOST_H_
+#define GPU_IPC_CLIENT_GPU_CHANNEL_HOST_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -19,8 +19,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_stream_constants.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
@@ -46,11 +46,11 @@ namespace gpu {
 class GpuMemoryBufferManager;
 }
 
-namespace content {
+namespace gpu {
 class CommandBufferProxyImpl;
 class GpuChannelHost;
 
-class CONTENT_EXPORT GpuChannelHostFactory {
+class GPU_EXPORT GpuChannelHostFactory {
  public:
   virtual ~GpuChannelHostFactory() {}
 
@@ -64,8 +64,9 @@ class CONTENT_EXPORT GpuChannelHostFactory {
 // On the GPU process side there's a corresponding GpuChannel.
 // Every method can be called on any thread with a message loop, except for the
 // IO thread.
-class GpuChannelHost : public IPC::Sender,
-                       public base::RefCountedThreadSafe<GpuChannelHost> {
+class GPU_EXPORT GpuChannelHost
+    : public IPC::Sender,
+      public base::RefCountedThreadSafe<GpuChannelHost> {
  public:
   // Must be called on the main thread (as defined by the factory).
   static scoped_refptr<GpuChannelHost> Create(
@@ -294,6 +295,6 @@ class GpuChannelHost : public IPC::Sender,
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_CHANNEL_HOST_H_
+#endif  // GPU_IPC_CLIENT_GPU_CHANNEL_HOST_H_

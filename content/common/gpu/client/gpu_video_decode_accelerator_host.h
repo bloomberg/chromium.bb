@@ -12,26 +12,29 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace content {
+namespace gpu {
 class GpuChannelHost;
+}
+
+namespace content {
 
 // This class is used to talk to VideoDecodeAccelerator in the Gpu process
 // through IPC messages.
 class GpuVideoDecodeAcceleratorHost
     : public IPC::Listener,
       public media::VideoDecodeAccelerator,
-      public CommandBufferProxyImpl::DeletionObserver,
+      public gpu::CommandBufferProxyImpl::DeletionObserver,
       public base::NonThreadSafe {
  public:
   // |this| is guaranteed not to outlive |channel| and |impl|.  (See comments
   // for |channel_| and |impl_|.)
-  GpuVideoDecodeAcceleratorHost(GpuChannelHost* channel,
-                                CommandBufferProxyImpl* impl);
+  GpuVideoDecodeAcceleratorHost(gpu::GpuChannelHost* channel,
+                                gpu::CommandBufferProxyImpl* impl);
 
   // IPC::Listener implementation.
   void OnChannelError() override;
@@ -48,7 +51,7 @@ class GpuVideoDecodeAcceleratorHost
   void Reset() override;
   void Destroy() override;
 
-  // CommandBufferProxyImpl::DeletionObserver implemetnation.
+  // gpu::CommandBufferProxyImpl::DeletionObserver implemetnation.
   void OnWillDeleteImpl() override;
 
  private:
@@ -80,7 +83,7 @@ class GpuVideoDecodeAcceleratorHost
   // Unowned reference to the GpuChannelHost to send IPC messages to the GPU
   // process.  |channel_| outlives |impl_|, so the reference is always valid as
   // long as it is not NULL.
-  GpuChannelHost* channel_;
+  gpu::GpuChannelHost* channel_;
 
   // Route ID for the associated decoder in the GPU process.
   int32_t decoder_route_id_;
@@ -88,10 +91,10 @@ class GpuVideoDecodeAcceleratorHost
   // The client that will receive callbacks from the decoder.
   Client* client_;
 
-  // Unowned reference to the CommandBufferProxyImpl that created us.  |this|
-  // registers as a DeletionObserver of |impl_|, the so reference is always
-  // valid as long as it is not NULL.
-  CommandBufferProxyImpl* impl_;
+  // Unowned reference to the gpu::CommandBufferProxyImpl that created us.
+  // |this| registers as a DeletionObserver of |impl_|, the so reference is
+  // always valid as long as it is not NULL.
+  gpu::CommandBufferProxyImpl* impl_;
 
   // Requested dimensions of the buffer, from ProvidePictureBuffers().
   gfx::Size picture_buffer_dimensions_;

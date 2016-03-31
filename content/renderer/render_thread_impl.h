@@ -25,11 +25,11 @@
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "ui/gfx/native_widget_types.h"
@@ -67,6 +67,10 @@ namespace cc_blink {
 class ContextProviderWebContext;
 }
 
+namespace gpu {
+class GpuChannelHost;
+}
+
 namespace IPC {
 class MessageFilter;
 }
@@ -102,7 +106,6 @@ class DBMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
 class EmbeddedWorkerDispatcher;
-class GpuChannelHost;
 class IndexedDBDispatcher;
 class InputHandlerManager;
 class MediaStreamCenter;
@@ -146,7 +149,7 @@ class SynchronousCompositorFilter;
 class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
-      public GpuChannelHostFactory,
+      public gpu::GpuChannelHostFactory,
       NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
@@ -225,8 +228,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
   // time this routine returns.
-  GpuChannelHost* EstablishGpuChannelSync(CauseForGpuLaunch);
-
+  gpu::GpuChannelHost* EstablishGpuChannelSync(CauseForGpuLaunch);
 
   // This method modifies how the next message is sent.  Normally, when sending
   // a synchronous message that runs a nested message loop, we need to suspend
@@ -332,7 +334,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
-  GpuChannelHost* GetGpuChannel();
+  gpu::GpuChannelHost* GetGpuChannel();
 
   // Returns a SingleThreadTaskRunner instance corresponding to the message loop
   // of the thread on which file operations should be run. Must be called
@@ -594,7 +596,7 @@ class CONTENT_EXPORT RenderThreadImpl
   base::RepeatingTimer idle_timer_;
 
   // The channel from the renderer process to the GPU process.
-  scoped_refptr<GpuChannelHost> gpu_channel_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
   // Cache of variables that are needed on the compositor thread by
   // GpuChannelHostFactory methods.

@@ -719,7 +719,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   }
 #endif
 
-  scoped_refptr<GpuChannelHost> gpu_channel_host;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host;
   if (!use_software) {
     CauseForGpuLaunch cause =
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
@@ -2062,7 +2062,7 @@ void RenderWidget::didUpdateTextOfFocusedElementByNonUserInput() {
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-RenderWidget::CreateGraphicsContext3D(GpuChannelHost* gpu_channel_host) {
+RenderWidget::CreateGraphicsContext3D(gpu::GpuChannelHost* gpu_channel_host) {
   // This is for an offscreen context for raster in the compositor. So the
   // default framebuffer doesn't need alpha, depth, stencil, antialiasing.
   gpu::gles2::ContextCreationAttribHelper attributes;

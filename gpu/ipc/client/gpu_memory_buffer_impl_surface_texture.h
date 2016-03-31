@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
-#define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
+#ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
+#define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
 
 #include <android/native_window.h>
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "content/common/content_export.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "gpu/gpu_export.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 
-namespace content {
+namespace gpu {
 
 // Implementation of GPU memory buffer based on SurfaceTextures.
-class CONTENT_EXPORT GpuMemoryBufferImplSurfaceTexture
+class GPU_EXPORT GpuMemoryBufferImplSurfaceTexture
     : public GpuMemoryBufferImpl {
  public:
   ~GpuMemoryBufferImplSurfaceTexture() override;
@@ -55,6 +55,6 @@ class CONTENT_EXPORT GpuMemoryBufferImplSurfaceTexture
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplSurfaceTexture);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_
+#endif  // GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_SURFACE_TEXTURE_H_

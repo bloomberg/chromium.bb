@@ -146,7 +146,7 @@ GLHelperHolder* GLHelperHolder::Create() {
 
 void GLHelperHolder::Initialize() {
   auto* factory = BrowserGpuChannelHostFactory::instance();
-  scoped_refptr<GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
 
   // The Browser Compositor is in charge of reestablishing the channel if its
   // missing.

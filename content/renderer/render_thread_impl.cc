@@ -72,7 +72,6 @@
 #include "content/common/dom_storage/dom_storage_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/render_frame_setup.mojom.h"
 #include "content/common/render_process_messages.h"
@@ -128,6 +127,7 @@
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "gin/public/debug.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
@@ -1492,7 +1492,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       GetMediaThreadTaskRunner();
   scoped_refptr<ContextProviderCommandBuffer> shared_context_provider =
       SharedWorkerContextProvider();
-  scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host = GetGpuChannel();
   if (shared_context_provider && gpu_channel_host) {
     const bool enable_video_accelerator =
         !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
@@ -1535,7 +1535,7 @@ RenderThreadImpl::CreateOffscreenContext3d() {
   attributes.lose_context_when_out_of_memory = true;
   bool share_resources = true;
   bool automatic_flushes = false;
-  scoped_refptr<GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
   return make_scoped_ptr(
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
@@ -1584,7 +1584,7 @@ scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
       stream_texture_factory_ = NULL;
       return NULL;
     }
-    scoped_refptr<GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
         CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE));
     if (!gpu_channel_host.get()) {
       LOG(ERROR) << "Failed to establish GPU channel for media player";
@@ -1851,7 +1851,7 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
   RenderViewImpl::Create(compositor_deps, params, false);
 }
 
-GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
+gpu::GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
     CauseForGpuLaunch cause_for_gpu_launch) {
   TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
 
@@ -1886,13 +1886,9 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   // implementation of GpuChannelHostFactory.
   io_thread_task_runner_ = ChildProcess::current()->io_task_runner();
 
-  gpu_channel_ =
-      GpuChannelHost::Create(this,
-                             client_id,
-                             gpu_info,
-                             channel_handle,
-                             ChildProcess::current()->GetShutDownEvent(),
-                             gpu_memory_buffer_manager());
+  gpu_channel_ = gpu::GpuChannelHost::Create(
+      this, client_id, gpu_info, channel_handle,
+      ChildProcess::current()->GetShutDownEvent(), gpu_memory_buffer_manager());
   return gpu_channel_.get();
 }
 
@@ -1919,7 +1915,7 @@ RenderThreadImpl::GetPeerConnectionDependencyFactory() {
 }
 #endif
 
-GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
+gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
   if (!gpu_channel_.get())
     return NULL;
 

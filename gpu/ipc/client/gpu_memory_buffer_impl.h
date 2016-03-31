@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
-#define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
+#ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
+#define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/content_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace content {
+namespace gpu {
 
 // Provides common implementation of a GPU memory buffer.
-class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
+class GPU_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   typedef base::Callback<void(const gpu::SyncToken& sync)> DestructionCallback;
 
@@ -63,6 +63,6 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImpl);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
+#endif  // GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_

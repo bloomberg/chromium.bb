@@ -68,8 +68,8 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
   lost_context_callback_proxy_.reset();
 }
 
-
-CommandBufferProxyImpl* ContextProviderCommandBuffer::GetCommandBufferProxy() {
+gpu::CommandBufferProxyImpl*
+ContextProviderCommandBuffer::GetCommandBufferProxy() {
   return WebContext3DNoChecks()->GetCommandBufferProxy();
 }
 

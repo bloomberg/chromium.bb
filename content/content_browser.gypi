@@ -22,6 +22,7 @@
     '../gin/gin.gyp:gin',
     '../google_apis/google_apis.gyp:google_apis',
     '../gpu/gpu.gyp:gpu',
+    '../gpu/gpu.gyp:gpu_ipc_client',
     '../gpu/gpu.gyp:gpu_ipc_common',
     '../mojo/mojo_base.gyp:mojo_application_base',
     '../mojo/mojo_base.gyp:mojo_geometry_lib',

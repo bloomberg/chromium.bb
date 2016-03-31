@@ -41,12 +41,12 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
 
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {}
 
-CommandBufferProxyImpl*
+gpu::CommandBufferProxyImpl*
 GpuBrowserCompositorOutputSurface::GetCommandBufferProxy() {
   ContextProviderCommandBuffer* provider_command_buffer =
       static_cast<content::ContextProviderCommandBuffer*>(
           context_provider_.get());
-  CommandBufferProxyImpl* command_buffer_proxy =
+  gpu::CommandBufferProxyImpl* command_buffer_proxy =
       provider_command_buffer->GetCommandBufferProxy();
   DCHECK(command_buffer_proxy);
   return command_buffer_proxy;

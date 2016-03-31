@@ -23,7 +23,6 @@
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -33,6 +32,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
@@ -43,14 +43,15 @@ namespace {
 static base::LazyInstance<base::Lock>::Leaky
     g_default_share_groups_lock = LAZY_INSTANCE_INITIALIZER;
 
-typedef std::map<GpuChannelHost*,
-    scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup> >
+typedef std::map<
+    gpu::GpuChannelHost*,
+    scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup>>
     ShareGroupMap;
 static base::LazyInstance<ShareGroupMap> g_default_share_groups =
     LAZY_INSTANCE_INITIALIZER;
 
 scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup>
-    GetDefaultShareGroupForHost(GpuChannelHost* host) {
+GetDefaultShareGroupForHost(gpu::GpuChannelHost* host) {
   base::AutoLock lock(g_default_share_groups_lock.Get());
 
   ShareGroupMap& share_groups = g_default_share_groups.Get();
@@ -83,7 +84,7 @@ WebGraphicsContext3DCommandBufferImpl::ShareGroup::~ShareGroup() {
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     gpu::SurfaceHandle surface_handle,
     const GURL& active_url,
-    GpuChannelHost* host,
+    gpu::GpuChannelHost* host,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     gfx::GpuPreference gpu_preference,
     bool share_resources,
@@ -167,7 +168,7 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   if (!host_.get())
     return false;
 
-  CommandBufferProxyImpl* share_group_command_buffer = NULL;
+  gpu::CommandBufferProxyImpl* share_group_command_buffer = NULL;
 
   if (share_context) {
     share_group_command_buffer = share_context->GetCommandBufferProxy();
@@ -180,8 +181,9 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   // Create a proxy to a command buffer in the GPU process.
   command_buffer_ = host_->CreateCommandBuffer(
       surface_handle_, gfx::Size(), share_group_command_buffer,
-      GpuChannelHost::kDefaultStreamId, GpuChannelHost::kDefaultStreamPriority,
-      serialized_attributes, active_url_, gpu_preference_);
+      gpu::GpuChannelHost::kDefaultStreamId,
+      gpu::GpuChannelHost::kDefaultStreamPriority, serialized_attributes,
+      active_url_, gpu_preference_);
 
   if (!command_buffer_) {
     DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";
@@ -325,7 +327,7 @@ bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
 // static
 WebGraphicsContext3DCommandBufferImpl*
 WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-    GpuChannelHost* host,
+    gpu::GpuChannelHost* host,
     const gpu::gles2::ContextCreationAttribHelper& attributes,
     gfx::GpuPreference gpu_preference,
     bool share_resources,

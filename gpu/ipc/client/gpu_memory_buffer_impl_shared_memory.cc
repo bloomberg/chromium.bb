@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 
 #include <stdint.h>
 #include <utility>
@@ -13,7 +13,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace content {
+namespace gpu {
 namespace {
 
 void Noop() {}
@@ -35,8 +35,7 @@ GpuMemoryBufferImplSharedMemory::GpuMemoryBufferImplSharedMemory(
   DCHECK(IsSizeValidForFormat(size, format));
 }
 
-GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {
-}
+GpuMemoryBufferImplSharedMemory::~GpuMemoryBufferImplSharedMemory() {}
 
 // static
 scoped_ptr<GpuMemoryBufferImplSharedMemory>
@@ -221,4 +220,4 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplSharedMemory::GetHandle() const {
   return handle;
 }
 
-}  // namespace content
+}  // namespace gpu

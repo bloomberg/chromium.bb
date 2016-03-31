@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SHARED_MEMORY_H_
-#define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SHARED_MEMORY_H_
+#ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_SHARED_MEMORY_H_
+#define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_SHARED_MEMORY_H_
 
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "content/common/content_export.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "gpu/gpu_export.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 
-namespace content {
+namespace gpu {
 
 // Implementation of GPU memory buffer based on shared memory.
-class CONTENT_EXPORT GpuMemoryBufferImplSharedMemory
-    : public GpuMemoryBufferImpl {
+class GPU_EXPORT GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
  public:
   ~GpuMemoryBufferImplSharedMemory() override;
 
@@ -72,6 +71,6 @@ class CONTENT_EXPORT GpuMemoryBufferImplSharedMemory
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplSharedMemory);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_SHARED_MEMORY_H_
+#endif  // GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_SHARED_MEMORY_H_

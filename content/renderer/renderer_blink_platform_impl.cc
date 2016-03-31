@@ -42,7 +42,6 @@
 #include "content/common/file_utilities_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/mime_registry_messages.h"
@@ -75,6 +74,7 @@
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"
@@ -642,8 +642,8 @@ WebString RendererBlinkPlatformImpl::databaseCreateOriginIdentifier(
 
 bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
-  GpuChannelHost* host = thread->EstablishGpuChannelSync(
-      CAUSE_FOR_GPU_LAUNCH_CANVAS_2D);
+  gpu::GpuChannelHost* host =
+      thread->EstablishGpuChannelSync(CAUSE_FOR_GPU_LAUNCH_CANVAS_2D);
   if (!host)
     return false;
 
@@ -968,7 +968,7 @@ blink::WebSpeechSynthesizer* RendererBlinkPlatformImpl::createSpeechSynthesizer(
 
 static void Collect3DContextInformationOnFailure(
     blink::Platform::GraphicsInfo* gl_info,
-    GpuChannelHost* host) {
+    gpu::GpuChannelHost* host) {
   DCHECK(gl_info);
   std::string error_message("OffscreenContext Creation failed, ");
   if (host) {
@@ -1016,7 +1016,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
     return nullptr;
   }
 
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync(
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
 

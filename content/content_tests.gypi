@@ -674,8 +674,6 @@
       'common/dwrite_font_platform_win_unittest.cc',
       'common/fileapi/file_system_util_unittest.cc',
       'common/gpu/ca_layer_tree_unittest_mac.mm',
-      'common/gpu/client/gpu_memory_buffer_impl_shared_memory_unittest.cc',
-      'common/gpu/client/gpu_memory_buffer_impl_test_template.h',
       'common/gpu/gpu_channel_manager_unittest.cc',
       'common/gpu/gpu_channel_test_common.cc',
       'common/gpu/gpu_channel_test_common.h',
@@ -837,11 +835,9 @@
       'renderer/media/android/webmediasession_android_unittest.cc',
     ],
     'content_unittests_mac_sources': [
-      'common/gpu/client/gpu_memory_buffer_impl_io_surface_unittest.cc',
       'common/gpu/gpu_memory_buffer_factory_io_surface_unittest.cc',
     ],
     'content_unittests_ozone_sources': [
-      'common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap_unittest.cc',
       'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap_unittest.cc',
     ],
   },
@@ -1559,6 +1555,7 @@
       ],
       'sources': [
         'browser/compositor/gl_helper_unittest.cc',
+        'common/gpu/client/gpu_context_tests.h',
         'common/gpu/client/gpu_in_process_context_tests.cc',
         'test/run_all_gl_tests.cc',
       ],

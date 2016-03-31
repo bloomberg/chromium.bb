@@ -560,7 +560,7 @@ class CONTENT_EXPORT RenderWidget
 
   // Creates a 3D context associated with this view.
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D(
-      GpuChannelHost* gpu_channel_host);
+      gpu::GpuChannelHost* gpu_channel_host);
 
   // Sends an ACK to the browser process during the next compositor frame.
   void OnWaitNextFrameForTests(int routing_id);

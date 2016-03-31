@@ -11,11 +11,11 @@
 #include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/gpu/media/media_messages.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
@@ -349,7 +349,7 @@ void GpuVideoEncodeAccelerator::OnEncode2(
     const size_t height =
         media::VideoFrame::Rows(i, input_format_, params.size.height());
     scoped_ptr<gfx::GpuMemoryBuffer> buffer =
-        GpuMemoryBufferImpl::CreateFromHandle(
+        gpu::GpuMemoryBufferImpl::CreateFromHandle(
             handles[i], gfx::Size(width, height), gfx::BufferFormat::R_8,
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
             media::BindToCurrentLoop(base::Bind(&DestroyGpuMemoryBuffer)));

@@ -34,9 +34,8 @@ class SignalTest : public ContextTestBase {
   void TestSignalQuery(GLuint query) {
     base::RunLoop run_loop;
     context_support_->SignalQuery(
-        query,
-        base::Bind(
-            &RunOnlyOnce, run_loop.QuitClosure(), base::Owned(new int(0))));
+        query, base::Bind(&RunOnlyOnce, run_loop.QuitClosure(),
+                          base::Owned(new int(0))));
     run_loop.Run();
   }
 };
@@ -136,5 +135,4 @@ CONTEXT_TEST_F(SignalTest, InvalidSignalQueryUnboundTest) {
   TestSignalQuery(928729082);
   TestSignalQuery(928729081);
 };
-
 };

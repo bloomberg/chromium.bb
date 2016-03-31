@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 
 #include <utility>
 #include <vector>
@@ -13,7 +13,6 @@
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
@@ -21,12 +20,13 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/image_factory.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace content {
+namespace gpu {
 
 namespace {
 
@@ -59,9 +59,7 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(GpuChannelHost* channel,
 }
 
 CommandBufferProxyImpl::~CommandBufferProxyImpl() {
-  FOR_EACH_OBSERVER(DeletionObserver,
-                    deletion_observers_,
-                    OnWillDeleteImpl());
+  FOR_EACH_OBSERVER(DeletionObserver, deletion_observers_, OnWillDeleteImpl());
   if (channel_) {
     channel_->DestroyCommandBuffer(this);
     channel_ = nullptr;
@@ -76,8 +74,7 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxyImpl, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Destroyed, OnDestroyed);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ConsoleMsg, OnConsoleMessage);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalAck,
-                        OnSignalAck);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalAck, OnSignalAck);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SwapBuffersCompleted,
                         OnSwapBuffersCompleted);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UpdateVSyncParameters,
@@ -172,8 +169,9 @@ void CommandBufferProxyImpl::SetContextLostCallback(
 
 bool CommandBufferProxyImpl::Initialize() {
   TRACE_EVENT0("gpu", "CommandBufferProxyImpl::Initialize");
-  shared_state_shm_.reset(channel_->factory()->AllocateSharedMemory(
-      sizeof(*shared_state())).release());
+  shared_state_shm_.reset(channel_->factory()
+                              ->AllocateSharedMemory(sizeof(*shared_state()))
+                              .release());
   if (!shared_state_shm_)
     return false;
 
@@ -191,8 +189,8 @@ bool CommandBufferProxyImpl::Initialize() {
     return false;
 
   bool result = false;
-  if (!Send(new GpuCommandBufferMsg_Initialize(
-      route_id_, handle, &result, &capabilities_))) {
+  if (!Send(new GpuCommandBufferMsg_Initialize(route_id_, handle, &result,
+                                               &capabilities_))) {
     LOG(ERROR) << "Could not send GpuCommandBufferMsg_Initialize.";
     return false;
   }
@@ -221,9 +219,7 @@ void CommandBufferProxyImpl::Flush(int32_t put_offset) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  TRACE_EVENT1("gpu",
-               "CommandBufferProxyImpl::Flush",
-               "put_offset",
+  TRACE_EVENT1("gpu", "CommandBufferProxyImpl::Flush", "put_offset",
                put_offset);
 
   bool put_offset_changed = last_put_offset_ != put_offset;
@@ -299,18 +295,14 @@ void CommandBufferProxyImpl::SetUpdateVSyncParametersCallback(
 
 void CommandBufferProxyImpl::WaitForTokenInRange(int32_t start, int32_t end) {
   CheckLock();
-  TRACE_EVENT2("gpu",
-               "CommandBufferProxyImpl::WaitForToken",
-               "start",
-               start,
-               "end",
-               end);
+  TRACE_EVENT2("gpu", "CommandBufferProxyImpl::WaitForToken", "start", start,
+               "end", end);
   TryUpdateState();
   if (!InRange(start, end, last_state_.token) &&
       last_state_.error == gpu::error::kNoError) {
     gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_WaitForTokenInRange(
-            route_id_, start, end, &state)))
+    if (Send(new GpuCommandBufferMsg_WaitForTokenInRange(route_id_, start, end,
+                                                         &state)))
       OnUpdateState(state);
   }
   if (!InRange(start, end, last_state_.token) &&
@@ -323,18 +315,14 @@ void CommandBufferProxyImpl::WaitForTokenInRange(int32_t start, int32_t end) {
 void CommandBufferProxyImpl::WaitForGetOffsetInRange(int32_t start,
                                                      int32_t end) {
   CheckLock();
-  TRACE_EVENT2("gpu",
-               "CommandBufferProxyImpl::WaitForGetOffset",
-               "start",
-               start,
-               "end",
-               end);
+  TRACE_EVENT2("gpu", "CommandBufferProxyImpl::WaitForGetOffset", "start",
+               start, "end", end);
   TryUpdateState();
   if (!InRange(start, end, last_state_.get_offset) &&
       last_state_.error == gpu::error::kNoError) {
     gpu::CommandBuffer::State state;
-    if (Send(new GpuCommandBufferMsg_WaitForGetOffsetInRange(
-            route_id_, start, end, &state)))
+    if (Send(new GpuCommandBufferMsg_WaitForGetOffsetInRange(route_id_, start,
+                                                             end, &state)))
       OnUpdateState(state);
   }
   if (!InRange(start, end, last_state_.get_offset) &&
@@ -506,8 +494,8 @@ uint32_t CommandBufferProxyImpl::CreateStreamTexture(uint32_t texture_id) {
 
   int32_t stream_id = channel_->GenerateRouteID();
   bool succeeded = false;
-  Send(new GpuCommandBufferMsg_CreateStreamTexture(
-      route_id_, texture_id, stream_id, &succeeded));
+  Send(new GpuCommandBufferMsg_CreateStreamTexture(route_id_, texture_id,
+                                                   stream_id, &succeeded));
   if (!succeeded) {
     DLOG(ERROR) << "GpuCommandBufferMsg_CreateStreamTexture returned failure";
     return 0;
@@ -744,4 +732,4 @@ void CommandBufferProxyImpl::InvalidGpuReplyOnClientThread() {
   OnDestroyed(gpu::error::kInvalidGpuMessage, gpu::error::kLostContext);
 }
 
-}  // namespace content
+}  // namespace gpu

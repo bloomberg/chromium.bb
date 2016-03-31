@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_io_surface.h"
 
 #include "base/logging.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/io_surface.h"
 
-namespace content {
+namespace gpu {
 namespace {
 
 uint32_t LockFlags(gfx::BufferUsage usage) {
@@ -25,8 +25,7 @@ uint32_t LockFlags(gfx::BufferUsage usage) {
   return 0;
 }
 
-void NoOp() {
-}
+void NoOp() {}
 
 }  // namespace
 
@@ -41,8 +40,7 @@ GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
       io_surface_(io_surface),
       lock_flags_(lock_flags) {}
 
-GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {
-}
+GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {}
 
 // static
 scoped_ptr<GpuMemoryBufferImplIOSurface>
@@ -121,4 +119,4 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::GetHandle() const {
   return handle;
 }
 
-}  // namespace content
+}  // namespace gpu

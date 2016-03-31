@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
-#include "build/build_config.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
+#include "build/build_config.h"
 #include "content/common/gpu/media/media_messages.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
@@ -19,8 +19,8 @@ using media::VideoDecodeAccelerator;
 namespace content {
 
 GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
-    GpuChannelHost* channel,
-    CommandBufferProxyImpl* impl)
+    gpu::GpuChannelHost* channel,
+    gpu::CommandBufferProxyImpl* impl)
     : channel_(channel),
       decoder_route_id_(MSG_ROUTING_NONE),
       client_(NULL),
@@ -187,7 +187,7 @@ void GpuVideoDecodeAcceleratorHost::OnWillDeleteImpl() {
   DCHECK(CalledOnValidThread());
   impl_ = NULL;
 
-  // The CommandBufferProxyImpl is going away; error out this VDA.
+  // The gpu::CommandBufferProxyImpl is going away; error out this VDA.
   OnChannelError();
 }
 

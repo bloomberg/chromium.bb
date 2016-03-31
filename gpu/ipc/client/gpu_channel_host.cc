@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_channel_host.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 
 #include <algorithm>
 #include <utility>
@@ -17,7 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -25,7 +25,7 @@
 
 using base::AutoLock;
 
-namespace content {
+namespace gpu {
 namespace {
 
 // Global atomic to generate unique transfer buffer IDs.
@@ -57,9 +57,8 @@ scoped_refptr<GpuChannelHost> GpuChannelHost::Create(
     base::WaitableEvent* shutdown_event,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   DCHECK(factory->IsMainThread());
-  scoped_refptr<GpuChannelHost> host =
-      new GpuChannelHost(factory, channel_id, gpu_info,
-                         gpu_memory_buffer_manager);
+  scoped_refptr<GpuChannelHost> host = new GpuChannelHost(
+      factory, channel_id, gpu_info, gpu_memory_buffer_manager);
   host->Connect(channel_handle, shutdown_event);
   return host;
 }
@@ -263,8 +262,8 @@ void GpuChannelHost::DestroyChannel() {
   channel_.reset();
 }
 
-void GpuChannelHost::AddRoute(
-    int route_id, base::WeakPtr<IPC::Listener> listener) {
+void GpuChannelHost::AddRoute(int route_id,
+                              base::WeakPtr<IPC::Listener> listener) {
   AddRouteWithTaskRunner(route_id, listener,
                          base::ThreadTaskRunnerHandle::Get());
 }
@@ -413,9 +412,7 @@ GpuChannelHost::MessageFilter::ListenerInfo::ListenerInfo(
 
 GpuChannelHost::MessageFilter::ListenerInfo::~ListenerInfo() {}
 
-GpuChannelHost::MessageFilter::MessageFilter()
-    : lost_(false) {
-}
+GpuChannelHost::MessageFilter::MessageFilter() : lost_(false) {}
 
 GpuChannelHost::MessageFilter::~MessageFilter() {}
 
@@ -478,4 +475,4 @@ bool GpuChannelHost::MessageFilter::IsLost() const {
   return lost_;
 }
 
-}  // namespace content
+}  // namespace gpu

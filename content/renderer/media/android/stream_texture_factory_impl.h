@@ -18,18 +18,18 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }  // namespace gles2
+class GpuChannelHost;
 }  // namespace gpu
 
 namespace content {
 
 class ContextProviderCommandBuffer;
-class GpuChannelHost;
 
 class StreamTextureFactoryImpl : public StreamTextureFactory {
  public:
   static scoped_refptr<StreamTextureFactoryImpl> Create(
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
-      GpuChannelHost* channel);
+      gpu::GpuChannelHost* channel);
 
   // StreamTextureFactory implementation.
   StreamTextureProxy* CreateProxy() override;
@@ -46,11 +46,11 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
   friend class base::RefCounted<StreamTextureFactoryImpl>;
   StreamTextureFactoryImpl(
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
-      GpuChannelHost* channel);
+      gpu::GpuChannelHost* channel);
   ~StreamTextureFactoryImpl() override;
 
-  scoped_refptr<content::ContextProviderCommandBuffer> context_provider_;
-  scoped_refptr<GpuChannelHost> channel_;
+  scoped_refptr<ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<gpu::GpuChannelHost> channel_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureFactoryImpl);
 };

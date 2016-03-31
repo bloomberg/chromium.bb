@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_IMPL_H_
-#define CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_IMPL_H_
+#ifndef GPU_IPC_CLIENT_COMMAND_BUFFER_PROXY_IMPL_H_
+#define GPU_IPC_CLIENT_COMMAND_BUFFER_PROXY_IMPL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/gpu_export.h"
 #include "ipc/ipc_listener.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/swap_result.h"
@@ -40,12 +41,12 @@ struct Mailbox;
 struct SyncToken;
 }
 
-namespace content {
+namespace gpu {
 class GpuChannelHost;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
-class CommandBufferProxyImpl
+class GPU_EXPORT CommandBufferProxyImpl
     : public gpu::CommandBuffer,
       public gpu::GpuControl,
       public IPC::Listener,
@@ -60,8 +61,8 @@ class CommandBufferProxyImpl
     virtual ~DeletionObserver() {}
   };
 
-  typedef base::Callback<void(
-      const std::string& msg, int id)> GpuConsoleMessageCallback;
+  typedef base::Callback<void(const std::string& msg, int id)>
+      GpuConsoleMessageCallback;
 
   CommandBufferProxyImpl(GpuChannelHost* channel,
                          int32_t route_id,
@@ -119,8 +120,7 @@ class CommandBufferProxyImpl
 
   bool EnsureBackbuffer();
 
-  void SetOnConsoleMessageCallback(
-      const GpuConsoleMessageCallback& callback);
+  void SetOnConsoleMessageCallback(const GpuConsoleMessageCallback& callback);
 
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
   using SwapBuffersCompletionCallback =
@@ -249,6 +249,6 @@ class CommandBufferProxyImpl
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_PROXY_IMPL_H_
+#endif  // GPU_IPC_CLIENT_COMMAND_BUFFER_PROXY_IMPL_H_

@@ -173,6 +173,7 @@
         'command_buffer_service',
         'gpu',
         'gpu_unittest_utils',
+        'gl_in_process_context',
         'gles2_implementation',
         'gles2_cmd_helper',
         'gles2_c_lib',
@@ -245,6 +246,7 @@
         'command_buffer/service/memory_program_cache_unittest.cc',
         'command_buffer/service/mocks.cc',
         'command_buffer/service/mocks.h',
+        'command_buffer/service/path_manager_unittest.cc',
         'command_buffer/service/program_cache_unittest.cc',
         'command_buffer/service/program_manager_unittest.cc',
         'command_buffer/service/query_manager_unittest.cc',
@@ -255,7 +257,6 @@
         'command_buffer/service/sync_point_manager_unittest.cc',
         'command_buffer/service/test_helper.cc',
         'command_buffer/service/test_helper.h',
-        'command_buffer/service/path_manager_unittest.cc',
         'command_buffer/service/texture_manager_unittest.cc',
         'command_buffer/service/transfer_buffer_manager_unittest.cc',
         'command_buffer/service/valuebuffer_manager_unittest.cc',
@@ -273,12 +274,24 @@
         'config/gpu_test_config_unittest.cc',
         'config/gpu_test_expectations_parser_unittest.cc',
         'config/gpu_util_unittest.cc',
+        'ipc/client/gpu_memory_buffer_impl_shared_memory_unittest.cc',
+        'ipc/client/gpu_memory_buffer_impl_test_template.h',
       ],
       'conditions': [
         ['OS == "android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
+        }],
+        ['OS == "mac"', {
+          'sources+': [
+           'ipc/client/gpu_memory_buffer_impl_io_surface_unittest.cc',
+          ]
+        }],
+        ['use_ozone == 1', {
+          'sources+': [
+           'ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap_unittest.cc',
+          ]
         }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -352,8 +365,8 @@
         'command_buffer/tests/gl_chromium_path_rendering_unittest.cc',
         'command_buffer/tests/gl_clear_framebuffer_unittest.cc',
         'command_buffer/tests/gl_compressed_copy_texture_CHROMIUM_unittest.cc',
-        'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_copy_tex_image_2d_workaround_unittest.cc',
+        'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_cube_map_texture_unittest.cc',
         'command_buffer/tests/gl_depth_texture_unittest.cc',
         'command_buffer/tests/gl_dynamic_config_unittest.cc',
@@ -525,6 +538,7 @@
             'command_buffer_service',
             'gles2_cmd_helper',
             'gpu_config',
+            'gpu_ipc_client',
             'gpu_ipc_common',
           ],
           'sources': [
@@ -603,6 +617,17 @@
           ],
         },
         {
+          # GN version: //gpu/ipc/client
+          'target_name': 'gpu_ipc_client',
+          'type': 'static_library',
+          'includes': [
+            'gpu_ipc_client.gypi',
+          ],
+          'dependencies': [
+            'command_buffer_traits',
+          ],
+        },
+        {
           # GN version: //gpu/ipc/common
           'target_name': 'gpu_ipc_common',
           'type': 'static_library',
@@ -646,6 +671,7 @@
             'command_buffer_traits.gypi',
             'gles2_cmd_helper.gypi',
             'gpu_config.gypi',
+            'gpu_ipc_client.gypi',
             'gpu_ipc_common.gypi',
             '../build/android/increase_size_for_speed.gypi',
           ],
@@ -701,6 +727,14 @@
         {
           # GN version: //gpu/ipc/common:command_buffer_traits
           'target_name': 'command_buffer_traits',
+          'type': 'none',
+          'dependencies': [
+            'gpu',
+          ],
+        },
+        {
+          # GN version: //gpu/ipc/client
+          'target_name': 'gpu_ipc_client',
           'type': 'none',
           'dependencies': [
             'gpu',

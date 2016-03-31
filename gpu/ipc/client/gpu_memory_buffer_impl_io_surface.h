@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
-#define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
+#ifndef GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
+#define GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
 
 #include <IOSurface/IOSurface.h>
 #include <stddef.h>
@@ -11,13 +11,13 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "content/common/content_export.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "gpu/gpu_export.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 
-namespace content {
+namespace gpu {
 
 // Implementation of GPU memory buffer based on IO surfaces.
-class CONTENT_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
+class GPU_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
  public:
   ~GpuMemoryBufferImplIOSurface() override;
 
@@ -58,6 +58,6 @@ class CONTENT_EXPORT GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplIOSurface);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_
+#endif  // GPU_IPC_CLIENT_GPU_MEMORY_BUFFER_IMPL_IO_SURFACE_H_

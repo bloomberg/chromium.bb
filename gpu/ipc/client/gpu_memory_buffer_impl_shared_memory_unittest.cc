@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl_test_template.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_test_template.h"
 
-namespace content {
+namespace gpu {
 namespace {
 
 INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplSharedMemory,
@@ -37,4 +37,4 @@ TEST(GpuMemoryBufferImplSharedMemoryTest, Create) {
 }
 
 }  // namespace
-}  // namespace content
+}  // namespace gpu

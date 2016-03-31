@@ -40,7 +40,6 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/common/host_shared_bitmap_manager.h"
@@ -48,6 +47,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_constants.h"
@@ -123,7 +123,7 @@ scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 GpuProcessTransportFactory::CreateOffscreenCommandBufferContext() {
   CauseForGpuLaunch cause =
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(cause));
   return CreateContextCommon(gpu_channel_host, gpu::kNullSurfaceHandle);
 }
@@ -278,7 +278,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         shared_worker_context_provider_lost = true;
       }
     }
-    scoped_refptr<GpuChannelHost> gpu_channel_host =
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
         BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
     if (gpu_channel_host.get()) {
       GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
@@ -609,7 +609,7 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 GpuProcessTransportFactory::CreateContextCommon(
-    scoped_refptr<GpuChannelHost> gpu_channel_host,
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::SurfaceHandle surface_handle) {
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
     return nullptr;

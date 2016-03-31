@@ -18,11 +18,11 @@
 
 namespace gpu {
 struct Capabilities;
+class CommandBufferProxyImpl;
+class GpuChannelHost;
 }
 
 namespace content {
-class CommandBufferProxyImpl;
-class GpuChannelHost;
 
 class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
  public:
@@ -61,9 +61,9 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
     *sync_token = sync_token_;
   }
 
-  CommandBufferProxyImpl* GetCommandBufferProxy();
+  gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
-  GpuChannelHost* channel() { return channel_.get(); }
+  gpu::GpuChannelHost* channel() { return channel_.get(); }
 
  protected:
   ~PPB_Graphics3D_Impl() override;
@@ -96,8 +96,8 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   gpu::Mailbox mailbox_;
   gpu::SyncToken sync_token_;
   bool has_alpha_;
-  scoped_refptr<GpuChannelHost> channel_;
-  scoped_ptr<CommandBufferProxyImpl> command_buffer_;
+  scoped_refptr<gpu::GpuChannelHost> channel_;
+  scoped_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
 
   base::WeakPtrFactory<PPB_Graphics3D_Impl> weak_ptr_factory_;
 

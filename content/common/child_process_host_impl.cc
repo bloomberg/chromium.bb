@@ -22,10 +22,10 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "build/build_config.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "ipc/attachment_broker.h"
 #include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_channel.h"
@@ -317,8 +317,8 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
   // AllocateForChildProcess() will check if |width| and |height| are valid
   // and handle failure in a controlled way when not. We just need to make
   // sure |usage| is supported here.
-  if (GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) {
-    *handle = GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
+  if (gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) {
+    *handle = gpu::GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
         id, gfx::Size(width, height), format, peer_process_.Handle());
   }
 }

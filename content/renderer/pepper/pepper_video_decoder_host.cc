@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/client/gpu_video_decode_accelerator_host.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/common/content_client.h"
@@ -19,6 +18,7 @@
 #include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/pepper/video_decoder_shim.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "media/base/limits.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -134,7 +134,8 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   PPB_Graphics3D_Impl* graphics3d =
       static_cast<PPB_Graphics3D_Impl*>(enter_graphics.object());
 
-  CommandBufferProxyImpl* command_buffer = graphics3d->GetCommandBufferProxy();
+  gpu::CommandBufferProxyImpl* command_buffer =
+      graphics3d->GetCommandBufferProxy();
   if (!command_buffer)
     return PP_ERROR_FAILED;
 
@@ -146,7 +147,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgInitialize(
   if (acceleration != PP_HARDWAREACCELERATION_NONE) {
     // This is not synchronous, but subsequent IPC messages will be buffered, so
     // it is okay to immediately send IPC messages.
-    GpuChannelHost* channel = command_buffer->channel();
+    gpu::GpuChannelHost* channel = command_buffer->channel();
     if (channel) {
       decoder_.reset(
           new GpuVideoDecodeAcceleratorHost(channel, command_buffer));

@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -23,6 +23,10 @@ namespace gfx {
 struct GpuMemoryBufferHandle;
 class Size;
 }  // namespace gfx
+
+namespace gpu {
+class GpuChannelHost;
+}  // namespace gpu
 
 namespace media {
 class VideoFrame;
@@ -33,20 +37,19 @@ class Location;
 }  // namespace tracked_objects
 
 namespace content {
-class GpuChannelHost;
 
 // This class is the renderer-side host for the VideoEncodeAccelerator in the
 // GPU process, coordinated over IPC.
 class GpuVideoEncodeAcceleratorHost
     : public IPC::Listener,
       public media::VideoEncodeAccelerator,
-      public CommandBufferProxyImpl::DeletionObserver,
+      public gpu::CommandBufferProxyImpl::DeletionObserver,
       public base::NonThreadSafe {
  public:
   // |this| is guaranteed not to outlive |channel| and |impl|.  (See comments
   // for |channel_| and |impl_|.)
-  GpuVideoEncodeAcceleratorHost(GpuChannelHost* channel,
-                                CommandBufferProxyImpl* impl);
+  GpuVideoEncodeAcceleratorHost(gpu::GpuChannelHost* channel,
+                                gpu::CommandBufferProxyImpl* impl);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -66,7 +69,7 @@ class GpuVideoEncodeAcceleratorHost
                                        uint32_t framerate_num) override;
   void Destroy() override;
 
-  // CommandBufferProxyImpl::DeletionObserver implementation.
+  // gpu::CommandBufferProxyImpl::DeletionObserver implementation.
   void OnWillDeleteImpl() override;
 
  private:
@@ -99,7 +102,7 @@ class GpuVideoEncodeAcceleratorHost
   // Unowned reference to the GpuChannelHost to send IPC messages to the GPU
   // process.  |channel_| outlives |impl_|, so the reference is always valid as
   // long as it is not NULL.
-  GpuChannelHost* channel_;
+  gpu::GpuChannelHost* channel_;
 
   // Route ID for the associated encoder in the GPU process.
   int32_t encoder_route_id_;
@@ -107,10 +110,10 @@ class GpuVideoEncodeAcceleratorHost
   // The client that will receive callbacks from the encoder.
   Client* client_;
 
-  // Unowned reference to the CommandBufferProxyImpl that created us.  |this|
-  // registers as a DeletionObserver of |impl_|, so the reference is always
-  // valid as long as it is not NULL.
-  CommandBufferProxyImpl* impl_;
+  // Unowned reference to the gpu::CommandBufferProxyImpl that created us.
+  // |this| registers as a DeletionObserver of |impl_|, so the reference is
+  // always valid as long as it is not NULL.
+  gpu::CommandBufferProxyImpl* impl_;
 
   // media::VideoFrames sent to the encoder.
   // base::IDMap not used here, since that takes pointers, not scoped_refptr.

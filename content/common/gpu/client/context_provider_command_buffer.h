@@ -32,7 +32,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
       scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
       CommandBufferContextType type);
 
-  CommandBufferProxyImpl* GetCommandBufferProxy();
+  gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
   // cc_blink::ContextProviderWebContext implementation.
   WebGraphicsContext3DCommandBufferImpl* WebContext3D() override;

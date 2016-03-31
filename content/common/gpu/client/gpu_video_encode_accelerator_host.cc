@@ -7,9 +7,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/gpu/media/media_messages.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/video_frame.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -17,8 +17,8 @@
 namespace content {
 
 GpuVideoEncodeAcceleratorHost::GpuVideoEncodeAcceleratorHost(
-    GpuChannelHost* channel,
-    CommandBufferProxyImpl* impl)
+    gpu::GpuChannelHost* channel,
+    gpu::CommandBufferProxyImpl* impl)
     : channel_(channel),
       encoder_route_id_(MSG_ROUTING_NONE),
       client_(NULL),
@@ -181,7 +181,7 @@ void GpuVideoEncodeAcceleratorHost::OnWillDeleteImpl() {
   DCHECK(CalledOnValidThread());
   impl_ = NULL;
 
-  // The CommandBufferProxyImpl is going away; error out this VEA.
+  // The gpu::CommandBufferProxyImpl is going away; error out this VEA.
   OnChannelError();
 }
 

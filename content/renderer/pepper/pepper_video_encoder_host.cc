@@ -10,7 +10,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/numerics/safe_math.h"
 #include "build/build_config.h"
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "content/common/pepper_file_util.h"
@@ -19,6 +18,7 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/video_encoder_shim.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -506,8 +506,9 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
   std::vector<int32_t> attribs(1, PP_GRAPHICS3DATTRIB_NONE);
   command_buffer_ = channel_->CreateCommandBuffer(
       gpu::kNullSurfaceHandle, gfx::Size(), nullptr,
-      GpuChannelHost::kDefaultStreamId, GpuChannelHost::kDefaultStreamPriority,
-      attribs, GURL::EmptyGURL(), gfx::PreferIntegratedGpu);
+      gpu::GpuChannelHost::kDefaultStreamId,
+      gpu::GpuChannelHost::kDefaultStreamPriority, attribs, GURL::EmptyGURL(),
+      gfx::PreferIntegratedGpu);
   if (!command_buffer_) {
     Close();
     return false;

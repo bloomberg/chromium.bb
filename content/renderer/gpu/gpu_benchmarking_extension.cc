@@ -909,7 +909,8 @@ bool GpuBenchmarking::SendMessageToMicroBenchmark(
 }
 
 bool GpuBenchmarking::HasGpuChannel() {
-  GpuChannelHost* gpu_channel = RenderThreadImpl::current()->GetGpuChannel();
+  gpu::GpuChannelHost* gpu_channel =
+      RenderThreadImpl::current()->GetGpuChannel();
   return !!gpu_channel;
 }
 

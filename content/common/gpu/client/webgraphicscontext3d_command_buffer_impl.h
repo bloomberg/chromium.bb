@@ -18,9 +18,9 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_metrics.h"
-#include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -30,6 +30,7 @@
 namespace gpu {
 
 class ContextSupport;
+class GpuChannelHost;
 class TransferBuffer;
 
 namespace gles2 {
@@ -40,7 +41,6 @@ class GLES2Interface;
 }
 
 namespace content {
-class GpuChannelHost;
 
 const size_t kDefaultCommandBufferSize = 1024 * 1024;
 const size_t kDefaultStartTransferBufferSize = 1 * 1024 * 1024;
@@ -111,7 +111,7 @@ class WebGraphicsContext3DCommandBufferImpl
   WebGraphicsContext3DCommandBufferImpl(
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
-      GpuChannelHost* host,
+      gpu::GpuChannelHost* host,
       const gpu::gles2::ContextCreationAttribHelper& attributes,
       gfx::GpuPreference gpu_preference,
       bool share_resources,
@@ -121,7 +121,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   ~WebGraphicsContext3DCommandBufferImpl() override;
 
-  CommandBufferProxyImpl* GetCommandBufferProxy() {
+  gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
     return command_buffer_.get();
   }
 
@@ -139,7 +139,7 @@ class WebGraphicsContext3DCommandBufferImpl
   // on any failure.
   static CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl*
   CreateOffscreenContext(
-      GpuChannelHost* host,
+      gpu::GpuChannelHost* host,
       const gpu::gles2::ContextCreationAttribHelper& attributes,
       gfx::GpuPreference gpu_preference,
       bool share_resources,
@@ -197,14 +197,14 @@ class WebGraphicsContext3DCommandBufferImpl
   gpu::gles2::ContextCreationAttribHelper attributes_;
 
   // State needed by MaybeInitializeGL.
-  scoped_refptr<GpuChannelHost> host_;
+  scoped_refptr<gpu::GpuChannelHost> host_;
   gpu::SurfaceHandle surface_handle_;
   GURL active_url_;
   CommandBufferContextType context_type_;
 
   gfx::GpuPreference gpu_preference_;
 
-  scoped_ptr<CommandBufferProxyImpl> command_buffer_;
+  scoped_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
   scoped_ptr<gpu::gles2::GLES2Implementation> real_gl_;

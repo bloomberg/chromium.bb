@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 
 #if defined(OS_MACOSX)
-#include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_io_surface.h"
 #endif
 
 #if defined(OS_ANDROID)
-#include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_surface_texture.h"
 #endif
 
 #if defined(USE_OZONE)
-#include "content/common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
 #endif
 
-namespace content {
+namespace gpu {
 
 GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::GpuMemoryBufferId id,
                                          const gfx::Size& size,
@@ -91,4 +91,4 @@ ClientBuffer GpuMemoryBufferImpl::AsClientBuffer() {
   return reinterpret_cast<ClientBuffer>(this);
 }
 
-}  // namespace content
+}  // namespace gpu

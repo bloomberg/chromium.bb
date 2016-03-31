@@ -4,14 +4,14 @@
 
 #include "content/renderer/gpu/stream_texture_host_android.h"
 
-#include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace content {
 
-StreamTextureHost::StreamTextureHost(GpuChannelHost* channel)
+StreamTextureHost::StreamTextureHost(gpu::GpuChannelHost* channel)
     : stream_id_(0),
       listener_(NULL),
       channel_(channel),

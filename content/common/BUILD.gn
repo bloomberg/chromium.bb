@@ -171,6 +171,7 @@ source_set("common") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/service",
+    "//gpu/ipc/client",
     "//gpu/ipc/common",
     "//gpu/skia_bindings",
     "//ipc",
@@ -224,8 +225,6 @@ source_set("common") {
 
   if (is_mac) {
     sources += [
-                 "gpu/client/gpu_memory_buffer_impl_io_surface.cc",
-                 "gpu/client/gpu_memory_buffer_impl_io_surface.h",
                  "gpu/gpu_memory_buffer_factory_io_surface.cc",
                  "gpu/gpu_memory_buffer_factory_io_surface.h",
                  "gpu/media/vt_mac.h",
@@ -259,8 +258,6 @@ source_set("common") {
 
   if (is_android) {
     sources += [
-      "gpu/client/gpu_memory_buffer_impl_surface_texture.cc",
-      "gpu/client/gpu_memory_buffer_impl_surface_texture.h",
       "gpu/gpu_memory_buffer_factory_surface_texture.cc",
       "gpu/gpu_memory_buffer_factory_surface_texture.h",
     ]
@@ -286,8 +283,6 @@ source_set("common") {
     sources -= [
       "cursors/webcursor_ozone.cc",
       "font_list_ozone.cc",
-      "gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.cc",
-      "gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h",
       "gpu/gpu_memory_buffer_factory_ozone_native_pixmap.cc",
       "gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h",
     ]

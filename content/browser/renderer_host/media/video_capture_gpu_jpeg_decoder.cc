@@ -209,7 +209,7 @@ void VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread(
     base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       BrowserGpuChannelHostFactory::instance()->GetGpuChannel());
   task_runner->PostTask(
       FROM_HERE, base::Bind(&VideoCaptureGpuJpegDecoder::FinishInitialization,
@@ -217,7 +217,7 @@ void VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread(
 }
 
 void VideoCaptureGpuJpegDecoder::FinishInitialization(
-    scoped_refptr<GpuChannelHost> gpu_channel_host) {
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   TRACE_EVENT0("gpu", "VideoCaptureGpuJpegDecoder::FinishInitialization");
   DCHECK(CalledOnValidThread());
   base::AutoLock lock(lock_);

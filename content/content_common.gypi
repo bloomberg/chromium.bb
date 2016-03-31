@@ -351,20 +351,10 @@
       'common/gpu/child_window_surface_win.h',
       'common/gpu/client/command_buffer_metrics.cc',
       'common/gpu/client/command_buffer_metrics.h',
-      'common/gpu/client/command_buffer_proxy_impl.cc',
-      'common/gpu/client/command_buffer_proxy_impl.h',
       'common/gpu/client/context_provider_command_buffer.cc',
       'common/gpu/client/context_provider_command_buffer.h',
-      'common/gpu/client/gpu_channel_host.cc',
-      'common/gpu/client/gpu_channel_host.h',
       'common/gpu/client/gpu_jpeg_decode_accelerator_host.cc',
       'common/gpu/client/gpu_jpeg_decode_accelerator_host.h',
-      'common/gpu/client/gpu_memory_buffer_impl.cc',
-      'common/gpu/client/gpu_memory_buffer_impl.h',
-      'common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.cc',
-      'common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h',
-      'common/gpu/client/gpu_memory_buffer_impl_shared_memory.cc',
-      'common/gpu/client/gpu_memory_buffer_impl_shared_memory.h',
       'common/gpu/client/gpu_video_decode_accelerator_host.cc',
       'common/gpu/client/gpu_video_decode_accelerator_host.h',
       'common/gpu/client/gpu_video_encode_accelerator_host.cc',
@@ -664,8 +654,6 @@
         '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac'
       ],
       'sources': [
-        'common/gpu/client/gpu_memory_buffer_impl_io_surface.cc',
-        'common/gpu/client/gpu_memory_buffer_impl_io_surface.h',
         'common/gpu/gpu_memory_buffer_factory_io_surface.cc',
         'common/gpu/gpu_memory_buffer_factory_io_surface.h',
         'common/gpu/media/vt_mac.h',
@@ -729,8 +717,6 @@
     }],
     ['OS=="android"',{
       'sources': [
-        'common/gpu/client/gpu_memory_buffer_impl_surface_texture.cc',
-        'common/gpu/client/gpu_memory_buffer_impl_surface_texture.h',
         'common/gpu/gpu_memory_buffer_factory_surface_texture.cc',
         'common/gpu/gpu_memory_buffer_factory_surface_texture.h',
       ],
@@ -1094,16 +1080,12 @@
         '../ui/ozone/ozone.gyp:ozone_base',
       ],
       'sources!': [
-        'common/gpu/client/gpu_memory_buffer_impl_linux.cc',
         'common/gpu/gpu_memory_buffer_factory_linux.cc',
       ],
     }, {  # use_ozone!=1
       'sources!': [
         'common/cursors/webcursor_ozone.cc',
         'common/font_list_ozone.cc',
-        'common/gpu/client/gpu_memory_buffer_impl_ozone.cc',
-        'common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.cc',
-        'common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h',
         'common/gpu/gpu_memory_buffer_factory_ozone.cc',
         'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.cc',
         'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h',

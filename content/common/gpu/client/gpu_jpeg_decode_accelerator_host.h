@@ -16,13 +16,16 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace gpu {
+class GpuChannelHost;
+}
+
 namespace IPC {
 class Listener;
 class Message;
 }
 
 namespace content {
-class GpuChannelHost;
 
 // This class is used to talk to JpegDecodeAccelerator in the GPU process
 // through IPC messages.
@@ -33,7 +36,7 @@ class GpuJpegDecodeAcceleratorHost : public media::JpegDecodeAccelerator,
   // VideoCaptureGpuJpegDecoder delete |this| before |channel|. So |this| is
   // guaranteed not to outlive |channel|.
   GpuJpegDecodeAcceleratorHost(
-      GpuChannelHost* channel,
+      gpu::GpuChannelHost* channel,
       int32_t route_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~GpuJpegDecodeAcceleratorHost() override;
@@ -55,7 +58,7 @@ class GpuJpegDecodeAcceleratorHost : public media::JpegDecodeAccelerator,
 
   // Unowned reference to the GpuChannelHost to send IPC messages to the GPU
   // process.
-  GpuChannelHost* channel_;
+  gpu::GpuChannelHost* channel_;
 
   // Route ID for the associated decoder in the GPU process.
   int32_t decoder_route_id_;

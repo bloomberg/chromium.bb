@@ -17,11 +17,11 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/generic_shared_memory_id_generator.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_switches.h"
@@ -57,7 +57,7 @@ void HostCreateGpuMemoryBufferFromHandle(
 
 void GpuMemoryBufferDeleted(
     scoped_refptr<base::SingleThreadTaskRunner> destruction_task_runner,
-    const GpuMemoryBufferImpl::DestructionCallback& destruction_callback,
+    const gpu::GpuMemoryBufferImpl::DestructionCallback& destruction_callback,
     const gpu::SyncToken& sync_token) {
   destruction_task_runner->PostTask(
       FROM_HERE, base::Bind(destruction_callback, sync_token));
@@ -297,8 +297,9 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   }
 
   // Early out if we cannot fallback to shared memory buffer.
-  if (!GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage) ||
-      !GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size, format)) {
+  if (!gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage) ||
+      !gpu::GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size,
+                                                                  format)) {
     callback.Run(gfx::GpuMemoryBufferHandle());
     return;
   }
@@ -315,21 +316,21 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
     return;
   }
 
-  callback.Run(GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
+  callback.Run(gpu::GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
       id, size, format, child_process_handle));
 }
 
 gfx::GpuMemoryBuffer*
 BrowserGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {
-  return GpuMemoryBufferImpl::FromClientBuffer(buffer);
+  return gpu::GpuMemoryBufferImpl::FromClientBuffer(buffer);
 }
 
 void BrowserGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {
-  static_cast<GpuMemoryBufferImpl*>(buffer)
-      ->set_destruction_sync_token(sync_token);
+  static_cast<gpu::GpuMemoryBufferImpl*>(buffer)->set_destruction_sync_token(
+      sync_token);
 }
 
 bool BrowserGpuMemoryBufferManager::OnMemoryDump(
@@ -462,7 +463,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
     return;
   }
 
-  DCHECK(GpuMemoryBufferImplSharedMemory::IsUsageSupported(request->usage))
+  DCHECK(gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(request->usage))
       << static_cast<int>(request->usage);
 
   BufferMap& buffers = clients_[request->client_id];
@@ -475,7 +476,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
 
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
-  request->result = GpuMemoryBufferImplSharedMemory::Create(
+  request->result = gpu::GpuMemoryBufferImplSharedMemory::Create(
       new_id, request->size, request->format,
       base::Bind(
           &GpuMemoryBufferDeleted,
@@ -512,7 +513,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferFromHandleOnIO(
     return;
   }
 
-  DCHECK(GpuMemoryBufferImplSharedMemory::IsUsageSupported(request->usage))
+  DCHECK(gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(request->usage))
       << static_cast<int>(request->usage);
 
   BufferMap& buffers = clients_[request->client_id];
@@ -531,7 +532,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferFromHandleOnIO(
 
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
-  request->result = GpuMemoryBufferImplSharedMemory::CreateFromHandle(
+  request->result = gpu::GpuMemoryBufferImplSharedMemory::CreateFromHandle(
       handle, request->size, request->format, request->usage,
       base::Bind(
           &GpuMemoryBufferDeleted,
@@ -554,7 +555,7 @@ void BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO(
 
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
-  request->result = GpuMemoryBufferImpl::CreateFromHandle(
+  request->result = gpu::GpuMemoryBufferImpl::CreateFromHandle(
       handle, request->size, request->format, request->usage,
       base::Bind(
           &GpuMemoryBufferDeleted,

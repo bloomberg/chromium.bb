@@ -28,7 +28,7 @@ const content::CauseForGpuLaunch kInitCause =
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext(
-    content::GpuChannelHost* gpu_channel_host) {
+    gpu::GpuChannelHost* gpu_channel_host) {
   // This is for an offscreen context, so the default framebuffer doesn't need
   // any alpha, depth, stencil, antialiasing.
   gpu::gles2::ContextCreationAttribHelper attributes;
@@ -65,8 +65,8 @@ class ContextTestBase : public content::ContentBrowserTest {
     base::RunLoop run_loop;
     factory->EstablishGpuChannel(kInitCause, run_loop.QuitClosure());
     run_loop.Run();
-    scoped_refptr<content::GpuChannelHost>
-        gpu_channel_host(factory->GetGpuChannel());
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
+        factory->GetGpuChannel());
     CHECK(gpu_channel_host);
 
     provider_ = content::ContextProviderCommandBuffer::Create(
@@ -144,9 +144,7 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
     run_loop.Run();
   }
 
-  GpuChannelHost* GetGpuChannel() {
-    return GetFactory()->GetGpuChannel();
-  }
+  gpu::GpuChannelHost* GetGpuChannel() { return GetFactory()->GetGpuChannel(); }
 
   static void Signal(bool *event) {
     CHECK_EQ(*event, false);
@@ -196,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                        MAYBE_AlreadyEstablished) {
   DCHECK(!IsChannelEstablished());
-  scoped_refptr<GpuChannelHost> gpu_channel =
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel =
       GetFactory()->EstablishGpuChannelSync(kInitCause);
 
   // Expect established callback immediately.
@@ -264,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                        MAYBE_CrashAndRecover) {
   DCHECK(!IsChannelEstablished());
   EstablishAndWait();
-  scoped_refptr<GpuChannelHost> host = GetGpuChannel();
+  scoped_refptr<gpu::GpuChannelHost> host = GetGpuChannel();
 
   scoped_refptr<ContextProviderCommandBuffer> provider =
       ContextProviderCommandBuffer::Create(CreateContext(GetGpuChannel()),

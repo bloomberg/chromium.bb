@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/common/gpu/client/gpu_channel_host.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/compositor/compositor.h"
 
@@ -95,7 +95,7 @@ class GpuProcessTransportFactory
                              bool create_gpu_output_surface,
                              int num_attempts);
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContextCommon(
-      scoped_refptr<GpuChannelHost> gpu_channel_host,
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
       gpu::SurfaceHandle surface_handle);
 
   void OnLostMainThreadSharedContextInsideCallback();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
 
 #include <utility>
 
@@ -13,7 +13,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
-namespace content {
+namespace gpu {
 namespace {
 
 void FreeNativePixmapForTesting(scoped_refptr<ui::NativePixmap> native_pixmap) {
@@ -108,4 +108,4 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplOzoneNativePixmap::GetHandle()
   return handle;
 }
 
-}  // namespace content
+}  // namespace gpu
