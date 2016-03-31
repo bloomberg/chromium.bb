@@ -334,6 +334,8 @@ source_set("test_support") {
     "public/test/response_providers/file_based_response_provider_impl.mm",
     "public/test/response_providers/response_provider.h",
     "public/test/response_providers/response_provider.mm",
+    "public/test/response_providers/string_response_provider.h",
+    "public/test/response_providers/string_response_provider.mm",
     "public/test/scoped_testing_web_client.h",
     "public/test/scoped_testing_web_client.mm",
     "public/test/test_browser_state.cc",
@@ -350,6 +352,8 @@ source_set("test_support") {
     "test/crw_fake_web_controller_observer.mm",
     "test/test_web_thread.cc",
     "test/test_web_thread_bundle.cc",
+    "test/web_int_test.h",
+    "test/web_int_test.mm",
     "test/web_test.h",
     "test/web_test.mm",
     "test/web_test_suite.cc",
@@ -432,6 +436,22 @@ test("ios_web_unittests") {
     "webui/crw_web_ui_manager_unittest.mm",
     "webui/crw_web_ui_page_builder_unittest.mm",
     "webui/url_fetcher_block_adapter_unittest.mm",
+  ]
+}
+
+test("ios_web_inttests") {
+  deps = [
+    ":test_support",
+    ":web",
+    "//base/test:test_support",
+    "//net:test_support",
+    "//testing/gtest",
+    "//ui/base:test_support",
+  ]
+  sources = [
+    "browser_state_web_view_partition_inttest.mm",
+    "public/test/http_server_inttest.mm",
+    "test/run_all_unittests.cc",
   ]
 }
 
