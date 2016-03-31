@@ -39,6 +39,7 @@
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "url/gurl.h"
 
 using password_manager::PasswordFormManager;
@@ -47,7 +48,7 @@ using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
 
-@interface PasswordController ()<FormSuggestionProvider>
+@interface PasswordController ()<CRWWebStateObserver, FormSuggestionProvider>
 
 // Parses the |jsonString| which contatins the password forms found on a web
 // page to populate the |forms| vector.
@@ -243,23 +244,12 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (instancetype)initWithWebState:(web::WebState*)webState
              passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate {
-  self = [self initWithWebState:webState
-            passwordsUiDelegate:UIDelegate
-                         client:nullptr];
-  passwordManagerClient_.reset(new IOSChromePasswordManagerClient(self));
-  return self;
-}
-
-- (instancetype)initWithWebState:(web::WebState*)webState
-             passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
-                          client:(scoped_ptr<PasswordManagerClient>)
-                                     passwordManagerClient {
   DCHECK(webState);
   self = [super init];
   if (self) {
     webStateObserverBridge_.reset(
         new web::WebStateObserverBridge(webState, self));
-    passwordManagerClient_ = std::move(passwordManagerClient);
+    passwordManagerClient_.reset(new IOSChromePasswordManagerClient(self));
     passwordManager_.reset(new PasswordManager(passwordManagerClient_.get()));
     passwordManagerDriver_.reset(new IOSChromePasswordManagerDriver(self));
     if (experimental_flags::IsPasswordGenerationEnabled() &&

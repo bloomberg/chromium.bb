@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/autofill/form_suggestion_provider.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_client.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_driver.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 @protocol FormInputAccessoryViewProvider;
 @protocol PasswordsUiDelegate;
@@ -23,9 +22,8 @@ class PasswordManagerDriver;
 }  // namespace password_manager
 
 // Per-tab password controller. Handles password autofill and saving.
-@interface PasswordController : NSObject<CRWWebStateObserver,
-                                         PasswordManagerClientDelegate,
-                                         PasswordManagerDriverDelegate>
+@interface PasswordController
+    : NSObject<PasswordManagerClientDelegate, PasswordManagerDriverDelegate>
 
 // An object that can provide suggestions from this PasswordController.
 @property(readonly) id<FormSuggestionProvider> suggestionProvider;
@@ -48,14 +46,8 @@ class PasswordManagerDriver;
 
 // |webState| should not be nil.
 - (instancetype)initWithWebState:(web::WebState*)webState
-             passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate;
-
-// This is just for testing.
-- (instancetype)
-   initWithWebState:(web::WebState*)webState
-passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
-             client:(scoped_ptr<password_manager::PasswordManagerClient>)
-                        passwordManagerClient NS_DESIGNATED_INITIALIZER;
+             passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
