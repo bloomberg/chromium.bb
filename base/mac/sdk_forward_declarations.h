@@ -538,6 +538,10 @@ BASE_EXPORT extern "C" void NSAccessibilityPostNotificationWithUserInfo(
 - (void)setTitlebarAppearsTransparent:(BOOL)flag;
 @end
 
+@interface NSProcessInfo (YosemiteSDK)
+@property(readonly) NSOperatingSystemVersion operatingSystemVersion;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_10
 
 // Once Chrome no longer supports OSX 10.10.2, everything within this

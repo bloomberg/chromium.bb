@@ -626,7 +626,7 @@
           'sys_info_internal.h',
           'sys_info_ios.mm',
           'sys_info_linux.cc',
-          'sys_info_mac.cc',
+          'sys_info_mac.mm',
           'sys_info_openbsd.cc',
           'sys_info_posix.cc',
           'sys_info_win.cc',

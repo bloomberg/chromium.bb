@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreServices/CoreServices.h>
+#import <Foundation/Foundation.h>
 #include <mach/mach_host.h>
 #include <mach/mach_init.h>
 #include <stddef.h>
@@ -14,7 +15,9 @@
 #include <sys/types.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_mach_port.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 
@@ -36,12 +39,29 @@ std::string SysInfo::OperatingSystemVersion() {
 void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
                                             int32_t* minor_version,
                                             int32_t* bugfix_version) {
-  Gestalt(gestaltSystemVersionMajor,
-      reinterpret_cast<SInt32*>(major_version));
-  Gestalt(gestaltSystemVersionMinor,
-      reinterpret_cast<SInt32*>(minor_version));
-  Gestalt(gestaltSystemVersionBugFix,
-      reinterpret_cast<SInt32*>(bugfix_version));
+  NSProcessInfo* processInfo = [NSProcessInfo processInfo];
+  if ([processInfo respondsToSelector:@selector(operatingSystemVersion)]) {
+    NSOperatingSystemVersion version = [processInfo operatingSystemVersion];
+    *major_version = version.majorVersion;
+    *minor_version = version.minorVersion;
+    *bugfix_version = version.patchVersion;
+  } else {
+    // -[NSProcessInfo operatingSystemVersion] is documented available in 10.10.
+    // It's also available via a private API since 10.9.2. For the remaining
+    // cases in 10.9, rely on ::Gestalt(..). Since this code is only needed for
+    // 10.9.0 and 10.9.1 and uses the recommended replacement thereafter,
+    // suppress the warning for this fallback case.
+    DCHECK(base::mac::IsOSMavericks());
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    Gestalt(gestaltSystemVersionMajor,
+            reinterpret_cast<SInt32*>(major_version));
+    Gestalt(gestaltSystemVersionMinor,
+            reinterpret_cast<SInt32*>(minor_version));
+    Gestalt(gestaltSystemVersionBugFix,
+            reinterpret_cast<SInt32*>(bugfix_version));
+#pragma clang diagnostic pop
+  }
 }
 
 // static
