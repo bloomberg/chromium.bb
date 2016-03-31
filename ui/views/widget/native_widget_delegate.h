@@ -117,11 +117,10 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // |point|, in client coordinates.
   virtual int GetNonClientComponent(const gfx::Point& point) = 0;
 
-  // Mouse and key event handlers.
+  // Event handlers.
   virtual void OnKeyEvent(ui::KeyEvent* event) = 0;
   virtual void OnMouseEvent(ui::MouseEvent* event) = 0;
   virtual void OnMouseCaptureLost() = 0;
-
   virtual void OnScrollEvent(ui::ScrollEvent* event) = 0;
   virtual void OnGestureEvent(ui::GestureEvent* event) = 0;
 
@@ -137,7 +136,6 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // Provides the hit-test mask if HasHitTestMask above returns true.
   virtual void GetHitTestMask(gfx::Path* mask) const = 0;
 
-  //
   virtual Widget* AsWidget() = 0;
   virtual const Widget* AsWidget() const = 0;
 
