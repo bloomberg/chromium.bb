@@ -633,7 +633,7 @@ source_set("skia_opts") {
         }
       }
     } else {
-      sources = gypi_skia_opts.none_sourcees
+      sources = gypi_skia_opts.none_sources
     }
   } else if (current_cpu == "arm64") {
     sources = gypi_skia_opts.arm64_sources
