@@ -41,9 +41,4 @@ void TrackedDictionary::SetBoolean(const std::string& path, bool new_value) {
   Set(path, make_scoped_ptr(new base::FundamentalValue(new_value)));
 }
 
-void TrackedDictionary::SetString(const std::string& path,
-                                  const std::string& new_value) {
-  Set(path, make_scoped_ptr(new base::StringValue(new_value)));
-}
-
 }  // namespace test_runner

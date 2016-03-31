@@ -44,7 +44,6 @@ class TEST_RUNNER_EXPORT TrackedDictionary {
 
   // Type-specific setter for convenience.
   void SetBoolean(const std::string& path, bool new_value);
-  void SetString(const std::string& path, const std::string& new_value);
 
  private:
   base::DictionaryValue current_values_;
