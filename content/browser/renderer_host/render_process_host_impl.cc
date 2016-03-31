@@ -300,10 +300,6 @@ IPC::PlatformFileForTransit CreateFileForProcess(base::FilePath file_path,
 // Allow us to only run the trial in the first renderer.
 bool has_done_stun_trials = false;
 
-// Does nothing. Just to avoid races between enable and disable.
-void DisableAecDumpOnFileThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-}
 #endif
 
 // the global list of all renderer processes
@@ -2029,7 +2025,7 @@ void RenderProcessHostImpl::DisableAudioDebugRecordings() {
   // for avoiding races between enable and disable. Nothing is done on the FILE
   // thread.
   BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE, base::Bind(&DisableAecDumpOnFileThread),
+      BrowserThread::FILE, FROM_HERE, base::Bind(&base::DoNothing),
       base::Bind(&RenderProcessHostImpl::SendDisableAecDumpToRenderer,
                  weak_factory_.GetWeakPtr()));
 
@@ -2061,7 +2057,7 @@ void RenderProcessHostImpl::DisableEventLogRecordings() {
   // for avoiding races between enable and disable. Nothing is done on the FILE
   // thread.
   BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE, base::Bind(&DisableAecDumpOnFileThread),
+      BrowserThread::FILE, FROM_HERE, base::Bind(&base::DoNothing),
       base::Bind(&RenderProcessHostImpl::SendDisableEventLogToRenderer,
                  weak_factory_.GetWeakPtr()));
 }
