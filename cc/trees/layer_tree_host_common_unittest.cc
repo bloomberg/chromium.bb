@@ -310,7 +310,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   const gfx::Vector2d kMaxScrollOffset(200, 200);
   const gfx::PointF kScrollLayerPosition(-kScrollOffset.x(),
                                          -kScrollOffset.y());
-  const float kPageScale = 0.888f;
+  float page_scale = 0.888f;
   const float kDeviceScale = 1.666f;
 
   FakeImplTaskRunnerProvider task_runner_provider;
@@ -362,22 +362,16 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   LayerImpl* root_layer = root.get();
   host_impl.active_tree()->SetRootLayer(std::move(root));
 
-  // We need property trees to exist when we try to update page scale factor on
-  // active tree. But we still need to rebuild property trees after that because
-  // BuildingPropertyTreesForTesting doesn't take into account the scale factors
-  // and the page scale layer.
-  root_layer->layer_tree_impl()->BuildPropertyTreesForTesting();
-  root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(root_layer, kDeviceScale, kPageScale,
+  ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
                                  scroll_layer->parent());
   gfx::Transform expected_transform = identity_matrix;
   gfx::PointF sub_layer_screen_position = kScrollLayerPosition - kScrollDelta;
   expected_transform.Translate(MathUtil::Round(sub_layer_screen_position.x() *
-                                               kPageScale * kDeviceScale),
+                                               page_scale * kDeviceScale),
                                MathUtil::Round(sub_layer_screen_position.y() *
-                                               kPageScale * kDeviceScale));
-  expected_transform.Scale(kPageScale * kDeviceScale,
-                           kPageScale * kDeviceScale);
+                                               page_scale * kDeviceScale));
+  expected_transform.Scale(page_scale * kDeviceScale,
+                           page_scale * kDeviceScale);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
                                   sublayer->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
@@ -391,18 +385,41 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                gfx::Point3F(), gfx::PointF(), gfx::Size(10, 20),
                                true, false, false);
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(root_layer, kDeviceScale, kPageScale,
+  ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
                                  scroll_layer->parent());
   expected_transform.MakeIdentity();
   expected_transform.Translate(
-      MathUtil::Round(kTranslateX * kPageScale * kDeviceScale +
-                      sub_layer_screen_position.x() * kPageScale *
+      MathUtil::Round(kTranslateX * page_scale * kDeviceScale +
+                      sub_layer_screen_position.x() * page_scale *
                           kDeviceScale),
-      MathUtil::Round(kTranslateY * kPageScale * kDeviceScale +
-                      sub_layer_screen_position.y() * kPageScale *
+      MathUtil::Round(kTranslateY * page_scale * kDeviceScale +
+                      sub_layer_screen_position.y() * page_scale *
                           kDeviceScale));
-  expected_transform.Scale(kPageScale * kDeviceScale,
-                           kPageScale * kDeviceScale);
+  expected_transform.Scale(page_scale * kDeviceScale,
+                           page_scale * kDeviceScale);
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
+                                  sublayer->DrawTransform());
+
+  // Test that page scale is updated even when we don't rebuild property trees.
+  page_scale = 1.888f;
+  root_layer->layer_tree_impl()->SetViewportLayersFromIds(
+      Layer::INVALID_ID, scroll_layer->parent()->id(), Layer::INVALID_ID,
+      Layer::INVALID_ID);
+  root_layer->layer_tree_impl()->SetPageScaleOnActiveTree(page_scale);
+  EXPECT_FALSE(root_layer->layer_tree_impl()->property_trees()->needs_rebuild);
+  ExecuteCalculateDrawProperties(root_layer, kDeviceScale, page_scale,
+                                 scroll_layer->parent());
+
+  expected_transform.MakeIdentity();
+  expected_transform.Translate(
+      MathUtil::Round(kTranslateX * page_scale * kDeviceScale +
+                      sub_layer_screen_position.x() * page_scale *
+                          kDeviceScale),
+      MathUtil::Round(kTranslateY * page_scale * kDeviceScale +
+                      sub_layer_screen_position.y() * page_scale *
+                          kDeviceScale));
+  expected_transform.Scale(page_scale * kDeviceScale,
+                           page_scale * kDeviceScale);
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform,
                                   sublayer->DrawTransform());
 }
@@ -4772,12 +4789,6 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
 
   float device_scale_factor = 2.5f;
   float page_scale_factor = 3.f;
-  // We need property trees to exist when we try to update page scale factor on
-  // active tree. But we still need to rebuild property trees after that because
-  // BuildingPropertyTreesForTesting doesn't take into account the scale factors
-  // and the page scale layer.
-  root->layer_tree_impl()->BuildPropertyTreesForTesting();
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
                                  root);
 
@@ -4864,12 +4875,6 @@ TEST_F(LayerTreeHostCommonScalingTest, SmallIdealScale) {
   float page_scale_factor = 0.01f;
 
   {
-    // We need property trees to exist when we try to update page scale factor
-    // on active tree. But we still need to rebuild property trees after that
-    // because BuildingPropertyTreesForTesting doesn't take into account the
-    // scale factors and the page scale layer.
-    root->layer_tree_impl()->BuildPropertyTreesForTesting();
-    root->layer_tree_impl()->property_trees()->needs_rebuild = true;
     ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
                                    root);
 
