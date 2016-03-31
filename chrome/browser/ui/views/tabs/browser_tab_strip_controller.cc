@@ -374,7 +374,7 @@ void BrowserTabStripController::CreateNewTabWithLocation(
 }
 
 bool BrowserTabStripController::IsIncognito() {
-  return browser_->profile()->IsOffTheRecord();
+  return browser_->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE;
 }
 
 void BrowserTabStripController::StackedLayoutMaybeChanged() {
