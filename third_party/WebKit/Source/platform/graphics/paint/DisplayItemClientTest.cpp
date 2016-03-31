@@ -4,6 +4,7 @@
 
 #include "platform/graphics/paint/DisplayItemClient.h"
 
+#include "platform/testing/FakeDisplayItemClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -11,16 +12,10 @@ namespace {
 
 #if ENABLE(ASSERT)
 
-class TestDisplayItemClient : public DisplayItemClient {
-public:
-    String debugName() const final { return "TestDisplayItemClient"; }
-    LayoutRect visualRect() const final { return LayoutRect(); }
-};
-
 TEST(DisplayItemClientTest, IsAlive)
 {
     EXPECT_FALSE(DisplayItemClient::isAlive(*reinterpret_cast<DisplayItemClient*>(0x12345678)));
-    TestDisplayItemClient* testClient = new TestDisplayItemClient;
+    FakeDisplayItemClient* testClient = new FakeDisplayItemClient;
     EXPECT_TRUE(DisplayItemClient::isAlive(*testClient));
     delete testClient;
     EXPECT_FALSE(DisplayItemClient::isAlive(*testClient));

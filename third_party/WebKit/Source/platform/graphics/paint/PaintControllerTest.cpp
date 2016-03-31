@@ -12,6 +12,7 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
+#include "platform/testing/FakeDisplayItemClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -44,23 +45,9 @@ const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(D
 const DisplayItem::Type backgroundDrawingType = DisplayItem::DrawingPaintPhaseFirst;
 const DisplayItem::Type clipType = DisplayItem::ClipFirst;
 
-class TestDisplayItemClient : public DisplayItemClient {
-public:
-    TestDisplayItemClient(const String& name, LayoutRect visualRect = LayoutRect())
-        : m_name(name), m_visualRect(visualRect)
-    { }
-
-    String debugName() const final { return m_name; }
-    LayoutRect visualRect() const override { return m_visualRect; }
-
-private:
-    String m_name;
-    LayoutRect m_visualRect;
-};
-
 class TestDisplayItem final : public DisplayItem {
 public:
-    TestDisplayItem(const TestDisplayItemClient& client, Type type) : DisplayItem(client, type, sizeof(*this)) { }
+    TestDisplayItem(const FakeDisplayItemClient& client, Type type) : DisplayItem(client, type, sizeof(*this)) { }
 
     void replay(GraphicsContext&) const final { ASSERT_NOT_REACHED(); }
     void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const final { ASSERT_NOT_REACHED(); }
@@ -87,7 +74,7 @@ public:
         } \
     } while (false);
 
-void drawRect(GraphicsContext& context, const TestDisplayItemClient& client, DisplayItem::Type type, const FloatRect& bounds)
+void drawRect(GraphicsContext& context, const FakeDisplayItemClient& client, DisplayItem::Type type, const FloatRect& bounds)
 {
     if (DrawingRecorder::useCachedDrawingIfPossible(context, client, type))
         return;
@@ -96,7 +83,7 @@ void drawRect(GraphicsContext& context, const TestDisplayItemClient& client, Dis
     context.drawRect(rect);
 }
 
-void drawClippedRect(GraphicsContext& context, const TestDisplayItemClient& client, DisplayItem::Type clipType, DisplayItem::Type drawingType, const FloatRect& bound)
+void drawClippedRect(GraphicsContext& context, const FakeDisplayItemClient& client, DisplayItem::Type clipType, DisplayItem::Type drawingType, const FloatRect& bound)
 {
     ClipRecorder clipRecorder(context, client, clipType, LayoutRect(1, 1, 9, 9));
     drawRect(context, client, drawingType, bound);
@@ -106,7 +93,7 @@ TEST_F(PaintControllerTest, NestedRecorders)
 {
     GraphicsContext context(getPaintController());
 
-    TestDisplayItemClient client("client");
+    FakeDisplayItemClient client("client");
 
     drawClippedRect(context, client, clipType, backgroundDrawingType, FloatRect(100, 100, 200, 200));
     getPaintController().commitNewDisplayItems();
@@ -119,8 +106,8 @@ TEST_F(PaintControllerTest, NestedRecorders)
 
 TEST_F(PaintControllerTest, UpdateBasic)
 {
-    TestDisplayItemClient first("first");
-    TestDisplayItemClient second("second");
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
     GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
@@ -145,9 +132,9 @@ TEST_F(PaintControllerTest, UpdateBasic)
 
 TEST_F(PaintControllerTest, UpdateSwapOrder)
 {
-    TestDisplayItemClient first("first");
-    TestDisplayItemClient second("second");
-    TestDisplayItemClient unaffected("unaffected");
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
+    FakeDisplayItemClient unaffected("unaffected");
     GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
@@ -174,9 +161,9 @@ TEST_F(PaintControllerTest, UpdateSwapOrder)
 
 TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
 {
-    TestDisplayItemClient first("first");
-    TestDisplayItemClient second("second");
-    TestDisplayItemClient third("third");
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
+    FakeDisplayItemClient third("third");
     GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
@@ -200,9 +187,9 @@ TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
 
 TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
 {
-    TestDisplayItemClient first("first");
-    TestDisplayItemClient second("second");
-    TestDisplayItemClient third("third");
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
+    FakeDisplayItemClient third("third");
     GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
@@ -241,8 +228,8 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
 
 TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
 {
-    TestDisplayItemClient first("first");
-    TestDisplayItemClient second("second");
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
     GraphicsContext context(getPaintController());
 
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
@@ -279,8 +266,8 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
 
 TEST_F(PaintControllerTest, UpdateAddLastOverlap)
 {
-    TestDisplayItemClient first("first");
-    TestDisplayItemClient second("second");
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
     GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
@@ -318,8 +305,8 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
 
 TEST_F(PaintControllerTest, UpdateClip)
 {
-    TestDisplayItemClient first("first");
-    TestDisplayItemClient second("second");
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
     GraphicsContext context(getPaintController());
 
     {
@@ -361,8 +348,8 @@ TEST_F(PaintControllerTest, UpdateClip)
 
 TEST_F(PaintControllerTest, CachedDisplayItems)
 {
-    TestDisplayItemClient first("first");
-    TestDisplayItemClient second("second");
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
     GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
@@ -402,10 +389,10 @@ TEST_F(PaintControllerTest, CachedDisplayItems)
 
 TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
 {
-    TestDisplayItemClient container1("container1");
-    TestDisplayItemClient content1("content1");
-    TestDisplayItemClient container2("container2");
-    TestDisplayItemClient content2("content2");
+    FakeDisplayItemClient container1("container1");
+    FakeDisplayItemClient content1("content1");
+    FakeDisplayItemClient container2("container2");
+    FakeDisplayItemClient content2("content2");
     GraphicsContext context(getPaintController());
 
     drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
@@ -453,10 +440,10 @@ TEST_F(PaintControllerTest, ComplexUpdateSwapOrder)
 
 TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
 {
-    TestDisplayItemClient container1("container1");
-    TestDisplayItemClient content1("content1");
-    TestDisplayItemClient container2("container2");
-    TestDisplayItemClient content2("content2");
+    FakeDisplayItemClient container1("container1");
+    FakeDisplayItemClient content1("content1");
+    FakeDisplayItemClient container2("container2");
+    FakeDisplayItemClient content2("content2");
     GraphicsContext context(getPaintController());
 
     {
@@ -518,7 +505,7 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
 
 TEST_F(PaintControllerTest, OutOfOrderNoCrash)
 {
-    TestDisplayItemClient client("client");
+    FakeDisplayItemClient client("client");
     GraphicsContext context(getPaintController());
 
     const DisplayItem::Type type1 = DisplayItem::DrawingFirst;
@@ -543,10 +530,10 @@ TEST_F(PaintControllerTest, OutOfOrderNoCrash)
 
 TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
 {
-    TestDisplayItemClient container1("container1");
-    TestDisplayItemClient content1("content1");
-    TestDisplayItemClient container2("container2");
-    TestDisplayItemClient content2("content2");
+    FakeDisplayItemClient container1("container1");
+    FakeDisplayItemClient content1("content1");
+    FakeDisplayItemClient container2("container2");
+    FakeDisplayItemClient content2("content2");
     GraphicsContext context(getPaintController());
 
     {
@@ -636,8 +623,8 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
 
 TEST_F(PaintControllerTest, Scope)
 {
-    TestDisplayItemClient multicol("multicol");
-    TestDisplayItemClient content("content");
+    FakeDisplayItemClient multicol("multicol");
+    FakeDisplayItemClient content("content");
     GraphicsContext context(getPaintController());
 
     FloatRect rect1(100, 100, 50, 50);
@@ -718,9 +705,9 @@ TEST_F(PaintControllerTest, Scope)
 
 TEST_F(PaintControllerTest, OptimizeNoopPairs)
 {
-    TestDisplayItemClient first("first");
-    TestDisplayItemClient second("second");
-    TestDisplayItemClient third("third");
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
+    FakeDisplayItemClient third("third");
 
     GraphicsContext context(getPaintController());
     drawRect(context, first, backgroundDrawingType, FloatRect(0, 0, 100, 100));
@@ -773,7 +760,7 @@ TEST_F(PaintControllerTest, OptimizeNoopPairs)
 TEST_F(PaintControllerTest, SmallPaintControllerHasOnePaintChunk)
 {
     RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-    TestDisplayItemClient client("test client");
+    FakeDisplayItemClient client("test client");
 
     GraphicsContext context(getPaintController());
     drawRect(context, client, backgroundDrawingType, FloatRect(0, 0, 100, 100));
@@ -796,7 +783,7 @@ TEST_F(PaintControllerTest, SmallPaintControllerHasOnePaintChunk)
 
 TEST_F(PaintControllerTest, PaintArtifactWithVisualRects)
 {
-    TestDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+    FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
 
     GraphicsContext context(getPaintController());
     drawRect(context, client, backgroundDrawingType, FloatRect(0, 0, 100, 100));

@@ -1233,6 +1233,7 @@
       'threading/BackgroundTaskRunnerTest.cpp',
     ],
     'platform_test_support_files': [
+      'testing/FakeDisplayItemClient.h',
       'testing/FontTestHelpers.cpp',
       'testing/FontTestHelpers.h',
       'testing/GeometryPrinters.cpp',

@@ -10,6 +10,7 @@
 #include "platform/graphics/paint/SubsequenceDisplayItem.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/testing/FakeDisplayItemClient.h"
 #include "platform/transforms/AffineTransform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,12 +26,6 @@ namespace {
         EXPECT_EQ(expected.height(), actualRect.height()); \
     } while (false)
 
-class TestDisplayItemClient : public DisplayItemClient {
-public:
-    String debugName() const final { return "TestDisplayItemClient"; }
-    LayoutRect visualRect() const final { return LayoutRect(); }
-};
-
 static const size_t kDefaultListBytes = 10 * 1024;
 
 class DisplayItemListTest : public ::testing::Test {
@@ -39,7 +34,7 @@ public:
         : m_list(kDefaultListBytes) {}
 
     DisplayItemList m_list;
-    TestDisplayItemClient m_client;
+    FakeDisplayItemClient m_client;
 };
 
 static PassRefPtr<SkPicture> createRectPicture(const IntRect& bounds)
