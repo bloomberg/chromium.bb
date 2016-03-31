@@ -394,6 +394,14 @@
             "group_name": "Enabled"
         }
     ],
+    "TokenBinding": [
+        {
+            "enable_features": [
+                "token-binding"
+            ],
+            "group_name": "TokenBinding"
+        }
+    ],
     "UMA_EnableCellularLogUpload": [
         {
             "group_name": "Enabled_wo_sampling",

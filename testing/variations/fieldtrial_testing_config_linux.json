@@ -230,6 +230,14 @@
             "group_name": "Enabled"
         }
     ],
+    "TokenBinding": [
+        {
+            "enable_features": [
+                "token-binding"
+            ],
+            "group_name": "TokenBinding"
+        }
+    ],
     "VarationsServiceControl": [
         {
             "group_name": "Interval_30min",
