@@ -47,13 +47,13 @@
 
 namespace blink {
 
-static Frame* reuseExistingWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, const AtomicString& frameName, NavigationPolicy policy)
+static Frame* reuseExistingWindow(LocalFrame& activeFrame, LocalFrame& lookupFrame, const AtomicString& frameName, NavigationPolicy policy)
 {
     if (!frameName.isEmpty() && frameName != "_blank" && policy == NavigationPolicyIgnore) {
-        if (Frame* frame = lookupFrame.findFrameForNavigation(frameName, openerFrame)) {
+        if (Frame* frame = lookupFrame.findFrameForNavigation(frameName, activeFrame)) {
             if (frameName != "_self") {
                 if (FrameHost* host = frame->host()) {
-                    if (host == openerFrame.host())
+                    if (host == activeFrame.host())
                         frame->page()->focusController().setFocusedFrame(frame);
                     else
                         host->chromeClient().focus();
@@ -112,7 +112,7 @@ static Frame* createNewWindow(LocalFrame& openerFrame, const FrameLoadRequest& r
     return &frame;
 }
 
-static Frame* createWindowHelper(LocalFrame& openerFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSetOpener shouldSetOpener, bool& created)
+static Frame* createWindowHelper(LocalFrame& openerFrame, LocalFrame& activeFrame, LocalFrame& lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSetOpener shouldSetOpener, bool& created)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());
     ASSERT(request.resourceRequest().requestorOrigin() || openerFrame.document()->url().isEmpty());
@@ -120,7 +120,7 @@ static Frame* createWindowHelper(LocalFrame& openerFrame, LocalFrame& lookupFram
 
     created = false;
 
-    Frame* window = reuseExistingWindow(openerFrame, lookupFrame, request.frameName(), policy);
+    Frame* window = reuseExistingWindow(activeFrame, lookupFrame, request.frameName(), policy);
 
     if (!window) {
         // Sandboxed frames cannot open new auxiliary browsing contexts.
@@ -175,7 +175,7 @@ DOMWindow* createWindow(const String& urlString, const AtomicString& frameName, 
     // the opener frame, and the name references a frame relative to the opener frame.
     bool created;
     ShouldSetOpener opener = windowFeatures.noopener ? NeverSetOpener : MaybeSetOpener;
-    Frame* newFrame = createWindowHelper(*activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, opener, created);
+    Frame* newFrame = createWindowHelper(openerFrame, *activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, opener, created);
     if (!newFrame)
         return nullptr;
 
@@ -204,7 +204,7 @@ void createWindowForRequest(const FrameLoadRequest& request, LocalFrame& openerF
 
     WindowFeatures features;
     bool created;
-    Frame* newFrame = createWindowHelper(openerFrame, openerFrame, request, features, policy, shouldSetOpener, created);
+    Frame* newFrame = createWindowHelper(openerFrame, openerFrame, openerFrame, request, features, policy, shouldSetOpener, created);
     if (!newFrame)
         return;
     if (shouldSendReferrer == MaybeSendReferrer) {
