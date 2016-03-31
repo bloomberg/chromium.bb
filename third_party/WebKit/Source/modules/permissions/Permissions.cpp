@@ -42,6 +42,8 @@ WebPermissionType getPermissionType(ScriptState* scriptState, const Dictionary& 
         MidiPermissionDescriptor midiPermission = NativeValueTraits<MidiPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
         return midiPermission.sysex() ? WebPermissionTypeMidiSysEx : WebPermissionTypeMidi;
     }
+    if (name == "background-sync")
+        return WebPermissionTypeBackgroundSync;
 
     ASSERT_NOT_REACHED();
     return WebPermissionTypeGeolocation;

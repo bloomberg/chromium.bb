@@ -23,6 +23,8 @@
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/common/background_sync.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -36,17 +38,19 @@ namespace {
 // The key used to index the background sync data in ServiceWorkerStorage.
 const char kBackgroundSyncUserDataKey[] = "BackgroundSyncUserData";
 
-void PostErrorResponse(
+void RecordFailureAndPostError(
     BackgroundSyncStatus status,
     const BackgroundSyncManager::StatusAndRegistrationCallback& callback) {
+  BackgroundSyncMetrics::CountRegisterFailure(status);
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, status,
                  base::Passed(scoped_ptr<BackgroundSyncRegistration>())));
 }
 
-// Returns nullptr if the controller cannot be accessed for any reason.
-BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
+// Returns nullptr if the browser context cannot be accessed for any reason.
+BrowserContext* GetBrowserContextOnUIThread(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -57,8 +61,42 @@ BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
   if (!storage_partition_impl)  // may be null in tests
     return nullptr;
 
-  return storage_partition_impl->browser_context()
-      ->GetBackgroundSyncController();
+  return storage_partition_impl->browser_context();
+}
+
+// Returns nullptr if the controller cannot be accessed for any reason.
+BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
+    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserContext* browser_context =
+      GetBrowserContextOnUIThread(service_worker_context);
+  if (!browser_context)
+    return nullptr;
+
+  return browser_context->GetBackgroundSyncController();
+}
+
+// Returns PermissionStatus::DENIED if the permission manager cannot be
+// accessed for any reason.
+mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
+    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
+    const GURL& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserContext* browser_context =
+      GetBrowserContextOnUIThread(service_worker_context);
+  if (!browser_context)
+    return mojom::PermissionStatus::DENIED;
+
+  PermissionManager* permission_manager =
+      browser_context->GetPermissionManager();
+  if (!permission_manager)
+    return mojom::PermissionStatus::DENIED;
+
+  // The requesting origin always matches the embedding origin.
+  return permission_manager->GetPermissionStatus(
+      PermissionType::BACKGROUND_SYNC, origin, origin);
 }
 
 void NotifyBackgroundSyncRegisteredOnUIThread(
@@ -114,8 +152,9 @@ void OnSyncEventFinished(
     mojom::ServiceWorkerEventStatus status) {
   if (!active_version->FinishRequest(
           request_id,
-          status == content::mojom::ServiceWorkerEventStatus::COMPLETED))
+          status == content::mojom::ServiceWorkerEventStatus::COMPLETED)) {
     return;
+  }
   callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
 }
 
@@ -157,9 +196,7 @@ void BackgroundSyncManager::Register(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    BackgroundSyncMetrics::CountRegisterFailure(
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
     return;
   }
 
@@ -363,9 +400,8 @@ void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
-    BackgroundSyncMetrics::CountRegisterFailure(
-        BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
+                              callback);
     return;
   }
 
@@ -384,9 +420,7 @@ void BackgroundSyncManager::RegisterDidCheckIfMainFrame(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!has_main_frame_client) {
-    BackgroundSyncMetrics::CountRegisterFailure(
-        BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
     return;
   }
   RegisterImpl(sw_registration_id, options, callback);
@@ -399,25 +433,53 @@ void BackgroundSyncManager::RegisterImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    BackgroundSyncMetrics::CountRegisterFailure(
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
     return;
   }
 
   if (options.tag.length() > kMaxTagLength) {
-    BackgroundSyncMetrics::CountRegisterFailure(
-        BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
     return;
   }
 
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
-    BackgroundSyncMetrics::CountRegisterFailure(
-        BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
+                              callback);
+    return;
+  }
+
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetBackgroundSyncPermissionOnUIThread,
+                 service_worker_context_,
+                 sw_registration->pattern().GetOrigin()),
+      base::Bind(&BackgroundSyncManager::RegisterDidAskForPermission,
+                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
+                 callback));
+}
+
+void BackgroundSyncManager::RegisterDidAskForPermission(
+    int64_t sw_registration_id,
+    const BackgroundSyncRegistrationOptions& options,
+    const StatusAndRegistrationCallback& callback,
+    mojom::PermissionStatus permission_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (permission_status == mojom::PermissionStatus::DENIED) {
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_PERMISSION_DENIED,
+                              callback);
+    return;
+  }
+  DCHECK(permission_status == mojom::PermissionStatus::GRANTED);
+
+  ServiceWorkerRegistration* sw_registration =
+      service_worker_context_->GetLiveRegistration(sw_registration_id);
+  if (!sw_registration || !sw_registration->active_version()) {
+    // The service worker was shut down in the interim.
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
+                              callback);
     return;
   }
 
@@ -590,10 +652,8 @@ void BackgroundSyncManager::RegisterDidStore(
 
   if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
     // The service worker registration is gone.
-    BackgroundSyncMetrics::CountRegisterFailure(
-        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     active_registrations_.erase(sw_registration_id);
-    PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
     return;
   }
 

@@ -126,6 +126,8 @@
       'test/mock_keyboard.h',
       'test/mock_keyboard_driver_win.cc',
       'test/mock_keyboard_driver_win.h',
+      'test/mock_permission_manager.cc',
+      'test/mock_permission_manager.h',
       'test/mock_render_process.cc',
       'test/mock_render_process.h',
       'test/mock_ssl_host_state_delegate.cc',

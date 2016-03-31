@@ -17,9 +17,11 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/mock_permission_manager.h"
 #include "content/test/test_background_sync_context_impl.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/base/network_change_notifier.h"
@@ -28,6 +30,8 @@
 namespace content {
 
 namespace {
+
+using ::testing::_;
 
 const char kServiceWorkerPattern[] = "https://example.com/a";
 const char kServiceWorkerScript[] = "https://example.com/a/script.js";
@@ -114,6 +118,13 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void CreateTestHelper() {
     embedded_worker_helper_.reset(
         new EmbeddedWorkerTestHelper(base::FilePath()));
+    scoped_ptr<MockPermissionManager> mock_permission_manager(
+        new testing::NiceMock<MockPermissionManager>());
+    ON_CALL(*mock_permission_manager,
+            GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
+        .WillByDefault(testing::Return(mojom::PermissionStatus::GRANTED));
+    embedded_worker_helper_->browser_context()->SetPermissionManager(
+        std::move(mock_permission_manager));
   }
 
   void CreateStoragePartition() {
@@ -166,10 +177,10 @@ class BackgroundSyncServiceImplTest : public testing::Test {
 
   void CreateBackgroundSyncServiceImpl() {
     // Create a dummy mojo channel so that the BackgroundSyncServiceImpl can be
-    // instantiated
+    // instantiated.
     mojo::InterfaceRequest<mojom::BackgroundSyncService> service_request =
         mojo::GetProxy(&service_ptr_);
-    // Create a new BackgroundSyncServiceImpl bound to the dummy channel
+    // Create a new BackgroundSyncServiceImpl bound to the dummy channel.
     background_sync_context_->CreateService(std::move(service_request));
     base::RunLoop().RunUntilIdle();
 

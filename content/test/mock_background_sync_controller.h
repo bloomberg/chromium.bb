@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
-#include "content/public/common/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

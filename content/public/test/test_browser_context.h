@@ -30,6 +30,7 @@ class TestBrowserContext : public BrowserContext {
   base::FilePath TakePath();
 
   void SetSpecialStoragePolicy(storage::SpecialStoragePolicy* policy);
+  void SetPermissionManager(scoped_ptr<PermissionManager> permission_manager);
 
   base::FilePath GetPath() const override;
   scoped_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
@@ -59,6 +60,7 @@ class TestBrowserContext : public BrowserContext {
   scoped_ptr<MockResourceContext> resource_context_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_ptr<MockSSLHostStateDelegate> ssl_host_state_delegate_;
+  scoped_ptr<PermissionManager> permission_manager_;
   scoped_ptr<MockBackgroundSyncController> background_sync_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);

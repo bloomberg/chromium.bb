@@ -6,7 +6,8 @@ enum PermissionName {
     "geolocation",
     "midi",
     "notifications",
-    "push"
+    "push",
+    "background-sync"
 };
 
 // The PermissionDescriptor dictionary is a base to describe permissions. Some

@@ -16,6 +16,7 @@ enum PermissionName {
   DURABLE_STORAGE,
   AUDIO_CAPTURE,
   VIDEO_CAPTURE,
+  BACKGROUND_SYNC,
 };
 
 // The Permission service provides permission handling capabilities by exposing

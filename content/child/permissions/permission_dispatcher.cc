@@ -33,6 +33,8 @@ mojom::PermissionName GetPermissionName(blink::WebPermissionType type) {
       return mojom::PermissionName::DURABLE_STORAGE;
     case blink::WebPermissionTypeMidi:
       return mojom::PermissionName::MIDI;
+    case blink::WebPermissionTypeBackgroundSync:
+      return mojom::PermissionName::BACKGROUND_SYNC;
     default:
       // The default statement is only there to prevent compilation failures if
       // WebPermissionType enum gets extended.
@@ -80,7 +82,8 @@ bool PermissionDispatcher::IsObservable(blink::WebPermissionType type) {
          type == blink::WebPermissionTypeNotifications ||
          type == blink::WebPermissionTypePushNotifications ||
          type == blink::WebPermissionTypeMidiSysEx ||
-         type == blink::WebPermissionTypeMidi;
+         type == blink::WebPermissionTypeMidi ||
+         type == blink::WebPermissionTypeBackgroundSync;
 }
 
 PermissionDispatcher::PermissionDispatcher(ServiceRegistry* service_registry)

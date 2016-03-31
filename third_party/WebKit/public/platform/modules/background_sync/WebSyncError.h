@@ -14,6 +14,7 @@ struct WebSyncError {
         ErrorTypeAbort = 0,
         ErrorTypeNoPermission,
         ErrorTypeNotFound,
+        ErrorTypePermissionDenied,
         ErrorTypeUnknown,
         ErrorTypeLast = ErrorTypeUnknown
     };

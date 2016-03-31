@@ -154,6 +154,11 @@ void BackgroundSyncProvider::RegisterCallback(
                               "Attempted to register a sync event without a "
                               "window or registration tag too long."));
       break;
+    case mojom::BackgroundSyncError::PERMISSION_DENIED:
+      callbacks->onError(
+          blink::WebSyncError(blink::WebSyncError::ErrorTypePermissionDenied,
+                              "Permission denied."));
+      break;
     case mojom::BackgroundSyncError::NO_SERVICE_WORKER:
       callbacks->onError(
           blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
@@ -181,6 +186,7 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
     }
     case mojom::BackgroundSyncError::NOT_FOUND:
     case mojom::BackgroundSyncError::NOT_ALLOWED:
+    case mojom::BackgroundSyncError::PERMISSION_DENIED:
       // These errors should never be returned from
       // BackgroundSyncManager::GetRegistrations
       NOTREACHED();

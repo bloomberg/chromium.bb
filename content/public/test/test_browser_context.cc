@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/test/null_task_runner.h"
+#include "content/public/browser/permission_manager.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/test/mock_background_sync_controller.h"
 #include "content/test/mock_ssl_host_state_delegate.h"
@@ -58,6 +59,11 @@ base::FilePath TestBrowserContext::TakePath() {
 void TestBrowserContext::SetSpecialStoragePolicy(
     storage::SpecialStoragePolicy* policy) {
   special_storage_policy_ = policy;
+}
+
+void TestBrowserContext::SetPermissionManager(
+    scoped_ptr<PermissionManager> permission_manager) {
+  permission_manager_ = std::move(permission_manager);
 }
 
 base::FilePath TestBrowserContext::GetPath() const {
@@ -135,7 +141,7 @@ SSLHostStateDelegate* TestBrowserContext::GetSSLHostStateDelegate() {
 }
 
 PermissionManager* TestBrowserContext::GetPermissionManager() {
-  return NULL;
+  return permission_manager_.get();
 }
 
 BackgroundSyncController* TestBrowserContext::GetBackgroundSyncController() {

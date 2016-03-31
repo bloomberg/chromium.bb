@@ -55,8 +55,10 @@ COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NO_SERVICE_WORKER,
                              BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
 COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NOT_ALLOWED,
                              BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::PERMISSION_DENIED,
+                             BACKGROUND_SYNC_STATUS_PERMISSION_DENIED);
 COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::MAX,
-                             BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
+                             BACKGROUND_SYNC_STATUS_PERMISSION_DENIED);
 
 COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncNetworkState::ANY,
                              SyncNetworkState::NETWORK_STATE_ANY);

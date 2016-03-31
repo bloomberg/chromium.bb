@@ -36,6 +36,8 @@ PermissionType PermissionNameToPermissionType(mojom::PermissionName name) {
       return PermissionType::AUDIO_CAPTURE;
     case mojom::PermissionName::VIDEO_CAPTURE:
       return PermissionType::VIDEO_CAPTURE;
+    case mojom::PermissionName::BACKGROUND_SYNC:
+      return PermissionType::BACKGROUND_SYNC;
   }
 
   NOTREACHED();

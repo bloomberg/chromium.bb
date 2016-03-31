@@ -59,6 +59,12 @@ mojom::PermissionStatus ShellPermissionManager::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
+  // Background sync browser tests require permission to be granted by default.
+  // TODO(nsatragno): add a command line flag so that it's only granted for
+  // tests.
+  if (permission == PermissionType::BACKGROUND_SYNC)
+    return mojom::PermissionStatus::GRANTED;
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if ((permission == PermissionType::AUDIO_CAPTURE ||
        permission == PermissionType::VIDEO_CAPTURE) &&

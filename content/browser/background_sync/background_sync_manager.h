@@ -31,11 +31,13 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
 
 class BackgroundSyncNetworkObserver;
+enum class PermissionStatus;
 class ServiceWorkerContextWrapper;
 
 // BackgroundSyncManager manages and stores the set of background sync
@@ -198,6 +200,11 @@ class CONTENT_EXPORT BackgroundSyncManager
   void RegisterImpl(int64_t sw_registration_id,
                     const BackgroundSyncRegistrationOptions& options,
                     const StatusAndRegistrationCallback& callback);
+  void RegisterDidAskForPermission(
+      int64_t sw_registration_id,
+      const BackgroundSyncRegistrationOptions& options,
+      const StatusAndRegistrationCallback& callback,
+      mojom::PermissionStatus permission_status);
   void RegisterDidStore(int64_t sw_registration_id,
                         const BackgroundSyncRegistration& new_registration,
                         const StatusAndRegistrationCallback& callback,

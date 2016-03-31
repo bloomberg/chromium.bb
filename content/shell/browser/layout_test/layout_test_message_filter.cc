@@ -160,6 +160,8 @@ void LayoutTestMessageFilter::OnSetPermission(const std::string& name,
     type = PermissionType::GEOLOCATION;
   } else if (name == "protected-media-identifier") {
     type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+  } else if (name == "background-sync") {
+    type = PermissionType::BACKGROUND_SYNC;
   } else {
     NOTREACHED();
     type = PermissionType::NOTIFICATIONS;

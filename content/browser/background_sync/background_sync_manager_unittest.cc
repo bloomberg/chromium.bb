@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -26,17 +27,24 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/background_sync_parameters.h"
+#include "content/public/browser/permission_type.h"
+#include "content/public/common/permission_status.mojom.h"
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_background_sync_controller.h"
+#include "content/test/mock_permission_manager.h"
 #include "content/test/test_background_sync_manager.h"
 #include "net/base/network_change_notifier.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
+
+using ::testing::Return;
+using ::testing::_;
 
 const char kPattern1[] = "https://example.com/a";
 const char kPattern2[] = "https://example.com/b";
@@ -114,6 +122,14 @@ class BackgroundSyncManagerTest : public testing::Test {
     // so that we can inject test versions instead of bringing up all of this
     // extra SW stuff.
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
+
+    scoped_ptr<MockPermissionManager> mock_permission_manager(
+        new testing::NiceMock<MockPermissionManager>());
+    ON_CALL(*mock_permission_manager,
+            GetPermissionStatus(PermissionType::BACKGROUND_SYNC, _, _))
+        .WillByDefault(Return(mojom::PermissionStatus::GRANTED));
+    helper_->browser_context()->SetPermissionManager(
+        std::move(mock_permission_manager));
 
     // Create a StoragePartition with the correct BrowserContext so that the
     // BackgroundSyncManager can find the BrowserContext through it.
@@ -262,6 +278,11 @@ class BackgroundSyncManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
     return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
+  }
+
+  MockPermissionManager* GetPermissionManager() {
+    return static_cast<MockPermissionManager*>(
+        helper_->browser_context()->GetPermissionManager());
   }
 
   bool GetRegistration(
@@ -439,6 +460,28 @@ TEST_F(BackgroundSyncManagerTest, RegisterBadBackend) {
   test_background_sync_manager_->set_corrupt_backend(false);
   EXPECT_FALSE(Register(sync_options_1_));
   EXPECT_FALSE(GetRegistration(sync_options_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegisterPermissionDenied) {
+  GURL expected_origin = GURL(kPattern1).GetOrigin();
+  MockPermissionManager* mock_permission_manager = GetPermissionManager();
+
+  EXPECT_CALL(*mock_permission_manager,
+              GetPermissionStatus(PermissionType::BACKGROUND_SYNC,
+                                  expected_origin, expected_origin))
+      .WillOnce(testing::Return(mojom::PermissionStatus::DENIED));
+  EXPECT_FALSE(Register(sync_options_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, RegisterPermissionGranted) {
+  GURL expected_origin = GURL(kPattern1).GetOrigin();
+  MockPermissionManager* mock_permission_manager = GetPermissionManager();
+
+  EXPECT_CALL(*mock_permission_manager,
+              GetPermissionStatus(PermissionType::BACKGROUND_SYNC,
+                                  expected_origin, expected_origin))
+      .WillOnce(testing::Return(mojom::PermissionStatus::GRANTED));
+  EXPECT_TRUE(Register(sync_options_1_));
 }
 
 TEST_F(BackgroundSyncManagerTest, TwoRegistrations) {

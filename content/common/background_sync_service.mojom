@@ -13,7 +13,8 @@ enum BackgroundSyncError {
   NOT_FOUND,
   NO_SERVICE_WORKER,
   NOT_ALLOWED,
-  MAX=NOT_ALLOWED
+  PERMISSION_DENIED,
+  MAX=PERMISSION_DENIED
 };
 
 enum BackgroundSyncState {
