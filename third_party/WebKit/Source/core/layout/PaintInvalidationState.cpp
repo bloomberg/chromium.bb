@@ -21,6 +21,43 @@
 
 namespace blink {
 
+#if ASSERT_SAME_RESULT_SLOW_AND_FAST_PATH
+// Make sure that the fast path and the slow path generate the same rect.
+void assertRectsEqual(const LayoutObject& object, const LayoutBoxModelObject& ancestor, const LayoutRect& rect, const LayoutRect& slowPathRect)
+{
+    // TODO(wangxianzhu): This is for cases that a sub-frame creates a root PaintInvalidationState
+    // which doesn't inherit clip from ancestor frames.
+    // Remove the condition when we eliminate the latter case of PaintInvalidationState(const LayoutView&, ...).
+    if (object.isLayoutView())
+        return;
+
+    // TODO(crbug.com/597903): Fast path and slow path should generate equal empty rects.
+    if (rect.isEmpty() && slowPathRect.isEmpty())
+        return;
+
+    if (rect == slowPathRect)
+        return;
+
+    // Tolerate the difference between the two paths when crossing frame boundaries.
+    if (object.view() != ancestor.view()) {
+        LayoutRect inflatedRect = rect;
+        inflatedRect.inflate(1);
+        if (inflatedRect.contains(slowPathRect))
+            return;
+        LayoutRect inflatedSlowPathRect = slowPathRect;
+        inflatedSlowPathRect.inflate(1);
+        if (inflatedSlowPathRect.contains(rect))
+            return;
+    }
+
+#ifndef NDEBUG
+    WTFLogAlways("Fast-path paint invalidation rect differs from slow-path: %s vs %s", rect.toString().ascii().data(), slowPathRect.toString().ascii().data());
+    showLayoutTree(&object);
+#endif
+    ASSERT_NOT_REACHED();
+}
+#endif
+
 static bool isAbsolutePositionUnderRelativePositionInline(const LayoutObject& object)
 {
     if (object.styleRef().position() != AbsolutePosition)
@@ -266,12 +303,11 @@ LayoutRect PaintInvalidationState::computePaintInvalidationRectInBackingForSVG()
         if (m_clipped)
             rect.intersect(m_clipRect);
 #if ASSERT_SAME_RESULT_SLOW_AND_FAST_PATH
-        LayoutRect slowPathRect = SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(m_currentObject, m_paintInvalidationContainer);
         // TODO(crbug.com/597902): Slow path misses clipping of paintInvalidationContainer.
+        LayoutRect slowPathRect = SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(m_currentObject, m_paintInvalidationContainer);
         if (m_clipped)
             slowPathRect.intersect(m_clipRect);
-        // TODO(crbug.com/597903): Fast path and slow path should generate equal empty rects.
-        ASSERT((rect.isEmpty() && slowPathRect.isEmpty()) || rect == slowPathRect);
+        assertRectsEqual(m_currentObject, m_paintInvalidationContainer, rect, slowPathRect);
 #endif
     } else {
         // TODO(wangxianzhu): Sometimes m_cachedOffsetsEnabled==false doesn't mean we can't use cached
@@ -314,15 +350,10 @@ void PaintInvalidationState::mapLocalRectToPaintInvalidationBacking(LayoutRect& 
         if (m_clipped)
             rect.intersect(m_clipRect);
 #if ASSERT_SAME_RESULT_SLOW_AND_FAST_PATH
-        // Make sure that the fast path and the slow path generate the same rect.
         // TODO(crbug.com/597902): Slow path misses clipping of paintInvalidationContainer.
         if (m_clipped)
             slowPathRect.intersect(m_clipRect);
-        // TODO(wangxianzhu): The isLayoutView() condition is for cases that a sub-frame creates a
-        // root PaintInvalidationState which doesn't inherit clip from ancestor frames.
-        // Remove the condition when we eliminate the latter case of PaintInvalidationState(const LayoutView&, ...).
-        // TODO(crbug.com/597903): Fast path and slow path should generate equal empty rects.
-        ASSERT(m_currentObject.isLayoutView() || (rect.isEmpty() && slowPathRect.isEmpty()) || rect == slowPathRect);
+        assertRectsEqual(m_currentObject, m_paintInvalidationContainer, rect, slowPathRect);
 #endif
     } else {
         slowMapToVisualRectInAncestorSpace(m_currentObject, m_paintInvalidationContainer, rect);
