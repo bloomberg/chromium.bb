@@ -19,6 +19,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
@@ -88,6 +89,12 @@ class ShellSurfaceWidget : public views::Widget {
 
   // Overridden from views::Widget
   void Close() override { shell_surface_->Close(); }
+  void OnKeyEvent(ui::KeyEvent* event) override {
+    // Handle only accelerators. Do not call Widget::OnKeyEvent that eats focus
+    // management keys (like the tab key) as well.
+    if (GetFocusManager()->ProcessAccelerator(ui::Accelerator(*event)))
+      event->StopPropagation();
+  }
 
  private:
   ShellSurface* const shell_surface_;

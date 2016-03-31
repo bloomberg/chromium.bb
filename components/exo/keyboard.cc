@@ -19,7 +19,7 @@ namespace exo {
 
 Keyboard::Keyboard(KeyboardDelegate* delegate)
     : delegate_(delegate), focus_(nullptr), modifier_flags_(0) {
-  ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  ash::Shell::GetInstance()->AddPostTargetHandler(this);
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->AddObserver(this);
@@ -32,7 +32,7 @@ Keyboard::~Keyboard() {
     focus_->RemoveSurfaceObserver(this);
   aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
       ->RemoveObserver(this);
-  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  ash::Shell::GetInstance()->RemovePostTargetHandler(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

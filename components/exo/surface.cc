@@ -26,6 +26,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/views/widget/widget.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(exo::Surface*);
 
@@ -83,6 +84,15 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   bool HasHitTestMask() const override { return surface_->HasHitTestMask(); }
   void GetHitTestMask(gfx::Path* mask) const override {
     surface_->GetHitTestMask(mask);
+  }
+  void OnKeyEvent(ui::KeyEvent* event) override {
+    // Propagates the key event upto the top-level views Widget so that we can
+    // trigger proper events in the views/ash level there. Event handling for
+    // Surfaces is done in a post event handler in keyboard.cc.
+    views::Widget* widget =
+        views::Widget::GetTopLevelWidgetForNativeView(surface_);
+    if (widget)
+      widget->OnKeyEvent(event);
   }
 
  private:
