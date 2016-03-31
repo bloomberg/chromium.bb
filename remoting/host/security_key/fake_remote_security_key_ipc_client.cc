@@ -13,19 +13,50 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "remoting/host/chromoting_messages.h"
-#include "remoting/host/security_key/gnubby_auth_handler.h"
 
 namespace remoting {
 
 FakeRemoteSecurityKeyIpcClient::FakeRemoteSecurityKeyIpcClient(
-    base::Closure channel_event_callback)
+    const base::Closure& channel_event_callback)
     : channel_event_callback_(channel_event_callback) {
   DCHECK(!channel_event_callback_.is_null());
 }
 
 FakeRemoteSecurityKeyIpcClient::~FakeRemoteSecurityKeyIpcClient() {}
 
-bool FakeRemoteSecurityKeyIpcClient::Connect(const std::string& channel_name) {
+bool FakeRemoteSecurityKeyIpcClient::WaitForSecurityKeyIpcServerChannel() {
+  return wait_for_ipc_channel_return_value_;
+}
+
+void FakeRemoteSecurityKeyIpcClient::EstablishIpcConnection(
+    const base::Closure& connection_ready_callback,
+    const base::Closure& connection_error_callback) {
+  if (establish_ipc_connection_should_succeed_) {
+    connection_ready_callback.Run();
+  } else {
+    connection_error_callback.Run();
+  }
+}
+
+bool FakeRemoteSecurityKeyIpcClient::SendSecurityKeyRequest(
+    const std::string& request_payload,
+    const ResponseCallback& response_callback) {
+  if (send_security_request_should_succeed_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(response_callback, security_key_response_payload_));
+  }
+
+  return send_security_request_should_succeed_;
+}
+
+void FakeRemoteSecurityKeyIpcClient::CloseIpcConnection() {
+  client_channel_.reset();
+  channel_event_callback_.Run();
+}
+
+bool FakeRemoteSecurityKeyIpcClient::ConnectViaIpc(
+    const std::string& channel_name) {
   // The retry loop is needed as the IPC Servers we connect to are reset (torn
   // down and recreated) in some tests and we should be resilient in that case.
   IPC::ChannelHandle channel_handle(channel_name);
@@ -45,12 +76,7 @@ bool FakeRemoteSecurityKeyIpcClient::Connect(const std::string& channel_name) {
   return false;
 }
 
-void FakeRemoteSecurityKeyIpcClient::CloseChannel() {
-  client_channel_.reset();
-  channel_event_callback_.Run();
-}
-
-void FakeRemoteSecurityKeyIpcClient::SendRequest(
+void FakeRemoteSecurityKeyIpcClient::SendSecurityKeyRequestViaIpc(
     const std::string& request_payload) {
   client_channel_->Send(
       new ChromotingRemoteSecurityKeyToNetworkMsg_Request(request_payload));

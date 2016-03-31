@@ -113,12 +113,12 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleSingleGnubbyRequest) {
   FakeRemoteSecurityKeyIpcClient fake_ipc_client(
       base::Bind(&RemoteSecurityKeyIpcServerTest::OperationComplete,
                  base::Unretained(this)));
-  ASSERT_TRUE(fake_ipc_client.Connect(channel_name));
+  ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
 
   // Send a request from the IPC client to the IPC server.
   std::string request_data("Blergh!");
-  fake_ipc_client.SendRequest(request_data);
+  fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data);
   WaitForOperationComplete();
 
   // Verify the request was received.
@@ -134,7 +134,7 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleSingleGnubbyRequest) {
   ASSERT_EQ(response_data, fake_ipc_client.last_message_received());
 
   // Typically the client will be the one to close the connection.
-  fake_ipc_client.CloseChannel();
+  fake_ipc_client.CloseIpcConnection();
 }
 
 TEST_F(RemoteSecurityKeyIpcServerTest, HandleMultipleGnubbyRequests) {
@@ -147,12 +147,12 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleMultipleGnubbyRequests) {
   FakeRemoteSecurityKeyIpcClient fake_ipc_client(
       base::Bind(&RemoteSecurityKeyIpcServerTest::OperationComplete,
                  base::Unretained(this)));
-  ASSERT_TRUE(fake_ipc_client.Connect(channel_name));
+  ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
 
   // Send a request from the IPC client to the IPC server.
   std::string request_data_1("Blergh!");
-  fake_ipc_client.SendRequest(request_data_1);
+  fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data_1);
   WaitForOperationComplete();
 
   // Verify the request was received.
@@ -169,7 +169,7 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleMultipleGnubbyRequests) {
 
   // Send a request from the IPC client to the IPC server.
   std::string request_data_2("Bleh!");
-  fake_ipc_client.SendRequest(request_data_2);
+  fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data_2);
   WaitForOperationComplete();
 
   // Verify the request was received.
@@ -185,7 +185,7 @@ TEST_F(RemoteSecurityKeyIpcServerTest, HandleMultipleGnubbyRequests) {
   ASSERT_EQ(response_data_2, fake_ipc_client.last_message_received());
 
   // Typically the client will be the one to close the connection.
-  fake_ipc_client.CloseChannel();
+  fake_ipc_client.CloseIpcConnection();
 }
 
 TEST_F(RemoteSecurityKeyIpcServerTest, InitialIpcConnectionTimeout) {
@@ -217,7 +217,7 @@ TEST_F(RemoteSecurityKeyIpcServerTest, NoGnubbyRequestTimeout) {
   FakeRemoteSecurityKeyIpcClient fake_ipc_client(
       base::Bind(&RemoteSecurityKeyIpcServerTest::OperationComplete,
                  base::Unretained(this)));
-  ASSERT_TRUE(fake_ipc_client.Connect(channel_name));
+  ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
 
   // Now that a connection has been established, we wait for the timeout.
@@ -241,13 +241,13 @@ TEST_F(RemoteSecurityKeyIpcServerTest, GnubbyResponseTimeout) {
   FakeRemoteSecurityKeyIpcClient fake_ipc_client(
       base::Bind(&RemoteSecurityKeyIpcServerTest::OperationComplete,
                  base::Unretained(this)));
-  ASSERT_TRUE(fake_ipc_client.Connect(channel_name));
+  ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
 
   // Now that a connection has been established, we issue a request and
   // then wait for the timeout.
   std::string request_data("I can haz Auth?");
-  fake_ipc_client.SendRequest(request_data);
+  fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data);
   WaitForOperationComplete();
 
   // Leave the request hanging until it times out...
@@ -272,12 +272,12 @@ TEST_F(RemoteSecurityKeyIpcServerTest, SendResponseTimeout) {
   FakeRemoteSecurityKeyIpcClient fake_ipc_client(
       base::Bind(&RemoteSecurityKeyIpcServerTest::OperationComplete,
                  base::Unretained(this)));
-  ASSERT_TRUE(fake_ipc_client.Connect(channel_name));
+  ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_name));
   WaitForOperationComplete();
 
   // Issue a request.
   std::string request_data("Auth me yo!");
-  fake_ipc_client.SendRequest(request_data);
+  fake_ipc_client.SendSecurityKeyRequestViaIpc(request_data);
   WaitForOperationComplete();
 
   // Send a response from the IPC server to the IPC client.

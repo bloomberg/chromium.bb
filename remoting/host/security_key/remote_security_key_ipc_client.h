@@ -22,6 +22,7 @@ namespace remoting {
 
 // Responsible for handing the client end of the IPC channel between the
 // the network process (server) and remote_security_key process (client).
+// The public methods are virtual to allow for using fake objects for testing.
 class RemoteSecurityKeyIpcClient : public IPC::Listener {
  public:
   RemoteSecurityKeyIpcClient();
@@ -33,7 +34,7 @@ class RemoteSecurityKeyIpcClient : public IPC::Listener {
 
   // Returns true if there is an active remoting session which supports
   // security key request forwarding.
-  bool WaitForSecurityKeyIpcServerChannel();
+  virtual bool WaitForSecurityKeyIpcServerChannel();
 
   // Begins the process of connecting to the IPC channel which will be used for
   // exchanging security key messages.
@@ -41,16 +42,18 @@ class RemoteSecurityKeyIpcClient : public IPC::Listener {
   // and security key requests can be sent.
   // |connection_error_callback| is stored and will be called back for any
   // unexpected errors that occur while establishing, or during, the session.
-  void EstablishIpcConnection(const base::Closure& connection_ready_callback,
-                              const base::Closure& connection_error_callback);
+  virtual void EstablishIpcConnection(
+      const base::Closure& connection_ready_callback,
+      const base::Closure& connection_error_callback);
 
   // Sends a security key request message to the network process to be forwarded
   // to the remote client.
-  bool SendSecurityKeyRequest(const std::string& request_payload,
-                              const ResponseCallback& response_callback);
+  virtual bool SendSecurityKeyRequest(
+      const std::string& request_payload,
+      const ResponseCallback& response_callback);
 
   // Closes the IPC channel if connected.
-  void CloseIpcConnection();
+  virtual void CloseIpcConnection();
 
   // Allows tests to override the initial IPC channel used to retrieve IPC
   // connection details.

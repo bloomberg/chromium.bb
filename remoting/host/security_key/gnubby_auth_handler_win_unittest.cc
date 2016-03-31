@@ -149,7 +149,7 @@ void GnubbyAuthHandlerWinTest::EstablishInitialIpcConnection(
   size_t expected_connection_count =
       auth_handler_->GetActiveConnectionCountForTest() + 1;
 
-  ASSERT_TRUE(fake_ipc_client->Connect(channel_name));
+  ASSERT_TRUE(fake_ipc_client->ConnectViaIpc(channel_name));
   // Client and Server will each signal us once when OnChannelConenect() is
   // called so we wait on complete twice.  The order in which each is signaled
   // is not important.
@@ -166,7 +166,7 @@ void GnubbyAuthHandlerWinTest::EstablishInitialIpcConnection(
             auth_handler_->GetActiveConnectionCountForTest());
 
   if (close_connection) {
-    fake_ipc_client->CloseChannel();
+    fake_ipc_client->CloseIpcConnection();
     WaitForOperationComplete();
   }
 }

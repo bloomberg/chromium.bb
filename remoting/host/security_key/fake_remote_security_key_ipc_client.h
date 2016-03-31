@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "ipc/ipc_listener.h"
+#include "remoting/host/security_key/remote_security_key_ipc_client.h"
 
 namespace IPC {
 class Channel;
@@ -20,24 +20,49 @@ class Message;
 namespace remoting {
 
 // Simulates the RemoteSecurityKeyIpcClient and provides access to data members
-// for testing.
-class FakeRemoteSecurityKeyIpcClient : public IPC::Listener {
+// for testing.  This class is used for scenarios which require an IPC channel
+// as well as for tests which only need callbacks activated.
+class FakeRemoteSecurityKeyIpcClient : public RemoteSecurityKeyIpcClient {
  public:
-  explicit FakeRemoteSecurityKeyIpcClient(base::Closure channel_event_callback);
+  explicit FakeRemoteSecurityKeyIpcClient(
+      const base::Closure& channel_event_callback);
   ~FakeRemoteSecurityKeyIpcClient() override;
 
+  // RemoteSecurityKeyIpcClient interface.
+  bool WaitForSecurityKeyIpcServerChannel() override;
+  void EstablishIpcConnection(
+      const base::Closure& connection_ready_callback,
+      const base::Closure& connection_error_callback) override;
+  bool SendSecurityKeyRequest(
+      const std::string& request_payload,
+      const ResponseCallback& response_callback) override;
+  void CloseIpcConnection() override;
+
   // Connects as a client to the |channel_name| IPC Channel.
-  bool Connect(const std::string& channel_name);
+  bool ConnectViaIpc(const std::string& channel_name);
 
-  // Closes the |client_channel_| IPC channel.
-  void CloseChannel();
+  // Override of SendSecurityKeyRequest() interface method for tests which use
+  // an IPC channel for testing.
+  void SendSecurityKeyRequestViaIpc(const std::string& request_payload);
 
-  // Sends a security key request message via IPC through |client_channel_|.
-  void SendRequest(const std::string& request_data);
-
-  // Provides access to |last_message_received_| for testing.
   const std::string& last_message_received() const {
     return last_message_received_;
+  }
+
+  void set_wait_for_ipc_channel_return_value(bool return_value) {
+    wait_for_ipc_channel_return_value_ = return_value;
+  }
+
+  void set_establish_ipc_connection_should_succeed(bool should_succeed) {
+    establish_ipc_connection_should_succeed_ = should_succeed;
+  }
+
+  void set_send_security_request_should_succeed(bool should_succeed) {
+    send_security_request_should_succeed_ = should_succeed;
+  }
+
+  void set_security_key_response_payload(const std::string& response_payload) {
+    security_key_response_payload_ = response_payload;
   }
 
  private:
@@ -61,6 +86,18 @@ class FakeRemoteSecurityKeyIpcClient : public IPC::Listener {
 
   // Provides the contents of the last IPC message received.
   std::string last_message_received_;
+
+  // Determines whether EstablishIpcConnection() returns success or failure.
+  bool establish_ipc_connection_should_succeed_ = true;
+
+  // Determines whether SendSecurityKeyRequest() returns success or failure.
+  bool send_security_request_should_succeed_ = true;
+
+  // Value returned by WaitForSecurityKeyIpcServerChannel() method.
+  bool wait_for_ipc_channel_return_value_ = true;
+
+  // Value returned by SendSecurityKeyRequest() method.
+  std::string security_key_response_payload_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRemoteSecurityKeyIpcClient);
 };
