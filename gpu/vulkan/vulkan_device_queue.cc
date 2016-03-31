@@ -4,6 +4,7 @@
 
 #include "gpu/vulkan/vulkan_device_queue.h"
 
+#include <unordered_set>
 #include <vector>
 
 #include "gpu/vulkan/vulkan_command_pool.h"
@@ -29,18 +30,18 @@ bool VulkanDeviceQueue::Initialize(uint32_t options) {
   if (VK_NULL_HANDLE == vk_instance)
     return false;
 
-  VkResult status = VK_SUCCESS;
+  VkResult result = VK_SUCCESS;
 
   uint32_t device_count = 0;
-  status = vkEnumeratePhysicalDevices(vk_instance, &device_count, nullptr);
-  if (VK_SUCCESS != status || device_count == 0)
+  result = vkEnumeratePhysicalDevices(vk_instance, &device_count, nullptr);
+  if (VK_SUCCESS != result || device_count == 0)
     return false;
 
   std::vector<VkPhysicalDevice> devices(device_count);
-  status =
+  result =
       vkEnumeratePhysicalDevices(vk_instance, &device_count, devices.data());
-  if (VK_SUCCESS != status) {
-    DLOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << status;
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << result;
     return false;
   }
 
@@ -104,16 +105,48 @@ bool VulkanDeviceQueue::Initialize(uint32_t options) {
 
   const char* device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
+  std::vector<const char*> enabled_layer_names;
+#if DCHECK_IS_ON()
+  uint32_t num_device_layers = 0;
+  result = vkEnumerateDeviceLayerProperties(vk_physical_device_,
+                                            &num_device_layers, nullptr);
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkEnumerateDeviceLayerProperties(NULL) failed: "
+                << result;
+    return false;
+  }
+
+  std::vector<VkLayerProperties> device_layers(num_device_layers);
+  result = vkEnumerateDeviceLayerProperties(vk_physical_device_,
+                                            &num_device_layers,
+                                            device_layers.data());
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkEnumerateDeviceLayerProperties() failed: " << result;
+    return false;
+  }
+
+  std::unordered_set<std::string> desired_layers({
+    "VK_LAYER_LUNARG_standard_validation",
+  });
+
+  for (const VkLayerProperties& layer_property : device_layers) {
+    if (desired_layers.find(layer_property.layerName) != desired_layers.end())
+      enabled_layer_names.push_back(layer_property.layerName);
+  }
+#endif
+
   VkDeviceCreateInfo device_create_info = {};
   device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   device_create_info.queueCreateInfoCount = 1;
   device_create_info.pQueueCreateInfos = &queue_create_info;
+  device_create_info.enabledLayerCount = enabled_layer_names.size();
+  device_create_info.ppEnabledLayerNames = enabled_layer_names.data();
   device_create_info.enabledExtensionCount = arraysize(device_extensions);
   device_create_info.ppEnabledExtensionNames = device_extensions;
 
-  status = vkCreateDevice(vk_physical_device_, &device_create_info, nullptr,
+  result = vkCreateDevice(vk_physical_device_, &device_create_info, nullptr,
                           &vk_device_);
-  if (VK_SUCCESS != status)
+  if (VK_SUCCESS != result)
     return false;
 
   vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
