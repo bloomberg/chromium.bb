@@ -26,6 +26,7 @@
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="appearance">
       <neon-animatable id="main">
+<if expr="chromeos">
         <div class="settings-box first two-line">
           <iron-icon icon="device:wallpaper"></iron-icon>
           <paper-button class="primary-button middle">
@@ -33,15 +34,16 @@
             <div class="secondary">[[i18n('openWallpaperApp')]]</div>
           </paper-button>
         </div>
+</if>
         <div class="settings-box two-line">
           <iron-icon icon="image:palette"></iron-icon>
           <paper-button class="primary-button middle" id="get-themes"
               on-tap="openThemesGallery_">
             <div>[[i18n('getThemes')]]</div>
-            <div class="secondary">[[i18n('chooseFromWebStore')]]</div>
+            <div class="secondary">[[themeSublabel_]]</div>
           </paper-button>
           <template is="dom-if" if="[[allowResetTheme_]]">
-            <paper-button on-tap="resetTheme_"
+            <paper-button on-tap="resetTheme_" class="secondary-action"
                 >[[i18n('resetToDefaultTheme')]]</paper-button>
           </template>
         </div>

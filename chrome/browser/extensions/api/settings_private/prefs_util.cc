@@ -70,6 +70,24 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)["browser.show_home_button"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Appearance settings.
+  (*s_whitelist)["extensions.theme.id"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["webkit.webprefs.default_font_size"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["webkit.webprefs.minimum_font_size"] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)["webkit.webprefs.fonts.fixed.Zyyy"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["webkit.webprefs.fonts.sansserif.Zyyy"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["webkit.webprefs.fonts.serif.Zyyy"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["webkit.webprefs.fonts.standard.Zyyy"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)["intl.charset_default"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
+
   // Downloads settings.
   (*s_whitelist)["download.default_directory"] =
       settings_private::PrefType::PREF_TYPE_STRING;
@@ -165,22 +183,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_DICTIONARY;
   (*s_whitelist)["profile.content_settings.exceptions.popups"] =
       settings_private::PrefType::PREF_TYPE_DICTIONARY;
-
-  // Web content settings.
-  (*s_whitelist)["webkit.webprefs.default_font_size"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["webkit.webprefs.minimum_font_size"] =
-      settings_private::PrefType::PREF_TYPE_NUMBER;
-  (*s_whitelist)["webkit.webprefs.fonts.fixed.Zyyy"] =
-      settings_private::PrefType::PREF_TYPE_STRING;
-  (*s_whitelist)["webkit.webprefs.fonts.sansserif.Zyyy"] =
-      settings_private::PrefType::PREF_TYPE_STRING;
-  (*s_whitelist)["webkit.webprefs.fonts.serif.Zyyy"] =
-      settings_private::PrefType::PREF_TYPE_STRING;
-  (*s_whitelist)["webkit.webprefs.fonts.standard.Zyyy"] =
-      settings_private::PrefType::PREF_TYPE_STRING;
-  (*s_whitelist)["intl.charset_default"] =
-      settings_private::PrefType::PREF_TYPE_STRING;
 
 #if defined(OS_CHROMEOS)
   (*s_whitelist)["cros.accounts.allowBWSI"] =

@@ -17,6 +17,8 @@
 Polymer({
   is: 'settings-appearance-page',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * The current active route.
@@ -99,13 +101,13 @@ Polymer({
         {value: 500, name: '500%'},
       ],
     },
+
+    /** @private */
+    themeSublabel_: String,
   },
 
-  behaviors: [
-    I18nBehavior,
-  ],
-
   observers: [
+    'themeChanged_(prefs.extensions.theme.id.value)',
     'zoomLevelChanged_(defaultZoomLevel_.value)',
   ],
 
@@ -166,6 +168,21 @@ Polymer({
   /** @private */
   showFontsPage_: function() {
     return this.currentRoute.subpage[0] == 'appearance-fonts';
+  },
+
+  /**
+   * @param {string} themeId The theme ID.
+   * @private
+   */
+  themeChanged_: function(themeId) {
+    if (themeId) {
+      chrome.management.get(themeId,
+          function(info) {
+            this.themeSublabel_ = info.name;
+          }.bind(this));
+    } else {
+      this.themeSublabel_ = this.i18n('chooseFromWebStore');
+    }
   },
 
   /**

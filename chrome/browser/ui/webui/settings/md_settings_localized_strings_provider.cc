@@ -144,7 +144,6 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"appearancePageTitle", IDS_SETTINGS_APPEARANCE},
       {"exampleDotCom", IDS_SETTINGS_EXAMPLE_DOT_COM},
-      {"setWallpaper", IDS_SETTINGS_SET_WALLPAPER},
       {"getThemes", IDS_SETTINGS_THEMES},
       {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
       {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
@@ -154,8 +153,11 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
       {"changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE},
       {"themesGalleryUrl", IDS_THEMES_GALLERY_URL},
       {"chooseFromWebStore", IDS_SETTINGS_WEB_STORE},
-      {"openWallpaperApp", IDS_SETTINGS_OPEN_WALLPAPER_APP},
       {"chooseFontsAndEncoding", IDS_SETTINGS_CHOOSE_FONTS_AND_ENCODING},
+#if defined(OS_CHROMEOS)
+      {"openWallpaperApp", IDS_SETTINGS_OPEN_WALLPAPER_APP},
+      {"setWallpaper", IDS_SETTINGS_SET_WALLPAPER},
+#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
