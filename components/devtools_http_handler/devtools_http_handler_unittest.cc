@@ -18,6 +18,7 @@
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/socket/server_socket.h"
@@ -42,9 +43,7 @@ class DummyServerSocket : public net::ServerSocket {
   }
 
   int GetLocalAddress(net::IPEndPoint* address) const override {
-    net::IPAddressNumber number;
-    EXPECT_TRUE(net::ParseIPLiteralToNumber("127.0.0.1", &number));
-    *address = net::IPEndPoint(number, kDummyPort);
+    *address = net::IPEndPoint(net::IPAddress::IPv4Localhost(), kDummyPort);
     return net::OK;
   }
 
