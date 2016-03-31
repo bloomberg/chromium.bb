@@ -384,17 +384,25 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
 
     int local_start = overlap_start - child_start;
     int local_end = overlap_end - child_start;
+    // |local_end| and |local_start| may equal |child_length| when the caret is
+    // at the end of a text field.
+    DCHECK_GE(local_start, 0);
+    DCHECK_LE(local_start, child_length);
+    DCHECK_GE(local_end, 0);
+    DCHECK_LE(local_end, child_length);
 
-    gfx::Rect child_rect = child->GetLocation();
-    auto text_direction = static_cast<ui::AXTextDirection>(
-        child->GetIntAttribute(ui::AX_ATTR_TEXT_DIRECTION));
     const std::vector<int32_t>& character_offsets =
         child->GetIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS);
+    if (static_cast<int>(character_offsets.size()) != child_length)
+      continue;
     int start_pixel_offset =
         local_start > 0 ? character_offsets[local_start - 1] : 0;
     int end_pixel_offset =
         local_end > 0 ? character_offsets[local_end - 1] : 0;
 
+    gfx::Rect child_rect = child->GetLocation();
+    auto text_direction = static_cast<ui::AXTextDirection>(
+        child->GetIntAttribute(ui::AX_ATTR_TEXT_DIRECTION));
     gfx::Rect child_overlap_rect;
     switch (text_direction) {
       case ui::AX_TEXT_DIRECTION_NONE:
