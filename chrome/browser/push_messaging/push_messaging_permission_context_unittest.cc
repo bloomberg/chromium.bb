@@ -85,20 +85,30 @@ TEST_F(PushMessagingPermissionContextTest, HasPermissionPrompt) {
   EXPECT_EQ(CONTENT_SETTING_ASK,
             context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 
-  // Just granting notifications should still prompt
-  SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+  // Just granting push messaging permission should still prompt.
+  SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
             context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 
-  // Just granting push should still prompt
+  // Just granting notifications should allow if push messaging is not blocked.
   SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                     CONTENT_SETTING_ASK);
   SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
                     CONTENT_SETTING_ALLOW);
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
+            context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
+
+  // Granting allow notifications but explicitly denying push messaging should
+  // block.
+  SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                    CONTENT_SETTING_ALLOW);
+  SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                    CONTENT_SETTING_BLOCK);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
             context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 }
 
@@ -214,19 +224,20 @@ TEST_F(PushMessagingPermissionContextTest, RequestPermission) {
       HostContentSettingsMapFactory::GetForProfile(&profile)->GetContentSetting(
           GURL(kOriginA), GURL(kOriginA), CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
           std::string()));
-  EXPECT_EQ(CONTENT_SETTING_ASK,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             context.GetPermissionStatus(GURL(kOriginA), GURL(kOriginA)));
 
   // If a website already has notifications permission, push permission is
-  // silently granted once the website requests it.
+  // silently assumed to be granted.
   NavigateAndCommit(GURL(kOriginA));
   context.RequestPermission(web_contents(), request_id, GURL(kOriginA),
                             callback);
 
-  EXPECT_TRUE(context.was_persisted());
+  // Although the permission check goes through, the push message permission
+  // isn't actually updated.
   EXPECT_TRUE(context.was_granted());
   EXPECT_EQ(
-      CONTENT_SETTING_ALLOW,
+      CONTENT_SETTING_ASK,
       HostContentSettingsMapFactory::GetForProfile(&profile)->GetContentSetting(
           GURL(kOriginA), GURL(kOriginA), CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
           std::string()));
@@ -246,7 +257,6 @@ TEST_F(PushMessagingPermissionContextTest, RequestAfterRevokingNotifications) {
   NavigateAndCommit(GURL(kOriginA));
   context.RequestPermission(web_contents(), request_id, GURL(kOriginA),
                             callback);
-  EXPECT_TRUE(context.was_persisted());
   EXPECT_TRUE(context.was_granted());
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,

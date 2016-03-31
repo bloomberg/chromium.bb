@@ -298,9 +298,17 @@ void PushMessagingMessageFilter::OnSubscribeFromWorker(
   }
   data.requesting_origin = service_worker_registration->pattern().GetOrigin();
 
-  // If there is a sender_info in the subscription options, it will be used,
-  // otherwise the registration sender_info will be used.
-  CheckForExistingRegistration(data, options);
+  if (!options.sender_info.empty()) {
+    service_worker_context_->StoreRegistrationUserData(
+        service_worker_registration_id, data.requesting_origin,
+        kPushSenderIdServiceWorkerKey, options.sender_info,
+        base::Bind(&PushMessagingMessageFilter::DidPersistSenderInfo,
+                   weak_factory_io_to_io_.GetWeakPtr(), data, options));
+  } else {
+    // If there is a sender_info in the subscription options, it will be used,
+    // otherwise the registration sender_info will be used.
+    CheckForExistingRegistration(data, options);
+  }
 }
 
 void PushMessagingMessageFilter::DidPersistSenderInfo(

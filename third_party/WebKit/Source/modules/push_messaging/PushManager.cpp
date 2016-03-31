@@ -38,14 +38,14 @@ String bufferSourceToString(const ArrayBufferOrArrayBufferView& applicationServe
 {
     // Check the validity of the sender info. It must be a 65 byte unencrypted key,
     // which has the byte 0x04 as the first byte as a marker.
-    char* input;
+    unsigned char* input;
     int length;
     if (applicationServerKey.isArrayBuffer()) {
-        input = static_cast<char*>(
+        input = static_cast<unsigned char*>(
             applicationServerKey.getAsArrayBuffer()->data());
         length = applicationServerKey.getAsArrayBuffer()->byteLength();
     } else if (applicationServerKey.isArrayBufferView()) {
-        input = static_cast<char*>(
+        input = static_cast<unsigned char*>(
             applicationServerKey.getAsArrayBufferView()->buffer()->data());
         length = applicationServerKey.getAsArrayBufferView()->buffer()->byteLength();
     } else {
@@ -53,8 +53,11 @@ String bufferSourceToString(const ArrayBufferOrArrayBufferView& applicationServe
         return String();
     }
 
+    // If the key is valid, just treat it as a string of bytes and pass it to
+    // the push service.
     if (length == 65 && input[0] == 0x04)
-        return WebString::fromUTF8(input, length);
+        return WebString::fromLatin1(input, length);
+
     exceptionState.throwDOMException(InvalidAccessError, "The provided applicationServerKey is not valid.");
     return String();
 }

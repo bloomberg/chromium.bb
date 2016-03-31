@@ -55,7 +55,9 @@ void PushMessagingDispatcher::subscribe(
   } else {
     PushSubscriptionOptions content_options;
     content_options.user_visible_only = options.userVisibleOnly;
-    content_options.sender_info = options.applicationServerKey.utf8();
+    // Just treat the server key as a string of bytes and pass it to the push
+    // service.
+    content_options.sender_info = options.applicationServerKey.latin1();
     DoSubscribe(service_worker_registration, content_options, callbacks);
   }
 }

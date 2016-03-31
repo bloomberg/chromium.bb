@@ -5,17 +5,6 @@
 'use strict';
 
 var resultQueue = new ResultQueue();
-var pushSubscription = null;
-
-// NIST P-256 public key made available to tests. Must be an uncompressed
-// point in accordance with SEC1 2.3.3.
-var applicationServerKey = new Uint8Array([
-  0x04, 0x55, 0x52, 0x6A, 0xA5, 0x6E, 0x8E, 0xAA, 0x47, 0x97, 0x36, 0x10, 0xC1,
-  0x66, 0x3C, 0x1E, 0x65, 0xBF, 0xA1, 0x7B, 0xEE, 0x48, 0xC9, 0xC6, 0xBB, 0xBF,
-  0x02, 0x18, 0x53, 0x72, 0x1D, 0x0C, 0x7B, 0xA9, 0xE3, 0x11, 0xB7, 0x03, 0x52,
-  0x21, 0xD3, 0x71, 0x90, 0x13, 0xA8, 0xC1, 0xCF, 0xED, 0x20, 0xF7, 0x1F, 0xD1,
-  0x7F, 0xF2, 0x76, 0xB6, 0x01, 0x20, 0xD8, 0x35, 0xA5, 0xD9, 0x3C, 0x43, 0xFD
-]);
 
 var pushSubscriptionOptions = {
   userVisibleOnly: true
@@ -118,40 +107,49 @@ function swapManifestNoSenderId() {
 
 // This is the old style of push subscriptions which we are phasing away
 // from, where the subscription used a sender ID instead of public key.
-function subscribePushWithoutKey() {
+function documentSubscribePushWithoutKey() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
     return swRegistration.pushManager.subscribe(
         pushSubscriptionOptions)
         .then(function(subscription) {
-          pushSubscription = subscription;
           sendResultToTest(subscription.endpoint);
         });
   }).catch(sendErrorToTest);
 }
 
-function subscribePush() {
+function documentSubscribePush() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    pushSubscriptionOptions.applicationServerKey = applicationServerKey.buffer;
+    pushSubscriptionOptions.applicationServerKey = kApplicationServerKey.buffer;
     return swRegistration.pushManager.subscribe(pushSubscriptionOptions)
         .then(function(subscription) {
-          pushSubscription = subscription;
           sendResultToTest(subscription.endpoint);
         });
   }).catch(sendErrorToTest);
 }
 
-function subscribePushBadKey() {
+function documentSubscribePushBadKey() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    var invalidApplicationServerKey = Uint8Array.from(applicationServerKey);
+    var invalidApplicationServerKey = Uint8Array.from(kApplicationServerKey);
     invalidApplicationServerKey[0] = 0x05;
     pushSubscriptionOptions.applicationServerKey =
         invalidApplicationServerKey.buffer;
     return swRegistration.pushManager.subscribe(pushSubscriptionOptions)
         .then(function(subscription) {
-          pushSubscription = subscription;
           sendResultToTest(subscription.endpoint);
         });
   }).catch(sendErrorToTest);
+}
+
+function workerSubscribePush() {
+  // Send the message to the worker for it to subscribe
+  navigator.serviceWorker.controller.postMessage({command: 'workerSubscribe'});
+}
+
+function workerSubscribePushNoKey() {
+  // The worker will try to subscribe without providing a key. This should
+  // succeed if the worker was previously subscribed and fail otherwise.
+  navigator.serviceWorker.controller.postMessage(
+      {command: 'workerSubscribeNoKey'});
 }
 
 function GetP256dh() {
@@ -182,15 +180,23 @@ function isControlled() {
 }
 
 function unsubscribePush() {
-  if (!pushSubscription) {
-    sendResultToTest('unsubscribe error: no subscription');
-    return;
-  }
-
-  pushSubscription.unsubscribe().then(function(result) {
-    sendResultToTest('unsubscribe result: ' + result);
-  }, function(error) {
-    sendResultToTest('unsubscribe error: ' + error.name + ': ' + error.message);
+  navigator.serviceWorker.ready.then(function(swRegistration) {
+    if (!swRegistration) {
+      sendResultToTest('unsubscribe result: false');
+      return;
+    }
+    swRegistration.pushManager.getSubscription().then(function(pushSubscription)
+    {
+      if (!pushSubscription) {
+        sendResultToTest('unsubscribe result: false');
+        return;
+      }
+      pushSubscription.unsubscribe().then(function(result) {
+        sendResultToTest('unsubscribe result: ' + result);
+      }, function(error) {
+        sendResultToTest('unsubscribe error: ' + error.message);
+      })
+    })
   });
 }
 
@@ -207,4 +213,6 @@ navigator.serviceWorker.addEventListener('message', function(event) {
   var message = JSON.parse(event.data);
   if (message.type == 'push')
     resultQueue.push(message.data);
+  else
+    sendResultToTest(message.data);
 }, false);

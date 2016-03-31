@@ -53,12 +53,15 @@ ContentSetting PushMessagingPermissionContext::GetPermissionStatus(
       push_content_setting == CONTENT_SETTING_BLOCK) {
     return CONTENT_SETTING_BLOCK;
   }
-  if (notifications_permission == CONTENT_SETTING_ASK ||
-      push_content_setting == CONTENT_SETTING_ASK) {
+  if (notifications_permission == CONTENT_SETTING_ASK)
     return CONTENT_SETTING_ASK;
-  }
-  DCHECK_EQ(CONTENT_SETTING_ALLOW, notifications_permission);
-  DCHECK_EQ(CONTENT_SETTING_ALLOW, push_content_setting);
+
+  DCHECK(push_content_setting == CONTENT_SETTING_ALLOW ||
+         push_content_setting == CONTENT_SETTING_ASK);
+
+  // If the notifications permission has already been granted,
+  // and the push permission isn't explicitly blocked, then grant
+  // allow permission.
   return CONTENT_SETTING_ALLOW;
 #else
   return CONTENT_SETTING_BLOCK;
