@@ -619,8 +619,15 @@ TEST_F(WindowTreeClientTest, TwoClientsGetDifferentConnectionIds) {
   ASSERT_NE(connection_id_1(), connection_id_2());
 }
 
+// Disabled due to flakes on win8_chromium_ng; see https://crbug.com/598925.
+#if defined(OS_WIN)
+#define MAYBE_WindowsRemovedWhenEmbedding \
+    DISABLED_WindowsRemovedWhenEmbedding
+#else
+#define MAYBE_WindowsRemovedWhenEmbedding WindowsRemovedWhenEmbedding
+#endif
 // Verifies when Embed() is invoked any child windows are removed.
-TEST_F(WindowTreeClientTest, WindowsRemovedWhenEmbedding) {
+TEST_F(WindowTreeClientTest, MAYBE_WindowsRemovedWhenEmbedding) {
   // Two windows 1 and 2. 2 is parented to 1.
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
@@ -1701,14 +1708,7 @@ TEST_F(WindowTreeClientTest, EmbedSupplyingWindowTreeClient) {
             SingleChangeToDescription(*client2.tracker()->changes()));
 }
 
-// Disabled due to flakes on win8_chromium_ng; see https://crbug.com/598925.
-#if defined(OS_WIN)
-#define MAYBE_EmbedFailsFromOtherConnection \
-    DISABLED_EmbedFailsFromOtherConnection
-#else
-#define MAYBE_EmbedFailsFromOtherConnection EmbedFailsFromOtherConnection
-#endif
-TEST_F(WindowTreeClientTest, MAYBE_EmbedFailsFromOtherConnection) {
+TEST_F(WindowTreeClientTest, EmbedFailsFromOtherConnection) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
