@@ -1021,6 +1021,9 @@
     'blink_loader': {
       'filepath': 'third_party/WebKit/Source/core/loader',
     },
+    'blink_modules': {
+      'filepath': 'third_party/WebKit/Source/modules'
+    },
     'blink_notifications': {
       'filepath': 'third_party/WebKit/LayoutTests/http/tests/notifications' \
                   '|third_party/WebKit/Source/modules/notifications' \
@@ -1625,6 +1628,7 @@
                                  'drott+blinkwatch@chromium.org',
                                  'junov@chromium.org',
                                  'blink-reviews-platform-graphics@chromium.org' ],
+    'blink_modules': [ 'haraken@chromium.org' ],
     'blink_heap': [ 'ager@chromium.org',
                     'haraken@chromium.org',
                     'kouhei+heap@chromium.org',
