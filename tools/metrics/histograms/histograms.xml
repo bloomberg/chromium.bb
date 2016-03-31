@@ -84895,15 +84895,15 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="WebBluetoothFunction" type="int">
   <int value="0" label="requestDevice()"/>
-  <int value="1" label="connectGATT()"/>
+  <int value="1" label="RemoteGATTServer.connect()"/>
   <int value="2" label="RemoteGATTServer.getPrimaryService()"/>
-  <int value="3" label="Service.getCharacteristic()"/>
-  <int value="4" label="Characteristic.readValue()"/>
-  <int value="5" label="Characteristic.writeValue()"/>
-  <int value="6" label="Characteristic.startNotifications()"/>
-  <int value="7" label="Characteristic.stopNotifications()"/>
+  <int value="3" label="RemoteGATTService.getCharacteristic()"/>
+  <int value="4" label="RemoteGATTCharacteristic.readValue()"/>
+  <int value="5" label="RemoteGATTCharacteristic.writeValue()"/>
+  <int value="6" label="RemoteGATTCharacteristic.startNotifications()"/>
+  <int value="7" label="RemoteGATTCharacteristic.stopNotifications()"/>
   <int value="8" label="RemoteGATTServer.disconnect()"/>
-  <int value="9" label="Service.getCharacteristics()"/>
+  <int value="9" label="RemoteGATTService.getCharacteristics()"/>
 </enum>
 
 <enum name="WebBluetoothGATTOperationOutcome" type="int">
