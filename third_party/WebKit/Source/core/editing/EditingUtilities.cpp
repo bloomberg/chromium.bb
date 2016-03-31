@@ -41,6 +41,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/HTMLInterchange.h"
+#include "core/editing/state_machines/BackspaceStateMachine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
@@ -543,6 +544,31 @@ PositionInFlatTree lastEditablePositionBeforePositionInRoot(const PositionInFlat
     return lastEditablePositionBeforePositionInRootAlgorithm<EditingInFlatTreeStrategy>(position, highestRoot);
 }
 
+template<typename StateMachine>
+int findNextBoundaryOffset(const String& str, int current)
+{
+    StateMachine machine;
+    TextSegmentationMachineState state = TextSegmentationMachineState::Invalid;
+
+    for (int i = current - 1; i >= 0; --i) {
+        state = machine.feedPrecedingCodeUnit(str[i]);
+        if (state != TextSegmentationMachineState::NeedMoreCodeUnit)
+            break;
+    }
+    if (state == TextSegmentationMachineState::NeedMoreCodeUnit)
+        state = machine.tellEndOfPrecedingText();
+    if (state == TextSegmentationMachineState::Finished)
+        return current + machine.finalizeAndGetBoundaryOffset();
+    const int length = str.length();
+    DCHECK_EQ(TextSegmentationMachineState::NeedFollowingCodeUnit, state);
+    for (int i = current; i < length; ++i) {
+        state = machine.feedFollowingCodeUnit(str[i]);
+        if (state != TextSegmentationMachineState::NeedMoreCodeUnit)
+            break;
+    }
+    return current + machine.finalizeAndGetBoundaryOffset();
+}
+
 int uncheckedPreviousOffset(const Node* node, int current)
 {
     if (!node->isTextNode())
@@ -566,12 +592,8 @@ static int uncheckedPreviousOffsetForBackwardDeletion(const Node* node, int curr
         return current - 1;
 
     const String& text = toText(node)->data();
-    DCHECK(static_cast<unsigned>(current - 1) < text.length());
-    if (U16_IS_TRAIL(text[--current]))
-        --current;
-    if (current < 0)
-        current = 0;
-    return current;
+    DCHECK_LT(static_cast<unsigned>(current - 1), text.length());
+    return findNextBoundaryOffset<BackspaceStateMachine>(text, current);
 }
 
 int uncheckedNextOffset(const Node* node, int current)

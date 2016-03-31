@@ -6,6 +6,7 @@
 #define BackspaceStateMachine_h
 
 #include "core/CoreExport.h"
+#include "core/editing/state_machines/TextSegmentationMachineState.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/Unicode.h"
@@ -18,13 +19,19 @@ class CORE_EXPORT BackspaceStateMachine {
 public:
     BackspaceStateMachine() = default;
 
-    // Returns true when the state machine has stopped.
-    bool updateState(UChar codeUnit);
+    // Prepares by feeding preceding text.
+    // This method must not be called after feedFollowingCodeUnit().
+    TextSegmentationMachineState feedPrecedingCodeUnit(UChar codeUnit);
 
-    // Finalize the state machine and returns the code unit count to be deleted.
-    // If the state machine hasn't finished, this method finishes the state
-    // machine first.
-    int finalizeAndGetCodeUnitCountToBeDeleted();
+    // Tells the end of preceding text to the state machine.
+    TextSegmentationMachineState tellEndOfPrecedingText();
+
+    // Find boundary offset by feeding following text.
+    // This method must be called after feedPrecedingCodeUnit() returns NeedsFollowingCodeUnit.
+    TextSegmentationMachineState feedFollowingCodeUnit(UChar codeUnit);
+
+    // Returns the next boundary offset. This method finalizes the state machine if it is not finished.
+    int finalizeAndGetBoundaryOffset();
 
     // Resets the internal state to the initial state.
     void reset();
