@@ -89,6 +89,9 @@ config("compiler") {
         "-fansi-escape-codes",
       ]
     }
+
+    # Clang runtime libraries, such as the sanitizer runtimes, live here.
+    lib_dirs = [ "//third_party/llvm-build/Release+Asserts/lib/clang/3.9.0/lib/windows" ]
   }
 
   if (is_syzyasan) {
