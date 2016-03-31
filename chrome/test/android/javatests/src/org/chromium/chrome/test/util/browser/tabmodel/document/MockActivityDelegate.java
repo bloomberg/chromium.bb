@@ -69,6 +69,12 @@ public class MockActivityDelegate extends ActivityDelegate {
         }
     }
 
+    @Override
+    public void finishAllDocumentActivities() {
+        mRegularTasks.clear();
+        mIncognitoTasks.clear();
+    }
+
     /**
      * Adds a task to the recents list.
      * @param isIncognito Whether the task is an incognito task.

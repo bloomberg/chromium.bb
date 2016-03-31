@@ -232,7 +232,7 @@ public class ChromeLauncherActivity extends Activity
             return;
         }
 
-        if (DocumentModeAssassin.isMigrationNecessary()) {
+        if (DocumentModeAssassin.getInstance().isMigrationNecessary()) {
             Log.d(TAG, "Diverting to UpgradeActivity via ChromeLauncherActivity.");
             UpgradeActivity.launchInstance(this, intent);
             ApiCompatibilityUtils.finishAndRemoveTask(this);

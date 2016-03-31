@@ -191,7 +191,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     @Override
     protected final void onCreate(Bundle savedInstanceState) {
-        if (DocumentModeAssassin.isMigrationNecessary()) {
+        if (DocumentModeAssassin.getInstance().isMigrationNecessary()) {
             super.onCreate(null);
 
             // Kick the user to the MigrationActivity.

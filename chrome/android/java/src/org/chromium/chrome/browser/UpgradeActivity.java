@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,7 +28,7 @@ public class UpgradeActivity extends AppCompatActivity {
     public static final String EXTRA_INTENT_TO_REFIRE =
             "org.chromium.chrome.browser.INTENT_TO_REFIRE";
 
-    private static final long MIN_MS_TO_DISPLAY_ACTIVITY = 500;
+    private static final long MIN_MS_TO_DISPLAY_ACTIVITY = 1000;
     private static final long INVALID_TIMESTAMP = -1;
 
     private final Handler mHandler;
@@ -38,12 +38,13 @@ public class UpgradeActivity extends AppCompatActivity {
     private long mStartTimestamp = INVALID_TIMESTAMP;
     private boolean mIsDestroyed;
 
-    public static void launchInstance(Context context, Intent originalIntent) {
+    public static void launchInstance(Activity activity, Intent originalIntent) {
         Intent intent = new Intent();
-        intent.setClass(context, UpgradeActivity.class);
+        intent.setClass(activity, UpgradeActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(UpgradeActivity.EXTRA_INTENT_TO_REFIRE, originalIntent);
-        context.startActivity(intent);
+        activity.startActivity(intent);
+        activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     public UpgradeActivity() {
@@ -76,7 +77,7 @@ public class UpgradeActivity extends AppCompatActivity {
         setContentView(R.layout.upgrade_activity);
 
         DocumentModeAssassin assassin = DocumentModeAssassin.getInstance();
-        if (!DocumentModeAssassin.isMigrationNecessary()
+        if (!DocumentModeAssassin.getInstance().isMigrationNecessary()
                 || assassin.getStage() == DocumentModeAssassin.STAGE_DONE) {
             // Migration finished in the background.
             continueApplicationLaunch();
@@ -129,7 +130,7 @@ public class UpgradeActivity extends AppCompatActivity {
         ApiCompatibilityUtils.finishAndRemoveTask(this);
         if (mIntentToFireAfterUpgrade != null && ApplicationStatus.hasVisibleActivities()) {
             startActivity(mIntentToFireAfterUpgrade);
-            overridePendingTransition(android.R.anim.fade_in, 0);
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             mIntentToFireAfterUpgrade = null;
         }
     }

@@ -251,7 +251,7 @@ public class DocumentActivity extends ChromeActivity {
             tabbedIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
 
             startActivity(tabbedIntent);
-            overridePendingTransition(0, 0);
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }
 
         boolean isStartedUpCorrectly = tabId != Tab.INVALID_TAB_ID && isDocumentMode;

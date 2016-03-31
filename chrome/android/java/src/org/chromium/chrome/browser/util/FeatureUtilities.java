@@ -124,8 +124,12 @@ public class FeatureUtilities {
     }
 
     /**
-     * Whether the device could possibly run in Document mode (may return true even
-     * if the document mode is turned off).
+     * Whether the device could possibly run in Document mode (may return true even if the document
+     * mode is turned off).
+     *
+     * This function can't be changed to return false (even if document mode is deleted) because we
+     * need to know whether a user needs to be migrated away.
+     *
      * @param context The context to use for checking configuration.
      * @return Whether the device could possibly run in Document mode.
      */
