@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -18,6 +19,8 @@ import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Instrumentation tests for the Notification UI Manager implementation on Android.
@@ -112,5 +115,48 @@ public class NotificationUIManagerIntentTest extends ChromeActivityTestCaseBase<
         SingleWebsitePreferences fragment =
                 ActivityUtils.waitForFragmentToAttach(activity, SingleWebsitePreferences.class);
         assertNotNull("Could not find the SingleWebsitePreferences fragment", fragment);
+    }
+
+    /**
+     * Tests the browser initialization code when a notification has been activated. This will be
+     * routed through the NotificationService which starts the browser process, which in turn will
+     * create an instance of the NotificationUIManager.
+     *
+     * The created intent does not carry significant data and is expected to fail, but has to be
+     * sufficient for the Java code to trigger start-up of the browser process.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testLaunchProcessForNotificationActivation() throws Exception {
+        assertFalse("The native library should not be loaded yet", LibraryLoader.isInitialized());
+        assertNull(NotificationUIManager.getInstanceForTests());
+
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+
+        Intent intent = new Intent(NotificationConstants.ACTION_CLICK_NOTIFICATION);
+        intent.setClass(context, NotificationService.Receiver.class);
+
+        long persistentId = 42;
+
+        intent.putExtra(NotificationConstants.EXTRA_PERSISTENT_NOTIFICATION_ID, persistentId);
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_ID, "Default");
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN, "example.com");
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_TAG, "tag");
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                context, 0 /* request code */, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // Send the pending intent. This will begin starting up the browser process.
+        pendingIntent.send();
+
+        CriteriaHelper.pollUiThread(new Criteria("Browser process was never started.") {
+            @Override
+            public boolean isSatisfied() {
+                return NotificationUIManager.getInstanceForTests() != null;
+            }
+        });
+
+        assertTrue("The native library should be loaded now", LibraryLoader.isInitialized());
+        assertNotNull(NotificationUIManager.getInstanceForTests());
     }
 }

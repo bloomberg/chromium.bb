@@ -10,13 +10,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.content.app.ContentApplication;
-import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 
 /**
  * The Notification service receives intents fired as responses to user actions issued on Android
@@ -76,14 +73,8 @@ public class NotificationService extends IntentService {
      */
     @SuppressFBWarnings("DM_EXIT")
     private void dispatchIntentOnUIThread(Intent intent) {
-        Context context = getApplicationContext();
-        if (!CommandLine.isInitialized()) {
-            ContentApplication.initCommandLine(context);
-        }
-
         try {
-            BrowserStartupController.get(this, LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesSync(false);
+            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
 
             // Now that the browser process is initialized, we pass forward the call to the
             // Notification UI Manager which will take care of delivering the appropriate events.
@@ -93,9 +84,6 @@ public class NotificationService extends IntentService {
 
             // TODO(peter): Verify that the lifetime of the NotificationService is sufficient
             // when a notification event could be dispatched successfully.
-
-            // TODO(peter): The native side needs to tell us when executing the event has
-            // finished, so that we can forcefully stop the service.
 
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to start the browser process.", e);
