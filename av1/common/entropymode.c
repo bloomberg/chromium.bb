@@ -241,7 +241,7 @@ static const aom_prob default_zeromv_prob[ZEROMV_MODE_CONTEXTS] = {
 };
 
 static const aom_prob default_refmv_prob[REFMV_MODE_CONTEXTS] = {
-    220, 220, 200, 200, 180, 128,
+    220, 220, 200, 200, 180, 128, 1, 250,
 };
 #endif
 

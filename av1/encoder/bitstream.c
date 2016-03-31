@@ -70,19 +70,24 @@ static void write_intra_mode(aom_writer *w, PREDICTION_MODE mode,
 
 static void write_inter_mode(AV1_COMMON *cm,
                              aom_writer *w, PREDICTION_MODE mode,
-                             const uint8_t mode_ctx) {
+                             const int16_t mode_ctx) {
 #if CONFIG_REF_MV
-  const uint8_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
+  const int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
   const aom_prob newmv_prob = cm->fc->newmv_prob[newmv_ctx];
   aom_write(w, mode != NEWMV, newmv_prob);
 
   if (mode != NEWMV) {
-    const uint8_t zeromv_ctx = (mode_ctx >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
+    const int16_t zeromv_ctx = (mode_ctx >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
     const aom_prob zeromv_prob = cm->fc->zeromv_prob[zeromv_ctx];
+
+    if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
+      assert(mode == ZEROMV);
+      return;
+    }
     aom_write(w, mode != ZEROMV, zeromv_prob);
 
     if (mode != ZEROMV) {
-      const uint8_t refmv_ctx = (mode_ctx >> REFMV_OFFSET);
+      const int16_t refmv_ctx = (mode_ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
       const aom_prob refmv_prob = cm->fc->refmv_prob[refmv_ctx];
       aom_write(w, mode != NEARESTMV, refmv_prob);
     }
@@ -417,8 +422,15 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
     }
     write_intra_mode(w, mbmi->uv_mode, cm->fc->uv_mode_prob[mode]);
   } else {
-    const int mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
+    int16_t mode_ctx = mbmi_ext->mode_context[mbmi->ref_frame[0]];
     write_ref_frames(cm, xd, w);
+
+#if CONFIG_REF_MV
+    if (mbmi->ref_frame[1] > NONE)
+      mode_ctx &= (mbmi_ext->mode_context[mbmi->ref_frame[1]] | 0x00ff);
+    if (bsize < BLOCK_8X8)
+      mode_ctx &= 0x00ff;
+#endif
 
     // If segment skip is not enabled code the mode.
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {
