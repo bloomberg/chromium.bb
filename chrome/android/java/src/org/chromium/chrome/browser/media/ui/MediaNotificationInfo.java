@@ -262,7 +262,7 @@ public class MediaNotificationInfo {
                 && id == other.id
                 && metadata.equals(other.metadata)
                 && TextUtils.equals(origin, other.origin)
-                && image == other.image || (image != null && image.sameAs(other.image))
+                && (image == other.image || (image != null && image.sameAs(other.image)))
                 && contentIntent.equals(other.contentIntent)
                 && listener.equals(other.listener);
     }
