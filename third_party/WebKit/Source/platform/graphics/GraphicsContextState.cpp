@@ -18,22 +18,18 @@ static inline SkFilterQuality filterQualityForPaint(InterpolationQuality quality
 }
 
 GraphicsContextState::GraphicsContextState()
-    : m_strokeColor(Color::black)
-    , m_fillColor(Color::black)
-    , m_textDrawingMode(TextModeFill)
+    : m_textDrawingMode(TextModeFill)
     , m_interpolationQuality(InterpolationDefault)
     , m_saveCount(0)
     , m_shouldAntialias(true)
 {
     m_strokePaint.setStyle(SkPaint::kStroke_Style);
     m_strokePaint.setStrokeWidth(SkFloatToScalar(m_strokeData.thickness()));
-    m_strokePaint.setColor(m_strokeColor.rgb());
     m_strokePaint.setStrokeCap(SkPaint::kDefault_Cap);
     m_strokePaint.setStrokeJoin(SkPaint::kDefault_Join);
     m_strokePaint.setStrokeMiter(SkFloatToScalar(m_strokeData.miterLimit()));
     m_strokePaint.setFilterQuality(filterQualityForPaint(m_interpolationQuality));
     m_strokePaint.setAntiAlias(m_shouldAntialias);
-    m_fillPaint.setColor(m_fillColor.rgb());
     m_fillPaint.setFilterQuality(filterQualityForPaint(m_interpolationQuality));
     m_fillPaint.setAntiAlias(m_shouldAntialias);
 }
@@ -42,13 +38,9 @@ GraphicsContextState::GraphicsContextState(const GraphicsContextState& other)
     : m_strokePaint(other.m_strokePaint)
     , m_fillPaint(other.m_fillPaint)
     , m_strokeData(other.m_strokeData)
-    , m_strokeColor(other.m_strokeColor)
     , m_strokeGradient(other.m_strokeGradient)
-    , m_fillColor(other.m_fillColor)
     , m_fillGradient(other.m_fillGradient)
-    , m_looper(other.m_looper)
     , m_textDrawingMode(other.m_textDrawingMode)
-    , m_colorFilter(other.m_colorFilter)
     , m_interpolationQuality(other.m_interpolationQuality)
     , m_saveCount(0)
     , m_shouldAntialias(other.m_shouldAntialias) { }
@@ -88,14 +80,12 @@ void GraphicsContextState::setStrokeThickness(float thickness)
 void GraphicsContextState::setStrokeColor(const Color& color)
 {
     m_strokeGradient.clear();
-    m_strokeColor = color;
     m_strokePaint.setColor(color.rgb());
     m_strokePaint.setShader(0);
 }
 
 void GraphicsContextState::setStrokeGradient(const PassRefPtr<Gradient> gradient, float alpha)
 {
-    m_strokeColor = Color::black;
     m_strokeGradient = gradient;
     m_strokePaint.setColor(scaleAlpha(SK_ColorBLACK, alpha));
     m_strokeGradient->applyToPaint(m_strokePaint);
@@ -121,7 +111,6 @@ void GraphicsContextState::setMiterLimit(float miterLimit)
 
 void GraphicsContextState::setFillColor(const Color& color)
 {
-    m_fillColor = color;
     m_fillGradient.clear();
     m_fillPaint.setColor(color.rgb());
     m_fillPaint.setShader(0);
@@ -129,7 +118,6 @@ void GraphicsContextState::setFillColor(const Color& color)
 
 void GraphicsContextState::setFillGradient(const PassRefPtr<Gradient> gradient, float alpha)
 {
-    m_fillColor = Color::black;
     m_fillGradient = gradient;
     m_fillPaint.setColor(scaleAlpha(SK_ColorBLACK, alpha));
     m_fillGradient->applyToPaint(m_fillPaint);
@@ -138,9 +126,10 @@ void GraphicsContextState::setFillGradient(const PassRefPtr<Gradient> gradient, 
 // Shadow. (This will need tweaking if we use draw loopers for other things.)
 void GraphicsContextState::setDrawLooper(PassRefPtr<SkDrawLooper> drawLooper)
 {
-    m_looper = toSkSp(drawLooper);
-    m_strokePaint.setLooper(m_looper);
-    m_fillPaint.setLooper(m_looper);
+    // Grab a new ref for stroke.
+    m_strokePaint.setLooper(sk_ref_sp(drawLooper.get()));
+    // Pass the existing ref to fill (to minimize refcount churn).
+    m_fillPaint.setLooper(toSkSp(drawLooper));
 }
 
 void GraphicsContextState::setLineDash(const DashArray& dashes, float dashOffset)
@@ -150,9 +139,10 @@ void GraphicsContextState::setLineDash(const DashArray& dashes, float dashOffset
 
 void GraphicsContextState::setColorFilter(PassRefPtr<SkColorFilter> colorFilter)
 {
-    m_colorFilter = toSkSp(colorFilter);
-    m_strokePaint.setColorFilter(m_colorFilter);
-    m_fillPaint.setColorFilter(m_colorFilter);
+    // Grab a new ref for stroke.
+    m_strokePaint.setColorFilter(sk_ref_sp(colorFilter.get()));
+    // Pass the existing ref to fill (to minimize refcount churn).
+    m_fillPaint.setColorFilter(toSkSp(colorFilter));
 }
 
 void GraphicsContextState::setInterpolationQuality(InterpolationQuality quality)

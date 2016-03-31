@@ -710,8 +710,7 @@ void GraphicsContext::drawRect(const IntRect& rect)
         return;
 
     SkRect skRect = rect;
-    int fillcolorNotTransparent = immutableState()->fillColor().rgb() & 0xFF000000;
-    if (fillcolorNotTransparent)
+    if (immutableState()->fillColor().alpha())
         drawRect(skRect, immutableState()->fillPaint());
 
     if (immutableState()->getStrokeData().style() != NoStroke
