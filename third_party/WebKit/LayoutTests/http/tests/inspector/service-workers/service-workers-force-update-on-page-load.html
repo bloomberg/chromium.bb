@@ -65,10 +65,7 @@ function test()
         .then(function() {
             InspectorTest.addResult("The second frame loaded.");
             InspectorTest.addResult("Check \"Force update on page load\" check box");
-            WebInspector.panels.sources.sidebarPanes.serviceWorkers.expand();
-            for (var element of WebInspector.panels.sources.sidebarPanes.serviceWorkers._versionIdCheckBoxMap.values()) {
-                element.click();
-            }
+            WebInspector.settings.settingForTest("serviceWorkerUpdateOnReload").set(true);
             return InspectorTest.invokePageFunctionPromise("loadIframe", [scope]);
         })
         .then(function() {
@@ -78,9 +75,7 @@ function test()
         .then(function() {
             InspectorTest.addResult("The fourth frame loaded.  The third worker must be activated before here.");
             InspectorTest.addResult("Uncheck \"Force update on page load\" check box");
-            for (var element of WebInspector.panels.sources.sidebarPanes.serviceWorkers._versionIdCheckBoxMap.values()) {
-                element.click();
-            }
+            WebInspector.settings.settingForTest("serviceWorkerUpdateOnReload").set(false);
             return InspectorTest.invokePageFunctionPromise("loadIframe", [scope]);
         })
         .then(function() {

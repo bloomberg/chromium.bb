@@ -35,7 +35,6 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
     virtual void WorkerReadyForInspection(
         ServiceWorkerDevToolsAgentHost* host) {}
     virtual void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) {}
-    virtual void DebugOnStartUpdated(bool debug_on_start) {}
 
    protected:
     virtual ~Observer() {}

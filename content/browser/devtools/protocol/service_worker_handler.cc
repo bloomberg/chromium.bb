@@ -133,10 +133,7 @@ scoped_refptr<ServiceWorkerRegistration> CreateRegistrationDictionaryValue(
               base::Int64ToString(registration_info.registration_id))
           ->set_scope_url(registration_info.pattern.spec())
           ->set_is_deleted(registration_info.delete_flag ==
-                           ServiceWorkerRegistrationInfo::IS_DELETED)
-          ->set_force_update_on_page_load(
-              registration_info.force_update_on_page_load ==
-              ServiceWorkerRegistrationInfo::IS_FORCED));
+                           ServiceWorkerRegistrationInfo::IS_DELETED));
   return registration;
 }
 
@@ -311,11 +308,6 @@ Response ServiceWorkerHandler::Enable() {
 
   ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
 
-  client_->DebugOnStartUpdated(
-      DebugOnStartUpdatedParams::Create()->set_debug_on_start(
-          ServiceWorkerDevToolsManager::GetInstance()
-              ->debug_service_worker_on_start()));
-
   context_watcher_ = new ServiceWorkerContextWatcher(
       context_, base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationUpdated,
                            weak_factory_.GetWeakPtr()),
@@ -422,25 +414,11 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
   return Response::OK();
 }
 
-Response ServiceWorkerHandler::SetDebugOnStart(bool debug_on_start) {
-  ServiceWorkerDevToolsManager::GetInstance()
-      ->set_debug_service_worker_on_start(debug_on_start);
-  return Response::OK();
-}
-
 Response ServiceWorkerHandler::SetForceUpdateOnPageLoad(
-    const std::string& registration_id,
     bool force_update_on_page_load) {
   if (!context_)
     return CreateContextErrorResponse();
-  int64_t id = kInvalidServiceWorkerRegistrationId;
-  if (!base::StringToInt64(registration_id, &id))
-    return CreateInvalidVersionIdErrorResponse();
-  if (force_update_on_page_load)
-    force_update_enabled_registrations_.insert(id);
-  else
-    force_update_enabled_registrations_.erase(id);
-  context_->SetForceUpdateOnPageLoad(id, force_update_on_page_load);
+  context_->SetForceUpdateOnPageLoad(force_update_on_page_load);
   return Response::OK();
 }
 
@@ -586,11 +564,6 @@ void ServiceWorkerHandler::WorkerDestroyed(
   UpdateHosts();
 }
 
-void ServiceWorkerHandler::DebugOnStartUpdated(bool debug_on_start) {
-  client_->DebugOnStartUpdated(
-      DebugOnStartUpdatedParams::Create()->set_debug_on_start(debug_on_start));
-}
-
 void ServiceWorkerHandler::ReportWorkerCreated(
     ServiceWorkerDevToolsAgentHost* host) {
   if (host->IsAttached())
@@ -616,11 +589,8 @@ void ServiceWorkerHandler::ReportWorkerTerminated(
 }
 
 void ServiceWorkerHandler::ClearForceUpdate() {
-  if (context_) {
-    for (const auto registration_id : force_update_enabled_registrations_)
-      context_->SetForceUpdateOnPageLoad(registration_id, false);
-  }
-  force_update_enabled_registrations_.clear();
+  if (context_)
+    context_->SetForceUpdateOnPageLoad(false);
 }
 
 }  // namespace service_worker

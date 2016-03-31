@@ -174,8 +174,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // These methods can be called from any thread.
   void UpdateRegistration(const GURL& pattern);
-  void SetForceUpdateOnPageLoad(int64_t registration_id,
-                                bool force_update_on_page_load);
+  void SetForceUpdateOnPageLoad(bool force_update_on_page_load);
   void AddObserver(ServiceWorkerContextObserver* observer);
   void RemoveObserver(ServiceWorkerContextObserver* observer);
 

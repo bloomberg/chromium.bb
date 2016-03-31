@@ -220,6 +220,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     : wrapper_(wrapper),
       providers_(new ProcessToProviderMap),
       provider_by_uuid_(new ProviderByClientUUIDMap),
+      force_update_on_page_load_(false),
       next_handle_id_(0),
       next_registration_handle_id_(0),
       was_service_worker_registered_(false),
@@ -396,23 +397,6 @@ void ServiceWorkerContextCore::UpdateServiceWorker(
                            skip_script_comparison, provider_host,
                            base::Bind(&ServiceWorkerContextCore::UpdateComplete,
                                       AsWeakPtr(), callback));
-}
-
-void ServiceWorkerContextCore::SetForceUpdateOnPageLoad(
-    int64_t registration_id,
-    bool force_update_on_page_load) {
-  ServiceWorkerRegistration* registration =
-      GetLiveRegistration(registration_id);
-  if (!registration)
-    return;
-  registration->set_force_update_on_page_load(force_update_on_page_load);
-
-  if (observer_list_.get()) {
-    observer_list_->Notify(
-        FROM_HERE,
-        &ServiceWorkerContextObserver::OnForceUpdateOnPageLoadChanged,
-        registration_id, force_update_on_page_load);
-  }
 }
 
 void ServiceWorkerContextCore::UnregisterServiceWorker(

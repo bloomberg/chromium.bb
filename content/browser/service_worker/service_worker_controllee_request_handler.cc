@@ -182,7 +182,7 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     return;
 
   const bool need_to_update = !force_update_started_ && registration &&
-                              registration->force_update_on_page_load();
+                              context_->force_update_on_page_load();
 
   if (provider_host_ && !need_to_update)
     provider_host_->SetAllowAssociation(true);

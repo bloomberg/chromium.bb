@@ -142,11 +142,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   void RegisterRegistrationFinishedCallback(const base::Closure& callback);
   void NotifyRegistrationFinished();
 
-  bool force_update_on_page_load() const { return force_update_on_page_load_; }
-  void set_force_update_on_page_load(bool force_update_on_page_load) {
-    force_update_on_page_load_ = force_update_on_page_load;
-  }
-
  private:
   friend class base::RefCounted<ServiceWorkerRegistration>;
 
@@ -181,7 +176,6 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   bool is_uninstalling_;
   bool is_uninstalled_;
   bool should_activate_when_ready_;
-  bool force_update_on_page_load_;
   base::Time last_update_check_;
   int64_t resources_total_size_bytes_;
 

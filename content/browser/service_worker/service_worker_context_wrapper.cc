@@ -292,19 +292,17 @@ void ServiceWorkerContextWrapper::StartServiceWorker(
 }
 
 void ServiceWorkerContextWrapper::SetForceUpdateOnPageLoad(
-    int64_t registration_id,
     bool force_update_on_page_load) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ServiceWorkerContextWrapper::SetForceUpdateOnPageLoad, this,
-                   registration_id, force_update_on_page_load));
+                   force_update_on_page_load));
     return;
   }
   if (!context_core_)
     return;
-  context_core_->SetForceUpdateOnPageLoad(registration_id,
-                                          force_update_on_page_load);
+  context_core_->set_force_update_on_page_load(force_update_on_page_load);
 }
 
 void ServiceWorkerContextWrapper::GetAllOriginsInfo(

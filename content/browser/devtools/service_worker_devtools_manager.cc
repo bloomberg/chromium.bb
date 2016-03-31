@@ -157,8 +157,6 @@ void ServiceWorkerDevToolsManager::RemoveObserver(Observer* observer) {
 void ServiceWorkerDevToolsManager::set_debug_service_worker_on_start(
     bool debug_on_start) {
   debug_service_worker_on_start_ = debug_on_start;
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    DebugOnStartUpdated(debug_on_start));
 }
 
 ServiceWorkerDevToolsManager::ServiceWorkerDevToolsManager()

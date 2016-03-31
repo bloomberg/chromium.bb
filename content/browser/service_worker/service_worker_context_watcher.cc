@@ -281,17 +281,4 @@ void ServiceWorkerContextWatcher::OnRegistrationDeleted(int64_t registration_id,
                        ServiceWorkerRegistrationInfo::IS_DELETED);
 }
 
-void ServiceWorkerContextWatcher::OnForceUpdateOnPageLoadChanged(
-    int64_t registration_id,
-    bool force_update_on_page_load) {
-  ServiceWorkerRegistration* registration =
-      context_->GetLiveRegistration(registration_id);
-  if (!registration)
-    return;
-  std::vector<ServiceWorkerRegistrationInfo> registrations;
-  registrations.push_back(registration->GetInfo());
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(registration_callback_, registrations));
-}
-
 }  // namespace content

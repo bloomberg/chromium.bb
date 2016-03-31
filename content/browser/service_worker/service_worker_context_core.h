@@ -207,13 +207,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                            ServiceWorkerProviderHost* provider_host,
                            const UpdateCallback& callback);
 
-  // Used in DevTools to update the service worker registration without
-  // consulting the browser cache while loading the controlled page. The loading
-  // is delayed until the update completes and the new worker is activated. The
-  // new worker skips the waiting state and immediately becomes active after
-  // installed.
-  void SetForceUpdateOnPageLoad(int64_t registration_id,
-                                bool force_update_on_page_load);
+  // Used in DevTools to update the service worker registrations without
+  // consulting the browser cache while loading the controlled page. The
+  // loading is delayed until the update completes and the new worker is
+  // activated. The new worker skips the waiting state and immediately
+  // becomes active after installed.
+  bool force_update_on_page_load() { return force_update_on_page_load_; }
+  void set_force_update_on_page_load(bool force_update_on_page_load) {
+    force_update_on_page_load_ = force_update_on_page_load;
+  }
 
   // This class maintains collections of live instances, this class
   // does not own these object or influence their lifetime.
@@ -345,6 +347,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int, ServiceWorkerNavigationHandleCore*>
       navigation_handle_cores_map_;
 
+  bool force_update_on_page_load_;
   int next_handle_id_;
   int next_registration_handle_id_;
   // Set in RegisterServiceWorker(), cleared in ClearAllServiceWorkersForTest().
