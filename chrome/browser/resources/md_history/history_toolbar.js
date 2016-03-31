@@ -2,6 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @constructor
+ * @implements {SearchFieldDelegate}
+ * @param {!HistoryToolbarElement} toolbar This history-toolbar.
+ */
+function ToolbarSearchFieldDelegate(toolbar) {
+  this.toolbar_ = toolbar;
+}
+
+ToolbarSearchFieldDelegate.prototype = {
+  /** @override */
+  onSearchTermSearch: function(searchTerm) {
+    this.toolbar_.onSearch(searchTerm);
+  }
+};
+
 Polymer({
   is: 'history-toolbar',
   properties: {
@@ -38,19 +54,34 @@ Polymer({
   },
 
   /**
+   * When changing the search term externally, update the search field to
+   * reflect the new search term.
+   * @param {string} search
+   */
+  setSearchTerm: function(search) {
+    if (this.searchTerm == search)
+      return;
+    this.searchTerm = search;
+    var searchField = /** @type {SearchField} */(this.$['search-input']);
+    searchField.showAndFocus().then(function(showing) {
+      if (showing) searchField.setValue(search);
+    });
+  },
+
+  /**
    * If the search term has changed reload for the new search.
    */
   onSearch: function(searchTerm) {
-    if (searchTerm != this.searchTerm)
+    if (searchTerm != this.searchTerm) {
+      this.searchTerm = searchTerm;
       this.fire('search-changed', {search: searchTerm});
-    this.searchTerm = searchTerm;
+    }
   },
 
   attached: function() {
-    this.async(function() {
-      this.searchFieldDelegate_ = new ToolbarSearchFieldDelegate(this);
-      this.$['search-input'].setDelegate(this.searchFieldDelegate_);
-    });
+    this.searchFieldDelegate_ = new ToolbarSearchFieldDelegate(this);
+    /** @type {SearchField} */(this.$['search-input'])
+        .setDelegate(this.searchFieldDelegate_);
   },
 
   onClearSelectionTap_: function() {
@@ -81,19 +112,3 @@ Polymer({
     return count > 0 ? loadTimeData.getStringF('itemsSelected', count) : '';
   }
 });
-
-/**
- * @constructor
- * @implements {SearchFieldDelegate}
- * @param {!Object} toolbar This history-toolbar.
- */
-function ToolbarSearchFieldDelegate(toolbar) {
-  this.toolbar_ = toolbar;
-}
-
-ToolbarSearchFieldDelegate.prototype = {
-  /** @override */
-  onSearchTermSearch: function(searchTerm) {
-    this.toolbar_.onSearch(searchTerm);
-  }
-};

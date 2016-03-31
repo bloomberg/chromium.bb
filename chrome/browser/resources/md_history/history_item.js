@@ -72,7 +72,11 @@ Polymer({
   onMenuButtonTap_: function(e) {
     this.fire('toggle-menu', {
       target: Polymer.dom(e).localTarget,
-      timestamp: this.item.time,
+      itemIdentifier: {
+        url: this.item.url,
+        timestamps: this.item.time,
+        domain: this.item.domain
+      },
     });
 
     // Stops the 'tap' event from closing the menu when it opens.

@@ -58,13 +58,20 @@ Polymer({
   /**
    * Opens the overflow menu unless the menu is already open and the same button
    * is pressed.
-   * @param {Event} e The event with details of the menu item that was clicked.
+   * @param {{detail: {itemIdentifier: !Object}}} e
    * @private
    */
   toggleMenu_: function(e) {
     var target = e.detail.target;
     /** @type {CrSharedMenuElement} */(this.$.sharedMenu).toggleMenu(
-        target, e.detail.timestamp);
+        target, e.detail.itemIdentifier);
+  },
+
+  /** @private */
+  onMoreFromSiteTap_: function() {
+    var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
+    this.fire('search-changed', {search: menu.itemData.domain});
+    menu.closeMenu();
   },
 
   /**

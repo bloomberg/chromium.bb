@@ -59,9 +59,12 @@ window.addEventListener('delete-selected', function() {
 });
 
 /**
- * When the search is changed refresh the results from the backend.
+ * When the search is changed refresh the results from the backend. Ensures that
+ * the search bar is updated with the new search term.
+ * @param {{detail: {search: string}}} e
  */
 window.addEventListener('search-changed', function(e) {
+  $('toolbar').setSearchTerm(e.detail.search);
   /** @type {HistoryListElement} */($('history-list')).setLoading();
   chrome.send('queryHistory', [e.detail.search, 0, 0, 0, RESULTS_PER_PAGE]);
 });

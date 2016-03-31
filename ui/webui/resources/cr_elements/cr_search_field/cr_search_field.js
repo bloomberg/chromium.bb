@@ -42,26 +42,42 @@ var SearchField = Polymer({
     return searchInput ? searchInput.value : '';
   },
 
+  /**
+   * Sets the value of the search field, if it exists.
+   * @param {string} value
+   */
+  setValue: function(value) {
+    var searchInput = this.getSearchInput_();
+    if (searchInput)
+      searchInput.value = value;
+  },
+
   /** @param {SearchFieldDelegate} delegate */
   setDelegate: function(delegate) {
     this.delegate_ = delegate;
   },
 
+  /** @return {Promise<boolean>} */
   showAndFocus: function() {
     this.showingSearch_ = true;
-    this.focus_();
+    return this.focus_();
   },
 
-  /** @private */
+  /**
+   * @return {Promise<boolean>}
+   * @private
+   */
   focus_: function() {
-    this.async(function() {
-      if (!this.showingSearch_)
-        return;
-
-      var searchInput = this.getSearchInput_();
-      if (searchInput)
-        searchInput.focus();
-    });
+    return new Promise(function(resolve) {
+      this.async(function() {
+        if (this.showingSearch_) {
+          var searchInput = this.getSearchInput_();
+          if (searchInput)
+            searchInput.focus();
+        }
+        resolve(this.showingSearch_);
+      });
+    }.bind(this));
   },
 
   /**

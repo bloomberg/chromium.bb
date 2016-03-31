@@ -51,6 +51,20 @@ cr.define('md_history.history_toolbar_test', function() {
         toolbar.onSearch('Test');
       });
 
+      test('more from this site sends and sets correct data', function(done) {
+        registerMessageCallback('queryHistory', this, function (info) {
+          assertEquals(info[0], 'example.com');
+          flush(function() {
+            assertEquals(toolbar.$$('#search-input').$$('#search-input').value,
+                'example.com');
+            done();
+          });
+        });
+
+        element.$.sharedMenu.itemData = {domain: 'example.com'};
+        MockInteractions.tap(element.$.menuMoreButton);
+      });
+
       teardown(function() {
         element.historyData = [];
         registerMessageCallback('queryHistory', this, undefined);
