@@ -43,9 +43,8 @@ namespace content {
 class NavigatorTestWithBrowserSideNavigation
     : public RenderViewHostImplTestHarness {
  public:
-  // Re-defines the private RenderFrameHostManager::SiteInstanceDescriptor here
-  // to allow access to it from tests.
-  typedef RenderFrameHostManager::SiteInstanceDescriptor SiteInstanceDescriptor;
+  using SiteInstanceDescriptor = RenderFrameHostManager::SiteInstanceDescriptor;
+  using SiteInstanceRelation = RenderFrameHostManager::SiteInstanceRelation;
 
   void SetUp() override {
 #if !defined(OS_ANDROID)
@@ -1049,7 +1048,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // current one.
   GURL kUrlSameSiteAs1("http://www.a.com/foo");
   {
-    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs1, true);
+    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs1,
+                                      SiteInstanceRelation::RELATED);
     scoped_refptr<SiteInstance> converted_instance =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
     EXPECT_EQ(current_instance, converted_instance);
@@ -1060,7 +1060,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   GURL kUrlSameSiteAs2("http://www.b.com/foo");
   scoped_refptr<SiteInstance> related_instance;
   {
-    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs2, true);
+    SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs2,
+                                      SiteInstanceRelation::RELATED);
     related_instance = ConvertToSiteInstance(rfhm, descriptor, nullptr);
     // Should return a new instance, related to the current, set to the new site
     // URL.
@@ -1076,7 +1077,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // current one, several times, with and without candidate sites.
   {
     SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs1,
-                                      false);
+                                      SiteInstanceRelation::UNRELATED);
     scoped_refptr<SiteInstance> converted_instance_1 =
         ConvertToSiteInstance(rfhm, descriptor, nullptr);
     // Should return a new instance, unrelated to the current one, set to the
@@ -1114,7 +1115,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // related_instance and using it as a candidate.
   {
     SiteInstanceDescriptor descriptor(browser_context(), kUrlSameSiteAs2,
-                                      false);
+                                      SiteInstanceRelation::UNRELATED);
     scoped_refptr<SiteInstance> converted_instance_1 =
         ConvertToSiteInstance(rfhm, descriptor, related_instance.get());
     // Should return a new instance, unrelated to the current, set to the

@@ -27,8 +27,9 @@ SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
     : id_(next_site_instance_id_++),
       active_frame_count_(0),
       browsing_instance_(browsing_instance),
-      process_(NULL),
-      has_site_(false) {
+      process_(nullptr),
+      has_site_(false),
+      is_default_subframe_site_instance_(false) {
   DCHECK(browsing_instance);
 }
 
@@ -226,11 +227,16 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
       GetProcess(), browsing_instance_->browser_context(), site_url);
 }
 
+scoped_refptr<SiteInstanceImpl>
+SiteInstanceImpl::GetDefaultSubframeSiteInstance() {
+  return browsing_instance_->GetDefaultSubframeSiteInstance();
+}
+
 bool SiteInstanceImpl::RequiresDedicatedProcess() {
   if (!has_site_)
     return false;
-  return SiteInstanceImpl::DoesSiteRequireDedicatedProcess(GetBrowserContext(),
-                                                           site_);
+
+  return DoesSiteRequireDedicatedProcess(GetBrowserContext(), site_);
 }
 
 void SiteInstanceImpl::IncrementActiveFrameCount() {
@@ -393,7 +399,7 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
 void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
   DCHECK_EQ(process_, host);
   process_->RemoveObserver(this);
-  process_ = NULL;
+  process_ = nullptr;
 }
 
 void SiteInstanceImpl::RenderProcessWillExit(RenderProcessHost* host) {

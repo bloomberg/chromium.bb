@@ -998,9 +998,8 @@ void RenderFrameHostManager::OnDidUpdateOrigin(
 RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
     BrowserContext* browser_context,
     GURL dest_url,
-    bool related_to_current)
-    : existing_site_instance(nullptr),
-      new_is_related_to_current(related_to_current) {
+    SiteInstanceRelation relation_to_current)
+    : existing_site_instance(nullptr), relation(relation_to_current) {
   new_site_url = SiteInstance::GetSiteForURL(browser_context, dest_url);
 }
 
@@ -1186,13 +1185,13 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
 
   scoped_refptr<SiteInstance> new_instance =
       ConvertToSiteInstance(new_instance_descriptor, candidate_instance);
-
   // If |force_swap| is true, we must use a different SiteInstance than the
   // current one. If we didn't, we would have two RenderFrameHosts in the same
   // SiteInstance and the same frame, resulting in page_id conflicts for their
   // NavigationEntries.
   if (force_swap)
     CHECK_NE(new_instance, current_instance);
+
   return new_instance;
 }
 
@@ -1225,7 +1224,8 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // If a swap is required, we need to force the SiteInstance AND
   // BrowsingInstance to be different ones, using CreateForURL.
   if (force_browsing_instance_swap)
-    return SiteInstanceDescriptor(browser_context, dest_url, false);
+    return SiteInstanceDescriptor(browser_context, dest_url,
+                                  SiteInstanceRelation::UNRELATED);
 
   // (UGLY) HEURISTIC, process-per-site only:
   //
@@ -1264,7 +1264,8 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
         RenderProcessHostImpl::GetProcessHostForSite(browser_context, dest_url);
     if (current_instance_impl->HasRelatedSiteInstance(dest_url) ||
         use_process_per_site) {
-      return SiteInstanceDescriptor(browser_context, dest_url, true);
+      return SiteInstanceDescriptor(browser_context, dest_url,
+                                    SiteInstanceRelation::RELATED);
     }
 
     // For extensions, Web UI URLs (such as the new tab page), and apps we do
@@ -1272,20 +1273,23 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // will have a RenderProcessHost of PRIV_NORMAL. Create a new SiteInstance
     // for this URL instead (with the correct process type).
     if (current_instance_impl->HasWrongProcessForURL(dest_url))
-      return SiteInstanceDescriptor(browser_context, dest_url, true);
+      return SiteInstanceDescriptor(browser_context, dest_url,
+                                    SiteInstanceRelation::RELATED);
 
     // View-source URLs must use a new SiteInstance and BrowsingInstance.
     // TODO(nasko): This is the same condition as later in the function. This
     // should be taken into account when refactoring this method as part of
     // http://crbug.com/123007.
     if (dest_is_view_source_mode)
-      return SiteInstanceDescriptor(browser_context, dest_url, false);
+      return SiteInstanceDescriptor(browser_context, dest_url,
+                                    SiteInstanceRelation::UNRELATED);
 
     // If we are navigating from a blank SiteInstance to a WebUI, make sure we
     // create a new SiteInstance.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
             browser_context, dest_url)) {
-      return SiteInstanceDescriptor(browser_context, dest_url, false);
+      return SiteInstanceDescriptor(browser_context, dest_url,
+                                    SiteInstanceRelation::UNRELATED);
     }
 
     // Normally the "site" on the SiteInstance is set lazily when the load
@@ -1335,7 +1339,8 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   if (current_entry &&
       current_entry->IsViewSourceMode() != dest_is_view_source_mode &&
       !IsRendererDebugURL(dest_url)) {
-    return SiteInstanceDescriptor(browser_context, dest_url, false);
+    return SiteInstanceDescriptor(browser_context, dest_url,
+                                  SiteInstanceRelation::UNRELATED);
   }
 
   // Use the source SiteInstance in case of data URLs or about:blank pages,
@@ -1347,21 +1352,43 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     return SiteInstanceDescriptor(source_instance);
   }
 
-  // Use the current SiteInstance for same site navigations, as long as the
-  // process type is correct.  (The URL may have been installed as an app since
-  // the last time we visited it.)
-  const GURL& current_url = GetCurrentURLForSiteInstance(current_instance_impl);
-  if (SiteInstance::IsSameWebSite(browser_context, current_url, dest_url) &&
-      !current_instance_impl->HasWrongProcessForURL(dest_url)) {
-    return SiteInstanceDescriptor(current_instance_impl);
+  // Use the current SiteInstance for same site navigations.
+  if (IsCurrentlySameSite(render_frame_host_.get(), dest_url))
+    return SiteInstanceDescriptor(render_frame_host_->GetSiteInstance());
+
+  if (SiteIsolationPolicy::IsTopDocumentIsolationEnabled()) {
+    // TODO(nick): Looking at the main frame and openers is required for TDI
+    // mode, but should be safe to enable unconditionally.
+    if (!frame_tree_node_->IsMainFrame()) {
+      RenderFrameHostImpl* main_frame =
+          frame_tree_node_->frame_tree()->root()->current_frame_host();
+      if (IsCurrentlySameSite(main_frame, dest_url))
+        return SiteInstanceDescriptor(main_frame->GetSiteInstance());
+    }
+
+    if (frame_tree_node_->opener()) {
+      RenderFrameHostImpl* opener_frame =
+          frame_tree_node_->opener()->current_frame_host();
+      if (IsCurrentlySameSite(opener_frame, dest_url))
+        return SiteInstanceDescriptor(opener_frame->GetSiteInstance());
+    }
+  }
+
+  if (!frame_tree_node_->IsMainFrame() &&
+      SiteIsolationPolicy::IsTopDocumentIsolationEnabled() &&
+      !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(browser_context,
+                                                         dest_url)) {
+    // This is a cross-site subframe of a non-isolated origin, so place this
+    // frame in the default subframe site instance.
+    return SiteInstanceDescriptor(
+        browser_context, dest_url,
+        SiteInstanceRelation::RELATED_DEFAULT_SUBFRAME);
   }
 
   // Start the new renderer in a new SiteInstance, but in the current
-  // BrowsingInstance.  It is important to immediately give this new
-  // SiteInstance to a RenderViewHost (if it is different than our current
-  // SiteInstance), so that it is ref counted.  This will happen in
-  // CreateRenderView.
-  return SiteInstanceDescriptor(browser_context, dest_url, true);
+  // BrowsingInstance.
+  return SiteInstanceDescriptor(browser_context, dest_url,
+                                SiteInstanceRelation::RELATED);
 }
 
 bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
@@ -1390,23 +1417,34 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   // TODO(nasko, nick): These following --site-per-process checks are
   // overly simplistic. Update them to match all the cases
   // considered by DetermineSiteInstanceForURL.
-  if (SiteInstance::IsSameWebSite(rfh->GetSiteInstance()->GetBrowserContext(),
-                                  rfh->GetSiteInstance()->GetSiteURL(),
-                                  dest_url)) {
-    return false;  // The same site, no transition needed.
+  if (IsCurrentlySameSite(rfh, dest_url)) {
+    // The same site, no transition needed for security purposes, and we must
+    // keep the same SiteInstance for correctness of synchronous scripting.
+    return false;
   }
 
   // The sites differ. If either one requires a dedicated process,
   // then a transfer is needed.
-  return rfh->GetSiteInstance()->RequiresDedicatedProcess() ||
-         SiteInstanceImpl::DoesSiteRequireDedicatedProcess(context,
-                                                           effective_url);
+  if (rfh->GetSiteInstance()->RequiresDedicatedProcess() ||
+      SiteInstanceImpl::DoesSiteRequireDedicatedProcess(context,
+                                                        effective_url)) {
+    return true;
+  }
+
+  if (SiteIsolationPolicy::IsTopDocumentIsolationEnabled() &&
+      (!frame_tree_node_->IsMainFrame() ||
+       rfh->GetSiteInstance()->is_default_subframe_site_instance())) {
+    // Always attempt a transfer in these cases.
+    return true;
+  }
+
+  return false;
 }
 
 scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
     const SiteInstanceDescriptor& descriptor,
     SiteInstance* candidate_instance) {
-  SiteInstance* current_instance = render_frame_host_->GetSiteInstance();
+  SiteInstanceImpl* current_instance = render_frame_host_->GetSiteInstance();
 
   // Note: If the |candidate_instance| matches the descriptor, it will already
   // be set to |descriptor.existing_site_instance|.
@@ -1415,8 +1453,11 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
 
   // Note: If the |candidate_instance| matches the descriptor,
   // GetRelatedSiteInstance will return it.
-  if (descriptor.new_is_related_to_current)
+  if (descriptor.relation == SiteInstanceRelation::RELATED)
     return current_instance->GetRelatedSiteInstance(descriptor.new_site_url);
+
+  if (descriptor.relation == SiteInstanceRelation::RELATED_DEFAULT_SUBFRAME)
+    return current_instance->GetDefaultSubframeSiteInstance();
 
   // At this point we know an unrelated site instance must be returned. First
   // check if the candidate matches.
@@ -1432,21 +1473,49 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
       descriptor.new_site_url);
 }
 
-const GURL& RenderFrameHostManager::GetCurrentURLForSiteInstance(
-    SiteInstance* current_instance) {
-  // Use the current RenderFrameHost's last successful URL if it has one.  This
-  // excludes commits of net errors, since net errors do not currently swap
-  // processes for transfer navigations.  Thus, we compare against the last
-  // successful commit when deciding whether to swap this time.
-  // (Note: browser-initiated net errors do swap processes, but the frame's last
-  // successful URL will be empty in that case, causing us to fall back to the
-  // SiteInstance's URL below.)
-  if (!render_frame_host_->last_successful_url().is_empty())
-    return render_frame_host_->last_successful_url();
+bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
+                                                 const GURL& dest_url) {
+  BrowserContext* browser_context =
+      delegate_->GetControllerForRenderManager().GetBrowserContext();
 
-  // Fall back to the SiteInstance's Site URL if the FrameTreeNode doen't have a
-  // current URL.
-  return current_instance->GetSiteURL();
+  // If the process type is incorrect, reject the candidate even if |dest_url|
+  // is same-site.  (The URL may have been installed as an app since
+  // the last time we visited it.)
+  if (candidate->GetSiteInstance()->HasWrongProcessForURL(dest_url))
+    return false;
+
+  // If we don't have a last successful URL, we can't trust the origin or URL
+  // stored on the frame, so we fall back to GetSiteURL(). This case occurs
+  // after commits of net errors, since net errors do not currently swap
+  // processes for transfer navigations. Note: browser-initiated net errors do
+  // swap processes, but the frame's last successful URL will still be empty in
+  // that case.
+  if (candidate->last_successful_url().is_empty()) {
+    // TODO(creis): GetSiteURL() is not 100% accurate. Eliminate this fallback.
+    return SiteInstance::IsSameWebSite(
+        browser_context, candidate->GetSiteInstance()->GetSiteURL(), dest_url);
+  }
+
+  // In the common case, we use the RenderFrameHost's last successful URL. Thus,
+  // we compare against the last successful commit when deciding whether to swap
+  // this time.
+  if (SiteInstance::IsSameWebSite(browser_context,
+                                  candidate->last_successful_url(), dest_url)) {
+    return true;
+  }
+
+  // It is possible that last_successful_url() was a nonstandard scheme (for
+  // example, "about:blank"). If so, examine the replicated origin to determine
+  // the site.
+  if (!candidate->GetLastCommittedOrigin().unique() &&
+      SiteInstance::IsSameWebSite(
+          browser_context,
+          GURL(candidate->GetLastCommittedOrigin().Serialize()), dest_url)) {
+    return true;
+  }
+
+  // Not same-site.
+  return false;
 }
 
 void RenderFrameHostManager::CreatePendingRenderFrameHost(

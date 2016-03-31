@@ -37,6 +37,10 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // Returns true if every site should be placed in a dedicated process.
   static bool UseDedicatedProcessesForAllSites();
 
+  // Returns true if third-party subframes of a page should be kept in a
+  // different process from the main frame.
+  static bool IsTopDocumentIsolationEnabled();
+
   // Returns true if navigation and history code should maintain per-frame
   // navigation entries. This is an in-progress feature related to site
   // isolation, so the return value is currently tied to --site-per-process.

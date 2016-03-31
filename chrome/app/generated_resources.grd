@@ -13145,7 +13145,17 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
       <message name="IDS_FLAGS_SITE_PER_PROCESS_DESCRIPTION"
                desc="Description of about:flag option to turn on experimental out-of-process iframe support">
-        Highly experimental support for rendering cross-site iframes in separate processes.
+        Highly experimental support for rendering cross-site iframes in separate processes. In this mode, documents will share a renderer process only if they are from the same web site.
+      </message>
+
+      <!-- Top document isolation mode -->
+      <message name="IDS_FLAGS_TOP_DOCUMENT_ISOLATION_NAME"
+               desc="Name of about:flag option to turn on experimental top document isolation support">
+        Top document isolation
+      </message>
+      <message name="IDS_FLAGS_TOP_DOCUMENT_ISOLATION_DESCRIPTION"
+               desc="Description of about:flag option to turn on top document isolation">
+        Highly experimental performance mode where cross-site iframes are kept in a separate process from the top document. In this mode, iframes from different third-party sites will be allowed to share a process.
       </message>
 
       <!-- Windows 8 Metro mode. -->

@@ -265,6 +265,7 @@
       'browser/shared_worker/worker_browsertest.cc',
       'browser/site_per_process_browsertest.cc',
       'browser/site_per_process_browsertest.h',
+      'browser/top_document_isolation_browsertest.cc',
       'browser/tracing/background_tracing_manager_browsertest.cc',
       'browser/tracing/memory_tracing_browsertest.cc',
       'browser/tracing/tracing_controller_browsertest.cc',

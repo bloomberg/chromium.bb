@@ -510,6 +510,15 @@ class CONTENT_EXPORT RenderFrameHostManager
   friend class RenderFrameHostManagerTest;
   friend class TestWebContents;
 
+  enum class SiteInstanceRelation {
+    // A SiteInstance in a different browsing instance from the current.
+    UNRELATED,
+    // A SiteInstance in the same browsing instance as the current.
+    RELATED,
+    // The default subframe SiteInstance for the current browsing instance.
+    RELATED_DEFAULT_SUBFRAME,
+  };
+
   // Stores information regarding a SiteInstance targeted at a specific URL to
   // allow for comparisons without having to actually create new instances. It
   // can point to an existing one or store the details needed to create a new
@@ -517,11 +526,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   struct CONTENT_EXPORT SiteInstanceDescriptor {
     explicit SiteInstanceDescriptor(content::SiteInstance* site_instance)
         : existing_site_instance(site_instance),
-          new_is_related_to_current(false) {}
+          relation(SiteInstanceRelation::UNRELATED) {}
 
     SiteInstanceDescriptor(BrowserContext* browser_context,
                            GURL dest_url,
-                           bool related_to_current);
+                           SiteInstanceRelation relation_to_current);
 
     // Set with an existing SiteInstance to be reused.
     content::SiteInstance* existing_site_instance;
@@ -529,9 +538,9 @@ class CONTENT_EXPORT RenderFrameHostManager
     // In case |existing_site_instance| is null, specify a new site URL.
     GURL new_site_url;
 
-    // In case |existing_site_instance| is null, specify if the new site should
-    // be created in a new BrowsingInstance or not.
-    bool new_is_related_to_current;
+    // In case |existing_site_instance| is null, specify how the new site is
+    // related to the current BrowsingInstance.
+    SiteInstanceRelation relation;
   };
 
   // Create a RenderFrameProxyHost owned by this object.
@@ -606,9 +615,9 @@ class CONTENT_EXPORT RenderFrameHostManager
       const SiteInstanceDescriptor& descriptor,
       SiteInstance* candidate_instance);
 
-  // Determines the appropriate url to use as the current url for SiteInstance
-  // selection.
-  const GURL& GetCurrentURLForSiteInstance(SiteInstance* current_instance);
+  // Returns true if |candidate| is currently on the same web site as dest_url.
+  bool IsCurrentlySameSite(RenderFrameHostImpl* candidate,
+                           const GURL& dest_url);
 
   // Creates a new RenderFrameHostImpl for the |new_instance| and assign it to
   // |pending_render_frame_host_| while respecting the opener route if needed

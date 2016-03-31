@@ -135,7 +135,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   SiteInstanceImpl* GetSiteInstance() override;
   RenderProcessHost* GetProcess() override;
   RenderWidgetHostView* GetView() override;
-  RenderFrameHost* GetParent() override;
+  RenderFrameHostImpl* GetParent() override;
   int GetFrameTreeNodeId() override;
   const std::string& GetFrameName() override;
   bool IsCrossProcessSubframe() override;

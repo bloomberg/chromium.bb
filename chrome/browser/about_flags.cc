@@ -617,10 +617,8 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcStunOrigin)},
 #endif
 #if defined(OS_ANDROID)
-    {"enable-osk-overscroll",
-     IDS_FLAGS_ENABLE_OSK_OVERSCROLL_NAME,
-     IDS_FLAGS_ENABLE_OSK_OVERSCROLL_DESCRIPTION,
-     kOsAndroid,
+    {"enable-osk-overscroll", IDS_FLAGS_ENABLE_OSK_OVERSCROLL_NAME,
+     IDS_FLAGS_ENABLE_OSK_OVERSCROLL_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableOSKOverscroll)},
 #endif
   // Native client is compiled out when DISABLE_NACL is defined.
@@ -1442,6 +1440,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-site-per-process", IDS_FLAGS_SITE_PER_PROCESS_NAME,
      IDS_FLAGS_SITE_PER_PROCESS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
+    {"enable-top-document-isolation", IDS_FLAGS_TOP_DOCUMENT_ISOLATION_NAME,
+     IDS_FLAGS_TOP_DOCUMENT_ISOLATION_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kTopDocumentIsolation)},
     {"enable-use-zoom-for-dsf", IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_NAME,
      IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kEnableUseZoomForDSFChoices)},
@@ -1821,7 +1822,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kEnableExperimentalAccessibilityFeatures)},
-     {"opt-in-ime-menu", IDS_FLAGS_ENABLE_IME_MENU_NAME,
+    {"opt-in-ime-menu", IDS_FLAGS_ENABLE_IME_MENU_NAME,
      IDS_FLAGS_ENABLE_IME_MENU_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kOptInImeMenu)},
 #endif

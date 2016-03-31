@@ -818,6 +818,10 @@ const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";
 
+// Groups all out-of-process iframes to a different process from the process
+// of the top document. This is a performance isolation mode.
+const char kTopDocumentIsolation[] = "top-document-isolation";
+
 // Controls how text selection granularity changes when touch text selection
 // handles are dragged. Should be "character" or "direction". If not specified,
 // the platform default is used.

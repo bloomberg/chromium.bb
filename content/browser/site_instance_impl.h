@@ -50,6 +50,12 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   size_t GetRelatedActiveContentsCount() override;
   bool RequiresDedicatedProcess() override;
 
+  // Returns the SiteInstance, related to this one, that should be used
+  // for subframes when an oopif is required, but a dedicated process is not.
+  // This SiteInstance will be created if it doesn't already exist. There is
+  // at most one of these per BrowsingInstance.
+  scoped_refptr<SiteInstanceImpl> GetDefaultSubframeSiteInstance();
+
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
   // URL does not have a valid registered domain, then the full hostname is
@@ -94,6 +100,10 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  bool is_default_subframe_site_instance() {
+    return is_default_subframe_site_instance_;
+  }
+
   // Sets the global factory used to create new RenderProcessHosts.  It may be
   // NULL, in which case the default RenderProcessHost will be created (this is
   // the behavior if you don't call this function).  The factory must be set
@@ -129,6 +139,11 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // and tests; most callers should use Create or GetRelatedSiteInstance
   // instead.
   explicit SiteInstanceImpl(BrowsingInstance* browsing_instance);
+
+  // Only BrowsingInstance should call this.
+  void set_is_default_subframe_site_instance() {
+    is_default_subframe_site_instance_ = true;
+  }
 
  private:
   // RenderProcessHostObserver implementation.
@@ -167,6 +182,11 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
 
   // Whether SetSite has been called.
   bool has_site_;
+
+  // Whether this SiteInstance is the default subframe SiteInstance for its
+  // BrowsingInstance. Only one SiteInstance per BrowsingInstance can have this
+  // be true.
+  bool is_default_subframe_site_instance_;
 
   base::ObserverList<Observer, true> observers_;
 

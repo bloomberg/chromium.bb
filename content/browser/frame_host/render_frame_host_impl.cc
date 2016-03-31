@@ -320,7 +320,7 @@ RenderProcessHost* RenderFrameHostImpl::GetProcess() {
   return process_;
 }
 
-RenderFrameHost* RenderFrameHostImpl::GetParent() {
+RenderFrameHostImpl* RenderFrameHostImpl::GetParent() {
   FrameTreeNode* parent_node = frame_tree_node_->parent();
   if (!parent_node)
     return NULL;

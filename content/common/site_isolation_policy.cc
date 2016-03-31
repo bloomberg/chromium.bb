@@ -15,8 +15,8 @@ namespace content {
 
 // static
 bool SiteIsolationPolicy::AreCrossProcessFramesPossible() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSitePerProcess) ||
+  return UseDedicatedProcessesForAllSites() ||
+         IsTopDocumentIsolationEnabled() ||
          GetContentClient()->IsSupplementarySiteIsolationModeEnabled() ||
          BrowserPluginGuestMode::UseCrossProcessFramesForGuests();
 }
@@ -25,6 +25,16 @@ bool SiteIsolationPolicy::AreCrossProcessFramesPossible() {
 bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSitePerProcess);
+}
+
+// static
+bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
+  // --site-per-process trumps --top-document-isolation.
+  if (UseDedicatedProcessesForAllSites())
+    return false;
+
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kTopDocumentIsolation);
 }
 
 // static
