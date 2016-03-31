@@ -49,7 +49,6 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
                                       const media::PictureBuffer&) override;
   void AssignOnePictureBuffer(const media::PictureBuffer&, bool) override;
   void ReuseOnePictureBuffer(const media::PictureBuffer&) override;
-  void DismissOnePictureBuffer(const media::PictureBuffer&) override;
   void CodecChanged(
       media::VideoCodecBridge*,
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;

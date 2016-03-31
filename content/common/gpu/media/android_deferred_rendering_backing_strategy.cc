@@ -242,18 +242,6 @@ void AndroidDeferredRenderingBackingStrategy::ReuseOnePictureBuffer(
   ReleaseCodecBufferForPicture(picture_buffer);
 }
 
-void AndroidDeferredRenderingBackingStrategy::DismissOnePictureBuffer(
-    const media::PictureBuffer& picture_buffer) {
-  // If there is an outstanding codec buffer attached to this image, then
-  // release it.
-  ReleaseCodecBufferForPicture(picture_buffer);
-
-  // This makes sure that the Texture no longer refers to the codec or to the
-  // SurfaceTexture's service_id.  That's important, so that it doesn't refer
-  // to the texture by name after we've deleted it.
-  SetImageForPicture(picture_buffer, nullptr);
-}
-
 void AndroidDeferredRenderingBackingStrategy::CodecChanged(
     media::VideoCodecBridge* codec,
     const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {

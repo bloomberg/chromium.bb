@@ -85,10 +85,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     virtual void ReuseOnePictureBuffer(
         const media::PictureBuffer& picture_buffer) {}
 
-    // Notify strategy that we are about to dismiss a picture buffer.
-    virtual void DismissOnePictureBuffer(
-        const media::PictureBuffer& picture_buffer) {}
-
     // Notify strategy that we have a new android MediaCodec instance.  This
     // happens when we're starting up or re-configuring mid-stream.  Any
     // previously provided codec should no longer be referenced.
@@ -230,10 +226,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // is still valid and should be processed.
   void ResetCodecState();
 
-  // Dismiss all |output_picture_buffers_| in preparation for requesting new
-  // ones.
-  void DismissPictureBuffers();
-
   // Return true if and only if we should use deferred rendering.
   static bool UseDeferredRenderingStrategy(
       const gpu::GpuPreferences& gpu_preferences);
@@ -268,11 +260,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // decoded frames to the client.
   std::queue<int32_t> free_picture_ids_;
 
-  // Picture buffer ids which have been dismissed and not yet re-assigned.  Used
-  // to ignore ReusePictureBuffer calls that were in flight when the
-  // DismissPictureBuffer call was made.
-  std::set<int32_t> dismissed_picture_ids_;
-
   // The low-level decoder which Android SDK provides.
   scoped_ptr<media::VideoCodecBridge> media_codec_;
 
@@ -287,11 +274,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   gfx::Size size_;
 
   // Encoded bitstream buffers to be passed to media codec, queued until an
-  // input buffer is available, along with the time when they were first
-  // enqueued.
-  typedef std::queue<std::pair<media::BitstreamBuffer, base::Time> >
-      PendingBitstreamBuffers;
-  PendingBitstreamBuffers pending_bitstream_buffers_;
+  // input buffer is available.
+  std::queue<media::BitstreamBuffer> pending_bitstream_buffers_;
 
   // A map of presentation timestamp to bitstream buffer id for the bitstream
   // buffers that have been submitted to the decoder but haven't yet produced an

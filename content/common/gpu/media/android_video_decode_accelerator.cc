@@ -455,11 +455,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 
   DCHECK_NE(input_buf_index, -1);
 
-  base::Time queued_time = pending_bitstream_buffers_.front().second;
-  UMA_HISTOGRAM_TIMES("Media.AVDA.InputQueueTime",
-                      base::Time::Now() - queued_time);
-  media::BitstreamBuffer bitstream_buffer =
-      pending_bitstream_buffers_.front().first;
+  media::BitstreamBuffer bitstream_buffer = pending_bitstream_buffers_.front();
 
   if (bitstream_buffer.id() == -1) {
     pending_bitstream_buffers_.pop();
@@ -777,8 +773,7 @@ void AndroidVideoDecodeAccelerator::Decode(
 
 void AndroidVideoDecodeAccelerator::DecodeBuffer(
     const media::BitstreamBuffer& bitstream_buffer) {
-  pending_bitstream_buffers_.push(
-      std::make_pair(bitstream_buffer, base::Time::Now()));
+  pending_bitstream_buffers_.push(bitstream_buffer);
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
                  pending_bitstream_buffers_.size());
 
@@ -817,10 +812,6 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
     int32_t id = buffers[i].id();
     output_picture_buffers_.insert(std::make_pair(id, buffers[i]));
     free_picture_ids_.push(id);
-    // Since the client might be re-using |picture_buffer_id| values, forget
-    // about previously-dismissed IDs now.  See ReusePictureBuffer() comment
-    // about "zombies" for why we maintain this set in the first place.
-    dismissed_picture_ids_.erase(id);
 
     strategy_->AssignOnePictureBuffer(buffers[i], have_context);
   }
@@ -831,13 +822,6 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
 void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
     int32_t picture_buffer_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // This ReusePictureBuffer() might have been in a pipe somewhere (queued in
-  // IPC, or in a PostTask either at the sender or receiver) when we sent a
-  // DismissPictureBuffer() for this |picture_buffer_id|.  Account for such
-  // potential "zombie" IDs here.
-  if (dismissed_picture_ids_.erase(picture_buffer_id))
-    return;
 
   free_picture_ids_.push(picture_buffer_id);
   TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
@@ -892,12 +876,6 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
   DCHECK(thread_checker_.CalledOnValidThread());
   bitstream_buffers_in_decoder_.clear();
 
-  // We don't dismiss picture buffers here since we might not get a format
-  // changed message to re-request them, such as during a seek.  In that case,
-  // we want to reuse the existing buffers.  However, we're about to invalidate
-  // all the output buffers, so we must be sure that the strategy no longer
-  // refers to them.
-
   if (pending_input_buf_index_ != -1) {
     // The data for that index exists in the input buffer, but corresponding
     // shm block been deleted. Check that it is safe to flush the coec, i.e.
@@ -943,27 +921,12 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
   }
 }
 
-void AndroidVideoDecodeAccelerator::DismissPictureBuffers() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(3) << __FUNCTION__;
-
-  for (const auto& pb : output_picture_buffers_) {
-    strategy_->DismissOnePictureBuffer(pb.second);
-    client_->DismissPictureBuffer(pb.first);
-    dismissed_picture_ids_.insert(pb.first);
-  }
-  output_picture_buffers_.clear();
-  std::queue<int32_t> empty;
-  std::swap(free_picture_ids_, empty);
-  picturebuffers_requested_ = false;
-}
-
 void AndroidVideoDecodeAccelerator::Reset() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::Reset");
 
   while (!pending_bitstream_buffers_.empty()) {
-    int32_t bitstream_buffer_id = pending_bitstream_buffers_.front().first.id();
+    int32_t bitstream_buffer_id = pending_bitstream_buffers_.front().id();
     pending_bitstream_buffers_.pop();
 
     if (bitstream_buffer_id != -1) {

@@ -19798,6 +19798,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AVDA.InputQueueTime" units="ms">
+  <owner>watk@chromium.org</owner>
+  <obsolete>
+    Deprecated 03/2016. No longer needed.
+  </obsolete>
+  <summary>
+    The time that a bitstream buffer spends in AVDA's pending bitstream buffer
+    queue before it is fed to MediaCodec.
+  </summary>
+</histogram>
+
 <histogram name="Media.AVDA.MissingFormatChanged" enum="BooleanFormatChanged">
   <owner>liberato@chromium.org</owner>
   <summary>
