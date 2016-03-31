@@ -76,18 +76,13 @@ void NonBlockingDataTypeController::LoadModelsOnModelThread() {
   if (!model_type_service) {
     LOG(WARNING) << "ModelTypeService destroyed before "
                     "ModelTypeController was started.";
-    // TODO(gangwu): Add SyncError and then call start_callback with it. also
+    // TODO(gangwu): Add SyncError and then call start_callback with it. Also
     // set an error state to |state_|.
     return;
   }
 
-  syncer_v2::ModelTypeChangeProcessor* model_type_change_processor =
-      model_type_service->OnSyncStarting(
-          base::Bind(&NonBlockingDataTypeController::OnProcessorStarted, this));
-  DCHECK(model_type_change_processor);
-  type_processor_ = static_cast<syncer_v2::SharedModelTypeProcessor*>(
-                        model_type_change_processor)
-                        ->AsWeakPtrForUI();
+  model_type_service->OnSyncStarting(
+      base::Bind(&NonBlockingDataTypeController::OnProcessorStarted, this));
 }
 
 void NonBlockingDataTypeController::LoadModelsDone(
@@ -172,11 +167,6 @@ void NonBlockingDataTypeController::Stop() {
     return;
 
   state_ = NOT_RUNNING;
-
-  RunOnModelThread(
-      FROM_HERE,
-      base::Bind(&syncer_v2::SharedModelTypeProcessor::DisconnectSync,
-                 type_processor()));
 }
 
 std::string NonBlockingDataTypeController::name() const {
@@ -236,11 +226,6 @@ void NonBlockingDataTypeController::RecordUnrecoverableError() {
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(type()),
                             syncer::MODEL_TYPE_COUNT);
-}
-
-base::WeakPtr<syncer_v2::SharedModelTypeProcessor>
-NonBlockingDataTypeController::type_processor() const {
-  return type_processor_;
 }
 
 syncer::ModelType NonBlockingDataTypeController::type() const {

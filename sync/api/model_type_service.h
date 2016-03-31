@@ -86,8 +86,7 @@ class SYNC_EXPORT ModelTypeService {
 
   void clear_change_processor();
 
-  ModelTypeChangeProcessor* OnSyncStarting(
-      const ModelTypeChangeProcessor::StartCallback& callback);
+  void OnSyncStarting(const ModelTypeChangeProcessor::StartCallback& callback);
 
  protected:
   // TODO(skym): See crbug/547087, do we need all these accessors?

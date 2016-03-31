@@ -58,11 +58,10 @@ FakeModelTypeService::CreateProcessorForTestWrapper(syncer::ModelType type,
   return make_scoped_ptr(CreateProcessorForTest(type, service));
 }
 
-base::WeakPtr<SharedModelTypeProcessor> FakeModelTypeService::SetUpProcessor(
+SharedModelTypeProcessor* FakeModelTypeService::SetUpProcessor(
     ModelTypeChangeProcessor* processor) {
   processor_ = processor;
-  return static_cast<SharedModelTypeProcessor*>(GetOrCreateChangeProcessor())
-      ->AsWeakPtrForUI();
+  return static_cast<SharedModelTypeProcessor*>(GetOrCreateChangeProcessor());
 }
 
 }  // namespace syncer_v2

@@ -12,14 +12,18 @@
 
 namespace syncer_v2 {
 
-MockModelTypeProcessor::MockModelTypeProcessor() : is_synchronous_(true) {
-}
+MockModelTypeProcessor::MockModelTypeProcessor() : is_synchronous_(true) {}
 
-MockModelTypeProcessor::~MockModelTypeProcessor() {
-}
+MockModelTypeProcessor::~MockModelTypeProcessor() {}
 
 void MockModelTypeProcessor::ConnectSync(scoped_ptr<CommitQueue> commit_queue) {
   NOTREACHED();
+}
+
+void MockModelTypeProcessor::DisconnectSync() {
+  if (!disconnect_callback_.is_null()) {
+    disconnect_callback_.Run();
+  }
 }
 
 void MockModelTypeProcessor::OnCommitCompleted(
@@ -179,6 +183,11 @@ CommitResponseData MockModelTypeProcessor::GetCommitResponse(
   std::map<const std::string, CommitResponseData>::const_iterator it =
       commit_response_items_.find(tag_hash);
   return it->second;
+}
+
+void MockModelTypeProcessor::SetDisconnectCallback(
+    const DisconnectCallback& callback) {
+  disconnect_callback_ = callback;
 }
 
 void MockModelTypeProcessor::OnCommitCompletedImpl(

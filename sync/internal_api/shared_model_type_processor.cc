@@ -27,6 +27,7 @@ class ModelTypeProcessorProxy : public ModelTypeProcessor {
   ~ModelTypeProcessorProxy() override;
 
   void ConnectSync(scoped_ptr<CommitQueue> worker) override;
+  void DisconnectSync() override;
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
@@ -48,6 +49,11 @@ void ModelTypeProcessorProxy::ConnectSync(scoped_ptr<CommitQueue> worker) {
   processor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ModelTypeProcessor::ConnectSync, processor_,
                             base::Passed(std::move(worker))));
+}
+
+void ModelTypeProcessorProxy::DisconnectSync() {
+  processor_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ModelTypeProcessor::DisconnectSync, processor_));
 }
 
 void ModelTypeProcessorProxy::OnCommitCompleted(
@@ -73,8 +79,7 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
     : type_(type),
       is_metadata_loaded_(false),
       service_(service),
-      weak_ptr_factory_(this),
-      weak_ptr_factory_for_sync_(this) {
+      weak_ptr_factory_(this) {
   DCHECK(service);
 }
 
@@ -161,9 +166,9 @@ void SharedModelTypeProcessor::ConnectIfReady() {
   scoped_ptr<ActivationContext> activation_context =
       make_scoped_ptr(new ActivationContext);
   activation_context->data_type_state = data_type_state_;
-  activation_context->type_processor = make_scoped_ptr(
-      new ModelTypeProcessorProxy(weak_ptr_factory_for_sync_.GetWeakPtr(),
-                                  base::ThreadTaskRunnerHandle::Get()));
+  activation_context->type_processor =
+      make_scoped_ptr(new ModelTypeProcessorProxy(
+          weak_ptr_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
 
   start_callback_.Run(syncer::SyncError(), std::move(activation_context));
   start_callback_.Reset();
@@ -194,25 +199,6 @@ void SharedModelTypeProcessor::Disable() {
   service_->clear_change_processor();
 }
 
-void SharedModelTypeProcessor::DisconnectSync() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(IsConnected());
-
-  DVLOG(1) << "Disconnecting sync for " << ModelTypeToString(type_);
-  weak_ptr_factory_for_sync_.InvalidateWeakPtrs();
-  worker_.reset();
-
-  for (auto it = entities_.begin(); it != entities_.end(); ++it) {
-    it->second->ClearTransientSyncState();
-  }
-}
-
-base::WeakPtr<SharedModelTypeProcessor>
-SharedModelTypeProcessor::AsWeakPtrForUI() {
-  DCHECK(CalledOnValidThread());
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
 void SharedModelTypeProcessor::ConnectSync(scoped_ptr<CommitQueue> worker) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
@@ -220,6 +206,19 @@ void SharedModelTypeProcessor::ConnectSync(scoped_ptr<CommitQueue> worker) {
   worker_ = std::move(worker);
 
   FlushPendingCommitRequests();
+}
+
+void SharedModelTypeProcessor::DisconnectSync() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(IsConnected());
+
+  DVLOG(1) << "Disconnecting sync for " << ModelTypeToString(type_);
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  worker_.reset();
+
+  for (auto it = entities_.begin(); it != entities_.end(); ++it) {
+    it->second->ClearTransientSyncState();
+  }
 }
 
 void SharedModelTypeProcessor::Put(const std::string& tag,

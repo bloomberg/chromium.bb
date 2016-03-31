@@ -32,12 +32,9 @@ void ModelTypeService::clear_change_processor() {
   change_processor_.reset();
 }
 
-ModelTypeChangeProcessor* ModelTypeService::OnSyncStarting(
+void ModelTypeService::OnSyncStarting(
     const ModelTypeChangeProcessor::StartCallback& start_callback) {
-  ModelTypeChangeProcessor* processor = GetOrCreateChangeProcessor();
-  DCHECK(processor);
-  processor->OnSyncStarting(start_callback);
-  return processor;
+  GetOrCreateChangeProcessor()->OnSyncStarting(start_callback);
 }
 
 syncer::ModelType ModelTypeService::type() const {

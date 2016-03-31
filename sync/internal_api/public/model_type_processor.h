@@ -25,6 +25,11 @@ class SYNC_EXPORT ModelTypeProcessor {
   // (via the DataTypeController) in between.
   virtual void ConnectSync(scoped_ptr<CommitQueue> commit_queue) = 0;
 
+  // Disconnect this processor from the sync engine. Change metadata will
+  // continue being processed and persisted, but no commits can be made until
+  // the next time sync is connected.
+  virtual void DisconnectSync() = 0;
+
   // Informs this object that some of its commit requests have been
   // successfully serviced.
   virtual void OnCommitCompleted(

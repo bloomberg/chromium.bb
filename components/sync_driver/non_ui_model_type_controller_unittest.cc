@@ -43,11 +43,6 @@ class TestNonUIModelTypeController : public NonUIModelTypeController {
                                  sync_client),
         model_task_runner_(model_task_runner) {}
 
-  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> get_type_processor()
-      const {
-    return type_processor();
-  }
-
   bool RunOnModelThread(const tracked_objects::Location& from_here,
                         const base::Closure& task) override {
     DCHECK(model_task_runner_);
@@ -336,7 +331,7 @@ class NonUIModelTypeControllerTest : public testing::Test,
     association_callback_called_ = true;
   }
 
-  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor_;
+  syncer_v2::SharedModelTypeProcessor* type_processor_;
   scoped_refptr<TestNonUIModelTypeController> controller_;
 
   bool auto_run_tasks_;
@@ -401,7 +396,6 @@ TEST_F(NonUIModelTypeControllerTest, Stop) {
 
   DeactivateDataTypeAndStop();
   EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_->state());
-  TestTypeProcessor(true, false);  // enabled, not connected.
 }
 
 }  // namespace sync_driver_v2

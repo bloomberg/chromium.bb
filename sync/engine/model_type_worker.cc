@@ -57,7 +57,9 @@ ModelTypeWorker::ModelTypeWorker(
   }
 }
 
-ModelTypeWorker::~ModelTypeWorker() {}
+ModelTypeWorker::~ModelTypeWorker() {
+  model_type_processor_->DisconnectSync();
+}
 
 ModelType ModelTypeWorker::GetModelType() const {
   DCHECK(CalledOnValidThread());

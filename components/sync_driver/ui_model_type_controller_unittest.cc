@@ -236,7 +236,7 @@ class UIModelTypeControllerTest : public testing::Test,
     association_callback_called_ = true;
   }
 
-  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor_;
+  syncer_v2::SharedModelTypeProcessor* type_processor_;
   scoped_refptr<TestUIModelTypeController> controller_;
 
   bool auto_run_tasks_;
@@ -295,7 +295,6 @@ TEST_F(UIModelTypeControllerTest, Stop) {
 
   DeactivateDataTypeAndStop();
   EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_->state());
-  TestTypeProcessor(true, false);  // enabled, not connected.
 }
 
 }  // namespace sync_driver_v2

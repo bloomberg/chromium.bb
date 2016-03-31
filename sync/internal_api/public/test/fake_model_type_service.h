@@ -42,8 +42,7 @@ class FakeModelTypeService : public ModelTypeService {
   void OnChangeProcessorSet() override;
 
   // TODO(gangwu): remove this and use overload constructor.
-  base::WeakPtr<SharedModelTypeProcessor> SetUpProcessor(
-      ModelTypeChangeProcessor* processor);
+  SharedModelTypeProcessor* SetUpProcessor(ModelTypeChangeProcessor* processor);
 
  protected:
   // The function will create ModelTypeChangeProcessor.

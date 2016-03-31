@@ -33,11 +33,14 @@ namespace syncer_v2 {
 // on their value.
 class MockModelTypeProcessor : public ModelTypeProcessor {
  public:
+  typedef base::Callback<void()> DisconnectCallback;
+
   MockModelTypeProcessor();
   ~MockModelTypeProcessor() override;
 
   // Implementation of ModelTypeProcessor.
   void ConnectSync(scoped_ptr<CommitQueue> commit_queue) override;
+  void DisconnectSync() override;
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
@@ -89,6 +92,8 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   bool HasCommitResponse(const std::string& tag_hash) const;
   CommitResponseData GetCommitResponse(const std::string& tag_hash) const;
 
+  void SetDisconnectCallback(const DisconnectCallback& callback);
+
  private:
   // Process a received commit response.
   //
@@ -135,6 +140,9 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   std::map<const std::string, int64_t> sequence_numbers_;
   std::map<const std::string, int64_t> base_versions_;
   std::map<const std::string, std::string> assigned_ids_;
+
+  // Callback which will be call during disconnection
+  DisconnectCallback disconnect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockModelTypeProcessor);
 };

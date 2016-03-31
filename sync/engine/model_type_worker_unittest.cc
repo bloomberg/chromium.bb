@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "sync/engine/commit_contribution.h"
 #include "sync/internal_api/public/base/model_type.h"
@@ -137,6 +138,12 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // It is safe to call this only if WillCommit() returns true.
   void DoSuccessfulCommit();
 
+  // Callback when processor got disconnected with sync.
+  void DisconnectProcessor();
+
+  bool IsProcessorDisconnected();
+  void ResetWorker();
+
   // Read commit messages the worker_ sent to the emulated server.
   size_t GetNumCommitMessagesOnServer() const;
   sync_pb::ClientToServerMessage GetNthCommitMessageOnServer(size_t n) const;
@@ -235,13 +242,16 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // A mock to track the number of times the CommitQueue requests to
   // sync.
   syncer::MockNudgeHandler mock_nudge_handler_;
+
+  bool is_processor_disconnected_;
 };
 
 ModelTypeWorkerTest::ModelTypeWorkerTest()
     : foreign_encryption_key_index_(0),
       update_encryption_filter_index_(0),
       mock_type_processor_(NULL),
-      mock_server_(kModelType) {}
+      mock_server_(kModelType),
+      is_processor_disconnected_(false) {}
 
 ModelTypeWorkerTest::~ModelTypeWorkerTest() {}
 
@@ -279,6 +289,8 @@ void ModelTypeWorkerTest::InitializeWithState(
 
   // We don't get to own this object.  The |worker_| keeps a scoped_ptr to it.
   mock_type_processor_ = new MockModelTypeProcessor();
+  mock_type_processor_->SetDisconnectCallback(base::Bind(
+      &ModelTypeWorkerTest::DisconnectProcessor, base::Unretained(this)));
   scoped_ptr<ModelTypeProcessor> proxy(mock_type_processor_);
 
   scoped_ptr<Cryptographer> cryptographer_copy;
@@ -485,6 +497,19 @@ void ModelTypeWorkerTest::DoSuccessfulCommit() {
   StatusController dummy_status;
   contribution->ProcessCommitResponse(response, &dummy_status);
   contribution->CleanUp();
+}
+
+void ModelTypeWorkerTest::DisconnectProcessor() {
+  DCHECK(!is_processor_disconnected_);
+  is_processor_disconnected_ = true;
+}
+
+bool ModelTypeWorkerTest::IsProcessorDisconnected() {
+  return is_processor_disconnected_;
+}
+
+void ModelTypeWorkerTest::ResetWorker() {
+  worker_.reset();
 }
 
 size_t ModelTypeWorkerTest::GetNumCommitMessagesOnServer() const {
@@ -1173,6 +1198,16 @@ TEST_F(ModelTypeWorkerTest, ReceiveCorruptEncryption) {
   SetUpdateEncryptionFilter(1);
   TriggerUpdateFromServer(10, "tag1", "value1");
   EXPECT_TRUE(HasUpdateResponseOnModelThread("tag1"));
+}
+
+// Test that processor has been disconnected from Sync when worker got
+// disconnected.
+TEST_F(ModelTypeWorkerTest, DisconnectProcessorFromSyncTest) {
+  // Initialize the worker with basic state.
+  NormalInitialize();
+  EXPECT_FALSE(IsProcessorDisconnected());
+  ResetWorker();
+  EXPECT_TRUE(IsProcessorDisconnected());
 }
 
 }  // namespace syncer_v2

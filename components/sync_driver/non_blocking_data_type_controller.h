@@ -63,10 +63,6 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   // DataTypeController is RefCounted.
   ~NonBlockingDataTypeController() override;
 
-  // Returns SharedModelTypeProcessor associated with the controller.
-  // The weak pointer should be used only on the model thread.
-  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor() const;
-
   // Returns true if the call is made on UI thread.
   bool BelongsToUIThread() const;
 
@@ -124,12 +120,6 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   // Controller receives |activation_context_| from SharedModelTypeProcessor
   // callback and must temporarily own it until ActivateDataType is called.
   scoped_ptr<syncer_v2::ActivationContext> activation_context_;
-
-  // TODO(gangwu): We can complete remove holding this pointer since the only
-  // place we use it is when we stop the data type. We can let ModelTypeService
-  // to stop the processor.
-  // A weak pointer to the actual SharedModelTypeProcessor
-  base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingDataTypeController);
 };

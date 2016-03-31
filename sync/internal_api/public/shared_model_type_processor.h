@@ -43,11 +43,6 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
       syncer::ModelType type,
       ModelTypeService* service);
 
-  // Disconnect this processor from the sync engine. Change metadata will
-  // continue being processed and persisted, but no commits can be made until
-  // the next time sync is connected.
-  void DisconnectSync();
-
   // Indicates that we no longer want to do any sync-related things for this
   // data type. Severs all ties to the sync thread, deletes all local sync
   // metadata, and then destroys the SharedModelTypeProcessor.
@@ -70,12 +65,9 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   void OnMetadataLoaded(scoped_ptr<MetadataBatch> batch) override;
   void OnSyncStarting(const StartCallback& callback) override;
 
-  // Returns the long-lived WeakPtr that is intended to be registered with the
-  // ProfileSyncService.
-  base::WeakPtr<SharedModelTypeProcessor> AsWeakPtrForUI();
-
   // ModelTypeProcessor implementation.
   void ConnectSync(scoped_ptr<CommitQueue> worker) override;
+  void DisconnectSync() override;
   void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
@@ -145,13 +137,8 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // become invalid.
   ModelTypeService* const service_;
 
-  // We use two different WeakPtrFactories because we want the pointers they
-  // issue to have different lifetimes.  When asked to disconnect from the sync
-  // thread, we want to make sure that no tasks generated as part of the
-  // now-obsolete connection to affect us.  But we also want the WeakPtr we
-  // sent to the UI thread to remain valid.
+  // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;
-  base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_for_sync_;
 };
 
 }  // namespace syncer_v2
