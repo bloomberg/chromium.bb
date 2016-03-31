@@ -237,11 +237,14 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
     received_popular_sites_ = true;
   }
 
+  SuggestionsService* suggestions_service =
+      SuggestionsServiceFactory::GetForProfile(profile_);
+  // Immediately get the current suggestions from the cache. If the cache is
+  // empty, this will fall back to TopSites.
   OnSuggestionsProfileAvailable(
-      SuggestionsServiceFactory::GetForProfile(profile_)
-          ->GetSuggestionsDataFromCache());
-
-  QueryMostVisitedURLs();
+      suggestions_service->GetSuggestionsDataFromCache());
+  // Also start a request for fresh suggestions.
+  suggestions_service->FetchSuggestionsData();
 
   scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
@@ -418,8 +421,16 @@ void MostVisitedSites::RegisterProfilePrefs(
 void MostVisitedSites::QueryMostVisitedURLs() {
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile_);
-  if (!suggestions_service->FetchSuggestionsData())
-    InitiateTopSitesQuery();
+  if (suggestions_service->FetchSuggestionsData()) {
+    // A suggestions network request is on its way. We'll be called back via
+    // OnSuggestionsProfileAvailable.
+    return;
+  }
+  // If no network request could be sent, try to get suggestions from the
+  // cache. If that also returns nothing, OnSuggestionsProfileAvailable will
+  // call InitiateTopSitesQuery.
+  OnSuggestionsProfileAvailable(
+      suggestions_service->GetSuggestionsDataFromCache());
 }
 
 void MostVisitedSites::InitiateTopSitesQuery() {
