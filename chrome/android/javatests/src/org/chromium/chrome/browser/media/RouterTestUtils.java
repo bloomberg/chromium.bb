@@ -37,7 +37,7 @@ public class RouterTestUtils {
                 public View call() {
                     Dialog mediaRouteListDialog = getDialog(activity);
                     if (mediaRouteListDialog == null) {
-                        Log.w(TAG, "Cannot find choose device dialog");
+                        Log.w(TAG, "Cannot find device selection dialog");
                         return null;
                     }
                     View mediaRouteList =
@@ -53,7 +53,7 @@ public class RouterTestUtils {
                         Log.w(TAG, "Cannot find wanted device");
                         return null;
                     }
-
+                    Log.i(TAG, "Found wanted device");
                     return routesWanted.get(0);
                 }
             }, maxTimeoutMs, intervalMs);
@@ -67,7 +67,13 @@ public class RouterTestUtils {
                     @Override
                     public boolean isSatisfied() {
                         try {
-                            return getDialog(activity) != null;
+                            if (getDialog(activity) != null) {
+                                Log.i(TAG, "Found device selection dialog");
+                                return true;
+                            } else {
+                                Log.w(TAG, "Cannot find device selection dialog");
+                                return false;
+                            }
                         } catch (Exception e) {
                             return false;
                         }

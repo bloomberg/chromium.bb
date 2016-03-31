@@ -12,7 +12,6 @@ import android.os.StrictMode;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.view.View;
 
-import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -40,8 +39,6 @@ import java.util.concurrent.TimeoutException;
  */
 @CommandLineFlags.Add(ContentSwitches.DISABLE_GESTURE_REQUIREMENT_FOR_PRESENTATION)
 public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-
-    private static final String TAG = "MediaRouterTest";
 
     private static final String TEST_PAGE =
             "/chrome/test/media_router/resources/basic_test.html?__is_android__=true";
@@ -215,16 +212,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
-        try {
-            View testRouteButton = RouterTestUtils.waitForRouteButton(
-                    getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-            RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
-        } catch (AssertionError e) {
-            // TODO(zqzhang): the device might not be shown in the dialog on some bots. Please check
-            // the logcat to see if it really passed.
-            Log.w(TAG, "Device not shown in the dialog. The test might be false negative.");
-            return;
-        }
+        View testRouteButton = RouterTestUtils.waitForRouteButton(
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
         assertFalse(sessionId.length() == 0);
@@ -244,16 +234,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
-        try {
-            View testRouteButton = RouterTestUtils.waitForRouteButton(
-                    getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-            RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
-        } catch (AssertionError e) {
-            // TODO(zqzhang): the device might not be shown in the dialog on some bots. Please check
-            // the logcat to see if it really passed.
-            Log.w(TAG, "Device not shown in the dialog. The test might be false negative.");
-            return;
-        }
+        View testRouteButton = RouterTestUtils.waitForRouteButton(
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
         assertFalse(sessionId.length() == 0);
@@ -269,16 +252,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
-        try {
-            View testRouteButton = RouterTestUtils.waitForRouteButton(
-                    getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-            RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
-        } catch (AssertionError e) {
-            // TODO(zqzhang): the device might not be shown in the dialog on some bots. Please check
-            // the logcat to see if it really passed.
-            Log.w(TAG, "Device not shown in the dialog. The test might be false negative.");
-            return;
-        }
+        View testRouteButton = RouterTestUtils.waitForRouteButton(
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
         assertFalse(sessionId.length() == 0);
@@ -297,16 +273,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
-        try {
-            View testRouteButton = RouterTestUtils.waitForRouteButton(
-                    getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-            RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
-        } catch (AssertionError e) {
-            // TODO(zqzhang): the device might not be shown in the dialog on some bots. Please check
-            // the logcat to see if it really passed.
-            Log.w(TAG, "Device not shown in the dialog. The test might be false negative.");
-            return;
-        }
+        View testRouteButton = RouterTestUtils.waitForRouteButton(
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         checkStartFailed(
                 webContents, "UnknownError", "No provider supports createRoute with source");
     }
@@ -320,16 +289,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
-        try {
-            View testRouteButton = RouterTestUtils.waitForRouteButton(
-                    getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-            RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
-        } catch (AssertionError e) {
-            // TODO(zqzhang): the device might not be shown in the dialog on some bots. Please check
-            // the logcat to see if it really passed.
-            Log.w(TAG, "Device not shown in the dialog. The test might be false negative.");
-            return;
-        }
+        View testRouteButton = RouterTestUtils.waitForRouteButton(
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         checkStartFailed(
                 webContents, "UnknownError", "Unknown sink");
     }
@@ -342,16 +304,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
-        try {
-            View testRouteButton = RouterTestUtils.waitForRouteButton(
-                    getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-            RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
-        } catch (AssertionError e) {
-            // TODO(zqzhang): the device might not be shown in the dialog on some bots. Please check
-            // the logcat to see if it really passed.
-            Log.w(TAG, "Device not shown in the dialog. The test might be false negative.");
-            return;
-        }
+        View testRouteButton = RouterTestUtils.waitForRouteButton(
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
 
@@ -375,16 +330,9 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         WebContents webContents = getActivity().getActivityTab().getWebContents();
         executeJavaScriptApi(webContents, WAIT_DEVICE_SCRIPT);
         executeJavaScriptApi(webContents, START_SESSION_SCRIPT);
-        try {
-            View testRouteButton = RouterTestUtils.waitForRouteButton(
-                    getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
-            RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
-        } catch (AssertionError e) {
-            // TODO(zqzhang): the device might not be shown in the dialog on some bots. Please check
-            // the logcat to see if it really passed.
-            Log.w(TAG, "Device not shown in the dialog. The test might be false negative.");
-            return;
-        }
+        View testRouteButton = RouterTestUtils.waitForRouteButton(
+                getActivity(), TEST_SINK_NAME, VIEW_TIMEOUT_MS, VIEW_RETRY_MS);
+        RouterTestUtils.mouseSingleClickView(getInstrumentation(), testRouteButton);
         executeJavaScriptApi(webContents, CHECK_SESSION_SCRIPT);
         String sessionId = getJavaScriptVariable(webContents, "startedConnection.id");
 
