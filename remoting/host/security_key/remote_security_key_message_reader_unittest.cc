@@ -33,6 +33,9 @@ class RemoteSecurityKeyMessageReaderTest : public testing::Test {
   // be verified by tests.
   void OnMessage(scoped_ptr<SecurityKeyMessage> message);
 
+  // Used as a callback to signal completion.
+  void OperationComplete();
+
  protected:
   // testing::Test interface.
   void SetUp() override;
@@ -55,12 +58,13 @@ class RemoteSecurityKeyMessageReaderTest : public testing::Test {
 
  private:
   base::MessageLoopForIO message_loop_;
-  base::RunLoop run_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSecurityKeyMessageReaderTest);
 };
 
-RemoteSecurityKeyMessageReaderTest::RemoteSecurityKeyMessageReaderTest() {}
+RemoteSecurityKeyMessageReaderTest::RemoteSecurityKeyMessageReaderTest()
+    : run_loop_(new base::RunLoop()) {}
 
 RemoteSecurityKeyMessageReaderTest::~RemoteSecurityKeyMessageReaderTest() {}
 
@@ -70,20 +74,26 @@ void RemoteSecurityKeyMessageReaderTest::SetUp() {
 
   // base::Unretained is safe since no further tasks can run after
   // RunLoop::Run() returns.
-  reader_->Start(base::Bind(&RemoteSecurityKeyMessageReaderTest::OnMessage,
-                            base::Unretained(this)),
-                 run_loop_.QuitClosure());
+  reader_->Start(
+      base::Bind(&RemoteSecurityKeyMessageReaderTest::OnMessage,
+                 base::Unretained(this)),
+      base::Bind(&RemoteSecurityKeyMessageReaderTest::OperationComplete,
+                 base::Unretained(this)));
 }
 
 void RemoteSecurityKeyMessageReaderTest::Run() {
-  // Close the write-end, so the reader doesn't block waiting for more data.
-  write_file_.Close();
-  run_loop_.Run();
+  run_loop_->Run();
+  run_loop_.reset(new base::RunLoop());
 }
 
 void RemoteSecurityKeyMessageReaderTest::OnMessage(
     scoped_ptr<SecurityKeyMessage> message) {
   messages_received_.push_back(std::move(message));
+  OperationComplete();
+}
+
+void RemoteSecurityKeyMessageReaderTest::OperationComplete() {
+  run_loop_->Quit();
 }
 
 void RemoteSecurityKeyMessageReaderTest::WriteMessage(
@@ -143,6 +153,7 @@ TEST_F(RemoteSecurityKeyMessageReaderTest, SingleMessageWithLargePayload) {
 }
 
 TEST_F(RemoteSecurityKeyMessageReaderTest, EmptyFile) {
+  write_file_.Close();
   Run();
   ASSERT_EQ(0u, messages_received_.size());
 }
@@ -158,6 +169,7 @@ TEST_F(RemoteSecurityKeyMessageReaderTest, InvalidMessageLength) {
 TEST_F(RemoteSecurityKeyMessageReaderTest, ShortHeader) {
   // Write only 3 bytes - the message length header is supposed to be 4 bytes.
   WriteData("xxx", SecurityKeyMessage::kHeaderSizeBytes - 1);
+  write_file_.Close();
   Run();
   ASSERT_EQ(0u, messages_received_.size());
 }
@@ -172,6 +184,7 @@ TEST_F(RemoteSecurityKeyMessageReaderTest, ZeroLengthMessage) {
 TEST_F(RemoteSecurityKeyMessageReaderTest, MissingControlCode) {
   uint32_t length = 1;
   WriteData(reinterpret_cast<char*>(&length), sizeof(length));
+  write_file_.Close();
   Run();
   ASSERT_EQ(0u, messages_received_.size());
 }
@@ -182,6 +195,7 @@ TEST_F(RemoteSecurityKeyMessageReaderTest, MissingPayload) {
 
   char test_control_code = static_cast<char>(kTestMessageType);
   WriteData(&test_control_code, sizeof(test_control_code));
+  write_file_.Close();
   Run();
   ASSERT_EQ(0u, messages_received_.size());
 }
@@ -194,9 +208,9 @@ TEST_F(RemoteSecurityKeyMessageReaderTest, MultipleMessages) {
 
   for (auto& payload : payloads) {
     WriteMessage(kTestMessageType, payload);
+    Run();
   }
 
-  Run();
   ASSERT_EQ(payloads.size(), messages_received_.size());
 
   for (size_t i = 0; i < payloads.size(); i++) {
