@@ -5,48 +5,55 @@
 
 # This script copies all dependencies required for trace collection.
 # Usage:
-#   deploy.sh builddir outdir bucket
+#   deploy.sh builddir gcs_path
 #
 # Where:
 #   builddir is the build directory for Chrome
-#   outdir is the directory where files are deployed
-#   bucket is the Google Storage bucket where Chrome is uploaded
+#   gcs_path is the Google Storage bucket under which the deployment is
+#   installed
 
 builddir=$1
-outdir=$2
-bucket=$3
+tmpdir=`mktemp -d`
+deployment_gcs_path=$2/deployment
 
-# Copy files from tools/android/loading
-mkdir -p $outdir/tools/android/loading
-cp tools/android/loading/*.py $outdir/tools/android/loading
-cp -r tools/android/loading/gce $outdir/tools/android/loading
+# Extract needed sources.
+src_suffix=src
+tmp_src_dir=$tmpdir/$src_suffix
 
-# Copy other dependencies
-mkdir $outdir/third_party
-# Use rsync to exclude unwanted files (e.g. the .git directory).
+# Copy files from tools/android/loading.
+mkdir -p $tmp_src_dir/tools/android/loading
+cp tools/android/loading/*.py $tmp_src_dir/tools/android/loading
+cp -r tools/android/loading/gce $tmp_src_dir/tools/android/loading
+
+# Copy other dependencies.
+mkdir $tmp_src_dir/third_party
 rsync -av --exclude=".*" --exclude "*.pyc" --exclude "*.html" --exclude "*.md" \
-  --delete third_party/catapult $outdir/third_party
-mkdir $outdir/tools/perf
-cp -r tools/perf/chrome_telemetry_build $outdir/tools/perf
-mkdir -p $outdir/build/android
-cp build/android/devil_chromium.py $outdir/build/android/
-cp build/android/video_recorder.py $outdir/build/android/
-cp build/android/devil_chromium.json $outdir/build/android/
-cp -r build/android/pylib $outdir/build/android/
+  --delete third_party/catapult $tmp_src_dir/third_party
+mkdir $tmp_src_dir/tools/perf
+cp -r tools/perf/chrome_telemetry_build $tmp_src_dir/tools/perf
+mkdir -p $tmp_src_dir/build/android
+cp build/android/devil_chromium.py $tmp_src_dir/build/android/
+cp build/android/video_recorder.py $tmp_src_dir/build/android/
+cp build/android/devil_chromium.json $tmp_src_dir/build/android/
+cp -r build/android/pylib $tmp_src_dir/build/android/
 
-# Copy the chrome executable to Google Cloud Storage
+# Tar up the source and copy it to Google Cloud Storage.
+source_tarball=$tmpdir/source.tgz
+tar -cvzf $source_tarball -C $tmpdir $src_suffix
+gsutil cp $source_tarball gs://$deployment_gcs_path/source/
+
+# Copy the chrome executable to Google Cloud Storage.
 chrome/tools/build/make_zip.py $builddir chrome/tools/build/linux/FILES.cfg \
-  /tmp/linux.zip
-gsutil cp /tmp/linux.zip gs://$bucket/chrome/linux.zip
-rm /tmp/linux.zip
+  $tmpdir/linux.zip
+gsutil cp $tmpdir/linux.zip gs://$deployment_gcs_path/binaries/linux.zip
 
-# Upload Chromium revision
+# Generate and upload metadata about this deployment.
 CHROMIUM_REV=$(git merge-base HEAD origin/master)
-cat >/tmp/build_metadata.json << EOF
+cat >$tmpdir/build_metadata.json << EOF
 {
   "chromium_rev": "$CHROMIUM_REV"
 }
 EOF
-gsutil cp /tmp/build_metadata.json gs://$bucket/chrome/build_metadata.json
-rm /tmp/build_metadata.json
-
+gsutil cp $tmpdir/build_metadata.json \
+  gs://$deployment_gcs_path/deployment_metadata.json
+rm -rf $tmpdir

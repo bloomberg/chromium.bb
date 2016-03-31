@@ -31,43 +31,46 @@ useradd -m -d /home/pythonapp pythonapp
 # pip from apt is out of date, so make it update itself and install virtualenv.
 pip install --upgrade pip virtualenv
 
-# Get the source code from the Google Cloud Repository.
-# It is expected that the contents of this repository have been generated using
+# Download the Clovis deployment from Google Cloud Storage and unzip it.
+# It is expected that the contents of the deployment have been generated using
 # the tools/android/loading/gce/deploy.sh script.
-# git requires $HOME and it's not set during the startup script.
-export HOME=/root
-git config --global credential.helper gcloud.sh
-git clone --depth 1 https://source.developers.google.com/p/$PROJECTID \
-    /opt/app/clovis
+CLOUD_STORAGE_PATH=$(curl -s \
+    "http://metadata/computeMetadata/v1/instance/attributes/cloud-storage-path" \
+    -H "Metadata-Flavor: Google")
+DEPLOYMENT_PATH=$CLOUD_STORAGE_PATH/deployment
+
+mkdir -p /opt/app/clovis
+gsutil cp gs://$DEPLOYMENT_PATH/source/source.tgz /opt/app/clovis/source.tgz
+tar xvf /opt/app/clovis/source.tgz -C /opt/app/clovis
+rm /opt/app/clovis/source.tgz
 
 # Install app dependencies
 virtualenv /opt/app/clovis/env
 /opt/app/clovis/env/bin/pip install \
-    -r /opt/app/clovis/tools/android/loading/gce/pip_requirements.txt
+    -r /opt/app/clovis/src/tools/android/loading/gce/pip_requirements.txt
 
-# Download Chrome from Google Cloud Storage and unzip it.
-# It is expected that the contents of the bucket have been generated using the
-# tools/android/loading/gce/deploy.sh script.
-STORAGE_BUCKET=`python - <<EOF
-import json
-config_file = "/opt/app/clovis/tools/android/loading/gce/server_config.json"
-with open(config_file) as config:
-  obj=json.load(config);
-  print obj["bucket_name"]
-EOF`
-
-mkdir /opt/app/clovis/out
-gsutil cp gs://$STORAGE_BUCKET/chrome/* /opt/app/clovis/out/
-unzip /opt/app/clovis/out/linux.zip -d /opt/app/clovis/out/
+mkdir /opt/app/clovis/binaries
+gsutil cp gs://$DEPLOYMENT_PATH/binaries/* /opt/app/clovis/binaries/
+unzip /opt/app/clovis/binaries/linux.zip -d /opt/app/clovis/binaries/
 
 # Install the Chrome sandbox
-cp /opt/app/clovis/out/chrome_sandbox /usr/local/sbin/chrome-devel-sandbox
+cp /opt/app/clovis/binaries/chrome_sandbox /usr/local/sbin/chrome-devel-sandbox
 chown root:root /usr/local/sbin/chrome-devel-sandbox
 chmod 4755 /usr/local/sbin/chrome-devel-sandbox
 export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
 
 # Make sure the pythonapp user owns the application code
 chown -R pythonapp:pythonapp /opt/app
+
+# Create the configuration file for this deployment.
+DEPLOYMENT_CONFIG_PATH=/opt/app/clovis/deployment_config.json
+cat >$DEPLOYMENT_CONFIG_PATH << EOF
+{
+  "project_name" : "$PROJECTID",
+  "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
+  "chrome_path" : "/opt/app/clovis/binaries/chrome"
+}
+EOF
 
 # Check if auto-start is enabled
 AUTO_START=$(curl -s \
@@ -87,9 +90,9 @@ fi
 # applicaiton.
 cat >/etc/supervisor/conf.d/python-app.conf << EOF
 [program:pythonapp]
-directory=/opt/app/clovis/tools/android/loading/gce
+directory=/opt/app/clovis/src/tools/android/loading/gce
 command=/opt/app/clovis/env/bin/gunicorn --workers=1 --bind 0.0.0.0:8080 \
-    'main:StartApp("/opt/app/clovis/out/chrome")'
+    'main:StartApp('\"$DEPLOYMENT_CONFIG_PATH\"')'
 autostart=true
 autorestart=true
 user=pythonapp

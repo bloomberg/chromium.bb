@@ -16,25 +16,38 @@ class ServerApp(object):
   Google Cloud Storage.
   """
 
-  def __init__(self, chrome_path):
-    """The chrome_path argument is the path to the Chrome executable as a
-    string.
+  def __init__(self, configuration_file):
+    """|configuration_file| is a path to a file containing JSON as described in
+    README.md.
     """
     self._tasks = []
     self._thread = None
-    self._chrome_path = chrome_path
     print 'Initializing credentials'
     self._credentials = GoogleCredentials.get_application_default()
-    print 'Reading server configuration'
-    with open('server_config.json') as configuration_file:
-       self._config = json.load(configuration_file)
+    print 'Reading configuration'
+    with open(configuration_file) as config_json:
+       config = json.load(config_json)
+       self._project_name = config['project_name']
+
+       # Separate the cloud storage path into the bucket and the base path under
+       # the bucket.
+       storage_path_components = config['cloud_storage_path'].split('/')
+       self._bucket_name = storage_path_components[0]
+       self._base_path_in_bucket = ''
+       if len(storage_path_components) > 1:
+         self._base_path_in_bucket = '/'.join(storage_path_components[1:])
+         if not self._base_path_in_bucket.endswith('/'):
+           self._base_path_in_bucket.append('/')
+
+       self._chrome_path = config['chrome_path']
+
 
   def _GetStorageClient(self):
-    return storage.Client(project = self._config['project_name'],
+    return storage.Client(project = self._project_name,
                           credentials = self._credentials)
 
   def _GetStorageBucket(self, storage_client):
-    return storage_client.get_bucket(self._config['bucket_name'])
+    return storage_client.get_bucket(self._bucket_name)
 
   def _UploadFile(self, filename_src, filename_dest):
     """Uploads a file to Google Cloud Storage
@@ -89,8 +102,8 @@ class ServerApp(object):
     """
     ret = subprocess.call(
         ['python', '../analyze.py', 'log_requests', '--clear_cache', '--local',
-         '--headless', '--local_binary', self._chrome_path, '--url', url,
-         '--output', filename])
+         '--headless', '--local_binary', self._chrome_path, '--url',
+         url, '--output', filename])
     return ret == 0
 
   def _ProcessTasks(self):
@@ -100,7 +113,8 @@ class ServerApp(object):
       url = self._tasks.pop()
       filename = pattern.sub('_', url)
       if self._GenerateTrace(url, filename):
-        self._UploadFile(filename, 'traces/' + filename)
+        self._UploadFile(filename, self._base_path_in_bucket + 'traces/'
+                         + filename)
       else:
         # TODO(droger): Upload the list of urls that failed.
         print 'analyze.py failed'
@@ -142,5 +156,5 @@ class ServerApp(object):
     return iter([data])
 
 
-def StartApp(chrome_path):
-  return ServerApp(chrome_path)
+def StartApp(configuration_file):
+  return ServerApp(configuration_file)

@@ -9,45 +9,19 @@ Engine.
 
 Install the [gcloud command line tool][1].
 
-Checkout the source:
-
-```shell
-mkdir clovis
-cd clovis
-gcloud init
-```
-
-When offered, accept to clone the Google Cloud repo.
-
-## Update or Change the code
-
-Make changes to the code, or copy the latest version from Chromium into your
-local Google Cloud repository:
+## Deploy the code
 
 ```shell
 # Build Chrome
 BUILD_DIR=out/Release
 ninja -C $BUILD_DIR -j1000 -l60 chrome chrome_sandbox
 
-GCE_DIR=~/dev/clovis/default
-
 # Deploy to GCE
-# CHROME_BUCKET_NAME is the name of the Google Cloud Storage bucket where the
-# Chrome build artifacts will be uploaded, and matches the value of
-# 'bucket_name' in server_config.json.
-./tools/android/loading/gce/deploy.sh $BUILD_DIR $GCE_DIR $CHROME_BUCKET_NAME
+# CLOUD_STORAGE_PATH is the path in Google Cloud Storage under which the
+# Clovis deployment will be uploaded.
 
-cd $GCE_DIR
-
-# git add the relevant files
-
-# commit and push:
-git commit
-git push -u origin master
+./tools/android/loading/gce/deploy.sh $BUILD_DIR $CLOUD_STORAGE_PATH
 ```
-
-If there are instances already running, they need to be restarted for this to
-take effect.
 
 ## Start the app in the cloud
 
@@ -60,6 +34,7 @@ gcloud compute instances create clovis-tracer-1 \
  --zone europe-west1-c \
  --tags clovis-http-server \
  --scopes cloud-platform \
+ --metadata cloud-storage-path=$CLOUD_STORAGE_PATH
  --metadata auto-start=true \
  --metadata-from-file startup-script=tools/android/loading/gce/startup-script.sh
 ```
@@ -109,7 +84,7 @@ gcloud compute ssh clovis-tracer-1
 
 ## Use the app locally
 
-Setup the local environment:
+Set up the local environment:
 
 ```shell
 virtualenv env
@@ -117,11 +92,27 @@ source env/bin/activate
 pip install -r pip_requirements.txt
 ```
 
-Launch the app, passing the path to the Chrome executable on the host:
+Create a JSON file describing the deployment configuration:
 
 ```shell
-gunicorn --workers=1 --bind 127.0.0.1:8080 \
-    'main:StartApp("/path/to/chrome")'
+# CONFIG_FILE is the output json file.
+# PROJECT_NAME is the Google Cloud project.
+# CLOUD_STORAGE_PATH is the path in Google Storage where generated traces will
+# be stored.
+# CHROME_PATH is the path to the Chrome executable on the host.
+cat >$CONFIG_FILE << EOF
+{
+  "project_name" : "$PROJECT_NAME",
+  "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
+  "chrome_path" : "$CHROME_PATH"
+}
+EOF
+```
+
+Launch the app, passing the path to the deployment configuration file:
+
+```shell
+gunicorn --workers=1 --bind 127.0.0.1:8080 'main:StartApp('\"$CONFIG_FILE\"')'
 ```
 
 You can now [use the app][2], which is located at http://localhost:8080.
@@ -136,15 +127,6 @@ deactivate
 
 This is already setup, no need to do this again.
 Kept here for reference.
-
-### Server configuration file
-
-`main.py` expects to find a `server_config.json` file, which is a dictionary
-with the keys:
-
-*   `project_name`: the name of the Google Compute project,
-*   `bucket_name`: the name of the Google Storage bucket used to store the
-    results.
 
 ### Firewall rule
 
