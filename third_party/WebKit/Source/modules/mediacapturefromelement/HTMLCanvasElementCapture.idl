@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://www.w3.org/TR/mediacapture-fromelement/#html-canvas-element-media-capture-extensions
+// https://w3c.github.io/mediacapture-fromelement/#html-canvas-element-media-capture-extensions
 [
     RuntimeEnabled=MediaCaptureFromCanvas
 ] partial interface HTMLCanvasElement {

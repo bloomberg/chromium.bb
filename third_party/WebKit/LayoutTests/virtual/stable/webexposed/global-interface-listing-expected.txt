@@ -398,6 +398,11 @@ interface CacheStorage
     method keys
     method match
     method open
+interface CanvasCaptureMediaStreamTrack : MediaStreamTrack
+    attribute @@toStringTag
+    getter canvas
+    method constructor
+    method requestFrame
 interface CanvasGradient
     attribute @@toStringTag
     method addColorStop
@@ -1506,6 +1511,7 @@ interface HTMLCanvasElement : HTMLElement
     attribute @@toStringTag
     getter height
     getter width
+    method captureStream
     method constructor
     method getContext
     method toBlob
