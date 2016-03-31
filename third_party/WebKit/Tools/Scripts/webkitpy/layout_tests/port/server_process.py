@@ -53,6 +53,7 @@ else:
     import select
     _quote_cmd = lambda cmdline: ' '.join(pipes.quote(arg) for arg in cmdline)
 
+from webkitpy.common.system.executive import ScriptError
 
 
 _log = logging.getLogger(__name__)

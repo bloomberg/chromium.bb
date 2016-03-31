@@ -30,6 +30,7 @@
 
 import atexit
 import subprocess
+import sys
 import threading
 import urllib
 

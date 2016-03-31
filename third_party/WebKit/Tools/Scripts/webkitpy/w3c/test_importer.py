@@ -72,6 +72,7 @@
 
 # FIXME: Change this file to use the Host abstractions rather that os, sys, shutils, etc.
 
+import datetime
 import logging
 import mimetypes
 import optparse

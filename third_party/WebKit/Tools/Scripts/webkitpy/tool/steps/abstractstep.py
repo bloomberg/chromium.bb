@@ -28,6 +28,7 @@
 
 import sys
 
+from webkitpy.common.system.executive import ScriptError
 from webkitpy.tool.steps.options import Options
 
 

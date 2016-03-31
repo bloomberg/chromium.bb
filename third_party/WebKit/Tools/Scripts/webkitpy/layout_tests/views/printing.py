@@ -33,6 +33,7 @@ import optparse
 
 from webkitpy.tool import grammar
 from webkitpy.layout_tests.models import test_expectations
+from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.views.metered_stream import MeteredStream
 
 

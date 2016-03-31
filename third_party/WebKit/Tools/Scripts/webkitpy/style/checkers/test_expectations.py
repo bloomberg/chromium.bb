@@ -29,6 +29,10 @@
 """Checks WebKit style for test_expectations files."""
 
 import logging
+import optparse
+import os
+import re
+import sys
 
 from common import TabChecker
 from webkitpy.common.host import Host

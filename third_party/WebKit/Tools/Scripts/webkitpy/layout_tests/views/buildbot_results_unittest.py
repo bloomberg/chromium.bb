@@ -31,6 +31,8 @@ import unittest
 
 from webkitpy.common.host_mock import MockHost
 
+from webkitpy.layout_tests.models import test_expectations
+from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models import test_run_results_unittest

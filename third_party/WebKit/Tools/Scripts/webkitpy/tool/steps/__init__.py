@@ -27,3 +27,5 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # FIXME: Is this the right way to do this?
+from webkitpy.tool.steps.confirmdiff import ConfirmDiff
+from webkitpy.tool.steps.options import Options

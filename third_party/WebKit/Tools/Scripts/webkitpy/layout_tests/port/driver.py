@@ -27,11 +27,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import base64
+import copy
 import logging
 import re
 import shlex
 import sys
 import time
+import os
 
 from webkitpy.common.system import path
 from webkitpy.common.system.profiler import ProfilerFactory

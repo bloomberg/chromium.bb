@@ -49,6 +49,7 @@ Methods:
 """
 
 
+import sys
 
 
 class DefaultStyleErrorHandler(object):

@@ -27,9 +27,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import mimetypes
+import time
 import urllib2
 
-from webkitpy.common.net.networktransaction import NetworkTransaction
+from webkitpy.common.net.networktransaction import NetworkTransaction, NetworkTimeout
 
 
 def get_mime_type(filename):

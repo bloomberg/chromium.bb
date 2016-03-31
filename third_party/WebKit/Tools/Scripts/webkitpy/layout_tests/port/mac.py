@@ -29,6 +29,7 @@
 """Chromium Mac implementation of the Port interface."""
 
 import logging
+import signal
 
 from webkitpy.layout_tests.port import base
 

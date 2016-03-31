@@ -32,6 +32,7 @@ import hashlib
 import os
 import re
 
+from webkitpy.common.system import path
 
 
 class MockFileSystem(object):
