@@ -92,7 +92,10 @@ check_targets = [
   "//testing/*",
 
   #"//third_party/*",  # May not ever want this.
+  "//third_party/hunspell/*",
   "//third_party/kasko/*",
+  "//third_party/libaddressinput/*",
+  "//third_party/libphonenumber/*",
   "//third_party/WebKit/Source/*",
   "//tools/*",
 

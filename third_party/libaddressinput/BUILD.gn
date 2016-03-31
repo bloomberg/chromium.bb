@@ -181,6 +181,8 @@ if (!is_android || use_aura) {
       ":util",
       "//base",
       "//base:i18n",
+      "//components/prefs",
+      "//net",
       "//third_party/icu",
       "//third_party/re2",
     ]
