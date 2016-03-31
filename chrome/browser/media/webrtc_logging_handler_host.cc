@@ -34,8 +34,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "gpu/config/gpu_info.h"
-#include "net/base/address_family.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_LINUX)
@@ -63,12 +62,12 @@ const char kLogNotStoppedOrNoLogOpen[] =
 // octet for IPv4 and last 80 bits (5 groups) for IPv6. String will be
 // "1.2.3.x" and "1.2.3::" respectively. For debug builds, the string is
 // not stripped.
-std::string IPAddressToSensitiveString(const net::IPAddressNumber& address) {
+std::string IPAddressToSensitiveString(const net::IPAddress& address) {
 #if defined(NDEBUG)
   std::string sensitive_address;
-  switch (net::GetAddressFamily(address)) {
-    case net::ADDRESS_FAMILY_IPV4: {
-      sensitive_address = net::IPAddressToString(address);
+  switch (address.size()) {
+    case net::IPAddress::kIPv4AddressSize: {
+      sensitive_address = address.ToString();
       size_t find_pos = sensitive_address.rfind('.');
       if (find_pos == std::string::npos)
         return std::string();
@@ -76,22 +75,20 @@ std::string IPAddressToSensitiveString(const net::IPAddressNumber& address) {
       sensitive_address += ".x";
       break;
     }
-    case net::ADDRESS_FAMILY_IPV6: {
+    case net::IPAddress::kIPv6AddressSize: {
       // TODO(grunell): Create a string of format "1:2:3:x:x:x:x:x" to clarify
       // that the end has been stripped out.
-      net::IPAddressNumber sensitive_address_number = address;
-      sensitive_address_number.resize(net::kIPv6AddressSize - 10);
-      sensitive_address_number.resize(net::kIPv6AddressSize, 0);
-      sensitive_address = net::IPAddressToString(sensitive_address_number);
+      std::vector<uint8_t> bytes = address.bytes();
+      std::fill(bytes.begin() + 6, bytes.end(), 0);
+      net::IPAddress stripped_address(bytes);
+      sensitive_address = stripped_address.ToString();
       break;
     }
-    case net::ADDRESS_FAMILY_UNSPECIFIED: {
-      break;
-    }
+    default: { break; }
   }
   return sensitive_address;
 #else
-  return net::IPAddressToString(address);
+  return address.ToString();
 #endif
 }
 
@@ -631,7 +628,7 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
        it != network_list.end(); ++it) {
     LogToCircularBuffer(
         "Name: " + it->friendly_name + ", Address: " +
-        IPAddressToSensitiveString(it->address.bytes()) + ", Type: " +
+        IPAddressToSensitiveString(it->address) + ", Type: " +
         net::NetworkChangeNotifier::ConnectionTypeToString(it->type));
   }
 

@@ -11,6 +11,7 @@
 #include "chrome/common/cast_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/cast/logging/logging_defines.h"
+#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -25,10 +26,7 @@ class CastTransportHostFilterTest : public testing::Test {
     // is probably not going to respond, but that's ok.
     // TODO(hubbe): Open up an UDP port and make sure
     // we can send and receive packets.
-    net::IPAddressNumber receiver_address(4, 0);
-    receiver_address[0] = 127;
-    receiver_address[3] = 1;
-    receive_endpoint_ = net::IPEndPoint(receiver_address, 7);
+    receive_endpoint_ = net::IPEndPoint(net::IPAddress::IPv4Localhost(), 7);
   }
 
  protected:
@@ -39,7 +37,6 @@ class CastTransportHostFilterTest : public testing::Test {
   base::DictionaryValue options_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
   scoped_refptr<content::BrowserMessageFilter> filter_;
-  net::IPAddressNumber receiver_address_;
   net::IPEndPoint receive_endpoint_;
 };
 

@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/test/python_utils.h"
@@ -102,15 +103,14 @@ bool WVTestLicenseServerConfig::GetServerCommandLine(
 bool WVTestLicenseServerConfig::SelectServerPort() {
   // Try all ports within the range of kMinPort to (kMinPort + kPortRangeSize)
   // Instead of starting from kMinPort, use a random port within that range.
-  net::IPAddressNumber address;
-  net::ParseIPLiteralToNumber("127.0.0.1", &address);
   uint16_t start_seed = base::RandInt(0, kPortRangeSize);
   uint16_t try_port = 0;
   for (uint16_t i = 0; i < kPortRangeSize; ++i) {
     try_port = kMinPort + (start_seed + i) % kPortRangeSize;
     net::NetLog::Source source;
     net::TCPServerSocket sock(NULL, source);
-    if (sock.Listen(net::IPEndPoint(address, try_port), 1) == net::OK) {
+    if (sock.Listen(net::IPEndPoint(net::IPAddress::IPv4Localhost(), try_port),
+                    1) == net::OK) {
       port_ = try_port;
       return true;
     }
