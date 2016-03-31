@@ -984,7 +984,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public void onTextChangedForAutocomplete(final boolean textDeleted) {
         cancelPendingAutocompleteStart();
 
-        updateDeleteButtonVisibility();
+        updateButtonVisibility();
         updateNavigationButton();
 
         if (!mHasStartedNewOmniboxEditSession && mNativeInitialized) {
@@ -1755,6 +1755,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             if (!TextUtils.isEmpty(mUrlBar.getQueryText())) {
                 setUrlBarText(null, null, "");
                 hideSuggestions();
+                updateButtonVisibility();
             }
 
             startZeroSuggest();
