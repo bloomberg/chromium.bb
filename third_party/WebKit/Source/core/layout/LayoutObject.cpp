@@ -798,15 +798,11 @@ void LayoutObject::markContainerChainForLayout(bool scheduleRelayout, SubtreeLay
         if (!container && !object->isLayoutView())
             return;
         if (!last->isTextOrSVGChild() && last->style()->hasOutOfFlowPosition()) {
-            bool willSkipRelativelyPositionedInlines = !object->isLayoutBlock() || object->isAnonymousBlock();
-            // Skip relatively positioned inlines and anonymous blocks to get to the enclosing LayoutBlock.
-            while (object && (!object->isLayoutBlock() || object->isAnonymousBlock()))
-                object = object->container();
-            if (!object || object->posChildNeedsLayout())
+            LayoutBlock* containingBlock = last->containingBlock();
+            if (containingBlock->posChildNeedsLayout())
                 return;
-            if (willSkipRelativelyPositionedInlines)
-                container = object->container();
-            object->setPosChildNeedsLayout(true);
+            container = containingBlock->container();
+            containingBlock->setPosChildNeedsLayout(true);
             simplifiedNormalFlowLayout = true;
             ASSERT(!object->isSetNeedsLayoutForbidden());
         } else if (simplifiedNormalFlowLayout) {
