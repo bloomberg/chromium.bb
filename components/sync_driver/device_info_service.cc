@@ -72,7 +72,8 @@ scoped_ptr<MetadataChangeList> DeviceInfoService::CreateMetadataChangeList() {
 SyncError DeviceInfoService::MergeSyncData(
     scoped_ptr<MetadataChangeList> metadata_change_list,
     EntityDataMap entity_data_map) {
-  if (!has_provider_initialized_ || !has_data_loaded_ || !change_processor()) {
+  if (!has_provider_initialized_ || !has_metadata_loaded_ ||
+      !change_processor()) {
     return SyncError(
         FROM_HERE, SyncError::DATATYPE_ERROR,
         "Cannot call MergeSyncData without provider, data, and processor.",
@@ -84,53 +85,48 @@ SyncError DeviceInfoService::MergeSyncData(
   // data is blown away. However, this simplification is being ignored here and
   // a full difference is going to be calculated to explore what other service
   // implementations may look like.
-  std::set<std::string> local_only_tags;
+  std::set<std::string> local_tags_to_put;
   for (const auto& kv : all_data_) {
-    local_only_tags.insert(kv.first);
+    local_tags_to_put.insert(kv.first);
   }
 
   bool has_changes = false;
-  std::string local_tag =
-      local_device_info_provider_->GetLocalDeviceInfo()->guid();
+  const DeviceInfo* local_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  std::string local_tag = local_info->guid();
   scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
   for (const auto& kv : entity_data_map) {
     const std::string tag = GetClientTag(kv.second.value());
     const DeviceInfoSpecifics& specifics =
         kv.second.value().specifics.device_info();
-
-    // Ignore any remote changes that have our local cache guid.
     if (tag == local_tag) {
-      continue;
+      // Don't Put local data if it's the same as the remote copy.
+      if (local_info->Equals(*CopyToModel(specifics))) {
+        local_tags_to_put.erase(tag);
+      }
+    } else {
+      // Remote data wins conflicts.
+      local_tags_to_put.erase(tag);
+      has_changes = true;
+      StoreSpecifics(make_scoped_ptr(new DeviceInfoSpecifics(specifics)),
+                     batch.get());
     }
-
-    // Remote data wins conflicts.
-    local_only_tags.erase(tag);
-    StoreSpecifics(make_scoped_ptr(new DeviceInfoSpecifics(specifics)),
-                   batch.get());
-    has_changes = true;
   }
 
-  for (const std::string& tag : local_only_tags) {
-    change_processor()->Put(tag, CopyIntoNewEntityData(*all_data_[tag]),
+  for (const std::string& tag : local_tags_to_put) {
+    change_processor()->Put(tag, CopyToEntityData(*all_data_[tag]),
                             metadata_change_list.get());
   }
 
-  // Transfer at the end because processor Put calls may update metadata.
-  static_cast<SimpleMetadataChangeList*>(metadata_change_list.get())
-      ->TransferChanges(store_.get(), batch.get());
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::Bind(&DeviceInfoService::OnCommit, weak_factory_.GetWeakPtr()));
-  if (has_changes) {
-    NotifyObservers();
-  }
+  CommitAndNotify(std::move(batch), std::move(metadata_change_list),
+                  has_changes);
   return syncer::SyncError();
 }
 
 SyncError DeviceInfoService::ApplySyncChanges(
     scoped_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
-  if (!has_provider_initialized_ || !has_data_loaded_) {
+  if (!has_provider_initialized_ || !has_metadata_loaded_) {
     return SyncError(
         FROM_HERE, SyncError::DATATYPE_ERROR,
         "Cannot call ApplySyncChanges before provider and data have loaded.",
@@ -138,8 +134,6 @@ SyncError DeviceInfoService::ApplySyncChanges(
   }
 
   scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-  static_cast<SimpleMetadataChangeList*>(metadata_change_list.get())
-      ->TransferChanges(store_.get(), batch.get());
   bool has_changes = false;
   for (EntityChange& change : entity_changes) {
     const std::string tag = change.client_tag();
@@ -161,51 +155,47 @@ SyncError DeviceInfoService::ApplySyncChanges(
     }
   }
 
-  store_->CommitWriteBatch(
-      std::move(batch),
-      base::Bind(&DeviceInfoService::OnCommit, weak_factory_.GetWeakPtr()));
-  if (has_changes) {
-    NotifyObservers();
-  }
+  CommitAndNotify(std::move(batch), std::move(metadata_change_list),
+                  has_changes);
   return SyncError();
 }
 
 void DeviceInfoService::GetData(ClientTagList client_tags,
                                 DataCallback callback) {
-  if (!has_data_loaded_) {
-    callback.Run(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
-                           "Cannot call GetData before data has loaded.",
-                           syncer::DEVICE_INFO),
-                 scoped_ptr<DataBatchImpl>());
+  if (!has_metadata_loaded_) {
+    callback.Run(
+        SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
+                  "Should not call GetData before metadata has loaded.",
+                  syncer::DEVICE_INFO),
+        scoped_ptr<DataBatchImpl>());
     return;
   }
 
-  syncer::SyncError error;
   scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& tag : client_tags) {
     const auto iter = all_data_.find(tag);
     if (iter != all_data_.end()) {
-      batch->Put(tag, CopyIntoNewEntityData(*iter->second));
+      batch->Put(tag, CopyToEntityData(*iter->second));
     }
   }
-  callback.Run(error, std::move(batch));
+  callback.Run(syncer::SyncError(), std::move(batch));
 }
 
 void DeviceInfoService::GetAllData(DataCallback callback) {
-  if (!has_data_loaded_) {
-    callback.Run(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
-                           "Cannot call GetAllData before data has loaded.",
-                           syncer::DEVICE_INFO),
-                 scoped_ptr<DataBatchImpl>());
+  if (!has_metadata_loaded_) {
+    callback.Run(
+        SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
+                  "Should not call GetAllData before metadata has loaded.",
+                  syncer::DEVICE_INFO),
+        scoped_ptr<DataBatchImpl>());
     return;
   }
 
-  syncer::SyncError error;
   scoped_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& kv : all_data_) {
-    batch->Put(kv.first, CopyIntoNewEntityData(*kv.second));
+    batch->Put(kv.first, CopyToEntityData(*kv.second));
   }
-  callback.Run(error, std::move(batch));
+  callback.Run(syncer::SyncError(), std::move(batch));
 }
 
 std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
@@ -214,7 +204,16 @@ std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
 }
 
 void DeviceInfoService::OnChangeProcessorSet() {
-  TryLoadAllMetadata();
+  // We've recieved a new processor that needs metadata. If we're still in the
+  // process of loading data and/or metadata, then |has_metadata_loaded_| is
+  // false and we'll wait for those async reads to happen. If we've already
+  // loaded metadata and then subsequently we get a new processor, we must not
+  // have created the processor ourselves because we had no metadata. So there
+  // must not be any metadata on disk.
+  if (has_metadata_loaded_) {
+    change_processor()->OnMetadataLoaded(make_scoped_ptr(new MetadataBatch()));
+    TryReconcileLocalAndStored();
+  }
 }
 
 bool DeviceInfoService::IsSyncing() const {
@@ -228,7 +227,7 @@ scoped_ptr<DeviceInfo> DeviceInfoService::GetDeviceInfo(
     return scoped_ptr<DeviceInfo>();
   }
 
-  return CreateDeviceInfo(*iter->second);
+  return CopyToModel(*iter->second);
 }
 
 ScopedVector<DeviceInfo> DeviceInfoService::GetAllDeviceInfo() const {
@@ -236,7 +235,7 @@ ScopedVector<DeviceInfo> DeviceInfoService::GetAllDeviceInfo() const {
 
   for (ClientIdToSpecifics::const_iterator iter = all_data_.begin();
        iter != all_data_.end(); ++iter) {
-    list.push_back(CreateDeviceInfo(*iter->second));
+    list.push_back(CopyToModel(*iter->second));
   }
 
   return list;
@@ -261,19 +260,8 @@ void DeviceInfoService::NotifyObservers() {
 
 // TODO(skym): crbug.com/543406: It might not make sense for this to be a
 // scoped_ptr.
-scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CreateLocalSpecifics() {
-  const DeviceInfo* info = local_device_info_provider_->GetLocalDeviceInfo();
-  DCHECK(info);
-  scoped_ptr<DeviceInfoSpecifics> specifics = CreateSpecifics(*info);
-  // TODO(skym): crbug.com:543406: Local tag and non unique name have no place
-  // to be set now.
-  return specifics;
-}
-
-// TODO(skym): crbug.com/543406: It might not make sense for this to be a
-// scoped_ptr.
 // Static.
-scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CreateSpecifics(
+scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CopyToSpecifics(
     const DeviceInfo& info) {
   scoped_ptr<DeviceInfoSpecifics> specifics =
       make_scoped_ptr(new DeviceInfoSpecifics);
@@ -287,7 +275,7 @@ scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CreateSpecifics(
 }
 
 // Static.
-scoped_ptr<DeviceInfo> DeviceInfoService::CreateDeviceInfo(
+scoped_ptr<DeviceInfo> DeviceInfoService::CopyToModel(
     const DeviceInfoSpecifics& specifics) {
   return make_scoped_ptr(new DeviceInfo(
       specifics.cache_guid(), specifics.client_name(),
@@ -296,7 +284,7 @@ scoped_ptr<DeviceInfo> DeviceInfoService::CreateDeviceInfo(
 }
 
 // Static.
-scoped_ptr<EntityData> DeviceInfoService::CopyIntoNewEntityData(
+scoped_ptr<EntityData> DeviceInfoService::CopyToEntityData(
     const DeviceInfoSpecifics& specifics) {
   scoped_ptr<EntityData> entity_data(new EntityData());
   *entity_data->specifics.mutable_device_info() = specifics;
@@ -347,38 +335,32 @@ void DeviceInfoService::OnStoreCreated(Result result,
 
 void DeviceInfoService::OnReadAllData(Result result,
                                       scoped_ptr<RecordList> record_list) {
-  if (result == Result::SUCCESS) {
-    for (const Record& r : *record_list.get()) {
-      scoped_ptr<DeviceInfoSpecifics> specifics(
-          make_scoped_ptr(new DeviceInfoSpecifics()));
-      if (specifics->ParseFromString(r.value)) {
-        all_data_[r.id] = std::move(specifics);
-      } else {
-        LOG(WARNING) << "Failed to deserialize specifics.";
-        // TODO(skym, crbug.com/582460): Handle unrecoverable initialization
-        // failure.
-      }
-    }
-    has_data_loaded_ = true;
-    TryLoadAllMetadata();
-  } else {
+  if (result != Result::SUCCESS) {
     LOG(WARNING) << "Initial load of data failed.";
     // TODO(skym, crbug.com/582460): Handle unrecoverable initialization
     // failure.
+    return;
   }
+
+  for (const Record& r : *record_list.get()) {
+    scoped_ptr<DeviceInfoSpecifics> specifics(
+        make_scoped_ptr(new DeviceInfoSpecifics()));
+    if (specifics->ParseFromString(r.value)) {
+      all_data_[r.id] = std::move(specifics);
+    } else {
+      LOG(WARNING) << "Failed to deserialize specifics.";
+      // TODO(skym, crbug.com/582460): Handle unrecoverable initialization
+      // failure.
+    }
+  }
+  store_->ReadAllMetadata(base::Bind(&DeviceInfoService::OnReadAllMetadata,
+                                     weak_factory_.GetWeakPtr()));
 }
 
 void DeviceInfoService::OnReadAllMetadata(
     Result result,
     scoped_ptr<RecordList> metadata_records,
     const std::string& global_metadata) {
-  if (metadata_records->size() > 0 || !global_metadata.empty()) {
-    GetOrCreateChangeProcessor();
-  }
-  if (!change_processor()) {
-    // This datatype was disabled while this read was oustanding.
-    return;
-  }
   if (result != Result::SUCCESS) {
     // Store has encountered some serious error. We should still be able to
     // continue as a read only service, since if we got this far we must have
@@ -387,6 +369,28 @@ void DeviceInfoService::OnReadAllMetadata(
     LOG(WARNING) << "Load of metadata completely failed.";
     return;
   }
+
+  // If we have no metadata then we don't want to create a processor. The idea
+  // is that by not having a processor, the services will suffer less of a
+  // performance hit. This isn't terribly applicable for this model type, but
+  // we want this class to be as similar to other services as possible so follow
+  // the convention.
+  if (metadata_records->size() > 0 || !global_metadata.empty()) {
+    GetOrCreateChangeProcessor();
+  }
+
+  // Set this after OnChangeProcessorSet so that we can correctly avoid giving
+  // the processor empty metadata. We always want to set |has_metadata_loaded_|
+  // at this point so that we'll know to give a processor empty metadata if it
+  // is created later.
+  has_metadata_loaded_ = true;
+
+  if (!change_processor()) {
+    // This means we haven't been told to start sycning and we don't have any
+    // local metadata
+    return;
+  }
+
   scoped_ptr<MetadataBatch> batch(new MetadataBatch());
   DataTypeState state;
   if (state.ParseFromString(global_metadata)) {
@@ -412,6 +416,7 @@ void DeviceInfoService::OnReadAllMetadata(
     }
   }
   change_processor()->OnMetadataLoaded(std::move(batch));
+  TryReconcileLocalAndStored();
 }
 
 void DeviceInfoService::OnCommit(Result result) {
@@ -421,15 +426,49 @@ void DeviceInfoService::OnCommit(Result result) {
 }
 
 void DeviceInfoService::TryReconcileLocalAndStored() {
-  // TODO(skym, crbug.com/582460): Implement logic to reconcile provider and
-  // stored device infos.
+  // On initial syncing we will have a change processor here, but it will not be
+  // tracking changes. We need to persist a copy of our local device info to
+  // disk, but the Put call to the processor will be ignored. That should be
+  // fine however, as the discrepancy will be picked up later in merge. We don't
+  // bother trying to track this case and act intelligently because simply not
+  // much of a benefit in doing so.
+  if (has_provider_initialized_ && has_metadata_loaded_ && change_processor()) {
+    const DeviceInfo* current_info =
+        local_device_info_provider_->GetLocalDeviceInfo();
+    auto iter = all_data_.find(current_info->guid());
+    // Convert to DeviceInfo for Equals function.
+    if (iter == all_data_.end() ||
+        !current_info->Equals(*CopyToModel(*iter->second))) {
+      PutAndStore(*current_info);
+    }
+  }
 }
 
-void DeviceInfoService::TryLoadAllMetadata() {
-  // TODO(skym): Fix the double load metadata issue.
-  if (has_data_loaded_) {
-    store_->ReadAllMetadata(base::Bind(&DeviceInfoService::OnReadAllMetadata,
-                                       weak_factory_.GetWeakPtr()));
+void DeviceInfoService::PutAndStore(const DeviceInfo& device_info) {
+  scoped_ptr<DeviceInfoSpecifics> specifics = CopyToSpecifics(device_info);
+
+  scoped_ptr<MetadataChangeList> metadata_change_list =
+      CreateMetadataChangeList();
+  change_processor()->Put(device_info.guid(), CopyToEntityData(*specifics),
+                          metadata_change_list.get());
+
+  scoped_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  StoreSpecifics(std::move(specifics), batch.get());
+
+  CommitAndNotify(std::move(batch), std::move(metadata_change_list), true);
+}
+
+void DeviceInfoService::CommitAndNotify(
+    scoped_ptr<WriteBatch> batch,
+    scoped_ptr<MetadataChangeList> metadata_change_list,
+    bool should_notify) {
+  static_cast<SimpleMetadataChangeList*>(metadata_change_list.get())
+      ->TransferChanges(store_.get(), batch.get());
+  store_->CommitWriteBatch(
+      std::move(batch),
+      base::Bind(&DeviceInfoService::OnCommit, weak_factory_.GetWeakPtr()));
+  if (should_notify) {
+    NotifyObservers();
   }
 }
 
