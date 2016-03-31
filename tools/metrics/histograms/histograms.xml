@@ -58364,6 +58364,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.Encoded.Qp" units="qp value">
+  <owner>asapersson@chromium.org</owner>
+  <summary>
+    The average QP (quantizer value) per frame for a sent video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.Encoder.CodecType" enum="WebRtcVideoCodecs">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -90946,6 +90954,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="V8.MemoryHeapSampleTotalCommitted"/>
   <affected-histogram name="V8.MemoryHeapSampleTotalUsed"/>
   <affected-histogram name="V8.MemoryHeapUsed"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="VideoEncodedQpStats" separator=".">
+  <suffix name="Vp8"
+      label="Video codec: VP8. QP range: 0-127. Single stream sent."/>
+  <suffix name="Vp8.S0"
+      label="Video codec: VP8. QP range: 0-127. Spatial index 0."/>
+  <suffix name="Vp8.S1"
+      label="Video codec: VP8. QP range: 0-127. Spatial index 1."/>
+  <suffix name="Vp8.S2"
+      label="Video codec: VP8. QP range: 0-127. Spatial index 2."/>
+  <affected-histogram name="WebRTC.Video.Encoded.Qp"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="WebFontFamily">
