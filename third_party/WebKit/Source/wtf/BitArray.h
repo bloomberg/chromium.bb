@@ -43,19 +43,19 @@ public:
 
     void set(unsigned index)
     {
-        RELEASE_ASSERT(index < arraySize);
+        CHECK_LT(index, arraySize);
         m_data[index / 8] |= 1 << (index & 7);
     }
 
     void clear(unsigned index)
     {
-        RELEASE_ASSERT(index < arraySize);
+        CHECK_LT(index, arraySize);
         m_data[index / 8] &= ~(1 << (index & 7));
     }
 
     bool get(unsigned index) const
     {
-        RELEASE_ASSERT(index < arraySize);
+        CHECK_LT(index, arraySize);
         return !!(m_data[index / 8] & (1 << (index & 7)));
     }
 

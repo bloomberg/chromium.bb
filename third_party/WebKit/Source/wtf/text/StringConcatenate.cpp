@@ -49,7 +49,7 @@ WTF::StringTypeAdapter<const UChar*>::StringTypeAdapter(const UChar* buffer)
     while (m_buffer[len] != UChar(0))
         ++len;
 
-    RELEASE_ASSERT(len <= std::numeric_limits<unsigned>::max());
+    CHECK_LE(len, std::numeric_limits<unsigned>::max());
 
     m_length = len;
 }
