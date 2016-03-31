@@ -71,7 +71,6 @@
       'ChromiumOS amd64-generic Compile': 'tbd',
       'ChromiumOS daisy Compile': 'tbd',
       'ChromiumOS x86-generic Compile': 'tbd',
-      'Linux ChromiumOS Builder': 'tbd',
       'Linux ChromiumOS Builder (dbg)': 'tbd',
       'Linux ChromiumOS Full': 'tbd',
       'Linux ChromiumOS Ozone Builder': 'tbd',
@@ -79,6 +78,7 @@
       'Linux ChromiumOS Tests (1)': 'tbd',
       'Linux ChromiumOS Tests (dbg)(1)': 'tbd',
 
+      'Linux ChromiumOS Builder': 'swarming_chromeos_gyp_release_bot',
       'Linux ChromiumOS GN (dbg)': 'chromeos_gn_debug_bot',
       'Linux ChromiumOS GN': 'chromeos_ozone_gn_release_bot',
     },
@@ -1227,6 +1227,10 @@
       'swarming', 'asan', 'lsan', 'release_trybot',
     ],
 
+    'swarming_chromeos_gyp_release_bot': [
+      'swarming', 'chromeos_with_codecs', 'gyp', 'release_bot',
+    ],
+
     'swarming_msan_gyp_release_trybot': [
       'swarming', 'chromeos', 'msan', 'gyp', 'release_trybot',
     ],
@@ -1518,6 +1522,12 @@
     'chromeos': {
       'gn_args': 'target_os="chromeos"',
       'gyp_defines': 'chromeos=1',
+    },
+
+    'chromeos_with_codecs': {
+      'gn_args': 'ffmpeg_branding="ChromeOS" proprietary_codecs=true',
+      'gyp_defines': 'ffmpeg_branding=ChromeOS proprietary_codecs=1',
+      'mixins': ['chromeos'],
     },
 
     'clang': {
