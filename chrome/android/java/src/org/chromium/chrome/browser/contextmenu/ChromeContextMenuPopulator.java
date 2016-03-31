@@ -386,6 +386,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         String scheme = uri.getScheme();
+        if (scheme == null) return false;
+
         String extension = MimeTypeMap.getFileExtensionFromUrl(uriString);
         String type = null;
         if (extension != null) {
