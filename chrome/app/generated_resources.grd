@@ -9905,11 +9905,6 @@ I don't think this site should be blocked!
         <message name="IDS_AUTOFILL_DIALOG_VALIDATION_WAITING_FOR_RULES" desc="Message displayed to user when validation rules are still downloading.">
           Validating...
         </message>
-
-        <!-- Autofill dialog post-submit bubbles -->
-        <message name="IDS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_LINK" desc="The text of a link at the bottom of the autofill dialog bubble that sends users to a Google Payments billing/card management page.">
-          Manage credit cards
-        </message>
       </if>
 
       <message name="IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT" desc="The name of the Google product that stores user addresses or credit cards in the cloud." formatter_data="android_java">

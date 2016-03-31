@@ -837,10 +837,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         Save details in Chrome
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_TOOLTIP" desc="Tooltip which explains function of checkbox that controls whether info the user types into the autofill dialog is saved by chrome.">
-        Chrome will securely store your information so you don't need to type it in again, but you will still need to verify your card's security code for future payments.
-      </message>
-      <message name="IDS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_TITLE" desc="Title text of the new credit card bubble informing a user their billing information has been saved in chrome.">
-        Your billing details have been saved in Chrome.
+        Chrome will securely store your personal details so you don't need to type them again.
       </message>
       <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">
         Copied to Chrome

@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
-#include "chrome/browser/ui/autofill/new_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -1231,10 +1230,6 @@ bool AutofillDialogControllerImpl::ShouldShowErrorBubble() const {
 void AutofillDialogControllerImpl::ViewClosed() {
   GetManager()->RemoveObserver(this);
 
-  // Called from here rather than in ~AutofillDialogControllerImpl as this
-  // relies on virtual methods that change to their base class in the dtor.
-  MaybeShowCreditCardBubble();
-
   delete this;
 }
 
@@ -1427,13 +1422,6 @@ bool AutofillDialogControllerImpl::HandleKeyPressEventInInput(
     return popup_controller_->HandleKeyPressEvent(event);
 
   return false;
-}
-
-void AutofillDialogControllerImpl::ShowNewCreditCardBubble(
-    scoped_ptr<CreditCard> new_card,
-    scoped_ptr<AutofillProfile> billing_profile) {
-  NewCreditCardBubbleController::Show(web_contents(), std::move(new_card),
-                                      std::move(billing_profile));
 }
 
 void AutofillDialogControllerImpl::SubmitButtonDelayBegin() {
@@ -1687,15 +1675,6 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       // The card holder name comes from the billing address section.
       card.SetRawInfo(CREDIT_CARD_NAME_FULL,
                       GetValueFromSection(SECTION_BILLING, NAME_BILLING_FULL));
-
-      if (ShouldSaveDetailsLocally()) {
-        card.set_origin(kAutofillDialogOrigin);
-
-        std::string guid = GetManager()->SaveImportedCreditCard(card);
-        newly_saved_data_model_guids_[section] = guid;
-        DCHECK(!profile()->IsOffTheRecord());
-        newly_saved_card_.reset(new CreditCard(card));
-      }
 
       AutofillCreditCardWrapper card_wrapper(&card);
       card_wrapper.FillFormStructure(types, compare, &form_structure_);
@@ -2098,7 +2077,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
   if (ShouldOfferToSaveInChrome()) {
     for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
       DialogSection section = static_cast<DialogSection>(i);
-      if (!SectionIsActive(section))
+      if (!SectionIsActive(section) || section == SECTION_CC)
         continue;
 
       SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
@@ -2281,30 +2260,6 @@ AutofillMetrics::DialogInitialUserStateMetric
   return has_autofill_profiles
              ? AutofillMetrics::DIALOG_USER_NOT_SIGNED_IN_HAS_AUTOFILL
              : AutofillMetrics::DIALOG_USER_NOT_SIGNED_IN_NO_AUTOFILL;
-}
-
-void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
-  if (!data_was_passed_back_ || !newly_saved_card_)
-    return;
-
-  scoped_ptr<AutofillProfile> billing_profile;
-  if (IsManuallyEditingSection(SECTION_BILLING)) {
-    // Scrape the view as the user's entering or updating information.
-    FieldValueMap outputs;
-    view_->GetUserInput(SECTION_BILLING, &outputs);
-    billing_profile.reset(new AutofillProfile);
-    FillFormGroupFromOutputs(outputs, billing_profile.get());
-    billing_profile->set_language_code(billing_address_language_code_);
-  } else {
-    // Just snag the currently suggested profile.
-    std::string item_key = SuggestionsMenuModelForSection(SECTION_BILLING)
-                               ->GetItemKeyForCheckedItem();
-    AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
-    billing_profile.reset(new AutofillProfile(*profile));
-  }
-
-  ShowNewCreditCardBubble(std::move(newly_saved_card_),
-                          std::move(billing_profile));
 }
 
 void AutofillDialogControllerImpl::OnSubmitButtonDelayEnd() {

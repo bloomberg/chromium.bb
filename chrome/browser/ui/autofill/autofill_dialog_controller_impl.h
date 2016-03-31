@@ -199,12 +199,6 @@ class AutofillDialogControllerImpl
   // happens via choosing "Add a new X..." from a section's suggestion menu.
   bool IsManuallyEditingSection(DialogSection section) const;
 
-  // Shows a new credit card saved bubble and passes ownership of |new_card| and
-  // |billing_profile| to the bubble. Exposed for testing.
-  virtual void ShowNewCreditCardBubble(
-      scoped_ptr<CreditCard> new_card,
-      scoped_ptr<AutofillProfile> billing_profile);
-
   // Delays enabling submit button for a short period of time. Exposed for
   // testing.
   virtual void SubmitButtonDelayBegin();
@@ -446,10 +440,6 @@ class AutofillDialogControllerImpl
   // interacting with this dialog.
   AutofillMetrics::DialogInitialUserStateMetric GetInitialUserState() const;
 
-  // Shows an educational bubble if a new credit card was saved or the first few
-  // times an Online Wallet fronting card was generated.
-  void MaybeShowCreditCardBubble();
-
   // Called when the delay for enabling the submit button ends.
   void OnSubmitButtonDelayEnd();
 
@@ -584,11 +574,6 @@ class AutofillDialogControllerImpl
   // models for that section. No entries present that don't have newly saved
   // data models.
   std::map<DialogSection, std::string> newly_saved_data_model_guids_;
-
-  // Populated if the user chose to save a newly inputted credit card. Used to
-  // show a bubble as the dialog closes to confirm a user's new card info was
-  // saved. Never populated while incognito (as nothing's actually saved).
-  scoped_ptr<CreditCard> newly_saved_card_;
 
   // The timer that delays enabling submit button for a short period of time on
   // startup.

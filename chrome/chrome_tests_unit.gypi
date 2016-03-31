@@ -1168,7 +1168,6 @@
       'browser/ui/cocoa/autofill/autofill_tooltip_controller_unittest.mm',
       'browser/ui/cocoa/autofill/down_arrow_popup_menu_cell_unittest.mm',
       'browser/ui/cocoa/autofill/layout_view_unittest.mm',
-      'browser/ui/cocoa/autofill/new_credit_card_bubble_cocoa_unittest.mm',
       'browser/ui/cocoa/autofill/password_generation_popup_view_cocoa_unittest.mm',
       'browser/ui/cocoa/autofill/save_card_bubble_view_unittest.mm',
       'browser/ui/cocoa/autofill/simple_grid_layout_unittest.mm',
@@ -1505,8 +1504,6 @@
       'browser/translate/translate_manager_render_view_host_unittest.cc',
       # The autofill popup is implemented in mostly native code on Android.
       'browser/ui/autofill/autofill_popup_controller_unittest.cc',
-      'browser/ui/autofill/mock_new_credit_card_bubble_controller.cc',
-      'browser/ui/autofill/mock_new_credit_card_bubble_controller.h',
       'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
       'browser/ui/bookmarks/bookmark_unittest.cc',
       'browser/ui/browser_close_unittest.cc',
