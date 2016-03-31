@@ -69,7 +69,7 @@ PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData(String& contentTy
         params->append(idName(), id());
         params->append(passwordName(), password());
 
-        contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8", AtomicString::ConstructFromLiteral);
+        contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
 
         return params->encodeFormData();
     }
@@ -93,7 +93,7 @@ PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData(String& contentTy
     formData->append(passwordName(), password());
 
     RefPtr<EncodedFormData> encodedData = formData->encodeMultiPartFormData();
-    contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + encodedData->boundary().data();
+    contentType = AtomicString("multipart/form-data; boundary=") + encodedData->boundary().data();
     return encodedData.release();
 }
 

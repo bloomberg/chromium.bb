@@ -456,9 +456,9 @@ int HTMLTextFormControlElement::computeSelectionEnd() const
 
 static const AtomicString& directionString(TextFieldSelectionDirection direction)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, forward, ("forward", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, backward, ("backward", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
+    DEFINE_STATIC_LOCAL(const AtomicString, forward, ("forward"));
+    DEFINE_STATIC_LOCAL(const AtomicString, backward, ("backward"));
 
     switch (direction) {
     case SelectionHasNoDirection:
@@ -548,11 +548,11 @@ PassRefPtrWillBeRawPtr<Range> HTMLTextFormControlElement::selection() const
 
 const AtomicString& HTMLTextFormControlElement::autocapitalize() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, off, ("off", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, words, ("words", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, off, ("off"));
+    DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
+    DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters"));
+    DEFINE_STATIC_LOCAL(const AtomicString, words, ("words"));
+    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
 
     const AtomicString& value = fastGetAttribute(autocapitalizeAttr);
     if (equalIgnoringCase(value, none) || equalIgnoringCase(value, off))

@@ -107,7 +107,7 @@ bool HTMLFieldSetElement::supportsFocus() const
 
 const AtomicString& HTMLFieldSetElement::formControlType() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, fieldset, ("fieldset", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, fieldset, ("fieldset"));
     return fieldset;
 }
 

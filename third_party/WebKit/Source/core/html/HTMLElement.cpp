@@ -666,9 +666,9 @@ void HTMLElement::setTranslate(bool enable)
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#limited-to-only-known-values
 static inline const AtomicString& toValidDirValue(const AtomicString& value)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, ltrValue, ("ltr", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, rtlValue, ("rtl", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, autoValue, ("auto", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, ltrValue, ("ltr"));
+    DEFINE_STATIC_LOCAL(const AtomicString, rtlValue, ("rtl"));
+    DEFINE_STATIC_LOCAL(const AtomicString, autoValue, ("auto"));
 
     if (equalIgnoringCase(value, ltrValue))
         return ltrValue;
@@ -1030,7 +1030,7 @@ void HTMLElement::handleKeypressEvent(KeyboardEvent* event)
 
 const AtomicString& HTMLElement::eventParameterName()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, eventString, ("event", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, eventString, ("event"));
     return eventString;
 }
 

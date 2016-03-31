@@ -265,7 +265,7 @@ private:
         }
         // Here we handle body->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
-        blobData->setContentType(AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + body->boundary().data());
+        blobData->setContentType(AtomicString("multipart/form-data; boundary=") + body->boundary().data());
         auto size = blobData->length();
         if (factory) {
             // For testing

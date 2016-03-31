@@ -156,7 +156,7 @@ void VTTRegion::setViewportAnchorY(double value, ExceptionState& exceptionState)
 
 const AtomicString VTTRegion::scroll() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up"));
 
     if (m_scroll)
         return upScrollValueKeyword;
@@ -166,7 +166,7 @@ const AtomicString VTTRegion::scroll() const
 
 void VTTRegion::setScroll(const AtomicString& value, ExceptionState& exceptionState)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up"));
 
     if (value != emptyString() && value != upScrollValueKeyword) {
         exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid. The 'scroll' property must be either the empty string, or 'up'.");
@@ -238,7 +238,7 @@ static inline bool parsedEntireRun(const VTTScanner& input, const VTTScanner::Ru
 
 void VTTRegion::parseSettingValue(RegionSetting setting, VTTScanner& input)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, scrollUpValueKeyword, ("up", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, scrollUpValueKeyword, ("up"));
 
     VTTScanner::Run valueRun = input.collectUntil<VTTParser::isASpace>();
 
@@ -297,7 +297,7 @@ void VTTRegion::parseSettingValue(RegionSetting setting, VTTScanner& input)
 const AtomicString& VTTRegion::textTrackCueContainerShadowPseudoId()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, trackRegionCueContainerPseudoId,
-        ("-webkit-media-text-track-region-container", AtomicString::ConstructFromLiteral));
+        ("-webkit-media-text-track-region-container"));
 
     return trackRegionCueContainerPseudoId;
 }
@@ -305,7 +305,7 @@ const AtomicString& VTTRegion::textTrackCueContainerShadowPseudoId()
 const AtomicString& VTTRegion::textTrackCueContainerScrollingClass()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, trackRegionCueContainerScrollingClass,
-        ("scrolling", AtomicString::ConstructFromLiteral));
+        ("scrolling"));
 
     return trackRegionCueContainerScrollingClass;
 }
@@ -313,7 +313,7 @@ const AtomicString& VTTRegion::textTrackCueContainerScrollingClass()
 const AtomicString& VTTRegion::textTrackRegionShadowPseudoId()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, trackRegionShadowPseudoId,
-        ("-webkit-media-text-track-region", AtomicString::ConstructFromLiteral));
+        ("-webkit-media-text-track-region"));
 
     return trackRegionShadowPseudoId;
 }

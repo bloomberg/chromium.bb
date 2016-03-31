@@ -43,7 +43,7 @@ TextTrackContainer::TextTrackContainer(Document& document)
 PassRefPtrWillBeRawPtr<TextTrackContainer> TextTrackContainer::create(Document& document)
 {
     RefPtrWillBeRawPtr<TextTrackContainer> element = adoptRefWillBeNoop(new TextTrackContainer(document));
-    element->setShadowPseudoId(AtomicString("-webkit-media-text-track-container", AtomicString::ConstructFromLiteral));
+    element->setShadowPseudoId(AtomicString("-webkit-media-text-track-container"));
     return element.release();
 }
 

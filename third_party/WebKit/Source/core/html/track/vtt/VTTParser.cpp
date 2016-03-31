@@ -215,7 +215,7 @@ bool VTTParser::hasRequiredFileIdentifier(const String& line)
 void VTTParser::collectMetadataHeader(const String& line)
 {
     // WebVTT header parsing (WebVTT parser algorithm step 12)
-    DEFINE_STATIC_LOCAL(const AtomicString, regionHeaderName, ("Region", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, regionHeaderName, ("Region"));
 
     // The only currently supported header is the "Region" header.
     if (!RuntimeEnabledFeatures::webVTTRegionsEnabled())

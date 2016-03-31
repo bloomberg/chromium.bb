@@ -166,8 +166,8 @@ PassRefPtrWillBeRawPtr<SearchFieldDecorationElement> SearchFieldDecorationElemen
 
 const AtomicString& SearchFieldDecorationElement::shadowPseudoId() const
 {
-    DEFINE_STATIC_LOCAL(AtomicString, resultsDecorationId, ("-webkit-search-results-decoration", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, decorationId, ("-webkit-search-decoration", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, resultsDecorationId, ("-webkit-search-results-decoration"));
+    DEFINE_STATIC_LOCAL(AtomicString, decorationId, ("-webkit-search-decoration"));
     Element* host = shadowHost();
     if (!host)
         return resultsDecorationId;
@@ -209,7 +209,7 @@ inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(Document& 
 PassRefPtrWillBeRawPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<SearchFieldCancelButtonElement> element = adoptRefWillBeNoop(new SearchFieldCancelButtonElement(document));
-    element->setShadowPseudoId(AtomicString("-webkit-search-cancel-button", AtomicString::ConstructFromLiteral));
+    element->setShadowPseudoId(AtomicString("-webkit-search-cancel-button"));
     element->setAttribute(idAttr, ShadowElementNames::clearButton());
     return element.release();
 }

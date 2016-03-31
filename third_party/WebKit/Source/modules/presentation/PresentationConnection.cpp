@@ -45,9 +45,9 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext)
 
 const AtomicString& connectionStateToString(WebPresentationConnectionState state)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, closedValue, ("closed", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, terminatedValue, ("terminated", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected"));
+    DEFINE_STATIC_LOCAL(const AtomicString, closedValue, ("closed"));
+    DEFINE_STATIC_LOCAL(const AtomicString, terminatedValue, ("terminated"));
 
     switch (state) {
     case WebPresentationConnectionState::Connected:
@@ -64,9 +64,9 @@ const AtomicString& connectionStateToString(WebPresentationConnectionState state
 
 const AtomicString& connectionCloseReasonToString(WebPresentationConnectionCloseReason reason)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, errorValue, ("error", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, closedValue, ("closed", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, wentAwayValue, ("wentaway", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, errorValue, ("error"));
+    DEFINE_STATIC_LOCAL(const AtomicString, closedValue, ("closed"));
+    DEFINE_STATIC_LOCAL(const AtomicString, wentAwayValue, ("wentaway"));
 
     switch (reason) {
     case WebPresentationConnectionCloseReason::Error:

@@ -210,7 +210,7 @@ bool SVGTextContentElement::isPresentationAttribute(const QualifiedName& name) c
 void SVGTextContentElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     if (name.matches(XMLNames::spaceAttr)) {
-        DEFINE_STATIC_LOCAL(const AtomicString, preserveString, ("preserve", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(const AtomicString, preserveString, ("preserve"));
 
         if (value == preserveString) {
             UseCounter::count(document(), UseCounter::WhiteSpacePreFromXMLSpace);

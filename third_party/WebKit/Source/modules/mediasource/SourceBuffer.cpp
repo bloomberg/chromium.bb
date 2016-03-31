@@ -150,13 +150,13 @@ SourceBuffer::~SourceBuffer()
 
 const AtomicString& SourceBuffer::segmentsKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, segments, ("segments", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, segments, ("segments"));
     return segments;
 }
 
 const AtomicString& SourceBuffer::sequenceKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, sequence, ("sequence", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, sequence, ("sequence"));
     return sequence;
 }
 

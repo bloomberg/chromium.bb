@@ -3166,10 +3166,10 @@ WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialK
 
 static WebFocusType focusDirectionForKey(const AtomicString& keyIdentifier)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, Down, ("Down", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, Up, ("Up", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, Left, ("Left", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, Right, ("Right", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, Down, ("Down"));
+    DEFINE_STATIC_LOCAL(AtomicString, Up, ("Up"));
+    DEFINE_STATIC_LOCAL(AtomicString, Left, ("Left"));
+    DEFINE_STATIC_LOCAL(AtomicString, Right, ("Right"));
 
     WebFocusType retVal = WebFocusTypeNone;
 

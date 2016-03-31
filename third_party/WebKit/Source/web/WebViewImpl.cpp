@@ -2539,8 +2539,8 @@ int WebViewImpl::textInputFlags()
     if (!element)
         return WebTextInputFlagNone;
 
-    DEFINE_STATIC_LOCAL(AtomicString, autocompleteString, ("autocomplete", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, autocorrectString, ("autocorrect", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, autocompleteString, ("autocomplete"));
+    DEFINE_STATIC_LOCAL(AtomicString, autocorrectString, ("autocorrect"));
     int flags = 0;
 
     const AtomicString& autocomplete = element->getAttribute(autocompleteString);
@@ -2564,10 +2564,10 @@ int WebViewImpl::textInputFlags()
     if (isHTMLTextFormControlElement(element)) {
         HTMLTextFormControlElement* formElement = static_cast<HTMLTextFormControlElement*>(element);
         if (formElement->supportsAutocapitalize()) {
-            DEFINE_STATIC_LOCAL(const AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
-            DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters", AtomicString::ConstructFromLiteral));
-            DEFINE_STATIC_LOCAL(const AtomicString, words, ("words", AtomicString::ConstructFromLiteral));
-            DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences", AtomicString::ConstructFromLiteral));
+            DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
+            DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters"));
+            DEFINE_STATIC_LOCAL(const AtomicString, words, ("words"));
+            DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
 
             const AtomicString& autocapitalize = formElement->autocapitalize();
             if (autocapitalize == none)

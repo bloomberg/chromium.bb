@@ -67,7 +67,7 @@ bool TextInputType::supportsInputModeAttribute() const
 
 const AtomicString& TextInputType::defaultAutocapitalize() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
     return sentences;
 }
 

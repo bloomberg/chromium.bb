@@ -71,7 +71,7 @@ LayoutObject* HTMLKeygenElement::createLayoutObject(const ComputedStyle& style)
 
 void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, keygenSelectPseudoId, ("-webkit-keygen-select", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, keygenSelectPseudoId, ("-webkit-keygen-select"));
 
     Vector<String> keys;
     keys.reserveCapacity(2);
@@ -115,7 +115,7 @@ void HTMLKeygenElement::appendToFormData(FormData& formData)
 
 const AtomicString& HTMLKeygenElement::formControlType() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, keygen, ("keygen", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, keygen, ("keygen"));
     return keygen;
 }
 

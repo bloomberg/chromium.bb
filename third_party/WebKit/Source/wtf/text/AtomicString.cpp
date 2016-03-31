@@ -125,16 +125,6 @@ static inline PassRefPtr<StringImpl> addToStringTable(const T& value)
     return addResult.isNewEntry ? adoptRef(*addResult.storedValue) : *addResult.storedValue;
 }
 
-PassRefPtr<StringImpl> AtomicString::add(const LChar* c)
-{
-    if (!c)
-        return nullptr;
-    if (!*c)
-        return StringImpl::empty();
-
-    return add(c, strlen(reinterpret_cast<const char*>(c)));
-}
-
 template<typename CharacterType>
 struct HashTranslatorCharBuffer {
     const CharacterType* s;
@@ -367,26 +357,6 @@ struct LCharBufferTranslator {
     }
 };
 
-typedef HashTranslatorCharBuffer<char> CharBuffer;
-struct CharBufferFromLiteralDataTranslator {
-    static unsigned hash(const CharBuffer& buf)
-    {
-        return StringHasher::computeHashAndMaskTop8Bits(reinterpret_cast<const LChar*>(buf.s), buf.length);
-    }
-
-    static bool equal(StringImpl* const& str, const CharBuffer& buf)
-    {
-        return WTF::equal(str, buf.s, buf.length);
-    }
-
-    static void translate(StringImpl*& location, const CharBuffer& buf, unsigned hash)
-    {
-        location = StringImpl::create(buf.s, buf.length).leakRef();
-        location->setHash(hash);
-        location->setIsAtomic(true);
-    }
-};
-
 PassRefPtr<StringImpl> AtomicString::add(const LChar* s, unsigned length)
 {
     if (!s)
@@ -397,15 +367,6 @@ PassRefPtr<StringImpl> AtomicString::add(const LChar* s, unsigned length)
 
     LCharBuffer buffer = { s, length };
     return addToStringTable<LCharBuffer, LCharBufferTranslator>(buffer);
-}
-
-PassRefPtr<StringImpl> AtomicString::addFromLiteralData(const char* characters, unsigned length)
-{
-    ASSERT(characters);
-    ASSERT(length);
-
-    CharBuffer buffer = { characters, length };
-    return addToStringTable<CharBuffer, CharBufferFromLiteralDataTranslator>(buffer);
 }
 
 PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* string)

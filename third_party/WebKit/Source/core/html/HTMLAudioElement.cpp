@@ -49,7 +49,7 @@ PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::createForJSConstructo
 {
     RefPtrWillBeRawPtr<HTMLAudioElement> audio = adoptRefWillBeNoop(new HTMLAudioElement(document));
     audio->ensureUserAgentShadowRoot();
-    audio->setPreload(AtomicString("auto", AtomicString::ConstructFromLiteral));
+    audio->setPreload(AtomicString("auto"));
     if (!src.isNull())
         audio->setSrc(src);
     audio->suspendIfNeeded();

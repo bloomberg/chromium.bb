@@ -48,7 +48,7 @@ DateTimeAMPMFieldElement::DateTimeAMPMFieldElement(Document& document, FieldOwne
 
 PassRefPtrWillBeRawPtr<DateTimeAMPMFieldElement> DateTimeAMPMFieldElement::create(Document& document, FieldOwner& fieldOwner, const Vector<String>& ampmLabels)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, ampmPseudoId, ("-webkit-datetime-edit-ampm-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, ampmPseudoId, ("-webkit-datetime-edit-ampm-field"));
     RefPtrWillBeRawPtr<DateTimeAMPMFieldElement> field = adoptRefWillBeNoop(new DateTimeAMPMFieldElement(document, fieldOwner, ampmLabels));
     field->initialize(ampmPseudoId, queryString(WebLocalizedString::AXAMPMFieldText));
     return field.release();
@@ -84,7 +84,7 @@ DateTimeDayFieldElement::DateTimeDayFieldElement(Document& document, FieldOwner&
 
 PassRefPtrWillBeRawPtr<DateTimeDayFieldElement> DateTimeDayFieldElement::create(Document& document, FieldOwner& fieldOwner, const String& placeholder, const Range& range)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, dayPseudoId, ("-webkit-datetime-edit-day-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, dayPseudoId, ("-webkit-datetime-edit-day-field"));
     RefPtrWillBeRawPtr<DateTimeDayFieldElement> field = adoptRefWillBeNoop(new DateTimeDayFieldElement(document, fieldOwner, placeholder.isEmpty() ? "--" : placeholder, range));
     field->initialize(dayPseudoId, queryString(WebLocalizedString::AXDayOfMonthFieldText));
     return field.release();
@@ -125,7 +125,7 @@ DateTimeHourFieldElementBase::DateTimeHourFieldElementBase(Document& document, F
 
 void DateTimeHourFieldElementBase::initialize()
 {
-    DEFINE_STATIC_LOCAL(AtomicString, hourPseudoId, ("-webkit-datetime-edit-hour-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, hourPseudoId, ("-webkit-datetime-edit-hour-field"));
     DateTimeNumericFieldElement::initialize(hourPseudoId, queryString(WebLocalizedString::AXHourFieldText));
 }
 
@@ -327,7 +327,7 @@ DateTimeMillisecondFieldElement::DateTimeMillisecondFieldElement(Document& docum
 
 PassRefPtrWillBeRawPtr<DateTimeMillisecondFieldElement> DateTimeMillisecondFieldElement::create(Document& document, FieldOwner& fieldOwner, const Range& range, const Step& step)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, millisecondPseudoId, ("-webkit-datetime-edit-millisecond-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, millisecondPseudoId, ("-webkit-datetime-edit-millisecond-field"));
     RefPtrWillBeRawPtr<DateTimeMillisecondFieldElement> field = adoptRefWillBeNoop(new DateTimeMillisecondFieldElement(document, fieldOwner, range, step));
     field->initialize(millisecondPseudoId, queryString(WebLocalizedString::AXMillisecondFieldText));
     return field.release();
@@ -368,7 +368,7 @@ DateTimeMinuteFieldElement::DateTimeMinuteFieldElement(Document& document, Field
 
 PassRefPtrWillBeRawPtr<DateTimeMinuteFieldElement> DateTimeMinuteFieldElement::create(Document& document, FieldOwner& fieldOwner, const Range& range, const Step& step)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, minutePseudoId, ("-webkit-datetime-edit-minute-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, minutePseudoId, ("-webkit-datetime-edit-minute-field"));
     RefPtrWillBeRawPtr<DateTimeMinuteFieldElement> field = adoptRefWillBeNoop(new DateTimeMinuteFieldElement(document, fieldOwner, range, step));
     field->initialize(minutePseudoId, queryString(WebLocalizedString::AXMinuteFieldText));
     return field.release();
@@ -409,7 +409,7 @@ DateTimeMonthFieldElement::DateTimeMonthFieldElement(Document& document, FieldOw
 
 PassRefPtrWillBeRawPtr<DateTimeMonthFieldElement> DateTimeMonthFieldElement::create(Document& document, FieldOwner& fieldOwner, const String& placeholder, const Range& range)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, monthPseudoId, ("-webkit-datetime-edit-month-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, monthPseudoId, ("-webkit-datetime-edit-month-field"));
     RefPtrWillBeRawPtr<DateTimeMonthFieldElement> field = adoptRefWillBeNoop(new DateTimeMonthFieldElement(document, fieldOwner, placeholder.isEmpty() ? "--" : placeholder, range));
     field->initialize(monthPseudoId, queryString(WebLocalizedString::AXMonthFieldText));
     return field.release();
@@ -450,7 +450,7 @@ DateTimeSecondFieldElement::DateTimeSecondFieldElement(Document& document, Field
 
 PassRefPtrWillBeRawPtr<DateTimeSecondFieldElement> DateTimeSecondFieldElement::create(Document& document, FieldOwner& fieldOwner, const Range& range, const Step& step)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, secondPseudoId, ("-webkit-datetime-edit-second-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, secondPseudoId, ("-webkit-datetime-edit-second-field"));
     RefPtrWillBeRawPtr<DateTimeSecondFieldElement> field = adoptRefWillBeNoop(new DateTimeSecondFieldElement(document, fieldOwner, range, step));
     field->initialize(secondPseudoId, queryString(WebLocalizedString::AXSecondFieldText));
     return field.release();
@@ -491,7 +491,7 @@ DateTimeSymbolicMonthFieldElement::DateTimeSymbolicMonthFieldElement(Document& d
 
 PassRefPtrWillBeRawPtr<DateTimeSymbolicMonthFieldElement> DateTimeSymbolicMonthFieldElement::create(Document& document, FieldOwner& fieldOwner, const Vector<String>& labels, int minimum, int maximum)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, monthPseudoId, ("-webkit-datetime-edit-month-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, monthPseudoId, ("-webkit-datetime-edit-month-field"));
     RefPtrWillBeRawPtr<DateTimeSymbolicMonthFieldElement> field = adoptRefWillBeNoop(new DateTimeSymbolicMonthFieldElement(document, fieldOwner, labels, minimum, maximum));
     field->initialize(monthPseudoId, queryString(WebLocalizedString::AXMonthFieldText));
     return field.release();
@@ -535,7 +535,7 @@ DateTimeWeekFieldElement::DateTimeWeekFieldElement(Document& document, FieldOwne
 
 PassRefPtrWillBeRawPtr<DateTimeWeekFieldElement> DateTimeWeekFieldElement::create(Document& document, FieldOwner& fieldOwner, const Range& range)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, weekPseudoId, ("-webkit-datetime-edit-week-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, weekPseudoId, ("-webkit-datetime-edit-week-field"));
     RefPtrWillBeRawPtr<DateTimeWeekFieldElement> field = adoptRefWillBeNoop(new DateTimeWeekFieldElement(document, fieldOwner, range));
     field->initialize(weekPseudoId, queryString(WebLocalizedString::AXWeekOfYearFieldText));
     return field.release();
@@ -580,7 +580,7 @@ DateTimeYearFieldElement::DateTimeYearFieldElement(Document& document, FieldOwne
 
 PassRefPtrWillBeRawPtr<DateTimeYearFieldElement> DateTimeYearFieldElement::create(Document& document, FieldOwner& fieldOwner, const DateTimeYearFieldElement::Parameters& parameters)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, yearPseudoId, ("-webkit-datetime-edit-year-field", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, yearPseudoId, ("-webkit-datetime-edit-year-field"));
     RefPtrWillBeRawPtr<DateTimeYearFieldElement> field = adoptRefWillBeNoop(new DateTimeYearFieldElement(document, fieldOwner, parameters));
     field->initialize(yearPseudoId, queryString(WebLocalizedString::AXYearFieldText));
     return field.release();

@@ -59,7 +59,7 @@ XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequ
     : StyleSheetResource(resourceRequest, XSLStyleSheet, options, "text/xsl", charset)
 {
     ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-    DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml"));
 
     // It's XML we want.
     // FIXME: This should accept more general xml formats */*+xml, image/svg+xml for example.

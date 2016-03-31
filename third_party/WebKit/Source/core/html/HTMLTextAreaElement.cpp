@@ -102,7 +102,7 @@ void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 
 const AtomicString& HTMLTextAreaElement::formControlType() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, textarea, ("textarea", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, textarea, ("textarea"));
     return textarea;
 }
 
@@ -636,7 +636,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
     if (!placeholder) {
         RefPtrWillBeRawPtr<HTMLDivElement> newElement = HTMLDivElement::create(document());
         placeholder = newElement.get();
-        placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
+        placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder"));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         placeholder->setInlineStyleProperty(CSSPropertyDisplay, isPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
         userAgentShadowRoot()->insertBefore(placeholder, innerEditorElement());
@@ -656,7 +656,7 @@ bool HTMLTextAreaElement::supportsAutofocus() const
 
 const AtomicString& HTMLTextAreaElement::defaultAutocapitalize() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences"));
     return sentences;
 }
 

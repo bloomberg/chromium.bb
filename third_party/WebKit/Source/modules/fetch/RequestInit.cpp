@@ -79,11 +79,11 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         RefPtr<EncodedFormData> formData = V8FormData::toImpl(v8::Local<v8::Object>::Cast(v8Body))->encodeMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
-        contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + formData->boundary().data();
+        contentType = AtomicString("multipart/form-data; boundary=") + formData->boundary().data();
         body = FetchFormDataConsumerHandle::create(context, formData.release());
     } else if (V8URLSearchParams::hasInstance(v8Body, isolate)) {
         RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(v8::Local<v8::Object>::Cast(v8Body))->encodeFormData();
-        contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8", AtomicString::ConstructFromLiteral);
+        contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
         body = FetchFormDataConsumerHandle::create(context, formData.release());
     } else if (V8PasswordCredential::hasInstance(v8Body, isolate)) {
         // See https://w3c.github.io/webappsec-credential-management/#monkey-patching-fetch-4

@@ -353,7 +353,7 @@ const AtomicString& FormKeyGenerator::formKey(const HTMLFormControlElementWithSt
 {
     HTMLFormElement* form = ownerFormForState(control);
     if (!form) {
-        DEFINE_STATIC_LOCAL(const AtomicString, formKeyForNoOwner, ("No owner", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(const AtomicString, formKeyForNoOwner, ("No owner"));
         return formKeyForNoOwner;
     }
     FormToKeyMap::const_iterator it = m_formToKeyMap.find(form);

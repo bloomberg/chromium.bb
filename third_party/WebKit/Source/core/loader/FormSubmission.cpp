@@ -91,10 +91,10 @@ void FormSubmission::Attributes::parseAction(const String& action)
 AtomicString FormSubmission::Attributes::parseEncodingType(const String& type)
 {
     if (equalIgnoringCase(type, "multipart/form-data"))
-        return AtomicString("multipart/form-data", AtomicString::ConstructFromLiteral);
+        return AtomicString("multipart/form-data");
     if (equalIgnoringCase(type, "text/plain"))
-        return AtomicString("text/plain", AtomicString::ConstructFromLiteral);
-    return AtomicString("application/x-www-form-urlencoded", AtomicString::ConstructFromLiteral);
+        return AtomicString("text/plain");
+    return AtomicString("application/x-www-form-urlencoded");
 }
 
 void FormSubmission::Attributes::updateEncodingType(const String& type)
@@ -203,7 +203,7 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
     if (copiedAttributes.method() == PostMethod) {
         isMultiPartForm = copiedAttributes.isMultiPartForm();
         if (isMultiPartForm && isMailtoForm) {
-            encodingType = AtomicString("application/x-www-form-urlencoded", AtomicString::ConstructFromLiteral);
+            encodingType = AtomicString("application/x-www-form-urlencoded");
             isMultiPartForm = false;
         }
     }

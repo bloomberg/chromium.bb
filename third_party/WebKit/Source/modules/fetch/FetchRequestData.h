@@ -74,7 +74,7 @@ public:
 
     // We use these strings instead of "no-referrer" and "client" in the spec.
     static AtomicString noReferrerString() { return AtomicString(); }
-    static AtomicString clientReferrerString() { return AtomicString("about:client", AtomicString::ConstructFromLiteral); }
+    static AtomicString clientReferrerString() { return AtomicString("about:client"); }
 
     DECLARE_TRACE();
 

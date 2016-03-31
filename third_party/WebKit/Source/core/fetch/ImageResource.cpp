@@ -314,7 +314,7 @@ void ImageResource::clear()
 
 void ImageResource::setCustomAcceptHeader()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, acceptImages, ("image/webp,image/*,*/*;q=0.8", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, acceptImages, ("image/webp,image/*,*/*;q=0.8"));
     setAccept(acceptImages);
 }
 

@@ -136,7 +136,7 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         RefPtr<EncodedFormData> formData = V8FormData::toImpl(body.As<v8::Object>())->encodeMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
-        contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + formData->boundary().data();
+        contentType = AtomicString("multipart/form-data; boundary=") + formData->boundary().data();
         bodyHandle = FetchFormDataConsumerHandle::create(executionContext, formData.release());
     } else if (RuntimeEnabledFeatures::responseConstructedWithReadableStreamEnabled() && ReadableStreamOperations::isReadableStream(scriptState, bodyValue)) {
         bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, bodyValue);

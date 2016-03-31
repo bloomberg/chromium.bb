@@ -134,9 +134,9 @@ void ColorInputType::createShadowSubtree()
 
     Document& document = element().document();
     RefPtrWillBeRawPtr<HTMLDivElement> wrapperElement = HTMLDivElement::create(document);
-    wrapperElement->setShadowPseudoId(AtomicString("-webkit-color-swatch-wrapper", AtomicString::ConstructFromLiteral));
+    wrapperElement->setShadowPseudoId(AtomicString("-webkit-color-swatch-wrapper"));
     RefPtrWillBeRawPtr<HTMLDivElement> colorSwatch = HTMLDivElement::create(document);
-    colorSwatch->setShadowPseudoId(AtomicString("-webkit-color-swatch", AtomicString::ConstructFromLiteral));
+    colorSwatch->setShadowPseudoId(AtomicString("-webkit-color-swatch"));
     wrapperElement->appendChild(colorSwatch.release());
     element().userAgentShadowRoot()->appendChild(wrapperElement.release());
 

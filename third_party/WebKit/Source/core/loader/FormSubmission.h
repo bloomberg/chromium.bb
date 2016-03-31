@@ -54,7 +54,7 @@ public:
         Attributes()
             : m_method(GetMethod)
             , m_isMultiPartForm(false)
-            , m_encodingType("application/x-www-form-urlencoded", AtomicString::ConstructFromLiteral)
+            , m_encodingType("application/x-www-form-urlencoded")
         {
         }
 

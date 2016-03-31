@@ -159,7 +159,7 @@ void DateTimeFieldElement::focusOnNextField()
 void DateTimeFieldElement::initialize(const AtomicString& pseudo, const String& axHelpText, int axMinimum, int axMaximum)
 {
     // On accessibility, DateTimeFieldElement acts like spin button.
-    setAttribute(roleAttr, AtomicString("spinbutton", AtomicString::ConstructFromLiteral));
+    setAttribute(roleAttr, AtomicString("spinbutton"));
     setAttribute(aria_valuetextAttr, AtomicString(emptyValueAXText()));
     setAttribute(aria_valueminAttr, AtomicString::number(axMinimum));
     setAttribute(aria_valuemaxAttr, AtomicString::number(axMaximum));

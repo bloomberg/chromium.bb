@@ -39,25 +39,25 @@ class FilterInputKeywords {
 public:
     static const AtomicString& getSourceGraphic()
     {
-        DEFINE_STATIC_LOCAL(const AtomicString, s_sourceGraphicName, ("SourceGraphic", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(const AtomicString, s_sourceGraphicName, ("SourceGraphic"));
         return s_sourceGraphicName;
     }
 
     static const AtomicString& sourceAlpha()
     {
-        DEFINE_STATIC_LOCAL(const AtomicString, s_sourceAlphaName, ("SourceAlpha", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(const AtomicString, s_sourceAlphaName, ("SourceAlpha"));
         return s_sourceAlphaName;
     }
 
     static const AtomicString& fillPaint()
     {
-        DEFINE_STATIC_LOCAL(const AtomicString, s_fillPaintName, ("FillPaint", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(const AtomicString, s_fillPaintName, ("FillPaint"));
         return s_fillPaintName;
     }
 
     static const AtomicString& strokePaint()
     {
-        DEFINE_STATIC_LOCAL(const AtomicString, s_strokePaintName, ("StrokePaint", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(const AtomicString, s_strokePaintName, ("StrokePaint"));
         return s_strokePaintName;
     }
 };

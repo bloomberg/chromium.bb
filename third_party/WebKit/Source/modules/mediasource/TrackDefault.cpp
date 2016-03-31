@@ -14,19 +14,19 @@ namespace blink {
 
 static const AtomicString& audioKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, audio, ("audio", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, audio, ("audio"));
     return audio;
 }
 
 static const AtomicString& videoKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, video, ("video", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, video, ("video"));
     return video;
 }
 
 static const AtomicString& textKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, text, ("text", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, text, ("text"));
     return text;
 }
 

@@ -472,8 +472,8 @@ bool SVGImage::dataChanged(bool allDataReceived)
         DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FrameLoaderClient>, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
 
         if (m_page) {
-            toLocalFrame(m_page->mainFrame())->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml", AtomicString::ConstructFromLiteral),
-                AtomicString("UTF-8", AtomicString::ConstructFromLiteral), KURL(), ForceSynchronousLoad)));
+            toLocalFrame(m_page->mainFrame())->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml"),
+                AtomicString("UTF-8"), KURL(), ForceSynchronousLoad)));
             return true;
         }
 
@@ -527,8 +527,8 @@ bool SVGImage::dataChanged(bool allDataReceived)
         m_page = page.release();
 
         TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
-        loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml", AtomicString::ConstructFromLiteral),
-            AtomicString("UTF-8", AtomicString::ConstructFromLiteral), KURL(), ForceSynchronousLoad)));
+        loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml"),
+            AtomicString("UTF-8"), KURL(), ForceSynchronousLoad)));
 
         // Set the concrete object size before a container size is available.
         m_intrinsicSize = roundedIntSize(concreteObjectSize(FloatSize(300, 150)));

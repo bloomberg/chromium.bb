@@ -129,9 +129,9 @@ static String buildAccessControlFailureMessage(const String& detail, SecurityOri
 
 bool passesAccessControlCheck(const ResourceResponse& response, StoredCredentials includeCredentials, SecurityOrigin* securityOrigin, String& errorDescription, WebURLRequest::RequestContext context)
 {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowOriginHeaderName, (new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral)));
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowCredentialsHeaderName, (new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral)));
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowSuboriginHeaderName, (new AtomicString("access-control-allow-suborigin", AtomicString::ConstructFromLiteral)));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowOriginHeaderName, (new AtomicString("access-control-allow-origin")));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowCredentialsHeaderName, (new AtomicString("access-control-allow-credentials")));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, allowSuboriginHeaderName, (new AtomicString("access-control-allow-suborigin")));
 
     int statusCode = response.httpStatusCode();
 

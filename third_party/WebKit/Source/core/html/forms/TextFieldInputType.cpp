@@ -100,7 +100,7 @@ public:
     static PassRefPtrWillBeRawPtr<DataListIndicatorElement> create(Document& document)
     {
         RefPtrWillBeRawPtr<DataListIndicatorElement> element = adoptRefWillBeNoop(new DataListIndicatorElement(document));
-        element->setShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
+        element->setShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
         element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
         return element.release();
     }
@@ -294,7 +294,7 @@ void TextFieldInputType::createShadowSubtree()
     }
 
     RefPtrWillBeRawPtr<TextControlInnerContainer> container = TextControlInnerContainer::create(document);
-    container->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
+    container->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container"));
     shadowRoot->appendChild(container);
 
     RefPtrWillBeRawPtr<EditingViewPortElement> editingViewPort = EditingViewPortElement::create(document);
@@ -343,7 +343,7 @@ void TextFieldInputType::listAttributeTargetChanged()
             // but they are different. We should simplify the code by making
             // containerElement mandatory.
             RefPtrWillBeRawPtr<Element> rpContainer = TextControlInnerContainer::create(document);
-            rpContainer->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container", AtomicString::ConstructFromLiteral));
+            rpContainer->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container"));
             RefPtrWillBeRawPtr<Element> innerEditor = element().innerEditorElement();
             innerEditor->parentNode()->replaceChild(rpContainer.get(), innerEditor.get());
             RefPtrWillBeRawPtr<Element> editingViewPort = EditingViewPortElement::create(document);
@@ -459,7 +459,7 @@ void TextFieldInputType::updatePlaceholderText()
     if (!placeholder) {
         RefPtrWillBeRawPtr<HTMLElement> newElement = HTMLDivElement::create(element().document());
         placeholder = newElement.get();
-        placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
+        placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder"));
         placeholder->setInlineStyleProperty(CSSPropertyDisplay, element().isPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
         Element* container = containerElement();

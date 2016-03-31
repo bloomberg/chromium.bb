@@ -186,7 +186,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
 
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& fontDescription, ShouldRetain shouldRetain)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, timesStr, ("Times", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, timesStr, ("Times"));
 
     // FIXME: Would be even better to somehow get the user's default font here.  For now we'll pick
     // the default that the user would get without changing any prefs.
@@ -198,7 +198,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
     // the user doesn't have it, we fall back on Lucida Grande because that's
     // guaranteed to be there, according to Nathan Taylor. This is good enough
     // to avoid a crash at least.
-    DEFINE_STATIC_LOCAL(AtomicString, lucidaGrandeStr, ("Lucida Grande", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, lucidaGrandeStr, ("Lucida Grande"));
     return getFontData(fontDescription, lucidaGrandeStr, false, shouldRetain);
 }
 

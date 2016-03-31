@@ -435,9 +435,9 @@ String SecurityOrigin::toString() const
 AtomicString SecurityOrigin::toAtomicString() const
 {
     if (isUnique())
-        return AtomicString("null", AtomicString::ConstructFromLiteral);
+        return AtomicString("null");
     if (isLocal() && m_blockLocalAccessFromLocalOrigin)
-        return AtomicString("null", AtomicString::ConstructFromLiteral);
+        return AtomicString("null");
     return toRawAtomicString();
 }
 
@@ -492,7 +492,7 @@ bool SecurityOrigin::deserializeSuboriginAndHost(const String& oldHost, String& 
 AtomicString SecurityOrigin::toRawAtomicString() const
 {
     if (m_protocol == "file")
-        return AtomicString("file://", AtomicString::ConstructFromLiteral);
+        return AtomicString("file://");
 
     StringBuilder result;
     buildRawString(result, true);

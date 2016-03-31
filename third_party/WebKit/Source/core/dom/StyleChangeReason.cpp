@@ -59,12 +59,12 @@ void init()
 {
     ASSERT(isMainThread());
 
-    new (NotNull, (void*)&Active) AtomicString(":active", AtomicString::ConstructFromLiteral);
-    new (NotNull, (void*)&Disabled) AtomicString(":disabled", AtomicString::ConstructFromLiteral);
-    new (NotNull, (void*)&Focus) AtomicString(":focus", AtomicString::ConstructFromLiteral);
-    new (NotNull, (void*)&Hover) AtomicString(":hover", AtomicString::ConstructFromLiteral);
-    new (NotNull, (void*)&Past) AtomicString(":past", AtomicString::ConstructFromLiteral);
-    new (NotNull, (void*)&Unresolved) AtomicString(":unresolved", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&Active) AtomicString(":active");
+    new (NotNull, (void*)&Disabled) AtomicString(":disabled");
+    new (NotNull, (void*)&Focus) AtomicString(":focus");
+    new (NotNull, (void*)&Hover) AtomicString(":hover");
+    new (NotNull, (void*)&Past) AtomicString(":past");
+    new (NotNull, (void*)&Unresolved) AtomicString(":unresolved");
 }
 
 } // namespace StyleChangeExtraData

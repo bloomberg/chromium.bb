@@ -1325,9 +1325,9 @@ bool AXLayoutObject::supportsARIAOwns() const
 
 const AtomicString& AXLayoutObject::liveRegionStatus() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusAssertive, ("assertive", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusPolite, ("polite", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusOff, ("off", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusAssertive, ("assertive"));
+    DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusPolite, ("polite"));
+    DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusOff, ("off"));
 
     const AtomicString& liveRegionStatus = getAttribute(aria_liveAttr);
     // These roles have implicit live region status.
@@ -1352,7 +1352,7 @@ const AtomicString& AXLayoutObject::liveRegionStatus() const
 
 const AtomicString& AXLayoutObject::liveRegionRelevant() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, defaultLiveRegionRelevant, ("additions text", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, defaultLiveRegionRelevant, ("additions text"));
     const AtomicString& relevant = getAttribute(aria_relevantAttr);
 
     // Default aria-relevant = "additions text".

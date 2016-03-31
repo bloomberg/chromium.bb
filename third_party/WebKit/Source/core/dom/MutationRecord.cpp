@@ -170,19 +170,19 @@ private:
 
 const AtomicString& ChildListRecord::type()
 {
-    DEFINE_STATIC_LOCAL(AtomicString, childList, ("childList", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, childList, ("childList"));
     return childList;
 }
 
 const AtomicString& AttributesRecord::type()
 {
-    DEFINE_STATIC_LOCAL(AtomicString, attributes, ("attributes", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, attributes, ("attributes"));
     return attributes;
 }
 
 const AtomicString& CharacterDataRecord::type()
 {
-    DEFINE_STATIC_LOCAL(AtomicString, characterData, ("characterData", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, characterData, ("characterData"));
     return characterData;
 }
 

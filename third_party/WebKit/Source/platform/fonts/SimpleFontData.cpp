@@ -156,9 +156,9 @@ void SimpleFontData::platformInit()
     // web standard. The AppKit adjustment of 20% is too big and is
     // incorrectly added to line spacing, so we use a 15% adjustment instead
     // and add it to the ascent.
-    DEFINE_STATIC_LOCAL(AtomicString, timesName, ("Times", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, helveticaName, ("Helvetica", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, courierName, ("Courier", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, timesName, ("Times"));
+    DEFINE_STATIC_LOCAL(AtomicString, helveticaName, ("Helvetica"));
+    DEFINE_STATIC_LOCAL(AtomicString, courierName, ("Courier"));
     String familyName = m_platformData.fontFamilyName();
     if (familyName == timesName || familyName == helveticaName || familyName == courierName)
         ascent += floorf(((ascent + descent) * 0.15f) + 0.5f);

@@ -783,7 +783,7 @@ void XMLHttpRequest::send(FormData* body, ExceptionState& exceptionState)
         httpBody = body->encodeMultiPartFormData();
 
         if (getRequestHeader(HTTPNames::Content_Type).isEmpty()) {
-            AtomicString contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + httpBody->boundary().data();
+            AtomicString contentType = AtomicString("multipart/form-data; boundary=") + httpBody->boundary().data();
             setRequestHeaderInternal(HTTPNames::Content_Type, contentType);
         }
     }
@@ -1288,7 +1288,7 @@ AtomicString XMLHttpRequest::finalResponseMIMETypeWithFallback() const
 
     // FIXME: This fallback is not specified in the final MIME type algorithm
     // of the XHR spec. Move this to more appropriate place.
-    return AtomicString("text/xml", AtomicString::ConstructFromLiteral);
+    return AtomicString("text/xml");
 }
 
 bool XMLHttpRequest::responseIsXML() const

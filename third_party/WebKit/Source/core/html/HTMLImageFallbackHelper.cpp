@@ -36,7 +36,7 @@ void HTMLImageFallbackHelper::createAltTextShadowTree(Element& element)
 
     RefPtrWillBeRawPtr<HTMLDivElement> container = HTMLDivElement::create(element.document());
     root.appendChild(container);
-    container->setAttribute(idAttr, AtomicString("alttext-container", AtomicString::ConstructFromLiteral));
+    container->setAttribute(idAttr, AtomicString("alttext-container"));
     container->setInlineStyleProperty(CSSPropertyOverflow, CSSValueHidden);
     container->setInlineStyleProperty(CSSPropertyBorderWidth, 1, CSSPrimitiveValue::UnitType::Pixels);
     container->setInlineStyleProperty(CSSPropertyBorderStyle, CSSValueSolid);
@@ -48,15 +48,15 @@ void HTMLImageFallbackHelper::createAltTextShadowTree(Element& element)
     RefPtrWillBeRawPtr<HTMLImageElement> brokenImage = HTMLImageElement::create(element.document());
     container->appendChild(brokenImage);
     brokenImage->setIsFallbackImage();
-    brokenImage->setAttribute(idAttr, AtomicString("alttext-image", AtomicString::ConstructFromLiteral));
-    brokenImage->setAttribute(widthAttr, AtomicString("16", AtomicString::ConstructFromLiteral));
-    brokenImage->setAttribute(heightAttr, AtomicString("16", AtomicString::ConstructFromLiteral));
-    brokenImage->setAttribute(alignAttr, AtomicString("left", AtomicString::ConstructFromLiteral));
+    brokenImage->setAttribute(idAttr, AtomicString("alttext-image"));
+    brokenImage->setAttribute(widthAttr, AtomicString("16"));
+    brokenImage->setAttribute(heightAttr, AtomicString("16"));
+    brokenImage->setAttribute(alignAttr, AtomicString("left"));
     brokenImage->setInlineStyleProperty(CSSPropertyMargin, 0, CSSPrimitiveValue::UnitType::Pixels);
 
     RefPtrWillBeRawPtr<HTMLDivElement> altText = HTMLDivElement::create(element.document());
     container->appendChild(altText);
-    altText->setAttribute(idAttr, AtomicString("alttext", AtomicString::ConstructFromLiteral));
+    altText->setAttribute(idAttr, AtomicString("alttext"));
     altText->setInlineStyleProperty(CSSPropertyOverflow, CSSValueHidden);
     altText->setInlineStyleProperty(CSSPropertyDisplay, CSSValueBlock);
 

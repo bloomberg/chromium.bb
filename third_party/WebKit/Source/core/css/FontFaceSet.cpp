@@ -159,8 +159,8 @@ ExecutionContext* FontFaceSet::getExecutionContext() const
 
 AtomicString FontFaceSet::status() const
 {
-    DEFINE_STATIC_LOCAL(AtomicString, loading, ("loading", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, loaded, ("loaded", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, loading, ("loading"));
+    DEFINE_STATIC_LOCAL(AtomicString, loaded, ("loaded"));
     return m_isLoading ? loading : loaded;
 }
 

@@ -18,8 +18,8 @@ namespace {
 
 const AtomicString& remotePlaybackStateToString(WebRemotePlaybackState state)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, disconnectedValue, ("disconnected", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, connectedValue, ("connected"));
+    DEFINE_STATIC_LOCAL(const AtomicString, disconnectedValue, ("disconnected"));
 
     switch (state) {
     case WebRemotePlaybackState::Connected:

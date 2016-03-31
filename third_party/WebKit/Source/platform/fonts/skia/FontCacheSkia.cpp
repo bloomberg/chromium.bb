@@ -148,21 +148,21 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
 
     // We should at least have Sans or Arial which is the last resort fallback of SkFontHost ports.
     if (!fontPlatformData) {
-        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, sansCreationParams, (AtomicString("Sans", AtomicString::ConstructFromLiteral)));
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, sansCreationParams, (AtomicString("Sans")));
         fontPlatformData = getFontPlatformData(description, sansCreationParams);
     }
     if (!fontPlatformData) {
-        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, arialCreationParams, (AtomicString("Arial", AtomicString::ConstructFromLiteral)));
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, arialCreationParams, (AtomicString("Arial")));
         fontPlatformData = getFontPlatformData(description, arialCreationParams);
     }
 #if OS(WIN)
     // Try some more Windows-specific fallbacks.
     if (!fontPlatformData) {
-        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, msuigothicCreationParams, (AtomicString("MS UI Gothic", AtomicString::ConstructFromLiteral)));
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, msuigothicCreationParams, (AtomicString("MS UI Gothic")));
         fontPlatformData = getFontPlatformData(description, msuigothicCreationParams);
     }
     if (!fontPlatformData) {
-        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, mssansserifCreationParams, (AtomicString("Microsoft Sans Serif", AtomicString::ConstructFromLiteral)));
+        DEFINE_STATIC_LOCAL(const FontFaceCreationParams, mssansserifCreationParams, (AtomicString("Microsoft Sans Serif")));
         fontPlatformData = getFontPlatformData(description, mssansserifCreationParams);
     }
 #endif

@@ -128,7 +128,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
 PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& mediaElement)
 {
     RefPtrWillBeRawPtr<MediaControls> controls = adoptRefWillBeNoop(new MediaControls(mediaElement));
-    controls->setShadowPseudoId(AtomicString("-webkit-media-controls", AtomicString::ConstructFromLiteral));
+    controls->setShadowPseudoId(AtomicString("-webkit-media-controls"));
     controls->initializeControls();
     return controls.release();
 }

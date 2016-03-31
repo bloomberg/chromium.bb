@@ -29,7 +29,7 @@ CSSAnimationData::CSSAnimationData(const CSSAnimationData& other)
 
 const AtomicString& CSSAnimationData::initialName()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, name, ("none", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, name, ("none"));
     return name;
 }
 

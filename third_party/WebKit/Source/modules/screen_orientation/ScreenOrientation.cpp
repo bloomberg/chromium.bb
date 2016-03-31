@@ -33,14 +33,14 @@ struct ScreenOrientationInfo {
 
 static ScreenOrientationInfo* orientationsMap(unsigned& length)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, portraitPrimary, ("portrait-primary", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, portraitSecondary, ("portrait-secondary", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, landscapePrimary, ("landscape-primary", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, landscapeSecondary, ("landscape-secondary", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, any, ("any", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, portrait, ("portrait", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, landscape, ("landscape", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, natural, ("natural", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, portraitPrimary, ("portrait-primary"));
+    DEFINE_STATIC_LOCAL(const AtomicString, portraitSecondary, ("portrait-secondary"));
+    DEFINE_STATIC_LOCAL(const AtomicString, landscapePrimary, ("landscape-primary"));
+    DEFINE_STATIC_LOCAL(const AtomicString, landscapeSecondary, ("landscape-secondary"));
+    DEFINE_STATIC_LOCAL(const AtomicString, any, ("any"));
+    DEFINE_STATIC_LOCAL(const AtomicString, portrait, ("portrait"));
+    DEFINE_STATIC_LOCAL(const AtomicString, landscape, ("landscape"));
+    DEFINE_STATIC_LOCAL(const AtomicString, natural, ("natural"));
 
     static ScreenOrientationInfo orientationMap[] = {
         { portraitPrimary, WebScreenOrientationLockPortraitPrimary },

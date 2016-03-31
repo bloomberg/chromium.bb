@@ -69,19 +69,19 @@ static bool throwExceptionIfClosedOrUpdating(bool isOpen, bool isUpdating, Excep
 
 const AtomicString& MediaSource::openKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, open, ("open", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, open, ("open"));
     return open;
 }
 
 const AtomicString& MediaSource::closedKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, closed, ("closed", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, closed, ("closed"));
     return closed;
 }
 
 const AtomicString& MediaSource::endedKeyword()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, ended, ("ended", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, ended, ("ended"));
     return ended;
 }
 
@@ -465,8 +465,8 @@ void MediaSource::setReadyState(const AtomicString& state)
 
 void MediaSource::endOfStream(const AtomicString& error, ExceptionState& exceptionState)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, network, ("network", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, decode, ("decode", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, network, ("network"));
+    DEFINE_STATIC_LOCAL(const AtomicString, decode, ("decode"));
 
     if (error == network) {
         endOfStreamInternal(WebMediaSource::EndOfStreamStatusNetworkError, exceptionState);

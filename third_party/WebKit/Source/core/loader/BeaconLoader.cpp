@@ -229,7 +229,7 @@ bool Beacon::serialize(FormData* data, ResourceRequest& request, int allowance, 
     if (allowance > 0 && static_cast<unsigned long long>(allowance) < entitySize)
         return false;
 
-    AtomicString contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + entityBody->boundary().data();
+    AtomicString contentType = AtomicString("multipart/form-data; boundary=") + entityBody->boundary().data();
     request.setHTTPBody(entityBody.release());
     request.setHTTPContentType(contentType);
 

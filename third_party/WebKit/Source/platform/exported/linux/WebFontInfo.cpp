@@ -232,7 +232,7 @@ public:
 
     WebFallbackFont fallbackFontForCharInLocale(WebUChar32 c, const char* locale)
     {
-        DEFINE_STATIC_LOCAL(AtomicString, noLocale, ("NO_LOCALE_SPECIFIED", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(AtomicString, noLocale, ("NO_LOCALE_SPECIFIED"));
         AtomicString localeKey;
         if (locale && strlen(locale)) {
             localeKey = AtomicString(locale);

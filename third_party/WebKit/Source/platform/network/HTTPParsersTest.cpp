@@ -138,7 +138,7 @@ TEST(HTTPParsersTest, HTTPFieldContent)
 
 TEST(HTTPParsersTest, ExtractMIMETypeFromMediaType)
 {
-    const AtomicString textHtml("text/html", AtomicString::ConstructFromLiteral);
+    const AtomicString textHtml("text/html");
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html; charset=iso-8859-1")));
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html ; charset=iso-8859-1")));
     EXPECT_EQ(textHtml, extractMIMETypeFromMediaType(AtomicString("text/html,text/plain")));

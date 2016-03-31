@@ -99,7 +99,7 @@ static SMILEventSender& smilRepeatEventSender()
 
 static SMILEventSender& smilRepeatNEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SMILEventSender>, sender, (SMILEventSender::create(AtomicString("repeatn", AtomicString::ConstructFromLiteral))));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SMILEventSender>, sender, (SMILEventSender::create(AtomicString("repeatn"))));
     return *sender;
 }
 
@@ -398,7 +398,7 @@ SMILTime SVGSMILElement::parseClockValue(const String& data)
 
     String parse = data.stripWhiteSpace();
 
-    DEFINE_STATIC_LOCAL(const AtomicString, indefiniteValue, ("indefinite", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, indefiniteValue, ("indefinite"));
     if (parse == indefiniteValue)
         return SMILTime::indefinite();
 
@@ -710,8 +710,8 @@ bool SVGSMILElement::isFrozen() const
 
 SVGSMILElement::Restart SVGSMILElement::getRestart() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, never, ("never", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, whenNotActive, ("whenNotActive", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, never, ("never"));
+    DEFINE_STATIC_LOCAL(const AtomicString, whenNotActive, ("whenNotActive"));
     const AtomicString& value = fastGetAttribute(SVGNames::restartAttr);
     if (value == never)
         return RestartNever;
@@ -722,7 +722,7 @@ SVGSMILElement::Restart SVGSMILElement::getRestart() const
 
 SVGSMILElement::FillMode SVGSMILElement::fill() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, freeze, ("freeze", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, freeze, ("freeze"));
     const AtomicString& value = fastGetAttribute(SVGNames::fillAttr);
     return value == freeze ? FillFreeze : FillRemove;
 }
@@ -754,7 +754,7 @@ SMILTime SVGSMILElement::repeatCount() const
     SMILTime computedRepeatCount = SMILTime::unresolved();
     const AtomicString& value = fastGetAttribute(SVGNames::repeatCountAttr);
     if (!value.isNull()) {
-        DEFINE_STATIC_LOCAL(const AtomicString, indefiniteValue, ("indefinite", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(const AtomicString, indefiniteValue, ("indefinite"));
         if (value == indefiniteValue) {
             computedRepeatCount = SMILTime::indefinite();
         } else {

@@ -47,7 +47,7 @@ float LayoutThemeFontProvider::s_defaultFontSize = 16.0;
 // sizes (e.g. 15px). So, for now we just use Arial.
 const AtomicString& LayoutThemeFontProvider::defaultGUIFont()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, fontFace, ("Arial", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, fontFace, ("Arial"));
     return fontFace;
 }
 

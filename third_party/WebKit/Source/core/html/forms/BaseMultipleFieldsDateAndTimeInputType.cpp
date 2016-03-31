@@ -525,7 +525,7 @@ void BaseMultipleFieldsDateAndTimeInputType::updateView()
 
     setupLayoutParameters(layoutParameters, date);
 
-    DEFINE_STATIC_LOCAL(AtomicString, datetimeformatAttr, ("datetimeformat", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, datetimeformatAttr, ("datetimeformat"));
     edit->setAttribute(datetimeformatAttr, AtomicString(layoutParameters.dateTimeFormat), ASSERT_NO_EXCEPTION);
     const AtomicString pattern = edit->fastGetAttribute(HTMLNames::patternAttr);
     if (!pattern.isEmpty())

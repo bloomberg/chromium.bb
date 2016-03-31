@@ -266,13 +266,13 @@ HTMLInputElement* SliderThumbElement::hostInput() const
 
 static const AtomicString& sliderThumbShadowPartId()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, sliderThumb, ("-webkit-slider-thumb", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, sliderThumb, ("-webkit-slider-thumb"));
     return sliderThumb;
 }
 
 static const AtomicString& mediaSliderThumbShadowPartId()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderThumb, ("-webkit-media-slider-thumb", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderThumb, ("-webkit-media-slider-thumb"));
     return mediaSliderThumb;
 }
 
@@ -312,8 +312,8 @@ LayoutObject* SliderContainerElement::createLayoutObject(const ComputedStyle&)
 
 const AtomicString& SliderContainerElement::shadowPseudoId() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderContainer, ("-webkit-media-slider-container", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, sliderContainer, ("-webkit-slider-container", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderContainer, ("-webkit-media-slider-container"));
+    DEFINE_STATIC_LOCAL(const AtomicString, sliderContainer, ("-webkit-slider-container"));
 
     if (!shadowHost() || !shadowHost()->layoutObject())
         return sliderContainer;

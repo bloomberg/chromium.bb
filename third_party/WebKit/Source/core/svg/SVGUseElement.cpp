@@ -150,7 +150,7 @@ Document* SVGUseElement::externalDocument() const
 
 static void transferUseWidthAndHeightIfNeeded(const SVGUseElement& use, SVGElement& shadowElement, const SVGElement& originalElement)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, hundredPercentString, ("100%", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, hundredPercentString, ("100%"));
     // Use |originalElement| for checking the element type, because we will
     // have replaced a <symbol> with an <svg> in the instance tree.
     if (isSVGSymbolElement(originalElement)) {

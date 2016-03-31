@@ -1223,7 +1223,7 @@ DEFINE_TRACE(SVGElement)
 
 const AtomicString& SVGElement::eventParameterName()
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, evtString, ("evt", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, evtString, ("evt"));
     return evtString;
 }
 

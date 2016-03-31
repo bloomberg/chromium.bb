@@ -732,7 +732,7 @@ bool InputType::supportsAutocapitalize() const
 
 const AtomicString& InputType::defaultAutocapitalize() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, none, ("none"));
     return none;
 }
 

@@ -139,10 +139,8 @@ const AtomicString& getPropertyNameAtomicString(CSSPropertyID id)
     int index = id - firstCSSProperty;
     static AtomicString* propertyStrings = new AtomicString[lastUnresolvedCSSProperty]; // Intentionally never destroyed.
     AtomicString& propertyString = propertyStrings[index];
-    if (propertyString.isNull()) {
-        const char* propertyName = propertyNameStringsPool + propertyNameStringsOffsets[index];
-        propertyString = AtomicString(propertyName, strlen(propertyName), AtomicString::ConstructFromLiteral);
-    }
+    if (propertyString.isNull())
+        propertyString = AtomicString(propertyNameStringsPool + propertyNameStringsOffsets[index]);
     return propertyString;
 }
 

@@ -148,7 +148,7 @@ VTTCueBox::VTTCueBox(Document& document)
     : HTMLDivElement(document)
     , m_snapToLinesPosition(std::numeric_limits<float>::quiet_NaN())
 {
-    setShadowPseudoId(AtomicString("-webkit-media-text-track-display", AtomicString::ConstructFromLiteral));
+    setShadowPseudoId(AtomicString("-webkit-media-text-track-display"));
 }
 
 void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters)

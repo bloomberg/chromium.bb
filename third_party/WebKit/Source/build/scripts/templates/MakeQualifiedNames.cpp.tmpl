@@ -61,7 +61,7 @@ void init()
     };
 
     // Use placement new to initialize the globals.
-    AtomicString {{namespace_prefix}}NS("{{namespace_uri}}", AtomicString::ConstructFromLiteral);
+    AtomicString {{namespace_prefix}}NS("{{namespace_uri}}");
 
     // Namespace
     new ((void*)&{{namespace_prefix}}NamespaceURI) AtomicString({{namespace_prefix}}NS);

@@ -26,6 +26,7 @@
 #include "wtf/WTFExport.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
+#include <cstring>
 #include <iosfwd>
 
 namespace WTF {
@@ -58,20 +59,6 @@ public:
     explicit AtomicString(const String& s) : m_string(add(s.impl())) { }
 
     AtomicString(StringImpl* baseString, unsigned start, unsigned length) : m_string(add(baseString, start, length)) { }
-
-    enum ConstructFromLiteralTag { ConstructFromLiteral };
-    AtomicString(const char* characters, unsigned length, ConstructFromLiteralTag)
-        : m_string(addFromLiteralData(characters, length))
-    {
-    }
-
-    template<unsigned charactersCount>
-    ALWAYS_INLINE AtomicString(const char (&characters)[charactersCount], ConstructFromLiteralTag)
-        : m_string(addFromLiteralData(characters, charactersCount - 1))
-    {
-        static_assert(charactersCount > 1, "AtomicString FromLiteralData should not be empty");
-        static_assert((charactersCount - 1 <= ((unsigned(~0) - sizeof(StringImpl)) / sizeof(LChar))), "AtomicString FromLiteralData cannot overflow");
-    }
 
     // Hash table deleted values, which are only constructed and never copied or destroyed.
     AtomicString(WTF::HashTableDeletedValueType) : m_string(WTF::HashTableDeletedValue) { }
@@ -161,7 +148,12 @@ public:
 private:
     String m_string;
 
-    static PassRefPtr<StringImpl> add(const LChar*);
+    ALWAYS_INLINE static PassRefPtr<StringImpl> add(const LChar* characters)
+    {
+        if (!characters)
+            return nullptr;
+        return add(characters, strlen(reinterpret_cast<const char*>(characters)));
+    }
     ALWAYS_INLINE static PassRefPtr<StringImpl> add(const char* s) { return add(reinterpret_cast<const LChar*>(s)); }
     static PassRefPtr<StringImpl> add(const LChar*, unsigned length);
     static PassRefPtr<StringImpl> add(const UChar*, unsigned length);
@@ -175,7 +167,6 @@ private:
             return r;
         return addSlowCase(r);
     }
-    static PassRefPtr<StringImpl> addFromLiteralData(const char* characters, unsigned length);
     static PassRefPtr<StringImpl> addSlowCase(StringImpl*);
 #if OS(MACOSX)
     static PassRefPtr<StringImpl> add(CFStringRef);

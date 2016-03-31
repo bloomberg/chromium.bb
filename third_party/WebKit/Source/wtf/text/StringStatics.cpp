@@ -90,7 +90,7 @@ void StringStatics::init()
     ASSERT(isMainThread());
 
     // FIXME: These should be allocated at compile time.
-    new (NotNull, (void*)&starAtom) AtomicString("*", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&starAtom) AtomicString("*");
     new (NotNull, (void*)&xmlAtom) AtomicString(addStaticASCIILiteral("xml"));
     new (NotNull, (void*)&xmlnsAtom) AtomicString(addStaticASCIILiteral("xmlns"));
     new (NotNull, (void*)&xlinkAtom) AtomicString(addStaticASCIILiteral("xlink"));

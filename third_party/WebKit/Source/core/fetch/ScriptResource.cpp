@@ -50,7 +50,7 @@ ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const Res
     : TextResource(resourceRequest, Script, options, "application/javascript", charset)
     , m_integrityDisposition(ScriptIntegrityDisposition::NotChecked)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, acceptScript, ("*/*", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, acceptScript, ("*/*"));
 
     // It's javascript we want.
     // But some websites think their scripts are <some wrong mimetype here>

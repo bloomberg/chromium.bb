@@ -400,7 +400,7 @@ bool DateTimeEditBuilder::shouldYearFieldDisabled() const
 
 void DateTimeEditBuilder::visitLiteral(const String& text)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, textPseudoId, ("-webkit-datetime-edit-text", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, textPseudoId, ("-webkit-datetime-edit-text"));
     ASSERT(text.length());
     RefPtrWillBeRawPtr<HTMLDivElement> element = HTMLDivElement::create(editElement().document());
     element->setShadowPseudoId(textPseudoId);
@@ -501,7 +501,7 @@ void DateTimeEditElement::blurByOwner()
 PassRefPtrWillBeRawPtr<DateTimeEditElement> DateTimeEditElement::create(Document& document, EditControlOwner& editControlOwner)
 {
     RefPtrWillBeRawPtr<DateTimeEditElement> container = adoptRefWillBeNoop(new DateTimeEditElement(document, editControlOwner));
-    container->setShadowPseudoId(AtomicString("-webkit-datetime-edit", AtomicString::ConstructFromLiteral));
+    container->setShadowPseudoId(AtomicString("-webkit-datetime-edit"));
     container->setAttribute(idAttr, ShadowElementNames::dateTimeEdit());
     return container.release();
 }
@@ -668,7 +668,7 @@ bool DateTimeEditElement::isReadOnly() const
 
 void DateTimeEditElement::layout(const LayoutParameters& layoutParameters, const DateComponents& dateValue)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, fieldsWrapperPseudoId, ("-webkit-datetime-edit-fields-wrapper", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, fieldsWrapperPseudoId, ("-webkit-datetime-edit-fields-wrapper"));
     if (!hasChildren()) {
         RefPtrWillBeRawPtr<HTMLDivElement> element = HTMLDivElement::create(document());
         element->setShadowPseudoId(fieldsWrapperPseudoId);

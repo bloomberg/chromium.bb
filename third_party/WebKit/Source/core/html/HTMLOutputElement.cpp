@@ -57,7 +57,7 @@ PassRefPtrWillBeRawPtr<HTMLOutputElement> HTMLOutputElement::create(Document& do
 
 const AtomicString& HTMLOutputElement::formControlType() const
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, output, ("output", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, output, ("output"));
     return output;
 }
 

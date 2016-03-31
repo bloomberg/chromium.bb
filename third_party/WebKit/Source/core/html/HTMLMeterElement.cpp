@@ -194,11 +194,11 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     ASSERT(!m_value);
 
     RefPtrWillBeRawPtr<HTMLDivElement> inner = HTMLDivElement::create(document());
-    inner->setShadowPseudoId(AtomicString("-webkit-meter-inner-element", AtomicString::ConstructFromLiteral));
+    inner->setShadowPseudoId(AtomicString("-webkit-meter-inner-element"));
     root.appendChild(inner);
 
     RefPtrWillBeRawPtr<HTMLDivElement> bar = HTMLDivElement::create(document());
-    bar->setShadowPseudoId(AtomicString("-webkit-meter-bar", AtomicString::ConstructFromLiteral));
+    bar->setShadowPseudoId(AtomicString("-webkit-meter-bar"));
 
     m_value = HTMLDivElement::create(document());
     updateValueAppearance(0);
@@ -209,9 +209,9 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 
 void HTMLMeterElement::updateValueAppearance(double percentage)
 {
-    DEFINE_STATIC_LOCAL(AtomicString, optimumPseudoId, ("-webkit-meter-optimum-value", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, suboptimumPseudoId, ("-webkit-meter-suboptimum-value", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, evenLessGoodPseudoId, ("-webkit-meter-even-less-good-value", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, optimumPseudoId, ("-webkit-meter-optimum-value"));
+    DEFINE_STATIC_LOCAL(AtomicString, suboptimumPseudoId, ("-webkit-meter-suboptimum-value"));
+    DEFINE_STATIC_LOCAL(AtomicString, evenLessGoodPseudoId, ("-webkit-meter-even-less-good-value"));
 
     m_value->setInlineStyleProperty(CSSPropertyWidth, percentage, CSSPrimitiveValue::UnitType::Percentage);
     switch (getGaugeRegion()) {
