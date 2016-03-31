@@ -15,9 +15,6 @@
 
 #include "device/bluetooth/bluetooth_export.h"
 
-#pragma comment(lib, "Bthprops.lib")
-#pragma comment(lib, "BluetoothApis.lib")
-
 namespace device {
 namespace bluetooth_init_win {
 

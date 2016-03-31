@@ -146,7 +146,13 @@ component("bluetooth") {
   }
 
   if (is_win) {
-    libs = [ "setupapi.lib" ]
+    libs = [
+      # Bthprops must be listed before BluetoothApis or else delay loading
+      # crashes.
+      "Bthprops.lib",
+      "BluetoothApis.lib",
+      "setupapi.lib",
+    ]
   }
 
   if (is_chromeos || is_linux) {

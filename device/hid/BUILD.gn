@@ -60,6 +60,13 @@ source_set("hid") {
   if (is_chromeos) {
     deps += [ "//chromeos" ]
   }
+
+  if (is_win) {
+    libs = [
+      "hid.lib",
+      "setupapi.lib",
+    ]
+  }
 }
 
 source_set("mocks") {

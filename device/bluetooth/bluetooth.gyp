@@ -288,6 +288,12 @@
                   'Bthprops.cpl',
                   'setupapi.dll',
                 ],
+                'AdditionalDependencies': [
+                  # Bthprops must be listed before BluetoothApis or else delay
+                  # loading crashes.
+                  'Bthprops.lib',
+                  'BluetoothApis.lib',
+                ],
               },
             },
           },
@@ -299,6 +305,12 @@
                 # symbols declared by bthprops.lib, they actually reside here:
                 'Bthprops.cpl',
                 'setupapi.dll',
+              ],
+              'AdditionalDependencies': [
+                # Bthprops must be listed before BluetoothApis or else delay
+                # loading crashes.
+                'Bthprops.lib',
+                'BluetoothApis.lib',
               ],
             },
           },

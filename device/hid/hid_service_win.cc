@@ -27,10 +27,6 @@
 #include "device/hid/hid_device_info.h"
 #include "net/base/io_buffer.h"
 
-// Setup API is required to enumerate HID devices.
-#pragma comment(lib, "setupapi.lib")
-#pragma comment(lib, "hid.lib")
-
 namespace device {
 
 HidServiceWin::HidServiceWin(

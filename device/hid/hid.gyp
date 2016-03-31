@@ -63,6 +63,26 @@
             'input_service_linux.cc',
             'input_service_linux.h',
           ],
+        }],        
+        ['OS=="win"', {
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'AdditionalDependencies': [
+                  'hid.lib',
+                  'setupapi.lib',
+                ],
+              },
+            },
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalDependencies': [
+                'hid.lib',
+                'setupapi.lib',
+              ],
+            },
+          },
         }],
       ],
     },
