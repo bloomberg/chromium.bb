@@ -22,9 +22,6 @@ using api::system_display::DisplayUnitInfo;
 
 namespace SetDisplayProperties = api::system_display::SetDisplayProperties;
 
-typedef std::vector<linked_ptr<api::system_display::DisplayUnitInfo>>
-    DisplayInfo;
-
 bool SystemDisplayGetInfoFunction::RunSync() {
   DisplayInfo all_displays_info =
       DisplayInfoProvider::Get()->GetAllDisplaysInfo();

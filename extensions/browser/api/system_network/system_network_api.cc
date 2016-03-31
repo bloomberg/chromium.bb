@@ -62,17 +62,14 @@ void SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread(
     const net::NetworkInterfaceList& interface_list) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::vector<linked_ptr<api::system_network::NetworkInterface>> create_arg;
+  std::vector<api::system_network::NetworkInterface> create_arg;
   create_arg.reserve(interface_list.size());
-  for (net::NetworkInterfaceList::const_iterator i = interface_list.begin();
-       i != interface_list.end();
-       ++i) {
-    linked_ptr<api::system_network::NetworkInterface> info =
-        make_linked_ptr(new api::system_network::NetworkInterface);
-    info->name = i->name;
-    info->address = i->address.ToString();
-    info->prefix_length = i->prefix_length;
-    create_arg.push_back(info);
+  for (const net::NetworkInterface interface : interface_list) {
+    api::system_network::NetworkInterface info;
+    info.name = interface.name;
+    info.address = interface.address.ToString();
+    info.prefix_length = interface.prefix_length;
+    create_arg.push_back(std::move(info));
   }
 
   results_ =

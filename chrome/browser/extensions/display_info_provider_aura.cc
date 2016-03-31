@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/display_info_provider_aura.h"
 
+#include "base/logging.h"
 #include "ui/gfx/screen.h"
 
 namespace extensions {

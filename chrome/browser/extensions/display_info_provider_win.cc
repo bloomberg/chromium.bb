@@ -26,7 +26,7 @@ EnumMonitorCallback(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
   DisplayInfo* all_displays = reinterpret_cast<DisplayInfo*>(data);
   DCHECK(all_displays);
 
-  linked_ptr<DisplayUnitInfo> unit(new DisplayUnitInfo);
+  DisplayUnitInfo unit;
 
   MONITORINFOEX monitor_info;
   ZeroMemory(&monitor_info, sizeof(MONITORINFOEX));
@@ -39,12 +39,12 @@ EnumMonitorCallback(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
     return FALSE;
 
   gfx::Size dpi(gfx::GetDPI());
-  unit->id =
+  unit.id =
       base::Int64ToString(base::Hash(base::WideToUTF8(monitor_info.szDevice)));
-  unit->name = base::WideToUTF8(device.DeviceString);
-  unit->dpi_x = dpi.width();
-  unit->dpi_y = dpi.height();
-  all_displays->push_back(unit);
+  unit.name = base::WideToUTF8(device.DeviceString);
+  unit.dpi_x = dpi.width();
+  unit.dpi_y = dpi.height();
+  all_displays->push_back(std::move(unit));
 
   return TRUE;
 }
@@ -72,10 +72,10 @@ void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
   EnumDisplayMonitors(
       NULL, NULL, EnumMonitorCallback, reinterpret_cast<LPARAM>(&all_displays));
   for (size_t i = 0; i < all_displays.size(); ++i) {
-    if (unit->id == all_displays[i]->id) {
-      unit->name = all_displays[i]->name;
-      unit->dpi_x = all_displays[i]->dpi_x;
-      unit->dpi_y = all_displays[i]->dpi_y;
+    if (unit->id == all_displays[i].id) {
+      unit->name = all_displays[i].name;
+      unit->dpi_x = all_displays[i].dpi_x;
+      unit->dpi_y = all_displays[i].dpi_y;
       break;
     }
   }

@@ -5,7 +5,7 @@
 // Use the <code>chrome.sockets.tcpServer</code> API to create server
 // applications using TCP connections. This API supersedes the TCP functionality
 // previously found in the <code>chrome.socket</code> API.
-namespace sockets.tcpServer {
+[use_movable_types=true] namespace sockets.tcpServer {
   // The socket properties specified in the <code>create</code> or
   // <code>update</code> function. Each property is optional. If a property
   // value is not specified, a default value is used when calling

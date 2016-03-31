@@ -51,26 +51,25 @@ void DisplayInfoProvider::InitializeForTesting(
 
 // static
 // Creates new DisplayUnitInfo struct for |display|.
-api::system_display::DisplayUnitInfo*
-DisplayInfoProvider::CreateDisplayUnitInfo(const gfx::Display& display,
-                                           int64_t primary_display_id) {
-  api::system_display::DisplayUnitInfo* unit =
-      new api::system_display::DisplayUnitInfo();
+api::system_display::DisplayUnitInfo DisplayInfoProvider::CreateDisplayUnitInfo(
+    const gfx::Display& display,
+    int64_t primary_display_id) {
+  api::system_display::DisplayUnitInfo unit;
   const gfx::Rect& bounds = display.bounds();
   const gfx::Rect& work_area = display.work_area();
-  unit->id = base::Int64ToString(display.id());
-  unit->is_primary = (display.id() == primary_display_id);
-  unit->is_internal = display.IsInternal();
-  unit->is_enabled = true;
-  unit->rotation = RotationToDegrees(display.rotation());
-  unit->bounds.left = bounds.x();
-  unit->bounds.top = bounds.y();
-  unit->bounds.width = bounds.width();
-  unit->bounds.height = bounds.height();
-  unit->work_area.left = work_area.x();
-  unit->work_area.top = work_area.y();
-  unit->work_area.width = work_area.width();
-  unit->work_area.height = work_area.height();
+  unit.id = base::Int64ToString(display.id());
+  unit.is_primary = (display.id() == primary_display_id);
+  unit.is_internal = display.IsInternal();
+  unit.is_enabled = true;
+  unit.rotation = RotationToDegrees(display.rotation());
+  unit.bounds.left = bounds.x();
+  unit.bounds.top = bounds.y();
+  unit.bounds.width = bounds.width();
+  unit.bounds.height = bounds.height();
+  unit.work_area.left = work_area.x();
+  unit.work_area.top = work_area.y();
+  unit.work_area.width = work_area.width();
+  unit.work_area.height = work_area.height();
   return unit;
 }
 
@@ -82,10 +81,10 @@ DisplayInfo DisplayInfoProvider::GetAllDisplaysInfo() {
   std::vector<gfx::Display> displays = screen->GetAllDisplays();
   DisplayInfo all_displays;
   for (const gfx::Display& display : displays) {
-    linked_ptr<api::system_display::DisplayUnitInfo> unit(
-        CreateDisplayUnitInfo(display, primary_id));
-    UpdateDisplayUnitInfoForPlatform(display, unit.get());
-    all_displays.push_back(unit);
+    api::system_display::DisplayUnitInfo unit =
+        CreateDisplayUnitInfo(display, primary_id);
+    UpdateDisplayUnitInfoForPlatform(display, &unit);
+    all_displays.push_back(std::move(unit));
   }
   return all_displays;
 }

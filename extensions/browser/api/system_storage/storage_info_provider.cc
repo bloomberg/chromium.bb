@@ -47,10 +47,6 @@ StorageInfoProvider::StorageInfoProvider() {
 StorageInfoProvider::~StorageInfoProvider() {
 }
 
-const StorageUnitInfoList& StorageInfoProvider::storage_unit_info_list() const {
-  return info_;
-}
-
 void StorageInfoProvider::InitializeForTesting(
     scoped_refptr<StorageInfoProvider> provider) {
   DCHECK(provider.get() != NULL);
@@ -86,9 +82,9 @@ void StorageInfoProvider::GetAllStoragesIntoInfoList() {
   for (std::vector<StorageInfo>::const_iterator it = storage_list.begin();
        it != storage_list.end();
        ++it) {
-    linked_ptr<StorageUnitInfo> unit(new StorageUnitInfo());
-    systeminfo::BuildStorageUnitInfo(*it, unit.get());
-    info_.push_back(unit);
+    StorageUnitInfo unit;
+    systeminfo::BuildStorageUnitInfo(*it, &unit);
+    info_.push_back(std::move(unit));
   }
 }
 

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 
 namespace gfx {
 class Display;
@@ -26,8 +25,7 @@ struct DisplayUnitInfo;
 }
 }
 
-typedef std::vector<linked_ptr<api::system_display::DisplayUnitInfo>>
-    DisplayInfo;
+typedef std::vector<api::system_display::DisplayUnitInfo> DisplayInfo;
 
 class DisplayInfoProvider {
  public:
@@ -59,7 +57,7 @@ class DisplayInfoProvider {
 
   // Create a DisplayUnitInfo from a gfx::Display for implementations of
   // GetAllDisplaysInfo()
-  static api::system_display::DisplayUnitInfo* CreateDisplayUnitInfo(
+  static api::system_display::DisplayUnitInfo CreateDisplayUnitInfo(
       const gfx::Display& display,
       int64_t primary_display_id);
 

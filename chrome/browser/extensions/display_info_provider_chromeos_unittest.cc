@@ -83,36 +83,35 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBasic) {
   ASSERT_EQ(2u, result.size());
 
   int64_t display_id;
-  ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[0].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
 
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
-  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[0]->overscan));
-  EXPECT_EQ(0, result[0]->rotation);
-  EXPECT_TRUE(result[0]->is_primary);
-  EXPECT_EQ(96, result[0]->dpi_x);
-  EXPECT_EQ(96, result[0]->dpi_y);
-  EXPECT_TRUE(result[0]->mirroring_source_id.empty());
-  EXPECT_TRUE(result[0]->is_enabled);
+  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[0].overscan));
+  EXPECT_EQ(0, result[0].rotation);
+  EXPECT_TRUE(result[0].is_primary);
+  EXPECT_EQ(96, result[0].dpi_x);
+  EXPECT_EQ(96, result[0].dpi_y);
+  EXPECT_TRUE(result[0].mirroring_source_id.empty());
+  EXPECT_TRUE(result[0].is_enabled);
 
-  ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[1].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
 
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
   EXPECT_EQ(GetDisplayManager()->GetDisplayNameForId(display_id),
-            result[1]->name);
+            result[1].name);
   // The second display is positioned left of the primary display, whose width
   // is 500.
-  EXPECT_EQ("500,0 400x520",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
-  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[1]->overscan));
-  EXPECT_EQ(0, result[1]->rotation);
-  EXPECT_FALSE(result[1]->is_primary);
-  EXPECT_EQ(96, result[1]->dpi_x);
-  EXPECT_EQ(96, result[1]->dpi_y);
-  EXPECT_TRUE(result[1]->mirroring_source_id.empty());
-  EXPECT_TRUE(result[1]->is_enabled);
+  EXPECT_EQ("500,0 400x520", SystemInfoDisplayBoundsToString(result[1].bounds));
+  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[1].overscan));
+  EXPECT_EQ(0, result[1].rotation);
+  EXPECT_FALSE(result[1].is_primary);
+  EXPECT_EQ(96, result[1].dpi_x);
+  EXPECT_EQ(96, result[1].dpi_y);
+  EXPECT_TRUE(result[1].mirroring_source_id.empty());
+  EXPECT_TRUE(result[1].is_enabled);
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, GetWithUnifiedDesktop) {
@@ -125,36 +124,35 @@ TEST_F(DisplayInfoProviderChromeosTest, GetWithUnifiedDesktop) {
   ASSERT_EQ(2u, result.size());
 
   int64_t display_id;
-  ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[0].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
 
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
-  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[0]->overscan));
-  EXPECT_EQ(0, result[0]->rotation);
-  EXPECT_TRUE(result[0]->is_primary);
-  EXPECT_EQ(96, result[0]->dpi_x);
-  EXPECT_EQ(96, result[0]->dpi_y);
-  EXPECT_TRUE(result[0]->mirroring_source_id.empty());
-  EXPECT_TRUE(result[0]->is_enabled);
+  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[0].overscan));
+  EXPECT_EQ(0, result[0].rotation);
+  EXPECT_TRUE(result[0].is_primary);
+  EXPECT_EQ(96, result[0].dpi_x);
+  EXPECT_EQ(96, result[0].dpi_y);
+  EXPECT_TRUE(result[0].mirroring_source_id.empty());
+  EXPECT_TRUE(result[0].is_enabled);
 
-  ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[1].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
 
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
   EXPECT_EQ(GetDisplayManager()->GetDisplayNameForId(display_id),
-            result[1]->name);
+            result[1].name);
 
   // Initial multipple display configuration.
-  EXPECT_EQ("500,0 400x520",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
-  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[1]->overscan));
-  EXPECT_EQ(0, result[1]->rotation);
-  EXPECT_FALSE(result[1]->is_primary);
-  EXPECT_EQ(96, result[1]->dpi_x);
-  EXPECT_EQ(96, result[1]->dpi_y);
-  EXPECT_TRUE(result[1]->mirroring_source_id.empty());
-  EXPECT_TRUE(result[1]->is_enabled);
+  EXPECT_EQ("500,0 400x520", SystemInfoDisplayBoundsToString(result[1].bounds));
+  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[1].overscan));
+  EXPECT_EQ(0, result[1].rotation);
+  EXPECT_FALSE(result[1].is_primary);
+  EXPECT_EQ(96, result[1].dpi_x);
+  EXPECT_EQ(96, result[1].dpi_y);
+  EXPECT_TRUE(result[1].mirroring_source_id.empty());
+  EXPECT_TRUE(result[1].is_enabled);
 
   // Enable unified.
   GetDisplayManager()->SetUnifiedDesktopEnabled(true);
@@ -164,35 +162,34 @@ TEST_F(DisplayInfoProviderChromeosTest, GetWithUnifiedDesktop) {
 
   ASSERT_EQ(2u, result.size());
 
-  ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[0].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
 
-  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[0]->overscan));
-  EXPECT_EQ(0, result[0]->rotation);
-  EXPECT_TRUE(result[0]->is_primary);
-  EXPECT_EQ(96, result[0]->dpi_x);
-  EXPECT_EQ(96, result[0]->dpi_y);
-  EXPECT_TRUE(result[0]->mirroring_source_id.empty());
-  EXPECT_TRUE(result[0]->is_enabled);
+  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[0].overscan));
+  EXPECT_EQ(0, result[0].rotation);
+  EXPECT_TRUE(result[0].is_primary);
+  EXPECT_EQ(96, result[0].dpi_x);
+  EXPECT_EQ(96, result[0].dpi_y);
+  EXPECT_TRUE(result[0].mirroring_source_id.empty());
+  EXPECT_TRUE(result[0].is_enabled);
 
-  ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[1].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
 
   EXPECT_EQ(GetDisplayManager()->GetDisplayNameForId(display_id),
-            result[1]->name);
+            result[1].name);
 
   // After enabling unified the second display is scaled to meet the height for
   // the first. Which also affects the DPI below.
-  EXPECT_EQ("500,0 461x600",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
-  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[1]->overscan));
-  EXPECT_EQ(0, result[1]->rotation);
-  EXPECT_FALSE(result[1]->is_primary);
-  EXPECT_FLOAT_EQ(111, round(result[1]->dpi_x));
-  EXPECT_FLOAT_EQ(111, round(result[1]->dpi_y));
-  EXPECT_TRUE(result[1]->mirroring_source_id.empty());
-  EXPECT_TRUE(result[1]->is_enabled);
+  EXPECT_EQ("500,0 461x600", SystemInfoDisplayBoundsToString(result[1].bounds));
+  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[1].overscan));
+  EXPECT_EQ(0, result[1].rotation);
+  EXPECT_FALSE(result[1].is_primary);
+  EXPECT_FLOAT_EQ(111, round(result[1].dpi_x));
+  EXPECT_FLOAT_EQ(111, round(result[1].dpi_y));
+  EXPECT_TRUE(result[1].mirroring_source_id.empty());
+  EXPECT_TRUE(result[1].is_enabled);
 
   // Disable unified and check that once again it matches initial situation.
   GetDisplayManager()->SetUnifiedDesktopEnabled(false);
@@ -201,34 +198,33 @@ TEST_F(DisplayInfoProviderChromeosTest, GetWithUnifiedDesktop) {
 
   ASSERT_EQ(2u, result.size());
 
-  ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[0].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
 
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
-  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[0]->overscan));
-  EXPECT_EQ(0, result[0]->rotation);
-  EXPECT_TRUE(result[0]->is_primary);
-  EXPECT_EQ(96, result[0]->dpi_x);
-  EXPECT_EQ(96, result[0]->dpi_y);
-  EXPECT_TRUE(result[0]->mirroring_source_id.empty());
-  EXPECT_TRUE(result[0]->is_enabled);
+  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[0].overscan));
+  EXPECT_EQ(0, result[0].rotation);
+  EXPECT_TRUE(result[0].is_primary);
+  EXPECT_EQ(96, result[0].dpi_x);
+  EXPECT_EQ(96, result[0].dpi_y);
+  EXPECT_TRUE(result[0].mirroring_source_id.empty());
+  EXPECT_TRUE(result[0].is_enabled);
 
-  ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[1].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
 
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
   EXPECT_EQ(GetDisplayManager()->GetDisplayNameForId(display_id),
-            result[1]->name);
-  EXPECT_EQ("500,0 400x520",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
-  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[1]->overscan));
-  EXPECT_EQ(0, result[1]->rotation);
-  EXPECT_FALSE(result[1]->is_primary);
-  EXPECT_EQ(96, result[1]->dpi_x);
-  EXPECT_EQ(96, result[1]->dpi_y);
-  EXPECT_TRUE(result[1]->mirroring_source_id.empty());
-  EXPECT_TRUE(result[1]->is_enabled);
+            result[1].name);
+  EXPECT_EQ("500,0 400x520", SystemInfoDisplayBoundsToString(result[1].bounds));
+  EXPECT_EQ("0,0,0,0", SystemInfoDisplayInsetsToString(result[1].overscan));
+  EXPECT_EQ(0, result[1].rotation);
+  EXPECT_FALSE(result[1].is_primary);
+  EXPECT_EQ(96, result[1].dpi_x);
+  EXPECT_EQ(96, result[1].dpi_y);
+  EXPECT_TRUE(result[1].mirroring_source_id.empty());
+  EXPECT_TRUE(result[1].is_enabled);
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
@@ -238,12 +234,12 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
   ASSERT_EQ(1u, result.size());
 
   int64_t display_id;
-  ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[0].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
 
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
-  EXPECT_EQ("0,0 600x500", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ(90, result[0]->rotation);
+  EXPECT_EQ("0,0 600x500", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ(90, result[0].rotation);
 
   GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_270,
                                           gfx::Display::ROTATION_SOURCE_ACTIVE);
@@ -252,9 +248,9 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   ASSERT_EQ(1u, result.size());
 
-  EXPECT_EQ(base::Int64ToString(display_id), result[0]->id);
-  EXPECT_EQ("0,0 600x500", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ(270, result[0]->rotation);
+  EXPECT_EQ(base::Int64ToString(display_id), result[0].id);
+  EXPECT_EQ("0,0 600x500", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ(270, result[0].rotation);
 
   GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_180,
                                           gfx::Display::ROTATION_SOURCE_ACTIVE);
@@ -263,9 +259,9 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   ASSERT_EQ(1u, result.size());
 
-  EXPECT_EQ(base::Int64ToString(display_id), result[0]->id);
-  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ(180, result[0]->rotation);
+  EXPECT_EQ(base::Int64ToString(display_id), result[0].id);
+  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ(180, result[0].rotation);
 
   GetDisplayManager()->SetDisplayRotation(display_id, gfx::Display::ROTATE_0,
                                           gfx::Display::ROTATION_SOURCE_ACTIVE);
@@ -274,9 +270,9 @@ TEST_F(DisplayInfoProviderChromeosTest, GetRotation) {
 
   ASSERT_EQ(1u, result.size());
 
-  EXPECT_EQ(base::Int64ToString(display_id), result[0]->id);
-  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ(0, result[0]->rotation);
+  EXPECT_EQ(base::Int64ToString(display_id), result[0].id);
+  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ(0, result[0].rotation);
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, GetDPI) {
@@ -286,16 +282,15 @@ TEST_F(DisplayInfoProviderChromeosTest, GetDPI) {
 
   ASSERT_EQ(2u, result.size());
 
-  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ(96, result[0]->dpi_x);
-  EXPECT_EQ(96, result[0]->dpi_y);
+  EXPECT_EQ("0,0 500x600", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ(96, result[0].dpi_x);
+  EXPECT_EQ(96, result[0].dpi_y);
 
-  EXPECT_EQ("500,0 200x260",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
+  EXPECT_EQ("500,0 200x260", SystemInfoDisplayBoundsToString(result[1].bounds));
   // DPI should be 96 (native dpi) * 200 (display) / 400 (native) when ui scale
   // is 2.
-  EXPECT_EQ(96 / 2, result[1]->dpi_x);
-  EXPECT_EQ(96 / 2, result[1]->dpi_y);
+  EXPECT_EQ(96 / 2, result[1].dpi_x);
+  EXPECT_EQ(96 / 2, result[1].dpi_y);
 
   ash::test::SwapPrimaryDisplay();
 
@@ -304,13 +299,13 @@ TEST_F(DisplayInfoProviderChromeosTest, GetDPI) {
   ASSERT_EQ(2u, result.size());
 
   EXPECT_EQ("-500,0 500x600",
-            SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ(96, result[0]->dpi_x);
-  EXPECT_EQ(96, result[0]->dpi_y);
+            SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ(96, result[0].dpi_x);
+  EXPECT_EQ(96, result[0].dpi_y);
 
-  EXPECT_EQ("0,0 200x260", SystemInfoDisplayBoundsToString(result[1]->bounds));
-  EXPECT_EQ(96 / 2, result[1]->dpi_x);
-  EXPECT_EQ(96 / 2, result[1]->dpi_y);
+  EXPECT_EQ("0,0 200x260", SystemInfoDisplayBoundsToString(result[1].bounds));
+  EXPECT_EQ(96 / 2, result[1].dpi_x);
+  EXPECT_EQ(96 / 2, result[1].dpi_y);
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
@@ -321,15 +316,13 @@ TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
   ASSERT_EQ(2u, result.size());
 
   int64_t display_id;
-  ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[1]->id;
+  ASSERT_TRUE(base::StringToInt64(result[1].id, &display_id))
+      << "Display id must be convertable to integer: " << result[1].id;
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
 
   // Default overscan is 5%.
-  EXPECT_EQ("304,0 380x494",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
-  EXPECT_EQ("13,10,13,10",
-            SystemInfoDisplayInsetsToString(result[1]->overscan));
+  EXPECT_EQ("304,0 380x494", SystemInfoDisplayBoundsToString(result[1].bounds));
+  EXPECT_EQ("13,10,13,10", SystemInfoDisplayInsetsToString(result[1].overscan));
 
   GetDisplayManager()->SetOverscanInsets(display_id,
                                          gfx::Insets(20, 30, 50, 60));
@@ -337,19 +330,17 @@ TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
 
   ASSERT_EQ(2u, result.size());
 
-  EXPECT_EQ(base::Int64ToString(display_id), result[1]->id);
-  EXPECT_EQ("304,0 310x450",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
-  EXPECT_EQ("20,30,50,60",
-            SystemInfoDisplayInsetsToString(result[1]->overscan));
+  EXPECT_EQ(base::Int64ToString(display_id), result[1].id);
+  EXPECT_EQ("304,0 310x450", SystemInfoDisplayBoundsToString(result[1].bounds));
+  EXPECT_EQ("20,30,50,60", SystemInfoDisplayInsetsToString(result[1].overscan));
 
   // Set insets for the primary screen. Note that it has 2x scale.
-  ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[0].id, &display_id))
+      << "Display id must be convertable to integer: " << result[0].id;
   ASSERT_TRUE(DisplayExists(display_id)) << display_id << " not found";
 
-  EXPECT_EQ("0,0 304x342", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ("9,8,9,8", SystemInfoDisplayInsetsToString(result[0]->overscan));
+  EXPECT_EQ("0,0 304x342", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ("9,8,9,8", SystemInfoDisplayInsetsToString(result[0].overscan));
 
   GetDisplayManager()->SetOverscanInsets(display_id,
                                          gfx::Insets(10, 20, 30, 40));
@@ -357,10 +348,9 @@ TEST_F(DisplayInfoProviderChromeosTest, GetVisibleArea) {
 
   ASSERT_EQ(2u, result.size());
 
-  EXPECT_EQ(base::Int64ToString(display_id), result[0]->id);
-  EXPECT_EQ("0,0 260x320", SystemInfoDisplayBoundsToString(result[0]->bounds));
-  EXPECT_EQ("10,20,30,40",
-            SystemInfoDisplayInsetsToString(result[0]->overscan));
+  EXPECT_EQ(base::Int64ToString(display_id), result[0].id);
+  EXPECT_EQ("0,0 260x320", SystemInfoDisplayBoundsToString(result[0].bounds));
+  EXPECT_EQ("10,20,30,40", SystemInfoDisplayInsetsToString(result[0].overscan));
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
@@ -371,20 +361,20 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   ASSERT_EQ(2u, result.size());
 
   int64_t display_id_primary;
-  ASSERT_TRUE(base::StringToInt64(result[0]->id, &display_id_primary))
-      << "Display id must be convertable to integer: " << result[0]->id;
+  ASSERT_TRUE(base::StringToInt64(result[0].id, &display_id_primary))
+      << "Display id must be convertable to integer: " << result[0].id;
   ASSERT_TRUE(DisplayExists(display_id_primary)) << display_id_primary
                                                  << " not found";
 
   int64_t display_id_secondary;
-  ASSERT_TRUE(base::StringToInt64(result[1]->id, &display_id_secondary))
-      << "Display id must be convertable to integer: " << result[1]->id;
+  ASSERT_TRUE(base::StringToInt64(result[1].id, &display_id_secondary))
+      << "Display id must be convertable to integer: " << result[1].id;
   ASSERT_TRUE(DisplayExists(display_id_secondary)) << display_id_secondary
                                                    << " not found";
 
   ASSERT_FALSE(GetDisplayManager()->IsInMirrorMode());
-  EXPECT_TRUE(result[0]->mirroring_source_id.empty());
-  EXPECT_TRUE(result[1]->mirroring_source_id.empty());
+  EXPECT_TRUE(result[0].mirroring_source_id.empty());
+  EXPECT_TRUE(result[1].mirroring_source_id.empty());
 
   GetDisplayManager()->SetMirrorMode(true);
   ASSERT_TRUE(GetDisplayManager()->IsInMirrorMode());
@@ -392,9 +382,9 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(1u, result.size());
-  EXPECT_EQ(base::Int64ToString(display_id_primary), result[0]->id);
+  EXPECT_EQ(base::Int64ToString(display_id_primary), result[0].id);
   EXPECT_EQ(base::Int64ToString(display_id_secondary),
-            result[0]->mirroring_source_id);
+            result[0].mirroring_source_id);
 
   GetDisplayManager()->SetMirrorMode(false);
   ASSERT_FALSE(GetDisplayManager()->IsInMirrorMode());
@@ -402,10 +392,10 @@ TEST_F(DisplayInfoProviderChromeosTest, GetMirroring) {
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
-  EXPECT_EQ(base::Int64ToString(display_id_primary), result[0]->id);
-  EXPECT_TRUE(result[0]->mirroring_source_id.empty());
-  EXPECT_EQ(base::Int64ToString(display_id_secondary), result[1]->id);
-  EXPECT_TRUE(result[1]->mirroring_source_id.empty());
+  EXPECT_EQ(base::Int64ToString(display_id_primary), result[0].id);
+  EXPECT_TRUE(result[0].mirroring_source_id.empty());
+  EXPECT_EQ(base::Int64ToString(display_id_secondary), result[1].id);
+  EXPECT_TRUE(result[1].mirroring_source_id.empty());
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
@@ -416,9 +406,9 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   DisplayInfo result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
-  EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
+  EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0].bounds));
   EXPECT_EQ("-400,-40 400x520",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
+            SystemInfoDisplayBoundsToString(result[1].bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
       ash::test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 40));
@@ -426,18 +416,18 @@ TEST_F(DisplayInfoProviderChromeosTest, GetBounds) {
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 
   ASSERT_EQ(2u, result.size());
-  EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
+  EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0].bounds));
   EXPECT_EQ("40,-520 400x520",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
+            SystemInfoDisplayBoundsToString(result[1].bounds));
 
   GetDisplayManager()->SetLayoutForCurrentDisplays(
       ash::test::CreateDisplayLayout(ash::DisplayPlacement::BOTTOM, 80));
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
   ASSERT_EQ(2u, result.size());
-  EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0]->bounds));
+  EXPECT_EQ("0,0 600x600", SystemInfoDisplayBoundsToString(result[0].bounds));
   EXPECT_EQ("80,600 400x520",
-            SystemInfoDisplayBoundsToString(result[1]->bounds));
+            SystemInfoDisplayBoundsToString(result[1].bounds));
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginLeftExact) {

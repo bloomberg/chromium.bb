@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/display_info_provider_mac.h"
 
+#include "base/logging.h"
+
 namespace extensions {
 
 DisplayInfoProviderMac::DisplayInfoProviderMac() {

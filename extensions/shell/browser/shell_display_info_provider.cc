@@ -4,6 +4,8 @@
 
 #include "extensions/shell/browser/shell_display_info_provider.h"
 
+#include "base/logging.h"
+
 namespace extensions {
 
 ShellDisplayInfoProvider::ShellDisplayInfoProvider() {

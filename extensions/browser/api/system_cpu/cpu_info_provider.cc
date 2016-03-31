@@ -34,10 +34,8 @@ bool CpuInfoProvider::QueryInfo() {
 
   info_.processors.clear();
   // Fill in the correct number of uninitialized ProcessorInfos.
-  for (int i = 0; i < info_.num_of_processors; ++i) {
-    info_.processors.push_back(linked_ptr<api::system_cpu::ProcessorInfo>(
-        new api::system_cpu::ProcessorInfo()));
-  }
+  for (int i = 0; i < info_.num_of_processors; ++i)
+    info_.processors.push_back(api::system_cpu::ProcessorInfo());
   // Initialize the ProcessorInfos, or return an empty array if that fails.
   if (!QueryCpuTimePerProcessor(&info_.processors))
     info_.processors.clear();

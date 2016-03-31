@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // The <code>chrome.system.memory</code> API.
-namespace system.memory {
+[use_movable_types=true] namespace system.memory {
 
   dictionary MemoryInfo {
     // The total amount of physical memory capacity, in bytes.

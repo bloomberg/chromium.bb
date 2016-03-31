@@ -408,10 +408,10 @@ DisplayInfo DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
   int64_t primary_id = displays[0].id();
   DisplayInfo all_displays;
   for (const gfx::Display& display : displays) {
-    linked_ptr<api::system_display::DisplayUnitInfo> unit(
-        CreateDisplayUnitInfo(display, primary_id));
-    UpdateDisplayUnitInfoForPlatform(display, unit.get());
-    all_displays.push_back(unit);
+    api::system_display::DisplayUnitInfo unit =
+        CreateDisplayUnitInfo(display, primary_id);
+    UpdateDisplayUnitInfoForPlatform(display, &unit);
+    all_displays.push_back(std::move(unit));
   }
   return all_displays;
 }

@@ -21,7 +21,7 @@ const char kProcStat[] = "/proc/stat";
 }  // namespace
 
 bool CpuInfoProvider::QueryCpuTimePerProcessor(
-    std::vector<linked_ptr<api::system_cpu::ProcessorInfo>>* infos) {
+    std::vector<api::system_cpu::ProcessorInfo>* infos) {
   DCHECK(infos);
 
   // WARNING: this method may return incomplete data because some processors may
@@ -64,10 +64,10 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
       return false;
     }
 
-    infos->at(pindex)->usage.kernel = static_cast<double>(sys);
-    infos->at(pindex)->usage.user = static_cast<double>(user + nice);
-    infos->at(pindex)->usage.idle = static_cast<double>(idle);
-    infos->at(pindex)->usage.total =
+    infos->at(pindex).usage.kernel = static_cast<double>(sys);
+    infos->at(pindex).usage.user = static_cast<double>(user + nice);
+    infos->at(pindex).usage.idle = static_cast<double>(idle);
+    infos->at(pindex).usage.total =
         static_cast<double>(sys + user + nice + idle);
   }
 

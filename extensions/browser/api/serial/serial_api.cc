@@ -90,7 +90,7 @@ void SerialGetDevicesFunction::Work() {
       device::SerialDeviceEnumerator::Create();
   mojo::Array<device::serial::DeviceInfoPtr> devices = enumerator->GetDevices();
   results_ = serial::GetDevices::Results::Create(
-      devices.To<std::vector<linked_ptr<serial::DeviceInfo> > >());
+      devices.To<std::vector<serial::DeviceInfo>>());
 }
 
 SerialConnectFunction::SerialConnectFunction() {
@@ -350,7 +350,7 @@ bool SerialGetConnectionsFunction::Prepare() {
 }
 
 void SerialGetConnectionsFunction::Work() {
-  std::vector<linked_ptr<serial::ConnectionInfo> > infos;
+  std::vector<serial::ConnectionInfo> infos;
   const base::hash_set<int>* connection_ids =
       manager_->GetResourceIds(extension_->id());
   if (connection_ids) {
@@ -360,10 +360,10 @@ void SerialGetConnectionsFunction::Work() {
       int connection_id = *it;
       SerialConnection* connection = GetSerialConnection(connection_id);
       if (connection) {
-        linked_ptr<serial::ConnectionInfo> info(new serial::ConnectionInfo());
-        info->connection_id = connection_id;
-        connection->GetInfo(info.get());
-        infos.push_back(info);
+        serial::ConnectionInfo info;
+        info.connection_id = connection_id;
+        connection->GetInfo(&info);
+        infos.push_back(std::move(info));
       }
     }
   }
@@ -477,19 +477,18 @@ void SerialClearBreakFunction::Work() {
 namespace mojo {
 
 // static
-linked_ptr<extensions::api::serial::DeviceInfo> TypeConverter<
-    linked_ptr<extensions::api::serial::DeviceInfo>,
+extensions::api::serial::DeviceInfo TypeConverter<
+    extensions::api::serial::DeviceInfo,
     device::serial::DeviceInfoPtr>::Convert(const device::serial::DeviceInfoPtr&
                                                 device) {
-  linked_ptr<extensions::api::serial::DeviceInfo> info(
-      new extensions::api::serial::DeviceInfo);
-  info->path = device->path;
+  extensions::api::serial::DeviceInfo info;
+  info.path = device->path;
   if (device->has_vendor_id)
-    info->vendor_id.reset(new int(static_cast<int>(device->vendor_id)));
+    info.vendor_id.reset(new int(static_cast<int>(device->vendor_id)));
   if (device->has_product_id)
-    info->product_id.reset(new int(static_cast<int>(device->product_id)));
+    info.product_id.reset(new int(static_cast<int>(device->product_id)));
   if (device->display_name)
-    info->display_name.reset(new std::string(device->display_name));
+    info.display_name.reset(new std::string(device->display_name));
   return info;
 }
 

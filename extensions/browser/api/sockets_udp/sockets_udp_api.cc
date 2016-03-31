@@ -46,29 +46,27 @@ ResumableUDPSocket* UDPSocketExtensionWithDnsLookupFunction::GetUdpSocket(
   return static_cast<ResumableUDPSocket*>(GetSocket(socket_id));
 }
 
-linked_ptr<sockets_udp::SocketInfo> CreateSocketInfo(
-    int socket_id,
-    ResumableUDPSocket* socket) {
-  linked_ptr<sockets_udp::SocketInfo> socket_info(
-      new sockets_udp::SocketInfo());
+sockets_udp::SocketInfo CreateSocketInfo(int socket_id,
+                                         ResumableUDPSocket* socket) {
+  sockets_udp::SocketInfo socket_info;
   // This represents what we know about the socket, and does not call through
   // to the system.
-  socket_info->socket_id = socket_id;
+  socket_info.socket_id = socket_id;
   if (!socket->name().empty()) {
-    socket_info->name.reset(new std::string(socket->name()));
+    socket_info.name.reset(new std::string(socket->name()));
   }
-  socket_info->persistent = socket->persistent();
+  socket_info.persistent = socket->persistent();
   if (socket->buffer_size() > 0) {
-    socket_info->buffer_size.reset(new int(socket->buffer_size()));
+    socket_info.buffer_size.reset(new int(socket->buffer_size()));
   }
-  socket_info->paused = socket->paused();
+  socket_info.paused = socket->paused();
 
   // Grab the local address as known by the OS.
   net::IPEndPoint localAddress;
   if (socket->GetLocalAddress(&localAddress)) {
-    socket_info->local_address.reset(
+    socket_info.local_address.reset(
         new std::string(localAddress.ToStringWithoutPort()));
-    socket_info->local_port.reset(new int(localAddress.port()));
+    socket_info.local_port.reset(new int(localAddress.port()));
   }
 
   return socket_info;
@@ -329,9 +327,9 @@ void SocketsUdpGetInfoFunction::Work() {
     return;
   }
 
-  linked_ptr<sockets_udp::SocketInfo> socket_info =
+  sockets_udp::SocketInfo socket_info =
       CreateSocketInfo(params_->socket_id, socket);
-  results_ = sockets_udp::GetInfo::Results::Create(*socket_info);
+  results_ = sockets_udp::GetInfo::Results::Create(socket_info);
 }
 
 SocketsUdpGetSocketsFunction::SocketsUdpGetSocketsFunction() {}
@@ -341,13 +339,10 @@ SocketsUdpGetSocketsFunction::~SocketsUdpGetSocketsFunction() {}
 bool SocketsUdpGetSocketsFunction::Prepare() { return true; }
 
 void SocketsUdpGetSocketsFunction::Work() {
-  std::vector<linked_ptr<sockets_udp::SocketInfo> > socket_infos;
+  std::vector<sockets_udp::SocketInfo> socket_infos;
   base::hash_set<int>* resource_ids = GetSocketIds();
   if (resource_ids != NULL) {
-    for (base::hash_set<int>::iterator it = resource_ids->begin();
-         it != resource_ids->end();
-         ++it) {
-      int socket_id = *it;
+    for (int socket_id : *resource_ids) {
       ResumableUDPSocket* socket = GetUdpSocket(socket_id);
       if (socket) {
         socket_infos.push_back(CreateSocketInfo(socket_id, socket));

@@ -12,7 +12,7 @@
 namespace extensions {
 
 bool CpuInfoProvider::QueryCpuTimePerProcessor(
-    std::vector<linked_ptr<api::system_cpu::ProcessorInfo>>* infos) {
+    std::vector<api::system_cpu::ProcessorInfo>* infos) {
   DCHECK(infos);
 
   natural_t num_of_processors;
@@ -36,10 +36,10 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
              nice = static_cast<double>(cpu_infos[i].cpu_ticks[CPU_STATE_NICE]),
              idle = static_cast<double>(cpu_infos[i].cpu_ticks[CPU_STATE_IDLE]);
 
-      infos->at(i)->usage.kernel = sys;
-      infos->at(i)->usage.user = user + nice;
-      infos->at(i)->usage.idle = idle;
-      infos->at(i)->usage.total = sys + user + nice + idle;
+      infos->at(i).usage.kernel = sys;
+      infos->at(i).usage.user = user + nice;
+      infos->at(i).usage.idle = idle;
+      infos->at(i).usage.total = sys + user + nice + idle;
     }
 
     vm_deallocate(mach_task_self(),

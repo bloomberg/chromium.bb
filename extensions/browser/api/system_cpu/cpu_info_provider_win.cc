@@ -25,7 +25,7 @@ typedef DWORD(WINAPI* NtQuerySystemInformationPF)(DWORD system_info_class,
 }  // namespace
 
 bool CpuInfoProvider::QueryCpuTimePerProcessor(
-    std::vector<linked_ptr<api::system_cpu::ProcessorInfo>>* infos) {
+    std::vector<api::system_cpu::ProcessorInfo>* infos) {
   DCHECK(infos);
 
   HMODULE ntdll = GetModuleHandle(kNtdll);
@@ -64,10 +64,10 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(
 
     // KernelTime needs to be fixed-up, because it includes both idle time and
     // real kernel time.
-    infos->at(i)->usage.kernel = kernel - idle;
-    infos->at(i)->usage.user = user;
-    infos->at(i)->usage.idle = idle;
-    infos->at(i)->usage.total = kernel + user;
+    infos->at(i).usage.kernel = kernel - idle;
+    infos->at(i).usage.user = user;
+    infos->at(i).usage.idle = idle;
+    infos->at(i).usage.total = kernel + user;
   }
 
   return true;

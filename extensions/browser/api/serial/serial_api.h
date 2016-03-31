@@ -278,9 +278,9 @@ class SerialClearBreakFunction : public SerialAsyncApiFunction {
 namespace mojo {
 
 template <>
-struct TypeConverter<linked_ptr<extensions::api::serial::DeviceInfo>,
+struct TypeConverter<extensions::api::serial::DeviceInfo,
                      device::serial::DeviceInfoPtr> {
-  static linked_ptr<extensions::api::serial::DeviceInfo> Convert(
+  static extensions::api::serial::DeviceInfo Convert(
       const device::serial::DeviceInfoPtr& input);
 };
 
