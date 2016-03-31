@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
+import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
@@ -720,6 +721,10 @@ public class CustomTabActivity extends ChromeActivity {
             } else {
                 RecordUserAction.record("MobileShortcutFindInPage");
             }
+            return true;
+        } else if (id == R.id.info_menu_id) {
+            WebsiteSettingsPopup.show(this, getTabModelSelector().getCurrentTab(),
+                    getToolbarManager().getContentPublisher());
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

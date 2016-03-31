@@ -347,6 +347,14 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public void setUrlBarHidden(boolean hide) { }
 
     /**
+     * @return The name of the publisher of the content if it can be reliably extracted, or null
+     *         otherwise.
+     */
+    public String getContentPublisher() {
+        return null;
+    }
+
+    /**
      * Tells the Toolbar to update what buttons it is currently displaying.
      */
     public void updateButtonVisibility() { }

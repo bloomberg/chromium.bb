@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Pair;
@@ -134,7 +135,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
                 if (currentTab == null || currentTab.getWebContents() == null) return;
                 Activity activity = currentTab.getWindowAndroid().getActivity().get();
                 if (activity == null) return;
-                WebsiteSettingsPopup.show(activity, currentTab);
+                WebsiteSettingsPopup.show(activity, currentTab, mState == STATE_TITLE_ONLY
+                        ? parsePublisherNameFromUrl(currentTab.getUrl()) : null);
             }
         });
     }
@@ -243,6 +245,15 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         } else {
             assert false : "Unreached state";
         }
+    }
+
+    @Override
+    public String getContentPublisher() {
+        if (mState == STATE_TITLE_ONLY) {
+            if (getToolbarDataProvider().getTab() == null) return null;
+            return parsePublisherNameFromUrl(getToolbarDataProvider().getTab().getUrl());
+        }
+        return null;
     }
 
     @Override
@@ -582,6 +593,14 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             return false;
         }
         return showAccessibilityToast(v, description);
+    }
+
+    private static String parsePublisherNameFromUrl(String url) {
+        // TODO(ianwen): Make it generic to parse url from URI path. http://crbug.com/599298
+        // The url should look like: https://www.google.com/amp/s/www.nyt.com/ampthml/blogs.html
+        Uri uri = Uri.parse(url);
+        String path = uri.getPathSegments().get(2);
+        return path;
     }
 
     // Toolbar and LocationBar calls that are not relevant here.

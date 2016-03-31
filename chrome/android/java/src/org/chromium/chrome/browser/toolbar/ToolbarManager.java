@@ -953,6 +953,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * @see ToolbarLayout#getContentPublisher()
+     */
+    public String getContentPublisher() {
+        return mToolbar.getContentPublisher();
+    }
+
+    /**
      * Focuses or unfocuses the URL bar.
      * @param focused Whether URL bar should be focused.
      */
