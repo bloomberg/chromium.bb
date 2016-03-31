@@ -74,8 +74,8 @@ public:
         ScriptState* scriptState = static_cast<ScriptState*>(context->GetAlignedPointerFromEmbedderData(v8ContextPerContextDataIndex));
         // ScriptState::from() must not be called for a context that does not have
         // valid embedder data in the embedder field.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(scriptState);
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(scriptState->context() == context);
+        SECURITY_CHECK(scriptState);
+        SECURITY_CHECK(scriptState->context() == context);
         return scriptState;
     }
 

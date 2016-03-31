@@ -210,7 +210,7 @@ void DocumentThreadableLoader::start(const ResourceRequest& request)
                 break;
             case AllowCrossOriginRequests:
                 // No-CORS requests are allowed only for those contexts.
-                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(requestContext == WebURLRequest::RequestContextAudio || requestContext == WebURLRequest::RequestContextVideo || requestContext == WebURLRequest::RequestContextObject || requestContext == WebURLRequest::RequestContextFavicon || requestContext == WebURLRequest::RequestContextImage || requestContext == WebURLRequest::RequestContextScript);
+                SECURITY_CHECK(requestContext == WebURLRequest::RequestContextAudio || requestContext == WebURLRequest::RequestContextVideo || requestContext == WebURLRequest::RequestContextObject || requestContext == WebURLRequest::RequestContextFavicon || requestContext == WebURLRequest::RequestContextImage || requestContext == WebURLRequest::RequestContextScript);
                 newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
                 break;
             }

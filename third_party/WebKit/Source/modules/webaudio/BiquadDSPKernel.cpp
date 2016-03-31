@@ -44,8 +44,7 @@ void BiquadDSPKernel::updateCoefficientsIfNecessary(int framesToProcess)
         float gain[AudioUtilities::kRenderQuantumFrames];
         float detune[AudioUtilities::kRenderQuantumFrames]; // in Cents
 
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(
-            static_cast<unsigned>(framesToProcess) <= AudioUtilities::kRenderQuantumFrames);
+        SECURITY_CHECK(static_cast<unsigned>(framesToProcess) <= AudioUtilities::kRenderQuantumFrames);
 
         if (getBiquadProcessor()->hasSampleAccurateValues()) {
             getBiquadProcessor()->parameter1().calculateSampleAccurateValues(cutoffFrequency, framesToProcess);

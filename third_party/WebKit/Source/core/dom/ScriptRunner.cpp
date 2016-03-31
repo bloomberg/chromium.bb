@@ -143,14 +143,14 @@ void ScriptRunner::scheduleReadyInOrderScripts()
 
 void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType executionType)
 {
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(scriptLoader);
+    SECURITY_CHECK(scriptLoader);
     switch (executionType) {
     case ASYNC_EXECUTION:
         // RELEASE_ASSERT makes us crash in a controlled way in error cases
         // where the ScriptLoader is associated with the wrong ScriptRunner
         // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
         // to detach).
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_pendingAsyncScripts.contains(scriptLoader));
+        SECURITY_CHECK(m_pendingAsyncScripts.contains(scriptLoader));
 
         m_pendingAsyncScripts.remove(scriptLoader);
         m_asyncScriptsToExecuteSoon.append(scriptLoader);
@@ -160,7 +160,7 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
         break;
 
     case IN_ORDER_EXECUTION:
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_numberOfInOrderScriptsWithPendingNotification > 0);
+        SECURITY_CHECK(m_numberOfInOrderScriptsWithPendingNotification > 0);
         m_numberOfInOrderScriptsWithPendingNotification--;
 
         scheduleReadyInOrderScripts();
@@ -174,7 +174,7 @@ bool ScriptRunner::removePendingInOrderScript(ScriptLoader* scriptLoader)
     for (auto it = m_pendingInOrderScripts.begin(); it != m_pendingInOrderScripts.end(); ++it) {
         if (*it == scriptLoader) {
             m_pendingInOrderScripts.remove(it);
-            RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(m_numberOfInOrderScriptsWithPendingNotification > 0);
+            SECURITY_CHECK(m_numberOfInOrderScriptsWithPendingNotification > 0);
             m_numberOfInOrderScriptsWithPendingNotification--;
             return true;
         }
@@ -195,7 +195,7 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
         // If the ScriptRunner has been disposed of, no pending scripts remain.
         foundLoader = foundLoader || m_isDisposed;
 #endif
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(foundLoader);
+        SECURITY_CHECK(foundLoader);
         m_pendingAsyncScripts.remove(scriptLoader);
         break;
     }
@@ -204,7 +204,7 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
 #if !ENABLE(OILPAN)
         foundLoader = foundLoader || m_isDisposed;
 #endif
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(foundLoader);
+        SECURITY_CHECK(foundLoader);
         scheduleReadyInOrderScripts();
         break;
     }

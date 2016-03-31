@@ -75,7 +75,7 @@ void NodeRareData::finalizeGarbageCollectedObject()
 
 void NodeRareData::incrementConnectedSubframeCount()
 {
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION((m_connectedFrameCount + 1) <= FrameHost::maxNumberOfFrames);
+    SECURITY_CHECK((m_connectedFrameCount + 1) <= FrameHost::maxNumberOfFrames);
     ++m_connectedFrameCount;
 }
 

@@ -124,7 +124,7 @@ DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index) const
 bool DOMWindow::isCurrentlyDisplayedInFrame() const
 {
     if (frame())
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(frame()->domWindow() == this);
+        SECURITY_CHECK(frame()->domWindow() == this);
     return frame() && frame()->host();
 }
 

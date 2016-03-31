@@ -93,7 +93,7 @@ inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isolat
         setNativeInfo(wrapper, wrapperTypeInfo, impl);
         ASSERT(hasInternalFieldsSet(wrapper));
     }
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(toScriptWrappable(wrapper) == impl);
+    SECURITY_CHECK(toScriptWrappable(wrapper) == impl);
     return wrapper;
 }
 
@@ -104,7 +104,7 @@ inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isolat
         setNativeInfo(wrapper, wrapperTypeInfo, ScriptWrappable::fromNode(node));
         ASSERT(hasInternalFieldsSet(wrapper));
     }
-    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(toScriptWrappable(wrapper) == ScriptWrappable::fromNode(node));
+    SECURITY_CHECK(toScriptWrappable(wrapper) == ScriptWrappable::fromNode(node));
     return wrapper;
 }
 

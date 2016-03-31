@@ -157,7 +157,7 @@ protected:
     {
         // We must not get deleted as long as we contain a wrapper. If this happens, we screwed up ref
         // counting somewhere. Crash here instead of crashing during a later gc cycle.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!containsWrapper());
+        SECURITY_CHECK(!containsWrapper());
     }
 #endif
     // With Oilpan we don't need a ScriptWrappable destructor.
@@ -173,7 +173,7 @@ private:
     void disposeWrapper(const v8::WeakCallbackInfo<ScriptWrappable>& data)
     {
         auto scriptWrappable = reinterpret_cast<ScriptWrappable*>(data.GetInternalField(v8DOMWrapperObjectIndex));
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(scriptWrappable == this);
+        SECURITY_CHECK(scriptWrappable == this);
         RELEASE_ASSERT(containsWrapper());
         m_wrapper.Reset();
     }

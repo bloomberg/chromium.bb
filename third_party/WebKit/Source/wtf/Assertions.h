@@ -215,10 +215,9 @@ private:
 
 #endif
 
-// ASSERT_WITH_SECURITY_IMPLICATION / RELEASE_ASSERT_WITH_SECURITY_IMPLICATION
-// They are deprecated.  ASSERT_WITH_SECURITY_IMPLICATION should be replaced
-// with SECURITY_DCHECK, and RELEASE_ASSERT_WITH_SECURITY_IMPLICATION should be
-// replaced with RELEASE_ASSERT.
+// ASSERT_WITH_SECURITY_IMPLICATION
+// It is deprecated.  ASSERT_WITH_SECURITY_IMPLICATION should be replaced
+// with SECURITY_DCHECK.
 #ifdef ADDRESS_SANITIZER
 
 #define ASSERT_WITH_SECURITY_IMPLICATION(assertion) \
@@ -227,13 +226,8 @@ private:
             CRASH()) : \
         (void)0)
 
-#define RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(assertion) ASSERT_WITH_SECURITY_IMPLICATION(assertion)
-
 #else
-
 #define ASSERT_WITH_SECURITY_IMPLICATION(assertion) ASSERT(assertion)
-#define RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(assertion) RELEASE_ASSERT(assertion)
-
 #endif
 
 // Users must test "#if ENABLE(SECURITY_ASSERT)", which helps ensure
@@ -244,16 +238,20 @@ private:
 #define ENABLE_SECURITY_ASSERT 0
 #endif
 
-// SECURITY_DCHECK
+// SECURITY_DCHECK and SECURITY_CHECK
 // Use in places where failure of the assertion indicates a possible security
 // vulnerability. Classes of these vulnerabilities include bad casts, out of
 // bounds accesses, use-after-frees, etc. Please be sure to file bugs for these
 // failures using the security template:
-//    http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
+//    https://bugs.chromium.org/p/chromium/issues/entry?template=Security%20Bug
 #if ENABLE_SECURITY_ASSERT
 #define SECURITY_DCHECK(condition) LOG_IF(FATAL, !(condition)) << "Security check failed: " #condition ". "
+// TODO(tkent): Should we make SECURITY_CHECK different from SECURITY_DCHECK?
+// A SECURITY_CHECK failure is actually not vulnerable.
+#define SECURITY_CHECK(condition) SECURITY_DCHECK(condition)
 #else
 #define SECURITY_DCHECK(condition) ((void)0)
+#define SECURITY_CHECK(condition) CHECK(condition)
 #endif
 
 // WTF_LOG
