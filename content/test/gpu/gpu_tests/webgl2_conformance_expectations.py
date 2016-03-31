@@ -592,8 +592,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux only.
     self.Fail('deqp/functional/gles3/fbostatequery.html',
         ['linux'], bug=483282)
-    self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
-        ['linux'], bug=483282)
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
@@ -602,6 +600,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['linux'], bug=483282)
+    # We want to mark this Flaky for all of Linux however we currently skip
+    # all the tests on Intel. Tag this with AMD and Nvidia to avoid an
+    # expectation conflict that would make this test run on Intel.
+    self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
+        ['linux', 'amd', 'nvidia'], bug=483282)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.

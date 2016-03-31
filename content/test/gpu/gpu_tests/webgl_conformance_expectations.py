@@ -220,7 +220,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('deqp/data/gles2/shaders/linkage.html',
         ['linux', 'intel'], bug=540543)
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
-        ['linux', 'intel', 'opengl'], bug=1312)  # ANGLE bug id
+        ['linux', 'intel'], bug=1312)  # ANGLE bug id. See also 598910
+    self.Fail('conformance/glsl/bugs/sampler-array-using-loop-index.html',
+        ['linux', 'intel', 'opengl'], bug=598924)
 
     # Android failures
     self.Fail('deqp/data/gles2/shaders/constants.html',
