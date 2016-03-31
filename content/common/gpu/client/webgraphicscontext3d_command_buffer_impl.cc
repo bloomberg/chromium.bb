@@ -84,30 +84,35 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     gpu::SurfaceHandle surface_handle,
     const GURL& active_url,
     GpuChannelHost* host,
-    const Attributes& attributes,
-    bool lose_context_when_out_of_memory,
+    const gpu::gles2::ContextCreationAttribHelper& attributes,
+    gfx::GpuPreference gpu_preference,
+    bool share_resources,
+    bool automatic_flushes,
     const SharedMemoryLimits& limits,
     WebGraphicsContext3DCommandBufferImpl* share_context)
-    : lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
+    : automatic_flushes_(automatic_flushes),
       attributes_(attributes),
       host_(host),
       surface_handle_(surface_handle),
       active_url_(active_url),
-      context_type_(CONTEXT_TYPE_UNKNOWN),
-      gpu_preference_(attributes.preferDiscreteGPU ? gfx::PreferDiscreteGpu
-                                                   : gfx::PreferIntegratedGpu),
+      gpu_preference_(gpu_preference),
       mem_limits_(limits),
       weak_ptr_factory_(this) {
-  if (attributes_.webGLVersion > 0)
-    context_type_ = OFFSCREEN_CONTEXT_FOR_WEBGL;
+  switch (attributes.context_type) {
+    case gpu::gles2::CONTEXT_TYPE_OPENGLES2:
+    case gpu::gles2::CONTEXT_TYPE_OPENGLES3:
+      context_type_ = CONTEXT_TYPE_UNKNOWN;
+    case gpu::gles2::CONTEXT_TYPE_WEBGL1:
+    case gpu::gles2::CONTEXT_TYPE_WEBGL2:
+      context_type_ = OFFSCREEN_CONTEXT_FOR_WEBGL;
+  }
   if (share_context) {
-    DCHECK(!attributes_.shareResources);
+    DCHECK(!share_resources);
     share_group_ = share_context->share_group_;
+  } else if (share_resources) {
+    share_group_ = GetDefaultShareGroupForHost(host);
   } else {
-    share_group_ = attributes_.shareResources
-        ? GetDefaultShareGroupForHost(host)
-        : scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup>(
-            new ShareGroup());
+    share_group_ = make_scoped_refptr(new ShareGroup);
   }
 }
 
@@ -168,19 +173,15 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
     share_group_command_buffer = share_context->GetCommandBufferProxy();
   }
 
-  ::gpu::gles2::ContextCreationAttribHelper attribs_for_gles2;
-  ConvertAttributes(attributes_, &attribs_for_gles2);
-  attribs_for_gles2.lose_context_when_out_of_memory =
-      lose_context_when_out_of_memory_;
-  DCHECK(attribs_for_gles2.buffer_preserved);
-  std::vector<int32_t> attribs;
-  attribs_for_gles2.Serialize(&attribs);
+  DCHECK(attributes_.buffer_preserved);
+  std::vector<int32_t> serialized_attributes;
+  attributes_.Serialize(&serialized_attributes);
 
   // Create a proxy to a command buffer in the GPU process.
   command_buffer_ = host_->CreateCommandBuffer(
       surface_handle_, gfx::Size(), share_group_command_buffer,
       GpuChannelHost::kDefaultStreamId, GpuChannelHost::kDefaultStreamPriority,
-      attribs, active_url_, gpu_preference_);
+      serialized_attributes, active_url_, gpu_preference_);
 
   if (!command_buffer_) {
     DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";
@@ -229,7 +230,7 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
     return false;
   }
 
-  if (attributes_.noAutomaticFlushes)
+  if (!automatic_flushes_)
     gles2_helper_->SetAutomaticFlushes(false);
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
@@ -237,13 +238,15 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext() {
 
   DCHECK(host_.get());
 
-  // Create the object exposing the OpenGL API.
-  const bool bind_generates_resources = false;
+  const bool bind_generates_resource = attributes_.bind_generates_resource;
+  const bool lose_context_when_out_of_memory =
+      attributes_.lose_context_when_out_of_memory;
   const bool support_client_side_arrays = false;
 
+  // Create the object exposing the OpenGL API.
   real_gl_.reset(new gpu::gles2::GLES2Implementation(
       gles2_helper_.get(), gles2_share_group.get(), transfer_buffer_.get(),
-      bind_generates_resources, lose_context_when_out_of_memory_,
+      bind_generates_resource, lose_context_when_out_of_memory,
       support_client_side_arrays, command_buffer_.get()));
   SetGLInterface(real_gl_.get());
 
@@ -323,8 +326,10 @@ bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
 WebGraphicsContext3DCommandBufferImpl*
 WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     GpuChannelHost* host,
-    const WebGraphicsContext3D::Attributes& attributes,
-    bool lose_context_when_out_of_memory,
+    const gpu::gles2::ContextCreationAttribHelper& attributes,
+    gfx::GpuPreference gpu_preference,
+    bool share_resources,
+    bool automatic_flushes,
     const GURL& active_url,
     const SharedMemoryLimits& limits,
     WebGraphicsContext3DCommandBufferImpl* share_context) {
@@ -335,13 +340,8 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     return NULL;
 
   return new WebGraphicsContext3DCommandBufferImpl(
-      gpu::kNullSurfaceHandle,
-      active_url,
-      host,
-      attributes,
-      lose_context_when_out_of_memory,
-      limits,
-      share_context);
+      gpu::kNullSurfaceHandle, active_url, host, attributes, gpu_preference,
+      share_resources, automatic_flushes, limits, share_context);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {

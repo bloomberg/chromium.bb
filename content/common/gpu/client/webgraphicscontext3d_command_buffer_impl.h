@@ -20,6 +20,7 @@
 #include "content/common/gpu/client/command_buffer_metrics.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -111,8 +112,10 @@ class WebGraphicsContext3DCommandBufferImpl
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
       GpuChannelHost* host,
-      const Attributes& attributes,
-      bool lose_context_when_out_of_memory,
+      const gpu::gles2::ContextCreationAttribHelper& attributes,
+      gfx::GpuPreference gpu_preference,
+      bool share_resources,
+      bool automatic_flushes,
       const SharedMemoryLimits& limits,
       WebGraphicsContext3DCommandBufferImpl* share_context);
 
@@ -135,13 +138,15 @@ class WebGraphicsContext3DCommandBufferImpl
   // Create & initialize a WebGraphicsContext3DCommandBufferImpl.  Return NULL
   // on any failure.
   static CONTENT_EXPORT WebGraphicsContext3DCommandBufferImpl*
-      CreateOffscreenContext(
-          GpuChannelHost* host,
-          const WebGraphicsContext3D::Attributes& attributes,
-          bool lose_context_when_out_of_memory,
-          const GURL& active_url,
-          const SharedMemoryLimits& limits,
-          WebGraphicsContext3DCommandBufferImpl* share_context);
+  CreateOffscreenContext(
+      GpuChannelHost* host,
+      const gpu::gles2::ContextCreationAttribHelper& attributes,
+      gfx::GpuPreference gpu_preference,
+      bool share_resources,
+      bool automatic_flushes,
+      const GURL& active_url,
+      const SharedMemoryLimits& limits,
+      WebGraphicsContext3DCommandBufferImpl* share_context);
 
   size_t GetMappedMemoryLimit() {
     return mem_limits_.mapped_memory_reclaim_limit;
@@ -188,8 +193,8 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void OnContextLost();
 
-  bool lose_context_when_out_of_memory_;
-  blink::WebGraphicsContext3D::Attributes attributes_;
+  bool automatic_flushes_;
+  gpu::gles2::ContextCreationAttribHelper attributes_;
 
   // State needed by MaybeInitializeGL.
   scoped_refptr<GpuChannelHost> host_;

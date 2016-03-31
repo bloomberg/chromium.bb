@@ -153,9 +153,16 @@ void GLHelperHolder::Initialize() {
   if (!gpu_channel_host)
     return;
 
-  blink::WebGraphicsContext3D::Attributes attrs;
-  attrs.shareResources = true;
-  GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
+  // This is for an offscreen context, so we don't need the default framebuffer
+  // to have alpha, stencil, depth, antialiasing.
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = -1;
+  attributes.stencil_size = 0;
+  attributes.depth_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+
   static const size_t kBytesPerPixel = 4;
   gfx::DeviceDisplayInfo display_info;
   size_t full_screen_texture_size_in_bytes = display_info.GetDisplayHeight() *
@@ -169,12 +176,18 @@ void GLHelperHolder::Initialize() {
       3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
   limits.mapped_memory_reclaim_limit =
       WebGraphicsContext3DCommandBufferImpl::kNoLimit;
-  bool lose_context_when_out_of_memory = false;
+
+  bool share_resources = true;
+  // TODO(danakj): This should be false probably, it is for the main thread
+  // context which is used for GLHelper.
+  bool automatic_flushes = true;
+  GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
+
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
           gpu::kNullSurfaceHandle,  // offscreen
-          url, gpu_channel_host.get(), attrs, lose_context_when_out_of_memory,
-          limits, nullptr));
+          url, gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
+          share_resources, automatic_flushes, limits, nullptr));
   provider_ = ContextProviderCommandBuffer::Create(
       std::move(context), BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())

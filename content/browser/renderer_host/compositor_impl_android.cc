@@ -412,7 +412,7 @@ void CompositorImpl::SetNeedsComposite() {
 static scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 CreateGpuProcessViewContext(
     const scoped_refptr<GpuChannelHost>& gpu_channel_host,
-    const blink::WebGraphicsContext3D::Attributes attributes,
+    const gpu::gles2::ContextCreationAttribHelper& attributes,
     int surface_id) {
   GURL url("chrome://gpu/Compositor::createContext3D");
   static const size_t kBytesPerPixel = 4;
@@ -428,17 +428,14 @@ CreateGpuProcessViewContext(
   limits.max_transfer_buffer_size = std::min(
       3 * full_screen_texture_size_in_bytes, kDefaultMaxTransferBufferSize);
   limits.mapped_memory_reclaim_limit = 2 * 1024 * 1024;
-  bool lose_context_when_out_of_memory = true;
   GpuSurfaceTracker* tracker = GpuSurfaceTracker::Get();
   gpu::SurfaceHandle surface_handle = tracker->GetSurfaceHandle(surface_id);
-  return make_scoped_ptr(
-      new WebGraphicsContext3DCommandBufferImpl(surface_handle,
-                                                url,
-                                                gpu_channel_host.get(),
-                                                attributes,
-                                                lose_context_when_out_of_memory,
-                                                limits,
-                                                NULL));
+  bool share_resources = true;
+  bool automatic_flushes = false;
+  return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
+      surface_handle, url, gpu_channel_host.get(), attributes,
+      gfx::PreferIntegratedGpu, share_resources, automatic_flushes, limits,
+      nullptr));
 }
 
 void CompositorImpl::UpdateLayerTreeHost() {
@@ -503,11 +500,33 @@ void CompositorImpl::CreateOutputSurface() {
   if (!output_surface_request_pending_ || !host_->visible())
     return;
 
-  blink::WebGraphicsContext3D::Attributes attrs;
-  attrs.shareResources = true;
-  attrs.noAutomaticFlushes = true;
-  if (base::SysInfo::IsLowEndDevice())
-    attrs.alpha = has_transparent_background_;
+  // This is used for the browser compositor (offscreen) and for the display
+  // compositor (onscreen), so ask for capabilities needed by either one.
+  // The default framebuffer for an offscreen context is not used, so it does
+  // not need alpha, stencil, depth, antialiasing. The display compositor does
+  // not use these things either, except for alpha when it has a transparent
+  // background.
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = -1;
+  attributes.stencil_size = 0;
+  attributes.depth_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+
+  if (has_transparent_background_) {
+    attributes.alpha_size = 8;
+  } else if (base::SysInfo::IsLowEndDevice()) {
+    // In this case we prefer to use RGB565 format instead of RGBA8888 if
+    // possible.
+    // TODO(danakj): GpuCommandBufferStub constructor checks for alpha == 0 in
+    // order to enable 565, but it should avoid using 565 when -1s are specified
+    // (IOW check that a <= 0 && rgb > 0 && rgb <= 565) then alpha should be -1.
+    attributes.alpha_size = 0;
+    attributes.red_size = 5;
+    attributes.green_size = 6;
+    attributes.blue_size = 5;
+  }
 
   pending_swapbuffers_ = 0;
 
@@ -523,8 +542,9 @@ void CompositorImpl::CreateOutputSurface() {
   scoped_refptr<GpuChannelHost> gpu_channel_host(factory->GetGpuChannel());
   scoped_refptr<ContextProviderCommandBuffer> context_provider(
       ContextProviderCommandBuffer::Create(
-          CreateGpuProcessViewContext(gpu_channel_host, attrs, surface_id_),
-          BROWSER_COMPOSITOR_ONSCREEN_CONTEXT));
+          CreateGpuProcessViewContext(gpu_channel_host, attributes,
+                                      surface_id_),
+          DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT));
   DCHECK(context_provider.get());
 
   scoped_ptr<cc::OutputSurface> real_output_surface(

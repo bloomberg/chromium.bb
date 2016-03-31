@@ -403,16 +403,6 @@ void CreateRenderFrameSetup(
   new RenderFrameSetupImpl(std::move(request));
 }
 
-blink::WebGraphicsContext3D::Attributes GetOffscreenAttribs() {
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.shareResources = true;
-  attributes.depth = false;
-  attributes.stencil = false;
-  attributes.antialias = false;
-  attributes.noAutomaticFlushes = true;
-  return attributes;
-}
-
 void SetupEmbeddedWorkerOnWorkerThread(
     mojo::shell::mojom::InterfaceProviderRequest services,
     mojo::shell::mojom::InterfaceProviderPtrInfo exposed_services) {
@@ -1531,19 +1521,29 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 RenderThreadImpl::CreateOffscreenContext3d() {
-  blink::WebGraphicsContext3D::Attributes attributes(GetOffscreenAttribs());
-  bool lose_context_when_out_of_memory = true;
-
+  // This is used to create a few different offscreen contexts:
+  // - The shared main thread context (offscreen) used by blink for canvas
+  // - The worker context (offscreen) used for GPU raster and video decoding.
+  // This is for an offscreen context, so the default framebuffer doesn't need
+  // alpha, depth, stencil, antialiasing.
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = -1;
+  attributes.depth_size = 0;
+  attributes.stencil_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+  attributes.lose_context_when_out_of_memory = true;
+  bool share_resources = true;
+  bool automatic_flushes = false;
   scoped_refptr<GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
   return make_scoped_ptr(
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-          gpu_channel_host.get(),
-          attributes,
-          lose_context_when_out_of_memory,
+          gpu_channel_host.get(), attributes, gfx::PreferIntegratedGpu,
+          share_resources, automatic_flushes,
           GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d"),
-          WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
-          NULL));
+          WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(), NULL));
 }
 
 scoped_refptr<cc_blink::ContextProviderWebContext>

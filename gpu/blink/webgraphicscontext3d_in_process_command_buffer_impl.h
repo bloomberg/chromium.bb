@@ -39,20 +39,13 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   };
 
   static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
-      CreateViewContext(
-          const blink::WebGraphicsContext3D::Attributes& attributes,
-          bool lose_context_when_out_of_memory,
-          gfx::AcceleratedWidget window);
+  CreateOffscreenContext(
+      const gpu::gles2::ContextCreationAttribHelper& attributes,
+      bool share_resources);
 
-  static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
-      CreateOffscreenContext(
-          const blink::WebGraphicsContext3D::Attributes& attributes,
-          bool lose_context_when_out_of_memory);
-
-  static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
-      WrapContext(
-          scoped_ptr< ::gpu::GLInProcessContext> context,
-          const blink::WebGraphicsContext3D::Attributes& attributes);
+  static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> WrapContext(
+      scoped_ptr<::gpu::GLInProcessContext> context,
+      const gpu::gles2::ContextCreationAttribHelper& attributes);
 
   ~WebGraphicsContext3DInProcessCommandBufferImpl() override;
 
@@ -69,9 +62,9 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
  private:
   WebGraphicsContext3DInProcessCommandBufferImpl(
-      scoped_ptr< ::gpu::GLInProcessContext> context,
-      const blink::WebGraphicsContext3D::Attributes& attributes,
-      bool lose_context_when_out_of_memory,
+      scoped_ptr<::gpu::GLInProcessContext> context,
+      const gpu::gles2::ContextCreationAttribHelper& attributes,
+      bool share_resources,
       bool is_offscreen,
       gfx::AcceleratedWidget window);
 
@@ -83,7 +76,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   // instead of going through WebGraphicsContext3D.
   void ClearContext();
 
-  ::gpu::gles2::ContextCreationAttribHelper attribs_;
+  ::gpu::gles2::ContextCreationAttribHelper attributes_;
   bool share_resources_;
 
   bool is_offscreen_;

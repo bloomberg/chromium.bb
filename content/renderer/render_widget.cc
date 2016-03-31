@@ -2063,23 +2063,17 @@ void RenderWidget::didUpdateTextOfFocusedElementByNonUserInput() {
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 RenderWidget::CreateGraphicsContext3D(GpuChannelHost* gpu_channel_host) {
-  // Explicitly disable antialiasing for the compositor. As of the time of
-  // this writing, the only platform that supported antialiasing for the
-  // compositor was Mac OS X, because the on-screen OpenGL context creation
-  // code paths on Windows and Linux didn't yet have multisampling support.
-  // Mac OS X essentially always behaves as though it's rendering offscreen.
-  // Multisampling has a heavy cost especially on devices with relatively low
-  // fill rate like most notebooks, and the Mac implementation would need to
-  // be optimized to resolve directly into the IOSurface shared between the
-  // GPU and browser processes. For these reasons and to avoid platform
-  // disparities we explicitly disable antialiasing.
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.antialias = false;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-  attributes.depth = false;
-  attributes.stencil = false;
-  bool lose_context_when_out_of_memory = true;
+  // This is for an offscreen context for raster in the compositor. So the
+  // default framebuffer doesn't need alpha, depth, stencil, antialiasing.
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = -1;
+  attributes.depth_size = 0;
+  attributes.stencil_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+  attributes.lose_context_when_out_of_memory = true;
+
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 #if defined(OS_ANDROID)
   bool using_synchronous_compositing =
@@ -2114,9 +2108,13 @@ RenderWidget::CreateGraphicsContext3D(GpuChannelHost* gpu_channel_host) {
   limits.start_transfer_buffer_size = 64 * 1024;
   limits.min_transfer_buffer_size = 64 * 1024;
 
+  bool share_resources = true;
+  bool automatic_flushes = false;
+
   return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
       gpu::kNullSurfaceHandle, GetURLForGraphicsContext3D(), gpu_channel_host,
-      attributes, lose_context_when_out_of_memory, limits, NULL));
+      attributes, gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
+      limits, nullptr));
 }
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {

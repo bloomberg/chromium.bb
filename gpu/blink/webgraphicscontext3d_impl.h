@@ -47,12 +47,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
     return gl_;
   }
 
-  // Convert WebGL context creation attributes into command buffer / EGL size
-  // requests.
-  static void ConvertAttributes(
-      const blink::WebGraphicsContext3D::Attributes& attributes,
-      ::gpu::gles2::ContextCreationAttribHelper* output_attribs);
-
  protected:
   friend class WebGraphicsContext3DErrorMessageCallback;
 

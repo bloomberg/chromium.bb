@@ -33,59 +33,38 @@ namespace gpu_blink {
 
 // static
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
-WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
-    const blink::WebGraphicsContext3D::Attributes& attributes,
-    bool lose_context_when_out_of_memory,
-    gfx::AcceleratedWidget window) {
-  DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
-  bool is_offscreen = false;
-  return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
-      scoped_ptr< ::gpu::GLInProcessContext>(),
-      attributes,
-      lose_context_when_out_of_memory,
-      is_offscreen,
-      window));
-}
-
-// static
-scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-    const blink::WebGraphicsContext3D::Attributes& attributes,
-    bool lose_context_when_out_of_memory) {
+    const gpu::gles2::ContextCreationAttribHelper& attributes,
+    bool share_resources) {
   bool is_offscreen = true;
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
-      scoped_ptr< ::gpu::GLInProcessContext>(),
-      attributes,
-      lose_context_when_out_of_memory,
-      is_offscreen,
-      gfx::kNullAcceleratedWidget));
+      scoped_ptr<::gpu::GLInProcessContext>(), attributes, share_resources,
+      is_offscreen, gfx::kNullAcceleratedWidget));
 }
 
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
-    scoped_ptr< ::gpu::GLInProcessContext> context,
-    const blink::WebGraphicsContext3D::Attributes& attributes) {
-  bool lose_context_when_out_of_memory = false;  // Not used.
+    scoped_ptr<::gpu::GLInProcessContext> context,
+    const gpu::gles2::ContextCreationAttribHelper& attributes) {
   bool is_offscreen = true;                      // Not used.
+  bool share_resources = false;                  // Not used.
+  gfx::AcceleratedWidget window = gfx::kNullAcceleratedWidget;  // Not used.
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
-      std::move(context), attributes, lose_context_when_out_of_memory,
-      is_offscreen, gfx::kNullAcceleratedWidget /* window. Not used. */));
+      std::move(context), attributes, share_resources, is_offscreen, window));
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     WebGraphicsContext3DInProcessCommandBufferImpl(
         scoped_ptr<::gpu::GLInProcessContext> context,
-        const blink::WebGraphicsContext3D::Attributes& attributes,
-        bool lose_context_when_out_of_memory,
+        const gpu::gles2::ContextCreationAttribHelper& attributes,
+        bool share_resources,
         bool is_offscreen,
         gfx::AcceleratedWidget window)
-    : share_resources_(attributes.shareResources),
+    : attributes_(attributes),
+      share_resources_(share_resources),
       is_offscreen_(is_offscreen),
       window_(window),
-      context_(std::move(context)) {
-  ConvertAttributes(attributes, &attribs_);
-  attribs_.lose_context_when_out_of_memory = lose_context_when_out_of_memory;
-}
+      context_(std::move(context)) {}
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
@@ -110,18 +89,11 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
     // discrete GPU is created, or the last one is destroyed.
     gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
     context_.reset(GLInProcessContext::Create(
-        NULL, /* service */
-        NULL, /* surface */
-        is_offscreen_,
-        window_,
-        gfx::Size(1, 1),
-        NULL, /* share_context */
-        share_resources_,
-        attribs_,
-        gpu_preference,
-        ::gpu::GLInProcessContextSharedMemoryLimits(),
-        nullptr,
-        nullptr));
+        NULL,                                          /* service */
+        NULL,                                          /* surface */
+        is_offscreen_, window_, gfx::Size(1, 1), NULL, /* share_context */
+        share_resources_, attributes_, gpu_preference,
+        ::gpu::GLInProcessContextSharedMemoryLimits(), nullptr, nullptr));
   }
 
   if (context_) {

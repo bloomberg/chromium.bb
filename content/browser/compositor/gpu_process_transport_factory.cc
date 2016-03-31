@@ -285,10 +285,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       gpu::SurfaceHandle surface_handle =
           data->surface_id ? tracker->GetSurfaceHandle(data->surface_id)
                            : gpu::kNullSurfaceHandle;
+      // This context is used for both the browser compositor and the display
+      // compositor.
       context_provider = ContextProviderCommandBuffer::Create(
           GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
                                                           surface_handle),
-          BROWSER_COMPOSITOR_ONSCREEN_CONTEXT);
+          DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
       if (context_provider && !context_provider->BindToCurrentThread())
         context_provider = nullptr;
       if (!shared_worker_context_provider_ ||
@@ -610,28 +612,43 @@ GpuProcessTransportFactory::CreateContextCommon(
     scoped_refptr<GpuChannelHost> gpu_channel_host,
     gpu::SurfaceHandle surface_handle) {
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-  blink::WebGraphicsContext3D::Attributes attrs;
-  attrs.shareResources = true;
-  attrs.depth = false;
-  attrs.stencil = false;
-  attrs.antialias = false;
-  attrs.noAutomaticFlushes = true;
-  bool lose_context_when_out_of_memory = true;
-  if (!gpu_channel_host.get()) {
+    return nullptr;
+  if (!gpu_channel_host) {
     LOG(ERROR) << "Failed to establish GPU channel.";
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
+    return nullptr;
   }
+
+  // This is called from a few places to create different contexts:
+  // - The shared main thread context (offscreen).
+  // - The compositor context, which is used by the browser compositor
+  //   (offscreen) for synchronization mostly, and by the display compositor
+  //   (onscreen) for actual GL drawing.
+  // - The compositor worker context (offscreen) used for GPU raster.
+  // So ask for capabilities needed by any of these cases (we can optimize by
+  // branching on |surface_handle| being null if these needs diverge).
+  //
+  // The default framebuffer for an offscreen context is not used, so it does
+  // not need alpha, stencil, depth, antialiasing. The display compositor does
+  // not use these things either, so we can request nothing here.
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = -1;
+  attributes.depth_size = 0;
+  attributes.stencil_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+  attributes.lose_context_when_out_of_memory = true;
+
+  bool share_resources = true;
+  bool automatic_flushes = false;
+
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
-          surface_handle,
-          url,
-          gpu_channel_host.get(),
-          attrs,
-          lose_context_when_out_of_memory,
+          surface_handle, url, gpu_channel_host.get(), attributes,
+          gfx::PreferIntegratedGpu, share_resources, automatic_flushes,
           WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
-          NULL));
+          nullptr));
   return context;
 }
 

@@ -75,7 +75,7 @@ CommandBufferContextLostReason GetContextLostReason(
 void RecordContextLost(CommandBufferContextType type,
                        CommandBufferContextLostReason reason) {
   switch (type) {
-    case BROWSER_COMPOSITOR_ONSCREEN_CONTEXT:
+    case DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.BrowserCompositor", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
       break;
@@ -124,8 +124,8 @@ std::string CommandBufferContextTypeToString(CommandBufferContextType type) {
   switch (type) {
     case OFFSCREEN_CONTEXT_FOR_TESTING:
       return "Context-For-Testing";
-    case BROWSER_COMPOSITOR_ONSCREEN_CONTEXT:
-      return "Compositor";
+    case DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT:
+      return "DisplayCompositor";
     case BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT:
       return "Offscreen-MainThread";
     case BROWSER_WORKER_CONTEXT:

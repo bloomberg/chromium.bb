@@ -84,47 +84,4 @@ void WebGraphicsContext3DImpl::OnErrorMessage(
   }
 }
 
-// static
-void WebGraphicsContext3DImpl::ConvertAttributes(
-    const blink::WebGraphicsContext3D::Attributes& attributes,
-    ::gpu::gles2::ContextCreationAttribHelper* output_attribs) {
-  output_attribs->alpha_size = attributes.alpha ? 8 : 0;
-  output_attribs->depth_size = attributes.depth ? 24 : 0;
-  // TODO(jinsukkim): Pass RGBA info directly from client by cleaning up
-  //   how this is passed to the constructor.
-#if defined(OS_ANDROID)
-  if (base::SysInfo::IsLowEndDevice() && !attributes.alpha) {
-    output_attribs->red_size = 5;
-    output_attribs->green_size = 6;
-    output_attribs->blue_size = 5;
-    output_attribs->depth_size = 16;
-  } else {
-    output_attribs->red_size = 8;
-    output_attribs->green_size = 8;
-    output_attribs->blue_size = 8;
-  }
-#endif
-  output_attribs->stencil_size = attributes.stencil ? 8 : 0;
-  output_attribs->samples = attributes.antialias ? 4 : 0;
-  output_attribs->sample_buffers = attributes.antialias ? 1 : 0;
-  output_attribs->fail_if_major_perf_caveat =
-      attributes.failIfMajorPerformanceCaveat;
-  output_attribs->bind_generates_resource = false;
-  switch (attributes.webGLVersion) {
-    case 0:
-      output_attribs->context_type = ::gpu::gles2::CONTEXT_TYPE_OPENGLES2;
-      break;
-    case 1:
-      output_attribs->context_type = ::gpu::gles2::CONTEXT_TYPE_WEBGL1;
-      break;
-    case 2:
-      output_attribs->context_type = ::gpu::gles2::CONTEXT_TYPE_WEBGL2;
-      break;
-    default:
-      NOTREACHED();
-      output_attribs->context_type = ::gpu::gles2::CONTEXT_TYPE_OPENGLES2;
-      break;
-  }
-}
-
 }  // namespace gpu_blink

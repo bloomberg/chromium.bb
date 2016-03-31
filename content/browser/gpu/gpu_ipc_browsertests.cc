@@ -27,6 +27,27 @@ const content::CauseForGpuLaunch kInitCause =
     content::
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
 
+scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext(
+    content::GpuChannelHost* gpu_channel_host) {
+  // This is for an offscreen context, so the default framebuffer doesn't need
+  // any alpha, depth, stencil, antialiasing.
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = -1;
+  attributes.depth_size = 0;
+  attributes.stencil_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+  bool share_resources = false;
+  bool automatic_flushes = false;
+  return make_scoped_ptr(
+      WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+          gpu_channel_host, attributes, gfx::PreferIntegratedGpu,
+          share_resources, automatic_flushes, GURL(),
+          WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
+          nullptr));
+}
+
 class ContextTestBase : public content::ContentBrowserTest {
  public:
   void SetUpOnMainThread() override {
@@ -46,18 +67,11 @@ class ContextTestBase : public content::ContentBrowserTest {
     run_loop.Run();
     scoped_refptr<content::GpuChannelHost>
         gpu_channel_host(factory->GetGpuChannel());
-    CHECK(gpu_channel_host.get());
-
-    bool lose_context_when_out_of_memory = false;
-    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> web_context(
-        WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-            gpu_channel_host.get(), blink::WebGraphicsContext3D::Attributes(),
-            lose_context_when_out_of_memory, GURL(),
-            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
-            nullptr));
+    CHECK(gpu_channel_host);
 
     provider_ = content::ContextProviderCommandBuffer::Create(
-        std::move(web_context), content::OFFSCREEN_CONTEXT_FOR_TESTING);
+        CreateContext(gpu_channel_host.get()),
+        content::OFFSCREEN_CONTEXT_FOR_TESTING);
     bool bound = provider_->BindToCurrentThread();
     CHECK(bound);
     gl_ = provider_->ContextGL();
@@ -138,18 +152,6 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
     CHECK_EQ(*event, false);
     *event = true;
   }
-
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext() {
-    bool lose_context_when_out_of_memory = false;
-    return make_scoped_ptr(
-        WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-            GetGpuChannel(),
-            blink::WebGraphicsContext3D::Attributes(),
-            lose_context_when_out_of_memory,
-            GURL(),
-            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
-            NULL));
-  }
 };
 
 // Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
@@ -228,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   // Step 2: verify that holding onto the provider's GrContext will
   // retain the host after provider is destroyed.
   scoped_refptr<ContextProviderCommandBuffer> provider =
-      ContextProviderCommandBuffer::Create(CreateContext(),
+      ContextProviderCommandBuffer::Create(CreateContext(GetGpuChannel()),
                                            OFFSCREEN_CONTEXT_FOR_TESTING);
   EXPECT_TRUE(provider->BindToCurrentThread());
 
@@ -265,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   scoped_refptr<GpuChannelHost> host = GetGpuChannel();
 
   scoped_refptr<ContextProviderCommandBuffer> provider =
-      ContextProviderCommandBuffer::Create(CreateContext(),
+      ContextProviderCommandBuffer::Create(CreateContext(GetGpuChannel()),
                                            OFFSCREEN_CONTEXT_FOR_TESTING);
   base::RunLoop run_loop;
   int counter = 0;

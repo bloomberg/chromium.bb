@@ -46,30 +46,15 @@ struct ContextHolder {
   gpu::GLInProcessContext* gl_in_process_context;
 };
 
-blink::WebGraphicsContext3D::Attributes GetDefaultAttribs() {
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.antialias = false;
-  attributes.depth = false;
-  attributes.stencil = false;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-
-  return attributes;
-}
-
 ContextHolder CreateContextHolder(
-    const blink::WebGraphicsContext3D::Attributes& attributes,
+    const gpu::gles2::ContextCreationAttribHelper& attributes,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
-    const gpu::GLInProcessContextSharedMemoryLimits& mem_limits,
-    bool is_offscreen) {
-  gpu::gles2::ContextCreationAttribHelper in_process_attribs;
-  WebGraphicsContext3DImpl::ConvertAttributes(attributes, &in_process_attribs);
-  in_process_attribs.lose_context_when_out_of_memory = true;
-
+    const gpu::GLInProcessContextSharedMemoryLimits& mem_limits) {
+  bool is_offscreen = true;
   scoped_ptr<gpu::GLInProcessContext> context(gpu::GLInProcessContext::Create(
-      service, NULL /* surface */, is_offscreen, gfx::kNullAcceleratedWidget,
-      gfx::Size(1, 1), NULL /* share_context */, attributes.shareResources,
-      in_process_attribs, gfx::PreferDiscreteGpu, mem_limits,
+      service, nullptr /* surface */, is_offscreen, gfx::kNullAcceleratedWidget,
+      gfx::Size(1, 1), nullptr /* share_context */, false /* share_resources */,
+      attributes, gfx::PreferDiscreteGpu, mem_limits,
       BrowserGpuMemoryBufferManager::current(), nullptr));
 
   gpu::GLInProcessContext* context_ptr = context.get();
@@ -253,13 +238,22 @@ SynchronousCompositorStreamTextureFactoryImpl::TryCreateStreamTextureFactory() {
   if (!video_context_provider_.get()) {
     DCHECK(android_view_service_.get());
 
-    blink::WebGraphicsContext3D::Attributes attributes = GetDefaultAttribs();
-    attributes.shareResources = false;
+    // This is for an offscreen context, so the default framebuffer doesn't need
+    // any alpha, depth, stencil, antialiasing.
+    gpu::gles2::ContextCreationAttribHelper attributes;
+    attributes.alpha_size = -1;
+    attributes.depth_size = 0;
+    attributes.stencil_size = 0;
+    attributes.samples = 0;
+    attributes.sample_buffers = 0;
+    attributes.bind_generates_resource = false;
+    attributes.lose_context_when_out_of_memory = true;
+
     // This needs to run in on-screen |android_view_service_| context due to
     // SurfaceTexture limitations.
     ContextHolder holder =
         CreateContextHolder(attributes, android_view_service_,
-                            gpu::GLInProcessContextSharedMemoryLimits(), false);
+                            gpu::GLInProcessContextSharedMemoryLimits());
     video_context_provider_ = new VideoContextProvider(
         ContextProviderInProcess::Create(std::move(holder.command_buffer),
                                          "Video-Offscreen-main-thread"),

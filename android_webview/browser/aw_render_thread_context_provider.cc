@@ -32,30 +32,29 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  blink::WebGraphicsContext3D::Attributes attributes;
-  attributes.antialias = false;
-  attributes.depth = false;
-  attributes.stencil = true;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-  gpu::gles2::ContextCreationAttribHelper attribs_for_gles2;
-  gpu_blink::WebGraphicsContext3DImpl::ConvertAttributes(attributes,
-                                                         &attribs_for_gles2);
-  attribs_for_gles2.lose_context_when_out_of_memory = false;
-
+  // This is an onscreen context, wrapping the GLSurface given to us from
+  // the Android OS. The widget we pass here will be ignored since we're
+  // providing the GLSurface to the context already.
+  DCHECK(!surface->IsOffscreen());
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  // The context is wrapping an already allocated surface, so we can't control
+  // what buffers it has from these attributes. We do expect an alpha and
+  // stencil buffer to exist for webview, as the display compositor requires
+  // having them both in order to integrate its output with the content behind
+  // it.
+  attributes.alpha_size = 8;
+  attributes.stencil_size = 8;
+  // The depth buffer may exist due to having a stencil buffer, but we don't
+  // need one, so use -1 for it.
+  attributes.depth_size = -1;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
   context_.reset(gpu::GLInProcessContext::Create(
-      service,
-      surface,
-      surface->IsOffscreen(),
-      gfx::kNullAcceleratedWidget,
-      surface->GetSize(),
-      NULL /* share_context */,
-      false /* share_resources */,
-      attribs_for_gles2,
-      gfx::PreferDiscreteGpu,
-      gpu::GLInProcessContextSharedMemoryLimits(),
-      nullptr,
-      nullptr));
+      service, surface, surface->IsOffscreen(), gfx::kNullAcceleratedWidget,
+      surface->GetSize(), nullptr /* share_context */,
+      false /* share_resources */, attributes, gfx::PreferDiscreteGpu,
+      gpu::GLInProcessContextSharedMemoryLimits(), nullptr, nullptr));
 
   context_->SetContextLostCallback(base::Bind(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));
