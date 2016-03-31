@@ -228,10 +228,8 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
       OnOptInPreferenceChanged();
     } else {
       UpdateEnabledStateUMA(false);
-      if (!disable_ui_for_testing && profile_->IsNewProfile()) {
-        PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
-        OnIsSyncingChanged();
-      }
+      PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
+      OnIsSyncingChanged();
     }
   } else {
     auth_code_.clear();
@@ -246,8 +244,14 @@ void ArcAuthService::OnIsSyncingChanged() {
     return;
 
   pref_service_syncable->RemoveObserver(this);
-  if (!profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled))
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled))
+    OnOptInPreferenceChanged();
+
+  if (!disable_ui_for_testing && profile_->IsNewProfile() &&
+      !profile_->GetPrefs()->HasPrefPath(prefs::kArcEnabled)) {
     arc::ArcAuthNotification::Show();
+  }
 }
 
 void ArcAuthService::Shutdown() {
