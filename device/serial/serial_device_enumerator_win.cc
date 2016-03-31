@@ -66,7 +66,7 @@ bool GetDisplayName(const std::string friendly_name,
 // vendor_id, and returns whether the operation was successful.
 bool GetVendorID(const std::string hardware_id, uint32_t* vendor_id) {
   std::string vendor_id_str;
-  return RE2::PartialMatch(hardware_id, "VID_([0-9]+)", &vendor_id_str) &&
+  return RE2::PartialMatch(hardware_id, "VID_([0-9a-fA-F]+)", &vendor_id_str) &&
          base::HexStringToUInt(vendor_id_str, vendor_id);
 }
 
@@ -74,7 +74,8 @@ bool GetVendorID(const std::string hardware_id, uint32_t* vendor_id) {
 // product_id, and returns whether the operation was successful.
 bool GetProductID(const std::string hardware_id, uint32_t* product_id) {
   std::string product_id_str;
-  return RE2::PartialMatch(hardware_id, "PID_([0-9]+)", &product_id_str) &&
+  return RE2::PartialMatch(hardware_id, "PID_([0-9a-fA-F]+)",
+                           &product_id_str) &&
          base::HexStringToUInt(product_id_str, product_id);
 }
 
