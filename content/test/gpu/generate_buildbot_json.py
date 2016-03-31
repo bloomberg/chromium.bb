@@ -758,6 +758,15 @@ TELEMETRY_TESTS = {
         'run_on_optional': True,
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          # http://crbug.com/599451: this test is currently too slow
+          # to run on x64 in Debug mode. Need to shard the tests.
+          'Win7 x64 Debug (NVIDIA)',
+        ],
+      },
+    ],
     'target_name': 'webgl_conformance',
     'args': [
       '--webgl-conformance-version=2.0.0',
