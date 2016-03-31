@@ -451,11 +451,13 @@ TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<Cac
     : m_documentURL(documentURL)
     , m_inStyle(false)
     , m_inPicture(false)
+    , m_inScript(false)
     , m_isAppCacheEnabled(false)
     , m_isCSPEnabled(false)
     , m_templateCount(0)
     , m_documentParameters(documentParameters)
     , m_mediaValues(MediaValuesCached::create(mediaValuesCachedData))
+    , m_didRewind(false)
 {
     ASSERT(m_documentParameters.get());
     ASSERT(m_mediaValues.get());
@@ -468,7 +470,7 @@ TokenPreloadScanner::~TokenPreloadScanner()
 TokenPreloadScannerCheckpoint TokenPreloadScanner::createCheckpoint()
 {
     TokenPreloadScannerCheckpoint checkpoint = m_checkpoints.size();
-    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle, m_isAppCacheEnabled, m_isCSPEnabled, m_templateCount));
+    m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle, m_inScript, m_isAppCacheEnabled, m_isCSPEnabled, m_templateCount));
     return checkpoint;
 }
 
@@ -481,18 +483,22 @@ void TokenPreloadScanner::rewindTo(TokenPreloadScannerCheckpoint checkpointIndex
     m_isAppCacheEnabled = checkpoint.isAppCacheEnabled;
     m_isCSPEnabled = checkpoint.isCSPEnabled;
     m_templateCount = checkpoint.templateCount;
+
+    m_didRewind = true;
+    m_inScript = checkpoint.inScript;
+
     m_cssScanner.reset();
     m_checkpoints.clear();
 }
 
 void TokenPreloadScanner::scan(const HTMLToken& token, const SegmentedString& source, PreloadRequestStream& requests, ViewportDescriptionWrapper* viewport)
 {
-    scanCommon(token, source, requests, viewport);
+    scanCommon(token, source, requests, viewport, nullptr);
 }
 
-void TokenPreloadScanner::scan(const CompactHTMLToken& token, const SegmentedString& source, PreloadRequestStream& requests, ViewportDescriptionWrapper* viewport)
+void TokenPreloadScanner::scan(const CompactHTMLToken& token, const SegmentedString& source, PreloadRequestStream& requests, ViewportDescriptionWrapper* viewport, bool* likelyDocumentWriteScript)
 {
-    scanCommon(token, source, requests, viewport);
+    scanCommon(token, source, requests, viewport, likelyDocumentWriteScript);
 }
 
 static void handleMetaViewport(const String& attributeValue, const CachedDocumentParameters* documentParameters, MediaValuesCached* mediaValues, ViewportDescriptionWrapper* viewport)
@@ -541,8 +547,32 @@ static void handleMetaNameAttribute(const Token& token, CachedDocumentParameters
     }
 }
 
+// This method returns true for script source strings which will likely use
+// document.write to insert an external script. These scripts will be flagged
+// for evaluation via the DocumentWriteEvaluator, so it also dismisses scripts
+// that will likely fail evaluation. These includes scripts that are too long,
+// have looping constructs, or use non-determinism.
+bool TokenPreloadScanner::shouldEvaluateForDocumentWrite(const String& source)
+{
+    // The maximum length script source that will be marked for evaluation to
+    // preload document.written external scripts.
+    const int kMaxLengthForEvaluating = 1024;
+
+    return m_documentParameters->doDocumentWritePreloadScanning
+        && source.length() <= kMaxLengthForEvaluating
+        && source.find("document.write") != WTF::kNotFound
+        && (source.findIgnoringASCIICase("<sc") != WTF::kNotFound
+            || source.findIgnoringASCIICase("%3Csc") != WTF::kNotFound)
+        && source.findIgnoringASCIICase("src") != WTF::kNotFound
+        && source.find("while") == WTF::kNotFound
+        && source.find("for") == WTF::kNotFound
+        && source.find("jQuery") == WTF::kNotFound
+        && source.find("Math.random") == WTF::kNotFound
+        && source.find("Date") == WTF::kNotFound;
+}
+
 template <typename Token>
-void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& source, PreloadRequestStream& requests, ViewportDescriptionWrapper* viewport)
+void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& source, PreloadRequestStream& requests, ViewportDescriptionWrapper* viewport, bool* likelyDocumentWriteScript)
 {
     if (!m_documentParameters->doHtmlPreloadScanning)
         return;
@@ -557,9 +587,16 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
 
     switch (token.type()) {
     case HTMLToken::Character: {
-        if (!m_inStyle)
-            return;
-        m_cssScanner.scan(token.data(), source, requests, m_predictedBaseElementURL);
+        if (m_inStyle) {
+            m_cssScanner.scan(token.data(), source, requests, m_predictedBaseElementURL);
+        } else if (m_inScript && likelyDocumentWriteScript && !m_didRewind) {
+            // Don't mark scripts for evaluation if the preloader rewound to a
+            // previous checkpoint. This could cause re-evaluation of scripts if
+            // care isn't given.
+            // TODO(csharrison): Revisit this if rewinds are low hanging fruit for the
+            // document.write evaluator.
+            *likelyDocumentWriteScript = shouldEvaluateForDocumentWrite(token.data());
+        }
         return;
     }
     case HTMLToken::EndTag: {
@@ -573,6 +610,10 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
             if (m_inStyle)
                 m_cssScanner.reset();
             m_inStyle = false;
+            return;
+        }
+        if (match(tagImpl, scriptTag)) {
+            m_inScript = false;
             return;
         }
         if (match(tagImpl, pictureTag))
@@ -590,6 +631,11 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
         if (match(tagImpl, styleTag)) {
             m_inStyle = true;
             return;
+        }
+        // Don't early return, because the StartTagScanner needs to look at
+        // these too.
+        if (match(tagImpl, scriptTag)) {
+            m_inScript = true;
         }
         if (match(tagImpl, baseTag)) {
             // The first <base> element is the one that wins.
@@ -665,7 +711,7 @@ void HTMLPreloadScanner::appendToEnd(const SegmentedString& source)
     m_source.append(source);
 }
 
-void HTMLPreloadScanner::scan(ResourcePreloader* preloader, const KURL& startingBaseElementURL, ViewportDescriptionWrapper* viewport)
+void HTMLPreloadScanner::scanAndPreload(ResourcePreloader* preloader, const KURL& startingBaseElementURL, ViewportDescriptionWrapper* viewport)
 {
     ASSERT(isMainThread()); // HTMLTokenizer::updateStateFor only works on the main thread.
 
@@ -692,6 +738,7 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document)
     ASSERT(isMainThread());
     ASSERT(document);
     doHtmlPreloadScanning = !document->settings() || document->settings()->doHtmlPreloadScanning();
+    doDocumentWritePreloadScanning = doHtmlPreloadScanning && document->frame() && document->frame()->isMainFrame() && RuntimeEnabledFeatures::documentWriteEvaluatorEnabled();
     defaultViewportMinWidth = document->viewportDefaultMinWidth();
     viewportMetaZeroValuesQuirk = document->settings() && document->settings()->viewportMetaZeroValuesQuirk();
     viewportMetaEnabled = document->settings() && document->settings()->viewportMetaEnabled();

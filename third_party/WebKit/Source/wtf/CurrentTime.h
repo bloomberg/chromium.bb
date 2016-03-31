@@ -51,6 +51,12 @@ inline double currentTimeMS()
 // On unsupported platforms, this function only guarantees the result will be non-decreasing.
 WTF_EXPORT double monotonicallyIncreasingTime();
 
+// Same thing, in milliseconds.
+inline double monotonicallyIncreasingTimeMS()
+{
+    return monotonicallyIncreasingTime() * 1000.0;
+}
+
 using TimeFunction = double (*)();
 
 // Make all the time functions (currentTime(), monotonicallyIncreasingTime(), systemTraceTime()) return the result
@@ -63,6 +69,7 @@ WTF_EXPORT TimeFunction setTimeFunctionsForTesting(TimeFunction);
 using WTF::currentTime;
 using WTF::currentTimeMS;
 using WTF::monotonicallyIncreasingTime;
+using WTF::monotonicallyIncreasingTimeMS;
 using WTF::TimeFunction;
 using WTF::setTimeFunctionsForTesting;
 

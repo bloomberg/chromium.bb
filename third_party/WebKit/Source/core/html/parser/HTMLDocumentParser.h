@@ -26,6 +26,7 @@
 #ifndef HTMLDocumentParser_h
 #define HTMLDocumentParser_h
 
+#include "bindings/core/v8/DocumentWriteEvaluator.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fetch/ResourceClient.h"
@@ -103,6 +104,8 @@ public:
         HTMLInputCheckpoint inputCheckpoint;
         TokenPreloadScannerCheckpoint preloadScannerCheckpoint;
         bool startingScript;
+        // Indices into |tokens|.
+        Vector<int> likelyDocumentWriteScriptIndices;
     };
     void notifyPendingParsedChunks();
     void didReceiveEncodingDataFromBackgroundParser(const DocumentEncodingData&);
@@ -172,6 +175,13 @@ private:
     bool inPumpSession() const { return m_pumpSessionNestingLevel > 0; }
     bool shouldDelayEnd() const { return inPumpSession() || isWaitingForScripts() || isScheduledForResume() || isExecutingScript(); }
 
+    void pumpPreloadQueue();
+
+    PassOwnPtr<HTMLPreloadScanner> createPreloadScanner();
+
+    int preloadInsertion(const SegmentedString& source);
+    void evaluateAndPreloadScriptForDocumentWrite(const String& source);
+
     HTMLToken& token() { return *m_token; }
 
     HTMLParserOptions m_options;
@@ -198,7 +208,9 @@ private:
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
     OwnPtrWillBeMember<HTMLResourcePreloader> m_preloader;
     PreloadRequestStream m_queuedPreloads;
+    Vector<String> m_queuedDocumentWriteScripts;
     RefPtr<ParsedChunkQueue> m_parsedChunkQueue;
+    OwnPtr<DocumentWriteEvaluator> m_evaluator;
 
     bool m_shouldUseThreading;
     bool m_endWasDelayed;

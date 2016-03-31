@@ -63,6 +63,7 @@ public:
     }
 
     bool doHtmlPreloadScanning;
+    bool doDocumentWritePreloadScanning;
     Length defaultViewportMinWidth;
     bool viewportMetaZeroValuesQuirk;
     bool viewportMetaEnabled;
@@ -79,7 +80,7 @@ public:
     ~TokenPreloadScanner();
 
     void scan(const HTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*);
-    void scan(const CompactHTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*);
+    void scan(const CompactHTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*, bool* likelyDocumentWriteScript);
 
     void setPredictedBaseElementURL(const KURL& url) { m_predictedBaseElementURL = url; }
 
@@ -91,16 +92,20 @@ public:
 private:
     class StartTagScanner;
 
+    bool shouldEvaluateForDocumentWrite(const String& source);
+    bool shouldEvaluateForDocumentWrite(const HTMLToken::DataVector& source) { return false; }
+
     template <typename Token>
-    inline void scanCommon(const Token&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*);
+    inline void scanCommon(const Token&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*, bool* likelyDocumentWriteScript);
 
     template<typename Token>
     void updatePredictedBaseURL(const Token&);
 
     struct Checkpoint {
-        Checkpoint(const KURL& predictedBaseElementURL, bool inStyle, bool isAppCacheEnabled, bool isCSPEnabled, size_t templateCount)
+        Checkpoint(const KURL& predictedBaseElementURL, bool inStyle, bool inScript, bool isAppCacheEnabled, bool isCSPEnabled, size_t templateCount)
             : predictedBaseElementURL(predictedBaseElementURL)
             , inStyle(inStyle)
+            , inScript(inScript)
             , isAppCacheEnabled(isAppCacheEnabled)
             , isCSPEnabled(isCSPEnabled)
             , templateCount(templateCount)
@@ -109,6 +114,7 @@ private:
 
         KURL predictedBaseElementURL;
         bool inStyle;
+        bool inScript;
         bool isAppCacheEnabled;
         bool isCSPEnabled;
         size_t templateCount;
@@ -132,6 +138,7 @@ private:
     KURL m_predictedBaseElementURL;
     bool m_inStyle;
     bool m_inPicture;
+    bool m_inScript;
     bool m_isAppCacheEnabled;
     bool m_isCSPEnabled;
     PictureData m_pictureData;
@@ -139,6 +146,8 @@ private:
     OwnPtr<CachedDocumentParameters> m_documentParameters;
     RefPtrWillBePersistent<MediaValuesCached> m_mediaValues;
     ClientHintsPreferences m_clientHintsPreferences;
+
+    bool m_didRewind = false;
 
     Vector<Checkpoint> m_checkpoints;
 };
@@ -155,7 +164,7 @@ public:
     ~HTMLPreloadScanner();
 
     void appendToEnd(const SegmentedString&);
-    void scan(ResourcePreloader*, const KURL& documentBaseElementURL, ViewportDescriptionWrapper*);
+    void scanAndPreload(ResourcePreloader*, const KURL& documentBaseElementURL, ViewportDescriptionWrapper*);
 
 private:
     HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);

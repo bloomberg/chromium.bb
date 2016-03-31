@@ -245,7 +245,9 @@ void BackgroundHTMLParser::pumpTokenizer()
 
             CompactHTMLToken token(m_token.get(), position);
 
-            m_preloadScanner->scan(token, m_input.current(), m_pendingPreloads, &m_viewportDescription);
+            bool shouldEvaluateForDocumentWrite = false;
+            m_preloadScanner->scan(token, m_input.current(), m_pendingPreloads, &m_viewportDescription, &shouldEvaluateForDocumentWrite);
+
             simulatedToken = m_treeBuilderSimulator.simulate(token, m_tokenizer.get());
 
             // Break chunks before a script tag is inserted and flag the chunk as starting a script
@@ -256,6 +258,9 @@ void BackgroundHTMLParser::pumpTokenizer()
             }
 
             m_pendingTokens->append(token);
+            if (shouldEvaluateForDocumentWrite) {
+                m_likelyDocumentWriteScriptIndices.append(m_pendingTokens->size() - 1);
+            }
         }
 
         m_token->clear();
@@ -291,6 +296,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     chunk->preloadScannerCheckpoint = m_preloadScanner->createCheckpoint();
     chunk->tokens = m_pendingTokens.release();
     chunk->startingScript = m_startingScript;
+    chunk->likelyDocumentWriteScriptIndices.swap(m_likelyDocumentWriteScriptIndices);
     m_startingScript = false;
 
     bool isEmpty = m_parsedChunkQueue->enqueue(chunk.release());

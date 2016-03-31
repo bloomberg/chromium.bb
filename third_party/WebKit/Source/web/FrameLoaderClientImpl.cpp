@@ -744,7 +744,7 @@ PassRefPtrWillBeRawPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoad
 
 String FrameLoaderClientImpl::userAgent()
 {
-    WebString override = m_webFrame->client()->userAgentOverride();
+    WebString override = m_webFrame->client() ? m_webFrame->client()->userAgentOverride() : "";
     if (!override.isEmpty())
         return override;
 

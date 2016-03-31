@@ -31,6 +31,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentLifecycleObserver.h"
 #include "core/dom/Element.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
@@ -45,6 +46,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/NavigationScheduler.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
@@ -121,6 +123,7 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors
     , m_weakFactory(this)
     , m_preloader(HTMLResourcePreloader::create(document))
     , m_parsedChunkQueue(ParsedChunkQueue::create())
+    , m_evaluator(DocumentWriteEvaluator::create(document))
     , m_shouldUseThreading(syncPolicy == AllowAsynchronousParsing)
     , m_endWasDelayed(false)
     , m_haveBackgroundParser(false)
@@ -342,14 +345,26 @@ void HTMLDocumentParser::notifyPendingParsedChunks()
         for (auto& chunk : pendingChunks) {
             for (auto& request : chunk->preloads)
                 m_queuedPreloads.append(request.release());
+            for (auto& index : chunk->likelyDocumentWriteScriptIndices) {
+                const CompactHTMLToken& token = chunk->tokens->at(index);
+                ASSERT(token.type() == HTMLToken::TokenType::Character);
+                m_queuedDocumentWriteScripts.append(token.data());
+            }
         }
     } else {
         // We can safely assume that there are no queued preloads request after
         // the document element is available, as we empty the queue immediately
         // after the document element is created in pumpPendingSpeculations().
         ASSERT(m_queuedPreloads.isEmpty());
-        for (auto& chunk : pendingChunks)
+        ASSERT(m_queuedDocumentWriteScripts.isEmpty());
+        for (auto& chunk : pendingChunks) {
+            for (auto& index : chunk->likelyDocumentWriteScriptIndices) {
+                const CompactHTMLToken& token = chunk->tokens->at(index);
+                ASSERT(token.type() == HTMLToken::TokenType::Character);
+                evaluateAndPreloadScriptForDocumentWrite(token.data());
+            }
             m_preloader->takeAndPreload(chunk->preloads);
+        }
     }
 
     for (auto& chunk : pendingChunks)
@@ -485,8 +500,7 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
         if (isStopped())
             break;
 
-        if (!m_queuedPreloads.isEmpty() && document()->documentElement())
-            m_preloader->takeAndPreload(m_queuedPreloads);
+        pumpPreloadQueue();
 
         if (!m_triedLoadingLinkHeaders && document()->loader()) {
             String linkHeader = document()->loader()->response().httpHeaderField(HTTPNames::Link);
@@ -656,14 +670,10 @@ void HTMLDocumentParser::pumpTokenizer()
         // adding paranoia if for speculative crash fix for crbug.com/465478
         if (m_preloader) {
             if (!m_preloadScanner) {
-                m_preloadScanner = HTMLPreloadScanner::create(
-                    m_options,
-                    document()->url(),
-                    CachedDocumentParameters::create(document()),
-                    MediaValuesCached::MediaValuesCachedData(*document()));
+                m_preloadScanner = createPreloadScanner();
                 m_preloadScanner->appendToEnd(m_input.current());
             }
-            m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL(), nullptr);
+            m_preloadScanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
         }
     }
 
@@ -741,16 +751,10 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
     if (isWaitingForScripts()) {
         // Check the document.write() output with a separate preload scanner as
         // the main scanner can't deal with insertions.
-        if (!m_insertionPreloadScanner) {
-            m_insertionPreloadScanner = HTMLPreloadScanner::create(
-                m_options,
-                document()->url(),
-                CachedDocumentParameters::create(document()),
-                MediaValuesCached::MediaValuesCachedData(*document()));
-        }
-
+        if (!m_insertionPreloadScanner)
+            m_insertionPreloadScanner = createPreloadScanner();
         m_insertionPreloadScanner->appendToEnd(source);
-        m_insertionPreloadScanner->scan(m_preloader.get(), document()->baseElementURL(), nullptr);
+        m_insertionPreloadScanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
     }
 
     endIfDelayed();
@@ -830,7 +834,7 @@ void HTMLDocumentParser::append(const String& inputSource)
         } else {
             m_preloadScanner->appendToEnd(source);
             if (isWaitingForScripts())
-                m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL(), nullptr);
+                m_preloadScanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
         }
     }
 
@@ -1010,7 +1014,7 @@ void HTMLDocumentParser::appendCurrentInputStreamToPreloadScannerAndScan()
 {
     ASSERT(m_preloadScanner);
     m_preloadScanner->appendToEnd(m_input.current());
-    m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL(), nullptr);
+    m_preloadScanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
 }
 
 void HTMLDocumentParser::notifyScriptLoaded(Resource* cachedResource)
@@ -1129,6 +1133,66 @@ void HTMLDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
 
     if (m_haveBackgroundParser)
         HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::setDecoder, AllowCrossThreadAccess(m_backgroundParser), takeDecoder()));
+}
+
+void HTMLDocumentParser::pumpPreloadQueue()
+{
+    if (!document()->documentElement())
+        return;
+
+    for (const String& scriptSource : m_queuedDocumentWriteScripts) {
+        evaluateAndPreloadScriptForDocumentWrite(scriptSource);
+    }
+
+    m_queuedDocumentWriteScripts.clear();
+    if (!m_queuedPreloads.isEmpty())
+        m_preloader->takeAndPreload(m_queuedPreloads);
+}
+
+PassOwnPtr<HTMLPreloadScanner> HTMLDocumentParser::createPreloadScanner()
+{
+    return HTMLPreloadScanner::create(
+        m_options,
+        document()->url(),
+        CachedDocumentParameters::create(document()),
+        MediaValuesCached::MediaValuesCachedData(*document()));
+}
+
+void HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite(const String& source)
+{
+    if (!m_evaluator->shouldEvaluate(source))
+        return;
+    TRACE_EVENT0("blink", "HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite");
+
+    double initializeStartTime = monotonicallyIncreasingTimeMS();
+    bool neededInitialization = m_evaluator->ensureEvaluationContext();
+    double initializationDuration = monotonicallyIncreasingTimeMS() - initializeStartTime;
+
+    double startTime = monotonicallyIncreasingTimeMS();
+    String writtenSource = m_evaluator->evaluateAndEmitWrittenSource(source);
+    double duration = monotonicallyIncreasingTimeMS() - startTime;
+
+    int currentPreloadCount = document()->loader()->fetcher()->countPreloads();
+    OwnPtr<HTMLPreloadScanner> scanner = createPreloadScanner();
+    scanner->appendToEnd(SegmentedString(writtenSource));
+    scanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
+    int numPreloads = document()->loader()->fetcher()->countPreloads() - currentPreloadCount;
+
+    TRACE_EVENT_INSTANT2("blink", "HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite.data", TRACE_EVENT_SCOPE_THREAD, "numPreloads", numPreloads, "scriptLength", source.length());
+
+    if (neededInitialization) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, initializeHistograms, ("PreloadScanner.DocumentWrite.InitializationTime", 1, 10000, 50));
+        initializeHistograms.count(initializationDuration);
+    }
+
+    if (numPreloads) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, successHistogram, ("PreloadScanner.DocumentWrite.ExecutionTime.Success", 1, 10000, 50));
+        successHistogram.count(duration);
+    } else {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, failureHistogram, ("PreloadScanner.DocumentWrite.ExecutionTime.Failure", 1, 10000, 50));
+        failureHistogram.count(duration);
+    }
+
 }
 
 } // namespace blink

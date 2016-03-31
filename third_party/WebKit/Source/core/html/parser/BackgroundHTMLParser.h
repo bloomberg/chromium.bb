@@ -113,6 +113,8 @@ private:
     OwnPtr<CompactHTMLTokenStream> m_pendingTokens;
     const size_t m_pendingTokenLimit;
     PreloadRequestStream m_pendingPreloads;
+    // Indices into |m_pendingTokens|.
+    Vector<int> m_likelyDocumentWriteScriptIndices;
     ViewportDescriptionWrapper m_viewportDescription;
     XSSInfoStream m_pendingXSSInfos;
 

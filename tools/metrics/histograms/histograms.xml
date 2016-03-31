@@ -38838,6 +38838,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The amount of time that elapsed during CreateProfilePrefs.</summary>
 </histogram>
 
+<histogram name="PreloadScanner.DocumentWrite.ExecutionTime.Failure" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Time spent executing a script tag in the blink preload scanner, for the
+    purpose of preloading scripts that will be fetched via a call to
+    document.write. The execution failed to generate a preload request.
+  </summary>
+</histogram>
+
+<histogram name="PreloadScanner.DocumentWrite.ExecutionTime.Success" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Time spent executing a script tag in the blink preload scanner, for the
+    purpose of preloading scripts that will be fetched via a call to
+    document.write. The execution successfully resulted in a preload request.
+  </summary>
+</histogram>
+
+<histogram name="PreloadScanner.DocumentWrite.InitializationTime" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Time spent initializing a new V8 context for the purpose of evaluating it
+    and preloading document.written strings.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.AbandonTimeUntilUsed" units="ms">
   <owner>davidben@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
