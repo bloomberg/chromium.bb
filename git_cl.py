@@ -881,17 +881,17 @@ class Changelist(object):
     self._remote = None
 
     self._codereview_impl = None
+    self._codereview = None
     self._load_codereview_impl(codereview, **kwargs)
+    assert self._codereview_impl
+    assert self._codereview in _CODEREVIEW_IMPLEMENTATIONS
 
   def _load_codereview_impl(self, codereview=None, **kwargs):
     if codereview:
-      codereview = codereview.lower()
-      if codereview == 'gerrit':
-        self._codereview_impl = _GerritChangelistImpl(self, **kwargs)
-      elif codereview == 'rietveld':
-        self._codereview_impl = _RietveldChangelistImpl(self, **kwargs)
-      else:
-        assert codereview in ('rietveld', 'gerrit')
+      assert codereview in _CODEREVIEW_IMPLEMENTATIONS
+      cls = _CODEREVIEW_IMPLEMENTATIONS[codereview]
+      self._codereview = codereview
+      self._codereview_impl = cls(self, **kwargs)
       return
 
     # Automatic selection based on issue number set for a current branch.
@@ -899,10 +899,11 @@ class Changelist(object):
     assert not self.issue
     # Whether we find issue or not, we are doing the lookup.
     self.lookedup_issue = True
-    for cls in [_RietveldChangelistImpl, _GerritChangelistImpl]:
+    for codereview, cls in _CODEREVIEW_IMPLEMENTATIONS.iteritems():
       setting = cls.IssueSetting(self.GetBranch())
       issue = RunGit(['config', setting], error_ok=True).strip()
       if issue:
+        self._codereview = codereview
         self._codereview_impl = cls(self, **kwargs)
         self.issue = int(issue)
         return
@@ -912,6 +913,8 @@ class Changelist(object):
         codereview='gerrit' if settings.GetIsGerrit() else 'rietveld',
         **kwargs)
 
+  def IsGerrit(self):
+    return self._codereview == 'gerrit'
 
   def GetCCList(self):
     """Return the users cc'd on this CL.
@@ -1650,10 +1653,54 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def CloseIssue(self):
     gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
 
+  def SubmitIssue(self, wait_for_merge=True):
+    gerrit_util.SubmitChange(self._GetGerritHost(), self.GetIssue(),
+                             wait_for_merge=wait_for_merge)
 
   def _GetChangeDetail(self, options):
     return gerrit_util.GetChangeDetail(self._GetGerritHost(), self.GetIssue(),
                                        options)
+
+  def CMDLand(self, force, bypass_hooks, verbose):
+    if git_common.is_dirty_git_tree('land'):
+      return 1
+    differs = True
+    last_upload = RunGit(['config',
+                          'branch.%s.gerritsquashhash' % self.GetBranch()],
+                         error_ok=True).strip()
+    # Note: git diff outputs nothing if there is no diff.
+    if not last_upload or RunGit(['diff', last_upload]).strip():
+      print('WARNING: some changes from local branch haven\'t been uploaded')
+    else:
+      detail = self._GetChangeDetail(['CURRENT_REVISION'])
+      if detail['current_revision'] == last_upload:
+        differs = False
+      else:
+        print('WARNING: local branch contents differ from latest uploaded '
+              'patchset')
+    if differs:
+      if not force:
+        ask_for_data(
+            'Do you want to submit latest Gerrit patchset and bypass hooks?')
+      print('WARNING: bypassing hooks and submitting latest uploaded patchset')
+    elif not bypass_hooks:
+      hook_results = self.RunHook(
+          committing=True,
+          may_prompt=not force,
+          verbose=verbose,
+          change=self.GetChange(self.GetCommonAncestorWithUpstream(), None))
+      if not hook_results.should_continue():
+        return 1
+
+    self.SubmitIssue(wait_for_merge=True)
+    print('Issue %s has been submitted.' % self.GetIssueURL())
+    return 0
+
+
+_CODEREVIEW_IMPLEMENTATIONS = {
+  'rietveld': _RietveldChangelistImpl,
+  'gerrit': _GerritChangelistImpl,
+}
 
 
 class ChangeDescription(object):
@@ -3110,10 +3157,14 @@ def IsSubmoduleMergeCommit(ref):
 def SendUpstream(parser, args, cmd):
   """Common code for CMDland and CmdDCommit
 
-  Squashes branch into a single commit.
-  Updates changelog with metadata (e.g. pointer to review).
-  Pushes/dcommits the code upstream.
-  Updates review and closes.
+  In case of Gerrit, uses Gerrit REST api to "submit" the issue, which pushes
+  upstream and closes the issue automatically and atomically.
+
+  Otherwise (in case of Rietveld):
+    Squashes branch into a single commit.
+    Updates changelog with metadata (e.g. pointer to review).
+    Pushes/dcommits the code upstream.
+    Updates review and closes.
   """
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
                     help='bypass upload presubmit hook')
@@ -3131,6 +3182,24 @@ def SendUpstream(parser, args, cmd):
   auth_config = auth.extract_auth_config_from_options(options)
 
   cl = Changelist(auth_config=auth_config)
+
+  # TODO(tandrii): refactor this into _RietveldChangelistImpl method.
+  if cl.IsGerrit():
+    if options.message:
+      # This could be implemented, but it requires sending a new patch to
+      # Gerrit, as Gerrit unlike Rietveld versions messages with patchsets.
+      # Besides, Gerrit has the ability to change the commit message on submit
+      # automatically, thus there is no need to support this option (so far?).
+      parser.error('-m MESSAGE option is not supported for Gerrit.')
+    if options.contributor:
+      parser.error(
+          '-c CONTRIBUTOR option is not supported for Gerrit.\n'
+          'Before uploading a commit to Gerrit, ensure it\'s author field is '
+          'the contributor\'s "name <email>". If you can\'t upload such a '
+          'commit for review, contact your repository admin and request'
+          '"Forge-Author" permission.')
+    return cl._codereview_impl.CMDLand(options.force, options.bypass_hooks,
+                                       options.verbose)
 
   current = cl.GetBranch()
   remote, upstream_branch = cl.FetchUpstreamTuple(cl.GetBranch())
