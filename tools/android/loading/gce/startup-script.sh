@@ -57,7 +57,6 @@ unzip /opt/app/clovis/binaries/linux.zip -d /opt/app/clovis/binaries/
 cp /opt/app/clovis/binaries/chrome_sandbox /usr/local/sbin/chrome-devel-sandbox
 chown root:root /usr/local/sbin/chrome-devel-sandbox
 chmod 4755 /usr/local/sbin/chrome-devel-sandbox
-export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome-devel-sandbox
 
 # Make sure the pythonapp user owns the application code
 chown -R pythonapp:pythonapp /opt/app
@@ -77,12 +76,8 @@ AUTO_START=$(curl -s \
     "http://metadata/computeMetadata/v1/instance/attributes/auto-start" \
     -H "Metadata-Flavor: Google")
 
-# TODO(droger): Figure out how to correctly restore check for auto-startup
-# as well as auto-startup code.
-exit 1
-
 # Exit early if auto start is not enabled.
-if [ -z "$AUTO_START" ]; then
+if [ "$AUTO_START" != "true" ]; then
   exit 1
 fi
 
@@ -100,7 +95,8 @@ user=pythonapp
 # configured virtualenv.
 environment=VIRTUAL_ENV="/opt/app/clovis/env", \
     PATH="/opt/app/clovis/env/bin:/usr/bin", \
-    HOME="/home/pythonapp",USER="pythonapp"
+    HOME="/home/pythonapp",USER="pythonapp", \
+    CHROME_DEVEL_SANDBOX="/usr/local/sbin/chrome-devel-sandbox"
 stdout_logfile=syslog
 stderr_logfile=syslog
 EOF

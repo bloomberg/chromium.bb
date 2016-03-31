@@ -50,6 +50,15 @@ Otherwise the IP address can be retrieved by doing:
 gcloud compute instances list
 ```
 
+**Note:** It can take a few minutes for the instance to start. You can follow
+the progress of the startup script on the gcloud console web interface (menu
+"Compute Engine" > "VM instances" then click on your instance and scroll down to
+see the "Serial console output") or from the command line using:
+
+```shell
+gcloud compute instances get-serial-port-output clovis-tracer-1
+```
+
 ## Use the app
 
 Check that `http://<instance-ip>:8080/test` prints `hello` when opened in a
