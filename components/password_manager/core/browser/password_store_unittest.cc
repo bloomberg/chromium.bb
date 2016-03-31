@@ -799,7 +799,7 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
   }
 }
 
-TEST_F(PasswordStoreTest, GetAutofillableLoginsWithAffiliatedRealms) {
+TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
   /* clang-format off */
   static const PasswordFormData kTestCredentials[] = {
       {PasswordForm::SCHEME_HTML,
@@ -819,45 +819,58 @@ TEST_F(PasswordStoreTest, GetAutofillableLoginsWithAffiliatedRealms) {
        L"", true, true, 1}};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
-  store->Init(syncer::SyncableService::StartSyncFlare());
+  const bool kFalseTrue[] = {false, true};
+  for (bool blacklisted : kFalseTrue) {
+    SCOPED_TRACE(testing::Message("use blacklisted logins: ") << blacklisted);
+    scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
+        make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
+    store->Init(syncer::SyncableService::StartSyncFlare());
+    store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
+                                      base::Closure());
 
-  ScopedVector<PasswordForm> all_credentials;
-  for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
-    all_credentials.push_back(
-        CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
-    store->AddLogin(*all_credentials.back());
+    ScopedVector<PasswordForm> all_credentials;
+    for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
+      all_credentials.push_back(
+          CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
+      if (blacklisted)
+        all_credentials.back()->blacklisted_by_user = true;
+      store->AddLogin(*all_credentials.back());
+      base::MessageLoop::current()->RunUntilIdle();
+    }
+
+    MockPasswordStoreConsumer mock_consumer;
+    ScopedVector<PasswordForm> expected_results;
+    for (size_t i = 0; i < arraysize(kTestCredentials); ++i)
+      expected_results.push_back(new PasswordForm(*all_credentials[i]));
+
+    MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
+    store->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+
+    std::vector<std::string> affiliated_web_realms;
+    affiliated_web_realms.push_back(kTestWebRealm1);
+    affiliated_web_realms.push_back(kTestWebRealm2);
+    affiliated_web_realms.push_back(std::string());
+    mock_helper->ExpectCallToInjectAffiliatedWebRealms(affiliated_web_realms);
+    for (size_t i = 0; i < expected_results.size(); ++i)
+      expected_results[i]->affiliated_web_realm = affiliated_web_realms[i];
+
+    EXPECT_CALL(mock_consumer,
+                OnGetPasswordStoreResultsConstRef(
+                    UnorderedPasswordFormElementsAre(expected_results.get())));
+    if (blacklisted)
+      store->GetBlacklistLoginsWithAffiliatedRealms(&mock_consumer);
+    else
+      store->GetAutofillableLoginsWithAffiliatedRealms(&mock_consumer);
+
+    // Since GetAutofillableLoginsWithAffiliatedRealms schedules a request for
+    // affiliated realms to UI thread, don't shutdown UI thread until there are
+    // no tasks in the UI queue.
+    base::MessageLoop::current()->RunUntilIdle();
+    store->ShutdownOnUIThread();
     base::MessageLoop::current()->RunUntilIdle();
   }
-
-  MockPasswordStoreConsumer mock_consumer;
-  ScopedVector<PasswordForm> expected_results;
-  for (size_t i = 0; i < arraysize(kTestCredentials); ++i)
-    expected_results.push_back(new PasswordForm(*all_credentials[i]));
-
-  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
-  store->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
-
-  std::vector<std::string> affiliated_web_realms;
-  affiliated_web_realms.push_back(kTestWebRealm1);
-  affiliated_web_realms.push_back(kTestWebRealm2);
-  affiliated_web_realms.push_back(std::string());
-  mock_helper->ExpectCallToInjectAffiliatedWebRealms(affiliated_web_realms);
-  for (size_t i = 0; i < expected_results.size(); ++i)
-    expected_results[i]->affiliated_web_realm = affiliated_web_realms[i];
-
-  EXPECT_CALL(mock_consumer,
-              OnGetPasswordStoreResultsConstRef(
-                  UnorderedPasswordFormElementsAre(expected_results.get())));
-  store->GetAutofillableLoginsWithAffiliatedRealms(&mock_consumer);
-  // Since GetAutofillableLoginsWithAffiliatedRealms schedules a request for
-  // affiliated realms to UI thread, don't shutdown UI thread until there are no
-  // tasks in the UI queue.
-  base::MessageLoop::current()->RunUntilIdle();
-  store->ShutdownOnUIThread();
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace password_manager

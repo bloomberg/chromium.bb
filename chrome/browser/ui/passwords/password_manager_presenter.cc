@@ -258,7 +258,7 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::Populate() {
   PasswordStore* store = page_->GetPasswordStore();
   if (store != NULL) {
     cancelable_task_tracker()->TryCancelAll();
-    store->GetBlacklistLogins(this);
+    store->GetBlacklistLoginsWithAffiliatedRealms(this);
   } else {
     LOG(ERROR) << "No password store! Cannot display exceptions.";
   }

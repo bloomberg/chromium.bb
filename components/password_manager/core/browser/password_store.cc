@@ -205,6 +205,12 @@ void PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
   Schedule(&PasswordStore::GetBlacklistLoginsImpl, consumer);
 }
 
+void PasswordStore::GetBlacklistLoginsWithAffiliatedRealms(
+    PasswordStoreConsumer* consumer) {
+  Schedule(&PasswordStore::GetBlacklistLoginsWithAffiliatedRealmsImpl,
+           consumer);
+}
+
 void PasswordStore::ReportMetrics(const std::string& sync_username,
                                   bool custom_passphrase_sync_enabled) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
@@ -446,6 +452,19 @@ void PasswordStore::GetBlacklistLoginsImpl(
   if (!FillBlacklistLogins(&obtained_forms))
     obtained_forms.clear();
   request->NotifyConsumerWithResults(std::move(obtained_forms));
+}
+
+void PasswordStore::GetBlacklistLoginsWithAffiliatedRealmsImpl(
+    scoped_ptr<GetLoginsRequest> request) {
+  ScopedVector<PasswordForm> obtained_forms;
+  if (!FillBlacklistLogins(&obtained_forms))
+    obtained_forms.clear();
+  // Since AffiliatedMatchHelper's requests should be sent from UI thread,
+  // post a request to UI thread.
+  main_thread_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PasswordStore::InjectAffiliatedWebRealms, this,
+                 base::Passed(&obtained_forms), base::Passed(&request)));
 }
 
 void PasswordStore::NotifySiteStats(const GURL& origin_domain,

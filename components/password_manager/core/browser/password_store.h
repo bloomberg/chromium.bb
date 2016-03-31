@@ -168,6 +168,11 @@ class PasswordStore : protected PasswordStoreSync,
   // consumer is destroyed.
   virtual void GetBlacklistLogins(PasswordStoreConsumer* consumer);
 
+  // Same as above, but also fills in |affiliated_web_realm| for Android
+  // credentials.
+  virtual void GetBlacklistLoginsWithAffiliatedRealms(
+      PasswordStoreConsumer* consumer);
+
   // Reports usage metrics for the database. |sync_username| and
   // |custom_passphrase_sync_enabled| determine some of the UMA stats that
   // may be reported.
@@ -378,6 +383,11 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Finds all blacklist PasswordForms, and notifies the consumer.
   void GetBlacklistLoginsImpl(scoped_ptr<GetLoginsRequest> request);
+
+  // Same as above, but also fills in |affiliated_web_realm| for Android
+  // credentials.
+  void GetBlacklistLoginsWithAffiliatedRealmsImpl(
+      scoped_ptr<GetLoginsRequest> request);
 
   // Notifies |request| about the stats for |origin_domain|.
   void NotifySiteStats(const GURL& origin_domain,
