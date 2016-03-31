@@ -28,9 +28,6 @@ void LayoutTestRuntimeFlags::Reset() {
   set_policy_delegate_should_notify_done(false);
   set_wait_until_done(false);
 
-  set_dump_selection_rect(false);
-  set_dump_drag_image(false);
-
   set_accept_languages("");
 
   // No need to report the initial state - only the future delta is important.

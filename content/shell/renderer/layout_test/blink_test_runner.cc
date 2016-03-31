@@ -30,7 +30,6 @@
 #include "build/build_config.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "components/test_runner/gamepad_controller.h"
-#include "components/test_runner/pixel_dump.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "components/test_runner/web_test_runner.h"
@@ -730,8 +729,11 @@ blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
   return placeholder->plugin();
 }
 
-float BlinkTestRunner::GetDeviceScaleFactorForTest() const {
-  return render_view()->GetDeviceScaleFactorForTest();
+blink::WebPoint BlinkTestRunner::ConvertDIPToNative(
+    const blink::WebPoint& point_in_dip) const {
+  float scale = render_view()->GetDeviceScaleFactorForTest();
+  return blink::WebPoint(point_in_dip.x * scale,
+                         point_in_dip.y * scale);
 }
 
 bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
@@ -894,10 +896,8 @@ void BlinkTestRunner::CaptureDumpContinued() {
       interfaces->TestRunner()->ShouldGeneratePixelResults() &&
       !interfaces->TestRunner()->ShouldDumpAsAudio()) {
     CHECK(render_view()->GetWebView()->isAcceleratedCompositingActive());
-    interfaces->TestRunner()->DumpPixelsAsync(
-        render_view()->GetWebView(),
-        base::Bind(&BlinkTestRunner::OnPixelsDumpCompleted,
-                   base::Unretained(this)));
+    proxy()->CapturePixelsAsync(base::Bind(
+        &BlinkTestRunner::OnPixelsDumpCompleted, base::Unretained(this)));
     return;
   }
 

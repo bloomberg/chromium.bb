@@ -19,7 +19,6 @@
 #include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_runner.h"
-#include "third_party/WebKit/public/platform/WebImage.h"
 #include "v8/include/v8.h"
 
 class GURL;
@@ -77,9 +76,6 @@ class TestRunner : public WebTestRunner,
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
   bool IsRecursiveLayoutDumpRequested() override;
   std::string DumpLayout(blink::WebLocalFrame* frame) override;
-  void DumpPixelsAsync(
-      blink::WebView* web_view,
-      const base::Callback<void(const SkBitmap&)>& callback) override;
   void ReplicateLayoutTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_values) override;
   bool HasCustomTextDump(std::string* custom_text_dump) const override;
@@ -91,6 +87,7 @@ class TestRunner : public WebTestRunner,
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   MockScreenOrientationClient* getMockScreenOrientationClient();
   MockWebUserMediaClient* getMockWebUserMediaClient();
+  bool shouldDumpSelectionRect() const;
   bool isPrinting() const;
   bool shouldDumpAsTextWithPixelResults();
   bool shouldDumpAsCustomText() const;
@@ -132,7 +129,7 @@ class TestRunner : public WebTestRunner,
   void RequestPointerUnlock();
   bool isPointerLocked();
   void setToolTipText(const blink::WebString&);
-  void setDragImage(const blink::WebImage& drag_image);
+  bool shouldDumpDragImage();
   bool shouldDumpNavigationPolicy() const;
 
   bool midiAccessorResult();
@@ -481,9 +478,10 @@ class TestRunner : public WebTestRunner,
   // WebFrameClient receives a loadURLExternally() call.
   void WaitUntilExternalURLLoad();
 
-  // This function sets a flag to dump the drag image when the next drag&drop is
-  // initiated. It is equivalent to DumpAsTextWithPixelResults but the pixel
-  // results will be the drag image instead of a snapshot of the page.
+  // This function sets a flag which tells the WebTestProxy to dump the drag
+  // image when the next drag-and-drop is initiated. It is equivalent to
+  // DumpAsTextWithPixelResults but the pixel results will be the drag image
+  // instead of a snapshot of the page.
   void DumpDragImage();
 
   // Sets a flag that tells the WebTestProxy to dump the default navigation
@@ -757,6 +755,13 @@ class TestRunner : public WebTestRunner,
   // well.
   bool dump_back_forward_list_;
 
+  // If true, the test_shell will draw the bounds of the current selection rect
+  // taking possible transforms of the selection rect into account.
+  bool dump_selection_rect_;
+
+  // If true, the test_shell will dump the drag image as pixel results.
+  bool dump_drag_image_;
+
   // If true, content_shell will dump the default navigation policy passed to
   // WebFrameClient::decidePolicyForNavigation.
   bool dump_navigation_policy_;
@@ -811,9 +816,6 @@ class TestRunner : public WebTestRunner,
 
   // Number of currently active color choosers.
   int chooser_count_;
-
-  // Captured drag image.
-  blink::WebImage drag_image_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 

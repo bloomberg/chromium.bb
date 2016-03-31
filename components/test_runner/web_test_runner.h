@@ -8,10 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-
-class SkBitmap;
-
 namespace base {
 class DictionaryValue;
 }
@@ -19,7 +15,6 @@ class DictionaryValue;
 namespace blink {
 class WebContentSettingsClient;
 class WebLocalFrame;
-class WebView;
 }
 
 namespace test_runner {
@@ -46,13 +41,6 @@ class WebTestRunner {
   // Dumps layout of |frame| using the mode requested by the current test
   // (i.e. text mode if testRunner.dumpAsText() was called from javascript).
   virtual std::string DumpLayout(blink::WebLocalFrame* frame) = 0;
-
-  // Snapshots image of |web_view| using the mode requested by the current test
-  // and calls |callback| with the result.  Caller needs to ensure that
-  // |web_view| stays alive until |callback| is called.
-  virtual void DumpPixelsAsync(
-      blink::WebView* web_view,
-      const base::Callback<void(const SkBitmap&)>& callback) = 0;
 
   // Replicates changes to layout test runtime flags
   // (i.e. changes that happened in another renderer).

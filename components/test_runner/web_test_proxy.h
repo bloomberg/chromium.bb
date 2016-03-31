@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_task.h"
+#include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -23,10 +24,12 @@
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 
+class SkBitmap;
+class SkCanvas;
+
 namespace blink {
 class WebDragData;
 class WebFileChooserCompletion;
-class WebImage;
 class WebLocalFrame;
 class WebSpeechRecognizer;
 class WebSpellCheckClient;
@@ -69,6 +72,12 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
                              blink::WebTextDirection sub_message_hint);
 
   std::string DumpBackForwardLists();
+  void CapturePixelsForPrinting(
+      const base::Callback<void(const SkBitmap&)>& callback);
+  void CopyImageAtAndCapturePixels(
+      int x, int y, const base::Callback<void(const SkBitmap&)>& callback);
+  void CapturePixelsAsync(
+      const base::Callback<void(const SkBitmap&)>& callback);
 
   void LayoutAndPaintAsyncThen(const base::Closure& callback);
 
@@ -118,12 +127,18 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
 
  private:
   void AnimateNow();
+  void DrawSelectionRect(SkCanvas* canvas);
+  void DidCapturePixelsAsync(
+      const base::Callback<void(const SkBitmap&)>& callback,
+      const SkBitmap& bitmap);
 
   TestInterfaces* test_interfaces_;
   WebTestDelegate* delegate_;
   blink::WebWidget* web_widget_;
 
   WebTaskList task_list_;
+
+  blink::WebImage drag_image_;
 
   scoped_ptr<SpellCheckClient> spellcheck_;
 

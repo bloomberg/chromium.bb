@@ -91,13 +91,6 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // If true, the policy delegate will signal layout test completion.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(policy_delegate_should_notify_done)
 
-  // If true, the test_shell will draw the bounds of the current selection rect
-  // taking possible transforms of the selection rect into account.
-  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_selection_rect)
-
-  // If true, the test_shell will dump the drag image as pixel results.
-  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_drag_image)
-
   // Contents of Accept-Language HTTP header requested by the test.
   DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG(accept_languages)
 
