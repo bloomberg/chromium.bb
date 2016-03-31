@@ -5052,30 +5052,25 @@ class ContextMenuObserverDelegate : public WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(ContextMenuObserverDelegate);
 };
 
-// Test that a mouse right-click to an out-of-process iframe causes a context
-// menu to be generated with the correct screen position.
-#if defined(OS_ANDROID)
-// Browser process hit testing is not implemented on Android.
-// https://crbug.com/491334
-#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
-#else
-#define MAYBE_CreateContextMenuTest CreateContextMenuTest
-#endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
-  GURL main_url(embedded_test_server()->GetURL(
+// Helper function to run the CreateContextMenuTest in either normal
+// or high DPI mode.
+void CreateContextMenuTestHelper(
+    Shell* shell,
+    net::test_server::EmbeddedTestServer* embedded_test_server) {
+  GURL main_url(embedded_test_server->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
-  NavigateToURL(shell(), main_url);
+  EXPECT_TRUE(NavigateToURL(shell, main_url));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell->web_contents())
                             ->GetFrameTree()
                             ->root();
   ASSERT_EQ(1U, root->child_count());
 
   FrameTreeNode* child_node = root->child_at(0);
-  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  GURL site_url(embedded_test_server->GetURL("baz.com", "/title1.html"));
   EXPECT_EQ(site_url, child_node->current_url());
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+  EXPECT_NE(shell->web_contents()->GetSiteInstance(),
             child_node->current_frame_host()->GetSiteInstance());
 
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
@@ -5086,38 +5081,33 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
   // Ensure that the child process renderer is ready to have input events
   // routed to it. This happens when the browser process has received
   // updated compositor surfaces from both renderer processes.
-  gfx::Point point(75, 75);
-  gfx::Point transformed_point;
-  while (root_view->SurfaceIdNamespaceAtPoint(nullptr, point,
-                                              &transformed_point) !=
-         rwhv_child->GetSurfaceIdNamespace()) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  SurfaceHitTestReadyNotifier notifier(
+      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
+  notifier.WaitForSurfaceReady();
 
   // A WebContentsDelegate to listen for the ShowContextMenu message.
   ContextMenuObserverDelegate context_menu_delegate;
-  shell()->web_contents()->SetDelegate(&context_menu_delegate);
+  shell->web_contents()->SetDelegate(&context_menu_delegate);
 
   RenderWidgetHostInputEventRouter* router =
-      static_cast<WebContentsImpl*>(shell()->web_contents())
+      static_cast<WebContentsImpl*>(shell->web_contents())
           ->GetInputEventRouter();
+
+  gfx::Point point(75, 75);
 
   // Target right-click event to child frame.
   blink::WebMouseEvent click_event;
   click_event.type = blink::WebInputEvent::MouseDown;
   click_event.button = blink::WebPointerProperties::ButtonRight;
-  click_event.x = 75;
-  click_event.y = 75;
+  click_event.x = point.x();
+  click_event.y = point.y();
   click_event.clickCount = 1;
   router->RouteMouseEvent(root_view, &click_event);
 
   // We also need a MouseUp event, needed by Windows.
   click_event.type = blink::WebInputEvent::MouseUp;
-  click_event.x = 75;
-  click_event.y = 75;
+  click_event.x = point.x();
+  click_event.y = point.y();
   router->RouteMouseEvent(root_view, &click_event);
 
   context_menu_delegate.Wait();
@@ -5126,6 +5116,35 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
 
   EXPECT_EQ(point.x(), params.x);
   EXPECT_EQ(point.y(), params.y);
+}
+
+// Test that a mouse right-click to an out-of-process iframe causes a context
+// menu to be generated with the correct screen position.
+#if defined(OS_ANDROID)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
+#else
+#define MAYBE_CreateContextMenuTest CreateContextMenuTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
+  CreateContextMenuTestHelper(shell(), embedded_test_server());
+}
+
+// Test that a mouse right-click to an out-of-process iframe causes a context
+// menu to be generated with the correct screen position on a screen with
+// non-default scale factor.
+#if defined(OS_ANDROID) || defined(OS_WIN)
+// Browser process hit testing is not implemented on Android.
+// https://crbug.com/491334
+// Windows is disabled because of https://crbug.com/545547.
+#define MAYBE_HighDPICreateContextMenuTest DISABLED_HighDPICreateContextMenuTest
+#else
+#define MAYBE_HighDPICreateContextMenuTest HighDPICreateContextMenuTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
+                       MAYBE_HighDPICreateContextMenuTest) {
+  CreateContextMenuTestHelper(shell(), embedded_test_server());
 }
 
 class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
