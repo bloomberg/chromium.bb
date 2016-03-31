@@ -505,14 +505,14 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     filter_image = ApplyImageFilter(filter.get(), quad, content);
   }
 
-  skia::RefPtr<SkShader> shader;
+  sk_sp<SkShader> shader;
   if (!filter_image) {
-    shader = skia::AdoptRef(
-        SkShader::CreateBitmapShader(*content, SkShader::kClamp_TileMode,
-                                     SkShader::kClamp_TileMode, &content_mat));
+    shader =
+        SkShader::MakeBitmapShader(*content, SkShader::kClamp_TileMode,
+                                   SkShader::kClamp_TileMode, &content_mat);
   } else {
-    shader = skia::AdoptRef(filter_image->newShader(
-        SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &content_mat));
+    shader = filter_image->makeShader(SkShader::kClamp_TileMode,
+                                      SkShader::kClamp_TileMode, &content_mat);
   }
 
   scoped_ptr<ResourceProvider::ScopedReadLockSoftware> mask_lock;
@@ -550,15 +550,15 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   }
 
   // If we have a background filter shader, render its results first.
-  skia::RefPtr<SkShader> background_filter_shader =
+  sk_sp<SkShader> background_filter_shader =
       GetBackgroundFilterShader(frame, quad, SkShader::kClamp_TileMode);
   if (background_filter_shader) {
     SkPaint paint;
-    paint.setShader(background_filter_shader.get());
+    paint.setShader(std::move(background_filter_shader));
     paint.setRasterizer(current_paint_.getRasterizer());
     current_canvas_->drawRect(dest_visible_rect, paint);
   }
-  current_paint_.setShader(shader.get());
+  current_paint_.setShader(std::move(shader));
   current_canvas_->drawRect(dest_visible_rect, current_paint_);
 }
 
@@ -682,12 +682,12 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   return backdrop_rect;
 }
 
-skia::RefPtr<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
+sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
     const DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     SkShader::TileMode content_tile_mode) const {
   if (!ShouldApplyBackgroundFilters(quad))
-    return skia::RefPtr<SkShader>();
+    return nullptr;
 
   gfx::Transform quad_rect_matrix;
   QuadRectTransform(&quad_rect_matrix,
@@ -703,7 +703,7 @@ skia::RefPtr<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
   // Figure out the transformations to move it back to pixel space.
   gfx::Transform contents_device_transform_inverse;
   if (!contents_device_transform.GetInverse(&contents_device_transform_inverse))
-    return skia::RefPtr<SkShader>();
+    return nullptr;
 
   SkMatrix filter_backdrop_transform =
       contents_device_transform_inverse.matrix();
@@ -721,8 +721,8 @@ skia::RefPtr<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
   if (!filter_backdrop_image)
     return nullptr;
 
-  return skia::AdoptRef(filter_backdrop_image->newShader(
-      content_tile_mode, content_tile_mode, &filter_backdrop_transform));
+  return filter_backdrop_image->makeShader(content_tile_mode, content_tile_mode,
+                                           &filter_backdrop_transform);
 }
 
 }  // namespace cc

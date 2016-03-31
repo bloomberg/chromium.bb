@@ -254,11 +254,10 @@ void CocoaScrollBar::OnPaint(gfx::Canvas* canvas) {
     gradient_bounds[0].set(track_rect.x(), track_rect.y());
     gradient_bounds[1].set(track_rect.right(), track_rect.y());
   }
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(SkGradientShader::CreateLinear(
+  SkPaint gradient;
+  gradient.setShader(SkGradientShader::MakeLinear(
       gradient_bounds, kScrollerTrackGradientColors, nullptr,
       arraysize(kScrollerTrackGradientColors), SkShader::kClamp_TileMode));
-  SkPaint gradient;
-  gradient.setShader(shader.get());
   canvas->DrawRect(track_rect, gradient);
 
   // Draw the inner border: top if horizontal, left if vertical.

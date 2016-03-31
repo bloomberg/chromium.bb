@@ -54,13 +54,13 @@ GFX_EXPORT void TransformToFlattenedSkMatrix(const gfx::Transform& transform,
 // TODO(pkotwicz): Allow shader's local matrix to be changed after the shader
 // is created.
 //
-GFX_EXPORT skia::RefPtr<SkShader> CreateImageRepShader(
+GFX_EXPORT sk_sp<SkShader> CreateImageRepShader(
     const gfx::ImageSkiaRep& image_rep,
     SkShader::TileMode tile_mode,
     const SkMatrix& local_matrix);
 
 // Creates a bitmap shader for the image rep with the passed in scale factor.
-GFX_EXPORT skia::RefPtr<SkShader> CreateImageRepShaderForScale(
+GFX_EXPORT sk_sp<SkShader> CreateImageRepShaderForScale(
     const gfx::ImageSkiaRep& image_rep,
     SkShader::TileMode tile_mode,
     const SkMatrix& local_matrix,
@@ -68,10 +68,10 @@ GFX_EXPORT skia::RefPtr<SkShader> CreateImageRepShaderForScale(
 
 // Creates a vertical gradient shader. The caller owns the shader.
 // Example usage to avoid leaks:
-GFX_EXPORT skia::RefPtr<SkShader> CreateGradientShader(int start_point,
-                                                       int end_point,
-                                                       SkColor start_color,
-                                                       SkColor end_color);
+GFX_EXPORT sk_sp<SkShader> CreateGradientShader(int start_point,
+                                                int end_point,
+                                                SkColor start_color,
+                                                SkColor end_color);
 
 // Creates a draw looper to generate |shadows|. The caller owns the draw looper.
 // NULL is returned if |shadows| is empty since no draw looper is needed in

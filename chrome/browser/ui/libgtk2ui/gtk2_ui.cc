@@ -1193,12 +1193,11 @@ SkBitmap Gtk2UI::GenerateFrameImage(
                        NULL);
 
   if (gradient_size) {
-    skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
-        0, gradient_size, gradient_top_color, base);
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
-    paint.setShader(shader.get());
+    paint.setShader(gfx::CreateGradientShader(
+        0, gradient_size, gradient_top_color, base));
 
     canvas.DrawRect(gfx::Rect(0, 0, kToolbarImageWidth, gradient_size), paint);
   }

@@ -64,7 +64,7 @@ class GFX_EXPORT SkiaTextRenderer {
   void SetTextSize(SkScalar size);
   void SetFontWithStyle(const Font& font, int font_style);
   void SetForegroundColor(SkColor foreground);
-  void SetShader(SkShader* shader);
+  void SetShader(sk_sp<SkShader> shader);
   // Sets underline metrics to use if the text will be drawn with an underline.
   // If not set, default values based on the size of the text will be used. The
   // two metrics must be set together.

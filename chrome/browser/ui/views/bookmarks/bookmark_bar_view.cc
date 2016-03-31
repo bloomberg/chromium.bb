@@ -509,9 +509,8 @@ void PaintVerticalDivider(gfx::Canvas* canvas,
                           SkColor bottom_color) {
   // Draw the upper half of the divider.
   SkPaint paint;
-  skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
-      vertical_padding + 1, height / 2, top_color, middle_color);
-  paint.setShader(shader.get());
+  paint.setShader(gfx::CreateGradientShader(
+      vertical_padding + 1, height / 2, top_color, middle_color));
   SkRect rc = { SkIntToScalar(x),
                 SkIntToScalar(vertical_padding + 1),
                 SkIntToScalar(x + 1),
@@ -520,9 +519,8 @@ void PaintVerticalDivider(gfx::Canvas* canvas,
 
   // Draw the lower half of the divider.
   SkPaint paint_down;
-  shader = gfx::CreateGradientShader(
-      height / 2, height - vertical_padding, middle_color, bottom_color);
-  paint_down.setShader(shader.get());
+  paint_down.setShader(gfx::CreateGradientShader(
+      height / 2, height - vertical_padding, middle_color, bottom_color));
   SkRect rc_down = { SkIntToScalar(x),
                      SkIntToScalar(height / 2),
                      SkIntToScalar(x + 1),

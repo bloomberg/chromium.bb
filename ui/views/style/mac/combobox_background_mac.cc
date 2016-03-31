@@ -31,12 +31,11 @@ void ComboboxBackgroundMac::Paint(gfx::Canvas* canvas, View* view) const {
   if (!combobox->enabled())
     state = ui::NativeTheme::kDisabled;
 
-  skia::RefPtr<SkShader> shader =
+  SkPaint paint;
+  paint.setShader(
       ui::NativeThemeMac::GetButtonBackgroundShader(
           state,
-          bounds.height());
-  SkPaint paint;
-  paint.setShader(shader.get());
+          bounds.height()));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
 

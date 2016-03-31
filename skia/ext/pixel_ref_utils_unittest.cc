@@ -41,9 +41,8 @@ skia::RefPtr<SkImage> CreateDiscardableImage(const gfx::Size& size) {
 
 void SetDiscardableShader(SkPaint* paint) {
   skia::RefPtr<SkImage> image = CreateDiscardableImage(gfx::Size(50, 50));
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(
-      image->newShader(SkShader::kClamp_TileMode, SkShader::kClamp_TileMode));
-  paint->setShader(shader.get());
+  paint->setShader(
+      image->makeShader(SkShader::kClamp_TileMode, SkShader::kClamp_TileMode));
 }
 
 SkCanvas* StartRecording(SkPictureRecorder* recorder, gfx::Rect layer_rect) {

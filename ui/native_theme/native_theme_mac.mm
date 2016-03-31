@@ -268,7 +268,7 @@ void NativeThemeMac::PaintMenuItemBackground(
 }
 
 // static
-skia::RefPtr<SkShader> NativeThemeMac::GetButtonBackgroundShader(
+sk_sp<SkShader> NativeThemeMac::GetButtonBackgroundShader(
     NativeTheme::State state, int height) {
   typedef SkColor ColorByState[NativeTheme::State::kNumStates];
   SkPoint gradient_points[2];
@@ -292,11 +292,9 @@ skia::RefPtr<SkShader> NativeThemeMac::GetButtonBackgroundShader(
     start_colors[state], start_colors[state], end_colors[state]
   };
 
-  skia::RefPtr<SkShader> gradient_shader = skia::AdoptRef(
-      SkGradientShader::CreateLinear(
-          gradient_points, gradient_colors, gradient_positions, 3,
-          SkShader::kClamp_TileMode));
-  return gradient_shader;
+  return SkGradientShader::MakeLinear(
+      gradient_points, gradient_colors, gradient_positions, 3,
+      SkShader::kClamp_TileMode);
 }
 
 NativeThemeMac::NativeThemeMac() {

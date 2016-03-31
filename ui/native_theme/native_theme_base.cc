@@ -698,12 +698,11 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
     std::swap(gradient_bounds[0], gradient_bounds[1]);
   SkColor colors[2] = { light_color, base_color };
 
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(
-      SkGradientShader::CreateLinear(
-          gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode));
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
-  paint.setShader(shader.get());
+  paint.setShader(
+      SkGradientShader::MakeLinear(
+          gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode));
 
   canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), paint);
   paint.setShader(NULL);

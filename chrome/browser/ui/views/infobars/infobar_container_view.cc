@@ -37,10 +37,9 @@ class ContentShadow : public views::View {
   void OnPaint(gfx::Canvas* canvas) override {
     // The first shader (small shadow) blurs from 0 to kSmallShadowHeight.
     SkPaint paint;
-    skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
+    paint.setShader(gfx::CreateGradientShader(
         0, kSmallShadowHeight, SkColorSetA(SK_ColorBLACK, kSmallShadowAlpha),
-        SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT));
-    paint.setShader(shader.get());
+        SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT)));
     gfx::Rect small_shadow_bounds = GetLocalBounds();
     small_shadow_bounds.set_height(kSmallShadowHeight);
     canvas->DrawRect(small_shadow_bounds, paint);
@@ -48,11 +47,10 @@ class ContentShadow : public views::View {
     // The second shader (large shadow) is solid from 0 to kSmallShadowHeight
     // (blending with the first shader) and then blurs from kSmallShadowHeight
     // to kLargeShadowHeight.
-    shader = gfx::CreateGradientShader(
+    paint.setShader(gfx::CreateGradientShader(
         kSmallShadowHeight, height(),
         SkColorSetA(SK_ColorBLACK, kLargeShadowAlpha),
-        SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT));
-    paint.setShader(shader.get());
+        SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT)));
     canvas->DrawRect(GetLocalBounds(), paint);
   }
 

@@ -91,14 +91,14 @@ void TransformToFlattenedSkMatrix(const gfx::Transform& transform,
   flattened->set(8, SkMScalarToScalar(transform.matrix().get(3, 3)));
 }
 
-skia::RefPtr<SkShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
+sk_sp<SkShader> CreateImageRepShader(const gfx::ImageSkiaRep& image_rep,
                                             SkShader::TileMode tile_mode,
                                             const SkMatrix& local_matrix) {
   return CreateImageRepShaderForScale(image_rep, tile_mode, local_matrix,
                                       image_rep.scale());
 }
 
-skia::RefPtr<SkShader> CreateImageRepShaderForScale(
+sk_sp<SkShader> CreateImageRepShaderForScale(
     const gfx::ImageSkiaRep& image_rep,
     SkShader::TileMode tile_mode,
     const SkMatrix& local_matrix,
@@ -115,12 +115,11 @@ skia::RefPtr<SkShader> CreateImageRepShaderForScale(
   shader_scale.setScaleX(local_matrix.getScaleX() / scale);
   shader_scale.setScaleY(local_matrix.getScaleY() / scale);
 
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(SkShader::CreateBitmapShader(
-      image_rep.sk_bitmap(), tile_mode, tile_mode, &shader_scale));
-  return shader;
+  return SkShader::MakeBitmapShader(
+      image_rep.sk_bitmap(), tile_mode, tile_mode, &shader_scale);
 }
 
-skia::RefPtr<SkShader> CreateGradientShader(int start_point,
+sk_sp<SkShader> CreateGradientShader(int start_point,
                                             int end_point,
                                             SkColor start_color,
                                             SkColor end_color) {
@@ -129,8 +128,8 @@ skia::RefPtr<SkShader> CreateGradientShader(int start_point,
   grad_points[0].iset(0, start_point);
   grad_points[1].iset(0, end_point);
 
-  return skia::AdoptRef(SkGradientShader::CreateLinear(
-      grad_points, grad_colors, NULL, 2, SkShader::kClamp_TileMode));
+  return SkGradientShader::MakeLinear(
+      grad_points, grad_colors, NULL, 2, SkShader::kClamp_TileMode);
 }
 
 static SkScalar RadiusToSigma(double radius) {

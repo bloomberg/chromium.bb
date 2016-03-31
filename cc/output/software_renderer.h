@@ -99,7 +99,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform) const;
   SkBitmap GetBackdropBitmap(const gfx::Rect& bounding_rect) const;
-  skia::RefPtr<SkShader> GetBackgroundFilterShader(
+  sk_sp<SkShader> GetBackgroundFilterShader(
       const DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
       SkShader::TileMode content_tile_mode) const;

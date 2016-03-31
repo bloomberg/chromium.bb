@@ -33,9 +33,7 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       const MenuItemExtraParams& menu_item) const override;
 
   // Creates a shader appropriate for painting the background of a button.
-  static skia::RefPtr<SkShader> GetButtonBackgroundShader(
-      State state,
-      int height);
+  static sk_sp<SkShader> GetButtonBackgroundShader(State state, int height);
 
  private:
   NativeThemeMac();
