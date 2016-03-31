@@ -33,7 +33,9 @@ from webkitpy.common.system.systemhost import SystemHost
 from webkitpy.common.system.platforminfo_mock import MockPlatformInfo
 from webkitpy.common.system import path
 
+
 class AbspathTest(unittest.TestCase):
+
     def platforminfo(self):
         return SystemHost().platform
 
@@ -41,11 +43,11 @@ class AbspathTest(unittest.TestCase):
         if sys.platform != 'cygwin':
             return
         self.assertEqual(path.abspath_to_uri(self.platforminfo(), '/cygdrive/c/foo/bar.html'),
-                          'file:///C:/foo/bar.html')
+                         'file:///C:/foo/bar.html')
 
     def test_abspath_to_uri_unixy(self):
         self.assertEqual(path.abspath_to_uri(MockPlatformInfo(), "/foo/bar.html"),
-                          'file:///foo/bar.html')
+                         'file:///foo/bar.html')
 
     def test_abspath_to_uri_win(self):
         if sys.platform != 'win32':
@@ -62,7 +64,7 @@ class AbspathTest(unittest.TestCase):
         if sys.platform != 'cygwin':
             return
         self.assertEqual(path.abspath_to_uri(self.platforminfo(), '/cygdrive/c/foo/bar + baz%.html'),
-                          'file:///C:/foo/bar%20+%20baz%25.html')
+                         'file:///C:/foo/bar%20+%20baz%25.html')
 
     def test_stop_cygpath_subprocess(self):
         if sys.platform != 'cygwin':

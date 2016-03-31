@@ -39,6 +39,7 @@ from webkitpy.tool.servers.reflectionhandler import ReflectionHandler
 
 
 class LayoutTestsHTTPServer(BaseHTTPServer.HTTPServer):
+
     def __init__(self, httpd_port, config):
         server_name = ""
         server_address = ("", httpd_port)

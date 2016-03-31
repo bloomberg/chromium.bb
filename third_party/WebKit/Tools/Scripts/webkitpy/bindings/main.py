@@ -85,6 +85,7 @@ reference_directory = os.path.join(source_path, 'bindings', 'tests', 'results')
 # in Source/bindings/tests/idls/{core,modules}, not in Source/{core,modules}.
 component_info_providers = {}
 
+
 @contextmanager
 def TemporaryDirectory():
     """Wrapper for tempfile.mkdtemp() so it's usable with 'with' statement.
@@ -258,8 +259,8 @@ def bindings_tests(output_directory, verbose):
                 excess_files.append(relpath)
         if excess_files:
             print ('Excess reference files! '
-                  '(probably cruft from renaming or deleting):\n' +
-                  '\n'.join(excess_files))
+                   '(probably cruft from renaming or deleting):\n' +
+                   '\n'.join(excess_files))
             return False
         return True
 

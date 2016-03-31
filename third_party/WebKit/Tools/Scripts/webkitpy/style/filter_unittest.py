@@ -49,6 +49,7 @@ from filter import FilterConfiguration
 #
 #   (from http://docs.python.org/reference/datamodel.html#object.__ne__ )
 
+
 class ValidateFilterRulesTest(unittest.TestCase):
 
     """Tests validate_filter_rules() function."""
@@ -63,13 +64,13 @@ class ValidateFilterRulesTest(unittest.TestCase):
             " +tabs",
             "+whitespace/newline",
             "+xxx",
-            ]
+        ]
 
         good_rules = [
             "+tabs",
             "-tabs",
             "+build"
-            ]
+        ]
 
         for rule in bad_rules:
             self.assertRaises(ValueError, validate_filter_rules,
@@ -189,11 +190,11 @@ class FilterConfigurationTest(unittest.TestCase):
         user_rules = ["+"]
 
         self.assertFalse(config.__eq__(FilterConfiguration(
-                                           base_rules=base_rules)))
+            base_rules=base_rules)))
         self.assertFalse(config.__eq__(FilterConfiguration(
-                                           path_specific=path_specific)))
+            path_specific=path_specific)))
         self.assertFalse(config.__eq__(FilterConfiguration(
-                                           user_rules=user_rules)))
+            user_rules=user_rules)))
 
     def test_ne(self):
         """Test __ne__ method."""
@@ -253,4 +254,3 @@ class FilterConfigurationTest(unittest.TestCase):
 
         self.assertFalse(config.should_check("a", "path"))
         self.assertTrue(config.should_check("b", "path"))
-

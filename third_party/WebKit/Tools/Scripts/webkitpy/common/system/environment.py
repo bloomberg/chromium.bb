@@ -28,6 +28,7 @@
 
 
 class Environment(object):
+
     def __init__(self, env=None):
         self.env = env or {}
 

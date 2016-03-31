@@ -31,6 +31,7 @@
 
 from common import TabChecker
 
+
 class TextChecker(object):
 
     """Processes text lines for checking style."""
@@ -48,4 +49,3 @@ class TextChecker(object):
 def process_file_data(filename, lines, error):
     checker = TextChecker(filename, error)
     checker.check(lines)
-

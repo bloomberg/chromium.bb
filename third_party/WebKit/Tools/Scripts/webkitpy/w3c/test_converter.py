@@ -53,6 +53,7 @@ def convert_for_webkit(new_path, filename, reference_support_info, host=Host()):
 
 
 class _W3CTestConverter(HTMLParser):
+
     def __init__(self, new_path, filename, reference_support_info, host=Host()):
         HTMLParser.__init__(self)
 

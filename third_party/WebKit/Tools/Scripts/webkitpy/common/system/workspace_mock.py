@@ -28,6 +28,7 @@
 
 
 class MockWorkspace(object):
+
     def find_unused_filename(self, directory, name, extension, search_limit=10):
         return "%s/%s.%s" % (directory, name, extension)
 

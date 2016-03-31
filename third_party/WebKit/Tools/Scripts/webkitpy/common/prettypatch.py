@@ -31,6 +31,7 @@ import tempfile
 
 
 class PrettyPatch(object):
+
     def __init__(self, executive):
         self._executive = executive
 

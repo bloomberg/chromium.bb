@@ -33,6 +33,8 @@ from common import TabChecker
 #        of a checker's categories are covered by the unit tests.
 #        Such shared code can be located in a shared test file, perhaps
 #        even this file.
+
+
 class CarriageReturnCheckerTest(unittest.TestCase):
 
     """Tests check_no_carriage_return()."""
@@ -43,7 +45,7 @@ class CarriageReturnCheckerTest(unittest.TestCase):
                          "better to use only a \\n")
 
     def setUp(self):
-        self._style_errors = [] # The list of accumulated style errors.
+        self._style_errors = []  # The list of accumulated style errors.
 
     def _mock_style_error_handler(self, line_number, category, confidence,
                                   message):

@@ -37,6 +37,7 @@ from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem
 
 
 class MockHost(MockSystemHost):
+
     def __init__(self, log_executive=False, executive_throws_when_run=None, initialize_scm_by_default=True, web=None, scm=None):
         MockSystemHost.__init__(self, log_executive, executive_throws_when_run)
         add_unit_tests_to_mock_filesystem(self.filesystem)

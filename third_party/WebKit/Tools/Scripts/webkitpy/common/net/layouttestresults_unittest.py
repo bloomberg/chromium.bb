@@ -91,8 +91,10 @@ class LayoutTestResultsTest(unittest.TestCase):
         self.assertIsNone(LayoutTestResults.results_from_string(""))
 
     def test_was_interrupted(self):
-        self.assertTrue(LayoutTestResults.results_from_string('ADD_RESULTS({"tests":{},"interrupted":true});').run_was_interrupted())
-        self.assertFalse(LayoutTestResults.results_from_string('ADD_RESULTS({"tests":{},"interrupted":false});').run_was_interrupted())
+        self.assertTrue(LayoutTestResults.results_from_string(
+            'ADD_RESULTS({"tests":{},"interrupted":true});').run_was_interrupted())
+        self.assertFalse(LayoutTestResults.results_from_string(
+            'ADD_RESULTS({"tests":{},"interrupted":false});').run_was_interrupted())
 
     def test_chromium_revision(self):
         self.assertEqual(LayoutTestResults.results_from_string(self.example_full_results_json).chromium_revision(), 1234)

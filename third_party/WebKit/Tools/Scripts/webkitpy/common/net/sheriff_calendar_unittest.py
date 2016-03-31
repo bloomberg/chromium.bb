@@ -12,6 +12,7 @@ import sheriff_calendar as calendar
 
 
 class SheriffCalendarTest(OutputCaptureTestCaseBase):
+
     def test_complete_email(self):
         expected_emails = ['foo@chromium.org', 'bar@google.com', 'baz@chromium.org']
         names = ['foo', 'bar@google.com', 'baz']

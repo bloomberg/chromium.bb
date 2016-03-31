@@ -57,6 +57,7 @@ def result_for_test(tree, test):
 
 
 class JSONTestResult(object):
+
     def __init__(self, test_name, result_dict):
         self._test_name = test_name
         self._result_dict = result_dict
@@ -86,6 +87,7 @@ class JSONTestResult(object):
 # in the layout_tests package.
 # This doesn't belong in common.net, but we don't have a better place for it yet.
 class LayoutTestResults(object):
+
     @classmethod
     def results_from_string(cls, string):
         if not string:

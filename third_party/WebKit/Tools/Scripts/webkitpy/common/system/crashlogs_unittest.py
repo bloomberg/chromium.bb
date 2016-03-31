@@ -67,7 +67,9 @@ PCI Card: NVIDIA GeForce GT 120, sppci_displaycontroller, MXM-Slot
 Serial ATA Device: OPTIARC DVD RW AD-5670S
 """.format(process_name=process_name, pid=pid)
 
+
 class CrashLogsTest(unittest.TestCase):
+
     def test_find_log_darwin(self):
         if not SystemHost().platform.is_mac():
             return
@@ -76,7 +78,8 @@ class CrashLogsTest(unittest.TestCase):
         mock_crash_report = make_mock_crash_report_darwin('DumpRenderTree', 28530)
         newer_mock_crash_report = make_mock_crash_report_darwin('DumpRenderTree', 28529)
         other_process_mock_crash_report = make_mock_crash_report_darwin('FooProcess', 28527)
-        misformatted_mock_crash_report = 'Junk that should not appear in a crash report' + make_mock_crash_report_darwin('DumpRenderTree', 28526)[200:]
+        misformatted_mock_crash_report = 'Junk that should not appear in a crash report' + \
+            make_mock_crash_report_darwin('DumpRenderTree', 28526)[200:]
         files = {}
         files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150718_quadzen.crash'] = older_mock_crash_report
         files['/Users/mock/Library/Logs/DiagnosticReports/DumpRenderTree_2011-06-13-150719_quadzen.crash'] = mock_crash_report

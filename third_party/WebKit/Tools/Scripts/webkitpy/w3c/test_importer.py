@@ -132,15 +132,15 @@ def configure_logging():
 def parse_args():
     parser = optparse.OptionParser(usage='usage: %prog [options] [dir_to_import] [top_of_repo]')
     parser.add_option('-n', '--no-overwrite', dest='overwrite', action='store_false', default=True,
-        help='Flag to prevent duplicate test files from overwriting existing tests. By default, they will be overwritten.')
+                      help='Flag to prevent duplicate test files from overwriting existing tests. By default, they will be overwritten.')
     parser.add_option('-a', '--all', action='store_true', default=False,
-        help='Import all tests including reftests, JS tests, and manual/pixel tests. By default, only reftests and JS tests are imported.')
+                      help='Import all tests including reftests, JS tests, and manual/pixel tests. By default, only reftests and JS tests are imported.')
     parser.add_option('-d', '--dest-dir', dest='destination', default='w3c',
-        help='Import into a specified directory relative to the LayoutTests root. By default, files are imported under LayoutTests/w3c.')
+                      help='Import into a specified directory relative to the LayoutTests root. By default, files are imported under LayoutTests/w3c.')
     parser.add_option('--ignore-expectations', action='store_true', default=False,
-        help='Ignore the W3CImportExpectations file and import everything.')
+                      help='Ignore the W3CImportExpectations file and import everything.')
     parser.add_option('--dry-run', action='store_true', default=False,
-        help='Dryrun only (don\'t actually write any results).')
+                      help='Dryrun only (don\'t actually write any results).')
 
     options, args = parser.parse_args()
     if len(args) > 2:
@@ -220,7 +220,6 @@ class TestImporter(object):
                         else:
                             _log.info("  skipping %s" % path_base)
 
-
             copy_list = []
 
             for filename in files:
@@ -271,7 +270,8 @@ class TestImporter(object):
                     # references but HTML tests.
                     ref_file += os.path.splitext(test_info['reference'])[1]
 
-                    copy_list.append({'src': test_info['reference'], 'dest': ref_file, 'reference_support_info': test_info['reference_support_info']})
+                    copy_list.append({'src': test_info['reference'], 'dest': ref_file,
+                                      'reference_support_info': test_info['reference_support_info']})
                     copy_list.append({'src': test_info['test'], 'dest': filename})
 
                 elif 'jstest' in test_info.keys():
@@ -285,7 +285,7 @@ class TestImporter(object):
             if copy_list:
                 # Only add this directory to the list if there's something to import
                 self.import_list.append({'dirname': root, 'copy_list': copy_list,
-                    'reftests': reftests, 'jstests': jstests, 'total_tests': total_tests})
+                                         'reftests': reftests, 'jstests': jstests, 'total_tests': total_tests})
 
     def find_paths_to_skip(self):
         if self.options.ignore_expectations:
@@ -366,8 +366,9 @@ class TestImporter(object):
                 # Only html, xml, or css should be converted
                 # FIXME: Eventually, so should js when support is added for this type of conversion
                 mimetype = mimetypes.guess_type(orig_filepath)
-                if 'html' in str(mimetype[0]) or 'xml' in str(mimetype[0])  or 'css' in str(mimetype[0]):
-                    converted_file = convert_for_webkit(new_path, filename=orig_filepath, reference_support_info=reference_support_info)
+                if 'html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0]):
+                    converted_file = convert_for_webkit(new_path, filename=orig_filepath,
+                                                        reference_support_info=reference_support_info)
 
                     if not converted_file:
                         if not self.import_in_place and not self.options.dry_run:

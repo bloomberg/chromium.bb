@@ -42,6 +42,7 @@ def construct_style(name):
 
 
 class TestTranslation(unittest.TestCase):
+
     def assert_unchanged(self, text):
         self.assertEqual(text, webgl.translate_khronos_test(text))
 

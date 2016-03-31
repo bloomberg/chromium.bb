@@ -79,6 +79,7 @@ def _encode_multipart_form_data(fields, files):
 
 
 class FileUploader(object):
+
     def __init__(self, url, timeout_seconds):
         self._url = url
         self._timeout_seconds = timeout_seconds

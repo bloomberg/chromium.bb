@@ -40,11 +40,13 @@ from webkitpy.performance_tests.perftest import SingleProcessPerfTest
 
 
 class MockPort(TestPort):
+
     def __init__(self, custom_run_test=None):
         super(MockPort, self).__init__(host=MockHost(), custom_run_test=custom_run_test)
 
 
 class TestPerfTestMetric(unittest.TestCase):
+
     def test_init_set_missing_unit(self):
         self.assertEqual(PerfTestMetric('Time', iterations=[1, 2, 3, 4, 5]).unit(), 'ms')
         self.assertEqual(PerfTestMetric('Malloc', iterations=[1, 2, 3, 4, 5]).unit(), 'bytes')
@@ -86,6 +88,7 @@ class TestPerfTestMetric(unittest.TestCase):
 
 
 class TestPerfTest(unittest.TestCase):
+
     def _assert_results_are_correct(self, test, output):
         test.run_single = lambda driver, path, time_out_ms: output
         self.assertTrue(test._run_with_driver(None, None))
@@ -172,9 +175,9 @@ Should not be ignored
 [ERROR:main.cc] The sky has fallen""")
         test._filter_output(output_with_lines_to_ignore)
         self.assertEqual(output_with_lines_to_ignore.error,
-            "Should not be ignored\n"
-            "[WARNING:chrome.cc] Something went wrong\n"
-            "[ERROR:main.cc] The sky has fallen")
+                         "Should not be ignored\n"
+                         "[WARNING:chrome.cc] Something went wrong\n"
+                         "[ERROR:main.cc] The sky has fallen")
 
     def test_parse_output_with_subtests(self):
         output = DriverOutput("""
@@ -204,6 +207,7 @@ max 1120 ms
 
 
 class TestSingleProcessPerfTest(unittest.TestCase):
+
     def test_use_only_one_process(self):
         called = [0]
 
@@ -228,6 +232,7 @@ max 1120 ms""", image=None, image_hash=None, audio=None)
 
 
 class TestPerfTestFactory(unittest.TestCase):
+
     def test_regular_test(self):
         test = PerfTestFactory.create_perf_test(MockPort(), 'some-dir/some-test', '/path/some-dir/some-test')
         self.assertEqual(test.__class__, PerfTest)

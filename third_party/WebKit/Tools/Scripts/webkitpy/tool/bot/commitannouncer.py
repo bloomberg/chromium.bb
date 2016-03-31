@@ -187,6 +187,7 @@ class CommitAnnouncer(SingleServerIRCBot):
 
 
 class CommitAnnouncerThread(threading.Thread):
+
     def __init__(self, tool, announce_path, irc_password):
         threading.Thread.__init__(self)
         self.bot = CommitAnnouncer(tool, announce_path, irc_password)

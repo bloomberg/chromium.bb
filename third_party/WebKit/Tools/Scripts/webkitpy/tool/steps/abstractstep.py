@@ -32,6 +32,7 @@ from webkitpy.tool.steps.options import Options
 
 
 class AbstractStep(object):
+
     def __init__(self, tool, options):
         self._tool = tool
         self._options = options

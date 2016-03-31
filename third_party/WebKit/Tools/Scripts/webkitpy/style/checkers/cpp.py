@@ -55,7 +55,7 @@ _STL_HEADERS = frozenset([
     'pthread_alloc', 'queue', 'set', 'set.h', 'sstream', 'stack',
     'stl_alloc.h', 'stl_relops.h', 'type_traits.h',
     'utility', 'vector', 'vector.h',
-    ])
+])
 
 
 # Non-STL C++ system headers.
@@ -73,7 +73,7 @@ _CPP_HEADERS = frozenset([
     'SFile.h', 'slist', 'slist.h', 'stack.h', 'stdexcept',
     'stdiostream.h', 'streambuf.h', 'stream.h', 'strfile.h', 'string',
     'strstream', 'strstream.h', 'tempbuf.h', 'tree.h', 'typeinfo', 'valarray',
-    ])
+])
 
 
 # Assertion macros.  These are defined in base/logging.h and
@@ -85,7 +85,7 @@ _CHECK_MACROS = [
     'ASSERT_TRUE_M', 'ASSERT_TRUE',
     'EXPECT_FALSE_M', 'EXPECT_FALSE',
     'ASSERT_FALSE_M', 'ASSERT_FALSE',
-    ]
+]
 
 # Replacement macros for CHECK/DCHECK/EXPECT_TRUE/EXPECT_FALSE
 _CHECK_REPLACEMENT = dict([(m, {}) for m in _CHECK_MACROS])
@@ -205,6 +205,7 @@ def _find_in_lines(regex, lines, start_position, not_found_position):
             return not_found_position
         current_line = lines[current_row]
 
+
 def _rfind_in_lines(regex, lines, start_position, not_found_position):
     """Does a reverse find starting at start position and going backwards until
     a match is found.
@@ -250,7 +251,6 @@ def _convert_to_lower_with_underscores(text):
     return text.lower()
 
 
-
 def _create_acronym(text):
     """Creates an acronym for the given text."""
     # Removes all lower case letters except those starting words.
@@ -275,13 +275,14 @@ def up_to_unmatched_closing_paren(s):
     """
     i = 1
     for pos, c in enumerate(s):
-      if c == '(':
-        i += 1
-      elif c == ')':
-        i -= 1
-        if i == 0:
-          return s[:pos], s[pos + 1:]
+        if c == '(':
+            i += 1
+        elif c == ')':
+            i -= 1
+            if i == 0:
+                return s[:pos], s[pos + 1:]
     return None, None
+
 
 class _IncludeState(dict):
     """Tracks line numbers for includes, and the order in which includes appear.
@@ -304,18 +305,18 @@ class _IncludeState(dict):
         _PRIMARY_HEADER: 'header this file implements',
         _OTHER_HEADER: 'other header',
         _MOC_HEADER: 'moc file',
-        }
+    }
     _SECTION_NAMES = {
         _INITIAL_SECTION: "... nothing.",
         _PRIMARY_SECTION: 'a header this file implements.',
         _OTHER_SECTION: 'other header.',
-        }
+    }
 
     def __init__(self):
         dict.__init__(self)
         self._section = self._INITIAL_SECTION
         self._visited_primary_section = False
-        self.header_types = dict();
+        self.header_types = dict()
 
     def visited_primary_section(self):
         return self._visited_primary_section
@@ -346,8 +347,8 @@ class _IncludeState(dict):
                                     (self._TYPE_NAMES[header_type],
                                      self._SECTION_NAMES[self._section + 1]))
         after_error_message = ('Found %s after %s' %
-                                (self._TYPE_NAMES[header_type],
-                                 self._SECTION_NAMES[self._section]))
+                               (self._TYPE_NAMES[header_type],
+                                self._SECTION_NAMES[self._section]))
 
         if header_type == _PRIMARY_HEADER:
             if self._section >= self._PRIMARY_SECTION:
@@ -366,6 +367,7 @@ class _IncludeState(dict):
 
 class Position(object):
     """Holds the position of something."""
+
     def __init__(self, row, column):
         self.row = row
         self.column = column
@@ -379,6 +381,7 @@ class Position(object):
 
 class Parameter(object):
     """Information about one function parameter."""
+
     def __init__(self, parameter, parameter_name_index, row):
         self.type = parameter[:parameter_name_index].strip()
         # Remove any initializers from the parameter name (e.g. int i = 5).
@@ -394,6 +397,7 @@ class Parameter(object):
 class SingleLineView(object):
     """Converts multiple lines into a single line (with line breaks replaced by a
        space) to allow for easier searching."""
+
     def __init__(self, lines, start_position, end_position):
         """Create a SingleLineView instance.
 
@@ -548,7 +552,8 @@ class _FunctionState(object):
         self.parameter_end_position = parameter_end_position
         self.is_pure = False
         if self.is_declaration:
-            characters_after_parameters = SingleLineView(clean_lines.elided, parameter_end_position, body_start_position).single_line
+            characters_after_parameters = SingleLineView(
+                clean_lines.elided, parameter_end_position, body_start_position).single_line
             self.is_pure = bool(match(r'\s*=\s*0\s*', characters_after_parameters))
         self._clean_lines = clean_lines
         self._parameter_list = None
@@ -565,7 +570,8 @@ class _FunctionState(object):
     def parameter_list(self):
         if not self._parameter_list:
             # Store the final result as a tuple since that is immutable.
-            self._parameter_list = tuple(parameter_list(self._clean_lines.elided, self.parameter_start_position, self.parameter_end_position))
+            self._parameter_list = tuple(parameter_list(self._clean_lines.elided,
+                                                        self.parameter_start_position, self.parameter_end_position))
 
         return self._parameter_list
 
@@ -595,7 +601,7 @@ class _FunctionState(object):
             error(line_number, 'readability/fn_size', error_level,
                   'Small and focused functions are preferred:'
                   ' %s has %d non-comment lines'
-                  ' (error triggered by exceeding %d lines).'  % (
+                  ' (error triggered by exceeding %d lines).' % (
                       self.current_function, self.lines_in_function, trigger))
 
     def end(self):
@@ -895,6 +901,7 @@ def close_expression(elided, position):
     # The given item was not closed.
     return Position(len(elided), -1)
 
+
 def check_for_copyright(lines, error):
     """Logs an error if no Copyright message appears at the top of the file."""
 
@@ -1093,7 +1100,7 @@ _THREADING_LIST = (
     ('readdir(', 'readdir_r('),
     ('strtok(', 'strtok_r('),
     ('ttyname(', 'ttyname_r('),
-    )
+)
 
 
 def check_posix_threading(clean_lines, line_number, error):
@@ -1193,6 +1200,7 @@ class _ClassState(object):
 
 
 class _FileState(object):
+
     def __init__(self, clean_lines, file_extension):
         self._did_inside_namespace_indent_warning = False
         self._clean_lines = clean_lines
@@ -1291,6 +1299,7 @@ class _EnumState(object):
                             return False
                     return True
         return True
+
 
 def check_for_non_standard_constructs(clean_lines, line_number,
                                       class_state, error):
@@ -1459,18 +1468,18 @@ def check_for_non_standard_constructs(clean_lines, line_number,
     else:
         classinfo.brace_depth = brace_depth
 
-    well_typed_bitfield = False;
+    well_typed_bitfield = False
     # Look for bool <name> : 1 declarations.
     args = search(r'\bbool\s+(\S*)\s*:\s*\d+\s*;', line)
     if args:
         classinfo.bool_bitfields.append('%d: %s' % (line_number, args.group(1)))
-        well_typed_bitfield = True;
+        well_typed_bitfield = True
 
     # Look for unsigned <name> : n declarations.
     args = search(r'\bunsigned\s+(?:int\s+)?(\S+)\s*:\s*\d+\s*;', line)
     if args:
         classinfo.unsigned_bitfields.append('%d: %s' % (line_number, args.group(1)))
-        well_typed_bitfield = True;
+        well_typed_bitfield = True
 
     # Look for other bitfield declarations. We don't care about those in
     # size-matching structs.
@@ -1482,6 +1491,7 @@ def check_for_non_standard_constructs(clean_lines, line_number,
                   'Member %s of class %s defined as a bitfield of type %s. '
                   'Please declare all bitfields as unsigned.'
                   % (args.group(2), classinfo.name, args.group(1)))
+
 
 def check_spacing_for_function_call(line, line_number, error):
     """Checks for the correctness of various spacing around function calls.
@@ -1757,7 +1767,8 @@ def check_function_definition(filename, file_extension, clean_lines, line_number
             error(function_state.function_name_start_position.row, 'readability/webkit_export', 5,
                   'WEBKIT_EXPORT should not be used with a pure virtual function.')
 
-    check_function_definition_and_pass_ptr(modifiers_and_return_type, function_state.function_name_start_position.row, 'return', error)
+    check_function_definition_and_pass_ptr(
+        modifiers_and_return_type, function_state.function_name_start_position.row, 'return', error)
 
     parameter_list = function_state.parameter_list()
     for parameter in parameter_list:
@@ -1923,9 +1934,9 @@ def check_spacing(file_extension, clean_lines, line_number, error):
             # Allow one space before end of line comment.
             if (not match(r'^\s*$', line[:comment_position])
                 and (comment_position >= 1
-                and ((line[comment_position - 1] not in string.whitespace)
-                     or (comment_position >= 2
-                         and line[comment_position - 2] in string.whitespace)))):
+                     and ((line[comment_position - 1] not in string.whitespace)
+                          or (comment_position >= 2
+                              and line[comment_position - 2] in string.whitespace)))):
                 error(line_number, 'whitespace/comments', 5,
                       'One space before end of line comments')
             # There should always be a space between the // and the comment
@@ -2130,7 +2141,7 @@ def check_namespace_indentation(clean_lines, line_number, file_extension, file_s
       error: The function to call with any errors found.
     """
 
-    line = clean_lines.elided[line_number] # Get rid of comments and strings.
+    line = clean_lines.elided[line_number]  # Get rid of comments and strings.
 
     namespace_match = match(r'(?P<namespace_indentation>\s*)namespace\s+\S+\s*{\s*$', line)
     if not namespace_match:
@@ -2143,9 +2154,9 @@ def check_namespace_indentation(clean_lines, line_number, file_extension, file_s
             error(line_number, 'whitespace/indent', 4,
                   'namespace should never be indented.')
         return
-    looking_for_semicolon = False;
+    looking_for_semicolon = False
     line_offset = 0
-    in_preprocessor_directive = False;
+    in_preprocessor_directive = False
     for current_line in clean_lines.elided[line_number + 1:]:
         line_offset += 1
         if not current_line.strip():
@@ -2156,15 +2167,16 @@ def check_namespace_indentation(clean_lines, line_number, file_extension, file_s
                     file_state.set_did_inside_namespace_indent_warning()
                     error(line_number + line_offset, 'whitespace/indent', 4,
                           'Code inside a namespace should not be indented.')
-            if in_preprocessor_directive or (current_line.strip()[0] == '#'): # This takes care of preprocessor directive syntax.
+            if in_preprocessor_directive or (current_line.strip()[0] == '#'):  # This takes care of preprocessor directive syntax.
                 in_preprocessor_directive = current_line[-1] == '\\'
             else:
-                looking_for_semicolon = ((current_line.find(';') == -1) and (current_line.strip()[-1] != '}')) or (current_line[-1] == '\\')
+                looking_for_semicolon = ((current_line.find(';') == -1) and (current_line.strip()
+                                                                             [-1] != '}')) or (current_line[-1] == '\\')
         else:
-            looking_for_semicolon = False; # If we have a brace we may not need a semicolon.
+            looking_for_semicolon = False  # If we have a brace we may not need a semicolon.
         current_indentation_level += current_line.count('{') - current_line.count('}')
         if current_indentation_level < 0:
-            break;
+            break
 
 
 def check_enum_casing(clean_lines, line_number, enum_state, error):
@@ -2183,6 +2195,7 @@ def check_enum_casing(clean_lines, line_number, enum_state, error):
     if not enum_state.process_clean_line(line):
         error(line_number, 'readability/enum_casing', 4,
               'enum members should use InterCaps with an initial capital letter.')
+
 
 def check_directive_indentation(clean_lines, line_number, file_state, error):
     """Looks for indentation of preprocessor directives.
@@ -2244,7 +2257,7 @@ def check_using_std(clean_lines, line_number, file_state, error):
     if file_state.is_c_or_objective_c():
         return
 
-    line = clean_lines.elided[line_number] # Get rid of comments and strings.
+    line = clean_lines.elided[line_number]  # Get rid of comments and strings.
 
     using_std_match = match(r'\s*using\s+std::(?P<method_name>\S+)\s*;\s*$', line)
     if not using_std_match:
@@ -2273,7 +2286,7 @@ def check_max_min_macros(clean_lines, line_number, file_state, error):
     if file_state.is_c_or_objective_c():
         return
 
-    line = clean_lines.elided[line_number] # Get rid of comments and strings.
+    line = clean_lines.elided[line_number]  # Get rid of comments and strings.
 
     max_min_macros_search = search(r'\b(?P<max_min_macro>(MAX|MIN))\s*\(', line)
     if not max_min_macros_search:
@@ -2300,7 +2313,8 @@ def check_ctype_functions(clean_lines, line_number, file_state, error):
 
     line = clean_lines.elided[line_number]  # Get rid of comments and strings.
 
-    ctype_function_search = search(r'\b(?P<ctype_function>(isalnum|isalpha|isascii|isblank|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|isxdigit|toascii|tolower|toupper))\s*\(', line)
+    ctype_function_search = search(
+        r'\b(?P<ctype_function>(isalnum|isalpha|isascii|isblank|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|isxdigit|toascii|tolower|toupper))\s*\(', line)
     if not ctype_function_search:
         return
 
@@ -2308,6 +2322,7 @@ def check_ctype_functions(clean_lines, line_number, file_state, error):
     error(line_number, 'runtime/ctype_function', 4,
           'Use equivelent function in <wtf/ASCIICType.h> instead of the %s() function.'
           % (ctype_function))
+
 
 def check_switch_indentation(clean_lines, line_number, error):
     """Looks for indentation errors inside of switch statements.
@@ -2318,7 +2333,7 @@ def check_switch_indentation(clean_lines, line_number, error):
       error: The function to call with any errors found.
     """
 
-    line = clean_lines.elided[line_number] # Get rid of comments and strings.
+    line = clean_lines.elided[line_number]  # Get rid of comments and strings.
 
     switch_match = match(r'(?P<switch_indentation>\s*)switch\s*\(.+\)\s*{\s*$', line)
     if not switch_match:
@@ -2346,7 +2361,7 @@ def check_switch_indentation(clean_lines, line_number, error):
             # still catch all indentation issues in practice.
             encountered_nested_switch = True
 
-        current_indentation_match = match(r'(?P<indentation>\s*)(?P<remaining_line>.*)$', current_line);
+        current_indentation_match = match(r'(?P<indentation>\s*)(?P<remaining_line>.*)$', current_line)
         current_indentation = current_indentation_match.group('indentation')
         remaining_line = current_indentation_match.group('remaining_line')
 
@@ -2388,7 +2403,7 @@ def check_braces(clean_lines, line_number, error):
       error: The function to call with any errors found.
     """
 
-    line = clean_lines.elided[line_number] # Get rid of comments and strings.
+    line = clean_lines.elided[line_number]  # Get rid of comments and strings.
 
     if match(r'\s*{\s*$', line):
         # We allow an open brace to start a line in the case where someone
@@ -2458,7 +2473,7 @@ def check_exit_statement_simplifications(clean_lines, line_number, error):
       error: The function to call with any errors found.
     """
 
-    line = clean_lines.elided[line_number] # Get rid of comments and strings.
+    line = clean_lines.elided[line_number]  # Get rid of comments and strings.
 
     else_match = match(r'(?P<else_indentation>\s*)(\}\s*)?else(\s+if\s*\(|(?P<else>\s*(\{\s*)?\Z))', line)
     if not else_match:
@@ -2488,7 +2503,7 @@ def check_exit_statement_simplifications(clean_lines, line_number, error):
         if current_line == else_indentation + '}':
             continue
 
-        current_indentation_match = match(r'(?P<indentation>\s*)(?P<remaining_line>.*)$', current_line);
+        current_indentation_match = match(r'(?P<indentation>\s*)(?P<remaining_line>.*)$', current_line)
         current_indentation = current_indentation_match.group('indentation')
         remaining_line = current_indentation_match.group('remaining_line')
 
@@ -2634,7 +2649,8 @@ def check_for_null(clean_lines, line_number, file_state, error):
     if search(r'\bgdk_pixbuf_save_to\w+\b', line):
         return
 
-    # Don't warn about NULL usage in gtk_widget_style_get(), gtk_style_context_get_style(), or gtk_style_context_get(). See Bug 51758
+    # Don't warn about NULL usage in gtk_widget_style_get(),
+    # gtk_style_context_get_style(), or gtk_style_context_get(). See Bug 51758
     if search(r'\bgtk_widget_style_get\(\w+\b', line) or search(r'\bgtk_style_context_get_style\(\w+\b', line) or search(r'\bgtk_style_context_get\(\w+\b', line):
         return
 
@@ -2652,6 +2668,7 @@ def check_for_null(clean_lines, line_number, file_state, error):
     # NULLs occurring in strings.
     if search(r'\bNULL\b', line) and search(r'\bNULL\b', CleansedLines.collapse_strings(line)):
         error(line_number, 'readability/null', 4, 'Use 0 or null instead of NULL (even in *comments*).')
+
 
 def get_line_width(line):
     """Determines the width of the line in column positions.
@@ -3027,7 +3044,7 @@ def _classify_include(filename, include, is_system, include_state):
     # include exactly matches the header filename will be is flagged as
     # primary, so that it triggers the "don't include yourself" check.
     if filename.endswith('.h') and filename != include:
-        return _OTHER_HEADER;
+        return _OTHER_HEADER
 
     # Qt's moc files do not follow the naming and ordering rules, so they should be skipped
     if include.startswith('moc_') and include.endswith('.cpp'):
@@ -3145,23 +3162,23 @@ def check_include_line(filename, file_extension, clean_lines, line_number, inclu
 
     # Check to make sure we have a blank line after primary header.
     if not error_message and header_type == _PRIMARY_HEADER:
-         next_line = clean_lines.raw_lines[line_number + 1]
-         if not is_blank_line(next_line):
+        next_line = clean_lines.raw_lines[line_number + 1]
+        if not is_blank_line(next_line):
             error(line_number, 'build/include_order', 4,
                   'You should add a blank line after implementation file\'s own header.')
 
     # Check to make sure all headers besides the primary header are
     # alphabetically sorted. Skip Qt's moc files.
     if not error_message and header_type == _OTHER_HEADER:
-         previous_line_number = line_number - 1;
-         previous_line = clean_lines.lines[previous_line_number]
-         previous_match = _RE_PATTERN_INCLUDE.search(previous_line)
-         while (not previous_match and previous_line_number > 0
-                and not search(r'\A(#if|#ifdef|#ifndef|#else|#elif|#endif)', previous_line)):
-            previous_line_number -= 1;
+        previous_line_number = line_number - 1
+        previous_line = clean_lines.lines[previous_line_number]
+        previous_match = _RE_PATTERN_INCLUDE.search(previous_line)
+        while (not previous_match and previous_line_number > 0
+               and not search(r'\A(#if|#ifdef|#ifndef|#else|#elif|#endif)', previous_line)):
+            previous_line_number -= 1
             previous_line = clean_lines.lines[previous_line_number]
             previous_match = _RE_PATTERN_INCLUDE.search(previous_line)
-         if previous_match:
+        if previous_match:
             previous_header_type = include_state.header_types[previous_line_number]
             if previous_header_type == _OTHER_HEADER and previous_line.strip() > line.strip():
                 # This type of error is potentially a problem with this line or the previous one,
@@ -3388,7 +3405,8 @@ def check_language(filename, clean_lines, line_number, file_extension, include_s
     # Check for plain bitfields declared without either "singed" or "unsigned".
     # Most compilers treat such bitfields as signed, but there are still compilers like
     # RVCT 4.0 that use unsigned by default.
-    matched = re.match(r'\s*((const|mutable)\s+)?(char|(short(\s+int)?)|int|long(\s+(long|int))?)\s+[a-zA-Z_][a-zA-Z0-9_]*\s*:\s*\d+\s*;', line)
+    matched = re.match(
+        r'\s*((const|mutable)\s+)?(char|(short(\s+int)?)|int|long(\s+(long|int))?)\s+[a-zA-Z_][a-zA-Z0-9_]*\s*:\s*\d+\s*;', line)
     if matched:
         error(line_number, 'runtime/bitfields', 5,
               'Please declare integral type bitfields with either signed or unsigned.')
@@ -3517,11 +3535,13 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
                 and not modified_identifier == "const_iterator"
                 and not modified_identifier == "vm_throw"
                 and not modified_identifier == "DFG_OPERATION"):
-                error(line_number, 'readability/naming/underscores', 4, identifier + " is incorrectly named. Don't use underscores in your identifier names.")
+                error(line_number, 'readability/naming/underscores', 4, identifier +
+                      " is incorrectly named. Don't use underscores in your identifier names.")
 
         # Check for variables named 'l', these are too easy to confuse with '1' in some fonts
         if modified_identifier == 'l':
-            error(line_number, 'readability/naming', 4, identifier + " is incorrectly named. Don't use the single letter 'l' as an identifier name.")
+            error(line_number, 'readability/naming', 4, identifier +
+                  " is incorrectly named. Don't use the single letter 'l' as an identifier name.")
 
         # There can be only one declaration in non-for-control statements.
         if control_statement:
@@ -3745,7 +3765,7 @@ _HEADERS_CONTAINING_TEMPLATES = (
                       'const_mem_fun_t', 'const_mem_fun1_t',
                       'const_mem_fun_ref_t', 'const_mem_fun1_ref_t',
                       'mem_fun_ref',
-                     )),
+                      )),
     ('<limits>', ('numeric_limits',)),
     ('<list>', ('list',)),
     ('<map>', ('map', 'multimap',)),
@@ -3762,7 +3782,7 @@ _HEADERS_CONTAINING_TEMPLATES = (
     ('<hash_map>', ('hash_map', 'hash_multimap',)),
     ('<hash_set>', ('hash_set', 'hash_multiset',)),
     ('<slist>', ('slist',)),
-    )
+)
 
 _HEADERS_ACCEPTED_BUT_NOT_PROMOTED = {
     # We can trust with reasonable confidence that map gives us pair<>, too.
@@ -3890,7 +3910,7 @@ def check_for_include_what_you_use(filename, clean_lines, include_state, error):
       error: The function to call with any errors found.
     """
     required = {}  # A map of header name to line_number and the template entity.
-        # Example of required: { '<functional>': (1219, 'less<>') }
+    # Example of required: { '<functional>': (1219, 'less<>') }
 
     for line_number in xrange(clean_lines.num_lines()):
         line = clean_lines.elided[line_number]
@@ -3935,7 +3955,7 @@ def check_for_include_what_you_use(filename, clean_lines, include_state, error):
 
     # include_state is modified during iteration, so we iterate over a copy of
     # the keys.
-    for header in include_state.keys():  #NOLINT
+    for header in include_state.keys():  # NOLINT
         (same_module, common_path) = files_belong_to_same_module(abs_filename, header)
         fullpath = common_path + header
         if same_module and update_include_state(fullpath, include_state):
@@ -4005,6 +4025,7 @@ def process_line(filename, file_extension,
     check_conditional_and_loop_bodies_for_brace_violations(clean_lines, line, error)
     check_redundant_virtual(clean_lines, line, error)
     check_redundant_override(clean_lines, line, error)
+
 
 def _process_lines(filename, file_extension, lines, error, min_confidence):
     """Performs lint checks and reports any errors to the given error function.
@@ -4128,7 +4149,7 @@ class CppChecker(object):
         'whitespace/semicolon',
         'whitespace/tab',
         'whitespace/todo',
-        ])
+    ])
 
     fs = None
 

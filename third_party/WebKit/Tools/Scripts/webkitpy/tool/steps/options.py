@@ -28,8 +28,11 @@
 
 from optparse import make_option
 
+
 class Options(object):
     confirm = make_option("--no-confirm", action="store_false", dest="confirm", default=True, help="Skip confirmation steps.")
-    git_commit = make_option("-g", "--git-commit", action="store", dest="git_commit", help="Operate on a local commit. If a range, the commits are squashed into one. <ref>.... includes the working copy changes. UPSTREAM can be used for the upstream/tracking branch.")
-    parent_command = make_option("--parent-command", action="store", dest="parent_command", default=None, help="(Internal) The command that spawned this instance.")
+    git_commit = make_option("-g", "--git-commit", action="store", dest="git_commit",
+                             help="Operate on a local commit. If a range, the commits are squashed into one. <ref>.... includes the working copy changes. UPSTREAM can be used for the upstream/tracking branch.")
+    parent_command = make_option("--parent-command", action="store", dest="parent_command",
+                                 default=None, help="(Internal) The command that spawned this instance.")
     quiet = make_option("--quiet", action="store_true", dest="quiet", default=False, help="Produce less console output.")

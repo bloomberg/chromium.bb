@@ -122,16 +122,16 @@ def option_parser():
     usage = "usage: %prog [options] (input file or directory)"
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('-v', '--verbose',
-                             action='store_true',
-                             default=False,
-                             help='include debug-level logging')
+                      action='store_true',
+                      default=False,
+                      help='include debug-level logging')
     parser.add_option('-o', '--output',
-                             action='store',
-                             type='string',
-                             default=default_out_dir(),
-                             metavar='DIR',
-                             help='specify an output directory to place files '
-                                  'in [default: %default]')
+                      action='store',
+                      type='string',
+                      default=default_out_dir(),
+                      metavar='DIR',
+                      help='specify an output directory to place files '
+                      'in [default: %default]')
     return parser
 
 

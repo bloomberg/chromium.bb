@@ -96,4 +96,5 @@ class TestExpectationsTestCase(unittest.TestCase):
         self.assert_lines_lint(["Bug(me) passes/text.html [ Give Up]"], should_pass=False)
 
     def test_tab(self):
-        self.assert_lines_lint(["\twebkit.org/b/1 passes/text.html [ Pass ]"], should_pass=False, expected_output="Line contains tab character.  [whitespace/tab] [5]")
+        self.assert_lines_lint(["\twebkit.org/b/1 passes/text.html [ Pass ]"], should_pass=False,
+                               expected_output="Line contains tab character.  [whitespace/tab] [5]")

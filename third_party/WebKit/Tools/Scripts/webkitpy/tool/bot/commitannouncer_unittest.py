@@ -30,6 +30,7 @@ from webkitpy.tool.mocktool import MockTool
 
 
 class CommitAnnouncerTest(unittest.TestCase):
+
     def test_format_commit(self):
         tool = MockTool()
         bot = CommitAnnouncer(tool, "test/directory", "test_password")

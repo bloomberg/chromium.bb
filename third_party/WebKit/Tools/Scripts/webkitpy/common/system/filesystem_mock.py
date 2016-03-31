@@ -239,6 +239,7 @@ class MockFileSystem(object):
 
     def mkdtemp(self, **kwargs):
         class TemporaryDirectory(object):
+
             def __init__(self, fs, **kwargs):
                 self._kwargs = kwargs
                 self._filesystem = fs
@@ -350,7 +351,7 @@ class MockFileSystem(object):
         dot_dot = ''
         while not common_root == '':
             if path.startswith(common_root):
-                 break
+                break
             common_root = self.dirname(common_root)
             dot_dot += '..' + self.sep
 
@@ -414,6 +415,7 @@ class MockFileSystem(object):
 
 
 class WritableBinaryFileObject(object):
+
     def __init__(self, fs, path):
         self.fs = fs
         self.path = path
@@ -435,11 +437,13 @@ class WritableBinaryFileObject(object):
 
 
 class WritableTextFileObject(WritableBinaryFileObject):
+
     def write(self, str):
         WritableBinaryFileObject.write(self, str.encode('utf-8'))
 
 
 class ReadableBinaryFileObject(object):
+
     def __init__(self, fs, path, data):
         self.fs = fs
         self.path = path
@@ -465,6 +469,7 @@ class ReadableBinaryFileObject(object):
 
 
 class ReadableTextFileObject(ReadableBinaryFileObject):
+
     def __init__(self, fs, path, data):
         super(ReadableTextFileObject, self).__init__(fs, path, StringIO.StringIO(data.decode("utf-8")))
 

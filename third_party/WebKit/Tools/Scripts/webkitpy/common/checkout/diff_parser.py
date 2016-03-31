@@ -36,7 +36,8 @@ _log = logging.getLogger(__name__)
 conversion_patterns = (
     (re.compile("^diff --git \w/(.+) \w/(?P<FilePath>.+)"), lambda matched: "Index: " + matched.group('FilePath') + "\n"),
     (re.compile("^new file.*"), lambda matched: "\n"),
-    (re.compile("^index (([0-9a-f]{7}\.\.[0-9a-f]{7})|([0-9a-f]{40}\.\.[0-9a-f]{40})) [0-9]{6}"), lambda matched: ("=" * 67) + "\n"),
+    (re.compile("^index (([0-9a-f]{7}\.\.[0-9a-f]{7})|([0-9a-f]{40}\.\.[0-9a-f]{40})) [0-9]{6}"),
+     lambda matched: ("=" * 67) + "\n"),
     (re.compile("^--- \w/(?P<FilePath>.+)"), lambda matched: "--- " + matched.group('FilePath') + "\n"),
     (re.compile("^\+\+\+ \w/(?P<FilePath>.+)"), lambda matched: "+++ " + matched.group('FilePath') + "\n"),
 )

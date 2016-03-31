@@ -141,6 +141,7 @@ class CommandOptionValues(object):
                      and "vs7" which Microsoft Visual Studio 7 can parse.
 
     """
+
     def __init__(self,
                  filter_rules=None,
                  git_commit=None,
@@ -197,7 +198,7 @@ class ArgumentPrinter(object):
     """Supports the printing of check-webkit-style command arguments."""
 
     def _flag_pair_to_string(self, flag_key, flag_value):
-        return '--%(key)s=%(val)s' % {'key': flag_key, 'val': flag_value }
+        return '--%(key)s=%(val)s' % {'key': flag_key, 'val': flag_value}
 
     def to_flag_string(self, options):
         """Return a flag string of the given CommandOptionValues instance.
@@ -287,9 +288,9 @@ class ArgumentParser(object):
         self.stderr_write = stderr.write
 
         self._parser = self._create_option_parser(stderr=stderr,
-            usage=usage,
-            default_min_confidence=self.default_options.min_confidence,
-            default_output_format=self.default_options.output_format)
+                                                  usage=usage,
+                                                  default_min_confidence=self.default_options.min_confidence,
+                                                  default_output_format=self.default_options.output_format)
 
     def _create_option_parser(self, stderr, usage,
                               default_min_confidence, default_output_format):
@@ -453,4 +454,3 @@ class ArgumentParser(object):
                                       output_format=output_format)
 
         return (paths, options)
-

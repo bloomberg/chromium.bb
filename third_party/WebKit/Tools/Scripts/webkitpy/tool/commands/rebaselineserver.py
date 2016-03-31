@@ -38,6 +38,7 @@ from webkitpy.tool.servers.rebaselineserver import get_test_baselines, Rebaselin
 
 
 class TestConfig(object):
+
     def __init__(self, test_port, layout_tests_directory, results_directory, platforms, host):
         self.test_port = test_port
         self.layout_tests_directory = layout_tests_directory

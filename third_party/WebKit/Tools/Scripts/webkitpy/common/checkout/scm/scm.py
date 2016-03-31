@@ -41,6 +41,7 @@ _log = logging.getLogger(__name__)
 
 # SCM methods are expected to return paths relative to self.checkout_root.
 class SCM:
+
     def __init__(self, cwd, executive=None, filesystem=None):
         self.cwd = cwd
         self._executive = executive or Executive()
@@ -51,12 +52,12 @@ class SCM:
     def _run(self, args, cwd=None, input=None, error_handler=None, return_exit_code=False, return_stderr=True, decode_output=True):
         # FIXME: We should set cwd appropriately.
         return self._executive.run_command(args,
-                           cwd=cwd,
-                           input=input,
-                           error_handler=error_handler,
-                           return_exit_code=return_exit_code,
-                           return_stderr=return_stderr,
-                           decode_output=decode_output)
+                                           cwd=cwd,
+                                           input=input,
+                                           error_handler=error_handler,
+                                           return_exit_code=return_exit_code,
+                                           return_stderr=return_stderr,
+                                           decode_output=decode_output)
 
     # SCM always returns repository relative path, but sometimes we need
     # absolute paths to pass to rm, etc.

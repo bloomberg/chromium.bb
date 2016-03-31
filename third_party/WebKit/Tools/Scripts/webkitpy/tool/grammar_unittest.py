@@ -30,6 +30,7 @@ import unittest
 
 from webkitpy.tool import grammar
 
+
 class GrammarTest(unittest.TestCase):
 
     def test_join_with_separators_zero(self):

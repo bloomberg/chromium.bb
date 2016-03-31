@@ -33,10 +33,11 @@ import unittest
 
 from webkitpy.common.checkout.diff_test_data import DIFF_TEST_DATA
 
+
 class DiffParserTest(unittest.TestCase):
     maxDiff = None
 
-    def test_diff_parser(self, parser = None):
+    def test_diff_parser(self, parser=None):
         if not parser:
             parser = diff_parser.DiffParser(DIFF_TEST_DATA.splitlines())
         self.assertEqual(3, len(parser.files))
@@ -86,11 +87,11 @@ class DiffParserTest(unittest.TestCase):
             "\n",
             " - Cool Hacker\n",
             "\n",
-            ]
+        ]
 
         revision_lines = [
             "Subversion Revision 289799\n",
-            ]
+        ]
 
         svn_diff_lines = [
             "Index: Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
@@ -98,7 +99,7 @@ class DiffParserTest(unittest.TestCase):
             "--- Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
             "+++ Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
             "@@ -59,6 +59,7 @@ def git_diff_to_svn_diff(line):\n",
-            ]
+        ]
         self.assertEqual(diff_parser.get_diff_converter(svn_diff_lines), diff_parser.svn_diff_to_svn_diff)
         self.assertEqual(diff_parser.get_diff_converter(comment_lines + svn_diff_lines), diff_parser.svn_diff_to_svn_diff)
         self.assertEqual(diff_parser.get_diff_converter(revision_lines + svn_diff_lines), diff_parser.svn_diff_to_svn_diff)
@@ -109,7 +110,7 @@ class DiffParserTest(unittest.TestCase):
             "--- a/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
             "+++ b/Tools/Scripts/webkitpy/common/checkout/diff_parser.py\n",
             "@@ -59,6 +59,7 @@ def git_diff_to_svn_diff(line):\n",
-            ]
+        ]
         self.assertEqual(diff_parser.get_diff_converter(git_diff_lines), diff_parser.git_diff_to_svn_diff)
         self.assertEqual(diff_parser.get_diff_converter(comment_lines + git_diff_lines), diff_parser.git_diff_to_svn_diff)
         self.assertEqual(diff_parser.get_diff_converter(revision_lines + git_diff_lines), diff_parser.git_diff_to_svn_diff)
@@ -118,11 +119,11 @@ class DiffParserTest(unittest.TestCase):
         p = re.compile(r' ([a|b])/')
 
         prefixes = [
-            { 'a' : 'i', 'b' : 'w' }, # git-diff (compares the (i)ndex and the (w)ork tree)
-            { 'a' : 'c', 'b' : 'w' }, # git-diff HEAD (compares a (c)ommit and the (w)ork tree)
-            { 'a' : 'c', 'b' : 'i' }, # git diff --cached (compares a (c)ommit and the (i)ndex)
-            { 'a' : 'o', 'b' : 'w' }, # git-diff HEAD:file1 file2 (compares an (o)bject and a (w)ork tree entity)
-            { 'a' : '1', 'b' : '2' }, # git diff --no-index a b (compares two non-git things (1) and (2))
+            {'a': 'i', 'b': 'w'},  # git-diff (compares the (i)ndex and the (w)ork tree)
+            {'a': 'c', 'b': 'w'},  # git-diff HEAD (compares a (c)ommit and the (w)ork tree)
+            {'a': 'c', 'b': 'i'},  # git diff --cached (compares a (c)ommit and the (i)ndex)
+            {'a': 'o', 'b': 'w'},  # git-diff HEAD:file1 file2 (compares an (o)bject and a (w)ork tree entity)
+            {'a': '1', 'b': '2'},  # git diff --no-index a b (compares two non-git things (1) and (2))
         ]
 
         for prefix in prefixes:

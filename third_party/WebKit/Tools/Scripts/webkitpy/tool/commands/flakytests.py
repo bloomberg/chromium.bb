@@ -120,4 +120,3 @@ Flakiness dashboard: %s
 
         # pylint: disable=E1601
         print self.OUTPUT % (self.HEADER, expectations_string, flakiness_dashbord_url)
-

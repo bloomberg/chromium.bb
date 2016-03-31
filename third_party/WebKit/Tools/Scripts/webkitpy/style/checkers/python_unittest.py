@@ -34,13 +34,14 @@ class PythonCheckerTest(unittest.TestCase):
 
     def test_init(self):
         """Test __init__() method."""
+
         def _mock_handle_style_error(self):
             pass
 
         checker = PythonChecker("foo.txt", _mock_handle_style_error)
         self.assertEqual(checker._file_path, "foo.txt")
         self.assertEqual(checker._handle_style_error,
-                          _mock_handle_style_error)
+                         _mock_handle_style_error)
 
     def test_check(self):
         """Test check() method."""
@@ -61,4 +62,4 @@ class PythonCheckerTest(unittest.TestCase):
             (4, "pep8/W291", 5, "trailing whitespace"),
             (4, "pylint/E1601(print-statement)", 5, "[] print statement used"),
             (4, "pylint/E0602(undefined-variable)", 5, "[] Undefined variable 'error'"),
-            ])
+        ])

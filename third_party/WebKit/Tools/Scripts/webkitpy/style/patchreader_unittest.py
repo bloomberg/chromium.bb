@@ -63,9 +63,9 @@ class PatchReaderTest(unittest.TestCase):
 
     def _assert_checked(self, passed_to_process_file, delete_only_file_count):
         self.assertEqual(self._file_reader.passed_to_process_file,
-                          passed_to_process_file)
+                         passed_to_process_file)
         self.assertEqual(self._file_reader.delete_only_file_count,
-                          delete_only_file_count)
+                         delete_only_file_count)
 
     def test_check_patch(self):
         # The modified line_numbers array for this patch is: [2].

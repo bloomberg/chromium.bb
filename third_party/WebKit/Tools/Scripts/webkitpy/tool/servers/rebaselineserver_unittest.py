@@ -38,6 +38,7 @@ from webkitpy.tool.servers import rebaselineserver
 
 
 class RebaselineTestTest(unittest.TestCase):
+
     def test_text_rebaseline_update(self):
         self._assertRebaseline(
             test_files=(
@@ -210,7 +211,8 @@ class RebaselineTestTest(unittest.TestCase):
         server = RebaselineServer()
         server._test_config = get_test_config()
         server._gather_baselines(results_json)
-        self.assertEqual(results_json['tests']['svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html']['state'], 'needs_rebaseline')
+        self.assertEqual(results_json['tests'][
+                         'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html']['state'], 'needs_rebaseline')
         self.assertNotIn('prototype-chocolate.html', results_json['tests'])
 
     def _assertRebaseline(self, test_files, results_files, test_name, baseline_target, baseline_move_to, expected_success, expected_log):
@@ -227,6 +229,7 @@ class RebaselineTestTest(unittest.TestCase):
 
 
 class GetActualResultFilesTest(unittest.TestCase):
+
     def test(self):
         test_config = get_test_config(result_files=(
             'fast/text-actual.txt',
@@ -241,6 +244,7 @@ class GetActualResultFilesTest(unittest.TestCase):
 
 
 class GetBaselinesTest(unittest.TestCase):
+
     def test_no_baselines(self):
         self._assertBaselines(
             test_files=(),

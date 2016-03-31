@@ -34,6 +34,7 @@ from webkitpy.common.system import environment, executive, filesystem, platformi
 
 
 class SystemHost(object):
+
     def __init__(self):
         self.executable = sys.executable
         self.executive = executive.Executive()

@@ -43,6 +43,7 @@ _log = get_logger(__file__)
 
 
 class Builder(object):
+
     def __init__(self, name, buildbot):
         self._name = name
         self._buildbot = buildbot
@@ -59,7 +60,7 @@ class Builder(object):
         return config_urls.chromium_accumulated_results_url_base_for_builder(self._name)
 
     def latest_layout_test_results_url(self):
-        return self.accumulated_results_url() or self.latest_cached_build().results_url();
+        return self.accumulated_results_url() or self.latest_cached_build().results_url()
 
     @memoized
     def latest_layout_test_results(self):
@@ -76,7 +77,8 @@ class Builder(object):
 
     def fetch_layout_test_results(self, results_url):
         # FIXME: This should cache that the result was a 404 and stop hitting the network.
-        results_file = NetworkTransaction(convert_404_to_None=True).run(lambda: self._fetch_file_from_results(results_url, "failing_results.json"))
+        results_file = NetworkTransaction(convert_404_to_None=True).run(
+            lambda: self._fetch_file_from_results(results_url, "failing_results.json"))
         return LayoutTestResults.results_from_string(results_file)
 
     def url_encoded_name(self):
@@ -92,13 +94,13 @@ class Builder(object):
             return None
         revision_string = build_dictionary['sourceStamp']['revision']
         return Build(self,
-            build_number=int(build_dictionary['number']),
-            # 'revision' may be None if a trunk build was started by the force-build button on the web page.
-            revision=(int(revision_string) if revision_string else None),
-            # Buildbot uses any nubmer other than 0 to mean fail.  Since we fetch with
-            # filter=1, passing builds may contain no 'results' value.
-            is_green=(not build_dictionary.get('results')),
-        )
+                     build_number=int(build_dictionary['number']),
+                     # 'revision' may be None if a trunk build was started by the force-build button on the web page.
+                     revision=(int(revision_string) if revision_string else None),
+                     # Buildbot uses any nubmer other than 0 to mean fail.  Since we fetch with
+                     # filter=1, passing builds may contain no 'results' value.
+                     is_green=(not build_dictionary.get('results')),
+                     )
 
     def build(self, build_number):
         if not build_number:
@@ -118,6 +120,7 @@ class Builder(object):
         return self.build(latest_build_number)
 
     file_name_regexp = re.compile(r"r(?P<revision>\d+) \((?P<build_number>\d+)\)")
+
     def _revision_and_build_for_filename(self, filename):
         # Example: "r47483 (1)/" or "r47483 (1).zip"
         match = self.file_name_regexp.match(filename)
@@ -169,14 +172,15 @@ class Builder(object):
         if not build and allow_failed_lookups:
             # Builds for old revisions with fail to lookup via buildbot's json api.
             build = Build(self,
-                build_number=build_number,
-                revision=revision,
-                is_green=False,
-            )
+                          build_number=build_number,
+                          revision=revision,
+                          is_green=False,
+                          )
         return build
 
 
 class Build(object):
+
     def __init__(self, builder, build_number, revision, is_green):
         self._builder = builder
         self._number = build_number
@@ -227,14 +231,14 @@ class BuildBot(object):
             revision_string = status_link.string
             # If revision_string has non-digits assume it's not a revision number.
             builder['built_revision'] = int(revision_string) \
-                                        if not re.match('\D', revision_string) \
-                                        else None
+                if not re.match('\D', revision_string) \
+                else None
 
             # FIXME: We treat slave lost as green even though it is not to
             # work around the Qts bot being on a broken internet connection.
             # The real fix is https://bugs.webkit.org/show_bug.cgi?id=37099
             builder['is_green'] = not re.search('fail', cell.renderContents()) or \
-                                  not not re.search('lost', cell.renderContents())
+                not not re.search('lost', cell.renderContents())
 
             status_link_regexp = r"builders/(?P<builder_name>.*)/builds/(?P<build_number>\d+)"
             link_match = re.match(status_link_regexp, status_link['href'])
@@ -250,7 +254,7 @@ class BuildBot(object):
 
     def _parse_current_build_cell(self, builder, cell):
         activity_lines = cell.renderContents().split("<br />")
-        builder["activity"] = activity_lines[0] # normally "building" or "idle"
+        builder["activity"] = activity_lines[0]  # normally "building" or "idle"
         # The middle lines document how long left for any current builds.
         match = re.match("(?P<pending_builds>\d) pending", activity_lines[-1])
         builder["pending_builds"] = int(match.group("pending_builds")) if match else 0
@@ -284,7 +288,8 @@ class BuildBot(object):
             return json.load(urllib2.urlopen(json_url))
         except urllib2.URLError, err:
             build_url = Build.build_url(builder, build_number)
-            _log.error("Error fetching data for %s build %s (%s, json: %s): %s" % (builder.name(), build_number, build_url, json_url, err))
+            _log.error("Error fetching data for %s build %s (%s, json: %s): %s" %
+                       (builder.name(), build_number, build_url, json_url, err))
             return None
         except ValueError, err:
             build_url = Build.build_url(builder, build_number)

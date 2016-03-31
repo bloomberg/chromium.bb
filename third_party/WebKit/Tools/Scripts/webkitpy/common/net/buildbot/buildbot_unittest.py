@@ -36,6 +36,7 @@ from webkitpy.thirdparty.BeautifulSoup import BeautifulSoup
 
 
 class BuilderTest(unittest.TestCase):
+
     def _mock_test_result(self, testname):
         return test_results.TestResult(testname, [test_failures.FailureTextMismatch()])
 
@@ -65,8 +66,8 @@ class BuilderTest(unittest.TestCase):
 
     def test_build_and_revision_for_filename(self):
         expectations = {
-            "r47483 (1)/" : (47483, 1),
-            "r47483 (1).zip" : (47483, 1),
+            "r47483 (1)/": (47483, 1),
+            "r47483 (1).zip": (47483, 1),
             "random junk": None,
         }
         for filename, revision_and_build in expectations.items():
@@ -89,7 +90,7 @@ class BuilderTest(unittest.TestCase):
             build_dictionary = {
                 "sourceStamp": {
                     "revision": None,  # revision=None means a trunk build started from the force-build button on the builder page.
-                    },
+                },
                 "number": int(build_number),
                 # Intentionally missing the 'results' key, meaning it's a "pass" build.
             }
@@ -133,7 +134,7 @@ class BuildBotTest(unittest.TestCase):
     _expected_example_one_box_parsings = [
         {
             'is_green': True,
-            'build_number' : 3693,
+            'build_number': 3693,
             'name': u'Windows Debug (Tests)',
             'built_revision': 47380,
             'activity': 'building',
@@ -141,7 +142,7 @@ class BuildBotTest(unittest.TestCase):
         },
         {
             'is_green': False,
-            'build_number' : None,
+            'build_number': None,
             'name': u'SnowLeopard Intel Release',
             'built_revision': None,
             'activity': 'building',
@@ -149,7 +150,7 @@ class BuildBotTest(unittest.TestCase):
         },
         {
             'is_green': False,
-            'build_number' : 654,
+            'build_number': 654,
             'name': u'Qt Linux Release',
             'built_revision': 47383,
             'activity': 'idle',
@@ -157,7 +158,7 @@ class BuildBotTest(unittest.TestCase):
         },
         {
             'is_green': True,
-            'build_number' : 2090,
+            'build_number': 2090,
             'name': u'Qt Windows 32-bit Debug',
             'built_revision': 60563,
             'activity': 'building',
@@ -182,7 +183,8 @@ class BuildBotTest(unittest.TestCase):
             self.assertEqual(builder.keys(), expected_parsing.keys())
 
             for key, expected_value in expected_parsing.items():
-                self.assertEqual(builder[key], expected_value, ("Builder %d parse failure for key: %s: Actual='%s' Expected='%s'" % (x, key, builder[key], expected_value)))
+                self.assertEqual(builder[key], expected_value, ("Builder %d parse failure for key: %s: Actual='%s' Expected='%s'" % (
+                    x, key, builder[key], expected_value)))
 
     def test_builder_with_name(self):
         buildbot = BuildBot()
@@ -197,10 +199,10 @@ class BuildBotTest(unittest.TestCase):
         def mock_fetch_build_dictionary(self, build_number):
             build_dictionary = {
                 "sourceStamp": {
-                    "revision" : 2 * build_number,
-                    },
-                "number" : int(build_number),
-                "results" : build_number % 2, # 0 means pass
+                    "revision": 2 * build_number,
+                },
+                "number": int(build_number),
+                "results": build_number % 2,  # 0 means pass
             }
             return build_dictionary
         buildbot._fetch_build_dictionary = mock_fetch_build_dictionary
@@ -246,16 +248,16 @@ class BuildBotTest(unittest.TestCase):
 '''
     _expected_files = [
         {
-            "filename" : "r47483 (1)/",
-            "size" : "",
-            "type" : "[Directory]",
-            "encoding" : "",
+            "filename": "r47483 (1)/",
+            "size": "",
+            "type": "[Directory]",
+            "encoding": "",
         },
         {
-            "filename" : "r47484 (2).zip",
-            "size" : "89K",
-            "type" : "[application/zip]",
-            "encoding" : "",
+            "filename": "r47484 (2).zip",
+            "size": "89K",
+            "type": "[application/zip]",
+            "encoding": "",
         },
     ]
 
@@ -340,11 +342,13 @@ class BuildBotTest(unittest.TestCase):
         buildbot._fetch_builder_page = lambda builder: builder.page
         builder_with_success = Builder('Some builder', None)
         builder_with_success.page = self._fake_builder_page
-        self.assertEqual(buildbot._revisions_for_builder(builder_with_success), [(104643, False), (104636, False), (104635, True), (104633, False)])
+        self.assertEqual(buildbot._revisions_for_builder(builder_with_success), [
+                         (104643, False), (104636, False), (104635, True), (104633, False)])
 
         builder_without_success = Builder('Some builder', None)
         builder_without_success.page = self._fake_builder_page_without_success
-        self.assertEqual(buildbot._revisions_for_builder(builder_without_success), [(104643, False), (104636, False), (104635, False), (104633, False)])
+        self.assertEqual(buildbot._revisions_for_builder(builder_without_success), [
+                         (104643, False), (104636, False), (104635, False), (104633, False)])
 
     def test_find_green_revision(self):
         buildbot = BuildBot()

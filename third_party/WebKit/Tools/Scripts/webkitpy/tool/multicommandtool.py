@@ -48,6 +48,7 @@ class TryAgain(Exception):
 class Command(object):
     name = None
     show_in_main_help = False
+
     def __init__(self, help_text, argument_names=None, options=None, long_help=None, requires_local_commits=False):
         self.help_text = help_text
         self.long_help = long_help
@@ -93,7 +94,8 @@ class Command(object):
                 # For now our parser is rather dumb.  Do some minimal validation that
                 # we haven't confused it.
                 if argument[-1] != ']':
-                    raise Exception("Failure to parse argument string %s.  Argument %s is missing ending ]" % (argument_names, argument))
+                    raise Exception("Failure to parse argument string %s.  Argument %s is missing ending ]" %
+                                    (argument_names, argument))
             else:
                 required_args.append(argument)
         return required_args
@@ -144,11 +146,13 @@ class AbstractDeclarativeCommand(Command):
     help_text = None
     argument_names = None
     long_help = None
+
     def __init__(self, options=None, **kwargs):
         Command.__init__(self, self.help_text, self.argument_names, options=options, long_help=self.long_help, **kwargs)
 
 
 class HelpPrintingOptionParser(OptionParser):
+
     def __init__(self, epilog_method=None, *args, **kwargs):
         self.epilog_method = epilog_method
         OptionParser.__init__(self, *args, **kwargs)
@@ -178,7 +182,8 @@ class HelpCommand(AbstractDeclarativeCommand):
             make_option("-a", "--all-commands", action="store_true", dest="show_all_commands", help="Print all available commands"),
         ]
         AbstractDeclarativeCommand.__init__(self, options)
-        self.show_all_commands = False # A hack used to pass --all-commands to _help_epilog even though it's called by the OptionParser.
+        # A hack used to pass --all-commands to _help_epilog even though it's called by the OptionParser.
+        self.show_all_commands = False
 
     def _help_epilog(self):
         # Only show commands which are relevant to this checkout's SCM system.  Might this be confusing to some users?
@@ -190,11 +195,12 @@ class HelpCommand(AbstractDeclarativeCommand):
             relevant_commands = filter(self._tool.should_show_in_main_help, self._tool.commands)
         longest_name_length = max(map(lambda command: len(command.name), relevant_commands))
         relevant_commands.sort(lambda a, b: cmp(a.name, b.name))
-        command_help_texts = map(lambda command: "   %s   %s\n" % (command.name.ljust(longest_name_length), command.help_text), relevant_commands)
+        command_help_texts = map(lambda command: "   %s   %s\n" % (
+            command.name.ljust(longest_name_length), command.help_text), relevant_commands)
         epilog += "%s\n" % "".join(command_help_texts)
         epilog += "See '%prog help --all-commands' to list all commands.\n"
         epilog += "See '%prog help COMMAND' for more information on a specific command.\n"
-        return epilog.replace("%prog", self._tool.name()) # Use of %prog here mimics OptionParser.expand_prog_name().
+        return epilog.replace("%prog", self._tool.name())  # Use of %prog here mimics OptionParser.expand_prog_name().
 
     # FIXME: This is a hack so that we don't show --all-commands as a global option:
     def _remove_help_options(self):
@@ -218,7 +224,7 @@ class MultiCommandTool(object):
     global_options = None
 
     def __init__(self, name=None, commands=None):
-        self._name = name or OptionParser(prog=name).get_prog_name() # OptionParser has nice logic for fetching the name.
+        self._name = name or OptionParser(prog=name).get_prog_name()  # OptionParser has nice logic for fetching the name.
         # Allow the unit tests to disable command auto-discovery.
         self.commands = commands or [cls() for cls in self._find_all_commands() if cls.name]
         self.help_command = self.command_by_name(HelpCommand.name)
@@ -306,7 +312,7 @@ class MultiCommandTool(object):
         (should_execute, failure_reason) = self.should_execute_command(command)
         if not should_execute:
             _log.error(failure_reason)
-            return 0 # FIXME: Should this really be 0?
+            return 0  # FIXME: Should this really be 0?
 
         while True:
             try:

@@ -33,6 +33,7 @@ import unittest
 import text as text_style
 from text import TextChecker
 
+
 class TextStyleTestCase(unittest.TestCase):
     """TestCase for text_style.py"""
 
@@ -60,12 +61,10 @@ class TextStyleTestCase(unittest.TestCase):
         text_style.process_file_data('', lines, error_for_test)
         self.assertTrue(self.had_error, '%s should have an error [whitespace/tab].' % lines)
 
-
     def test_no_error(self):
         """Tests for no error cases."""
         self.assertNoError([''])
         self.assertNoError(['abc def', 'ggg'])
-
 
     def test_error(self):
         """Tests for error cases."""

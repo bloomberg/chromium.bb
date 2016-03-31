@@ -34,6 +34,7 @@ from webkitpy.common.system import filesystem_unittest
 
 
 class MockFileSystemTest(unittest.TestCase, filesystem_unittest.GenericFileSystemTests):
+
     def setUp(self):
         self.fs = filesystem_mock.MockFileSystem()
         self.setup_generic_test_dir()

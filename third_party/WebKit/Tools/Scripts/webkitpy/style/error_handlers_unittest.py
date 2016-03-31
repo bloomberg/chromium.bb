@@ -55,17 +55,17 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         filter_configuration = FilterConfiguration(base_rules=base_rules)
 
         return StyleProcessorConfiguration(
-                   filter_configuration=filter_configuration,
-                   max_reports_per_category={"whitespace/tab": 2},
-                   min_confidence=3,
-                   output_format="vs7",
-                   stderr_write=self._mock_stderr_write)
+            filter_configuration=filter_configuration,
+            max_reports_per_category={"whitespace/tab": 2},
+            min_confidence=3,
+            output_format="vs7",
+            stderr_write=self._mock_stderr_write)
 
     def _error_handler(self, configuration, line_numbers=None):
         return DefaultStyleErrorHandler(configuration=configuration,
-                   file_path=self._file_path,
-                   increment_error_count=self._mock_increment_error_count,
-                   line_numbers=line_numbers)
+                                        file_path=self._file_path,
+                                        increment_error_count=self._mock_increment_error_count,
+                                        line_numbers=line_numbers)
 
     def _check_initialized(self):
         """Check that count and error messages are initialized."""
@@ -89,12 +89,12 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
     def test_eq__false_return_value(self):
         """Test the __eq__() method for the return value of False."""
         def make_handler(configuration=self._style_checker_configuration(),
-                file_path='foo.txt', increment_error_count=lambda: True,
-                line_numbers=[100]):
+                         file_path='foo.txt', increment_error_count=lambda: True,
+                         line_numbers=[100]):
             return DefaultStyleErrorHandler(configuration=configuration,
-                       file_path=file_path,
-                       increment_error_count=increment_error_count,
-                       line_numbers=line_numbers)
+                                            file_path=file_path,
+                                            increment_error_count=increment_error_count,
+                                            line_numbers=line_numbers)
 
         handler = make_handler()
 
@@ -147,7 +147,7 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         self.assertEqual(1, self._error_count)
         self.assertEqual(1, len(self._error_messages))
         self.assertEqual(self._error_messages,
-                          ["foo.h(100):  message  [whitespace/tab] [5]\n"])
+                         ["foo.h(100):  message  [whitespace/tab] [5]\n"])
 
         # Second call: suppression message reported.
         self._call_error_handler(error_handler, confidence)
@@ -156,10 +156,10 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         self.assertEqual(2, self._error_count)
         self.assertEqual(3, len(self._error_messages))
         self.assertEqual(self._error_messages[-2],
-                          "foo.h(100):  message  [whitespace/tab] [5]\n")
+                         "foo.h(100):  message  [whitespace/tab] [5]\n")
         self.assertEqual(self._error_messages[-1],
-                          "Suppressing further [whitespace/tab] reports "
-                          "for this file.\n")
+                         "Suppressing further [whitespace/tab] reports "
+                         "for this file.\n")
 
         # Third call: no report.
         self._call_error_handler(error_handler, confidence)
@@ -183,13 +183,13 @@ class DefaultStyleErrorHandlerTest(unittest.TestCase):
         self._call_error_handler(error_handler, confidence, line_number=50)
         self.assertEqual(1, self._error_count)
         self.assertEqual(self._error_messages,
-                          ["foo.h(50):  message  [whitespace/tab] [5]\n"])
+                         ["foo.h(50):  message  [whitespace/tab] [5]\n"])
 
         # Error on non-modified line after turning off line filtering: error.
         error_handler.turn_off_line_filtering()
         self._call_error_handler(error_handler, confidence, line_number=60)
         self.assertEqual(2, self._error_count)
         self.assertEqual(self._error_messages,
-                          ['foo.h(50):  message  [whitespace/tab] [5]\n',
-                           'foo.h(60):  message  [whitespace/tab] [5]\n',
-                           'Suppressing further [whitespace/tab] reports for this file.\n'])
+                         ['foo.h(50):  message  [whitespace/tab] [5]\n',
+                          'foo.h(60):  message  [whitespace/tab] [5]\n',
+                          'Suppressing further [whitespace/tab] reports for this file.\n'])

@@ -35,7 +35,8 @@ class AbstractLocalServerCommand(AbstractDeclarativeCommand):
     def __init__(self):
         options = [
             make_option("--httpd-port", action="store", type="int", default=8127, help="Port to use for the HTTP server"),
-            make_option("--no-show-results", action="store_false", default=True, dest="show_results", help="Don't launch a browser with the rebaseline server"),
+            make_option("--no-show-results", action="store_false", default=True, dest="show_results",
+                        help="Don't launch a browser with the rebaseline server"),
         ]
         AbstractDeclarativeCommand.__init__(self, options=options)
 

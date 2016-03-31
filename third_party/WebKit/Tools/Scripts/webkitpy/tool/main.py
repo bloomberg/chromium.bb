@@ -38,7 +38,8 @@ from webkitpy.tool.multicommandtool import MultiCommandTool
 class WebKitPatch(MultiCommandTool, Host):
     global_options = [
         make_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="enable all logging"),
-        make_option("-d", "--directory", action="append", dest="patch_directories", default=[], help="Directory to look at for changed files"),
+        make_option("-d", "--directory", action="append", dest="patch_directories",
+                    default=[], help="Directory to look at for changed files"),
     ]
 
     def __init__(self, path):
@@ -62,6 +63,7 @@ class WebKitPatch(MultiCommandTool, Host):
 
     def should_execute_command(self, command):
         if command.requires_local_commits and not self.scm().supports_local_commits():
-            failure_reason = "%s requires local commits using %s in %s." % (command.name, self.scm().display_name(), self.scm().checkout_root)
+            failure_reason = "%s requires local commits using %s in %s." % (
+                command.name, self.scm().display_name(), self.scm().checkout_root)
             return (False, failure_reason)
         return (True, None)

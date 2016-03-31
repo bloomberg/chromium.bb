@@ -31,6 +31,7 @@ import sys
 
 
 class WebKitFinder(object):
+
     def __init__(self, filesystem):
         self._filesystem = filesystem
         self._dirsep = filesystem.sep

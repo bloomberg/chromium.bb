@@ -83,7 +83,8 @@ class User(object):
     def _wait_on_list_response(cls, list_items, can_choose_multiple, raw_input):
         while True:
             if can_choose_multiple:
-                response = cls.prompt("Enter one or more numbers (comma-separated) or ranges (e.g. 3-7), or \"all\": ", raw_input=raw_input)
+                response = cls.prompt(
+                    "Enter one or more numbers (comma-separated) or ranges (e.g. 3-7), or \"all\": ", raw_input=raw_input)
                 if not response.strip() or response == "all":
                     return list_items
 

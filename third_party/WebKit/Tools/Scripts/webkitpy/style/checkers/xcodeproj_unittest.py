@@ -29,6 +29,7 @@ import xcodeproj
 
 class TestErrorHandler(object):
     """Error handler for XcodeProjectFileChecker unittests"""
+
     def __init__(self, handler):
         self.handler = handler
 

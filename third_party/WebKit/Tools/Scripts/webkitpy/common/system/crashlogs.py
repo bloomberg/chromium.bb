@@ -30,6 +30,7 @@ import re
 
 
 class CrashLogs(object):
+
     def __init__(self, host):
         self._host = host
 

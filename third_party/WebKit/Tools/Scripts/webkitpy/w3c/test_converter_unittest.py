@@ -40,6 +40,7 @@ from webkitpy.w3c.test_converter import _W3CTestConverter
 DUMMY_FILENAME = 'dummy.html'
 DUMMY_PATH = 'dummy/testharness/path'
 
+
 class W3CTestConverterTest(unittest.TestCase):
 
     # FIXME: When we move to using a MockHost, this method should be removed, since
@@ -362,7 +363,8 @@ CONTENT OF TEST
  </body>
  </html>
  """
-        test_reference_support_info = {'reference_relpath': '../', 'files': ['../../some-script.js', '../../../some-style.css', '../../../../some-image.jpg'], 'elements': ['script', 'style', 'img']}
+        test_reference_support_info = {'reference_relpath': '../', 'files': [
+            '../../some-script.js', '../../../some-style.css', '../../../../some-image.jpg'], 'elements': ['script', 'style', 'img']}
         converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME, test_reference_support_info)
 
         oc = OutputCapture()
@@ -398,7 +400,8 @@ CONTENT OF TEST
         new_relpath = os.path.relpath(resources_dir, test_path)
         relpath_pattern = re.compile(new_relpath)
         self.assertEquals(len(converted.findAll(src=relpath_pattern)), num_src_paths, 'testharness src relative path not correct')
-        self.assertEquals(len(converted.findAll(href=relpath_pattern)), num_href_paths, 'testharness href relative path not correct')
+        self.assertEquals(len(converted.findAll(href=relpath_pattern)),
+                          num_href_paths, 'testharness href relative path not correct')
 
     def verify_prefixed_properties(self, converted, test_properties):
         self.assertEqual(len(set(converted[0])), len(set(test_properties)), 'Incorrect number of properties converted')

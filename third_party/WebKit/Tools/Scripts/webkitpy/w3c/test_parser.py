@@ -107,7 +107,8 @@ class TestParser(object):
             if self.filesystem.dirname(ref_file) != self.filesystem.dirname(self.filename):
                 reference_support_files = self.support_files(self.ref_doc)
                 if len(reference_support_files) > 0:
-                    reference_relpath = self.filesystem.relpath(self.filesystem.dirname(self.filename), self.filesystem.dirname(ref_file)) + self.filesystem.sep
+                    reference_relpath = self.filesystem.relpath(self.filesystem.dirname(
+                        self.filename), self.filesystem.dirname(ref_file)) + self.filesystem.sep
                     test_info['reference_support_info'] = {'reference_relpath': reference_relpath, 'files': reference_support_files}
 
         elif self.is_jstest():

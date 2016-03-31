@@ -38,6 +38,7 @@ _log = logging.getLogger(__name__)
 
 
 class SCMDetector(object):
+
     def __init__(self, filesystem, executive):
         self._filesystem = filesystem
         self._executive = executive

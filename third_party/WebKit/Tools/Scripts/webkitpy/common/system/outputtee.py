@@ -34,6 +34,7 @@ import sys
 
 # Simple class to split output between multiple destinations
 class Tee:
+
     def __init__(self, *files):
         self.files = files
 
@@ -44,6 +45,7 @@ class Tee:
 
 
 class OutputTee:
+
     def __init__(self):
         self._original_stdout = None
         self._original_stderr = None

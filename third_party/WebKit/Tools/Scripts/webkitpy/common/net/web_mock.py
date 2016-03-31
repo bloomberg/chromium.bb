@@ -30,6 +30,7 @@ import StringIO
 
 
 class MockWeb(object):
+
     def __init__(self, urls=None):
         self.urls = urls or {}
         self.urls_fetched = []

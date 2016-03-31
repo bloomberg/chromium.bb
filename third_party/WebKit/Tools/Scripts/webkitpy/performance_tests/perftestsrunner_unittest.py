@@ -45,6 +45,7 @@ from webkitpy.performance_tests.perftestsrunner import PerfTestsRunner
 
 
 class MainTest(unittest.TestCase):
+
     def create_runner(self, args=[]):
         options, parsed_args = PerfTestsRunner._parse_args(args)
         test_port = TestPort(host=MockHost(), options=options)
@@ -102,7 +103,7 @@ class MainTest(unittest.TestCase):
         self._add_file(runner, 'Suite', 'SkippedTest2.html')
         port.skipped_perf_tests = lambda: ['Suite/SkippedTest1.html', 'Suite/SkippedTest1.html', 'SkippedSuite']
         self.assertItemsEqual(self._collect_tests_and_sort_test_name(runner),
-            ['SkippedSuite/Test1.html', 'Suite/SkippedTest1.html', 'Suite/Test1.html'])
+                              ['SkippedSuite/Test1.html', 'Suite/SkippedTest1.html', 'Suite/Test1.html'])
 
     def test_collect_tests_with_ignored_skipped_list(self):
         runner, port = self.create_runner(args=['--force'])
@@ -113,7 +114,8 @@ class MainTest(unittest.TestCase):
         self._add_file(runner, 'inspector/resources', 'resource_file.html')
         self._add_file(runner, 'unsupported', 'unsupported_test2.html')
         port.skipped_perf_tests = lambda: ['inspector/unsupported_test1.html', 'unsupported']
-        self.assertItemsEqual(self._collect_tests_and_sort_test_name(runner), ['inspector/test1.html', 'inspector/test2.html', 'inspector/unsupported_test1.html', 'unsupported/unsupported_test2.html'])
+        self.assertItemsEqual(self._collect_tests_and_sort_test_name(runner), [
+                              'inspector/test1.html', 'inspector/test2.html', 'inspector/unsupported_test1.html', 'unsupported/unsupported_test2.html'])
 
     def test_default_args(self):
         runner, port = self.create_runner()
@@ -129,21 +131,21 @@ class MainTest(unittest.TestCase):
     def test_parse_args(self):
         runner, port = self.create_runner()
         options, args = PerfTestsRunner._parse_args([
-                '--build-directory=folder42',
-                '--platform=platform42',
-                '--builder-name', 'webkit-mac-1',
-                '--build-number=56',
-                '--time-out-ms=42',
-                '--no-show-results',
-                '--reset-results',
-                '--output-json-path=a/output.json',
-                '--slave-config-json-path=a/source.json',
-                '--test-results-server=somehost',
-                '--additional-driver-flag=--enable-threaded-parser',
-                '--additional-driver-flag=--awesomesauce',
-                '--repeat=5',
-                '--test-runner-count=5',
-                '--debug'])
+            '--build-directory=folder42',
+            '--platform=platform42',
+            '--builder-name', 'webkit-mac-1',
+            '--build-number=56',
+            '--time-out-ms=42',
+            '--no-show-results',
+            '--reset-results',
+            '--output-json-path=a/output.json',
+            '--slave-config-json-path=a/source.json',
+            '--test-results-server=somehost',
+            '--additional-driver-flag=--enable-threaded-parser',
+            '--additional-driver-flag=--awesomesauce',
+            '--repeat=5',
+            '--test-runner-count=5',
+            '--debug'])
         self.assertTrue(options.build)
         self.assertEqual(options.build_directory, 'folder42')
         self.assertEqual(options.platform, 'platform42')
@@ -213,7 +215,8 @@ class MainTest(unittest.TestCase):
         self.assertEqual(MockFileUploader.called, ['FileUploader', 'upload_single_text_file'])
 
         MockFileUploader.reset()
-        MockFileUploader.upload_single_text_file_return_value = StringIO.StringIO('{"status": "SomethingHasFailed", "failureStored": false}')
+        MockFileUploader.upload_single_text_file_return_value = StringIO.StringIO(
+            '{"status": "SomethingHasFailed", "failureStored": false}')
         output = OutputCapture()
         output.capture_output()
         self.assertFalse(runner._upload_json('some.host', 'some.json', '/some/path', MockFileUploader))
@@ -272,7 +275,7 @@ Finished: 0.1 s
 """
 
     results = {'url': 'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings/event-target-wrapper.html',
-        'metrics': {'Time': {'current': [[1486.0, 1471.0, 1510.0, 1505.0, 1478.0, 1490.0]] * 4}}}
+               'metrics': {'Time': {'current': [[1486.0, 1471.0, 1510.0, 1505.0, 1478.0, 1490.0]] * 4}}}
 
 
 class SomeParserTestData:
@@ -342,6 +345,7 @@ Finished: 0.1 s
 
 
 class TestDriver:
+
     def run_test(self, driver_input, stop_when_done):
         text = ''
         timeout = False
@@ -372,6 +376,7 @@ class TestDriver:
 
 
 class IntegrationTest(unittest.TestCase):
+
     def _normalize_output(self, log):
         return re.sub(r'(stdev=\s+\d+\.\d{5})\d+', r'\1', re.sub(r'Finished: [0-9\.]+ s', 'Finished: 0.1 s', log))
 
@@ -429,7 +434,7 @@ class IntegrationTest(unittest.TestCase):
     def test_run_test_set(self):
         runner, port = self.create_runner()
         tests = self._tests_for_runner(runner, ['inspector/pass.html', 'inspector/silent.html', 'inspector/failed.html',
-            'inspector/tonguey.html', 'inspector/timeout.html', 'inspector/crash.html'])
+                                                'inspector/tonguey.html', 'inspector/timeout.html', 'inspector/crash.html'])
         output = OutputCapture()
         output.capture_output()
         try:
@@ -450,7 +455,7 @@ class IntegrationTest(unittest.TestCase):
         runner, port = self.create_runner(driver_class=TestDriverWithStopCount)
 
         tests = self._tests_for_runner(runner, ['inspector/pass.html', 'inspector/silent.html', 'inspector/failed.html',
-            'inspector/tonguey.html', 'inspector/timeout.html', 'inspector/crash.html'])
+                                                'inspector/tonguey.html', 'inspector/timeout.html', 'inspector/crash.html'])
         unexpected_result_count = runner._run_tests_set(tests)
 
         self.assertEqual(TestDriverWithStopCount.stop_count, 6)
@@ -525,11 +530,11 @@ class IntegrationTest(unittest.TestCase):
     _event_target_wrapper_and_inspector_results = {
         "Bindings":
             {"url": "https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings",
-            "tests": {"event-target-wrapper": EventTargetWrapperTestData.results}}}
+             "tests": {"event-target-wrapper": EventTargetWrapperTestData.results}}}
 
     def test_run_with_json_output(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--test-results-server=some.host'])
+                                                                           '--test-results-server=some.host'])
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
             "buildTime": "2013-02-08T15:19:37.460000", "tests": self._event_target_wrapper_and_inspector_results,
@@ -541,7 +546,7 @@ class IntegrationTest(unittest.TestCase):
 
     def test_run_with_description(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--test-results-server=some.host', '--description', 'some description'])
+                                                                           '--test-results-server=some.host', '--description', 'some description'])
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
             "buildTime": "2013-02-08T15:19:37.460000", "description": "some description",
@@ -552,14 +557,14 @@ class IntegrationTest(unittest.TestCase):
         runner, port = self.create_runner(args)
         filesystem = port.host.filesystem
         filesystem.write_text_file(runner._base_path + '/resources/results-template.html',
-            'BEGIN<script src="%AbsolutePathToWebKitTrunk%/some.js"></script>'
-            '<script src="%AbsolutePathToWebKitTrunk%/other.js"></script><script>%PeformanceTestsResultsJSON%</script>END')
+                                   'BEGIN<script src="%AbsolutePathToWebKitTrunk%/some.js"></script>'
+                                   '<script src="%AbsolutePathToWebKitTrunk%/other.js"></script><script>%PeformanceTestsResultsJSON%</script>END')
         filesystem.write_text_file(runner._base_path + '/Dromaeo/resources/dromaeo/web/lib/jquery-1.6.4.js', 'jquery content')
         return runner, port
 
     def test_run_respects_no_results(self):
         runner, port = self.create_runner(args=['--output-json-path=/mock-checkout/output.json',
-            '--test-results-server=some.host', '--no-results'])
+                                                '--test-results-server=some.host', '--no-results'])
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=False, results_shown=False)
         self.assertFalse(port.host.filesystem.isfile('/mock-checkout/output.json'))
 
@@ -625,16 +630,16 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(runner._output_json_path(), '/mock-checkout/output.json')
         self.assertEqual(self._load_output_json(runner), [expected_entry])
         self.assertEqual(filesystem.read_text_file('/mock-checkout/output.html'),
-            'BEGIN<script src="/test.checkout/some.js"></script><script src="/test.checkout/other.js"></script>'
-            '<script>%s</script>END' % port.host.filesystem.read_text_file(runner._output_json_path()))
+                         'BEGIN<script src="/test.checkout/some.js"></script><script src="/test.checkout/other.js"></script>'
+                         '<script>%s</script>END' % port.host.filesystem.read_text_file(runner._output_json_path()))
         self.assertEqual(page_shown[0], '/mock-checkout/output.html')
 
         self._test_run_with_json_output(runner, filesystem, results_shown=False)
         self.assertEqual(runner._output_json_path(), '/mock-checkout/output.json')
         self.assertEqual(self._load_output_json(runner), [expected_entry, expected_entry])
         self.assertEqual(filesystem.read_text_file('/mock-checkout/output.html'),
-            'BEGIN<script src="/test.checkout/some.js"></script><script src="/test.checkout/other.js"></script>'
-            '<script>%s</script>END' % port.host.filesystem.read_text_file(runner._output_json_path()))
+                         'BEGIN<script src="/test.checkout/some.js"></script><script src="/test.checkout/other.js"></script>'
+                         '<script>%s</script>END' % port.host.filesystem.read_text_file(runner._output_json_path()))
 
     def test_run_respects_no_show_results(self):
         show_results_html_file = lambda path: page_shown.append(path)
@@ -646,7 +651,7 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(page_shown[0], '/mock-checkout/output.html')
 
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--no-show-results'])
+                                                                           '--no-show-results'])
         page_shown = []
         port.show_results_html_file = show_results_html_file
         self._test_run_with_json_output(runner, port.host.filesystem, results_shown=False)
@@ -661,7 +666,7 @@ class IntegrationTest(unittest.TestCase):
 
     def test_run_with_slave_config_json(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--slave-config-json-path=/mock-checkout/slave-config.json', '--test-results-server=some.host'])
+                                                                           '--slave-config-json-path=/mock-checkout/slave-config.json', '--test-results-server=some.host'])
         port.host.filesystem.write_text_file('/mock-checkout/slave-config.json', '{"key": "value"}')
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
@@ -670,8 +675,9 @@ class IntegrationTest(unittest.TestCase):
 
     def test_run_with_bad_slave_config_json(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--slave-config-json-path=/mock-checkout/slave-config.json', '--test-results-server=some.host'])
-        logs = self._test_run_with_json_output(runner, port.host.filesystem, expected_exit_code=PerfTestsRunner.EXIT_CODE_BAD_SOURCE_JSON)
+                                                                           '--slave-config-json-path=/mock-checkout/slave-config.json', '--test-results-server=some.host'])
+        logs = self._test_run_with_json_output(runner, port.host.filesystem,
+                                               expected_exit_code=PerfTestsRunner.EXIT_CODE_BAD_SOURCE_JSON)
         self.assertTrue('Missing slave configuration JSON file: /mock-checkout/slave-config.json' in logs)
         port.host.filesystem.write_text_file('/mock-checkout/slave-config.json', 'bad json')
         self._test_run_with_json_output(runner, port.host.filesystem, expected_exit_code=PerfTestsRunner.EXIT_CODE_BAD_SOURCE_JSON)
@@ -680,7 +686,7 @@ class IntegrationTest(unittest.TestCase):
 
     def test_run_with_multiple_repositories(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--test-results-server=some.host'])
+                                                                           '--test-results-server=some.host'])
         port.repository_path = lambda: '/mock-checkout'
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         self.assertEqual(self._load_output_json(runner), [{
@@ -689,7 +695,7 @@ class IntegrationTest(unittest.TestCase):
 
     def test_run_with_upload_json(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--test-results-server', 'some.host', '--platform', 'platform1', '--builder-name', 'builder1', '--build-number', '123'])
+                                                                           '--test-results-server', 'some.host', '--platform', 'platform1', '--builder-name', 'builder1', '--build-number', '123'])
 
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
         generated_json = json.loads(port.host.filesystem.files['/mock-checkout/output.json'])
@@ -697,12 +703,13 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(generated_json[0]['builderName'], 'builder1')
         self.assertEqual(generated_json[0]['buildNumber'], 123)
 
-        self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=False, expected_exit_code=PerfTestsRunner.EXIT_CODE_FAILED_UPLOADING)
+        self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=False,
+                                        expected_exit_code=PerfTestsRunner.EXIT_CODE_FAILED_UPLOADING)
 
     def test_run_with_upload_json_should_generate_perf_webkit_json(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--test-results-server', 'some.host', '--platform', 'platform1', '--builder-name', 'builder1', '--build-number', '123',
-            '--slave-config-json-path=/mock-checkout/slave-config.json'])
+                                                                           '--test-results-server', 'some.host', '--platform', 'platform1', '--builder-name', 'builder1', '--build-number', '123',
+                                                                           '--slave-config-json-path=/mock-checkout/slave-config.json'])
         port.host.filesystem.write_text_file('/mock-checkout/slave-config.json', '{"key": "value1"}')
 
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True)
@@ -720,7 +727,8 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(output['revisions'], {'chromium': {'revision': '5678', 'timestamp': '2013-02-01 08:48:05 +0000'}})
         self.assertEqual(output['tests'].keys(), ['Bindings'])
         self.assertEqual(sorted(output['tests']['Bindings'].keys()), ['tests', 'url'])
-        self.assertEqual(output['tests']['Bindings']['url'], 'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings')
+        self.assertEqual(output['tests']['Bindings']['url'],
+                         'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings')
         self.assertEqual(output['tests']['Bindings']['tests'].keys(), ['event-target-wrapper'])
         self.assertEqual(output['tests']['Bindings']['tests']['event-target-wrapper'], {
             'url': 'https://src.chromium.org/viewvc/blink/trunk/PerformanceTests/Bindings/event-target-wrapper.html',
@@ -729,7 +737,7 @@ class IntegrationTest(unittest.TestCase):
     def test_run_with_repeat(self):
         self.maxDiff = None
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--test-results-server=some.host', '--repeat', '5'])
+                                                                           '--test-results-server=some.host', '--repeat', '5'])
         self._test_run_with_json_output(runner, port.host.filesystem, upload_succeeds=True, repeat=5)
         self.assertEqual(self._load_output_json(runner), [
             {"buildTime": "2013-02-08T15:19:37.460000",
@@ -750,7 +758,7 @@ class IntegrationTest(unittest.TestCase):
 
     def test_run_with_test_runner_count(self):
         runner, port = self.create_runner_and_setup_results_template(args=['--output-json-path=/mock-checkout/output.json',
-            '--test-runner-count=3'])
+                                                                           '--test-runner-count=3'])
         self._test_run_with_json_output(runner, port.host.filesystem, compare_logs=False)
         generated_json = json.loads(port.host.filesystem.files['/mock-checkout/output.json'])
         self.assertTrue(isinstance(generated_json, list))

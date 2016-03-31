@@ -53,6 +53,7 @@ class TestReflectionHandler(ReflectionHandler):
 
 
 class WriteConvertingLogger(object):
+
     def __init__(self):
         self.data = ''
 
@@ -62,6 +63,7 @@ class WriteConvertingLogger(object):
 
 
 class TestReflectionHandlerServeXML(ReflectionHandler):
+
     def __init__(self):
         self.requestline = False
         self.client_address = '127.0.0.1'
@@ -76,6 +78,7 @@ class TestReflectionHandlerServeXML(ReflectionHandler):
 
 
 class ReflectionHandlerTest(unittest.TestCase):
+
     def assert_handler_response(self, requests, expected_static_files, expected_errors, expected_functions):
         handler = TestReflectionHandler()
         for request in requests:
@@ -87,7 +90,8 @@ class ReflectionHandlerTest(unittest.TestCase):
 
     def test_static_content_or_function_switch(self):
         self.assert_handler_response(["/test.js"], set(["test.js"]), set(), set())
-        self.assert_handler_response(["/test.js", "/test.css", "/test.html"], set(["test.js", "test.html", "test.css"]), set(), set())
+        self.assert_handler_response(["/test.js", "/test.css", "/test.html"],
+                                     set(["test.js", "test.html", "test.css"]), set(), set())
         self.assert_handler_response(["/test.js", "/test.exe", "/testhtml"], set(["test.js"]), set([404]), set())
         self.assert_handler_response(["/test.html", "/function.one"], set(["test.html"]), set(), set(['function_one']))
         self.assert_handler_response(["/some.html"], set(["some.html"]), set(), set())

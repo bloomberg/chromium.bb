@@ -40,6 +40,7 @@ _log = logging.getLogger(__name__)
 
 
 class PerfTestMetric(object):
+
     def __init__(self, metric, unit=None, iterations=None):
         # FIXME: Fix runner.js to report correct metric names
         self._iterations = iterations or []
@@ -124,7 +125,7 @@ class PerfTest(object):
             if should_log:
                 legacy_chromium_bot_compatible_name = self.test_name_without_file_extension().replace('/', ': ')
                 self.log_statistics(legacy_chromium_bot_compatible_name + ': ' + metric.name(),
-                    metric.flattened_iteration_values(), metric.unit())
+                                    metric.flattened_iteration_values(), metric.unit())
 
         return results
 
@@ -148,7 +149,7 @@ class PerfTest(object):
 
         _log.info('RESULT %s= %s %s' % (test_name, mean, unit))
         _log.info('median= %s %s, stdev= %s %s, min= %s %s, max= %s %s' %
-            (median, unit, stdev, unit, sorted_values[0], unit, sorted_values[-1], unit))
+                  (median, unit, stdev, unit, sorted_values[0], unit, sorted_values[-1], unit))
 
     _description_regex = re.compile(r'^Description: (?P<description>.*)$', re.IGNORECASE)
     _metrics_regex = re.compile(r'^(?P<metric>Time|Malloc|JS Heap):')
@@ -242,7 +243,8 @@ class PerfTest(object):
         re.compile(re.escape("""frame "<!--framePath //<!--frame0-->/<!--frame0-->-->" - has 1 onunload handler(s)""")),
         # Following is for html5.html
         re.compile(re.escape("""Blocked access to external URL http://www.whatwg.org/specs/web-apps/current-work/""")),
-        re.compile(r"CONSOLE MESSAGE: (line \d+: )?Blocked script execution in '[A-Za-z0-9\-\.:]+' because the document's frame is sandboxed and the 'allow-scripts' permission is not set."),
+        re.compile(
+            r"CONSOLE MESSAGE: (line \d+: )?Blocked script execution in '[A-Za-z0-9\-\.:]+' because the document's frame is sandboxed and the 'allow-scripts' permission is not set."),
         re.compile(r"CONSOLE MESSAGE: (line \d+: )?Not allowed to load local resource"),
         # Dromaeo reports values for subtests. Ignore them for now.
         re.compile(r'(?P<name>.+): \[(?P<values>(\d+(.\d+)?,\s+)*\d+(.\d+)?)\]'),
@@ -250,12 +252,15 @@ class PerfTest(object):
 
     def _filter_output(self, output):
         if output.error:
-            output.error = '\n'.join([line for line in re.split('\n', output.error) if not self._should_ignore_line(self._lines_to_ignore_in_stderr, line)])
+            output.error = '\n'.join([line for line in re.split('\n', output.error)
+                                      if not self._should_ignore_line(self._lines_to_ignore_in_stderr, line)])
         if output.text:
-            output.text = '\n'.join([line for line in re.split('\n', output.text) if not self._should_ignore_line(self._lines_to_ignore_in_parser_result, line)])
+            output.text = '\n'.join([line for line in re.split('\n', output.text)
+                                     if not self._should_ignore_line(self._lines_to_ignore_in_parser_result, line)])
 
 
 class SingleProcessPerfTest(PerfTest):
+
     def __init__(self, port, test_name, test_path, test_runner_count=1):
         super(SingleProcessPerfTest, self).__init__(port, test_name, test_path, test_runner_count)
 

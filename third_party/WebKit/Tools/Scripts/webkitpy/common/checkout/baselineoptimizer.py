@@ -104,7 +104,8 @@ class BaselineOptimizer(object):
 
     def read_results_by_directory(self, baseline_name):
         results_by_directory = {}
-        directories = reduce(set.union, map(set, [self._relative_baseline_search_paths(port, baseline_name) for port in self._ports.values()]))
+        directories = reduce(set.union, map(set, [self._relative_baseline_search_paths(
+            port, baseline_name) for port in self._ports.values()]))
 
         for directory in directories:
             path = self._join_directory(directory, baseline_name)
@@ -170,7 +171,8 @@ class BaselineOptimizer(object):
         results_by_port_name = self._results_by_port_name(results_by_directory, baseline_name)
         port_names_by_result = _invert_dictionary(results_by_port_name)
 
-        new_results_by_directory = self._remove_redundant_results(results_by_directory, results_by_port_name, port_names_by_result, baseline_name)
+        new_results_by_directory = self._remove_redundant_results(
+            results_by_directory, results_by_port_name, port_names_by_result, baseline_name)
         self._optimize_result_for_root(new_results_by_directory, baseline_name)
 
         return results_by_directory, new_results_by_directory
@@ -182,7 +184,7 @@ class BaselineOptimizer(object):
 
             # This happens if we're missing baselines for a port.
             if not current_result:
-                continue;
+                continue
 
             fallback_path = self._relative_baseline_search_paths(port, baseline_name)
             current_index, current_directory = self._find_in_fallbackpath(fallback_path, current_result, new_results_by_directory)

@@ -255,11 +255,11 @@ class CheckerDispatcherSkipTest(unittest.TestCase):
         """Test should_skip_with_warning()."""
         # Check skipped files.
         paths_to_skip = [
-           "Source/WebKit/gtk/tests/testatk.c",
-           "Source/WebKit2/UIProcess/API/gtk/webkit2.h",
-           "Source/WebKit2/UIProcess/API/gtk/WebKitWebView.h",
-           "Source/WebKit2/UIProcess/API/gtk/WebKitLoader.h",
-            ]
+            "Source/WebKit/gtk/tests/testatk.c",
+            "Source/WebKit2/UIProcess/API/gtk/webkit2.h",
+            "Source/WebKit2/UIProcess/API/gtk/WebKitWebView.h",
+            "Source/WebKit2/UIProcess/API/gtk/WebKitLoader.h",
+        ]
 
         for path in paths_to_skip:
             self.assertTrue(self._dispatcher.should_skip_with_warning(path),
@@ -267,14 +267,14 @@ class CheckerDispatcherSkipTest(unittest.TestCase):
 
         # Verify that some files are not skipped.
         paths_not_to_skip = [
-           "foo.txt",
-           "Source/WebKit2/UIProcess/API/gtk/HelperClass.cpp",
-           "Source/WebKit2/UIProcess/API/gtk/HelperClass.h",
-           "Source/WebKit2/UIProcess/API/gtk/WebKitWebView.cpp",
-           "Source/WebKit2/UIProcess/API/gtk/WebKitWebViewPrivate.h",
-           "Source/WebKit2/UIProcess/API/gtk/tests/WebViewTest.cpp",
-           "Source/WebKit2/UIProcess/API/gtk/tests/WebViewTest.h",
-            ]
+            "foo.txt",
+            "Source/WebKit2/UIProcess/API/gtk/HelperClass.cpp",
+            "Source/WebKit2/UIProcess/API/gtk/HelperClass.h",
+            "Source/WebKit2/UIProcess/API/gtk/WebKitWebView.cpp",
+            "Source/WebKit2/UIProcess/API/gtk/WebKitWebViewPrivate.h",
+            "Source/WebKit2/UIProcess/API/gtk/tests/WebViewTest.cpp",
+            "Source/WebKit2/UIProcess/API/gtk/tests/WebViewTest.h",
+        ]
 
         for path in paths_not_to_skip:
             self.assertFalse(self._dispatcher.should_skip_with_warning(path))
@@ -288,7 +288,7 @@ class CheckerDispatcherSkipTest(unittest.TestCase):
         message = 'while checking: %s' % path
         self.assertEqual(checker is None, is_checker_none, message)
         self.assertEqual(self._dispatcher.should_skip_without_warning(path),
-                          expected, message)
+                         expected, message)
 
     def test_should_skip_without_warning__true(self):
         """Test should_skip_without_warning() for True return values."""
@@ -310,7 +310,7 @@ class CheckerDispatcherSkipTest(unittest.TestCase):
         """Test should_skip_without_warning() for False return values."""
         paths = ['foo.txt',
                  os.path.join('LayoutTests', 'TestExpectations'),
-        ]
+                 ]
 
         for path in paths:
             self._assert_should_skip_without_warning(path,
@@ -319,6 +319,7 @@ class CheckerDispatcherSkipTest(unittest.TestCase):
 
 
 class CheckerDispatcherCarriageReturnTest(unittest.TestCase):
+
     def test_should_check_and_strip_carriage_returns(self):
         files = {
             'foo.txt': True,
@@ -329,7 +330,8 @@ class CheckerDispatcherCarriageReturnTest(unittest.TestCase):
 
         dispatcher = CheckerDispatcher()
         for file_path, expected_result in files.items():
-            self.assertEqual(dispatcher.should_check_and_strip_carriage_returns(file_path), expected_result, 'Checking: %s' % file_path)
+            self.assertEqual(dispatcher.should_check_and_strip_carriage_returns(
+                file_path), expected_result, 'Checking: %s' % file_path)
 
 
 class CheckerDispatcherDispatchTest(unittest.TestCase):
@@ -355,9 +357,9 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
         checker = self.dispatch(file_path)
         got_class = checker.__class__
         self.assertEqual(got_class, expected_class,
-                          'For path "%(file_path)s" got %(got_class)s when '
-                          "expecting %(expected_class)s."
-                          % {"file_path": file_path,
+                         'For path "%(file_path)s" got %(got_class)s when '
+                         "expecting %(expected_class)s."
+                         % {"file_path": file_path,
                              "got_class": got_class,
                              "expected_class": expected_class})
 
@@ -388,7 +390,7 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
             "foo.c",
             "foo.cpp",
             "foo.h",
-            ]
+        ]
 
         for path in paths:
             self.assert_checker_cpp(path)
@@ -415,8 +417,8 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
     def test_json_paths(self):
         """Test paths that should be checked as JSON."""
         paths = [
-           "Source/WebCore/inspector/Inspector.json",
-           "Tools/BuildSlaveSupport/build.webkit.org-config/config.json",
+            "Source/WebCore/inspector/Inspector.json",
+            "Tools/BuildSlaveSupport/build.webkit.org-config/config.json",
         ]
 
         for path in paths:
@@ -429,13 +431,13 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
         self.assert_checker_json(file_path)
         checker = self.dispatch(file_path)
         self.assertEqual(checker._handle_style_error,
-                          self.mock_handle_style_error)
+                         self.mock_handle_style_error)
 
     def test_python_paths(self):
         """Test paths that should be checked as Python."""
         paths = [
-           "foo.py",
-           "Tools/Scripts/modules/text_style.py",
+            "foo.py",
+            "Tools/Scripts/modules/text_style.py",
         ]
 
         for path in paths:
@@ -449,31 +451,31 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
         checker = self.dispatch(file_path)
         self.assertEqual(checker.file_path, file_path)
         self.assertEqual(checker.handle_style_error,
-                          self.mock_handle_style_error)
+                         self.mock_handle_style_error)
 
     def test_text_paths(self):
         """Test paths that should be checked as text."""
         paths = [
-           "foo.cc",
-           "foo.cgi",
-           "foo.css",
-           "foo.gyp",
-           "foo.gypi",
-           "foo.html",
-           "foo.idl",
-           "foo.in",
-           "foo.js",
-           "foo.mm",
-           "foo.php",
-           "foo.pl",
-           "foo.pm",
-           "foo.rb",
-           "foo.sh",
-           "foo.txt",
-           "foo.xhtml",
-           "foo.y",
-           os.path.join("Source", "WebCore", "inspector", "front-end", "Main.js"),
-           os.path.join("Tools", "Scripts", "check-webkit-style"),
+            "foo.cc",
+            "foo.cgi",
+            "foo.css",
+            "foo.gyp",
+            "foo.gypi",
+            "foo.html",
+            "foo.idl",
+            "foo.in",
+            "foo.js",
+            "foo.mm",
+            "foo.php",
+            "foo.pl",
+            "foo.pm",
+            "foo.rb",
+            "foo.sh",
+            "foo.txt",
+            "foo.xhtml",
+            "foo.y",
+            os.path.join("Source", "WebCore", "inspector", "front-end", "Main.js"),
+            os.path.join("Tools", "Scripts", "check-webkit-style"),
         ]
 
         for path in paths:
@@ -491,8 +493,8 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
     def test_xml_paths(self):
         """Test paths that should be checked as XML."""
         paths = [
-           "Source/WebCore/WebCore.vcproj/WebCore.vcproj",
-           "WebKitLibraries/win/tools/vsprops/common.vsprops",
+            "Source/WebCore/WebCore.vcproj/WebCore.vcproj",
+            "WebKitLibraries/win/tools/vsprops/common.vsprops",
         ]
 
         for path in paths:
@@ -505,15 +507,15 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
         self.assert_checker_xml(file_path)
         checker = self.dispatch(file_path)
         self.assertEqual(checker._handle_style_error,
-                          self.mock_handle_style_error)
+                         self.mock_handle_style_error)
 
     def test_none_paths(self):
         """Test paths that have no file type.."""
         paths = [
-           "Makefile",
-           "foo.asdf",  # Non-sensical file extension.
-           "foo.exe",
-            ]
+            "Makefile",
+            "foo.asdf",  # Non-sensical file extension.
+            "foo.exe",
+        ]
 
         for path in paths:
             self.assert_checker_none(path)
@@ -536,11 +538,11 @@ class StyleProcessorConfigurationTest(unittest.TestCase):
         filter_configuration = FilterConfiguration(base_rules=base_rules)
 
         return StyleProcessorConfiguration(
-                   filter_configuration=filter_configuration,
-                   max_reports_per_category={"whitespace/newline": 1},
-                   min_confidence=3,
-                   output_format=output_format,
-                   stderr_write=self._mock_stderr_write)
+            filter_configuration=filter_configuration,
+            max_reports_per_category={"whitespace/newline": 1},
+            min_confidence=3,
+            output_format=output_format,
+            stderr_write=self._mock_stderr_write)
 
     def test_init(self):
         """Test the __init__() method."""
@@ -548,7 +550,7 @@ class StyleProcessorConfigurationTest(unittest.TestCase):
 
         # Check that __init__ sets the "public" data attributes correctly.
         self.assertEqual(configuration.max_reports_per_category,
-                          {"whitespace/newline": 1})
+                         {"whitespace/newline": 1})
         self.assertEqual(configuration.stderr_write, self._mock_stderr_write)
         self.assertEqual(configuration.min_confidence, 3)
 
@@ -576,13 +578,13 @@ class StyleProcessorConfigurationTest(unittest.TestCase):
         """Test the write_style_error() method."""
         self._call_write_style_error("emacs")
         self.assertEqual(self._error_messages,
-                          ["foo.h:100:  message  [whitespace/tab] [5]\n"])
+                         ["foo.h:100:  message  [whitespace/tab] [5]\n"])
 
     def test_write_style_error_vs7(self):
         """Test the write_style_error() method."""
         self._call_write_style_error("vs7")
         self.assertEqual(self._error_messages,
-                          ["foo.h(100):  message  [whitespace/tab] [5]\n"])
+                         ["foo.h(100):  message  [whitespace/tab] [5]\n"])
 
 
 class StyleProcessor_EndToEndTest(LoggingTestCase):
@@ -600,11 +602,11 @@ class StyleProcessor_EndToEndTest(LoggingTestCase):
     def test_init(self):
         """Test __init__ constructor."""
         configuration = StyleProcessorConfiguration(
-                            filter_configuration=FilterConfiguration(),
-                            max_reports_per_category={},
-                            min_confidence=3,
-                            output_format="vs7",
-                            stderr_write=self._mock_stderr_write)
+            filter_configuration=FilterConfiguration(),
+            max_reports_per_category={},
+            min_confidence=3,
+            output_format="vs7",
+            stderr_write=self._mock_stderr_write)
         processor = StyleProcessor(configuration)
 
         self.assertEqual(processor.error_count, 0)
@@ -612,11 +614,11 @@ class StyleProcessor_EndToEndTest(LoggingTestCase):
 
     def test_process(self):
         configuration = StyleProcessorConfiguration(
-                            filter_configuration=FilterConfiguration(),
-                            max_reports_per_category={},
-                            min_confidence=3,
-                            output_format="vs7",
-                            stderr_write=self._mock_stderr_write)
+            filter_configuration=FilterConfiguration(),
+            max_reports_per_category={},
+            min_confidence=3,
+            output_format="vs7",
+            stderr_write=self._mock_stderr_write)
         processor = StyleProcessor(configuration)
 
         processor.process(lines=['line1', 'Line with tab:\t'],
@@ -668,9 +670,9 @@ class StyleProcessor_CodeCoverageTest(LoggingTestCase):
                 return None
 
             checker = StyleProcessor_CodeCoverageTest.MockDispatchedChecker(
-                          file_path,
-                          min_confidence,
-                          style_error_handler)
+                file_path,
+                min_confidence,
+                style_error_handler)
 
             # Save the dispatched checker so the current test case has a
             # way to access and check it.
@@ -683,11 +685,11 @@ class StyleProcessor_CodeCoverageTest(LoggingTestCase):
         # We can pass an error-message swallower here because error message
         # output is tested instead in the end-to-end test case above.
         configuration = StyleProcessorConfiguration(
-                            filter_configuration=FilterConfiguration(),
-                            max_reports_per_category={"whitespace/newline": 1},
-                            min_confidence=3,
-                            output_format="vs7",
-                            stderr_write=self._swallow_stderr_message)
+            filter_configuration=FilterConfiguration(),
+            max_reports_per_category={"whitespace/newline": 1},
+            min_confidence=3,
+            output_format="vs7",
+            stderr_write=self._swallow_stderr_message)
 
         mock_carriage_checker_class = self._create_carriage_checker_class()
         mock_dispatcher = self.MockDispatcher()
@@ -696,9 +698,9 @@ class StyleProcessor_CodeCoverageTest(LoggingTestCase):
         mock_increment_error_count = self._do_nothing
 
         processor = StyleProcessor(configuration=configuration,
-                        mock_carriage_checker_class=mock_carriage_checker_class,
-                        mock_dispatcher=mock_dispatcher,
-                        mock_increment_error_count=mock_increment_error_count)
+                                   mock_carriage_checker_class=mock_carriage_checker_class,
+                                   mock_dispatcher=mock_dispatcher,
+                                   mock_increment_error_count=mock_increment_error_count)
 
         self._configuration = configuration
         self._mock_dispatcher = mock_dispatcher
@@ -784,7 +786,7 @@ class StyleProcessor_CodeCoverageTest(LoggingTestCase):
         # and was passed lines correctly.
         carriage_checker = self.carriage_checker
         self.assertEqual(carriage_checker.style_error_handler,
-                          expected_error_handler)
+                         expected_error_handler)
         self.assertEqual(carriage_checker.lines, ['line1', 'line2'])
 
         # Check that the style checker was dispatched correctly and was

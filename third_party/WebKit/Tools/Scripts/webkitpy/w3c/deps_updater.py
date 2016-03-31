@@ -11,6 +11,7 @@ from webkitpy.common.webkit_finder import WebKitFinder
 
 
 class DepsUpdater(object):
+
     def __init__(self, host):
         self.host = host
         self.executive = host.executive

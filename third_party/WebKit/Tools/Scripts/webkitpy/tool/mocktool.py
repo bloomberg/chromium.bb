@@ -56,6 +56,7 @@ class MockOptions(object):
 
 # FIXME: This should be renamed MockWebKitPatch.
 class MockTool(MockHost):
+
     def __init__(self, *args, **kwargs):
         MockHost.__init__(self, *args, **kwargs)
 

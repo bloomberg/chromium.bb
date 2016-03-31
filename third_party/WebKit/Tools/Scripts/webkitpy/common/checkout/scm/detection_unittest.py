@@ -37,6 +37,7 @@ from webkitpy.common.system.outputcapture import OutputCapture
 
 
 class SCMDetectorTest(unittest.TestCase):
+
     def test_detect_scm_system(self):
         filesystem = MockFileSystem()
         executive = MockExecutive(should_log=True)

@@ -71,7 +71,6 @@ class PerfTestsRunner(object):
         self._timestamp = time.time()
         self._utc_timestamp = datetime.datetime.utcnow()
 
-
     @staticmethod
     def _parse_args(args=None):
         def _expand_path(option, opt_str, value, parser):
@@ -79,59 +78,59 @@ class PerfTestsRunner(object):
             setattr(parser.values, option.dest, path)
         perf_option_list = [
             optparse.make_option('--debug', action='store_const', const='Debug', dest="configuration",
-                help='Set the configuration to Debug'),
+                                 help='Set the configuration to Debug'),
             optparse.make_option('--release', action='store_const', const='Release', dest="configuration",
-                help='Set the configuration to Release'),
+                                 help='Set the configuration to Release'),
             optparse.make_option("--platform",
-                help="Specify port/platform being tested (e.g. mac)"),
+                                 help="Specify port/platform being tested (e.g. mac)"),
             optparse.make_option("--chromium",
-                action="store_const", const='chromium', dest='platform', help='Alias for --platform=chromium'),
+                                 action="store_const", const='chromium', dest='platform', help='Alias for --platform=chromium'),
             optparse.make_option("--android",
-                action="store_const", const='android', dest='platform', help='Alias for --platform=android'),
+                                 action="store_const", const='android', dest='platform', help='Alias for --platform=android'),
             optparse.make_option("--builder-name",
-                help=("The name of the builder shown on the waterfall running this script e.g. google-mac-2.")),
+                                 help=("The name of the builder shown on the waterfall running this script e.g. google-mac-2.")),
             optparse.make_option("--build-number",
-                help=("The build number of the builder running this script.")),
+                                 help=("The build number of the builder running this script.")),
             optparse.make_option("--build", dest="build", action="store_true", default=True,
-                help="Check to ensure the DumpRenderTree build is up-to-date (default)."),
+                                 help="Check to ensure the DumpRenderTree build is up-to-date (default)."),
             optparse.make_option("--no-build", dest="build", action="store_false",
-                help="Don't check to see if the DumpRenderTree build is up-to-date."),
+                                 help="Don't check to see if the DumpRenderTree build is up-to-date."),
             optparse.make_option("--build-directory",
-                help="Path to the directory under which build files are kept (should not include configuration)"),
+                                 help="Path to the directory under which build files are kept (should not include configuration)"),
             optparse.make_option("--time-out-ms", default=600 * 1000,
-                help="Set the timeout for each test"),
+                                 help="Set the timeout for each test"),
             optparse.make_option("--no-results", action="store_false", dest="generate_results", default=True,
-                help="Do no generate results JSON and results page."),
+                                 help="Do no generate results JSON and results page."),
             optparse.make_option("--output-json-path", action='callback', callback=_expand_path, type="str",
-                help="Path to generate a JSON file at; may contain previous results if it already exists."),
+                                 help="Path to generate a JSON file at; may contain previous results if it already exists."),
             optparse.make_option("--reset-results", action="store_true",
-                help="Clears the content in the generated JSON file before adding the results."),
+                                 help="Clears the content in the generated JSON file before adding the results."),
             optparse.make_option("--slave-config-json-path", action='callback', callback=_expand_path, type="str",
-                help="Only used on bots. Path to a slave configuration file."),
+                                 help="Only used on bots. Path to a slave configuration file."),
             optparse.make_option("--description",
-                help="Add a description to the output JSON file if one is generated"),
+                                 help="Add a description to the output JSON file if one is generated"),
             optparse.make_option("--no-show-results", action="store_false", default=True, dest="show_results",
-                help="Don't launch a browser with results after the tests are done"),
+                                 help="Don't launch a browser with results after the tests are done"),
             optparse.make_option("--test-results-server",
-                help="Upload the generated JSON file to the specified server when --output-json-path is present."),
+                                 help="Upload the generated JSON file to the specified server when --output-json-path is present."),
             optparse.make_option("--force", dest="use_skipped_list", action="store_false", default=True,
-                help="Run all tests, including the ones in the Skipped list."),
+                                 help="Run all tests, including the ones in the Skipped list."),
             optparse.make_option("--profile", action="store_true",
-                help="Output per-test profile information."),
+                                 help="Output per-test profile information."),
             optparse.make_option("--profiler", action="store",
-                help="Output per-test profile information, using the specified profiler."),
+                                 help="Output per-test profile information, using the specified profiler."),
             optparse.make_option("--additional-driver-flag", action="append",
-                default=[], help="Additional command line flag to pass to DumpRenderTree "
-                     "Specify multiple times to add multiple flags."),
+                                 default=[], help="Additional command line flag to pass to DumpRenderTree "
+                                 "Specify multiple times to add multiple flags."),
             optparse.make_option("--driver-name", type="string",
-                help="Alternative DumpRenderTree binary to use"),
+                                 help="Alternative DumpRenderTree binary to use"),
             optparse.make_option("--content-shell", action="store_true",
-                help="Use Content Shell instead of DumpRenderTree"),
+                                 help="Use Content Shell instead of DumpRenderTree"),
             optparse.make_option("--repeat", default=1, type="int",
-                help="Specify number of times to run test set (default: 1)."),
+                                 help="Specify number of times to run test set (default: 1)."),
             optparse.make_option("--test-runner-count", default=DEFAULT_TEST_RUNNER_COUNT, type="int",
-                help="Specify number of times to invoke test runner for each performance test."),
-            ]
+                                 help="Specify number of times to invoke test runner for each performance test."),
+        ]
         return optparse.OptionParser(option_list=(perf_option_list)).parse_args(args)
 
     def _collect_tests(self):
@@ -160,7 +159,8 @@ class PerfTestsRunner(object):
             relative_path = filesystem.relpath(path, self._base_path).replace('\\', '/')
             if self._options.use_skipped_list and self._port.skips_perf_test(relative_path) and filesystem.normpath(relative_path) not in paths:
                 continue
-            test = PerfTestFactory.create_perf_test(self._port, relative_path, path, test_runner_count=self._options.test_runner_count)
+            test = PerfTestFactory.create_perf_test(self._port, relative_path, path,
+                                                    test_runner_count=self._options.test_runner_count)
             tests.append(test)
 
         return tests
@@ -177,6 +177,7 @@ class PerfTestsRunner(object):
         needs_http = self._port.requires_http_server()
 
         class FakePrinter(object):
+
             def write_update(self, msg):
                 print msg
 
@@ -236,7 +237,8 @@ class PerfTestsRunner(object):
     def _generate_results(self):
         options = self._options
         output_json_path = self._output_json_path()
-        output = self._generate_results_dict(self._timestamp, options.description, options.platform, options.builder_name, options.build_number)
+        output = self._generate_results_dict(self._timestamp, options.description,
+                                             options.platform, options.builder_name, options.build_number)
 
         if options.slave_config_json_path:
             output = self._merge_slave_config_json(options.slave_config_json_path, output)

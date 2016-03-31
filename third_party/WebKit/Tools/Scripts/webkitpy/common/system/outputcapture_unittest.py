@@ -30,6 +30,7 @@ _log = logging.getLogger(__name__)
 
 
 class OutputCaptureTest(unittest.TestCase):
+
     def setUp(self):
         self.output = OutputCapture()
 

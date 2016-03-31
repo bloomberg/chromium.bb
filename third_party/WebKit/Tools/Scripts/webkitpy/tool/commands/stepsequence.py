@@ -37,6 +37,7 @@ _log = logging.getLogger(__name__)
 
 
 class StepSequenceErrorHandler():
+
     @classmethod
     def handle_script_error(cls, tool, patch, script_error):
         raise NotImplementedError, "subclasses must implement"
@@ -47,6 +48,7 @@ class StepSequenceErrorHandler():
 
 
 class StepSequence(object):
+
     def __init__(self, steps):
         self._steps = steps or []
 

@@ -36,6 +36,7 @@ from webkitpy.tool.mocktool import MockTool, MockOptions
 
 
 class PrintExpectationsTest(unittest.TestCase):
+
     def run_test(self, tests, expected_stdout, platform='test-win-win7', **args):
         options = MockOptions(all=False, csv=False, full=False, platform=platform,
                               include_keyword=[], exclude_keyword=[], paths=False).update(**args)
@@ -67,7 +68,7 @@ class PrintExpectationsTest(unittest.TestCase):
                        '// For test-win-win7\n'
                        'failures/expected/text.html [ Failure ]\n'
                        'failures/expected/timeout.html [ Timeout ]\n'),
-                       platform='test-win-*')
+                      platform='test-win-*')
 
     def test_full(self):
         self.run_test(['failures/expected/text.html', 'failures/expected/timeout.html'],
@@ -101,7 +102,9 @@ class PrintExpectationsTest(unittest.TestCase):
                        'LayoutTests/platform/test-win-win7/TestExpectations\n'),
                       paths=True)
 
+
 class PrintBaselinesTest(unittest.TestCase):
+
     def setUp(self):
         self.oc = None
         self.tool = MockTool()
@@ -126,34 +129,37 @@ class PrintBaselinesTest(unittest.TestCase):
         command = PrintBaselines()
         command.bind_to_tool(self.tool)
         self.capture_output()
-        command.execute(MockOptions(all=False, include_virtual_tests=False, csv=False, platform=None), ['passes/text.html'], self.tool)
+        command.execute(MockOptions(all=False, include_virtual_tests=False,
+                                    csv=False, platform=None), ['passes/text.html'], self.tool)
         stdout, _, _ = self.restore_output()
         self.assertMultiLineEqual(stdout,
-                          ('// For test-win-win7\n'
-                           'passes/text-expected.png\n'
-                           'passes/text-expected.txt\n'))
+                                  ('// For test-win-win7\n'
+                                   'passes/text-expected.png\n'
+                                   'passes/text-expected.txt\n'))
 
     def test_multiple(self):
         command = PrintBaselines()
         command.bind_to_tool(self.tool)
         self.capture_output()
-        command.execute(MockOptions(all=False, include_virtual_tests=False, csv=False, platform='test-win-*'), ['passes/text.html'], self.tool)
+        command.execute(MockOptions(all=False, include_virtual_tests=False, csv=False,
+                                    platform='test-win-*'), ['passes/text.html'], self.tool)
         stdout, _, _ = self.restore_output()
         self.assertMultiLineEqual(stdout,
-                          ('// For test-win-win10\n'
-                           'passes/text-expected.png\n'
-                           'passes/text-expected.txt\n'
-                           '\n'
-                           '// For test-win-win7\n'
-                           'passes/text-expected.png\n'
-                           'passes/text-expected.txt\n'))
+                                  ('// For test-win-win10\n'
+                                   'passes/text-expected.png\n'
+                                   'passes/text-expected.txt\n'
+                                   '\n'
+                                   '// For test-win-win7\n'
+                                   'passes/text-expected.png\n'
+                                   'passes/text-expected.txt\n'))
 
     def test_csv(self):
         command = PrintBaselines()
         command.bind_to_tool(self.tool)
         self.capture_output()
-        command.execute(MockOptions(all=False, platform='*win7', csv=True, include_virtual_tests=False), ['passes/text.html'], self.tool)
+        command.execute(MockOptions(all=False, platform='*win7', csv=True,
+                                    include_virtual_tests=False), ['passes/text.html'], self.tool)
         stdout, _, _ = self.restore_output()
         self.assertMultiLineEqual(stdout,
-                          ('test-win-win7,passes/text.html,None,png,passes/text-expected.png,None\n'
-                           'test-win-win7,passes/text.html,None,txt,passes/text-expected.txt,None\n'))
+                                  ('test-win-win7,passes/text.html,None,png,passes/text-expected.png,None\n'
+                                   'test-win-win7,passes/text.html,None,txt,passes/text-expected.txt,None\n'))

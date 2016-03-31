@@ -163,6 +163,7 @@ def _move_test_baselines(test_file, extensions_to_move, source_platform, destina
 def get_test_baselines(test_file, test_config):
     # FIXME: This seems like a hack. This only seems used to access the Port.expected_baselines logic.
     class AllPlatformsPort(Port):
+
         def __init__(self, host):
             super(AllPlatformsPort, self).__init__(host, 'mac')
             self._platforms_by_directory = dict([(self._webkit_baseline_path(p), p) for p in test_config.platforms])
@@ -196,6 +197,7 @@ def get_test_baselines(test_file, test_config):
 
 
 class RebaselineHTTPServer(BaseHTTPServer.HTTPServer):
+
     def __init__(self, httpd_port, config):
         server_name = ""
         BaseHTTPServer.HTTPServer.__init__(self, (server_name, httpd_port), RebaselineHTTPRequestHandler)

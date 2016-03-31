@@ -39,6 +39,7 @@ _log = logutils.get_logger(__file__)
 
 
 class ConfirmDiff(AbstractStep):
+
     @classmethod
     def options(cls):
         return AbstractStep.options() + [
@@ -73,7 +74,7 @@ class ConfirmDiff(AbstractStep):
     def diff(self):
         changed_files = self._tool.scm().changed_files(self._options.git_commit)
         return self._tool.scm().create_patch(self._options.git_commit,
-            changed_files=changed_files)
+                                             changed_files=changed_files)
 
     def run(self, state):
         if not self._options.confirm:

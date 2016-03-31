@@ -128,6 +128,7 @@ class ConfigureLoggingTest(ConfigureLoggingTestBase):
 
 
 class ConfigureLoggingVerboseTest(ConfigureLoggingTestBase):
+
     def _logging_level(self):
         return logging.DEBUG
 
@@ -138,6 +139,7 @@ class ConfigureLoggingVerboseTest(ConfigureLoggingTestBase):
     def test_debug_message(self):
         self._log.debug("test message")
         self._assert_log_messages(["unittest: [DEBUG] test message\n"])
+
 
 class ConfigureLoggingCustomLevelTest(ConfigureLoggingTestBase):
 

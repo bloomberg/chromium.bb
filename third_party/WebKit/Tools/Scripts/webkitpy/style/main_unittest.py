@@ -60,7 +60,7 @@ class ChangeDirectoryTest(unittest.TestCase):
         paths = ["/WebKit/foo1.txt", "/outside/foo2.txt"]
         paths = self._change_directory(checkout_root=self._checkout_root, paths=paths)
         log_messages = [
-"""WARNING: Path-dependent style checks may not work correctly:
+            """WARNING: Path-dependent style checks may not work correctly:
 
   One of the given paths is outside the WebKit checkout of the current
   working directory:

@@ -76,7 +76,7 @@ def change_directory(filesystem, checkout_root, paths):
                 # current working directory, and do not change the current
                 # working directory.
                 _log.warn(
-"""Path-dependent style checks may not work correctly:
+                    """Path-dependent style checks may not work correctly:
 
   One of the given paths is outside the WebKit checkout of the current
   working directory:
@@ -87,7 +87,7 @@ def change_directory(filesystem, checkout_root, paths):
   Pass only files below the checkout root to ensure correct results.
   See the help documentation for more info.
 """
-                          % (path, checkout_root))
+                    % (path, checkout_root))
 
                 return paths
             rel_paths.append(rel_path)
@@ -101,6 +101,7 @@ def change_directory(filesystem, checkout_root, paths):
 
 
 class CheckWebKitStyle(object):
+
     def _engage_awesome_stderr_hacks(self):
         # Change stderr to write with replacement characters so we don't die
         # if we try to print something containing non-ASCII characters.

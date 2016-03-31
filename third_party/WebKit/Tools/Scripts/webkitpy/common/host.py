@@ -41,6 +41,7 @@ _log = logging.getLogger(__name__)
 
 
 class Host(SystemHost):
+
     def __init__(self):
         SystemHost.__init__(self)
         self.web = web.Web()

@@ -39,6 +39,7 @@ import sys
 import tempfile
 import time
 
+
 class FileSystem(object):
     """FileSystem interface for webkitpy.
 
@@ -147,6 +148,7 @@ class FileSystem(object):
         methods. If you need a string, coerce the object to a string and go from there.
         """
         class TemporaryDirectory(object):
+
             def __init__(self, **kwargs):
                 self._kwargs = kwargs
                 self._directory_path = tempfile.mkdtemp(**self._kwargs)
@@ -203,7 +205,9 @@ class FileSystem(object):
 
     def open_text_file_for_reading(self, path):
         # Note: There appears to be an issue with the returned file objects
-        # not being seekable. See http://stackoverflow.com/questions/1510188/can-seek-and-tell-work-with-utf-8-encoded-documents-in-python .
+        # not being seekable. See
+        # http://stackoverflow.com/questions/1510188/can-seek-and-tell-work-with-utf-8-encoded-documents-in-python
+        # .
         return codecs.open(path, 'r', 'utf8')
 
     def open_text_file_for_writing(self, path):

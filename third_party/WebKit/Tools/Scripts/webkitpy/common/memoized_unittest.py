@@ -32,6 +32,7 @@ from webkitpy.common.memoized import memoized
 
 
 class _TestObject(object):
+
     def __init__(self):
         self.callCount = 0
 
@@ -45,6 +46,7 @@ class _TestObject(object):
 
 
 class MemoizedTest(unittest.TestCase):
+
     def test_caching(self):
         test = _TestObject()
         test.callCount = 0

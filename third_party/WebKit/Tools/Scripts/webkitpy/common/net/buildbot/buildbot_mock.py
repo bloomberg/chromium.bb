@@ -35,12 +35,15 @@ _log = logging.getLogger(__name__)
 
 
 class MockBuild(object):
+
     def __init__(self, build_number, revision, is_green):
         self._number = build_number
         self._revision = revision
         self._is_green = is_green
 
+
 class MockBuilder(object):
+
     def __init__(self, name):
         self._name = name
 
@@ -62,7 +65,9 @@ class MockBuilder(object):
     def latest_layout_test_results(self):
         return LayoutTestResults.results_from_string(layouttestresults_unittest.LayoutTestResultsTest.example_full_results_json)
 
+
 class MockBuildBot(object):
+
     def __init__(self):
         self._mock_builder1_status = {
             "name": "Builder1",

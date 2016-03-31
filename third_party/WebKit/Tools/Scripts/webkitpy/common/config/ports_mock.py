@@ -28,6 +28,7 @@
 
 
 class MockPort(object):
+
     def name(self):
         return "MockPort"
 

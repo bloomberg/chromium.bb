@@ -32,5 +32,6 @@ from webkitpy.common.net.networktransaction import NetworkTransaction
 
 
 class Web(object):
+
     def get_binary(self, url, convert_404_to_None=False):
         return NetworkTransaction(convert_404_to_None=convert_404_to_None).run(lambda: urllib2.urlopen(url).read())

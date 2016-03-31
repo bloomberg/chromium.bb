@@ -34,6 +34,7 @@ _log = logging.getLogger(__name__)
 
 
 class ProfilerFactory(object):
+
     @classmethod
     def create_profiler(cls, host, executable_path, output_dir, profiler_name=None, identifier=None):
         profilers = cls.profilers_for_platform(host.platform)
@@ -84,10 +85,12 @@ class Profiler(object):
 
 
 class SingleFileOutputProfiler(Profiler):
+
     def __init__(self, host, executable_path, output_dir, output_suffix, identifier=None):
         super(SingleFileOutputProfiler, self).__init__(host, executable_path, output_dir, identifier)
         # FIXME: Currently all reports are kept as test.*, until we fix that, search up to 1000 names before giving up.
-        self._output_path = self._host.workspace.find_unused_filename(self._output_dir, self._identifier, output_suffix, search_limit=1000)
+        self._output_path = self._host.workspace.find_unused_filename(
+            self._output_dir, self._identifier, output_suffix, search_limit=1000)
         assert(self._output_path)
 
 
@@ -200,7 +203,7 @@ class IProfiler(SingleFileOutputProfiler):
         # from the basename of the file, with no control over the extension.
         fs = self._host.filesystem
         cmd = ["iprofiler", "-timeprofiler", "-a", pid,
-                "-d", fs.dirname(self._output_path), "-o", fs.splitext(fs.basename(self._output_path))[0]]
+               "-d", fs.dirname(self._output_path), "-o", fs.splitext(fs.basename(self._output_path))[0]]
         # FIXME: Consider capturing instead of letting instruments spam to stderr directly.
         self._profiler_process = self._host.executive.popen(cmd)
 
