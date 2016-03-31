@@ -326,7 +326,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_CallToActionColor:
       return GetSystemColor(kColorId_LinkEnabled);
     case kColorId_TextOnCallToActionColor:
-      return GetTextAAColor(GetLabel(), PRELIGHT);
+      return GetTextColor(GetLabel(), SELECTED);
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
