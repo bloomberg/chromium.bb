@@ -129,6 +129,47 @@ private:
     friend class ThreadState;
 };
 
+// Stats for the heap.
+class ThreadHeapStats {
+    USING_FAST_MALLOC(ThreadHeapStats);
+public:
+    ThreadHeapStats();
+    void setMarkedObjectSizeAtLastCompleteSweep(size_t size) { releaseStore(&m_markedObjectSizeAtLastCompleteSweep, size); }
+    size_t markedObjectSizeAtLastCompleteSweep() { return acquireLoad(&m_markedObjectSizeAtLastCompleteSweep); }
+    void increaseAllocatedObjectSize(size_t delta);
+    void decreaseAllocatedObjectSize(size_t delta);
+    size_t allocatedObjectSize() { return acquireLoad(&m_allocatedObjectSize); }
+    void increaseMarkedObjectSize(size_t delta);
+    size_t markedObjectSize() { return acquireLoad(&m_markedObjectSize); }
+    void increaseAllocatedSpace(size_t delta);
+    void decreaseAllocatedSpace(size_t delta);
+    size_t allocatedSpace() { return acquireLoad(&m_allocatedSpace); }
+    size_t objectSizeAtLastGC() { return acquireLoad(&m_objectSizeAtLastGC); }
+    void increaseWrapperCount(size_t delta) { atomicAdd(&m_wrapperCount, static_cast<long>(delta)); }
+    void decreaseWrapperCount(size_t delta) { atomicSubtract(&m_wrapperCount, static_cast<long>(delta)); }
+    size_t wrapperCount() { return acquireLoad(&m_wrapperCount); }
+    size_t wrapperCountAtLastGC() { return acquireLoad(&m_wrapperCountAtLastGC); }
+    void increaseCollectedWrapperCount(size_t delta) { atomicAdd(&m_collectedWrapperCount, static_cast<long>(delta)); }
+    size_t collectedWrapperCount() { return acquireLoad(&m_collectedWrapperCount); }
+    size_t partitionAllocSizeAtLastGC() { return acquireLoad(&m_partitionAllocSizeAtLastGC); }
+    void setEstimatedMarkingTimePerByte(double estimatedMarkingTimePerByte) { m_estimatedMarkingTimePerByte = estimatedMarkingTimePerByte; }
+    double estimatedMarkingTimePerByte() const { return m_estimatedMarkingTimePerByte; }
+    double estimatedMarkingTime();
+    void reset();
+
+private:
+    size_t m_allocatedSpace;
+    size_t m_allocatedObjectSize;
+    size_t m_objectSizeAtLastGC;
+    size_t m_markedObjectSize;
+    size_t m_markedObjectSizeAtLastCompleteSweep;
+    size_t m_wrapperCount;
+    size_t m_wrapperCountAtLastGC;
+    size_t m_collectedWrapperCount;
+    size_t m_partitionAllocSizeAtLastGC;
+    double m_estimatedMarkingTimePerByte;
+};
+
 class PLATFORM_EXPORT Heap {
     STATIC_ONLY(Heap);
 public:
@@ -292,44 +333,7 @@ public:
         return info;
     }
 
-    static void setMarkedObjectSizeAtLastCompleteSweep(size_t size) { releaseStore(&s_markedObjectSizeAtLastCompleteSweep, size); }
-    static size_t markedObjectSizeAtLastCompleteSweep() { return acquireLoad(&s_markedObjectSizeAtLastCompleteSweep); }
-    static void increaseAllocatedObjectSize(size_t delta)
-    {
-        atomicAdd(&s_allocatedObjectSize, static_cast<long>(delta));
-        ProcessHeap::increaseTotalAllocatedObjectSize(delta);
-    }
-    static void decreaseAllocatedObjectSize(size_t delta)
-    {
-        atomicSubtract(&s_allocatedObjectSize, static_cast<long>(delta));
-        ProcessHeap::decreaseTotalAllocatedObjectSize(delta);
-    }
-    static size_t allocatedObjectSize() { return acquireLoad(&s_allocatedObjectSize); }
-    static void increaseMarkedObjectSize(size_t delta)
-    {
-        atomicAdd(&s_markedObjectSize, static_cast<long>(delta));
-        ProcessHeap::increaseTotalMarkedObjectSize(delta);
-    }
-    static size_t markedObjectSize() { return acquireLoad(&s_markedObjectSize); }
-    static void increaseAllocatedSpace(size_t delta)
-    {
-        atomicAdd(&s_allocatedSpace, static_cast<long>(delta));
-        ProcessHeap::increaseTotalAllocatedSpace(delta);
-    }
-    static void decreaseAllocatedSpace(size_t delta)
-    {
-        atomicSubtract(&s_allocatedSpace, static_cast<long>(delta));
-        ProcessHeap::decreaseTotalAllocatedSpace(delta);
-    }
-    static size_t allocatedSpace() { return acquireLoad(&s_allocatedSpace); }
-    static size_t objectSizeAtLastGC() { return acquireLoad(&s_objectSizeAtLastGC); }
-    static void increaseWrapperCount(size_t delta) { atomicAdd(&s_wrapperCount, static_cast<long>(delta)); }
-    static void decreaseWrapperCount(size_t delta) { atomicSubtract(&s_wrapperCount, static_cast<long>(delta)); }
-    static size_t wrapperCount() { return acquireLoad(&s_wrapperCount); }
-    static size_t wrapperCountAtLastGC() { return acquireLoad(&s_wrapperCountAtLastGC); }
-    static void increaseCollectedWrapperCount(size_t delta) { atomicAdd(&s_collectedWrapperCount, static_cast<long>(delta)); }
-    static size_t collectedWrapperCount() { return acquireLoad(&s_collectedWrapperCount); }
-    static size_t partitionAllocSizeAtLastGC() { return acquireLoad(&s_partitionAllocSizeAtLastGC); }
+    static ThreadHeapStats& heapStats();
 
     static double estimatedMarkingTime();
     static void reportMemoryUsageHistogram();
@@ -352,16 +356,6 @@ private:
     static HeapDoesNotContainCache* s_heapDoesNotContainCache;
     static FreePagePool* s_freePagePool;
     static OrphanedPagePool* s_orphanedPagePool;
-    static size_t s_allocatedSpace;
-    static size_t s_allocatedObjectSize;
-    static size_t s_objectSizeAtLastGC;
-    static size_t s_markedObjectSize;
-    static size_t s_markedObjectSizeAtLastCompleteSweep;
-    static size_t s_wrapperCount;
-    static size_t s_wrapperCountAtLastGC;
-    static size_t s_collectedWrapperCount;
-    static size_t s_partitionAllocSizeAtLastGC;
-    static double s_estimatedMarkingTimePerByte;
     static BlinkGC::GCReason s_lastGCReason;
 
     friend class ThreadState;

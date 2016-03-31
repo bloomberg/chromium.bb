@@ -1774,7 +1774,7 @@ TEST(HeapTest, BasicFunctionality)
         size_t baseLevel = initialObjectPayloadSize;
         bool testPagesAllocated = !baseLevel;
         if (testPagesAllocated)
-            EXPECT_EQ(Heap::allocatedSpace(), 0ul);
+            EXPECT_EQ(Heap::heapStats().allocatedSpace(), 0ul);
 
         // This allocates objects on the general heap which should add a page of memory.
         DynamicallySizedObject* alloc32 = DynamicallySizedObject::create(32);
@@ -1788,7 +1788,7 @@ TEST(HeapTest, BasicFunctionality)
 
         CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
         if (testPagesAllocated)
-            EXPECT_EQ(Heap::allocatedSpace(), blinkPageSize * 2);
+            EXPECT_EQ(Heap::heapStats().allocatedSpace(), blinkPageSize * 2);
 
         EXPECT_EQ(alloc32->get(0), 40);
         EXPECT_EQ(alloc32->get(31), 40);
@@ -1809,7 +1809,7 @@ TEST(HeapTest, BasicFunctionality)
     size_t baseLevel = Heap::objectPayloadSizeForTesting();
     bool testPagesAllocated = !baseLevel;
     if (testPagesAllocated)
-        EXPECT_EQ(Heap::allocatedSpace(), 0ul);
+        EXPECT_EQ(Heap::heapStats().allocatedSpace(), 0ul);
 
     size_t big = 1008;
     Persistent<DynamicallySizedObject> bigArea = DynamicallySizedObject::create(big);
@@ -1827,7 +1827,7 @@ TEST(HeapTest, BasicFunctionality)
         slack += 4;
         CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
         if (testPagesAllocated)
-            EXPECT_EQ(0ul, Heap::allocatedSpace() & (blinkPageSize - 1));
+            EXPECT_EQ(0ul, Heap::heapStats().allocatedSpace() & (blinkPageSize - 1));
     }
 
     {
@@ -1842,14 +1842,14 @@ TEST(HeapTest, BasicFunctionality)
         total += 96;
         CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
         if (testPagesAllocated)
-            EXPECT_EQ(0ul, Heap::allocatedSpace() & (blinkPageSize - 1));
+            EXPECT_EQ(0ul, Heap::heapStats().allocatedSpace() & (blinkPageSize - 1));
     }
 
     clearOutOldGarbage();
     total -= 96;
     slack -= 8;
     if (testPagesAllocated)
-        EXPECT_EQ(0ul, Heap::allocatedSpace() & (blinkPageSize - 1));
+        EXPECT_EQ(0ul, Heap::heapStats().allocatedSpace() & (blinkPageSize - 1));
 
     // Clear the persistent, so that the big area will be garbage collected.
     bigArea.release();
@@ -1859,11 +1859,11 @@ TEST(HeapTest, BasicFunctionality)
     slack -= 4;
     CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
     if (testPagesAllocated)
-        EXPECT_EQ(0ul, Heap::allocatedSpace() & (blinkPageSize - 1));
+        EXPECT_EQ(0ul, Heap::heapStats().allocatedSpace() & (blinkPageSize - 1));
 
     CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
     if (testPagesAllocated)
-        EXPECT_EQ(0ul, Heap::allocatedSpace() & (blinkPageSize - 1));
+        EXPECT_EQ(0ul, Heap::heapStats().allocatedSpace() & (blinkPageSize - 1));
 
     for (size_t i = 0; i < persistentCount; i++) {
         delete persistents[i];
@@ -2326,7 +2326,7 @@ TEST(HeapTest, LargeHeapObjects)
 {
     clearOutOldGarbage();
     size_t initialObjectPayloadSize = Heap::objectPayloadSizeForTesting();
-    size_t initialAllocatedSpace = Heap::allocatedSpace();
+    size_t initialAllocatedSpace = Heap::heapStats().allocatedSpace();
     IntWrapper::s_destructorCalls = 0;
     LargeHeapObject::s_destructorCalls = 0;
     {
@@ -2335,7 +2335,7 @@ TEST(HeapTest, LargeHeapObjects)
         ASSERT(ThreadState::current()->findPageFromAddress(object));
         ASSERT(ThreadState::current()->findPageFromAddress(reinterpret_cast<char*>(object.get()) + sizeof(LargeHeapObject) - 1));
         clearOutOldGarbage();
-        size_t afterAllocation = Heap::allocatedSpace();
+        size_t afterAllocation = Heap::heapStats().allocatedSpace();
         {
             object->set(0, 'a');
             EXPECT_EQ('a', object->get(0));
@@ -2359,13 +2359,13 @@ TEST(HeapTest, LargeHeapObjects)
                 object = LargeHeapObject::create();
         }
         clearOutOldGarbage();
-        EXPECT_TRUE(Heap::allocatedSpace() == afterAllocation);
+        EXPECT_TRUE(Heap::heapStats().allocatedSpace() == afterAllocation);
         EXPECT_EQ(10, IntWrapper::s_destructorCalls);
         EXPECT_EQ(10, LargeHeapObject::s_destructorCalls);
     }
     clearOutOldGarbage();
     EXPECT_TRUE(initialObjectPayloadSize == Heap::objectPayloadSizeForTesting());
-    EXPECT_TRUE(initialAllocatedSpace == Heap::allocatedSpace());
+    EXPECT_TRUE(initialAllocatedSpace == Heap::heapStats().allocatedSpace());
     EXPECT_EQ(11, IntWrapper::s_destructorCalls);
     EXPECT_EQ(11, LargeHeapObject::s_destructorCalls);
     preciselyCollectGarbage();

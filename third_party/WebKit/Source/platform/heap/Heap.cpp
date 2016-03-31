@@ -124,15 +124,6 @@ void Heap::init()
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
-    s_allocatedSpace = 0;
-    s_allocatedObjectSize = 0;
-    s_objectSizeAtLastGC = 0;
-    s_markedObjectSizeAtLastCompleteSweep = 0;
-    s_wrapperCount = 0;
-    s_wrapperCountAtLastGC = 0;
-    s_collectedWrapperCount = 0;
-    s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
-    s_estimatedMarkingTimePerByte = 0.0;
     s_lastGCReason = BlinkGC::NumberOfGCReason;
 
     GCInfoTable::init();
@@ -167,7 +158,7 @@ void Heap::shutdown()
     s_ephemeronStack = nullptr;
     GCInfoTable::shutdown();
     ThreadState::shutdown();
-    ASSERT(Heap::allocatedSpace() == 0);
+    ASSERT(Heap::heapStats().allocatedSpace() == 0);
 }
 
 CrossThreadPersistentRegion& ProcessHeap::crossThreadPersistentRegion()
@@ -180,6 +171,73 @@ bool ProcessHeap::s_isLowEndDevice = false;
 size_t ProcessHeap::s_totalAllocatedSpace = 0;
 size_t ProcessHeap::s_totalAllocatedObjectSize = 0;
 size_t ProcessHeap::s_totalMarkedObjectSize = 0;
+
+ThreadHeapStats::ThreadHeapStats()
+    : m_allocatedSpace(0)
+    , m_allocatedObjectSize(0)
+    , m_objectSizeAtLastGC(0)
+    , m_markedObjectSize(0)
+    , m_markedObjectSizeAtLastCompleteSweep(0)
+    , m_wrapperCount(0)
+    , m_wrapperCountAtLastGC(0)
+    , m_collectedWrapperCount(0)
+    , m_partitionAllocSizeAtLastGC(WTF::Partitions::totalSizeOfCommittedPages())
+    , m_estimatedMarkingTimePerByte(0.0)
+{
+}
+
+double ThreadHeapStats::estimatedMarkingTime()
+{
+    // Use 8 ms as initial estimated marking time.
+    // 8 ms is long enough for low-end mobile devices to mark common
+    // real-world object graphs.
+    if (m_estimatedMarkingTimePerByte == 0)
+        return 0.008;
+
+    // Assuming that the collection rate of this GC will be mostly equal to
+    // the collection rate of the last GC, estimate the marking time of this GC.
+    return m_estimatedMarkingTimePerByte * (allocatedObjectSize() + markedObjectSize());
+}
+
+void ThreadHeapStats::reset()
+{
+    m_objectSizeAtLastGC = m_allocatedObjectSize + m_markedObjectSize;
+    m_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
+    m_allocatedObjectSize = 0;
+    m_markedObjectSize = 0;
+    m_wrapperCountAtLastGC = m_wrapperCount;
+    m_collectedWrapperCount = 0;
+}
+
+void ThreadHeapStats::increaseAllocatedObjectSize(size_t delta)
+{
+    atomicAdd(&m_allocatedObjectSize, static_cast<long>(delta));
+    ProcessHeap::increaseTotalAllocatedObjectSize(delta);
+}
+
+void ThreadHeapStats::decreaseAllocatedObjectSize(size_t delta)
+{
+    atomicSubtract(&m_allocatedObjectSize, static_cast<long>(delta));
+    ProcessHeap::decreaseTotalAllocatedObjectSize(delta);
+}
+
+void ThreadHeapStats::increaseMarkedObjectSize(size_t delta)
+{
+    atomicAdd(&m_markedObjectSize, static_cast<long>(delta));
+    ProcessHeap::increaseTotalMarkedObjectSize(delta);
+}
+
+void ThreadHeapStats::increaseAllocatedSpace(size_t delta)
+{
+    atomicAdd(&m_allocatedSpace, static_cast<long>(delta));
+    ProcessHeap::increaseTotalAllocatedSpace(delta);
+}
+
+void ThreadHeapStats::decreaseAllocatedSpace(size_t delta)
+{
+    atomicSubtract(&m_allocatedSpace, static_cast<long>(delta));
+    ProcessHeap::decreaseTotalAllocatedSpace(delta);
+}
 
 #if ENABLE(ASSERT)
 BasePage* Heap::findPageFromAddress(Address address)
@@ -355,15 +413,15 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
 {
     ASSERT(gcType != BlinkGC::ThreadTerminationGC);
 
-    size_t debugAllocatedObjectSize = Heap::allocatedObjectSize();
-    base::debug::Alias(&debugAllocatedObjectSize);
-    size_t debugWrapperCount = Heap::wrapperCount();
-    base::debug::Alias(&debugWrapperCount);
-
     ThreadState* state = ThreadState::current();
     // Nested collectGarbage() invocations aren't supported.
     RELEASE_ASSERT(!state->isGCForbidden());
     state->completeSweep();
+
+    size_t debugAllocatedObjectSize = Heap::heapStats().allocatedObjectSize();
+    base::debug::Alias(&debugAllocatedObjectSize);
+    size_t debugWrapperCount = Heap::heapStats().wrapperCount();
+    base::debug::Alias(&debugWrapperCount);
 
     OwnPtr<Visitor> visitor = Visitor::create(state, gcType);
 
@@ -395,7 +453,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
 
     StackFrameDepthScope stackDepthScope;
 
-    size_t totalObjectSize = Heap::allocatedObjectSize() + Heap::markedObjectSize();
+    size_t totalObjectSize = Heap::heapStats().allocatedObjectSize() + Heap::heapStats().markedObjectSize();
     if (gcType != BlinkGC::TakeSnapshot)
         Heap::resetHeapCounters();
 
@@ -418,7 +476,7 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     getOrphanedPagePool()->decommitOrphanedPages();
 
     double markingTimeInMilliseconds = WTF::currentTimeMS() - startTime;
-    s_estimatedMarkingTimePerByte = totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0;
+    Heap::heapStats().setEstimatedMarkingTimePerByte(totalObjectSize ? (markingTimeInMilliseconds / 1000 / totalObjectSize) : 0);
 
 #if PRINT_HEAP_STATS
     dataLogF("Heap::collectGarbage (gcReason=%s, lazySweeping=%d, time=%.1lfms)\n", gcReasonString(reason), gcType == BlinkGC::GCWithoutSweep, markingTimeInMilliseconds);
@@ -541,26 +599,11 @@ void Heap::collectAllGarbage()
     size_t previousLiveObjects = 0;
     for (int i = 0; i < 5; ++i) {
         collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
-        size_t liveObjects = Heap::markedObjectSize();
+        size_t liveObjects = Heap::heapStats().markedObjectSize();
         if (liveObjects == previousLiveObjects)
             break;
         previousLiveObjects = liveObjects;
     }
-}
-
-double Heap::estimatedMarkingTime()
-{
-    ASSERT(ThreadState::current()->isMainThread());
-
-    // Use 8 ms as initial estimated marking time.
-    // 8 ms is long enough for low-end mobile devices to mark common
-    // real-world object graphs.
-    if (s_estimatedMarkingTimePerByte == 0)
-        return 0.008;
-
-    // Assuming that the collection rate of this GC will be mostly equal to
-    // the collection rate of the last GC, estimate the marking time of this GC.
-    return s_estimatedMarkingTimePerByte * (Heap::allocatedObjectSize() + Heap::markedObjectSize());
 }
 
 void Heap::reportMemoryUsageHistogram()
@@ -572,7 +615,7 @@ void Heap::reportMemoryUsageHistogram()
     if (!isMainThread())
         return;
     // +1 is for rounding up the sizeInMB.
-    size_t sizeInMB = Heap::allocatedSpace() / 1024 / 1024 + 1;
+    size_t sizeInMB = Heap::heapStats().allocatedSpace() / 1024 / 1024 + 1;
     if (sizeInMB >= supportedMaxSizeInMB)
         sizeInMB = supportedMaxSizeInMB - 1;
     if (sizeInMB > observedMaxSizeInMB) {
@@ -597,15 +640,15 @@ void Heap::reportMemoryUsageForTracing()
 
     // These values are divided by 1024 to avoid overflow in practical cases (TRACE_COUNTER values are 32-bit ints).
     // They are capped to INT_MAX just in case.
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::allocatedObjectSizeKB", std::min(Heap::allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::markedObjectSizeKB", std::min(Heap::markedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::markedObjectSizeAtLastCompleteSweepKB", std::min(Heap::markedObjectSizeAtLastCompleteSweep() / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::allocatedSpaceKB", std::min(Heap::allocatedSpace() / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::objectSizeAtLastGCKB", std::min(Heap::objectSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::wrapperCount", std::min(Heap::wrapperCount(), static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::wrapperCountAtLastGC", std::min(Heap::wrapperCountAtLastGC(), static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::collectedWrapperCount", std::min(Heap::collectedWrapperCount(), static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::partitionAllocSizeAtLastGCKB", std::min(Heap::partitionAllocSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::allocatedObjectSizeKB", std::min(Heap::heapStats().allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::markedObjectSizeKB", std::min(Heap::heapStats().markedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::markedObjectSizeAtLastCompleteSweepKB", std::min(Heap::heapStats().markedObjectSizeAtLastCompleteSweep() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::allocatedSpaceKB", std::min(Heap::heapStats().allocatedSpace() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::objectSizeAtLastGCKB", std::min(Heap::heapStats().objectSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::wrapperCount", std::min(Heap::heapStats().wrapperCount(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::heapStats().wrapperCountAtLastGC", std::min(Heap::heapStats().wrapperCountAtLastGC(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::collectedWrapperCount", std::min(Heap::heapStats().collectedWrapperCount(), static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::partitionAllocSizeAtLastGCKB", std::min(Heap::heapStats().partitionAllocSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Partitions::totalSizeOfCommittedPagesKB", std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024, static_cast<size_t>(INT_MAX)));
 }
 
@@ -645,14 +688,16 @@ void Heap::resetHeapCounters()
 
     Heap::reportMemoryUsageForTracing();
 
-    s_objectSizeAtLastGC = s_allocatedObjectSize + s_markedObjectSize;
-    s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
-    s_allocatedObjectSize = 0;
-    s_markedObjectSize = 0;
-    s_wrapperCountAtLastGC = s_wrapperCount;
-    s_collectedWrapperCount = 0;
+    Heap::heapStats().reset();
     for (ThreadState* state : ThreadState::attachedThreads())
         state->resetHeapCounters();
+}
+
+// TODO(keishi): Make this a member of ThreadHeap.
+ThreadHeapStats& Heap::heapStats()
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadHeapStats, stats, new ThreadHeapStats());
+    return stats;
 }
 
 CallbackStack* Heap::s_markingStack;
@@ -662,16 +707,6 @@ CallbackStack* Heap::s_ephemeronStack;
 HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
-size_t Heap::s_allocatedSpace = 0;
-size_t Heap::s_allocatedObjectSize = 0;
-size_t Heap::s_objectSizeAtLastGC = 0;
-size_t Heap::s_markedObjectSize = 0;
-size_t Heap::s_markedObjectSizeAtLastCompleteSweep = 0;
-size_t Heap::s_wrapperCount = 0;
-size_t Heap::s_wrapperCountAtLastGC = 0;
-size_t Heap::s_collectedWrapperCount = 0;
-size_t Heap::s_partitionAllocSizeAtLastGC = 0;
-double Heap::s_estimatedMarkingTimePerByte = 0.0;
 
 BlinkGC::GCReason Heap::s_lastGCReason = BlinkGC::NumberOfGCReason;
 

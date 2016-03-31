@@ -517,18 +517,18 @@ void ThreadState::threadLocalWeakProcessing()
 
 size_t ThreadState::totalMemorySize()
 {
-    return Heap::allocatedObjectSize() + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
+    return Heap::heapStats().allocatedObjectSize() + Heap::heapStats().markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
 }
 
 size_t ThreadState::estimatedLiveSize(size_t estimationBaseSize, size_t sizeAtLastGC)
 {
-    if (Heap::wrapperCountAtLastGC() == 0) {
+    if (Heap::heapStats().wrapperCountAtLastGC() == 0) {
         // We'll reach here only before hitting the first GC.
         return 0;
     }
 
     // (estimated size) = (estimation base size) - (heap size at the last GC) / (# of persistent handles at the last GC) * (# of persistent handles collected since the last GC);
-    size_t sizeRetainedByCollectedPersistents = static_cast<size_t>(1.0 * sizeAtLastGC / Heap::wrapperCountAtLastGC() * Heap::collectedWrapperCount());
+    size_t sizeRetainedByCollectedPersistents = static_cast<size_t>(1.0 * sizeAtLastGC / Heap::heapStats().wrapperCountAtLastGC() * Heap::heapStats().collectedWrapperCount());
     if (estimationBaseSize < sizeRetainedByCollectedPersistents)
         return 0;
     return estimationBaseSize - sizeRetainedByCollectedPersistents;
@@ -536,8 +536,8 @@ size_t ThreadState::estimatedLiveSize(size_t estimationBaseSize, size_t sizeAtLa
 
 double ThreadState::heapGrowingRate()
 {
-    size_t currentSize = Heap::allocatedObjectSize() + Heap::markedObjectSize();
-    size_t estimatedSize = estimatedLiveSize(Heap::markedObjectSizeAtLastCompleteSweep(), Heap::markedObjectSizeAtLastCompleteSweep());
+    size_t currentSize = Heap::heapStats().allocatedObjectSize() + Heap::heapStats().markedObjectSize();
+    size_t estimatedSize = estimatedLiveSize(Heap::heapStats().markedObjectSizeAtLastCompleteSweep(), Heap::heapStats().markedObjectSizeAtLastCompleteSweep());
 
     // If the estimatedSize is 0, we set a high growing rate to trigger a GC.
     double growingRate = estimatedSize > 0 ? 1.0 * currentSize / estimatedSize : 100;
@@ -549,7 +549,7 @@ double ThreadState::heapGrowingRate()
 double ThreadState::partitionAllocGrowingRate()
 {
     size_t currentSize = WTF::Partitions::totalSizeOfCommittedPages();
-    size_t estimatedSize = estimatedLiveSize(currentSize, Heap::partitionAllocSizeAtLastGC());
+    size_t estimatedSize = estimatedLiveSize(currentSize, Heap::heapStats().partitionAllocSizeAtLastGC());
 
     // If the estimatedSize is 0, we set a high growing rate to trigger a GC.
     double growingRate = estimatedSize > 0 ? 1.0 * currentSize / estimatedSize : 100;
@@ -563,7 +563,7 @@ double ThreadState::partitionAllocGrowingRate()
 bool ThreadState::judgeGCThreshold(size_t totalMemorySizeThreshold, double heapGrowingRateThreshold)
 {
     // If the allocated object size or the total memory size is small, don't trigger a GC.
-    if (Heap::allocatedObjectSize() < 100 * 1024 || totalMemorySize() < totalMemorySizeThreshold)
+    if (Heap::heapStats().allocatedObjectSize() < 100 * 1024 || totalMemorySize() < totalMemorySizeThreshold)
         return false;
     // If the growing rate of Oilpan's heap or PartitionAlloc is high enough,
     // trigger a GC.
@@ -757,8 +757,8 @@ void ThreadState::performIdleGC(double deadlineSeconds)
         return;
 
     double idleDeltaInSeconds = deadlineSeconds - monotonicallyIncreasingTime();
-    TRACE_EVENT2("blink_gc", "ThreadState::performIdleGC", "idleDeltaInSeconds", idleDeltaInSeconds, "estimatedMarkingTime", Heap::estimatedMarkingTime());
-    if (idleDeltaInSeconds <= Heap::estimatedMarkingTime() && !Platform::current()->currentThread()->scheduler()->canExceedIdleDeadlineIfRequired()) {
+    TRACE_EVENT2("blink_gc", "ThreadState::performIdleGC", "idleDeltaInSeconds", idleDeltaInSeconds, "estimatedMarkingTime", Heap::heapStats().estimatedMarkingTime());
+    if (idleDeltaInSeconds <= Heap::heapStats().estimatedMarkingTime() && !Platform::current()->currentThread()->scheduler()->canExceedIdleDeadlineIfRequired()) {
         // If marking is estimated to take longer than the deadline and we can't
         // exceed the deadline, then reschedule for the next idle period.
         scheduleIdleGC();
@@ -1133,8 +1133,8 @@ void ThreadState::postSweep()
 
     if (isMainThread()) {
         double collectionRate = 0;
-        if (Heap::objectSizeAtLastGC() > 0)
-            collectionRate = 1 - 1.0 * Heap::markedObjectSize() / Heap::objectSizeAtLastGC();
+        if (Heap::heapStats().objectSizeAtLastGC() > 0)
+            collectionRate = 1 - 1.0 * Heap::heapStats().markedObjectSize() / Heap::heapStats().objectSizeAtLastGC();
         TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "ThreadState::collectionRate", static_cast<int>(100 * collectionRate));
 
 #if PRINT_HEAP_STATS
@@ -1143,12 +1143,12 @@ void ThreadState::postSweep()
 
         // Heap::markedObjectSize() may be underestimated here if any other
         // thread has not yet finished lazy sweeping.
-        Heap::setMarkedObjectSizeAtLastCompleteSweep(Heap::markedObjectSize());
+        Heap::heapStats().setMarkedObjectSizeAtLastCompleteSweep(Heap::heapStats().markedObjectSize());
 
         DEFINE_STATIC_LOCAL(CustomCountHistogram, objectSizeBeforeGCHistogram, ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));
-        objectSizeBeforeGCHistogram.count(Heap::objectSizeAtLastGC() / 1024);
+        objectSizeBeforeGCHistogram.count(Heap::heapStats().objectSizeAtLastGC() / 1024);
         DEFINE_STATIC_LOCAL(CustomCountHistogram, objectSizeAfterGCHistogram, ("BlinkGC.ObjectSizeAfterGC", 1, 4 * 1024 * 1024, 50));
-        objectSizeAfterGCHistogram.count(Heap::markedObjectSize() / 1024);
+        objectSizeAfterGCHistogram.count(Heap::heapStats().markedObjectSize() / 1024);
         DEFINE_STATIC_LOCAL(CustomCountHistogram, collectionRateHistogram, ("BlinkGC.CollectionRate", 1, 100, 20));
         collectionRateHistogram.count(static_cast<int>(100 * collectionRate));
         DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForSweepHistogram, ("BlinkGC.TimeForSweepingAllObjects", 1, 10 * 1000, 50));
@@ -1314,19 +1314,19 @@ void ThreadState::resetHeapCounters()
 void ThreadState::increaseAllocatedObjectSize(size_t delta)
 {
     m_allocatedObjectSize += delta;
-    Heap::increaseAllocatedObjectSize(delta);
+    Heap::heapStats().increaseAllocatedObjectSize(delta);
 }
 
 void ThreadState::decreaseAllocatedObjectSize(size_t delta)
 {
     m_allocatedObjectSize -= delta;
-    Heap::decreaseAllocatedObjectSize(delta);
+    Heap::heapStats().decreaseAllocatedObjectSize(delta);
 }
 
 void ThreadState::increaseMarkedObjectSize(size_t delta)
 {
     m_markedObjectSize += delta;
-    Heap::increaseMarkedObjectSize(delta);
+    Heap::heapStats().increaseMarkedObjectSize(delta);
 }
 
 void ThreadState::copyStackUntilSafePointScope()

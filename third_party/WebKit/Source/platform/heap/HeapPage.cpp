@@ -126,7 +126,7 @@ void BaseArena::cleanupPages()
     ASSERT(!m_firstUnsweptPage);
     // Add the BaseArena's pages to the orphanedPagePool.
     for (BasePage* page = m_firstPage; page; page = page->next()) {
-        Heap::decreaseAllocatedSpace(page->size());
+        Heap::heapStats().decreaseAllocatedSpace(page->size());
         Heap::getOrphanedPagePool()->addOrphanedPage(arenaIndex(), page);
     }
     m_firstPage = nullptr;
@@ -429,7 +429,7 @@ void NormalPageArena::allocatePage()
     NormalPage* page = new (pageMemory->writableStart()) NormalPage(pageMemory, this);
     page->link(&m_firstPage);
 
-    Heap::increaseAllocatedSpace(page->size());
+    Heap::heapStats().increaseAllocatedSpace(page->size());
 #if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
     // Allow the following addToFreeList() to add the newly allocated memory
     // to the free list.
@@ -444,7 +444,7 @@ void NormalPageArena::allocatePage()
 
 void NormalPageArena::freePage(NormalPage* page)
 {
-    Heap::decreaseAllocatedSpace(page->size());
+    Heap::heapStats().decreaseAllocatedSpace(page->size());
 
     if (page->terminating()) {
         // The thread is shutting down and this page is being removed as a part
@@ -817,7 +817,7 @@ Address LargeObjectArena::doAllocateLargeObjectPage(size_t allocationSize, size_
 
     largeObject->link(&m_firstPage);
 
-    Heap::increaseAllocatedSpace(largeObject->size());
+    Heap::heapStats().increaseAllocatedSpace(largeObject->size());
     getThreadState()->increaseAllocatedObjectSize(largeObject->size());
     return result;
 }
@@ -826,7 +826,7 @@ void LargeObjectArena::freeLargeObjectPage(LargeObjectPage* object)
 {
     ASAN_UNPOISON_MEMORY_REGION(object->payload(), object->payloadSize());
     object->heapObjectHeader()->finalize(object->payload(), object->payloadSize());
-    Heap::decreaseAllocatedSpace(object->size());
+    Heap::heapStats().decreaseAllocatedSpace(object->size());
 
     // Unpoison the object header and allocationGranularity bytes after the
     // object before freeing.

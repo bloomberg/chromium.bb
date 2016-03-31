@@ -140,7 +140,7 @@ struct WrapperTypeInfo {
     void refObject(ScriptWrappable* scriptWrappable) const
     {
         if (isGarbageCollected()) {
-            Heap::increaseWrapperCount(1);
+            Heap::heapStats().increaseWrapperCount(1);
         } else {
             ASSERT(refObjectFunction);
             refObjectFunction(scriptWrappable);
@@ -150,8 +150,9 @@ struct WrapperTypeInfo {
     void derefObject(ScriptWrappable* scriptWrappable) const
     {
         if (isGarbageCollected()) {
-            Heap::decreaseWrapperCount(1);
-            Heap::increaseCollectedWrapperCount(1);
+            ThreadHeapStats& heapStats = Heap::heapStats();
+            heapStats.decreaseWrapperCount(1);
+            heapStats.increaseCollectedWrapperCount(1);
         } else {
             ASSERT(derefObjectFunction);
             derefObjectFunction(scriptWrappable);
@@ -161,8 +162,9 @@ struct WrapperTypeInfo {
     void derefObject() const
     {
         ASSERT(isGarbageCollected());
-        Heap::decreaseWrapperCount(1);
-        Heap::increaseCollectedWrapperCount(1);
+        ThreadHeapStats& heapStats = Heap::heapStats();
+        heapStats.decreaseWrapperCount(1);
+        heapStats.increaseCollectedWrapperCount(1);
     }
 
     void trace(Visitor* visitor, ScriptWrappable* scriptWrappable) const
