@@ -86,6 +86,7 @@
                           '<(pnacl_output_prefix)arm_libgcc_a',
                           '<(pnacl_output_prefix)arm_libpnacl_irt_shim_a',
                           '<(pnacl_output_prefix)arm_pnacl_llc_nexe',
+                          '<(pnacl_output_prefix)arm_pnacl_sz_nexe',
                         ],
                        'inputs': [
                           '>(tc_lib_dir_newlib_arm)/libpnacl_irt_shim_browser.a',

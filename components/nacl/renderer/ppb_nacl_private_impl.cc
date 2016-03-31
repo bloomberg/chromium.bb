@@ -1142,6 +1142,8 @@ bool ShouldUseSubzero(const PP_PNaClOptions* pnacl_options) {
     return true;
   if (strcmp(arch, "x86-64") == 0)
     return true;
+  if (strcmp(arch, "arm") == 0)
+    return true;
 
   return false;
 }
