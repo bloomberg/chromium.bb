@@ -9302,7 +9302,8 @@
             "daisy",
             "lakitu"
         ],
-        "build_type": "chroot",
+        "build_timeout": 28200,
+        "build_type": "toolchain",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
         "chrome_sdk": true,
         "chromeos_official": true,
@@ -21058,7 +21059,8 @@
             "arm-generic",
             "amd64-generic"
         ],
-        "build_type": "chroot",
+        "build_timeout": 28200,
+        "build_type": "toolchain",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
         "chrome_sdk": true,
         "description": "Test next minor toolchain revision",
