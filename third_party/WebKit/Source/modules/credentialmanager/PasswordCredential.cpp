@@ -83,11 +83,24 @@ PasswordCredential* PasswordCredential::create(HTMLFormElement* form, ExceptionS
     ASSERT(credential);
 
     // After creating the Credential, populate its 'additionalData', 'idName', and 'passwordName' attributes.
-    FormDataOrURLSearchParams additionalData;
-    additionalData.setFormData(formData);
-    credential->setAdditionalData(additionalData);
+    // If the form's 'enctype' is anything other than multipart, generate a URLSearchParams using the
+    // data in |formData|.
     credential->setIdName(idName);
     credential->setPasswordName(passwordName);
+
+    FormDataOrURLSearchParams additionalData;
+    if (form->enctype() == "multipart/form-data") {
+        additionalData.setFormData(formData);
+    } else {
+        URLSearchParams* params = URLSearchParams::create(URLSearchParamsInit());
+        for (const FormData::Entry* entry : formData->entries()) {
+            if (entry->isString())
+                params->append(entry->name().data(), entry->value().data());
+        }
+        additionalData.setURLSearchParams(params);
+    }
+
+    credential->setAdditionalData(additionalData);
     return credential;
 }
 

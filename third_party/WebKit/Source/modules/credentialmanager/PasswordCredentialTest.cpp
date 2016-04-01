@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/URLSearchParams.h"
 #include "core/frame/FrameView.h"
 #include "core/html/FormData.h"
 #include "core/html/HTMLDocument.h"
@@ -28,10 +29,12 @@ protected:
 
     HTMLDocument& document() const { return *m_document; }
 
-    HTMLFormElement* populateForm(const char* html)
+    HTMLFormElement* populateForm(const char* enctype, const char* html)
     {
         StringBuilder b;
-        b.appendLiteral("<!DOCTYPE html><html><body><form id='theForm'>");
+        b.appendLiteral("<!DOCTYPE html><html><body><form id='theForm' enctype='");
+        b.append(enctype);
+        b.appendLiteral("'>");
         b.append(html);
         b.appendLiteral("</form></body></html>");
         document().documentElement()->setInnerHTML(b.toString(), ASSERT_NO_EXCEPTION);
@@ -46,9 +49,9 @@ private:
     RefPtrWillBePersistent<HTMLDocument> m_document;
 };
 
-TEST_F(PasswordCredentialTest, CreateFromForm)
+TEST_F(PasswordCredentialTest, CreateFromMultipartForm)
 {
-    HTMLFormElement* form = populateForm(
+    HTMLFormElement* form = populateForm("multipart/form-data",
         "<input type='text' name='theId' value='musterman' autocomplete='username'>"
         "<input type='text' name='thePassword' value='sekrit' autocomplete='current-password'>"
         "<input type='text' name='theIcon' value='https://example.com/photo' autocomplete='photo'>"
@@ -75,9 +78,38 @@ TEST_F(PasswordCredentialTest, CreateFromForm)
     EXPECT_TRUE(additionalData.getAsFormData()->has("theExtraField"));
 }
 
+TEST_F(PasswordCredentialTest, CreateFromURLEncodedForm)
+{
+    HTMLFormElement* form = populateForm("application/x-www-form-urlencoded",
+        "<input type='text' name='theId' value='musterman' autocomplete='username'>"
+        "<input type='text' name='thePassword' value='sekrit' autocomplete='current-password'>"
+        "<input type='text' name='theIcon' value='https://example.com/photo' autocomplete='photo'>"
+        "<input type='text' name='theExtraField' value='extra'>"
+        "<input type='text' name='theName' value='friendly name' autocomplete='name'>");
+    PasswordCredential* credential = PasswordCredential::create(form, ASSERT_NO_EXCEPTION);
+    ASSERT_NE(nullptr, credential);
+    EXPECT_EQ("theId", credential->idName());
+    EXPECT_EQ("thePassword", credential->passwordName());
+
+    EXPECT_EQ("musterman", credential->id());
+    EXPECT_EQ("sekrit", credential->password());
+    EXPECT_EQ(KURL(ParsedURLString, "https://example.com/photo"), credential->iconURL());
+    EXPECT_EQ("friendly name", credential->name());
+    EXPECT_EQ("password", credential->type());
+
+    FormDataOrURLSearchParams additionalData;
+    credential->additionalData(additionalData);
+    ASSERT_TRUE(additionalData.isURLSearchParams());
+    EXPECT_TRUE(additionalData.getAsURLSearchParams()->has("theId"));
+    EXPECT_TRUE(additionalData.getAsURLSearchParams()->has("thePassword"));
+    EXPECT_TRUE(additionalData.getAsURLSearchParams()->has("theIcon"));
+    EXPECT_TRUE(additionalData.getAsURLSearchParams()->has("theName"));
+    EXPECT_TRUE(additionalData.getAsURLSearchParams()->has("theExtraField"));
+}
+
 TEST_F(PasswordCredentialTest, CreateFromFormNoPassword)
 {
-    HTMLFormElement* form = populateForm(
+    HTMLFormElement* form = populateForm("multipart/form-data",
         "<input type='text' name='theId' value='musterman' autocomplete='username'>"
         "<!-- No password field -->"
         "<input type='text' name='theIcon' value='https://example.com/photo' autocomplete='photo'>"
@@ -92,7 +124,7 @@ TEST_F(PasswordCredentialTest, CreateFromFormNoPassword)
 
 TEST_F(PasswordCredentialTest, CreateFromFormNoId)
 {
-    HTMLFormElement* form = populateForm(
+    HTMLFormElement* form = populateForm("multipart/form-data",
         "<!-- No username field. -->"
         "<input type='text' name='thePassword' value='sekrit' autocomplete='current-password'>"
         "<input type='text' name='theIcon' value='https://example.com/photo' autocomplete='photo'>"
