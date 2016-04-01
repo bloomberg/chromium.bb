@@ -461,7 +461,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         @Override
         public int getSystemWindowInsetBottom() {
             ChromeActivity activity = getActivity();
-            if (activity != null) {
+            if (activity != null && activity.getInsetObserverView() != null) {
                 return activity.getInsetObserverView().getSystemWindowInsetsBottom();
             }
             return 0;
