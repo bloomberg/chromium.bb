@@ -11,10 +11,14 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
-#include "ipc/ipc_param_traits.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
+
+namespace IPC {
+template <class P>
+struct ParamTraits;
+}
 
 namespace media {
 
