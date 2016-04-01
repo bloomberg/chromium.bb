@@ -138,7 +138,7 @@ private:
 
     void inheritViewAttributes(SVGViewElement*);
 
-    void updateCurrentTranslate();
+    void updateUserTransform();
 
     void finishParsingChildren() override;
 
@@ -161,6 +161,7 @@ private:
     RefPtrWillBeMember<SMILTimeContainer> m_timeContainer;
     RefPtrWillBeMember<SVGPoint> m_translation;
     RefPtrWillBeMember<SVGViewSpec> m_viewSpec;
+    float m_currentScale;
 
     friend class SVGCurrentTranslateTearOff;
 };

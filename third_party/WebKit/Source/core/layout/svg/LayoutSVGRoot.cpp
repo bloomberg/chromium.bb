@@ -304,6 +304,7 @@ void LayoutSVGRoot::buildLocalToBorderBoxTransform()
     m_localToBorderBoxTransform = svg->viewBoxToViewTransform(contentWidth() / scale, contentHeight() / scale);
 
     AffineTransform viewToBorderBoxTransform(scale, 0, 0, scale, borderAndPadding.width() + translate.x(), borderAndPadding.height() + translate.y());
+    viewToBorderBoxTransform.scale(svg->currentScale());
     m_localToBorderBoxTransform.preMultiply(viewToBorderBoxTransform);
 }
 

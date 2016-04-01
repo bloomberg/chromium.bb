@@ -69,6 +69,7 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     , m_useCurrentView(false)
     , m_timeContainer(SMILTimeContainer::create(*this))
     , m_translation(SVGPoint::create())
+    , m_currentScale(1)
 {
     m_width->setDefaultValueAsString("100%");
     m_height->setDefaultValueAsString("100%");
@@ -118,16 +119,7 @@ float SVGSVGElement::currentScale() const
     if (!inDocument() || !isOutermostSVGSVGElement())
         return 1;
 
-    LocalFrame* frame = document().frame();
-    if (!frame)
-        return 1;
-
-    const FrameTree& frameTree = frame->tree();
-
-    // The behaviour of currentScale() is undefined, when we're dealing with non-standalone SVG documents.
-    // If the svg is embedded, the scaling is handled by the host layoutObject, so when asking from inside
-    // the SVG document, a scale value of 1 seems reasonable, as it doesn't know anything about the parent scale.
-    return frameTree.parent() ? 1 : frame->pageZoomFactor();
+    return m_currentScale;
 }
 
 void SVGSVGElement::setCurrentScale(float scale)
@@ -136,19 +128,8 @@ void SVGSVGElement::setCurrentScale(float scale)
     if (!inDocument() || !isOutermostSVGSVGElement())
         return;
 
-    LocalFrame* frame = document().frame();
-    if (!frame)
-        return;
-
-    const FrameTree& frameTree = frame->tree();
-
-    // The behaviour of setCurrentScale() is undefined, when we're dealing with non-standalone SVG documents.
-    // We choose the ignore this call, it's pretty useless to support calling setCurrentScale() from within
-    // an embedded SVG document, for the same reasons as in currentScale() - needs resolution by SVG WG.
-    if (frameTree.parent())
-        return;
-
-    frame->setPageZoomFactor(scale);
+    m_currentScale = scale;
+    updateUserTransform();
 }
 
 class SVGCurrentTranslateTearOff : public SVGPointTearOff {
@@ -161,7 +142,7 @@ public:
     void commitChange() override
     {
         ASSERT(contextElement());
-        toSVGSVGElement(contextElement())->updateCurrentTranslate();
+        toSVGSVGElement(contextElement())->updateUserTransform();
     }
 
 private:
@@ -179,10 +160,10 @@ PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGSVGElement::currentTranslateFromJavas
 void SVGSVGElement::setCurrentTranslate(const FloatPoint& point)
 {
     m_translation->setValue(point);
-    updateCurrentTranslate();
+    updateUserTransform();
 }
 
-void SVGSVGElement::updateCurrentTranslate()
+void SVGSVGElement::updateUserTransform()
 {
     if (LayoutObject* object = layoutObject())
         object->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
