@@ -12,7 +12,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/media/android/router/media_router_android.h"
 #else
-#include "chrome/browser/media/router/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #endif

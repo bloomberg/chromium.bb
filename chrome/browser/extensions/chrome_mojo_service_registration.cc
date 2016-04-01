@@ -15,7 +15,7 @@
 
 #if defined(ENABLE_MEDIA_ROUTER)
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/media/router/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #endif
 
 namespace extensions {

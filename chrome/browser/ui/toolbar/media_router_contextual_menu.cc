@@ -7,7 +7,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -140,6 +140,7 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
 void MediaRouterContextualMenu::ReportIssue() {
   // Opens feedback page loaded from the media router extension.
   // This is temporary until feedback UI is redesigned.
+  // TODO(crbug.com/597778): remove reference to MediaRouterMojoImpl
   media_router::MediaRouterMojoImpl* media_router =
       static_cast<media_router::MediaRouterMojoImpl*>(
           media_router::MediaRouterFactory::GetApiForBrowserContext(

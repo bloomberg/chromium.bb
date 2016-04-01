@@ -2,42 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/media_router_metrics.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 
 #include "base/version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media_router {
 
-TEST(MediaRouteProviderMetricsTest, TestGetMediaRouteProviderVersion) {
+TEST(MediaRouterMojoMetricsTest, TestGetMediaRouteProviderVersion) {
   const base::Version kBrowserVersion("50.0.2396.71");
   EXPECT_EQ(MediaRouteProviderVersion::SAME_VERSION_AS_CHROME,
-            MediaRouterMetrics::GetMediaRouteProviderVersion(
+            MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
                 base::Version("50.0.2396.71"), kBrowserVersion));
   EXPECT_EQ(MediaRouteProviderVersion::SAME_VERSION_AS_CHROME,
-            MediaRouterMetrics::GetMediaRouteProviderVersion(
+            MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
                 base::Version("50.0.2100.0"), kBrowserVersion));
   EXPECT_EQ(MediaRouteProviderVersion::SAME_VERSION_AS_CHROME,
-            MediaRouterMetrics::GetMediaRouteProviderVersion(
+            MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
                 base::Version("51.0.2117.0"), kBrowserVersion));
   EXPECT_EQ(MediaRouteProviderVersion::ONE_VERSION_BEHIND_CHROME,
-            MediaRouterMetrics::GetMediaRouteProviderVersion(
+            MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
                 base::Version("49.0.2138.0"), kBrowserVersion));
   EXPECT_EQ(MediaRouteProviderVersion::MULTIPLE_VERSIONS_BEHIND_CHROME,
-            MediaRouterMetrics::GetMediaRouteProviderVersion(
+            MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
                 base::Version("47.0.1134.0"), kBrowserVersion));
   EXPECT_EQ(MediaRouteProviderVersion::UNKNOWN,
-            MediaRouterMetrics::GetMediaRouteProviderVersion(
+            MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
                 base::Version("blargh"), kBrowserVersion));
   EXPECT_EQ(MediaRouteProviderVersion::UNKNOWN,
-            MediaRouterMetrics::GetMediaRouteProviderVersion(base::Version(""),
-                                                             kBrowserVersion));
+            MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
+                base::Version(""), kBrowserVersion));
   EXPECT_EQ(MediaRouteProviderVersion::UNKNOWN,
-            MediaRouterMetrics::GetMediaRouteProviderVersion(
+            MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
                 base::Version("-1.0.0.0"), kBrowserVersion));
   EXPECT_EQ(MediaRouteProviderVersion::UNKNOWN,
-            MediaRouterMetrics::GetMediaRouteProviderVersion(base::Version("0"),
-                                                             kBrowserVersion));
+            MediaRouterMojoMetrics::GetMediaRouteProviderVersion(
+                base::Version("0"), kBrowserVersion));
 }
 
 }  // namespace media_router

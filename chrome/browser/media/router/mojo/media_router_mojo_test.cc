@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/media_router_mojo_test.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_test.h"
 
 #include <utility>
 
+#include "base/run_loop.h"
 #include "extensions/common/test_util.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 
@@ -21,11 +22,13 @@ void ExpectAsyncResultEqual(T1 expected, T2 actual) {
 
 }  // namespace
 
-MockMediaRouteProvider::MockMediaRouteProvider() {
-}
+MockMediaRouteProvider::MockMediaRouteProvider() {}
 
-MockMediaRouteProvider::~MockMediaRouteProvider() {
-}
+MockMediaRouteProvider::~MockMediaRouteProvider() {}
+
+MockEventPageTracker::MockEventPageTracker() {}
+
+MockEventPageTracker::~MockEventPageTracker() {}
 
 MediaRouterMojoTest::MediaRouterMojoTest()
     : mock_media_router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)) {
@@ -33,8 +36,7 @@ MediaRouterMojoTest::MediaRouterMojoTest()
   extension_ = extensions::test_util::CreateEmptyExtension();
 }
 
-MediaRouterMojoTest::~MediaRouterMojoTest() {
-}
+MediaRouterMojoTest::~MediaRouterMojoTest() {}
 
 void MediaRouterMojoTest::ConnectProviderManagerService() {
   // Bind the |media_route_provider| interface to |media_route_provider_|.

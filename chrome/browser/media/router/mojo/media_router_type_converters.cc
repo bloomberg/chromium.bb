@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "chrome/browser/media/router/media_router_type_converters.h"
+#include "chrome/browser/media/router/mojo/media_router_type_converters.h"
 
 using media_router::interfaces::IssuePtr;
 using media_router::interfaces::MediaRoutePtr;

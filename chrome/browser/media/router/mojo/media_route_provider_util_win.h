@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTE_PROVIDER_UTIL_WIN_H_
-#define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTE_PROVIDER_UTIL_WIN_H_
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_MOJO_MEDIA_ROUTE_PROVIDER_UTIL_WIN_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_MOJO_MEDIA_ROUTE_PROVIDER_UTIL_WIN_H_
 
 #include "base/callback.h"
 
@@ -16,4 +16,4 @@ void CanFirewallUseLocalPorts(const base::Callback<void(bool)>& callback);
 
 }  // namespace media_router
 
-#endif  // CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTE_PROVIDER_UTIL_WIN_H_
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_MOJO_MEDIA_ROUTE_PROVIDER_UTIL_WIN_H_

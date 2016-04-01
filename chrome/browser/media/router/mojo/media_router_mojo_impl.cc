@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/router/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 
 #include <stddef.h>
 #include <utility>
@@ -15,12 +15,12 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issues_observer.h"
-#include "chrome/browser/media/router/media_route_provider_util_win.h"
 #include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/media_router_metrics.h"
-#include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
+#include "chrome/browser/media/router/mojo/media_route_provider_util_win.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
+#include "chrome/browser/media/router/mojo/media_router_type_converters.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "extensions/browser/process_manager.h"
@@ -117,7 +117,7 @@ void MediaRouterMojoImpl::BindToMojoRequest(
 
   media_route_provider_extension_id_ = extension.id();
   if (!provider_version_was_recorded_) {
-    MediaRouterMetrics::RecordMediaRouteProviderVersion(extension);
+    MediaRouterMojoMetrics::RecordMediaRouteProviderVersion(extension);
     provider_version_was_recorded_ = true;
   }
 }
@@ -258,9 +258,9 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
   std::vector<MediaRoute::Id> joinable_routes_converted =
       joinable_route_ids.To<std::vector<std::string>>();
 
-  FOR_EACH_OBSERVER(MediaRoutesObserver, it->second->observers,
-                    OnRoutesUpdated(routes_converted,
-                                    joinable_routes_converted));
+  FOR_EACH_OBSERVER(
+      MediaRoutesObserver, it->second->observers,
+      OnRoutesUpdated(routes_converted, joinable_routes_converted));
 }
 
 void MediaRouterMojoImpl::RouteResponseReceived(
@@ -892,7 +892,7 @@ void MediaRouterMojoImpl::AttemptWakeEventPage() {
                               << "page.";
     DrainPendingRequests();
     wakeup_attempt_count_ = 0;
-    MediaRouterMetrics::RecordMediaRouteProviderWakeup(
+    MediaRouterMojoMetrics::RecordMediaRouteProviderWakeup(
         MediaRouteProviderWakeup::ERROR_TOO_MANY_RETRIES);
     return;
   }
@@ -925,10 +925,10 @@ void MediaRouterMojoImpl::ExecutePendingRequests() {
 
 void MediaRouterMojoImpl::EventPageWakeComplete(bool success) {
   if (success) {
-    MediaRouterMetrics::RecordMediaRouteProviderWakeReason(
+    MediaRouterMojoMetrics::RecordMediaRouteProviderWakeReason(
         current_wake_reason_);
     ClearWakeReason();
-    MediaRouterMetrics::RecordMediaRouteProviderWakeup(
+    MediaRouterMojoMetrics::RecordMediaRouteProviderWakeup(
         MediaRouteProviderWakeup::SUCCESS);
     return;
   }
@@ -938,7 +938,7 @@ void MediaRouterMojoImpl::EventPageWakeComplete(bool success) {
       << "An error encountered while waking the event page.";
   ClearWakeReason();
   DrainPendingRequests();
-  MediaRouterMetrics::RecordMediaRouteProviderWakeup(
+  MediaRouterMojoMetrics::RecordMediaRouteProviderWakeup(
       MediaRouteProviderWakeup::ERROR_UNKNOWN);
 }
 

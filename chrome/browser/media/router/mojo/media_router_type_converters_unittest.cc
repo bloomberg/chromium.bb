@@ -5,9 +5,9 @@
 #include <stddef.h>
 
 #include "chrome/browser/media/router/issue.h"
-#include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source_helper.h"
+#include "chrome/browser/media/router/mojo/media_router_type_converters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_router {
@@ -135,10 +135,9 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssue) {
 
   std::vector<IssueAction> secondary_actions;
   secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
-  Issue expected_issue("title", "msg",
-                       IssueAction(IssueAction::TYPE_LEARN_MORE),
-                       secondary_actions, "routeId", Issue::WARNING, true,
-                       "help_url");
+  Issue expected_issue(
+      "title", "msg", IssueAction(IssueAction::TYPE_LEARN_MORE),
+      secondary_actions, "routeId", Issue::WARNING, true, "help_url");
   Issue converted_issue = mojo::TypeConverter<
       media_router::Issue,
       media_router::interfaces::IssuePtr>::Convert(mojoIssue);

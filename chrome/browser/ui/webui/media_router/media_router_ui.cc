@@ -23,12 +23,12 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
-#include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "chrome/browser/media/router/media_source_helper.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/media/router/route_request_result.h"
 #include "chrome/browser/profiles/profile.h"
@@ -558,7 +558,7 @@ std::string MediaRouterUI::GetTruncatedPresentationRequestSourceName() const {
 }
 
 const std::string& MediaRouterUI::GetRouteProviderExtensionId() const {
-  // TODO(imcheng): Get rid of this hack once we no longer need this method.
+  // TODO(crbug.com/597778): remove reference to MediaRouterMojoImpl
   return static_cast<MediaRouterMojoImpl*>(router_)
       ->media_route_provider_extension_id();
 }

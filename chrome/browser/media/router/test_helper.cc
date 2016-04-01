@@ -24,11 +24,6 @@ MockMediaRoutesObserver::MockMediaRoutesObserver(MediaRouter* router,
 MockMediaRoutesObserver::~MockMediaRoutesObserver() {
 }
 
-MockEventPageTracker::MockEventPageTracker() {
-}
-MockEventPageTracker::~MockEventPageTracker() {
-}
-
 MockPresentationConnectionStateChangedCallback::
     MockPresentationConnectionStateChangedCallback() = default;
 

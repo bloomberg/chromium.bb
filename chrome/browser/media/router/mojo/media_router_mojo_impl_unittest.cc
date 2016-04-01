@@ -18,10 +18,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
-#include "chrome/browser/media/router/media_router_metrics.h"
-#include "chrome/browser/media/router/media_router_mojo_test.h"
-#include "chrome/browser/media/router/media_router_type_converters.h"
 #include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
+#include "chrome/browser/media/router/mojo/media_router_mojo_test.h"
+#include "chrome/browser/media/router/mojo/media_router_type_converters.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -571,9 +571,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdOffTheRecordMismatchFails) {
 TEST_F(MediaRouterMojoImplTest, DetachRoute) {
   base::RunLoop run_loop;
   EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId)))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-        run_loop.Quit();
-      }));
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   router()->DetachRoute(kRouteId);
   run_loop.Run();
 }
@@ -582,9 +580,7 @@ TEST_F(MediaRouterMojoImplTest, TerminateRoute) {
   base::RunLoop run_loop;
   EXPECT_CALL(mock_media_route_provider_,
               TerminateRoute(mojo::String(kRouteId)))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-        run_loop.Quit();
-      }));
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   router()->TerminateRoute(kRouteId);
   run_loop.Run();
 }
@@ -605,9 +601,7 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
   base::RunLoop run_loop;
   EXPECT_CALL(issue_observer2,
               OnIssueUpdated(Pointee(EqualsIssue(expected_issue1))))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-        run_loop.Quit();
-      }));
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   media_router_proxy_->OnIssue(std::move(mojo_issue1));
   run_loop.Run();
 
@@ -637,9 +631,7 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
   base::RunLoop run_loop2;
   EXPECT_CALL(issue_observer2,
               OnIssueUpdated(Pointee(EqualsIssue(expected_issue2))))
-      .WillOnce(InvokeWithoutArgs([&run_loop2]() {
-        run_loop2.Quit();
-      }));
+      .WillOnce(InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); }));
   media_router_proxy_->OnIssue(std::move(mojo_issue2));
   run_loop2.Run();
 
@@ -722,9 +714,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
               StopObservingMediaSinks(mojo::String(kSource)));
   EXPECT_CALL(mock_media_route_provider_,
               StopObservingMediaSinks(mojo::String(kSource2)))
-      .WillOnce(InvokeWithoutArgs([&run_loop2]() {
-        run_loop2.Quit();
-      }));
+      .WillOnce(InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); }));
   sinks_observer.reset();
   extra_sinks_observer.reset();
   unrelated_sinks_observer.reset();
@@ -810,10 +800,12 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   MediaSource media_source(kSource);
   MediaSource different_media_source(kSource2);
   EXPECT_CALL(mock_media_route_provider_,
-      StartObservingMediaRoutes(mojo::String(media_source.id()))).Times(2);
-  EXPECT_CALL(mock_media_route_provider_,
-      StartObservingMediaRoutes(
-          mojo::String(different_media_source.id()))).Times(1);
+              StartObservingMediaRoutes(mojo::String(media_source.id())))
+      .Times(2);
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      StartObservingMediaRoutes(mojo::String(different_media_source.id())))
+      .Times(1);
 
   MediaRoutesObserver* observer_captured;
   EXPECT_CALL(mock_router, RegisterMediaRoutesObserver(_))
@@ -822,10 +814,10 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   MockMediaRoutesObserver routes_observer(&mock_router, media_source.id());
   EXPECT_EQ(observer_captured, &routes_observer);
   MockMediaRoutesObserver extra_routes_observer(&mock_router,
-      media_source.id());
+                                                media_source.id());
   EXPECT_EQ(observer_captured, &extra_routes_observer);
-  MockMediaRoutesObserver different_routes_observer(&mock_router,
-      different_media_source.id());
+  MockMediaRoutesObserver different_routes_observer(
+      &mock_router, different_media_source.id());
   EXPECT_EQ(observer_captured, &different_routes_observer);
   router()->RegisterMediaRoutesObserver(&routes_observer);
   router()->RegisterMediaRoutesObserver(&extra_routes_observer);
@@ -862,15 +854,15 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   mojo_routes[1]->is_local = false;
   mojo_routes[1]->off_the_record = true;
 
-  EXPECT_CALL(routes_observer,
-              OnRoutesUpdated(SequenceEquals(expected_routes),
-                              expected_joinable_route_ids));
+  EXPECT_CALL(routes_observer, OnRoutesUpdated(SequenceEquals(expected_routes),
+                                               expected_joinable_route_ids));
   EXPECT_CALL(extra_routes_observer,
               OnRoutesUpdated(SequenceEquals(expected_routes),
                               expected_joinable_route_ids));
   EXPECT_CALL(different_routes_observer,
               OnRoutesUpdated(SequenceEquals(expected_routes),
-                              expected_joinable_route_ids)).Times(0);
+                              expected_joinable_route_ids))
+      .Times(0);
   media_router_proxy_->OnRoutesUpdated(std::move(mojo_routes),
                                        media_source.id(),
                                        std::move(mojo_joinable_routes));
@@ -885,11 +877,11 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   router()->UnregisterMediaRoutesObserver(&extra_routes_observer);
   router()->UnregisterMediaRoutesObserver(&different_routes_observer);
   EXPECT_CALL(mock_media_route_provider_,
-              StopObservingMediaRoutes(
-                  mojo::String(media_source.id()))).Times(1);
-  EXPECT_CALL(mock_media_route_provider_,
-              StopObservingMediaRoutes(
-                  mojo::String(different_media_source.id())));
+              StopObservingMediaRoutes(mojo::String(media_source.id())))
+      .Times(1);
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      StopObservingMediaRoutes(mojo::String(different_media_source.id())));
   ProcessEventLoop();
 }
 
@@ -906,9 +898,7 @@ TEST_F(MediaRouterMojoImplTest, SendRouteMessage) {
   base::RunLoop run_loop;
   SendMessageCallbackHandler handler;
   EXPECT_CALL(handler, Invoke(true))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-        run_loop.Quit();
-      }));
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   router()->SendRouteMessage(kRouteId, kMessage,
                              base::Bind(&SendMessageCallbackHandler::Invoke,
                                         base::Unretained(&handler)));
@@ -933,9 +923,7 @@ TEST_F(MediaRouterMojoImplTest, SendRouteBinaryMessage) {
   base::RunLoop run_loop;
   SendMessageCallbackHandler handler;
   EXPECT_CALL(handler, Invoke(true))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-        run_loop.Quit();
-      }));
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   router()->SendRouteBinaryMessage(
       kRouteId, std::move(expected_binary_data),
       base::Bind(&SendMessageCallbackHandler::Invoke,
@@ -970,9 +958,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   EXPECT_CALL(mock_media_route_provider_,
               ListenForRouteMessages(Eq(expected_route_id), _))
       .WillOnce(DoAll(SaveArg<1>(&mojo_callback),
-                      InvokeWithoutArgs([&run_loop]() {
-                        run_loop.Quit();
-                      })));
+                      InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); })));
 
   // |pass_ownership| param is "true" here because there is only one observer.
   ListenForMessagesCallbackHandler handler(std::move(expected_messages), true);
@@ -996,9 +982,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
       mojo_callback_2;
   EXPECT_CALL(mock_media_route_provider_, ListenForRouteMessages(_, _))
       .WillOnce(DoAll(SaveArg<1>(&mojo_callback_2),
-                      InvokeWithoutArgs([&run_loop2]() {
-                        run_loop2.Quit();
-                      })));
+                      InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); })));
   run_loop2.Run();
 
   base::RunLoop run_loop3;
@@ -1011,9 +995,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   observer.reset();
   mojo_callback_2.Run(std::move(mojo_messages_2), false);
   EXPECT_CALL(mock_media_route_provider_, StopListeningForRouteMessages(_))
-      .WillOnce(InvokeWithoutArgs([&run_loop3]() {
-        run_loop3.Quit();
-      }));
+      .WillOnce(InvokeWithoutArgs([&run_loop3]() { run_loop3.Quit(); }));
   run_loop3.Run();
 }
 
@@ -1044,9 +1026,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   EXPECT_CALL(mock_media_route_provider_,
               ListenForRouteMessages(Eq(expected_route_id), _))
       .WillOnce(DoAll(SaveArg<1>(&mojo_callback),
-                      InvokeWithoutArgs([&run_loop]() {
-                        run_loop.Quit();
-                      })));
+                      InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); })));
 
   // |pass_ownership| param is "false" here because there are more than one
   // observers.
@@ -1076,9 +1056,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
       mojo_callback_2;
   EXPECT_CALL(mock_media_route_provider_, ListenForRouteMessages(_, _))
       .WillOnce(DoAll(SaveArg<1>(&mojo_callback_2),
-                      InvokeWithoutArgs([&run_loop2]() {
-                        run_loop2.Quit();
-                      })));
+                      InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); })));
   run_loop2.Run();
 
   base::RunLoop run_loop3;
@@ -1092,9 +1070,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   observer2.reset();
   mojo_callback_2.Run(std::move(mojo_messages_2), false);
   EXPECT_CALL(mock_media_route_provider_, StopListeningForRouteMessages(_))
-      .WillOnce(InvokeWithoutArgs([&run_loop3]() {
-        run_loop3.Quit();
-      }));
+      .WillOnce(InvokeWithoutArgs([&run_loop3]() { run_loop3.Quit(); }));
   run_loop3.Run();
 }
 
@@ -1105,9 +1081,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesError) {
   EXPECT_CALL(mock_media_route_provider_,
               ListenForRouteMessages(Eq(expected_route_id), _))
       .WillOnce(DoAll(SaveArg<1>(&mojo_callback),
-                      InvokeWithoutArgs([&run_loop]() {
-                        run_loop.Quit();
-                      })));
+                      InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); })));
 
   ListenForMessagesCallbackHandler handler(
       ScopedVector<content::PresentationSessionMessage>(), true);
@@ -1196,9 +1170,8 @@ TEST_F(MediaRouterMojoImplTest, QueuedWhileAsleep) {
   EXPECT_CALL(mock_event_page_tracker_, WakeEventPage(extension_id(), _))
       .Times(2)
       .WillOnce(Return(true))
-      .WillOnce(DoAll(InvokeWithoutArgs([&run_loop]() {
-                        run_loop.Quit();
-                      }), Return(true)));
+      .WillOnce(DoAll(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }),
+                      Return(true)));
   router()->DetachRoute(kRouteId);
   router()->DetachRoute(kRouteId2);
   run_loop.Run();
@@ -1274,9 +1247,7 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
                    base::Unretained(&provide_handler_)));
   }
 
-  void ProcessEventLoop() {
-    message_loop_.RunUntilIdle();
-  }
+  void ProcessEventLoop() { message_loop_.RunUntilIdle(); }
 
   void ExpectWakeReasonBucketCount(MediaRouteProviderWakeReason reason,
                                    int expected_count) {
@@ -1329,17 +1300,13 @@ TEST_F(MediaRouterMojoExtensionTest, DeferredBindingAndSuspension) {
   // Now that the |media_router| and |mojo_media_router| are fully initialized,
   // the queued DetachRoute() call should be executed.
   EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-                  run_loop.Quit();
-                }));
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
       .WillOnce(Return(false));
   EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
       .Times(AtMost(1));
   EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId)))
-      .WillOnce(InvokeWithoutArgs([&run_loop2]() {
-                  run_loop2.Quit();
-                }));
+      .WillOnce(InvokeWithoutArgs([&run_loop2]() { run_loop2.Quit(); }));
   RegisterMediaRouteProvider();
   run_loop.Run();
   run_loop2.Run();
@@ -1361,17 +1328,13 @@ TEST_F(MediaRouterMojoExtensionTest, DeferredBindingAndSuspension) {
   // RegisterMediaRouteProvider() is called.
   // The queued DetachRoute(kRouteId2) call should be executed.
   EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
-      .WillOnce(InvokeWithoutArgs([&run_loop4]() {
-                  run_loop4.Quit();
-                }));
+      .WillOnce(InvokeWithoutArgs([&run_loop4]() { run_loop4.Quit(); }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()))
       .WillOnce(Return(false));
   EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
       .Times(AtMost(1));
   EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId2)))
-      .WillOnce(InvokeWithoutArgs([&run_loop5]() {
-                  run_loop5.Quit();
-                }));
+      .WillOnce(InvokeWithoutArgs([&run_loop5]() { run_loop5.Quit(); }));
   BindMediaRouteProvider();
   RegisterMediaRouteProvider();
   run_loop4.Run();
@@ -1475,18 +1438,16 @@ TEST_F(MediaRouterMojoExtensionTest, DropOldestPendingRequest) {
   // DetachRoute(kRouteId) here.
   BindMediaRouteProvider();
   EXPECT_CALL(provide_handler_, Invoke(testing::Not("")))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-                  run_loop.Quit();
-                }));
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   EXPECT_CALL(*process_manager_, IsEventPageSuspended(extension_->id()));
   EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery())
       .Times(AtMost(1));
   EXPECT_CALL(mock_media_route_provider_, DetachRoute(mojo::String(kRouteId2)))
       .Times(kMaxPendingRequests)
       .WillRepeatedly(InvokeWithoutArgs([&run_loop2, &count]() {
-                        if (++count == MediaRouterMojoImpl::kMaxPendingRequests)
-                          run_loop2.Quit();
-                      }));
+        if (++count == MediaRouterMojoImpl::kMaxPendingRequests)
+          run_loop2.Quit();
+      }));
   RegisterMediaRouteProvider();
   run_loop.Run();
   run_loop2.Run();

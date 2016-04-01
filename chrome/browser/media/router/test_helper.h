@@ -13,11 +13,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/media/router/issues_observer.h"
-#include "chrome/browser/media/router/media_router.mojom.h"
-#include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
-#include "extensions/browser/event_page_tracker.h"
+#include "content/public/browser/presentation_service_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_router {
@@ -92,70 +90,6 @@ class MockIssuesObserver : public IssuesObserver {
   MOCK_METHOD1(OnIssueUpdated, void(const Issue* issue));
 };
 
-class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
- public:
-  MockMediaRouteProvider();
-  ~MockMediaRouteProvider() override;
-
-  MOCK_METHOD8(CreateRoute,
-               void(const mojo::String& source_urn,
-                    const mojo::String& sink_id,
-                    const mojo::String& presentation_id,
-                    const mojo::String& origin,
-                    int tab_id,
-                    int64_t timeout_secs,
-                    bool off_the_record,
-                    const CreateRouteCallback& callback));
-  MOCK_METHOD7(JoinRoute,
-               void(const mojo::String& source_urn,
-                    const mojo::String& presentation_id,
-                    const mojo::String& origin,
-                    int tab_id,
-                    int64_t timeout_secs,
-                    bool off_the_record,
-                    const JoinRouteCallback& callback));
-  MOCK_METHOD8(ConnectRouteByRouteId,
-               void(const mojo::String& source_urn,
-                    const mojo::String& route_id,
-                    const mojo::String& presentation_id,
-                    const mojo::String& origin,
-                    int tab_id,
-                    int64_t timeout_secs,
-                    bool off_the_record,
-                    const JoinRouteCallback& callback));
-  MOCK_METHOD1(DetachRoute, void(const mojo::String& route_id));
-  MOCK_METHOD1(TerminateRoute, void(const mojo::String& route_id));
-  MOCK_METHOD1(StartObservingMediaSinks, void(const mojo::String& source));
-  MOCK_METHOD1(StopObservingMediaSinks, void(const mojo::String& source));
-  MOCK_METHOD3(SendRouteMessage,
-               void(const mojo::String& media_route_id,
-                    const mojo::String& message,
-                    const SendRouteMessageCallback& callback));
-  void SendRouteBinaryMessage(
-      const mojo::String& media_route_id,
-      mojo::Array<uint8_t> data,
-      const SendRouteMessageCallback& callback) override {
-    SendRouteBinaryMessageInternal(media_route_id, data.storage(), callback);
-  }
-  MOCK_METHOD3(SendRouteBinaryMessageInternal,
-               void(const mojo::String& media_route_id,
-                    const std::vector<uint8_t>& data,
-                    const SendRouteMessageCallback& callback));
-  MOCK_METHOD2(ListenForRouteMessages,
-               void(const mojo::String& route_id,
-                    const ListenForRouteMessagesCallback& callback));
-  MOCK_METHOD1(StopListeningForRouteMessages,
-               void(const mojo::String& route_id));
-  MOCK_METHOD1(OnPresentationSessionDetached,
-               void(const mojo::String& route_id));
-  MOCK_METHOD1(StartObservingMediaRoutes, void(const mojo::String& source));
-  MOCK_METHOD1(StopObservingMediaRoutes, void(const mojo::String& source));
-  MOCK_METHOD0(EnableMdnsDiscovery, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockMediaRouteProvider);
-};
-
 class MockMediaSinksObserver : public MediaSinksObserver {
  public:
   MockMediaSinksObserver(MediaRouter* router,
@@ -174,17 +108,6 @@ class MockMediaRoutesObserver : public MediaRoutesObserver {
 
   MOCK_METHOD2(OnRoutesUpdated, void(const std::vector<MediaRoute>& routes,
       const std::vector<MediaRoute::Id>& joinable_route_ids));
-};
-
-class MockEventPageTracker : public extensions::EventPageTracker {
- public:
-  MockEventPageTracker();
-  ~MockEventPageTracker();
-
-  MOCK_METHOD1(IsEventPageSuspended, bool(const std::string& extension_id));
-  MOCK_METHOD2(WakeEventPage,
-               bool(const std::string& extension_id,
-                    const base::Callback<void(bool)>& callback));
 };
 
 class MockPresentationConnectionStateChangedCallback {
