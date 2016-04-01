@@ -303,7 +303,8 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   nearest_refmv_count = *refmv_count;
 
-  if (prev_frame_mvs_base && cm->show_frame && cm->last_show_frame) {
+  if (prev_frame_mvs_base && cm->show_frame && cm->last_show_frame &&
+      rf[1] == NONE) {
     int ref;
     int blk_row, blk_col;
     int coll_blk_count = 0;
@@ -422,10 +423,19 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
   }
 
-  for (idx = 0; idx < AOMMIN(MAX_MV_REF_CANDIDATES, *refmv_count); ++idx) {
-    mv_ref_list[idx].as_int = ref_mv_stack[idx].this_mv.as_int;
-    clamp_mv_ref(&mv_ref_list[idx].as_mv,
-                 (xd->n8_w << 3), (xd->n8_h << 3), xd);
+  if (rf[1] > NONE) {
+    for (idx = 0; idx < *refmv_count; ++idx) {
+      clamp_mv_ref(&ref_mv_stack[idx].this_mv.as_mv,
+                   xd->n8_w << 3 , xd->n8_h << 3, xd);
+      clamp_mv_ref(&ref_mv_stack[idx].comp_mv.as_mv,
+                   xd->n8_w << 3 , xd->n8_h << 3, xd);
+    }
+  } else {
+    for (idx = 0; idx < AOMMIN(MAX_MV_REF_CANDIDATES, *refmv_count); ++idx) {
+      mv_ref_list[idx].as_int = ref_mv_stack[idx].this_mv.as_int;
+      clamp_mv_ref(&mv_ref_list[idx].as_mv,
+                   xd->n8_w << 3, xd->n8_h << 3, xd);
+    }
   }
 }
 #endif
@@ -609,14 +619,6 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (all_zero)
     mode_context[ref_frame] |= (1 << ALL_ZERO_FLAG_OFFSET);
 #endif
-}
-
-static void lower_mv_precision(MV *mv, int allow_hp) {
-  const int use_hp = allow_hp && av1_use_mv_hp(mv);
-  if (!use_hp) {
-    if (mv->row & 1) mv->row += (mv->row > 0 ? -1 : 1);
-    if (mv->col & 1) mv->col += (mv->col > 0 ? -1 : 1);
-  }
 }
 
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,

@@ -66,6 +66,12 @@ typedef struct {
 #define MAX_REF_FRAMES 4
 typedef int8_t MV_REFERENCE_FRAME;
 
+#if CONFIG_REF_MV
+#define MODE_CTX_REF_FRAMES (MAX_REF_FRAMES + (ALTREF_FRAME - LAST_FRAME))
+#else
+#define MODE_CTX_REF_FRAMES MAX_REF_FRAMES
+#endif
+
 // This structure now relates to 8x8 block regions.
 typedef struct {
   // Common for both INTER and INTRA blocks
@@ -196,8 +202,8 @@ typedef struct macroblockd {
   const YV12_BUFFER_CONFIG *cur_buf;
 
 #if CONFIG_REF_MV
-  uint8_t ref_mv_count[MAX_REF_FRAMES];
-  CANDIDATE_MV ref_mv_stack[MAX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
+  uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
+  CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   uint8_t is_sec_rect;
 #endif
 
