@@ -48,6 +48,9 @@ public class LibraryLoader {
     // Guards all access to the libraries
     private static final Object sLock = new Object();
 
+    // The singleton instance of NativeLibraryPreloader.
+    private static NativeLibraryPreloader sLibraryPreloader;
+
     // The singleton instance of LibraryLoader.
     private static volatile LibraryLoader sInstance;
 
@@ -86,6 +89,20 @@ public class LibraryLoader {
     // The number of milliseconds it took to load all the native libraries, which
     // will be reported via UMA. Set once when the libraries are done loading.
     private long mLibraryLoadTimeMs;
+
+    /**
+     * Set native library preloader, if set, the NativeLibraryPreloader.loadLibrary will be invoked
+     * before calling System.loadLibrary, this only applies when not using the chromium linker.
+     *
+     * @param loader the NativeLibraryPreloader, it shall only be set once and before the
+     *               native library loaded.
+     */
+    public static void setNativeLibraryPreloader(NativeLibraryPreloader loader) {
+        synchronized (sLock) {
+            assert sLibraryPreloader == null && (sInstance == null || !sInstance.mLoaded);
+            sLibraryPreloader = loader;
+        }
+    }
 
     /**
      * @param libraryProcessType the process the shared library is loaded in. refer to
@@ -266,6 +283,9 @@ public class LibraryLoader {
 
                     linker.finishLibraryLoad();
                 } else {
+                    if (sLibraryPreloader != null) {
+                        sLibraryPreloader.loadLibrary(context);
+                    }
                     // Load libraries using the system linker.
                     for (String library : NativeLibraries.LIBRARIES) {
                         System.loadLibrary(library);
