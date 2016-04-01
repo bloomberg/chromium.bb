@@ -92,13 +92,20 @@ const char kSigninFormHTML[] =
 const char kAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
-    "  <INPUT type = 'password' id = 'first_password' "
-    "         autocomplete = 'off' size = 5/>"
+    "  <INPUT type = 'password' id = 'first_password' size = 5/>"
     "  <INPUT type = 'password' id = 'second_password' size = 5/> "
     "  <INPUT type = 'text' id = 'address'/> "
     "  <INPUT type = 'button' id = 'dummy'/> "
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
+
+const char kAccountCreationNoForm[] =
+    "<INPUT type = 'text' id = 'username'/> "
+    "<INPUT type = 'password' id = 'first_password' size = 5/>"
+    "<INPUT type = 'password' id = 'second_password' size = 5/> "
+    "<INPUT type = 'text' id = 'address'/> "
+    "<INPUT type = 'button' id = 'dummy'/> "
+    "<INPUT type = 'submit' value = 'LOGIN' />";
 
 const char kDisabledElementAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
@@ -575,8 +582,15 @@ TEST_F(PasswordGenerationAgentTest, ChangePasswordFormDetectionTest) {
   ExpectGenerationAvailable("newpassword", true);
 }
 
-TEST_F(PasswordGenerationAgentTest, ManualGenerationTest) {
+TEST_F(PasswordGenerationAgentTest, ManualGenerationInFormTest) {
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  ShowGenerationPopUpManually("first_password");
+  ExpectGenerationAvailable("first_password", true);
+  ExpectGenerationAvailable("second_password", false);
+}
+
+TEST_F(PasswordGenerationAgentTest, ManualGenerationNoFormTest) {
+  LoadHTMLWithUserGesture(kAccountCreationNoForm);
   ShowGenerationPopUpManually("first_password");
   ExpectGenerationAvailable("first_password", true);
   ExpectGenerationAvailable("second_password", false);

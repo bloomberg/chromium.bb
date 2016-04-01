@@ -35,18 +35,12 @@ namespace {
 // Returns true if we think that this form is for account creation. |passwords|
 // is filled with the password field(s) in the form.
 bool GetAccountCreationPasswordFields(
-    const blink::WebFormElement& form,
+    const std::vector<blink::WebFormControlElement>& control_elements,
     std::vector<blink::WebInputElement>* passwords) {
-  // Grab all of the passwords for the form.
-  blink::WebVector<blink::WebFormControlElement> control_elements;
-  form.getFormControlElements(control_elements);
-
-  size_t num_input_elements = 0;
   for (size_t i = 0; i < control_elements.size(); i++) {
-    blink::WebInputElement* input_element =
+    const blink::WebInputElement* input_element =
         toWebInputElement(&control_elements[i]);
     if (input_element && input_element->isTextField()) {
-      num_input_elements++;
       if (input_element->isPasswordField())
         passwords->push_back(*input_element);
     }
@@ -78,7 +72,9 @@ std::vector<blink::WebInputElement> FindPasswordElementsForGeneration(
   auto iter =
       std::find_if(all_password_elements.begin(), all_password_elements.end(),
                    [&field_name](const blink::WebInputElement& input) {
-                     return input.nameForAutofill() == field_name;
+                     // Make explicit conversion before comparing with string16.
+                     base::string16 input_name = input.nameForAutofill();
+                     return input_name == field_name;
                    });
   std::vector<blink::WebInputElement> passwords;
 
@@ -221,7 +217,9 @@ void PasswordGenerationAgent::FindPossibleGenerationForm() {
       continue;
 
     std::vector<blink::WebInputElement> passwords;
-    if (GetAccountCreationPasswordFields(forms[i], &passwords)) {
+    if (GetAccountCreationPasswordFields(
+            form_util::ExtractAutofillableElementsInForm(forms[i]),
+            &passwords)) {
       AccountCreationFormData ac_form_data(
           make_linked_ptr(password_form.release()), passwords);
       possible_account_creation_forms_.push_back(ac_form_data);
@@ -477,17 +475,25 @@ void PasswordGenerationAgent::OnUserTriggeredGeneratePassword() {
     return;
 
   blink::WebFormElement form = element->form();
-  if (form.isNull())
-    return;
+  scoped_ptr<PasswordForm> password_form;
+  std::vector<blink::WebFormControlElement> control_elements;
+  if (!form.isNull()) {
+    password_form = CreatePasswordFormFromWebForm(form, nullptr, nullptr);
+    control_elements = form_util::ExtractAutofillableElementsInForm(form);
+  } else {
+    const blink::WebFrame& frame = *render_frame()->GetWebFrame();
+    password_form =
+        CreatePasswordFormFromUnownedInputElements(frame, nullptr, nullptr);
+    control_elements =
+        form_util::GetUnownedFormFieldElements(frame.document().all(), nullptr);
+  }
 
-  scoped_ptr<PasswordForm> password_form(
-      CreatePasswordFormFromWebForm(form, nullptr, nullptr));
   if (!password_form)
     return;
 
   generation_element_ = *element;
   std::vector<blink::WebInputElement> password_elements;
-  GetAccountCreationPasswordFields(form, &password_elements);
+  GetAccountCreationPasswordFields(control_elements, &password_elements);
   password_elements = FindPasswordElementsForGeneration(
       password_elements, element->nameForAutofill());
   generation_form_data_.reset(new AccountCreationFormData(
