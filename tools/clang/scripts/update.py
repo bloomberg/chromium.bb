@@ -26,7 +26,7 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '264334'
+CLANG_REVISION = '264915'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
@@ -480,10 +480,6 @@ def UpdateClang(args):
       # https://stackoverflow.com/questions/13050827
       cc = cc.replace('\\', '/')
       cxx = cxx.replace('\\', '/')
-      # If we're using VS 2015, tell the stage 1 compiler to act like it.
-      if GetVSVersion().ShortName().startswith('2015'):
-        cflags += ['-fms-compatibility-version=19']
-        cxxflags += ['-fms-compatibility-version=19']
     else:
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang')
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
