@@ -338,6 +338,9 @@ class BlinkDeprecatedTestInstance : public pp::InstancePrivate {
     if (HasAttribute("testwindowopen"))
       return TestWindowOpen();
 
+    if (HasAttribute("initscript"))
+      ExecuteScript(attributes_["initscript"]);
+
     uint32_t event_classes = 0;
     if (HasAttribute("keydownscript"))
         event_classes |= PP_INPUTEVENT_CLASS_KEYBOARD;

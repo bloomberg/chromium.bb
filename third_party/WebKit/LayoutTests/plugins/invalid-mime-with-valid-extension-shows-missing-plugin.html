@@ -14,9 +14,9 @@
     }
 </script>
 <div id="console">PASS</div>
-<embed name="plugin" src="resources/test.testnetscape" type="application/x-non-existent">
+<embed name="plugin" src="resources/test.blinktestplugin" type="application/x-non-existent">
 <script>
-    if (plugin.testCallback)
-        plugin.testCallback("logFailure");
+    if (plugin.postMessage)
+        logFailure();
     finishTest();
 </script>
