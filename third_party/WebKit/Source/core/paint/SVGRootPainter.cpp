@@ -22,8 +22,11 @@ namespace blink {
 
 void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
+    // Pixel-snap to match BoxPainter's alignment.
+    const IntRect adjustedRect = pixelSnappedIntRect(paintOffset, m_layoutSVGRoot.size());
+
     // An empty viewport disables rendering.
-    if (m_layoutSVGRoot.pixelSnappedBorderBoxRect().isEmpty())
+    if (adjustedRect.isEmpty())
         return;
 
     // SVG outlines are painted during PaintPhaseForeground.
@@ -70,8 +73,14 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
 
     // Convert from container offsets (html layoutObjects) to a relative transform (svg layoutObjects).
     // Transform from our paint container's coordinate system to our local coords.
-    IntPoint adjustedPaintOffset = roundedIntPoint(paintOffset);
-    AffineTransform paintOffsetToBorderBox = AffineTransform::translation(adjustedPaintOffset.x(), adjustedPaintOffset.y()) * m_layoutSVGRoot.localToBorderBoxTransform();
+    AffineTransform paintOffsetToBorderBox =
+        AffineTransform::translation(adjustedRect.x(), adjustedRect.y());
+    // Compensate for size snapping.
+    paintOffsetToBorderBox.scale(
+        adjustedRect.width() / m_layoutSVGRoot.size().width().toFloat(),
+        adjustedRect.height() / m_layoutSVGRoot.size().height().toFloat());
+    paintOffsetToBorderBox.multiply(m_layoutSVGRoot.localToBorderBoxTransform());
+
     paintInfoBeforeFiltering.updateCullRect(paintOffsetToBorderBox);
     TransformRecorder transformRecorder(paintInfoBeforeFiltering.context, m_layoutSVGRoot, paintOffsetToBorderBox);
 
