@@ -27,6 +27,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {nullptr, nullptr, nullptr}};
 
 const char* kMetadataWhitelist[] = {
+  "clock-domain",
   "command_line",
   "config",
   "cpu-*",
