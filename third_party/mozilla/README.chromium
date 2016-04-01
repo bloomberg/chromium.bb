@@ -3,6 +3,7 @@ Short Name: camino
 URL: http://caminobrowser.org/
 Version: unknown
 License: MPL 1.1/GPL 2.0/LGPL 2.1
+Security Critical: yes
 
 Description:
   This directory contains the following files come from (Mozilla) Camino
@@ -25,6 +26,8 @@ Local modifications:
 - -[NSPasteboard htmlFromRtf] was added to do rtf->html conversion.
 - NSWorkspace+Utils.m was modified to compile on the x86_64 architecture.
 - MOZILLA_EXPORT was added to some constants in NSPasteboard+Utils.h.
+- +[NSWorkspace(CaminoDefaultBrowserAdditions) isLeopardOrHigher] hidden since
+  it relies on methods deprecated in 10.8 (and is unused in Chrome).
 
 -----------------------------------------------------------------
 

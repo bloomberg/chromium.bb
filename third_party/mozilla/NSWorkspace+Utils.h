@@ -58,7 +58,9 @@
 
 // OS feature checks
 + (NSString*)osVersionString;
-+ (BOOL)isLeopardOrHigher;
+// Begin Google Modified
+//+ (BOOL)isLeopardOrHigher;
+// End Google Modified
 
 @end
 

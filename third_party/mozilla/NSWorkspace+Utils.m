@@ -156,6 +156,8 @@
   return [versionInfo objectForKey:@"ProductVersion"];
 }
 
+// Begin Google Modified
+#if 0
 //
 // +systemVersion
 //
@@ -183,5 +185,7 @@
   return [self systemVersion] >= 0x1050;
 #endif
 }
+#endif
+// End Google Modified
 
 @end
