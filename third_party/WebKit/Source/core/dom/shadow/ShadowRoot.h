@@ -79,6 +79,8 @@ public:
 
     ShadowRoot* olderShadowRootForBindings() const;
 
+    String mode() const { return (type() == ShadowRootType::V0 || type() == ShadowRootType::Open) ? "open" : "closed"; };
+
     bool isOpenOrV0() const { return type() == ShadowRootType::V0 || type() == ShadowRootType::Open; }
 
     bool isV1() const { return type() == ShadowRootType::Open || type() == ShadowRootType::Closed; }

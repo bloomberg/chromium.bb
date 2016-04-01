@@ -5728,6 +5728,7 @@ interface ShadowRoot : DocumentFragment
     getter delegatesFocus
     getter host
     getter innerHTML
+    getter mode
     getter olderShadowRoot
     getter styleSheets
     method cloneNode
