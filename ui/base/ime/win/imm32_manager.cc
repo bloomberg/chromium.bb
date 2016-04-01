@@ -15,11 +15,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/composition_text.h"
 
-// "imm32.lib" is required by IMM32 APIs used in this file.
-// NOTE(hbono): To comply with a comment from Darin, I have added
-// this #pragma directive instead of adding "imm32.lib" to a project file.
-#pragma comment(lib, "imm32.lib")
-
 // Following code requires wchar_t to be same as char16. It should always be
 // true on Windows.
 static_assert(sizeof(wchar_t) == sizeof(base::char16),

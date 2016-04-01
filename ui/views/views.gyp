@@ -738,6 +738,7 @@
             'libraries': [
               '-limm32.lib',
               '-loleacc.lib',
+              '-lwtsapi32.lib',
             ],
             'msvs_settings': {
               'VCLinkerTool': {

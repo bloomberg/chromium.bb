@@ -5,7 +5,6 @@
 #include "ui/views/win/windows_session_change_observer.h"
 
 #include <wtsapi32.h>
-#pragma comment(lib, "wtsapi32.lib")
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

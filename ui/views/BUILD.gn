@@ -85,6 +85,7 @@ component("views") {
       "dwmapi.lib",
       "imm32.lib",
       "oleacc.lib",
+      "wtsapi32.lib",
     ]
     ldflags = [ "/DELAYLOAD:user32.dll" ]
     deps += [
