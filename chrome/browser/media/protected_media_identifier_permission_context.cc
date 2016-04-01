@@ -52,51 +52,13 @@ ProtectedMediaIdentifierPermissionContext::
 }
 
 #if defined(OS_CHROMEOS)
-void ProtectedMediaIdentifierPermissionContext::RequestPermission(
+void ProtectedMediaIdentifierPermissionContext::DecidePermission(
     content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_origin,
+    const GURL& embedding_origin,
     const BrowserPermissionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // First check if this permission has been disabled. This check occurs before
-  // the call to GetPermissionStatus, which will return CONTENT_SETTING_BLOCK
-  // if the kill switch is on.
-  //
-  // TODO(xhwang): Remove this kill switch block when crbug.com/454847 is fixed
-  // and we no longer call GetPermissionStatus before
-  // PermissionContextBase::RequestPermission.
-  if (IsPermissionKillSwitchOn()) {
-    // Log to the developer console.
-    web_contents->GetMainFrame()->AddMessageToConsole(
-        content::CONSOLE_MESSAGE_LEVEL_LOG,
-        base::StringPrintf(
-            "%s permission has been blocked.",
-            PermissionUtil::GetPermissionString(
-                content::PermissionType::PROTECTED_MEDIA_IDENTIFIER)
-                .c_str()));
-    // The kill switch is enabled for this permission; Block all requests and
-    // run the callback immediately.
-    callback.Run(CONTENT_SETTING_BLOCK);
-    return;
-  }
-
-  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
-
-  DVLOG(1) << __FUNCTION__ << ": (" << requesting_origin.spec() << ", "
-           << embedding_origin.spec() << ")";
-
-  ContentSetting content_setting =
-      GetPermissionStatus(requesting_origin, embedding_origin);
-
-  if (content_setting == CONTENT_SETTING_ALLOW ||
-      content_setting == CONTENT_SETTING_BLOCK) {
-    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
-                        false /* persist */, content_setting);
-    return;
-  }
-
-  DCHECK_EQ(CONTENT_SETTING_ASK, content_setting);
 
   // Since the dialog is modal, we only support one prompt per |web_contents|.
   // Reject the new one if there is already one pending. See

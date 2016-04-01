@@ -42,10 +42,11 @@ class ProtectedMediaIdentifierPermissionContext
 
   // PermissionContextBase implementation.
 #if defined(OS_CHROMEOS)
-  void RequestPermission(content::WebContents* web_contents,
-                         const PermissionRequestID& id,
-                         const GURL& requesting_origin,
-                         const BrowserPermissionCallback& callback) override;
+  void DecidePermission(content::WebContents* web_contents,
+                        const PermissionRequestID& id,
+                        const GURL& requesting_origin,
+                        const GURL& embedding_origin,
+                        const BrowserPermissionCallback& callback) override;
 #endif  // defined(OS_CHROMEOS)
   ContentSetting GetPermissionStatus(
       const GURL& requesting_origin,
