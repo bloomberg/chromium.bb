@@ -7,11 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/storage_browser_export.h"
 
@@ -50,9 +51,8 @@ class STORAGE_EXPORT NativeFileUtil {
                                            bool recursive);
   static base::File::Error GetFileInfo(const base::FilePath& path,
                                        base::File::Info* file_info);
-  static scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
-      CreateFileEnumerator(const base::FilePath& root_path,
-                           bool recursive);
+  static std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+  CreateFileEnumerator(const base::FilePath& root_path, bool recursive);
   static base::File::Error Touch(const base::FilePath& path,
                                  const base::Time& last_access_time,
                                  const base::Time& last_modified_time);

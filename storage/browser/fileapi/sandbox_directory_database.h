@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "storage/browser/storage_browser_export.h"
 
@@ -130,7 +130,7 @@ class STORAGE_EXPORT SandboxDirectoryDatabase {
 
   const base::FilePath filesystem_data_directory_;
   leveldb::Env* env_override_;
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(SandboxDirectoryDatabase);
 };

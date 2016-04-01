@@ -5,6 +5,8 @@
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -109,7 +111,7 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
   DCHECK(error_code);
 
   DCHECK(delegate_);
-  scoped_ptr<FileSystemOperationContext> operation_context =
+  std::unique_ptr<FileSystemOperationContext> operation_context =
       delegate_->CreateFileSystemOperationContext(url, context, error_code);
   if (!operation_context)
     return NULL;
@@ -134,7 +136,7 @@ bool SandboxFileSystemBackend::HasInplaceCopyImplementation(
   return false;
 }
 
-scoped_ptr<storage::FileStreamReader>
+std::unique_ptr<storage::FileStreamReader>
 SandboxFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
@@ -147,7 +149,7 @@ SandboxFileSystemBackend::CreateFileStreamReader(
       url, offset, expected_modification_time, context);
 }
 
-scoped_ptr<storage::FileStreamWriter>
+std::unique_ptr<storage::FileStreamWriter>
 SandboxFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64_t offset,

@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -75,7 +76,7 @@ class STORAGE_EXPORT SandboxFileStreamWriter
   scoped_refptr<FileSystemContext> file_system_context_;
   FileSystemURL url_;
   int64_t initial_offset_;
-  scoped_ptr<FileStreamWriter> local_file_writer_;
+  std::unique_ptr<FileStreamWriter> local_file_writer_;
   net::CompletionCallback cancel_callback_;
 
   UpdateObserverList observers_;

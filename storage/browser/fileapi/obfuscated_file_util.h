@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util_proxy.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -126,7 +126,7 @@ class STORAGE_EXPORT ObfuscatedFileUtil : public FileSystemFileUtil {
                                 const FileSystemURL& url,
                                 base::File::Info* file_info,
                                 base::FilePath* platform_file) override;
-  scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
+  std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url) override;
   base::File::Error GetLocalFilePath(FileSystemOperationContext* context,
@@ -159,7 +159,7 @@ class STORAGE_EXPORT ObfuscatedFileUtil : public FileSystemFileUtil {
       base::FilePath* platform_path) override;
 
   // Same as the other CreateFileEnumerator, but with recursive support.
-  scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
+  std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,
       bool recursive);
@@ -329,7 +329,7 @@ class STORAGE_EXPORT ObfuscatedFileUtil : public FileSystemFileUtil {
 
   typedef std::map<std::string, SandboxDirectoryDatabase*> DirectoryMap;
   DirectoryMap directories_;
-  scoped_ptr<SandboxOriginDatabaseInterface> origin_database_;
+  std::unique_ptr<SandboxOriginDatabaseInterface> origin_database_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   base::FilePath file_system_directory_;
   leveldb::Env* env_override_;
@@ -338,7 +338,7 @@ class STORAGE_EXPORT ObfuscatedFileUtil : public FileSystemFileUtil {
   int64_t db_flush_delay_seconds_;
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
-  scoped_ptr<TimedTaskHelper> timer_;
+  std::unique_ptr<TimedTaskHelper> timer_;
 
   GetTypeStringForURLCallback get_type_string_for_url_;
   std::set<std::string> known_type_strings_;

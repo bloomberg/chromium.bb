@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <stack>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "storage/browser/fileapi/recursive_operation_delegate.h"
 
@@ -51,8 +51,8 @@ class CopyOrMoveOperationDelegate
   class STORAGE_EXPORT StreamCopyHelper {
    public:
     StreamCopyHelper(
-        scoped_ptr<storage::FileStreamReader> reader,
-        scoped_ptr<FileStreamWriter> writer,
+        std::unique_ptr<storage::FileStreamReader> reader,
+        std::unique_ptr<FileStreamWriter> writer,
         FlushPolicy flush_policy,
         int buffer_size,
         const FileSystemOperation::CopyFileProgressCallback&
@@ -81,8 +81,8 @@ class CopyOrMoveOperationDelegate
     void Flush(const StatusCallback& callback, bool is_eof);
     void DidFlush(const StatusCallback& callback, bool is_eof, int result);
 
-    scoped_ptr<storage::FileStreamReader> reader_;
-    scoped_ptr<FileStreamWriter> writer_;
+    std::unique_ptr<storage::FileStreamReader> reader_;
+    std::unique_ptr<FileStreamWriter> writer_;
     const FlushPolicy flush_policy_;
     FileSystemOperation::CopyFileProgressCallback file_progress_callback_;
     scoped_refptr<net::IOBufferWithSize> io_buffer_;

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -289,7 +290,8 @@ bool SandboxOriginDatabase::ListAllOrigins(
     origins->clear();
     return false;
   }
-  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(leveldb::ReadOptions()));
+  std::unique_ptr<leveldb::Iterator> iter(
+      db_->NewIterator(leveldb::ReadOptions()));
   std::string origin_key_prefix = OriginToOriginKey(std::string());
   iter->Seek(origin_key_prefix);
   origins->clear();
@@ -333,7 +335,7 @@ bool SandboxOriginDatabase::GetLastPathNumber(int* number) {
   // Verify that this is a totally new database, and initialize it.
   {
     // Scope the iterator to ensure it is deleted before database is closed.
-    scoped_ptr<leveldb::Iterator> iter(
+    std::unique_ptr<leveldb::Iterator> iter(
         db_->NewIterator(leveldb::ReadOptions()));
     iter->SeekToFirst();
     if (iter->Valid()) {  // DB was not empty, but had no last path number!

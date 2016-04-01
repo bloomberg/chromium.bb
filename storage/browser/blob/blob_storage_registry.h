@@ -8,13 +8,13 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/blob/internal_blob_data.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
@@ -53,8 +53,8 @@ class STORAGE_EXPORT BlobStorageRegistry {
         IPCBlobCreationCancelCode::UNKNOWN;
 
     // data and data_builder are mutually exclusive.
-    scoped_ptr<InternalBlobData> data;
-    scoped_ptr<InternalBlobData::Builder> data_builder;
+    std::unique_ptr<InternalBlobData> data;
+    std::unique_ptr<InternalBlobData::Builder> data_builder;
 
     std::string content_type;
     std::string content_disposition;
@@ -109,7 +109,7 @@ class STORAGE_EXPORT BlobStorageRegistry {
 
  private:
   friend class ViewBlobInternalsJob;
-  using BlobMap = base::ScopedPtrHashMap<std::string, scoped_ptr<Entry>>;
+  using BlobMap = base::ScopedPtrHashMap<std::string, std::unique_ptr<Entry>>;
   using URLMap = std::map<GURL, std::string>;
 
   BlobMap blob_map_;

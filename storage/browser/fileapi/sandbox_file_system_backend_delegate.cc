@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
@@ -106,7 +107,7 @@ class ObfuscatedOriginEnumerator
   }
 
  private:
-  scoped_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enum_;
+  std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enum_;
 };
 
 void OpenFileSystemOnFileTaskRunner(
@@ -192,7 +193,7 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
                                                obfuscated_file_util(),
                                                usage_cache())),
       quota_reservation_manager_(new QuotaReservationManager(
-          scoped_ptr<QuotaReservationManager::QuotaBackend>(
+          std::unique_ptr<QuotaReservationManager::QuotaBackend>(
               new QuotaBackendImpl(file_task_runner_.get(),
                                    obfuscated_file_util(),
                                    usage_cache(),
@@ -274,21 +275,21 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
   is_filesystem_opened_ = true;
 }
 
-scoped_ptr<FileSystemOperationContext>
+std::unique_ptr<FileSystemOperationContext>
 SandboxFileSystemBackendDelegate::CreateFileSystemOperationContext(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::File::Error* error_code) const {
   if (!IsAccessValid(url)) {
     *error_code = base::File::FILE_ERROR_SECURITY;
-    return scoped_ptr<FileSystemOperationContext>();
+    return std::unique_ptr<FileSystemOperationContext>();
   }
 
   const UpdateObserverList* update_observers = GetUpdateObservers(url.type());
   const ChangeObserverList* change_observers = GetChangeObservers(url.type());
   DCHECK(update_observers);
 
-  scoped_ptr<FileSystemOperationContext> operation_context(
+  std::unique_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
   operation_context->set_update_observers(*update_observers);
   operation_context->set_change_observers(
@@ -297,30 +298,30 @@ SandboxFileSystemBackendDelegate::CreateFileSystemOperationContext(
   return operation_context;
 }
 
-scoped_ptr<storage::FileStreamReader>
+std::unique_ptr<storage::FileStreamReader>
 SandboxFileSystemBackendDelegate::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   if (!IsAccessValid(url))
-    return scoped_ptr<storage::FileStreamReader>();
-  return scoped_ptr<storage::FileStreamReader>(
+    return std::unique_ptr<storage::FileStreamReader>();
+  return std::unique_ptr<storage::FileStreamReader>(
       storage::FileStreamReader::CreateForFileSystemFile(
           context, url, offset, expected_modification_time));
 }
 
-scoped_ptr<FileStreamWriter>
+std::unique_ptr<FileStreamWriter>
 SandboxFileSystemBackendDelegate::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64_t offset,
     FileSystemContext* context,
     FileSystemType type) const {
   if (!IsAccessValid(url))
-    return scoped_ptr<FileStreamWriter>();
+    return std::unique_ptr<FileStreamWriter>();
   const UpdateObserverList* observers = GetUpdateObservers(type);
   DCHECK(observers);
-  return scoped_ptr<FileStreamWriter>(
+  return std::unique_ptr<FileStreamWriter>(
       new SandboxFileStreamWriter(context, url, offset, *observers));
 }
 
@@ -352,7 +353,7 @@ void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
     FileSystemType type, std::set<GURL>* origins) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origins);
-  scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
+  std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
   GURL origin;
   while (!(origin = enumerator->Next()).is_empty()) {
     if (enumerator->HasFileSystemType(type))
@@ -375,7 +376,7 @@ void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
     std::set<GURL>* origins) {
   DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origins);
-  scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
+  std::unique_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
   GURL origin;
   while (!(origin = enumerator->Next()).is_empty()) {
     if (host == net::GetHostOrSpecFromURL(origin) &&
@@ -600,9 +601,9 @@ int64_t SandboxFileSystemBackendDelegate::RecalculateUsage(
   FileSystemOperationContext operation_context(context);
   FileSystemURL url = context->CreateCrackedFileSystemURL(
       origin, type, base::FilePath());
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-      obfuscated_file_util()->CreateFileEnumerator(
-          &operation_context, url, true));
+  std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
+      obfuscated_file_util()->CreateFileEnumerator(&operation_context, url,
+                                                   true));
 
   base::FilePath file_path_each;
   int64_t usage = 0;

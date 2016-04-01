@@ -10,6 +10,7 @@
 #include <deque>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -19,7 +20,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "storage/browser/quota/quota_callbacks.h"
@@ -204,7 +204,7 @@ class STORAGE_EXPORT QuotaManager
 
   // Set the eviction policy to use when choosing an origin to evict.
   void SetTemporaryStorageEvictionPolicy(
-      scoped_ptr<QuotaEvictionPolicy> policy);
+      std::unique_ptr<QuotaEvictionPolicy> policy);
 
   // DeleteOriginData and DeleteHostData (surprisingly enough) delete data of a
   // particular StorageType associated with either a specific origin or set of
@@ -465,22 +465,22 @@ class STORAGE_EXPORT QuotaManager
   bool eviction_disabled_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
   scoped_refptr<base::SequencedTaskRunner> db_thread_;
-  mutable scoped_ptr<QuotaDatabase> database_;
+  mutable std::unique_ptr<QuotaDatabase> database_;
 
   GetOriginCallback lru_origin_callback_;
   std::set<GURL> access_notified_origins_;
 
   QuotaClientList clients_;
 
-  scoped_ptr<UsageTracker> temporary_usage_tracker_;
-  scoped_ptr<UsageTracker> persistent_usage_tracker_;
-  scoped_ptr<UsageTracker> syncable_usage_tracker_;
+  std::unique_ptr<UsageTracker> temporary_usage_tracker_;
+  std::unique_ptr<UsageTracker> persistent_usage_tracker_;
+  std::unique_ptr<UsageTracker> syncable_usage_tracker_;
   // TODO(michaeln): Need a way to clear the cache, drop and
   // reinstantiate the trackers when they're not handling requests.
 
-  scoped_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
+  std::unique_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
   EvictionContext eviction_context_;
-  scoped_ptr<QuotaEvictionPolicy> temporary_storage_eviction_policy_;
+  std::unique_ptr<QuotaEvictionPolicy> temporary_storage_eviction_policy_;
   bool is_getting_eviction_origin_;
 
   ClosureQueue db_initialization_callbacks_;
@@ -505,7 +505,7 @@ class STORAGE_EXPORT QuotaManager
   // values. The default value points to QuotaManager::GetVolumeInfo.
   GetVolumeInfoFn get_volume_info_fn_;
 
-  scoped_ptr<StorageMonitor> storage_monitor_;
+  std::unique_ptr<StorageMonitor> storage_monitor_;
 
   base::WeakPtrFactory<QuotaManager> weak_factory_;
 

@@ -5,12 +5,12 @@
 #include "storage/browser/fileapi/file_system_quota_client.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"

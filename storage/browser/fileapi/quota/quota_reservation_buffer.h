@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -40,7 +41,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
       FileSystemType type);
 
   scoped_refptr<QuotaReservation> CreateReservation();
-  scoped_ptr<OpenFileHandle> GetOpenFileHandle(
+  std::unique_ptr<OpenFileHandle> GetOpenFileHandle(
       QuotaReservation* reservation,
       const base::FilePath& platform_path);
   void CommitFileGrowth(int64_t quota_consumption, int64_t usage_delta);

@@ -5,12 +5,12 @@
 #ifndef STORAGE_BROWSER_FILEAPI_SANDBOX_PRIORITIZED_ORIGIN_DATABASE_H_
 #define STORAGE_BROWSER_FILEAPI_SANDBOX_PRIORITIZED_ORIGIN_DATABASE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/sandbox_origin_database_interface.h"
 
 namespace leveldb {
@@ -66,8 +66,8 @@ class STORAGE_EXPORT SandboxPrioritizedOriginDatabase
   const base::FilePath file_system_directory_;
   leveldb::Env* env_override_;
   const base::FilePath primary_origin_file_;
-  scoped_ptr<SandboxOriginDatabase> origin_database_;
-  scoped_ptr<SandboxIsolatedOriginDatabase> primary_origin_database_;
+  std::unique_ptr<SandboxOriginDatabase> origin_database_;
+  std::unique_ptr<SandboxIsolatedOriginDatabase> primary_origin_database_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxPrioritizedOriginDatabase);
 };

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -53,8 +54,8 @@ class STORAGE_EXPORT BlobStorageContext
   BlobStorageContext();
   ~BlobStorageContext();
 
-  scoped_ptr<BlobDataHandle> GetBlobDataFromUUID(const std::string& uuid);
-  scoped_ptr<BlobDataHandle> GetBlobDataFromPublicURL(const GURL& url);
+  std::unique_ptr<BlobDataHandle> GetBlobDataFromUUID(const std::string& uuid);
+  std::unique_ptr<BlobDataHandle> GetBlobDataFromPublicURL(const GURL& url);
 
   // Useful for coining blobs from within the browser process. If the
   // blob cannot be added due to memory consumption, returns NULL.
@@ -63,10 +64,12 @@ class STORAGE_EXPORT BlobStorageContext
   // To cleanly use a builder multiple times, please call Clone() on the
   // builder, or even better for memory savings, clear the builder and append
   // the previously constructed blob.
-  scoped_ptr<BlobDataHandle> AddFinishedBlob(const BlobDataBuilder& builder);
+  std::unique_ptr<BlobDataHandle> AddFinishedBlob(
+      const BlobDataBuilder& builder);
 
   // Deprecated, use const ref version above.
-  scoped_ptr<BlobDataHandle> AddFinishedBlob(const BlobDataBuilder* builder);
+  std::unique_ptr<BlobDataHandle> AddFinishedBlob(
+      const BlobDataBuilder* builder);
 
   // Useful for coining blob urls from within the browser process.
   bool RegisterPublicBlobURL(const GURL& url, const std::string& uuid);
@@ -118,7 +121,7 @@ class STORAGE_EXPORT BlobStorageContext
   // This will return an empty snapshot until the blob is complete.
   // TODO(dmurph): After we make the snapshot method in BlobHandle private, then
   // make this DCHECK on the blob not being complete.
-  scoped_ptr<BlobDataSnapshot> CreateSnapshot(const std::string& uuid);
+  std::unique_ptr<BlobDataSnapshot> CreateSnapshot(const std::string& uuid);
   bool IsBroken(const std::string& uuid) const;
   bool IsBeingBuilt(const std::string& uuid) const;
   // Runs |done| when construction completes, with true if it was successful.

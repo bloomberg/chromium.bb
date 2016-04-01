@@ -7,9 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -48,7 +50,7 @@ using MemoryItemRequest =
 BlobAsyncBuilderHost::BlobBuildingState::BlobBuildingState(
     const std::string& uuid,
     std::set<std::string> referenced_blob_uuids,
-    std::vector<scoped_ptr<BlobDataHandle>>* referenced_blob_handles)
+    std::vector<std::unique_ptr<BlobDataHandle>>* referenced_blob_handles)
     : data_builder(uuid),
       referenced_blob_uuids(referenced_blob_uuids),
       referenced_blob_handles(std::move(*referenced_blob_handles)) {}
@@ -70,9 +72,9 @@ BlobTransportResult BlobAsyncBuilderHost::RegisterBlobUUID(
   if (referenced_blob_uuids.find(uuid) != referenced_blob_uuids.end())
     return BlobTransportResult::BAD_IPC;
   context->CreatePendingBlob(uuid, content_type, content_disposition);
-  std::vector<scoped_ptr<BlobDataHandle>> handles;
+  std::vector<std::unique_ptr<BlobDataHandle>> handles;
   for (const std::string& referenced_uuid : referenced_blob_uuids) {
-    scoped_ptr<BlobDataHandle> handle =
+    std::unique_ptr<BlobDataHandle> handle =
         context->GetBlobDataFromUUID(referenced_uuid);
     if (!handle || handle->IsBroken()) {
       // We cancel the blob right away, and don't bother storing our state.
@@ -82,7 +84,7 @@ BlobTransportResult BlobAsyncBuilderHost::RegisterBlobUUID(
     }
     handles.emplace_back(std::move(handle));
   }
-  async_blob_map_[uuid] = make_scoped_ptr(
+  async_blob_map_[uuid] = base::WrapUnique(
       new BlobBuildingState(uuid, referenced_blob_uuids, &handles));
   return BlobTransportResult::DONE;
 }
@@ -284,7 +286,7 @@ void BlobAsyncBuilderHost::CancelBuildingBlob(const std::string& uuid,
 void BlobAsyncBuilderHost::CancelAll(BlobStorageContext* context) {
   DCHECK(context);
   // Some of our pending blobs may still be referenced elsewhere.
-  std::vector<scoped_ptr<BlobDataHandle>> referenced_pending_blobs;
+  std::vector<std::unique_ptr<BlobDataHandle>> referenced_pending_blobs;
   for (const auto& uuid_state_pair : async_blob_map_) {
     if (context->IsBeingBuilt(uuid_state_pair.first)) {
       referenced_pending_blobs.emplace_back(
@@ -295,7 +297,8 @@ void BlobAsyncBuilderHost::CancelAll(BlobStorageContext* context) {
   // our class (see ReferencedBlobFinished) if any blobs were waiting for others
   // to construct.
   async_blob_map_.clear();
-  for (const scoped_ptr<BlobDataHandle>& handle : referenced_pending_blobs) {
+  for (const std::unique_ptr<BlobDataHandle>& handle :
+       referenced_pending_blobs) {
     context->CancelPendingBlob(
         handle->uuid(), IPCBlobCreationCancelCode::SOURCE_DIED_IN_TRANSIT);
   }
@@ -321,9 +324,9 @@ BlobTransportResult BlobAsyncBuilderHost::ContinueBlobMemoryRequests(
     return BlobTransportResult::PENDING_RESPONSES;
   }
 
-  scoped_ptr<std::vector<BlobItemBytesRequest>> byte_requests(
+  std::unique_ptr<std::vector<BlobItemBytesRequest>> byte_requests(
       new std::vector<BlobItemBytesRequest>());
-  scoped_ptr<std::vector<base::SharedMemoryHandle>> shared_memory(
+  std::unique_ptr<std::vector<base::SharedMemoryHandle>> shared_memory(
       new std::vector<base::SharedMemoryHandle>());
 
   for (; state->next_request < num_requests; ++state->next_request) {
@@ -377,7 +380,7 @@ BlobTransportResult BlobAsyncBuilderHost::ContinueBlobMemoryRequests(
 
   state->request_memory_callback.Run(
       std::move(byte_requests), std::move(shared_memory),
-      make_scoped_ptr(new std::vector<base::File>()));
+      base::WrapUnique(new std::vector<base::File>()));
   return BlobTransportResult::PENDING_RESPONSES;
 }
 

@@ -6,8 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
@@ -205,12 +208,11 @@ base::File::Error NativeFileUtil::GetFileInfo(
   return base::File::FILE_OK;
 }
 
-scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
-    NativeFileUtil::CreateFileEnumerator(const base::FilePath& root_path,
-                                         bool recursive) {
-  return make_scoped_ptr(new NativeFileEnumerator(
-      root_path,
-      recursive,
+std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+NativeFileUtil::CreateFileEnumerator(const base::FilePath& root_path,
+                                     bool recursive) {
+  return base::WrapUnique(new NativeFileEnumerator(
+      root_path, recursive,
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES));
 }
 

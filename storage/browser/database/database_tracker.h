@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -15,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -282,9 +282,9 @@ class STORAGE_EXPORT DatabaseTracker
   bool shutting_down_;
   const base::FilePath profile_path_;
   const base::FilePath db_dir_;
-  scoped_ptr<sql::Connection> db_;
-  scoped_ptr<DatabasesTable> databases_table_;
-  scoped_ptr<sql::MetaTable> meta_table_;
+  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<DatabasesTable> databases_table_;
+  std::unique_ptr<sql::MetaTable> meta_table_;
   base::ObserverList<Observer, true> observers_;
   std::map<std::string, CachedOriginInfo> origins_info_map_;
   DatabaseConnections database_connections_;

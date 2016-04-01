@@ -5,10 +5,11 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_URL_REQUEST_JOB_FACTORY_H_
 #define STORAGE_BROWSER_BLOB_BLOB_URL_REQUEST_JOB_FACTORY_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "storage/browser/storage_browser_export.h"
@@ -34,8 +35,8 @@ class STORAGE_EXPORT BlobProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // A helper to manufacture an URLRequest to retrieve the given blob.
-  static scoped_ptr<net::URLRequest> CreateBlobRequest(
-      scoped_ptr<BlobDataHandle> blob_data_handle,
+  static std::unique_ptr<net::URLRequest> CreateBlobRequest(
+      std::unique_ptr<BlobDataHandle> blob_data_handle,
       const net::URLRequestContext* request_context,
       net::URLRequest::Delegate* request_delegate);
 
@@ -43,7 +44,7 @@ class STORAGE_EXPORT BlobProtocolHandler
   // to SetRequestedBlobDataHandle instead.
   static void SetRequestedBlobDataHandle(
       net::URLRequest* request,
-      scoped_ptr<BlobDataHandle> blob_data_handle);
+      std::unique_ptr<BlobDataHandle> blob_data_handle);
 
   // This gets the handle on the request if it exists.
   static BlobDataHandle* GetRequestBlobDataHandle(net::URLRequest* request);

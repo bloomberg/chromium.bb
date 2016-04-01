@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/blob_data_item.h"
 
+#include <memory>
 #include <utility>
 
 namespace storage {
@@ -11,19 +12,19 @@ namespace storage {
 BlobDataItem::DataHandle::~DataHandle() {
 }
 
-BlobDataItem::BlobDataItem(scoped_ptr<DataElement> item)
+BlobDataItem::BlobDataItem(std::unique_ptr<DataElement> item)
     : item_(std::move(item)),
       disk_cache_entry_(nullptr),
       disk_cache_stream_index_(-1) {}
 
-BlobDataItem::BlobDataItem(scoped_ptr<DataElement> item,
+BlobDataItem::BlobDataItem(std::unique_ptr<DataElement> item,
                            const scoped_refptr<DataHandle>& data_handle)
     : item_(std::move(item)),
       data_handle_(data_handle),
       disk_cache_entry_(nullptr),
       disk_cache_stream_index_(-1) {}
 
-BlobDataItem::BlobDataItem(scoped_ptr<DataElement> item,
+BlobDataItem::BlobDataItem(std::unique_ptr<DataElement> item,
                            const scoped_refptr<DataHandle>& data_handle,
                            disk_cache::Entry* entry,
                            int disk_cache_stream_index)

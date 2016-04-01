@@ -5,6 +5,8 @@
 #include "storage/browser/blob/internal_blob_data.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/containers/hash_tables.h"
@@ -37,7 +39,7 @@ size_t InternalBlobData::Builder::GetNonsharedMemoryUsage() const {
   return data_->GetUnsharedMemoryUsage();
 }
 
-scoped_ptr<InternalBlobData> InternalBlobData::Builder::Build() {
+std::unique_ptr<InternalBlobData> InternalBlobData::Builder::Build() {
   DCHECK(data_);
   return std::move(data_);
 }

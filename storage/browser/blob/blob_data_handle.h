@@ -5,12 +5,12 @@
 #ifndef STORAGE_BROWSER_BLOB_BLOB_DATA_HANDLE_H_
 #define STORAGE_BROWSER_BLOB_BLOB_DATA_HANDLE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "storage/browser/storage_browser_export.h"
@@ -61,7 +61,7 @@ class STORAGE_EXPORT BlobDataHandle
   // A BlobReader is used to read the data from the blob.  This object is
   // intended to be transient and should not be stored for any extended period
   // of time.
-  scoped_ptr<BlobReader> CreateReader(
+  std::unique_ptr<BlobReader> CreateReader(
       FileSystemContext* file_system_context,
       base::SequencedTaskRunner* file_task_runner) const;
 
@@ -77,7 +77,7 @@ class STORAGE_EXPORT BlobDataHandle
   // Please do not call this, and use CreateReader instead. It appropriately
   // waits until the blob is built before having a size (see CalculateSize).
   // TODO(dmurph): Make this protected, where only the BlobReader can call it.
-  scoped_ptr<BlobDataSnapshot> CreateSnapshot() const;
+  std::unique_ptr<BlobDataSnapshot> CreateSnapshot() const;
 
  private:
   // Internal class whose destructor is guarenteed to be called on the IO
@@ -92,7 +92,7 @@ class STORAGE_EXPORT BlobDataHandle
 
     void RunOnConstructionComplete(const base::Callback<void(bool)>& done);
 
-    scoped_ptr<BlobDataSnapshot> CreateSnapshot() const;
+    std::unique_ptr<BlobDataSnapshot> CreateSnapshot() const;
 
    private:
     friend class base::DeleteHelper<BlobDataHandleShared>;

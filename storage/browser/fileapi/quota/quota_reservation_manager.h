@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/callback_forward.h"
@@ -74,7 +75,7 @@ class STORAGE_EXPORT QuotaReservationManager {
     DISALLOW_COPY_AND_ASSIGN(QuotaBackend);
   };
 
-  explicit QuotaReservationManager(scoped_ptr<QuotaBackend> backend);
+  explicit QuotaReservationManager(std::unique_ptr<QuotaBackend> backend);
   ~QuotaReservationManager();
 
   // The entry point of the quota reservation.  Creates new reservation object
@@ -110,7 +111,7 @@ class STORAGE_EXPORT QuotaReservationManager {
       FileSystemType type);
   void ReleaseReservationBuffer(QuotaReservationBuffer* reservation_pool);
 
-  scoped_ptr<QuotaBackend> backend_;
+  std::unique_ptr<QuotaBackend> backend_;
 
   // Not owned.  The destructor of ReservationBuffer should erase itself from
   // |reservation_buffers_| by calling ReleaseReservationBuffer.

@@ -6,7 +6,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "storage/browser/fileapi/quota/open_file_handle.h"
 #include "storage/browser/fileapi/quota/open_file_handle_context.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
@@ -31,14 +34,14 @@ scoped_refptr<QuotaReservation> QuotaReservationBuffer::CreateReservation() {
   return make_scoped_refptr(new QuotaReservation(this));
 }
 
-scoped_ptr<OpenFileHandle> QuotaReservationBuffer::GetOpenFileHandle(
+std::unique_ptr<OpenFileHandle> QuotaReservationBuffer::GetOpenFileHandle(
     QuotaReservation* reservation,
     const base::FilePath& platform_path) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   OpenFileHandleContext** open_file = &open_files_[platform_path];
   if (!*open_file)
     *open_file = new OpenFileHandleContext(platform_path, this);
-  return make_scoped_ptr(new OpenFileHandle(reservation, *open_file));
+  return base::WrapUnique(new OpenFileHandle(reservation, *open_file));
 }
 
 void QuotaReservationBuffer::CommitFileGrowth(

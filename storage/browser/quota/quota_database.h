@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "storage/browser/storage_browser_export.h"
@@ -188,8 +188,8 @@ class STORAGE_EXPORT QuotaDatabase {
 
   base::FilePath db_file_path_;
 
-  scoped_ptr<sql::Connection> db_;
-  scoped_ptr<sql::MetaTable> meta_table_;
+  std::unique_ptr<sql::Connection> db_;
+  std::unique_ptr<sql::MetaTable> meta_table_;
   bool is_recreating_;
   bool is_disabled_;
 

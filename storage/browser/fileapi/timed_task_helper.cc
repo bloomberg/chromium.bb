@@ -4,10 +4,12 @@
 
 #include "storage/browser/fileapi/timed_task_helper.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 
 namespace storage {
@@ -58,18 +60,18 @@ void TimedTaskHelper::Reset() {
 
   // Initialize the tracker for the first time.
   tracker_ = new Tracker(this);
-  PostDelayedTask(make_scoped_ptr(tracker_), delay_);
+  PostDelayedTask(base::WrapUnique(tracker_), delay_);
 }
 
 // static
-void TimedTaskHelper::Fired(scoped_ptr<Tracker> tracker) {
+void TimedTaskHelper::Fired(std::unique_ptr<Tracker> tracker) {
   if (!tracker->timer)
     return;
   TimedTaskHelper* timer = tracker->timer;
   timer->OnFired(std::move(tracker));
 }
 
-void TimedTaskHelper::OnFired(scoped_ptr<Tracker> tracker) {
+void TimedTaskHelper::OnFired(std::unique_ptr<Tracker> tracker) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::TimeTicks now = base::TimeTicks::Now();
   if (desired_run_time_ > now) {
@@ -82,7 +84,7 @@ void TimedTaskHelper::OnFired(scoped_ptr<Tracker> tracker) {
   task.Run();
 }
 
-void TimedTaskHelper::PostDelayedTask(scoped_ptr<Tracker> tracker,
+void TimedTaskHelper::PostDelayedTask(std::unique_ptr<Tracker> tracker,
                                       base::TimeDelta delay) {
   task_runner_->PostDelayedTask(
       posted_from_,

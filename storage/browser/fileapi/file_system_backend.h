@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/open_file_system_mode.h"
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
@@ -119,7 +119,7 @@ class STORAGE_EXPORT FileSystemBackend {
   // This method itself does *not* check if the given path exists and is a
   // regular file. At most |max_bytes_to_read| can be fetched from the file
   // stream reader.
-  virtual scoped_ptr<storage::FileStreamReader> CreateFileStreamReader(
+  virtual std::unique_ptr<storage::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64_t offset,
       int64_t max_bytes_to_read,
@@ -130,7 +130,7 @@ class STORAGE_EXPORT FileSystemBackend {
   // offset |offset|.
   // This method itself does *not* check if the given path exists and is a
   // regular file.
-  virtual scoped_ptr<FileStreamWriter> CreateFileStreamWriter(
+  virtual std::unique_ptr<FileStreamWriter> CreateFileStreamWriter(
       const FileSystemURL& url,
       int64_t offset,
       FileSystemContext* context) const = 0;

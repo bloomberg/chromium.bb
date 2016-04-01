@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -43,7 +45,7 @@ BlobReader::FileStreamReaderProvider::~FileStreamReaderProvider() {}
 
 BlobReader::BlobReader(
     const BlobDataHandle* blob_handle,
-    scoped_ptr<FileStreamReaderProvider> file_stream_provider,
+    std::unique_ptr<FileStreamReaderProvider> file_stream_provider,
     base::SequencedTaskRunner* file_task_runner)
     : file_stream_provider_(std::move(file_stream_provider)),
       file_task_runner_(file_task_runner),
@@ -472,7 +474,8 @@ void BlobReader::ContinueAsyncReadLoop() {
 }
 
 void BlobReader::DeleteCurrentFileReader() {
-  SetFileReaderAtIndex(current_item_index_, scoped_ptr<FileStreamReader>());
+  SetFileReaderAtIndex(current_item_index_,
+                       std::unique_ptr<FileStreamReader>());
 }
 
 BlobReader::Status BlobReader::ReadDiskCacheEntryItem(const BlobDataItem& item,
@@ -547,7 +550,7 @@ FileStreamReader* BlobReader::GetOrCreateFileReaderAtIndex(size_t index) {
     DCHECK(it->second);
     return it->second;
   }
-  scoped_ptr<FileStreamReader> reader = CreateFileStreamReader(item, 0);
+  std::unique_ptr<FileStreamReader> reader = CreateFileStreamReader(item, 0);
   FileStreamReader* ret_value = reader.get();
   if (!ret_value)
     return nullptr;
@@ -555,7 +558,7 @@ FileStreamReader* BlobReader::GetOrCreateFileReaderAtIndex(size_t index) {
   return ret_value;
 }
 
-scoped_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
+std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
     const BlobDataItem& item,
     uint64_t additional_offset) {
   DCHECK(IsFileType(item.type()));
@@ -584,8 +587,9 @@ scoped_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
   return nullptr;
 }
 
-void BlobReader::SetFileReaderAtIndex(size_t index,
-                                      scoped_ptr<FileStreamReader> reader) {
+void BlobReader::SetFileReaderAtIndex(
+    size_t index,
+    std::unique_ptr<FileStreamReader> reader) {
   auto found = index_to_reader_.find(current_item_index_);
   if (found != index_to_reader_.end()) {
     if (found->second) {

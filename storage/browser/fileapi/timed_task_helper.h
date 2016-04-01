@@ -5,11 +5,12 @@
 #ifndef STORAGE_BROWSER_FILEAPI_TIMED_TASK_HELPER_H_
 #define STORAGE_BROWSER_FILEAPI_TIMED_TASK_HELPER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "storage/browser/storage_browser_export.h"
 
@@ -36,10 +37,10 @@ class STORAGE_EXPORT TimedTaskHelper {
 
  private:
   struct Tracker;
-  static void Fired(scoped_ptr<Tracker> tracker);
+  static void Fired(std::unique_ptr<Tracker> tracker);
 
-  void OnFired(scoped_ptr<Tracker> tracker);
-  void PostDelayedTask(scoped_ptr<Tracker> tracker, base::TimeDelta delay);
+  void OnFired(std::unique_ptr<Tracker> tracker);
+  void PostDelayedTask(std::unique_ptr<Tracker> tracker, base::TimeDelta delay);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   tracked_objects::Location posted_from_;

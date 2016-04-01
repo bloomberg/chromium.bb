@@ -6,10 +6,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
@@ -437,34 +440,35 @@ void FileSystemContext::DeleteFileSystem(
       callback);
 }
 
-scoped_ptr<storage::FileStreamReader> FileSystemContext::CreateFileStreamReader(
+std::unique_ptr<storage::FileStreamReader>
+FileSystemContext::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     int64_t max_bytes_to_read,
     const base::Time& expected_modification_time) {
   if (!url.is_valid())
-    return scoped_ptr<storage::FileStreamReader>();
+    return std::unique_ptr<storage::FileStreamReader>();
   FileSystemBackend* backend = GetFileSystemBackend(url.type());
   if (!backend)
-    return scoped_ptr<storage::FileStreamReader>();
+    return std::unique_ptr<storage::FileStreamReader>();
   return backend->CreateFileStreamReader(
       url, offset, max_bytes_to_read, expected_modification_time, this);
 }
 
-scoped_ptr<FileStreamWriter> FileSystemContext::CreateFileStreamWriter(
+std::unique_ptr<FileStreamWriter> FileSystemContext::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64_t offset) {
   if (!url.is_valid())
-    return scoped_ptr<FileStreamWriter>();
+    return std::unique_ptr<FileStreamWriter>();
   FileSystemBackend* backend = GetFileSystemBackend(url.type());
   if (!backend)
-    return scoped_ptr<FileStreamWriter>();
+    return std::unique_ptr<FileStreamWriter>();
   return backend->CreateFileStreamWriter(url, offset, this);
 }
 
-scoped_ptr<FileSystemOperationRunner>
+std::unique_ptr<FileSystemOperationRunner>
 FileSystemContext::CreateFileSystemOperationRunner() {
-  return make_scoped_ptr(new FileSystemOperationRunner(this));
+  return base::WrapUnique(new FileSystemOperationRunner(this));
 }
 
 FileSystemURL FileSystemContext::CrackURL(const GURL& url) const {

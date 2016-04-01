@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -1001,7 +1003,7 @@ void QuotaManager::SetUsageCacheEnabled(QuotaClient::ID client_id,
 }
 
 void QuotaManager::SetTemporaryStorageEvictionPolicy(
-    scoped_ptr<QuotaEvictionPolicy> policy) {
+    std::unique_ptr<QuotaEvictionPolicy> policy) {
   temporary_storage_eviction_policy_ = std::move(policy);
 }
 

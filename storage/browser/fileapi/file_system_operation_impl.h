@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/scoped_file.h"
 #include "storage/browser/fileapi/file_system_operation.h"
@@ -64,8 +64,8 @@ class STORAGE_EXPORT FileSystemOperationImpl
               bool recursive,
               const StatusCallback& callback) override;
   void Write(const FileSystemURL& url,
-             scoped_ptr<FileWriterDelegate> writer_delegate,
-             scoped_ptr<net::URLRequest> blob_request,
+             std::unique_ptr<FileWriterDelegate> writer_delegate,
+             std::unique_ptr<net::URLRequest> blob_request,
              const WriteCallback& callback) override;
   void Truncate(const FileSystemURL& url,
                 int64_t length,
@@ -109,7 +109,7 @@ class STORAGE_EXPORT FileSystemOperationImpl
   FileSystemOperationImpl(
       const FileSystemURL& url,
       FileSystemContext* file_system_context,
-      scoped_ptr<FileSystemOperationContext> operation_context);
+      std::unique_ptr<FileSystemOperationContext> operation_context);
 
   // Queries the quota and usage and then runs the given |task|.
   // If an error occurs during the quota query it runs |error_callback| instead.
@@ -188,11 +188,11 @@ class STORAGE_EXPORT FileSystemOperationImpl
 
   scoped_refptr<FileSystemContext> file_system_context_;
 
-  scoped_ptr<FileSystemOperationContext> operation_context_;
+  std::unique_ptr<FileSystemOperationContext> operation_context_;
   AsyncFileUtil* async_file_util_;  // Not owned.
 
-  scoped_ptr<FileWriterDelegate> file_writer_delegate_;
-  scoped_ptr<RecursiveOperationDelegate> recursive_operation_delegate_;
+  std::unique_ptr<FileWriterDelegate> file_writer_delegate_;
+  std::unique_ptr<RecursiveOperationDelegate> recursive_operation_delegate_;
 
   StatusCallback cancel_callback_;
 

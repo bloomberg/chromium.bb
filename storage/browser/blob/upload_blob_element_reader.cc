@@ -5,6 +5,8 @@
 #include "storage/browser/blob/upload_blob_element_reader.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
@@ -16,7 +18,7 @@
 namespace storage {
 
 UploadBlobElementReader::UploadBlobElementReader(
-    scoped_ptr<BlobDataHandle> handle,
+    std::unique_ptr<BlobDataHandle> handle,
     FileSystemContext* file_system_context,
     base::SingleThreadTaskRunner* file_task_runner)
     : handle_(std::move(handle)),

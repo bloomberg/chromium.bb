@@ -6,9 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/file_util_proxy.h"
+#include "base/memory/ptr_util.h"
 #include "storage/browser/fileapi/async_file_util_adapter.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
@@ -134,18 +137,16 @@ base::File::Error LocalFileUtil::GetFileInfo(
   return error;
 }
 
-scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> LocalFileUtil::
-    CreateFileEnumerator(
-        FileSystemOperationContext* context,
-        const FileSystemURL& root_url) {
+std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+LocalFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
+                                    const FileSystemURL& root_url) {
   base::FilePath file_path;
   if (GetLocalFilePath(context, root_url, &file_path) !=
       base::File::FILE_OK) {
-    return make_scoped_ptr(new EmptyFileEnumerator);
+    return base::WrapUnique(new EmptyFileEnumerator);
   }
-  return make_scoped_ptr(new LocalFileEnumerator(
-      file_path,
-      root_url.path(),
+  return base::WrapUnique(new LocalFileEnumerator(
+      file_path, root_url.path(),
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES));
 }
 

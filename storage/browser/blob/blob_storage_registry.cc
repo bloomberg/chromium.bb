@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -62,7 +64,7 @@ BlobStorageRegistry::Entry* BlobStorageRegistry::CreateEntry(
     const std::string& content_type,
     const std::string& content_disposition) {
   DCHECK(!ContainsKey(blob_map_, uuid));
-  scoped_ptr<Entry> entry(new Entry(1, BlobState::PENDING));
+  std::unique_ptr<Entry> entry(new Entry(1, BlobState::PENDING));
   entry->content_type = content_type;
   entry->content_disposition = content_disposition;
   Entry* entry_ptr = entry.get();

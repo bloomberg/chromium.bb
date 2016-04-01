@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/blob/scoped_file.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/storage_browser_export.h"
@@ -98,7 +99,7 @@ class STORAGE_EXPORT FileSystemFileUtil {
   //
   // The supplied context must remain valid at least lifetime of the enumerator
   // instance.
-  virtual scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
+  virtual std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url) = 0;
 

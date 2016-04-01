@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/fileapi/file_system_operation.h"
@@ -117,7 +117,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
   // |url_request_context| is used to read contents in |blob|.
   OperationID Write(const net::URLRequestContext* url_request_context,
                     const FileSystemURL& url,
-                    scoped_ptr<storage::BlobDataHandle> blob,
+                    std::unique_ptr<storage::BlobDataHandle> blob,
                     int64_t offset,
                     const WriteCallback& callback);
 

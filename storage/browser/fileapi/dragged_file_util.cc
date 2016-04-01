@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -87,10 +88,9 @@ base::File::Error DraggedFileUtil::GetFileInfo(
   return error;
 }
 
-scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
-    DraggedFileUtil::CreateFileEnumerator(
-        FileSystemOperationContext* context,
-        const FileSystemURL& root) {
+std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+DraggedFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
+                                      const FileSystemURL& root) {
   DCHECK(root.is_valid());
   if (!root.path().empty())
     return LocalFileUtil::CreateFileEnumerator(context, root);
@@ -99,7 +99,8 @@ scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
   std::vector<FileInfo> toplevels;
   IsolatedContext::GetInstance()->GetDraggedFileInfo(
       root.filesystem_id(), &toplevels);
-  return scoped_ptr<AbstractFileEnumerator>(new SetFileEnumerator(toplevels));
+  return std::unique_ptr<AbstractFileEnumerator>(
+      new SetFileEnumerator(toplevels));
 }
 
 }  // namespace storage

@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -67,10 +68,10 @@ class InternalBlobData {
     void RemoveBlobFromShareableItems(const std::string& blob_uuid);
 
     // The builder is invalid after calling this method.
-    scoped_ptr<::storage::InternalBlobData> Build();
+    std::unique_ptr<::storage::InternalBlobData> Build();
 
    private:
-    scoped_ptr<::storage::InternalBlobData> data_;
+    std::unique_ptr<::storage::InternalBlobData> data_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };

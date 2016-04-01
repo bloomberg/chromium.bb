@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,6 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/blob/blob_async_transport_request_builder.h"
@@ -49,9 +49,9 @@ class BlobStorageContext;
 class STORAGE_EXPORT BlobAsyncBuilderHost {
  public:
   using RequestMemoryCallback = base::Callback<void(
-      scoped_ptr<std::vector<storage::BlobItemBytesRequest>>,
-      scoped_ptr<std::vector<base::SharedMemoryHandle>>,
-      scoped_ptr<std::vector<base::File>>)>;
+      std::unique_ptr<std::vector<storage::BlobItemBytesRequest>>,
+      std::unique_ptr<std::vector<base::SharedMemoryHandle>>,
+      std::unique_ptr<std::vector<base::File>>)>;
   BlobAsyncBuilderHost();
   ~BlobAsyncBuilderHost();
 
@@ -134,7 +134,7 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
     BlobBuildingState(
         const std::string& uuid,
         std::set<std::string> referenced_blob_uuids,
-        std::vector<scoped_ptr<BlobDataHandle>>* referenced_blob_handles);
+        std::vector<std::unique_ptr<BlobDataHandle>>* referenced_blob_handles);
     ~BlobBuildingState();
 
     BlobAsyncTransportRequestBuilder request_builder;
@@ -142,7 +142,7 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
     std::vector<bool> request_received;
     size_t next_request = 0;
     size_t num_fulfilled_requests = 0;
-    scoped_ptr<base::SharedMemory> shared_memory_block;
+    std::unique_ptr<base::SharedMemory> shared_memory_block;
     // This is the number of requests that have been sent to populate the above
     // shared data. We won't ask for more data in shared memory until all
     // requests have been responded to.
@@ -157,7 +157,7 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
     // We use these to make sure they stay alive while we create the new blob,
     // and to wait until any blobs that are not done building are fully
     // constructed.
-    std::vector<scoped_ptr<BlobDataHandle>> referenced_blob_handles;
+    std::vector<std::unique_ptr<BlobDataHandle>> referenced_blob_handles;
 
     // These are the number of blobs we're waiting for before we can start
     // building.
@@ -166,7 +166,8 @@ class STORAGE_EXPORT BlobAsyncBuilderHost {
     BlobAsyncBuilderHost::RequestMemoryCallback request_memory_callback;
   };
 
-  typedef std::map<std::string, scoped_ptr<BlobBuildingState>> AsyncBlobMap;
+  typedef std::map<std::string, std::unique_ptr<BlobBuildingState>>
+      AsyncBlobMap;
 
   // This is the 'main loop' of our memory requests to the renderer.
   BlobTransportResult ContinueBlobMemoryRequests(const std::string& uuid,

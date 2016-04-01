@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -63,7 +64,7 @@ class FileSystemOperation {
   STORAGE_EXPORT static FileSystemOperation* Create(
       const FileSystemURL& url,
       FileSystemContext* file_system_context,
-      scoped_ptr<FileSystemOperationContext> operation_context);
+      std::unique_ptr<FileSystemOperationContext> operation_context);
 
   virtual ~FileSystemOperation() {}
 
@@ -324,11 +325,10 @@ class FileSystemOperation {
                       const StatusCallback& callback) = 0;
 
   // Writes the data read from |blob_request| using |writer_delegate|.
-  virtual void Write(
-    const FileSystemURL& url,
-    scoped_ptr<FileWriterDelegate> writer_delegate,
-    scoped_ptr<net::URLRequest> blob_request,
-    const WriteCallback& callback) = 0;
+  virtual void Write(const FileSystemURL& url,
+                     std::unique_ptr<FileWriterDelegate> writer_delegate,
+                     std::unique_ptr<net::URLRequest> blob_request,
+                     const WriteCallback& callback) = 0;
 
   // Truncates a file at |path| to |length|. If |length| is larger than
   // the original file size, the file will be extended, and the extended

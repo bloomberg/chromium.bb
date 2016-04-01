@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
@@ -67,10 +67,10 @@ class STORAGE_EXPORT FileSystemURLRequestJob : public net::URLRequestJob {
 
   const std::string storage_domain_;
   FileSystemContext* file_system_context_;
-  scoped_ptr<storage::FileStreamReader> reader_;
+  std::unique_ptr<storage::FileStreamReader> reader_;
   FileSystemURL url_;
   bool is_directory_;
-  scoped_ptr<net::HttpResponseInfo> response_info_;
+  std::unique_ptr<net::HttpResponseInfo> response_info_;
   int64_t remaining_bytes_;
   net::Error range_parse_result_;
   net::HttpByteRange byte_range_;

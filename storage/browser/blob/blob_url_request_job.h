@@ -8,10 +8,10 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_status_code.h"
@@ -73,9 +73,9 @@ class STORAGE_EXPORT BlobURLRequestJob
   bool byte_range_set_;
   net::HttpByteRange byte_range_;
 
-  scoped_ptr<BlobDataHandle> blob_handle_;
-  scoped_ptr<BlobReader> blob_reader_;
-  scoped_ptr<net::HttpResponseInfo> response_info_;
+  std::unique_ptr<BlobDataHandle> blob_handle_;
+  std::unique_ptr<BlobReader> blob_reader_;
+  std::unique_ptr<net::HttpResponseInfo> response_info_;
 
   base::WeakPtrFactory<BlobURLRequestJob> weak_factory_;
 

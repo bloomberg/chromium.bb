@@ -8,11 +8,11 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "storage/browser/storage_browser_export.h"
@@ -92,7 +92,7 @@ class STORAGE_EXPORT FileSystemUsageCache {
 
   bool CalledOnValidThread();
 
-  scoped_ptr<TimedTaskHelper> timer_;
+  std::unique_ptr<TimedTaskHelper> timer_;
   CacheFiles cache_files_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

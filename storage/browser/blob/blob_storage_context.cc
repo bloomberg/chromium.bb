@@ -6,15 +6,17 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/thread_task_runner_handle.h"
@@ -35,42 +37,42 @@ BlobStorageContext::BlobStorageContext() : memory_usage_(0) {}
 BlobStorageContext::~BlobStorageContext() {
 }
 
-scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
+std::unique_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
     const std::string& uuid) {
   BlobRegistryEntry* entry = registry_.GetEntry(uuid);
   if (!entry) {
     return nullptr;
   }
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new BlobDataHandle(uuid, entry->content_type, entry->content_disposition,
                          this, base::ThreadTaskRunnerHandle::Get().get()));
 }
 
-scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromPublicURL(
+std::unique_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromPublicURL(
     const GURL& url) {
   std::string uuid;
   BlobRegistryEntry* entry = registry_.GetEntryFromURL(url, &uuid);
   if (!entry) {
     return nullptr;
   }
-  return make_scoped_ptr(
+  return base::WrapUnique(
       new BlobDataHandle(uuid, entry->content_type, entry->content_disposition,
                          this, base::ThreadTaskRunnerHandle::Get().get()));
 }
 
-scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
+std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
     const BlobDataBuilder& external_builder) {
   TRACE_EVENT0("Blob", "Context::AddFinishedBlob");
   CreatePendingBlob(external_builder.uuid(), external_builder.content_type_,
                     external_builder.content_disposition_);
   CompletePendingBlob(external_builder);
-  scoped_ptr<BlobDataHandle> handle =
+  std::unique_ptr<BlobDataHandle> handle =
       GetBlobDataFromUUID(external_builder.uuid_);
   DecrementBlobRefCount(external_builder.uuid_);
   return handle;
 }
 
-scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
+std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
     const BlobDataBuilder* builder) {
   DCHECK(builder);
   return AddFinishedBlob(*builder);
@@ -196,16 +198,16 @@ void BlobStorageContext::DecrementBlobRefCount(const std::string& uuid) {
   }
 }
 
-scoped_ptr<BlobDataSnapshot> BlobStorageContext::CreateSnapshot(
+std::unique_ptr<BlobDataSnapshot> BlobStorageContext::CreateSnapshot(
     const std::string& uuid) {
-  scoped_ptr<BlobDataSnapshot> result;
+  std::unique_ptr<BlobDataSnapshot> result;
   BlobRegistryEntry* entry = registry_.GetEntry(uuid);
   if (entry->state != BlobState::COMPLETE) {
     return result;
   }
 
   const InternalBlobData& data = *entry->data;
-  scoped_ptr<BlobDataSnapshot> snapshot(new BlobDataSnapshot(
+  std::unique_ptr<BlobDataSnapshot> snapshot(new BlobDataSnapshot(
       uuid, entry->content_type, entry->content_disposition));
   snapshot->items_.reserve(data.items().size());
   for (const auto& shareable_item : data.items()) {
@@ -317,7 +319,7 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
       UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.Blob",
                            (length - offset) / 1024);
       // We grab the handle to ensure it stays around while we copy it.
-      scoped_ptr<BlobDataHandle> src =
+      std::unique_ptr<BlobDataHandle> src =
           GetBlobDataFromUUID(data_element.blob_uuid());
       if (!src || src->IsBroken() || src->IsBeingBuilt()) {
         error = true;
@@ -398,7 +400,7 @@ bool BlobStorageContext::AppendBlob(
           return false;
         }
         DCHECK(!item.offset());
-        scoped_ptr<DataElement> element(new DataElement());
+        std::unique_ptr<DataElement> element(new DataElement());
         element->SetToBytes(item.bytes() + offset,
                             static_cast<int64_t>(new_length));
         memory_usage_ += new_length;
@@ -410,7 +412,7 @@ bool BlobStorageContext::AppendBlob(
             << "We cannot use a section of a file with an unknown length";
         UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.File",
                              new_length / 1024);
-        scoped_ptr<DataElement> element(new DataElement());
+        std::unique_ptr<DataElement> element(new DataElement());
         element->SetToFilePathRange(item.path(), item.offset() + offset,
                                     new_length,
                                     item.expected_modification_time());
@@ -421,7 +423,7 @@ bool BlobStorageContext::AppendBlob(
       case DataElement::TYPE_FILE_FILESYSTEM: {
         UMA_HISTOGRAM_COUNTS("Storage.BlobItemSize.BlobSlice.FileSystem",
                              new_length / 1024);
-        scoped_ptr<DataElement> element(new DataElement());
+        std::unique_ptr<DataElement> element(new DataElement());
         element->SetToFileSystemUrlRange(item.filesystem_url(),
                                          item.offset() + offset, new_length,
                                          item.expected_modification_time());
@@ -429,7 +431,7 @@ bool BlobStorageContext::AppendBlob(
             target_blob_uuid, new BlobDataItem(std::move(element))));
       } break;
       case DataElement::TYPE_DISK_CACHE_ENTRY: {
-        scoped_ptr<DataElement> element(new DataElement());
+        std::unique_ptr<DataElement> element(new DataElement());
         element->SetToDiskCacheEntryRange(item.offset() + offset,
                                           new_length);
         target_blob_builder->AppendSharedBlobItem(new ShareableBlobDataItem(

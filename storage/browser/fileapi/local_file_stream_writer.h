@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
@@ -91,7 +91,7 @@ class STORAGE_EXPORT LocalFileStreamWriter
 
   // Current states of the operation.
   bool has_pending_operation_;
-  scoped_ptr<net::FileStream> stream_impl_;
+  std::unique_ptr<net::FileStream> stream_impl_;
   net::CompletionCallback cancel_callback_;
 
   base::WeakPtrFactory<LocalFileStreamWriter> weak_factory_;

@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -74,7 +74,7 @@ class SandboxQuotaObserver
   FileSystemUsageCache* file_system_usage_cache_;
 
   PendingUpdateNotificationMap pending_update_notification_;
-  scoped_ptr<TimedTaskHelper> delayed_cache_update_helper_;
+  std::unique_ptr<TimedTaskHelper> delayed_cache_update_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxQuotaObserver);
 };

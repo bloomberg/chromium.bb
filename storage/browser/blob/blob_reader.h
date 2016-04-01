@@ -7,12 +7,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "storage/browser/storage_browser_export.h"
@@ -50,13 +51,13 @@ class STORAGE_EXPORT BlobReader {
    public:
     virtual ~FileStreamReaderProvider();
 
-    virtual scoped_ptr<FileStreamReader> CreateForLocalFile(
+    virtual std::unique_ptr<FileStreamReader> CreateForLocalFile(
         base::TaskRunner* task_runner,
         const base::FilePath& file_path,
         int64_t initial_offset,
         const base::Time& expected_modification_time) = 0;
 
-    virtual scoped_ptr<FileStreamReader> CreateFileStreamReader(
+    virtual std::unique_ptr<FileStreamReader> CreateFileStreamReader(
         const GURL& filesystem_url,
         int64_t offset,
         int64_t max_bytes_to_read,
@@ -121,7 +122,7 @@ class STORAGE_EXPORT BlobReader {
   FRIEND_TEST_ALL_PREFIXES(BlobReaderTest, ReadFromIncompleteBlob);
 
   BlobReader(const BlobDataHandle* blob_handle,
-             scoped_ptr<FileStreamReaderProvider> file_stream_provider,
+             std::unique_ptr<FileStreamReaderProvider> file_stream_provider,
              base::SequencedTaskRunner* file_task_runner);
 
   bool total_size_calculated() const { return total_size_calculated_; }
@@ -163,15 +164,16 @@ class STORAGE_EXPORT BlobReader {
   // If the item at |index| is not of file this returns NULL.
   FileStreamReader* GetOrCreateFileReaderAtIndex(size_t index);
   // If the reader is null, then this basically performs a delete operation.
-  void SetFileReaderAtIndex(size_t index, scoped_ptr<FileStreamReader> reader);
+  void SetFileReaderAtIndex(size_t index,
+                            std::unique_ptr<FileStreamReader> reader);
   // Creates a FileStreamReader for the item with additional_offset.
-  scoped_ptr<FileStreamReader> CreateFileStreamReader(
+  std::unique_ptr<FileStreamReader> CreateFileStreamReader(
       const BlobDataItem& item,
       uint64_t additional_offset);
 
-  scoped_ptr<BlobDataHandle> blob_handle_;
-  scoped_ptr<BlobDataSnapshot> blob_data_;
-  scoped_ptr<FileStreamReaderProvider> file_stream_provider_;
+  std::unique_ptr<BlobDataHandle> blob_handle_;
+  std::unique_ptr<BlobDataSnapshot> blob_data_;
+  std::unique_ptr<FileStreamReaderProvider> file_stream_provider_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   int net_error_;

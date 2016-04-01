@@ -5,7 +5,9 @@
 #include "storage/browser/fileapi/file_system_operation_impl.h"
 
 #include <stdint.h>
+
 #include <limits>
+#include <memory>
 #include <tuple>
 #include <utility>
 
@@ -58,7 +60,7 @@ void DidOpenFile(
 FileSystemOperation* FileSystemOperation::Create(
     const FileSystemURL& url,
     FileSystemContext* file_system_context,
-    scoped_ptr<FileSystemOperationContext> operation_context) {
+    std::unique_ptr<FileSystemOperationContext> operation_context) {
   return new FileSystemOperationImpl(url, file_system_context,
                                      std::move(operation_context));
 }
@@ -191,8 +193,8 @@ void FileSystemOperationImpl::Remove(const FileSystemURL& url,
 
 void FileSystemOperationImpl::Write(
     const FileSystemURL& url,
-    scoped_ptr<FileWriterDelegate> writer_delegate,
-    scoped_ptr<net::URLRequest> blob_request,
+    std::unique_ptr<FileWriterDelegate> writer_delegate,
+    std::unique_ptr<net::URLRequest> blob_request,
     const WriteCallback& callback) {
   DCHECK(SetPendingOperationType(kOperationWrite));
   file_writer_delegate_ = std::move(writer_delegate);
@@ -375,7 +377,7 @@ base::File::Error FileSystemOperationImpl::SyncGetPlatformPath(
 FileSystemOperationImpl::FileSystemOperationImpl(
     const FileSystemURL& url,
     FileSystemContext* file_system_context,
-    scoped_ptr<FileSystemOperationContext> operation_context)
+    std::unique_ptr<FileSystemOperationContext> operation_context)
     : file_system_context_(file_system_context),
       operation_context_(std::move(operation_context)),
       async_file_util_(NULL),

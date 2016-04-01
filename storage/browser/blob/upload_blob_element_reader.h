@@ -7,9 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/upload_element_reader.h"
 #include "storage/browser/storage_browser_export.h"
@@ -33,7 +34,7 @@ class FileSystemContext;
 class STORAGE_EXPORT UploadBlobElementReader
     : NON_EXPORTED_BASE(public net::UploadElementReader) {
  public:
-  UploadBlobElementReader(scoped_ptr<BlobDataHandle> handle,
+  UploadBlobElementReader(std::unique_ptr<BlobDataHandle> handle,
                           FileSystemContext* file_system_context,
                           base::SingleThreadTaskRunner* file_task_runner);
   ~UploadBlobElementReader() override;
@@ -53,10 +54,10 @@ class STORAGE_EXPORT UploadBlobElementReader
   const std::string& uuid() const;
 
  private:
-  scoped_ptr<BlobDataHandle> handle_;
+  std::unique_ptr<BlobDataHandle> handle_;
   scoped_refptr<FileSystemContext> file_system_context_;
   scoped_refptr<base::SingleThreadTaskRunner> file_runner_;
-  scoped_ptr<BlobReader> reader_;
+  std::unique_ptr<BlobReader> reader_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadBlobElementReader);
 };

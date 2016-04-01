@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -38,7 +40,7 @@ class STORAGE_EXPORT QuotaReservation
 
   // Associates |platform_path| to the QuotaReservation instance.
   // Returns an OpenFileHandle instance that represents a quota managed file.
-  scoped_ptr<OpenFileHandle> GetOpenFileHandle(
+  std::unique_ptr<OpenFileHandle> GetOpenFileHandle(
       const base::FilePath& platform_path);
 
   // Should be called when the associated client is crashed.

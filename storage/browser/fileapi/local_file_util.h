@@ -7,10 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/storage_browser_export.h"
 
@@ -46,7 +47,7 @@ class STORAGE_EXPORT LocalFileUtil
                                 const FileSystemURL& url,
                                 base::File::Info* file_info,
                                 base::FilePath* platform_file) override;
-  scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(
+  std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url) override;
   base::File::Error GetLocalFilePath(FileSystemOperationContext* context,

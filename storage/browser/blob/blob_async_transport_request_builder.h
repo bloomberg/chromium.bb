@@ -9,10 +9,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"

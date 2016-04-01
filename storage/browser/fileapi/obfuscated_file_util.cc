@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <queue>
 #include <tuple>
 
@@ -408,10 +409,9 @@ base::File::Error ObfuscatedFileUtil::GetFileInfo(
                              file_info, platform_file_path);
 }
 
-scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
-    ObfuscatedFileUtil::CreateFileEnumerator(
-    FileSystemOperationContext* context,
-    const FileSystemURL& root_url) {
+std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+ObfuscatedFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
+                                         const FileSystemURL& root_url) {
   return CreateFileEnumerator(context, root_url, false /* recursive */);
 }
 
@@ -796,16 +796,15 @@ storage::ScopedFile ObfuscatedFileUtil::CreateSnapshotFile(
   return storage::ScopedFile();
 }
 
-scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
-    ObfuscatedFileUtil::CreateFileEnumerator(
-    FileSystemOperationContext* context,
-    const FileSystemURL& root_url,
-    bool recursive) {
+std::unique_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+ObfuscatedFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
+                                         const FileSystemURL& root_url,
+                                         bool recursive) {
   SandboxDirectoryDatabase* db = GetDirectoryDatabase(root_url, false);
   if (!db) {
-    return scoped_ptr<AbstractFileEnumerator>(new EmptyFileEnumerator());
+    return std::unique_ptr<AbstractFileEnumerator>(new EmptyFileEnumerator());
   }
-  return scoped_ptr<AbstractFileEnumerator>(
+  return std::unique_ptr<AbstractFileEnumerator>(
       new ObfuscatedFileEnumerator(db, context, this, root_url, recursive));
 }
 
@@ -910,7 +909,7 @@ void ObfuscatedFileUtil::CloseFileSystemForOriginAndType(
                           base::CompareCase::SENSITIVE))
       break;
     DCHECK(type_string.empty() || iter->first == key_prefix);
-    scoped_ptr<SandboxDirectoryDatabase> database(iter->second);
+    std::unique_ptr<SandboxDirectoryDatabase> database(iter->second);
     directories_.erase(iter++);
   }
 }
@@ -935,7 +934,7 @@ void ObfuscatedFileUtil::DestroyDirectoryDatabase(
                           base::CompareCase::SENSITIVE))
       break;
     DCHECK(type_string.empty() || iter->first == key_prefix);
-    scoped_ptr<SandboxDirectoryDatabase> database(iter->second);
+    std::unique_ptr<SandboxDirectoryDatabase> database(iter->second);
     directories_.erase(iter++);
 
     // Continue to destroy databases even if it failed because it doesn't affect
@@ -970,7 +969,7 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase(
         origin, type_string, false, &error);
     if (error != base::File::FILE_OK)
       continue;
-    scoped_ptr<SandboxDirectoryDatabase> db(
+    std::unique_ptr<SandboxDirectoryDatabase> db(
         new SandboxDirectoryDatabase(path, env_override_));
     if (db->Init(SandboxDirectoryDatabase::FAIL_ON_CORRUPTION)) {
       directories_[GetDirectoryDatabaseKey(origin, type_string)] = db.release();

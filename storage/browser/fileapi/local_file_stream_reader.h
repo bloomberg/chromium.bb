@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -69,7 +71,7 @@ class STORAGE_EXPORT LocalFileStreamReader
                                   const base::File::Info& file_info);
 
   scoped_refptr<base::TaskRunner> task_runner_;
-  scoped_ptr<net::FileStream> stream_impl_;
+  std::unique_ptr<net::FileStream> stream_impl_;
   const base::FilePath file_path_;
   const int64_t initial_offset_;
   const base::Time expected_modification_time_;

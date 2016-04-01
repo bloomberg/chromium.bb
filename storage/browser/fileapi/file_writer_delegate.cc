@@ -5,6 +5,8 @@
 #include "storage/browser/fileapi/file_writer_delegate.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -24,7 +26,7 @@ namespace storage {
 static const int kReadBufSize = 32768;
 
 FileWriterDelegate::FileWriterDelegate(
-    scoped_ptr<FileStreamWriter> file_stream_writer,
+    std::unique_ptr<FileStreamWriter> file_stream_writer,
     FlushPolicy flush_policy)
     : file_stream_writer_(std::move(file_stream_writer)),
       writing_started_(false),
@@ -38,7 +40,7 @@ FileWriterDelegate::FileWriterDelegate(
 FileWriterDelegate::~FileWriterDelegate() {
 }
 
-void FileWriterDelegate::Start(scoped_ptr<net::URLRequest> request,
+void FileWriterDelegate::Start(std::unique_ptr<net::URLRequest> request,
                                const DelegateWriteCallback& write_callback) {
   write_callback_ = write_callback;
   request_ = std::move(request);

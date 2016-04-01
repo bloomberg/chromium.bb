@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "storage/browser/fileapi/quota/open_file_handle.h"
 #include "storage/browser/fileapi/quota/quota_reservation_buffer.h"
@@ -32,7 +34,7 @@ void QuotaReservation::RefreshReservation(int64_t size,
     remaining_quota_ = 0;
 }
 
-scoped_ptr<OpenFileHandle> QuotaReservation::GetOpenFileHandle(
+std::unique_ptr<OpenFileHandle> QuotaReservation::GetOpenFileHandle(
     const base::FilePath& platform_path) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(!client_crashed_);

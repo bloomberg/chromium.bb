@@ -6,12 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"

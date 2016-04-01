@@ -5,11 +5,11 @@
 #ifndef STORAGE_BROWSER_FILEAPI_SANDBOX_ORIGIN_DATABASE_H_
 #define STORAGE_BROWSER_FILEAPI_SANDBOX_ORIGIN_DATABASE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "storage/browser/fileapi/sandbox_origin_database_interface.h"
 
@@ -70,7 +70,7 @@ class STORAGE_EXPORT SandboxOriginDatabase
 
   base::FilePath file_system_directory_;
   leveldb::Env* env_override_;
-  scoped_ptr<leveldb::DB> db_;
+  std::unique_ptr<leveldb::DB> db_;
   base::Time last_reported_time_;
   DISALLOW_COPY_AND_ASSIGN(SandboxOriginDatabase);
 };
