@@ -27,6 +27,12 @@ struct V4ProtocolConfig {
 
   // The Google API key.
   std::string key_param;
+
+  // Disable auto-updates using a command line switch?
+  bool disable_auto_update;
+
+  V4ProtocolConfig();
+  ~V4ProtocolConfig();
 };
 
 // The information required to uniquely identify each list the client is
@@ -102,7 +108,7 @@ class V4ProtocolManagerUtil {
                                                 size_t* multiplier);
 
  private:
-  V4ProtocolManagerUtil() {};
+  V4ProtocolManagerUtil(){};
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerUtilTest,
                            TestBackOffLogic);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerUtilTest,

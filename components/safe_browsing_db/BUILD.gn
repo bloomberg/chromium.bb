@@ -30,6 +30,7 @@ group("safe_browsing_db_shared") {
 group("safe_browsing_db") {
   deps = [
     ":safe_browsing_db_shared",
+    ":v4_update_protocol_manager",
   ]
 }
 
@@ -51,7 +52,6 @@ source_set("database_manager") {
     ":hit_report",
     ":util",
     ":v4_get_hash_protocol_manager",
-    ":v4_update_protocol_manager",
     "//base:base",
     "//content/public/browser",
     "//content/public/common",

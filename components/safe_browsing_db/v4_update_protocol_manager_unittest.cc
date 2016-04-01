@@ -7,6 +7,8 @@
 #include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
@@ -30,71 +32,97 @@ const char kKeyParam[] = "test_key_param";
 
 namespace safe_browsing {
 
-typedef V4UpdateProtocolManager::ListUpdateRequest ListUpdateRequest;
-typedef V4UpdateProtocolManager::ListUpdateResponse ListUpdateResponse;
-
 class V4UpdateProtocolManagerTest : public testing::Test {
  protected:
-  scoped_ptr<V4UpdateProtocolManager> CreateProtocolManager() {
+  static void ValidateGetUpdatesResults(
+      const std::vector<ListUpdateResponse>& expected_lurs,
+      const std::vector<ListUpdateResponse>& list_update_responses) {
+    ASSERT_EQ(expected_lurs.size(), list_update_responses.size());
+
+    for (unsigned int i = 0; i < list_update_responses.size(); ++i) {
+      const ListUpdateResponse& expected = expected_lurs[i];
+      const ListUpdateResponse& actual = list_update_responses[i];
+
+      EXPECT_EQ(expected.platform_type(), actual.platform_type());
+      EXPECT_EQ(expected.response_type(), actual.response_type());
+      EXPECT_EQ(expected.threat_entry_type(), actual.threat_entry_type());
+      EXPECT_EQ(expected.threat_type(), actual.threat_type());
+      EXPECT_EQ(expected.new_client_state(), actual.new_client_state());
+
+      // TODO(vakh): Test more fields from the proto.
+    }
+  }
+
+  scoped_ptr<V4UpdateProtocolManager> CreateProtocolManager(
+      const base::hash_map<UpdateListIdentifier, std::string>
+          current_list_states,
+      const std::vector<ListUpdateResponse>& expected_lurs) {
     V4ProtocolConfig config;
     config.client_name = kClient;
     config.version = kAppVer;
     config.key_param = kKeyParam;
-    return scoped_ptr<V4UpdateProtocolManager>(
-        V4UpdateProtocolManager::Create(NULL, config));
+    config.disable_auto_update = false;
+    return V4UpdateProtocolManager::Create(
+        NULL, config, current_list_states,
+        base::Bind(ValidateGetUpdatesResults, expected_lurs));
   }
 
-  void SetupListsToUpdate(
-      base::hash_set<UpdateListIdentifier>* lists_to_update) {
+  void SetupCurrentListStates(
+      base::hash_map<UpdateListIdentifier, std::string>* current_list_states) {
     UpdateListIdentifier list_identifier;
     list_identifier.platform_type = WINDOWS_PLATFORM;
     list_identifier.threat_entry_type = URL_EXPRESSION;
     list_identifier.threat_type = MALWARE_THREAT;
-    lists_to_update->insert(list_identifier);
+    current_list_states->insert({list_identifier, "initial_state_1"});
 
     list_identifier.platform_type = WINDOWS_PLATFORM;
     list_identifier.threat_entry_type = URL_EXPRESSION;
     list_identifier.threat_type = UNWANTED_SOFTWARE;
-    lists_to_update->insert(list_identifier);
+    current_list_states->insert({list_identifier, "initial_state_2"});
 
     list_identifier.platform_type = WINDOWS_PLATFORM;
     list_identifier.threat_entry_type = BINARY_DIGEST;
     list_identifier.threat_type = MALWARE_THREAT;
-    lists_to_update->insert(list_identifier);
+    current_list_states->insert({list_identifier, "initial_state_3"});
   }
 
-  void ClearListsToUpdate(
-      base::hash_set<UpdateListIdentifier>* lists_to_update) {
-    lists_to_update->clear();
+  void SetupExpectedListUpdateResponse(
+      std::vector<ListUpdateResponse>* expected_lurs) {
+    ListUpdateResponse lur;
+    lur.set_platform_type(WINDOWS_PLATFORM);
+    lur.set_response_type(ListUpdateResponse::PARTIAL_UPDATE);
+    lur.set_threat_entry_type(URL_EXPRESSION);
+    lur.set_threat_type(MALWARE_THREAT);
+    lur.set_new_client_state("new_state_1");
+    expected_lurs->push_back(lur);
+
+    lur.set_platform_type(WINDOWS_PLATFORM);
+    lur.set_response_type(ListUpdateResponse::PARTIAL_UPDATE);
+    lur.set_threat_entry_type(URL_EXPRESSION);
+    lur.set_threat_type(UNWANTED_SOFTWARE);
+    lur.set_new_client_state("new_state_2");
+    expected_lurs->push_back(lur);
+
+    lur.set_platform_type(WINDOWS_PLATFORM);
+    lur.set_response_type(ListUpdateResponse::FULL_UPDATE);
+    lur.set_threat_entry_type(BINARY_DIGEST);
+    lur.set_threat_type(MALWARE_THREAT);
+    lur.set_new_client_state("new_state_3");
+    expected_lurs->push_back(lur);
   }
 
-  void SetupCurrentListStates(
-      const base::hash_set<UpdateListIdentifier>& lists_to_update,
-      base::hash_map<UpdateListIdentifier, std::string>* current_list_states) {
-    // TODO(vakh): Implement this to test the cases when we have an existing
-    // state for some of the lists.
-  }
-
-  std::string GetStockV4UpdateResponse() {
+  std::string GetExpectedV4UpdateResponse(
+      std::vector<ListUpdateResponse>& expected_lurs) const {
     FetchThreatListUpdatesResponse response;
 
-    ListUpdateResponse* lur = response.add_list_update_responses();
-    lur->set_platform_type(WINDOWS_PLATFORM);
-    lur->set_response_type(ListUpdateResponse::PARTIAL_UPDATE);
-    lur->set_threat_entry_type(URL_EXPRESSION);
-    lur->set_threat_type(MALWARE_THREAT);
-
-    lur = response.add_list_update_responses();
-    lur->set_platform_type(WINDOWS_PLATFORM);
-    lur->set_response_type(ListUpdateResponse::PARTIAL_UPDATE);
-    lur->set_threat_entry_type(URL_EXPRESSION);
-    lur->set_threat_type(UNWANTED_SOFTWARE);
-
-    lur = response.add_list_update_responses();
-    lur->set_platform_type(WINDOWS_PLATFORM);
-    lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
-    lur->set_threat_entry_type(BINARY_DIGEST);
-    lur->set_threat_type(MALWARE_THREAT);
+    for (const auto& expected_lur : expected_lurs) {
+      ListUpdateResponse* lur = response.add_list_update_responses();
+      lur->set_new_client_state(expected_lur.new_client_state());
+      lur->set_platform_type(expected_lur.platform_type());
+      lur->set_response_type(expected_lur.response_type());
+      lur->set_threat_entry_type(expected_lur.threat_entry_type());
+      lur->set_threat_type(expected_lur.threat_type());
+    }
 
     // Serialize.
     std::string res_data;
@@ -104,35 +132,26 @@ class V4UpdateProtocolManagerTest : public testing::Test {
   }
 };
 
-void ValidateGetUpdatesResults(
-    const std::vector<ListUpdateResponse>& expected_lurs,
-    const std::vector<ListUpdateResponse>& list_update_responses) {
-  ASSERT_EQ(expected_lurs.size(), list_update_responses.size());
-
-  for (unsigned int i = 0; i < list_update_responses.size(); ++i) {
-    const ListUpdateResponse& expected = expected_lurs[i];
-    const ListUpdateResponse& actual = list_update_responses[i];
-
-    EXPECT_EQ(expected.platform_type(), actual.platform_type());
-    EXPECT_EQ(expected.response_type(), actual.response_type());
-    EXPECT_EQ(expected.threat_entry_type(), actual.threat_entry_type());
-    EXPECT_EQ(expected.threat_type(), actual.threat_type());
-
-    // TODO(vakh): Test more fields from the proto.
-  }
-}
-
 // TODO(vakh): Add many more tests.
-
 TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingNetwork) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory factory;
-  scoped_ptr<V4UpdateProtocolManager> pm(CreateProtocolManager());
-
-  const std::vector<ListUpdateResponse> expected_lurs;
-  const base::hash_set<UpdateListIdentifier> lists_to_update;
   const base::hash_map<UpdateListIdentifier, std::string> current_list_states;
-  pm->GetUpdates(lists_to_update, current_list_states,
-                 base::Bind(&ValidateGetUpdatesResults, expected_lurs));
+  const std::vector<ListUpdateResponse> expected_lurs;
+  scoped_ptr<V4UpdateProtocolManager> pm(
+      CreateProtocolManager(current_list_states, expected_lurs));
+  runner->ClearPendingTasks();
+
+  // Initial state. No errors.
+  EXPECT_EQ(0ul, pm->update_error_count_);
+  EXPECT_EQ(1ul, pm->update_back_off_mult_);
+
+  pm->IssueUpdateRequest();
+  EXPECT_FALSE(pm->IsUpdateScheduled());
+
+  runner->RunPendingTasks();
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   DCHECK(fetcher);
@@ -144,56 +163,68 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingNetwork) {
   // Should have recorded one error, but back off multiplier is unchanged.
   EXPECT_EQ(1ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingResponseCode) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory factory;
-  scoped_ptr<V4UpdateProtocolManager> pm(CreateProtocolManager());
-
   const std::vector<ListUpdateResponse> expected_lurs;
-  const base::hash_set<UpdateListIdentifier> lists_to_update;
   const base::hash_map<UpdateListIdentifier, std::string> current_list_states;
-  pm->GetUpdates(lists_to_update, current_list_states,
-                 base::Bind(&ValidateGetUpdatesResults, expected_lurs));
+  scoped_ptr<V4UpdateProtocolManager> pm(
+      CreateProtocolManager(current_list_states, expected_lurs));
+  runner->ClearPendingTasks();
 
+  pm->IssueUpdateRequest();
+  EXPECT_FALSE(pm->IsUpdateScheduled());
+
+  runner->RunPendingTasks();
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   DCHECK(fetcher);
   fetcher->set_status(net::URLRequestStatus());
   // Response code of anything other than 200 should result in error.
-  fetcher->set_response_code(204);
-  fetcher->SetResponseString(GetStockV4UpdateResponse());
+  fetcher->set_response_code(net::HTTP_NO_CONTENT);
+  fetcher->SetResponseString("");
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // Should have recorded one error, but back off multiplier is unchanged.
   EXPECT_EQ(1ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesNoError) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
   net::TestURLFetcherFactory factory;
-  scoped_ptr<V4UpdateProtocolManager> pm(CreateProtocolManager());
-
-
-  const std::vector<ListUpdateResponse> expected_lurs;
-  base::hash_set<UpdateListIdentifier> lists_to_update;
-  SetupListsToUpdate(&lists_to_update);
+  std::vector<ListUpdateResponse> expected_lurs;
+  SetupExpectedListUpdateResponse(&expected_lurs);
   base::hash_map<UpdateListIdentifier, std::string> current_list_states;
-  SetupCurrentListStates(lists_to_update, &current_list_states);
-  pm->GetUpdates(lists_to_update, current_list_states,
-                 base::Bind(&ValidateGetUpdatesResults, expected_lurs));
-  ClearListsToUpdate(&lists_to_update);
+  SetupCurrentListStates(&current_list_states);
+  scoped_ptr<V4UpdateProtocolManager> pm(
+      CreateProtocolManager(current_list_states, expected_lurs));
+  runner->ClearPendingTasks();
+
+  pm->IssueUpdateRequest();
+  EXPECT_FALSE(pm->IsUpdateScheduled());
+
+  runner->RunPendingTasks();
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   DCHECK(fetcher);
   fetcher->set_status(net::URLRequestStatus());
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(GetStockV4UpdateResponse());
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(GetExpectedV4UpdateResponse(expected_lurs));
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   // No error, back off multiplier is unchanged.
   EXPECT_EQ(0ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
+  EXPECT_TRUE(pm->IsUpdateScheduled());
 }
 
 }  // namespace safe_browsing

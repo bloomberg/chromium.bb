@@ -28,6 +28,7 @@
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
 #include "url/gurl.h"
 
@@ -82,7 +83,7 @@ class LocalSafeBrowsingDatabaseManager
     bool is_extended_reporting;
     bool need_get_hash;
     base::TimeTicks start;  // When check was sent to SB service.
-    ListType check_type;  // See comment in constructor.
+    ListType check_type;    // See comment in constructor.
     std::vector<SBThreatType> expected_threats;
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
@@ -131,9 +132,8 @@ class LocalSafeBrowsingDatabaseManager
   bool IsMalwareKillSwitchOn() override;
   bool IsCsdWhitelistKillSwitchOn() override;
   void CancelCheck(Client* client) override;
-  void StartOnIOThread(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config) override;
+  void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
+                       const V4ProtocolConfig& config) override;
   void StopOnIOThread(bool shutdown) override;
   bool download_protection_enabled() const override;
 
@@ -155,8 +155,7 @@ class LocalSafeBrowsingDatabaseManager
   friend class SafeBrowsingServiceTest;
   friend class SafeBrowsingServiceTestHelper;
   friend class LocalDatabaseManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(LocalDatabaseManagerTest,
-                           GetUrlSeverestThreatType);
+  FRIEND_TEST_ALL_PREFIXES(LocalDatabaseManagerTest, GetUrlSeverestThreatType);
   FRIEND_TEST_ALL_PREFIXES(LocalDatabaseManagerTest,
                            ServiceStopWithPendingChecks);
 
@@ -256,7 +255,7 @@ class LocalSafeBrowsingDatabaseManager
       AddChunksCallback callback);
 
   void DeleteDatabaseChunks(
-      scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes);
+      scoped_ptr<std::vector<SBChunkDelete>> chunk_deletes);
 
   void NotifyClientBlockingComplete(Client* client, bool proceed);
 

@@ -28,7 +28,6 @@ namespace safe_browsing {
 
 struct V4ProtocolConfig;
 class V4GetHashProtocolManager;
-class V4UpdateProtocolManager;
 
 // Base class to either the locally-managed or a remotely-managed database.
 class SafeBrowsingDatabaseManager
@@ -178,7 +177,6 @@ class SafeBrowsingDatabaseManager
 
   // Created and destroyed via StartonIOThread/StopOnIOThread.
   V4GetHashProtocolManager* v4_get_hash_protocol_manager_;
-  V4UpdateProtocolManager* v4_update_protocol_manager_;
 };  // class SafeBrowsingDatabaseManager
 
 }  // namespace safe_browsing
