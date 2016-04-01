@@ -56,7 +56,7 @@ ninja -C out-linux/Debug blimp
 To add your own build preferences
 
 ```bash
-gn args out-android/Debug
+gn args out-linux/Debug
 ```
 
 ## Adding new build arguments
