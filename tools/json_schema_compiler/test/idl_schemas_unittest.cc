@@ -157,10 +157,10 @@ TEST(IdlCompiler, ArrayTypes) {
   scoped_ptr<Function11::Params> f11_params = Function11::Params::Create(list);
   ASSERT_TRUE(f11_params != NULL);
   ASSERT_EQ(2u, f11_params->arg.size());
-  EXPECT_EQ(5, f11_params->arg[0]->x);
-  EXPECT_EQ("foo", f11_params->arg[0]->y);
-  EXPECT_EQ(6, f11_params->arg[1]->x);
-  EXPECT_EQ("bar", f11_params->arg[1]->y);
+  EXPECT_EQ(5, f11_params->arg[0].x);
+  EXPECT_EQ("foo", f11_params->arg[0].y);
+  EXPECT_EQ(6, f11_params->arg[1].x);
+  EXPECT_EQ("bar", f11_params->arg[1].y);
 }
 
 TEST(IdlCompiler, ObjectTypes) {

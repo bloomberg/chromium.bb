@@ -162,9 +162,9 @@ TEST(JsonSchemaCompilerArrayTest, RefArrayType) {
     scoped_ptr<RefArrayType> ref_array_type(new RefArrayType());
     EXPECT_TRUE(RefArrayType::Populate(*value, ref_array_type.get()));
     ASSERT_EQ(3u, ref_array_type->refs.size());
-    EXPECT_EQ(1, ref_array_type->refs[0]->val);
-    EXPECT_EQ(2, ref_array_type->refs[1]->val);
-    EXPECT_EQ(3, ref_array_type->refs[2]->val);
+    EXPECT_EQ(1, ref_array_type->refs[0].val);
+    EXPECT_EQ(2, ref_array_type->refs[1].val);
+    EXPECT_EQ(3, ref_array_type->refs[2].val);
   }
   {
     scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
@@ -219,8 +219,8 @@ TEST(JsonSchemaCompilerArrayTest, ObjectArrayParamsCreate) {
       ObjectArray::Params::Create(*params_value));
   EXPECT_TRUE(params.get());
   ASSERT_EQ(2u, params->objects.size());
-  EXPECT_EQ(1, params->objects[0]->additional_properties["val"]);
-  EXPECT_EQ(2, params->objects[1]->additional_properties["val"]);
+  EXPECT_EQ(1, params->objects[0].additional_properties["val"]);
+  EXPECT_EQ(2, params->objects[1].additional_properties["val"]);
 }
 
 TEST(JsonSchemaCompilerArrayTest, RefArrayParamsCreate) {
@@ -233,8 +233,8 @@ TEST(JsonSchemaCompilerArrayTest, RefArrayParamsCreate) {
       RefArray::Params::Create(*params_value));
   EXPECT_TRUE(params.get());
   ASSERT_EQ(2u, params->refs.size());
-  EXPECT_EQ(1, params->refs[0]->val);
-  EXPECT_EQ(2, params->refs[1]->val);
+  EXPECT_EQ(1, params->refs[0].val);
+  EXPECT_EQ(2, params->refs[1].val);
 }
 
 TEST(JsonSchemaCompilerArrayTest, ReturnIntegerArrayResultCreate) {
@@ -253,11 +253,11 @@ TEST(JsonSchemaCompilerArrayTest, ReturnIntegerArrayResultCreate) {
 }
 
 TEST(JsonSchemaCompilerArrayTest, ReturnRefArrayResultCreate) {
-  std::vector<linked_ptr<Item> > items;
-  items.push_back(linked_ptr<Item>(new Item()));
-  items.push_back(linked_ptr<Item>(new Item()));
-  items[0]->val = 1;
-  items[1]->val = 2;
+  std::vector<Item> items;
+  items.push_back(Item());
+  items.push_back(Item());
+  items[0].val = 1;
+  items[1].val = 2;
   scoped_ptr<base::ListValue> results =
       ReturnRefArray::Results::Create(items);
 

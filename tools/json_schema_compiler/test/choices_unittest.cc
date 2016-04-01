@@ -281,7 +281,7 @@ TEST(JsonSchemaCompilerChoicesTest, NestedChoices) {
     EXPECT_FALSE(obj->as_choice2->as_choice_type);
     ASSERT_TRUE(obj->as_choice2->as_choice_types);
     {
-      std::vector<linked_ptr<ChoiceType> >* choice_types =
+      std::vector<ChoiceType>* choice_types =
           obj->as_choice2->as_choice_types.get();
       // Bleh too much effort to test everything.
       ASSERT_EQ(2u, choice_types->size());

@@ -148,7 +148,7 @@ class CppTypeGeneratorTest(unittest.TestCase):
     manager = CppTypeGenerator(self.models.get('windows'),
                                 _FakeSchemaLoader(None))
     self.assertEquals(
-        'std::vector<linked_ptr<Window> >',
+        'std::vector<Window>',
         manager.GetCppType(
             self.windows.functions['getAll'].callback.params[0].type_))
     manager = CppTypeGenerator(self.models.get('permissions'),
@@ -182,7 +182,7 @@ class CppTypeGeneratorTest(unittest.TestCase):
                    environment=CppNamespaceEnvironment('%(namespace)s'))
     manager = CppTypeGenerator(m, _FakeSchemaLoader(m))
     self.assertEquals(
-        'std::vector<linked_ptr<tabs::Tab> >',
+        'std::vector<tabs::Tab>',
         manager.GetCppType(
             self.windows.types['Window'].properties['tabs'].type_))
 
@@ -193,7 +193,7 @@ class CppTypeGeneratorTest(unittest.TestCase):
         manager.GetCppType(
             self.permissions.types['Permissions'].properties['origins'].type_,
             is_in_container=False))
-    self.assertEquals('linked_ptr<std::vector<std::string> >',
+    self.assertEquals('std::vector<std::string>',
         manager.GetCppType(
             self.permissions.types['Permissions'].properties['origins'].type_,
             is_in_container=True))

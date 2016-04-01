@@ -127,16 +127,15 @@ class _Generator(object):
         .Cblock(self._GenerateInitializersAndBody(type_))
         .Append('%s::~%s() {}' % (classname_in_namespace, classname))
       )
-      if 'use_movable_types' in type_.namespace.compiler_options:
-        # Note: we use 'rhs' because some API objects have a member 'other'.
-        (c.Append('%s::%s(%s&& rhs)' %
-                      (classname_in_namespace, classname, classname))
-          .Cblock(self._GenerateMoveCtor(type_))
-          .Append('%s& %s::operator=(%s&& rhs)' %
-                      (classname_in_namespace, classname_in_namespace,
-                       classname))
-          .Cblock(self._GenerateMoveAssignOperator(type_))
-        )
+      # Note: we use 'rhs' because some API objects have a member 'other'.
+      (c.Append('%s::%s(%s&& rhs)' %
+                    (classname_in_namespace, classname, classname))
+        .Cblock(self._GenerateMoveCtor(type_))
+        .Append('%s& %s::operator=(%s&& rhs)' %
+                    (classname_in_namespace, classname_in_namespace,
+                     classname))
+        .Cblock(self._GenerateMoveAssignOperator(type_))
+      )
       if type_.origin.from_json:
         c.Cblock(self._GenerateTypePopulate(classname_in_namespace, type_))
         if cpp_namespace is None:  # only generate for top-level types
@@ -483,17 +482,12 @@ class _Generator(object):
       if type_.additional_properties.property_type == PropertyType.ANY:
         c.Append('value->MergeDictionary(&additional_properties);')
       else:
-        # Non-copyable types will be wrapped in a linked_ptr for inclusion in
-        # maps, so we need to unwrap them.
-        needs_unwrap = (
-            not 'use_movable_types' in type_.namespace.compiler_options and
-            not self._type_helper.IsCopyable(type_.additional_properties))
         (c.Sblock('for (const auto& it : additional_properties) {')
           .Cblock(self._CreateValueFromType(
               'value->SetWithoutPathExpansion(it.first, %s);',
               type_.additional_properties.name,
               type_.additional_properties,
-              '%sit.second' % ('*' if needs_unwrap else '')))
+              'it.second'))
           .Eblock('}')
         )
 
