@@ -148,7 +148,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   void SetFullscreen(bool fullscreen) override;
   bool IsFullscreen() const override;
   void SetOpacity(unsigned char opacity) override;
-  void SetUseDragFrame(bool use_drag_frame) override;
   void FlashFrame(bool flash_frame) override;
   void RunShellDrag(View* view,
                     const ui::OSExchangeData& data,

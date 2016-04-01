@@ -493,10 +493,6 @@ void NativeWidgetMac::SetOpacity(unsigned char opacity) {
   [GetNativeWindow() setAlphaValue:opacity / 255.0];
 }
 
-void NativeWidgetMac::SetUseDragFrame(bool use_drag_frame) {
-  NOTIMPLEMENTED();
-}
-
 void NativeWidgetMac::FlashFrame(bool flash_frame) {
   NOTIMPLEMENTED();
 }

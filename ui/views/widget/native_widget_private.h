@@ -194,7 +194,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreen() const = 0;
   virtual void SetOpacity(unsigned char opacity) = 0;
-  virtual void SetUseDragFrame(bool use_drag_frame) = 0;
   virtual void FlashFrame(bool flash) = 0;
   virtual void RunShellDrag(View* view,
                             const ui::OSExchangeData& data,

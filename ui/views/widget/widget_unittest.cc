@@ -632,7 +632,6 @@ class WidgetWithDestroyedNativeViewTest : public ViewsTestBase {
     widget->IsMaximized();
     widget->IsFullscreen();
     widget->SetOpacity(0);
-    widget->SetUseDragFrame(true);
     widget->FlashFrame(true);
     widget->IsVisible();
     widget->GetThemeProvider();

@@ -820,9 +820,6 @@ void DesktopNativeWidgetAura::SetOpacity(unsigned char opacity) {
     desktop_window_tree_host_->SetOpacity(opacity);
 }
 
-void DesktopNativeWidgetAura::SetUseDragFrame(bool use_drag_frame) {
-}
-
 void DesktopNativeWidgetAura::FlashFrame(bool flash_frame) {
   if (content_window_)
     desktop_window_tree_host_->FlashFrame(flash_frame);

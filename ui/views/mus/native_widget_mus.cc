@@ -770,10 +770,6 @@ void NativeWidgetMus::SetOpacity(unsigned char opacity) {
   // NOTIMPLEMENTED();
 }
 
-void NativeWidgetMus::SetUseDragFrame(bool use_drag_frame) {
-  // NOTIMPLEMENTED();
-}
-
 void NativeWidgetMus::FlashFrame(bool flash_frame) {
   // NOTIMPLEMENTED();
 }

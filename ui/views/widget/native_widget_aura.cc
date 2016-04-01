@@ -598,10 +598,6 @@ void NativeWidgetAura::SetOpacity(unsigned char opacity) {
     window_->layer()->SetOpacity(opacity / 255.0);
 }
 
-void NativeWidgetAura::SetUseDragFrame(bool use_drag_frame) {
-  NOTIMPLEMENTED();
-}
-
 void NativeWidgetAura::FlashFrame(bool flash) {
   if (window_)
     window_->SetProperty(aura::client::kDrawAttentionKey, flash);

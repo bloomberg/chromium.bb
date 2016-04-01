@@ -523,10 +523,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // underlying windowing system.
   void SetOpacity(unsigned char opacity);
 
-  // Sets whether or not the window should show its frame as a "transient drag
-  // frame" - slightly transparent and without the standard window controls.
-  void SetUseDragFrame(bool use_drag_frame);
-
   // Flashes the frame of the window to draw attention to it. Currently only
   // implemented on Windows for non-Aura.
   void FlashFrame(bool flash);
