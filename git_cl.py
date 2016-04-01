@@ -4478,7 +4478,7 @@ if __name__ == '__main__':
   # These affect sys.stdout so do it outside of main() to simplify mocks in
   # unit testing.
   fix_encoding.fix_encoding()
-  colorama.init(wrap="TERM" not in os.environ)
+  colorama.init()
   try:
     sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:

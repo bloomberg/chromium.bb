@@ -2,7 +2,6 @@
 *.pyc
 
 # Ignore the batch files produced by the Windows bootstrapping.
-/git-bash
 /git.bat
 /gitk.bat
 /pylint.bat

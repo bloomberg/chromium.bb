@@ -89,18 +89,15 @@ for /d %%i in ("%WIN_TOOLS_ROOT_DIR%\git-*_bin") do (
 
 if "%WIN_TOOLS_FORCE%" == "1" goto :GIT_INSTALL
 
-if not exist "%GIT_EXE_PATH%" goto :GIT_INSTALL
-
-call "%GIT_EXE_PATH%" --version 2>nul 1>nul
-if errorlevel 1 goto :GIT_INSTALL
-
-:: Several git versions can live side-by-side; check the top-level
-:: batch script to make sure it points to the desired version.
-for %%f in (git.bat gitk.bat ssh.bat ssh-keygen.bat git-bash) do (
-  find "%GIT_BIN_DIR%" "%WIN_TOOLS_ROOT_DIR%\%%f" 2>nul 1>nul
+if exist "%GIT_EXE_PATH%" (
+  call "%GIT_EXE_PATH%" --version 2>nul 1>nul
+  if errorlevel 1 goto :GIT_INSTALL
+  rem Several git versions can live side-by-side; check the top-level
+  rem batch script to make sure it points to the desired version.
+  find "%GIT_BIN_DIR%" "%WIN_TOOLS_ROOT_DIR%\git.bat" 2>nul 1>nul
   if errorlevel 1 goto :GIT_MAKE_BATCH_FILES
+  goto :SYNC_GIT_HELP_FILES
 )
-goto :SYNC_GIT_HELP_FILES
 
 :GIT_INSTALL
 echo Installing git %GIT_VERSION% (avg 1-2 min download) ...
@@ -131,11 +128,10 @@ if not exist "%GIT_INST_DIR%\." goto :GIT_FAIL
 :: Create the batch files.
 set GIT_TEMPL=%~dp0git.template.bat
 set SED=%GIT_INST_DIR%\usr\bin\sed.exe
-call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/g" -e "s/GIT_PROGRAM/cmd\\\\git.exe/g" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\git.bat"
-call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/g" -e "s/GIT_PROGRAM/cmd\\\\gitk.exe/g" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\gitk.bat"
-call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/g" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh.exe/g" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh.bat"
-call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/g" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh-keygen.exe/g" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat"
-call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/g" -e "s/PYTHON_BIN_DIR/python276_bin/g" -e "s/SVN_BIN_DIR/svn_bin/g" < %~dp0git-bash.template.sh > "%WIN_TOOLS_ROOT_DIR%\git-bash"
+call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/cmd\\\\git.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\git.bat"
+call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/cmd\\\\gitk.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\gitk.bat"
+call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh.bat"
+call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh-keygen.exe/" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat"
 
 :: Ensure various git configurations are set correctly at they system level.
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.autocrlf false

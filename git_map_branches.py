@@ -27,7 +27,6 @@ Branches are colorized as follows:
 
 import argparse
 import collections
-import os
 import sys
 import subprocess2
 
@@ -272,7 +271,7 @@ class BranchMapper(object):
 
 
 def main(argv):
-  colorama.init(wrap="TERM" not in os.environ)
+  colorama.init()
   if get_git_version() < MIN_UPSTREAM_TRACK_GIT_VERSION:
     print >> sys.stderr, (
         'This tool will not show all tracking information for git version '

@@ -2303,7 +2303,7 @@ def main(argv):
     return 2
   fix_encoding.fix_encoding()
   disable_buffering()
-  colorama.init(wrap="TERM" not in os.environ)
+  colorama.init()
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
     return dispatcher.execute(OptionParser(), argv)
