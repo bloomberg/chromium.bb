@@ -26,4 +26,12 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
   history_service->QueryWebAndAppActivity(callback);
 }
 
+void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
+    const ProfileSyncService* sync_service,
+    history::WebHistoryService* history_service,
+    base::Callback<void(bool)> callback) {
+  ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
+      sync_service, history_service, callback);
+}
+
 }  // namespace browsing_data_ui

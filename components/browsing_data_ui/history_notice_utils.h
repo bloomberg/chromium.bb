@@ -23,6 +23,15 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
     history::WebHistoryService* history_service,
     base::Callback<void(bool)> callback);
 
+// Whether the Clear Browsing Data UI should popup a dialog with information
+// about the existence of other forms of browsing history stored in user's
+// account when the user deletes their browsing history for the first time.
+// The response is returned in a |callback|.
+void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
+    const ProfileSyncService* sync_service,
+    history::WebHistoryService* history_service,
+    base::Callback<void(bool)> callback);
+
 }  // namespace browsing_data_ui
 
 #endif  // COMPONENTS_BROWSING_DATA_UI_HISTORY_NOTICE_UTILS_H_
