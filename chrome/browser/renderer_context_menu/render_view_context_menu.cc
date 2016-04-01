@@ -182,6 +182,13 @@ enum UmaEnumOpenLinkAsUser {
   OPEN_LINK_AS_USER_LAST_ENUM_ID,
 };
 
+// State of other profiles when the "Open Link as User" context menu is shown.
+enum UmaEnumOpenLinkAsUserProfilesState {
+  OPEN_LINK_AS_USER_PROFILES_STATE_NO_OTHER_ACTIVE_PROFILES_ENUM_ID,
+  OPEN_LINK_AS_USER_PROFILES_STATE_OTHER_ACTIVE_PROFILES_ENUM_ID,
+  OPEN_LINK_AS_USER_PROFILES_STATE_LAST_ENUM_ID,
+};
+
 #if !defined(OS_CHROMEOS)
 // We report the number of "Open Link as User" entries shown in the context
 // menu via UMA, differentiating between at most that many profiles.
@@ -962,6 +969,18 @@ void RenderViewContextMenu::AppendLinkItems() {
       }
 
       if (!target_profiles_entries.empty()) {
+        UmaEnumOpenLinkAsUserProfilesState profiles_state;
+        if (multiple_profiles_open_) {
+          profiles_state =
+              OPEN_LINK_AS_USER_PROFILES_STATE_OTHER_ACTIVE_PROFILES_ENUM_ID;
+        } else {
+          profiles_state =
+              OPEN_LINK_AS_USER_PROFILES_STATE_NO_OTHER_ACTIVE_PROFILES_ENUM_ID;
+        }
+        UMA_HISTOGRAM_ENUMERATION(
+            "RenderViewContextMenu.OpenLinkAsUserProfilesState", profiles_state,
+            OPEN_LINK_AS_USER_PROFILES_STATE_LAST_ENUM_ID);
+
         UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.OpenLinkAsUserShown",
                                   target_profiles_entries.size(),
                                   kOpenLinkAsUserMaxProfilesReported);

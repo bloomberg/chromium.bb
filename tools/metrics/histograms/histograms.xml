@@ -41847,6 +41847,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RenderViewContextMenu.OpenLinkAsUserShownProfilesState"
+    enum="OpenLinkAsUserProfilesState">
+  <owner>jochen@chromium.org</owner>
+  <summary>
+    Whether or not other profiles are active when the &quot;Open Link as
+    User&quot; context menu is shown. Logged when the context menu is created.
+  </summary>
+</histogram>
+
 <histogram name="RenderViewContextMenu.Shown" enum="RenderViewContextMenuItem">
   <owner>vitalybuka@chromium.org</owner>
   <summary>Count of renderer view context menu items shown.</summary>
@@ -77449,6 +77458,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Active profile."/>
   <int value="1" label="Inactive, multi-profile."/>
   <int value="2" label="Inactive, single-profile."/>
+</enum>
+
+<enum name="OpenLinkAsUserProfilesState" type="int">
+  <int value="0" label="No other active profiles."/>
+  <int value="1" label="Active other profiles."/>
 </enum>
 
 <enum name="OSAgnosticErrno" type="int">
