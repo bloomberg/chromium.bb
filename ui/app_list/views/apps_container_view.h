@@ -13,6 +13,8 @@
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/views/app_list_page.h"
 #include "ui/app_list/views/top_icon_animation_view.h"
+#include "ui/gfx/range/range.h"
+#include "ui/views/controls/styled_label_listener.h"
 
 namespace gfx {
 class Rect;
@@ -26,13 +28,16 @@ class AppListFolderItem;
 class AppListFolderView;
 class AppListMainView;
 class AppListModel;
+class AppListViewDelegate;
 class ContentsView;
 class FolderBackgroundView;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
 // active folder. Only one if them is visible to user at any time.
-class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
+class AppsContainerView : public AppListPage,
+                          public TopIconAnimationObserver,
+                          public views::StyledLabelListener {
  public:
   AppsContainerView(AppListMainView* app_list_main_view,
                     AppListModel* model);
@@ -78,6 +83,11 @@ class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
   // TopIconAnimationObserver overrides:
   void OnTopIconAnimationsComplete() override;
 
+  // StyledLabelListener overrides:
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override;
+
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {
      return folder_background_view_;
@@ -107,10 +117,13 @@ class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
 
   void PrepareToShowApps(AppListFolderItem* folder_item);
 
+  // Null on Chrome OS (unused).
+  View* deprecation_banner_view_ = nullptr;  // Owned by views hierarchy.
   AppsGridView* apps_grid_view_;  // Owned by views hierarchy.
   AppListFolderView* app_list_folder_view_;  // Owned by views hierarchy.
   FolderBackgroundView* folder_background_view_;  // Owned by views hierarchy.
   ShowState show_state_;
+  AppListViewDelegate* view_delegate_;
 
   // The transitional views for animating the top items in folder
   // when opening or closing a folder.

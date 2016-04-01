@@ -8,21 +8,146 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/folder_background_view.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
+#include "ui/gfx/canvas.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/view.h"
 
 namespace app_list {
 
+namespace {
+
+#if !defined(OS_CHROMEOS)
+// Deprecation notice dimensions.
+const int kDeprecationBannerLabelSpacingPx = 6;
+const int kDeprecationBannerPaddingPx = 16;
+const int kDeprecationBannerMarginPx = 12;
+const SkColor kDeprecationBannerBackgroundColor =
+    SkColorSetRGB(0xff, 0xfd, 0xe7);
+const SkColor kDeprecationBannerBorderColor = SkColorSetRGB(0xc1, 0xc1, 0xc1);
+const int kDeprecationBannerBorderThickness = 1;
+const int kDeprecationBannerBorderCornerRadius = 2;
+// Relative to the platform-default font size.
+const int kDeprecationBannerTitleSize = 2;
+const int kDeprecationBannerTextSize = 0;
+const SkColor kLinkColor = SkColorSetRGB(0x33, 0x67, 0xd6);
+
+// A background that paints a filled rounded rectangle.
+class RoundedRectBackground : public views::Background {
+ public:
+  RoundedRectBackground(SkColor color, int corner_radius)
+      : color_(color), corner_radius_(corner_radius) {}
+  ~RoundedRectBackground() override {}
+
+  // views::Background overrides:
+  void Paint(gfx::Canvas* canvas, views::View* view) const override {
+    gfx::Rect bounds = view->GetContentsBounds();
+
+    SkPaint paint;
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    paint.setColor(color_);
+    canvas->DrawRoundRect(bounds, corner_radius_, paint);
+  }
+
+ private:
+  SkColor color_;
+  int corner_radius_;
+
+  DISALLOW_COPY_AND_ASSIGN(RoundedRectBackground);
+};
+
+base::string16 GetDeprecationText(const AppListViewDelegate& delegate) {
+  size_t message_break;
+  base::string16 text = delegate.GetMessageText(&message_break);
+  base::string16 apps_shortcut_name = delegate.GetAppsShortcutName();
+
+  // TODO(mgiuca): Insert the Apps shortcut with an image, rather than just
+  // concatenating it into the string.
+  text.insert(message_break, apps_shortcut_name);
+  return text;
+}
+
+views::View* BuildDeprecationNotice(const AppListViewDelegate& delegate,
+                                    views::StyledLabelListener* listener) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::FontList& title_font =
+      rb.GetFontListWithDelta(kDeprecationBannerTitleSize);
+  const gfx::FontList& text_font =
+      rb.GetFontListWithDelta(kDeprecationBannerTextSize);
+
+  base::string16 title = delegate.GetMessageTitle();
+  views::Label* title_label = new views::Label(title);
+  title_label->SetMultiLine(true);
+  title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  title_label->SetFontList(title_font);
+  title_label->SetBackgroundColor(kDeprecationBannerBackgroundColor);
+
+  base::string16 text = GetDeprecationText(delegate);
+  base::string16 learn_more = delegate.GetLearnMoreText();
+  base::string16 message = text + base::ASCIIToUTF16(" ") + learn_more;
+  size_t learn_more_start = text.size() + 1;
+  size_t learn_more_end = learn_more_start + learn_more.size();
+  views::StyledLabel* text_label = new views::StyledLabel(message, listener);
+  auto learn_more_style = views::StyledLabel::RangeStyleInfo::CreateForLink();
+  learn_more_style.color = kLinkColor;
+  if (learn_more.size()) {
+    text_label->AddStyleRange(gfx::Range(learn_more_start, learn_more_end),
+                              learn_more_style);
+  }
+  text_label->SetDisplayedOnBackgroundColor(kDeprecationBannerBackgroundColor);
+  text_label->SetBaseFontList(text_font);
+
+  views::View* deprecation_banner_box = new views::View;
+  deprecation_banner_box->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, kDeprecationBannerPaddingPx,
+      kDeprecationBannerPaddingPx, kDeprecationBannerLabelSpacingPx));
+  deprecation_banner_box->AddChildView(title_label);
+  deprecation_banner_box->AddChildView(text_label);
+  deprecation_banner_box->set_background(new RoundedRectBackground(
+      kDeprecationBannerBackgroundColor, kDeprecationBannerBorderCornerRadius));
+  deprecation_banner_box->SetBorder(views::Border::CreateRoundedRectBorder(
+      kDeprecationBannerBorderThickness, kDeprecationBannerBorderCornerRadius,
+      kDeprecationBannerBorderColor));
+
+  views::View* deprecation_banner_view = new views::View;
+  deprecation_banner_view->AddChildView(deprecation_banner_box);
+  deprecation_banner_view->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, kDeprecationBannerMarginPx,
+      kDeprecationBannerMarginPx, 0));
+
+  return deprecation_banner_view;
+}
+#endif  // !defined(OS_CHROMEOS)
+
+}  // namespace
+
 AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
                                      AppListModel* model)
-    : show_state_(SHOW_NONE), top_icon_animation_pending_count_(0) {
+    : show_state_(SHOW_NONE),
+      view_delegate_(app_list_main_view->view_delegate()),
+      top_icon_animation_pending_count_(0) {
+#if !defined(OS_CHROMEOS)
+  deprecation_banner_view_ = BuildDeprecationNotice(*view_delegate_, this);
+  AddChildView(deprecation_banner_view_);
+#endif  // !defined(OS_CHROMEOS)
+
   apps_grid_view_ = new AppsGridView(app_list_main_view);
   int cols;
   int rows;
@@ -110,11 +235,16 @@ void AppsContainerView::ReparentDragEnded() {
 }
 
 gfx::Size AppsContainerView::GetPreferredSize() const {
+  const int deprecation_banner_height =
+      deprecation_banner_view_
+          ? deprecation_banner_view_->GetPreferredSize().height()
+          : 0;
   const gfx::Size grid_size = apps_grid_view_->GetPreferredSize();
   const gfx::Size folder_view_size = app_list_folder_view_->GetPreferredSize();
 
   int width = std::max(grid_size.width(), folder_view_size.width());
-  int height = std::max(grid_size.height(), folder_view_size.height());
+  int height = std::max(grid_size.height() + deprecation_banner_height,
+                        folder_view_size.height());
   return gfx::Size(width, height);
 }
 
@@ -123,8 +253,18 @@ void AppsContainerView::Layout() {
   if (rect.IsEmpty())
     return;
 
+  int deprecation_banner_height = 0;
+  if (deprecation_banner_view_) {
+    deprecation_banner_height =
+        deprecation_banner_view_->GetPreferredSize().height();
+    gfx::Size deprecation_banner_size(rect.width(), deprecation_banner_height);
+    deprecation_banner_view_->SetBoundsRect(
+        gfx::Rect(rect.origin(), deprecation_banner_size));
+  }
+
   switch (show_state_) {
     case SHOW_APPS:
+      rect.Inset(0, deprecation_banner_height, 0, 0);
       apps_grid_view_->SetBoundsRect(rect);
       break;
     case SHOW_ACTIVE_FOLDER:
@@ -174,6 +314,16 @@ void AppsContainerView::OnTopIconAnimationsComplete() {
   }
 }
 
+void AppsContainerView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                               const gfx::Range& range,
+                                               int event_flags) {
+#if !defined(OS_CHROMEOS)
+  // The only style label is the "Learn more" link in the deprecation banner, so
+  // assume that that's what was clicked.
+  view_delegate_->OpenLearnMoreLink();
+#endif  // !defined(OS_CHROMEOS)
+}
+
 void AppsContainerView::SetShowState(ShowState show_state,
                                      bool show_apps_with_animation) {
   if (show_state_ == show_state)
@@ -183,6 +333,8 @@ void AppsContainerView::SetShowState(ShowState show_state,
 
   switch (show_state_) {
     case SHOW_APPS:
+      if (deprecation_banner_view_)
+        deprecation_banner_view_->SetVisible(true);
       folder_background_view_->SetVisible(false);
       if (show_apps_with_animation) {
         app_list_folder_view_->ScheduleShowHideAnimation(false, false);
@@ -193,11 +345,15 @@ void AppsContainerView::SetShowState(ShowState show_state,
       }
       break;
     case SHOW_ACTIVE_FOLDER:
+      if (deprecation_banner_view_)
+        deprecation_banner_view_->SetVisible(false);
       folder_background_view_->SetVisible(true);
       apps_grid_view_->ScheduleShowHideAnimation(false);
       app_list_folder_view_->ScheduleShowHideAnimation(true, false);
       break;
     case SHOW_ITEM_REPARENT:
+      if (deprecation_banner_view_)
+        deprecation_banner_view_->SetVisible(true);
       folder_background_view_->SetVisible(false);
       folder_background_view_->UpdateFolderContainerBubble(
           FolderBackgroundView::NO_BUBBLE);

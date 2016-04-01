@@ -298,9 +298,14 @@ void AppListViewTestContext::RunDisplayTest() {
 
   Show();
 
+#if defined(OS_CHROMEOS)
   // Explicitly enforce the exact dimensions of the app list. Feel free to
   // change these if you need to (they are just here to prevent against
   // accidental changes to the window size).
+  //
+  // Note: Only test this on Chrome OS; the deprecation banner on other
+  // platforms makes the height variable so we can't reliably test it (nor do we
+  // really need to).
   switch (test_type_) {
     case NORMAL:
       EXPECT_EQ("400x500", view_->bounds().size().ToString());
@@ -318,6 +323,7 @@ void AppListViewTestContext::RunDisplayTest() {
       NOTREACHED();
       break;
   }
+#endif  // defined(OS_CHROMEOS)
 
   if (is_landscape())
     EXPECT_EQ(2, GetPaginationModel()->total_pages());
