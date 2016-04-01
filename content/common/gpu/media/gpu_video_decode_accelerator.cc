@@ -15,11 +15,11 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 
+#include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
-#include "gpu/ipc/service/gpu_channel.h"
-#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/message_filter.h"
@@ -53,7 +53,7 @@
 namespace content {
 
 static bool MakeDecoderContextCurrent(
-    const base::WeakPtr<gpu::GpuCommandBufferStub> stub) {
+    const base::WeakPtr<GpuCommandBufferStub> stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
     return false;
@@ -127,7 +127,7 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     int32_t host_route_id,
-    gpu::GpuCommandBufferStub* stub,
+    GpuCommandBufferStub* stub,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : host_route_id_(host_route_id),
       stub_(stub),

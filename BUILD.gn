@@ -175,7 +175,6 @@ group("both_gn_and_gyp") {
       "//content/test:content_unittests",
       "//device:device_unittests",
       "//gpu:gpu_unittests",
-      "//gpu/ipc/service:gpu_ipc_service_unittests",
       "//ipc:ipc_tests",
       "//ipc/mojo:ipc_mojo_unittests",
       "//media:media_unittests",

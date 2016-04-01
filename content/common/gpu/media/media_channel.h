@@ -14,18 +14,15 @@ namespace media {
 struct CreateVideoEncoderParams;
 }
 
-namespace gpu {
-class GpuChannel;
-class GpuCommandBufferStub;
-}
-
 namespace content {
 
+class GpuChannel;
+class GpuCommandBufferStub;
 class MediaChannelDispatchHelper;
 
 class MediaChannel : public IPC::Listener, public IPC::Sender {
  public:
-  explicit MediaChannel(gpu::GpuChannel* channel);
+  explicit MediaChannel(GpuChannel* channel);
   ~MediaChannel() override;
 
   // IPC::Sender implementation:
@@ -47,7 +44,7 @@ class MediaChannel : public IPC::Listener, public IPC::Sender {
                             const media::CreateVideoEncoderParams& params,
                             IPC::Message* reply_message);
 
-  gpu::GpuChannel* const channel_;
+  GpuChannel* const channel_;
   scoped_ptr<GpuJpegDecodeAccelerator> jpeg_decoder_;
   DISALLOW_COPY_AND_ASSIGN(MediaChannel);
 };

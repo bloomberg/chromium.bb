@@ -5,9 +5,7 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
-    '../gpu/gpu.gyp:command_buffer_traits',
     '../gpu/gpu.gyp:gpu',
-    '../gpu/gpu.gyp:gpu_ipc_service',
     '../skia/skia.gyp:skia',
     '../ui/gl/gl.gyp:gl',
     'content_common_mojo_bindings.gyp:content_common_mojo_bindings',

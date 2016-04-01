@@ -16,7 +16,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "gpu/ipc/service/gpu_channel.h"
+#include "content/common/gpu/gpu_channel.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/message_filter.h"
 #include "media/filters/jpeg_parser.h"
@@ -292,7 +292,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
 };
 
 GpuJpegDecodeAccelerator::GpuJpegDecodeAccelerator(
-    gpu::GpuChannel* channel,
+    GpuChannel* channel,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : channel_(channel),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),

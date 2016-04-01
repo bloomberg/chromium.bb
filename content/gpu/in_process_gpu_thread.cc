@@ -6,11 +6,11 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -29,8 +29,8 @@ InProcessGpuThread::InProcessGpuThread(
       sync_point_manager_override_(sync_point_manager_override),
       gpu_memory_buffer_factory_(
           gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER
-          ? gpu::GpuMemoryBufferFactory::CreateNativeType()
-          : nullptr) {
+              ? GpuMemoryBufferFactory::CreateNativeType()
+              : nullptr) {
   if (!sync_point_manager_override_) {
     sync_point_manager_.reset(new gpu::SyncPointManager(false));
     sync_point_manager_override_ = sync_point_manager_.get();

@@ -20,11 +20,9 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace gpu {
-class GpuChannel;
-}
-
 namespace content {
+class GpuChannel;
+
 class GpuJpegDecodeAccelerator
     : public IPC::Sender,
       public base::NonThreadSafe,
@@ -32,7 +30,7 @@ class GpuJpegDecodeAccelerator
  public:
   // |channel| must outlive this object.
   GpuJpegDecodeAccelerator(
-      gpu::GpuChannel* channel,
+      GpuChannel* channel,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~GpuJpegDecodeAccelerator() override;
 
@@ -63,10 +61,10 @@ class GpuJpegDecodeAccelerator
   static scoped_ptr<media::JpegDecodeAccelerator> CreateVaapiJDA(
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
-  // The lifetime of objects of this class is managed by a gpu::GpuChannel. The
+  // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuJpegDecodeAccelerator that they own when
   // they are destroyed. So a raw pointer is safe.
-  gpu::GpuChannel* channel_;
+  GpuChannel* channel_;
 
   // The message filter to run JpegDecodeAccelerator::Decode on IO thread.
   scoped_refptr<MessageFilter> filter_;

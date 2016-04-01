@@ -66,8 +66,8 @@ class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
                              int player_id,
                              int frame_id) = 0;
 
-  // Creates a gpu::StreamTexture and returns its id.  Sets |*texture_id| to the
-  // client-side id of the gpu::StreamTexture. The texture is produced into
+  // Creates a StreamTexture and returns its id.  Sets |*texture_id| to the
+  // client-side id of the StreamTexture. The texture is produced into
   // a mailbox so it can be shipped in a VideoFrame.
   virtual unsigned CreateStreamTexture(unsigned texture_target,
                                        unsigned* texture_id,

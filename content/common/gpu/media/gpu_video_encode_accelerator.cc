@@ -11,10 +11,10 @@
 #include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
+#include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
-#include "gpu/ipc/service/gpu_channel.h"
-#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
@@ -45,7 +45,7 @@ void DestroyGpuMemoryBuffer(const gpu::SyncToken& sync_token) {}
 } // namespace
 
 static bool MakeDecoderContextCurrent(
-    const base::WeakPtr<gpu::GpuCommandBufferStub> stub) {
+    const base::WeakPtr<GpuCommandBufferStub> stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
     return false;
@@ -59,9 +59,8 @@ static bool MakeDecoderContextCurrent(
   return true;
 }
 
-GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(
-    int32_t host_route_id,
-    gpu::GpuCommandBufferStub* stub)
+GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(int32_t host_route_id,
+                                                     GpuCommandBufferStub* stub)
     : host_route_id_(host_route_id),
       stub_(stub),
       input_format_(media::PIXEL_FORMAT_UNKNOWN),

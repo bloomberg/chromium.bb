@@ -342,7 +342,7 @@ class WebMediaPlayerAndroid
   // Size of the video.
   blink::WebSize natural_size_;
 
-  // Size that has been sent to gpu::StreamTexture.
+  // Size that has been sent to StreamTexture.
   blink::WebSize cached_stream_texture_size_;
 
   // The video frame object used for rendering by the compositor.

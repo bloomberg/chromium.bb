@@ -15,9 +15,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/ipc/service/gpu_command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
@@ -33,14 +33,14 @@ class GpuVideoDecodeAccelerator
     : public IPC::Listener,
       public IPC::Sender,
       public media::VideoDecodeAccelerator::Client,
-      public gpu::GpuCommandBufferStub::DestructionObserver {
+      public GpuCommandBufferStub::DestructionObserver {
  public:
   // Each of the arguments to the constructor must outlive this object.
   // |stub->decoder()| will be made current around any operation that touches
   // the underlying VDA so that it can make GL calls safely.
   GpuVideoDecodeAccelerator(
       int32_t host_route_id,
-      gpu::GpuCommandBufferStub* stub,
+      GpuCommandBufferStub* stub,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // Static query for the capabilities, which includes the supported profiles.
@@ -73,8 +73,8 @@ class GpuVideoDecodeAccelerator
 
   // Initialize VDAs from the set of VDAs supported for current platform until
   // one of them succeeds for given |config|. Send the |init_done_msg| when
-  // done. filter_ is passed to gpu::GpuCommandBufferStub channel only if the
-  // chosen VDA can decode on IO thread.
+  // done. filter_ is passed to GpuCommandBufferStub channel only if the chosen
+  // VDA can decode on IO thread.
   bool Initialize(const media::VideoDecodeAccelerator::Config& config);
 
  private:
@@ -133,10 +133,10 @@ class GpuVideoDecodeAccelerator
   // Route ID to communicate with the host.
   const int32_t host_route_id_;
 
-  // Unowned pointer to the underlying gpu::GpuCommandBufferStub.  |this| is
+  // Unowned pointer to the underlying GpuCommandBufferStub.  |this| is
   // registered as a DestuctionObserver of |stub_| and will self-delete when
   // |stub_| is destroyed.
-  gpu::GpuCommandBufferStub* const stub_;
+  GpuCommandBufferStub* const stub_;
 
   // The underlying VideoDecodeAccelerator.
   scoped_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;

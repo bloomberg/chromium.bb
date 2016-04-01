@@ -17,20 +17,19 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
+#include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/gpu_channel_manager_delegate.h"
+#include "content/common/gpu/gpu_config.h"
+#include "content/common/gpu/x_util.h"
 #include "content/common/process_control.mojom.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/ipc/service/gpu_channel.h"
-#include "gpu/ipc/service/gpu_channel_manager.h"
-#include "gpu/ipc/service/gpu_channel_manager_delegate.h"
-#include "gpu/ipc/service/gpu_config.h"
-#include "gpu/ipc/service/x_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
-class GpuMemoryBufferFactory;
 class SyncPointManager;
 }
 
@@ -39,6 +38,7 @@ class TargetServices;
 }
 
 namespace content {
+class GpuMemoryBufferFactory;
 class GpuProcessControlImpl;
 class GpuWatchdogThread;
 class MediaService;
@@ -49,10 +49,10 @@ struct BufferPresentedParams;
 
 // The main thread of the GPU child process. There will only ever be one of
 // these per process. It does process initialization and shutdown. It forwards
-// IPC messages to gpu::GpuChannelManager, which is responsible for issuing
-// rendering commands to the GPU.
+// IPC messages to GpuChannelManager, which is responsible for issuing rendering
+// commands to the GPU.
 class GpuChildThread : public ChildThreadImpl,
-                       public gpu::GpuChannelManagerDelegate {
+                       public GpuChannelManagerDelegate {
  public:
   typedef std::queue<IPC::Message*> DeferredMessages;
 
@@ -60,12 +60,12 @@ class GpuChildThread : public ChildThreadImpl,
                  bool dead_on_arrival,
                  const gpu::GPUInfo& gpu_info,
                  const DeferredMessages& deferred_messages,
-                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+                 GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                  gpu::SyncPointManager* sync_point_manager);
 
   GpuChildThread(const gpu::GpuPreferences& gpu_preferences,
                  const InProcessChildThreadParams& params,
-                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+                 GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                  gpu::SyncPointManager* sync_point_manager);
 
   ~GpuChildThread() override;
@@ -81,7 +81,7 @@ class GpuChildThread : public ChildThreadImpl,
   bool OnControlMessageReceived(const IPC::Message& msg) override;
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  // gpu::GpuChannelManagerDelegate implementation.
+  // GpuChannelManagerDelegate implementation.
   void SetActiveURL(const GURL& url) override;
   void AddSubscription(int32_t client_id, unsigned int target) override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
@@ -159,7 +159,7 @@ class GpuChildThread : public ChildThreadImpl,
   // Non-owning.
   gpu::SyncPointManager* sync_point_manager_;
 
-  scoped_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
+  scoped_ptr<GpuChannelManager> gpu_channel_manager_;
 
   scoped_ptr<MediaService> media_service_;
 
@@ -172,8 +172,8 @@ class GpuChildThread : public ChildThreadImpl,
   // Whether the GPU thread is running in the browser process.
   bool in_browser_process_;
 
-  // The gpu::GpuMemoryBufferFactory instance used to allocate GpuMemoryBuffers.
-  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+  // The GpuMemoryBufferFactory instance used to allocate GpuMemoryBuffers.
+  GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 
   // Process control for Mojo application hosting.
   scoped_ptr<GpuProcessControlImpl> process_control_;
