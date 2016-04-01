@@ -9,6 +9,8 @@
 #include <stdint.h>
 
 #include <map>
+#include <vector>
+
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -143,19 +145,26 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     initial_target_ = target;
   }
 
-  bool shadowed() const {
-    return shadowed_;
-  }
+  bool shadowed() const { return !shadow_.empty(); }
 
   void MarkAsDeleted() {
     deleted_ = true;
   }
 
+  // Setup the shadow buffer. This will either initialize the shadow buffer
+  // with the passed data or clear the shadow buffer if no shadow required. This
+  // will return a pointer to the shadowed data if using shadow, otherwise will
+  // return the original data pointer.
+  const GLvoid* StageShadow(bool use_shadow,
+                            GLsizeiptr size,
+                            const GLvoid* data);
+
   // Sets the size, usage and initial data of a buffer.
   // If shadow is true then if data is NULL buffer will be initialized to 0.
-  void SetInfo(
-      GLsizeiptr size, GLenum usage, bool shadow, const GLvoid* data,
-      bool is_client_side_array);
+  void SetInfo(GLsizeiptr size,
+               GLenum usage,
+               bool use_shadow,
+               bool is_client_side_array);
 
   // Sets a range of data for this buffer. Returns false if the offset or size
   // is out of range.
@@ -171,18 +180,15 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // The manager that owns this Buffer.
   BufferManager* manager_;
 
-  // A copy of the data in the buffer. This data is only kept if the target
-  // is backed_ = true.
-  scoped_ptr<int8_t[]> shadow_;
+  // A copy of the data in the buffer. This data is only kept if the conditions
+  // checked in UseShadowBuffer() are true.
+  std::vector<uint8_t> shadow_;
 
   // Size of buffer.
   GLsizeiptr size_;
 
   // True if deleted.
   bool deleted_;
-
-  // Whether or not the data is shadowed.
-  bool shadowed_;
 
   // Whether or not this Buffer is not uploaded to the GPU but just
   // sitting in local memory.
@@ -311,10 +317,16 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
       GLenum usage,
       const GLvoid* data);
 
+  // Tests whether a shadow buffer needs to be used.
+  bool UseShadowBuffer(GLenum target, GLenum usage);
+
   // Sets the size, usage and initial data of a buffer.
   // If data is NULL buffer will be initialized to 0 if shadowed.
-  void SetInfo(Buffer* buffer, GLenum target, GLsizeiptr size, GLenum usage,
-               const GLvoid* data);
+  void SetInfo(Buffer* buffer,
+               GLenum target,
+               GLsizeiptr size,
+               GLenum usage,
+               bool use_shadow);
 
   scoped_ptr<MemoryTypeTracker> memory_type_tracker_;
   MemoryTracker* memory_tracker_;
