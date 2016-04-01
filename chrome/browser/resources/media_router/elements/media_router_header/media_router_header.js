@@ -211,11 +211,11 @@ Polymer({
    * Updates header height to accomodate email text. This is called on changes
    * to |showEmail| and will return early if the value has not changed.
    *
-   * @param {boolean} oldValue .
-   * @param {boolean} newValue .
+   * @param {boolean} newValue The new value of |showEmail|.
+   * @param {boolean} oldValue The previous value of |showEmail|.
    * @private
    */
-  maybeChangeHeaderHeight_: function(oldValue, newValue) {
+  maybeChangeHeaderHeight_: function(newValue, oldValue) {
     if (!!oldValue == !!newValue) {
       return;
     }

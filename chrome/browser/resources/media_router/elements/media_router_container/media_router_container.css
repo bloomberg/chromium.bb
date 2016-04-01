@@ -192,9 +192,9 @@ paper-menu {
  * paper-icon-button. This should achieve the same dimensions as .sink-icon.
  */
 #sink-search-icon {
+  -webkit-margin-start: 4px;
   -webkit-padding-end: 12px;
-  -webkit-padding-start: 16px;
-  width: 44px;
+  -webkit-padding-start: 12px;
 }
 
 #sink-search-input {

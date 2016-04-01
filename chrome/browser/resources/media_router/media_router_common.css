@@ -5,7 +5,7 @@
 :root {
   --dialog-padding-end: 26px;
   --dialog-padding-start: 16px;
-  --navigation-icon-size: 20px;
+  --navigation-icon-button-size: 36px;
   --non-navigation-icon-size: 16px;
   --subtext-color: rgb(150, 150, 150);
 }
