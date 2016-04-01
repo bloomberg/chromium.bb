@@ -8,9 +8,23 @@
 #import <AppKit/AppKit.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ref_counted.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {
+
+class UI_BASE_EXPORT UniquePasteboard
+    : public base::RefCounted<UniquePasteboard> {
+ public:
+  UniquePasteboard();
+
+  NSPasteboard* get() { return pasteboard_; }
+
+ private:
+  friend class base::RefCounted<UniquePasteboard>;
+  ~UniquePasteboard();
+  base::scoped_nsobject<NSPasteboard> pasteboard_;
+};
 
 class UI_BASE_EXPORT ClipboardUtil {
  public:

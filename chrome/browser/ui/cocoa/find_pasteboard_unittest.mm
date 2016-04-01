@@ -5,9 +5,11 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ref_counted.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/find_pasteboard.h"
 
 // A subclass of FindPasteboard that doesn't write to the real find pasteboard.
@@ -15,7 +17,7 @@
  @public
   int notificationCount_;
  @private
-  NSPasteboard* pboard_;
+  scoped_refptr<ui::UniquePasteboard> pboard_;
 }
 - (NSPasteboard*)findPboard;
 
@@ -29,20 +31,12 @@
 
 @implementation FindPasteboardTesting
 
-- (id)init {
-  if ((self = [super init])) {
-    pboard_ = [NSPasteboard pasteboardWithUniqueName];
-  }
-  return self;
-}
-
-- (void)dealloc {
-  [pboard_ releaseGlobally];
-  [super dealloc];
-}
-
 - (NSPasteboard*)findPboard {
-  return pboard_;
+  // This method is called by the super class's -init, otherwise initialization
+  // would go into this class's -init.
+  if (!pboard_)
+    pboard_ = new ui::UniquePasteboard;
+  return pboard_->get();
 }
 
 - (void)callback:(id)sender {
@@ -50,13 +44,13 @@
 }
 
 - (void)setFindPboardText:(NSString*)text {
-  [pboard_ declareTypes:[NSArray arrayWithObject:NSStringPboardType]
-                  owner:nil];
-  [pboard_ setString:text forType:NSStringPboardType];
+  [pboard_->get() declareTypes:[NSArray arrayWithObject:NSStringPboardType]
+                         owner:nil];
+  [pboard_->get() setString:text forType:NSStringPboardType];
 }
 
 - (NSString*)findPboardText {
-  return [pboard_ stringForType:NSStringPboardType];
+  return [pboard_->get() stringForType:NSStringPboardType];
 }
 @end
 
@@ -64,9 +58,19 @@ namespace {
 
 class FindPasteboardTest : public CocoaTest {
  public:
-  FindPasteboardTest() {
+  FindPasteboardTest() {}
+
+  void SetUp() override {
+    CocoaTest::SetUp();
     pboard_.reset([[FindPasteboardTesting alloc] init]);
+    ASSERT_TRUE(pboard_.get());
   }
+
+  void TearDown() override {
+    pboard_.reset();
+    CocoaTest::TearDown();
+  }
+
  protected:
   base::scoped_nsobject<FindPasteboardTesting> pboard_;
 };

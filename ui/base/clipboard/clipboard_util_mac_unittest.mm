@@ -5,6 +5,7 @@
 #import "ui/base/clipboard/clipboard_util_mac.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -25,19 +26,19 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemFromUrl) {
 
   base::scoped_nsobject<NSPasteboardItem> item(
       ui::ClipboardUtil::PasteboardItemFromUrl(urlString, nil));
-  NSPasteboard* pasteboard = [NSPasteboard pasteboardWithUniqueName];
-  [pasteboard writeObjects:@[ item ]];
+  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+  [pasteboard->get() writeObjects:@[ item ]];
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pasteboard getURLs:&urls andTitles:&titles convertingFilenames:NO];
+  [pasteboard->get() getURLs:&urls andTitles:&titles convertingFilenames:NO];
 
   ASSERT_EQ(1u, [urls count]);
   EXPECT_NSEQ(urlString, [urls objectAtIndex:0]);
   ASSERT_EQ(1u, [titles count]);
   EXPECT_NSEQ(urlString, [titles objectAtIndex:0]);
 
-  NSURL* url = [NSURL URLFromPasteboard:pasteboard];
+  NSURL* url = [NSURL URLFromPasteboard:pasteboard->get()];
   EXPECT_NSEQ([url absoluteString], urlString);
 }
 
@@ -47,19 +48,19 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemWithTitle) {
 
   base::scoped_nsobject<NSPasteboardItem> item(
       ui::ClipboardUtil::PasteboardItemFromUrl(urlString, title));
-  NSPasteboard* pasteboard = [NSPasteboard pasteboardWithUniqueName];
-  [pasteboard writeObjects:@[ item ]];
+  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+  [pasteboard->get() writeObjects:@[ item ]];
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pasteboard getURLs:&urls andTitles:&titles convertingFilenames:NO];
+  [pasteboard->get() getURLs:&urls andTitles:&titles convertingFilenames:NO];
 
   ASSERT_EQ(1u, [urls count]);
   EXPECT_NSEQ(urlString, [urls objectAtIndex:0]);
   ASSERT_EQ(1u, [titles count]);
   EXPECT_NSEQ(title, [titles objectAtIndex:0]);
 
-  NSURL* url = [NSURL URLFromPasteboard:pasteboard];
+  NSURL* url = [NSURL URLFromPasteboard:pasteboard->get()];
   EXPECT_NSEQ([url absoluteString], urlString);
 }
 
@@ -70,20 +71,29 @@ TEST_F(ClipboardUtilMacTest, PasteboardItemWithFilePath) {
 
   base::scoped_nsobject<NSPasteboardItem> item(
       ui::ClipboardUtil::PasteboardItemFromUrl(urlString, nil));
-  NSPasteboard* pasteboard = [NSPasteboard pasteboardWithUniqueName];
-  [pasteboard writeObjects:@[ item ]];
+  scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+  [pasteboard->get() writeObjects:@[ item ]];
 
   NSArray* urls = nil;
   NSArray* titles = nil;
-  [pasteboard getURLs:&urls andTitles:&titles convertingFilenames:NO];
+  [pasteboard->get() getURLs:&urls andTitles:&titles convertingFilenames:NO];
 
   ASSERT_EQ(1u, [urls count]);
   EXPECT_NSEQ(urlString, [urls objectAtIndex:0]);
   ASSERT_EQ(1u, [titles count]);
   EXPECT_NSEQ(urlString, [titles objectAtIndex:0]);
 
-  NSURL* urlFromPasteboard = [NSURL URLFromPasteboard:pasteboard];
+  NSURL* urlFromPasteboard = [NSURL URLFromPasteboard:pasteboard->get()];
   EXPECT_NSEQ(urlFromPasteboard, url);
+}
+
+TEST_F(ClipboardUtilMacTest, CheckForLeak) {
+  for (int i = 0; i < 10000; ++i) {
+    @autoreleasepool {
+      scoped_refptr<ui::UniquePasteboard> pboard = new ui::UniquePasteboard;
+      EXPECT_TRUE(pboard->get());
+    }
+  }
 }
 
 }  // namespace

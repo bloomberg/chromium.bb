@@ -5,6 +5,7 @@
 // Download utility test for Mac OS X.
 
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -13,21 +14,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "ui/base/clipboard/clipboard_util_mac.h"
 
 namespace {
 
 class DownloadUtilMacTest : public CocoaTest {
  public:
-  DownloadUtilMacTest() {
-    pasteboard_ = [NSPasteboard pasteboardWithUniqueName];
-  }
+  DownloadUtilMacTest() { pasteboard_ = new ui::UniquePasteboard; }
 
-  ~DownloadUtilMacTest() override { [pasteboard_ releaseGlobally]; }
-
-  NSPasteboard* pasteboard() { return pasteboard_; }
+  NSPasteboard* pasteboard() { return pasteboard_->get(); }
 
  private:
-  NSPasteboard* pasteboard_;
+  scoped_refptr<ui::UniquePasteboard> pasteboard_;
 };
 
 // Ensure adding files to the pasteboard methods works as expected.

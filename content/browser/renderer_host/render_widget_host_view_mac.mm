@@ -21,6 +21,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -70,6 +71,7 @@
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
+#import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
@@ -2425,11 +2427,11 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
         renderWidgetHostView_->selected_text());
     if ([text length] == 0)
       return;
-    NSPasteboard* pasteboard = [NSPasteboard pasteboardWithUniqueName];
+    scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
     NSArray* types = [NSArray arrayWithObject:NSStringPboardType];
-    [pasteboard declareTypes:types owner:nil];
-    if ([pasteboard setString:text forType:NSStringPboardType])
-      NSPerformService(@"Look Up in Dictionary", pasteboard);
+    [pasteboard->get() declareTypes:types owner:nil];
+    if ([pasteboard->get() setString:text forType:NSStringPboardType])
+      NSPerformService(@"Look Up in Dictionary", pasteboard->get());
     return;
   }
   dispatch_async(dispatch_get_main_queue(), ^{

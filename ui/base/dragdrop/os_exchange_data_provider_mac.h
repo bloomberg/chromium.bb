@@ -5,20 +5,21 @@
 #ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_MAC_H_
 #define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_MAC_H_
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
 @class NSPasteboard;
 
 namespace ui {
+class UniquePasteboard;
 
 // OSExchangeData::Provider implementation for Mac.
 class UI_BASE_EXPORT OSExchangeDataProviderMac
     : public OSExchangeData::Provider {
  public:
   OSExchangeDataProviderMac();
-  explicit OSExchangeDataProviderMac(NSPasteboard* pasteboard);
   ~OSExchangeDataProviderMac() override;
 
   // Overridden from OSExchangeData::Provider:
@@ -45,7 +46,8 @@ class UI_BASE_EXPORT OSExchangeDataProviderMac
   bool HasCustomFormat(const Clipboard::FormatType& format) const override;
 
  private:
-  base::scoped_nsobject<NSPasteboard> pasteboard_;
+  explicit OSExchangeDataProviderMac(scoped_refptr<ui::UniquePasteboard>);
+  scoped_refptr<ui::UniquePasteboard> pasteboard_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderMac);
 };

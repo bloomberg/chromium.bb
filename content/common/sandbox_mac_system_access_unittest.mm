@@ -9,11 +9,13 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"
 #include "content/common/sandbox_mac_unittest_helper.h"
 #include "crypto/openssl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "ui/base/clipboard/clipboard_util_mac.h"
 
 namespace content {
 
@@ -69,15 +71,16 @@ void MacSandboxedClipboardTestCase::SetTestData(const char* test_data) {
 }
 
 TEST_F(MacSandboxTest, ClipboardAccess) {
-  NSPasteboard* pb = [NSPasteboard pasteboardWithUniqueName];
-  EXPECT_EQ([[pb types] count], 0U);
+  scoped_refptr<ui::UniquePasteboard> pb = new ui::UniquePasteboard;
+  ASSERT_TRUE(pb->get());
+  EXPECT_EQ([[pb->get() types] count], 0U);
 
-  std::string pasteboard_name = base::SysNSStringToUTF8([pb name]);
+  std::string pasteboard_name = base::SysNSStringToUTF8([pb->get() name]);
   EXPECT_TRUE(RunTestInAllSandboxTypes("MacSandboxedClipboardTestCase",
                                        pasteboard_name.c_str()));
 
   // After executing the test, the clipboard should still be empty.
-  EXPECT_EQ([[pb types] count], 0U);
+  EXPECT_EQ([[pb->get() types] count], 0U);
 }
 
 //--------------------- File Access Sandboxing ----------------------

@@ -26,6 +26,13 @@ NSString* UTIFromPboardType(NSString* type) {
 
 namespace ui {
 
+UniquePasteboard::UniquePasteboard()
+    : pasteboard_([[NSPasteboard pasteboardWithUniqueName] retain]) {}
+
+UniquePasteboard::~UniquePasteboard() {
+  [pasteboard_ releaseGlobally];
+}
+
 // static
 base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
     NSString* urlString,

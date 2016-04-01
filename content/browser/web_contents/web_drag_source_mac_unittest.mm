@@ -4,10 +4,12 @@
 
 #import "content/browser/web_contents/web_drag_source_mac.h"
 
+#include "base/memory/ref_counted.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "ui/base/clipboard/clipboard_util_mac.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -23,19 +25,19 @@ TEST_F(WebDragSourceMacTest, DragInvalidlyEscapedBookmarklet) {
   dropData->url = GURL("javascript:%");
 
   WebContentsImpl* contentsImpl = static_cast<WebContentsImpl*>(contents.get());
+  scoped_refptr<ui::UniquePasteboard> pasteboard1 = new ui::UniquePasteboard;
   base::scoped_nsobject<WebDragSource> source([[WebDragSource alloc]
-      initWithContents:contentsImpl
-                  view:view
-              dropData:dropData.get()
-                 image:nil
-                offset:NSZeroPoint
-            pasteboard:[NSPasteboard pasteboardWithUniqueName]
-     dragOperationMask:NSDragOperationCopy]);
+       initWithContents:contentsImpl
+                   view:view
+               dropData:dropData.get()
+                  image:nil
+                 offset:NSZeroPoint
+             pasteboard:pasteboard1->get()
+      dragOperationMask:NSDragOperationCopy]);
 
   // Test that this call doesn't throw any exceptions: http://crbug.com/128371
-  base::scoped_nsobject<NSPasteboard> pasteboard(
-      [NSPasteboard pasteboardWithUniqueName]);
-  [source lazyWriteToPasteboard:pasteboard forType:NSURLPboardType];
+  scoped_refptr<ui::UniquePasteboard> pasteboard2 = new ui::UniquePasteboard;
+  [source lazyWriteToPasteboard:pasteboard2->get() forType:NSURLPboardType];
 }
 
 }  // namespace content
