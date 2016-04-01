@@ -740,15 +740,10 @@ void BrowserPluginGuest::Attach(
 void BrowserPluginGuest::OnWillAttachComplete(
     WebContentsImpl* embedder_web_contents,
     const BrowserPluginHostMsg_Attach_Params& params) {
-  bool use_cross_process_frames =
-      BrowserPluginGuestMode::UseCrossProcessFramesForGuests();
   // If a RenderView has already been created for this new window, then we need
   // to initialize the browser-side state now so that the RenderFrameHostManager
   // does not create a new RenderView on navigation.
-  // TODO(wjmaclean): this pathway doesn't seem to ever get hit when using
-  // cross-process-frames ... should it be removed? Or am I just missing a
-  // use case?
-  if (!use_cross_process_frames && has_render_view_) {
+  if (has_render_view_) {
     // This will trigger a callback to RenderViewReady after a round-trip IPC.
     static_cast<RenderViewHostImpl*>(GetWebContents()->GetRenderViewHost())
         ->GetWidget()
@@ -772,9 +767,7 @@ void BrowserPluginGuest::OnWillAttachComplete(
   RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
       web_contents()->GetRenderWidgetHostView());
   rwhv->RegisterSurfaceNamespaceId();
-
-  if (!use_cross_process_frames)
-    has_render_view_ = true;
+  has_render_view_ = true;
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
 }

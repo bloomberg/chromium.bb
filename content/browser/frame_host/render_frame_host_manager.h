@@ -505,6 +505,13 @@ class CONTENT_EXPORT RenderFrameHostManager
   void ActiveFrameCountIsZero(SiteInstanceImpl* site_instance) override;
   void RenderProcessGone(SiteInstanceImpl* site_instance) override;
 
+  // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not
+  // null, it creates a RenderFrameProxy in the target renderer process which is
+  // used to route IPC messages when in swapped out state.  Returns early if the
+  // RenderViewHost has already been initialized for another RenderFrameHost.
+  bool InitRenderView(RenderViewHostImpl* render_view_host,
+    RenderFrameProxyHost* proxy);
+
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
@@ -666,13 +673,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // is redirected to a different SiteInstance.
   bool CreateSpeculativeRenderFrameHost(SiteInstance* old_instance,
                                         SiteInstance* new_instance);
-
-  // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not
-  // null, it creates a RenderFrameProxy in the target renderer process which is
-  // used to route IPC messages when in swapped out state.  Returns early if the
-  // RenderViewHost has already been initialized for another RenderFrameHost.
-  bool InitRenderView(RenderViewHostImpl* render_view_host,
-                      RenderFrameProxyHost* proxy);
 
   // Initialization for RenderFrameHost uses the same sequence as InitRenderView
   // above.

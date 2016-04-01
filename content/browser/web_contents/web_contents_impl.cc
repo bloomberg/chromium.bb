@@ -1272,6 +1272,19 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
     WebContents* outer_web_contents,
     RenderFrameHost* outer_contents_frame) {
   CHECK(BrowserPluginGuestMode::UseCrossProcessFramesForGuests());
+  RenderFrameHostManager* render_manager = GetRenderManager();
+
+  // When the WebContents being initialized has an opener, the  browser side
+  // Render{View,Frame}Host must be initialized and the RenderWidgetHostView
+  // created. This is needed because the usual initialization happens during
+  // the first navigation, but when attaching a new window we don't navigate
+  // before attaching. If the browser side is already initialized, the calls
+  // below will just early return.
+  render_manager->InitRenderView(GetRenderViewHost(), nullptr);
+  GetMainFrame()->Init();
+  if (!render_manager->GetRenderWidgetHostView())
+    CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
+
   // Create a link to our outer WebContents.
   node_.reset(new WebContentsTreeNode());
   node_->ConnectToOuterWebContents(
@@ -1283,15 +1296,15 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
   // Create a proxy in top-level RenderFrameHostManager, pointing to the
   // SiteInstance of the outer WebContents. The proxy will be used to send
   // postMessage to the inner WebContents.
-  GetRenderManager()->CreateOuterDelegateProxy(
+  render_manager->CreateOuterDelegateProxy(
       outer_contents_frame->GetSiteInstance(),
       static_cast<RenderFrameHostImpl*>(outer_contents_frame));
 
-  GetRenderManager()->SetRWHViewForInnerContents(
-      GetRenderManager()->GetRenderWidgetHostView());
+  render_manager->SetRWHViewForInnerContents(
+      render_manager->GetRenderWidgetHostView());
 
   static_cast<RenderWidgetHostViewChildFrame*>(
-      GetRenderManager()->GetRenderWidgetHostView())
+      render_manager->GetRenderWidgetHostView())
       ->RegisterSurfaceNamespaceId();
 }
 
@@ -1803,12 +1816,6 @@ void WebContentsImpl::CreateNewWindow(
   // if the opener is being suppressed (in a non-guest), we create a new
   // SiteInstance in its own BrowsingInstance.
   bool is_guest = BrowserPluginGuest::IsGuest(this);
-
-  if (is_guest && BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
-    // TODO(lazyboy): CreateNewWindow doesn't work for OOPIF-based <webview>
-    // yet.
-    NOTREACHED();
-  }
 
   // If the opener is to be suppressed, the new window can be in any process.
   // Since routing ids are process specific, we must not have one passed in

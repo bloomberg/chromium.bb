@@ -744,9 +744,7 @@ INSTANTIATE_TEST_CASE_P(WebViewTests,
                         testing::Values(false));
 
 class WebViewNewWindowTest : public WebViewTest {};
-INSTANTIATE_TEST_CASE_P(WebViewTests,
-                        WebViewNewWindowTest,
-                        testing::Values(false));
+INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewNewWindowTest, testing::Bool());
 
 class WebViewSizeTest : public WebViewTest {};
 INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewSizeTest, testing::Values(false));
@@ -1748,6 +1746,11 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, OpenURLFromTab_CurrentTab_Succeed) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, OpenURLFromTab_NewWindow_Abort) {
+  // This test is disabled because it attaches before the element is appended
+  // to the document. crbug.com/589896.
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+    return;
+
   LoadAppWithGuest("web_view/simple");
 
   // Verify that OpenURLFromTab with a window disposition of NEW_BACKGROUND_TAB
