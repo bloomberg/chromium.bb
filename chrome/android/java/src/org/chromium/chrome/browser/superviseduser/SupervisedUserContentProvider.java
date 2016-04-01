@@ -16,10 +16,9 @@ import android.os.UserManager;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.components.webrestrictions.WebRestrictionsContentProvider;
-import org.chromium.content.browser.BrowserStartupController;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -41,8 +40,7 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
             return mNativeSupervisedUserContentProvider;
         }
 
-        BrowserStartupController.get(getContext(), LibraryProcessType.PROCESS_BROWSER)
-                .startBrowserProcessesSync(false);
+        ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
 
         mNativeSupervisedUserContentProvider = nativeCreateSupervisedUserContentProvider();
         return mNativeSupervisedUserContentProvider;

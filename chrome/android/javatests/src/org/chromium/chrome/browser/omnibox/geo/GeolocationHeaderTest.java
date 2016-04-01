@@ -13,13 +13,11 @@ import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.PathUtils;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
-import org.chromium.content.browser.BrowserStartupController;
 
 /**
  * Tests for GeolocationHeader and GeolocationTracker.
@@ -29,18 +27,12 @@ public class GeolocationHeaderTest extends InstrumentationTestCase {
     private static final String SEARCH_URL_1 = "https://www.google.com/search?q=potatoes";
     private static final String SEARCH_URL_2 = "https://www.google.co.jp/webhp?#q=dinosaurs";
 
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content";
-
     @SmallTest
     @Feature({"Location"})
     @UiThreadTest
     public void testGeolocationHeader() throws ProcessInitException {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
-                getInstrumentation().getTargetContext());
-
         Context targetContext = getInstrumentation().getTargetContext();
-        BrowserStartupController.get(targetContext, LibraryProcessType.PROCESS_BROWSER)
-                .startBrowserProcessesSync(false);
+        ChromeBrowserInitializer.getInstance(targetContext).handleSynchronousStartup();
 
         setMockLocation(20.3, 155.8, System.currentTimeMillis());
 
