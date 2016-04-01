@@ -8394,6 +8394,7 @@ should be able to be added at any place in this file.
   <description>
     Android: User clicked on a snippet card to hide the bigger summary.
   </description>
+  <obsolete>Deprecated as of 4/2016</obsolete>
 </action>
 
 <action name="MobileNTP.Snippets.ShowMore">
@@ -8401,6 +8402,7 @@ should be able to be added at any place in this file.
   <description>
     Android: User clicked on a snippet card to reveal a bigger summary.
   </description>
+  <obsolete>Deprecated as of 4/2016</obsolete>
 </action>
 
 <action name="MobileNTPBookmark">

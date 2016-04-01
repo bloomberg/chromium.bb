@@ -79,7 +79,7 @@
     <!-- First Run Experience Colors -->
     <color name="fre_text_color">#000000</color>
     <color name="fre_title_color">#161616</color>
-    
+
     <!-- Account Signin Colors -->
     <!-- As in dimens.xml, signin uses values from the First Run Experience -->
     <color name="signin_light_text_color">#494949</color>
@@ -95,11 +95,11 @@
     <color name="ntp_list_header_text">#333</color>
     <color name="ntp_list_header_subtext">#969696</color>
     <color name="ntp_list_header_subtext_active">#7cadff</color>
-    <color name="snippets_publisher_name_color">#7f7f7f</color>
-    <color name="snippets_text_color">#7f7f7f</color>
-    <color name="snippets_list_header_text_color">#7f7f7f</color>
-    <color name="snippets_headline_text_color">#000000</color>
-    <color name="snippets_read_more_link_color">@color/light_active_color</color>
+    <color name="ntp_with_cards_bg">#f2f2f2</color>
+    <color name="snippets_publisher_name_color">#646464</color>
+    <color name="snippets_text_color">#646464</color>
+    <color name="snippets_list_header_text_color">#646464</color>
+    <color name="snippets_headline_text_color">#333333</color>
 
     <!-- Signin promo screen colors -->
     <color name="illustration_background_color">#4FC3F7</color>

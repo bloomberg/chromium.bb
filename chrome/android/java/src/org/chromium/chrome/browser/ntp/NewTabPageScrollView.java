@@ -8,7 +8,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -17,6 +16,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.ScrollView;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.FadingShadow;
 
@@ -24,9 +24,8 @@ import org.chromium.chrome.browser.widget.FadingShadow;
  * Simple wrapper on top of a ScrollView that will acquire focus when tapped.  Ensures the
  * New Tab page receives focus when clicked.
  */
-public class NewTabScrollView extends ScrollView {
-
-    private static final String TAG = "NewTabScrollView";
+public class NewTabPageScrollView extends ScrollView {
+    private static final String TAG = "NewTabPageScrollView";
 
     /**
      * Listener for scroll changes.
@@ -49,7 +48,7 @@ public class NewTabScrollView extends ScrollView {
     /**
      * Constructor needed to inflate from XML.
      */
-    public NewTabScrollView(Context context, AttributeSet attrs) {
+    public NewTabPageScrollView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         mGestureDetector = new GestureDetector(

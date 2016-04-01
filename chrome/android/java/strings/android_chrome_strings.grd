@@ -1827,10 +1827,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         Remove all
       </message>
       <message name="IDS_SNIPPETS_HEADER" desc="Header for a group of content snippets">
-        For readers of <ph name="PUBLISHER">%1$s<ex>The New York Times</ex></ph>
-      </message>
-      <message name="IDS_SNIPPETS_NTP_READ_MORE_LINK_TEXT" desc="Link to an article this snippet is describing">
-        Read more
+        Articles for you
       </message>
 
       <!-- Toolbar button strings -->

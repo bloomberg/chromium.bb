@@ -32211,6 +32211,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Android: The position of the snippets card on the NTP, that is expanded to
     reveal more content.
   </summary>
+  <obsolete>
+    Deprecated as of 4/2016
+  </obsolete>
 </histogram>
 
 <histogram name="NewTabPage.Snippets.CardHidden">
@@ -32219,6 +32222,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Android: The position of the snippets card on the NTP, for which the
     expanded content was minimized/hidden.
   </summary>
+  <obsolete>
+    Deprecated as of 4/2016
+  </obsolete>
 </histogram>
 
 <histogram name="NewTabPage.Snippets.CardShown">

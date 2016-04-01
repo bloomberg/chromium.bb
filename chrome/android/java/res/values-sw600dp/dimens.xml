@@ -40,7 +40,6 @@
 
     <!-- NTP dimensions -->
     <dimen name="ntp_logo_height">180dp</dimen>
-    <dimen name="snippets_thumbnail_size">120dp</dimen>
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">28dp</dimen>

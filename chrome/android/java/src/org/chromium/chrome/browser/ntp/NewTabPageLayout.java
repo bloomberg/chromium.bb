@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -29,6 +30,7 @@ public class NewTabPageLayout extends BoundedLinearLayout {
     private final int mMiddleSpacerHeight;
     private final int mBottomSpacerHeight;
     private final int mTotalSpacerHeight;
+    private final int mMostVisitedLayoutBleed;
 
     private int mParentScrollViewportHeight;
 
@@ -37,16 +39,22 @@ public class NewTabPageLayout extends BoundedLinearLayout {
     private View mBottomSpacer;
     private View mScrollCompensationSpacer;
 
+    private LogoView mSearchProviderLogoView;
+    private View mSearchBoxView;
+    private MostVisitedLayout mMostVisitedLayout;
+
     /**
      * Constructor for inflating from XML.
      */
     public NewTabPageLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        float density = getResources().getDisplayMetrics().density;
+        Resources res = getResources();
+        float density = res.getDisplayMetrics().density;
         mTopSpacerHeight = Math.round(density * TOP_SPACER_HEIGHT_DP);
         mMiddleSpacerHeight = Math.round(density * MIDDLE_SPACER_HEIGHT_DP);
         mBottomSpacerHeight = Math.round(density * BOTTOM_SPACER_HEIGHT_DP);
         mTotalSpacerHeight = Math.round(density * TOTAL_SPACER_HEIGHT_DP);
+        mMostVisitedLayoutBleed = res.getDimensionPixelSize(R.dimen.most_visited_layout_bleed);
     }
 
     @Override
@@ -56,6 +64,9 @@ public class NewTabPageLayout extends BoundedLinearLayout {
         mMiddleSpacer = findViewById(R.id.ntp_middle_spacer);
         mBottomSpacer = findViewById(R.id.ntp_bottom_spacer);
         mScrollCompensationSpacer = findViewById(R.id.ntp_scroll_spacer);
+        mSearchProviderLogoView = (LogoView) findViewById(R.id.search_provider_logo);
+        mSearchBoxView = findViewById(R.id.search_box);
+        mMostVisitedLayout = (MostVisitedLayout) findViewById(R.id.most_visited_layout);
     }
 
     /**
@@ -105,6 +116,19 @@ public class NewTabPageLayout extends BoundedLinearLayout {
             distributeExtraSpace(mTopSpacer.getMeasuredHeight());
         } else {
             mScrollCompensationSpacer.setVisibility(View.GONE);
+        }
+
+        // Make the search box and logo as wide as the most visited items
+        if (mMostVisitedLayout.getVisibility() != GONE) {
+            int mostVisitedWidthSpec = MeasureSpec.makeMeasureSpec(
+                    mMostVisitedLayout.getMeasuredWidth() - mMostVisitedLayoutBleed,
+                    MeasureSpec.EXACTLY);
+            int searchBoxHeight = MeasureSpec.makeMeasureSpec(
+                    mSearchBoxView.getMeasuredHeight(), MeasureSpec.EXACTLY);
+            mSearchBoxView.measure(mostVisitedWidthSpec, searchBoxHeight);
+            int logoHeight = MeasureSpec.makeMeasureSpec(
+                    mSearchProviderLogoView.getMeasuredHeight(), MeasureSpec.EXACTLY);
+            mSearchProviderLogoView.measure(mostVisitedWidthSpec, logoHeight);
         }
     }
 

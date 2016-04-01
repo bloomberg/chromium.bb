@@ -4,11 +4,16 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.support.annotation.IntDef;
+
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.base.PageTransition;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Records UMA stats for which actions the user takes on the NTP in the
@@ -45,6 +50,19 @@ public class NewTabPageUma {
     public static final int RAPPOR_ACTION_VISITED_SUGGESTED_TILE = 1;
     // The number of possible actions pertinent to Rappor
     private static final int RAPPOR_NUM_ACTIONS = 2;
+
+    /** Possible interactions with the snippets. */
+    @IntDef({SNIPPETS_ACTION_SHOWN, SNIPPETS_ACTION_SCROLLED, SNIPPETS_ACTION_CLICKED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SnippetsAction {}
+    /** Snippets are enabled and are being shown to the user. */
+    public static final int SNIPPETS_ACTION_SHOWN = 0;
+    /** The snippet list has been scrolled. */
+    public static final int SNIPPETS_ACTION_SCROLLED = 1;
+    /** A snippet has been clicked. */
+    public static final int SNIPPETS_ACTION_CLICKED = 2;
+    /** The number of possible actions. */
+    private static final int NUM_SNIPPETS_ACTIONS = 3;
 
     /**
      * Records an action taken by the user on the NTP.
@@ -107,5 +125,14 @@ public class NewTabPageUma {
             default:
                 return;
         }
+    }
+
+    /**
+     * Records important events related to snippets.
+     * @param action action key, one of {@link SnippetsAction}'s values.
+     */
+    public static void recordSnippetAction(@SnippetsAction int action) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "NewTabPage.Snippets.Interactions", action, NUM_SNIPPETS_ACTIONS);
     }
 }

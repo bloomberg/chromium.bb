@@ -16,7 +16,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -34,10 +33,8 @@ import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
@@ -45,7 +42,9 @@ import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsManager;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -62,10 +61,20 @@ public class NewTabPageView extends FrameLayout
 
     private static final int SHADOW_COLOR = 0x11000000;
     private static final long SNAP_SCROLL_DELAY_MS = 30;
-    private static final String TAG = "NewTabPageView";
+    private static final String TAG = "Ntp";
 
-    private ViewGroup mContentView;
-    private NewTabScrollView mScrollView;
+    /**
+     * Indicates which UI mode we are using. Should be checked when manipulating some members, as
+     * they may be unused or {@code null} depending on the mode.
+     */
+    private boolean mUseCardsUi;
+
+    // Note: Only one of these will be valid at a time, depending on if we are using the old NTP
+    // (NewTabPageScrollView) or the new NTP with cards (NewTabPageRecyclerView).
+    private NewTabPageScrollView mScrollView;
+    private NewTabPageRecyclerView mRecyclerView;
+
+    private NewTabPageLayout mContentView;
     private LogoView mSearchProviderLogoView;
     private View mSearchBoxView;
     private TextView mSearchBoxTextView;
@@ -73,7 +82,9 @@ public class NewTabPageView extends FrameLayout
     private MostVisitedLayout mMostVisitedLayout;
     private View mMostVisitedPlaceholder;
     private View mNoSearchLogoSpacer;
-    private RecyclerView mSnippetsView;
+
+    /** Adapter for {@link #mRecyclerView}. Will be {@code null} when using the old UI */
+    private NewTabPageAdapter mNtpAdapter;
 
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
@@ -141,6 +152,9 @@ public class NewTabPageView extends FrameLayout
          * @param numResults The maximum number of sites to retrieve.
          */
         void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults);
+
+        /** Sets the observer that will be notified of new snippets. */
+        void setSnippetsObserver(SnippetsObserver observer);
 
         /**
          * Gets a cached thumbnail of a URL.
@@ -234,22 +248,41 @@ public class NewTabPageView extends FrameLayout
      *                with the page.
      * @param isSingleUrlBarMode Whether the NTP is in single URL bar mode.
      * @param searchProviderHasLogo Whether the search provider has a logo.
+     * @param useCardsUi Whether to use the new cards based UI or the old one.
      */
     public void initialize(NewTabPageManager manager, boolean isSingleUrlBarMode,
-            boolean searchProviderHasLogo, SnippetsManager snippetsManager) {
+            boolean searchProviderHasLogo, boolean useCardsUi) {
         mManager = manager;
+        ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
 
-        mScrollView = (NewTabScrollView) findViewById(R.id.ntp_scrollview);
-        mScrollView.enableBottomShadow(SHADOW_COLOR);
-        mContentView = (ViewGroup) findViewById(R.id.ntp_content);
+        mUseCardsUi = useCardsUi;
+        if (mUseCardsUi) {
+            stub.setLayoutResource(R.layout.new_tab_page_recycler_view);
+            mRecyclerView = (NewTabPageRecyclerView) stub.inflate();
+
+            // Don't attach now, the recyclerView itself will determine when to do it.
+            mContentView = (NewTabPageLayout) LayoutInflater.from(getContext())
+                    .inflate(R.layout.new_tab_page_layout, mRecyclerView, false);
+
+            // Tailor the LayoutParams for the snippets UI, as the configuration in the XML is
+            // made for the ScrollView UI.
+            ViewGroup.LayoutParams params = mContentView.getLayoutParams();
+            params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        } else {
+            stub.setLayoutResource(R.layout.new_tab_page_scroll_view);
+            mScrollView = (NewTabPageScrollView) stub.inflate();
+            mScrollView.enableBottomShadow(SHADOW_COLOR);
+            mContentView = (NewTabPageLayout) findViewById(R.id.ntp_content);
+        }
 
         mMostVisitedDesign = new MostVisitedDesign(getContext());
-        mMostVisitedLayout = (MostVisitedLayout) findViewById(R.id.most_visited_layout);
+        mMostVisitedLayout =
+                (MostVisitedLayout) mContentView.findViewById(R.id.most_visited_layout);
         mMostVisitedDesign.initMostVisitedLayout(mMostVisitedLayout, searchProviderHasLogo);
 
-        mSearchProviderLogoView = (LogoView) findViewById(R.id.search_provider_logo);
-        mSearchBoxView = findViewById(R.id.search_box);
-        mNoSearchLogoSpacer = findViewById(R.id.no_search_logo_spacer);
+        mSearchProviderLogoView = (LogoView) mContentView.findViewById(R.id.search_provider_logo);
+        mSearchBoxView = mContentView.findViewById(R.id.search_box);
+        mNoSearchLogoSpacer = mContentView.findViewById(R.id.no_search_logo_spacer);
 
         mSearchBoxTextView = (TextView) mSearchBoxView.findViewById(R.id.search_box_text);
         String hintText = getResources().getString(R.string.search_or_type_url);
@@ -281,7 +314,7 @@ public class NewTabPageView extends FrameLayout
             }
         });
 
-        mVoiceSearchButton = (ImageView) findViewById(R.id.voice_search_button);
+        mVoiceSearchButton = (ImageView) mContentView.findViewById(R.id.voice_search_button);
         mVoiceSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -317,13 +350,16 @@ public class NewTabPageView extends FrameLayout
             }
         } else {
             ((ViewGroup) toolbar.getParent()).removeView(toolbar);
-            FrameLayout.LayoutParams params =
-                    (FrameLayout.LayoutParams) mScrollView.getLayoutParams();
-            params.bottomMargin = 0;
-            mScrollView.setLayoutParams(params);
+            if (!mUseCardsUi) {
+                // Only remove if we're using the old NTP view, the new one does not use a
+                // ScrollView
+                FrameLayout.LayoutParams params =
+                        (FrameLayout.LayoutParams) mScrollView.getLayoutParams();
+                params.bottomMargin = 0;
+                mScrollView.setLayoutParams(params);
+            }
         }
 
-        initializeSearchBoxScrollHandling();
         addOnLayoutChangeListener(this);
         setSearchProviderHasLogo(searchProviderHasLogo);
 
@@ -332,13 +368,12 @@ public class NewTabPageView extends FrameLayout
                 mMostVisitedDesign.getNumberOfTiles(searchProviderHasLogo));
 
         // Set up snippets
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)) {
-            mSnippetsView = (RecyclerView) findViewById(R.id.snippets_card_list);
-            mSnippetsView.setVisibility(View.VISIBLE);
-            RecordHistogram.recordEnumeratedHistogram(SnippetsManager.SNIPPETS_STATE_HISTOGRAM,
-                    SnippetsManager.SNIPPETS_SHOWN, SnippetsManager.NUM_SNIPPETS_ACTIONS);
-            mSnippetsView.setLayoutManager(new LinearLayoutManager(getContext()));
-            mSnippetsView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        if (mUseCardsUi) {
+            mNtpAdapter = new NewTabPageAdapter(mManager, mContentView);
+            mRecyclerView.setAdapter(mNtpAdapter);
+
+            NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
+            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 private boolean mScrolledOnce = false;
                 @Override
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -346,13 +381,12 @@ public class NewTabPageView extends FrameLayout
                     RecordUserAction.record("MobileNTP.Snippets.Scrolled");
                     if (mScrolledOnce) return;
                     mScrolledOnce = true;
-                    RecordHistogram.recordEnumeratedHistogram(
-                            SnippetsManager.SNIPPETS_STATE_HISTOGRAM,
-                            SnippetsManager.SNIPPETS_SCROLLED,
-                            SnippetsManager.NUM_SNIPPETS_ACTIONS);
+                    NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SCROLLED);
                 }
             });
-            snippetsManager.setSnippetsView(mSnippetsView);
+            initializeSearchBoxRecyclerViewScrollHandling();
+        } else {
+            initializeSearchBoxScrollHandling();
         }
     }
 
@@ -362,10 +396,10 @@ public class NewTabPageView extends FrameLayout
         float percentage = 0;
         // During startup the view may not be fully initialized, so we only calculate the current
         // percentage if some basic view properties are sane.
-        if (mScrollView.getHeight() != 0 && mSearchBoxView.getTop() != 0) {
-            int scrollY = mScrollView.getScrollY();
-            percentage = Math.max(
-                    0f, Math.min(1f, scrollY / (float) mSearchBoxView.getTop()));
+        View wrapperView = mUseCardsUi ? mRecyclerView : mScrollView;
+        if (wrapperView.getHeight() != 0 && mSearchBoxView.getTop() != 0) {
+            int scrollY = getVerticalScroll();
+            percentage = Math.max(0f, Math.min(1f, scrollY / (float) mSearchBoxView.getTop()));
         }
 
         updateVisualsForToolbarTransition(percentage);
@@ -373,6 +407,15 @@ public class NewTabPageView extends FrameLayout
         if (mSearchBoxScrollListener != null) {
             mSearchBoxScrollListener.onNtpScrollChanged(percentage);
         }
+    }
+
+    private void initializeSearchBoxRecyclerViewScrollHandling() {
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                updateSearchBoxOnScroll();
+            }
+        });
     }
 
     private void initializeSearchBoxScrollHandling() {
@@ -388,7 +431,7 @@ public class NewTabPageView extends FrameLayout
                 mPendingSnapScroll = false;
             }
         };
-        mScrollView.setOnScrollListener(new NewTabScrollView.OnScrollListener() {
+        mScrollView.setOnScrollListener(new NewTabPageScrollView.OnScrollListener() {
             @Override
             public void onScrollChanged(int l, int t, int oldl, int oldt) {
                 if (mPendingSnapScroll) {
@@ -548,7 +591,7 @@ public class NewTabPageView extends FrameLayout
      */
     private void setUrlFocusChangeAnimationPercentInternal(float percent) {
         mContentView.setTranslationY(percent * (-mMostVisitedLayout.getTop()
-                + mScrollView.getScrollY() + mContentView.getPaddingTop()));
+                + getVerticalScroll() + mContentView.getPaddingTop()));
         updateVisualsForToolbarTransition(percent);
     }
 
@@ -586,7 +629,12 @@ public class NewTabPageView extends FrameLayout
         transformedBounds.set(originalBounds);
         View view = (View) mSearchBoxView.getParent();
         while (view != null) {
-            transformedBounds.offset(-view.getScrollX(), -view.getScrollY());
+            if (view instanceof RecyclerView) {
+                transformedBounds.offset(-((RecyclerView) view).computeHorizontalScrollOffset(),
+                        -((RecyclerView) view).computeVerticalScrollOffset());
+            } else {
+                transformedBounds.offset(-view.getScrollX(), -view.getScrollY());
+            }
             if (view == this) break;
             transformedBounds.offset((int) view.getX(), (int) view.getY());
             view = (View) view.getParent();
@@ -640,23 +688,6 @@ public class NewTabPageView extends FrameLayout
         }
     }
 
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-        // Make the search box and logo the same width as the most visited tiles.
-        if (mMostVisitedLayout.getVisibility() != GONE) {
-            int mostVisitedWidth = MeasureSpec.makeMeasureSpec(mMostVisitedLayout.getMeasuredWidth()
-                    - mMostVisitedDesign.getMostVisitedLayoutBleed(), MeasureSpec.EXACTLY);
-            int searchBoxHeight = MeasureSpec.makeMeasureSpec(
-                    mSearchBoxView.getMeasuredHeight(), MeasureSpec.EXACTLY);
-            int logoHeight = MeasureSpec.makeMeasureSpec(
-                    mSearchProviderLogoView.getMeasuredHeight(), MeasureSpec.EXACTLY);
-            mSearchBoxView.measure(mostVisitedWidth, searchBoxHeight);
-            mSearchProviderLogoView.measure(mostVisitedWidth, logoHeight);
-        }
-    }
-
     /**
      * @see org.chromium.chrome.browser.compositor.layouts.content.
      *         InvalidationAwareThumbnailProvider#shouldCaptureThumbnail()
@@ -664,10 +695,8 @@ public class NewTabPageView extends FrameLayout
     boolean shouldCaptureThumbnail() {
         if (getWidth() == 0 || getHeight() == 0) return false;
 
-        return mSnapshotMostVisitedChanged
-                || getWidth() != mSnapshotWidth
-                || getHeight() != mSnapshotHeight
-                || mScrollView.getScrollY() != mSnapshotScrollY;
+        return mSnapshotMostVisitedChanged || getWidth() != mSnapshotWidth
+                || getHeight() != mSnapshotHeight || getVerticalScroll() != mSnapshotScrollY;
     }
 
     /**
@@ -679,7 +708,7 @@ public class NewTabPageView extends FrameLayout
         ViewUtils.captureBitmap(this, canvas);
         mSnapshotWidth = getWidth();
         mSnapshotHeight = getHeight();
-        mSnapshotScrollY = mScrollView.getScrollY();
+        mSnapshotScrollY = getVerticalScroll();
         mSnapshotMostVisitedChanged = false;
     }
 
@@ -825,15 +854,12 @@ public class NewTabPageView extends FrameLayout
         private static final int ICON_BACKGROUND_COLOR = 0xff787878;
         private static final int ICON_MIN_SIZE_PX = 48;
 
-        private int mMostVisitedLayoutBleed;
         private int mMinIconSize;
         private int mDesiredIconSize;
         private RoundedIconGenerator mIconGenerator;
 
         MostVisitedDesign(Context context) {
             Resources res = context.getResources();
-            mMostVisitedLayoutBleed = res.getDimensionPixelSize(
-                    R.dimen.most_visited_layout_bleed);
             mDesiredIconSize = res.getDimensionPixelSize(R.dimen.most_visited_icon_size);
             // On ldpi devices, mDesiredIconSize could be even smaller than ICON_MIN_SIZE_PX.
             mMinIconSize = Math.min(mDesiredIconSize, ICON_MIN_SIZE_PX);
@@ -846,10 +872,6 @@ public class NewTabPageView extends FrameLayout
 
         public int getNumberOfTiles(boolean searchProviderHasLogo) {
             return searchProviderHasLogo ? NUM_TILES : NUM_TILES_NO_LOGO;
-        }
-
-        public int getMostVisitedLayoutBleed() {
-            return mMostVisitedLayoutBleed;
         }
 
         public void initMostVisitedLayout(MostVisitedLayout mostVisitedLayout,
@@ -940,6 +962,14 @@ public class NewTabPageView extends FrameLayout
                     break;
                 }
             }
+        }
+    }
+
+    private int getVerticalScroll() {
+        if (mUseCardsUi) {
+            return mRecyclerView.computeVerticalScrollOffset();
+        } else {
+            return mScrollView.getScrollY();
         }
     }
 }

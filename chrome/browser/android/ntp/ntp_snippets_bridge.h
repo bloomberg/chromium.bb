@@ -11,7 +11,7 @@
 #include "base/scoped_observer.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 
-// The C++ counterpart to NTPSnippetsBridge.java. Enables Java code to access
+// The C++ counterpart to SnippetsBridge.java. Enables Java code to access
 // the list of snippets to show on the NTP
 class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
  public:
@@ -36,6 +36,7 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
 
   ntp_snippets::NTPSnippetsService* ntp_snippets_service_;
 
+  // Used to notify the Java side when new snippets have been fetched.
   base::android::ScopedJavaGlobalRef<jobject> observer_;
   ScopedObserver<ntp_snippets::NTPSnippetsService,
                  ntp_snippets::NTPSnippetsServiceObserver>

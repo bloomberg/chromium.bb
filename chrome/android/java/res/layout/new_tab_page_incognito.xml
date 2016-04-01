@@ -11,7 +11,7 @@
     android:layout_height="match_parent"
     android:paddingTop="@dimen/tab_strip_height" >
 
-    <org.chromium.chrome.browser.ntp.NewTabScrollView
+    <org.chromium.chrome.browser.ntp.NewTabPageScrollView
         android:id="@+id/ntp_scrollview"
         android:background="@color/ntp_bg_incognito"
         android:layout_width="match_parent"
@@ -78,6 +78,6 @@
 
         </LinearLayout>
 
-    </org.chromium.chrome.browser.ntp.NewTabScrollView>
+    </org.chromium.chrome.browser.ntp.NewTabPageScrollView>
 
 </org.chromium.chrome.browser.ntp.IncognitoNewTabPageView>

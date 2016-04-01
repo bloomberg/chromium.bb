@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,17 +15,18 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsManager.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsManager.SnippetListItem;
+import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 
 /**
  * A class that represents the view for a single card snippet.
  */
-class SnippetCardItemViewHolder extends SnippetListItemViewHolder implements View.OnClickListener {
+public class SnippetArticleViewHolder extends NewTabPageViewHolder implements View.OnClickListener {
+    private final NewTabPageManager mNewTabPageManager;
     public TextView mHeadlineTextView;
     public TextView mPublisherTextView;
     public TextView mArticleSnippetTextView;
-    public TextView mReadMoreLinkTextView;
     public ImageView mThumbnailView;
     public String mUrl;
     public int mPosition;
@@ -47,27 +48,15 @@ class SnippetCardItemViewHolder extends SnippetListItemViewHolder implements Vie
      * @param cardView The View for the snippet card
      * @param manager The SnippetsManager object used to open an article
      */
-    public SnippetCardItemViewHolder(View cardView, SnippetsManager manager) {
-        super(cardView, manager);
+    public SnippetArticleViewHolder(View cardView, NewTabPageManager manager) {
+        super(cardView);
 
+        mNewTabPageManager = manager;
         cardView.setOnClickListener(this);
         mThumbnailView = (ImageView) cardView.findViewById(R.id.article_thumbnail);
         mHeadlineTextView = (TextView) cardView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) cardView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) cardView.findViewById(R.id.article_snippet);
-        mReadMoreLinkTextView = (TextView) cardView.findViewById(R.id.read_more_link);
-        mReadMoreLinkTextView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadUrl(mUrl);
-                RecordUserAction.record("MobileNTP.Snippets.Click");
-                RecordHistogram.recordSparseSlowlyHistogram(
-                        "NewTabPage.Snippets.CardClicked", mPosition);
-                RecordHistogram.recordEnumeratedHistogram(SnippetsManager.SNIPPETS_STATE_HISTOGRAM,
-                        SnippetsManager.SNIPPETS_CLICKED, SnippetsManager.NUM_SNIPPETS_ACTIONS);
-                NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
-            }
-        });
         cardView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
@@ -82,26 +71,21 @@ class SnippetCardItemViewHolder extends SnippetListItemViewHolder implements Vie
 
     @Override
     public void onClick(View v) {
-        // Toggle visibility of snippet text
-        int visibility =
-                (mArticleSnippetTextView.getVisibility() == View.GONE) ? View.VISIBLE : View.GONE;
-        mArticleSnippetTextView.setVisibility(visibility);
-        mReadMoreLinkTextView.setVisibility(visibility);
-
-        String action = visibility == View.VISIBLE ? "MobileNTP.Snippets.ShowMore"
-                                                   : "MobileNTP.Snippets.ShowLess";
-        String histogram = visibility == View.VISIBLE ? "NewTabPage.Snippets.CardExpanded"
-                                                      : "NewTabPage.Snippets.CardHidden";
-        RecordUserAction.record(action);
-        RecordHistogram.recordSparseSlowlyHistogram(histogram, mPosition);
+        mNewTabPageManager.open(mUrl);
+        RecordUserAction.record("MobileNTP.Snippets.Click");
+        RecordHistogram.recordSparseSlowlyHistogram("NewTabPage.Snippets.CardClicked", mPosition);
+        NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_CLICKED);
+        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
     }
 
     @Override
-    public void onBindViewHolder(SnippetListItem snippetItem) {
-        SnippetArticle item = (SnippetArticle) snippetItem;
+    public void onBindViewHolder(NewTabPageListItem article) {
+        SnippetArticle item = (SnippetArticle) article;
 
         mHeadlineTextView.setText(item.mTitle);
-        mPublisherTextView.setText(item.mPublisher);
+        mPublisherTextView.setText(
+                DateUtils.getRelativeTimeSpanString(item.mTimestamp, System.currentTimeMillis(),
+                        DateUtils.MINUTE_IN_MILLIS, DateUtils.FORMAT_ABBREV_RELATIVE));
         mArticleSnippetTextView.setText(item.mPreviewText);
         mUrl = item.mUrl;
         mPosition = item.mPosition;

@@ -18,6 +18,7 @@
 
 using base::android::JavaParamRef;
 using base::android::ToJavaArrayOfStrings;
+using base::android::ToJavaLongArray;
 using ntp_snippets::NTPSnippetsService;
 using ntp_snippets::NTPSnippetsServiceObserver;
 
@@ -59,19 +60,22 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded(NTPSnippetsService* service) {
   std::vector<std::string> urls;
   std::vector<std::string> thumbnail_urls;
   std::vector<std::string> snippets;
+  std::vector<int64_t> timestamps;
   for (const ntp_snippets::NTPSnippet& snippet : *service) {
     titles.push_back(snippet.title());
     urls.push_back(snippet.url().spec());
     thumbnail_urls.push_back(snippet.salient_image_url().spec());
     snippets.push_back(snippet.snippet());
+    timestamps.push_back(snippet.publish_date().ToJavaTime());
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SnippetsObserver_onSnippetsAvailable(
+  Java_SnippetsBridge_onSnippetsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
       ToJavaArrayOfStrings(env, urls).obj(),
       ToJavaArrayOfStrings(env, thumbnail_urls).obj(),
-      ToJavaArrayOfStrings(env, snippets).obj());
+      ToJavaArrayOfStrings(env, snippets).obj(),
+      ToJavaLongArray(env, timestamps).obj());
 }
 
 void NTPSnippetsBridge::NTPSnippetsServiceShutdown(

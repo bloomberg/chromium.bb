@@ -47,7 +47,8 @@ import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage;
 import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickListener;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsManager;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
@@ -116,7 +117,7 @@ public class NewTabPage
     private String mAnimatedLogoUrl;
     private FakeboxDelegate mFakeboxDelegate;
     private OfflinePageBridge mOfflinePageBridge;
-    private SnippetsManager mSnippetsManager;
+    private SnippetsBridge mSnippetsBridge;
 
     // The timestamp at which the constructor was called.
     private final long mConstructedTimeNs;
@@ -241,7 +242,8 @@ public class NewTabPage
 
         @Override
         public boolean isToolbarEnabled() {
-            return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_TOOLBAR);
+            return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_TOOLBAR)
+                    && !ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS);
         }
 
         private void recordOpenedMostVisitedItem(MostVisitedItem item) {
@@ -415,6 +417,12 @@ public class NewTabPage
         }
 
         @Override
+        public void setSnippetsObserver(SnippetsObserver observer) {
+            if (mIsDestroyed) return;
+            mSnippetsBridge.setObserver(observer);
+        }
+
+        @Override
         public void getURLThumbnail(String url, ThumbnailCallback thumbnailCallback) {
             if (mIsDestroyed) return;
             mMostVisitedSites.getURLThumbnail(url, thumbnailCallback);
@@ -539,7 +547,9 @@ public class NewTabPage
         mProfile = tab.getProfile();
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
-        mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg);
+        mBackgroundColor = ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)
+                ? ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_with_cards_bg)
+                : ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg);
         mThemeColor = ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.default_primary_color);
         TemplateUrlService.getInstance().addObserver(this);
@@ -563,12 +573,14 @@ public class NewTabPage
         mLogoBridge = new LogoBridge(mProfile);
         updateSearchProviderHasLogo();
 
-        mSnippetsManager = new SnippetsManager(mNewTabPageManager, mProfile);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)) {
+            mSnippetsBridge = new SnippetsBridge(mProfile);
+        }
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page, null);
         mNewTabPageView.initialize(mNewTabPageManager, isInSingleUrlBarMode(activity),
-                mSearchProviderHasLogo, mSnippetsManager);
+                mSearchProviderHasLogo, mSnippetsBridge != null);
 
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
@@ -625,12 +637,7 @@ public class NewTabPage
     }
 
     private void updateSearchProviderHasLogo() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)) {
-            mSearchProviderHasLogo = false;
-            if (mNewTabPageView != null) mNewTabPageView.setSearchProviderHasLogo(false);
-        } else {
-            mSearchProviderHasLogo = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
-        }
+        mSearchProviderHasLogo = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
     }
 
     private void onSearchEngineUpdated() {
@@ -726,6 +733,7 @@ public class NewTabPage
         assert !mIsDestroyed;
         assert getView().getParent() == null : "Destroy called before removed from window";
         if (mIsVisible) recordNTPInteractionTime();
+
         if (mOfflinePageBridge != null) {
             mOfflinePageBridge = null;
         }
@@ -745,9 +753,9 @@ public class NewTabPage
             mLogoBridge.destroy();
             mLogoBridge = null;
         }
-        if (mSnippetsManager != null) {
-            mSnippetsManager.destroy();
-            mSnippetsManager = null;
+        if (mSnippetsBridge != null) {
+            mSnippetsBridge.destroy();
+            mSnippetsBridge = null;
         }
         if (mMostVisitedItemRemovedController != null) {
             mTab.getSnackbarManager().dismissSnackbars(mMostVisitedItemRemovedController);
