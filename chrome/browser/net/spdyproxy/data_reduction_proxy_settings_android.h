@@ -40,9 +40,6 @@ class DataReductionProxySettingsAndroid {
   jboolean IsDataReductionProxyPromoAllowed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  jboolean IsIncludedInAltFieldTrial(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   jboolean IsDataReductionProxyEnabled(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

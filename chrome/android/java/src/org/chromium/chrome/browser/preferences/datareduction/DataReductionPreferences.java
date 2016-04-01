@@ -6,13 +6,11 @@ package org.chromium.chrome.browser.preferences.datareduction;
 
 import static org.chromium.third_party.android.datausagechart.ChartDataUsageView.DAYS_IN_CHART;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,14 +18,11 @@ import android.view.MenuItem;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.infobar.DataReductionProxyInfoBar;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.third_party.android.datausagechart.NetworkStats;
 import org.chromium.third_party.android.datausagechart.NetworkStatsHistory;
 
@@ -39,29 +34,11 @@ public class DataReductionPreferences extends PreferenceFragment {
     public static final String PREF_DATA_REDUCTION_SWITCH = "data_reduction_switch";
     private static final String PREF_DATA_REDUCTION_STATS = "data_reduction_stats";
 
-    private static final String SHARED_PREF_DISPLAYED_INFOBAR = "displayed_data_reduction_infobar";
-
     // This is the same as Chromium data_reduction_proxy::switches::kEnableDataReductionProxy.
     private static final String ENABLE_DATA_REDUCTION_PROXY = "enable-spdy-proxy-auth";
 
     private boolean mIsEnabled;
     private boolean mWasEnabledAtCreation;
-
-    public static void launchDataReductionSSLInfoBar(Context context, WebContents webContents) {
-        // The infobar is displayed if the Chrome instance is part of the SSL experiment field
-        // trial, the FRE has completed, the proxy is enabled, and the infobar has not been
-        // displayed before.
-        if (!DataReductionProxySettings.getInstance().isIncludedInAltFieldTrial()) return;
-        if (!DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) return;
-        if (DataReductionProxySettings.getInstance().isDataReductionProxyManaged()) return;
-        if (!FirstRunStatus.getFirstRunFlowComplete(context)) return;
-        if (getDisplayedDataReductionInfoBar(context)) return;
-        DataReductionProxyInfoBar.launch(webContents,
-                context.getString(R.string.data_reduction_infobar_text),
-                context.getString(R.string.learn_more),
-                context.getString(R.string.data_reduction_experiment_link_url));
-        setDisplayedDataReductionInfoBar(context, true);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -127,12 +104,6 @@ public class DataReductionPreferences extends PreferenceFragment {
             updateReductionStatistics();
         } else {
             addPreferencesFromResource(R.xml.data_reduction_preferences_off);
-            if (!DataReductionProxySettings.getInstance().isIncludedInAltFieldTrial()) {
-                getPreferenceScreen().removePreference(
-                        findPreference("data_reduction_experiment_text"));
-                getPreferenceScreen().removePreference(
-                        findPreference("data_reduction_experiment_link"));
-            }
         }
         mIsEnabled = isEnabled;
     }
@@ -217,16 +188,5 @@ public class DataReductionPreferences extends PreferenceFragment {
         // (e.g. the switch will say "On" when data reduction is really turned off), so
         // .setChecked() should be called after .addPreference()
         dataReductionSwitch.setChecked(isEnabled);
-    }
-
-    private static boolean getDisplayedDataReductionInfoBar(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
-                SHARED_PREF_DISPLAYED_INFOBAR, false);
-    }
-
-    private static void setDisplayedDataReductionInfoBar(Context context, boolean displayed) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putBoolean(SHARED_PREF_DISPLAYED_INFOBAR, displayed)
-                .apply();
     }
 }

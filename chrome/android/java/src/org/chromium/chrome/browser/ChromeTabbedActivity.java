@@ -73,7 +73,6 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.ConnectionChangeReceiver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
@@ -315,11 +314,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     Window.PROGRESS_VISIBILITY_OFF);
 
             super.finishNativeInitialization();
-
-            if (getActivityTab() != null) {
-                DataReductionPreferences.launchDataReductionSSLInfoBar(
-                        this, getActivityTab().getWebContents());
-            }
         } finally {
             TraceEvent.end("ChromeTabbedActivity.finishNativeInitialization");
         }

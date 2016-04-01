@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -736,11 +735,6 @@ public class DocumentActivity extends ChromeActivity {
         mTab.addObserver(new DocumentTabObserver());
 
         removeWindowBackground();
-
-        if (mTab != null) {
-            DataReductionPreferences.launchDataReductionSSLInfoBar(
-                    DocumentActivity.this, mTab.getWebContents());
-        }
     }
 
     private void resetIcon() {

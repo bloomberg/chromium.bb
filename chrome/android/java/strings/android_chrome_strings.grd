@@ -780,15 +780,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DATA_REDUCTION_CAVEATS_DESCRIPTION" desc="Description text for usage caveats">
         This feature may interfere with access to premium data services provided by your carrier.
       </message>
-      <message name="IDS_DATA_REDUCTION_EXPERIMENT_DESCRIPTION" desc="Text to be displayed in settings when an experiment is running">
-        If you enable this feature, you will be part of an experiment that proxies HTTPS pages through Google servers.
-      </message>
-      <message name="IDS_DATA_REDUCTION_EXPERIMENT_LINK_URL" desc="A link provided in settings when an experiment is running" translateable="false">
-        <!-- Intentionally empty. This is overridden downstream. -->
-      </message>
-      <message name="IDS_DATA_REDUCTION_INFOBAR_TEXT" desc="Text to be displayed in the data reduction proxy infobar">
-        We are testing the proxying of HTTPS pages through Google servers as part of an experiment.
-      </message>
 
       <!-- Data Saver Promo and FRE card -->
       <message name="IDS_DATA_REDUCTION_PROMO_TITLE" desc="The title for the promo inviting users to enable Data Saver" >

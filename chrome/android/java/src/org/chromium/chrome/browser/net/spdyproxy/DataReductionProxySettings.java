@@ -135,11 +135,6 @@ public class DataReductionProxySettings {
         return nativeIsDataReductionProxyPromoAllowed(mNativeDataReductionProxySettings);
     }
 
-    /** Returns true if proxy alternative field trial is running. */
-    public boolean isIncludedInAltFieldTrial() {
-        return nativeIsIncludedInAltFieldTrial(mNativeDataReductionProxySettings);
-    }
-
     /**
      * Sets the preference on whether to enable/disable the SPDY proxy. This will zero out the
      * data reduction statistics if this is the first time the SPDY proxy has been enabled.
@@ -313,8 +308,6 @@ public class DataReductionProxySettings {
     private native boolean nativeIsDataReductionProxyAllowed(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyPromoAllowed(
-            long nativeDataReductionProxySettingsAndroid);
-    private native boolean nativeIsIncludedInAltFieldTrial(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyEnabled(
             long nativeDataReductionProxySettingsAndroid);
