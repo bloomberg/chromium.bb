@@ -2926,6 +2926,11 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int64_t best_filter_rd[SWITCHABLE_FILTER_CONTEXTS];
   int64_t best_filter_diff[SWITCHABLE_FILTER_CONTEXTS];
   MB_MODE_INFO best_mbmode;
+#if CONFIG_REF_MV
+  uint8_t best_ref_mv_idx[MAX_REF_FRAMES] = { 0 };
+  int rate_skip0 = av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
+  int rate_skip1 = av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
+#endif
   int best_mode_skippable = 0;
   int midx, best_mode_index = -1;
   unsigned int ref_costs_single[MAX_REF_FRAMES], ref_costs_comp[MAX_REF_FRAMES];
@@ -3104,6 +3109,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     ref_frame = av1_mode_order[mode_index].ref_frame[0];
     second_ref_frame = av1_mode_order[mode_index].ref_frame[1];
 
+#if CONFIG_REF_MV
+    mbmi->ref_mv_idx = 0;
+#endif
     // Look at the reference frame of the best mode so far and set the
     // skip mask to look at a subset of the remaining modes.
     if (midx == mode_skip_start && best_mode_index >= 0) {
@@ -3237,7 +3245,91 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
           &disable_skip, frame_mv, mi_row, mi_col, single_newmv,
           single_inter_filter, single_skippable, &total_sse, best_rd,
           &mask_filter, filter_cache);
-      if (this_rd == INT64_MAX) continue;
+
+#if CONFIG_REF_MV
+      mbmi->ref_mv_idx = 0;
+
+      if (!comp_pred && mbmi->mode == NEARMV &&
+          mbmi_ext->ref_mv_count[ref_frame] > 2) {
+        int_mv backup_mv = frame_mv[NEARMV][ref_frame];
+        int_mv cur_mv = mbmi_ext->ref_mv_stack[ref_frame][2].this_mv;
+        MB_MODE_INFO backup_mbmi = *mbmi;
+
+        int64_t tmp_alt_rd = INT64_MAX, tmp_ref_rd = this_rd;
+        int tmp_rate = 0, tmp_rate_y = 0, tmp_rate_uv = 0;
+        int tmp_skip = 1;
+        int64_t tmp_dist = 0, tmp_sse = 0;
+
+        lower_mv_precision(&cur_mv.as_mv, cm->allow_high_precision_mv);
+        clamp_mv2(&cur_mv.as_mv, xd);
+
+        if (!mv_check_bounds(x, &cur_mv.as_mv)) {
+          int64_t dummy_filter_cache[SWITCHABLE_FILTER_CONTEXTS];
+          INTERP_FILTER dummy_single_inter_filter[MB_MODE_COUNT]
+                                                 [MAX_REF_FRAMES];
+          int dummy_single_skippable[MB_MODE_COUNT][MAX_REF_FRAMES];
+          int dummy_disable_skip = 0;
+          int64_t dummy_mask_filter = 0;
+          int_mv dummy_single_newmv[MAX_REF_FRAMES] = { { 0 } };
+
+          frame_mv[NEARMV][ref_frame] = cur_mv;
+          tmp_alt_rd = handle_inter_mode(cpi, x, bsize,
+                                         &tmp_rate, &tmp_dist, &tmp_skip,
+                                         &tmp_rate_y, &tmp_rate_uv,
+                                         &dummy_disable_skip, frame_mv,
+                                         mi_row, mi_col,
+                                         dummy_single_newmv,
+                                         dummy_single_inter_filter,
+                                         dummy_single_skippable,
+                                         &tmp_sse, best_rd,
+                                         &dummy_mask_filter,
+                                         dummy_filter_cache);
+        }
+
+        if (this_rd < INT64_MAX) {
+          if (RDCOST(x->rdmult, x->rddiv,
+                     rate_y + rate_uv + rate_skip0, distortion2) <
+              RDCOST(x->rdmult, x->rddiv, rate_skip1, total_sse))
+            tmp_ref_rd = RDCOST(x->rdmult, x->rddiv,
+                rate2 + rate_skip0, distortion2);
+          else
+            tmp_ref_rd = RDCOST(x->rdmult, x->rddiv,
+                rate2 + rate_skip1 - rate_y - rate_uv, total_sse);
+        }
+
+        if (tmp_alt_rd < INT64_MAX) {
+          if (RDCOST(x->rdmult, x->rddiv,
+                     tmp_rate_y + tmp_rate_uv + rate_skip0, tmp_dist) <
+              RDCOST(x->rdmult, x->rddiv, rate_skip1, tmp_sse))
+            tmp_alt_rd = RDCOST(x->rdmult, x->rddiv,
+                tmp_rate + rate_skip0, tmp_dist);
+          else
+            tmp_alt_rd = RDCOST(x->rdmult, x->rddiv,
+                tmp_rate + rate_skip1 - tmp_rate_y - tmp_rate_uv, tmp_sse);
+        }
+
+        if (tmp_ref_rd > tmp_alt_rd) {
+          rate2 = tmp_rate;
+          distortion2 = tmp_dist;
+          skippable = tmp_skip;
+          rate_y = tmp_rate_y;
+          rate_uv = tmp_rate_uv;
+          total_sse = tmp_sse;
+          this_rd = tmp_alt_rd;
+          mbmi->ref_mv_idx = 1;
+          // Indicator of the effective nearmv reference motion vector.
+          best_ref_mv_idx[ref_frame] = 1;
+        } else {
+          *mbmi = backup_mbmi;
+        }
+
+        frame_mv[NEARMV][ref_frame] = backup_mv;
+        rate2 += av1_cost_bit(128, mbmi->ref_mv_idx);;
+      }
+#endif
+
+      if (this_rd == INT64_MAX)
+        continue;
 
       compmode_cost = av1_cost_bit(comp_mode_p, comp_pred);
 
@@ -3260,8 +3352,14 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         // Cost the skip mb case
         rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
       } else if (ref_frame != INTRA_FRAME && !xd->lossless[mbmi->segment_id]) {
+#if CONFIG_REF_MV
+        if (RDCOST(x->rdmult, x->rddiv,
+                   rate_y + rate_uv + rate_skip0, distortion2) <
+            RDCOST(x->rdmult, x->rddiv, rate_skip1, total_sse)) {
+#else
         if (RDCOST(x->rdmult, x->rddiv, rate_y + rate_uv, distortion2) <
             RDCOST(x->rdmult, x->rddiv, 0, total_sse)) {
+#endif
           // Add in the cost of the no skip flag.
           rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
         } else {
@@ -3416,6 +3514,13 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     int comp_pred_mode = refs[1] > INTRA_FRAME;
 #if CONFIG_REF_MV
     if (!comp_pred_mode) {
+      if (best_ref_mv_idx[refs[0]] == 1) {
+        int_mv cur_mv =
+            mbmi_ext->ref_mv_stack[best_mbmode.ref_frame[0]][2].this_mv;
+        lower_mv_precision(&cur_mv.as_mv, cm->allow_high_precision_mv);
+        frame_mv[NEARMV][refs[0]] = cur_mv;
+      }
+
       if (frame_mv[NEARESTMV][refs[0]].as_int == best_mbmode.mv[0].as_int)
         best_mbmode.mode = NEARESTMV;
       else if (frame_mv[NEARMV][refs[0]].as_int == best_mbmode.mv[0].as_int)
@@ -3484,6 +3589,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET))
       best_mbmode.mode = ZEROMV;
   }
+
+  if (best_mbmode.mode == NEARMV && best_mbmode.ref_frame[1] == NONE)
+    best_mbmode.ref_mv_idx = best_ref_mv_idx[best_mbmode.ref_frame[0]];
 #endif
 
   if (best_mode_index < 0 || best_rd >= best_rd_so_far) {
@@ -3659,10 +3767,10 @@ void av1_rd_pick_inter_mode_sb_seg_skip(AV1_COMP *cpi, TileDataEnc *tile_data,
 }
 
 void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
-                                    MACROBLOCK *x, int mi_row, int mi_col,
-                                    RD_COST *rd_cost, BLOCK_SIZE bsize,
-                                    PICK_MODE_CONTEXT *ctx,
-                                    int64_t best_rd_so_far) {
+                                   MACROBLOCK *x, int mi_row, int mi_col,
+                                   RD_COST *rd_cost, BLOCK_SIZE bsize,
+                                   PICK_MODE_CONTEXT *ctx,
+                                   int64_t best_rd_so_far) {
   AV1_COMMON *const cm = &cpi->common;
   RD_OPT *const rd_opt = &cpi->rd;
   SPEED_FEATURES *const sf = &cpi->sf;
@@ -3750,6 +3858,10 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     ref_frame = av1_ref_order[ref_index].ref_frame[0];
     second_ref_frame = av1_ref_order[ref_index].ref_frame[1];
+
+#if CONFIG_REF_MV
+    mbmi->ref_mv_idx = 0;
+#endif
 
     // Look at the reference frame of the best mode so far and set the
     // skip mask to look at a subset of the remaining modes.

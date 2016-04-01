@@ -11,7 +11,8 @@
 #include "av1/common/mvref_common.h"
 
 #if CONFIG_REF_MV
-static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
+static uint8_t add_ref_mv_candidate(const MACROBLOCKD *xd,
+                                    const MODE_INFO *const candidate_mi,
                                     const MB_MODE_INFO *const candidate,
                                     const MV_REFERENCE_FRAME rf[2],
                                     uint8_t *refmv_count,
@@ -26,6 +27,9 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
       if (candidate->ref_frame[ref] == rf[0]) {
         int_mv this_refmv =
             get_sub_block_mv(candidate_mi, ref, col, block);
+        clamp_mv_ref(&this_refmv.as_mv,
+                     xd->n8_w << 3, xd->n8_h << 3, xd);
+
         for (index = 0; index < *refmv_count; ++index)
           if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int)
             break;
@@ -47,6 +51,9 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
           int alt_block = 3 - block;
           this_refmv =
               get_sub_block_mv(candidate_mi, ref, col, alt_block);
+          clamp_mv_ref(&this_refmv.as_mv,
+                       xd->n8_w << 3, xd->n8_h << 3, xd);
+
           for (index = 0; index < *refmv_count; ++index)
             if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int)
               break;
@@ -75,6 +82,10 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
           get_sub_block_mv(candidate_mi, 1, col, block)
       };
 
+      for (ref = 0; ref < 2; ++ref)
+        clamp_mv_ref(&this_refmv[ref].as_mv,
+                     xd->n8_w << 3, xd->n8_h << 3, xd);
+
       for (index = 0; index < *refmv_count; ++index)
         if ((ref_mv_stack[index].this_mv.as_int == this_refmv[0].as_int) &&
             (ref_mv_stack[index].comp_mv.as_int == this_refmv[1].as_int))
@@ -98,6 +109,10 @@ static uint8_t add_ref_mv_candidate(const MODE_INFO *const candidate_mi,
         int alt_block = 3 - block;
         this_refmv[0] = get_sub_block_mv(candidate_mi, 0, col, alt_block);
         this_refmv[1] = get_sub_block_mv(candidate_mi, 1, col, alt_block);
+
+        for (ref = 0; ref < 2; ++ref)
+          clamp_mv_ref(&this_refmv[ref].as_mv,
+                       xd->n8_w << 3, xd->n8_h << 3, xd);
 
         for (index = 0; index < *refmv_count; ++index)
           if (ref_mv_stack[index].this_mv.as_int == this_refmv[0].as_int &&
@@ -144,7 +159,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const MB_MODE_INFO *const candidate_mbmi = &candidate_mi->mbmi;
       const int len = AOMMIN(xd->n8_w,
                         num_8x8_blocks_wide_lookup[candidate_mbmi->sb_type]);
-      newmv_count += add_ref_mv_candidate(candidate_mi, candidate_mbmi, rf,
+      newmv_count += add_ref_mv_candidate(xd, candidate_mi, candidate_mbmi, rf,
                                           refmv_count, ref_mv_stack, len,
                                           block, mi_pos.col);
       i += len;
@@ -176,7 +191,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const MB_MODE_INFO *const candidate_mbmi = &candidate_mi->mbmi;
       const int len = AOMMIN(xd->n8_h,
                         num_8x8_blocks_high_lookup[candidate_mbmi->sb_type]);
-      newmv_count += add_ref_mv_candidate(candidate_mi, candidate_mbmi, rf,
+      newmv_count += add_ref_mv_candidate(xd, candidate_mi, candidate_mbmi, rf,
                                           refmv_count, ref_mv_stack, len,
                                           block, mi_pos.col);
       i += len;
@@ -206,7 +221,7 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         xd->mi[mi_pos.row * xd->mi_stride + mi_pos.col];
     const MB_MODE_INFO *const candidate_mbmi = &candidate_mi->mbmi;
     const int len = 1;
-    newmv_count += add_ref_mv_candidate(candidate_mi, candidate_mbmi, rf,
+    newmv_count += add_ref_mv_candidate(xd, candidate_mi, candidate_mbmi, rf,
                                         refmv_count, ref_mv_stack, len,
                                         block, mi_pos.col);
   }  // Analyze a single 8x8 block motion information.
@@ -612,9 +627,16 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                     mv_ref_list, -1,
                     mi_row, mi_col, mode_context);
 
-  for (idx = 0; idx < MAX_MV_REF_CANDIDATES; ++idx)
-    if (mv_ref_list[idx].as_int != 0)
-      all_zero = 0;
+  if (*ref_mv_count >= 2) {
+    for (idx = 0; idx < AOMMIN(3, *ref_mv_count); ++idx) {
+      if (ref_mv_stack[idx].this_mv.as_int != 0)
+        all_zero = 0;
+    }
+  } else {
+    for (idx = 0; idx < MAX_MV_REF_CANDIDATES; ++idx)
+      if (mv_ref_list[idx].as_int != 0)
+        all_zero = 0;
+  }
 
   if (all_zero)
     mode_context[ref_frame] |= (1 << ALL_ZERO_FLAG_OFFSET);

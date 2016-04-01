@@ -93,6 +93,9 @@ typedef struct {
   MV_REFERENCE_FRAME ref_frame[2];
   TX_TYPE tx_type;
 
+#if CONFIG_REF_MV
+  uint8_t ref_mv_idx;
+#endif
   // TODO(slavarnway): Delete and use bmi[3].as_mv[] instead.
   int_mv mv[2];
   /* deringing gain *per-superblock* */

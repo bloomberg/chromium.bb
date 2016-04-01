@@ -443,6 +443,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {
       if (bsize >= BLOCK_8X8) {
         write_inter_mode(cm, w, mode, mode_ctx);
+#if CONFIG_REF_MV
+        if (mode == NEARMV && mbmi->ref_frame[1] == NONE)
+          if (mbmi_ext->ref_mv_count[mbmi->ref_frame[0]] > 2)
+            aom_write_bit(w, mbmi->ref_mv_idx);
+#endif
       }
     }
 
