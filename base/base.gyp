@@ -555,6 +555,7 @@
         'task_runner_util_unittest.cc',
         'task_scheduler/priority_queue_unittest.cc',
         'task_scheduler/scheduler_lock_unittest.cc',
+        'task_scheduler/scheduler_worker_thread_unittest.cc',
         'task_scheduler/sequence_sort_key_unittest.cc',
         'task_scheduler/sequence_unittest.cc',
         'task_scheduler/task_tracker_unittest.cc',
