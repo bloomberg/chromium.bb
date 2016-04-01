@@ -12,7 +12,7 @@ Install the [gcloud command line tool][1].
 ## Deploy the code
 
 ```shell
-# Build Chrome
+# Build Chrome (do not use the component build).
 BUILD_DIR=out/Release
 ninja -C $BUILD_DIR -j1000 -l60 chrome chrome_sandbox
 
@@ -32,11 +32,10 @@ gcloud compute instances create clovis-tracer-1 \
  --machine-type n1-standard-1 \
  --image ubuntu-14-04 \
  --zone europe-west1-c \
- --tags clovis-http-server \
  --scopes cloud-platform \
- --metadata cloud-storage-path=$CLOUD_STORAGE_PATH
- --metadata auto-start=true \
- --metadata-from-file startup-script=tools/android/loading/gce/startup-script.sh
+ --metadata cloud-storage-path=$CLOUD_STORAGE_PATH,auto-start=true \
+ --metadata-from-file \
+     startup-script=$CHROMIUM_SRC/tools/android/loading/gce/startup-script.sh
 ```
 
 **Note:** To start an instance without automatically starting the app on it,
@@ -90,12 +89,12 @@ gcloud compute ssh clovis-tracer-1
 
 ## Use the app locally
 
-Set up the local environment:
+From a new directory, set up a local environment:
 
 ```shell
 virtualenv env
 source env/bin/activate
-pip install -r pip_requirements.txt
+pip install -r $CHROMIUM_SRC/tools/android/loading/gce/pip_requirements.txt
 ```
 
 Create a JSON file describing the deployment configuration:
@@ -106,11 +105,13 @@ Create a JSON file describing the deployment configuration:
 # CLOUD_STORAGE_PATH is the path in Google Storage where generated traces will
 # be stored.
 # CHROME_PATH is the path to the Chrome executable on the host.
+# CHROMIUM_SRC is the Chromium src directory.
 cat >$CONFIG_FILE << EOF
 {
   "project_name" : "$PROJECT_NAME",
   "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
-  "chrome_path" : "$CHROME_PATH"
+  "chrome_path" : "$CHROME_PATH",
+  "src_path" : "$CHROMIUM_SRC"
 }
 EOF
 ```
@@ -118,7 +119,9 @@ EOF
 Launch the app, passing the path to the deployment configuration file:
 
 ```shell
-gunicorn --workers=1 --bind 127.0.0.1:8080 'main:StartApp('\"$CONFIG_FILE\"')'
+gunicorn --workers=1 --bind 127.0.0.1:8080 \
+    --pythonpath $CHROMIUM_SRC/tools/android/loading/gce \
+    'main:StartApp('\"$CONFIG_FILE\"')'
 ```
 
 You can now [use the app][2], which is located at http://localhost:8080.
@@ -127,29 +130,6 @@ Tear down the local environment:
 
 ```shell
 deactivate
-```
-
-## Project-wide settings
-
-This is already setup, no need to do this again.
-Kept here for reference.
-
-### Firewall rule
-
-Firewall rule to allow access to the instance HTTP server from the outside:
-
-```shell
-gcloud compute firewall-rules create default-allow-http-8080 \
-    --allow tcp:8080 \
-    --source-ranges 0.0.0.0/0 \
-    --target-tags clovis-http-server \
-    --description "Allow port 8080 access to http-server"
-```
-
-The firewall rule can be disabled with:
-
-```shell
-gcloud compute firewall-rules delete default-allow-http-8080
 ```
 
 [1]: https://cloud.google.com/sdk

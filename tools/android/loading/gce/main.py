@@ -41,6 +41,7 @@ class ServerApp(object):
            self._base_path_in_bucket += '/'
 
        self._chrome_path = config['chrome_path']
+       self._src_path = config['src_path']
 
 
   def _GetStorageClient(self):
@@ -115,9 +116,10 @@ class ServerApp(object):
       os.remove(filename)  # Remove any existing trace for this URL.
     except OSError:
       pass  # Nothing to remove.
-    command_line = ['python', '../analyze.py', 'log_requests', '--clear_cache',
-        '--local', '--headless', '--local_binary', self._chrome_path, '--url',
-        url, '--output', filename]
+    analyze_path = self._src_path + '/tools/android/loading/analyze.py'
+    command_line = ['python', analyze_path, 'log_requests',
+        '--clear_cache', '--local', '--headless', '--local_binary',
+        self._chrome_path, '--url', url, '--output', filename]
     with open(log_filename, 'w') as log_file:
       ret = subprocess.call(command_line , stderr = subprocess.STDOUT,
                             stdout = log_file)

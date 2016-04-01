@@ -67,7 +67,8 @@ cat >$DEPLOYMENT_CONFIG_PATH << EOF
 {
   "project_name" : "$PROJECTID",
   "cloud_storage_path" : "$CLOUD_STORAGE_PATH",
-  "chrome_path" : "/opt/app/clovis/binaries/chrome"
+  "chrome_path" : "/opt/app/clovis/binaries/chrome",
+  "src_path" : "/opt/app/clovis/src"
 }
 EOF
 
