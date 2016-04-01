@@ -15,8 +15,6 @@
 #include "net/proxy/proxy_resolver.h"
 #include "url/gurl.h"
 
-#pragma comment(lib, "winhttp.lib")
-
 using base::TimeDelta;
 using base::TimeTicks;
 

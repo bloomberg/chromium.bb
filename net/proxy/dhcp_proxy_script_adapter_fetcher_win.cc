@@ -21,7 +21,6 @@
 #include <windows.h>
 #include <winsock2.h>
 #include <dhcpcsdk.h>
-#pragma comment(lib, "dhcpcsvc.lib")
 
 namespace {
 

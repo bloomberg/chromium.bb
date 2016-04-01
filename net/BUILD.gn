@@ -444,6 +444,18 @@ component("net") {
     ]
   }
 
+  if (is_win) {
+    libs = [
+      "crypt32.lib",
+      "dhcpcsvc.lib",
+      "iphlpapi.lib",
+      "rpcrt4.lib",
+      "secur32.lib",
+      "urlmon.lib",
+      "winhttp.lib",
+    ]
+  }
+
   if (!is_nacl) {
     if (!disable_file_support) {
       sources += gypi_values.net_file_support_sources

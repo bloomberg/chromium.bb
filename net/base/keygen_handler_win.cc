@@ -20,9 +20,6 @@
 #include "crypto/scoped_capi_types.h"
 #include "crypto/wincrypt_shim.h"
 
-#pragma comment(lib, "crypt32.lib")
-#pragma comment(lib, "rpcrt4.lib")
-
 namespace net {
 
 // Assigns the contents of a CERT_PUBLIC_KEY_INFO structure for the signing

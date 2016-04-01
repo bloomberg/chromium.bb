@@ -14,8 +14,6 @@
 #include "crypto/capi_util.h"
 #include "crypto/wincrypt_shim.h"
 
-#pragma comment(lib, "crypt32.lib")
-
 namespace net {
 
 namespace {
