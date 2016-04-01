@@ -43,29 +43,29 @@ class SVGTransformList final : public SVGListPropertyHelper<SVGTransformList, SV
 public:
     typedef SVGTransformListTearOff TearOffType;
 
-    static PassRefPtrWillBeRawPtr<SVGTransformList> create()
+    static RawPtr<SVGTransformList> create()
     {
-        return adoptRefWillBeNoop(new SVGTransformList());
+        return new SVGTransformList();
     }
 
-    static PassRefPtrWillBeRawPtr<SVGTransformList> create(SVGTransformType, const String&);
+    static RawPtr<SVGTransformList> create(SVGTransformType, const String&);
 
     ~SVGTransformList() override;
 
-    PassRefPtrWillBeRawPtr<SVGTransform> consolidate();
+    RawPtr<SVGTransform> consolidate();
 
     bool concatenate(AffineTransform& result) const;
 
     // SVGPropertyBase:
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
     bool parse(const UChar*& ptr, const UChar* end);
     bool parse(const LChar*& ptr, const LChar* end);
 
-    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedTransformList; }
 

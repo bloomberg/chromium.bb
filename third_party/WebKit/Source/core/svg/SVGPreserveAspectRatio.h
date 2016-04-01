@@ -54,12 +54,12 @@ public:
 
     typedef SVGPreserveAspectRatioTearOff TearOffType;
 
-    static PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> create()
+    static RawPtr<SVGPreserveAspectRatio> create()
     {
-        return adoptRefWillBeNoop(new SVGPreserveAspectRatio());
+        return new SVGPreserveAspectRatio();
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> clone() const;
+    virtual RawPtr<SVGPreserveAspectRatio> clone() const;
 
     bool operator==(const SVGPreserveAspectRatio&) const;
     bool operator!=(const SVGPreserveAspectRatio& other) const { return !operator==(other); }
@@ -81,9 +81,9 @@ public:
     bool parse(const UChar*& ptr, const UChar* end, bool validate);
     bool parse(const LChar*& ptr, const LChar* end, bool validate);
 
-    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedPreserveAspectRatio; }
 

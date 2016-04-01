@@ -39,7 +39,7 @@ public:
     Path asPath() const override;
 
     float getTotalLength();
-    PassRefPtrWillBeRawPtr<SVGPointTearOff> getPointAtLength(float distance);
+    RawPtr<SVGPointTearOff> getPointAtLength(float distance);
     unsigned getPathSegAtLength(float distance);
 
     SVGAnimatedPath* path() const { return m_path.get(); }
@@ -66,8 +66,8 @@ private:
 
     void invalidateMPathDependencies();
 
-    RefPtrWillBeMember<SVGAnimatedNumber> m_pathLength;
-    RefPtrWillBeMember<SVGAnimatedPath> m_path;
+    Member<SVGAnimatedNumber> m_pathLength;
+    Member<SVGAnimatedPath> m_path;
 };
 
 } // namespace blink

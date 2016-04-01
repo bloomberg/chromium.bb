@@ -38,10 +38,10 @@ class SVGSVGElement;
 class SVGElement;
 class Element;
 
-class SVGDocumentExtensions : public NoBaseWillBeGarbageCollectedFinalized<SVGDocumentExtensions> {
-    WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions); USING_FAST_MALLOC_WILL_BE_REMOVED(SVGDocumentExtensions);
+class SVGDocumentExtensions : public GarbageCollectedFinalized<SVGDocumentExtensions> {
+    WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions);
 public:
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<Element>> SVGPendingElements;
+    typedef HeapHashSet<Member<Element>> SVGPendingElements;
     explicit SVGDocumentExtensions(Document*);
     ~SVGDocumentExtensions();
 
@@ -81,15 +81,15 @@ public:
     DECLARE_TRACE();
 
 private:
-    RawPtrWillBeMember<Document> m_document;
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement>> m_timeContainers; // For SVG 1.2 support this will need to be made more general.
-    using SVGElementSet = WillBeHeapHashSet<RefPtrWillBeMember<SVGElement>>;
+    Member<Document> m_document;
+    HeapHashSet<Member<SVGSVGElement>> m_timeContainers; // For SVG 1.2 support this will need to be made more general.
+    using SVGElementSet = HeapHashSet<Member<SVGElement>>;
     SVGElementSet m_webAnimationsPendingSVGElements;
     HashMap<AtomicString, LayoutSVGResourceContainer*> m_resources;
-    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements>> m_pendingResources; // Resources that are pending.
-    WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements>> m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
+    HeapHashMap<AtomicString, Member<SVGPendingElements>> m_pendingResources; // Resources that are pending.
+    HeapHashMap<AtomicString, Member<SVGPendingElements>> m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
     SVGResourcesCache m_resourcesCache;
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement>> m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
+    HeapHashSet<Member<SVGSVGElement>> m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
     FloatPoint m_translate;
 #if ENABLE(ASSERT)
     bool m_inRelativeLengthSVGRootsInvalidation;
@@ -105,7 +105,7 @@ public:
     bool isElementPendingResource(Element*, const AtomicString& id) const;
     void clearHasPendingResourcesIfPossible(Element*);
     void removeElementFromPendingResources(Element*);
-    PassOwnPtrWillBeRawPtr<SVGPendingElements> removePendingResource(const AtomicString& id);
+    RawPtr<SVGPendingElements> removePendingResource(const AtomicString& id);
 
     void serviceAnimations(double monotonicAnimationStartTime);
 
@@ -114,7 +114,7 @@ public:
     Element* removeElementFromPendingResourcesForRemoval(const AtomicString&);
 
 private:
-    PassOwnPtrWillBeRawPtr<SVGPendingElements> removePendingResourceForRemoval(const AtomicString&);
+    RawPtr<SVGPendingElements> removePendingResourceForRemoval(const AtomicString&);
 };
 
 } // namespace blink

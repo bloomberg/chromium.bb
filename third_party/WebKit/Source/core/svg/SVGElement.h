@@ -50,7 +50,7 @@ class SVGPropertyBase;
 class SVGSVGElement;
 class SVGUseElement;
 
-typedef WillBeHeapHashSet<RawPtrWillBeMember<SVGElement>> SVGElementSet;
+typedef HeapHashSet<Member<SVGElement>> SVGElementSet;
 
 class CORE_EXPORT SVGElement : public Element {
     DEFINE_WRAPPERTYPEINFO();
@@ -87,7 +87,7 @@ public:
 
     void ensureAttributeAnimValUpdated();
 
-    void setWebAnimatedAttribute(const QualifiedName& attribute, PassRefPtrWillBeRawPtr<SVGPropertyBase>);
+    void setWebAnimatedAttribute(const QualifiedName& attribute, RawPtr<SVGPropertyBase>);
     void clearWebAnimatedAttributes();
 
     SVGSVGElement* ownerSVGElement() const;
@@ -119,7 +119,7 @@ public:
     void invalidateSVGAttributes() { ensureUniqueElementData().m_animatedSVGAttributesAreDirty = true; }
     void invalidateSVGPresentationAttributeStyle() { ensureUniqueElementData().m_presentationAttributeStyleIsDirty = true; }
 
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instancesForElement() const;
+    const HeapHashSet<WeakMember<SVGElement>>& instancesForElement() const;
     void mapInstanceToElement(SVGElement*);
     void removeInstanceMapping(SVGElement*);
 
@@ -151,7 +151,7 @@ public:
 
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 
-    void addToPropertyMap(PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase>);
+    void addToPropertyMap(RawPtr<SVGAnimatedPropertyBase>);
 
     SVGAnimatedString* className() { return m_className.get(); }
 
@@ -171,7 +171,7 @@ public:
         ~InvalidationGuard() { m_element->invalidateInstances(); }
 
     private:
-        RawPtrWillBeMember<SVGElement> m_element;
+        Member<SVGElement> m_element;
     };
 
     class InstanceUpdateBlocker {
@@ -182,7 +182,7 @@ public:
         ~InstanceUpdateBlocker();
 
     private:
-        RawPtrWillBeMember<SVGElement> m_targetElement;
+        Member<SVGElement> m_targetElement;
     };
 
     void invalidateInstances();
@@ -227,8 +227,8 @@ protected:
     void reportAttributeParsingError(SVGParsingError, const QualifiedName&, const AtomicString&);
     bool hasFocusEventListeners() const;
 
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) final;
-    bool removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) final;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) final;
+    bool removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) final;
 
 private:
     bool isSVGElement() const = delete; // This will catch anyone doing an unnecessary check.
@@ -240,17 +240,17 @@ private:
 
     void buildPendingResourcesIfNeeded();
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>> m_elementsWithRelativeLengths;
+    HeapHashSet<WeakMember<SVGElement>> m_elementsWithRelativeLengths;
 
-    typedef WillBeHeapHashMap<QualifiedName, RefPtrWillBeMember<SVGAnimatedPropertyBase>> AttributeToPropertyMap;
+    typedef HeapHashMap<QualifiedName, Member<SVGAnimatedPropertyBase>> AttributeToPropertyMap;
     AttributeToPropertyMap m_attributeToPropertyMap;
 
 #if ENABLE(ASSERT)
     bool m_inRelativeLengthClientsInvalidation;
 #endif
 
-    OwnPtrWillBeMember<SVGElementRareData> m_SVGRareData;
-    RefPtrWillBeMember<SVGAnimatedString> m_className;
+    Member<SVGElementRareData> m_SVGRareData;
+    Member<SVGAnimatedString> m_className;
 };
 
 struct SVGAttributeHashTranslator {
@@ -283,8 +283,8 @@ inline bool Node::hasTagName(const SVGQualifiedName& name) const
     inline bool is##thisType(const SVGElement* element) { return element && is##thisType(*element); } \
     inline bool is##thisType(const Node& node) { return node.isSVGElement() ? is##thisType(toSVGElement(node)) : false; } \
     inline bool is##thisType(const Node* node) { return node && is##thisType(*node); } \
-    template<typename T> inline bool is##thisType(const PassRefPtrWillBeRawPtr<T>& node) { return is##thisType(node.get()); } \
-    template<typename T> inline bool is##thisType(const RefPtrWillBeMember<T>& node) { return is##thisType(node.get()); } \
+    template<typename T> inline bool is##thisType(const RawPtr<T>& node) { return is##thisType(node.get()); } \
+    template<typename T> inline bool is##thisType(const Member<T>& node) { return is##thisType(node.get()); } \
     template <> inline bool isElementOfType<const thisType>(const SVGElement& element) { return is##thisType(element); } \
     DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)
 

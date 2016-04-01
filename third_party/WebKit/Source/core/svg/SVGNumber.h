@@ -44,12 +44,12 @@ public:
     typedef SVGNumberTearOff TearOffType;
     typedef float PrimitiveType;
 
-    static PassRefPtrWillBeRawPtr<SVGNumber> create(float value = 0.0f)
+    static RawPtr<SVGNumber> create(float value = 0.0f)
     {
-        return adoptRefWillBeNoop(new SVGNumber(value));
+        return new SVGNumber(value);
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGNumber> clone() const;
+    virtual RawPtr<SVGNumber> clone() const;
 
     float value() const { return m_value; }
     void setValue(float value) { m_value = value; }
@@ -57,9 +57,9 @@ public:
     String valueAsString() const override;
     virtual SVGParsingError setValueAsString(const String&);
 
-    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedNumber; }
 
@@ -80,12 +80,12 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGNumber);
 //   offset = "<number> | <percentage>"
 class SVGNumberAcceptPercentage final : public SVGNumber {
 public:
-    static PassRefPtrWillBeRawPtr<SVGNumberAcceptPercentage> create(float value = 0)
+    static RawPtr<SVGNumberAcceptPercentage> create(float value = 0)
     {
-        return adoptRefWillBeNoop(new SVGNumberAcceptPercentage(value));
+        return new SVGNumberAcceptPercentage(value);
     }
 
-    PassRefPtrWillBeRawPtr<SVGNumber> clone() const override;
+    RawPtr<SVGNumber> clone() const override;
     SVGParsingError setValueAsString(const String&) override;
 
 private:

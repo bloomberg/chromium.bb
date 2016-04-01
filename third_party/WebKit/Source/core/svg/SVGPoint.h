@@ -44,17 +44,17 @@ class SVGPoint : public SVGPropertyHelper<SVGPoint> {
 public:
     typedef SVGPointTearOff TearOffType;
 
-    static PassRefPtrWillBeRawPtr<SVGPoint> create()
+    static RawPtr<SVGPoint> create()
     {
-        return adoptRefWillBeNoop(new SVGPoint());
+        return new SVGPoint();
     }
 
-    static PassRefPtrWillBeRawPtr<SVGPoint> create(const FloatPoint& point)
+    static RawPtr<SVGPoint> create(const FloatPoint& point)
     {
-        return adoptRefWillBeNoop(new SVGPoint(point));
+        return new SVGPoint(point);
     }
 
-    PassRefPtrWillBeRawPtr<SVGPoint> clone() const;
+    RawPtr<SVGPoint> clone() const;
 
     const FloatPoint& value() const { return m_value; }
     void setValue(const FloatPoint& value) { m_value = value; }
@@ -69,9 +69,9 @@ public:
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
 
-    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedPoint; }
 

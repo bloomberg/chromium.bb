@@ -57,7 +57,7 @@ void SVGFEComponentTransferElement::svgAttributeChanged(const QualifiedName& att
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-PassRefPtrWillBeRawPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+RawPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
@@ -78,7 +78,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFil
             alpha = toSVGFEFuncAElement(*element).transferFunction();
     }
 
-    RefPtrWillBeRawPtr<FilterEffect> effect = FEComponentTransfer::create(filter, red, green, blue, alpha);
+    RawPtr<FilterEffect> effect = FEComponentTransfer::create(filter, red, green, blue, alpha);
     effect->inputEffects().append(input1);
     return effect.release();
 }

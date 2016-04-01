@@ -32,9 +32,9 @@ namespace blink {
 
 class SVGAnimatedPathLength final : public SVGAnimatedNumber {
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedPathLength> create(SVGPathElement* contextElement)
+    static RawPtr<SVGAnimatedPathLength> create(SVGPathElement* contextElement)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedPathLength(contextElement));
+        return new SVGAnimatedPathLength(contextElement);
     }
 
     SVGParsingError setBaseValueAsString(const String& value) override
@@ -107,7 +107,7 @@ float SVGPathElement::getTotalLength()
     return SVGPathQuery(pathByteStream()).getTotalLength();
 }
 
-PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGPathElement::getPointAtLength(float length)
+RawPtr<SVGPointTearOff> SVGPathElement::getPointAtLength(float length)
 {
     document().updateLayoutIgnorePendingStylesheets();
     FloatPoint point = SVGPathQuery(pathByteStream()).getPointAtLength(length);

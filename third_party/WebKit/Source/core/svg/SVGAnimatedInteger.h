@@ -44,9 +44,9 @@ class SVGAnimatedIntegerOptionalInteger;
 class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGInteger> initialValue)
+    static RawPtr<SVGAnimatedInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGInteger> initialValue)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedInteger(contextElement, attributeName, initialValue));
+        return new SVGAnimatedInteger(contextElement, attributeName, initialValue);
     }
 
     void synchronizeAttribute() override;
@@ -59,13 +59,13 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    SVGAnimatedInteger(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGInteger> initialValue)
+    SVGAnimatedInteger(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGInteger> initialValue)
         : SVGAnimatedProperty<SVGInteger>(contextElement, attributeName, initialValue)
         , m_parentIntegerOptionalInteger(nullptr)
     {
     }
 
-    RawPtrWillBeMember<SVGAnimatedIntegerOptionalInteger> m_parentIntegerOptionalInteger;
+    Member<SVGAnimatedIntegerOptionalInteger> m_parentIntegerOptionalInteger;
 };
 
 } // namespace blink

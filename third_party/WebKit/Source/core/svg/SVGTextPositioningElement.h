@@ -46,11 +46,11 @@ protected:
     void svgAttributeChanged(const QualifiedName&) final;
     bool isTextPositioning() const final { return true; }
 
-    RefPtrWillBeMember<SVGAnimatedLengthList> m_x;
-    RefPtrWillBeMember<SVGAnimatedLengthList> m_y;
-    RefPtrWillBeMember<SVGAnimatedLengthList> m_dx;
-    RefPtrWillBeMember<SVGAnimatedLengthList> m_dy;
-    RefPtrWillBeMember<SVGAnimatedNumberList> m_rotate;
+    Member<SVGAnimatedLengthList> m_x;
+    Member<SVGAnimatedLengthList> m_y;
+    Member<SVGAnimatedLengthList> m_dx;
+    Member<SVGAnimatedLengthList> m_dy;
+    Member<SVGAnimatedNumberList> m_rotate;
 };
 
 inline bool isSVGTextPositioningElement(const SVGElement& element)

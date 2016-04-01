@@ -44,12 +44,12 @@ namespace blink {
 // For example, see SVGFEDropShadowElement::stdDeviation{X,Y}()
 class SVGAnimatedIntegerOptionalInteger : public SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger> {
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedIntegerOptionalInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue = 0, float initialSecondValue = 0)
+    static RawPtr<SVGAnimatedIntegerOptionalInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue = 0, float initialSecondValue = 0)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedIntegerOptionalInteger(contextElement, attributeName, initialFirstValue, initialSecondValue));
+        return new SVGAnimatedIntegerOptionalInteger(contextElement, attributeName, initialFirstValue, initialSecondValue);
     }
 
-    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
+    void setAnimatedValue(RawPtr<SVGPropertyBase>) override;
     bool needsSynchronizeAttribute() override;
     void animationEnded() override;
 
@@ -61,8 +61,8 @@ public:
 protected:
     SVGAnimatedIntegerOptionalInteger(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue, float initialSecondValue);
 
-    RefPtrWillBeMember<SVGAnimatedInteger> m_firstInteger;
-    RefPtrWillBeMember<SVGAnimatedInteger> m_secondInteger;
+    Member<SVGAnimatedInteger> m_firstInteger;
+    Member<SVGAnimatedInteger> m_secondInteger;
 };
 
 } // namespace blink

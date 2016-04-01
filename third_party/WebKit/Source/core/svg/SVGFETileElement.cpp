@@ -52,12 +52,12 @@ void SVGFETileElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-PassRefPtrWillBeRawPtr<FilterEffect> SVGFETileElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+RawPtr<FilterEffect> SVGFETileElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
 
-    RefPtrWillBeRawPtr<FilterEffect> effect = FETile::create(filter);
+    RawPtr<FilterEffect> effect = FETile::create(filter);
     effect->inputEffects().append(input1);
     return effect.release();
 }

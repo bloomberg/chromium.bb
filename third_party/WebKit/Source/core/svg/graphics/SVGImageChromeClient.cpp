@@ -44,9 +44,9 @@ SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
 {
 }
 
-PassOwnPtrWillBeRawPtr<SVGImageChromeClient> SVGImageChromeClient::create(SVGImage* image)
+RawPtr<SVGImageChromeClient> SVGImageChromeClient::create(SVGImage* image)
 {
-    return adoptPtrWillBeNoop(new SVGImageChromeClient(image));
+    return new SVGImageChromeClient(image);
 }
 
 bool SVGImageChromeClient::isSVGImageChromeClient() const
@@ -106,7 +106,7 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     // The calls below may trigger GCs, so set up the required persistent
     // reference on the ImageResource which owns this SVGImage. By transitivity,
     // that will keep this SVGImageChromeClient object alive.
-    RawPtrWillBePersistent<ImageObserver> protect(m_image->getImageObserver());
+    Persistent<ImageObserver> protect(m_image->getImageObserver());
     m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
     m_image->frameView()->updateAllLifecyclePhases();
 }

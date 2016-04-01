@@ -36,7 +36,7 @@ class SVGElement;
 class SVGAnimationElement;
 
 // The size of SVGElementInstances is 1 unless there is a <use> instance of the element.
-using SVGElementInstances = WillBeHeapVector<RawPtrWillBeMember<SVGElement>, 1u>;
+using SVGElementInstances = HeapVector<Member<SVGElement>, 1u>;
 
 class SVGAnimatedTypeAnimator final {
     DISALLOW_NEW();
@@ -46,17 +46,17 @@ public:
     void clear();
     void reset(SVGElement* contextElement);
 
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> constructFromString(const String&);
+    RawPtr<SVGPropertyBase> constructFromString(const String&);
 
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> startAnimValAnimation(const SVGElementInstances&);
+    RawPtr<SVGPropertyBase> startAnimValAnimation(const SVGElementInstances&);
     void stopAnimValAnimation(const SVGElementInstances&);
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> resetAnimValToBaseVal(const SVGElementInstances&);
+    RawPtr<SVGPropertyBase> resetAnimValToBaseVal(const SVGElementInstances&);
 
     void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*);
     float calculateDistance(const String& fromString, const String& toString);
 
-    void calculateFromAndToValues(RefPtrWillBeMember<SVGPropertyBase>& from, RefPtrWillBeMember<SVGPropertyBase>& to, const String& fromString, const String& toString);
-    void calculateFromAndByValues(RefPtrWillBeMember<SVGPropertyBase>& from, RefPtrWillBeMember<SVGPropertyBase>& to, const String& fromString, const String& byString);
+    void calculateFromAndToValues(Member<SVGPropertyBase>& from, Member<SVGPropertyBase>& to, const String& fromString, const String& toString);
+    void calculateFromAndByValues(Member<SVGPropertyBase>& from, Member<SVGPropertyBase>& to, const String& fromString, const String& byString);
 
     void setContextElement(SVGElement* contextElement) { m_contextElement = contextElement; }
     AnimatedPropertyType type() const { return m_type; }
@@ -68,12 +68,12 @@ public:
 
 private:
     friend class ParsePropertyFromString;
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> createPropertyForAnimation(const String&);
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> resetAnimation(const SVGElementInstances&);
+    RawPtr<SVGPropertyBase> createPropertyForAnimation(const String&);
+    RawPtr<SVGPropertyBase> resetAnimation(const SVGElementInstances&);
 
-    RawPtrWillBeMember<SVGAnimationElement> m_animationElement;
-    RawPtrWillBeMember<SVGElement> m_contextElement;
-    RefPtrWillBeMember<SVGAnimatedPropertyBase> m_animatedProperty;
+    Member<SVGAnimationElement> m_animationElement;
+    Member<SVGElement> m_contextElement;
+    Member<SVGAnimatedPropertyBase> m_animatedProperty;
     AnimatedPropertyType m_type;
 };
 

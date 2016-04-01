@@ -41,9 +41,9 @@ namespace blink {
 class SVGAnimatedAngle final : public SVGAnimatedProperty<SVGAngle>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedAngle> create(SVGElement* contextElement)
+    static RawPtr<SVGAnimatedAngle> create(SVGElement* contextElement)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedAngle(contextElement));
+        return new SVGAnimatedAngle(contextElement);
     }
 
     ~SVGAnimatedAngle() override;
@@ -54,7 +54,7 @@ public:
     bool needsSynchronizeAttribute() override;
     void synchronizeAttribute() override;
 
-    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
+    void setAnimatedValue(RawPtr<SVGPropertyBase>) override;
     void animationEnded() override;
 
     DECLARE_VIRTUAL_TRACE();
@@ -63,7 +63,7 @@ protected:
     explicit SVGAnimatedAngle(SVGElement* contextElement);
 
 private:
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGMarkerOrientType>> m_orientType;
+    Member<SVGAnimatedEnumeration<SVGMarkerOrientType>> m_orientType;
 };
 
 } // namespace blink

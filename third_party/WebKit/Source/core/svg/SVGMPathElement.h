@@ -33,7 +33,7 @@ class SVGPathElement;
 class SVGMPathElement final : public SVGElement,
                               public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGMPathElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGMPathElement);
 public:
     DECLARE_NODE_FACTORY(SVGMPathElement);
 

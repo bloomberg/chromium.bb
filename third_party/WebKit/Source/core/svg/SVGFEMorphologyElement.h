@@ -47,11 +47,11 @@ private:
 
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     void svgAttributeChanged(const QualifiedName&) override;
-    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_radius;
-    RefPtrWillBeMember<SVGAnimatedString> m_in1;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<MorphologyOperatorType>> m_svgOperator;
+    Member<SVGAnimatedNumberOptionalNumber> m_radius;
+    Member<SVGAnimatedString> m_in1;
+    Member<SVGAnimatedEnumeration<MorphologyOperatorType>> m_svgOperator;
 };
 
 } // namespace blink

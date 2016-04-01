@@ -33,8 +33,8 @@ class SVGPolyElement : public SVGGeometryElement {
 public:
     SVGAnimatedPointList* points() const { return m_points.get(); }
 
-    PassRefPtrWillBeRawPtr<SVGPointListTearOff> pointsFromJavascript() { return m_points->baseVal(); }
-    PassRefPtrWillBeRawPtr<SVGPointListTearOff> animatedPoints() { return m_points->animVal(); }
+    RawPtr<SVGPointListTearOff> pointsFromJavascript() { return m_points->baseVal(); }
+    RawPtr<SVGPointListTearOff> animatedPoints() { return m_points->animVal(); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -47,7 +47,7 @@ private:
     void svgAttributeChanged(const QualifiedName&) final;
 
 private:
-    RefPtrWillBeMember<SVGAnimatedPointList> m_points;
+    Member<SVGAnimatedPointList> m_points;
 
 };
 

@@ -45,7 +45,7 @@ using SMILEventSender = EventSender<SVGSMILElement>;
 
 // This class implements SMIL interval timing model as needed for SVG animation.
 class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGSMILElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGSMILElement);
 public:
     SVGSMILElement(const QualifiedName&, Document&);
     ~SVGSMILElement() override;
@@ -175,7 +175,7 @@ private:
 
     // This represents conditions on elements begin or end list that need to be resolved on runtime
     // for example <animate begin="otherElement.begin + 8s; button.click" ... />
-    class Condition : public NoBaseWillBeGarbageCollectedFinalized<Condition> {
+    class Condition : public GarbageCollectedFinalized<Condition> {
     public:
         enum Type {
             EventBase,
@@ -184,9 +184,9 @@ private:
         };
 
         Condition(Type, BeginOrEnd, const String& baseID, const String& name, SMILTime offset, int repeat = -1);
-        static PassOwnPtrWillBeRawPtr<Condition> create(Type type, BeginOrEnd beginOrEnd, const String& baseID, const String& name, SMILTime offset, int repeat = -1)
+        static RawPtr<Condition> create(Type type, BeginOrEnd beginOrEnd, const String& baseID, const String& name, SMILTime offset, int repeat = -1)
         {
-            return adoptPtrWillBeNoop(new Condition(type, beginOrEnd, baseID, name, offset, repeat));
+            return new Condition(type, beginOrEnd, baseID, name, offset, repeat);
         }
         ~Condition();
         DECLARE_TRACE();
@@ -200,7 +200,7 @@ private:
         SVGSMILElement* syncBase() const { return m_syncBase.get(); }
         void setSyncBase(SVGSMILElement* element) { m_syncBase = element; }
         ConditionEventListener* eventListener() const { return m_eventListener.get(); }
-        void setEventListener(PassRefPtrWillBeRawPtr<ConditionEventListener>);
+        void setEventListener(RawPtr<ConditionEventListener>);
 
     private:
         Type m_type;
@@ -209,8 +209,8 @@ private:
         String m_name;
         SMILTime m_offset;
         int m_repeat;
-        RefPtrWillBeMember<SVGSMILElement> m_syncBase;
-        RefPtrWillBeMember<ConditionEventListener> m_eventListener;
+        Member<SVGSMILElement> m_syncBase;
+        Member<ConditionEventListener> m_eventListener;
     };
     bool parseCondition(const String&, BeginOrEnd beginOrEnd);
     void parseBeginOrEnd(const String&, BeginOrEnd beginOrEnd);
@@ -239,16 +239,16 @@ private:
     float calculateAnimationPercentAndRepeat(SMILTime elapsed, unsigned& repeat) const;
     SMILTime calculateNextProgressTime(SMILTime elapsed) const;
 
-    RawPtrWillBeMember<SVGElement> m_targetElement;
+    Member<SVGElement> m_targetElement;
 
-    WillBeHeapVector<OwnPtrWillBeMember<Condition>> m_conditions;
+    HeapVector<Member<Condition>> m_conditions;
     bool m_syncBaseConditionsConnected;
     bool m_hasEndEventConditions;
 
     bool m_isWaitingForFirstInterval;
     bool m_isScheduled;
 
-    using TimeDependentSet = WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement>>;
+    using TimeDependentSet = HeapHashSet<Member<SVGSMILElement>>;
     TimeDependentSet m_syncBaseDependents;
 
     // Instance time lists
@@ -266,7 +266,7 @@ private:
 
     SMILTime m_nextProgressTime;
 
-    RefPtrWillBeMember<SMILTimeContainer> m_timeContainer;
+    Member<SMILTimeContainer> m_timeContainer;
     unsigned m_documentOrderIndex;
 
     Vector<unsigned> m_repeatEventCountList;

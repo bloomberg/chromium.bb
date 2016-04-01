@@ -59,13 +59,13 @@ private:
 
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
     void svgAttributeChanged(const QualifiedName&) override;
-    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_baseFrequency;
-    RefPtrWillBeMember<SVGAnimatedNumber> m_seed;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGStitchOptions>> m_stitchTiles;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<TurbulenceType>> m_type;
-    RefPtrWillBeMember<SVGAnimatedInteger> m_numOctaves;
+    Member<SVGAnimatedNumberOptionalNumber> m_baseFrequency;
+    Member<SVGAnimatedNumber> m_seed;
+    Member<SVGAnimatedEnumeration<SVGStitchOptions>> m_stitchTiles;
+    Member<SVGAnimatedEnumeration<TurbulenceType>> m_type;
+    Member<SVGAnimatedInteger> m_numOctaves;
 };
 
 } // namespace blink

@@ -40,7 +40,7 @@ SVGNumber::SVGNumber(float value)
 {
 }
 
-PassRefPtrWillBeRawPtr<SVGNumber> SVGNumber::clone() const
+RawPtr<SVGNumber> SVGNumber::clone() const
 {
     return create(m_value);
 }
@@ -80,28 +80,28 @@ SVGParsingError SVGNumber::setValueAsString(const String& string)
     return parse(ptr, end);
 }
 
-void SVGNumber::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
+void SVGNumber::add(RawPtr<SVGPropertyBase> other, SVGElement*)
 {
     setValue(m_value + toSVGNumber(other)->value());
 }
 
-void SVGNumber::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
+void SVGNumber::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
 {
     ASSERT(animationElement);
 
-    RefPtrWillBeRawPtr<SVGNumber> fromNumber = toSVGNumber(from);
-    RefPtrWillBeRawPtr<SVGNumber> toNumber = toSVGNumber(to);
-    RefPtrWillBeRawPtr<SVGNumber> toAtEndOfDurationNumber = toSVGNumber(toAtEndOfDuration);
+    RawPtr<SVGNumber> fromNumber = toSVGNumber(from);
+    RawPtr<SVGNumber> toNumber = toSVGNumber(to);
+    RawPtr<SVGNumber> toAtEndOfDurationNumber = toSVGNumber(toAtEndOfDuration);
 
     animationElement->animateAdditiveNumber(percentage, repeatCount, fromNumber->value(), toNumber->value(), toAtEndOfDurationNumber->value(), m_value);
 }
 
-float SVGNumber::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
+float SVGNumber::calculateDistance(RawPtr<SVGPropertyBase> other, SVGElement*)
 {
     return fabsf(m_value - toSVGNumber(other)->value());
 }
 
-PassRefPtrWillBeRawPtr<SVGNumber> SVGNumberAcceptPercentage::clone() const
+RawPtr<SVGNumber> SVGNumberAcceptPercentage::clone() const
 {
     return create(m_value);
 }

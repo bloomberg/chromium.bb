@@ -38,7 +38,7 @@ class SVGImage;
 
 class SVGImageChromeClient final : public EmptyChromeClient {
 public:
-    static PassOwnPtrWillBeRawPtr<SVGImageChromeClient> create(SVGImage*);
+    static RawPtr<SVGImageChromeClient> create(SVGImage*);
 
     bool isSVGImageChromeClient() const override;
 

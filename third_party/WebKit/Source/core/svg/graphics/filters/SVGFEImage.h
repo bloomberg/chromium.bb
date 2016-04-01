@@ -35,8 +35,8 @@ class LayoutObject;
 
 class FEImage final : public FilterEffect {
 public:
-    static PassRefPtrWillBeRawPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>);
-    static PassRefPtrWillBeRawPtr<FEImage> createWithIRIReference(Filter*, TreeScope&, const String&, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>);
+    static RawPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, RawPtr<SVGPreserveAspectRatio>);
+    static RawPtr<FEImage> createWithIRIReference(Filter*, TreeScope&, const String&, RawPtr<SVGPreserveAspectRatio>);
 
     FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
@@ -53,8 +53,8 @@ public:
 
 private:
     ~FEImage() override {}
-    FEImage(Filter*, PassRefPtr<Image>, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>);
-    FEImage(Filter*, TreeScope&, const String&, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>);
+    FEImage(Filter*, PassRefPtr<Image>, RawPtr<SVGPreserveAspectRatio>);
+    FEImage(Filter*, TreeScope&, const String&, RawPtr<SVGPreserveAspectRatio>);
     LayoutObject* referencedLayoutObject() const;
 
     PassRefPtr<SkImageFilter> createImageFilterForLayoutObject(const LayoutObject&);
@@ -62,9 +62,9 @@ private:
     RefPtr<Image> m_image;
 
     // m_treeScope will never be a dangling reference. See https://bugs.webkit.org/show_bug.cgi?id=99243
-    RawPtrWillBeMember<TreeScope> m_treeScope;
+    Member<TreeScope> m_treeScope;
     String m_href;
-    RefPtrWillBeMember<SVGPreserveAspectRatio> m_preserveAspectRatio;
+    Member<SVGPreserveAspectRatio> m_preserveAspectRatio;
 };
 
 } // namespace blink

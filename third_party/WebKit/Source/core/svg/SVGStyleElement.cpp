@@ -31,7 +31,7 @@ namespace blink {
 
 static SVGStyleEventSender& styleErrorEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGStyleEventSender>, sharedErrorEventSender, (SVGStyleEventSender::create(EventTypeNames::error)));
+    DEFINE_STATIC_LOCAL(Persistent<SVGStyleEventSender>, sharedErrorEventSender, (SVGStyleEventSender::create(EventTypeNames::error)));
     return *sharedErrorEventSender;
 }
 
@@ -50,9 +50,9 @@ SVGStyleElement::~SVGStyleElement()
 #endif
 }
 
-PassRefPtrWillBeRawPtr<SVGStyleElement> SVGStyleElement::create(Document& document, bool createdByParser)
+RawPtr<SVGStyleElement> SVGStyleElement::create(Document& document, bool createdByParser)
 {
-    return adoptRefWillBeNoop(new SVGStyleElement(document, createdByParser));
+    return new SVGStyleElement(document, createdByParser);
 }
 
 bool SVGStyleElement::disabled() const

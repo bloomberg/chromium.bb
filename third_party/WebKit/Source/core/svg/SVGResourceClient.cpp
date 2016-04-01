@@ -17,7 +17,7 @@ SVGResourceClient::~SVGResourceClient()
 void SVGResourceClient::addFilterReferences(const FilterOperations& operations, const Document& document)
 {
     for (size_t i = 0; i < operations.size(); ++i) {
-        RefPtrWillBeRawPtr<FilterOperation> filterOperation = operations.operations().at(i);
+        RawPtr<FilterOperation> filterOperation = operations.operations().at(i);
         if (filterOperation->type() != FilterOperation::REFERENCE)
             continue;
         ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation.get());
@@ -51,7 +51,7 @@ void SVGResourceClient::clearFilterReferences()
     }
     m_internalFilterReferences.clear();
 
-    for (RefPtrWillBeRawPtr<DocumentResource> documentResource : m_externalFilterReferences)
+    for (RawPtr<DocumentResource> documentResource : m_externalFilterReferences)
         documentResource->removeClient(this);
     m_externalFilterReferences.clear();
 }

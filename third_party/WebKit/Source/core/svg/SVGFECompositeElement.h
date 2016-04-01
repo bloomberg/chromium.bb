@@ -51,15 +51,15 @@ private:
 
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     void svgAttributeChanged(const QualifiedName&) override;
-    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtrWillBeMember<SVGAnimatedNumber> m_k1;
-    RefPtrWillBeMember<SVGAnimatedNumber> m_k2;
-    RefPtrWillBeMember<SVGAnimatedNumber> m_k3;
-    RefPtrWillBeMember<SVGAnimatedNumber> m_k4;
-    RefPtrWillBeMember<SVGAnimatedString> m_in1;
-    RefPtrWillBeMember<SVGAnimatedString> m_in2;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<CompositeOperationType>> m_svgOperator;
+    Member<SVGAnimatedNumber> m_k1;
+    Member<SVGAnimatedNumber> m_k2;
+    Member<SVGAnimatedNumber> m_k3;
+    Member<SVGAnimatedNumber> m_k4;
+    Member<SVGAnimatedString> m_in1;
+    Member<SVGAnimatedString> m_in2;
+    Member<SVGAnimatedEnumeration<CompositeOperationType>> m_svgOperator;
 };
 
 } // namespace blink

@@ -50,25 +50,25 @@ public:
         ConstructZeroTransform
     };
 
-    static PassRefPtrWillBeRawPtr<SVGTransform> create()
+    static RawPtr<SVGTransform> create()
     {
-        return adoptRefWillBeNoop(new SVGTransform());
+        return new SVGTransform();
     }
 
-    static PassRefPtrWillBeRawPtr<SVGTransform> create(SVGTransformType type, ConstructionMode mode = ConstructIdentityTransform)
+    static RawPtr<SVGTransform> create(SVGTransformType type, ConstructionMode mode = ConstructIdentityTransform)
     {
-        return adoptRefWillBeNoop(new SVGTransform(type, mode));
+        return new SVGTransform(type, mode);
     }
 
-    static PassRefPtrWillBeRawPtr<SVGTransform> create(const AffineTransform& affineTransform)
+    static RawPtr<SVGTransform> create(const AffineTransform& affineTransform)
     {
-        return adoptRefWillBeNoop(new SVGTransform(affineTransform));
+        return new SVGTransform(affineTransform);
     }
 
     ~SVGTransform() override;
 
-    PassRefPtrWillBeRawPtr<SVGTransform> clone() const;
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    RawPtr<SVGTransform> clone() const;
+    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     SVGTransformType transformType() const { return m_transformType; }
 
@@ -94,9 +94,9 @@ public:
 
     String valueAsString() const override;
 
-    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedTransform; }
 

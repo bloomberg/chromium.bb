@@ -55,9 +55,9 @@ private:
 
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
 
-    RefPtrWillBeMember<SVGAnimatedLength> m_cx;
-    RefPtrWillBeMember<SVGAnimatedLength> m_cy;
-    RefPtrWillBeMember<SVGAnimatedLength> m_r;
+    Member<SVGAnimatedLength> m_cx;
+    Member<SVGAnimatedLength> m_cy;
+    Member<SVGAnimatedLength> m_r;
 };
 
 } // namespace blink

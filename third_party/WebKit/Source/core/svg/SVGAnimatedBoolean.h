@@ -40,13 +40,13 @@ namespace blink {
 class SVGAnimatedBoolean final : public SVGAnimatedProperty<SVGBoolean>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedBoolean> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGBoolean> initialValue)
+    static RawPtr<SVGAnimatedBoolean> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGBoolean> initialValue)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedBoolean(contextElement, attributeName, initialValue));
+        return new SVGAnimatedBoolean(contextElement, attributeName, initialValue);
     }
 
 protected:
-    SVGAnimatedBoolean(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGBoolean> initialValue)
+    SVGAnimatedBoolean(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGBoolean> initialValue)
         : SVGAnimatedProperty<SVGBoolean>(contextElement, attributeName, initialValue)
     {
     }

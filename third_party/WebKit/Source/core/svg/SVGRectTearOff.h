@@ -40,9 +40,9 @@ namespace blink {
 class SVGRectTearOff : public SVGPropertyTearOff<SVGRect>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGRectTearOff> create(PassRefPtrWillBeRawPtr<SVGRect> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static RawPtr<SVGRectTearOff> create(RawPtr<SVGRect> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
-        return adoptRefWillBeNoop(new SVGRectTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+        return new SVGRectTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
     void setX(float, ExceptionState&);
@@ -55,7 +55,7 @@ public:
     float height() { return target()->height(); }
 
 private:
-    SVGRectTearOff(PassRefPtrWillBeRawPtr<SVGRect>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
+    SVGRectTearOff(RawPtr<SVGRect>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace blink

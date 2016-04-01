@@ -47,7 +47,7 @@ private:
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
     bool layoutObjectIsNeeded(const ComputedStyle&) override;
 
-    RefPtrWillBeMember<SVGAnimatedNumber> m_offset;
+    Member<SVGAnimatedNumber> m_offset;
 };
 
 } // namespace blink

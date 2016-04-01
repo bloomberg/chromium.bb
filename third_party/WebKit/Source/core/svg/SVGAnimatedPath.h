@@ -40,9 +40,9 @@ class SVGAnimatedPath : public SVGAnimatedProperty<SVGPath> {
 public:
     ~SVGAnimatedPath() override;
 
-    static PassRefPtrWillBeRawPtr<SVGAnimatedPath> create(SVGElement* contextElement, const QualifiedName& attributeName)
+    static RawPtr<SVGAnimatedPath> create(SVGElement* contextElement, const QualifiedName& attributeName)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedPath(contextElement, attributeName));
+        return new SVGAnimatedPath(contextElement, attributeName);
     }
 
 protected:

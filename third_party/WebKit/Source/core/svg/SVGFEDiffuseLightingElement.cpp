@@ -118,7 +118,7 @@ void SVGFEDiffuseLightingElement::lightElementAttributeChanged(const SVGFELightE
     primitiveAttributeChanged(attrName);
 }
 
-PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+RawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
@@ -133,7 +133,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEDiffuseLightingElement::build(SVGFilte
     const SVGFELightElement* lightNode = SVGFELightElement::findLightElement(*this);
     RefPtr<LightSource> lightSource = lightNode ? lightNode->lightSource(filter) : nullptr;
 
-    RefPtrWillBeRawPtr<FilterEffect> effect = FEDiffuseLighting::create(filter,
+    RawPtr<FilterEffect> effect = FEDiffuseLighting::create(filter,
         color,
         m_surfaceScale->currentValue()->value(),
         m_diffuseConstant->currentValue()->value(),

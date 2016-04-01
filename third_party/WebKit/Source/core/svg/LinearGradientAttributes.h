@@ -47,10 +47,10 @@ public:
     SVGLength* x2() const { return m_x2.get(); }
     SVGLength* y2() const { return m_y2.get(); }
 
-    void setX1(PassRefPtrWillBeRawPtr<SVGLength> value) { m_x1 = value; m_x1Set = true; }
-    void setY1(PassRefPtrWillBeRawPtr<SVGLength> value) { m_y1 = value; m_y1Set = true; }
-    void setX2(PassRefPtrWillBeRawPtr<SVGLength> value) { m_x2 = value; m_x2Set = true; }
-    void setY2(PassRefPtrWillBeRawPtr<SVGLength> value) { m_y2 = value; m_y2Set = true; }
+    void setX1(RawPtr<SVGLength> value) { m_x1 = value; m_x1Set = true; }
+    void setY1(RawPtr<SVGLength> value) { m_y1 = value; m_y1Set = true; }
+    void setX2(RawPtr<SVGLength> value) { m_x2 = value; m_x2Set = true; }
+    void setY2(RawPtr<SVGLength> value) { m_y2 = value; m_y2Set = true; }
 
     bool hasX1() const { return m_x1Set; }
     bool hasY1() const { return m_y1Set; }
@@ -67,10 +67,10 @@ public:
 
 private:
     // Properties
-    RefPtrWillBeMember<SVGLength> m_x1;
-    RefPtrWillBeMember<SVGLength> m_y1;
-    RefPtrWillBeMember<SVGLength> m_x2;
-    RefPtrWillBeMember<SVGLength> m_y2;
+    Member<SVGLength> m_x1;
+    Member<SVGLength> m_y1;
+    Member<SVGLength> m_x2;
+    Member<SVGLength> m_y2;
 
     // Property states
     bool m_x1Set : 1;

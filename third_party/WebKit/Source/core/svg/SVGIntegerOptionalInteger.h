@@ -43,33 +43,33 @@ public:
     typedef void TearOffType;
     typedef void PrimitiveType;
 
-    static PassRefPtrWillBeRawPtr<SVGIntegerOptionalInteger> create(PassRefPtrWillBeRawPtr<SVGInteger> firstInteger, PassRefPtrWillBeRawPtr<SVGInteger> secondInteger)
+    static RawPtr<SVGIntegerOptionalInteger> create(RawPtr<SVGInteger> firstInteger, RawPtr<SVGInteger> secondInteger)
     {
-        return adoptRefWillBeNoop(new SVGIntegerOptionalInteger(firstInteger, secondInteger));
+        return new SVGIntegerOptionalInteger(firstInteger, secondInteger);
     }
 
-    PassRefPtrWillBeRawPtr<SVGIntegerOptionalInteger> clone() const;
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    RawPtr<SVGIntegerOptionalInteger> clone() const;
+    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
 
-    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedIntegerOptionalInteger; }
 
-    PassRefPtrWillBeRawPtr<SVGInteger> firstInteger() const { return m_firstInteger; }
-    PassRefPtrWillBeRawPtr<SVGInteger> secondInteger() const { return m_secondInteger; }
+    RawPtr<SVGInteger> firstInteger() const { return m_firstInteger; }
+    RawPtr<SVGInteger> secondInteger() const { return m_secondInteger; }
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    SVGIntegerOptionalInteger(PassRefPtrWillBeRawPtr<SVGInteger> firstInteger, PassRefPtrWillBeRawPtr<SVGInteger> secondInteger);
+    SVGIntegerOptionalInteger(RawPtr<SVGInteger> firstInteger, RawPtr<SVGInteger> secondInteger);
 
-    RefPtrWillBeMember<SVGInteger> m_firstInteger;
-    RefPtrWillBeMember<SVGInteger> m_secondInteger;
+    Member<SVGInteger> m_firstInteger;
+    Member<SVGInteger> m_secondInteger;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGIntegerOptionalInteger);

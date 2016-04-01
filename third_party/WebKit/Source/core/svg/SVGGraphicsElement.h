@@ -37,7 +37,7 @@ class SVGMatrixTearOff;
 
 class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGGraphicsElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGGraphicsElement);
 public:
     ~SVGGraphicsElement() override;
 
@@ -45,8 +45,8 @@ public:
 
     AffineTransform getCTM(StyleUpdateStrategy = AllowStyleUpdate);
     AffineTransform getScreenCTM(StyleUpdateStrategy = AllowStyleUpdate);
-    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> getCTMFromJavascript();
-    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> getScreenCTMFromJavascript();
+    RawPtr<SVGMatrixTearOff> getCTMFromJavascript();
+    RawPtr<SVGMatrixTearOff> getScreenCTMFromJavascript();
 
     SVGElement* nearestViewportElement() const;
     SVGElement* farthestViewportElement() const;
@@ -57,7 +57,7 @@ public:
     AffineTransform* animateMotionTransform() override;
 
     virtual FloatRect getBBox();
-    PassRefPtrWillBeRawPtr<SVGRectTearOff> getBBoxFromJavascript();
+    RawPtr<SVGRectTearOff> getBBoxFromJavascript();
 
     bool isValid() const final { return SVGTests::isValid(); }
 
@@ -76,7 +76,7 @@ protected:
 
     void svgAttributeChanged(const QualifiedName&) override;
 
-    RefPtrWillBeMember<SVGAnimatedTransformList> m_transform;
+    Member<SVGAnimatedTransformList> m_transform;
 
 private:
     bool isSVGGraphicsElement() const final { return true; }

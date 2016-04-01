@@ -17,9 +17,9 @@ public:
     {
     }
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String& value) const
+    virtual RawPtr<SVGPropertyBase> cloneForAnimation(const String& value) const
     {
-        RefPtrWillBeRawPtr<Derived> property = Derived::create();
+        RawPtr<Derived> property = Derived::create();
         property->setValueAsString(value);
         return property.release();
     }

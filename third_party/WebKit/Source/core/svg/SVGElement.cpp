@@ -157,7 +157,7 @@ SVGElementRareData* SVGElement::ensureSVGRareData()
     if (hasSVGRareData())
         return svgRareData();
 
-    m_SVGRareData = adoptPtrWillBeNoop(new SVGElementRareData(this));
+    m_SVGRareData = new SVGElementRareData(this);
     return m_SVGRareData.get();
 }
 
@@ -265,7 +265,7 @@ static void updateInstancesAnimatedAttribute(SVGElement* element, const Qualifie
     }
 }
 
-void SVGElement::setWebAnimatedAttribute(const QualifiedName& attribute, PassRefPtrWillBeRawPtr<SVGPropertyBase> value)
+void SVGElement::setWebAnimatedAttribute(const QualifiedName& attribute, RawPtr<SVGPropertyBase> value)
 {
     updateInstancesAnimatedAttribute(this, attribute, [&value](SVGAnimatedPropertyBase& animatedProperty) {
         animatedProperty.setAnimatedValue(value.get());
@@ -517,7 +517,7 @@ void SVGElement::mapInstanceToElement(SVGElement* instance)
     ASSERT(instance);
     ASSERT(instance->inUseShadowTree());
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instances = ensureSVGRareData()->elementInstances();
+    HeapHashSet<WeakMember<SVGElement>>& instances = ensureSVGRareData()->elementInstances();
     ASSERT(!instances.contains(instance));
 
     instances.add(instance);
@@ -531,18 +531,18 @@ void SVGElement::removeInstanceMapping(SVGElement* instance)
     if (!hasSVGRareData())
         return;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instances = svgRareData()->elementInstances();
+    HeapHashSet<WeakMember<SVGElement>>& instances = svgRareData()->elementInstances();
 
     instances.remove(instance);
 }
 
-static WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& emptyInstances()
+static HeapHashSet<WeakMember<SVGElement>>& emptyInstances()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>>, emptyInstances, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>())));
+    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<WeakMember<SVGElement>>>, emptyInstances, (new HeapHashSet<WeakMember<SVGElement>>()));
     return *emptyInstances;
 }
 
-const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& SVGElement::instancesForElement() const
+const HeapHashSet<WeakMember<SVGElement>>& SVGElement::instancesForElement() const
 {
     if (!hasSVGRareData())
         return emptyInstances();
@@ -715,9 +715,9 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
     return AnimatedUnknown;
 }
 
-void SVGElement::addToPropertyMap(PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> passProperty)
+void SVGElement::addToPropertyMap(RawPtr<SVGAnimatedPropertyBase> passProperty)
 {
-    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property(passProperty);
+    RawPtr<SVGAnimatedPropertyBase> property(passProperty);
     QualifiedName attributeName = property->attributeName();
     m_attributeToPropertyMap.set(attributeName, property.release());
 }
@@ -757,7 +757,7 @@ bool SVGElement::haveLoadedRequiredResources()
     return true;
 }
 
-static inline void collectInstancesForSVGElement(SVGElement* element, WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& instances)
+static inline void collectInstancesForSVGElement(SVGElement* element, HeapHashSet<WeakMember<SVGElement>>& instances)
 {
     ASSERT(element);
     if (element->containingShadowRoot())
@@ -768,16 +768,16 @@ static inline void collectInstancesForSVGElement(SVGElement* element, WillBeHeap
     instances = element->instancesForElement();
 }
 
-bool SVGElement::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, const EventListenerOptions& options)
+bool SVGElement::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> prpListener, const EventListenerOptions& options)
 {
-    RefPtrWillBeRawPtr<EventListener> listener = prpListener;
+    RawPtr<EventListener> listener = prpListener;
 
     // Add event listener to regular DOM element
     if (!Node::addEventListenerInternal(eventType, listener, options))
         return false;
 
     // Add event listener to all shadow tree DOM element instances
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>> instances;
+    HeapHashSet<WeakMember<SVGElement>> instances;
     collectInstancesForSVGElement(this, instances);
     for (SVGElement* element : instances) {
         bool result = element->Node::addEventListenerInternal(eventType, listener, options);
@@ -787,16 +787,16 @@ bool SVGElement::addEventListenerInternal(const AtomicString& eventType, PassRef
     return true;
 }
 
-bool SVGElement::removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> prpListener, const EventListenerOptions& options)
+bool SVGElement::removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> prpListener, const EventListenerOptions& options)
 {
-    RefPtrWillBeRawPtr<EventListener> listener = prpListener;
+    RawPtr<EventListener> listener = prpListener;
 
     // Remove event listener from regular DOM element
     if (!Node::removeEventListenerInternal(eventType, listener, options))
         return false;
 
     // Remove event listener from all shadow tree DOM element instances
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>> instances;
+    HeapHashSet<WeakMember<SVGElement>> instances;
     collectInstancesForSVGElement(this, instances);
     for (SVGElement* shadowTreeElement : instances) {
         ASSERT(shadowTreeElement);
@@ -841,7 +841,7 @@ void SVGElement::sendSVGLoadEventToSelfAndAncestorChainIfPossible()
         return;
 
     // Save the next parent to dispatch to in case dispatching the event mutates the tree.
-    RefPtrWillBeRawPtr<Element> parent = parentOrShadowHostElement();
+    RawPtr<Element> parent = parentOrShadowHostElement();
     if (!sendSVGLoadEventIfPossible())
         return;
 
@@ -939,7 +939,7 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
 
         elementData()->m_animatedSVGAttributesAreDirty = false;
     } else {
-        RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = m_attributeToPropertyMap.get(name);
+        RawPtr<SVGAnimatedPropertyBase> property = m_attributeToPropertyMap.get(name);
         if (property && property->needsSynchronizeAttribute())
             property->synchronizeAttribute();
     }
@@ -1008,7 +1008,7 @@ void SVGElement::invalidateInstances()
     if (instanceUpdatesBlocked())
         return;
 
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& set = instancesForElement();
+    const HeapHashSet<WeakMember<SVGElement>>& set = instancesForElement();
     if (set.isEmpty())
         return;
 
@@ -1173,7 +1173,7 @@ void SVGElement::rebuildAllIncomingReferences()
     const SVGElementSet& incomingReferences = svgRareData()->incomingReferences();
 
     // Iterate on a snapshot as |incomingReferences| may be altered inside loop.
-    WillBeHeapVector<RawPtrWillBeMember<SVGElement>> incomingReferencesSnapshot;
+    HeapVector<Member<SVGElement>> incomingReferencesSnapshot;
     copyToVector(incomingReferences, incomingReferencesSnapshot);
 
     // Force rebuilding the |sourceElement| so it knows about this change.

@@ -45,7 +45,7 @@ class SVGSVGElement final : public SVGGraphicsElement,
                             public SVGFitToViewBox,
                             public SVGZoomAndPan {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGSVGElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGSVGElement);
 public:
     DECLARE_NODE_FACTORY(SVGSVGElement);
 
@@ -55,7 +55,7 @@ public:
 #endif
 
     // 'SVGSVGElement' functions
-    PassRefPtrWillBeRawPtr<SVGRectTearOff> viewport() const;
+    RawPtr<SVGRectTearOff> viewport() const;
 
     bool useCurrentView() const { return m_useCurrentView; }
     SVGViewSpec* currentView();
@@ -70,7 +70,7 @@ public:
 
     FloatPoint currentTranslate() { return m_translation->value(); }
     void setCurrentTranslate(const FloatPoint&);
-    PassRefPtrWillBeRawPtr<SVGPointTearOff> currentTranslateFromJavascript();
+    RawPtr<SVGPointTearOff> currentTranslateFromJavascript();
 
     SMILTimeContainer* timeContainer() const { return m_timeContainer.get(); }
 
@@ -87,20 +87,20 @@ public:
     void unsuspendRedrawAll() { }
     void forceRedraw() { }
 
-    PassRefPtrWillBeRawPtr<StaticNodeList> getIntersectionList(PassRefPtrWillBeRawPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
-    PassRefPtrWillBeRawPtr<StaticNodeList> getEnclosureList(PassRefPtrWillBeRawPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
-    bool checkIntersection(SVGElement*, PassRefPtrWillBeRawPtr<SVGRectTearOff>) const;
-    bool checkEnclosure(SVGElement*, PassRefPtrWillBeRawPtr<SVGRectTearOff>) const;
+    RawPtr<StaticNodeList> getIntersectionList(RawPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
+    RawPtr<StaticNodeList> getEnclosureList(RawPtr<SVGRectTearOff>, SVGElement* referenceElement) const;
+    bool checkIntersection(SVGElement*, RawPtr<SVGRectTearOff>) const;
+    bool checkEnclosure(SVGElement*, RawPtr<SVGRectTearOff>) const;
     void deselectAll();
 
-    static PassRefPtrWillBeRawPtr<SVGNumberTearOff> createSVGNumber();
-    static PassRefPtrWillBeRawPtr<SVGLengthTearOff> createSVGLength();
-    static PassRefPtrWillBeRawPtr<SVGAngleTearOff> createSVGAngle();
-    static PassRefPtrWillBeRawPtr<SVGPointTearOff> createSVGPoint();
-    static PassRefPtrWillBeRawPtr<SVGMatrixTearOff> createSVGMatrix();
-    static PassRefPtrWillBeRawPtr<SVGRectTearOff> createSVGRect();
-    static PassRefPtrWillBeRawPtr<SVGTransformTearOff> createSVGTransform();
-    static PassRefPtrWillBeRawPtr<SVGTransformTearOff> createSVGTransformFromMatrix(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>);
+    static RawPtr<SVGNumberTearOff> createSVGNumber();
+    static RawPtr<SVGLengthTearOff> createSVGLength();
+    static RawPtr<SVGAngleTearOff> createSVGAngle();
+    static RawPtr<SVGPointTearOff> createSVGPoint();
+    static RawPtr<SVGMatrixTearOff> createSVGMatrix();
+    static RawPtr<SVGRectTearOff> createSVGRect();
+    static RawPtr<SVGTransformTearOff> createSVGTransform();
+    static RawPtr<SVGTransformTearOff> createSVGTransformFromMatrix(RawPtr<SVGMatrixTearOff>);
 
     AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 
@@ -148,19 +148,19 @@ private:
     };
 
     bool checkIntersectionOrEnclosure(const SVGElement&, const FloatRect&, CheckIntersectionOrEnclosure) const;
-    PassRefPtrWillBeRawPtr<StaticNodeList> collectIntersectionOrEnclosureList(const FloatRect&, SVGElement*, CheckIntersectionOrEnclosure) const;
+    RawPtr<StaticNodeList> collectIntersectionOrEnclosureList(const FloatRect&, SVGElement*, CheckIntersectionOrEnclosure) const;
 
-    RefPtrWillBeMember<SVGAnimatedLength> m_x;
-    RefPtrWillBeMember<SVGAnimatedLength> m_y;
-    RefPtrWillBeMember<SVGAnimatedLength> m_width;
-    RefPtrWillBeMember<SVGAnimatedLength> m_height;
+    Member<SVGAnimatedLength> m_x;
+    Member<SVGAnimatedLength> m_y;
+    Member<SVGAnimatedLength> m_width;
+    Member<SVGAnimatedLength> m_height;
 
     AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override;
 
     bool m_useCurrentView;
-    RefPtrWillBeMember<SMILTimeContainer> m_timeContainer;
-    RefPtrWillBeMember<SVGPoint> m_translation;
-    RefPtrWillBeMember<SVGViewSpec> m_viewSpec;
+    Member<SMILTimeContainer> m_timeContainer;
+    Member<SVGPoint> m_translation;
+    Member<SVGViewSpec> m_viewSpec;
     float m_currentScale;
 
     friend class SVGCurrentTranslateTearOff;

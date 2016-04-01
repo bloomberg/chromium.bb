@@ -69,9 +69,9 @@ void SVGFilterGraphNodeMap::addBuiltinEffect(FilterEffect* effect)
     m_effectReferences.add(effect, FilterEffectSet());
 }
 
-void SVGFilterGraphNodeMap::addPrimitive(LayoutObject* object, PassRefPtrWillBeRawPtr<FilterEffect> prpEffect)
+void SVGFilterGraphNodeMap::addPrimitive(LayoutObject* object, RawPtr<FilterEffect> prpEffect)
 {
-    RefPtrWillBeRawPtr<FilterEffect> effect = prpEffect;
+    RawPtr<FilterEffect> effect = prpEffect;
 
     // The effect must be a newly created filter effect.
     ASSERT(!m_effectReferences.contains(effect));
@@ -114,13 +114,13 @@ DEFINE_TRACE(SVGFilterGraphNodeMap)
 }
 
 SVGFilterBuilder::SVGFilterBuilder(
-    PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic,
-    PassRefPtrWillBeRawPtr<SVGFilterGraphNodeMap> nodeMap,
+    RawPtr<FilterEffect> sourceGraphic,
+    RawPtr<SVGFilterGraphNodeMap> nodeMap,
     const SkPaint* fillPaint,
     const SkPaint* strokePaint)
     : m_nodeMap(nodeMap)
 {
-    RefPtrWillBeRawPtr<FilterEffect> sourceGraphicRef = sourceGraphic;
+    RawPtr<FilterEffect> sourceGraphicRef = sourceGraphic;
     m_builtinEffects.add(FilterInputKeywords::getSourceGraphic(), sourceGraphicRef);
     m_builtinEffects.add(FilterInputKeywords::sourceAlpha(), SourceAlpha::create(sourceGraphicRef.get()));
     if (fillPaint)
@@ -147,7 +147,7 @@ static EColorInterpolation colorInterpolationForElement(SVGElement& element, ECo
     // No layout has been performed, try to determine the property value
     // "manually" (used by external SVG files.)
     if (const StylePropertySet* propertySet = element.presentationAttributeStyle()) {
-        RefPtrWillBeRawPtr<CSSValue> cssValue = propertySet->getPropertyCSSValue(CSSPropertyColorInterpolationFilters);
+        RawPtr<CSSValue> cssValue = propertySet->getPropertyCSSValue(CSSPropertyColorInterpolationFilters);
         if (cssValue && cssValue->isPrimitiveValue()) {
             const CSSPrimitiveValue& primitiveValue = *((CSSPrimitiveValue*)cssValue.get());
             return primitiveValue.convertTo<EColorInterpolation>();
@@ -167,7 +167,7 @@ void SVGFilterBuilder::buildGraph(Filter* filter, SVGFilterElement& filterElemen
             continue;
 
         SVGFilterPrimitiveStandardAttributes* effectElement = static_cast<SVGFilterPrimitiveStandardAttributes*>(element);
-        RefPtrWillBeRawPtr<FilterEffect> effect = effectElement->build(this, filter);
+        RawPtr<FilterEffect> effect = effectElement->build(this, filter);
         if (!effect)
             continue;
 
@@ -185,7 +185,7 @@ void SVGFilterBuilder::buildGraph(Filter* filter, SVGFilterElement& filterElemen
     }
 }
 
-void SVGFilterBuilder::add(const AtomicString& id, PassRefPtrWillBeRawPtr<FilterEffect> effect)
+void SVGFilterBuilder::add(const AtomicString& id, RawPtr<FilterEffect> effect)
 {
     if (id.isEmpty()) {
         m_lastEffect = effect;

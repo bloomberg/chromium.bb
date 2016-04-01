@@ -61,9 +61,9 @@ public:
         SVG_MEETORSLICE_SLICE = SVGPreserveAspectRatio::SVG_MEETORSLICE_SLICE
     };
 
-    static PassRefPtrWillBeRawPtr<SVGPreserveAspectRatioTearOff> create(PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static RawPtr<SVGPreserveAspectRatioTearOff> create(RawPtr<SVGPreserveAspectRatio> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
-        return adoptRefWillBeNoop(new SVGPreserveAspectRatioTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+        return new SVGPreserveAspectRatioTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
     void setAlign(unsigned short, ExceptionState&);
@@ -72,7 +72,7 @@ public:
     unsigned short meetOrSlice() { return target()->meetOrSlice(); }
 
 private:
-    SVGPreserveAspectRatioTearOff(PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
+    SVGPreserveAspectRatioTearOff(RawPtr<SVGPreserveAspectRatio>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace blink

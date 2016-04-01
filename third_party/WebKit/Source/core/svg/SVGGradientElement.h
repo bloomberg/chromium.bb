@@ -43,7 +43,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMe
 class SVGGradientElement : public SVGElement,
                            public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGGradientElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGGradientElement);
 public:
     Vector<Gradient::ColorStop> buildStops();
 
@@ -63,9 +63,9 @@ private:
 
     void childrenChanged(const ChildrenChange&) final;
 
-    RefPtrWillBeMember<SVGAnimatedTransformList> m_gradientTransform;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGSpreadMethodType>> m_spreadMethod;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_gradientUnits;
+    Member<SVGAnimatedTransformList> m_gradientTransform;
+    Member<SVGAnimatedEnumeration<SVGSpreadMethodType>> m_spreadMethod;
+    Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_gradientUnits;
 };
 
 inline bool isSVGGradientElement(const SVGElement& element)

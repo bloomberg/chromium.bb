@@ -45,10 +45,10 @@ private:
     explicit SVGFEGaussianBlurElement(Document&);
 
     void svgAttributeChanged(const QualifiedName&) override;
-    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
-    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    Member<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
+    Member<SVGAnimatedString> m_in1;
 };
 
 } // namespace blink

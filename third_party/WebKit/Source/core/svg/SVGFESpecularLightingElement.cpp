@@ -124,7 +124,7 @@ void SVGFESpecularLightingElement::lightElementAttributeChanged(const SVGFELight
     primitiveAttributeChanged(attrName);
 }
 
-PassRefPtrWillBeRawPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+RawPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
@@ -139,7 +139,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilt
     const SVGFELightElement* lightNode = SVGFELightElement::findLightElement(*this);
     RefPtr<LightSource> lightSource = lightNode ? lightNode->lightSource(filter) : nullptr;
 
-    RefPtrWillBeRawPtr<FilterEffect> effect = FESpecularLighting::create(filter,
+    RawPtr<FilterEffect> effect = FESpecularLighting::create(filter,
         color,
         m_surfaceScale->currentValue()->value(),
         m_specularConstant->currentValue()->value(),

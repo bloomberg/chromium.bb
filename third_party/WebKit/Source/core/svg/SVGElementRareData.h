@@ -32,8 +32,8 @@ namespace blink {
 class CSSCursorImageValue;
 class SVGCursorElement;
 
-class SVGElementRareData : public NoBaseWillBeGarbageCollectedFinalized<SVGElementRareData> {
-    WTF_MAKE_NONCOPYABLE(SVGElementRareData); USING_FAST_MALLOC_WILL_BE_REMOVED(SVGElementRareData);
+class SVGElementRareData : public GarbageCollectedFinalized<SVGElementRareData> {
+    WTF_MAKE_NONCOPYABLE(SVGElementRareData);
 public:
     SVGElementRareData(SVGElement* owner)
 #if ENABLE(OILPAN)
@@ -56,8 +56,8 @@ public:
     SVGElementSet& incomingReferences() { return m_incomingReferences; }
     const SVGElementSet& incomingReferences() const { return m_incomingReferences; }
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& elementInstances() { return m_elementInstances; }
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& elementInstances() const { return m_elementInstances; }
+    HeapHashSet<WeakMember<SVGElement>>& elementInstances() { return m_elementInstances; }
+    const HeapHashSet<WeakMember<SVGElement>>& elementInstances() const { return m_elementInstances; }
 
     bool instanceUpdatesBlocked() const { return m_instancesUpdatesBlocked; }
     void setInstanceUpdatesBlocked(bool value) { m_instancesUpdatesBlocked = value; }
@@ -96,16 +96,16 @@ private:
 #endif
     SVGElementSet m_outgoingReferences;
     SVGElementSet m_incomingReferences;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>> m_elementInstances;
-    RawPtrWillBeWeakMember<SVGCursorElement> m_cursorElement;
-    RawPtrWillBeWeakMember<CSSCursorImageValue> m_cursorImageValue;
-    RefPtrWillBeMember<SVGElement> m_correspondingElement;
+    HeapHashSet<WeakMember<SVGElement>> m_elementInstances;
+    WeakMember<SVGCursorElement> m_cursorElement;
+    WeakMember<CSSCursorImageValue> m_cursorImageValue;
+    Member<SVGElement> m_correspondingElement;
     bool m_instancesUpdatesBlocked : 1;
     bool m_useOverrideComputedStyle : 1;
     bool m_needsOverrideComputedStyleUpdate : 1;
     bool m_webAnimatedAttributesDirty : 1;
     HashSet<const QualifiedName*> m_webAnimatedAttributes;
-    RefPtrWillBeMember<MutableStylePropertySet> m_animatedSMILStyleProperties;
+    Member<MutableStylePropertySet> m_animatedSMILStyleProperties;
     RefPtr<ComputedStyle> m_overrideComputedStyle;
     // Used by <animateMotion>
     AffineTransform m_animateMotionTransform;

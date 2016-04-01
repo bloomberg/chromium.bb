@@ -88,7 +88,7 @@ private:
     float convertValueFromUserUnitsToCHS(float value) const;
     float convertValueFromCHSToUserUnits(float value) const;
 
-    RawPtrWillBeMember<const SVGElement> m_context;
+    Member<const SVGElement> m_context;
 };
 
 } // namespace blink

@@ -60,18 +60,18 @@ private:
 
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     void svgAttributeChanged(const QualifiedName&) override;
-    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtrWillBeMember<SVGAnimatedNumber> m_bias;
-    RefPtrWillBeMember<SVGAnimatedNumber> m_divisor;
-    RefPtrWillBeMember<SVGAnimatedString> m_in1;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<EdgeModeType>> m_edgeMode;
-    RefPtrWillBeMember<SVGAnimatedNumberList> m_kernelMatrix;
-    RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
-    RefPtrWillBeMember<SVGAnimatedIntegerOptionalInteger> m_order;
-    RefPtrWillBeMember<SVGAnimatedBoolean> m_preserveAlpha;
-    RefPtrWillBeMember<SVGAnimatedInteger> m_targetX;
-    RefPtrWillBeMember<SVGAnimatedInteger> m_targetY;
+    Member<SVGAnimatedNumber> m_bias;
+    Member<SVGAnimatedNumber> m_divisor;
+    Member<SVGAnimatedString> m_in1;
+    Member<SVGAnimatedEnumeration<EdgeModeType>> m_edgeMode;
+    Member<SVGAnimatedNumberList> m_kernelMatrix;
+    Member<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
+    Member<SVGAnimatedIntegerOptionalInteger> m_order;
+    Member<SVGAnimatedBoolean> m_preserveAlpha;
+    Member<SVGAnimatedInteger> m_targetX;
+    Member<SVGAnimatedInteger> m_targetY;
 };
 
 } // namespace blink

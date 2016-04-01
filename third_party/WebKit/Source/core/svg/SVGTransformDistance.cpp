@@ -42,13 +42,13 @@ SVGTransformDistance::SVGTransformDistance(SVGTransformType transformType, float
 {
 }
 
-SVGTransformDistance::SVGTransformDistance(PassRefPtrWillBeRawPtr<SVGTransform> passFromSVGTransform, PassRefPtrWillBeRawPtr<SVGTransform> passToSVGTransform)
+SVGTransformDistance::SVGTransformDistance(RawPtr<SVGTransform> passFromSVGTransform, RawPtr<SVGTransform> passToSVGTransform)
     : m_angle(0)
     , m_cx(0)
     , m_cy(0)
 {
-    RefPtrWillBeRawPtr<SVGTransform> fromSVGTransform = passFromSVGTransform;
-    RefPtrWillBeRawPtr<SVGTransform> toSVGTransform = passToSVGTransform;
+    RawPtr<SVGTransform> fromSVGTransform = passFromSVGTransform;
+    RawPtr<SVGTransform> toSVGTransform = passToSVGTransform;
 
     m_transformType = fromSVGTransform->transformType();
     ASSERT(m_transformType == toSVGTransform->transformType());
@@ -109,13 +109,13 @@ SVGTransformDistance SVGTransformDistance::scaledDistance(float scaleFactor) con
     return SVGTransformDistance();
 }
 
-PassRefPtrWillBeRawPtr<SVGTransform> SVGTransformDistance::addSVGTransforms(PassRefPtrWillBeRawPtr<SVGTransform> passFirst, PassRefPtrWillBeRawPtr<SVGTransform> passSecond, unsigned repeatCount)
+RawPtr<SVGTransform> SVGTransformDistance::addSVGTransforms(RawPtr<SVGTransform> passFirst, RawPtr<SVGTransform> passSecond, unsigned repeatCount)
 {
-    RefPtrWillBeRawPtr<SVGTransform> first = passFirst;
-    RefPtrWillBeRawPtr<SVGTransform> second = passSecond;
+    RawPtr<SVGTransform> first = passFirst;
+    RawPtr<SVGTransform> second = passSecond;
     ASSERT(first->transformType() == second->transformType());
 
-    RefPtrWillBeRawPtr<SVGTransform> transform = SVGTransform::create();
+    RawPtr<SVGTransform> transform = SVGTransform::create();
 
     switch (first->transformType()) {
     case SVG_TRANSFORM_MATRIX:
@@ -150,12 +150,12 @@ PassRefPtrWillBeRawPtr<SVGTransform> SVGTransformDistance::addSVGTransforms(Pass
     return transform.release();
 }
 
-PassRefPtrWillBeRawPtr<SVGTransform> SVGTransformDistance::addToSVGTransform(PassRefPtrWillBeRawPtr<SVGTransform> passTransform) const
+RawPtr<SVGTransform> SVGTransformDistance::addToSVGTransform(RawPtr<SVGTransform> passTransform) const
 {
-    RefPtrWillBeRawPtr<SVGTransform> transform = passTransform;
+    RawPtr<SVGTransform> transform = passTransform;
     ASSERT(m_transformType == transform->transformType() || m_transformType == SVG_TRANSFORM_UNKNOWN);
 
-    RefPtrWillBeRawPtr<SVGTransform> newTransform = transform->clone();
+    RawPtr<SVGTransform> newTransform = transform->clone();
 
     switch (m_transformType) {
     case SVG_TRANSFORM_MATRIX:

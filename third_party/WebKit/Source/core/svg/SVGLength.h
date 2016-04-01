@@ -37,15 +37,15 @@ class SVGLength final : public SVGPropertyBase {
 public:
     typedef SVGLengthTearOff TearOffType;
 
-    static PassRefPtrWillBeRawPtr<SVGLength> create(SVGLengthMode mode = SVGLengthMode::Other)
+    static RawPtr<SVGLength> create(SVGLengthMode mode = SVGLengthMode::Other)
     {
-        return adoptRefWillBeNoop(new SVGLength(mode));
+        return new SVGLength(mode);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
-    PassRefPtrWillBeRawPtr<SVGLength> clone() const;
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    RawPtr<SVGLength> clone() const;
+    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     CSSPrimitiveValue::UnitType typeWithCalcResolved() const { return m_value->typeWithCalcResolved(); }
     void setUnitType(CSSPrimitiveValue::UnitType);
@@ -91,9 +91,9 @@ public:
     static SVGLengthMode lengthModeForAnimatedLengthAttribute(const QualifiedName&);
     static bool negativeValuesForbiddenForAnimatedLengthAttribute(const QualifiedName&);
 
-    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedLength; }
 
@@ -101,7 +101,7 @@ private:
     SVGLength(SVGLengthMode);
     SVGLength(const SVGLength&);
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_value;
+    Member<CSSPrimitiveValue> m_value;
     unsigned m_unitMode : 2;
 };
 

@@ -30,7 +30,7 @@ namespace blink {
 
 class Element;
 
-class CORE_EXPORT SVGURIReference : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT SVGURIReference : public GarbageCollectedMixin {
 public:
     virtual ~SVGURIReference() { }
 
@@ -71,7 +71,7 @@ protected:
     explicit SVGURIReference(SVGElement*);
 
 private:
-    RefPtrWillBeMember<SVGAnimatedHref> m_href;
+    Member<SVGAnimatedHref> m_href;
 };
 
 } // namespace blink

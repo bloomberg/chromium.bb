@@ -43,11 +43,11 @@ private:
     explicit SVGFEOffsetElement(Document&);
 
     void svgAttributeChanged(const QualifiedName&) override;
-    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtrWillBeMember<SVGAnimatedNumber> m_dx;
-    RefPtrWillBeMember<SVGAnimatedNumber> m_dy;
-    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    Member<SVGAnimatedNumber> m_dx;
+    Member<SVGAnimatedNumber> m_dy;
+    Member<SVGAnimatedString> m_in1;
 };
 
 } // namespace blink

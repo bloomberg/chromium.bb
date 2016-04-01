@@ -35,7 +35,7 @@ private:
     explicit SVGFEFloodElement(Document&);
 
     bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
-    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 };
 
 } // namespace blink

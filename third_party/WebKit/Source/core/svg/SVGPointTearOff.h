@@ -42,9 +42,9 @@ class SVGMatrixTearOff;
 class SVGPointTearOff : public SVGPropertyTearOff<SVGPoint>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGPointTearOff> create(PassRefPtrWillBeRawPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static RawPtr<SVGPointTearOff> create(RawPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
-        return adoptRefWillBeNoop(new SVGPointTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+        return new SVGPointTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
     void setX(float, ExceptionState&);
@@ -52,10 +52,10 @@ public:
     float x() { return target()->x(); }
     float y() { return target()->y(); }
 
-    PassRefPtrWillBeRawPtr<SVGPointTearOff> matrixTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>);
+    RawPtr<SVGPointTearOff> matrixTransform(RawPtr<SVGMatrixTearOff>);
 
 protected:
-    SVGPointTearOff(PassRefPtrWillBeRawPtr<SVGPoint>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
+    SVGPointTearOff(RawPtr<SVGPoint>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace blink

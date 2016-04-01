@@ -42,9 +42,9 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeTyp
 
 class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedOrder> create(SVGElement* contextElement)
+    static RawPtr<SVGAnimatedOrder> create(SVGElement* contextElement)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedOrder(contextElement));
+        return new SVGAnimatedOrder(contextElement);
     }
 
     SVGParsingError setBaseValueAsString(const String&) override;
@@ -162,7 +162,7 @@ void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrNa
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-PassRefPtrWillBeRawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+RawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     ASSERT(input1);
@@ -186,7 +186,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilter
 
     float divisorValue = m_divisor->currentValue()->value();
     if (!m_divisor->isSpecified()) {
-        RefPtrWillBeRawPtr<SVGNumberList> kernelMatrix = m_kernelMatrix->currentValue();
+        RawPtr<SVGNumberList> kernelMatrix = m_kernelMatrix->currentValue();
         size_t kernelMatrixSize = kernelMatrix->length();
         for (size_t i = 0; i < kernelMatrixSize; ++i)
             divisorValue += kernelMatrix->at(i)->value();
@@ -194,7 +194,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilter
             divisorValue = 1;
     }
 
-    RefPtrWillBeRawPtr<FilterEffect> effect = FEConvolveMatrix::create(filter,
+    RawPtr<FilterEffect> effect = FEConvolveMatrix::create(filter,
         IntSize(orderXValue, orderYValue), divisorValue,
         m_bias->currentValue()->value(), IntPoint(targetXValue, targetYValue), m_edgeMode->currentValue()->enumValue(),
         m_preserveAlpha->currentValue()->value(), m_kernelMatrix->currentValue()->toFloatVector());

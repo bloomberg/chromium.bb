@@ -40,16 +40,16 @@ namespace blink {
 class SVGAnimatedLength : public SVGAnimatedProperty<SVGLength>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedLength> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGLength> initialValue)
+    static RawPtr<SVGAnimatedLength> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGLength> initialValue)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedLength(contextElement, attributeName, initialValue));
+        return new SVGAnimatedLength(contextElement, attributeName, initialValue);
     }
 
     void setDefaultValueAsString(const String&);
     SVGParsingError setBaseValueAsString(const String&) override;
 
 protected:
-    SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGLength> initialValue)
+    SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGLength> initialValue)
         : SVGAnimatedProperty<SVGLength>(contextElement, attributeName, initialValue)
     {
     }

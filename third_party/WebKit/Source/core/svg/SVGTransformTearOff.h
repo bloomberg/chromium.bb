@@ -52,9 +52,9 @@ public:
         SVG_TRANSFORM_SKEWY = blink::SVG_TRANSFORM_SKEWY,
     };
 
-    static PassRefPtrWillBeRawPtr<SVGTransformTearOff> create(PassRefPtrWillBeRawPtr<SVGTransform> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static RawPtr<SVGTransformTearOff> create(RawPtr<SVGTransform> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
-        return adoptRefWillBeNoop(new SVGTransformTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+        return new SVGTransformTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
     ~SVGTransformTearOff() override;
@@ -63,7 +63,7 @@ public:
     SVGMatrixTearOff* matrix();
     float angle() { return target()->angle(); }
 
-    void setMatrix(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>, ExceptionState&);
+    void setMatrix(RawPtr<SVGMatrixTearOff>, ExceptionState&);
     void setTranslate(float tx, float ty, ExceptionState&);
     void setScale(float sx, float sy, ExceptionState&);
     void setRotate(float angle, float cx, float cy, ExceptionState&);
@@ -73,9 +73,9 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SVGTransformTearOff(PassRefPtrWillBeRawPtr<SVGTransform>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName);
+    SVGTransformTearOff(RawPtr<SVGTransform>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName);
 
-    RefPtrWillBeMember<SVGMatrixTearOff> m_matrixTearoff;
+    Member<SVGMatrixTearOff> m_matrixTearoff;
 };
 
 } // namespace blink

@@ -40,16 +40,16 @@ namespace blink {
 class SVGNumberTearOff : public SVGPropertyTearOff<SVGNumber>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGNumberTearOff> create(PassRefPtrWillBeRawPtr<SVGNumber> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static RawPtr<SVGNumberTearOff> create(RawPtr<SVGNumber> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
-        return adoptRefWillBeNoop(new SVGNumberTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+        return new SVGNumberTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
     void setValue(float, ExceptionState&);
     float value() { return target()->value(); }
 
 protected:
-    SVGNumberTearOff(PassRefPtrWillBeRawPtr<SVGNumber>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
+    SVGNumberTearOff(RawPtr<SVGNumber>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };
 
 } // namespace blink

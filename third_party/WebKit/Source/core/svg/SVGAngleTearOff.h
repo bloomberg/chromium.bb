@@ -40,9 +40,9 @@ namespace blink {
 class SVGAngleTearOff final : public SVGPropertyTearOff<SVGAngle>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGAngleTearOff> create(PassRefPtrWillBeRawPtr<SVGAngle> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static RawPtr<SVGAngleTearOff> create(RawPtr<SVGAngle> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
-        return adoptRefWillBeNoop(new SVGAngleTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+        return new SVGAngleTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
     enum {
@@ -70,7 +70,7 @@ public:
     void setValueAsString(const String&, ExceptionState&);
 
 private:
-    SVGAngleTearOff(PassRefPtrWillBeRawPtr<SVGAngle>, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
+    SVGAngleTearOff(RawPtr<SVGAngle>, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 
     bool hasExposedAngleUnit() { return target()->unitType() <= SVGAngle::SVG_ANGLETYPE_GRAD; }
 };

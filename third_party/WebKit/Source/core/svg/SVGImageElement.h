@@ -35,7 +35,7 @@ namespace blink {
 class SVGImageElement final : public SVGGraphicsElement,
                               public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGImageElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGImageElement);
 public:
     DECLARE_NODE_FACTORY(SVGImageElement);
     DECLARE_VIRTUAL_TRACE();
@@ -75,13 +75,13 @@ private:
     void didMoveToNewDocument(Document& oldDocument) override;
     SVGImageLoader& imageLoader() const { return *m_imageLoader; }
 
-    RefPtrWillBeMember<SVGAnimatedLength> m_x;
-    RefPtrWillBeMember<SVGAnimatedLength> m_y;
-    RefPtrWillBeMember<SVGAnimatedLength> m_width;
-    RefPtrWillBeMember<SVGAnimatedLength> m_height;
-    RefPtrWillBeMember<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+    Member<SVGAnimatedLength> m_x;
+    Member<SVGAnimatedLength> m_y;
+    Member<SVGAnimatedLength> m_width;
+    Member<SVGAnimatedLength> m_height;
+    Member<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
 
-    OwnPtrWillBeMember<SVGImageLoader> m_imageLoader;
+    Member<SVGImageLoader> m_imageLoader;
     bool m_needsLoaderURIUpdate : 1;
 };
 

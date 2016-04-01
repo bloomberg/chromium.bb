@@ -66,25 +66,25 @@ public:
     AffineTransform patternTransform() const { return m_patternTransform; }
     const SVGPatternElement* patternContentElement() const { return m_patternContentElement; }
 
-    void setX(PassRefPtrWillBeRawPtr<SVGLength> value)
+    void setX(RawPtr<SVGLength> value)
     {
         m_x = value;
         m_xSet = true;
     }
 
-    void setY(PassRefPtrWillBeRawPtr<SVGLength> value)
+    void setY(RawPtr<SVGLength> value)
     {
         m_y = value;
         m_ySet = true;
     }
 
-    void setWidth(PassRefPtrWillBeRawPtr<SVGLength> value)
+    void setWidth(RawPtr<SVGLength> value)
     {
         m_width = value;
         m_widthSet = true;
     }
 
-    void setHeight(PassRefPtrWillBeRawPtr<SVGLength> value)
+    void setHeight(RawPtr<SVGLength> value)
     {
         m_height = value;
         m_heightSet = true;
@@ -96,7 +96,7 @@ public:
         m_viewBoxSet = true;
     }
 
-    void setPreserveAspectRatio(PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> value)
+    void setPreserveAspectRatio(RawPtr<SVGPreserveAspectRatio> value)
     {
         m_preserveAspectRatio = value;
         m_preserveAspectRatioSet = true;
@@ -149,16 +149,16 @@ public:
 
 private:
     // Properties
-    RefPtrWillBeMember<SVGLength> m_x;
-    RefPtrWillBeMember<SVGLength> m_y;
-    RefPtrWillBeMember<SVGLength> m_width;
-    RefPtrWillBeMember<SVGLength> m_height;
+    Member<SVGLength> m_x;
+    Member<SVGLength> m_y;
+    Member<SVGLength> m_width;
+    Member<SVGLength> m_height;
     FloatRect m_viewBox;
-    RefPtrWillBeMember<SVGPreserveAspectRatio> m_preserveAspectRatio;
+    Member<SVGPreserveAspectRatio> m_preserveAspectRatio;
     SVGUnitTypes::SVGUnitType m_patternUnits;
     SVGUnitTypes::SVGUnitType m_patternContentUnits;
     AffineTransform m_patternTransform;
-    RawPtrWillBeMember<const SVGPatternElement> m_patternContentElement;
+    Member<const SVGPatternElement> m_patternContentElement;
 
     // Property states
     bool m_xSet : 1;

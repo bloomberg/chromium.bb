@@ -64,12 +64,12 @@ SVGTransform::~SVGTransform()
 {
 }
 
-PassRefPtrWillBeRawPtr<SVGTransform> SVGTransform::clone() const
+RawPtr<SVGTransform> SVGTransform::clone() const
 {
-    return adoptRefWillBeNoop(new SVGTransform(m_transformType, m_angle, m_center, m_matrix));
+    return new SVGTransform(m_transformType, m_angle, m_center, m_matrix);
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGTransform::cloneForAnimation(const String&) const
+RawPtr<SVGPropertyBase> SVGTransform::cloneForAnimation(const String&) const
 {
     // SVGTransform is never animated.
     ASSERT_NOT_REACHED();
@@ -235,19 +235,19 @@ String SVGTransform::valueAsString() const
     return builder.toString();
 }
 
-void SVGTransform::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+void SVGTransform::add(RawPtr<SVGPropertyBase>, SVGElement*)
 {
     // SVGTransform is not animated by itself.
     ASSERT_NOT_REACHED();
 }
 
-void SVGTransform::calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtrWillBeRawPtr<SVGPropertyBase>, PassRefPtrWillBeRawPtr<SVGPropertyBase>, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+void SVGTransform::calculateAnimatedValue(SVGAnimationElement*, float, unsigned, RawPtr<SVGPropertyBase>, RawPtr<SVGPropertyBase>, RawPtr<SVGPropertyBase>, SVGElement*)
 {
     // SVGTransform is not animated by itself.
     ASSERT_NOT_REACHED();
 }
 
-float SVGTransform::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+float SVGTransform::calculateDistance(RawPtr<SVGPropertyBase>, SVGElement*)
 {
     // SVGTransform is not animated by itself.
     ASSERT_NOT_REACHED();

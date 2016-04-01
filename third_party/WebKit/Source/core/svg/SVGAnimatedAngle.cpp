@@ -67,7 +67,7 @@ void SVGAnimatedAngle::synchronizeAttribute()
     SVGAnimatedProperty<SVGAngle>::synchronizeAttribute();
 }
 
-void SVGAnimatedAngle::setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> value)
+void SVGAnimatedAngle::setAnimatedValue(RawPtr<SVGPropertyBase> value)
 {
     SVGAnimatedProperty<SVGAngle>::setAnimatedValue(value);
     m_orientType->setAnimatedValue(currentValue()->orientType());

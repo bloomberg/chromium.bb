@@ -127,7 +127,7 @@ bool SVGLinearGradientElement::collectGradientAttributes(LinearGradientAttribute
     if (!layoutObject())
         return false;
 
-    WillBeHeapHashSet<RawPtrWillBeMember<SVGGradientElement>> processedGradients;
+    HeapHashSet<Member<SVGGradientElement>> processedGradients;
     SVGGradientElement* current = this;
 
     setGradientAttributes(current, attributes);

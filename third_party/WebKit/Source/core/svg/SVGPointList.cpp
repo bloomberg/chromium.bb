@@ -102,9 +102,9 @@ SVGParsingError SVGPointList::setValueAsString(const String& value)
     return parse(ptr, end);
 }
 
-void SVGPointList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGPointList::add(RawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
-    RefPtrWillBeRawPtr<SVGPointList> otherList = toSVGPointList(other);
+    RawPtr<SVGPointList> otherList = toSVGPointList(other);
 
     if (length() != otherList->length())
         return;
@@ -113,11 +113,11 @@ void SVGPointList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement
         at(i)->setValue(at(i)->value() + otherList->at(i)->value());
 }
 
-void SVGPointList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGPointList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
-    RefPtrWillBeRawPtr<SVGPointList> fromList = toSVGPointList(fromValue);
-    RefPtrWillBeRawPtr<SVGPointList> toList = toSVGPointList(toValue);
-    RefPtrWillBeRawPtr<SVGPointList> toAtEndOfDurationList = toSVGPointList(toAtEndOfDurationValue);
+    RawPtr<SVGPointList> fromList = toSVGPointList(fromValue);
+    RawPtr<SVGPointList> toList = toSVGPointList(toValue);
+    RawPtr<SVGPointList> toAtEndOfDurationList = toSVGPointList(toAtEndOfDurationValue);
 
     size_t fromPointListSize = fromList->length();
     size_t toPointListSize = toList->length();
@@ -144,7 +144,7 @@ void SVGPointList::calculateAnimatedValue(SVGAnimationElement* animationElement,
     }
 }
 
-float SVGPointList::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*)
+float SVGPointList::calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*)
 {
     // FIXME: Distance calculation is not possible for SVGPointList right now. We need the distance for every single value.
     return -1;

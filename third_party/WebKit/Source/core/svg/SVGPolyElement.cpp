@@ -43,7 +43,7 @@ Path SVGPolyElement::asPathFromPoints() const
 {
     Path path;
 
-    RefPtrWillBeRawPtr<SVGPointList> pointsValue = points()->currentValue();
+    RawPtr<SVGPointList> pointsValue = points()->currentValue();
     if (pointsValue->isEmpty())
         return path;
 

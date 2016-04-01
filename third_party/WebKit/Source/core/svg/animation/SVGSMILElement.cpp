@@ -48,9 +48,9 @@ namespace blink {
 
 class RepeatEvent final : public Event {
 public:
-    static PassRefPtrWillBeRawPtr<RepeatEvent> create(const AtomicString& type, int repeat)
+    static RawPtr<RepeatEvent> create(const AtomicString& type, int repeat)
     {
-        return adoptRefWillBeNoop(new RepeatEvent(type, false, false, repeat));
+        return new RepeatEvent(type, false, false, repeat);
     }
 
     ~RepeatEvent() override {}
@@ -81,25 +81,25 @@ inline RepeatEvent* toRepeatEvent(Event* event)
 
 static SMILEventSender& smilEndEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SMILEventSender>, sender, (SMILEventSender::create(EventTypeNames::endEvent)));
+    DEFINE_STATIC_LOCAL(Persistent<SMILEventSender>, sender, (SMILEventSender::create(EventTypeNames::endEvent)));
     return *sender;
 }
 
 static SMILEventSender& smilBeginEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SMILEventSender>, sender, (SMILEventSender::create(EventTypeNames::beginEvent)));
+    DEFINE_STATIC_LOCAL(Persistent<SMILEventSender>, sender, (SMILEventSender::create(EventTypeNames::beginEvent)));
     return *sender;
 }
 
 static SMILEventSender& smilRepeatEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SMILEventSender>, sender, (SMILEventSender::create(EventTypeNames::repeatEvent)));
+    DEFINE_STATIC_LOCAL(Persistent<SMILEventSender>, sender, (SMILEventSender::create(EventTypeNames::repeatEvent)));
     return *sender;
 }
 
 static SMILEventSender& smilRepeatNEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SMILEventSender>, sender, (SMILEventSender::create(AtomicString("repeatn"))));
+    DEFINE_STATIC_LOCAL(Persistent<SMILEventSender>, sender, (SMILEventSender::create(AtomicString("repeatn"))));
     return *sender;
 }
 
@@ -108,9 +108,9 @@ static const double invalidCachedTime = -1.;
 
 class ConditionEventListener final : public EventListener {
 public:
-    static PassRefPtrWillBeRawPtr<ConditionEventListener> create(SVGSMILElement* animation, SVGSMILElement::Condition* condition)
+    static RawPtr<ConditionEventListener> create(SVGSMILElement* animation, SVGSMILElement::Condition* condition)
     {
-        return adoptRefWillBeNoop(new ConditionEventListener(animation, condition));
+        return new ConditionEventListener(animation, condition);
     }
 
     static const ConditionEventListener* cast(const EventListener* listener)
@@ -144,8 +144,8 @@ private:
 
     void handleEvent(ExecutionContext*, Event*) override;
 
-    RawPtrWillBeMember<SVGSMILElement> m_animation;
-    RawPtrWillBeMember<SVGSMILElement::Condition> m_condition;
+    Member<SVGSMILElement> m_animation;
+    Member<SVGSMILElement::Condition> m_condition;
 };
 
 bool ConditionEventListener::operator==(const EventListener& listener) const
@@ -162,7 +162,7 @@ void ConditionEventListener::handleEvent(ExecutionContext*, Event* event)
     m_animation->handleConditionEvent(event, m_condition);
 }
 
-void SVGSMILElement::Condition::setEventListener(PassRefPtrWillBeRawPtr<ConditionEventListener> eventListener)
+void SVGSMILElement::Condition::setEventListener(RawPtr<ConditionEventListener> eventListener)
 {
     m_eventListener = eventListener;
 }
@@ -1233,7 +1233,7 @@ void SVGSMILElement::notifyDependentsIntervalChanged()
     // |loopBreaker| is used to avoid infinite recursions which may be caused from:
     // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| -> |add{Begin,End}Time| -> |{begin,end}TimeChanged| -> |notifyDependentsIntervalChanged|
     // |loopBreaker| is defined as a Persistent<HeapHashSet<Member<SVGSMILElement>>>. This won't cause leaks because it is guaranteed to be empty after the root |notifyDependentsIntervalChanged| has exited.
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement>>>, loopBreaker, (adoptPtrWillBeNoop(new WillBeHeapHashSet<RawPtrWillBeMember<SVGSMILElement>>())));
+    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<Member<SVGSMILElement>>>, loopBreaker, (new HeapHashSet<Member<SVGSMILElement>>()));
     if (!loopBreaker->add(this).isNewEntry)
         return;
 

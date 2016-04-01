@@ -34,9 +34,9 @@ using SVGStyleEventSender = EventSender<SVGStyleElement>;
 class SVGStyleElement final : public SVGElement
                             , public StyleElement {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 public:
-    static PassRefPtrWillBeRawPtr<SVGStyleElement> create(Document&, bool createdByParser);
+    static RawPtr<SVGStyleElement> create(Document&, bool createdByParser);
     ~SVGStyleElement() override;
 
     using StyleElement::sheet;

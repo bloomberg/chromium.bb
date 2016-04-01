@@ -31,12 +31,12 @@ class SVGTransformDistance {
     STACK_ALLOCATED();
 public:
     SVGTransformDistance();
-    SVGTransformDistance(PassRefPtrWillBeRawPtr<SVGTransform> fromTransform, PassRefPtrWillBeRawPtr<SVGTransform> toTransform);
+    SVGTransformDistance(RawPtr<SVGTransform> fromTransform, RawPtr<SVGTransform> toTransform);
 
     SVGTransformDistance scaledDistance(float scaleFactor) const;
-    PassRefPtrWillBeRawPtr<SVGTransform> addToSVGTransform(PassRefPtrWillBeRawPtr<SVGTransform>) const;
+    RawPtr<SVGTransform> addToSVGTransform(RawPtr<SVGTransform>) const;
 
-    static PassRefPtrWillBeRawPtr<SVGTransform> addSVGTransforms(PassRefPtrWillBeRawPtr<SVGTransform>, PassRefPtrWillBeRawPtr<SVGTransform>, unsigned repeatCount = 1);
+    static RawPtr<SVGTransform> addSVGTransforms(RawPtr<SVGTransform>, RawPtr<SVGTransform>, unsigned repeatCount = 1);
 
     float distance() const;
 

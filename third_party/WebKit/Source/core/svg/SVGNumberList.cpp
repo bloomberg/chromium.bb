@@ -87,9 +87,9 @@ SVGParsingError SVGNumberList::setValueAsString(const String& value)
     return parse(ptr, end);
 }
 
-void SVGNumberList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGNumberList::add(RawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
-    RefPtrWillBeRawPtr<SVGNumberList> otherList = toSVGNumberList(other);
+    RawPtr<SVGNumberList> otherList = toSVGNumberList(other);
 
     if (length() != otherList->length())
         return;
@@ -98,11 +98,11 @@ void SVGNumberList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElemen
         at(i)->setValue(at(i)->value() + otherList->at(i)->value());
 }
 
-void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
-    RefPtrWillBeRawPtr<SVGNumberList> fromList = toSVGNumberList(fromValue);
-    RefPtrWillBeRawPtr<SVGNumberList> toList = toSVGNumberList(toValue);
-    RefPtrWillBeRawPtr<SVGNumberList> toAtEndOfDurationList = toSVGNumberList(toAtEndOfDurationValue);
+    RawPtr<SVGNumberList> fromList = toSVGNumberList(fromValue);
+    RawPtr<SVGNumberList> toList = toSVGNumberList(toValue);
+    RawPtr<SVGNumberList> toAtEndOfDurationList = toSVGNumberList(toAtEndOfDurationValue);
 
     size_t fromListSize = fromList->length();
     size_t toListSize = toList->length();
@@ -122,7 +122,7 @@ void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement
     }
 }
 
-float SVGNumberList::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*)
+float SVGNumberList::calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*)
 {
     // FIXME: Distance calculation is not possible for SVGNumberList right now. We need the distance for every single value.
     return -1;

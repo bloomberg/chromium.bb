@@ -41,7 +41,7 @@ class SVGPatternElement final : public SVGElement,
                                 public SVGTests,
                                 public SVGFitToViewBox {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGPatternElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGPatternElement);
 public:
     DECLARE_NODE_FACTORY(SVGPatternElement);
 
@@ -75,13 +75,13 @@ private:
 
     bool selfHasRelativeLengths() const override;
 
-    RefPtrWillBeMember<SVGAnimatedLength> m_x;
-    RefPtrWillBeMember<SVGAnimatedLength> m_y;
-    RefPtrWillBeMember<SVGAnimatedLength> m_width;
-    RefPtrWillBeMember<SVGAnimatedLength> m_height;
-    RefPtrWillBeMember<SVGAnimatedTransformList> m_patternTransform;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_patternUnits;
-    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_patternContentUnits;
+    Member<SVGAnimatedLength> m_x;
+    Member<SVGAnimatedLength> m_y;
+    Member<SVGAnimatedLength> m_width;
+    Member<SVGAnimatedLength> m_height;
+    Member<SVGAnimatedTransformList> m_patternTransform;
+    Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_patternUnits;
+    Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_patternContentUnits;
 };
 
 } // namespace blink

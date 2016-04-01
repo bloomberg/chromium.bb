@@ -156,7 +156,7 @@ void SVGFEImageElement::notifyFinished(Resource*)
         markForLayoutAndParentResourceInvalidation(layoutObject);
 }
 
-PassRefPtrWillBeRawPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
+RawPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
 {
     if (m_cachedImage) {
         // Don't use the broken image icon on image loading errors.

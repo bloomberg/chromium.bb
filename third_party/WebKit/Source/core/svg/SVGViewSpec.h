@@ -28,18 +28,18 @@
 
 namespace blink {
 
-class SVGViewSpec final : public RefCountedWillBeGarbageCollectedFinalized<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
+class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGViewSpec);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGViewSpec);
 public:
 #if !ENABLE(OILPAN)
     using RefCounted<SVGViewSpec>::ref;
     using RefCounted<SVGViewSpec>::deref;
 #endif
 
-    static PassRefPtrWillBeRawPtr<SVGViewSpec> create(SVGSVGElement* contextElement)
+    static RawPtr<SVGViewSpec> create(SVGSVGElement* contextElement)
     {
-        return adoptRefWillBeNoop(new SVGViewSpec(contextElement));
+        return new SVGViewSpec(contextElement);
     }
 
     bool parseViewSpec(const String&);
@@ -49,7 +49,7 @@ public:
 
     // JS API
     SVGTransformList* transform() { return m_transform ? m_transform->baseValue() : 0; }
-    PassRefPtrWillBeRawPtr<SVGTransformListTearOff> transformFromJavascript() { return m_transform ? m_transform->baseVal() : 0; }
+    RawPtr<SVGTransformListTearOff> transformFromJavascript() { return m_transform ? m_transform->baseVal() : 0; }
     SVGElement* viewTarget() const;
     String viewBoxString() const;
     String preserveAspectRatioString() const;
@@ -69,8 +69,8 @@ private:
     template<typename CharType>
     bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
-    RawPtrWillBeMember<SVGSVGElement> m_contextElement;
-    RefPtrWillBeMember<SVGAnimatedTransformList> m_transform;
+    Member<SVGSVGElement> m_contextElement;
+    Member<SVGAnimatedTransformList> m_transform;
     String m_viewTargetString;
 };
 

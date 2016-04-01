@@ -47,15 +47,15 @@ private:
     explicit SVGFEDropShadowElement(Document&);
 
     void svgAttributeChanged(const QualifiedName&) override;
-    PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    RawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     static const AtomicString& stdDeviationXIdentifier();
     static const AtomicString& stdDeviationYIdentifier();
 
-    RefPtrWillBeMember<SVGAnimatedNumber> m_dx;
-    RefPtrWillBeMember<SVGAnimatedNumber> m_dy;
-    RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
-    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    Member<SVGAnimatedNumber> m_dx;
+    Member<SVGAnimatedNumber> m_dy;
+    Member<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
+    Member<SVGAnimatedString> m_in1;
 };
 
 } // namespace blink

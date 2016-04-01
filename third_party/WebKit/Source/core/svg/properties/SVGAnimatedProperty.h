@@ -45,7 +45,7 @@ namespace blink {
 
 class SVGElement;
 
-class SVGAnimatedPropertyBase : public RefCountedWillBeGarbageCollectedFinalized<SVGAnimatedPropertyBase> {
+class SVGAnimatedPropertyBase : public GarbageCollectedFinalized<SVGAnimatedPropertyBase> {
     WTF_MAKE_NONCOPYABLE(SVGAnimatedPropertyBase);
 public:
     virtual ~SVGAnimatedPropertyBase();
@@ -54,8 +54,8 @@ public:
     virtual const SVGPropertyBase& baseValueBase() const = 0;
     virtual bool isAnimating() const = 0;
 
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> createAnimatedValue() = 0;
-    virtual void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) = 0;
+    virtual RawPtr<SVGPropertyBase> createAnimatedValue() = 0;
+    virtual void setAnimatedValue(RawPtr<SVGPropertyBase>) = 0;
     virtual void animationEnded();
 
     virtual SVGParsingError setBaseValueAsString(const String&) = 0;
@@ -103,7 +103,7 @@ private:
     // This raw pointer is safe since the SVG element is guaranteed to be kept
     // alive by a V8 wrapper.
     // See http://crbug.com/528275 for the detail.
-    RawPtrWillBeUntracedMember<SVGElement> m_contextElement;
+    UntracedMember<SVGElement> m_contextElement;
 
     const QualifiedName& m_attributeName;
 };
@@ -146,14 +146,14 @@ public:
         return m_baseValue->setValueAsString(value);
     }
 
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> createAnimatedValue() override
+    RawPtr<SVGPropertyBase> createAnimatedValue() override
     {
         return m_baseValue->clone();
     }
 
-    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> passValue) override
+    void setAnimatedValue(RawPtr<SVGPropertyBase> passValue) override
     {
-        RefPtrWillBeRawPtr<SVGPropertyBase> value = passValue;
+        RawPtr<SVGPropertyBase> value = passValue;
         ASSERT(value->type() == Property::classType());
         m_currentValue = static_pointer_cast<Property>(value.release());
     }
@@ -173,15 +173,15 @@ public:
     }
 
 protected:
-    SVGAnimatedPropertyCommon(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<Property> initialValue)
+    SVGAnimatedPropertyCommon(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
         : SVGAnimatedPropertyBase(Property::classType(), contextElement, attributeName)
         , m_baseValue(initialValue)
     {
     }
 
 private:
-    RefPtrWillBeMember<Property> m_baseValue;
-    RefPtrWillBeMember<Property> m_currentValue;
+    Member<Property> m_baseValue;
+    Member<Property> m_currentValue;
 };
 
 // Implementation of SVGAnimatedProperty which uses primitive types.
@@ -234,7 +234,7 @@ public:
     }
 
 protected:
-    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<Property> initialValue)
+    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
         : SVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
         , m_baseValueUpdated(false)
     {
@@ -250,12 +250,12 @@ protected:
 template <typename Property, typename TearOffType>
 class SVGAnimatedProperty<Property, TearOffType, void> : public SVGAnimatedPropertyCommon<Property> {
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedProperty<Property>> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<Property> initialValue)
+    static RawPtr<SVGAnimatedProperty<Property>> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
+        return new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue);
     }
 
-    void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> value) override
+    void setAnimatedValue(RawPtr<SVGPropertyBase> value) override
     {
         SVGAnimatedPropertyCommon<Property>::setAnimatedValue(value);
         updateAnimValTearOffIfNeeded();
@@ -305,7 +305,7 @@ public:
     }
 
 protected:
-    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<Property> initialValue)
+    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
         : SVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
     {
     }
@@ -322,8 +322,8 @@ private:
     // When animated:
     //     m_animValTearOff targets m_currentValue.
     //     m_baseValTearOff targets m_baseValue.
-    RefPtrWillBeMember<TearOffType> m_baseValTearOff;
-    RefPtrWillBeMember<TearOffType> m_animValTearOff;
+    Member<TearOffType> m_baseValTearOff;
+    Member<TearOffType> m_animValTearOff;
 };
 
 // Implementation of SVGAnimatedProperty which doesn't use tear-off value types.
@@ -332,9 +332,9 @@ private:
 template <typename Property>
 class SVGAnimatedProperty<Property, void, void> : public SVGAnimatedPropertyCommon<Property> {
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedProperty<Property>> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<Property> initialValue)
+    static RawPtr<SVGAnimatedProperty<Property>> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue));
+        return new SVGAnimatedProperty<Property>(contextElement, attributeName, initialValue);
     }
 
     bool needsSynchronizeAttribute() override
@@ -344,7 +344,7 @@ public:
     }
 
 protected:
-    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<Property> initialValue)
+    SVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<Property> initialValue)
         : SVGAnimatedPropertyCommon<Property>(contextElement, attributeName, initialValue)
     {
     }

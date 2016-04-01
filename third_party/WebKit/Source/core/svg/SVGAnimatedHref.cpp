@@ -11,9 +11,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SVGAnimatedHref> SVGAnimatedHref::create(SVGElement* contextElement)
+RawPtr<SVGAnimatedHref> SVGAnimatedHref::create(SVGElement* contextElement)
 {
-    return adoptRefWillBeNoop(new SVGAnimatedHref(contextElement));
+    return new SVGAnimatedHref(contextElement);
 }
 
 DEFINE_TRACE(SVGAnimatedHref)

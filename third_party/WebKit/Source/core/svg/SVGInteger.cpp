@@ -40,7 +40,7 @@ SVGInteger::SVGInteger(int value)
 {
 }
 
-PassRefPtrWillBeRawPtr<SVGInteger> SVGInteger::clone() const
+RawPtr<SVGInteger> SVGInteger::clone() const
 {
     return create(m_value);
 }
@@ -63,25 +63,25 @@ SVGParsingError SVGInteger::setValueAsString(const String& string)
     return valid ? SVGParseStatus::NoError : SVGParseStatus::ExpectedInteger;
 }
 
-void SVGInteger::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
+void SVGInteger::add(RawPtr<SVGPropertyBase> other, SVGElement*)
 {
     setValue(m_value + toSVGInteger(other)->value());
 }
 
-void SVGInteger::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
+void SVGInteger::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
 {
     ASSERT(animationElement);
 
-    RefPtrWillBeRawPtr<SVGInteger> fromInteger = toSVGInteger(from);
-    RefPtrWillBeRawPtr<SVGInteger> toInteger = toSVGInteger(to);
-    RefPtrWillBeRawPtr<SVGInteger> toAtEndOfDurationInteger = toSVGInteger(toAtEndOfDuration);
+    RawPtr<SVGInteger> fromInteger = toSVGInteger(from);
+    RawPtr<SVGInteger> toInteger = toSVGInteger(to);
+    RawPtr<SVGInteger> toAtEndOfDurationInteger = toSVGInteger(toAtEndOfDuration);
 
     float animatedFloat = m_value;
     animationElement->animateAdditiveNumber(percentage, repeatCount, fromInteger->value(), toInteger->value(), toAtEndOfDurationInteger->value(), animatedFloat);
     m_value = static_cast<int>(roundf(animatedFloat));
 }
 
-float SVGInteger::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
+float SVGInteger::calculateDistance(RawPtr<SVGPropertyBase> other, SVGElement*)
 {
     return abs(m_value - toSVGInteger(other)->value());
 }

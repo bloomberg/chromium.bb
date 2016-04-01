@@ -30,8 +30,8 @@ public:
     String debugName() const override { return "SVGResourceClient"; }
 
 private:
-    WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<SVGFilterElement>> m_internalFilterReferences;
-    WillBePersistentHeapVector<RefPtrWillBeMember<DocumentResource>> m_externalFilterReferences;
+    PersistentHeapHashSet<WeakMember<SVGFilterElement>> m_internalFilterReferences;
+    PersistentHeapVector<Member<DocumentResource>> m_externalFilterReferences;
 };
 
 } // namespace blink

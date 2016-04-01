@@ -100,7 +100,7 @@ SVGSVGElement::~SVGSVGElement()
 #endif
 }
 
-PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGSVGElement::viewport() const
+RawPtr<SVGRectTearOff> SVGSVGElement::viewport() const
 {
     // FIXME: This method doesn't follow the spec and is basically untested. Parent documents are not considered here.
     // As we have no test coverage for this, we're going to disable it completly for now.
@@ -134,9 +134,9 @@ void SVGSVGElement::setCurrentScale(float scale)
 
 class SVGCurrentTranslateTearOff : public SVGPointTearOff {
 public:
-    static PassRefPtrWillBeRawPtr<SVGCurrentTranslateTearOff> create(SVGSVGElement* contextElement)
+    static RawPtr<SVGCurrentTranslateTearOff> create(SVGSVGElement* contextElement)
     {
-        return adoptRefWillBeNoop(new SVGCurrentTranslateTearOff(contextElement));
+        return new SVGCurrentTranslateTearOff(contextElement);
     }
 
     void commitChange() override
@@ -152,7 +152,7 @@ private:
     }
 };
 
-PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGSVGElement::currentTranslateFromJavascript()
+RawPtr<SVGPointTearOff> SVGSVGElement::currentTranslateFromJavascript()
 {
     return SVGCurrentTranslateTearOff::create(this);
 }
@@ -339,10 +339,10 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(const SVGElement& element, cons
     return result;
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect,
+RawPtr<StaticNodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const FloatRect& rect,
     SVGElement* referenceElement, CheckIntersectionOrEnclosure mode) const
 {
-    WillBeHeapVector<RefPtrWillBeMember<Node>> nodes;
+    HeapVector<Member<Node>> nodes;
 
     const SVGElement* root = this;
     if (referenceElement) {
@@ -363,21 +363,21 @@ PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::collectIntersectionOrEnclo
     return StaticNodeList::adopt(nodes);
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::getIntersectionList(PassRefPtrWillBeRawPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
+RawPtr<StaticNodeList> SVGSVGElement::getIntersectionList(RawPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CheckIntersection);
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::getEnclosureList(PassRefPtrWillBeRawPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
+RawPtr<StaticNodeList> SVGSVGElement::getEnclosureList(RawPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CheckEnclosure);
 }
 
-bool SVGSVGElement::checkIntersection(SVGElement* element, PassRefPtrWillBeRawPtr<SVGRectTearOff> rect) const
+bool SVGSVGElement::checkIntersection(SVGElement* element, RawPtr<SVGRectTearOff> rect) const
 {
     ASSERT(element);
     document().updateLayoutIgnorePendingStylesheets();
@@ -385,7 +385,7 @@ bool SVGSVGElement::checkIntersection(SVGElement* element, PassRefPtrWillBeRawPt
     return checkIntersectionOrEnclosure(*element, rect->target()->value(), CheckIntersection);
 }
 
-bool SVGSVGElement::checkEnclosure(SVGElement* element, PassRefPtrWillBeRawPtr<SVGRectTearOff> rect) const
+bool SVGSVGElement::checkEnclosure(SVGElement* element, RawPtr<SVGRectTearOff> rect) const
 {
     ASSERT(element);
     document().updateLayoutIgnorePendingStylesheets();
@@ -399,42 +399,42 @@ void SVGSVGElement::deselectAll()
         frame->selection().clear();
 }
 
-PassRefPtrWillBeRawPtr<SVGNumberTearOff> SVGSVGElement::createSVGNumber()
+RawPtr<SVGNumberTearOff> SVGSVGElement::createSVGNumber()
 {
     return SVGNumberTearOff::create(SVGNumber::create(0.0f), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtrWillBeRawPtr<SVGLengthTearOff> SVGSVGElement::createSVGLength()
+RawPtr<SVGLengthTearOff> SVGSVGElement::createSVGLength()
 {
     return SVGLengthTearOff::create(SVGLength::create(), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtrWillBeRawPtr<SVGAngleTearOff> SVGSVGElement::createSVGAngle()
+RawPtr<SVGAngleTearOff> SVGSVGElement::createSVGAngle()
 {
     return SVGAngleTearOff::create(SVGAngle::create(), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGSVGElement::createSVGPoint()
+RawPtr<SVGPointTearOff> SVGSVGElement::createSVGPoint()
 {
     return SVGPointTearOff::create(SVGPoint::create(), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGSVGElement::createSVGMatrix()
+RawPtr<SVGMatrixTearOff> SVGSVGElement::createSVGMatrix()
 {
     return SVGMatrixTearOff::create(AffineTransform());
 }
 
-PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGSVGElement::createSVGRect()
+RawPtr<SVGRectTearOff> SVGSVGElement::createSVGRect()
 {
     return SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtrWillBeRawPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransform()
+RawPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransform()
 {
     return SVGTransformTearOff::create(SVGTransform::create(SVG_TRANSFORM_MATRIX), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtrWillBeRawPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransformFromMatrix(PassRefPtrWillBeRawPtr<SVGMatrixTearOff> matrix)
+RawPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransformFromMatrix(RawPtr<SVGMatrixTearOff> matrix)
 {
     return SVGTransformTearOff::create(SVGTransform::create(matrix->value()), 0, PropertyIsNotAnimVal);
 }
@@ -644,7 +644,7 @@ AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float vie
         return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
 
     AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
-    RefPtrWillBeRawPtr<SVGTransformList> transformList = m_viewSpec->transform();
+    RawPtr<SVGTransformList> transformList = m_viewSpec->transform();
     if (transformList->isEmpty())
         return ctm;
 

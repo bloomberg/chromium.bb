@@ -48,7 +48,7 @@ namespace blink {
 
 static SVGUseEventSender& svgUseLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGUseEventSender>, sharedLoadEventSender, (SVGUseEventSender::create(EventTypeNames::load)));
+    DEFINE_STATIC_LOCAL(Persistent<SVGUseEventSender>, sharedLoadEventSender, (SVGUseEventSender::create(EventTypeNames::load)));
     return *sharedLoadEventSender;
 }
 
@@ -74,10 +74,10 @@ inline SVGUseElement::SVGUseElement(Document& document)
 #endif
 }
 
-PassRefPtrWillBeRawPtr<SVGUseElement> SVGUseElement::create(Document& document)
+RawPtr<SVGUseElement> SVGUseElement::create(Document& document)
 {
     // Always build a user agent #shadow-root for SVGUseElement.
-    RefPtrWillBeRawPtr<SVGUseElement> use = adoptRefWillBeNoop(new SVGUseElement(document));
+    RawPtr<SVGUseElement> use = new SVGUseElement(document);
     use->ensureUserAgentShadowRoot();
     return use.release();
 }
@@ -385,16 +385,16 @@ static inline void removeDisallowedElementsFromSubtree(SVGElement& subtree)
 
 static void moveChildrenToReplacementElement(ContainerNode& sourceRoot, ContainerNode& destinationRoot)
 {
-    for (RefPtrWillBeRawPtr<Node> child = sourceRoot.firstChild(); child; ) {
-        RefPtrWillBeRawPtr<Node> nextChild = child->nextSibling();
+    for (RawPtr<Node> child = sourceRoot.firstChild(); child; ) {
+        RawPtr<Node> nextChild = child->nextSibling();
         destinationRoot.appendChild(child);
         child = nextChild.release();
     }
 }
 
-PassRefPtrWillBeRawPtr<Element> SVGUseElement::createInstanceTree(SVGElement& targetRoot) const
+RawPtr<Element> SVGUseElement::createInstanceTree(SVGElement& targetRoot) const
 {
-    RefPtrWillBeRawPtr<Element> instanceRoot = targetRoot.cloneElementWithChildren();
+    RawPtr<Element> instanceRoot = targetRoot.cloneElementWithChildren();
     ASSERT(instanceRoot->isSVGElement());
     if (isSVGSymbolElement(targetRoot)) {
         // Spec: The referenced 'symbol' and its contents are deep-cloned into
@@ -405,7 +405,7 @@ PassRefPtrWillBeRawPtr<Element> SVGUseElement::createInstanceTree(SVGElement& ta
         // transferred to the generated 'svg'. If attributes width and/or
         // height are not specified, the generated 'svg' element will use
         // values of 100% for these attributes.
-        RefPtrWillBeRawPtr<SVGSVGElement> svgElement = SVGSVGElement::create(targetRoot.document());
+        RawPtr<SVGSVGElement> svgElement = SVGSVGElement::create(targetRoot.document());
         // Transfer all data (attributes, etc.) from the <symbol> to the new
         // <svg> element.
         svgElement->cloneDataFromElement(*instanceRoot);
@@ -436,7 +436,7 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target)
 
     // Set up root SVG element in shadow tree.
     // Clone the target subtree into the shadow tree, not handling <use> and <symbol> yet.
-    RefPtrWillBeRawPtr<Element> instanceRoot = createInstanceTree(target);
+    RawPtr<Element> instanceRoot = createInstanceTree(target);
     m_targetElementInstance = toSVGElement(instanceRoot.get());
     ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
     shadowTreeRootElement->appendChild(instanceRoot.release());
@@ -600,7 +600,7 @@ bool SVGUseElement::expandUseElementsInShadowTree()
     // actual shadow tree (after the special case modification for svg/symbol) we have
     // to walk it completely and expand all <use> elements.
     ShadowRoot* shadowRoot = userAgentShadowRoot();
-    for (RefPtrWillBeRawPtr<SVGUseElement> use = Traversal<SVGUseElement>::firstWithin(*shadowRoot); use; ) {
+    for (RawPtr<SVGUseElement> use = Traversal<SVGUseElement>::firstWithin(*shadowRoot); use; ) {
         ASSERT(!use->resourceIsStillLoading());
 
         SVGUseElement& originalUse = toSVGUseElement(*use->correspondingElement());
@@ -612,7 +612,7 @@ bool SVGUseElement::expandUseElementsInShadowTree()
             return false;
         // Don't ASSERT(target) here, it may be "pending", too.
         // Setup sub-shadow tree root node
-        RefPtrWillBeRawPtr<SVGGElement> cloneParent = SVGGElement::create(originalUse.document());
+        RawPtr<SVGGElement> cloneParent = SVGGElement::create(originalUse.document());
         // Transfer all data (attributes, etc.) from <use> to the new <g> element.
         cloneParent->cloneDataFromElement(*use);
         cloneParent->setCorrespondingElement(&originalUse);
@@ -625,7 +625,7 @@ bool SVGUseElement::expandUseElementsInShadowTree()
         if (target)
             cloneParent->appendChild(use->createInstanceTree(*target));
 
-        RefPtrWillBeRawPtr<SVGElement> replacingElement(cloneParent.get());
+        RawPtr<SVGElement> replacingElement(cloneParent.get());
 
         // Replace <use> with referenced content.
         use->parentNode()->replaceChild(cloneParent.release(), use);
@@ -647,11 +647,11 @@ void SVGUseElement::invalidateShadowTree()
 void SVGUseElement::invalidateDependentShadowTrees()
 {
     // Recursively invalidate dependent <use> shadow trees
-    const WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement>>& rawInstances = instancesForElement();
-    WillBeHeapVector<RefPtrWillBeMember<SVGElement>> instances;
+    const HeapHashSet<WeakMember<SVGElement>>& rawInstances = instancesForElement();
+    HeapVector<Member<SVGElement>> instances;
     instances.appendRange(rawInstances.begin(), rawInstances.end());
     for (auto& instance : instances) {
-        if (RefPtrWillBeRawPtr<SVGUseElement> element = instance->correspondingUseElement()) {
+        if (RawPtr<SVGUseElement> element = instance->correspondingUseElement()) {
             ASSERT(element->inDocument());
             element->invalidateShadowTree();
         }
@@ -744,7 +744,7 @@ bool SVGUseElement::instanceTreeIsLoading() const
     return false;
 }
 
-void SVGUseElement::setDocumentResource(PassRefPtrWillBeRawPtr<DocumentResource> resource)
+void SVGUseElement::setDocumentResource(RawPtr<DocumentResource> resource)
 {
     if (m_resource == resource)
         return;

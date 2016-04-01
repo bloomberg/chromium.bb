@@ -35,7 +35,7 @@
 
 namespace blink {
 
-SVGIntegerOptionalInteger::SVGIntegerOptionalInteger(PassRefPtrWillBeRawPtr<SVGInteger> firstInteger, PassRefPtrWillBeRawPtr<SVGInteger> secondInteger)
+SVGIntegerOptionalInteger::SVGIntegerOptionalInteger(RawPtr<SVGInteger> firstInteger, RawPtr<SVGInteger> secondInteger)
     : SVGPropertyBase(classType())
     , m_firstInteger(firstInteger)
     , m_secondInteger(secondInteger)
@@ -49,12 +49,12 @@ DEFINE_TRACE(SVGIntegerOptionalInteger)
     SVGPropertyBase::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<SVGIntegerOptionalInteger> SVGIntegerOptionalInteger::clone() const
+RawPtr<SVGIntegerOptionalInteger> SVGIntegerOptionalInteger::clone() const
 {
     return SVGIntegerOptionalInteger::create(m_firstInteger->clone(), m_secondInteger->clone());
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGIntegerOptionalInteger::cloneForAnimation(const String& value) const
+RawPtr<SVGPropertyBase> SVGIntegerOptionalInteger::cloneForAnimation(const String& value) const
 {
     float floatX, floatY;
     if (!parseNumberOptionalNumber(value, floatX, floatY)) {
@@ -90,21 +90,21 @@ SVGParsingError SVGIntegerOptionalInteger::setValueAsString(const String& value)
     return parseStatus;
 }
 
-void SVGIntegerOptionalInteger::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
+void SVGIntegerOptionalInteger::add(RawPtr<SVGPropertyBase> other, SVGElement*)
 {
-    RefPtrWillBeRawPtr<SVGIntegerOptionalInteger> otherIntegerOptionalInteger = toSVGIntegerOptionalInteger(other);
+    RawPtr<SVGIntegerOptionalInteger> otherIntegerOptionalInteger = toSVGIntegerOptionalInteger(other);
 
     m_firstInteger->setValue(m_firstInteger->value() + otherIntegerOptionalInteger->m_firstInteger->value());
     m_secondInteger->setValue(m_secondInteger->value() + otherIntegerOptionalInteger->m_secondInteger->value());
 }
 
-void SVGIntegerOptionalInteger::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
+void SVGIntegerOptionalInteger::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase> toAtEndOfDuration, SVGElement*)
 {
     ASSERT(animationElement);
 
-    RefPtrWillBeRawPtr<SVGIntegerOptionalInteger> fromInteger = toSVGIntegerOptionalInteger(from);
-    RefPtrWillBeRawPtr<SVGIntegerOptionalInteger> toInteger = toSVGIntegerOptionalInteger(to);
-    RefPtrWillBeRawPtr<SVGIntegerOptionalInteger> toAtEndOfDurationInteger = toSVGIntegerOptionalInteger(toAtEndOfDuration);
+    RawPtr<SVGIntegerOptionalInteger> fromInteger = toSVGIntegerOptionalInteger(from);
+    RawPtr<SVGIntegerOptionalInteger> toInteger = toSVGIntegerOptionalInteger(to);
+    RawPtr<SVGIntegerOptionalInteger> toAtEndOfDurationInteger = toSVGIntegerOptionalInteger(toAtEndOfDuration);
 
     float x = m_firstInteger->value();
     float y = m_secondInteger->value();
@@ -114,7 +114,7 @@ void SVGIntegerOptionalInteger::calculateAnimatedValue(SVGAnimationElement* anim
     m_secondInteger->setValue(static_cast<int>(roundf(y)));
 }
 
-float SVGIntegerOptionalInteger::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
+float SVGIntegerOptionalInteger::calculateDistance(RawPtr<SVGPropertyBase> other, SVGElement*)
 {
     // FIXME: Distance calculation is not possible for SVGIntegerOptionalInteger right now. We need the distance for every single value.
     return -1;

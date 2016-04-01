@@ -44,7 +44,7 @@ enum PropertyIsAnimValType {
     PropertyIsAnimVal
 };
 
-class SVGPropertyTearOffBase : public RefCountedWillBeGarbageCollectedFinalized<SVGPropertyTearOffBase> {
+class SVGPropertyTearOffBase : public GarbageCollectedFinalized<SVGPropertyTearOffBase> {
 public:
     virtual ~SVGPropertyTearOffBase() { }
 
@@ -113,7 +113,7 @@ private:
     // This raw pointer is safe since the SVG element is guaranteed to be kept
     // alive by a V8 wrapper.
     // See http://crbug.com/528275 for the detail.
-    RawPtrWillBeUntracedMember<SVGElement> m_contextElement;
+    UntracedMember<SVGElement> m_contextElement;
 
     PropertyIsAnimValType m_propertyIsAnimVal;
     bool m_isReadOnlyProperty;
@@ -131,7 +131,7 @@ public:
         return m_target.get();
     }
 
-    void setTarget(PassRefPtrWillBeRawPtr<Property> target)
+    void setTarget(RawPtr<Property> target)
     {
         m_target = target;
     }
@@ -148,7 +148,7 @@ public:
     }
 
 protected:
-    SVGPropertyTearOff(PassRefPtrWillBeRawPtr<Property> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    SVGPropertyTearOff(RawPtr<Property> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGPropertyTearOffBase(contextElement, propertyIsAnimVal, attributeName)
         , m_target(target)
     {
@@ -156,7 +156,7 @@ protected:
     }
 
 private:
-    RefPtrWillBeMember<Property> m_target;
+    Member<Property> m_target;
 };
 
 } // namespace blink

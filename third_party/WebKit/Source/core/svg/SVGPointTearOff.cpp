@@ -37,7 +37,7 @@
 
 namespace blink {
 
-SVGPointTearOff::SVGPointTearOff(PassRefPtrWillBeRawPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+SVGPointTearOff::SVGPointTearOff(RawPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGPoint>(target, contextElement, propertyIsAnimVal, attributeName)
 {
 }
@@ -64,7 +64,7 @@ void SVGPointTearOff::setY(float f, ExceptionState& exceptionState)
     commitChange();
 }
 
-PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGPointTearOff::matrixTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff> matrix)
+RawPtr<SVGPointTearOff> SVGPointTearOff::matrixTransform(RawPtr<SVGMatrixTearOff> matrix)
 {
     FloatPoint point = target()->matrixTransform(matrix->value());
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);

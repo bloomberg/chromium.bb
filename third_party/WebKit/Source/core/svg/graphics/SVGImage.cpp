@@ -70,7 +70,7 @@ SVGImage::~SVGImage()
 {
     if (m_page) {
         // Store m_page in a local variable, clearing m_page, so that SVGImageChromeClient knows we're destructed.
-        OwnPtrWillBeRawPtr<Page> currentPage = m_page.release();
+        RawPtr<Page> currentPage = m_page.release();
         // Break both the loader and view references to the frame
         currentPage->willBeDestroyed();
     }
@@ -469,7 +469,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // types.
         EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
 
-        DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FrameLoaderClient>, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
+        DEFINE_STATIC_LOCAL(Persistent<FrameLoaderClient>, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
 
         if (m_page) {
             toLocalFrame(m_page->mainFrame())->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml"),
@@ -488,7 +488,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // This will become an issue when SVGImage will be able to load other
         // SVGImage objects, but we're safe now, because SVGImage can only be
         // loaded by a top-level document.
-        OwnPtrWillBeRawPtr<Page> page;
+        RawPtr<Page> page;
         {
             TRACE_EVENT0("blink", "SVGImage::dataChanged::createPage");
             page = Page::create(pageClients);
@@ -509,7 +509,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
             }
         }
 
-        RefPtrWillBeRawPtr<LocalFrame> frame = nullptr;
+        RawPtr<LocalFrame> frame = nullptr;
         {
             TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
             frame = LocalFrame::create(dummyFrameLoaderClient.get(), &page->frameHost(), 0);

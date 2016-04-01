@@ -116,8 +116,8 @@ private:
     void drawInternal(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum,
         ImageClampingMode, const KURL&);
 
-    OwnPtrWillBePersistent<SVGImageChromeClient> m_chromeClient;
-    OwnPtrWillBePersistent<Page> m_page;
+    Persistent<SVGImageChromeClient> m_chromeClient;
+    Persistent<Page> m_page;
 
     // When an SVG image has no intrinsic size the size depends on the
     // default object size, which in turn depends on the
@@ -147,7 +147,7 @@ public:
     }
 private:
     Image* m_image;
-    RawPtrWillBeMember<ImageObserver> m_observer;
+    Member<ImageObserver> m_observer;
 };
 
 } // namespace blink

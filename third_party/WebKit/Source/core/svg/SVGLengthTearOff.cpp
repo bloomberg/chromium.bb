@@ -231,7 +231,7 @@ void SVGLengthTearOff::convertToSpecifiedUnits(unsigned short unitType, Exceptio
     commitChange();
 }
 
-SVGLengthTearOff::SVGLengthTearOff(PassRefPtrWillBeRawPtr<SVGLength> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+SVGLengthTearOff::SVGLengthTearOff(RawPtr<SVGLength> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGLength>(target, contextElement, propertyIsAnimVal, attributeName)
 {
 }

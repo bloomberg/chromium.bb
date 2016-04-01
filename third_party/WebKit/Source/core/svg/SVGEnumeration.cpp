@@ -40,9 +40,9 @@ SVGEnumerationBase::~SVGEnumerationBase()
 {
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGEnumerationBase::cloneForAnimation(const String& value) const
+RawPtr<SVGPropertyBase> SVGEnumerationBase::cloneForAnimation(const String& value) const
 {
-    RefPtrWillBeRawPtr<SVGEnumerationBase> svgEnumeration = clone();
+    RawPtr<SVGEnumerationBase> svgEnumeration = clone();
     svgEnumeration->setValueAsString(value);
     return svgEnumeration.release();
 }
@@ -80,12 +80,12 @@ SVGParsingError SVGEnumerationBase::setValueAsString(const String& string)
     return SVGParseStatus::ExpectedEnumeration;
 }
 
-void SVGEnumerationBase::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+void SVGEnumerationBase::add(RawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }
 
-void SVGEnumerationBase::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+void SVGEnumerationBase::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
     unsigned short fromEnumeration = animationElement->getAnimationMode() == ToAnimation ? m_value : toSVGEnumerationBase(from)->value();
@@ -94,7 +94,7 @@ void SVGEnumerationBase::calculateAnimatedValue(SVGAnimationElement* animationEl
     animationElement->animateDiscreteType<unsigned short>(percentage, fromEnumeration, toEnumeration, m_value);
 }
 
-float SVGEnumerationBase::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+float SVGEnumerationBase::calculateDistance(RawPtr<SVGPropertyBase>, SVGElement*)
 {
     // No paced animations for boolean.
     return -1;

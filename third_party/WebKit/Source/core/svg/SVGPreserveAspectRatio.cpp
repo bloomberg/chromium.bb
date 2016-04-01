@@ -41,9 +41,9 @@ void SVGPreserveAspectRatio::setDefault()
     m_meetOrSlice = SVG_MEETORSLICE_MEET;
 }
 
-PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> SVGPreserveAspectRatio::clone() const
+RawPtr<SVGPreserveAspectRatio> SVGPreserveAspectRatio::clone() const
 {
-    RefPtrWillBeRawPtr<SVGPreserveAspectRatio> preserveAspectRatio = create();
+    RawPtr<SVGPreserveAspectRatio> preserveAspectRatio = create();
 
     preserveAspectRatio->m_align = m_align;
     preserveAspectRatio->m_meetOrSlice = m_meetOrSlice;
@@ -379,25 +379,25 @@ String SVGPreserveAspectRatio::valueAsString() const
     return builder.toString();
 }
 
-void SVGPreserveAspectRatio::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
+void SVGPreserveAspectRatio::add(RawPtr<SVGPropertyBase> other, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }
 
-void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
 
     bool useToValue;
     animationElement->animateDiscreteType(percentage, false, true, useToValue);
 
-    RefPtrWillBeRawPtr<SVGPreserveAspectRatio> preserveAspectRatioToUse = useToValue ? toSVGPreserveAspectRatio(toValue) : toSVGPreserveAspectRatio(fromValue);
+    RawPtr<SVGPreserveAspectRatio> preserveAspectRatioToUse = useToValue ? toSVGPreserveAspectRatio(toValue) : toSVGPreserveAspectRatio(fromValue);
 
     m_align = preserveAspectRatioToUse->m_align;
     m_meetOrSlice = preserveAspectRatioToUse->m_meetOrSlice;
 }
 
-float SVGPreserveAspectRatio::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
+float SVGPreserveAspectRatio::calculateDistance(RawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
 {
     // No paced animations for SVGPreserveAspectRatio.
     return -1;

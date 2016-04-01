@@ -42,13 +42,13 @@ class SVGPath : public SVGPropertyBase {
 public:
     typedef void TearOffType;
 
-    static PassRefPtrWillBeRawPtr<SVGPath> create()
+    static RawPtr<SVGPath> create()
     {
-        return adoptRefWillBeNoop(new SVGPath());
+        return new SVGPath();
     }
-    static PassRefPtrWillBeRawPtr<SVGPath> create(PassRefPtrWillBeRawPtr<CSSPathValue> pathValue)
+    static RawPtr<SVGPath> create(RawPtr<CSSPathValue> pathValue)
     {
-        return adoptRefWillBeNoop(new SVGPath(pathValue));
+        return new SVGPath(pathValue);
     }
 
     ~SVGPath() override;
@@ -58,14 +58,14 @@ public:
     CSSPathValue* pathValue() const { return m_pathValue.get(); }
 
     // SVGPropertyBase:
-    PassRefPtrWillBeRawPtr<SVGPath> clone() const;
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    RawPtr<SVGPath> clone() const;
+    RawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
     String valueAsString() const override;
     SVGParsingError setValueAsString(const String&);
 
-    void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
+    void add(RawPtr<SVGPropertyBase>, SVGElement*) override;
+    void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> fromValue, RawPtr<SVGPropertyBase> toValue, RawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    float calculateDistance(RawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedPath; }
 
@@ -73,9 +73,9 @@ public:
 
 private:
     SVGPath();
-    explicit SVGPath(PassRefPtrWillBeRawPtr<CSSPathValue>);
+    explicit SVGPath(RawPtr<CSSPathValue>);
 
-    RefPtrWillBeMember<CSSPathValue> m_pathValue;
+    Member<CSSPathValue> m_pathValue;
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPath);

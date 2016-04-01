@@ -23,12 +23,12 @@
 
 namespace blink {
 
-void SVGString::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+void SVGString::add(RawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }
 
-void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, RawPtr<SVGPropertyBase> from, RawPtr<SVGPropertyBase> to, RawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
 
@@ -38,7 +38,7 @@ void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement, fl
     animationElement->animateDiscreteType<String>(percentage, fromString, toString, m_value);
 }
 
-float SVGString::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
+float SVGString::calculateDistance(RawPtr<SVGPropertyBase>, SVGElement*)
 {
     // No paced animations for strings.
     return -1;

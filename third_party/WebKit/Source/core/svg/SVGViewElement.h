@@ -35,7 +35,7 @@ class SVGViewElement final : public SVGElement,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGViewElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGViewElement);
 public:
     DECLARE_NODE_FACTORY(SVGViewElement);
 
@@ -55,7 +55,7 @@ private:
 
     bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-    RefPtrWillBeMember<SVGStaticStringList> m_viewTarget;
+    Member<SVGStaticStringList> m_viewTarget;
 };
 
 } // namespace blink

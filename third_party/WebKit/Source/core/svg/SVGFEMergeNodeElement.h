@@ -43,7 +43,7 @@ private:
 
     bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    Member<SVGAnimatedString> m_in1;
 };
 
 } // namespace blink

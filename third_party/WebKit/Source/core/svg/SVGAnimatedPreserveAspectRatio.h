@@ -40,13 +40,13 @@ namespace blink {
 class SVGAnimatedPreserveAspectRatio : public SVGAnimatedProperty<SVGPreserveAspectRatio>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedPreserveAspectRatio> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> initialValue)
+    static RawPtr<SVGAnimatedPreserveAspectRatio> create(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGPreserveAspectRatio> initialValue)
     {
-        return adoptRefWillBeNoop(new SVGAnimatedPreserveAspectRatio(contextElement, attributeName, initialValue));
+        return new SVGAnimatedPreserveAspectRatio(contextElement, attributeName, initialValue);
     }
 
 protected:
-    SVGAnimatedPreserveAspectRatio(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> initialValue)
+    SVGAnimatedPreserveAspectRatio(SVGElement* contextElement, const QualifiedName& attributeName, RawPtr<SVGPreserveAspectRatio> initialValue)
         : SVGAnimatedProperty<SVGPreserveAspectRatio>(contextElement, attributeName, initialValue)
     {
     }

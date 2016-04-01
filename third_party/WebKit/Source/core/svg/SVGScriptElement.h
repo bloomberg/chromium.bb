@@ -38,9 +38,9 @@ class SVGScriptElement final
     , public SVGURIReference
     , public ScriptLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGScriptElement);
+    USING_GARBAGE_COLLECTED_MIXIN(SVGScriptElement);
 public:
-    static PassRefPtrWillBeRawPtr<SVGScriptElement> create(Document&, bool wasInsertedByParser);
+    static RawPtr<SVGScriptElement> create(Document&, bool wasInsertedByParser);
 
     ScriptLoader* loader() const { return m_loader.get(); }
 
@@ -78,10 +78,10 @@ private:
 
     void dispatchLoadEvent() override;
 
-    PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    RawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
     bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
 
-    OwnPtrWillBeMember<ScriptLoader> m_loader;
+    Member<ScriptLoader> m_loader;
 };
 
 } // namespace blink

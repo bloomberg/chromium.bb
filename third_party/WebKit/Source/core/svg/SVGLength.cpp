@@ -53,14 +53,14 @@ DEFINE_TRACE(SVGLength)
     SVGPropertyBase::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<SVGLength> SVGLength::clone() const
+RawPtr<SVGLength> SVGLength::clone() const
 {
-    return adoptRefWillBeNoop(new SVGLength(*this));
+    return new SVGLength(*this);
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLength::cloneForAnimation(const String& value) const
+RawPtr<SVGPropertyBase> SVGLength::cloneForAnimation(const String& value) const
 {
-    RefPtrWillBeRawPtr<SVGLength> length = create();
+    RawPtr<SVGLength> length = create();
     length->m_unitMode = m_unitMode;
 
     if (length->setValueAsString(value) != SVGParseStatus::NoError)
@@ -137,7 +137,7 @@ SVGParsingError SVGLength::setValueAsString(const String& string)
     }
 
     CSSParserContext svgParserContext(SVGAttributeMode, 0);
-    RefPtrWillBeRawPtr<CSSValue> parsed = CSSParser::parseSingleValue(CSSPropertyX, string, svgParserContext);
+    RawPtr<CSSValue> parsed = CSSParser::parseSingleValue(CSSPropertyX, string, svgParserContext);
     if (!parsed || !parsed->isPrimitiveValue())
         return SVGParseStatus::ExpectedLength;
 
@@ -227,7 +227,7 @@ bool SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(const Qualifie
     return s_noNegativeValuesSet.contains(attrName);
 }
 
-void SVGLength::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGLength::add(RawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     SVGLengthContext lengthContext(contextElement);
     setValue(value(lengthContext) + toSVGLength(other)->value(lengthContext), lengthContext);
@@ -236,14 +236,14 @@ void SVGLength::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* c
 void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement,
     float percentage,
     unsigned repeatCount,
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue,
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue,
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue,
+    RawPtr<SVGPropertyBase> fromValue,
+    RawPtr<SVGPropertyBase> toValue,
+    RawPtr<SVGPropertyBase> toAtEndOfDurationValue,
     SVGElement* contextElement)
 {
-    RefPtrWillBeRawPtr<SVGLength> fromLength = toSVGLength(fromValue);
-    RefPtrWillBeRawPtr<SVGLength> toLength = toSVGLength(toValue);
-    RefPtrWillBeRawPtr<SVGLength> toAtEndOfDurationLength = toSVGLength(toAtEndOfDurationValue);
+    RawPtr<SVGLength> fromLength = toSVGLength(fromValue);
+    RawPtr<SVGLength> toLength = toSVGLength(toValue);
+    RawPtr<SVGLength> toAtEndOfDurationLength = toSVGLength(toAtEndOfDurationValue);
 
     SVGLengthContext lengthContext(contextElement);
     float animatedNumber = value(lengthContext);
@@ -257,10 +257,10 @@ void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement,
     m_value = CSSPrimitiveValue::create(animatedNumber, newUnit);
 }
 
-float SVGLength::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
+float SVGLength::calculateDistance(RawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
 {
     SVGLengthContext lengthContext(contextElement);
-    RefPtrWillBeRawPtr<SVGLength> toLength = toSVGLength(toValue);
+    RawPtr<SVGLength> toLength = toSVGLength(toValue);
 
     return fabsf(toLength->value(lengthContext) - value(lengthContext));
 }

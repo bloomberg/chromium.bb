@@ -19,7 +19,7 @@ namespace blink {
 // or the wrapped object and forwards the operation to it.)
 class SVGAnimatedHref final : public SVGAnimatedString {
 public:
-    static PassRefPtrWillBeRawPtr<SVGAnimatedHref> create(SVGElement* contextElement);
+    static RawPtr<SVGAnimatedHref> create(SVGElement* contextElement);
 
     SVGString* currentValue();
     const SVGString* currentValue() const;
@@ -42,7 +42,7 @@ private:
     const SVGAnimatedString* backingString() const;
     bool useXLink() const;
 
-    RefPtrWillBeMember<SVGAnimatedString> m_xlinkHref;
+    Member<SVGAnimatedString> m_xlinkHref;
 };
 
 } // namespace blink

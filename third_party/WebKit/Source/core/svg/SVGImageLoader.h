@@ -28,9 +28,9 @@ class SVGImageElement;
 
 class SVGImageLoader final : public ImageLoader {
 public:
-    static PassOwnPtrWillBeRawPtr<SVGImageLoader> create(SVGImageElement* element)
+    static RawPtr<SVGImageLoader> create(SVGImageElement* element)
     {
-        return adoptPtrWillBeNoop(new SVGImageLoader(element));
+        return new SVGImageLoader(element);
     }
 
 private:

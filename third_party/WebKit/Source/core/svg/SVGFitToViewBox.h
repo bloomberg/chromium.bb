@@ -34,14 +34,14 @@ namespace blink {
 
 class AffineTransform;
 
-class SVGFitToViewBox : public WillBeGarbageCollectedMixin {
+class SVGFitToViewBox : public GarbageCollectedMixin {
 public:
     enum PropertyMapPolicy {
         PropertyMapPolicyAdd,
         PropertyMapPolicySkip,
     };
 
-    static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>, float viewWidth, float viewHeight);
+    static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, RawPtr<SVGPreserveAspectRatio>, float viewWidth, float viewHeight);
 
     static bool isKnownAttribute(const QualifiedName&);
 
@@ -60,8 +60,8 @@ protected:
     void clearPreserveAspectRatio() { m_preserveAspectRatio = nullptr; }
 
 private:
-    RefPtrWillBeMember<SVGAnimatedRect> m_viewBox;
-    RefPtrWillBeMember<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+    Member<SVGAnimatedRect> m_viewBox;
+    Member<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
 };
 
 } // namespace blink

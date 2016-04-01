@@ -31,7 +31,7 @@ class Document;
 class QualifiedName;
 class SVGElement;
 
-class CORE_EXPORT SVGTests : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT SVGTests : public GarbageCollectedMixin {
 public:
     // JS API
     SVGStringListTearOff* requiredFeatures() { return m_requiredFeatures->tearOff(); }
@@ -48,9 +48,9 @@ protected:
     explicit SVGTests(SVGElement* contextElement);
 
 private:
-    RefPtrWillBeMember<SVGStaticStringList> m_requiredFeatures;
-    RefPtrWillBeMember<SVGStaticStringList> m_requiredExtensions;
-    RefPtrWillBeMember<SVGStaticStringList> m_systemLanguage;
+    Member<SVGStaticStringList> m_requiredFeatures;
+    Member<SVGStaticStringList> m_requiredExtensions;
+    Member<SVGStaticStringList> m_systemLanguage;
 };
 
 } // namespace blink
