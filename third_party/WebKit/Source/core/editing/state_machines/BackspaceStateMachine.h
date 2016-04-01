@@ -10,6 +10,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/Unicode.h"
+#include <iosfwd>
 
 namespace blink {
 
@@ -17,7 +18,7 @@ class CORE_EXPORT BackspaceStateMachine {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(BackspaceStateMachine);
 public:
-    BackspaceStateMachine() = default;
+    BackspaceStateMachine();
 
     // Prepares by feeding preceding text.
     // This method must not be called after feedFollowingCodeUnit().
@@ -27,20 +28,40 @@ public:
     TextSegmentationMachineState tellEndOfPrecedingText();
 
     // Find boundary offset by feeding following text.
-    // This method must be called after feedPrecedingCodeUnit() returns NeedsFollowingCodeUnit.
+    // This method must be called after feedPrecedingCodeUnit() returns
+    // NeedsFollowingCodeUnit.
     TextSegmentationMachineState feedFollowingCodeUnit(UChar codeUnit);
 
-    // Returns the next boundary offset. This method finalizes the state machine if it is not finished.
+    // Returns the next boundary offset. This method finalizes the state machine
+    // if it is not finished.
     int finalizeAndGetBoundaryOffset();
 
     // Resets the internal state to the initial state.
     void reset();
 
 private:
-    int m_codeUnitsToBeDeleted = 0;
+    enum class BackspaceState;
+    friend std::ostream& operator<<(std::ostream&, BackspaceState);
+
+    // Updates the internal state to the |newState| then return
+    // InternalState::NeedMoreCodeUnit.
+    TextSegmentationMachineState moveToNextState(BackspaceState newState);
+
+    // Update the internal state to BackspaceState::Finished, then return
+    // MachineState::Finished.
+    TextSegmentationMachineState finish();
 
     // Used for composing supplementary code point with surrogate pairs.
     UChar m_trailSurrogate = 0;
+
+    // The number of code units to be deleted.
+    int m_codeUnitsToBeDeleted = 0;
+
+    // The length of the previously seen variation selector.
+    int m_lastSeenVSCodeUnits = 0;
+
+    // The internal state.
+    BackspaceState m_state;
 };
 
 } // namespace blink
