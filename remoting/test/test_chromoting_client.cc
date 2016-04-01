@@ -250,6 +250,11 @@ void TestChromotingClient::DeliverHostMessage(
                     HostMessageReceived(message));
 }
 
+void TestChromotingClient::SetDesktopSize(const webrtc::DesktopSize& size,
+                      const webrtc::DesktopVector& dpi) {
+  VLOG(1) << "TestChromotingClient::SetDesktopSize() Called";
+}
+
 protocol::ClipboardStub* TestChromotingClient::GetClipboardStub() {
   VLOG(1) << "TestChromotingClient::GetClipboardStub() Called";
   return this;

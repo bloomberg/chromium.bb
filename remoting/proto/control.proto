@@ -81,3 +81,26 @@ message ExtensionMessage {
   // encoding.
   optional string data = 2;
 }
+
+message VideoTrackLayout {
+  // Name of the video track.
+  optional string track_name = 1;
+
+  // Position of the top left corner of the rectangle covered by the video
+  // track in DIPs (device independent pixels).
+  optional int32 position_x = 2;
+  optional int32 position_y = 3;
+
+  // Size of the area covered by the video track in DIPs.
+  optional int32 width = 4;
+  optional int32 height = 5;
+
+  // DPI of the screen.
+  optional int32 x_dpi = 6;
+  optional int32 y_dpi = 7;
+}
+
+message VideoLayout {
+  // Layout for each video track.
+  repeated VideoTrackLayout video_track = 1;
+}

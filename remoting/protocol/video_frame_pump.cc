@@ -122,10 +122,12 @@ void VideoFramePump::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
 
   captured_frame_timestamps_->capture_ended_time = base::TimeTicks::Now();
 
-  if (frame && !frame_size_.equals(frame->size())) {
+  if (frame && (!frame_size_.equals(frame->size()) ||
+                !frame_dpi_.equals(frame->dpi()))) {
     frame_size_ = frame->size();
+    frame_dpi_ = frame->dpi();
     if (!size_callback_.is_null())
-      size_callback_.Run(frame_size_);
+      size_callback_.Run(frame_size_, frame_dpi_);
   }
 
   // Even when |frame| is nullptr we still need to post it to the encode thread

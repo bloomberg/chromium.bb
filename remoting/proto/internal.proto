@@ -25,6 +25,7 @@ message ControlMessage {
   optional PairingRequest pairing_request = 7;
   optional PairingResponse pairing_response = 8;
   optional ExtensionMessage extension_message = 9;
+  optional VideoLayout video_layout = 10;
 }
 
 // Defines an event message on the event channel.

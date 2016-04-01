@@ -211,7 +211,8 @@ void ClientSessionTest::ConnectClientSession() {
 void ClientSessionTest::NotifyVideoSize() {
   connection_->last_video_stream()->size_callback().Run(
       webrtc::DesktopSize(protocol::FakeDesktopCapturer::kWidth,
-                          protocol::FakeDesktopCapturer::kHeight));
+                          protocol::FakeDesktopCapturer::kHeight),
+      webrtc::DesktopVector(kDefaultDpi, kDefaultDpi));
 }
 
 TEST_F(ClientSessionTest, DisableInputs) {

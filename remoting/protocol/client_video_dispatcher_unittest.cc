@@ -14,6 +14,7 @@
 #include "remoting/protocol/fake_stream_socket.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/message_serialization.h"
+#include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/stream_message_pipe_adapter.h"
 #include "remoting/protocol/video_stub.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,6 +49,7 @@ class ClientVideoDispatcherTest : public testing::Test,
   // Client side.
   FakeStreamChannelFactory client_channel_factory_;
   StreamMessageChannelFactoryAdapter channel_factory_adapter_;
+  MockClientStub client_stub_;
   ClientVideoDispatcher dispatcher_;
 
   // Host side.
@@ -66,7 +68,7 @@ ClientVideoDispatcherTest::ClientVideoDispatcherTest()
           &client_channel_factory_,
           base::Bind(&ClientVideoDispatcherTest::OnChannelError,
                      base::Unretained(this))),
-      dispatcher_(this) {
+      dispatcher_(this, &client_stub_) {
   dispatcher_.Init(&channel_factory_adapter_, this);
   base::RunLoop().RunUntilIdle();
   DCHECK(initialized_);
@@ -152,6 +154,37 @@ TEST_F(ClientVideoDispatcherTest, WithAcks) {
   // Verify that the Ack message has been received.
   ASSERT_EQ(1U, ack_messages_.size());
   EXPECT_EQ(kTestFrameId, ack_messages_[0]->frame_id());
+}
+
+// Verifies that the dispatcher properly synthesizes VideoLayout message when
+// screen size changes.
+TEST_F(ClientVideoDispatcherTest, VideoLayout) {
+  const int kScreenSize = 100;
+  const float kScaleFactor = 2.0;
+
+  VideoPacket packet;
+  packet.set_data(std::string());
+  packet.set_frame_id(42);
+  packet.mutable_format()->set_screen_width(kScreenSize);
+  packet.mutable_format()->set_screen_height(kScreenSize);
+  packet.mutable_format()->set_x_dpi(kDefaultDpi * kScaleFactor);
+  packet.mutable_format()->set_y_dpi(kDefaultDpi * kScaleFactor);
+
+  VideoLayout layout;
+  EXPECT_CALL(client_stub_, SetVideoLayout(testing::_))
+      .WillOnce(testing::SaveArg<0>(&layout));
+
+  // Send a VideoPacket and verify that the client receives it.
+  writer_.Write(SerializeAndFrameMessage(packet), base::Closure());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1, layout.video_track_size());
+  EXPECT_EQ(0, layout.video_track(0).position_x());
+  EXPECT_EQ(0, layout.video_track(0).position_y());
+  EXPECT_EQ(kScreenSize / kScaleFactor, layout.video_track(0).width());
+  EXPECT_EQ(kScreenSize / kScaleFactor, layout.video_track(0).height());
+  EXPECT_EQ(kDefaultDpi * kScaleFactor, layout.video_track(0).x_dpi());
+  EXPECT_EQ(kDefaultDpi * kScaleFactor, layout.video_track(0).y_dpi());
 }
 
 // Verify that Ack messages are sent in correct order.

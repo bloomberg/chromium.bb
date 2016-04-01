@@ -118,6 +118,8 @@ class ChromotingInstance : public ClientUserInterface,
   void SetPairingResponse(
       const protocol::PairingResponse& pairing_response) override;
   void DeliverHostMessage(const protocol::ExtensionMessage& message) override;
+  void SetDesktopSize(const webrtc::DesktopSize& size,
+                      const webrtc::DesktopVector& dpi) override;
   protocol::ClipboardStub* GetClipboardStub() override;
   protocol::CursorShapeStub* GetCursorShapeStub() override;
 
@@ -130,8 +132,6 @@ class ChromotingInstance : public ClientUserInterface,
   // PepperVideoRenderer::EventHandler interface.
   void OnVideoDecodeError() override;
   void OnVideoFirstFrameReceived() override;
-  void OnVideoSize(const webrtc::DesktopSize& size,
-                      const webrtc::DesktopVector& dpi) override;
   void OnVideoFrameDirtyRegion(
       const webrtc::DesktopRegion& dirty_region) override;
 

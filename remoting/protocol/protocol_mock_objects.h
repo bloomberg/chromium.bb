@@ -122,6 +122,7 @@ class MockClientStub : public ClientStub {
   MOCK_METHOD1(SetPairingResponse,
                void(const PairingResponse& pairing_response));
   MOCK_METHOD1(DeliverHostMessage, void(const ExtensionMessage& message));
+  MOCK_METHOD1(SetVideoLayout, void(const VideoLayout& layout));
 
   // ClipboardStub mock implementation.
   MOCK_METHOD1(InjectClipboardEvent, void(const ClipboardEvent& event));

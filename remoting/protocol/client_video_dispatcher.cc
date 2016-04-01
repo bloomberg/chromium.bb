@@ -11,7 +11,9 @@
 #include "net/socket/stream_socket.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"
+#include "remoting/proto/control.pb.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/video_stub.h"
@@ -27,10 +29,13 @@ struct ClientVideoDispatcher::PendingFrame {
   bool done;
 };
 
-ClientVideoDispatcher::ClientVideoDispatcher(VideoStub* video_stub)
+ClientVideoDispatcher::ClientVideoDispatcher(VideoStub* video_stub,
+                                             ClientStub* client_stub)
     : ChannelDispatcherBase(kVideoChannelName),
       video_stub_(video_stub),
+      client_stub_(client_stub),
       weak_factory_(this) {}
+
 ClientVideoDispatcher::~ClientVideoDispatcher() {}
 
 void ClientVideoDispatcher::OnIncomingMessage(
@@ -46,6 +51,43 @@ void ClientVideoDispatcher::OnIncomingMessage(
     video_stub_->ProcessVideoPacket(std::move(video_packet),
                                     base::Bind(&base::DoNothing));
     return;
+  }
+
+  bool resolution_changed = false;
+
+  if (video_packet->format().has_screen_width() &&
+      video_packet->format().has_screen_height()) {
+    webrtc::DesktopSize frame_size(video_packet->format().screen_width(),
+                                   video_packet->format().screen_height());
+    if (!screen_size_.equals(frame_size)) {
+      screen_size_ = frame_size;
+      resolution_changed = true;
+    }
+  }
+
+  if (video_packet->format().has_x_dpi() &&
+      video_packet->format().has_y_dpi()) {
+    webrtc::DesktopVector screen_dpi(video_packet->format().x_dpi(),
+                                     video_packet->format().y_dpi());
+    if (!screen_dpi_.equals(screen_dpi)) {
+      screen_dpi_ = screen_dpi;
+      resolution_changed = true;
+    }
+  }
+
+  // Simulate DesktopLayout message whenever screen size/resolution changes.
+  if (resolution_changed) {
+    VideoLayout layout;
+    VideoTrackLayout* video_track = layout.add_video_track();
+    video_track->set_position_x(0);
+    video_track->set_position_y(0);
+    video_track->set_width(screen_size_.width() * kDefaultDpi /
+                           screen_dpi_.x());
+    video_track->set_height(screen_size_.height() * kDefaultDpi /
+                            screen_dpi_.y());
+    video_track->set_x_dpi(screen_dpi_.x());
+    video_track->set_y_dpi(screen_dpi_.y());
+    client_stub_->SetVideoLayout(layout);
   }
 
   PendingFramesList::iterator pending_frame =

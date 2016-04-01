@@ -43,6 +43,12 @@ void HostControlDispatcher::DeliverHostMessage(
   message_pipe()->Send(&control_message, base::Closure());
 }
 
+void HostControlDispatcher::SetVideoLayout(const VideoLayout& layout) {
+  ControlMessage message;
+  message.mutable_video_layout()->CopyFrom(layout);
+  message_pipe()->Send(&message, base::Closure());
+}
+
 void HostControlDispatcher::InjectClipboardEvent(const ClipboardEvent& event) {
   ControlMessage message;
   message.mutable_clipboard_event()->CopyFrom(event);

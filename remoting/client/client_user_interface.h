@@ -11,6 +11,11 @@
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
 
+namespace webrtc {
+class DesktopSize;
+class DesktopVector;
+}  // namespace webrtc
+
 namespace remoting {
 
 namespace protocol {
@@ -47,6 +52,11 @@ class ClientUserInterface {
   // Deliver an extension message from the host to the client.
   virtual void DeliverHostMessage(
       const protocol::ExtensionMessage& message) = 0;
+
+  // Notify the client about screen dimensions. The |size| is in physical
+  // pixels.
+  virtual void SetDesktopSize(const webrtc::DesktopSize& size,
+                              const webrtc::DesktopVector& dpi) = 0;
 
   // Get the view's ClipboardStub implementation.
   virtual protocol::ClipboardStub* GetClipboardStub() = 0;

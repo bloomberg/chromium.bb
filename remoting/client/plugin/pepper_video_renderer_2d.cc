@@ -151,14 +151,6 @@ void PepperVideoRenderer2D::DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
     DCHECK(result) << "Couldn't bind the device context.";
   }
 
-
-  if (size_changed || !source_dpi_.equals(frame->dpi())) {
-    source_dpi_ = frame->dpi();
-
-    // Notify JavaScript of the change in source size.
-    event_handler_->OnVideoSize(source_size_, source_dpi_);
-  }
-
   // If Debug dirty region is enabled then emit it.
   if (debug_dirty_region_)
     event_handler_->OnVideoFrameDirtyRegion(frame->updated_region());

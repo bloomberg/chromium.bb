@@ -140,6 +140,8 @@ class ProtocolPerfTest
   void SetPairingResponse(
       const protocol::PairingResponse& pairing_response) override {}
   void DeliverHostMessage(const protocol::ExtensionMessage& message) override {}
+  void SetDesktopSize(const webrtc::DesktopSize& size,
+                      const webrtc::DesktopVector& dpi) override {}
   protocol::ClipboardStub* GetClipboardStub() override { return nullptr; }
   protocol::CursorShapeStub* GetCursorShapeStub() override {
     return &cursor_shape_stub_;

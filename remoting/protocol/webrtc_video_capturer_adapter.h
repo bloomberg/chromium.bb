@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/media/base/videocapturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
@@ -43,13 +44,11 @@ namespace protocol {
 class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
                                    public webrtc::DesktopCapturer::Callback {
  public:
-  typedef base::Callback<void(const webrtc::DesktopSize& size)> SizeCallback;
-
   explicit WebrtcVideoCapturerAdapter(
       scoped_ptr<webrtc::DesktopCapturer> capturer);
   ~WebrtcVideoCapturerAdapter() override;
 
-  void SetSizeCallback(const SizeCallback& size_callback);
+  void SetSizeCallback(const VideoStream::SizeCallback& size_callback);
   bool PauseCapturer(bool pause);
   base::WeakPtr<WebrtcVideoCapturerAdapter> GetWeakPtr();
 
@@ -76,7 +75,7 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
 
   scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
 
-  SizeCallback size_callback_;
+  VideoStream::SizeCallback size_callback_;
 
   // Timer to call CaptureNextFrame().
   scoped_ptr<base::RepeatingTimer> capture_timer_;

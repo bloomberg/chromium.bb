@@ -197,29 +197,11 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
   if (!packet->data().size())
     return;
 
-  bool resolution_changed = false;
-
   if (packet->format().has_screen_width() &&
       packet->format().has_screen_height()) {
-    webrtc::DesktopSize frame_size(packet->format().screen_width(),
-                                   packet->format().screen_height());
-    if (!frame_size_.equals(frame_size)) {
-      frame_size_ = frame_size;
-      resolution_changed = true;
-    }
+    frame_size_.set(packet->format().screen_width(),
+                    packet->format().screen_height());
   }
-
-  if (packet->format().has_x_dpi() && packet->format().has_y_dpi()) {
-    webrtc::DesktopVector frame_dpi(packet->format().x_dpi(),
-                                    packet->format().y_dpi());
-    if (!frame_dpi_.equals(frame_dpi)) {
-      frame_dpi_ = frame_dpi;
-      resolution_changed = true;
-    }
-  }
-
-  if (resolution_changed)
-    event_handler_->OnVideoSize(frame_size_, frame_dpi_);
 
   // Report the dirty region, for debugging, if requested.
   if (debug_dirty_region_) {

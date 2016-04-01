@@ -10,16 +10,19 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/base/constants.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 namespace protocol {
 
+class ClientStub;
 class VideoStub;
 
 class ClientVideoDispatcher : public ChannelDispatcherBase {
  public:
-  explicit ClientVideoDispatcher(VideoStub* video_stub);
+  ClientVideoDispatcher(VideoStub* video_stub, ClientStub* client_stub);
   ~ClientVideoDispatcher() override;
 
  private:
@@ -34,6 +37,11 @@ class ClientVideoDispatcher : public ChannelDispatcherBase {
   PendingFramesList pending_frames_;
 
   VideoStub* video_stub_;
+  ClientStub* client_stub_;
+
+  webrtc::DesktopSize screen_size_;
+  webrtc::DesktopVector screen_dpi_ =
+      webrtc::DesktopVector(kDefaultDpi, kDefaultDpi);
 
   base::WeakPtrFactory<ClientVideoDispatcher> weak_factory_;
 

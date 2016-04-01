@@ -82,9 +82,6 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
   // Size of the most recent source frame in pixels.
   webrtc::DesktopSize source_size_;
 
-  // Resolution of the most recent source frame dots-per-inch.
-  webrtc::DesktopVector source_dpi_;
-
   // Done callbacks for the frames that have been painted but not flushed.
   ScopedVector<base::ScopedClosureRunner> pending_frames_done_callbacks_;
 

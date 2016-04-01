@@ -40,10 +40,6 @@ class PepperVideoRenderer : public protocol::VideoRenderer {
     // Called when the first frame is received.
     virtual void OnVideoFirstFrameReceived() = 0;
 
-    // Called when stream size changes.
-    virtual void OnVideoSize(const webrtc::DesktopSize& size,
-                             const webrtc::DesktopVector& dpi) = 0;
-
     // Called with each frame's updated region, if EnableDebugDirtyRegion(true)
     // was called.
     virtual void OnVideoFrameDirtyRegion(

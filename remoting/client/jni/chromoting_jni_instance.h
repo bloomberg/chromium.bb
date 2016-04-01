@@ -108,6 +108,8 @@ class ChromotingJniInstance
   void SetCapabilities(const std::string& capabilities) override;
   void SetPairingResponse(const protocol::PairingResponse& response) override;
   void DeliverHostMessage(const protocol::ExtensionMessage& message) override;
+  void SetDesktopSize(const webrtc::DesktopSize& size,
+                      const webrtc::DesktopVector& dpi) override;
   protocol::ClipboardStub* GetClipboardStub() override;
   protocol::CursorShapeStub* GetCursorShapeStub() override;
 

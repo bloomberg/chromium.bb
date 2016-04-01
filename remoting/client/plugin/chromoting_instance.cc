@@ -341,21 +341,6 @@ void ChromotingInstance::OnVideoFirstFrameReceived() {
                         make_scoped_ptr(new base::DictionaryValue()));
 }
 
-void ChromotingInstance::OnVideoSize(const webrtc::DesktopSize& size,
-                                     const webrtc::DesktopVector& dpi) {
-  mouse_input_filter_.set_output_size(size);
-  touch_input_scaler_.set_output_size(size);
-
-  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  data->SetInteger("width", size.width());
-  data->SetInteger("height", size.height());
-  if (dpi.x())
-    data->SetInteger("x_dpi", dpi.x());
-  if (dpi.y())
-    data->SetInteger("y_dpi", dpi.y());
-  PostLegacyJsonMessage("onDesktopSize", std::move(data));
-}
-
 void ChromotingInstance::OnVideoFrameDirtyRegion(
     const webrtc::DesktopRegion& dirty_region) {
   scoped_ptr<base::ListValue> rects_value(new base::ListValue());
@@ -487,6 +472,21 @@ void ChromotingInstance::DeliverHostMessage(
   data->SetString("type", message.type());
   data->SetString("data", message.data());
   PostLegacyJsonMessage("extensionMessage", std::move(data));
+}
+
+void ChromotingInstance::SetDesktopSize(const webrtc::DesktopSize& size,
+                                        const webrtc::DesktopVector& dpi) {
+  DCHECK(!dpi.is_zero());
+
+  mouse_input_filter_.set_output_size(size);
+  touch_input_scaler_.set_output_size(size);
+
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetInteger("width", size.width());
+  data->SetInteger("height", size.height());
+  data->SetInteger("x_dpi", dpi.x());
+  data->SetInteger("y_dpi", dpi.y());
+  PostLegacyJsonMessage("onDesktopSize", std::move(data));
 }
 
 void ChromotingInstance::FetchSecretFromDialog(

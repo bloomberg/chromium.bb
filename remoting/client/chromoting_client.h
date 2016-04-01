@@ -84,6 +84,7 @@ class ChromotingClient : public SignalStrategy::Listener,
   void SetPairingResponse(
       const protocol::PairingResponse& pairing_response) override;
   void DeliverHostMessage(const protocol::ExtensionMessage& message) override;
+  void SetVideoLayout(const protocol::VideoLayout& layout) override;
 
   // ClipboardStub implementation for receiving clipboard data from host.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;

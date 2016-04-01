@@ -13,6 +13,7 @@
 
 namespace webrtc {
 class DesktopSize;
+class DesktopVector;
 }  // namespace webrtc
 
 namespace remoting {
@@ -20,8 +21,11 @@ namespace protocol {
 
 class VideoStream {
  public:
-  // Callback used to notify about screen size changes.
-  typedef base::Callback<void(const webrtc::DesktopSize& size)> SizeCallback;
+  // Callback used to notify about screen size changes. The size must be
+  // specified in DIPs.
+  typedef base::Callback<void(const webrtc::DesktopSize& size,
+                              const webrtc::DesktopVector& dpi)>
+      SizeCallback;
 
   VideoStream() {}
   virtual ~VideoStream() {}

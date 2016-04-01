@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "remoting/base/capabilities.h"
+#include "remoting/base/constants.h"
 #include "remoting/client/audio_decode_scheduler.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/client_context.h"
@@ -22,6 +23,7 @@
 #include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/webrtc_connection_to_host.h"
 #include "remoting/signaling/jid_util.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
 
@@ -145,6 +147,27 @@ void ChromotingClient::DeliverHostMessage(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   user_interface_->DeliverHostMessage(message);
+}
+
+void ChromotingClient::SetVideoLayout(const protocol::VideoLayout& layout) {
+  int num_video_tracks = layout.video_track_size();
+  if (num_video_tracks < 1) {
+    LOG(ERROR) << "Received VideoLayout message with 0 tracks.";
+    return;
+  }
+
+  if (num_video_tracks > 2) {
+    LOG(WARNING) << "Received VideoLayout message with " << num_video_tracks
+                 << " tracks. Only one track is supported.";
+  }
+
+  const protocol::VideoTrackLayout& track_layout = layout.video_track(0);
+  int x_dpi = track_layout.has_x_dpi() ? track_layout.x_dpi() : kDefaultDpi;
+  int y_dpi = track_layout.has_y_dpi() ? track_layout.y_dpi() : kDefaultDpi;
+  user_interface_->SetDesktopSize(
+      webrtc::DesktopSize(track_layout.width() * x_dpi / kDefaultDpi,
+                          track_layout.height() * y_dpi / kDefaultDpi),
+      webrtc::DesktopVector(x_dpi, y_dpi));
 }
 
 void ChromotingClient::InjectClipboardEvent(

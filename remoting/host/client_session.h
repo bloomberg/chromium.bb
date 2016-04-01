@@ -144,7 +144,8 @@ class ClientSession
   // Creates a proxy for sending clipboard events to the client.
   scoped_ptr<protocol::ClipboardStub> CreateClipboardProxy();
 
-  void OnScreenSizeChanged(const webrtc::DesktopSize& size);
+  void OnScreenSizeChanged(const webrtc::DesktopSize& size,
+                           const webrtc::DesktopVector& dpi);
 
   EventHandler* event_handler_;
 

@@ -20,6 +20,7 @@ namespace protocol {
 class Capabilities;
 class ExtensionMessage;
 class PairingResponse;
+class VideoLayout;
 
 class ClientStub : public ClipboardStub,
                    public CursorShapeStub {
@@ -35,6 +36,9 @@ class ClientStub : public ClipboardStub,
 
   // Deliver an extension message from the host to the client.
   virtual void DeliverHostMessage(const ExtensionMessage& message) = 0;
+
+  // Sets video layout.
+  virtual void SetVideoLayout(const VideoLayout& video_layout) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientStub);

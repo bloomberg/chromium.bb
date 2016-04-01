@@ -19,6 +19,8 @@ extern const char kVideoChannelName[];
 // MIME types for the clipboard.
 extern const char kMimeTypeTextUtf8[];
 
+const int kDefaultDpi = 96;
+
 }  // namespace remoting
 
 #endif  // REMOTING_BASE_CONSTANTS_H_

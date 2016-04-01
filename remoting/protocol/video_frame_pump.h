@@ -167,6 +167,7 @@ class VideoFramePump : public VideoStream,
 
   SizeCallback size_callback_;
   webrtc::DesktopSize frame_size_;
+  webrtc::DesktopVector frame_dpi_;
 
   // Timer used to ensure that we send empty keep-alive frames to the client
   // even when the video stream is paused or encoder is busy.

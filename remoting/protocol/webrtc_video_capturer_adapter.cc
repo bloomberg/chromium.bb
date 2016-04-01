@@ -30,7 +30,7 @@ WebrtcVideoCapturerAdapter::~WebrtcVideoCapturerAdapter() {
 }
 
 void WebrtcVideoCapturerAdapter::SetSizeCallback(
-    const SizeCallback& size_callback) {
+    const VideoStream::SizeCallback& size_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   size_callback_ = size_callback;
 }
@@ -169,7 +169,7 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
   if (!yuv_frame_ || yuv_frame_->width() != width ||
       yuv_frame_->height() != height) {
     if (!size_callback_.is_null())
-      size_callback_.Run(frame->size());
+      size_callback_.Run(frame->size(), frame->dpi());
 
     yuv_frame_ = new rtc::RefCountedObject<webrtc::I420Buffer>(width, height);
     // Set updated_region so the whole frame is converted to YUV below.

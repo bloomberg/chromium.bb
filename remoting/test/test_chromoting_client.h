@@ -85,6 +85,8 @@ class TestChromotingClient : public ClientUserInterface,
   void SetPairingResponse(
       const protocol::PairingResponse& pairing_response) override;
   void DeliverHostMessage(const protocol::ExtensionMessage& message) override;
+  void SetDesktopSize(const webrtc::DesktopSize& size,
+                      const webrtc::DesktopVector& dpi) override;
   protocol::ClipboardStub* GetClipboardStub() override;
   protocol::CursorShapeStub* GetCursorShapeStub() override;
 

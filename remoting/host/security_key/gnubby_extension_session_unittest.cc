@@ -65,6 +65,8 @@ class TestClientStub : public protocol::ClientStub {
     run_loop_->Quit();
   }
 
+  void SetVideoLayout(const protocol::VideoLayout& layout) override {}
+
   // protocol::ClipboardStub implementation.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override {}
 

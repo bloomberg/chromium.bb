@@ -350,6 +350,12 @@ void ChromotingJniInstance::DeliverHostMessage(
                             message.data()));
 }
 
+void ChromotingJniInstance::SetDesktopSize(const webrtc::DesktopSize& size,
+                                           const webrtc::DesktopVector& dpi) {
+  // JniFrameConsumer get size from the frames and it doesn't use DPI, so this
+  // call can be ignored.
+}
+
 protocol::ClipboardStub* ChromotingJniInstance::GetClipboardStub() {
   return this;
 }

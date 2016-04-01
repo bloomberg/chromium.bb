@@ -12,6 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "remoting/base/capabilities.h"
+#include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/audio_encoder_opus.h"
@@ -33,9 +34,6 @@
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_frame_pump.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
-
-// Default DPI to assume for old clients that use notifyClientDimensions.
-const int kDefaultDPI = 96;
 
 namespace remoting {
 
@@ -133,7 +131,7 @@ void ClientSession::NotifyClientResolution(
 
   ScreenResolution client_resolution(
       webrtc::DesktopSize(resolution.dips_width(), resolution.dips_height()),
-      webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
+      webrtc::DesktopVector(kDefaultDpi, kDefaultDpi));
 
   // Try to match the client's resolution.
   screen_controls_->SetScreenResolution(client_resolution);
@@ -458,10 +456,25 @@ scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {
                                          base::ThreadTaskRunnerHandle::Get()));
 }
 
-void ClientSession::OnScreenSizeChanged(const webrtc::DesktopSize& size) {
+void ClientSession::OnScreenSizeChanged(const webrtc::DesktopSize& size,
+                                        const webrtc::DesktopVector& dpi) {
   DCHECK(CalledOnValidThread());
+
   mouse_clamping_filter_.set_input_size(size);
   mouse_clamping_filter_.set_output_size(size);
+
+  if (connection_->session()->config().protocol() ==
+      protocol::SessionConfig::Protocol::WEBRTC) {
+    protocol::VideoLayout layout;
+    protocol::VideoTrackLayout* video_track = layout.add_video_track();
+    video_track->set_position_x(0);
+    video_track->set_position_y(0);
+    video_track->set_width(size.width() * kDefaultDpi / dpi.x());
+    video_track->set_height(size.height() * kDefaultDpi / dpi.y());
+    video_track->set_x_dpi(dpi.x());
+    video_track->set_y_dpi(dpi.y());
+    connection_->client_stub()->SetVideoLayout(layout);
+  }
 }
 
 }  // namespace remoting
