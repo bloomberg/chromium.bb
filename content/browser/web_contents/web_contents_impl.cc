@@ -4688,9 +4688,12 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
   last_dialog_suppressed_ = dialog_was_suppressed;
 
   if (is_showing_before_unload_dialog_ && !success) {
-    if (rfh)
+    // It is possible for the current RenderFrameHost to have changed in the
+    // meantime.  Do not reset the navigation state in that case.
+    if (rfh && rfh == rfh->frame_tree_node()->current_frame_host()) {
       rfh->frame_tree_node()->BeforeUnloadCanceled();
-    controller_.DiscardNonCommittedEntries();
+      controller_.DiscardNonCommittedEntries();
+    }
 
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       BeforeUnloadDialogCancelled());

@@ -7,3 +7,4 @@
 -SessionHistoryTest.FrameBackForward
 -SessionHistoryTest.FrameFormBackForward
 -SitePerProcessIgnoreCertErrorsBrowserTest.CrossSiteRedirectCertificateStore
+-WebContentsImplBrowserTest.NoResetOnBeforeUnloadCanceledOnCommit

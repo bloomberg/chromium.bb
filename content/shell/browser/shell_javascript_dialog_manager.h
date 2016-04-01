@@ -46,6 +46,9 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
   void set_dialog_request_callback(const base::Closure& callback) {
     dialog_request_callback_ = callback;
   }
+  void set_should_proceed_on_beforeunload(bool proceed) {
+    should_proceed_on_beforeunload_ = proceed;
+  }
 
  private:
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -56,6 +59,12 @@ class ShellJavaScriptDialogManager : public JavaScriptDialogManager {
 #endif
 
   base::Closure dialog_request_callback_;
+
+  // Whether to automatically proceed when asked to display a BeforeUnload
+  // dialog.
+  bool should_proceed_on_beforeunload_;
+
+  DialogClosedCallback before_unload_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellJavaScriptDialogManager);
 };

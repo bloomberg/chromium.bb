@@ -29,10 +29,35 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "content/test/test_frame_navigation_observer.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
+
+namespace {
+
+// Helper class used by the TestNavigationManager to pause navigations.
+class TestNavigationManagerThrottle : public NavigationThrottle {
+ public:
+  TestNavigationManagerThrottle(NavigationHandle* handle,
+                                base::Closure on_will_start_request_closure)
+      : NavigationThrottle(handle),
+        on_will_start_request_closure_(on_will_start_request_closure) {}
+  ~TestNavigationManagerThrottle() override {}
+
+ private:
+  // NavigationThrottle implementation.
+  NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            on_will_start_request_closure_);
+    return NavigationThrottle::DEFER;
+  }
+
+  base::Closure on_will_start_request_closure_;
+};
+
+}  // namespace
 
 void NavigateFrameToURL(FrameTreeNode* node, const GURL& url) {
   TestFrameNavigationObserver observer(node);
@@ -41,6 +66,13 @@ void NavigateFrameToURL(FrameTreeNode* node, const GURL& url) {
   params.frame_tree_node_id = node->frame_tree_node_id();
   node->navigator()->GetController()->LoadURLWithParams(params);
   observer.Wait();
+}
+
+void SetShouldProceedOnBeforeUnload(Shell* shell, bool proceed) {
+  ShellJavaScriptDialogManager* manager =
+      static_cast<ShellJavaScriptDialogManager*>(
+          shell->GetJavaScriptDialogManager(shell->web_contents()));
+  manager->set_should_proceed_on_beforeunload(proceed);
 }
 
 FrameTreeVisualizer::FrameTreeVisualizer() {
@@ -325,6 +357,65 @@ void NavigationStallDelegate::RequestBeginning(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (request->url() == url_)
     throttles->push_back(new HttpRequestStallThrottle);
+}
+
+TestNavigationManager::TestNavigationManager(WebContents* web_contents,
+                                             const GURL& url)
+    : WebContentsObserver(web_contents),
+      url_(url),
+      navigation_paused_(false),
+      handle_(nullptr),
+      weak_factory_(this) {}
+
+TestNavigationManager::~TestNavigationManager() {}
+
+void TestNavigationManager::WaitForWillStartRequest() {
+  if (navigation_paused_)
+    return;
+  loop_runner_ = new MessageLoopRunner();
+  loop_runner_->Run();
+  loop_runner_ = nullptr;
+}
+
+void TestNavigationManager::ResumeNavigation() {
+  if (!navigation_paused_ || !handle_)
+    return;
+  navigation_paused_ = false;
+  handle_->Resume();
+}
+
+void TestNavigationManager::WaitForNavigationFinished() {
+  if (!handle_)
+    return;
+  loop_runner_ = new MessageLoopRunner();
+  loop_runner_->Run();
+  loop_runner_ = nullptr;
+}
+
+void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
+  if (handle_ || handle->GetURL() != url_)
+    return;
+
+  handle_ = handle;
+  scoped_ptr<NavigationThrottle> throttle(new TestNavigationManagerThrottle(
+      handle_, base::Bind(&TestNavigationManager::OnWillStartRequest,
+                          weak_factory_.GetWeakPtr())));
+  handle_->RegisterThrottleForTesting(std::move(throttle));
+}
+
+void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
+  if (handle != handle_)
+    return;
+  handle_ = nullptr;
+  navigation_paused_ = false;
+  if (loop_runner_)
+    loop_runner_->Quit();
+}
+
+void TestNavigationManager::OnWillStartRequest() {
+  navigation_paused_ = true;
+  if (loop_runner_)
+    loop_runner_->Quit();
 }
 
 }  // namespace content

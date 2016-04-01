@@ -815,4 +815,50 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
   }
 }
 
+// TODO(clamy): Make the test work on Windows and on Mac. On Mac and Windows,
+// there seem to be an issue with the ShellJavascriptDialogManager.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_NoResetOnBeforeUnloadCanceledOnCommit \
+  DISABLED_NoResetOnBeforeUnloadCanceledOnCommit
+#else
+#define MAYBE_NoResetOnBeforeUnloadCanceledOnCommit \
+  NoResetOnBeforeUnloadCanceledOnCommit
+#endif
+// Test that if a BeforeUnload dialog is destroyed due to the commit of a
+// cross-site navigation, it will not reset the loading state.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MAYBE_NoResetOnBeforeUnloadCanceledOnCommit) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kStartURL(
+      embedded_test_server()->GetURL("/hang_before_unload.html"));
+  const GURL kCrossSiteURL(
+      embedded_test_server()->GetURL("bar.com", "/title1.html"));
+
+  // Navigate to a first web page with a BeforeUnload event listener.
+  EXPECT_TRUE(NavigateToURL(shell(), kStartURL));
+
+  // Start a cross-site navigation that will not commit for the moment.
+  TestNavigationManager cross_site_delayer(shell()->web_contents(),
+                                           kCrossSiteURL);
+  shell()->LoadURL(kCrossSiteURL);
+  cross_site_delayer.WaitForWillStartRequest();
+
+  // Click on a link in the page. This will show the BeforeUnload dialog.
+  // Ensure the dialog is not dismissed, which will cause it to still be
+  // present when the cross-site navigation later commits.
+  // Note: the javascript function executed will not do the link click but
+  // schedule it for afterwards. Since the BeforeUnload event is synchronous,
+  // clicking on the link right away would cause the ExecuteScript to never
+  // return.
+  SetShouldProceedOnBeforeUnload(shell(), false);
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "clickLinkSoon()"));
+  WaitForAppModalDialog(shell());
+
+  // Have the cross-site navigation commit. The main RenderFrameHost should
+  // still be loading after that.
+  cross_site_delayer.ResumeNavigation();
+  cross_site_delayer.WaitForNavigationFinished();
+  EXPECT_TRUE(shell()->web_contents()->IsLoading());
+}
+
 }  // namespace content
