@@ -10,6 +10,7 @@ import cStringIO
 import os
 
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -165,6 +166,13 @@ platform_pkg_test() {
     run_case(self._MULTILINE_PLATFORM, True)
     run_case(self._SINGLE_LINE_TEST, True)
 
+  def testCheckHasTestWithoutEbuild(self):
+    """Test CheckHasTest on a package without ebuild config file"""
+    package_name = 'chromeos-base/temp_mypackage'
+    package_path = os.path.join(self.tempdir, package_name)
+    os.makedirs(package_path)
+    with self.assertRaises(failures_lib.PackageBuildFailure):
+      portage_util._CheckHasTest(self.tempdir, package_name)
 
 class ProjectAndPathTest(cros_test_lib.MockTempDirTestCase):
   """Project and Path related tests."""

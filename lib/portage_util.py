@@ -18,6 +18,7 @@ import shutil
 import sys
 
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
@@ -1472,7 +1473,7 @@ def FindPackageNameMatches(pkg_str, board=None,
 
 
 def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
-                         extra_env=None):
+                         extra_env=None, error_code_ok=True):
   """Returns a path to an ebuild responsible for package matching |pkg_str|.
 
   Args:
@@ -1481,6 +1482,9 @@ def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
     include_masked: True iff we should include masked ebuilds in our query.
     extra_env: optional dictionary of extra string/string pairs to use as the
       environment of equery command.
+    error_code_ok: If true, do not raise an exception when RunCommand returns
+      a non-zero exit code. Instead, return the CommandResult object containing
+      the exit code.
 
   Returns:
     Path to ebuild for this package.
@@ -1491,7 +1495,8 @@ def FindEbuildForPackage(pkg_str, sysroot, include_masked=False,
   cmd += [pkg_str]
 
   result = cros_build_lib.RunCommand(cmd, extra_env=extra_env, print_cmd=False,
-                                     capture_output=True, error_code_ok=True)
+                                     capture_output=True,
+                                     error_code_ok=error_code_ok)
 
   if result.returncode:
     return None
@@ -1605,8 +1610,17 @@ def _CheckHasTest(cp, sysroot):
 
   Returns:
     |cp| if the ebuild for |cp| defines a test stanza, None otherwise.
+
+  Raises:
+    raise failures_lib.PackageBuildFailure if FindEbuildForPackage
+    raises a RunCommandError
   """
-  ebuild = EBuild(FindEbuildForPackage(cp, sysroot))
+  try:
+    path = FindEbuildForPackage(cp, sysroot, error_code_ok=False)
+  except cros_build_lib.RunCommandError as e:
+    logging.error('FindEbuildForPackage error %s', e)
+    raise failures_lib.PackageBuildFailure(e, 'equery', cp)
+  ebuild = EBuild(path)
   return cp if ebuild.has_test else None
 
 
