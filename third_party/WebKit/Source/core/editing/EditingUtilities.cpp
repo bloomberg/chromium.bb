@@ -1402,7 +1402,7 @@ Position leadingWhitespacePosition(const Position& position, TextAffinity affini
         return Position();
     if (enclosingBlockFlowElement(*anchorNode) != enclosingBlockFlowElement(*position.anchorNode()))
         return Position();
-    if (!anchorNode->isTextNode())
+    if (option == NotConsiderNonCollapsibleWhitespace && anchorNode->layoutObject() && !anchorNode->layoutObject()->style()->collapseWhiteSpace())
         return Position();
     const String& string = toText(anchorNode)->data();
     const UChar previousCharacter = string[prev.computeOffsetInContainerNode()];
