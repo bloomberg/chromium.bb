@@ -147,7 +147,15 @@ bool ScrollAnimator::willAnimateToOffset(const FloatPoint& targetPos)
     if (m_runState == RunState::PostAnimationCleanup)
         resetAnimationState();
 
-    if (m_animationCurve && m_runState != RunState::WaitingToCancelOnCompositor) {
+    if (m_runState == RunState::WaitingToCancelOnCompositor) {
+        // Ignore user scroll if WaitingToCancelOnCompositor. Can be in this
+        // state when holding down an arrow.
+        // TODO(ymalik): Handle this case by either updating the target on the
+        // current scroll or starting a new animation (see crbug.com/599876).
+        return true;
+    }
+
+    if (m_animationCurve) {
         if ((targetPos - m_targetOffset).isZero())
             return true;
 

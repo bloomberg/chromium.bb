@@ -81,6 +81,7 @@ protected:
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, MainThreadStates);
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, AnimatedScrollTakeover);
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingAnimationResetsState);
+    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingCompositorAnimation);
 
     enum class RunState {
         // No animation.
