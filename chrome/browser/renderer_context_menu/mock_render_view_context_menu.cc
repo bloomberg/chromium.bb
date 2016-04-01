@@ -4,12 +4,15 @@
 
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "content/public/browser/browser_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 MockRenderViewContextMenu::MockMenuItem::MockMenuItem()
     : command_id(0), enabled(false), checked(false), hidden(true) {}
@@ -103,6 +106,12 @@ void MockRenderViewContextMenu::UpdateMenuItem(int command_id,
   }
 
   FAIL() << "Menu observer is trying to change a menu item it doesn't own.";
+}
+
+void MockRenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
+  AddCheckItem(
+      IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
 }
 
 content::RenderViewHost* MockRenderViewContextMenu::GetRenderViewHost() const {

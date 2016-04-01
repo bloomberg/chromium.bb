@@ -4,11 +4,14 @@
 
 #include "chrome/browser/renderer_context_menu/spelling_options_submenu_observer.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_member.h"
@@ -29,6 +32,11 @@ SpellingOptionsSubMenuObserver::SpellingOptionsSubMenuObserver(
       submenu_model_(delegate),
       language_group_id_(group_id),
       num_selected_dictionaries_(0) {
+  if (proxy_ && proxy_->GetBrowserContext()) {
+    Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
+    use_spelling_service_.Init(prefs::kSpellCheckUseSpellingService,
+                               profile->GetPrefs());
+  }
   DCHECK(proxy_);
 }
 
@@ -80,9 +88,8 @@ void SpellingOptionsSubMenuObserver::InitMenu(
 
   // Add a check item 'Ask Google for spelling suggestions'. This item is
   // handled in SpellingMenuObserver.
-  submenu_model_.AddCheckItem(
-      IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
+  RenderViewContextMenu::AddSpellCheckServiceItem(
+      &submenu_model_, use_spelling_service_.GetValue());
 
   proxy_->AddSubMenu(
       IDC_SPELLCHECK_MENU,

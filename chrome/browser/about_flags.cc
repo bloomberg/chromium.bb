@@ -1830,6 +1830,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_IME_MENU_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kOptInImeMenu)},
 #endif
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
+    {"enable-google-branded-context-menu",
+     IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_NAME,
+     IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_DESCRIPTION, kOsDesktop,
+     SINGLE_VALUE_TYPE(switches::kEnableGoogleBrandedContextMenu)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
