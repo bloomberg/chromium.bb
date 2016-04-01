@@ -61,6 +61,8 @@ static const char kStackFirstLineKey[] = ": S 0 ";
 static const char kArmArchitecture[] = "arm";
 static const char kArm64Architecture[] = "arm64";
 static const char kX86Architecture[] = "x86";
+static const char kMipsArchitecture[] = "mips";
+static const char kMips64Architecture[] = "mips64";
 static const char kGpuUnknown[] = "UNKNOWN";
 
 template<typename T>
@@ -128,6 +130,18 @@ void MicrodumpContext::SetContextARM64(MDRawContextARM64* arm64) {
 void MicrodumpContext::SetContextX86(MDRawContextX86* x86) {
   DumpContext::SetContextFlags(MD_CONTEXT_X86);
   DumpContext::SetContextX86(x86);
+  valid_ = true;
+}
+
+void MicrodumpContext::SetContextMIPS(MDRawContextMIPS* mips) {
+  DumpContext::SetContextFlags(MD_CONTEXT_MIPS);
+  DumpContext::SetContextMIPS(mips);
+  valid_ = true;
+}
+
+void MicrodumpContext::SetContextMIPS64(MDRawContextMIPS* mips64) {
+  DumpContext::SetContextFlags(MD_CONTEXT_MIPS64);
+  DumpContext::SetContextMIPS(mips64);
   valid_ = true;
 }
 
@@ -281,8 +295,9 @@ Microdump::Microdump(const string& contents)
       std::vector<uint8_t> cpu_state_raw = ParseHexBuf(cpu_state_str);
       if (strcmp(arch.c_str(), kArmArchitecture) == 0) {
         if (cpu_state_raw.size() != sizeof(MDRawContextARM)) {
-          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size() <<
-              " bytes instead of " << sizeof(MDRawContextARM) << std::endl;
+          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size()
+                    << " bytes instead of " << sizeof(MDRawContextARM)
+                    << std::endl;
           continue;
         }
         MDRawContextARM* arm = new MDRawContextARM();
@@ -290,8 +305,9 @@ Microdump::Microdump(const string& contents)
         context_->SetContextARM(arm);
       } else if (strcmp(arch.c_str(), kArm64Architecture) == 0) {
         if (cpu_state_raw.size() != sizeof(MDRawContextARM64)) {
-          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size() <<
-              " bytes instead of " << sizeof(MDRawContextARM64) << std::endl;
+          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size()
+                    << " bytes instead of " << sizeof(MDRawContextARM64)
+                    << std::endl;
           continue;
         }
         MDRawContextARM64* arm = new MDRawContextARM64();
@@ -299,13 +315,34 @@ Microdump::Microdump(const string& contents)
         context_->SetContextARM64(arm);
       } else if (strcmp(arch.c_str(), kX86Architecture) == 0) {
         if (cpu_state_raw.size() != sizeof(MDRawContextX86)) {
-          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size() <<
-              " bytes instead of " << sizeof(MDRawContextX86) << std::endl;
+          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size()
+                    << " bytes instead of " << sizeof(MDRawContextX86)
+                    << std::endl;
           continue;
         }
         MDRawContextX86* x86 = new MDRawContextX86();
         memcpy(x86, &cpu_state_raw[0], cpu_state_raw.size());
         context_->SetContextX86(x86);
+      } else if (strcmp(arch.c_str(), kMipsArchitecture) == 0) {
+        if (cpu_state_raw.size() != sizeof(MDRawContextMIPS)) {
+          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size()
+                    << " bytes instead of " << sizeof(MDRawContextMIPS)
+                    << std::endl;
+          continue;
+        }
+        MDRawContextMIPS* mips = new MDRawContextMIPS();
+        memcpy(mips, &cpu_state_raw[0], cpu_state_raw.size());
+        context_->SetContextMIPS(mips);
+      } else if (strcmp(arch.c_str(), kMips64Architecture) == 0) {
+        if (cpu_state_raw.size() != sizeof(MDRawContextMIPS)) {
+          std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size()
+                    << " bytes instead of " << sizeof(MDRawContextMIPS)
+                    << std::endl;
+          continue;
+        }
+        MDRawContextMIPS* mips64 = new MDRawContextMIPS();
+        memcpy(mips64, &cpu_state_raw[0], cpu_state_raw.size());
+        context_->SetContextMIPS64(mips64);
       } else {
         std::cerr << "Unsupported architecture: " << arch << std::endl;
       }

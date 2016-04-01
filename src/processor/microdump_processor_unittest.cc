@@ -223,6 +223,48 @@ TEST_F(MicrodumpProcessorTest, TestProcessMultiple) {
   ASSERT_EQ(2U, state.threads()->at(0)->frames()->size());
 }
 
+TEST_F(MicrodumpProcessorTest, TestProcessMips) {
+  ProcessState state;
+  AnalyzeDump("microdump-mips32.dmp", false /* omit_symbols */,
+              2 /* expected_cpu_count */, &state);
+
+  ASSERT_EQ(7U, state.modules()->module_count());
+  ASSERT_EQ("mips", state.system_info()->cpu);
+  ASSERT_EQ("3.0.8-g893bf16 #7 SMP PREEMPT Fri Jul 10 15:20:59 PDT 2015",
+      state.system_info()->os_version);
+  ASSERT_EQ(4U, state.threads()->at(0)->frames()->size());
+
+  ASSERT_EQ("blaTest",
+            state.threads()->at(0)->frames()->at(0)->function_name);
+  ASSERT_EQ("Crash",
+            state.threads()->at(0)->frames()->at(1)->function_name);
+  ASSERT_EQ("main",
+            state.threads()->at(0)->frames()->at(2)->function_name);
+  ASSERT_EQ("crash_example",
+            state.threads()->at(0)->frames()->at(0)->module->debug_file());
+}
+
+TEST_F(MicrodumpProcessorTest, TestProcessMips64) {
+  ProcessState state;
+  AnalyzeDump("microdump-mips64.dmp", false /* omit_symbols */,
+              1 /* expected_cpu_count */, &state);
+
+  ASSERT_EQ(7U, state.modules()->module_count());
+  ASSERT_EQ("mips64", state.system_info()->cpu);
+  ASSERT_EQ("3.10.0-gf185e20 #112 PREEMPT Mon Oct 5 11:12:49 PDT 2015",
+        state.system_info()->os_version);
+  ASSERT_EQ(4U, state.threads()->at(0)->frames()->size());
+
+  ASSERT_EQ("blaTest",
+            state.threads()->at(0)->frames()->at(0)->function_name);
+  ASSERT_EQ("Crash",
+            state.threads()->at(0)->frames()->at(1)->function_name);
+  ASSERT_EQ("main",
+            state.threads()->at(0)->frames()->at(2)->function_name);
+  ASSERT_EQ("crash_example",
+            state.threads()->at(0)->frames()->at(0)->module->debug_file());
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
