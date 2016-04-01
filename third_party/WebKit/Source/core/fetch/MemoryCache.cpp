@@ -290,6 +290,10 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
     for (int i = size - 1; i >= 0; i--) {
         // Remove from the tail, since this is the least frequently accessed of the objects.
         MemoryCacheEntry* current = m_allResources[i].m_tail;
+        if (current) {
+            ASSERT(current->m_resource);
+            ASSERT(contains(current->m_resource.get()));
+        }
 
         // First flush all the decoded data in this queue.
         while (current) {
@@ -298,10 +302,7 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
                 ASSERT(previous->m_resource);
                 ASSERT(contains(previous->m_resource.get()));
             }
-            // TODO(leon.han@intel.com): We shouldn't be hitting the case
-            // that current->m_resource is null here, would turn the case into
-            // ASSERT(current->m_resource) after crbug.com/594644 got resolved.
-            if (current->m_resource && !current->m_resource->hasClientsOrObservers() && !current->m_resource->isPreloaded() && current->m_resource->isLoaded()) {
+            if (!current->m_resource->hasClientsOrObservers() && !current->m_resource->isPreloaded() && current->m_resource->isLoaded()) {
                 // Destroy our decoded data. This will remove us from
                 // m_liveDecodedResources, and possibly move us to a different
                 // LRU list in m_allResources.
@@ -319,16 +320,17 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
 
         // Now evict objects from this queue.
         current = m_allResources[i].m_tail;
+        if (current) {
+            ASSERT(current->m_resource);
+            ASSERT(contains(current->m_resource.get()));
+        }
         while (current) {
             MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
             if (previous) {
                 ASSERT(previous->m_resource);
                 ASSERT(contains(previous->m_resource.get()));
             }
-            // TODO(leon.han@intel.com): We shouldn't be hitting the case
-            // that current->m_resource is null here, would turn the case into
-            // ASSERT(current->m_resource) after crbug.com/594644 got resolved.
-            if (current->m_resource && !current->m_resource->hasClientsOrObservers() && !current->m_resource->isPreloaded()) {
+            if (!current->m_resource->hasClientsOrObservers() && !current->m_resource->isPreloaded()) {
                 evict(current);
                 if (targetSize && m_deadSize <= targetSize)
                     return;
