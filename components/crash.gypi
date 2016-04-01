@@ -298,6 +298,22 @@
                 '..',
                 '../breakpad/src',
               ],
+              'all_dependent_settings': {
+                'msvs_settings': {
+                  'VCLinkerTool': {
+                    'AdditionalDependencies': [
+                      'userenv.lib',
+                    ],
+                  },
+                },
+              },
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'AdditionalDependencies': [
+                    'userenv.lib',
+                  ],
+                },
+              },
             }],
           ],
         },
@@ -373,6 +389,26 @@
                   'msvs_target_platform': 'x64',
                 },
               },
+              'conditions': [
+                ['OS=="win"', {
+                  'all_dependent_settings': {
+                    'msvs_settings': {
+                      'VCLinkerTool': {
+                        'AdditionalDependencies': [
+                          'userenv.lib',
+                        ],
+                      },
+                    },
+                  },
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'AdditionalDependencies': [
+                        'userenv.lib',
+                      ],
+                    },
+                  },
+                }],
+              ],
             },
             {
               # GN version: //components/crash/content/tools:crash_service

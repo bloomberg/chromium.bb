@@ -43,9 +43,6 @@
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sidestep/preamble_patcher.h"
 
-// userenv.dll is required for GetProfileType().
-#pragma comment(lib, "userenv.lib")
-
 #pragma intrinsic(_AddressOfReturnAddress)
 #pragma intrinsic(_ReturnAddress)
 

@@ -148,7 +148,12 @@ source_set("common") {
     ]
 
     if (is_win) {
-      libs = [ "netapi32.lib" ]
+      libs = [
+        "netapi32.lib",
+        "shlwapi.lib",
+        "userenv.lib",
+        "ntdsapi.lib",
+      ]
     }
     if (is_android) {
       sources += [ "cloud/component_cloud_policy_service_stub.cc" ]

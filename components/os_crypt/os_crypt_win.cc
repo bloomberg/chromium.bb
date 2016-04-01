@@ -9,8 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "crypto/wincrypt_shim.h"
 
-#pragma comment(lib, "crypt32.lib")
-
 bool OSCrypt::EncryptString16(const base::string16& plaintext,
                               std::string* ciphertext) {
   return EncryptString(base::UTF16ToUTF8(plaintext), ciphertext);

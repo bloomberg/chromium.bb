@@ -187,6 +187,7 @@ source_set("app_breakpad_mac_win_to_be_deleted") {
 
     if (is_win) {
       deps += [ "//breakpad:breakpad_handler" ]
+      libs = [ "userenv.lib" ]
     }
   }
 }

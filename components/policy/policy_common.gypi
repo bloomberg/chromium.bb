@@ -193,6 +193,28 @@
             'core/common/mac_util.h',
           ],
         }],
+        ['OS=="win"', {
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'AdditionalDependencies': [
+                  'shlwapi.lib',
+                  'userenv.lib',
+                  'ntdsapi.lib',
+                ],
+              },
+            },
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalDependencies': [
+                'shlwapi.lib',
+                'userenv.lib',
+                'ntdsapi.lib',
+              ],
+            },
+          },
+        }],
       ],
     }, {  # configuration_policy==0
       # Some of the policy code is always enabled, so that other parts of

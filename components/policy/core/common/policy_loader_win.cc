@@ -15,13 +15,6 @@
 #include <string>
 #include <vector>
 
-// shlwapi.dll is required for PathIsUNC().
-#pragma comment(lib, "shlwapi.lib")
-// userenv.dll is required for various GPO functions.
-#pragma comment(lib, "userenv.lib")
-// ntdsapi.dll is required for Ds[Un]Bind calls.
-#pragma comment(lib, "ntdsapi.lib")
-
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"

@@ -32,6 +32,24 @@
             'os_crypt/os_crypt_posix.cc',
           ],
         }],
+        ['OS=="win"', {
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'AdditionalDependencies': [
+                  'crypt32.lib',
+                ],
+              },
+            },
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalDependencies': [
+                'crypt32.lib',
+              ],
+            },
+          },
+        }],
       ],
       'target_conditions': [
         ['OS=="ios"', {
