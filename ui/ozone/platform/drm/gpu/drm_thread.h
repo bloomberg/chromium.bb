@@ -109,7 +109,10 @@ class DrmThread : public base::Thread {
   void SetHDCPState(int64_t display_id,
                     HDCPState state,
                     const base::Callback<void(int64_t, bool)>& callback);
-  void SetGammaRamp(int64_t id, const std::vector<GammaRampRGBEntry>& lut);
+  void SetColorCorrection(int64_t display_id,
+                          const std::vector<GammaRampRGBEntry>& degamma_lut,
+                          const std::vector<GammaRampRGBEntry>& gamma_lut,
+                          const std::vector<float>& correction_matrix);
 
   // base::Thread:
   void Init() override;

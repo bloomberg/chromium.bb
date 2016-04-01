@@ -110,9 +110,11 @@ bool NativeDisplayDelegateOzone::SetColorCalibrationProfile(
   return false;
 }
 
-bool NativeDisplayDelegateOzone::SetGammaRamp(
+bool NativeDisplayDelegateOzone::SetColorCorrection(
     const ui::DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& lut) {
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
   NOTIMPLEMENTED();
   return false;
 }

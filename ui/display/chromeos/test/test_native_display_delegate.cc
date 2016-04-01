@@ -134,10 +134,13 @@ bool TestNativeDisplayDelegate::SetColorCalibrationProfile(
   return false;
 }
 
-bool TestNativeDisplayDelegate::SetGammaRamp(
+bool TestNativeDisplayDelegate::SetColorCorrection(
     const ui::DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& lut) {
-  log_->AppendAction(SetGammaRampAction(output, lut));
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
+  log_->AppendAction(SetColorCorrectionAction(output, degamma_lut, gamma_lut,
+                                              correction_matrix));
   return true;
 }
 

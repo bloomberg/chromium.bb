@@ -626,9 +626,11 @@ XRRCrtcGamma* NativeDisplayDelegateX11::CreateGammaRampForProfile(
   return NULL;
 }
 
-bool NativeDisplayDelegateX11::SetGammaRamp(
+bool NativeDisplayDelegateX11::SetColorCorrection(
     const ui::DisplaySnapshot& output,
-    const std::vector<GammaRampRGBEntry>& lut) {
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
   NOTIMPLEMENTED();
   return false;
 }

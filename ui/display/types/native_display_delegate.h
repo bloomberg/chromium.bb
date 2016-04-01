@@ -107,9 +107,12 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
       const ui::DisplaySnapshot& output,
       ui::ColorCalibrationProfile new_profile) = 0;
 
-  // Set the gamma ramp for the display.
-  virtual bool SetGammaRamp(const ui::DisplaySnapshot& output,
-                            const std::vector<GammaRampRGBEntry>& lut) = 0;
+  // Set the gamma tables and corection matrix for the display.
+  virtual bool SetColorCorrection(
+      const ui::DisplaySnapshot& output,
+      const std::vector<GammaRampRGBEntry>& degamma_lut,
+      const std::vector<GammaRampRGBEntry>& gamma_lut,
+      const std::vector<float>& correction_matrix) = 0;
 
   virtual void AddObserver(NativeDisplayObserver* observer) = 0;
 

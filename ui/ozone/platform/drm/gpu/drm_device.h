@@ -163,6 +163,11 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   // Set the gamma ramp for |crtc_id| to reflect the ramps in |lut|.
   virtual bool SetGammaRamp(uint32_t crtc_id,
                             const std::vector<GammaRampRGBEntry>& lut);
+  virtual bool SetColorCorrection(
+      uint32_t crtc_id,
+      const std::vector<GammaRampRGBEntry>& degamma_lut,
+      const std::vector<GammaRampRGBEntry>& gamma_lut,
+      const std::vector<float>& correction_matrix);
 
   virtual bool SetCapability(uint64_t capability, uint64_t value);
 

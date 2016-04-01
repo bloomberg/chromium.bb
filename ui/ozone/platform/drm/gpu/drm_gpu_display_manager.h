@@ -45,6 +45,10 @@ class DrmGpuDisplayManager {
   bool GetHDCPState(int64_t display_id, HDCPState* state);
   bool SetHDCPState(int64_t display_id, HDCPState state);
   void SetGammaRamp(int64_t id, const std::vector<GammaRampRGBEntry>& lut);
+  void SetColorCorrection(int64_t id,
+                          const std::vector<GammaRampRGBEntry>& degamma_lut,
+                          const std::vector<GammaRampRGBEntry>& gamma_lut,
+                          const std::vector<float>& correction_matrix);
 
  private:
   DrmDisplay* FindDisplay(int64_t display_id);

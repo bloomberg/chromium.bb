@@ -48,6 +48,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::DisplaySnapshot_Params)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(is_aspect_preserving_scaling)
   IPC_STRUCT_TRAITS_MEMBER(has_overscan)
+  IPC_STRUCT_TRAITS_MEMBER(has_color_correction_matrix)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
   IPC_STRUCT_TRAITS_MEMBER(sys_path)
   IPC_STRUCT_TRAITS_MEMBER(modes)
@@ -141,10 +142,11 @@ IPC_MESSAGE_CONTROL2(OzoneGpuMsg_SetHDCPState,
                      int64_t /* display_id */,
                      ui::HDCPState /* state */)
 
-// Provides the gamma ramp for display adjustment.
-IPC_MESSAGE_CONTROL2(OzoneGpuMsg_SetGammaRamp,
+IPC_MESSAGE_CONTROL4(OzoneGpuMsg_SetColorCorrection,
                      int64_t,                             // display ID,
-                     std::vector<ui::GammaRampRGBEntry>)  // lut
+                     std::vector<ui::GammaRampRGBEntry>,  // degamma lut
+                     std::vector<ui::GammaRampRGBEntry>,  // gamma lut
+                     std::vector<float>)                  // transform matrix
 
 IPC_MESSAGE_CONTROL2(OzoneGpuMsg_CheckOverlayCapabilities,
                      gfx::AcceleratedWidget /* widget */,

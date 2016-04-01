@@ -76,8 +76,10 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   bool SetColorCalibrationProfile(
       const DisplaySnapshot& output,
       ui::ColorCalibrationProfile new_profile) override;
-  bool SetGammaRamp(const ui::DisplaySnapshot& output,
-                    const std::vector<GammaRampRGBEntry>& lut) override;
+  bool SetColorCorrection(const ui::DisplaySnapshot& output,
+                          const std::vector<GammaRampRGBEntry>& degamma_lut,
+                          const std::vector<GammaRampRGBEntry>& gamma_lut,
+                          const std::vector<float>& correction_matrix) override;
   void AddObserver(NativeDisplayObserver* observer) override;
   void RemoveObserver(NativeDisplayObserver* observer) override;
 

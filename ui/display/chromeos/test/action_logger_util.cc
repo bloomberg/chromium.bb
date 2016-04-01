@@ -57,16 +57,32 @@ std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
                             output.display_id(), state);
 }
 
-std::string SetGammaRampAction(const ui::DisplaySnapshot& output,
-                               const std::vector<GammaRampRGBEntry>& lut) {
-  std::string table;
-  for (size_t i = 0; i < lut.size(); ++i) {
-    table += base::StringPrintf(",rgb[%" PRIuS "]=%04x%04x%04x", i, lut[i].r,
-                                lut[i].g, lut[i].b);
+std::string SetColorCorrectionAction(
+    const ui::DisplaySnapshot& output,
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
+  std::string degamma_table;
+  for (size_t i = 0; i < degamma_lut.size(); ++i) {
+    degamma_table += base::StringPrintf(",degamma[%" PRIuS "]=%04x%04x%04x", i,
+                                        degamma_lut[i].r, degamma_lut[i].g,
+                                        degamma_lut[i].b);
+  }
+  std::string gamma_table;
+  for (size_t i = 0; i < gamma_lut.size(); ++i) {
+    gamma_table +=
+        base::StringPrintf(",gamma[%" PRIuS "]=%04x%04x%04x", i, gamma_lut[i].r,
+                           gamma_lut[i].g, gamma_lut[i].b);
   }
 
-  return base::StringPrintf("set_gamma_ramp(id=%" PRId64 "%s)",
-                            output.display_id(), table.c_str());
+  std::string ctm;
+  for (size_t i = 0; i < correction_matrix.size(); ++i) {
+    ctm += base::StringPrintf(",ctm[%" PRIuS "]=%f", i, correction_matrix[i]);
+  }
+
+  return base::StringPrintf("set_color_correction(id=%" PRId64 "%s%s%s)",
+                            output.display_id(), degamma_table.c_str(),
+                            gamma_table.c_str(), ctm.c_str());
 }
 
 std::string JoinActions(const char* action, ...) {

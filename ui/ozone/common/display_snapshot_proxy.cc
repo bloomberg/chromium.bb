@@ -27,6 +27,7 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
                       params.type,
                       params.is_aspect_preserving_scaling,
                       params.has_overscan,
+                      params.has_color_correction_matrix,
                       params.display_name,
                       params.sys_path,
                       std::vector<const DisplayMode*>(),

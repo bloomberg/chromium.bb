@@ -66,9 +66,13 @@ std::string GetFramebufferAction(const gfx::Size& size,
 std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
                                   HDCPState state);
 
-// Returns a string describing a TestNativeDisplayDelegate::SetGammaRamp() call;
-std::string SetGammaRampAction(const ui::DisplaySnapshot& output,
-                               const std::vector<GammaRampRGBEntry>& lut);
+// Returns a string describing a TestNativeDisplayDelegate::SetColorCorrection()
+// call;
+std::string SetColorCorrectionAction(
+    const ui::DisplaySnapshot& output,
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix);
 // Joins a sequence of strings describing actions (e.g. kScreenDim) such
 // that they can be compared against a string returned by
 // ActionLogger::GetActionsAndClear().  The list of actions must be

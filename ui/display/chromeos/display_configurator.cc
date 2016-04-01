@@ -823,12 +823,15 @@ bool DisplayConfigurator::SetColorCalibrationProfile(
   return false;
 }
 
-bool DisplayConfigurator::SetGammaRamp(
+bool DisplayConfigurator::SetColorCorrection(
     int64_t display_id,
-    const std::vector<GammaRampRGBEntry>& lut) {
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
   for (const DisplaySnapshot* display : cached_displays_) {
     if (display->display_id() == display_id)
-      return native_display_delegate_->SetGammaRamp(*display, lut);
+      return native_display_delegate_->SetColorCorrection(
+          *display, degamma_lut, gamma_lut, correction_matrix);
   }
 
   return false;

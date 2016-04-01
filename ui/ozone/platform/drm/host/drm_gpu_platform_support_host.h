@@ -83,8 +83,11 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   bool GpuDisableNativeDisplay(int64_t display_id) override;
   bool GpuGetHDCPState(int64_t display_id) override;
   bool GpuSetHDCPState(int64_t display_id, ui::HDCPState state) override;
-  bool GpuSetGammaRamp(int64_t display_id,
-                       const std::vector<GammaRampRGBEntry>& lut) override;
+  bool GpuSetColorCorrection(
+      int64_t display_id,
+      const std::vector<GammaRampRGBEntry>& degamma_lut,
+      const std::vector<GammaRampRGBEntry>& gamma_lut,
+      const std::vector<float>& correction_matrix) override;
 
   // Services needed by DrmWindowHost
   bool GpuDestroyWindow(gfx::AcceleratedWidget widget) override;

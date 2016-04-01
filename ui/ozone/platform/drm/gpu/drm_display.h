@@ -44,7 +44,9 @@ class DrmDisplay {
   bool Configure(const drmModeModeInfo* mode, const gfx::Point& origin);
   bool GetHDCPState(HDCPState* state);
   bool SetHDCPState(HDCPState state);
-  void SetGammaRamp(const std::vector<GammaRampRGBEntry>& lut);
+  void SetColorCorrection(const std::vector<GammaRampRGBEntry>& degamma_lut,
+                          const std::vector<GammaRampRGBEntry>& gamma_lut,
+                          const std::vector<float>& correction_matrix);
 
  private:
   ScreenManager* screen_manager_;  // Not owned.

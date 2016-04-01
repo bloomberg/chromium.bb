@@ -157,6 +157,19 @@ int ConnectorIndex(int device_index, int display_index) {
   return ((device_index << 4) + display_index) & 0xFF;
 }
 
+bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc) {
+  ScopedDrmObjectPropertyPtr crtc_props(
+      drmModeObjectGetProperties(fd, crtc->crtc_id, DRM_MODE_OBJECT_CRTC));
+
+  for (uint32_t i = 0; i < crtc_props->count_props; ++i) {
+    ScopedDrmPropertyPtr property(drmModeGetProperty(fd, crtc_props->props[i]));
+    if (property && !strcmp(property->name, "CTM")) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 HardwareDisplayControllerInfo::HardwareDisplayControllerInfo(
@@ -229,6 +242,8 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
   params.type = GetDisplayType(info->connector());
   params.is_aspect_preserving_scaling =
       IsAspectPreserving(fd, info->connector());
+  params.has_color_correction_matrix =
+      HasColorCorrectionMatrix(fd, info->crtc());
 
   ScopedDrmPropertyBlobPtr edid_blob(
       GetDrmPropertyBlob(fd, info->connector(), "EDID"));

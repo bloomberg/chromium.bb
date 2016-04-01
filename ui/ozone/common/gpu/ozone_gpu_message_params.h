@@ -39,6 +39,7 @@ struct DisplaySnapshot_Params {
   DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_NONE;
   bool is_aspect_preserving_scaling = false;
   bool has_overscan = false;
+  bool has_color_correction_matrix = false;
   std::string display_name;
   base::FilePath sys_path;
   std::vector<DisplayMode_Params> modes;

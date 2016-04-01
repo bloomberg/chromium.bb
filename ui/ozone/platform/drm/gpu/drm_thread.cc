@@ -242,9 +242,13 @@ void DrmThread::SetHDCPState(
   callback.Run(display_id, display_manager_->SetHDCPState(display_id, state));
 }
 
-void DrmThread::SetGammaRamp(int64_t id,
-                             const std::vector<GammaRampRGBEntry>& lut) {
-  display_manager_->SetGammaRamp(id, lut);
+void DrmThread::SetColorCorrection(
+    int64_t display_id,
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
+  display_manager_->SetColorCorrection(display_id, degamma_lut, gamma_lut,
+                                       correction_matrix);
 }
 
 }  // namespace ui

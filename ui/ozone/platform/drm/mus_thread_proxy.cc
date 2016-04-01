@@ -274,14 +274,17 @@ bool MusThreadProxy::GpuSetHDCPState(int64_t display_id, HDCPState state) {
   return true;
 }
 
-bool MusThreadProxy::GpuSetGammaRamp(
+bool MusThreadProxy::GpuSetColorCorrection(
     int64_t id,
-    const std::vector<GammaRampRGBEntry>& lut) {
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
   DCHECK(drm_thread_->IsRunning());
   DCHECK(on_window_server_thread_.CalledOnValidThread());
   drm_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DrmThread::SetGammaRamp,
-                            base::Unretained(drm_thread_), id, lut));
+      FROM_HERE,
+      base::Bind(&DrmThread::SetColorCorrection, base::Unretained(drm_thread_),
+                 id, degamma_lut, gamma_lut, correction_matrix));
   return true;
 }
 

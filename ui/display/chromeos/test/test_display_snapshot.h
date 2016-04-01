@@ -22,6 +22,7 @@ class DISPLAY_EXPORT TestDisplaySnapshot : public DisplaySnapshot {
                       DisplayConnectionType type,
                       bool is_aspect_preserving_scaling,
                       int64_t product_id,
+                      bool has_color_correction_matrix,
                       const std::vector<const DisplayMode*>& modes,
                       const DisplayMode* current_mode,
                       const DisplayMode* native_mode);

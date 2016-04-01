@@ -73,7 +73,10 @@ class DrmThreadMessageProxy : public IPC::MessageFilter,
   void OnRemoveGraphicsDevice(const base::FilePath& path);
   void OnGetHDCPState(int64_t display_id);
   void OnSetHDCPState(int64_t display_id, HDCPState state);
-  void OnSetGammaRamp(int64_t id, const std::vector<GammaRampRGBEntry>& lut);
+  void OnSetColorCorrection(int64_t id,
+                            const std::vector<GammaRampRGBEntry>& degamma_lut,
+                            const std::vector<GammaRampRGBEntry>& gamma_lut,
+                            const std::vector<float>& correction_matrix);
 
   void OnCheckOverlayCapabilitiesCallback(
       gfx::AcceleratedWidget widget,

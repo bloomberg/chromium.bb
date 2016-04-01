@@ -29,6 +29,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   DisplayConnectionType type,
                   bool is_aspect_preserving_scaling,
                   bool has_overscan,
+                  bool has_color_correction_matrix,
                   std::string display_name,
                   const base::FilePath& sys_path,
                   const std::vector<const DisplayMode*>& modes,
@@ -60,6 +61,11 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
   void add_mode(const DisplayMode* mode) { modes_.push_back(mode); }
 
+  // Whether this display has advanced color correction available.
+  bool has_color_correction_matrix() const {
+    return has_color_correction_matrix_;
+  }
+
   // Returns a textual representation of this display state.
   virtual std::string ToString() const = 0;
 
@@ -80,6 +86,8 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   bool is_aspect_preserving_scaling_;
 
   bool has_overscan_;
+
+  bool has_color_correction_matrix_;
 
   std::string display_name_;
 

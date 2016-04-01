@@ -195,16 +195,18 @@ bool DrmGpuDisplayManager::SetHDCPState(int64_t display_id, HDCPState state) {
   return display->SetHDCPState(state);
 }
 
-void DrmGpuDisplayManager::SetGammaRamp(
+void DrmGpuDisplayManager::SetColorCorrection(
     int64_t display_id,
-    const std::vector<GammaRampRGBEntry>& lut) {
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
   DrmDisplay* display = FindDisplay(display_id);
   if (!display) {
     LOG(ERROR) << "There is no display with ID " << display_id;
     return;
   }
 
-  display->SetGammaRamp(lut);
+  display->SetColorCorrection(degamma_lut, gamma_lut, correction_matrix);
 }
 
 DrmDisplay* DrmGpuDisplayManager::FindDisplay(int64_t display_id) {

@@ -49,12 +49,15 @@ class ASH_EXPORT DisplayColorManager
     ColorCalibrationData();
     ~ColorCalibrationData();
 
-    std::vector<ui::GammaRampRGBEntry> lut;
+    std::vector<ui::GammaRampRGBEntry> degamma_lut;
+    std::vector<ui::GammaRampRGBEntry> gamma_lut;
+    std::vector<float> correction_matrix;
   };
 
  protected:
   virtual void FinishLoadCalibrationForDisplay(int64_t display_id,
                                                int64_t product_id,
+                                               bool has_color_correction_matrix,
                                                ui::DisplayConnectionType type,
                                                const base::FilePath& path,
                                                bool file_downloaded);

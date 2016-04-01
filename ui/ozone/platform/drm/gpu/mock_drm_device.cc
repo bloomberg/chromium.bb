@@ -228,6 +228,14 @@ bool MockDrmDevice::SetGammaRamp(uint32_t crtc_id,
   return true;
 }
 
+bool MockDrmDevice::SetColorCorrection(
+    uint32_t crtc_id,
+    const std::vector<GammaRampRGBEntry>& degamma_lut,
+    const std::vector<GammaRampRGBEntry>& gamma_lut,
+    const std::vector<float>& correction_matrix) {
+  return true;
+}
+
 bool MockDrmDevice::SetCapability(uint64_t capability, uint64_t value) {
   return false;
 }

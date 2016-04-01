@@ -274,10 +274,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   bool SetColorCalibrationProfile(int64_t display_id,
                                   ui::ColorCalibrationProfile new_profile);
 
-  // Sets the gamma ramp for |display_id| to the values in |lut|.
-  bool SetGammaRamp(int64_t display_id,
-                    const std::vector<GammaRampRGBEntry>& lut);
-
   // Enables/disables virtual display.
   int64_t AddVirtualDisplay(gfx::Size display_size);
   bool RemoveVirtualDisplay(int64_t display_id);
@@ -288,6 +284,13 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   void set_configure_display(bool configure_display) {
     configure_display_ = configure_display;
   }
+
+  // Sets the gamma, degamma and correction matrix for |display_id| to the
+  // values in |degamma_lut|, |gamma_lut| and |correction_matrix|.
+  bool SetColorCorrection(int64_t display_id,
+                          const std::vector<GammaRampRGBEntry>& degamma_lut,
+                          const std::vector<GammaRampRGBEntry>& gamma_lut,
+                          const std::vector<float>& correction_matrix);
 
  private:
   class DisplayLayoutManagerImpl;

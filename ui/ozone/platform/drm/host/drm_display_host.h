@@ -32,7 +32,9 @@ class DrmDisplayHost : public GpuThreadObserver {
                  const ConfigureCallback& callback);
   void GetHDCPState(const GetHDCPStateCallback& callback);
   void SetHDCPState(HDCPState state, const SetHDCPStateCallback& callback);
-  void SetGammaRamp(const std::vector<GammaRampRGBEntry>& lut);
+  void SetColorCorrection(const std::vector<GammaRampRGBEntry>& degamma_lut,
+                          const std::vector<GammaRampRGBEntry>& gamma_lut,
+                          const std::vector<float>& correction_matrix);
 
   // Called when the IPC from the GPU process arrives to answer the above
   // commands.
