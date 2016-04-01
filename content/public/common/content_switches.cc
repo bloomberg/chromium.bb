@@ -970,8 +970,8 @@ const char kEnableAggressiveDOMStorageFlushing[] =
     "enable-aggressive-domstorage-flushing";
 
 // Enable audio for desktop share.
-const char kEnableAudioSupportForDesktopShare[] =
-    "enable-audio-support-for-desktop-share";
+const char kDisableAudioSupportForDesktopShare[] =
+    "disable-audio-support-for-desktop-share";
 
 #if defined(OS_CHROMEOS)
 // Disables panel fitting (used for mirror mode).

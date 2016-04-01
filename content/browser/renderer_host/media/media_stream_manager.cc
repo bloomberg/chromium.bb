@@ -99,8 +99,8 @@ void ParseStreamType(const StreamControls& controls,
   *audio_type = MEDIA_NO_SERVICE;
   *video_type = MEDIA_NO_SERVICE;
   const bool audio_support_flag_for_desktop_share =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAudioSupportForDesktopShare);
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAudioSupportForDesktopShare);
   if (controls.audio.requested) {
     if (!controls.audio.stream_source.empty()) {
        // This is tab or screen capture.

@@ -1775,14 +1775,16 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-scroll-anchoring", IDS_FLAGS_ENABLE_SCROLL_ANCHORING_NAME,
      IDS_FLAGS_ENABLE_SCROLL_ANCHORING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kScrollAnchoring)},
-    {"enable-audio-support-for-desktop-share",
-     IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE,
-     IDS_FLAG_ENABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableAudioSupportForDesktopShare)},
+    {"disable-audio-support-for-desktop-share",
+     IDS_FLAG_DISABLE_AUDIO_FOR_DESKTOP_SHARE,
+     IDS_FLAG_DISABLE_AUDIO_FOR_DESKTOP_SHARE_DESCRIPTION, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kDisableAudioSupportForDesktopShare)},
 #if defined(ENABLE_EXTENSIONS)
-    {"enable-tab-for-desktop-share", IDS_FLAG_ENABLE_TAB_FOR_DESKTOP_SHARE,
-     IDS_FLAG_ENABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(extensions::switches::kEnableTabForDesktopShare)},
+    {"tab-for-desktop-share", IDS_FLAG_DISABLE_TAB_FOR_DESKTOP_SHARE,
+     IDS_FLAG_DISABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION, kOsAll,
+     ENABLE_DISABLE_VALUE_TYPE(
+         extensions::switches::kEnableTabForDesktopShare,
+         extensions::switches::kDisableTabForDesktopShare)},
 #endif
 #if defined(OS_ANDROID)
     {"enable-ntp-snippets", IDS_FLAGS_ENABLE_NTP_SNIPPETS_NAME,

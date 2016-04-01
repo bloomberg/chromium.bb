@@ -31,8 +31,8 @@ const char kEnableAppWindowControls[] = "enable-app-window-controls";
 // Enable BLE Advertisiing in apps.
 const char kEnableBLEAdvertising[] = "enable-ble-advertising-in-apps";
 
-const char kEnableDesktopCaptureAudio[] =
-    "enable-audio-support-for-desktop-share";
+const char kDisableDesktopCaptureAudio[] =
+    "disable-audio-support-for-desktop-share";
 
 // Hack so that feature switch can work with about_flags. See
 // kEnableScriptsRequireAction.
@@ -55,6 +55,7 @@ const char kEnableMojoSerialService[] = "enable-mojo-serial-service";
 const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 
 // Enables tab for desktop sharing.
+const char kDisableTabForDesktopShare[] = "disable-tab-for-desktop-share";
 const char kEnableTabForDesktopShare[] = "enable-tab-for-desktop-share";
 
 // Allows the ErrorConsole to collect runtime and manifest errors, and display

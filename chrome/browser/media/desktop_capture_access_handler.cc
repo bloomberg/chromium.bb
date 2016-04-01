@@ -366,10 +366,12 @@ void DesktopCaptureAccessHandler::HandleRequest(
        loopback_audio_supported) ||
       media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS;
 
-  const bool has_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      extensions::switches::kEnableDesktopCaptureAudio);
+  const bool check_audio_permission =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          extensions::switches::kDisableDesktopCaptureAudio);
   const bool capture_audio =
-      (has_flag ? audio_permitted : true) && audio_requested && audio_supported;
+      (check_audio_permission ? audio_permitted : true) && audio_requested &&
+      audio_supported;
 
   ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio, true,
                                    GetApplicationTitle(web_contents, extension),

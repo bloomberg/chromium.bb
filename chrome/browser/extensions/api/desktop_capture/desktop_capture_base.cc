@@ -18,6 +18,8 @@
 #include "chrome/browser/media/native_desktop_media_list.h"
 #include "chrome/browser/media/tab_desktop_media_list.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/common/channel_info.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -100,13 +102,19 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                 extensions::switches::kEnableTabForDesktopShare)) {
           show_tabs = true;
+        } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            extensions::switches::kDisableTabForDesktopShare)) {
+          show_tabs = false;
+        } else {
+          const version_info::Channel channel = chrome::GetChannel();
+          show_tabs = (channel != version_info::Channel::STABLE);
         }
         break;
 
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_AUDIO:
         bool has_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
-            extensions::switches::kEnableDesktopCaptureAudio);
-        request_audio = has_flag;
+            extensions::switches::kDisableDesktopCaptureAudio);
+        request_audio = !has_flag;
         break;
     }
   }

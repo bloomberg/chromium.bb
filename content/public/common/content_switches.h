@@ -36,6 +36,7 @@ CONTENT_EXPORT extern const char kDisableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kDisableAcceleratedJpegDecoding[];
 CONTENT_EXPORT extern const char kDisableAcceleratedMjpegDecode[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
+CONTENT_EXPORT extern const char kDisableAudioSupportForDesktopShare[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char
     kDisableBackgroundingOccludedWindowsForTesting[];
@@ -103,7 +104,6 @@ CONTENT_EXPORT extern const char kDomAutomationController[];
 CONTENT_EXPORT extern const char kDownloadProcess[];
 extern const char kEnable2dCanvasClipAntialiasing[];
 CONTENT_EXPORT extern const char kEnableAggressiveDOMStorageFlushing[];
-CONTENT_EXPORT extern const char kEnableAudioSupportForDesktopShare[];
 CONTENT_EXPORT extern const char kEnablePreferCompositingToLCDText[];
 CONTENT_EXPORT extern const char kEnableBlinkFeatures[];
 CONTENT_EXPORT extern const char kEnableBrowserSideNavigation[];

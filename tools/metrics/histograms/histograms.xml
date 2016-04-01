@@ -74393,6 +74393,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="730024226" label="enable-out-of-process-pdf"/>
   <int value="732703958" label="enable-gesture-tap-highlight"/>
   <int value="752194066" label="enable-app-window-cycling"/>
+  <int value="752939691" label="disable-tab-for-desktop-share"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="782167080" label="enable-new-qp-input-view"/>
@@ -74562,6 +74563,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1861251313"
       label="enable-message-center-always-scroll-up-upon-notification-removal"/>
   <int value="1862207743" label="enable-android-spellchecker"/>
+  <int value="1865068568" label="disable-audio-support-for-desktop-share"/>
   <int value="1865799183" label="javascript-harmony"/>
   <int value="1881036528" label="disable-multilingual-spellchecker"/>
   <int value="1881174782" label="disable-brotli"/>

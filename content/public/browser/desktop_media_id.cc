@@ -98,21 +98,25 @@ aura::Window* DesktopMediaID::GetAuraWindowById(const DesktopMediaID& id) {
 
 bool DesktopMediaID::operator<(const DesktopMediaID& other) const {
 #if defined(USE_AURA)
-  return std::tie(type, id, aura_id, web_contents_id) <
-         std::tie(other.type, other.id, other.aura_id, other.web_contents_id);
+  return std::tie(type, id, aura_id, web_contents_id, audio_share) <
+         std::tie(other.type, other.id, other.aura_id, other.web_contents_id,
+                  other.audio_share);
 #else
-  return std::tie(type, id, web_contents_id) <
-         std::tie(other.type, other.id, other.web_contents_id);
+  return std::tie(type, id, web_contents_id, audio_share) <
+         std::tie(other.type, other.id, other.web_contents_id,
+                  other.audio_share);
 #endif
 }
 
 bool DesktopMediaID::operator==(const DesktopMediaID& other) const {
 #if defined(USE_AURA)
   return type == other.type && id == other.id && aura_id == other.aura_id &&
-         web_contents_id == other.web_contents_id;
+         web_contents_id == other.web_contents_id &&
+         audio_share == other.audio_share;
 #else
   return type == other.type && id == other.id &&
-         web_contents_id == other.web_contents_id;
+         web_contents_id == other.web_contents_id &&
+         audio_share == other.audio_share;
 #endif
 }
 
