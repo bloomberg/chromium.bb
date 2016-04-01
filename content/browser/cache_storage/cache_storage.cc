@@ -303,27 +303,24 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     base::FilePath index_path =
         origin_path_.AppendASCII(CacheStorage::kIndexFileName);
 
-    cache_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&SimpleCacheLoader::WriteIndexWriteToFileInPool,
-                              tmp_path, index_path, serialized, callback,
-                              base::ThreadTaskRunnerHandle::Get()));
+    PostTaskAndReplyWithResult(
+        cache_task_runner_.get(), FROM_HERE,
+        base::Bind(&SimpleCacheLoader::WriteIndexWriteToFileInPool, tmp_path,
+                   index_path, serialized),
+        callback);
   }
 
-  static void WriteIndexWriteToFileInPool(
-      const base::FilePath& tmp_path,
-      const base::FilePath& index_path,
-      const std::string& data,
-      const BoolCallback& callback,
-      scoped_refptr<base::SingleThreadTaskRunner> original_task_runner) {
+  static bool WriteIndexWriteToFileInPool(const base::FilePath& tmp_path,
+                                          const base::FilePath& index_path,
+                                          const std::string& data) {
     int bytes_written = base::WriteFile(tmp_path, data.c_str(), data.size());
     if (bytes_written != base::checked_cast<int>(data.size())) {
       base::DeleteFile(tmp_path, /* recursive */ false);
-      original_task_runner->PostTask(FROM_HERE, base::Bind(callback, false));
+      return false;
     }
 
     // Atomically rename the temporary index file to become the real one.
-    bool rv = base::ReplaceFile(tmp_path, index_path, NULL);
-    original_task_runner->PostTask(FROM_HERE, base::Bind(callback, rv));
+    return base::ReplaceFile(tmp_path, index_path, NULL);
   }
 
   void LoadIndex(scoped_ptr<std::vector<std::string>> names,
