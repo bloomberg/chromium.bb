@@ -649,11 +649,9 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
 
   SkMatrix local_matrix;
   local_matrix.setScale(scale.x(), scale.y());
-  skia::RefPtr<SkImageFilter> filter_with_local_scale =
-      skia::AdoptRef(filter->newWithLocalMatrix(local_matrix));
 
   SkPaint paint;
-  paint.setImageFilter(filter_with_local_scale.get());
+  paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
   surface->getCanvas()->translate(-dst_rect.x(), -dst_rect.y());
   surface->getCanvas()->drawImage(srcImage.get(), src_rect.x(), src_rect.y(),
                                   &paint);
@@ -999,13 +997,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, gfx::SizeF(contents_texture->size()));
     if (filter) {
-      skia::RefPtr<SkColorFilter> cf;
-
-      {
-        SkColorFilter* colorfilter_rawptr = NULL;
-        filter->asColorFilter(&colorfilter_rawptr);
-        cf = skia::AdoptRef(colorfilter_rawptr);
-      }
+      SkColorFilter* colorfilter_rawptr = NULL;
+      filter->asColorFilter(&colorfilter_rawptr);
+      sk_sp<SkColorFilter> cf(colorfilter_rawptr);
 
       if (cf && cf->asColorMatrix(color_matrix) && !filter->getInput(0)) {
         // We have a single color matrix as a filter; apply it locally

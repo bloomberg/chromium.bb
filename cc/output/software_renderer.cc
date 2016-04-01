@@ -643,11 +643,9 @@ skia::RefPtr<SkImage> SoftwareRenderer::ApplyImageFilter(
   localM.setTranslate(SkIntToScalar(-quad->rect.origin().x()),
                       SkIntToScalar(-quad->rect.origin().y()));
   localM.preScale(quad->filters_scale.x(), quad->filters_scale.y());
-  skia::RefPtr<SkImageFilter> localIMF =
-      skia::AdoptRef(filter->newWithLocalMatrix(localM));
 
   SkPaint paint;
-  paint.setImageFilter(localIMF.get());
+  paint.setImageFilter(filter->makeWithLocalMatrix(localM));
   surface->getCanvas()->drawBitmap(*to_filter, 0, 0, &paint);
 
   return skia::AdoptRef(surface->newImageSnapshot());

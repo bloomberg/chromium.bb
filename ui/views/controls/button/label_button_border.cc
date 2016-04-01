@@ -146,9 +146,7 @@ void LabelButtonAssetBorder::Paint(const View& view, gfx::Canvas* canvas) {
 
     SkPaint paint;
     double scale = animation->GetCurrentValue();
-    skia::RefPtr<SkXfermode> sk_arith_xfer =
-        skia::AdoptRef(SkArithmeticMode::Create(0.0f, scale, 1.0 - scale, 0.0));
-    paint.setXfermode(sk_arith_xfer.get());
+    paint.setXfermode(SkArithmeticMode::Make(0.0f, scale, 1.0 - scale, 0.0));
     canvas->sk_canvas()->saveLayer(&sk_rect, &paint);
     state = native_theme_delegate->GetForegroundThemeState(&extra);
     PaintHelper(this, canvas, state, rect, extra);

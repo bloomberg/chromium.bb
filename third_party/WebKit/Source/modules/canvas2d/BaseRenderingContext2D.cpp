@@ -922,9 +922,8 @@ void BaseRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource* i
         }
         SkRect bounds = dstRect;
         SkPaint layerPaint;
-        layerPaint.setXfermode(paint->getXfermode());
-        SkAutoTUnref<SkImageFilter> localFilter(paint->getImageFilter()->newWithLocalMatrix(invCtm));
-        layerPaint.setImageFilter(localFilter);
+        layerPaint.setXfermode(sk_ref_sp(paint->getXfermode()));
+        layerPaint.setImageFilter(paint->getImageFilter()->makeWithLocalMatrix(invCtm));
         c->saveLayer(&bounds, &layerPaint);
         imagePaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
         imagePaint.setImageFilter(nullptr);

@@ -217,10 +217,7 @@ PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::buildBoxReflectFilter(Reflecti
     RefPtr<SkImageFilter> flipImageFilter = adoptRef(SkImageFilter::CreateMatrixFilter(
         flipMatrix, kNone_SkFilterQuality, maskedInput.get()));
 
-    RefPtr<SkImageFilter> combineImageFilter = adoptRef(SkXfermodeImageFilter::Create(
-        nullptr, flipImageFilter.get(), input));
-
-    return combineImageFilter.release();
+    return fromSkSp(SkXfermodeImageFilter::Make(nullptr, flipImageFilter.get(), input, nullptr));
 }
 
 } // namespace blink

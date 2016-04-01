@@ -59,9 +59,9 @@ PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder& bui
 {
     RefPtr<SkImageFilter> foreground(builder.build(inputEffect(0), operatingColorSpace()));
     RefPtr<SkImageFilter> background(builder.build(inputEffect(1), operatingColorSpace()));
-    RefPtr<SkXfermode> mode(adoptRef(SkXfermode::Create(WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_mode))));
+    sk_sp<SkXfermode> mode(SkXfermode::Make(WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_mode)));
     SkImageFilter::CropRect cropRect = getCropRect();
-    return adoptRef(SkXfermodeImageFilter::Create(mode.get(), background.get(), foreground.get(), &cropRect));
+    return fromSkSp(SkXfermodeImageFilter::Make(std::move(mode), background.get(), foreground.get(), &cropRect));
 }
 
 TextStream& FEBlend::externalRepresentation(TextStream& ts, int indent) const

@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/values.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 class SkXfermode;
@@ -85,7 +84,7 @@ private:
 
   base::ListValue op_records_;
   unsigned flags_;
-  RefPtr<SkXfermode> overdraw_xfermode_;
+  sk_sp<SkXfermode> overdraw_xfermode_;
 };
 
 }

@@ -50,7 +50,7 @@ void CrossfadeGeneratedImage::drawCrossfade(SkCanvas* canvas, const SkPaint& pai
     // to preserve pre-existing behavior while refactoring this code.  This should be
     // investigated further. crbug.com/472634
     SkPaint layerPaint;
-    layerPaint.setXfermode(paint.getXfermode());
+    layerPaint.setXfermode(sk_ref_sp(paint.getXfermode()));
     SkAutoCanvasRestore ar(canvas, false);
     canvas->saveLayer(nullptr, &layerPaint);
 
