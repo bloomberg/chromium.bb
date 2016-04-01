@@ -45,6 +45,9 @@ class ObjectBackedNativeHandler : public NativeHandler {
   // to bind to base::Unretained.
   void RouteFunction(const std::string& name,
                      const HandlerFunction& handler_function);
+  void RouteFunction(const std::string& name,
+                     const std::string& feature_name,
+                     const HandlerFunction& handler_function);
 
   ScriptContext* context() const { return context_; }
 

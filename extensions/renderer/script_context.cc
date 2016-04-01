@@ -4,6 +4,7 @@
 
 #include "extensions/renderer/script_context.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/constants.h"
@@ -208,6 +210,14 @@ v8::Local<v8::Value> ScriptContext::CallFunction(
 Feature::Availability ScriptContext::GetAvailability(
     const std::string& api_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (api_name == "test") {
+    bool allowed = base::CommandLine::ForCurrentProcess()->
+                       HasSwitch(::switches::kTestType);
+    Feature::AvailabilityResult result =
+        allowed ? Feature::IS_AVAILABLE : Feature::MISSING_COMMAND_LINE_SWITCH;
+    return Feature::Availability(result,
+                                 allowed ? "" : "Only allowed in tests");
+  }
   // Hack: Hosted apps should have the availability of messaging APIs based on
   // the URL of the page (which might have access depending on some extension
   // with externally_connectable), not whether the app has access to messaging
