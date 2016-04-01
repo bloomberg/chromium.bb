@@ -34,7 +34,7 @@ TEST_F(SyncSessionSnapshotTest, SyncSessionSnapshotToValue) {
   model_neutral.num_server_overwrites = 18;
 
   ProgressMarkerMap download_progress_markers;
-  download_progress_markers[BOOKMARKS] = "test";
+  download_progress_markers[BOOKMARKS] = "\xef\xb7\xa4";
   download_progress_markers[APPS] = "apps";
   scoped_ptr<base::DictionaryValue> expected_download_progress_markers_value(
       ProgressMarkerMapToValue(download_progress_markers));
