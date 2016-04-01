@@ -67,6 +67,8 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
       return kResultsTableDimmedText;
 
     // Intentional pass-throughs to NativeThemeAura.
+    case kColorId_ButtonEnabledColor:
+    case kColorId_TextOnCallToActionColor:
     case kColorId_ResultsTableHoveredBackground:
     case kColorId_ResultsTableSelectedBackground:
     case kColorId_ResultsTableNormalUrl:
@@ -75,9 +77,70 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
       return NativeThemeAura::GetSystemColor(color_id);
 
     // Any other color is not defined and shouldn't be used in a dark theme.
-    default:
+    case kColorId_WindowBackground:
+    case kColorId_DialogBackground:
+    case kColorId_BubbleBackground:
+    case kColorId_FocusedBorderColor:
+    case kColorId_UnfocusedBorderColor:
+    case kColorId_ButtonBackgroundColor:
+    case kColorId_ButtonDisabledColor:
+    case kColorId_ButtonHighlightColor:
+    case kColorId_ButtonHoverColor:
+    case kColorId_ButtonHoverBackgroundColor:
+    case kColorId_BlueButtonEnabledColor:
+    case kColorId_BlueButtonDisabledColor:
+    case kColorId_BlueButtonPressedColor:
+    case kColorId_BlueButtonHoverColor:
+    case kColorId_BlueButtonShadowColor:
+    case kColorId_EnabledMenuItemForegroundColor:
+    case kColorId_DisabledMenuItemForegroundColor:
+    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
+    case kColorId_SelectedMenuItemForegroundColor:
+    case kColorId_FocusedMenuItemBackgroundColor:
+    case kColorId_HoverMenuItemBackgroundColor:
+    case kColorId_MenuSeparatorColor:
+    case kColorId_MenuBackgroundColor:
+    case kColorId_MenuBorderColor:
+    case kColorId_EnabledMenuButtonBorderColor:
+    case kColorId_FocusedMenuButtonBorderColor:
+    case kColorId_HoverMenuButtonBorderColor:
+    case kColorId_LabelEnabledColor:
+    case kColorId_LabelDisabledColor:
+    case kColorId_LabelBackgroundColor:
+    case kColorId_LinkDisabled:
+    case kColorId_TextfieldReadOnlyColor:
+    case kColorId_TextfieldReadOnlyBackground:
+    case kColorId_TooltipBackground:
+    case kColorId_TooltipText:
+    case kColorId_TreeBackground:
+    case kColorId_TreeText:
+    case kColorId_TreeSelectedText:
+    case kColorId_TreeSelectedTextUnfocused:
+    case kColorId_TreeSelectionBackgroundFocused:
+    case kColorId_TreeSelectionBackgroundUnfocused:
+    case kColorId_TreeArrow:
+    case kColorId_TableBackground:
+    case kColorId_TableText:
+    case kColorId_TableSelectedText:
+    case kColorId_TableSelectedTextUnfocused:
+    case kColorId_TableSelectionBackgroundFocused:
+    case kColorId_TableSelectionBackgroundUnfocused:
+    case kColorId_TableGroupingIndicatorColor:
+    case kColorId_ResultsTablePositiveText:
+    case kColorId_ResultsTablePositiveHoveredText:
+    case kColorId_ResultsTablePositiveSelectedText:
+    case kColorId_ResultsTableNegativeText:
+    case kColorId_ResultsTableNegativeHoveredText:
+    case kColorId_ResultsTableNegativeSelectedText:
+    case kColorId_ThrobberSpinningColor:
+    case kColorId_ThrobberWaitingColor:
+    case kColorId_ThrobberLightColor:
+    case kColorId_NumColors:
       return gfx::kPlaceholderColor;
   }
+
+  NOTREACHED();
+  return gfx::kPlaceholderColor;
 }
 
 NativeThemeDarkAura::NativeThemeDarkAura() {}
