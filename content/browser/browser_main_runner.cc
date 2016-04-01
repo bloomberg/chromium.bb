@@ -15,6 +15,7 @@
 #include "base/profiler/scoped_profile.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/time/time.h"
+#include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
@@ -44,6 +45,7 @@ namespace content {
 namespace {
 
 bool g_exited_main_message_loop = false;
+const char kMainThreadName[] = "CrBrowserMain";
 
 }  // namespace
 
@@ -63,7 +65,9 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 
     // TODO(vadimt, yiyaoliu): Remove all tracked_objects references below once
     // crbug.com/453640 is fixed.
-    tracked_objects::ThreadData::InitializeThreadContext("CrBrowserMain");
+    tracked_objects::ThreadData::InitializeThreadContext(kMainThreadName);
+    base::trace_event::AllocationContextTracker::SetCurrentThreadName(
+        kMainThreadName);
     TRACK_SCOPED_REGION(
         "Startup", "BrowserMainRunnerImpl::Initialize");
     TRACE_EVENT0("startup", "BrowserMainRunnerImpl::Initialize");

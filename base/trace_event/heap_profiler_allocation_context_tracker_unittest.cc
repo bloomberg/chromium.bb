@@ -229,5 +229,27 @@ TEST_F(AllocationContextTrackerTest, BacktraceTakesTop) {
   }
 }
 
+TEST_F(AllocationContextTrackerTest, SetCurrentThreadName) {
+  TRACE_EVENT0("Testing", kCupcake);
+
+  // Test if the thread name is inserted into backtrace.
+  const char kThread1[] = "thread1";
+  AllocationContextTracker::SetCurrentThreadName(kThread1);
+  AllocationContext ctx1 =
+      AllocationContextTracker::GetInstanceForCurrentThread()
+          ->GetContextSnapshot();
+  ASSERT_EQ(kThread1, ctx1.backtrace.frames[0]);
+  ASSERT_EQ(kCupcake, ctx1.backtrace.frames[1]);
+
+  // Test if the thread name is reset.
+  const char kThread2[] = "thread2";
+  AllocationContextTracker::SetCurrentThreadName(kThread2);
+  AllocationContext ctx2 =
+      AllocationContextTracker::GetInstanceForCurrentThread()
+          ->GetContextSnapshot();
+  ASSERT_EQ(kThread2, ctx2.backtrace.frames[0]);
+  ASSERT_EQ(kCupcake, ctx2.backtrace.frames[1]);
+}
+
 }  // namespace trace_event
 }  // namespace base

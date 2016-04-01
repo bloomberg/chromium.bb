@@ -49,10 +49,17 @@ AllocationContextTracker::GetInstanceForCurrentThread() {
   return tracker;
 }
 
-AllocationContextTracker::AllocationContextTracker() {
+AllocationContextTracker::AllocationContextTracker() : thread_name_(nullptr) {
   pseudo_stack_.reserve(kMaxStackDepth);
 }
 AllocationContextTracker::~AllocationContextTracker() {}
+
+// static
+void AllocationContextTracker::SetCurrentThreadName(const char* name) {
+  if (name && capture_enabled()) {
+    GetInstanceForCurrentThread()->thread_name_ = name;
+  }
+}
 
 // static
 void AllocationContextTracker::SetCaptureEnabled(bool enabled) {
@@ -102,6 +109,13 @@ AllocationContext AllocationContextTracker::GetContextSnapshot() {
     auto dst = std::begin(ctx.backtrace.frames);
     auto src_end = pseudo_stack_.end();
     auto dst_end = std::end(ctx.backtrace.frames);
+
+    // Add the thread name as the first enrty in the backtrace.
+    if (thread_name_) {
+      DCHECK(dst < dst_end);
+      *dst = thread_name_;
+      ++dst;
+    }
 
     // Copy as much of the bottom of the pseudo stack into the backtrace as
     // possible.

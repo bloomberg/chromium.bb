@@ -48,6 +48,10 @@ class BASE_EXPORT AllocationContextTracker {
   // returns nullptr in the nested calls.
   static AllocationContextTracker* GetInstanceForCurrentThread();
 
+  // Set the thread name in the AllocationContextTracker of the current thread
+  // if capture is enabled.
+  static void SetCurrentThreadName(const char* name);
+
   // Pushes a frame onto the thread-local pseudo stack.
   void PushPseudoStackFrame(StackFrame frame);
 
@@ -66,6 +70,9 @@ class BASE_EXPORT AllocationContextTracker {
 
   // The pseudo stack where frames are |TRACE_EVENT| names.
   std::vector<StackFrame> pseudo_stack_;
+
+  // The thread name is used as the first entry in the pseudo stack.
+  const char* thread_name_;
 
   DISALLOW_COPY_AND_ASSIGN(AllocationContextTracker);
 };
