@@ -26,7 +26,7 @@ class MockInputApi(object):
     self.is_committing = False
     self.change = MockChange([])
 
-  def AffectedFiles(self, file_filter=None, include_deletes=False):
+  def AffectedFiles(self, file_filter=None):
     return self.files
 
   def AffectedSourceFiles(self, file_filter=None):
@@ -92,14 +92,13 @@ class MockFile(object):
   MockInputApi for presubmit unittests.
   """
 
-  def __init__(self, local_path, new_contents, action='A'):
+  def __init__(self, local_path, new_contents):
     self._local_path = local_path
     self._new_contents = new_contents
     self._changed_contents = [(i + 1, l) for i, l in enumerate(new_contents)]
-    self._action = action
 
   def Action(self):
-    return self._action
+    return 'A'  # TODO(dbeam): feel free to change if your test actually uses.
 
   def ChangedContents(self):
     return self._changed_contents
