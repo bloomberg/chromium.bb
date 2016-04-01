@@ -195,12 +195,6 @@ MostVisitedSites::MostVisitedSites(Profile* profile)
                               new suggestions::SuggestionsSource(profile_));
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
 
-  SuggestionsService* suggestions_service =
-      SuggestionsServiceFactory::GetForProfile(profile_);
-  suggestions_subscription_ = suggestions_service->AddCallback(
-      base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
-                 base::Unretained(this)));
-
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
   supervised_user_service->AddObserver(this);
@@ -237,15 +231,6 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
     received_popular_sites_ = true;
   }
 
-  SuggestionsService* suggestions_service =
-      SuggestionsServiceFactory::GetForProfile(profile_);
-  // Immediately get the current suggestions from the cache. If the cache is
-  // empty, this will fall back to TopSites.
-  OnSuggestionsProfileAvailable(
-      suggestions_service->GetSuggestionsDataFromCache());
-  // Also start a request for fresh suggestions.
-  suggestions_service->FetchSuggestionsData();
-
   scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
   if (top_sites) {
     // TopSites updates itself after a delay. To ensure up-to-date results,
@@ -256,6 +241,19 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
     // TopSites changes.
     scoped_observer_.Add(top_sites.get());
   }
+
+  SuggestionsService* suggestions_service =
+      SuggestionsServiceFactory::GetForProfile(profile_);
+  suggestions_subscription_ = suggestions_service->AddCallback(
+      base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
+                 base::Unretained(this)));
+
+  // Immediately get the current suggestions from the cache. If the cache is
+  // empty, this will fall back to TopSites.
+  OnSuggestionsProfileAvailable(
+      suggestions_service->GetSuggestionsDataFromCache());
+  // Also start a request for fresh suggestions.
+  suggestions_service->FetchSuggestionsData();
 }
 
 void MostVisitedSites::GetURLThumbnail(
