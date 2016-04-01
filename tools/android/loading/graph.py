@@ -75,6 +75,10 @@ class DirectedGraph(object):
     """Returns the set of edges of this graph."""
     return self._edges
 
+  def RootNodes(self):
+    """Returns an iterable of nodes that have no incoming edges."""
+    return filter(lambda n: not self.InEdges(n), self._nodes)
+
   def UpdateEdge(self, edge, new_from_node, new_to_node):
     """Updates an edge.
 
@@ -125,15 +129,23 @@ class DirectedGraph(object):
           sources.append(successor)
     return sorted_nodes
 
-  def ReachableNodes(self, roots):
-    """Returns a list of nodes from a set of root nodes."""
+  def ReachableNodes(self, roots, should_stop=lambda n: False):
+    """Returns a list of nodes from a set of root nodes.
+
+    Args:
+      roots: ([Node]) List of roots to start from.
+      should_stop: (callable) Returns True when a node should stop the
+                   exploration and be skipped.
+    """
     visited = set()
-    fifo = collections.deque(roots)
+    fifo = collections.deque([n for n in roots if not should_stop(n)])
     while len(fifo) != 0:
       node = fifo.pop()
+      if should_stop(node):
+        continue
       visited.add(node)
       for e in self.OutEdges(node):
-        if e.to_node not in visited:
+        if e.to_node not in visited and not should_stop(e.to_node):
           visited.add(e.to_node)
         fifo.appendleft(e.to_node)
     return list(visited)

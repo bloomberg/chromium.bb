@@ -11,19 +11,20 @@ import graph
 import request_track
 
 
-class _RequestNode(graph.Node):
+class RequestNode(graph.Node):
   def __init__(self, request):
-    super(_RequestNode, self).__init__()
+    super(RequestNode, self).__init__()
     self.request = request
     self.cost = request.Cost()
 
 
-class _Edge(graph.Edge):
+class Edge(graph.Edge):
   def __init__(self, from_node, to_node, reason):
-    super(_Edge, self).__init__(from_node, to_node)
+    super(Edge, self).__init__(from_node, to_node)
     self.reason = reason
     self.cost = request_track.TimeBetween(
         self.from_node.request, self.to_node.request, self.reason)
+    self.is_timing = False
 
 
 class RequestDependencyGraph(object):
@@ -34,16 +35,21 @@ class RequestDependencyGraph(object):
   _CAN_BE_TIMING_PARENT = set(['script', 'magic-debug-content'])
   _CAN_MAKE_TIMING_DEPENDENCE = set(['json', 'other', 'magic-debug-content'])
 
-  def __init__(self, requests, dependencies_lens):
+  def __init__(self, requests, dependencies_lens,
+               node_class=RequestNode, edge_class=Edge):
     """Creates a request dependency graph.
 
     Args:
       requests: ([Request]) a list of requests.
       dependencies_lens: (RequestDependencyLens)
+      node_class: (subclass of RequestNode)
+      edge_class: (subclass of Edge)
     """
+    assert issubclass(node_class, RequestNode)
+    assert issubclass(edge_class, Edge)
     self._requests = requests
     deps = dependencies_lens.GetRequestDependencies()
-    self._nodes_by_id = {r.request_id : _RequestNode(r) for r in self._requests}
+    self._nodes_by_id = {r.request_id : node_class(r) for r in self._requests}
     edges = []
     for (parent_request, child_request, reason) in deps:
       if (parent_request.request_id not in self._nodes_by_id
@@ -51,7 +57,7 @@ class RequestDependencyGraph(object):
         continue
       parent_node = self._nodes_by_id[parent_request.request_id]
       child_node = self._nodes_by_id[child_request.request_id]
-      edges.append(_Edge(parent_node, child_node, reason))
+      edges.append(edge_class(parent_node, child_node, reason))
     self._first_request_node = self._nodes_by_id[self._requests[0].request_id]
     self._deps_graph = graph.DirectedGraph(self._nodes_by_id.values(), edges)
     self._HandleTimingDependencies()
@@ -73,17 +79,20 @@ class RequestDependencyGraph(object):
       if request_id in request_id_to_cost:
         node.cost = request_id_to_cost[request_id]
 
-  def Cost(self, from_first_request=True):
+  def Cost(self, from_first_request=True, path_list=None, costs_out=None):
     """Returns the cost of the graph, that is the costliest path.
 
     Args:
       from_first_request: (boolean) If True, only considers paths that originate
                           from the first request node.
+      path_list: (list) See graph.Cost().
+      costs_out: (list) See graph.Cost().
     """
     if from_first_request:
-      return self._deps_graph.Cost([self._first_request_node])
+      return self._deps_graph.Cost(
+          [self._first_request_node], path_list, costs_out)
     else:
-      return self._deps_graph.Cost()
+      return self._deps_graph.Cost(path_list=path_list, costs_out=costs_out)
 
   def _HandleTimingDependencies(self):
     try:
@@ -162,6 +171,7 @@ class RequestDependencyGraph(object):
                   # eligible.
       if (edges_by_end_time[end_mark].to_node.request.end_msec
           <= current.to_node.request.start_msec):
+        current.is_timing = True
         self._deps_graph.UpdateEdge(
             current, edges_by_end_time[end_mark].to_node,
             current.to_node)

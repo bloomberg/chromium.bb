@@ -6,7 +6,6 @@
 
 import dependency_graph
 import devtools_monitor
-import loading_model
 import loading_trace
 import page_track
 import request_track
@@ -156,15 +155,6 @@ class SimpleLens(object):
       if initiating_url in url_to_rq:
         deps.append((url_to_rq[initiating_url], rq, rq.initiator['type']))
     return deps
-
-
-class TestResourceGraph(loading_model.ResourceGraph):
-  """Replace the default request lens in a ResourceGraph with our SimpleLens."""
-  REQUEST_LENS = SimpleLens
-
-  @classmethod
-  def FromRequestList(cls, requests, page_events=None, trace_events=None):
-    return cls(LoadingTraceFromEvents(requests, page_events, trace_events))
 
 
 class TestDependencyGraph(dependency_graph.RequestDependencyGraph):

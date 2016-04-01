@@ -29,11 +29,12 @@ import content_classification_lens
 import controller
 import device_setup
 import frame_load_lens
-import loading_model
+import loading_graph_view
+import loading_graph_view_visualization
 import loading_trace
-import model_graph
 import options
-
+import request_dependencies_lens
+import request_track
 
 # TODO(mattcary): logging.info isn't that useful, as the whole (tools) world
 # uses logging info; we need to introduce logging modules to get finer-grained
@@ -68,11 +69,11 @@ def _WriteJson(output, json_data):
   json.dump(json_data, output, sort_keys=True, indent=2)
 
 
-def _GetPrefetchHtml(graph, name=None):
+def _GetPrefetchHtml(graph_view, name=None):
   """Generate prefetch page for the resources in resource graph.
 
   Args:
-    graph: a ResourceGraph.
+    graph_view: (LoadingGraphView)
     name: optional string used in the generated page.
 
   Returns:
@@ -89,8 +90,8 @@ def _GetPrefetchHtml(graph, name=None):
 <head>
 <title>%s</title>
 """ % title)
-  for info in graph.ResourceInfo():
-    output.append('<link rel="prefetch" href="%s">\n' % info.Url())
+  for node in graph_view.deps_graph.graph.Nodes():
+    output.append('<link rel="prefetch" href="%s">\n' % node.request.url)
   output.append("""</head>
 <body>%s</body>
 </html>
@@ -139,8 +140,7 @@ def _FullFetch(url, json_output, prefetch):
   if prefetch:
     assert not OPTIONS.local
     logging.warning('Generating prefetch')
-    prefetch_html = _GetPrefetchHtml(
-        loading_model.ResourceGraph(cold_data), name=url)
+    prefetch_html = _GetPrefetchHtml(_ProcessJsonTrace(cold_data), name=url)
     tmp = tempfile.NamedTemporaryFile()
     tmp.write(prefetch_html)
     tmp.flush()
@@ -165,19 +165,24 @@ def _FullFetch(url, json_output, prefetch):
     logging.warning('Wrote ' + json_output)
 
 
-def _ProcessRequests(filename):
+def _ProcessTraceFile(filename):
   with open(filename) as f:
-    trace = loading_trace.LoadingTrace.FromJsonDict(json.load(f))
+    return _ProcessJsonTrace(json.load(f))
+
+
+def _ProcessJsonTrace(json_dict):
+    trace = loading_trace.LoadingTrace.FromJsonDict(json_dict)
     content_lens = (
         content_classification_lens.ContentClassificationLens.WithRulesFiles(
             trace, OPTIONS.ad_rules, OPTIONS.tracking_rules))
     frame_lens = frame_load_lens.FrameLoadLens(trace)
     activity = activity_lens.ActivityLens(trace)
-    graph = loading_model.ResourceGraph(
-        trace, content_lens, frame_lens, activity)
+    deps_lens = request_dependencies_lens.RequestDependencyLens(trace)
+    graph_view = loading_graph_view.LoadingGraphView(
+        trace, deps_lens, content_lens, frame_lens, activity)
     if OPTIONS.noads:
-      graph.Set(node_filter=graph.FilterAds)
-    return graph
+      graph_view.RemoveAds()
+    return graph_view
 
 
 def InvalidCommand(cmd):
@@ -189,8 +194,10 @@ def DoPng(arg_str):
   OPTIONS.ParseArgs(arg_str, description='Generates a PNG from a trace',
                     extra=['request_json', ('--png_output', ''),
                            ('--eog', False)])
-  graph = _ProcessRequests(OPTIONS.request_json)
-  visualization = model_graph.GraphVisualization(graph)
+  graph_view = _ProcessTraceFile(OPTIONS.request_json)
+  visualization = (
+      loading_graph_view_visualization.LoadingGraphViewVisualization(
+          graph_view))
   tmp = tempfile.NamedTemporaryFile()
   visualization.OutputDot(tmp)
   tmp.flush()
@@ -208,26 +215,13 @@ def DoPng(arg_str):
   tmp.close()
 
 
-def DoCompare(arg_str):
-  OPTIONS.ParseArgs(arg_str, description='Compares two traces',
-                    extra=['g1_json', 'g2_json'])
-  g1 = _ProcessRequests(OPTIONS.g1_json)
-  g2 = _ProcessRequests(OPTIONS.g2_json)
-  discrepancies = loading_model.ResourceGraph.CheckImageLoadConsistency(g1, g2)
-  if discrepancies:
-    print '%d discrepancies' % len(discrepancies)
-    print '\n'.join([str(r) for r in discrepancies])
-  else:
-    print 'Consistent!'
-
-
 def DoPrefetchSetup(arg_str):
   OPTIONS.ParseArgs(arg_str, description='Sets up prefetch',
                     extra=['request_json', 'target_html', ('--upload', False)])
-  graph = _ProcessRequests(OPTIONS.request_json)
+  graph_view = _ProcessTraceFile(OPTIONS.request_json)
   with open(OPTIONS.target_html, 'w') as html:
     html.write(_GetPrefetchHtml(
-        graph, name=os.path.basename(OPTIONS.request_json)))
+        graph_view, name=os.path.basename(OPTIONS.request_json)))
   if OPTIONS.upload:
     device = device_setup.GetFirstDevice()
     destination = os.path.join('/sdcard/Download',
@@ -265,35 +259,34 @@ def DoFetch(arg_str):
 def DoLongPole(arg_str):
   OPTIONS.ParseArgs(arg_str, description='Calculates long pole',
                     extra='request_json')
-  graph = _ProcessRequests(OPTIONS.request_json)
+  graph_view = _ProcessTraceFile(OPTIONS.request_json)
   path_list = []
-  cost = graph.Cost(path_list=path_list)
-  print '%s (%s)' % (path_list[-1], cost)
+  cost = graph_view.deps_graph.Cost(path_list=path_list)
+  print '%s (%s)' % (path_list[-1].request.url, cost)
 
 
 def DoNodeCost(arg_str):
   OPTIONS.ParseArgs(arg_str,
                     description='Calculates node cost',
                     extra='request_json')
-  graph = _ProcessRequests(OPTIONS.request_json)
-  print sum((n.NodeCost() for n in graph.Nodes()))
+  graph_view = _ProcessTraceFile(OPTIONS.request_json)
+  print sum((n.cost for n in graph_view.deps_graph.graph.Nodes()))
 
 
 def DoCost(arg_str):
   OPTIONS.ParseArgs(arg_str,
                     description='Calculates total cost',
                     extra=['request_json', ('--path', False)])
-  graph = _ProcessRequests(OPTIONS.request_json)
+  graph_view = _ProcessTraceFile(OPTIONS.request_json)
   path_list = []
-  print 'Graph cost: %s' % graph.Cost(path_list)
+  print 'Graph cost: %s' % graph_view.deps_graph.Cost(path_list=path_list)
   if OPTIONS.path:
-    for p in path_list:
-      print '  ' + p.ShortName()
+    for n in path_list:
+      print '  ' + request_track.ShortName(n.request.url)
 
 
 COMMAND_MAP = {
     'png': DoPng,
-    'compare': DoCompare,
     'prefetch_setup': DoPrefetchSetup,
     'log_requests': DoLogRequests,
     'longpole': DoLongPole,
