@@ -5,14 +5,17 @@
 #include "modules/payments/PaymentResponse.h"
 
 #include "bindings/core/v8/JSONValuesForV8.h"
-#include "bindings/core/v8/ScriptState.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
+#include "modules/payments/PaymentCompleter.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
-PaymentResponse::PaymentResponse()
+PaymentResponse::PaymentResponse(mojom::wtf::PaymentResponsePtr response, PaymentCompleter* paymentCompleter)
+    : m_methodName(response->method_name)
+    , m_stringifiedDetails(response->stringified_details)
+    , m_paymentCompleter(paymentCompleter)
 {
+    DCHECK(m_paymentCompleter);
 }
 
 PaymentResponse::~PaymentResponse()
@@ -26,7 +29,12 @@ ScriptValue PaymentResponse::details(ScriptState* scriptState, ExceptionState& e
 
 ScriptPromise PaymentResponse::complete(ScriptState* scriptState, bool success)
 {
-    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "Not implemented."));
+    return m_paymentCompleter->complete(scriptState, success);
+}
+
+DEFINE_TRACE(PaymentResponse)
+{
+    visitor->trace(m_paymentCompleter);
 }
 
 } // namespace blink

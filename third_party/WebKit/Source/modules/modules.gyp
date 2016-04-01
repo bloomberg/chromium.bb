@@ -48,6 +48,7 @@
       '<(DEPTH)/third_party/zlib/zlib.gyp:zlib',
       '../config.gyp:config',
       'modules_generated.gyp:make_modules_generated',
+      '../../public/blink.gyp:mojo_bindings',
     ],
     'defines': [
       'BLINK_IMPLEMENTATION=1',

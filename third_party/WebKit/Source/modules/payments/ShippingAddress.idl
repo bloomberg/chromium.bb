@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://wicg.github.io/paymentrequest/specs/paymentrequest.html#idl-def-shippingaddress
-// https://github.com/WICG/paymentrequest/issues/28
+// https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#shippingaddress-interface
+// https://github.com/w3c/browser-payment-api/issues/6
 
 [
     RuntimeEnabled=PaymentRequest,

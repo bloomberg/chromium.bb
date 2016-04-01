@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://wicg.github.io/paymentrequest/specs/paymentrequest.html#paymentrequest-interface
+// https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#paymentrequest-interface
 // http://crbug.com/587995
 
 [
@@ -13,7 +13,7 @@
     GarbageCollected,
 ] interface PaymentRequest : EventTarget {
     [CallWith=ScriptState] Promise<PaymentResponse> show();
-    void abort();
+    [RaisesException] void abort();
 
     [ImplementedAs=getShippingAddress] readonly attribute ShippingAddress? shippingAddress;
     readonly attribute DOMString? shippingOption;

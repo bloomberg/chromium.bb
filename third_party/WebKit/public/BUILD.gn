@@ -180,6 +180,7 @@ mojom("mojo_bindings_blink") {
   sources = [
     "platform/modules/bluetooth/web_bluetooth.mojom",
     "platform/modules/notifications/notification.mojom",
+    "platform/modules/payments/payment_request.mojom",
   ]
   for_blink = true
   variant = "wtf"
@@ -190,5 +191,6 @@ mojom("mojo_bindings") {
   sources = [
     "platform/modules/bluetooth/web_bluetooth.mojom",
     "platform/modules/notifications/notification.mojom",
+    "platform/modules/payments/payment_request.mojom",
   ]
 }

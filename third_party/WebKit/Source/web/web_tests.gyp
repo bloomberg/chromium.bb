@@ -47,6 +47,7 @@
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
                 '../../public/blink.gyp:blink',
+                '../../public/blink.gyp:mojo_bindings',
                 '../config.gyp:unittest_config',
                 '../modules/modules.gyp:modules',
                 '../platform/blink_platform_tests.gyp:blink_platform_test_support',

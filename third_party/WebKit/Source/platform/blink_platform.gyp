@@ -135,6 +135,7 @@
       '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
+      '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings_wtf_support',
       '<(DEPTH)/skia/skia.gyp:skia',
       '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',

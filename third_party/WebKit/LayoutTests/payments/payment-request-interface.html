@@ -4,25 +4,105 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
+function substitute(originalObject, substituteKeyValuePair) {
+    for (var key in originalObject) {
+        if (originalObject.hasOwnProperty(key) && substituteKeyValuePair.hasOwnProperty(key)) {
+            originalObject[key] = substituteKeyValuePair[key];
+        }
+    }
+}
+
+function buildItem(optionalSubstituteKeyValuePair) {
+    var item = {'id': 'item_id', 'label': 'Item Description', 'amount': {'currencyCode': 'USD', 'value': '10.00'}};
+
+    if (optionalSubstituteKeyValuePair) {
+        substitute(item, optionalSubstituteKeyValuePair);
+        substitute(item['amount'], optionalSubstituteKeyValuePair);
+    }
+
+    return item;
+}
+
+function buildDetails(optionalDetailName, optionalSubstituteKeyValuePair) {
+    var details = {};
+    var detailNames = ['items', 'shippingOptions'];
+
+    for (var i in detailNames) {
+        if (optionalDetailName == detailNames[i]) {
+            details[detailNames[i]] = [buildItem(optionalSubstituteKeyValuePair)];
+        } else {
+            details[detailNames[i]] = [buildItem()];
+        }
+    }
+
+    return details;
+}
+
 test(function() {
-    new PaymentRequest([], {}, {}, {});
+    new PaymentRequest(['foo'], buildDetails(), {}, {});
 }, 'Creating a PaymentRequest with empty parameters should not throw or crash.');
 
 test(function() {
-    new PaymentRequest([], {}, {}, {}, '');
+    new PaymentRequest(['foo'], buildDetails(), {}, {}, '');
 }, 'Creating a PaymentRequest with extra parameters should not throw or crash.');
 
 test(function() {
-    new PaymentRequest([], {});
+    new PaymentRequest(['foo'], buildDetails());
 }, 'Creating a PaymentRequest with omitted optional parameters should not throw or crash.');
 
 test(function() {
-    new PaymentRequest([], {}, undefined, undefined);
+    new PaymentRequest(['foo'], buildDetails(), undefined, undefined);
 }, 'Creating a PaymentRequest with undefined optional parameters should not throw or crash.');
 
 test(function() {
-    new PaymentRequest([], {}, null, null);
+    new PaymentRequest(['foo'], buildDetails(), null, null);
 }, 'Creating a PaymentRequest with null optional parameters should not throw or crash.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], buildDetails());
+    assert_readonly(request, 'shippingAddress', 'PaymentRequest should have a readonly shippingAddress property.');
+    assert_readonly(request, 'shippingOption', 'PaymentRequest should have a readonly shippingOption property.');
+}, 'PaymentRequest should have readonly shippingAddress and shippingOption properties.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], buildDetails());
+    assert_not_equals(request.onshippingaddresschange, undefined, 'PaymentRequest should have onShippingAddressChange event.');
+    assert_not_equals(request.onshippingoptionchange, undefined, 'PaymentRequest should have onShippingOptionChange event.');
+}, 'PaymentRequest should have onShippingAddressChange and onShippingOptionChange events.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], buildDetails());
+    assert_not_equals(request.abort, undefined, 'PaymentRequest should have abort() method.');
+    assert_not_equals(request.show, undefined, 'PaymentRequest should have show() method.');
+}, 'PaymentRequest should have methods abort() and show().');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], buildDetails());
+    request.show();
+    request.abort();
+}, 'PaymentRequest.abort() and PaymentRequest.show() should take no parameters.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], buildDetails(), {'requestShipping': true}, {'foo': {'gateway': 'bar'}});
+    request.show();
+    request.abort();
+}, 'Valid data causes no errors.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], buildDetails('shippingOptions', {'id': 'standard'}));
+    assert_equals('standard', request.shippingOption);
+}, 'Shipping option identifier should default to the single provided option.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], {"items": [buildItem()]});
+    assert_equals(null, request.shippingOption);
+}, 'Shipping option identifier should be null when no shipping options are provided.');
+
+test(function() {
+    var request = new PaymentRequest(['foo'], {'items': [buildItem()], 'shippingOptions': [buildItem({'id': 'standard'}), buildItem({'id': 'express'})]});
+    assert_equals(null, request.shippingOption);
+}, 'Shipping option identifier should be null at first when multiple shipping options are provided.');
+
 
 generate_tests(assert_throws, [
     ['PaymentRequest constructor should throw for incorrect parameter types.', null, function() {
@@ -33,31 +113,120 @@ generate_tests(assert_throws, [
     }],
     ['PaymentRequest constructor should throw for null required parameter.', null, function() {
         new PaymentRequest(null, null)
-    }]
+    }],
+    ['Empty list of supported payment method identifiers should throw.', null, function() {
+        new PaymentRequest([], buildDetails())
+    }],
+    ['Keys in payment method specific data object should match accepted method identifiers.', null, function() {
+        new PaymentRequest(['foo'], buildDetails(), {}, {'bar': {'gateway': 'baz'}})
+    }],
+    ['Empty details should throw', null, function() {
+        new PaymentRequest(['foo'], {})
+    }],
+    ['Empty items should throw', null, function() {
+        new PaymentRequest(['foo'], {'items': []})
+    }],
+    ['Aborting before showing should throw.', null, function() {
+        new PaymentRequest(['foo'], buildDetails()).abort()
+    }],
+
+    // Payment method specific data should be a JSON-serializable object.
+    ['Array value for payment method specific data parameter should throw', null, function() {
+        new PaymentRequest(['foo'], buildDetails(), {}, [])
+    }],
+    ['String value for payment method specific data parameter should throw', null, function() {
+        new PaymentRequest(['foo'], buildDetails(), {}, 'foo')
+    }],
+    ['Numeric value for payment method specific data parameter should throw', null, function() {
+        new PaymentRequest(['foo'], buildDetails(), {}, 42)
+    }],
+    ['Infinite JSON value for one of the payment method specific data pieces should throw', null, function() {
+        var infiniteData = {'foo': {}};
+        infiniteData.foo = infiniteData;
+        new PaymentRequest(['foo'], buildDetails(), {}, infiniteData)
+    }],
+
+    // Values in payment method specific data object should be JSON-serializable objects.
+    ['Array value for one of the payment method specific data pieces should throw', null, function() {
+        new PaymentRequest(['foo'], buildDetails(), {}, {'foo': []})
+    }],
+    ['String value for one of the payment method specific data pieces should throw', null, function() {
+        new PaymentRequest(['foo'], buildDetails(), {}, {'foo': 'bar'})
+    }],
+    ['Numeric value for one of the payment method specific data pieces should throw', null, function() {
+        new PaymentRequest(['foo'], buildDetails(), {}, {'foo': 42})
+    }],
 ]);
 
-test(function() {
-    var request = new PaymentRequest([], {});
-    assert_readonly(request, "shippingAddress", 'PaymentRequest should have a readonly shippingAddress property.');
-    assert_readonly(request, "shippingOption", 'PaymentRequest should have a readonly shippingOption property.');
-}, 'PaymentRequest should have readonly shippingAddress and shippingOption properties.');
+var detailNames = ['items', 'shippingOptions'];
+for (var i in detailNames) {
+    generate_tests(assert_throws, [
+        // Invalid currency code formats.
+        ['Invalid currency code US1 should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': 'US1'}))
+        }],
+        ['Invalid currency code US should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': 'US'}))
+        }],
+        ['Invalid currency code USDO should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': 'USDO'}))
+        }],
+        ['Invalid currency code usd should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': 'usd'}))
+        }],
+        ['Empty currency code should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': ''}))
+        }],
+        ['Null currency code should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': null}))
+        }],
+        ['Undefined currency code should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': undefined}))
+        }],
 
-test(function() {
-    var request = new PaymentRequest([], {});
-    assert_not_equals(request.onshippingaddresschange, undefined, 'PaymentRequest should have onShippingAddressChange event.');
-    assert_not_equals(request.onshippingoptionchange, undefined, 'PaymentRequest should have onShippingOptionChange event.');
-}, 'PaymentRequest should have onShippingAddressChange and onShippingOptionChange events.');
-
-
-test(function() {
-    var request = new PaymentRequest([], {});
-    assert_not_equals(request.abort, undefined, 'PaymentRequest should have abort() method.');
-    assert_not_equals(request.show, undefined, 'PaymentRequest should have show() method.');
-}, 'PaymentRequest should have methods abort() and show().');
-
-test(function() {
-    var request = new PaymentRequest([], {});
-    request.abort();
-    request.show();
-}, 'PaymentRequest.abort() and PaymentRequest.show() should take no parameters.');
+        // Invalid amount formats.
+        ['Invalid amount "-" should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': '-'}))
+        }],
+        ['Invalid amount "notdigits" should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': 'notdigits'}))
+        }],
+        ['Invalid amount "ALSONOTDIGITS" should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': 'ALSONOTDIGITS'}))
+        }],
+        ['Invalid amount "10." should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': '10.'}))
+        }],
+        ['Invalid amount ".99" should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': '.99'}))
+        }],
+        ['Invalid amount "-10." should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': '-10.'}))
+        }],
+        ['Invalid amount "-.99" should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': '-.99'}))
+        }],
+        ['Invalid amount "10-" should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': '10-'}))
+        }],
+        ['Invalid amount "1-0" should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': '1-0'}))
+        }],
+        ['Invalid amount "1.0.0" should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': '1.0.0'}))
+        }],
+        ['Invalid amount "1/3" should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': '1/3'}))
+        }],
+        ['Empty amount should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': ''}))
+        }],
+        ['Null amount should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': null}))
+        }],
+        ['Undefined amount should throw', null, function() {
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'value': undefined}))
+        }],
+    ]);
+}
 </script>

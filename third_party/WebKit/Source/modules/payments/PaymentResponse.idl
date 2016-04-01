@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://wicg.github.io/paymentrequest/specs/paymentrequest.html#dom-paymentresponse
+// https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#paymentresponse-interface
 
 [
     RuntimeEnabled=PaymentRequest,

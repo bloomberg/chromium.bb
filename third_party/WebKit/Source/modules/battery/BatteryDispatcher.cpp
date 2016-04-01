@@ -4,7 +4,7 @@
 
 #include "modules/battery/BatteryDispatcher.h"
 
-#include "platform/threading/BindForMojo.h"
+#include "platform/MojoHelper.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"

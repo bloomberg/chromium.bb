@@ -1,6 +1,7 @@
 include_rules = [
     # To whitelist base/ stuff Blink is allowed to include, we list up all
     # directories and files instead of writing 'base/'.
+    "+base/bind.h",
     "+base/files",
     "+base/json",
     "+base/location.h",
@@ -18,6 +19,8 @@ include_rules = [
     "+base/values.h",
     "+device",
     "+mozilla",
+    "+mojo/public/cpp/bindings/callback.h",
+    "+mojo/public/cpp/bindings/wtf_array.h",
     "+platform",
     "+public/platform",
     "+skia/ext",

@@ -341,6 +341,7 @@ component("platform") {
   deps = [
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings:callback",
+    "//mojo/public/cpp/bindings:wtf_support",
     "//third_party/WebKit/Source/platform/heap",
     "//third_party/harfbuzz-ng",
     "//third_party/icu",

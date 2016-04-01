@@ -35,6 +35,7 @@
         'blink_mojo_sources': [
             'platform/modules/bluetooth/web_bluetooth.mojom',
             'platform/modules/notifications/notification.mojom',
+            'platform/modules/payments/payment_request.mojom',
         ],
     },
     'targets': [

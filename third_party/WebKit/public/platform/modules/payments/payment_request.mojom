@@ -1,0 +1,105 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[JavaPackage="org.chromium.mojom.payments"]
+module mojom;
+
+// The shipping address that the browser process provides to the renderer
+// process. Built either by the browser or a payment app.
+struct ShippingAddress {
+  // ISO 3166 country code. Two upper case ASCII letters.
+  string region_code;
+
+  array<string> address_line;
+  string administrative_area;
+  string locality;
+  string dependent_locality;
+  string postal_code;
+  string sorting_code;
+
+  // Optional shortest ISO 639 language code. Two or three lower case ASCII
+  // letters.
+  string language_code;
+
+  // Optional ISO 1524 script code. Four ASCII letters. The first letter is
+  // upper case; the rest are lower case.
+  string script_code;
+
+  string organization;
+  string recipient;
+};
+
+struct PaymentResponse {
+  string method_name;
+
+  // Payment method specific JSON string that is built either by the browser or
+  // a payment app, for example Android Pay. Browser ensures that the string can
+  // be successfully parsed into base::JSONParser. Renderer parses this string
+  // via v8::JSON::Parse() and hands off the result to the merchant website.
+  // There's no one format for this object, so richer types cannot be used. A
+  // simple example:
+  //
+  // {"nameOnCard": "Jon Doe", "pan": "4111 1111 1111 1111"}
+  string stringified_details;
+};
+
+interface PaymentRequestClient {
+  OnShippingAddressChange(ShippingAddress address);
+  OnShippingOptionChange(string shipping_option_id);
+  OnPaymentResponse(PaymentResponse response);
+  OnError();
+  OnComplete();
+};
+
+// The currency amount that the renderer provides to the browser process. The
+// browser shows the amount in UI and forwards it on to the payment app, if it
+// requires the amount.
+struct CurrencyAmount {
+  // ISO 4217 currency code. Three upper case ASCII letters.
+  string currency_code;
+
+  // ISO 20022 CurrencyAnd30Amount. Up to 30 total digits. Up to 10 fraction
+  // digits. Separated by a dot.
+  string value;
+};
+
+struct PaymentItem {
+  string id;
+  string label;
+  CurrencyAmount amount;
+};
+
+struct ShippingOption {
+  string id;
+  string label;
+  CurrencyAmount amount;
+};
+
+struct PaymentDetails {
+  array<PaymentItem> items;
+  array<ShippingOption> shipping_options;
+};
+
+struct PaymentOptions {
+  bool request_shipping;
+};
+
+interface PaymentRequest {
+  SetClient(PaymentRequestClient client);
+  Show(array<string> supported_methods,
+       PaymentDetails details,
+       PaymentOptions options,
+       // A JSON string built by the renderer from a JavaScript object that the
+       // merchant website provides. The renderer uses
+       // blink::JSONObject::toJSONString() to generate this string. The browser
+       // parses the string via base::JSONParser and passes a part of the JSON
+       // object to the payment app, for example Android Pay. There's no one
+       // format for this object, so richer types cannot be used. A simple
+       // example:
+       //
+       // {"https://android.com/pay": {"gateway": "stripe"}}
+       string stringified_data);
+  Abort();
+  Complete(bool success);
+};
