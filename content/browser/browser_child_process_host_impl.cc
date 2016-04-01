@@ -126,7 +126,8 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     : data_(process_type),
       delegate_(delegate),
       power_monitor_message_broadcaster_(this),
-      is_channel_connected_(false) {
+      is_channel_connected_(false),
+      notify_child_disconnected_(false) {
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
 #if USE_ATTACHMENT_BROKER
@@ -156,6 +157,11 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
   g_child_process_list.Get().remove(this);
+
+  if (notify_child_disconnected_) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&NotifyProcessHostDisconnected, data_));
+  }
 }
 
 // static
@@ -193,6 +199,7 @@ void BrowserChildProcessHostImpl::Launch(
   cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
                              arraysize(kForwardSwitches));
 
+  notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
       delegate,
       cmd_line,
@@ -280,6 +287,7 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   is_channel_connected_ = true;
+  notify_child_disconnected_ = true;
 
 #if defined(OS_WIN)
   // From this point onward, the exit of the child process is detected by an
@@ -387,8 +395,6 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
     }
 #endif
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&NotifyProcessHostDisconnected, data_));
   delete delegate_;  // Will delete us
 }
 
@@ -398,6 +404,7 @@ bool BrowserChildProcessHostImpl::Send(IPC::Message* message) {
 
 void BrowserChildProcessHostImpl::OnProcessLaunchFailed() {
   delegate_->OnProcessLaunchFailed();
+  notify_child_disconnected_ = false;
   delete delegate_;  // Will delete us
 }
 

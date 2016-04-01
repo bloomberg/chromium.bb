@@ -135,6 +135,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 #endif
 
   bool is_channel_connected_;
+  bool notify_child_disconnected_;
 };
 
 }  // namespace content
