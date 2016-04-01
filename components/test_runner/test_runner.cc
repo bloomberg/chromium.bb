@@ -19,6 +19,7 @@
 #include "components/test_runner/mock_credential_manager_client.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
 #include "components/test_runner/mock_web_speech_recognizer.h"
+#include "components/test_runner/mock_web_user_media_client.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_preferences.h"
 #include "components/test_runner/web_content_settings.h"
@@ -1669,6 +1670,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       web_view_(nullptr),
       web_content_settings_(new WebContentSettings()),
       mock_screen_orientation_client_(new MockScreenOrientationClient),
+      chooser_count_(0),
       weak_factory_(this) {}
 
 TestRunner::~TestRunner() {}
@@ -2520,6 +2522,12 @@ MockScreenOrientationClient* TestRunner::getMockScreenOrientationClient() {
   return mock_screen_orientation_client_.get();
 }
 
+MockWebUserMediaClient* TestRunner::getMockWebUserMediaClient() {
+  if (!user_media_client_.get())
+    user_media_client_.reset(new MockWebUserMediaClient(delegate_));
+  return user_media_client_.get();
+}
+
 void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
   blink::WebScreenOrientationType orientation;
 
@@ -2542,6 +2550,15 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
 
 void TestRunner::DisableMockScreenOrientation() {
   mock_screen_orientation_client_->SetDisabled(true);
+}
+
+void TestRunner::DidOpenChooser() {
+  chooser_count_++;
+}
+
+void TestRunner::DidCloseChooser() {
+  chooser_count_--;
+  DCHECK_LE(0, chooser_count_);
 }
 
 void TestRunner::DidAcquirePointerLock() {
@@ -2853,7 +2870,7 @@ void TestRunner::CloseWebInspector() {
 }
 
 bool TestRunner::IsChooserShown() {
-  return proxy_->IsChooserShown();
+  return 0 < chooser_count_;
 }
 
 void TestRunner::EvaluateInWebInspector(int call_id,

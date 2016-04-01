@@ -14,6 +14,7 @@
 #include "components/test_runner/mock_webrtc_peer_connection_handler.h"
 #include "components/test_runner/test_interfaces.h"
 #include "components/test_runner/test_runner.h"
+#include "components/test_runner/web_frame_test_client.h"
 
 using namespace blink;
 
@@ -95,6 +96,17 @@ WebTestInterfaces::CreateAppBannerClient() {
 
 AppBannerClient* WebTestInterfaces::GetAppBannerClient() {
   return interfaces_->GetAppBannerClient();
+}
+
+blink::WebFrameClient* WebTestInterfaces::GetWebFrameTestClient() {
+  if (!web_frame_test_client_) {
+    web_frame_test_client_.reset(new WebFrameTestClient(
+        interfaces_->GetTestRunner(),
+        interfaces_->GetDelegate(),
+        interfaces_->GetAccessibilityController(),
+        interfaces_->GetEventSender()));
+  }
+  return web_frame_test_client_.get();
 }
 
 }  // namespace test_runner

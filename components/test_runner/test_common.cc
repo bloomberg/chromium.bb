@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
 namespace test_runner {
 
@@ -44,6 +45,15 @@ class MockBlinkPlatform : NON_EXPORTED_BASE(public blink::Platform) {
 base::LazyInstance<MockBlinkPlatform>::Leaky g_mock_blink_platform =
     LAZY_INSTANCE_INITIALIZER;
 
+const char* kIllegalString = "illegal value";
+const char* kPolicyIgnore = "Ignore";
+const char* kPolicyDownload = "download";
+const char* kPolicyCurrentTab = "current tab";
+const char* kPolicyNewBackgroundTab = "new background tab";
+const char* kPolicyNewForegroundTab = "new foreground tab";
+const char* kPolicyNewWindow = "new window";
+const char* kPolicyNewPopup = "new popup";
+
 }  // namespace
 
 std::string NormalizeLayoutTestURL(const std::string& url) {
@@ -59,6 +69,34 @@ std::string NormalizeLayoutTestURL(const std::string& url) {
     result.replace(data_url_pattern_size, url.length(), path);
   }
   return result;
+}
+
+std::string URLDescription(const GURL& url) {
+  if (url.SchemeIs(url::kFileScheme))
+    return url.ExtractFileName();
+  return url.possibly_invalid_spec();
+}
+
+const char* WebNavigationPolicyToString(
+    const blink::WebNavigationPolicy& policy) {
+  switch (policy) {
+    case blink::WebNavigationPolicyIgnore:
+      return kPolicyIgnore;
+    case blink::WebNavigationPolicyDownload:
+      return kPolicyDownload;
+    case blink::WebNavigationPolicyCurrentTab:
+      return kPolicyCurrentTab;
+    case blink::WebNavigationPolicyNewBackgroundTab:
+      return kPolicyNewBackgroundTab;
+    case blink::WebNavigationPolicyNewForegroundTab:
+      return kPolicyNewForegroundTab;
+    case blink::WebNavigationPolicyNewWindow:
+      return kPolicyNewWindow;
+    case blink::WebNavigationPolicyNewPopup:
+      return kPolicyNewPopup;
+    default:
+      return kIllegalString;
+  }
 }
 
 void EnsureBlinkInitialized() {

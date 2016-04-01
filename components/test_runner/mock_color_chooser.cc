@@ -4,8 +4,8 @@
 
 #include "components/test_runner/mock_color_chooser.h"
 
+#include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_test_delegate.h"
-#include "components/test_runner/web_test_proxy.h"
 
 namespace test_runner {
 
@@ -27,15 +27,13 @@ class HostMethodTask : public WebMethodTask<MockColorChooser> {
 
 MockColorChooser::MockColorChooser(blink::WebColorChooserClient* client,
                                    WebTestDelegate* delegate,
-                                   WebTestProxyBase* proxy)
-    : client_(client),
-      delegate_(delegate),
-      proxy_(proxy) {
-  proxy_->DidOpenChooser();
+                                   TestRunner* test_runner)
+    : client_(client), delegate_(delegate), test_runner_(test_runner) {
+  test_runner_->DidOpenChooser();
 }
 
 MockColorChooser::~MockColorChooser() {
-  proxy_->DidCloseChooser();
+  test_runner_->DidCloseChooser();
 }
 
 void MockColorChooser::setSelectedColor(const blink::WebColor color) {}

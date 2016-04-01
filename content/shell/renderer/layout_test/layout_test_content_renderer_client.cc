@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "components/test_runner/mock_credential_manager_client.h"
+#include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
@@ -45,10 +46,34 @@ using blink::WebThemeEngine;
 
 namespace content {
 
+namespace {
+
+void WebTestProxyCreated(RenderView* render_view,
+                         test_runner::WebTestProxyBase* proxy) {
+  BlinkTestRunner* test_runner = new BlinkTestRunner(render_view);
+  test_runner->set_proxy(proxy);
+  if (!LayoutTestRenderProcessObserver::GetInstance()->test_delegate()) {
+    LayoutTestRenderProcessObserver::GetInstance()->SetTestDelegate(
+        test_runner);
+  }
+  proxy->SetInterfaces(
+      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces());
+  test_runner->proxy()->SetDelegate(
+      LayoutTestRenderProcessObserver::GetInstance()->test_delegate());
+}
+
+void WebFrameTestProxyCreated(RenderFrame* render_frame,
+                              test_runner::WebFrameTestProxyBase* proxy) {
+  proxy->set_test_client(LayoutTestRenderProcessObserver::GetInstance()
+                             ->test_interfaces()
+                             ->GetWebFrameTestClient());
+}
+
+}  // namespace
+
 LayoutTestContentRendererClient::LayoutTestContentRendererClient() {
-  EnableWebTestProxyCreation(
-      base::Bind(&LayoutTestContentRendererClient::WebTestProxyCreated,
-                 base::Unretained(this)));
+  EnableWebTestProxyCreation(base::Bind(&WebTestProxyCreated),
+                             base::Bind(&WebFrameTestProxyCreated));
 }
 
 LayoutTestContentRendererClient::~LayoutTestContentRendererClient() {
@@ -149,21 +174,6 @@ LayoutTestContentRendererClient::CreateMediaStreamRendererFactory() {
 #else
   return nullptr;
 #endif
-}
-
-void LayoutTestContentRendererClient::WebTestProxyCreated(
-    RenderView* render_view,
-    test_runner::WebTestProxyBase* proxy) {
-  BlinkTestRunner* test_runner = new BlinkTestRunner(render_view);
-  test_runner->set_proxy(proxy);
-  if (!LayoutTestRenderProcessObserver::GetInstance()->test_delegate()) {
-    LayoutTestRenderProcessObserver::GetInstance()->SetTestDelegate(
-        test_runner);
-  }
-  proxy->SetInterfaces(
-      LayoutTestRenderProcessObserver::GetInstance()->test_interfaces());
-  test_runner->proxy()->SetDelegate(
-      LayoutTestRenderProcessObserver::GetInstance()->test_delegate());
 }
 
 }  // namespace content
