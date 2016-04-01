@@ -228,8 +228,7 @@ void PasswordManagerHandler::HandleUpdatePasswordLists(
 }
 
 void PasswordManagerHandler::SetPasswordList(
-    const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list,
-    bool show_passwords) {
+    const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list) {
   base::ListValue entries;
   languages_ = GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   base::string16 placeholder(base::ASCIIToUTF16("        "));
@@ -238,14 +237,10 @@ void PasswordManagerHandler::SetPasswordList(
     CopyOriginInfoOfPasswordForm(*saved_password, languages_, entry.get());
 
     entry->SetString(kUsernameField, saved_password->username_value);
-    if (show_passwords) {
-      entry->SetString(kPasswordField, saved_password->password_value);
-    } else {
-      // Use a placeholder value with the same length as the password.
-      entry->SetString(
-          kPasswordField,
-          base::string16(saved_password->password_value.length(), ' '));
-    }
+    // Use a placeholder value with the same length as the password.
+    entry->SetString(
+        kPasswordField,
+        base::string16(saved_password->password_value.length(), ' '));
     if (!saved_password->federation_origin.unique()) {
       entry->SetString(
           kFederationField,

@@ -295,11 +295,6 @@ const char kDisableOfflineAutoReloadVisibleOnly[] =
 // Disable out-of-process V8 proxy resolver.
 const char kDisableOutOfProcessPac[] = "disable-out-of-process-pac";
 
-// Disable the setting to prompt the user for their OS account password before
-// revealing plaintext passwords in the password manager.
-const char kDisablePasswordManagerReauthentication[] =
-    "disable-password-manager-reauthentication";
-
 // Disables the Permissions Blacklist, which blocks access to permissions
 // for blacklisted sites.
 const char kDisablePermissionsBlacklist[] = "disable-permissions-blacklist";

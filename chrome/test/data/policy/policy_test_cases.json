@@ -334,11 +334,7 @@
   },
 
   "PasswordManagerAllowShowPasswords": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "PasswordManagerAllowShowPasswords": false },
-    "pref_mappings": [
-      { "pref": "profile.password_manager_allow_show_passwords" }
-    ]
+    "note": "This policy is retired, see http://crbug.com/598698."
   },
 
   "ContextualSearchEnabled": {

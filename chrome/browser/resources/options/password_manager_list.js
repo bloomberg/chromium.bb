@@ -450,9 +450,6 @@ cr.define('options.passwordManager', function() {
     /** @override */
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
-      Preferences.getInstance().addEventListener(
-          'profile.password_manager_allow_show_passwords',
-          this.onPreferenceChanged_.bind(this));
       this.addEventListener('focus', this.onFocus_.bind(this));
     },
 

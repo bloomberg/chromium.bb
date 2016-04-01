@@ -1149,7 +1149,7 @@
       'name': 'PasswordManager',
       'type': 'group',
       'caption': '''Password manager''',
-      'desc': '''Configures the password manager. If the password manager is enabled, then you can choose to enable or disable whether the user may show stored passwords in clear text.''',
+      'desc': '''Configures the password manager.''',
       'policies': [
         {
           'name': 'PasswordManagerEnabled',
@@ -1187,16 +1187,19 @@
           'name': 'PasswordManagerAllowShowPasswords',
           'type': 'main',
           'schema': { 'type': 'boolean' },
-          'supported_on': ['chrome.*:8-', 'chrome_os:11-'],
+          'supported_on': ['chrome.*:8-50', 'chrome_os:11-50'],
           'features': {
             'dynamic_refresh': True,
             'per_profile': True,
           },
+          'deprecated': True,
           'example_value': False,
           'id': 17,
-          'caption': '''Allow users to show passwords in Password Manager''',
+          'caption': '''Allow users to show passwords in Password Manager (deprecated)''',
           'tags': [],
-          'desc': '''Controls whether the user may show passwords in clear text in the password manager.
+          'desc': '''The associated setting was used before reauthentication on viewing passwords was introduced. Since then, the setting and hence this policy had no effect on the behavior of Chrome. The current behavior of Chrome is now the same as if the the policy was set to disable showing passwords in clear text in the password manager settings page. That means that the settings page contains just a placeholder, and only upon the user clicking "Show" (and reauthenticating, if applicable) Chrome shows the password. Original description of the policy follows below.
+
+          Controls whether the user may show passwords in clear text in the password manager.
 
           If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
 

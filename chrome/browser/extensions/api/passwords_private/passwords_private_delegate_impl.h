@@ -55,9 +55,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
       const std::string& origin_url,
       const std::string& username,
       const base::string16& plaintext_password) override;
-  void SetPasswordList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list,
-      bool show_passwords) override;
+  void SetPasswordList(const std::vector<scoped_ptr<autofill::PasswordForm>>&
+                           password_list) override;
   void SetPasswordExceptionList(
       const std::vector<scoped_ptr<autofill::PasswordForm>>&
           password_exception_list) override;

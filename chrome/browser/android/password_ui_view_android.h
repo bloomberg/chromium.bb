@@ -34,8 +34,8 @@ class PasswordUIViewAndroid : public PasswordUIView {
       const std::string& username,
       const base::string16& password_value) override;
   void SetPasswordList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list,
-      bool show_passwords) override;
+      const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list)
+          override;
   void SetPasswordExceptionList(
       const std::vector<scoped_ptr<autofill::PasswordForm>>&
           password_exception_list) override;

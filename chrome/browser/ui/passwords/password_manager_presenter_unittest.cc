@@ -48,9 +48,8 @@ class MockPasswordUIView : public PasswordUIView {
 #endif
   MOCK_METHOD4(ShowPassword, void(
       size_t, const std::string&, const std::string&, const base::string16&));
-  MOCK_METHOD2(SetPasswordList,
-               void(const std::vector<scoped_ptr<autofill::PasswordForm>>&,
-                    bool));
+  MOCK_METHOD1(SetPasswordList,
+               void(const std::vector<scoped_ptr<autofill::PasswordForm>>&));
   MOCK_METHOD1(SetPasswordExceptionList,
                void(const std::vector<scoped_ptr<autofill::PasswordForm>>&));
   PasswordManagerPresenter* GetPasswordManagerPresenter() {
@@ -177,10 +176,8 @@ namespace {
 TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {
   EXPECT_CALL(
       *GetUIController(),
-      SetPasswordList(
-          Property(&std::vector<scoped_ptr<autofill::PasswordForm>>::size,
-                   Eq(0u)),
-          testing::_));
+      SetPasswordList(Property(
+          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(0u))));
   EXPECT_CALL(
       *GetUIController(),
       SetPasswordExceptionList(Property(
@@ -190,10 +187,8 @@ TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {
   AddPasswordEntry(pass_origin, "test@gmail.com", "test");
   EXPECT_CALL(
       *GetUIController(),
-      SetPasswordList(
-          Property(&std::vector<scoped_ptr<autofill::PasswordForm>>::size,
-                   Eq(1u)),
-          testing::_));
+      SetPasswordList(Property(
+          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(1u))));
   EXPECT_CALL(
       *GetUIController(),
       SetPasswordExceptionList(Property(
@@ -203,10 +198,8 @@ TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {
   AddPasswordException(except_origin);
   EXPECT_CALL(
       *GetUIController(),
-      SetPasswordList(
-          Property(&std::vector<scoped_ptr<autofill::PasswordForm>>::size,
-                   Eq(1u)),
-          testing::_));
+      SetPasswordList(Property(
+          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(1u))));
   EXPECT_CALL(
       *GetUIController(),
       SetPasswordExceptionList(Property(
@@ -216,10 +209,8 @@ TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {
   AddPasswordEntry(pass_origin2, "test@gmail.com", "test");
   EXPECT_CALL(
       *GetUIController(),
-      SetPasswordList(
-          Property(&std::vector<scoped_ptr<autofill::PasswordForm>>::size,
-                   Eq(2u)),
-          testing::_));
+      SetPasswordList(Property(
+          &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(2u))));
   EXPECT_CALL(
       *GetUIController(),
       SetPasswordExceptionList(Property(

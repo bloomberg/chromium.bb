@@ -146,8 +146,7 @@ void PasswordsPrivateDelegateImpl::ShowPassword(
 }
 
 void PasswordsPrivateDelegateImpl::SetPasswordList(
-    const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list,
-    bool show_passwords) {
+    const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list) {
   // Rebuild |login_pair_to_index_map_| so that it reflects the contents of the
   // new list.
   login_pair_to_index_map_.clear();

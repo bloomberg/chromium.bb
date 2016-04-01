@@ -137,13 +137,6 @@ class PasswordManagerPresenter
   DuplicatesMap password_duplicates_;
   DuplicatesMap password_exception_duplicates_;
 
-  // Whether to show stored passwords or not.
-  BooleanPrefMember show_passwords_;
-
-  // Indicates whether or not the password manager should require the user to
-  // reauthenticate before revealing plaintext passwords.
-  const bool require_reauthentication_;
-
   // The last time the user was successfully authenticated.
   // Used to determine whether or not to reveal plaintext passwords.
   base::TimeTicks last_authentication_time_;

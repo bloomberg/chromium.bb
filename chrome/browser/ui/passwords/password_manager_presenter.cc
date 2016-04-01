@@ -135,9 +135,6 @@ PasswordManagerPresenter::PasswordManagerPresenter(
     PasswordUIView* password_view)
     : populater_(this),
       exception_populater_(this),
-      require_reauthentication_(
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisablePasswordManagerReauthentication)),
       password_view_(password_view) {
   DCHECK(password_view_);
 }
@@ -149,20 +146,6 @@ PasswordManagerPresenter::~PasswordManagerPresenter() {
 }
 
 void PasswordManagerPresenter::Initialize() {
-  // Due to the way that handlers are (re)initialized under certain types of
-  // navigation, the presenter may already be initialized. (See bugs 88986
-  // and 86448). If this is the case, return immediately. This is a hack.
-  // TODO(mdm): remove this hack once it is no longer necessary.
-  if (!show_passwords_.GetPrefName().empty())
-    return;
-
-  show_passwords_.Init(
-      password_manager::prefs::kPasswordManagerAllowShowPasswords,
-      password_view_->GetProfile()->GetPrefs(),
-      base::Bind(&PasswordManagerPresenter::UpdatePasswordLists,
-                 base::Unretained(this)));
-  // TODO(jhawkins) We should not cache web_ui()->GetProfile().See
-  // crosbug.com/6304.
   PasswordStore* store = GetPasswordStore();
   if (store)
     store->AddObserver(this);
@@ -240,9 +223,8 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
     NOTREACHED();
     return;
   }
-  if (require_reauthentication_ &&
-      (base::TimeTicks::Now() - last_authentication_time_) >
-          base::TimeDelta::FromSeconds(60)) {
+  if ((base::TimeTicks::Now() - last_authentication_time_) >
+      base::TimeDelta::FromSeconds(60)) {
     bool authenticated = true;
 #if defined(OS_WIN)
     authenticated = password_manager_util_win::AuthenticateUser(
@@ -303,16 +285,7 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
 }
 
 void PasswordManagerPresenter::SetPasswordList() {
-  // Due to the way that handlers are (re)initialized under certain types of
-  // navigation, the presenter may already be initialized. (See bugs 88986
-  // and 86448). If this is the case, return immediately. This is a hack.
-  // If this is the case, initialize on demand. This is a hack.
-  // TODO(mdm): remove this hack once it is no longer necessary.
-  if (show_passwords_.GetPrefName().empty())
-    Initialize();
-
-  bool show_passwords = *show_passwords_ && !require_reauthentication_;
-  password_view_->SetPasswordList(password_list_, show_passwords);
+  password_view_->SetPasswordList(password_list_);
 }
 
 void PasswordManagerPresenter::SetPasswordExceptionList() {

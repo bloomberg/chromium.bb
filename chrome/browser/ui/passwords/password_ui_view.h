@@ -45,8 +45,7 @@ class PasswordUIView {
   // |password_list| the list of saved password entries.
   // |show_passwords| true if the passwords should be shown in the UI.
   virtual void SetPasswordList(
-      const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list,
-      bool show_passwords) = 0;
+      const std::vector<scoped_ptr<autofill::PasswordForm>>& password_list) = 0;
 
   // Updates the list of password exceptions in the UI.
   // |password_exception_list| The list of saved password exceptions.

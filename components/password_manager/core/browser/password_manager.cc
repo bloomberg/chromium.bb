@@ -145,8 +145,6 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kCredentialsEnableAutosignin, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
-  registry->RegisterBooleanPref(prefs::kPasswordManagerAllowShowPasswords,
-                                true);
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
                                 static_cast<int>(MigrationStatus::NOT_STARTED));
