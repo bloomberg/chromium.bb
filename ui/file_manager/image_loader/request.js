@@ -246,8 +246,9 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
     return;
   }
 
-  // Load RAW images by using Piex loader instead of XHR.
   var fileType = FileType.getTypeForName(this.request_.url);
+
+  // Load RAW images by using Piex loader instead of XHR.
   if (fileType.type === 'raw') {
     var timer = metrics.getTracker().startTiming(
         metrics.Categories.INTERNALS,
@@ -267,17 +268,22 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
     return;
   }
 
+  // Load video thumbnails by using video tag instead of XHR.
+  if (fileType.type === 'video') {
+    this.createVideoThumbnailUrl_(this.request_.url).then(function(url) {
+      this.image_.src = url;
+    }.bind(this)).catch(function(error) {
+      console.error('Video thumbnail error: ', error);
+      onFailure();
+    });
+    return;
+  }
+
   // Fetch the image via authorized XHR and parse it.
   var parseImage = function(contentType, blob) {
     if (contentType)
       this.contentType_ = contentType;
-    if (fileType.type === 'video') {
-      this.createThumbnailUrl_(blob).then(function(url) {
-        this.image_.src = url;
-      }.bind(this), onFailure);
-    } else {
-      this.image_.src = URL.createObjectURL(blob);
-    }
+    this.image_.src = URL.createObjectURL(blob);
   }.bind(this);
 
   // Request raw data via XHR.
@@ -287,13 +293,12 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
 /**
  * Creates a video thumbnail data url from video file.
  *
- * @param {!Blob}  blob Blob object of video file
- * @return {!Promise<!string>}  Promise that resolves with the data url of video
+ * @param {string} url Video URL.
+ * @return {!Promise<Blob>}  Promise that resolves with the data url of video
  *    thumbnail.
  * @private
  */
-ImageRequest.prototype.createThumbnailUrl_ = function(blob) {
-  var url = URL.createObjectURL(blob);
+ImageRequest.prototype.createVideoThumbnailUrl_ = function(url) {
   var video = document.createElement('video');
   return new Promise(function(resolve, reject) {
     video.addEventListener('canplay', resolve);
@@ -302,16 +307,11 @@ ImageRequest.prototype.createThumbnailUrl_ = function(blob) {
     video.preload = 'auto';
     video.src = url;
   }).then(function() {
-    URL.revokeObjectURL(url);
     var canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
     return canvas.toDataURL();
-  }, function(errev) {
-    URL.revokeObjectURL(url);
-    console.error(errev);
-    return Promise.reject(errev);
   });
 };
 
