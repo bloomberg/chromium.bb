@@ -42,14 +42,14 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<Scrollbar> Scrollbar::create(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, HostWindow* hostWindow)
+RawPtr<Scrollbar> Scrollbar::create(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, HostWindow* hostWindow)
 {
-    return adoptRefWillBeNoop(new Scrollbar(scrollableArea, orientation, size, hostWindow));
+    return new Scrollbar(scrollableArea, orientation, size, hostWindow);
 }
 
-PassRefPtrWillBeRawPtr<Scrollbar> Scrollbar::createForTesting(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, ScrollbarTheme* theme)
+RawPtr<Scrollbar> Scrollbar::createForTesting(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize size, ScrollbarTheme* theme)
 {
-    return adoptRefWillBeNoop(new Scrollbar(scrollableArea, orientation, size, nullptr, theme));
+    return new Scrollbar(scrollableArea, orientation, size, nullptr, theme);
 }
 
 Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, ScrollbarControlSize controlSize, HostWindow* hostWindow, ScrollbarTheme* theme)

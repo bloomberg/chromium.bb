@@ -33,10 +33,10 @@ FEDiffuseLighting::FEDiffuseLighting(Filter* filter, const Color& lightingColor,
 {
 }
 
-PassRefPtrWillBeRawPtr<FEDiffuseLighting> FEDiffuseLighting::create(Filter* filter, const Color& lightingColor,
+RawPtr<FEDiffuseLighting> FEDiffuseLighting::create(Filter* filter, const Color& lightingColor,
     float surfaceScale, float diffuseConstant, PassRefPtr<LightSource> lightSource)
 {
-    return adoptRefWillBeNoop(new FEDiffuseLighting(filter, lightingColor, surfaceScale, diffuseConstant, lightSource));
+    return new FEDiffuseLighting(filter, lightingColor, surfaceScale, diffuseConstant, lightSource);
 }
 
 FEDiffuseLighting::~FEDiffuseLighting()

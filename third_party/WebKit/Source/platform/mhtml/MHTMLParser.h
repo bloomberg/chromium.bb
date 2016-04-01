@@ -52,7 +52,7 @@ class PLATFORM_EXPORT MHTMLParser final {
 public:
     explicit MHTMLParser(SharedBuffer*);
 
-    WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>> parseArchive();
+    HeapVector<Member<ArchiveResource>> parseArchive();
 
     // Translates |contentIDFromMimeHeader| (of the form "<foo@bar.com>")
     // into a cid-scheme URI (of the form "cid:foo@bar.com").
@@ -63,8 +63,8 @@ public:
     static KURL convertContentIDToURI(const String& contentID);
 
 private:
-    bool parseArchiveWithHeader(MIMEHeader*, WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>>&);
-    PassRefPtrWillBeRawPtr<ArchiveResource> parseNextPart(const MIMEHeader&, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached);
+    bool parseArchiveWithHeader(MIMEHeader*, HeapVector<Member<ArchiveResource>>&);
+    RawPtr<ArchiveResource> parseNextPart(const MIMEHeader&, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached);
 
     SharedBufferChunkReader m_lineReader;
 };

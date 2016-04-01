@@ -34,9 +34,9 @@ FEMerge::FEMerge(Filter* filter)
 {
 }
 
-PassRefPtrWillBeRawPtr<FEMerge> FEMerge::create(Filter* filter)
+RawPtr<FEMerge> FEMerge::create(Filter* filter)
 {
-    return adoptRefWillBeNoop(new FEMerge(filter));
+    return new FEMerge(filter);
 }
 
 PassRefPtr<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder& builder)

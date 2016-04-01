@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class PopupMenu : public RefCountedWillBeGarbageCollectedFinalized<PopupMenu> {
+class PopupMenu : public GarbageCollectedFinalized<PopupMenu> {
 public:
     virtual ~PopupMenu() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }

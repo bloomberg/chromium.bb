@@ -41,7 +41,7 @@ namespace blink {
 
 // CSS Filters
 
-class PLATFORM_EXPORT FilterOperation : public RefCountedWillBeGarbageCollectedFinalized<FilterOperation> {
+class PLATFORM_EXPORT FilterOperation : public GarbageCollectedFinalized<FilterOperation> {
     WTF_MAKE_NONCOPYABLE(FilterOperation);
 public:
     enum OperationType {
@@ -85,7 +85,7 @@ public:
     virtual ~FilterOperation() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    static PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, const FilterOperation* to, double progress);
+    static RawPtr<FilterOperation> blend(const FilterOperation* from, const FilterOperation* to, double progress);
     virtual bool operator==(const FilterOperation&) const = 0;
     bool operator!=(const FilterOperation& o) const { return !(*this == o); }
 
@@ -106,7 +106,7 @@ protected:
     OperationType m_type;
 
 private:
-    virtual PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const = 0;
+    virtual RawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const = 0;
 };
 
 #define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, operationType) \
@@ -114,9 +114,9 @@ private:
 
 class PLATFORM_EXPORT ReferenceFilterOperation : public FilterOperation {
 public:
-    static PassRefPtrWillBeRawPtr<ReferenceFilterOperation> create(const String& url, const AtomicString& fragment)
+    static RawPtr<ReferenceFilterOperation> create(const String& url, const AtomicString& fragment)
     {
-        return adoptRefWillBeNoop(new ReferenceFilterOperation(url, fragment));
+        return new ReferenceFilterOperation(url, fragment);
     }
 
     bool affectsOpacity() const override { return true; }
@@ -126,12 +126,12 @@ public:
     const AtomicString& fragment() const { return m_fragment; }
 
     Filter* getFilter() const { return m_filter.get(); }
-    void setFilter(PassRefPtrWillBeRawPtr<Filter> filter) { m_filter = filter; }
+    void setFilter(RawPtr<Filter> filter) { m_filter = filter; }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override
+    RawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override
     {
         ASSERT_NOT_REACHED();
         return nullptr;
@@ -154,7 +154,7 @@ private:
 
     String m_url;
     AtomicString m_fragment;
-    RefPtrWillBeMember<Filter> m_filter;
+    Member<Filter> m_filter;
 };
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(ReferenceFilterOperation, REFERENCE);
@@ -163,16 +163,16 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(ReferenceFilterOperation, REFERENCE);
 // For HUE_ROTATE, the angle of rotation is stored in m_amount.
 class PLATFORM_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
 public:
-    static PassRefPtrWillBeRawPtr<BasicColorMatrixFilterOperation> create(double amount, OperationType type)
+    static RawPtr<BasicColorMatrixFilterOperation> create(double amount, OperationType type)
     {
-        return adoptRefWillBeNoop(new BasicColorMatrixFilterOperation(amount, type));
+        return new BasicColorMatrixFilterOperation(amount, type);
     }
 
     double amount() const { return m_amount; }
 
 
 private:
-    PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
+    RawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
     bool operator==(const FilterOperation& o) const override
     {
         if (!isSameType(o))
@@ -201,9 +201,9 @@ DEFINE_TYPE_CASTS(BasicColorMatrixFilterOperation, FilterOperation, op, isBasicC
 // INVERT, BRIGHTNESS, CONTRAST and OPACITY are variations on a basic component transfer effect.
 class PLATFORM_EXPORT BasicComponentTransferFilterOperation : public FilterOperation {
 public:
-    static PassRefPtrWillBeRawPtr<BasicComponentTransferFilterOperation> create(double amount, OperationType type)
+    static RawPtr<BasicComponentTransferFilterOperation> create(double amount, OperationType type)
     {
-        return adoptRefWillBeNoop(new BasicComponentTransferFilterOperation(amount, type));
+        return new BasicComponentTransferFilterOperation(amount, type);
     }
 
     double amount() const { return m_amount; }
@@ -212,7 +212,7 @@ public:
 
 
 private:
-    PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
+    RawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
     bool operator==(const FilterOperation& o) const override
     {
         if (!isSameType(o))
@@ -240,9 +240,9 @@ DEFINE_TYPE_CASTS(BasicComponentTransferFilterOperation, FilterOperation, op, is
 
 class PLATFORM_EXPORT BlurFilterOperation : public FilterOperation {
 public:
-    static PassRefPtrWillBeRawPtr<BlurFilterOperation> create(const Length& stdDeviation)
+    static RawPtr<BlurFilterOperation> create(const Length& stdDeviation)
     {
-        return adoptRefWillBeNoop(new BlurFilterOperation(stdDeviation));
+        return new BlurFilterOperation(stdDeviation);
     }
 
     const Length& stdDeviation() const { return m_stdDeviation; }
@@ -252,7 +252,7 @@ public:
 
 
 private:
-    PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
+    RawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
     bool operator==(const FilterOperation& o) const override
     {
         if (!isSameType(o))
@@ -274,9 +274,9 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(BlurFilterOperation, BLUR);
 
 class PLATFORM_EXPORT DropShadowFilterOperation : public FilterOperation {
 public:
-    static PassRefPtrWillBeRawPtr<DropShadowFilterOperation> create(const IntPoint& location, int stdDeviation, Color color)
+    static RawPtr<DropShadowFilterOperation> create(const IntPoint& location, int stdDeviation, Color color)
     {
-        return adoptRefWillBeNoop(new DropShadowFilterOperation(location, stdDeviation, color));
+        return new DropShadowFilterOperation(location, stdDeviation, color);
     }
 
     int x() const { return m_location.x(); }
@@ -290,7 +290,7 @@ public:
 
 
 private:
-    PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
+    RawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
     bool operator==(const FilterOperation& o) const override
     {
         if (!isSameType(o))

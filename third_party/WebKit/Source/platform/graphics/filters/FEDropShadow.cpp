@@ -39,9 +39,9 @@ FEDropShadow::FEDropShadow(Filter* filter, float stdX, float stdY, float dx, flo
 {
 }
 
-PassRefPtrWillBeRawPtr<FEDropShadow> FEDropShadow::create(Filter* filter, float stdX, float stdY, float dx, float dy, const Color& shadowColor, float shadowOpacity)
+RawPtr<FEDropShadow> FEDropShadow::create(Filter* filter, float stdX, float stdY, float dx, float dy, const Color& shadowColor, float shadowOpacity)
 {
-    return adoptRefWillBeNoop(new FEDropShadow(filter, stdX, stdY, dx, dy, shadowColor, shadowOpacity));
+    return new FEDropShadow(filter, stdX, stdY, dx, dy, shadowColor, shadowOpacity);
 }
 
 FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward)

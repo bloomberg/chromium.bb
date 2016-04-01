@@ -39,9 +39,9 @@ FEMorphology::FEMorphology(Filter* filter, MorphologyOperatorType type, float ra
 {
 }
 
-PassRefPtrWillBeRawPtr<FEMorphology> FEMorphology::create(Filter* filter, MorphologyOperatorType type, float radiusX, float radiusY)
+RawPtr<FEMorphology> FEMorphology::create(Filter* filter, MorphologyOperatorType type, float radiusX, float radiusY)
 {
-    return adoptRefWillBeNoop(new FEMorphology(filter, type, radiusX, radiusY));
+    return new FEMorphology(filter, type, radiusX, radiusY);
 }
 
 MorphologyOperatorType FEMorphology::morphologyOperator() const

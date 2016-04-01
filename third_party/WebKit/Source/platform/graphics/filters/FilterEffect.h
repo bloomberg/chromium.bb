@@ -44,7 +44,7 @@ class TextStream;
 
 class SkiaImageFilterBuilder;
 
-typedef WillBeHeapVector<RefPtrWillBeMember<FilterEffect>> FilterEffectVector;
+typedef HeapVector<Member<FilterEffect>> FilterEffectVector;
 
 enum FilterEffectType {
     FilterEffectTypeUnknown,
@@ -61,7 +61,7 @@ enum DetermineSubregionFlag {
 
 typedef int DetermineSubregionFlags;
 
-class PLATFORM_EXPORT FilterEffect : public RefCountedWillBeGarbageCollectedFinalized<FilterEffect> {
+class PLATFORM_EXPORT FilterEffect : public GarbageCollectedFinalized<FilterEffect> {
     WTF_MAKE_NONCOPYABLE(FilterEffect);
 public:
     virtual ~FilterEffect();
@@ -175,7 +175,7 @@ private:
     // The maximum size of a filter primitive. In SVG this is the primitive subregion in absolute coordinate space.
     // The absolute paint rect should never be bigger than m_maxEffectRect.
     FloatRect m_maxEffectRect;
-    RawPtrWillBeMember<Filter> m_filter;
+    Member<Filter> m_filter;
 
     // The following member variables are SVG specific and will move to LayoutSVGResourceFilterPrimitive.
     // See bug https://bugs.webkit.org/show_bug.cgi?id=45614.

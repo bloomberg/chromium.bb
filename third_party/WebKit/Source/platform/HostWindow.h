@@ -36,9 +36,8 @@ class IntRect;
 class Widget;
 struct WebScreenInfo;
 
-class PLATFORM_EXPORT HostWindow : public NoBaseWillBeGarbageCollectedFinalized<HostWindow> {
+class PLATFORM_EXPORT HostWindow : public GarbageCollectedFinalized<HostWindow> {
     WTF_MAKE_NONCOPYABLE(HostWindow);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(HostWindow);
 public:
     HostWindow() { }
     virtual ~HostWindow() { }

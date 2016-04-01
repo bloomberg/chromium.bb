@@ -41,7 +41,7 @@ enum CompositeOperationType {
 
 class PLATFORM_EXPORT FEComposite final : public FilterEffect {
 public:
-    static PassRefPtrWillBeRawPtr<FEComposite> create(Filter*, const CompositeOperationType&, float, float, float, float);
+    static RawPtr<FEComposite> create(Filter*, const CompositeOperationType&, float, float, float, float);
 
     CompositeOperationType operation() const;
     bool setOperation(CompositeOperationType);

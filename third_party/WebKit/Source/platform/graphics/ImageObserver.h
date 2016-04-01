@@ -36,7 +36,7 @@ class IntRect;
 
 // Interface for notification about changes to an image, including decoding,
 // drawing, and animating.
-class PLATFORM_EXPORT ImageObserver : public WillBeGarbageCollectedMixin {
+class PLATFORM_EXPORT ImageObserver : public GarbageCollectedMixin {
 protected:
     virtual ~ImageObserver();
 public:

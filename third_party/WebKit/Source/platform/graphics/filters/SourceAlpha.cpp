@@ -29,9 +29,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SourceAlpha> SourceAlpha::create(FilterEffect* sourceEffect)
+RawPtr<SourceAlpha> SourceAlpha::create(FilterEffect* sourceEffect)
 {
-    return adoptRefWillBeNoop(new SourceAlpha(sourceEffect));
+    return new SourceAlpha(sourceEffect);
 }
 
 SourceAlpha::SourceAlpha(FilterEffect* sourceEffect)

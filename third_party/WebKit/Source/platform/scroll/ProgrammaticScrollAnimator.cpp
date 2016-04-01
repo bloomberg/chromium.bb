@@ -15,9 +15,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<ProgrammaticScrollAnimator> ProgrammaticScrollAnimator::create(ScrollableArea* scrollableArea)
+RawPtr<ProgrammaticScrollAnimator> ProgrammaticScrollAnimator::create(ScrollableArea* scrollableArea)
 {
-    return adoptPtrWillBeNoop(new ProgrammaticScrollAnimator(scrollableArea));
+    return new ProgrammaticScrollAnimator(scrollableArea);
 }
 
 ProgrammaticScrollAnimator::ProgrammaticScrollAnimator(ScrollableArea* scrollableArea)

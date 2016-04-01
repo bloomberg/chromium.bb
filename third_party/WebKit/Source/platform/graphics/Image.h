@@ -162,7 +162,7 @@ private:
     //
     // The observer (an ImageResource) is an untraced member, with the ImageResource
     // being responsible of clearing itself out.
-    RawPtrWillBeUntracedMember<ImageObserver> m_imageObserver;
+    UntracedMember<ImageObserver> m_imageObserver;
 };
 
 #define DEFINE_IMAGE_TYPE_CASTS(typeName) \

@@ -62,7 +62,7 @@ struct ComponentTransferFunction {
 
 class PLATFORM_EXPORT FEComponentTransfer final : public FilterEffect {
 public:
-    static PassRefPtrWillBeRawPtr<FEComponentTransfer> create(Filter*, const ComponentTransferFunction& redFunc, const ComponentTransferFunction& greenFunc,
+    static RawPtr<FEComponentTransfer> create(Filter*, const ComponentTransferFunction& redFunc, const ComponentTransferFunction& greenFunc,
         const ComponentTransferFunction& blueFunc, const ComponentTransferFunction& alphaFunc);
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;

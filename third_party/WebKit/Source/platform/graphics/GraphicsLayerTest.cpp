@@ -163,10 +163,10 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
     layerTreeView()->detachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
 }
 
-class FakeScrollableArea : public NoBaseWillBeGarbageCollectedFinalized<FakeScrollableArea>, public ScrollableArea {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FakeScrollableArea);
+class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>, public ScrollableArea {
+    USING_GARBAGE_COLLECTED_MIXIN(FakeScrollableArea);
 public:
-    static PassOwnPtrWillBeRawPtr<FakeScrollableArea> create()
+    static RawPtr<FakeScrollableArea> create()
     {
         return adoptPtrWillBeNoop(new FakeScrollableArea);
     }
@@ -206,7 +206,7 @@ private:
 
 TEST_F(GraphicsLayerTest, applyScrollToScrollableArea)
 {
-    OwnPtrWillBeRawPtr<FakeScrollableArea> scrollableArea = FakeScrollableArea::create();
+    RawPtr<FakeScrollableArea> scrollableArea = FakeScrollableArea::create();
     m_graphicsLayer->setScrollableArea(scrollableArea.get(), false);
 
     WebDoublePoint scrollPosition(7, 9);

@@ -201,7 +201,7 @@ PassRefPtr<SkImageFilter> FilterEffect::createImageFilterWithoutValidation(SkiaI
 
 bool FilterEffect::inputsTaintOrigin() const
 {
-    for (const RefPtrWillBeMember<FilterEffect>& effect : m_inputEffects) {
+    for (const Member<FilterEffect>& effect : m_inputEffects) {
         if (effect->originTainted())
             return true;
     }

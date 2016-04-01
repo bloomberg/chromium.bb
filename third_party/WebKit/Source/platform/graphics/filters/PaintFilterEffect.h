@@ -12,7 +12,7 @@ namespace blink {
 
 class PLATFORM_EXPORT PaintFilterEffect : public FilterEffect {
 public:
-    static PassRefPtrWillBeRawPtr<PaintFilterEffect> create(Filter*, const SkPaint&);
+    static RawPtr<PaintFilterEffect> create(Filter*, const SkPaint&);
     ~PaintFilterEffect() override;
 
     FilterEffectType getFilterEffectType() const override { return FilterEffectTypeSourceInput; }

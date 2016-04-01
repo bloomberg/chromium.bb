@@ -37,9 +37,9 @@ SourceGraphic::~SourceGraphic()
 {
 }
 
-PassRefPtrWillBeRawPtr<SourceGraphic> SourceGraphic::create(Filter* filter)
+RawPtr<SourceGraphic> SourceGraphic::create(Filter* filter)
 {
-    return adoptRefWillBeNoop(new SourceGraphic(filter));
+    return new SourceGraphic(filter);
 }
 
 FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRect)

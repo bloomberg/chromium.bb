@@ -45,10 +45,10 @@ FEComponentTransfer::FEComponentTransfer(Filter* filter, const ComponentTransfer
 {
 }
 
-PassRefPtrWillBeRawPtr<FEComponentTransfer> FEComponentTransfer::create(Filter* filter, const ComponentTransferFunction& redFunc,
+RawPtr<FEComponentTransfer> FEComponentTransfer::create(Filter* filter, const ComponentTransferFunction& redFunc,
     const ComponentTransferFunction& greenFunc, const ComponentTransferFunction& blueFunc, const ComponentTransferFunction& alphaFunc)
 {
-    return adoptRefWillBeNoop(new FEComponentTransfer(filter, redFunc, greenFunc, blueFunc, alphaFunc));
+    return new FEComponentTransfer(filter, redFunc, greenFunc, blueFunc, alphaFunc);
 }
 
 static void identity(unsigned char*, const ComponentTransferFunction&)

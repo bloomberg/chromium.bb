@@ -47,7 +47,7 @@ namespace blink {
 class Scrollbar;
 
 class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
-    WILL_BE_USING_PRE_FINALIZER(ScrollAnimatorMac, dispose);
+    USING_PRE_FINALIZER(ScrollAnimatorMac, dispose);
 public:
     ScrollAnimatorMac(ScrollableArea*);
     ~ScrollAnimatorMac() override;

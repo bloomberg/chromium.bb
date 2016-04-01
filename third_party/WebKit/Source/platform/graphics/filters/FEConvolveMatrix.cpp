@@ -46,12 +46,12 @@ FEConvolveMatrix::FEConvolveMatrix(Filter* filter, const IntSize& kernelSize,
 {
 }
 
-PassRefPtrWillBeRawPtr<FEConvolveMatrix> FEConvolveMatrix::create(Filter* filter, const IntSize& kernelSize,
+RawPtr<FEConvolveMatrix> FEConvolveMatrix::create(Filter* filter, const IntSize& kernelSize,
     float divisor, float bias, const IntPoint& targetOffset, EdgeModeType edgeMode,
     bool preserveAlpha, const Vector<float>& kernelMatrix)
 {
-    return adoptRefWillBeNoop(new FEConvolveMatrix(filter, kernelSize, divisor, bias, targetOffset, edgeMode,
-        preserveAlpha, kernelMatrix));
+    return new FEConvolveMatrix(filter, kernelSize, divisor, bias, targetOffset, edgeMode,
+        preserveAlpha, kernelMatrix);
 }
 
 FloatRect FEConvolveMatrix::mapPaintRect(const FloatRect& rect, bool forward)

@@ -23,10 +23,9 @@ class CompositorAnimation;
 class CompositorAnimationPlayer;
 class CompositorAnimationTimeline;
 
-class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator : public NoBaseWillBeGarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>, private CompositorAnimationPlayerClient, CompositorAnimationDelegate {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ScrollAnimatorCompositorCoordinator);
+class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator : public GarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>, private CompositorAnimationPlayerClient, CompositorAnimationDelegate {
     WTF_MAKE_NONCOPYABLE(ScrollAnimatorCompositorCoordinator);
-    WILL_BE_USING_PRE_FINALIZER(ScrollAnimatorCompositorCoordinator, dispose);
+    USING_PRE_FINALIZER(ScrollAnimatorCompositorCoordinator, dispose);
 public:
     virtual ~ScrollAnimatorCompositorCoordinator();
 

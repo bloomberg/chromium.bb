@@ -29,7 +29,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<FilterOperation> FilterOperation::blend(const FilterOperation* from, const FilterOperation* to, double progress)
+RawPtr<FilterOperation> FilterOperation::blend(const FilterOperation* from, const FilterOperation* to, double progress)
 {
     ASSERT(from || to);
     if (to)
@@ -43,7 +43,7 @@ DEFINE_TRACE(ReferenceFilterOperation)
     FilterOperation::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterOperation* from, double progress) const
+RawPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     double fromAmount;
     if (from) {
@@ -82,7 +82,7 @@ PassRefPtrWillBeRawPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(c
     return BasicColorMatrixFilterOperation::create(result, m_type);
 }
 
-PassRefPtrWillBeRawPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const FilterOperation* from, double progress) const
+RawPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     double fromAmount;
     if (from) {
@@ -120,7 +120,7 @@ PassRefPtrWillBeRawPtr<FilterOperation> BasicComponentTransferFilterOperation::b
     return BasicComponentTransferFilterOperation::create(result, m_type);
 }
 
-PassRefPtrWillBeRawPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* from, double progress) const
+RawPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     LengthType lengthType = m_stdDeviation.type();
     if (!from)
@@ -130,7 +130,7 @@ PassRefPtrWillBeRawPtr<FilterOperation> BlurFilterOperation::blend(const FilterO
     return BlurFilterOperation::create(m_stdDeviation.blend(fromOp->m_stdDeviation, progress, ValueRangeNonNegative));
 }
 
-PassRefPtrWillBeRawPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* from, double progress) const
+RawPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     if (!from) {
         return DropShadowFilterOperation::create(

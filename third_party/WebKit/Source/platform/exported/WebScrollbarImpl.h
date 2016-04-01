@@ -66,7 +66,7 @@ public:
 private:
     explicit WebScrollbarImpl(Scrollbar*);
 
-    RefPtrWillBePersistent<Scrollbar> m_scrollbar;
+    Persistent<Scrollbar> m_scrollbar;
 };
 
 } // namespace blink

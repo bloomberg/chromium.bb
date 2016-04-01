@@ -50,12 +50,12 @@ static double getMockedTime()
 
 namespace {
 
-class MockScrollableArea : public NoBaseWillBeGarbageCollectedFinalized<MockScrollableArea>, public ScrollableArea {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockScrollableArea);
+class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>, public ScrollableArea {
+    USING_GARBAGE_COLLECTED_MIXIN(MockScrollableArea);
 public:
-    static PassOwnPtrWillBeRawPtr<MockScrollableArea> create(bool scrollAnimatorEnabled)
+    static RawPtr<MockScrollableArea> create(bool scrollAnimatorEnabled)
     {
-        return adoptPtrWillBeNoop(new MockScrollableArea(scrollAnimatorEnabled));
+        return new MockScrollableArea(scrollAnimatorEnabled);
     }
 
     MOCK_CONST_METHOD0(visualRectForScrollbarParts, LayoutRect());
@@ -134,8 +134,8 @@ static void reset(ScrollAnimator& scrollAnimator)
 
 TEST(ScrollAnimatorTest, MainThreadStates)
 {
-    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
-    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(new ScrollAnimator(scrollableArea.get(), getMockedTime));
+    RawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
+    RawPtr<ScrollAnimator> scrollAnimator = new ScrollAnimator(scrollableArea.get(), getMockedTime);
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint()));
@@ -181,8 +181,8 @@ TEST(ScrollAnimatorTest, MainThreadStates)
 
 TEST(ScrollAnimatorTest, MainThreadEnabled)
 {
-    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
-    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(new ScrollAnimator(scrollableArea.get(), getMockedTime));
+    RawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
+    RawPtr<ScrollAnimator> scrollAnimator = new ScrollAnimator(scrollableArea.get(), getMockedTime);
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
     EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
@@ -258,8 +258,8 @@ TEST(ScrollAnimatorTest, MainThreadEnabled)
 // non-smooth scroll offset animation.
 TEST(ScrollAnimatorTest, AnimatedScrollAborted)
 {
-    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
-    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(new ScrollAnimator(scrollableArea.get(), getMockedTime));
+    RawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
+    RawPtr<ScrollAnimator> scrollAnimator = new ScrollAnimator(scrollableArea.get(), getMockedTime);
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint()));
@@ -305,8 +305,8 @@ TEST(ScrollAnimatorTest, AnimatedScrollAborted)
 // completed on the main thread.
 TEST(ScrollAnimatorTest, AnimatedScrollTakeover)
 {
-    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
-    OwnPtrWillBeRawPtr<TestScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(new TestScrollAnimator(scrollableArea.get(), getMockedTime));
+    RawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
+    RawPtr<TestScrollAnimator> scrollAnimator = new TestScrollAnimator(scrollableArea.get(), getMockedTime);
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint()));
@@ -354,8 +354,8 @@ TEST(ScrollAnimatorTest, AnimatedScrollTakeover)
 
 TEST(ScrollAnimatorTest, Disabled)
 {
-    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(false);
-    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(new ScrollAnimator(scrollableArea.get(), getMockedTime));
+    RawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(false);
+    RawPtr<ScrollAnimator> scrollAnimator = new ScrollAnimator(scrollableArea.get(), getMockedTime);
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint()));
     EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
@@ -387,10 +387,8 @@ TEST(ScrollAnimatorTest, Disabled)
 // See crbug.com/598548.
 TEST(ScrollAnimatorTest, CancellingAnimationResetsState)
 {
-    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea =
-        MockScrollableArea::create(true);
-    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(
-        new ScrollAnimator(scrollableArea.get(), getMockedTime));
+    RawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
+    RawPtr<ScrollAnimator> scrollAnimator = new ScrollAnimator(scrollableArea.get(), getMockedTime);
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint()));

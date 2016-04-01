@@ -35,11 +35,11 @@ FESpecularLighting::FESpecularLighting(Filter* filter, const Color& lightingColo
 {
 }
 
-PassRefPtrWillBeRawPtr<FESpecularLighting> FESpecularLighting::create(Filter* filter, const Color& lightingColor,
+RawPtr<FESpecularLighting> FESpecularLighting::create(Filter* filter, const Color& lightingColor,
     float surfaceScale, float specularConstant, float specularExponent, PassRefPtr<LightSource> lightSource)
 {
-    return adoptRefWillBeNoop(new FESpecularLighting(filter, lightingColor, surfaceScale, specularConstant, specularExponent,
-        lightSource));
+    return new FESpecularLighting(filter, lightingColor, surfaceScale, specularConstant, specularExponent,
+        lightSource);
 }
 
 FESpecularLighting::~FESpecularLighting()

@@ -47,9 +47,9 @@ class SharedBuffer;
 
 struct SerializedResource;
 
-class PLATFORM_EXPORT MHTMLArchive final : public RefCountedWillBeGarbageCollectedFinalized<MHTMLArchive> {
+class PLATFORM_EXPORT MHTMLArchive final : public GarbageCollectedFinalized<MHTMLArchive> {
 public:
-    static PassRefPtrWillBeRawPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);
+    static RawPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);
     ~MHTMLArchive();
 
     // Binary encoding results in smaller MHTML files but they might not work in other browsers.
@@ -90,7 +90,7 @@ public:
         const String& boundary,
         SharedBuffer& outputBuffer);
 
-    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<ArchiveResource>> SubArchiveResources;
+    typedef HeapHashMap<String, Member<ArchiveResource>> SubArchiveResources;
 
     ArchiveResource* mainResource() { return m_mainResource.get(); }
     ArchiveResource* subresourceForURL(const KURL&) const;
@@ -100,10 +100,10 @@ public:
 private:
     MHTMLArchive();
 
-    void setMainResource(PassRefPtrWillBeRawPtr<ArchiveResource>);
+    void setMainResource(RawPtr<ArchiveResource>);
     void addSubresource(ArchiveResource*);
 
-    RefPtrWillBeMember<ArchiveResource> m_mainResource;
+    Member<ArchiveResource> m_mainResource;
     SubArchiveResources m_subresources;
 };
 

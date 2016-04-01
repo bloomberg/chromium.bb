@@ -48,7 +48,7 @@ class HostWindow;
 // Widgets are connected in a hierarchy, with the restriction that plugins and
 // scrollbars are always leaves of the tree. Only FrameView can have children
 // (and therefore the Widget class has no concept of children).
-class PLATFORM_EXPORT Widget : public RefCountedWillBeGarbageCollectedFinalized<Widget> {
+class PLATFORM_EXPORT Widget : public GarbageCollectedFinalized<Widget> {
 public:
     Widget();
     virtual ~Widget();
@@ -124,7 +124,7 @@ public:
     virtual void dispose() { }
 
 private:
-    RawPtrWillBeMember<Widget> m_parent;
+    Member<Widget> m_parent;
     IntRect m_frame;
     bool m_selfVisible;
     bool m_parentVisible;

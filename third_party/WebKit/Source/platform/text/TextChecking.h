@@ -108,7 +108,7 @@ private:
     Vector<unsigned> m_offsets;
 };
 
-class TextCheckingRequest : public RefCountedWillBeGarbageCollectedFinalized<TextCheckingRequest> {
+class TextCheckingRequest : public GarbageCollectedFinalized<TextCheckingRequest> {
 public:
     virtual ~TextCheckingRequest() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }

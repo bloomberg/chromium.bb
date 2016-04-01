@@ -21,9 +21,9 @@ PaintFilterEffect::~PaintFilterEffect()
 {
 }
 
-PassRefPtrWillBeRawPtr<PaintFilterEffect> PaintFilterEffect::create(Filter* filter, const SkPaint& paint)
+RawPtr<PaintFilterEffect> PaintFilterEffect::create(Filter* filter, const SkPaint& paint)
 {
-    return adoptRefWillBeNoop(new PaintFilterEffect(filter, paint));
+    return new PaintFilterEffect(filter, paint);
 }
 
 PassRefPtr<SkImageFilter> PaintFilterEffect::createImageFilter(SkiaImageFilterBuilder&)

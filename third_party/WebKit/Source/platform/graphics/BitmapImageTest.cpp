@@ -42,8 +42,8 @@ namespace blink {
 
 class BitmapImageTest : public ::testing::Test {
 public:
-    class FakeImageObserver : public NoBaseWillBeGarbageCollectedFinalized<FakeImageObserver>, public ImageObserver {
-        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FakeImageObserver);
+    class FakeImageObserver : public GarbageCollectedFinalized<FakeImageObserver>, public ImageObserver {
+        USING_GARBAGE_COLLECTED_MIXIN(FakeImageObserver);
     public:
         FakeImageObserver() : m_lastDecodedSizeChangedDelta(0) { }
 
@@ -140,7 +140,7 @@ protected:
         m_image = BitmapImage::create(m_imageObserver.get());
     }
 
-    OwnPtrWillBePersistent<FakeImageObserver> m_imageObserver;
+    Persistent<FakeImageObserver> m_imageObserver;
     RefPtr<BitmapImage> m_image;
 
 private:

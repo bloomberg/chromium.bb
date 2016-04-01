@@ -20,12 +20,12 @@ namespace {
 
 class TestFontSelector : public FontSelector {
 public:
-    static PassRefPtrWillBeRawPtr<TestFontSelector> create(const String& path)
+    static RawPtr<TestFontSelector> create(const String& path)
     {
         RefPtr<SharedBuffer> fontBuffer = testing::readFromFile(path);
         String otsParseMessage;
-        return adoptRefWillBeNoop(new TestFontSelector(FontCustomPlatformData::create(
-            fontBuffer.get(), otsParseMessage)));
+        return new TestFontSelector(FontCustomPlatformData::create(
+            fontBuffer.get(), otsParseMessage));
     }
 
     ~TestFontSelector() override { }

@@ -54,7 +54,7 @@ struct SameSizeAsScrollableArea {
 #if ENABLE(ASSERT) && ENABLE(OILPAN)
     VerifyEagerFinalization verifyEager;
 #endif
-    OwnPtrWillBeMember<void*> pointer[2];
+    Member<void*> pointer[2];
     unsigned bitfields : 16;
     IntPoint origin;
 };

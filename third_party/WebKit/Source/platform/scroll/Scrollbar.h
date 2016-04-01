@@ -48,10 +48,10 @@ class ScrollbarTheme;
 
 class PLATFORM_EXPORT Scrollbar : public Widget, public ScrollbarThemeClient {
 public:
-    static PassRefPtrWillBeRawPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, HostWindow*);
+    static RawPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, HostWindow*);
 
     // Theme object ownership remains with the caller and it must outlive the scrollbar.
-    static PassRefPtrWillBeRawPtr<Scrollbar> createForTesting(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme*);
+    static RawPtr<Scrollbar> createForTesting(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme*);
 
     ~Scrollbar() override;
 
@@ -192,11 +192,11 @@ protected:
     ScrollDirectionPhysical pressedPartScrollDirectionPhysical();
     ScrollGranularity pressedPartScrollGranularity();
 
-    RawPtrWillBeMember<ScrollableArea> m_scrollableArea;
+    Member<ScrollableArea> m_scrollableArea;
     ScrollbarOrientation m_orientation;
     ScrollbarControlSize m_controlSize;
     ScrollbarTheme& m_theme;
-    RawPtrWillBeMember<HostWindow> m_hostWindow;
+    Member<HostWindow> m_hostWindow;
 
     int m_visibleSize;
     int m_totalSize;

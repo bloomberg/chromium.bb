@@ -44,11 +44,11 @@
 namespace blink {
 
 // This class is a limited MIME parser used to parse the MIME headers of MHTML files.
-class MIMEHeader : public RefCountedWillBeGarbageCollectedFinalized<MIMEHeader> {
+class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
 public:
-    static PassRefPtrWillBeRawPtr<MIMEHeader> create()
+    static RawPtr<MIMEHeader> create()
     {
-        return adoptRefWillBeNoop(new MIMEHeader());
+        return new MIMEHeader();
     }
 
     enum Encoding {
@@ -60,7 +60,7 @@ public:
         Unknown
     };
 
-    static PassRefPtrWillBeRawPtr<MIMEHeader> parseHeader(SharedBufferChunkReader* crLFLineReader);
+    static RawPtr<MIMEHeader> parseHeader(SharedBufferChunkReader* crLFLineReader);
 
     bool isMultipart() const { return m_contentType.startsWith("multipart/", TextCaseInsensitive); }
 
@@ -130,9 +130,9 @@ static KeyValueMap retrieveKeyValuePairs(SharedBufferChunkReader* buffer)
     return keyValuePairs;
 }
 
-PassRefPtrWillBeRawPtr<MIMEHeader> MIMEHeader::parseHeader(SharedBufferChunkReader* buffer)
+RawPtr<MIMEHeader> MIMEHeader::parseHeader(SharedBufferChunkReader* buffer)
 {
-    RefPtrWillBeRawPtr<MIMEHeader> mimeHeader = MIMEHeader::create();
+    RawPtr<MIMEHeader> mimeHeader = MIMEHeader::create();
     KeyValueMap keyValuePairs = retrieveKeyValuePairs(buffer);
     KeyValueMap::iterator mimeParametersIterator = keyValuePairs.find("content-type");
     if (mimeParametersIterator != keyValuePairs.end()) {
@@ -206,16 +206,16 @@ MHTMLParser::MHTMLParser(SharedBuffer* data)
 {
 }
 
-WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>> MHTMLParser::parseArchive()
+HeapVector<Member<ArchiveResource>> MHTMLParser::parseArchive()
 {
-    RefPtrWillBeRawPtr<MIMEHeader> header = MIMEHeader::parseHeader(&m_lineReader);
-    WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>> resources;
+    RawPtr<MIMEHeader> header = MIMEHeader::parseHeader(&m_lineReader);
+    HeapVector<Member<ArchiveResource>> resources;
     if (!parseArchiveWithHeader(header.get(), resources))
         resources.clear();
     return resources;
 }
 
-bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>>& resources)
+bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, HeapVector<Member<ArchiveResource>>& resources)
 {
     if (!header) {
         DLOG(ERROR) << "Failed to parse MHTML part: no header.";
@@ -225,7 +225,7 @@ bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, WillBeHeapVector<Re
     if (!header->isMultipart()) {
         // With IE a page with no resource is not multi-part.
         bool endOfArchiveReached = false;
-        RefPtrWillBeRawPtr<ArchiveResource> resource = parseNextPart(*header, String(), String(), endOfArchiveReached);
+        RawPtr<ArchiveResource> resource = parseNextPart(*header, String(), String(), endOfArchiveReached);
         if (!resource)
             return false;
         resources.append(resource);
@@ -237,7 +237,7 @@ bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, WillBeHeapVector<Re
 
     bool endOfArchive = false;
     while (!endOfArchive) {
-        RefPtrWillBeRawPtr<MIMEHeader> resourceHeader = MIMEHeader::parseHeader(&m_lineReader);
+        RawPtr<MIMEHeader> resourceHeader = MIMEHeader::parseHeader(&m_lineReader);
         if (!resourceHeader) {
             DLOG(ERROR) << "Failed to parse MHTML, invalid MIME header.";
             return false;
@@ -253,7 +253,7 @@ bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, WillBeHeapVector<Re
             continue;
         }
 
-        RefPtrWillBeRawPtr<ArchiveResource> resource = parseNextPart(*resourceHeader, header->endOfPartBoundary(), header->endOfDocumentBoundary(), endOfArchive);
+        RawPtr<ArchiveResource> resource = parseNextPart(*resourceHeader, header->endOfPartBoundary(), header->endOfDocumentBoundary(), endOfArchive);
         if (!resource) {
             DLOG(ERROR) << "Failed to parse MHTML part.";
             return false;
@@ -264,7 +264,7 @@ bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, WillBeHeapVector<Re
 }
 
 
-PassRefPtrWillBeRawPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached)
+RawPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader, const String& endOfPartBoundary, const String& endOfDocumentBoundary, bool& endOfArchiveReached)
 {
     ASSERT(endOfPartBoundary.isEmpty() == endOfDocumentBoundary.isEmpty());
 

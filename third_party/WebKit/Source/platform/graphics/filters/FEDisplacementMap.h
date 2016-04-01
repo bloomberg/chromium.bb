@@ -37,7 +37,7 @@ enum ChannelSelectorType {
 
 class PLATFORM_EXPORT FEDisplacementMap final : public FilterEffect {
 public:
-    static PassRefPtrWillBeRawPtr<FEDisplacementMap> create(Filter*, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float);
+    static RawPtr<FEDisplacementMap> create(Filter*, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float);
 
     ChannelSelectorType xChannelSelector() const;
     bool setXChannelSelector(const ChannelSelectorType);

@@ -33,7 +33,7 @@
 namespace blink {
 
 template<typename T, typename Observer, typename Notifier>
-class LifecycleObserver : public WillBeGarbageCollectedMixin {
+class LifecycleObserver : public GarbageCollectedMixin {
 public:
     using Context = T;
 
@@ -44,7 +44,6 @@ public:
     }
 #endif
 
-    EAGERLY_FINALIZE_WILL_BE_REMOVED();
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_lifecycleContext);
@@ -70,7 +69,7 @@ protected:
     }
 
 private:
-    RawPtrWillBeWeakMember<Context> m_lifecycleContext;
+    WeakMember<Context> m_lifecycleContext;
 };
 
 template<typename T, typename Observer, typename Notifier>

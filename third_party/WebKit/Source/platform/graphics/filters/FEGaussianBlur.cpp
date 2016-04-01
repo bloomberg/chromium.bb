@@ -45,9 +45,9 @@ FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
 {
 }
 
-PassRefPtrWillBeRawPtr<FEGaussianBlur> FEGaussianBlur::create(Filter* filter, float x, float y)
+RawPtr<FEGaussianBlur> FEGaussianBlur::create(Filter* filter, float x, float y)
 {
-    return adoptRefWillBeNoop(new FEGaussianBlur(filter, x, y));
+    return new FEGaussianBlur(filter, x, y);
 }
 
 IntSize FEGaussianBlur::calculateUnscaledKernelSize(const FloatPoint& std)

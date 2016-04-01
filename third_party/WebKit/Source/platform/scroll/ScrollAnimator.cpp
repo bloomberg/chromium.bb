@@ -53,11 +53,11 @@ WebLayer* toWebLayer(GraphicsLayer* layer)
 
 } // namespace
 
-PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
+RawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
 {
     if (scrollableArea && scrollableArea->scrollAnimatorEnabled())
-        return adoptPtrWillBeNoop(new ScrollAnimator(scrollableArea));
-    return adoptPtrWillBeNoop(new ScrollAnimatorBase(scrollableArea));
+        return new ScrollAnimator(scrollableArea);
+    return new ScrollAnimatorBase(scrollableArea);
 }
 
 ScrollAnimator::ScrollAnimator(ScrollableArea* scrollableArea, WTF::TimeFunction timeFunction)

@@ -352,7 +352,7 @@ private:
 
     OwnPtr<ContentLayerDelegate> m_contentLayerDelegate;
 
-    RawPtrWillBeWeakPersistent<ScrollableArea> m_scrollableArea;
+    WeakPersistent<ScrollableArea> m_scrollableArea;
     GraphicsLayerDebugInfo m_debugInfo;
     int m_3dRenderingContext;
 

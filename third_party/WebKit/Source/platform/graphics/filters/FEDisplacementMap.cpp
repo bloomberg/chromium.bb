@@ -39,10 +39,10 @@ FEDisplacementMap::FEDisplacementMap(Filter* filter, ChannelSelectorType xChanne
 {
 }
 
-PassRefPtrWillBeRawPtr<FEDisplacementMap> FEDisplacementMap::create(Filter* filter, ChannelSelectorType xChannelSelector,
+RawPtr<FEDisplacementMap> FEDisplacementMap::create(Filter* filter, ChannelSelectorType xChannelSelector,
     ChannelSelectorType yChannelSelector, float scale)
 {
-    return adoptRefWillBeNoop(new FEDisplacementMap(filter, xChannelSelector, yChannelSelector, scale));
+    return new FEDisplacementMap(filter, xChannelSelector, yChannelSelector, scale);
 }
 
 FloatRect FEDisplacementMap::mapPaintRect(const FloatRect& rect, bool)

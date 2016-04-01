@@ -673,9 +673,9 @@ private:
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
+RawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(ScrollableArea* scrollableArea)
 {
-    return adoptPtrWillBeNoop(new ScrollAnimatorMac(scrollableArea));
+    return new ScrollAnimatorMac(scrollableArea);
 }
 
 ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)

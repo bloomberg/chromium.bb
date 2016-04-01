@@ -121,7 +121,7 @@ public:
     virtual ~SupplementTracing() { }
     // FIXME: Oilpan: this trace() method is only provided to minimize
     // the use of ENABLE(OILPAN) for Supplements deriving from the
-    // transition type WillBeHeapSupplement<>.
+    // transition type HeapSupplement<>.
     //
     // When that transition type is removed (or its use is substantially
     // reduced), remove this dummy trace method also.

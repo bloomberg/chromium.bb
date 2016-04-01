@@ -29,7 +29,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FESpecularLighting final : public FELighting {
 public:
-    static PassRefPtrWillBeRawPtr<FESpecularLighting> create(Filter*, const Color&, float, float,
+    static RawPtr<FESpecularLighting> create(Filter*, const Color&, float, float,
         float, PassRefPtr<LightSource>);
     ~FESpecularLighting() override;
 

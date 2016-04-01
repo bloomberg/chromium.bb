@@ -63,7 +63,7 @@ enum IncludeScrollbarsInRect {
 };
 
 #if ENABLE(OILPAN)
-// Oilpan: Using the transition type WillBeGarbageCollectedMixin is
+// Oilpan: Using the transition type GarbageCollectedMixin is
 // problematic non-Oilpan as the type expands to DummyBase, exporting it
 // also from 'platform' as a result. Bringing about duplicate DummyBases
 // as core also exports same; with component build linking fails as a
@@ -326,8 +326,8 @@ private:
     virtual int documentStep(ScrollbarOrientation) const;
     virtual float pixelStep(ScrollbarOrientation) const;
 
-    mutable OwnPtrWillBeMember<ScrollAnimatorBase> m_scrollAnimator;
-    mutable OwnPtrWillBeMember<ProgrammaticScrollAnimator> m_programmaticScrollAnimator;
+    mutable Member<ScrollAnimatorBase> m_scrollAnimator;
+    mutable Member<ProgrammaticScrollAnimator> m_programmaticScrollAnimator;
 
     unsigned m_scrollbarOverlayStyle : 2; // ScrollbarOverlayStyle
 

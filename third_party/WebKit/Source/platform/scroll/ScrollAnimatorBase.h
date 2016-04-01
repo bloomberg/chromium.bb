@@ -48,7 +48,7 @@ class Scrollbar;
 
 class PLATFORM_EXPORT ScrollAnimatorBase : public ScrollAnimatorCompositorCoordinator {
 public:
-    static PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> create(ScrollableArea*);
+    static RawPtr<ScrollAnimatorBase> create(ScrollableArea*);
 
     virtual ~ScrollAnimatorBase();
 
@@ -118,7 +118,7 @@ protected:
 
     virtual void notifyPositionChanged();
 
-    RawPtrWillBeMember<ScrollableArea> m_scrollableArea;
+    Member<ScrollableArea> m_scrollableArea;
 
     FloatPoint m_currentPos;
 };

@@ -34,7 +34,7 @@
 namespace blink {
 
 template<typename T, typename Observer>
-class LifecycleNotifier : public virtual WillBeGarbageCollectedMixin {
+class LifecycleNotifier : public virtual GarbageCollectedMixin {
 public:
     virtual ~LifecycleNotifier();
 
@@ -72,7 +72,7 @@ protected:
     IterationType m_iterating;
 
 protected:
-    using ObserverSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Observer>>;
+    using ObserverSet = HeapHashSet<WeakMember<Observer>>;
 
     ObserverSet m_observers;
 
@@ -106,7 +106,7 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
         return;
 
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
-    Vector<RawPtrWillBeUntracedMember<Observer>> snapshotOfObservers;
+    Vector<UntracedMember<Observer>> snapshotOfObservers;
     copyToVector(m_observers, snapshotOfObservers);
     for (Observer* observer : snapshotOfObservers) {
         // FIXME: Oilpan: At the moment, it's possible that the Observer is
