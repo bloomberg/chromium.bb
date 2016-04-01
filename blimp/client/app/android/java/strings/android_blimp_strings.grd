@@ -142,6 +142,9 @@
       <message name="IDS_NETWORK_DISCONNECTED" desc="Message for when a connection terminates.">
         Engine disconnected, reason: %1$s
       </message>
+      <message name="IDS_OPEN_IN_CHROME" desc="Opens the URL in Chrome.">
+        Open in Chrome
+      </message>
     </messages>
   </release>
 </grit>

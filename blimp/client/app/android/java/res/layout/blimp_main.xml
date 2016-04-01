@@ -45,6 +45,14 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:scaleType="center"
                 android:src="@drawable/btn_reload" />
+            <ImageButton
+                android:id="@+id/menu_button"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:paddingEnd="4dp"
+                android:layout_gravity="center"
+                android:background="@null"
+                android:src="@drawable/btn_menu" />
         </org.chromium.blimp.toolbar.Toolbar>
         
         <!-- Content Area -->

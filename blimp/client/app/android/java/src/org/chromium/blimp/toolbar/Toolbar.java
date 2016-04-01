@@ -4,18 +4,24 @@
 
 package org.chromium.blimp.toolbar;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListPopupWindow;
 import android.widget.ProgressBar;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-
 import org.chromium.blimp.R;
 import org.chromium.blimp.session.BlimpClientSession;
 
@@ -26,10 +32,15 @@ import org.chromium.blimp.session.BlimpClientSession;
 @JNINamespace("blimp::client")
 public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
         View.OnClickListener {
+    private static final int ID_OPEN_IN_CHROME = 0;
+
     private long mNativeToolbarPtr;
 
+    private Context mContext;
     private UrlBar mUrlBar;
     private ImageButton mReloadButton;
+    private ImageButton mMenuButton;
+    private ListPopupWindow mPopupMenu;
     private ProgressBar mProgressBar;
 
     /**
@@ -45,6 +56,7 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
      */
     public Toolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mContext = context;
     }
 
     /**
@@ -109,6 +121,14 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
         mReloadButton = (ImageButton) findViewById(R.id.toolbar_reload_btn);
         mReloadButton.setOnClickListener(this);
 
+        mMenuButton = (ImageButton) findViewById(R.id.menu_button);
+        mMenuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMenu(v);
+            }
+        });
+
         mProgressBar = (ProgressBar) findViewById(R.id.page_load_progress);
         mProgressBar.setVisibility(View.GONE);
     }
@@ -148,6 +168,50 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver,
             mProgressBar.setVisibility(View.VISIBLE);
         } else {
             mProgressBar.setVisibility(View.GONE);
+        }
+    }
+
+    private void showMenu(View anchorView) {
+        if (mPopupMenu == null) {
+            initializeMenu(anchorView);
+        }
+        mPopupMenu.show();
+        mPopupMenu.getListView().setDivider(null);
+    }
+
+    /**
+     * Creates and initializes the app menu anchored to the specified view.
+     * @param anchorView The anchor of the {@link ListPopupWindow}
+     */
+    private void initializeMenu(View anchorView) {
+        mPopupMenu = new ListPopupWindow(mContext);
+        mPopupMenu.setAdapter(new ArrayAdapter<String>(mContext, R.layout.toolbar_popup_item,
+                new String[] {mContext.getString(R.string.open_in_chrome)}));
+        mPopupMenu.setAnchorView(anchorView);
+        mPopupMenu.setWidth(getResources().getDimensionPixelSize(R.dimen.toolbar_popup_item_width));
+        mPopupMenu.setVerticalOffset(-anchorView.getHeight());
+        mPopupMenu.setModal(true);
+        mPopupMenu.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position == ID_OPEN_IN_CHROME) {
+                    openInChrome();
+                }
+                mPopupMenu.dismiss();
+            }
+        });
+    }
+
+    private void openInChrome() {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mUrlBar.getText().toString()));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setPackage("com.android.chrome");
+        try {
+            mContext.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            // Chrome is probably not installed, so try with the default browser
+            intent.setPackage(null);
+            mContext.startActivity(intent);
         }
     }
 
