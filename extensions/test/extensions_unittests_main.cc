@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_io_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/content_test_suite_base.h"
 #include "content/public/test/unittest_test_suite.h"
@@ -14,6 +15,7 @@
 #include "extensions/common/extension_paths.h"
 #include "extensions/test/test_extensions_client.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/test/scoped_ipc_support.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 #include "url/url_util.h"
@@ -112,6 +114,9 @@ int main(int argc, char** argv) {
   content::UnitTestTestSuite test_suite(new ExtensionsTestSuite(argc, argv));
 
   mojo::edk::Init();
+  base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
+  mojo::edk::test::ScopedIPCSupport ipc_support(test_io_thread.task_runner());
+
   return base::LaunchUnitTests(argc,
                                argv,
                                base::Bind(&content::UnitTestTestSuite::Run,

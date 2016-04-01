@@ -57,7 +57,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 #if defined(OS_POSIX)
   void SetEnv(const base::EnvironmentMap& env) override;
 #endif
-  bool StartMojoMode() override;
+  bool Start() override;
   ServiceRegistry* GetServiceRegistry() override;
   void SetName(const base::string16& name) override;
 

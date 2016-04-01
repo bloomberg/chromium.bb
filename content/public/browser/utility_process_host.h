@@ -29,7 +29,7 @@ struct ChildProcessData;
 // If you need multiple batches of work to be done in the process, use
 // StartBatchMode(), then multiple calls to StartFooBar(p), then finish with
 // EndBatchMode().
-// If you need to call Mojo services, use StartMojoMode() to start the child
+// If you need to call Mojo services, use Start() to start the child
 // process and GetServiceRegistry() to get the service registry to connect to
 // the child's Mojo services.
 //
@@ -76,11 +76,10 @@ class UtilityProcessHost : public IPC::Sender {
   virtual void SetEnv(const base::EnvironmentMap& env) = 0;
 #endif
 
-  // Starts the utility process in Mojo mode.
-  virtual bool StartMojoMode() = 0;
+  // Starts the utility process.
+  virtual bool Start() = 0;
 
-  // Returns the ServiceRegistry for this process. Will return nullptr if
-  // the process was not started with StartMojoMode().
+  // Returns the ServiceRegistry for this process. Will never return nullptr.
   virtual ServiceRegistry* GetServiceRegistry() = 0;
 
   // Set the name of the process to appear in the task manager.

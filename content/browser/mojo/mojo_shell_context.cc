@@ -57,7 +57,7 @@ void StartUtilityProcessOnIOThread(
   process_host->SetName(process_name);
   if (!use_sandbox)
     process_host->DisableSandbox();
-  process_host->StartMojoMode();
+  process_host->Start();
 
   ServiceRegistry* services = process_host->GetServiceRegistry();
   services->ConnectToRemoteService(std::move(request));
