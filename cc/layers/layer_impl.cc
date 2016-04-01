@@ -130,7 +130,7 @@ void LayerImpl::AddChild(scoped_ptr<LayerImpl> child) {
   layer_tree_impl_->AddLayer(std::move(child));
 }
 
-scoped_ptr<LayerImpl> LayerImpl::RemoveChild(LayerImpl* child) {
+scoped_ptr<LayerImpl> LayerImpl::RemoveChildForTesting(LayerImpl* child) {
   auto it = std::find(children_.begin(), children_.end(), child);
   if (it != children_.end())
     children_.erase(it);

@@ -4544,9 +4544,9 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithAnimatingTransforms) {
                                true,
                                false);
 
-  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(parent.get(),
-                                                      parent->bounds());
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      parent.get(), parent->bounds());
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   EXPECT_FALSE(child->has_render_surface());
   EXPECT_TRUE(animating_surface->has_render_surface());
@@ -5849,9 +5849,9 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
 
   host()->SetRootLayer(root);
 
-  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(root.get(),
-                                                      root->bounds());
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(root.get(),
+                                                                root->bounds());
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // The visible_layer_rect for the |surface_child| should not be clipped by
   // the viewport.
@@ -8065,12 +8065,12 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
   host()->SetRootLayer(root);
 
   gfx::Size device_viewport_size(768, 582);
-  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(host()->root_layer(),
-                                                      device_viewport_size);
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      host()->root_layer(), device_viewport_size);
   inputs.device_scale_factor = 2.f;
   inputs.page_scale_factor = 1.f;
   inputs.page_scale_layer = NULL;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // Layers in the root render surface have their visible content rect clipped
   // by the viewport.

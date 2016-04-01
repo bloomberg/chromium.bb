@@ -38,21 +38,21 @@ class CC_EXPORT LayerTreeHostCommon {
                                         const gfx::Rect& layer_bound_rect,
                                         const gfx::Transform& transform);
 
-  struct CC_EXPORT CalcDrawPropsMainInputs {
+  struct CC_EXPORT CalcDrawPropsMainInputsForTesting {
    public:
-    CalcDrawPropsMainInputs(Layer* root_layer,
-                            const gfx::Size& device_viewport_size,
-                            const gfx::Transform& device_transform,
-                            float device_scale_factor,
-                            float page_scale_factor,
-                            const Layer* page_scale_layer,
-                            const Layer* inner_viewport_scroll_layer,
-                            const Layer* outer_viewport_scroll_layer);
-    CalcDrawPropsMainInputs(Layer* root_layer,
-                            const gfx::Size& device_viewport_size,
-                            const gfx::Transform& device_transform);
-    CalcDrawPropsMainInputs(Layer* root_layer,
-                            const gfx::Size& device_viewport_size);
+    CalcDrawPropsMainInputsForTesting(Layer* root_layer,
+                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Transform& device_transform,
+                                      float device_scale_factor,
+                                      float page_scale_factor,
+                                      const Layer* page_scale_layer,
+                                      const Layer* inner_viewport_scroll_layer,
+                                      const Layer* outer_viewport_scroll_layer);
+    CalcDrawPropsMainInputsForTesting(Layer* root_layer,
+                                      const gfx::Size& device_viewport_size,
+                                      const gfx::Transform& device_transform);
+    CalcDrawPropsMainInputsForTesting(Layer* root_layer,
+                                      const gfx::Size& device_viewport_size);
     Layer* root_layer;
     gfx::Size device_viewport_size;
     gfx::Transform device_transform;
@@ -119,7 +119,8 @@ class CC_EXPORT LayerTreeHostCommon {
   };
 
   static int CalculateLayerJitter(LayerImpl* scrolling_layer);
-  static void CalculateDrawProperties(CalcDrawPropsMainInputs* inputs);
+  static void CalculateDrawPropertiesForTesting(
+      CalcDrawPropsMainInputsForTesting* inputs);
   static void PreCalculateMetaInformation(Layer* root_layer);
   static void PreCalculateMetaInformationForTesting(LayerImpl* root_layer);
   static void PreCalculateMetaInformationForTesting(Layer* root_layer);

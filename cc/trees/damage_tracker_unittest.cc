@@ -784,7 +784,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
   EXPECT_TRUE(root_damage_rect.IsEmpty());
 
   // Then, test removing child1.
-  root->RemoveChild(child1);
+  root->RemoveChildForTesting(child1);
   child1 = NULL;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);

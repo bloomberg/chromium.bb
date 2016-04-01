@@ -111,12 +111,12 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
   host->SetRootLayer(root_layer->layer());
 
   {
-    cc::LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
+    cc::LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
         root_layer->layer(), kDeviceViewportSize);
     inputs.device_scale_factor = kDeviceScaleFactor;
     inputs.page_scale_factor = kPageScaleFactor;
     inputs.page_scale_layer = root_layer->layer(),
-    cc::LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    cc::LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
     ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                   fixed_bounds_layer->layer());
@@ -127,12 +127,12 @@ void CompareFixedBoundsLayerAndNormalLayer(const WebFloatPoint& anchor_point,
       gfx::Size(fixed_bounds.width() / 2, fixed_bounds.height() * 2));
 
   {
-    cc::LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
+    cc::LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
         root_layer->layer(), kDeviceViewportSize);
     inputs.device_scale_factor = kDeviceScaleFactor;
     inputs.page_scale_factor = kPageScaleFactor;
     inputs.page_scale_layer = root_layer->layer(),
-    cc::LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    cc::LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
     ExpectEqualLayerRectsInTarget(normal_layer->layer(),
                                   fixed_bounds_layer->layer());

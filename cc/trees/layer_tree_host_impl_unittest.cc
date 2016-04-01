@@ -3567,7 +3567,7 @@ TEST_F(LayerTreeHostImplTest, PrepareToDrawSucceedsAndFails) {
     for (const auto& child : root->children())
       to_remove.push_back(child);
     for (auto* child : to_remove)
-      root->RemoveChild(child);
+      root->RemoveChildForTesting(child);
     timeline()->ClearPlayers();
 
     std::ostringstream scope;
@@ -3662,7 +3662,7 @@ TEST_F(LayerTreeHostImplTest,
     for (const auto& child : root->children())
       to_remove.push_back(child);
     for (auto* child : to_remove)
-      root->RemoveChild(child);
+      root->RemoveChildForTesting(child);
 
     std::ostringstream scope;
     scope << "Test case: " << i;

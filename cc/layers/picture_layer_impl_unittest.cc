@@ -243,7 +243,8 @@ class PictureLayerImplTest : public testing::Test {
       pending_tree->SetRootLayer(std::move(new_pending_root));
     } else {
       pending_layer.reset(static_cast<FakePictureLayerImpl*>(
-          pending_root->RemoveChild(pending_root->children()[0]).release()));
+          pending_root->RemoveChildForTesting(pending_root->children()[0])
+              .release()));
       if (!tile_size.IsEmpty())
         pending_layer->set_fixed_tile_size(tile_size);
     }

@@ -104,7 +104,7 @@ class CC_EXPORT LayerImpl {
   LayerImplList& children() { return children_; }
   LayerImpl* child_at(size_t index) const { return children_[index]; }
   void AddChild(scoped_ptr<LayerImpl> child);
-  scoped_ptr<LayerImpl> RemoveChild(LayerImpl* child);
+  scoped_ptr<LayerImpl> RemoveChildForTesting(LayerImpl* child);
   void SetParent(LayerImpl* parent);
 
   void SetScrollParent(LayerImpl* parent);

@@ -83,12 +83,12 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
   // We are probably not testing what is intended if the root_layer bounds are
   // empty.
   DCHECK(!root_layer->bounds().IsEmpty());
-  LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(root_layer,
-                                                      device_viewport_size);
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      root_layer, device_viewport_size);
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_layer = page_scale_layer;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 }
 
 void LayerTreeHostCommonTestBase::
