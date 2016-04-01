@@ -22,11 +22,14 @@ class SingleThreadTaskRunner;
 namespace chromecast {
 namespace media {
 
+class MediaPipelineBackendManager;
+
 class MediaPipelineBackendWrapper : public MediaPipelineBackend {
  public:
-  MediaPipelineBackendWrapper(MediaPipelineBackend* backend,
+  MediaPipelineBackendWrapper(scoped_ptr<MediaPipelineBackend> backend,
                               int stream_type,
-                              float stream_type_volume);
+                              float stream_type_volume,
+                              MediaPipelineBackendManager* backend_manager);
   ~MediaPipelineBackendWrapper() override;
 
   // MediaPipelineBackend implementation:
@@ -49,6 +52,7 @@ class MediaPipelineBackendWrapper : public MediaPipelineBackend {
   scoped_ptr<AudioDecoderWrapper> audio_decoder_wrapper_;
   float stream_type_volume_;
   bool is_initialized_;
+  MediaPipelineBackendManager* const backend_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendWrapper);
 };

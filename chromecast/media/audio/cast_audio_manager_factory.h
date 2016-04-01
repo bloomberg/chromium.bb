@@ -11,9 +11,12 @@
 namespace chromecast {
 namespace media {
 
+class MediaPipelineBackendManager;
+
 class CastAudioManagerFactory : public ::media::AudioManagerFactory {
  public:
-  CastAudioManagerFactory();
+  explicit CastAudioManagerFactory(
+      MediaPipelineBackendManager* backend_manager);
   ~CastAudioManagerFactory() override;
 
   // ::media::AudioManagerFactory overrides.
@@ -21,6 +24,8 @@ class CastAudioManagerFactory : public ::media::AudioManagerFactory {
       ::media::AudioLogFactory* audio_log_factory) override;
 
  private:
+  MediaPipelineBackendManager* const backend_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(CastAudioManagerFactory);
 };
 

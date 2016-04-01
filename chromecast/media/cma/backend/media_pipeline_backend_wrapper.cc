@@ -11,19 +11,21 @@ namespace chromecast {
 namespace media {
 
 MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
-    MediaPipelineBackend* backend,
+    scoped_ptr<MediaPipelineBackend> backend,
     int stream_type,
-    float stream_type_volume)
-    : backend_(backend),
+    float stream_type_volume,
+    MediaPipelineBackendManager* backend_manager)
+    : backend_(std::move(backend)),
       stream_type_(stream_type),
       audio_decoder_wrapper_(nullptr),
       stream_type_volume_(stream_type_volume),
-      is_initialized_(false) {
+      is_initialized_(false),
+      backend_manager_(backend_manager) {
   DCHECK(backend_);
 }
 
 MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
-  MediaPipelineBackendManager::OnMediaPipelineBackendDestroyed(this);
+  backend_manager_->OnMediaPipelineBackendDestroyed(this);
 }
 
 MediaPipelineBackend::AudioDecoder*
