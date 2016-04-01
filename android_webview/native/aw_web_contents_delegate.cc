@@ -14,6 +14,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -148,7 +149,7 @@ void AwWebContentsDelegate::AddNewContents(WebContents* source,
     // until then, and when the callback is made we will swap the WebContents
     // out into the new AwContents.
     AwContents::FromWebContents(source)->SetPendingWebContentsForPopup(
-        make_scoped_ptr(new_contents));
+        base::WrapUnique(new_contents));
     // Hide the WebContents for the pop up now, we will show it again
     // when the user calls us back with an AwContents to use to show it.
     new_contents->WasHidden();
@@ -233,11 +234,11 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
   if (!aw_contents) {
     callback.Run(content::MediaStreamDevices(),
                  content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
-                 scoped_ptr<content::MediaStreamUI>());
+                 std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   aw_contents->GetPermissionRequestHandler()->SendRequest(
-      scoped_ptr<AwPermissionRequestDelegate>(
+      std::unique_ptr<AwPermissionRequestDelegate>(
           new MediaAccessPermissionRequest(request, callback)));
 }
 

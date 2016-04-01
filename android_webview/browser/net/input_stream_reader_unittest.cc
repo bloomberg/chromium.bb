@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/input_stream_reader.h"
+
+#include "android_webview/browser/input_stream.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_byte_range.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

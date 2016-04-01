@@ -79,8 +79,8 @@ void DeleteDirRecursively(const base::FilePath& path) {
 
 AwBrowserContext* g_browser_context = NULL;
 
-scoped_ptr<net::ProxyConfigService> CreateProxyConfigService() {
-  scoped_ptr<net::ProxyConfigService> config_service =
+std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService() {
+  std::unique_ptr<net::ProxyConfigService> config_service =
       net::ProxyService::CreateSystemProxyConfigService(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
           nullptr /* Ignored on Android */);
@@ -217,7 +217,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
           GetUserAgent()));
   data_reduction_proxy_settings_.reset(
       new data_reduction_proxy::DataReductionProxySettings());
-  scoped_ptr<data_reduction_proxy::DataStore> store(
+  std::unique_ptr<data_reduction_proxy::DataStore> store(
       new data_reduction_proxy::DataStore());
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
@@ -357,7 +357,7 @@ void AwBrowserContext::InitUserPrefService() {
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 }
 
-scoped_ptr<content::ZoomLevelDelegate>
+std::unique_ptr<content::ZoomLevelDelegate>
 AwBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
   return nullptr;

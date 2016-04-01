@@ -5,6 +5,7 @@
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "android_webview/common/devtools_instrumentation.h"
@@ -14,7 +15,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -208,19 +208,21 @@ struct WebResourceRequest {
 // AwContentsIoThreadClientImpl -----------------------------------------------
 
 // static
-scoped_ptr<AwContentsIoThreadClient>
-AwContentsIoThreadClient::FromID(int render_process_id, int render_frame_id) {
+std::unique_ptr<AwContentsIoThreadClient> AwContentsIoThreadClient::FromID(
+    int render_process_id,
+    int render_frame_id) {
   pair<int, int> rfh_id(render_process_id, render_frame_id);
   IoThreadClientData client_data;
   if (!RfhToIoThreadClientMap::GetInstance()->Get(rfh_id, &client_data))
-    return scoped_ptr<AwContentsIoThreadClient>();
+    return std::unique_ptr<AwContentsIoThreadClient>();
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate =
       client_data.io_thread_client.get(env);
   DCHECK(!client_data.pending_association || java_delegate.is_null());
-  return scoped_ptr<AwContentsIoThreadClient>(new AwContentsIoThreadClientImpl(
-      client_data.pending_association, java_delegate));
+  return std::unique_ptr<AwContentsIoThreadClient>(
+      new AwContentsIoThreadClientImpl(client_data.pending_association,
+                                       java_delegate));
 }
 
 // static
@@ -269,17 +271,17 @@ void AwContentsIoThreadClientImpl::SetServiceWorkerIoThreadClient(
 }
 
 // static
-scoped_ptr<AwContentsIoThreadClient>
+std::unique_ptr<AwContentsIoThreadClient>
 AwContentsIoThreadClient::GetServiceWorkerIoThreadClient() {
   if (g_sw_instance_.Get().is_empty())
-    return scoped_ptr<AwContentsIoThreadClient>();
+    return std::unique_ptr<AwContentsIoThreadClient>();
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_delegate = g_sw_instance_.Get().get(env);
 
   DCHECK(!java_delegate.is_null());
-  return scoped_ptr<AwContentsIoThreadClient>(new AwContentsIoThreadClientImpl(
-      false, java_delegate));
+  return std::unique_ptr<AwContentsIoThreadClient>(
+      new AwContentsIoThreadClientImpl(false, java_delegate));
 }
 
 AwContentsIoThreadClientImpl::AwContentsIoThreadClientImpl(
@@ -312,7 +314,7 @@ AwContentsIoThreadClientImpl::GetCacheMode() const {
 
 namespace {
 
-scoped_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
+std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
     WebResourceRequest web_request,
     JavaObjectWeakGlobalRef ref) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
@@ -335,12 +337,12 @@ scoped_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
           web_request.jstring_method.obj(),
           web_request.jstringArray_header_names.obj(),
           web_request.jstringArray_header_values.obj());
-  return scoped_ptr<AwWebResourceResponse>(
+  return std::unique_ptr<AwWebResourceResponse>(
       ret.is_null() ? nullptr : new AwWebResourceResponseImpl(ret));
 }
 
-scoped_ptr<AwWebResourceResponse> ReturnNull() {
-  return scoped_ptr<AwWebResourceResponse>();
+std::unique_ptr<AwWebResourceResponse> ReturnNull() {
+  return std::unique_ptr<AwWebResourceResponse>();
 }
 
 }  // namespace
@@ -349,7 +351,7 @@ void AwContentsIoThreadClientImpl::ShouldInterceptRequestAsync(
     const net::URLRequest* request,
     const ShouldInterceptRequestResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::Callback<scoped_ptr<AwWebResourceResponse>()> get_response =
+  base::Callback<std::unique_ptr<AwWebResourceResponse>()> get_response =
       base::Bind(&ReturnNull);
   JNIEnv* env = AttachCurrentThread();
   if (bg_thread_client_object_.is_null() && !java_object_.is_null()) {

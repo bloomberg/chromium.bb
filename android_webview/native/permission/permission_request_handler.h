@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
@@ -33,7 +33,7 @@ class PermissionRequestHandler : public content::WebContentsObserver {
   ~PermissionRequestHandler() override;
 
   // Send the given |request| to PermissionRequestHandlerClient.
-  void SendRequest(scoped_ptr<AwPermissionRequestDelegate> request);
+  void SendRequest(std::unique_ptr<AwPermissionRequestDelegate> request);
 
   // Cancel the ongoing request initiated by |origin| for accessing |resources|.
   void CancelRequest(const GURL& origin, int64_t resources);

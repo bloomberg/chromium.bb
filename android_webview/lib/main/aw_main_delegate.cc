@@ -4,6 +4,8 @@
 
 #include "android_webview/lib/main/aw_main_delegate.h"
 
+#include <memory>
+
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
@@ -24,7 +26,6 @@
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
@@ -47,9 +48,8 @@ namespace {
 
 // TODO(boliu): Remove this global Allow once the underlying issues are
 // resolved - http://crbug.com/240453. See AwMainDelegate::RunProcess below.
-base::LazyInstance<scoped_ptr<ScopedAllowWaitForLegacyWebViewApi> >
+base::LazyInstance<std::unique_ptr<ScopedAllowWaitForLegacyWebViewApi>>
     g_allow_wait_in_ui_thread = LAZY_INSTANCE_INITIALIZER;
-
 }
 
 AwMainDelegate::AwMainDelegate() {

@@ -7,10 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "android_webview/browser/aw_web_preferences_populater.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 
 namespace android_webview {
@@ -99,7 +100,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   void SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
-      scoped_ptr<content::ClientCertificateDelegate> delegate) override;
+      std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
   bool CanCreateWindow(const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,
                        const GURL& source_origin,
@@ -147,8 +148,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
  private:
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.
-  scoped_ptr<AwBrowserContext> browser_context_;
-  scoped_ptr<AwWebPreferencesPopulater> preferences_populater_;
+  std::unique_ptr<AwBrowserContext> browser_context_;
+  std::unique_ptr<AwWebPreferencesPopulater> preferences_populater_;
 
   JniDependencyFactory* native_factory_;
 

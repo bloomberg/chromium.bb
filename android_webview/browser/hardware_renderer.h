@@ -5,9 +5,10 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_HARDWARE_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_HARDWARE_RENDERER_H_
 
+#include <memory>
+
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
@@ -69,14 +70,14 @@ class HardwareRenderer : public cc::DisplayClient,
   // This holds the last ChildFrame received. Contains the frame info of the
   // last frame. The |frame| member may be null if it's already submitted to
   // SurfaceFactory.
-  scoped_ptr<ChildFrame> child_frame_;
+  std::unique_ptr<ChildFrame> child_frame_;
 
   scoped_refptr<AwGLSurface> gl_surface_;
 
-  scoped_ptr<cc::SurfaceManager> surface_manager_;
-  scoped_ptr<cc::Display> display_;
-  scoped_ptr<cc::SurfaceFactory> surface_factory_;
-  scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  std::unique_ptr<cc::SurfaceManager> surface_manager_;
+  std::unique_ptr<cc::Display> display_;
+  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
+  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   cc::SurfaceId child_id_;
   cc::SurfaceId root_id_;
   uint32_t compositor_id_;

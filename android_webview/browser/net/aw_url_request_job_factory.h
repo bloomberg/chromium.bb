@@ -5,8 +5,9 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_URL_REQUEST_JOB_FACTORY_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_URL_REQUEST_JOB_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
@@ -27,7 +28,7 @@ class AwURLRequestJobFactory : public net::URLRequestJobFactory {
   ~AwURLRequestJobFactory() override;
 
   bool SetProtocolHandler(const std::string& scheme,
-                          scoped_ptr<ProtocolHandler> protocol_handler);
+                          std::unique_ptr<ProtocolHandler> protocol_handler);
 
   // net::URLRequestJobFactory implementation.
   net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
@@ -51,7 +52,7 @@ class AwURLRequestJobFactory : public net::URLRequestJobFactory {
  private:
   // By default calls are forwarded to this factory, to avoid having to
   // subclass an existing implementation class.
-  scoped_ptr<net::URLRequestJobFactoryImpl> next_factory_;
+  std::unique_ptr<net::URLRequestJobFactoryImpl> next_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AwURLRequestJobFactory);
 };

@@ -5,8 +5,9 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_INIT_NATIVE_CALLBACK_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_INIT_NATIVE_CALLBACK_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -29,12 +30,12 @@ scoped_refptr<base::SingleThreadTaskRunner> GetCookieStoreTaskRunner();
 net::CookieStore* GetCookieStore();
 
 // Called lazily when the job factory is being constructed.
-scoped_ptr<net::URLRequestInterceptor>
-    CreateAndroidAssetFileRequestInterceptor();
+std::unique_ptr<net::URLRequestInterceptor>
+CreateAndroidAssetFileRequestInterceptor();
 
 // Called lazily when the job factory is being constructed.
-scoped_ptr<net::URLRequestInterceptor>
-    CreateAndroidContentRequestInterceptor();
+std::unique_ptr<net::URLRequestInterceptor>
+CreateAndroidContentRequestInterceptor();
 
 }  // namespace android_webview
 

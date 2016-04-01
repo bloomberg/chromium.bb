@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
@@ -54,8 +55,9 @@ const char kHTTPNotFoundText[] = "Not Found";
 class InputStreamReaderWrapper :
     public base::RefCountedThreadSafe<InputStreamReaderWrapper> {
  public:
-  InputStreamReaderWrapper(scoped_ptr<InputStream> input_stream,
-                           scoped_ptr<InputStreamReader> input_stream_reader)
+  InputStreamReaderWrapper(
+      std::unique_ptr<InputStream> input_stream,
+      std::unique_ptr<InputStreamReader> input_stream_reader)
       : input_stream_(std::move(input_stream)),
         input_stream_reader_(std::move(input_stream_reader)) {
     DCHECK(input_stream_);
@@ -78,8 +80,8 @@ class InputStreamReaderWrapper :
   friend class base::RefCountedThreadSafe<InputStreamReaderWrapper>;
   ~InputStreamReaderWrapper() {}
 
-  scoped_ptr<InputStream> input_stream_;
-  scoped_ptr<InputStreamReader> input_stream_reader_;
+  std::unique_ptr<InputStream> input_stream_;
+  std::unique_ptr<InputStreamReader> input_stream_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(InputStreamReaderWrapper);
 };
@@ -87,7 +89,7 @@ class InputStreamReaderWrapper :
 AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    scoped_ptr<Delegate> delegate)
+    std::unique_ptr<Delegate> delegate)
     : URLRequestJob(request, network_delegate),
       range_parse_result_(net::OK),
       delegate_(std::move(delegate)),
@@ -98,7 +100,7 @@ AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
 AndroidStreamReaderURLRequestJob::AndroidStreamReaderURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
-    scoped_ptr<DelegateObtainer> delegate_obtainer,
+    std::unique_ptr<DelegateObtainer> delegate_obtainer,
     bool)
     : URLRequestJob(request, network_delegate),
       range_parse_result_(net::OK),
@@ -112,20 +114,22 @@ AndroidStreamReaderURLRequestJob::~AndroidStreamReaderURLRequestJob() {
 
 namespace {
 
-typedef base::Callback<
-    void(scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate>,
-         scoped_ptr<InputStream>)> OnInputStreamOpenedCallback;
+typedef base::Callback<void(
+    std::unique_ptr<AndroidStreamReaderURLRequestJob::Delegate>,
+    std::unique_ptr<InputStream>)>
+    OnInputStreamOpenedCallback;
 
 // static
 void OpenInputStreamOnWorkerThread(
     scoped_refptr<base::SingleThreadTaskRunner> job_thread_task_runner,
-    scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate> delegate,
+    std::unique_ptr<AndroidStreamReaderURLRequestJob::Delegate> delegate,
     const GURL& url,
     OnInputStreamOpenedCallback callback) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
 
-  scoped_ptr<InputStream> input_stream = delegate->OpenInputStream(env, url);
+  std::unique_ptr<InputStream> input_stream =
+      delegate->OpenInputStream(env, url);
   job_thread_task_runner->PostTask(
       FROM_HERE, base::Bind(callback, base::Passed(std::move(delegate)),
                             base::Passed(std::move(input_stream))));
@@ -155,14 +159,14 @@ void AndroidStreamReaderURLRequestJob::Kill() {
   URLRequestJob::Kill();
 }
 
-scoped_ptr<InputStreamReader>
+std::unique_ptr<InputStreamReader>
 AndroidStreamReaderURLRequestJob::CreateStreamReader(InputStream* stream) {
-  return make_scoped_ptr(new InputStreamReader(stream));
+  return base::WrapUnique(new InputStreamReader(stream));
 }
 
 void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(
-      scoped_ptr<Delegate> returned_delegate,
-      scoped_ptr<android_webview::InputStream> input_stream) {
+    std::unique_ptr<Delegate> returned_delegate,
+    std::unique_ptr<android_webview::InputStream> input_stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(returned_delegate);
   delegate_ = std::move(returned_delegate);
@@ -178,7 +182,7 @@ void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(
     return;
   }
 
-  scoped_ptr<InputStreamReader> input_stream_reader(
+  std::unique_ptr<InputStreamReader> input_stream_reader(
       CreateStreamReader(input_stream.get()));
   DCHECK(input_stream_reader);
 
@@ -268,7 +272,7 @@ bool AndroidStreamReaderURLRequestJob::GetCharset(std::string* charset) {
 }
 
 void AndroidStreamReaderURLRequestJob::DelegateObtained(
-    scoped_ptr<Delegate> delegate) {
+    std::unique_ptr<Delegate> delegate) {
   DCHECK(!delegate_);
   delegate_obtainer_.reset();
   if (delegate) {

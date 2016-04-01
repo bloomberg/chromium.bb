@@ -52,8 +52,8 @@ class AwContentRendererClient : public content::ContentRendererClient {
       blink::WebPageVisibilityState* override_state) override;
 
  private:
-  scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;
-  scoped_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
+  std::unique_ptr<AwRenderProcessObserver> aw_render_process_observer_;
+  std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
   const bool disable_page_visibility_;
 };
 

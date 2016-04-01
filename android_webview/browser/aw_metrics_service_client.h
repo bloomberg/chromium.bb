@@ -5,13 +5,12 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_IMPL_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_METRICS_SERVICE_CLIENT_IMPL_H_
 
-#include "android_webview/browser/aw_metrics_service_client.h"
-
+#include <memory>
 #include <string>
 
+#include "android_webview/browser/aw_metrics_service_client.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_service_client.h"
 
 class PrefService;
@@ -64,7 +63,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient {
   void InitializeSystemProfileMetrics(
       const base::Closure& done_callback) override;
   void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
-  scoped_ptr<metrics::MetricsLogUploader> CreateUploader(
+  std::unique_ptr<metrics::MetricsLogUploader> CreateUploader(
       const base::Callback<void(int)>& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
 
@@ -81,8 +80,8 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient {
   bool is_enabled_;
   PrefService* pref_service_;
   net::URLRequestContextGetter* request_context_;
-  scoped_ptr<metrics::MetricsStateManager> metrics_state_manager_;
-  scoped_ptr<metrics::MetricsService> metrics_service_;
+  std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
+  std::unique_ptr<metrics::MetricsService> metrics_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMetricsServiceClient);
 };

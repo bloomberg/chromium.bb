@@ -34,8 +34,8 @@ const int kUploadIntervalMinutes = 30;
 
 void StoreClientInfo(const metrics::ClientInfo& client_info) {}
 
-scoped_ptr<metrics::ClientInfo> LoadClientInfo() {
-  scoped_ptr<metrics::ClientInfo> client_info;
+std::unique_ptr<metrics::ClientInfo> LoadClientInfo() {
+  std::unique_ptr<metrics::ClientInfo> client_info;
   return client_info;
 }
 
@@ -106,22 +106,24 @@ void AwMetricsServiceClient::InitializeWithGUID(std::string* guid) {
       metrics_state_manager_.get(), this, pref_service_));
 
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new metrics::NetworkMetricsProvider(
-          content::BrowserThread::GetBlockingPool())));
+      std::unique_ptr<metrics::MetricsProvider>(
+          new metrics::NetworkMetricsProvider(
+              content::BrowserThread::GetBlockingPool())));
 
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new metrics::GPUMetricsProvider));
+      std::unique_ptr<metrics::MetricsProvider>(
+          new metrics::GPUMetricsProvider));
 
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(
+      std::unique_ptr<metrics::MetricsProvider>(
           new metrics::ScreenInfoMetricsProvider));
 
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(
+      std::unique_ptr<metrics::MetricsProvider>(
           new metrics::ProfilerMetricsProvider()));
 
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(
+      std::unique_ptr<metrics::MetricsProvider>(
           new metrics::CallStackProfileMetricsProvider));
 
   metrics_service_->InitializeMetricsRecordingState();
@@ -199,14 +201,13 @@ void AwMetricsServiceClient::CollectFinalMetricsForLog(
   done_callback.Run();
 }
 
-scoped_ptr<metrics::MetricsLogUploader> AwMetricsServiceClient::CreateUploader(
+std::unique_ptr<metrics::MetricsLogUploader>
+AwMetricsServiceClient::CreateUploader(
     const base::Callback<void(int)>& on_upload_complete) {
-  return scoped_ptr<::metrics::MetricsLogUploader>(
+  return std::unique_ptr<::metrics::MetricsLogUploader>(
       new metrics::NetMetricsLogUploader(
-          request_context_,
-          metrics::kDefaultMetricsServerUrl,
-          metrics::kDefaultMetricsMimeType,
-          on_upload_complete));
+          request_context_, metrics::kDefaultMetricsServerUrl,
+          metrics::kDefaultMetricsMimeType, on_upload_complete));
 }
 
 base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {

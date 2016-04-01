@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_ANDROID_STREAM_READER_URL_REQUEST_JOB_H_
 
+#include <memory>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
@@ -12,7 +13,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/net_errors.h"
@@ -47,7 +47,7 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
     virtual ~Delegate() {}
 
     // This method is called from a worker thread, not from the IO thread.
-    virtual scoped_ptr<android_webview::InputStream> OpenInputStream(
+    virtual std::unique_ptr<android_webview::InputStream> OpenInputStream(
         JNIEnv* env,
         const GURL& url) = 0;
 
@@ -79,20 +79,19 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
    public:
     virtual ~DelegateObtainer() {}
 
-    typedef base::Callback<void(scoped_ptr<Delegate>)> Callback;
+    typedef base::Callback<void(std::unique_ptr<Delegate>)> Callback;
     virtual void ObtainDelegate(net::URLRequest* request,
                                 const Callback& callback) = 0;
   };
 
+  AndroidStreamReaderURLRequestJob(net::URLRequest* request,
+                                   net::NetworkDelegate* network_delegate,
+                                   std::unique_ptr<Delegate> delegate);
   AndroidStreamReaderURLRequestJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
-      scoped_ptr<Delegate> delegate);
-  AndroidStreamReaderURLRequestJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      scoped_ptr<DelegateObtainer> delegate_obtainer,
-      bool); // resolve ambiguity
+      std::unique_ptr<DelegateObtainer> delegate_obtainer,
+      bool);  // resolve ambiguity
 
   // URLRequestJob:
   void Start() override;
@@ -113,29 +112,29 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
 
   // Creates an InputStreamReader instance.
   // Overridden in unittests to return a mock.
-  virtual scoped_ptr<android_webview::InputStreamReader>
-      CreateStreamReader(android_webview::InputStream* stream);
+  virtual std::unique_ptr<android_webview::InputStreamReader>
+  CreateStreamReader(android_webview::InputStream* stream);
 
  private:
   // Used as a callback when obtaining the delegate asynchronously,
   // see DelegateObtainer.
-  void DelegateObtained(scoped_ptr<Delegate> delegate);
+  void DelegateObtained(std::unique_ptr<Delegate> delegate);
   // Actual URLRequestJob::Start implementation.
   void DoStart();
 
   void HeadersComplete(int status_code, const std::string& status_text);
 
   void OnInputStreamOpened(
-      scoped_ptr<Delegate> delegate,
-      scoped_ptr<android_webview::InputStream> input_stream);
+      std::unique_ptr<Delegate> delegate,
+      std::unique_ptr<android_webview::InputStream> input_stream);
   void OnReaderSeekCompleted(int content_size);
   void OnReaderReadCompleted(int bytes_read);
 
   net::HttpByteRange byte_range_;
   net::Error range_parse_result_;
-  scoped_ptr<net::HttpResponseInfo> response_info_;
-  scoped_ptr<Delegate> delegate_;
-  scoped_ptr<DelegateObtainer> delegate_obtainer_;
+  std::unique_ptr<net::HttpResponseInfo> response_info_;
+  std::unique_ptr<Delegate> delegate_;
+  std::unique_ptr<DelegateObtainer> delegate_obtainer_;
   scoped_refptr<InputStreamReaderWrapper> input_stream_reader_wrapper_;
   base::ThreadChecker thread_checker_;
 

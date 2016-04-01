@@ -45,6 +45,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
@@ -179,11 +180,13 @@ AwBrowserPermissionRequestDelegate* AwBrowserPermissionRequestDelegate::FromID(
   return aw_contents;
 }
 
-AwContents::AwContents(scoped_ptr<WebContents> web_contents)
+AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     : shared_renderer_state_(
-          this, BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+          this,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       browser_view_renderer_(
-          this, BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          this,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisablePageVisibility)),
       web_contents_(std::move(web_contents)),
@@ -236,9 +239,8 @@ void AwContents::SetJavaPeers(
                                           io_thread_client);
 
   InterceptNavigationDelegate::Associate(
-      web_contents_.get(),
-      make_scoped_ptr(new InterceptNavigationDelegate(
-          env, intercept_navigation_delegate)));
+      web_contents_.get(), base::WrapUnique(new InterceptNavigationDelegate(
+                               env, intercept_navigation_delegate)));
 
   // Finally, having setup the associations, release any deferred requests
   for (content::RenderFrameHost* rfh : web_contents_->GetAllFrames()) {
@@ -327,7 +329,7 @@ static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& browser_context) {
   // TODO(joth): Use |browser_context| to get the native BrowserContext, rather
   // than hard-code the default instance lookup here.
-  scoped_ptr<WebContents> web_contents(content::WebContents::Create(
+  std::unique_ptr<WebContents> web_contents(content::WebContents::Create(
       content::WebContents::CreateParams(AwBrowserContext::GetDefault())));
   // Return an 'uninitialized' instance; most work is deferred until the
   // subsequent SetJavaPeers() call.
@@ -604,7 +606,7 @@ void AwContents::RequestProtectedMediaIdentifierPermission(
     const GURL& origin,
     const base::Callback<void(bool)>& callback) {
   permission_request_handler_->SendRequest(
-      scoped_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
+      std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
           origin, AwPermissionRequest::ProtectedMediaId, callback)));
 }
 
@@ -627,7 +629,7 @@ void AwContents::RequestGeolocationPermission(
     return;
   }
   permission_request_handler_->SendRequest(
-      scoped_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
+      std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
           origin, AwPermissionRequest::Geolocation, callback)));
 }
 
@@ -649,7 +651,7 @@ void AwContents::RequestMIDISysexPermission(
     const GURL& origin,
     const base::Callback<void(bool)>& callback) {
   permission_request_handler_->SendRequest(
-      scoped_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
+      std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
           origin, AwPermissionRequest::MIDISysex, callback)));
 }
 
@@ -975,8 +977,9 @@ bool AwContents::OnDraw(JNIEnv* env,
   // bitmap). For better performance, get global visible rect, transform it
   // from screen space to view space, then intersect with the webview in
   // viewspace.  Use the resulting rect as the auxiliary bitmap.
-  scoped_ptr<SoftwareCanvasHolder> canvas_holder = SoftwareCanvasHolder::Create(
-      canvas, scroll, view_size, g_force_auxiliary_bitmap_rendering);
+  std::unique_ptr<SoftwareCanvasHolder> canvas_holder =
+      SoftwareCanvasHolder::Create(canvas, scroll, view_size,
+                                   g_force_auxiliary_bitmap_rendering);
   if (!canvas_holder || !canvas_holder->GetCanvas()) {
     TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_NoSoftwareCanvas",
                          TRACE_EVENT_SCOPE_THREAD);
@@ -986,7 +989,7 @@ bool AwContents::OnDraw(JNIEnv* env,
 }
 
 void AwContents::SetPendingWebContentsForPopup(
-    scoped_ptr<content::WebContents> pending) {
+    std::unique_ptr<content::WebContents> pending) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (pending_contents_.get()) {
     // TODO(benm): Support holding multiple pop up window requests.

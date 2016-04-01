@@ -48,7 +48,7 @@ MediaAccessPermissionRequest::~MediaAccessPermissionRequest() {
 }
 
 void MediaAccessPermissionRequest::NotifyRequestResult(bool allowed) {
-  scoped_ptr<content::MediaStreamUI> ui;
+  std::unique_ptr<content::MediaStreamUI> ui;
   MediaStreamDevices devices;
   if (!allowed) {
     callback_.Run(devices, content::MEDIA_DEVICE_PERMISSION_DENIED,

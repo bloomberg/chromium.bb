@@ -87,7 +87,7 @@ class AuxiliaryCanvasHolder : public SoftwareCanvasHolder {
   ScopedJavaLocalRef<jobject> jcanvas_;
   ScopedJavaLocalRef<jobject> jbitmap_;
   gfx::Vector2d scroll_;
-  scoped_ptr<SkBitmap> bitmap_;
+  std::unique_ptr<SkBitmap> bitmap_;
   skia::RefPtr<SkCanvas> canvas_;
   DISALLOW_COPY_AND_ASSIGN(AuxiliaryCanvasHolder);
 };
@@ -149,13 +149,13 @@ void RasterHelperSetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table) {
 }
 
 // static
-scoped_ptr<SoftwareCanvasHolder> SoftwareCanvasHolder::Create(
+std::unique_ptr<SoftwareCanvasHolder> SoftwareCanvasHolder::Create(
     jobject java_canvas,
     const gfx::Vector2d& scroll_correction,
     const gfx::Size& auxiliary_bitmap_size,
     bool force_auxiliary_bitmap) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  scoped_ptr<SoftwareCanvasHolder> holder;
+  std::unique_ptr<SoftwareCanvasHolder> holder;
   if (!force_auxiliary_bitmap) {
     holder.reset(new JavaCanvasHolder(env, java_canvas, scroll_correction));
   }

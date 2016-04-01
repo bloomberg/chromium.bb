@@ -128,11 +128,11 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   bool CanOnDraw();
   void UpdateCompositorIsActive();
   bool CompositeSW(SkCanvas* canvas);
-  scoped_ptr<base::trace_event::ConvertableToTraceFormat> RootLayerStateAsValue(
-      const gfx::Vector2dF& total_scroll_offset_dip,
-      const gfx::SizeF& scrollable_size_dip);
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
+  RootLayerStateAsValue(const gfx::Vector2dF& total_scroll_offset_dip,
+                        const gfx::SizeF& scrollable_size_dip);
 
-  void ReturnUnusedResource(scoped_ptr<ChildFrame> frame);
+  void ReturnUnusedResource(std::unique_ptr<ChildFrame> frame);
   void ReturnResourceFromParent();
 
   gfx::Vector2d max_scroll_offset() const;

@@ -165,20 +165,20 @@ gfx::Vector2d SharedRendererState::GetScrollOffsetOnRT() {
   return scroll_offset_;
 }
 
-void SharedRendererState::SetFrameOnUI(scoped_ptr<ChildFrame> frame) {
+void SharedRendererState::SetFrameOnUI(std::unique_ptr<ChildFrame> frame) {
   base::AutoLock lock(lock_);
   DCHECK(!child_frame_.get());
   child_frame_ = std::move(frame);
 }
 
-scoped_ptr<ChildFrame> SharedRendererState::PassFrameOnRT() {
+std::unique_ptr<ChildFrame> SharedRendererState::PassFrameOnRT() {
   base::AutoLock lock(lock_);
   hardware_renderer_has_frame_ =
       hardware_renderer_has_frame_ || child_frame_.get();
   return std::move(child_frame_);
 }
 
-scoped_ptr<ChildFrame> SharedRendererState::PassUncommittedFrameOnUI() {
+std::unique_ptr<ChildFrame> SharedRendererState::PassUncommittedFrameOnUI() {
   base::AutoLock lock(lock_);
   return std::move(child_frame_);
 }

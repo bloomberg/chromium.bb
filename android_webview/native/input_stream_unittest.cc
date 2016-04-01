@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "android_webview/native/input_stream_impl.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/scoped_ptr.h"
 #include "jni/InputStreamUnittest_jni.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,7 +49,7 @@ class InputStreamTest : public Test {
         Java_InputStreamUnittest_getCountingStream(env_, stream_size);
     EXPECT_FALSE(counting_jstream.is_null());
 
-    scoped_ptr<InputStream> input_stream(
+    std::unique_ptr<InputStream> input_stream(
         new InputStreamImpl(counting_jstream));
     scoped_refptr<IOBuffer> buffer = new IOBuffer(bytes_requested);
 
@@ -65,7 +65,7 @@ TEST_F(InputStreamTest, ReadEmptyStream) {
       Java_InputStreamUnittest_getEmptyStream(env_);
   EXPECT_FALSE(empty_jstream.is_null());
 
-  scoped_ptr<InputStream> input_stream(new InputStreamImpl(empty_jstream));
+  std::unique_ptr<InputStream> input_stream(new InputStreamImpl(empty_jstream));
   const int bytes_requested = 10;
   int bytes_read = 0;
   scoped_refptr<IOBuffer> buffer = new IOBuffer(bytes_requested);
@@ -125,7 +125,7 @@ TEST_F(InputStreamTest, DoesNotCrashWhenExceptionThrown) {
       Java_InputStreamUnittest_getThrowingStream(env_);
   EXPECT_FALSE(throw_jstream.is_null());
 
-  scoped_ptr<InputStream> input_stream(new InputStreamImpl(throw_jstream));
+  std::unique_ptr<InputStream> input_stream(new InputStreamImpl(throw_jstream));
 
   int64_t bytes_skipped;
   EXPECT_FALSE(input_stream->Skip(10, &bytes_skipped));

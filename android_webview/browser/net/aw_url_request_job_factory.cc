@@ -75,7 +75,7 @@ net::URLRequestJob* AwURLRequestJobFactory::MaybeInterceptResponse(
 
 bool AwURLRequestJobFactory::SetProtocolHandler(
     const std::string& scheme,
-    scoped_ptr<ProtocolHandler> protocol_handler) {
+    std::unique_ptr<ProtocolHandler> protocol_handler) {
   return next_factory_->SetProtocolHandler(scheme, std::move(protocol_handler));
 }
 

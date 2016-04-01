@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/browser_view_renderer.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -67,7 +68,7 @@ void AwDevToolsDiscoveryProvider::Install() {
   devtools_discovery::DevToolsDiscoveryManager* discovery_manager =
       devtools_discovery::DevToolsDiscoveryManager::GetInstance();
   discovery_manager->AddProvider(
-      make_scoped_ptr(new AwDevToolsDiscoveryProvider()));
+      base::WrapUnique(new AwDevToolsDiscoveryProvider()));
 }
 
 AwDevToolsDiscoveryProvider::AwDevToolsDiscoveryProvider() {

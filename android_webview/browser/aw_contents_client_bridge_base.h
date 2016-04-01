@@ -5,7 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_CLIENT_BRIDGE_BASE_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_CONTENTS_CLIENT_BRIDGE_BASE_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/supports_user_data.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
@@ -47,7 +48,7 @@ class AwContentsClientBridgeBase {
                                      bool* cancel_request) = 0;
   virtual void SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
-      scoped_ptr<content::ClientCertificateDelegate> delegate) = 0;
+      std::unique_ptr<content::ClientCertificateDelegate> delegate) = 0;
 
   virtual void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,

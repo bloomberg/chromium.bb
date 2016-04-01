@@ -27,6 +27,7 @@
 #include "base/base_paths_android.h"
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_micro_dump_manager_android.h"
@@ -415,7 +416,7 @@ void AwContentBrowserClient::AllowCertificateError(
 void AwContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    scoped_ptr<content::ClientCertificateDelegate> delegate) {
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   AwContentsClientBridgeBase* client =
       AwContentsClientBridgeBase::FromWebContents(web_contents);
   if (client)
@@ -537,8 +538,8 @@ void AwContentBrowserClient::OverrideWebkitPrefs(
     content::RenderViewHost* rvh,
     content::WebPreferences* web_prefs) {
   if (!preferences_populater_.get()) {
-    preferences_populater_ = make_scoped_ptr(native_factory_->
-        CreateWebPreferencesPopulater());
+    preferences_populater_ =
+        base::WrapUnique(native_factory_->CreateWebPreferencesPopulater());
   }
   preferences_populater_->PopulateFor(
       content::WebContents::FromRenderViewHost(rvh), web_prefs);

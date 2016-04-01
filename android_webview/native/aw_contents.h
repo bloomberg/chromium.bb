@@ -6,7 +6,9 @@
 #define ANDROID_WEBVIEW_NATIVE_AW_CONTENTS_H_
 
 #include <jni.h>
+
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -25,7 +27,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 class SkBitmap;
 class TabContents;
@@ -74,7 +75,7 @@ class AwContents : public FindHelper::Listener,
 
   static std::string GetLocale();
 
-  AwContents(scoped_ptr<content::WebContents> web_contents);
+  AwContents(std::unique_ptr<content::WebContents> web_contents);
   ~AwContents() override;
 
   AwRenderViewHostExt* render_view_host_ext() {
@@ -282,7 +283,8 @@ class AwContents : public FindHelper::Listener,
   void ClearCache(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
                   jboolean include_disk_files);
-  void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
+  void SetPendingWebContentsForPopup(
+      std::unique_ptr<content::WebContents> pending);
   jlong ReleasePopupAwContents(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
 
@@ -344,15 +346,15 @@ class AwContents : public FindHelper::Listener,
   JavaObjectWeakGlobalRef java_ref_;
   SharedRendererState shared_renderer_state_;
   BrowserViewRenderer browser_view_renderer_;  // Must outlive |web_contents_|.
-  scoped_ptr<AwWebContentsDelegate> web_contents_delegate_;
-  scoped_ptr<AwContentsClientBridge> contents_client_bridge_;
-  scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<AwRenderViewHostExt> render_view_host_ext_;
-  scoped_ptr<FindHelper> find_helper_;
-  scoped_ptr<IconHelper> icon_helper_;
-  scoped_ptr<AwContents> pending_contents_;
-  scoped_ptr<AwPdfExporter> pdf_exporter_;
-  scoped_ptr<PermissionRequestHandler> permission_request_handler_;
+  std::unique_ptr<AwWebContentsDelegate> web_contents_delegate_;
+  std::unique_ptr<AwContentsClientBridge> contents_client_bridge_;
+  std::unique_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<AwRenderViewHostExt> render_view_host_ext_;
+  std::unique_ptr<FindHelper> find_helper_;
+  std::unique_ptr<IconHelper> icon_helper_;
+  std::unique_ptr<AwContents> pending_contents_;
+  std::unique_ptr<AwPdfExporter> pdf_exporter_;
+  std::unique_ptr<PermissionRequestHandler> permission_request_handler_;
   scoped_refptr<AwMessagePortMessageFilter> message_port_message_filter_;
 
   // GURL is supplied by the content layer as requesting frame.

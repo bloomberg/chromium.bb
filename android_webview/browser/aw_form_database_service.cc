@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_form_database_service.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/webdata/common/webdata_constants.h"
@@ -30,7 +31,7 @@ AwFormDatabaseService::AwFormDatabaseService(const base::FilePath path) {
   web_database_ = new WebDatabaseService(path.Append(kWebDataFilename),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
-  web_database_->AddTable(make_scoped_ptr(new autofill::AutofillTable));
+  web_database_->AddTable(base::WrapUnique(new autofill::AutofillTable));
   web_database_->LoadDatabase();
 
   autofill_data_ = new autofill::AutofillWebDataService(

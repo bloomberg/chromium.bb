@@ -73,10 +73,11 @@ void RenderingTest::QuitMessageLoop() {
   message_loop_->QuitWhenIdle();
 }
 
-scoped_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
-  scoped_ptr<cc::CompositorFrame> compositor_frame(new cc::CompositorFrame);
-  scoped_ptr<cc::DelegatedFrameData> frame(new cc::DelegatedFrameData);
-  scoped_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
+std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
+  std::unique_ptr<cc::CompositorFrame> compositor_frame(
+      new cc::CompositorFrame);
+  std::unique_ptr<cc::DelegatedFrameData> frame(new cc::DelegatedFrameData);
+  std::unique_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
   gfx::Rect viewport(browser_view_renderer_->size());
   root_pass->SetNew(cc::RenderPassId(1, 1), viewport, viewport,
                     gfx::Transform());

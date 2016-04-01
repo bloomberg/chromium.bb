@@ -5,11 +5,11 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_WEB_RESOURCE_RESPONSE_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_WEB_RESOURCE_RESPONSE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -27,7 +27,7 @@ class AwWebResourceResponse {
  public:
   virtual ~AwWebResourceResponse() {}
 
-  virtual scoped_ptr<InputStream> GetInputStream(JNIEnv* env) const = 0;
+  virtual std::unique_ptr<InputStream> GetInputStream(JNIEnv* env) const = 0;
   virtual bool GetMimeType(JNIEnv* env, std::string* mime_type) const = 0;
   virtual bool GetCharset(JNIEnv* env, std::string* charset) const = 0;
   virtual bool GetStatusInfo(JNIEnv* env,

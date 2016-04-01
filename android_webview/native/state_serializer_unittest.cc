@@ -4,9 +4,9 @@
 
 #include "android_webview/native/state_serializer.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -23,8 +23,8 @@ namespace android_webview {
 
 namespace {
 
-scoped_ptr<content::NavigationEntry> CreateNavigationEntry() {
-  scoped_ptr<content::NavigationEntry> entry(
+std::unique_ptr<content::NavigationEntry> CreateNavigationEntry() {
+  std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
 
   const GURL url("http://url");
@@ -103,13 +103,14 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   content::ContentBrowserClient browser_client;
   content::SetBrowserClientForTesting(&browser_client);
 
-  scoped_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
+  std::unique_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
 
   base::Pickle pickle;
   bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
   EXPECT_TRUE(result);
 
-  scoped_ptr<content::NavigationEntry> copy(content::NavigationEntry::Create());
+  std::unique_ptr<content::NavigationEntry> copy(
+      content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
   result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
   EXPECT_TRUE(result);
@@ -139,14 +140,15 @@ TEST(AndroidWebViewStateSerializerTest,
   content::ContentBrowserClient browser_client;
   content::SetBrowserClientForTesting(&browser_client);
 
-  scoped_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
+  std::unique_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
 
   base::Pickle pickle;
   bool result = internal::WriteNavigationEntryToPickle(
       internal::AW_STATE_VERSION_INITIAL, *entry, &pickle);
   EXPECT_TRUE(result);
 
-  scoped_ptr<content::NavigationEntry> copy(content::NavigationEntry::Create());
+  std::unique_ptr<content::NavigationEntry> copy(
+      content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
   result = internal::RestoreNavigationEntryFromPickle(
       internal::AW_STATE_VERSION_INITIAL, &iterator, copy.get());
@@ -176,7 +178,7 @@ TEST(AndroidWebViewStateSerializerTest, TestEmptyDataURLSerialization) {
   content::ContentBrowserClient browser_client;
   content::SetBrowserClientForTesting(&browser_client);
 
-  scoped_ptr<content::NavigationEntry> entry(
+  std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
   EXPECT_FALSE(entry->GetDataURLAsString());
 
@@ -184,7 +186,8 @@ TEST(AndroidWebViewStateSerializerTest, TestEmptyDataURLSerialization) {
   bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
   EXPECT_TRUE(result);
 
-  scoped_ptr<content::NavigationEntry> copy(content::NavigationEntry::Create());
+  std::unique_ptr<content::NavigationEntry> copy(
+      content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
   result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
   EXPECT_TRUE(result);
@@ -198,7 +201,7 @@ TEST(AndroidWebViewStateSerializerTest, TestHugeDataURLSerialization) {
   content::ContentBrowserClient browser_client;
   content::SetBrowserClientForTesting(&browser_client);
 
-  scoped_ptr<content::NavigationEntry> entry(
+  std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
   string huge_data_url(1024 * 1024 * 20 - 1, 'd');
   huge_data_url.replace(0, strlen(url::kDataScheme), url::kDataScheme);
@@ -212,7 +215,8 @@ TEST(AndroidWebViewStateSerializerTest, TestHugeDataURLSerialization) {
   bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
   EXPECT_TRUE(result);
 
-  scoped_ptr<content::NavigationEntry> copy(content::NavigationEntry::Create());
+  std::unique_ptr<content::NavigationEntry> copy(
+      content::NavigationEntry::Create());
   base::PickleIterator iterator(pickle);
   result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
   EXPECT_TRUE(result);

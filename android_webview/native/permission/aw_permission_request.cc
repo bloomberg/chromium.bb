@@ -18,7 +18,7 @@ namespace android_webview {
 
 // static
 base::android::ScopedJavaLocalRef<jobject> AwPermissionRequest::Create(
-    scoped_ptr<AwPermissionRequestDelegate> delegate,
+    std::unique_ptr<AwPermissionRequestDelegate> delegate,
     base::WeakPtr<AwPermissionRequest>* weak_ptr) {
   base::android::ScopedJavaLocalRef<jobject> java_peer;
   AwPermissionRequest* permission_request =
@@ -28,7 +28,7 @@ base::android::ScopedJavaLocalRef<jobject> AwPermissionRequest::Create(
 }
 
 AwPermissionRequest::AwPermissionRequest(
-    scoped_ptr<AwPermissionRequestDelegate> delegate,
+    std::unique_ptr<AwPermissionRequestDelegate> delegate,
     ScopedJavaLocalRef<jobject>* java_peer)
     : delegate_(std::move(delegate)), processed_(false), weak_factory_(this) {
   DCHECK(delegate_.get());

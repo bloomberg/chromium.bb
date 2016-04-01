@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "android_webview/browser/aw_form_database_service.h"
+
+#include <memory>
 #include <vector>
 
-#include "android_webview/browser/aw_form_database_service.h"
 #include "base/android/jni_android.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -52,7 +53,7 @@ class AwFormDatabaseServiceTest : public Test {
   content::TestBrowserThread db_thread_;
   JNIEnv* env_;
 
-  scoped_ptr<AwFormDatabaseService> service_;
+  std::unique_ptr<AwFormDatabaseService> service_;
 };
 
 // Disabling this test until we know why it crashes.

@@ -69,7 +69,7 @@ int AwNetworkDelegate::OnHeadersReceived(
   if (original_response_headers->response_code() >= 400 &&
       content::ResourceRequestInfo::GetRenderFrameForRequest(
           request, &render_process_id, &render_frame_id)) {
-    scoped_ptr<AwContentsIoThreadClient> io_thread_client =
+    std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
         AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
     if (io_thread_client.get()) {
       io_thread_client->OnReceivedHttpError(request, original_response_headers);

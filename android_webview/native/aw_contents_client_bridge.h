@@ -40,7 +40,7 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
                              bool* cancel_request) override;
   void SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
-      scoped_ptr<content::ClientCertificateDelegate> delegate) override;
+      std::unique_ptr<content::ClientCertificateDelegate> delegate) override;
 
   void RunJavaScriptDialog(
       content::JavaScriptMessageType message_type,

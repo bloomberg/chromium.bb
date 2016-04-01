@@ -5,10 +5,11 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_URL_REQUEST_CONTEXT_GETTER_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_URL_REQUEST_CONTEXT_GETTER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -35,7 +36,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   AwURLRequestContextGetter(
       const base::FilePath& cache_path,
-      scoped_ptr<net::ProxyConfigService> config_service,
+      std::unique_ptr<net::ProxyConfigService> config_service,
       PrefService* pref_service);
 
   // net::URLRequestContextGetter implementation.
@@ -69,7 +70,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
   // This is called to create a HttpAuthHandlerFactory that will handle
   // auth challenges for the new URLRequestContext
-  scoped_ptr<net::HttpAuthHandlerFactory> CreateAuthHandlerFactory(
+  std::unique_ptr<net::HttpAuthHandlerFactory> CreateAuthHandlerFactory(
       net::HostResolver* resolver);
 
   // Update methods for the auth related preferences
@@ -78,14 +79,14 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
   const base::FilePath cache_path_;
 
-  scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::URLRequestJobFactory> job_factory_;
-  scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
+  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::URLRequestJobFactory> job_factory_;
+  std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
   // http_auth_preferences_ holds the preferences for the negotiate
   // authenticator.
-  scoped_ptr<net::HttpAuthPreferences> http_auth_preferences_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
+  std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
 
   // Store HTTP Auth-related policies in this thread.
   StringPrefMember auth_android_negotiate_account_type_;

@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
@@ -54,7 +55,7 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
 
   base::ThreadChecker main_thread_checker_;
 
-  scoped_ptr<gpu::GLInProcessContext> context_;
+  std::unique_ptr<gpu::GLInProcessContext> context_;
   skia::RefPtr<class GrContext> gr_context_;
 
   cc::ContextProvider::Capabilities capabilities_;

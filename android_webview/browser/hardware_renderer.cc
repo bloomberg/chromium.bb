@@ -83,7 +83,8 @@ HardwareRenderer::~HardwareRenderer() {
 void HardwareRenderer::CommitFrame() {
   TRACE_EVENT0("android_webview", "CommitFrame");
   scroll_offset_ = shared_renderer_state_->GetScrollOffsetOnRT();
-  scoped_ptr<ChildFrame> child_frame = shared_renderer_state_->PassFrameOnRT();
+  std::unique_ptr<ChildFrame> child_frame =
+      shared_renderer_state_->PassFrameOnRT();
   if (!child_frame.get())
     return;
 
@@ -130,7 +131,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
           new cc::SurfaceFactory(surface_manager_.get(), this));
     }
 
-    scoped_ptr<cc::CompositorFrame> child_compositor_frame =
+    std::unique_ptr<cc::CompositorFrame> child_compositor_frame =
         std::move(child_frame_->frame);
 
     // On Android we put our browser layers in physical pixels and set our
@@ -179,7 +180,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
 
   // Create a frame with a single SurfaceDrawQuad referencing the child
   // Surface and transformed using the given transform.
-  scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(viewport), clip,
                       gfx::Transform(), false);
 
@@ -195,10 +196,10 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
   surface_quad->SetNew(quad_state, gfx::Rect(quad_state->quad_layer_bounds),
                        gfx::Rect(quad_state->quad_layer_bounds), child_id_);
 
-  scoped_ptr<cc::DelegatedFrameData> delegated_frame(
+  std::unique_ptr<cc::DelegatedFrameData> delegated_frame(
       new cc::DelegatedFrameData);
   delegated_frame->render_pass_list.push_back(std::move(render_pass));
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   frame->delegated_frame_data = std::move(delegated_frame);
 
   if (root_id_.is_null()) {
@@ -215,7 +216,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
     scoped_refptr<cc::ContextProvider> context_provider =
         AwRenderThreadContextProvider::Create(
             gl_surface_, DeferredGpuCommandService::GetInstance());
-    scoped_ptr<ParentOutputSurface> output_surface_holder(
+    std::unique_ptr<ParentOutputSurface> output_surface_holder(
         new ParentOutputSurface(context_provider));
     output_surface_ = output_surface_holder.get();
     display_->Initialize(std::move(output_surface_holder), nullptr);

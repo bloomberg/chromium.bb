@@ -52,18 +52,18 @@ class SharedRendererState {
 
   // UI thread methods.
   void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset);
-  void SetFrameOnUI(scoped_ptr<ChildFrame> frame);
+  void SetFrameOnUI(std::unique_ptr<ChildFrame> frame);
   void InitializeHardwareDrawIfNeededOnUI();
   ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const;
   void SwapReturnedResourcesOnUI(ReturnedResourcesMap* returned_resource_map);
   bool ReturnedResourcesEmptyOnUI() const;
-  scoped_ptr<ChildFrame> PassUncommittedFrameOnUI();
+  std::unique_ptr<ChildFrame> PassUncommittedFrameOnUI();
   bool HasFrameOnUI() const;
   void DeleteHardwareRendererOnUI();
 
   // RT thread methods.
   gfx::Vector2d GetScrollOffsetOnRT();
-  scoped_ptr<ChildFrame> PassFrameOnRT();
+  std::unique_ptr<ChildFrame> PassFrameOnRT();
   void DrawGL(AwDrawGLInfo* draw_info);
   void PostExternalDrawConstraintsToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
@@ -100,7 +100,7 @@ class SharedRendererState {
   base::CancelableClosure request_draw_gl_cancelable_closure_;
 
   // Accessed by RT thread.
-  scoped_ptr<HardwareRenderer> hardware_renderer_;
+  std::unique_ptr<HardwareRenderer> hardware_renderer_;
 
   // This is accessed by both UI and RT now. TODO(hush): move to RT only.
   GLViewRendererManager::Key renderer_manager_key_;
@@ -109,7 +109,7 @@ class SharedRendererState {
   mutable base::Lock lock_;
   bool hardware_renderer_has_frame_;
   gfx::Vector2d scroll_offset_;
-  scoped_ptr<ChildFrame> child_frame_;
+  std::unique_ptr<ChildFrame> child_frame_;
   bool inside_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
   ReturnedResourcesMap returned_resources_map_;

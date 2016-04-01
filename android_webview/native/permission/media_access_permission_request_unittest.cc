@@ -30,7 +30,7 @@ class MediaAccessPermissionRequestTest : public testing::Test {
     first_video_device_id_ = "video1";
   }
 
-  scoped_ptr<TestMediaAccessPermissionRequest> CreateRequest(
+  std::unique_ptr<TestMediaAccessPermissionRequest> CreateRequest(
       std::string audio_id,
       std::string video_id) {
     content::MediaStreamDevices audio_devices;
@@ -55,7 +55,7 @@ class MediaAccessPermissionRequestTest : public testing::Test {
         video_id, content::MEDIA_DEVICE_AUDIO_CAPTURE,
         content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
-    scoped_ptr<TestMediaAccessPermissionRequest> permission_request;
+    std::unique_ptr<TestMediaAccessPermissionRequest> permission_request;
     permission_request.reset(new TestMediaAccessPermissionRequest(
         request,
         base::Bind(&MediaAccessPermissionRequestTest::Callback,
@@ -71,17 +71,16 @@ class MediaAccessPermissionRequestTest : public testing::Test {
   content::MediaStreamDevices devices_;
   content::MediaStreamRequestResult result_;
  private:
-  void Callback(
-      const content::MediaStreamDevices& devices,
-      content::MediaStreamRequestResult result,
-      scoped_ptr<content::MediaStreamUI> ui) {
+  void Callback(const content::MediaStreamDevices& devices,
+                content::MediaStreamRequestResult result,
+                std::unique_ptr<content::MediaStreamUI> ui) {
     devices_ = devices;
     result_ = result;
   }
 };
 
 TEST_F(MediaAccessPermissionRequestTest, TestGrantPermissionRequest) {
-  scoped_ptr<TestMediaAccessPermissionRequest> request =
+  std::unique_ptr<TestMediaAccessPermissionRequest> request =
       CreateRequest(audio_device_id_, video_device_id_);
   request->NotifyRequestResult(true);
 
@@ -105,7 +104,7 @@ TEST_F(MediaAccessPermissionRequestTest, TestGrantPermissionRequest) {
 }
 
 TEST_F(MediaAccessPermissionRequestTest, TestGrantPermissionRequestWithoutID) {
-  scoped_ptr<TestMediaAccessPermissionRequest> request =
+  std::unique_ptr<TestMediaAccessPermissionRequest> request =
       CreateRequest(std::string(), std::string());
   request->NotifyRequestResult(true);
 
@@ -129,7 +128,7 @@ TEST_F(MediaAccessPermissionRequestTest, TestGrantPermissionRequestWithoutID) {
 }
 
 TEST_F(MediaAccessPermissionRequestTest, TestDenyPermissionRequest) {
-  scoped_ptr<TestMediaAccessPermissionRequest> request =
+  std::unique_ptr<TestMediaAccessPermissionRequest> request =
       CreateRequest(std::string(), std::string());
   request->NotifyRequestResult(false);
   EXPECT_TRUE(devices_.empty());

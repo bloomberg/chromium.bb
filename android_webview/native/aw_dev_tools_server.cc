@@ -96,26 +96,27 @@ class UnixDomainServerSocketFactory
 
  private:
   // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
-  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    scoped_ptr<net::UnixDomainServerSocket> socket(
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
+    std::unique_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(
             base::Bind(&content::CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
     if (socket->BindAndListen(socket_name_, kBackLog) != net::OK)
-      return scoped_ptr<net::ServerSocket>();
+      return std::unique_ptr<net::ServerSocket>();
 
     return std::move(socket);
   }
 
-  scoped_ptr<net::ServerSocket> CreateForTethering(std::string* name) override {
+  std::unique_ptr<net::ServerSocket> CreateForTethering(
+      std::string* name) override {
     *name = base::StringPrintf(
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
-    scoped_ptr<net::UnixDomainServerSocket> socket(
+    std::unique_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(
             base::Bind(&content::CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
     if (socket->BindAndListen(*name, kBackLog) != net::OK)
-      return scoped_ptr<net::ServerSocket>();
+      return std::unique_ptr<net::ServerSocket>();
 
     return std::move(socket);
   }
@@ -141,7 +142,7 @@ void AwDevToolsServer::Start() {
   if (devtools_http_handler_)
     return;
 
-  scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
+  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new UnixDomainServerSocketFactory(
           base::StringPrintf(kSocketNameFormat, getpid())));
   devtools_http_handler_.reset(new DevToolsHttpHandler(

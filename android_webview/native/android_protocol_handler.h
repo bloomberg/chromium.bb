@@ -5,8 +5,9 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_ANDROID_PROTOCOL_HANDLER_H_
 #define ANDROID_WEBVIEW_NATIVE_ANDROID_PROTOCOL_HANDLER_H_
 
+#include <memory>
+
 #include "base/android/jni_android.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace net {
 class URLRequestContext;
@@ -20,13 +21,14 @@ namespace android_webview {
 //  - "content:" scheme is used for accessing data from Android content
 //    providers, see http://developer.android.com/guide/topics/providers/
 //      content-provider-basics.html#ContentURIs
-scoped_ptr<net::URLRequestInterceptor> CreateContentSchemeRequestInterceptor();
+std::unique_ptr<net::URLRequestInterceptor>
+CreateContentSchemeRequestInterceptor();
 
 //  - "file:" scheme extension for accessing application assets and resources
 //    (file:///android_asset/ and file:///android_res/), see
 //    http://developer.android.com/reference/android/webkit/
 //      WebSettings.html#setAllowFileAccess(boolean)
-scoped_ptr<net::URLRequestInterceptor> CreateAssetFileRequestInterceptor();
+std::unique_ptr<net::URLRequestInterceptor> CreateAssetFileRequestInterceptor();
 
 bool RegisterAndroidProtocolHandler(JNIEnv* env);
 

@@ -21,7 +21,7 @@ namespace {
 
 void CompletionCallback(TokenBindingManager::KeyReadyCallback callback,
                         ChannelIDService::Request* request,
-                        scoped_ptr<crypto::ECPrivateKey>* key,
+                        std::unique_ptr<crypto::ECPrivateKey>* key,
                         int status) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -39,8 +39,8 @@ void GetKeyImpl(const std::string& host,
   ChannelIDService* service =
       context_getter->GetURLRequestContext()->channel_id_service();
   ChannelIDService::Request* request = new ChannelIDService::Request();
-  scoped_ptr<crypto::ECPrivateKey>* key =
-      new scoped_ptr<crypto::ECPrivateKey>();
+  std::unique_ptr<crypto::ECPrivateKey>* key =
+      new std::unique_ptr<crypto::ECPrivateKey>();
   // The request will own the callback if the call to service returns
   // PENDING. The request releases the ownership before calling the callback.
   net::CompletionCallback completion_callback = base::Bind(

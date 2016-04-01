@@ -5,8 +5,9 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NET_AW_REQUEST_INTERCEPTOR_H_
 #define ANDROID_WEBVIEW_BROWSER_NET_AW_REQUEST_INTERCEPTOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_request_interceptor.h"
 
 namespace net {

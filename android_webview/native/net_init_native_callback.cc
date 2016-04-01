@@ -10,12 +10,12 @@
 
 namespace android_webview {
 
-scoped_ptr<net::URLRequestInterceptor>
+std::unique_ptr<net::URLRequestInterceptor>
 CreateAndroidAssetFileRequestInterceptor() {
   return CreateAssetFileRequestInterceptor();
 }
 
-scoped_ptr<net::URLRequestInterceptor>
+std::unique_ptr<net::URLRequestInterceptor>
 CreateAndroidContentRequestInterceptor() {
   return CreateContentSchemeRequestInterceptor();
 }

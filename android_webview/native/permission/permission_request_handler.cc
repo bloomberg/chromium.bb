@@ -44,7 +44,7 @@ PermissionRequestHandler::~PermissionRequestHandler() {
 }
 
 void PermissionRequestHandler::SendRequest(
-    scoped_ptr<AwPermissionRequestDelegate> request) {
+    std::unique_ptr<AwPermissionRequestDelegate> request) {
   if (Preauthorized(request->GetOrigin(), request->GetResources())) {
     request->NotifyRequestResult(true);
     return;

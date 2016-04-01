@@ -8,6 +8,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/memory/ptr_util.h"
 #include "jni/AwWebResourceResponse_jni.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -26,13 +27,13 @@ AwWebResourceResponseImpl::AwWebResourceResponseImpl(
 AwWebResourceResponseImpl::~AwWebResourceResponseImpl() {
 }
 
-scoped_ptr<InputStream>
-AwWebResourceResponseImpl::GetInputStream(JNIEnv* env) const {
+std::unique_ptr<InputStream> AwWebResourceResponseImpl::GetInputStream(
+    JNIEnv* env) const {
   ScopedJavaLocalRef<jobject> jstream =
       Java_AwWebResourceResponse_getData(env, java_object_.obj());
   if (jstream.is_null())
-    return scoped_ptr<InputStream>();
-  return make_scoped_ptr<InputStream>(new InputStreamImpl(jstream));
+    return std::unique_ptr<InputStream>();
+  return base::WrapUnique(new InputStreamImpl(jstream));
 }
 
 bool AwWebResourceResponseImpl::GetMimeType(JNIEnv* env,

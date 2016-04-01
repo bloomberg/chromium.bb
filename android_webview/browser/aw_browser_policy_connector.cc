@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
@@ -28,25 +29,25 @@ const policy::PolicyDetails* GetChromePolicyDetails(const std::string& policy) {
 
 // Factory for the handlers that will be responsible for converting the policies
 // to the associated preferences.
-scoped_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
+std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
     const policy::Schema& chrome_schema) {
-  scoped_ptr<policy::ConfigurationPolicyHandlerList> handlers(
+  std::unique_ptr<policy::ConfigurationPolicyHandlerList> handlers(
       new policy::ConfigurationPolicyHandlerList(
           base::Bind(&PopulatePolicyHandlerParameters),
           base::Bind(&GetChromePolicyDetails)));
 
   // URL Filtering
-  handlers->AddHandler(make_scoped_ptr(new policy::SimplePolicyHandler(
+  handlers->AddHandler(base::WrapUnique(new policy::SimplePolicyHandler(
       policy::key::kURLWhitelist, policy::policy_prefs::kUrlWhitelist,
       base::Value::TYPE_LIST)));
   handlers->AddHandler(
-      make_scoped_ptr(new policy::URLBlacklistPolicyHandler()));
+      base::WrapUnique(new policy::URLBlacklistPolicyHandler()));
 
   // HTTP Negotiate authentication
-  handlers->AddHandler(make_scoped_ptr(new policy::SimplePolicyHandler(
+  handlers->AddHandler(base::WrapUnique(new policy::SimplePolicyHandler(
       policy::key::kAuthServerWhitelist, prefs::kAuthServerWhitelist,
       base::Value::TYPE_STRING)));
-  handlers->AddHandler(make_scoped_ptr(new policy::SimplePolicyHandler(
+  handlers->AddHandler(base::WrapUnique(new policy::SimplePolicyHandler(
       policy::key::kAuthAndroidNegotiateAccountType,
       prefs::kAuthAndroidNegotiateAccountType, base::Value::TYPE_STRING)));
 
@@ -57,7 +58,7 @@ scoped_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
 
 AwBrowserPolicyConnector::AwBrowserPolicyConnector()
    : BrowserPolicyConnectorBase(base::Bind(&BuildHandlerList)) {
-  SetPlatformPolicyProvider(make_scoped_ptr(
+  SetPlatformPolicyProvider(base::WrapUnique(
       new policy::android::AndroidCombinedPolicyProvider(GetSchemaRegistry())));
   InitPolicyProviders();
 }

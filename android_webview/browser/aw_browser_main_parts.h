@@ -5,9 +5,10 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_BROWSER_MAIN_PARTS_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_BROWSER_MAIN_PARTS_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 
 namespace base {
@@ -31,7 +32,7 @@ class AwBrowserMainParts : public content::BrowserMainParts {
 
  private:
   // Android specific UI MessageLoop.
-  scoped_ptr<base::MessageLoop> main_message_loop_;
+  std::unique_ptr<base::MessageLoop> main_message_loop_;
 
   AwBrowserContext* browser_context_;  // weak
 

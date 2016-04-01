@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/scoped_ptr.h"
 
 class GURL;
 
@@ -63,12 +63,13 @@ class AwContentsIoThreadClient {
   // |render_process_id|, |render_frame_id| pair.
   // This method can be called from any thread.
   // An empty scoped_ptr is a valid return value.
-  static scoped_ptr<AwContentsIoThreadClient> FromID(int render_process_id,
-                                                     int render_frame_id);
+  static std::unique_ptr<AwContentsIoThreadClient> FromID(int render_process_id,
+                                                          int render_frame_id);
 
   // Returns the global thread client for service worker related callbacks.
   // An empty scoped_ptr is a valid return value.
-  static scoped_ptr<AwContentsIoThreadClient> GetServiceWorkerIoThreadClient();
+  static std::unique_ptr<AwContentsIoThreadClient>
+  GetServiceWorkerIoThreadClient();
 
   // Called on the IO thread when a subframe is created.
   static void SubFrameCreated(int render_process_id,
@@ -76,7 +77,7 @@ class AwContentsIoThreadClient {
                               int child_render_frame_id);
 
   // This method is called on the IO thread only.
-  typedef base::Callback<void(scoped_ptr<AwWebResourceResponse>)>
+  typedef base::Callback<void(std::unique_ptr<AwWebResourceResponse>)>
       ShouldInterceptRequestResultCallback;
   virtual void ShouldInterceptRequestAsync(
       const net::URLRequest* request,

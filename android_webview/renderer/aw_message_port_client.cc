@@ -57,7 +57,7 @@ void AwMessagePortClient::OnWebToAppMessage(
   WebSerializedScriptValue v = WebSerializedScriptValue::fromString(message);
   v8::Local<v8::Value> v8value = v.deserialize();
 
-  scoped_ptr<V8ValueConverter> converter;
+  std::unique_ptr<V8ValueConverter> converter;
   converter.reset(V8ValueConverter::create());
   converter->SetDateAllowed(true);
   converter->SetRegExpAllowed(true);
@@ -85,11 +85,11 @@ void AwMessagePortClient::OnAppToWebMessage(
   v8::Local<v8::Context> context = main_frame->mainWorldScriptContext();
   v8::Context::Scope context_scope(context);
   DCHECK(!context.IsEmpty());
-  scoped_ptr<V8ValueConverter> converter;
+  std::unique_ptr<V8ValueConverter> converter;
   converter.reset(V8ValueConverter::create());
   converter->SetDateAllowed(true);
   converter->SetRegExpAllowed(true);
-  scoped_ptr<base::Value> value(new base::StringValue(message));
+  std::unique_ptr<base::Value> value(new base::StringValue(message));
   v8::Local<v8::Value> result_value =
       converter->ToV8Value(value.get(), context);
   WebSerializedScriptValue serialized_script_value =

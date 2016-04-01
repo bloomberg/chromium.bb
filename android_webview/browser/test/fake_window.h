@@ -81,7 +81,7 @@ class FakeWindow {
   base::SequenceChecker ui_checker_;
 
   // Render thread members.
-  scoped_ptr<base::Thread> render_thread_;
+  std::unique_ptr<base::Thread> render_thread_;
   base::SequenceChecker rt_checker_;
   SharedRendererState* functor_;
   scoped_refptr<base::SingleThreadTaskRunner> render_thread_loop_;

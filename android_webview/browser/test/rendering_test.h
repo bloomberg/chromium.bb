@@ -5,11 +5,12 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_TEST_RENDERING_TEST_H_
 #define ANDROID_WEBVIEW_BROWSER_TEST_RENDERING_TEST_H_
 
+#include <memory>
+
 #include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/shared_renderer_state_client.h"
 #include "android_webview/browser/test/fake_window.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,18 +78,18 @@ class RenderingTest : public testing::Test,
   void InitializeCompositor();
   void Attach();
   void EndTest();
-  scoped_ptr<cc::CompositorFrame> ConstructEmptyFrame();
+  std::unique_ptr<cc::CompositorFrame> ConstructEmptyFrame();
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  scoped_ptr<SharedRendererState> shared_renderer_state_;
-  scoped_ptr<BrowserViewRenderer> browser_view_renderer_;
-  scoped_ptr<content::TestSynchronousCompositor> compositor_;
-  scoped_ptr<FakeWindow> window_;
+  std::unique_ptr<SharedRendererState> shared_renderer_state_;
+  std::unique_ptr<BrowserViewRenderer> browser_view_renderer_;
+  std::unique_ptr<content::TestSynchronousCompositor> compositor_;
+  std::unique_ptr<FakeWindow> window_;
 
  private:
   void QuitMessageLoop();
 
-  const scoped_ptr<base::MessageLoop> message_loop_;
+  const std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderingTest);
 };

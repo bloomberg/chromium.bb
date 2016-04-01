@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #include "android_webview/native/aw_media_url_interceptor.h"
-#include "base/memory/scoped_ptr.h"
+
+#include <memory>
+#include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,7 +28,7 @@ class AwMediaUrlInterceptorTest : public Test {
    int fd_;
    int64_t offset_;
    int64_t size_;
-   scoped_ptr<AwMediaUrlInterceptor> url_interceptor_;
+   std::unique_ptr<AwMediaUrlInterceptor> url_interceptor_;
 };
 
 }  // namespace

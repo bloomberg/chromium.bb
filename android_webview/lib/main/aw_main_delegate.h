@@ -5,11 +5,12 @@
 #ifndef ANDROID_WEBVIEW_LIB_MAIN_AW_MAIN_DELEGATE_H_
 #define ANDROID_WEBVIEW_LIB_MAIN_AW_MAIN_DELEGATE_H_
 
+#include <memory>
+
 #include "android_webview/browser/jni_dependency_factory.h"
 #include "android_webview/common/aw_content_client.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/app/content_main_delegate.h"
 
 namespace content {
@@ -52,10 +53,10 @@ class AwMainDelegate : public content::ContentMainDelegate,
       content::WebContents* web_contents) override;
 #endif
 
-  scoped_ptr<content::BrowserMainRunner> browser_runner_;
+  std::unique_ptr<content::BrowserMainRunner> browser_runner_;
   AwContentClient content_client_;
-  scoped_ptr<AwContentBrowserClient> content_browser_client_;
-  scoped_ptr<AwContentRendererClient> content_renderer_client_;
+  std::unique_ptr<AwContentBrowserClient> content_browser_client_;
+  std::unique_ptr<AwContentRendererClient> content_renderer_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMainDelegate);
 };

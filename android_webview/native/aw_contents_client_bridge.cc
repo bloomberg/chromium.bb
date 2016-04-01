@@ -127,7 +127,7 @@ void AwContentsClientBridge::ProceedSslError(JNIEnv* env,
 // chrome/browser/ui/android/ssl_client_certificate_request.cc
 void AwContentsClientBridge::SelectClientCertificate(
     net::SSLCertRequestInfo* cert_request_info,
-    scoped_ptr<content::ClientCertificateDelegate> delegate) {
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Add the callback to id map.

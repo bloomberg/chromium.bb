@@ -36,7 +36,7 @@ class AwPermissionRequest {
   // Take the ownership of |delegate|. Returns the native pointer in
   // |weak_ptr|, which is owned by the returned java peer.
   static base::android::ScopedJavaLocalRef<jobject> Create(
-      scoped_ptr<AwPermissionRequestDelegate> delegate,
+      std::unique_ptr<AwPermissionRequestDelegate> delegate,
       base::WeakPtr<AwPermissionRequest>* weak_ptr);
 
   // Return the Java peer. Must be null-checked.
@@ -64,14 +64,14 @@ class AwPermissionRequest {
  private:
   friend class TestPermissionRequestHandlerClient;
 
-  AwPermissionRequest(scoped_ptr<AwPermissionRequestDelegate> delegate,
+  AwPermissionRequest(std::unique_ptr<AwPermissionRequestDelegate> delegate,
                       base::android::ScopedJavaLocalRef<jobject>* java_peer);
   ~AwPermissionRequest();
 
   void OnAcceptInternal(bool accept);
   void DeleteThis();
 
-  scoped_ptr<AwPermissionRequestDelegate> delegate_;
+  std::unique_ptr<AwPermissionRequestDelegate> delegate_;
   JavaObjectWeakGlobalRef java_ref_;
 
   bool processed_;

@@ -4,7 +4,8 @@
 
 #include "android_webview/browser/net/aw_cookie_store_wrapper.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/cookies/cookie_store_unittest.h"
@@ -13,8 +14,8 @@
 namespace android_webview {
 
 struct AwCookieStoreWrapperTestTraits {
-  static scoped_ptr<net::CookieStore> Create() {
-    scoped_ptr<net::CookieStore> cookie_store(new AwCookieStoreWrapper());
+  static std::unique_ptr<net::CookieStore> Create() {
+    std::unique_ptr<net::CookieStore> cookie_store(new AwCookieStoreWrapper());
 
     // Android Webview can run multiple tests without restarting the binary,
     // so have to delete any cookies the global store may have from an earlier

@@ -148,7 +148,7 @@ class PermissionRequestHandlerTest : public testing::Test {
 
   int64_t resources() { return resources_; }
 
-  scoped_ptr<AwPermissionRequestDelegate> delegate() {
+  std::unique_ptr<AwPermissionRequestDelegate> delegate() {
     return std::move(delegate_);
   }
 
@@ -167,7 +167,7 @@ class PermissionRequestHandlerTest : public testing::Test {
  private:
   GURL origin_;
   int64_t resources_;
-  scoped_ptr<AwPermissionRequestDelegate> delegate_;
+  std::unique_ptr<AwPermissionRequestDelegate> delegate_;
   TestPermissionRequestHandlerClient client_;
   TestPermissionRequestHandler handler_;
   bool allowed_;
@@ -217,7 +217,7 @@ TEST_F(PermissionRequestHandlerTest, TestMultiplePermissionRequest) {
   GURL origin1 = GURL("http://a.google.com");
   int64_t resources1 = AwPermissionRequest::Geolocation;
 
-  scoped_ptr<AwPermissionRequestDelegate> delegate1;
+  std::unique_ptr<AwPermissionRequestDelegate> delegate1;
   delegate1.reset(new TestAwPermissionRequestDelegate(
       origin1, resources1,
       base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
@@ -284,7 +284,7 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizePermission) {
 
   // Only ask one preauthorized resource, permission should granted
   // without asking PermissionRequestHandlerClient.
-  scoped_ptr<AwPermissionRequestDelegate> delegate;
+  std::unique_ptr<AwPermissionRequestDelegate> delegate;
   delegate.reset(new TestAwPermissionRequestDelegate(
       origin(), AwPermissionRequest::AudioCapture,
       base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
@@ -300,7 +300,7 @@ TEST_F(PermissionRequestHandlerTest, TestOriginNotPreauthorized) {
 
   // Ask the origin which wasn't preauthorized.
   GURL origin ("http://a.google.com/a/b");
-  scoped_ptr<AwPermissionRequestDelegate> delegate;
+  std::unique_ptr<AwPermissionRequestDelegate> delegate;
   int64_t requested_resources = AwPermissionRequest::AudioCapture;
   delegate.reset(new TestAwPermissionRequestDelegate(
       origin, requested_resources,
@@ -317,7 +317,7 @@ TEST_F(PermissionRequestHandlerTest, TestResourcesNotPreauthorized) {
   handler()->PreauthorizePermission(origin(), resources());
 
   // Ask the resources which weren't preauthorized.
-  scoped_ptr<AwPermissionRequestDelegate> delegate;
+  std::unique_ptr<AwPermissionRequestDelegate> delegate;
   int64_t requested_resources =
       AwPermissionRequest::AudioCapture | AwPermissionRequest::Geolocation;
   delegate.reset(new TestAwPermissionRequestDelegate(
@@ -338,7 +338,7 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizeMultiplePermission) {
   GURL origin ("http://a.google.com/a/b");
   handler()->PreauthorizePermission(origin, AwPermissionRequest::Geolocation);
   GURL origin_hostname ("http://a.google.com/");
-  scoped_ptr<AwPermissionRequestDelegate> delegate;
+  std::unique_ptr<AwPermissionRequestDelegate> delegate;
   delegate.reset(new TestAwPermissionRequestDelegate(
       origin_hostname, AwPermissionRequest::Geolocation,
       base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,

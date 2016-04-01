@@ -5,8 +5,9 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_CHILD_FRAME_H_
 #define ANDROID_WEBVIEW_BROWSER_CHILD_FRAME_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
@@ -20,7 +21,7 @@ namespace android_webview {
 class ChildFrame {
  public:
   ChildFrame(uint32_t output_surface_id,
-             scoped_ptr<cc::CompositorFrame> frame,
+             std::unique_ptr<cc::CompositorFrame> frame,
              uint32_t compositor_id,
              bool viewport_rect_for_tile_priority_empty,
              const gfx::Transform& transform_for_tile_priority,
@@ -29,7 +30,7 @@ class ChildFrame {
   ~ChildFrame();
 
   const uint32_t output_surface_id;
-  scoped_ptr<cc::CompositorFrame> frame;
+  std::unique_ptr<cc::CompositorFrame> frame;
   // The id of the compositor this |frame| comes from.
   const uint32_t compositor_id;
   const bool viewport_rect_for_tile_priority_empty;

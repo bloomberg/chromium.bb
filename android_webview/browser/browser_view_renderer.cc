@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
@@ -240,7 +241,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
     return hardware_enabled_;
   }
 
-  scoped_ptr<ChildFrame> child_frame = make_scoped_ptr(new ChildFrame(
+  std::unique_ptr<ChildFrame> child_frame = base::WrapUnique(new ChildFrame(
       frame.output_surface_id, std::move(frame.frame),
       GetCompositorID(compositor_), viewport_rect_for_tile_priority.IsEmpty(),
       transform_for_tile_priority, offscreen_pre_raster_,
@@ -260,7 +261,7 @@ void BrowserViewRenderer::OnParentDrawConstraintsUpdated() {
 }
 
 void BrowserViewRenderer::ReturnUnusedResource(
-    scoped_ptr<ChildFrame> child_frame) {
+    std::unique_ptr<ChildFrame> child_frame) {
   if (!child_frame.get() || !child_frame->frame.get())
     return;
 
@@ -619,11 +620,11 @@ void BrowserViewRenderer::UpdateRootLayerState(
   SetTotalRootLayerScrollOffset(total_scroll_offset_dip);
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 BrowserViewRenderer::RootLayerStateAsValue(
     const gfx::Vector2dF& total_scroll_offset_dip,
     const gfx::SizeF& scrollable_size_dip) {
-  scoped_ptr<base::trace_event::TracedValue> state(
+  std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
 
   state->SetDouble("total_scroll_offset_dip.x", total_scroll_offset_dip.x());

@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_BROWSER_CONTEXT_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_BROWSER_CONTEXT_H_
 
+#include <memory>
 #include <vector>
 
 #include "android_webview/browser/aw_download_manager_delegate.h"
@@ -14,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -107,7 +107,7 @@ class AwBrowserContext : public content::BrowserContext,
   policy::URLBlacklistManager* GetURLBlacklistManager();
 
   // content::BrowserContext implementation.
-  scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+  std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
   base::FilePath GetPath() const override;
   bool IsOffTheRecord() const override;
@@ -145,26 +145,26 @@ class AwBrowserContext : public content::BrowserContext,
   JniDependencyFactory* native_factory_;
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<AwQuotaManagerBridge> quota_manager_bridge_;
-  scoped_ptr<AwFormDatabaseService> form_database_service_;
-  scoped_ptr<AwMessagePortService> message_port_service_;
+  std::unique_ptr<AwFormDatabaseService> form_database_service_;
+  std::unique_ptr<AwMessagePortService> message_port_service_;
 
   AwDownloadManagerDelegate download_manager_delegate_;
 
-  scoped_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
-  scoped_ptr<content::ResourceContext> resource_context_;
+  std::unique_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
+  std::unique_ptr<content::ResourceContext> resource_context_;
 
-  scoped_ptr<PrefService> user_pref_service_;
-  scoped_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
-  scoped_ptr<policy::URLBlacklistManager> blacklist_manager_;
+  std::unique_ptr<PrefService> user_pref_service_;
+  std::unique_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
+  std::unique_ptr<policy::URLBlacklistManager> blacklist_manager_;
 
-  scoped_ptr<data_reduction_proxy::DataReductionProxySettings>
+  std::unique_ptr<data_reduction_proxy::DataReductionProxySettings>
       data_reduction_proxy_settings_;
-  scoped_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
+  std::unique_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;
-  scoped_ptr<data_reduction_proxy::DataReductionProxyService>
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyService>
       data_reduction_proxy_service_;
-  scoped_ptr<content::PermissionManager> permission_manager_;
+  std::unique_ptr<content::PermissionManager> permission_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

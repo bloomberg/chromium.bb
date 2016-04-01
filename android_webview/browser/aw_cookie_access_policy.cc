@@ -4,10 +4,10 @@
 
 #include "android_webview/browser/aw_cookie_access_policy.h"
 
-#include "android_webview/browser/aw_contents_io_thread_client.h"
+#include <memory>
 
+#include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/net_errors.h"
@@ -47,7 +47,7 @@ void AwCookieAccessPolicy::SetShouldAcceptCookies(bool allow) {
 bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     int render_process_id,
     int render_frame_id) {
-  scoped_ptr<AwContentsIoThreadClient> io_thread_client =
+  std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
       AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
   if (!io_thread_client) {
     return false;

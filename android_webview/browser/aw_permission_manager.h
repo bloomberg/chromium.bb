@@ -5,10 +5,11 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_PERMISSION_MANAGER_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_PERMISSION_MANAGER_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/permission_manager.h"
 
@@ -69,7 +70,7 @@ class AwPermissionManager : public content::PermissionManager {
       bool allowed);
 
   PendingRequestsMap pending_requests_;
-  scoped_ptr<LastRequestResultCache> result_cache_;
+  std::unique_ptr<LastRequestResultCache> result_cache_;
 
   base::WeakPtrFactory<AwPermissionManager> weak_ptr_factory_;
 
