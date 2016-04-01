@@ -74,7 +74,6 @@ class CC_EXPORT LayerTreeSettings {
   float skewport_target_time_in_seconds;
   int skewport_extrapolation_limit_in_content_pixels;
   size_t max_memory_for_prepaint_percentage;
-  bool strict_layer_property_change_checking;
   bool use_zero_copy;
   bool use_partial_raster;
   bool enable_elastic_overscroll;

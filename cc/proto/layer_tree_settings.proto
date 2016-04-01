@@ -54,7 +54,6 @@ message LayerTreeSettings {
   optional float skewport_target_time_in_seconds = 31;
   optional int32 skewport_extrapolation_limit_in_content_pixels = 32;
   optional uint32 max_memory_for_prepaint_percentage = 33;
-  optional bool strict_layer_property_change_checking = 34;
   optional bool use_zero_copy = 35;
   optional bool use_partial_raster = 36;
   optional bool enable_elastic_overscroll = 37;

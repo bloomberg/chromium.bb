@@ -74,8 +74,6 @@ TEST(LayerTreeSettingsTest, AllMembersChanged) {
       settings.skewport_extrapolation_limit_in_content_pixels * 3 + 1;
   settings.max_memory_for_prepaint_percentage =
       settings.max_memory_for_prepaint_percentage * 3 + 1;
-  settings.strict_layer_property_change_checking =
-      !settings.strict_layer_property_change_checking;
   settings.use_zero_copy = !settings.use_zero_copy;
   settings.use_partial_raster = !settings.use_partial_raster;
   settings.enable_elastic_overscroll = !settings.enable_elastic_overscroll;
@@ -134,7 +132,6 @@ TEST(LayerTreeSettingsTest, ArbitraryValues) {
   settings.skewport_target_time_in_seconds = 0.6f;
   settings.skewport_extrapolation_limit_in_content_pixels = 61;
   settings.max_memory_for_prepaint_percentage = 62;
-  settings.strict_layer_property_change_checking = true;
   settings.use_zero_copy = true;
   settings.use_partial_raster = true;
   settings.enable_elastic_overscroll = false;
