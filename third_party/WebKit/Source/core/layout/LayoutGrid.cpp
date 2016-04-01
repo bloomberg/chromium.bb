@@ -1542,6 +1542,18 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
     breadth = end - start;
     offset = start;
 
+    if (isForColumns && !styleRef().isLeftToRightDirection() && !child.styleRef().hasStaticInlinePosition(child.isHorizontalWritingMode())) {
+        // If the child doesn't have a static inline position (i.e. "left" and/or "right" aren't "auto",
+        // we need to calculate the offset from the left (even if we're in RTL).
+        if (endIsAuto) {
+            offset = LayoutUnit();
+        } else {
+            LayoutUnit alignmentOffset =  m_columnPositions[0] - borderAndPaddingStart();
+            LayoutUnit offsetFromLastLine = m_columnPositions[m_columnPositions.size() - 1] - m_columnPositions[endLine];
+            offset = paddingLeft() +  alignmentOffset + offsetFromLastLine;
+        }
+    }
+
     if (child.parent() == this && !startIsAuto) {
         // If column/row start is "auto" the static position has been already set in prepareChildForPositionedLayout().
         PaintLayer* childLayer = child.layer();
