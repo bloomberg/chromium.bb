@@ -34,8 +34,8 @@ namespace blink {
 class CORE_EXPORT Attr final : public Node {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Attr> create(Element&, const QualifiedName&);
-    static PassRefPtrWillBeRawPtr<Attr> create(Document&, const QualifiedName&, const AtomicString& value);
+    static RawPtr<Attr> create(Element&, const QualifiedName&);
+    static RawPtr<Attr> create(Document&, const QualifiedName&, const AtomicString& value);
     ~Attr() override;
 
     String name() const { return m_name.toString(); }
@@ -70,13 +70,13 @@ private:
 
     String nodeValue() const override { return value(); }
     void setNodeValue(const String&) override;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
+    RawPtr<Node> cloneNode(bool deep) override;
 
     bool isAttributeNode() const override { return true; }
 
     // Attr wraps either an element/name, or a name/value pair (when it's a standalone Node.)
     // Note that m_name is always set, but m_element/m_standaloneValue may be null.
-    RawPtrWillBeMember<Element> m_element;
+    Member<Element> m_element;
     QualifiedName m_name;
     // Holds the value if it is a standalone Node, or the local name of the
     // attribute it is attached to on an Element. The latter may (letter case)

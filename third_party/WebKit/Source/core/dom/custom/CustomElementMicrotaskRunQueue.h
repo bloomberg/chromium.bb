@@ -16,12 +16,11 @@ class CustomElementAsyncImportMicrotaskQueue;
 class CustomElementMicrotaskStep;
 class HTMLImportLoader;
 
-class CustomElementMicrotaskRunQueue : public RefCountedWillBeGarbageCollectedFinalized<CustomElementMicrotaskRunQueue> {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementMicrotaskRunQueue)
+class CustomElementMicrotaskRunQueue : public GarbageCollectedFinalized<CustomElementMicrotaskRunQueue> {
 public:
-    static PassRefPtrWillBeRawPtr<CustomElementMicrotaskRunQueue> create() { return adoptRefWillBeNoop(new CustomElementMicrotaskRunQueue()); }
+    static RawPtr<CustomElementMicrotaskRunQueue> create() { return new CustomElementMicrotaskRunQueue(); }
 
-    void enqueue(HTMLImportLoader* parentLoader, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep>, bool importIsSync);
+    void enqueue(HTMLImportLoader* parentLoader, RawPtr<CustomElementMicrotaskStep>, bool importIsSync);
     void requestDispatchIfNeeded();
     bool isEmpty() const;
 
@@ -32,8 +31,8 @@ private:
 
     void dispatch();
 
-    RefPtrWillBeMember<CustomElementSyncMicrotaskQueue> m_syncQueue;
-    RefPtrWillBeMember<CustomElementAsyncImportMicrotaskQueue> m_asyncQueue;
+    Member<CustomElementSyncMicrotaskQueue> m_syncQueue;
+    Member<CustomElementAsyncImportMicrotaskQueue> m_asyncQueue;
     bool m_dispatchIsPending;
 #if !ENABLE(OILPAN)
     WeakPtrFactory<CustomElementMicrotaskRunQueue> m_weakFactory;

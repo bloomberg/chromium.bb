@@ -35,7 +35,7 @@ namespace blink {
 class RangeBoundaryPoint {
     DISALLOW_NEW();
 public:
-    explicit RangeBoundaryPoint(PassRefPtrWillBeRawPtr<Node> container);
+    explicit RangeBoundaryPoint(RawPtr<Node> container);
 
     explicit RangeBoundaryPoint(const RangeBoundaryPoint&);
 
@@ -48,7 +48,7 @@ public:
 
     void clear();
 
-    void set(PassRefPtrWillBeRawPtr<Node> container, int offset, Node* childBefore);
+    void set(RawPtr<Node> container, int offset, Node* childBefore);
     void setOffset(int);
 
     void setToBeforeChild(Node&);
@@ -68,12 +68,12 @@ public:
 private:
     static const int invalidOffset = -1;
 
-    RefPtrWillBeMember<Node> m_containerNode;
+    Member<Node> m_containerNode;
     mutable int m_offsetInContainer;
-    RefPtrWillBeMember<Node> m_childBeforeBoundary;
+    Member<Node> m_childBeforeBoundary;
 };
 
-inline RangeBoundaryPoint::RangeBoundaryPoint(PassRefPtrWillBeRawPtr<Node> container)
+inline RangeBoundaryPoint::RangeBoundaryPoint(RawPtr<Node> container)
     : m_containerNode(container)
     , m_offsetInContainer(0)
     , m_childBeforeBoundary(nullptr)
@@ -131,7 +131,7 @@ inline void RangeBoundaryPoint::clear()
     m_childBeforeBoundary = nullptr;
 }
 
-inline void RangeBoundaryPoint::set(PassRefPtrWillBeRawPtr<Node> container, int offset, Node* childBefore)
+inline void RangeBoundaryPoint::set(RawPtr<Node> container, int offset, Node* childBefore)
 {
     ASSERT(container);
     ASSERT(offset >= 0);

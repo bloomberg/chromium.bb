@@ -30,7 +30,7 @@ class ContainerNode;
 class Document;
 class Element;
 
-class StyleElement : public WillBeGarbageCollectedMixin {
+class StyleElement : public GarbageCollectedMixin {
 public:
     StyleElement(Document*, bool createdByParser);
     virtual ~StyleElement();
@@ -58,7 +58,7 @@ protected:
     ProcessingResult childrenChanged(Element*);
     ProcessingResult finishParsingChildren(Element*);
 
-    RefPtrWillBeMember<CSSStyleSheet> m_sheet;
+    Member<CSSStyleSheet> m_sheet;
 
 private:
     ProcessingResult createSheet(Element*, const String& text = String());

@@ -36,7 +36,7 @@ class SegmentedString;
 class ScriptableDocumentParser;
 class TextResourceDecoder;
 
-class DocumentParser : public RefCountedWillBeGarbageCollectedFinalized<DocumentParser> {
+class DocumentParser : public GarbageCollectedFinalized<DocumentParser> {
 public:
     virtual ~DocumentParser();
     DECLARE_VIRTUAL_TRACE();
@@ -112,9 +112,9 @@ private:
 
     // Every DocumentParser needs a pointer back to the document.
     // m_document will be 0 after the parser is stopped.
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<DocumentParserClient>> m_clients;
+    HeapHashSet<WeakMember<DocumentParserClient>> m_clients;
 };
 
 } // namespace blink

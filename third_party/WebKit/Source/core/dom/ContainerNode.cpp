@@ -86,7 +86,7 @@ void ContainerNode::removeDetachedChildren()
 
 void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent)
 {
-    while (RefPtrWillBeRawPtr<Node> child = oldParent.firstChild()) {
+    while (RawPtr<Node> child = oldParent.firstChild()) {
         // Explicitly remove since appending can fail, but this loop shouldn't be infinite.
         oldParent.parserRemoveChild(*child);
         parserAppendChild(child.get());
@@ -164,7 +164,7 @@ bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, co
     return true;
 }
 
-PassRefPtrWillBeRawPtr<Node> ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
+RawPtr<Node> ContainerNode::insertBefore(RawPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
 {
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -172,7 +172,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<
     ASSERT(refCount() || parentOrShadowHostNode());
 #endif
 
-    RefPtrWillBeRawPtr<Node> protect(this);
+    RawPtr<Node> protect(this);
 
     // insertBefore(node, 0) is equivalent to appendChild(node)
     if (!refChild) {
@@ -197,7 +197,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::insertBefore(PassRefPtrWillBeRawPtr<
     if (refChild->previousSibling() == newChild || refChild == newChild)
         return newChild;
 
-    RefPtrWillBeRawPtr<Node> next = refChild;
+    RawPtr<Node> next = refChild;
 
     NodeVector targets;
     collectChildrenAndRemoveFromOldParent(*newChild, targets, exceptionState);
@@ -294,7 +294,7 @@ bool ContainerNode::checkParserAcceptChild(const Node& newChild) const
     return toDocument(*this).canAcceptChild(newChild, nullptr, IGNORE_EXCEPTION);
 }
 
-void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node& nextChild)
+void ContainerNode::parserInsertBefore(RawPtr<Node> newChild, Node& nextChild)
 {
     ASSERT(newChild);
     ASSERT(nextChild.parentNode() == this);
@@ -307,12 +307,12 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
     if (!checkParserAcceptChild(*newChild))
         return;
 
-    RefPtrWillBeRawPtr<Node> protect(this);
+    RawPtr<Node> protect(this);
 
     // FIXME: parserRemoveChild can run script which could then insert the
     // newChild back into the page. Loop until the child is actually removed.
     // See: fast/parser/execute-script-during-adoption-agency-removal.html
-    while (RefPtrWillBeRawPtr<ContainerNode> parent = newChild->parentNode())
+    while (RawPtr<ContainerNode> parent = newChild->parentNode())
         parent->parserRemoveChild(*newChild);
 
     if (nextChild.parentNode() != this)
@@ -334,7 +334,7 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
     notifyNodeInserted(*newChild, ChildrenChangeSourceParser);
 }
 
-PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, PassRefPtrWillBeRawPtr<Node> oldChild, ExceptionState& exceptionState)
+RawPtr<Node> ContainerNode::replaceChild(RawPtr<Node> newChild, RawPtr<Node> oldChild, ExceptionState& exceptionState)
 {
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -342,7 +342,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<
     ASSERT(refCount() || parentOrShadowHostNode());
 #endif
 
-    RefPtrWillBeRawPtr<Node> protect(this);
+    RawPtr<Node> protect(this);
 
     if (oldChild == newChild) // Nothing to do.
         return oldChild;
@@ -352,7 +352,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<Node> child = oldChild;
+    RawPtr<Node> child = oldChild;
 
     // Make sure replacing the old child with the new is OK.
     if (!checkAcceptChild(newChild.get(), child.get(), exceptionState)) {
@@ -369,7 +369,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::replaceChild(PassRefPtrWillBeRawPtr<
 
     ChildListMutationScope mutation(*this);
 
-    RefPtrWillBeRawPtr<Node> next = child->nextSibling();
+    RawPtr<Node> next = child->nextSibling();
 
     // Remove the node we're replacing.
     removeChild(child, exceptionState);
@@ -529,7 +529,7 @@ void ContainerNode::addChildNodesToDeletionQueue(Node*& head, Node*& tail, Conta
 
             tail = n;
         } else {
-            RefPtrWillBeRawPtr<Node> protect(n); // removedFromDocument may remove all references to this node.
+            RawPtr<Node> protect(n); // removedFromDocument may remove all references to this node.
             container.document().adoptIfNeeded(*n);
             if (n->inDocument())
                 container.notifyNodeRemoved(*n);
@@ -547,7 +547,7 @@ DEFINE_TRACE(ContainerNode)
     Node::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<Node> ContainerNode::removeChild(PassRefPtrWillBeRawPtr<Node> oldChild, ExceptionState& exceptionState)
+RawPtr<Node> ContainerNode::removeChild(RawPtr<Node> oldChild, ExceptionState& exceptionState)
 {
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -555,7 +555,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::removeChild(PassRefPtrWillBeRawPtr<N
     ASSERT(refCount() || parentOrShadowHostNode());
 #endif
 
-    RefPtrWillBeRawPtr<Node> protect(this);
+    RawPtr<Node> protect(this);
 
     // NotFoundError: Raised if oldChild is not a child of this node.
     // FIXME: We should never really get PseudoElements in here, but editing will sometimes
@@ -566,7 +566,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::removeChild(PassRefPtrWillBeRawPtr<N
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<Node> child = oldChild;
+    RawPtr<Node> child = oldChild;
 
     document().removeFocusedElementOfSubtree(child.get());
 
@@ -660,7 +660,7 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
         return;
 
     // The container node can be removed from event handlers.
-    RefPtrWillBeRawPtr<ContainerNode> protect(this);
+    RawPtr<ContainerNode> protect(this);
 
     // Do any prep work needed before actually starting to detach
     // and remove... e.g. stop loading frames, fire unload events.
@@ -699,7 +699,7 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
 #if !ENABLE(OILPAN)
             removedChildren.reserveInitialCapacity(countChildren());
 #endif
-            while (RefPtrWillBeRawPtr<Node> child = m_firstChild) {
+            while (RawPtr<Node> child = m_firstChild) {
                 removeBetween(0, child->nextSibling(), *child);
 #if !ENABLE(OILPAN)
                 removedChildren.append(child.get());
@@ -716,9 +716,9 @@ void ContainerNode::removeChildren(SubtreeModificationAction action)
         dispatchSubtreeModifiedEvent();
 }
 
-PassRefPtrWillBeRawPtr<Node> ContainerNode::appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& exceptionState)
+RawPtr<Node> ContainerNode::appendChild(RawPtr<Node> newChild, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<ContainerNode> protect(this);
+    RawPtr<ContainerNode> protect(this);
 
 #if !ENABLE(OILPAN)
     // Check that this node is not "floating".
@@ -781,7 +781,7 @@ PassRefPtrWillBeRawPtr<Node> ContainerNode::appendChild(PassRefPtrWillBeRawPtr<N
     return newChild;
 }
 
-void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
+void ContainerNode::parserAppendChild(RawPtr<Node> newChild)
 {
     ASSERT(newChild);
     ASSERT(!newChild->isDocumentFragment());
@@ -790,12 +790,12 @@ void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
     if (!checkParserAcceptChild(*newChild))
         return;
 
-    RefPtrWillBeRawPtr<Node> protect(this);
+    RawPtr<Node> protect(this);
 
     // FIXME: parserRemoveChild can run script which could then insert the
     // newChild back into the page. Loop until the child is actually removed.
     // See: fast/parser/execute-script-during-adoption-agency-removal.html
-    while (RefPtrWillBeRawPtr<ContainerNode> parent = newChild->parentNode())
+    while (RawPtr<ContainerNode> parent = newChild->parentNode())
         parent->parserRemoveChild(*newChild);
 
     if (document() != newChild->document())
@@ -821,8 +821,8 @@ void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
 
     InspectorInstrumentation::didInsertDOMNode(&root);
 
-    RefPtrWillBeRawPtr<Node> protect(this);
-    RefPtrWillBeRawPtr<Node> protectNode(root);
+    RawPtr<Node> protect(this);
+    RawPtr<Node> protectNode(root);
 
     NodeVector postInsertionNotificationTargets;
     notifyNodeInsertedInternal(root, postInsertionNotificationTargets);
@@ -1190,7 +1190,7 @@ void ContainerNode::setHovered(bool over)
     LayoutTheme::theme().controlStateChanged(*layoutObject(), HoverControlState);
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> ContainerNode::children()
+RawPtr<HTMLCollection> ContainerNode::children()
 {
     return ensureCachedCollection<HTMLCollection>(NodeChildren);
 }
@@ -1204,7 +1204,7 @@ unsigned ContainerNode::countChildren() const
     return count;
 }
 
-PassRefPtrWillBeRawPtr<Element> ContainerNode::querySelector(const AtomicString& selectors, ExceptionState& exceptionState)
+RawPtr<Element> ContainerNode::querySelector(const AtomicString& selectors, ExceptionState& exceptionState)
 {
     if (selectors.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
@@ -1219,7 +1219,7 @@ PassRefPtrWillBeRawPtr<Element> ContainerNode::querySelector(const AtomicString&
     return selectorQuery->queryFirst(*this);
 }
 
-PassRefPtrWillBeRawPtr<StaticElementList> ContainerNode::querySelectorAll(const AtomicString& selectors, ExceptionState& exceptionState)
+RawPtr<StaticElementList> ContainerNode::querySelectorAll(const AtomicString& selectors, ExceptionState& exceptionState)
 {
     if (selectors.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
@@ -1241,8 +1241,8 @@ static void dispatchChildInsertionEvents(Node& child)
 
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
 
-    RefPtrWillBeRawPtr<Node> c(child);
-    RefPtrWillBeRawPtr<Document> document(child.document());
+    RawPtr<Node> c(child);
+    RawPtr<Document> document(child.document());
 
     if (c->parentNode() && document->hasListenerType(Document::DOMNODEINSERTED_LISTENER))
         c->dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMNodeInserted, true, c->parentNode()));
@@ -1265,8 +1265,8 @@ static void dispatchChildRemovalEvents(Node& child)
 
     InspectorInstrumentation::willRemoveDOMNode(&child);
 
-    RefPtrWillBeRawPtr<Node> c(child);
-    RefPtrWillBeRawPtr<Document> document(child.document());
+    RawPtr<Node> c(child);
+    RawPtr<Document> document(child.document());
 
     // Dispatch pre-removal mutation events.
     if (c->parentNode() && document->hasListenerType(Document::DOMNODEREMOVED_LISTENER)) {
@@ -1435,14 +1435,14 @@ void ContainerNode::invalidateNodeListCachesInAncestors(const QualifiedName* att
     }
 }
 
-PassRefPtrWillBeRawPtr<TagCollection> ContainerNode::getElementsByTagName(const AtomicString& localName)
+RawPtr<TagCollection> ContainerNode::getElementsByTagName(const AtomicString& localName)
 {
     if (document().isHTMLDocument())
         return ensureCachedCollection<HTMLTagCollection>(HTMLTagCollectionType, localName);
     return ensureCachedCollection<TagCollection>(TagCollectionType, localName);
 }
 
-PassRefPtrWillBeRawPtr<TagCollection> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
+RawPtr<TagCollection> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
 {
     if (namespaceURI == starAtom)
         return getElementsByTagName(localName);
@@ -1452,19 +1452,19 @@ PassRefPtrWillBeRawPtr<TagCollection> ContainerNode::getElementsByTagNameNS(cons
 
 // Takes an AtomicString in argument because it is common for elements to share the same name attribute.
 // Therefore, the NameNodeList factory function expects an AtomicString type.
-PassRefPtrWillBeRawPtr<NameNodeList> ContainerNode::getElementsByName(const AtomicString& elementName)
+RawPtr<NameNodeList> ContainerNode::getElementsByName(const AtomicString& elementName)
 {
     return ensureCachedCollection<NameNodeList>(NameNodeListType, elementName);
 }
 
 // Takes an AtomicString in argument because it is common for elements to share the same set of class names.
 // Therefore, the ClassNodeList factory function expects an AtomicString type.
-PassRefPtrWillBeRawPtr<ClassCollection> ContainerNode::getElementsByClassName(const AtomicString& classNames)
+RawPtr<ClassCollection> ContainerNode::getElementsByClassName(const AtomicString& classNames)
 {
     return ensureCachedCollection<ClassCollection>(ClassCollectionType, classNames);
 }
 
-PassRefPtrWillBeRawPtr<RadioNodeList> ContainerNode::radioNodeList(const AtomicString& name, bool onlyMatchImgElements)
+RawPtr<RadioNodeList> ContainerNode::radioNodeList(const AtomicString& name, bool onlyMatchImgElements)
 {
     ASSERT(isHTMLFormElement(this) || isHTMLFieldSetElement(this));
     CollectionType type = onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType;

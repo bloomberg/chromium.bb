@@ -39,31 +39,29 @@ namespace blink {
 class CSSStyleSheet;
 class StyleSheet;
 
-class CORE_EXPORT StyleSheetCollection : public NoBaseWillBeGarbageCollected<StyleSheetCollection> {
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(StyleSheetCollection);
+class CORE_EXPORT StyleSheetCollection : public GarbageCollected<StyleSheetCollection> {
     WTF_MAKE_NONCOPYABLE(StyleSheetCollection);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleSheetCollection);
 public:
     friend class ActiveDocumentStyleSheetCollector;
     friend class ImportedDocumentStyleSheetCollector;
 
     StyleSheetCollection();
 
-    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
-    WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
-    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& activeAuthorStyleSheets() const { return m_activeAuthorStyleSheets; }
-    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
+    HeapVector<Member<CSSStyleSheet>>& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
+    HeapVector<Member<StyleSheet>>& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
+    const HeapVector<Member<CSSStyleSheet>>& activeAuthorStyleSheets() const { return m_activeAuthorStyleSheets; }
+    const HeapVector<Member<StyleSheet>>& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
 
     void swap(StyleSheetCollection&);
-    void swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>&);
+    void swapSheetsForSheetList(HeapVector<Member<StyleSheet>>&);
     void appendActiveStyleSheet(CSSStyleSheet*);
     void appendSheetForList(StyleSheet*);
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    WillBeHeapVector<RefPtrWillBeMember<StyleSheet>> m_styleSheetsForStyleSheetList;
-    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> m_activeAuthorStyleSheets;
+    HeapVector<Member<StyleSheet>> m_styleSheetsForStyleSheetList;
+    HeapVector<Member<CSSStyleSheet>> m_activeAuthorStyleSheets;
 };
 
 } // namespace blink

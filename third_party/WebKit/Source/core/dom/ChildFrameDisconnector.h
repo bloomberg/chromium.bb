@@ -34,8 +34,8 @@ private:
     void disconnectCollectedFrameOwners();
     Node& root() const { return *m_root; }
 
-    WillBeHeapVector<RefPtrWillBeMember<HTMLFrameOwnerElement>, 10> m_frameOwners;
-    RawPtrWillBeMember<Node> m_root;
+    HeapVector<Member<HTMLFrameOwnerElement>, 10> m_frameOwners;
+    Member<Node> m_root;
 };
 
 } // namespace blink

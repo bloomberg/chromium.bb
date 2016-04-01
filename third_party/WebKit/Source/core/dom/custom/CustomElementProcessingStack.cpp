@@ -42,7 +42,7 @@ size_t CustomElementProcessingStack::s_elementQueueEnd = kNumSentinels;
 
 CustomElementProcessingStack& CustomElementProcessingStack::instance()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<CustomElementProcessingStack>, instance, (adoptPtrWillBeNoop(new CustomElementProcessingStack())));
+    DEFINE_STATIC_LOCAL(Persistent<CustomElementProcessingStack>, instance, (new CustomElementProcessingStack()));
     return *instance;
 }
 

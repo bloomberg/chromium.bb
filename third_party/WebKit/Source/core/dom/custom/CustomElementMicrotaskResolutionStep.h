@@ -45,14 +45,14 @@ class Element;
 
 class CustomElementMicrotaskResolutionStep final : public CustomElementMicrotaskStep {
 public:
-    static PassOwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> create(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
+    static RawPtr<CustomElementMicrotaskResolutionStep> create(RawPtr<CustomElementRegistrationContext>, RawPtr<Element>, const CustomElementDescriptor&);
 
     ~CustomElementMicrotaskResolutionStep() override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    CustomElementMicrotaskResolutionStep(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
+    CustomElementMicrotaskResolutionStep(RawPtr<CustomElementRegistrationContext>, RawPtr<Element>, const CustomElementDescriptor&);
 
     Result process() override;
 
@@ -60,8 +60,8 @@ private:
     void show(unsigned indent) override;
 #endif
 
-    RefPtrWillBeMember<CustomElementRegistrationContext> m_context;
-    RefPtrWillBeMember<Element> m_element;
+    Member<CustomElementRegistrationContext> m_context;
+    Member<Element> m_element;
     CustomElementDescriptor m_descriptor;
 };
 

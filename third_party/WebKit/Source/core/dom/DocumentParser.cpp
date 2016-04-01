@@ -79,7 +79,7 @@ void DocumentParser::stopParsing()
     m_state = StoppedState;
 
     // Clients may be removed while in the loop. Make a snapshot for iteration.
-    WillBeHeapVector<RawPtrWillBeMember<DocumentParserClient>> clientsSnapshot;
+    HeapVector<Member<DocumentParserClient>> clientsSnapshot;
     copyToVector(m_clients, clientsSnapshot);
 
     for (DocumentParserClient* client : clientsSnapshot) {

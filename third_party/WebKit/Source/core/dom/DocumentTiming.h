@@ -66,7 +66,7 @@ private:
     double m_domComplete = 0.0;
     double m_firstLayout = 0.0;
 
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 };
 
 } // namespace blink

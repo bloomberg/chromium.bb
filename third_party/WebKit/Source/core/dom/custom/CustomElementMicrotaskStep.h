@@ -36,8 +36,7 @@
 
 namespace blink {
 
-class CustomElementMicrotaskStep : public NoBaseWillBeGarbageCollectedFinalized<CustomElementMicrotaskStep> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CustomElementMicrotaskStep);
+class CustomElementMicrotaskStep : public GarbageCollectedFinalized<CustomElementMicrotaskStep> {
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskStep);
 public:
     CustomElementMicrotaskStep() { }

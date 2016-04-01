@@ -34,18 +34,18 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> MutationObserverInterestGroup::createIfNeeded(Node& target, MutationObserver::MutationType type, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName)
+RawPtr<MutationObserverInterestGroup> MutationObserverInterestGroup::createIfNeeded(Node& target, MutationObserver::MutationType type, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName)
 {
     ASSERT((type == MutationObserver::Attributes && attributeName) || !attributeName);
-    WillBeHeapHashMap<RefPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions> observers;
+    HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions> observers;
     target.getRegisteredMutationObserversOfType(observers, type, attributeName);
     if (observers.isEmpty())
         return nullptr;
 
-    return adoptPtrWillBeNoop(new MutationObserverInterestGroup(observers, oldValueFlag));
+    return new MutationObserverInterestGroup(observers, oldValueFlag);
 }
 
-MutationObserverInterestGroup::MutationObserverInterestGroup(WillBeHeapHashMap<RefPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag)
+MutationObserverInterestGroup::MutationObserverInterestGroup(HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag)
     : m_oldValueFlag(oldValueFlag)
 {
     ASSERT(!observers.isEmpty());
@@ -61,10 +61,10 @@ bool MutationObserverInterestGroup::isOldValueRequested()
     return false;
 }
 
-void MutationObserverInterestGroup::enqueueMutationRecord(PassRefPtrWillBeRawPtr<MutationRecord> prpMutation)
+void MutationObserverInterestGroup::enqueueMutationRecord(RawPtr<MutationRecord> prpMutation)
 {
-    RefPtrWillBeRawPtr<MutationRecord> mutation = prpMutation;
-    RefPtrWillBeRawPtr<MutationRecord> mutationWithNullOldValue = nullptr;
+    RawPtr<MutationRecord> mutation = prpMutation;
+    RawPtr<MutationRecord> mutationWithNullOldValue = nullptr;
     for (auto& iter : m_observers) {
         MutationObserver* observer = iter.key.get();
         if (hasOldValue(iter.value)) {

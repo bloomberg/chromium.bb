@@ -39,13 +39,13 @@ struct SameSizeAsElementRareData : NodeRareData {
     LayoutSize sizeForResizing;
     IntSize scrollOffset;
     void* pointers[13];
-    PersistentWillBeMember<void*> persistentMember[2];
+    Member<void*> persistentMember[2];
 };
 
 CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* ownerElement)
 {
     if (!m_cssomWrapper)
-        m_cssomWrapper = adoptPtrWillBeNoop(new InlineCSSStyleDeclaration(ownerElement));
+        m_cssomWrapper = new InlineCSSStyleDeclaration(ownerElement);
     return *m_cssomWrapper;
 }
 

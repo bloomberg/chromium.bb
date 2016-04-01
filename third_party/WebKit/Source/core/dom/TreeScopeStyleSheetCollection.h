@@ -72,7 +72,7 @@ protected:
     public:
         StyleResolverUpdateType styleResolverUpdateType;
         bool requiresFullStyleRecalc;
-        WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace>> fontFaceRulesToRemove;
+        HeapVector<Member<const StyleRuleFontFace>> fontFaceRulesToRemove;
 
         StyleSheetChange()
             : styleResolverUpdateType(Reconstruct)
@@ -82,13 +82,13 @@ protected:
     void analyzeStyleSheetChange(StyleResolverUpdateMode, const StyleSheetCollection&, StyleSheetChange&);
 
 private:
-    static StyleResolverUpdateType compareStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& oldStyleSheets, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& newStylesheets, WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>& addedSheets);
-    bool activeLoadingStyleSheetLoaded(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& newStyleSheets);
+    static StyleResolverUpdateType compareStyleSheets(const HeapVector<Member<CSSStyleSheet>>& oldStyleSheets, const HeapVector<Member<CSSStyleSheet>>& newStylesheets, HeapVector<Member<StyleSheetContents>>& addedSheets);
+    bool activeLoadingStyleSheetLoaded(const HeapVector<Member<CSSStyleSheet>>& newStyleSheets);
 
     friend class TreeScopeStyleSheetCollectionTest;
 
 protected:
-    RawPtrWillBeMember<TreeScope> m_treeScope;
+    Member<TreeScope> m_treeScope;
     bool m_hadActiveLoadingStylesheet;
 
     DocumentOrderedList m_styleSheetCandidateNodes;

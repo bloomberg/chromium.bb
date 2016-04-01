@@ -42,7 +42,7 @@ public:
         return treeScope.elementFromPoint(x, y);
     }
 
-    static WillBeHeapVector<RawPtrWillBeMember<Element>> elementsFromPoint(TreeScope& treeScope, int x, int y)
+    static HeapVector<Member<Element>> elementsFromPoint(TreeScope& treeScope, int x, int y)
     {
         return treeScope.elementsFromPoint(x, y);
     }

@@ -54,7 +54,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<const InsertionPoint> m_insertionPoint;
+    Member<const InsertionPoint> m_insertionPoint;
 };
 
 CORE_EXPORT ContainerNode* parent(const Node&, ParentDetails* = 0);

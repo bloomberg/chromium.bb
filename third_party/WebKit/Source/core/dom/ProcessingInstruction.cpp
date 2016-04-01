@@ -48,9 +48,9 @@ inline ProcessingInstruction::ProcessingInstruction(Document& document, const St
 {
 }
 
-PassRefPtrWillBeRawPtr<ProcessingInstruction> ProcessingInstruction::create(Document& document, const String& target, const String& data)
+RawPtr<ProcessingInstruction> ProcessingInstruction::create(Document& document, const String& target, const String& data)
 {
-    return adoptRefWillBeNoop(new ProcessingInstruction(document, target, data));
+    return new ProcessingInstruction(document, target, data);
 }
 
 ProcessingInstruction::~ProcessingInstruction()
@@ -94,7 +94,7 @@ Node::NodeType ProcessingInstruction::getNodeType() const
     return PROCESSING_INSTRUCTION_NODE;
 }
 
-PassRefPtrWillBeRawPtr<Node> ProcessingInstruction::cloneNode(bool /*deep*/)
+RawPtr<Node> ProcessingInstruction::cloneNode(bool /*deep*/)
 {
     // FIXME: Is it a problem that this does not copy m_localHref?
     // What about other data members?
@@ -164,7 +164,7 @@ void ProcessingInstruction::process(const String& href, const String& charset)
 
     String url = document().completeURL(href).getString();
 
-    RefPtrWillBeRawPtr<StyleSheetResource> resource = nullptr;
+    RawPtr<StyleSheetResource> resource = nullptr;
     FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
     if (m_isXSL) {
         if (RuntimeEnabledFeatures::xsltEnabled())
@@ -211,9 +211,9 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
     ASSERT(m_isCSS);
     CSSParserContext parserContext(document(), 0, baseURL, charset);
 
-    RefPtrWillBeRawPtr<StyleSheetContents> newSheet = StyleSheetContents::create(href, parserContext);
+    RawPtr<StyleSheetContents> newSheet = StyleSheetContents::create(href, parserContext);
 
-    RefPtrWillBeRawPtr<CSSStyleSheet> cssSheet = CSSStyleSheet::create(newSheet, this);
+    RawPtr<CSSStyleSheet> cssSheet = CSSStyleSheet::create(newSheet, this);
     cssSheet->setDisabled(m_alternate);
     cssSheet->setTitle(m_title);
     cssSheet->setMediaQueries(MediaQuerySet::create(m_media));
@@ -235,7 +235,7 @@ void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& bas
 
     ASSERT(m_isXSL);
     m_sheet = XSLStyleSheet::create(this, href, baseURL);
-    RefPtrWillBeRawPtr<Document> protect(&document());
+    RawPtr<Document> protect(&document());
     OwnPtr<IncrementLoadEventDelayCount> delay = IncrementLoadEventDelayCount::create(document());
     parseStyleSheet(sheet);
 }
@@ -282,7 +282,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
     if (!DocumentXSLT::processingInstructionRemovedFromDocument(document(), this))
         document().styleEngine().removeStyleSheetCandidateNode(this);
 
-    RefPtrWillBeRawPtr<StyleSheet> removedSheet = m_sheet;
+    RawPtr<StyleSheet> removedSheet = m_sheet;
     if (m_sheet) {
         ASSERT(m_sheet->ownerNode() == this);
         clearSheet();

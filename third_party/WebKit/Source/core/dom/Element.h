@@ -108,12 +108,12 @@ struct FocusParams {
     Member<InputDeviceCapabilities> sourceCapabilities = nullptr;
 };
 
-typedef WillBeHeapVector<RefPtrWillBeMember<Attr>> AttrNodeList;
+typedef HeapVector<Member<Attr>> AttrNodeList;
 
 class CORE_EXPORT Element : public ContainerNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Element> create(const QualifiedName&, Document*);
+    static RawPtr<Element> create(const QualifiedName&, Document*);
     ~Element() override;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);
@@ -229,16 +229,16 @@ public:
     void removeAttribute(const AtomicString& name);
     void removeAttributeNS(const AtomicString& namespaceURI, const AtomicString& localName);
 
-    PassRefPtrWillBeRawPtr<Attr> detachAttribute(size_t index);
+    RawPtr<Attr> detachAttribute(size_t index);
 
-    PassRefPtrWillBeRawPtr<Attr> getAttributeNode(const AtomicString& name);
-    PassRefPtrWillBeRawPtr<Attr> getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName);
-    PassRefPtrWillBeRawPtr<Attr> setAttributeNode(Attr*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<Attr> setAttributeNodeNS(Attr*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<Attr> removeAttributeNode(Attr*, ExceptionState&);
+    RawPtr<Attr> getAttributeNode(const AtomicString& name);
+    RawPtr<Attr> getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName);
+    RawPtr<Attr> setAttributeNode(Attr*, ExceptionState&);
+    RawPtr<Attr> setAttributeNodeNS(Attr*, ExceptionState&);
+    RawPtr<Attr> removeAttributeNode(Attr*, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<Attr> attrIfExists(const QualifiedName&);
-    PassRefPtrWillBeRawPtr<Attr> ensureAttr(const QualifiedName&);
+    RawPtr<Attr> attrIfExists(const QualifiedName&);
+    RawPtr<Attr> ensureAttr(const QualifiedName&);
 
     AttrNodeList* attrNodeList();
 
@@ -266,8 +266,8 @@ public:
 
     String nodeName() const override;
 
-    PassRefPtrWillBeRawPtr<Element> cloneElementWithChildren();
-    PassRefPtrWillBeRawPtr<Element> cloneElementWithoutChildren();
+    RawPtr<Element> cloneElementWithChildren();
+    RawPtr<Element> cloneElementWithoutChildren();
 
     void scheduleSVGFilterLayerUpdateHack();
 
@@ -343,9 +343,9 @@ public:
     // If type of ShadowRoot (either closed or open) is explicitly specified, creation of multiple
     // shadow roots is prohibited in any combination and throws an exception. Multiple shadow roots
     // are allowed only when createShadowRoot() is used without any parameters from JavaScript.
-    PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(const ScriptState*, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ShadowRoot> attachShadow(const ScriptState*, const ShadowRootInit&, ExceptionState&);
-    PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootInternal(ShadowRootType, ExceptionState&);
+    RawPtr<ShadowRoot> createShadowRoot(const ScriptState*, ExceptionState&);
+    RawPtr<ShadowRoot> attachShadow(const ScriptState*, const ShadowRootInit&, ExceptionState&);
+    RawPtr<ShadowRoot> createShadowRootInternal(ShadowRootType, ExceptionState&);
 
     ShadowRoot* openShadowRoot() const;
     ShadowRoot* closedShadowRoot() const;
@@ -504,7 +504,7 @@ public:
     void clearHasPendingResources() { clearElementFlag(HasPendingResources); }
     virtual void buildPendingResource() { }
 
-    void setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition>);
+    void setCustomElementDefinition(RawPtr<CustomElementDefinition>);
     CustomElementDefinition* customElementDefinition() const;
 
     bool containsFullScreenElement() const { return hasElementFlag(ContainsFullScreenElement); }
@@ -573,7 +573,7 @@ protected:
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, CSSValueID identifier);
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, double value, CSSPrimitiveValue::UnitType);
     void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, const String& value);
-    void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>);
+    void addPropertyToPresentationAttributeStyle(MutableStylePropertySet*, CSSPropertyID, RawPtr<CSSValue>);
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;
@@ -689,8 +689,8 @@ private:
 
     // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
     // are used instead.
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
-    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren();
+    RawPtr<Node> cloneNode(bool deep) override;
+    virtual RawPtr<Element> cloneElementWithoutAttributesAndChildren();
 
     QualifiedName m_tagName;
 
@@ -712,7 +712,7 @@ private:
 
     v8::Local<v8::Object> wrapCustomElement(v8::Isolate*, v8::Local<v8::Object> creationContext);
 
-    RefPtrWillBeMember<ElementData> m_elementData;
+    Member<ElementData> m_elementData;
 };
 
 DEFINE_NODE_TYPE_CASTS(Element, isElementNode());
@@ -945,11 +945,11 @@ inline bool isAtShadowBoundary(const Element* element)
     DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(thisType)
 
 #define DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(T) \
-    static PassRefPtrWillBeRawPtr<T> create(const QualifiedName&, Document&)
+    static RawPtr<T> create(const QualifiedName&, Document&)
 #define DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(T) \
-    PassRefPtrWillBeRawPtr<T> T::create(const QualifiedName& tagName, Document& document) \
+    RawPtr<T> T::create(const QualifiedName& tagName, Document& document) \
     { \
-        return adoptRefWillBeNoop(new T(tagName, document)); \
+        return new T(tagName, document); \
     }
 
 } // namespace blink

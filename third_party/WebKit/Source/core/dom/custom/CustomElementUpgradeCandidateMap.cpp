@@ -34,9 +34,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<CustomElementUpgradeCandidateMap> CustomElementUpgradeCandidateMap::create()
+RawPtr<CustomElementUpgradeCandidateMap> CustomElementUpgradeCandidateMap::create()
 {
-    return adoptPtrWillBeNoop(new CustomElementUpgradeCandidateMap());
+    return new CustomElementUpgradeCandidateMap();
 }
 
 CustomElementUpgradeCandidateMap::~CustomElementUpgradeCandidateMap()
@@ -60,7 +60,7 @@ void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descri
     UnresolvedDefinitionMap::iterator it = m_unresolvedDefinitions.find(descriptor);
     ElementSet* elements;
     if (it == m_unresolvedDefinitions.end())
-        elements = m_unresolvedDefinitions.add(descriptor, adoptPtrWillBeNoop(new ElementSet())).storedValue->value.get();
+        elements = m_unresolvedDefinitions.add(descriptor, new ElementSet()).storedValue->value.get();
     else
         elements = it->value.get();
     elements->add(element);
@@ -78,9 +78,9 @@ void CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
     m_upgradeCandidates.remove(candidate);
 }
 
-PassOwnPtrWillBeRawPtr<CustomElementUpgradeCandidateMap::ElementSet> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)
+RawPtr<CustomElementUpgradeCandidateMap::ElementSet> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)
 {
-    OwnPtrWillBeRawPtr<ElementSet> candidates = m_unresolvedDefinitions.take(descriptor);
+    RawPtr<ElementSet> candidates = m_unresolvedDefinitions.take(descriptor);
 
     if (!candidates)
         return nullptr;

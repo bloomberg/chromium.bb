@@ -30,9 +30,7 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NodeIteratorBase);
-
-NodeIteratorBase::NodeIteratorBase(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> nodeFilter)
+NodeIteratorBase::NodeIteratorBase(RawPtr<Node> rootNode, unsigned whatToShow, RawPtr<NodeFilter> nodeFilter)
     : m_root(rootNode)
     , m_whatToShow(whatToShow)
     , m_filter(nodeFilter)

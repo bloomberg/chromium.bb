@@ -33,9 +33,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PendingScript> PendingScript::create(Element* element, ScriptResource* resource)
+RawPtr<PendingScript> PendingScript::create(Element* element, ScriptResource* resource)
 {
-    return adoptPtrWillBeNoop(new PendingScript(element, resource));
+    return new PendingScript(element, resource);
 }
 
 PendingScript::PendingScript(Element* element, ScriptResource* resource)
@@ -113,7 +113,7 @@ void PendingScript::setElement(Element* element)
     m_element = element;
 }
 
-PassRefPtrWillBeRawPtr<Element> PendingScript::releaseElementAndClear()
+RawPtr<Element> PendingScript::releaseElementAndClear()
 {
     setScriptResource(0);
     m_watchingForLoad = false;
@@ -208,7 +208,7 @@ ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOc
     return ScriptSourceCode(m_element->textContent(), documentURL, startingPosition());
 }
 
-void PendingScript::setStreamer(PassRefPtrWillBeRawPtr<ScriptStreamer> streamer)
+void PendingScript::setStreamer(RawPtr<ScriptStreamer> streamer)
 {
     ASSERT(!m_streamer);
     ASSERT(!m_watchingForLoad);

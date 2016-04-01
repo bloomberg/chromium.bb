@@ -32,8 +32,6 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MessageChannel);
-
 static void createChannel(MessagePort* port1, MessagePort* port2)
 {
     WebMessagePortChannel* channel1;

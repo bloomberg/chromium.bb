@@ -45,7 +45,7 @@ Element* SlotScopedTraversal::next(const Element& current)
         slot = nearestAncestorAssignedToSlot->assignedSlot();
         ASSERT(slot);
     }
-    WillBeHeapVector<RefPtrWillBeMember<Node>> assignedNodes = slot->getAssignedNodes();
+    HeapVector<Member<Node>> assignedNodes = slot->getAssignedNodes();
     size_t currentIndex = assignedNodes.find(*nearestAncestorAssignedToSlot);
     ASSERT(currentIndex != kNotFound);
     for (++currentIndex; currentIndex < assignedNodes.size(); ++currentIndex) {
@@ -63,11 +63,11 @@ Element* SlotScopedTraversal::previous(const Element& current)
     if (Element* previous = ElementTraversal::previous(current, nearestAncestorAssignedToSlot))
         return previous;
     // If null, jump to previous assigned node's descendant
-    const WillBeHeapVector<RefPtrWillBeMember<Node>> assignedNodes = nearestAncestorAssignedToSlot->assignedSlot()->getAssignedNodes();
+    const HeapVector<Member<Node>> assignedNodes = nearestAncestorAssignedToSlot->assignedSlot()->getAssignedNodes();
     size_t currentIndex = assignedNodes.reverseFind(*nearestAncestorAssignedToSlot);
     ASSERT(currentIndex != kNotFound);
     for (; currentIndex > 0; --currentIndex) {
-        const RefPtrWillBeMember<Node> assignedPrevious = assignedNodes[currentIndex - 1];
+        const Member<Node> assignedPrevious = assignedNodes[currentIndex - 1];
         if (assignedPrevious->isElementNode()) {
             if (Element* last = ElementTraversal::lastWithin(*toElement(assignedPrevious)))
                 return last;

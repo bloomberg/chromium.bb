@@ -36,17 +36,17 @@ namespace blink {
 
 class ExceptionState;
 
-class TreeWalker final : public RefCountedWillBeGarbageCollected<TreeWalker>, public ScriptWrappable, public NodeIteratorBase {
+class TreeWalker final : public GarbageCollected<TreeWalker>, public ScriptWrappable, public NodeIteratorBase {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TreeWalker);
+    USING_GARBAGE_COLLECTED_MIXIN(TreeWalker);
 public:
-    static PassRefPtrWillBeRawPtr<TreeWalker> create(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
+    static RawPtr<TreeWalker> create(RawPtr<Node> rootNode, unsigned whatToShow, RawPtr<NodeFilter> filter)
     {
-        return adoptRefWillBeNoop(new TreeWalker(rootNode, whatToShow, filter));
+        return new TreeWalker(rootNode, whatToShow, filter);
     }
 
     Node* currentNode() const { return m_current.get(); }
-    void setCurrentNode(PassRefPtrWillBeRawPtr<Node>);
+    void setCurrentNode(RawPtr<Node>);
 
     Node* parentNode(ExceptionState&);
     Node* firstChild(ExceptionState&);
@@ -59,11 +59,11 @@ public:
     DECLARE_TRACE();
 
 private:
-    TreeWalker(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);
+    TreeWalker(RawPtr<Node>, unsigned whatToShow, RawPtr<NodeFilter>);
 
-    Node* setCurrent(PassRefPtrWillBeRawPtr<Node>);
+    Node* setCurrent(RawPtr<Node>);
 
-    RefPtrWillBeMember<Node> m_current;
+    Member<Node> m_current;
 };
 
 } // namespace blink

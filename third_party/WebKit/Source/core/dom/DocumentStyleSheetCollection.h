@@ -38,11 +38,10 @@ class TreeScope;
 
 class DocumentStyleSheetCollection final : public TreeScopeStyleSheetCollection {
     WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentStyleSheetCollection);
 public:
-    static PassOwnPtrWillBeRawPtr<DocumentStyleSheetCollection> create(TreeScope& treeScope)
+    static RawPtr<DocumentStyleSheetCollection> create(TreeScope& treeScope)
     {
-        return adoptPtrWillBeNoop(new DocumentStyleSheetCollection(treeScope));
+        return new DocumentStyleSheetCollection(treeScope);
     }
 
     void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);

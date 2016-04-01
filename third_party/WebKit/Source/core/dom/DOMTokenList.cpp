@@ -55,7 +55,7 @@ public:
     }
 
 private:
-    const RefPtrWillBeMember<DOMTokenList> m_domTokenList;
+    const Member<DOMTokenList> m_domTokenList;
 };
 
 } // namespace

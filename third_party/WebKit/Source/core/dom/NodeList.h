@@ -33,7 +33,7 @@ namespace blink {
 
 class Node;
 
-class CORE_EXPORT NodeList : public RefCountedWillBeGarbageCollectedFinalized<NodeList>, public ScriptWrappable, public ValueIterable<Node *> {
+class CORE_EXPORT NodeList : public GarbageCollectedFinalized<NodeList>, public ScriptWrappable, public ValueIterable<Node *> {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~NodeList() { }

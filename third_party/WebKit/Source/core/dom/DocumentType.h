@@ -31,9 +31,9 @@ namespace blink {
 class DocumentType final : public Node {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DocumentType> create(Document* document, const String& name, const String& publicId, const String& systemId)
+    static RawPtr<DocumentType> create(Document* document, const String& name, const String& publicId, const String& systemId)
     {
-        return adoptRefWillBeNoop(new DocumentType(document, name, publicId, systemId));
+        return new DocumentType(document, name, publicId, systemId);
     }
 
     const String& name() const { return m_name; }
@@ -45,7 +45,7 @@ private:
 
     String nodeName() const override;
     NodeType getNodeType() const override;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
+    RawPtr<Node> cloneNode(bool deep) override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
     void removedFrom(ContainerNode*) override;

@@ -213,7 +213,7 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
 
 void ScriptRunner::movePendingScript(Document& oldDocument, Document& newDocument, ScriptLoader* scriptLoader)
 {
-    RefPtrWillBeRawPtr<Document> newContextDocument = newDocument.contextDocument().get();
+    RawPtr<Document> newContextDocument = newDocument.contextDocument().get();
     if (!newContextDocument) {
         // Document's contextDocument() method will return no Document if the
         // following conditions both hold:
@@ -228,7 +228,7 @@ void ScriptRunner::movePendingScript(Document& oldDocument, Document& newDocumen
         ASSERT(!newDocument.frame());
         newContextDocument = &newDocument;
     }
-    RefPtrWillBeRawPtr<Document> oldContextDocument = oldDocument.contextDocument().get();
+    RawPtr<Document> oldContextDocument = oldDocument.contextDocument().get();
     if (!oldContextDocument) {
         ASSERT(!oldDocument.frame());
         oldContextDocument = &oldDocument;
@@ -252,7 +252,7 @@ void ScriptRunner::movePendingScript(ScriptRunner* newRunner, ScriptLoader* scri
 }
 
 // Returns true if task was run, and false otherwise.
-bool ScriptRunner::executeTaskFromQueue(WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>>* taskQueue)
+bool ScriptRunner::executeTaskFromQueue(HeapDeque<Member<ScriptLoader>>* taskQueue)
 {
     if (taskQueue->isEmpty())
         return false;

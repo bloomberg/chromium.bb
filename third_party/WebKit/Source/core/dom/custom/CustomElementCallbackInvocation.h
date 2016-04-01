@@ -43,11 +43,11 @@ namespace blink {
 class CustomElementCallbackInvocation : public CustomElementProcessingStep {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackInvocation);
 public:
-    static PassOwnPtrWillBeRawPtr<CustomElementCallbackInvocation> createInvocation(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType);
-    static PassOwnPtrWillBeRawPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    static RawPtr<CustomElementCallbackInvocation> createInvocation(RawPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType);
+    static RawPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(RawPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
 protected:
-    CustomElementCallbackInvocation(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> callbacks)
+    CustomElementCallbackInvocation(RawPtr<CustomElementLifecycleCallbacks> callbacks)
         : m_callbacks(callbacks)
     {
     }
@@ -57,7 +57,7 @@ protected:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RefPtrWillBeMember<CustomElementLifecycleCallbacks> m_callbacks;
+    Member<CustomElementLifecycleCallbacks> m_callbacks;
 };
 
 } // namespace blink

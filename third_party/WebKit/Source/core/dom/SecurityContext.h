@@ -46,7 +46,7 @@ class SecurityOrigin;
 class ContentSecurityPolicy;
 class KURL;
 
-class CORE_EXPORT SecurityContext : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
     WTF_MAKE_NONCOPYABLE(SecurityContext);
 public:
     DECLARE_VIRTUAL_TRACE();
@@ -91,13 +91,13 @@ protected:
     SecurityContext();
     virtual ~SecurityContext();
 
-    void setContentSecurityPolicy(PassRefPtrWillBeRawPtr<ContentSecurityPolicy>);
+    void setContentSecurityPolicy(RawPtr<ContentSecurityPolicy>);
 
     void applySandboxFlags(SandboxFlags mask);
 
 private:
     RefPtr<SecurityOrigin> m_securityOrigin;
-    RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
+    Member<ContentSecurityPolicy> m_contentSecurityPolicy;
 
     SandboxFlags m_sandboxFlags;
 

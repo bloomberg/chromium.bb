@@ -46,18 +46,16 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementScheduler)
-
 // FIXME: Consider moving the element's callback queue to ElementRareData.
-typedef WillBeHeapHashMap<RawPtrWillBeMember<Element>, OwnPtrWillBeMember<CustomElementCallbackQueue>> ElementCallbackQueueMap;
+typedef HeapHashMap<Member<Element>, Member<CustomElementCallbackQueue>> ElementCallbackQueueMap;
 
 static ElementCallbackQueueMap& callbackQueues()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<ElementCallbackQueueMap>, map, (adoptPtrWillBeNoop(new ElementCallbackQueueMap())));
+    DEFINE_STATIC_LOCAL(Persistent<ElementCallbackQueueMap>, map, (new ElementCallbackQueueMap()));
     return *map;
 }
 
-static CustomElementCallbackQueue& ensureCallbackQueue(PassRefPtrWillBeRawPtr<Element> element)
+static CustomElementCallbackQueue& ensureCallbackQueue(RawPtr<Element> element)
 {
     ElementCallbackQueueMap::ValueType* it = callbackQueues().add(element.get(), nullptr).storedValue;
     if (!it->value)
@@ -66,9 +64,9 @@ static CustomElementCallbackQueue& ensureCallbackQueue(PassRefPtrWillBeRawPtr<El
 }
 
 // Finds or creates the callback queue for element.
-static CustomElementCallbackQueue& scheduleCallbackQueue(PassRefPtrWillBeRawPtr<Element> passElement)
+static CustomElementCallbackQueue& scheduleCallbackQueue(RawPtr<Element> passElement)
 {
-    RefPtrWillBeRawPtr<Element> element(passElement);
+    RawPtr<Element> element(passElement);
 
     CustomElementCallbackQueue& callbackQueue = ensureCallbackQueue(element);
     if (callbackQueue.inCreatedCallback()) {
@@ -89,7 +87,7 @@ static CustomElementCallbackQueue& scheduleCallbackQueue(PassRefPtrWillBeRawPtr<
     return callbackQueue;
 }
 
-void CustomElementScheduler::scheduleCallback(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, CustomElementLifecycleCallbacks::CallbackType type)
+void CustomElementScheduler::scheduleCallback(RawPtr<CustomElementLifecycleCallbacks> callbacks, RawPtr<Element> element, CustomElementLifecycleCallbacks::CallbackType type)
 {
     ASSERT(type != CustomElementLifecycleCallbacks::AttributeChangedCallback);
 
@@ -100,7 +98,7 @@ void CustomElementScheduler::scheduleCallback(PassRefPtrWillBeRawPtr<CustomEleme
     queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, type));
 }
 
-void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtrWillBeRawPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+void CustomElementScheduler::scheduleAttributeChangedCallback(RawPtr<CustomElementLifecycleCallbacks> callbacks, RawPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     if (!callbacks->hasCallback(CustomElementLifecycleCallbacks::AttributeChangedCallback))
         return;
@@ -109,7 +107,7 @@ void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtrWillBeRa
     queue.append(CustomElementCallbackInvocation::createAttributeChangedInvocation(callbacks, name, oldValue, newValue));
 }
 
-void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> context, PassRefPtrWillBeRawPtr<Element> element, const CustomElementDescriptor& descriptor)
+void CustomElementScheduler::resolveOrScheduleResolution(RawPtr<CustomElementRegistrationContext> context, RawPtr<Element> element, const CustomElementDescriptor& descriptor)
 {
     if (CustomElementProcessingStack::inCallbackDeliveryScope()) {
         context->resolve(element.get(), descriptor);
@@ -117,7 +115,7 @@ void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtrWillBeRawPtr<
     }
 
     Document& document = element->document();
-    OwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> step = CustomElementMicrotaskResolutionStep::create(context, element, descriptor);
+    RawPtr<CustomElementMicrotaskResolutionStep> step = CustomElementMicrotaskResolutionStep::create(context, element, descriptor);
     enqueueMicrotaskStep(document, step.release());
 }
 
@@ -128,13 +126,13 @@ CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImp
 
     // Ownership of the new step is transferred to the parent
     // processing step, or the base queue.
-    OwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import);
+    RawPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create(import);
     CustomElementMicrotaskImportStep* rawStep = step.get();
     enqueueMicrotaskStep(*(import->parent()->document()), step.release(), import->isSync());
     return rawStep;
 }
 
-void CustomElementScheduler::enqueueMicrotaskStep(Document& document, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step, bool importIsSync)
+void CustomElementScheduler::enqueueMicrotaskStep(Document& document, RawPtr<CustomElementMicrotaskStep> step, bool importIsSync)
 {
     Document& master = document.importsController() ? *(document.importsController()->master()) : document;
     master.customElementMicrotaskRunQueue()->enqueue(document.importLoader(), step, importIsSync);

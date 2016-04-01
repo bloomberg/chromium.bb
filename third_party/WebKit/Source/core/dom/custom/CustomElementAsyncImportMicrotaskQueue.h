@@ -37,9 +37,9 @@ namespace blink {
 
 class CustomElementAsyncImportMicrotaskQueue : public CustomElementMicrotaskQueueBase {
 public:
-    static PassRefPtrWillBeRawPtr<CustomElementAsyncImportMicrotaskQueue> create() { return adoptRefWillBeNoop(new CustomElementAsyncImportMicrotaskQueue()); }
+    static RawPtr<CustomElementAsyncImportMicrotaskQueue> create() { return new CustomElementAsyncImportMicrotaskQueue(); }
 
-    void enqueue(PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep>);
+    void enqueue(RawPtr<CustomElementMicrotaskStep>);
 
 private:
     CustomElementAsyncImportMicrotaskQueue() { }

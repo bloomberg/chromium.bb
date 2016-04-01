@@ -40,12 +40,12 @@ class Document;
 class ScriptLoader;
 class WebTaskRunner;
 
-class CORE_EXPORT ScriptRunner final : public NoBaseWillBeGarbageCollectedFinalized<ScriptRunner> {
-    WTF_MAKE_NONCOPYABLE(ScriptRunner); USING_FAST_MALLOC_WILL_BE_REMOVED(ScriptRunner);
+class CORE_EXPORT ScriptRunner final : public GarbageCollectedFinalized<ScriptRunner> {
+    WTF_MAKE_NONCOPYABLE(ScriptRunner);
 public:
-    static PassOwnPtrWillBeRawPtr<ScriptRunner> create(Document* document)
+    static RawPtr<ScriptRunner> create(Document* document)
     {
-        return adoptPtrWillBeNoop(new ScriptRunner(document));
+        return new ScriptRunner(document);
     }
     ~ScriptRunner();
 #if !ENABLE(OILPAN)
@@ -75,18 +75,18 @@ private:
 
     void postTask(const WebTraceLocation&);
 
-    bool executeTaskFromQueue(WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>>*);
+    bool executeTaskFromQueue(HeapDeque<Member<ScriptLoader>>*);
 
     void executeTask();
 
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 
-    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_pendingInOrderScripts;
-    WillBeHeapHashSet<RawPtrWillBeMember<ScriptLoader>> m_pendingAsyncScripts;
+    HeapDeque<Member<ScriptLoader>> m_pendingInOrderScripts;
+    HeapHashSet<Member<ScriptLoader>> m_pendingAsyncScripts;
 
     // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
-    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_asyncScriptsToExecuteSoon;
-    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_inOrderScriptsToExecuteSoon;
+    HeapDeque<Member<ScriptLoader>> m_asyncScriptsToExecuteSoon;
+    HeapDeque<Member<ScriptLoader>> m_inOrderScriptsToExecuteSoon;
 
     WebTaskRunner* m_taskRunner;
 

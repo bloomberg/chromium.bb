@@ -168,9 +168,9 @@ Element* TreeScope::getElementById(const AtomicString& elementId) const
     return m_elementsById->getElementById(elementId, this);
 }
 
-const WillBeHeapVector<RawPtrWillBeMember<Element>>& TreeScope::getAllElementsById(const AtomicString& elementId) const
+const HeapVector<Member<Element>>& TreeScope::getAllElementsById(const AtomicString& elementId) const
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapVector<RawPtrWillBeMember<Element>>>, emptyVector, (adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<Element>>())));
+    DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<Element>>>, emptyVector, (new HeapVector<Member<Element>>()));
     if (elementId.isEmpty())
         return *emptyVector;
     if (!m_elementsById)
@@ -294,9 +294,9 @@ Element* TreeScope::hitTestPoint(int x, int y, const HitTestRequest& request) co
     return toElement(node);
 }
 
-WillBeHeapVector<RawPtrWillBeMember<Element>> TreeScope::elementsFromHitTestResult(HitTestResult& result) const
+HeapVector<Member<Element>> TreeScope::elementsFromHitTestResult(HitTestResult& result) const
 {
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    HeapVector<Member<Element>> elements;
 
     Node* lastNode = nullptr;
     for (const auto rectBasedNode : result.listBasedTestResult()) {
@@ -329,12 +329,12 @@ WillBeHeapVector<RawPtrWillBeMember<Element>> TreeScope::elementsFromHitTestResu
     return elements;
 }
 
-WillBeHeapVector<RawPtrWillBeMember<Element>> TreeScope::elementsFromPoint(int x, int y) const
+HeapVector<Member<Element>> TreeScope::elementsFromPoint(int x, int y) const
 {
     Document& document = rootNode().document();
     IntPoint hitPoint(x, y);
     if (!pointWithScrollAndZoomIfPossible(document, hitPoint))
-        return WillBeHeapVector<RawPtrWillBeMember<Element>>();
+        return HeapVector<Member<Element>>();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased | HitTestRequest::PenetratingList);
     HitTestResult result(request, hitPoint);
@@ -429,7 +429,7 @@ Element* TreeScope::adjustedFocusedElement() const
     if (!element)
         return 0;
 
-    OwnPtrWillBeRawPtr<EventPath> eventPath = adoptPtrWillBeNoop(new EventPath(*element));
+    RawPtr<EventPath> eventPath = new EventPath(*element);
     for (size_t i = 0; i < eventPath->size(); ++i) {
         if (eventPath->at(i).node() == rootNode()) {
             // eventPath->at(i).target() is one of the followings:
@@ -448,8 +448,8 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
     if (otherScope == this)
         return Node::DOCUMENT_POSITION_EQUIVALENT;
 
-    WillBeHeapVector<RawPtrWillBeMember<const TreeScope>, 16> chain1;
-    WillBeHeapVector<RawPtrWillBeMember<const TreeScope>, 16> chain2;
+    HeapVector<Member<const TreeScope>, 16> chain1;
+    HeapVector<Member<const TreeScope>, 16> chain2;
     const TreeScope* current;
     for (current = this; current; current = current->parentTreeScope())
         chain1.append(current);
@@ -488,11 +488,11 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
 
 const TreeScope* TreeScope::commonAncestorTreeScope(const TreeScope& other) const
 {
-    WillBeHeapVector<RawPtrWillBeMember<const TreeScope>, 16> thisChain;
+    HeapVector<Member<const TreeScope>, 16> thisChain;
     for (const TreeScope* tree = this; tree; tree = tree->parentTreeScope())
         thisChain.append(tree);
 
-    WillBeHeapVector<RawPtrWillBeMember<const TreeScope>, 16> otherChain;
+    HeapVector<Member<const TreeScope>, 16> otherChain;
     for (const TreeScope* tree = &other; tree; tree = tree->parentTreeScope())
         otherChain.append(tree);
 

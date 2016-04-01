@@ -161,7 +161,7 @@ public:
 private:
     explicit ScopedAXObjectCache(Document&);
 
-    RefPtrWillBePersistent<Document> m_document;
+    Persistent<Document> m_document;
     Persistent<AXObjectCache> m_cache;
 };
 

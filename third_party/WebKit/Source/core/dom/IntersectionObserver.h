@@ -60,7 +60,7 @@ private:
 #endif
 
     Member<IntersectionObserverCallback> m_callback;
-    WeakPtrWillBeWeakMember<Node> m_root;
+    WeakMember<Node> m_root;
     HeapHashSet<WeakMember<IntersectionObservation>> m_observations;
     HeapVector<Member<IntersectionObserverEntry>> m_entries;
     Vector<float> m_thresholds;

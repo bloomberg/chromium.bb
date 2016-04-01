@@ -34,13 +34,13 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
 {
     m_assignment.clear();
 
-    using Name2Slot = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<HTMLSlotElement>>;
+    using Name2Slot = HeapHashMap<AtomicString, Member<HTMLSlotElement>>;
     Name2Slot name2slot;
     HTMLSlotElement* defaultSlot = nullptr;
 
-    const WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& slots = shadowRoot.descendantSlots();
+    const HeapVector<Member<HTMLSlotElement>>& slots = shadowRoot.descendantSlots();
 
-    for (RefPtrWillBeMember<HTMLSlotElement> slot : slots) {
+    for (Member<HTMLSlotElement> slot : slots) {
         slot->willUpdateDistribution();
         AtomicString name = slot->fastGetAttribute(HTMLNames::nameAttr);
         if (isDefaultSlotName(name)) {

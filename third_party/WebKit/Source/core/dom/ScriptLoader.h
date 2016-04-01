@@ -36,12 +36,11 @@ class ScriptLoaderClient;
 class ScriptSourceCode;
 class LocalFrame;
 
-class CORE_EXPORT ScriptLoader : public NoBaseWillBeGarbageCollectedFinalized<ScriptLoader>, public ScriptResourceClient {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ScriptLoader);
+class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>, public ScriptResourceClient {
 public:
-    static PassOwnPtrWillBeRawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated)
+    static RawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated)
     {
-        return adoptPtrWillBeNoop(new ScriptLoader(element, createdByParser, isEvaluated));
+        return new ScriptLoader(element, createdByParser, isEvaluated);
     }
 
     ~ScriptLoader() override;
@@ -102,8 +101,8 @@ private:
     void notifyFinished(Resource*) override;
     String debugName() const override { return "ScriptLoader"; }
 
-    RawPtrWillBeMember<Element> m_element;
-    RefPtrWillBeMember<ScriptResource> m_resource;
+    Member<Element> m_element;
+    Member<ScriptResource> m_resource;
     WTF::OrdinalNumber m_startLineNumber;
     String m_characterEncoding;
     String m_fallbackCharacterEncoding;
@@ -118,7 +117,7 @@ private:
     bool m_willExecuteWhenDocumentFinishedParsing : 1;
     bool m_forceAsync : 1;
 
-    OwnPtrWillBeMember<PendingScript> m_pendingScript;
+    Member<PendingScript> m_pendingScript;
 };
 
 ScriptLoader* toScriptLoaderIfPossible(Element*);

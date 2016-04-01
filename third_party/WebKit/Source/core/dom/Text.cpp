@@ -44,24 +44,24 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<Text> Text::create(Document& document, const String& data)
+RawPtr<Text> Text::create(Document& document, const String& data)
 {
-    return adoptRefWillBeNoop(new Text(document, data, CreateText));
+    return new Text(document, data, CreateText);
 }
 
-PassRefPtrWillBeRawPtr<Text> Text::createEditingText(Document& document, const String& data)
+RawPtr<Text> Text::createEditingText(Document& document, const String& data)
 {
-    return adoptRefWillBeNoop(new Text(document, data, CreateEditingText));
+    return new Text(document, data, CreateEditingText);
 }
 
-PassRefPtrWillBeRawPtr<Node> Text::mergeNextSiblingNodesIfPossible()
+RawPtr<Node> Text::mergeNextSiblingNodesIfPossible()
 {
-    RefPtrWillBeRawPtr<Node> protect(this);
+    RawPtr<Node> protect(this);
 
     // Remove empty text nodes.
     if (!length()) {
         // Care must be taken to get the next node before removing the current node.
-        RefPtrWillBeRawPtr<Node> nextNode(NodeTraversal::nextPostOrder(*this));
+        RawPtr<Node> nextNode(NodeTraversal::nextPostOrder(*this));
         remove(IGNORE_EXCEPTION);
         return nextNode.release();
     }
@@ -71,7 +71,7 @@ PassRefPtrWillBeRawPtr<Node> Text::mergeNextSiblingNodesIfPossible()
         if (nextSibling->getNodeType() != TEXT_NODE)
             break;
 
-        RefPtrWillBeRawPtr<Text> nextText = toText(nextSibling);
+        RawPtr<Text> nextText = toText(nextSibling);
 
         // Remove empty text nodes.
         if (!nextText->length()) {
@@ -104,7 +104,7 @@ PassRefPtrWillBeRawPtr<Node> Text::mergeNextSiblingNodesIfPossible()
     return NodeTraversal::nextPostOrder(*this);
 }
 
-PassRefPtrWillBeRawPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState)
+RawPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState)
 {
     // IndexSizeError: Raised if the specified offset is negative or greater than
     // the number of 16-bit units in data.
@@ -115,7 +115,7 @@ PassRefPtrWillBeRawPtr<Text> Text::splitText(unsigned offset, ExceptionState& ex
 
     EventQueueScope scope;
     String oldStr = data();
-    RefPtrWillBeRawPtr<Text> newText = cloneWithData(oldStr.substring(offset));
+    RawPtr<Text> newText = cloneWithData(oldStr.substring(offset));
     setDataWithoutUpdate(oldStr.substring(0, offset));
 
     didModifyData(oldStr, CharacterData::UpdateFromNonParser);
@@ -189,26 +189,26 @@ String Text::wholeText() const
     return result.toString();
 }
 
-PassRefPtrWillBeRawPtr<Text> Text::replaceWholeText(const String& newText)
+RawPtr<Text> Text::replaceWholeText(const String& newText)
 {
     // Remove all adjacent text nodes, and replace the contents of this one.
 
     // Protect startText and endText against mutation event handlers removing the last ref
-    RefPtrWillBeRawPtr<Text> startText = const_cast<Text*>(earliestLogicallyAdjacentTextNode(this));
-    RefPtrWillBeRawPtr<Text> endText = const_cast<Text*>(latestLogicallyAdjacentTextNode(this));
+    RawPtr<Text> startText = const_cast<Text*>(earliestLogicallyAdjacentTextNode(this));
+    RawPtr<Text> endText = const_cast<Text*>(latestLogicallyAdjacentTextNode(this));
 
-    RefPtrWillBeRawPtr<Text> protectedThis(this); // Mutation event handlers could cause our last ref to go away
-    RefPtrWillBeRawPtr<ContainerNode> parent = parentNode(); // Protect against mutation handlers moving this node during traversal
-    for (RefPtrWillBeRawPtr<Node> n = startText; n && n != this && n->isTextNode() && n->parentNode() == parent;) {
-        RefPtrWillBeRawPtr<Node> nodeToRemove(n.release());
+    RawPtr<Text> protectedThis(this); // Mutation event handlers could cause our last ref to go away
+    RawPtr<ContainerNode> parent = parentNode(); // Protect against mutation handlers moving this node during traversal
+    for (RawPtr<Node> n = startText; n && n != this && n->isTextNode() && n->parentNode() == parent;) {
+        RawPtr<Node> nodeToRemove(n.release());
         n = nodeToRemove->nextSibling();
         parent->removeChild(nodeToRemove.get(), IGNORE_EXCEPTION);
     }
 
     if (this != endText) {
         Node* onePastEndText = endText->nextSibling();
-        for (RefPtrWillBeRawPtr<Node> n = nextSibling(); n && n != onePastEndText && n->isTextNode() && n->parentNode() == parent;) {
-            RefPtrWillBeRawPtr<Node> nodeToRemove(n.release());
+        for (RawPtr<Node> n = nextSibling(); n && n != onePastEndText && n->isTextNode() && n->parentNode() == parent;) {
+            RawPtr<Node> nodeToRemove(n.release());
             n = nodeToRemove->nextSibling();
             parent->removeChild(nodeToRemove.get(), IGNORE_EXCEPTION);
         }
@@ -234,7 +234,7 @@ Node::NodeType Text::getNodeType() const
     return TEXT_NODE;
 }
 
-PassRefPtrWillBeRawPtr<Node> Text::cloneNode(bool /*deep*/)
+RawPtr<Node> Text::cloneNode(bool /*deep*/)
 {
     return cloneWithData(data());
 }
@@ -435,7 +435,7 @@ void Text::updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned length
     textLayoutObject->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);
 }
 
-PassRefPtrWillBeRawPtr<Text> Text::cloneWithData(const String& data)
+RawPtr<Text> Text::cloneWithData(const String& data)
 {
     return create(document(), data);
 }

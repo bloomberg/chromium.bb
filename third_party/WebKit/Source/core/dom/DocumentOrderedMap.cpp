@@ -41,7 +41,7 @@ namespace blink {
 using namespace HTMLNames;
 
 
-PassOwnPtrWillBeRawPtr<DocumentOrderedMap> DocumentOrderedMap::create()
+RawPtr<DocumentOrderedMap> DocumentOrderedMap::create()
 {
     return adoptPtrWillBeNoop(new DocumentOrderedMap);
 }
@@ -49,8 +49,6 @@ PassOwnPtrWillBeRawPtr<DocumentOrderedMap> DocumentOrderedMap::create()
 DocumentOrderedMap::DocumentOrderedMap()
 {
 }
-
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentOrderedMap);
 
 #if ENABLE(ASSERT)
 static int s_removeScopeLevel = 0;
@@ -92,11 +90,11 @@ void DocumentOrderedMap::add(const AtomicString& key, Element* element)
     ASSERT(key);
     ASSERT(element);
 
-    Map::AddResult addResult = m_map.add(key, adoptPtrWillBeNoop(new MapEntry(element)));
+    Map::AddResult addResult = m_map.add(key, new MapEntry(element));
     if (addResult.isNewEntry)
         return;
 
-    OwnPtrWillBeMember<MapEntry>& entry = addResult.storedValue->value;
+    Member<MapEntry>& entry = addResult.storedValue->value;
     ASSERT(entry->count);
     entry->element = nullptr;
     entry->count++;
@@ -112,7 +110,7 @@ void DocumentOrderedMap::remove(const AtomicString& key, Element* element)
     if (it == m_map.end())
         return;
 
-    OwnPtrWillBeMember<MapEntry>& entry = it->value;
+    Member<MapEntry>& entry = it->value;
     ASSERT(entry->count);
     if (entry->count == 1) {
         ASSERT(!entry->element || entry->element == element);
@@ -162,17 +160,17 @@ Element* DocumentOrderedMap::getElementById(const AtomicString& key, const TreeS
     return get<keyMatchesId>(key, scope);
 }
 
-const WillBeHeapVector<RawPtrWillBeMember<Element>>& DocumentOrderedMap::getAllElementsById(const AtomicString& key, const TreeScope* scope) const
+const HeapVector<Member<Element>>& DocumentOrderedMap::getAllElementsById(const AtomicString& key, const TreeScope* scope) const
 {
     ASSERT(key);
     ASSERT(scope);
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapVector<RawPtrWillBeMember<Element>>>, emptyVector, (adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<Element>>())));
+    DEFINE_STATIC_LOCAL(Persistent<HeapVector<Member<Element>>>, emptyVector, (new HeapVector<Member<Element>>()));
 
     Map::iterator it = m_map.find(key);
     if (it == m_map.end())
         return *emptyVector;
 
-    OwnPtrWillBeMember<MapEntry>& entry = it->value;
+    Member<MapEntry>& entry = it->value;
     ASSERT(entry->count);
 
     if (entry->orderedList.isEmpty()) {

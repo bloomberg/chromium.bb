@@ -50,7 +50,7 @@ class Node;
 // A class which inherits both Node and TreeScope must call clearRareData() in its destructor
 // so that the Node destructor no longer does problematic NodeList cache manipulation in
 // the destructor.
-class CORE_EXPORT TreeScope : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 public:
     TreeScope* parentTreeScope() const { return m_parentTreeScope; }
 
@@ -59,7 +59,7 @@ public:
 
     Element* adjustedFocusedElement() const;
     Element* getElementById(const AtomicString&) const;
-    const WillBeHeapVector<RawPtrWillBeMember<Element>>& getAllElementsById(const AtomicString&) const;
+    const HeapVector<Member<Element>>& getAllElementsById(const AtomicString&) const;
     bool hasElementWithId(const AtomicString& id) const;
     bool containsMultipleElementsWithId(const AtomicString& id) const;
     void addElementById(const AtomicString& elementId, Element*);
@@ -79,8 +79,8 @@ public:
 
     Element* elementFromPoint(int x, int y) const;
     Element* hitTestPoint(int x, int y, const HitTestRequest&) const;
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elementsFromPoint(int x, int y) const;
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elementsFromHitTestResult(HitTestResult&) const;
+    HeapVector<Member<Element>> elementsFromPoint(int x, int y) const;
+    HeapVector<Member<Element>> elementsFromHitTestResult(HitTestResult&) const;
 
     // For accessibility.
     bool shouldCacheLabelsByForAttribute() const { return m_labelsByForAttribute; }
@@ -181,23 +181,23 @@ private:
 
     bool rootNodeHasTreeSharedParent() const;
 
-    RawPtrWillBeMember<ContainerNode> m_rootNode;
-    RawPtrWillBeMember<Document> m_document;
-    RawPtrWillBeMember<TreeScope> m_parentTreeScope;
+    Member<ContainerNode> m_rootNode;
+    Member<Document> m_document;
+    Member<TreeScope> m_parentTreeScope;
 
 #if !ENABLE(OILPAN)
     int m_guardRefCount;
 #endif
 
-    OwnPtrWillBeMember<DocumentOrderedMap> m_elementsById;
-    OwnPtrWillBeMember<DocumentOrderedMap> m_imageMapsByName;
-    OwnPtrWillBeMember<DocumentOrderedMap> m_labelsByForAttribute;
+    Member<DocumentOrderedMap> m_elementsById;
+    Member<DocumentOrderedMap> m_imageMapsByName;
+    Member<DocumentOrderedMap> m_labelsByForAttribute;
 
-    OwnPtrWillBeMember<IdTargetObserverRegistry> m_idTargetObserverRegistry;
+    Member<IdTargetObserverRegistry> m_idTargetObserverRegistry;
 
-    OwnPtrWillBeMember<ScopedStyleResolver> m_scopedStyleResolver;
+    Member<ScopedStyleResolver> m_scopedStyleResolver;
 
-    mutable RefPtrWillBeMember<DOMSelection> m_selection;
+    mutable Member<DOMSelection> m_selection;
 
     RadioButtonGroupScope m_radioButtonGroupScope;
 };

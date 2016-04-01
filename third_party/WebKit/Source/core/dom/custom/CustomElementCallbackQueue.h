@@ -44,11 +44,10 @@ namespace blink {
 
 // FIXME: Rename this because it contains resolution and upgrade as
 // well as callbacks.
-class CustomElementCallbackQueue : public NoBaseWillBeGarbageCollectedFinalized<CustomElementCallbackQueue> {
+class CustomElementCallbackQueue : public GarbageCollectedFinalized<CustomElementCallbackQueue> {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CustomElementCallbackQueue);
 public:
-    static PassOwnPtrWillBeRawPtr<CustomElementCallbackQueue> create(PassRefPtrWillBeRawPtr<Element>);
+    static RawPtr<CustomElementCallbackQueue> create(RawPtr<Element>);
 
     typedef int ElementQueueId;
     ElementQueueId owner() const { return m_owner; }
@@ -63,16 +62,16 @@ public:
 
     bool processInElementQueue(ElementQueueId);
 
-    void append(PassOwnPtrWillBeRawPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
+    void append(RawPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
     bool inCreatedCallback() const { return m_inCreatedCallback; }
 
     DECLARE_TRACE();
 
 private:
-    explicit CustomElementCallbackQueue(PassRefPtrWillBeRawPtr<Element>);
+    explicit CustomElementCallbackQueue(RawPtr<Element>);
 
-    RefPtrWillBeMember<Element> m_element;
-    WillBeHeapVector<OwnPtrWillBeMember<CustomElementProcessingStep>> m_queue;
+    Member<Element> m_element;
+    HeapVector<Member<CustomElementProcessingStep>> m_queue;
     ElementQueueId m_owner;
     size_t m_index;
     bool m_inCreatedCallback;

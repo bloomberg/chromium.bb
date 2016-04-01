@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class DocumentParserClient : public WillBeGarbageCollectedMixin {
+class DocumentParserClient : public GarbageCollectedMixin {
 public:
     // This callback is called when all data pushed to parser has been consumed.
     virtual void notifyParserStopped() = 0;

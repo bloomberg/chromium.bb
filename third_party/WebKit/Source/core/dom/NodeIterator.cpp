@@ -36,7 +36,7 @@ NodeIterator::NodePointer::NodePointer()
 {
 }
 
-NodeIterator::NodePointer::NodePointer(PassRefPtrWillBeRawPtr<Node> n, bool b)
+NodeIterator::NodePointer::NodePointer(RawPtr<Node> n, bool b)
     : node(n)
     , isPointerBeforeNode(b)
 {
@@ -71,7 +71,7 @@ bool NodeIterator::NodePointer::moveToPrevious(Node* root)
     return node;
 }
 
-NodeIterator::NodeIterator(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
+NodeIterator::NodeIterator(RawPtr<Node> rootNode, unsigned whatToShow, RawPtr<NodeFilter> filter)
     : NodeIteratorBase(rootNode, whatToShow, filter)
     , m_referenceNode(root(), true)
 {
@@ -88,16 +88,16 @@ NodeIterator::~NodeIterator()
 }
 #endif
 
-PassRefPtrWillBeRawPtr<Node> NodeIterator::nextNode(ExceptionState& exceptionState)
+RawPtr<Node> NodeIterator::nextNode(ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Node> result = nullptr;
+    RawPtr<Node> result = nullptr;
 
     m_candidateNode = m_referenceNode;
     while (m_candidateNode.moveToNext(root())) {
         // NodeIterators treat the DOM tree as a flat list of nodes.
         // In other words, FILTER_REJECT does not pass over descendants
         // of the rejected node. Hence, FILTER_REJECT is the same as FILTER_SKIP.
-        RefPtrWillBeRawPtr<Node> provisionalResult = m_candidateNode.node;
+        RawPtr<Node> provisionalResult = m_candidateNode.node;
         bool nodeWasAccepted = acceptNode(provisionalResult.get(), exceptionState) == NodeFilter::FILTER_ACCEPT;
         if (exceptionState.hadException())
             break;
@@ -112,16 +112,16 @@ PassRefPtrWillBeRawPtr<Node> NodeIterator::nextNode(ExceptionState& exceptionSta
     return result.release();
 }
 
-PassRefPtrWillBeRawPtr<Node> NodeIterator::previousNode(ExceptionState& exceptionState)
+RawPtr<Node> NodeIterator::previousNode(ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Node> result = nullptr;
+    RawPtr<Node> result = nullptr;
 
     m_candidateNode = m_referenceNode;
     while (m_candidateNode.moveToPrevious(root())) {
         // NodeIterators treat the DOM tree as a flat list of nodes.
         // In other words, FILTER_REJECT does not pass over descendants
         // of the rejected node. Hence, FILTER_REJECT is the same as FILTER_SKIP.
-        RefPtrWillBeRawPtr<Node> provisionalResult = m_candidateNode.node;
+        RawPtr<Node> provisionalResult = m_candidateNode.node;
         bool nodeWasAccepted = acceptNode(provisionalResult.get(), exceptionState) == NodeFilter::FILTER_ACCEPT;
         if (exceptionState.hadException())
             break;

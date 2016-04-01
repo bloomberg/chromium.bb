@@ -45,8 +45,8 @@ static void markBoolean(bool* toBeMarked)
 
 TEST(MainThreadTaskRunnerTest, PostTask)
 {
-    RefPtrWillBeRawPtr<NullExecutionContext> context = adoptRefWillBeNoop(new NullExecutionContext());
-    OwnPtrWillBeRawPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
+    RawPtr<NullExecutionContext> context = new NullExecutionContext();
+    RawPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
     bool isMarked = false;
 
     runner->postTask(BLINK_FROM_HERE, createSameThreadTask(&markBoolean, &isMarked));
@@ -57,8 +57,8 @@ TEST(MainThreadTaskRunnerTest, PostTask)
 
 TEST(MainThreadTaskRunnerTest, SuspendTask)
 {
-    RefPtrWillBeRawPtr<NullExecutionContext> context = adoptRefWillBeNoop(new NullExecutionContext());
-    OwnPtrWillBeRawPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
+    RawPtr<NullExecutionContext> context = new NullExecutionContext();
+    RawPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
     bool isMarked = false;
 
     context->setTasksNeedSuspension(true);
@@ -75,8 +75,8 @@ TEST(MainThreadTaskRunnerTest, SuspendTask)
 
 TEST(MainThreadTaskRunnerTest, RemoveRunner)
 {
-    RefPtrWillBeRawPtr<NullExecutionContext> context = adoptRefWillBeNoop(new NullExecutionContext());
-    OwnPtrWillBeRawPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
+    RawPtr<NullExecutionContext> context = new NullExecutionContext();
+    RawPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context.get());
     bool isMarked = false;
 
     context->setTasksNeedSuspension(true);

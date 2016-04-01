@@ -36,7 +36,7 @@ void DistributedNodes::swap(DistributedNodes& other)
     m_indices.swap(other.m_indices);
 }
 
-void DistributedNodes::append(PassRefPtrWillBeRawPtr<Node> node)
+void DistributedNodes::append(RawPtr<Node> node)
 {
     ASSERT(node);
     ASSERT(!node->isSlotOrActiveInsertionPoint());
@@ -47,7 +47,7 @@ void DistributedNodes::append(PassRefPtrWillBeRawPtr<Node> node)
 
 size_t DistributedNodes::find(const Node* node) const
 {
-    WillBeHeapHashMap<RawPtrWillBeMember<const Node>, size_t>::const_iterator it = m_indices.find(node);
+    HeapHashMap<Member<const Node>, size_t>::const_iterator it = m_indices.find(node);
     if (it == m_indices.end())
         return kNotFound;
 

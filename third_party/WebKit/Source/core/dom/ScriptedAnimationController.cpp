@@ -50,8 +50,6 @@ ScriptedAnimationController::ScriptedAnimationController(Document* document)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptedAnimationController);
-
 DEFINE_TRACE(ScriptedAnimationController)
 {
 #if ENABLE(OILPAN)
@@ -97,12 +95,12 @@ void ScriptedAnimationController::cancelCallback(CallbackId id)
 
 void ScriptedAnimationController::dispatchEvents(const AtomicString& eventInterfaceFilter)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Event>> events;
+    HeapVector<Member<Event>> events;
     if (eventInterfaceFilter.isEmpty()) {
         events.swap(m_eventQueue);
         m_perFrameEvents.clear();
     } else {
-        WillBeHeapVector<RefPtrWillBeMember<Event>> remaining;
+        HeapVector<Member<Event>> remaining;
         for (auto& event : m_eventQueue) {
             if (event && event->interfaceName() == eventInterfaceFilter) {
                 m_perFrameEvents.remove(eventTargetKey(event.get()));
@@ -163,7 +161,7 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
     if (!hasScheduledItems())
         return;
 
-    RefPtrWillBeRawPtr<ScriptedAnimationController> protect(this);
+    RawPtr<ScriptedAnimationController> protect(this);
 
     callMediaQueryListListeners();
     dispatchEvents();
@@ -172,21 +170,21 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
     scheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
+void ScriptedAnimationController::enqueueEvent(RawPtr<Event> event)
 {
     InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
     m_eventQueue.append(event);
     scheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::enqueuePerFrameEvent(PassRefPtrWillBeRawPtr<Event> event)
+void ScriptedAnimationController::enqueuePerFrameEvent(RawPtr<Event> event)
 {
     if (!m_perFrameEvents.add(eventTargetKey(event.get())).isNewEntry)
         return;
     enqueueEvent(event);
 }
 
-void ScriptedAnimationController::enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener>>& listeners)
+void ScriptedAnimationController::enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryListListener>>& listeners)
 {
     for (size_t i = 0; i < listeners.size(); ++i) {
         m_mediaQueryListListeners.add(listeners[i]);

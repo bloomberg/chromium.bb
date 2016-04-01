@@ -47,8 +47,8 @@ public:
     void clear() { m_nodes.clear(); }
     size_t size() const { return m_nodes.size(); }
 
-    using iterator = WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 32>::iterator;
-    using const_reverse_iterator = WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 32>::const_reverse_iterator;
+    using iterator = HeapListHashSet<Member<Node>, 32>::iterator;
+    using const_reverse_iterator = HeapListHashSet<Member<Node>, 32>::const_reverse_iterator;
 
     iterator begin() { return m_nodes.begin(); }
     iterator end() { return m_nodes.end(); }
@@ -59,7 +59,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    WillBeHeapListHashSet<RawPtrWillBeMember<Node>, 32> m_nodes;
+    HeapListHashSet<Member<Node>, 32> m_nodes;
 };
 
 } // namespace blink

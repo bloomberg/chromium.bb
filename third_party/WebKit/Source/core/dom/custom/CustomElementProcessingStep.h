@@ -36,8 +36,7 @@
 
 namespace blink {
 
-class CustomElementProcessingStep : public NoBaseWillBeGarbageCollectedFinalized<CustomElementProcessingStep> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CustomElementProcessingStep);
+class CustomElementProcessingStep : public GarbageCollectedFinalized<CustomElementProcessingStep> {
     WTF_MAKE_NONCOPYABLE(CustomElementProcessingStep);
 public:
     CustomElementProcessingStep() { }

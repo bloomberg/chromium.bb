@@ -38,7 +38,6 @@ class StyleEngine;
 
 class ShadowTreeStyleSheetCollection final : public TreeScopeStyleSheetCollection {
     WTF_MAKE_NONCOPYABLE(ShadowTreeStyleSheetCollection);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ShadowTreeStyleSheetCollection);
 public:
     explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
 

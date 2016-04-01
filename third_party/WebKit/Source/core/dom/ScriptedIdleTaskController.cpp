@@ -23,7 +23,7 @@ namespace internal {
 
 class IdleRequestCallbackWrapper : public RefCounted<IdleRequestCallbackWrapper> {
 public:
-    static PassRefPtr<IdleRequestCallbackWrapper> create(ScriptedIdleTaskController::CallbackId id, PassRefPtrWillBeRawPtr<ScriptedIdleTaskController> controller)
+    static PassRefPtr<IdleRequestCallbackWrapper> create(ScriptedIdleTaskController::CallbackId id, RawPtr<ScriptedIdleTaskController> controller)
     {
         return adoptRef(new IdleRequestCallbackWrapper(id, controller));
     }
@@ -34,14 +34,14 @@ public:
     static void idleTaskFired(PassRefPtr<IdleRequestCallbackWrapper> callbackWrapper, double deadlineSeconds)
     {
         // TODO(rmcilroy): Implement clamping of deadline in some form.
-        if (RefPtrWillBeRawPtr<ScriptedIdleTaskController> controller = callbackWrapper->controller())
+        if (RawPtr<ScriptedIdleTaskController> controller = callbackWrapper->controller())
             controller->callbackFired(callbackWrapper->id(), deadlineSeconds, IdleDeadline::CallbackType::CalledWhenIdle);
         callbackWrapper->cancel();
     }
 
     static void timeoutFired(PassRefPtr<IdleRequestCallbackWrapper> callbackWrapper)
     {
-        if (RefPtrWillBeRawPtr<ScriptedIdleTaskController> controller = callbackWrapper->controller())
+        if (RawPtr<ScriptedIdleTaskController> controller = callbackWrapper->controller())
             controller->callbackFired(callbackWrapper->id(), monotonicallyIncreasingTime(), IdleDeadline::CallbackType::CalledByTimeout);
         callbackWrapper->cancel();
     }
@@ -52,17 +52,17 @@ public:
     }
 
     ScriptedIdleTaskController::CallbackId id() const { return m_id; }
-    PassRefPtrWillBeRawPtr<ScriptedIdleTaskController> controller() const { return m_controller; }
+    RawPtr<ScriptedIdleTaskController> controller() const { return m_controller; }
 
 private:
-    IdleRequestCallbackWrapper(ScriptedIdleTaskController::CallbackId id, PassRefPtrWillBeRawPtr<ScriptedIdleTaskController> controller)
+    IdleRequestCallbackWrapper(ScriptedIdleTaskController::CallbackId id, RawPtr<ScriptedIdleTaskController> controller)
         : m_id(id)
         , m_controller(controller)
     {
     }
 
     ScriptedIdleTaskController::CallbackId m_id;
-    RefPtrWillBePersistent<ScriptedIdleTaskController> m_controller;
+    Persistent<ScriptedIdleTaskController> m_controller;
 };
 
 } // namespace internal

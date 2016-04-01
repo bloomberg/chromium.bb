@@ -54,7 +54,7 @@ private:
     // TODO(szager): Why Node instead of Element?  Because NodeIntersectionObserverData::createWeakPtr()
     // returns a WeakPtr<Node>, which cannot be coerced into a WeakPtr<Element>.  When oilpan rolls out,
     // this can be changed to WeakMember<Element>.
-    WeakPtrWillBeWeakMember<Node> m_target;
+    WeakMember<Node> m_target;
 
     unsigned m_shouldReportRootBounds : 1;
     unsigned m_lastThresholdIndex : 30;

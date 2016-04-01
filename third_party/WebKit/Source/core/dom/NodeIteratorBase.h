@@ -34,8 +34,7 @@ class ExceptionState;
 class Node;
 class NodeFilter;
 
-class NodeIteratorBase : public WillBeGarbageCollectedMixin {
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(NodeIteratorBase);
+class NodeIteratorBase : public GarbageCollectedMixin {
 public:
     Node* root() const { return m_root.get(); }
     unsigned whatToShow() const { return m_whatToShow; }
@@ -44,13 +43,13 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    NodeIteratorBase(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);
+    NodeIteratorBase(RawPtr<Node>, unsigned whatToShow, RawPtr<NodeFilter>);
     unsigned acceptNode(Node*, ExceptionState&) const;
 
 private:
-    RefPtrWillBeMember<Node> m_root;
+    Member<Node> m_root;
     unsigned m_whatToShow;
-    RefPtrWillBeMember<NodeFilter> m_filter;
+    Member<NodeFilter> m_filter;
 };
 
 } // namespace blink

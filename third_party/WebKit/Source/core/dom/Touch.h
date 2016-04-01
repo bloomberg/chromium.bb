@@ -43,19 +43,19 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT Touch final : public RefCountedWillBeGarbageCollectedFinalized<Touch>, public ScriptWrappable {
+class CORE_EXPORT Touch final : public GarbageCollectedFinalized<Touch>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Touch> create(LocalFrame* frame, EventTarget* target,
+    static RawPtr<Touch> create(LocalFrame* frame, EventTarget* target,
         int identifier, const FloatPoint& screenPos, const FloatPoint& pagePos,
         const FloatSize& radius, float rotationAngle, float force, String region)
     {
-        return adoptRefWillBeNoop(new Touch(frame, target, identifier, screenPos, pagePos, radius, rotationAngle, force, region));
+        return new Touch(frame, target, identifier, screenPos, pagePos, radius, rotationAngle, force, region);
     }
 
-    static PassRefPtrWillBeRawPtr<Touch> create(const Document& document, const TouchInit& initializer)
+    static RawPtr<Touch> create(const Document& document, const TouchInit& initializer)
     {
-        return adoptRefWillBeNoop(new Touch(document.frame(), initializer));
+        return new Touch(document.frame(), initializer);
     }
 
     // DOM Touch implementation
@@ -76,7 +76,7 @@ public:
     // Blink-internal methods
     const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
     const FloatPoint& screenLocation() const { return m_screenPos; }
-    PassRefPtrWillBeRawPtr<Touch> cloneWithNewTarget(EventTarget*) const;
+    RawPtr<Touch> cloneWithNewTarget(EventTarget*) const;
 
     DECLARE_TRACE();
 
@@ -91,7 +91,7 @@ private:
 
     Touch(LocalFrame*, const TouchInit&);
 
-    RefPtrWillBeMember<EventTarget> m_target;
+    Member<EventTarget> m_target;
     int m_identifier;
     // Position relative to the viewport in CSS px.
     FloatPoint m_clientPos;

@@ -46,7 +46,7 @@ struct SameSizeAsShadowRoot : public DocumentFragment, public TreeScope, public 
 #if ENABLE(OILPAN)
     char emptyClassFieldsDueToGCMixinMarker[1];
 #endif
-    RawPtrWillBeMember<void*> willbeMember[3];
+    Member<void*> willbeMember[3];
     unsigned countersAndFlags[1];
 };
 
@@ -111,7 +111,7 @@ ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
     return older;
 }
 
-PassRefPtrWillBeRawPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
+RawPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
 {
     exceptionState.throwDOMException(NotSupportedError, "ShadowRoot nodes are not clonable.");
     return nullptr;
@@ -129,7 +129,7 @@ void ShadowRoot::setInnerHTML(const String& markup, ExceptionState& exceptionSta
         return;
     }
 
-    if (RefPtrWillBeRawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, "innerHTML", exceptionState))
+    if (RawPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, "innerHTML", exceptionState))
         replaceChildrenWithFragment(this, fragment.release(), exceptionState);
 }
 
@@ -252,7 +252,7 @@ HTMLShadowElement* ShadowRoot::shadowInsertionPointOfYoungerShadowRoot() const
     return m_shadowRootRareData ? m_shadowRootRareData->shadowInsertionPointOfYoungerShadowRoot() : 0;
 }
 
-void ShadowRoot::setShadowInsertionPointOfYoungerShadowRoot(PassRefPtrWillBeRawPtr<HTMLShadowElement> shadowInsertionPoint)
+void ShadowRoot::setShadowInsertionPointOfYoungerShadowRoot(RawPtr<HTMLShadowElement> shadowInsertionPoint)
 {
     if (!m_shadowRootRareData && !shadowInsertionPoint)
         return;
@@ -295,9 +295,9 @@ void ShadowRoot::invalidateDescendantInsertionPoints()
     m_shadowRootRareData->clearDescendantInsertionPoints();
 }
 
-const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& ShadowRoot::descendantInsertionPoints()
+const HeapVector<Member<InsertionPoint>>& ShadowRoot::descendantInsertionPoints()
 {
-    DEFINE_STATIC_LOCAL(WillBePersistentHeapVector<RefPtrWillBeMember<InsertionPoint>>, emptyList, ());
+    DEFINE_STATIC_LOCAL(PersistentHeapVector<Member<InsertionPoint>>, emptyList, ());
     if (m_shadowRootRareData && m_descendantInsertionPointsIsValid)
         return m_shadowRootRareData->descendantInsertionPoints();
 
@@ -306,7 +306,7 @@ const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& ShadowRoot::descenda
     if (!containsInsertionPoints())
         return emptyList;
 
-    WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>> insertionPoints;
+    HeapVector<Member<InsertionPoint>> insertionPoints;
     for (InsertionPoint& insertionPoint : Traversal<InsertionPoint>::descendantsOf(*this))
         insertionPoints.append(&insertionPoint);
 
@@ -347,9 +347,9 @@ unsigned ShadowRoot::descendantSlotCount() const
     return m_shadowRootRareData ? m_shadowRootRareData->descendantSlotCount() : 0;
 }
 
-const WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& ShadowRoot::descendantSlots()
+const HeapVector<Member<HTMLSlotElement>>& ShadowRoot::descendantSlots()
 {
-    DEFINE_STATIC_LOCAL(WillBePersistentHeapVector<RefPtrWillBeMember<HTMLSlotElement>>, emptyList, ());
+    DEFINE_STATIC_LOCAL(PersistentHeapVector<Member<HTMLSlotElement>>, emptyList, ());
     if (m_descendantSlotsIsValid) {
         ASSERT(m_shadowRootRareData);
         return m_shadowRootRareData->descendantSlots();
@@ -358,7 +358,7 @@ const WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& ShadowRoot::descend
         return emptyList;
 
     ASSERT(m_shadowRootRareData);
-    WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>> slots;
+    HeapVector<Member<HTMLSlotElement>> slots;
     slots.reserveCapacity(descendantSlotCount());
     for (HTMLSlotElement& slot : Traversal<HTMLSlotElement>::descendantsOf(rootNode()))
         slots.append(&slot);

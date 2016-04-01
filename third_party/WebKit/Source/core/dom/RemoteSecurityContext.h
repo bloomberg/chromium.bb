@@ -11,12 +11,12 @@
 
 namespace blink {
 
-class CORE_EXPORT RemoteSecurityContext : public RefCountedWillBeGarbageCollectedFinalized<RemoteSecurityContext>, public SecurityContext {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteSecurityContext);
+class CORE_EXPORT RemoteSecurityContext : public GarbageCollectedFinalized<RemoteSecurityContext>, public SecurityContext {
+    USING_GARBAGE_COLLECTED_MIXIN(RemoteSecurityContext);
 public:
     DECLARE_VIRTUAL_TRACE();
 
-    static PassRefPtrWillBeRawPtr<RemoteSecurityContext> create();
+    static RawPtr<RemoteSecurityContext> create();
     void setReplicatedOrigin(PassRefPtr<SecurityOrigin>);
 
     // FIXME: implement

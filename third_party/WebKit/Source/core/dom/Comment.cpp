@@ -30,9 +30,9 @@ inline Comment::Comment(Document& document, const String& text)
 {
 }
 
-PassRefPtrWillBeRawPtr<Comment> Comment::create(Document& document, const String& text)
+RawPtr<Comment> Comment::create(Document& document, const String& text)
 {
-    return adoptRefWillBeNoop(new Comment(document, text));
+    return new Comment(document, text);
 }
 
 String Comment::nodeName() const
@@ -45,7 +45,7 @@ Node::NodeType Comment::getNodeType() const
     return COMMENT_NODE;
 }
 
-PassRefPtrWillBeRawPtr<Node> Comment::cloneNode(bool /*deep*/)
+RawPtr<Node> Comment::cloneNode(bool /*deep*/)
 {
     return create(document(), data());
 }

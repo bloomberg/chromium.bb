@@ -72,7 +72,7 @@ private:
 
     static Type typeOf(Node&);
 
-    RawPtrWillBeMember<Node> m_node;
+    Member<Node> m_node;
     Type m_type;
 };
 

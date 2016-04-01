@@ -52,7 +52,7 @@ class HTMLImportChild;
 // import isn't "ready" (finished parsing and running script.)
 class CustomElementMicrotaskImportStep final : public CustomElementMicrotaskStep {
 public:
-    static PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> create(HTMLImportChild*);
+    static RawPtr<CustomElementMicrotaskImportStep> create(HTMLImportChild*);
     ~CustomElementMicrotaskImportStep() override;
 
     // API for HTML Imports
@@ -76,11 +76,11 @@ private:
 #if !defined(NDEBUG)
     void show(unsigned indent) override;
 #endif
-    WeakPtrWillBeWeakMember<HTMLImportChild> m_import;
+    WeakMember<HTMLImportChild> m_import;
 #if !ENABLE(OILPAN)
     WeakPtrFactory<CustomElementMicrotaskImportStep> m_weakFactory;
 #endif
-    RefPtrWillBeMember<CustomElementSyncMicrotaskQueue> m_queue;
+    Member<CustomElementSyncMicrotaskQueue> m_queue;
 };
 
 } // namespace blink

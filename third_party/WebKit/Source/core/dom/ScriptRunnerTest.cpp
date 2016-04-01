@@ -25,9 +25,9 @@ namespace blink {
 
 class MockScriptLoader final : public ScriptLoader {
 public:
-    static PassOwnPtrWillBeRawPtr<MockScriptLoader> create(Element* element)
+    static RawPtr<MockScriptLoader> create(Element* element)
     {
-        return adoptPtrWillBeNoop(new MockScriptLoader(element));
+        return new MockScriptLoader(element);
     }
     ~MockScriptLoader() override { }
 
@@ -60,16 +60,16 @@ public:
         m_scriptRunner.release();
     }
 
-    RefPtrWillBePersistent<Document> m_document;
-    RefPtrWillBePersistent<Element> m_element;
+    Persistent<Document> m_document;
+    Persistent<Element> m_element;
     TestingPlatformSupportWithMockScheduler m_platform;
-    OwnPtrWillBePersistent<ScriptRunner> m_scriptRunner;
+    Persistent<ScriptRunner> m_scriptRunner;
     WTF::Vector<int> m_order;
 };
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_Async)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader = MockScriptLoader::create(m_element.get());
     m_scriptRunner->queueScriptForExecution(scriptLoader.get(), ScriptRunner::ASYNC_EXECUTION);
     m_scriptRunner->notifyScriptReady(scriptLoader.get(), ScriptRunner::ASYNC_EXECUTION);
 
@@ -79,7 +79,7 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_Async)
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader = MockScriptLoader::create(m_element.get());
     m_scriptRunner->queueScriptForExecution(scriptLoader.get(), ScriptRunner::IN_ORDER_EXECUTION);
 
     EXPECT_CALL(*scriptLoader, isReady()).WillOnce(Return(true));
@@ -92,11 +92,11 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder)
 
 TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
 
-    WillBeHeapVector<RawPtrWillBeMember<MockScriptLoader>> scriptLoaders;
+    HeapVector<Member<MockScriptLoader>> scriptLoaders;
     scriptLoaders.append(scriptLoader1.get());
     scriptLoaders.append(scriptLoader2.get());
     scriptLoaders.append(scriptLoader3.get());
@@ -134,11 +134,11 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder)
 
 TEST_F(ScriptRunnerTest, QueueMixedScripts)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader4 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader5 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader4 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader5 = MockScriptLoader::create(m_element.get());
 
 
     m_scriptRunner->queueScriptForExecution(scriptLoader1.get(), ScriptRunner::IN_ORDER_EXECUTION);
@@ -188,9 +188,9 @@ TEST_F(ScriptRunnerTest, QueueMixedScripts)
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_Async)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
 
     m_scriptRunner->queueScriptForExecution(scriptLoader1.get(), ScriptRunner::ASYNC_EXECUTION);
     m_scriptRunner->queueScriptForExecution(scriptLoader2.get(), ScriptRunner::ASYNC_EXECUTION);
@@ -227,9 +227,9 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async)
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
 
     EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
@@ -272,7 +272,7 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder)
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoaders[20];
+    RawPtr<MockScriptLoader> scriptLoaders[20];
     for (int i = 0; i < 20; i++)
         scriptLoaders[i] = nullptr;
 
@@ -309,9 +309,9 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
 
     m_scriptRunner->queueScriptForExecution(scriptLoader1.get(), ScriptRunner::IN_ORDER_EXECUTION);
     m_scriptRunner->queueScriptForExecution(scriptLoader2.get(), ScriptRunner::IN_ORDER_EXECUTION);
@@ -359,9 +359,9 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder)
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader3 = MockScriptLoader::create(m_element.get());
 
     m_scriptRunner->queueScriptForExecution(scriptLoader1.get(), ScriptRunner::ASYNC_EXECUTION);
     m_scriptRunner->queueScriptForExecution(scriptLoader2.get(), ScriptRunner::ASYNC_EXECUTION);
@@ -395,8 +395,8 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async)
 
 TEST_F(ScriptRunnerTest, LateNotifications)
 {
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    RawPtr<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
 
     EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
@@ -423,8 +423,8 @@ TEST_F(ScriptRunnerTest, LateNotifications)
 
 TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner)
 {
-    OwnPtrWillBePersistent<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
-    OwnPtrWillBePersistent<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
+    Persistent<MockScriptLoader> scriptLoader1 = MockScriptLoader::create(m_element.get());
+    Persistent<MockScriptLoader> scriptLoader2 = MockScriptLoader::create(m_element.get());
 
     EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));

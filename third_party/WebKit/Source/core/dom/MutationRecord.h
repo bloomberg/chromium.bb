@@ -44,13 +44,13 @@ class QualifiedName;
 template <typename NodeType> class StaticNodeTypeList;
 typedef StaticNodeTypeList<Node> StaticNodeList;
 
-class MutationRecord : public RefCountedWillBeGarbageCollectedFinalized<MutationRecord>, public ScriptWrappable {
+class MutationRecord : public GarbageCollectedFinalized<MutationRecord>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<MutationRecord> createChildList(PassRefPtrWillBeRawPtr<Node> target, PassRefPtrWillBeRawPtr<StaticNodeList> added, PassRefPtrWillBeRawPtr<StaticNodeList> removed, PassRefPtrWillBeRawPtr<Node> previousSibling, PassRefPtrWillBeRawPtr<Node> nextSibling);
-    static PassRefPtrWillBeRawPtr<MutationRecord> createAttributes(PassRefPtrWillBeRawPtr<Node> target, const QualifiedName&, const AtomicString& oldValue);
-    static PassRefPtrWillBeRawPtr<MutationRecord> createCharacterData(PassRefPtrWillBeRawPtr<Node> target, const String& oldValue);
-    static PassRefPtrWillBeRawPtr<MutationRecord> createWithNullOldValue(PassRefPtrWillBeRawPtr<MutationRecord>);
+    static RawPtr<MutationRecord> createChildList(RawPtr<Node> target, RawPtr<StaticNodeList> added, RawPtr<StaticNodeList> removed, RawPtr<Node> previousSibling, RawPtr<Node> nextSibling);
+    static RawPtr<MutationRecord> createAttributes(RawPtr<Node> target, const QualifiedName&, const AtomicString& oldValue);
+    static RawPtr<MutationRecord> createCharacterData(RawPtr<Node> target, const String& oldValue);
+    static RawPtr<MutationRecord> createWithNullOldValue(RawPtr<MutationRecord>);
 
     MutationRecord() { }
 

@@ -37,9 +37,9 @@ class LayoutTextFragment;
 class FirstLetterPseudoElement final : public PseudoElement {
     WTF_MAKE_NONCOPYABLE(FirstLetterPseudoElement);
 public:
-    static PassRefPtrWillBeRawPtr<FirstLetterPseudoElement> create(Element* parent)
+    static RawPtr<FirstLetterPseudoElement> create(Element* parent)
     {
-        return adoptRefWillBeNoop(new FirstLetterPseudoElement(parent));
+        return new FirstLetterPseudoElement(parent);
     }
 
     ~FirstLetterPseudoElement() override;

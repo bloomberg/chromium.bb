@@ -46,8 +46,7 @@ class UniqueElementData;
 
 // ElementData represents very common, but not necessarily unique to an element,
 // data such as attributes, inline style, and parsed class names and ids.
-class ElementData : public RefCountedWillBeGarbageCollectedFinalized<ElementData> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ElementData);
+class ElementData : public GarbageCollectedFinalized<ElementData> {
 public:
 #if ENABLE(OILPAN)
     // Override GarbageCollectedFinalized's finalizeGarbageCollectedObject to
@@ -94,7 +93,7 @@ protected:
     mutable unsigned m_styleAttributeIsDirty : 1;
     mutable unsigned m_animatedSVGAttributesAreDirty : 1;
 
-    mutable RefPtrWillBeMember<StylePropertySet> m_inlineStyle;
+    mutable Member<StylePropertySet> m_inlineStyle;
     mutable SpaceSplitString m_classNames;
     mutable AtomicString m_idForStyleResolution;
 
@@ -108,7 +107,7 @@ private:
     void destroy();
 #endif
 
-    PassRefPtrWillBeRawPtr<UniqueElementData> makeUniqueCopy() const;
+    RawPtr<UniqueElementData> makeUniqueCopy() const;
 };
 
 #define DEFINE_ELEMENT_DATA_TYPE_CASTS(thisType,  pointerPredicate, referencePredicate) \
@@ -126,7 +125,7 @@ private:
 // duplicate sets of attributes (ex. the same classes).
 class ShareableElementData final : public ElementData {
 public:
-    static PassRefPtrWillBeRawPtr<ShareableElementData> createWithAttributes(const Vector<Attribute>&);
+    static RawPtr<ShareableElementData> createWithAttributes(const Vector<Attribute>&);
 
     explicit ShareableElementData(const Vector<Attribute>&);
     explicit ShareableElementData(const UniqueElementData&);
@@ -163,8 +162,8 @@ DEFINE_ELEMENT_DATA_TYPE_CASTS(ShareableElementData, !data->isUnique(), !data.is
 // attribute will have the same inline style.
 class UniqueElementData final : public ElementData {
 public:
-    static PassRefPtrWillBeRawPtr<UniqueElementData> create();
-    PassRefPtrWillBeRawPtr<ShareableElementData> makeShareableCopy() const;
+    static RawPtr<UniqueElementData> create();
+    RawPtr<ShareableElementData> makeShareableCopy() const;
 
     MutableAttributeCollection attributes();
     AttributeCollection attributes() const;
@@ -179,7 +178,7 @@ public:
     // presentation attribute style. Lots of table cells likely have the same
     // attributes. Most modern pages don't use presentation attributes though
     // so this might not make sense.
-    mutable RefPtrWillBeMember<StylePropertySet> m_presentationAttributeStyle;
+    mutable Member<StylePropertySet> m_presentationAttributeStyle;
     AttributeVector m_attributeVector;
 };
 

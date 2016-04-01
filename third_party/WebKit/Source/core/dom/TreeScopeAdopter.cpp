@@ -65,7 +65,7 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
             continue;
         Element& element = toElement(node);
 
-        if (WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrs = element.attrNodeList()) {
+        if (HeapVector<Member<Attr>>* attrs = element.attrNodeList()) {
             for (const auto& attr : *attrs)
                 moveTreeToNewScope(*attr);
         }
@@ -92,7 +92,7 @@ void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, 
             continue;
         Element& element = toElement(node);
 
-        if (WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrs = element.attrNodeList()) {
+        if (HeapVector<Member<Attr>>* attrs = element.attrNodeList()) {
             for (const auto& attr : *attrs)
                 moveTreeToNewDocument(*attr, oldDocument, newDocument);
         }

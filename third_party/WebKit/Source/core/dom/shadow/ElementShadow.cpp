@@ -51,7 +51,7 @@ public:
 
 private:
     void detachNonDistributedNodes();
-    WillBeHeapVector<RawPtrWillBeMember<Node>, 32> m_nodes;
+    HeapVector<Member<Node>, 32> m_nodes;
     Vector<bool, 32> m_distributed;
 };
 
@@ -129,9 +129,9 @@ inline void DistributionPool::detachNonDistributedNodes()
     }
 }
 
-PassOwnPtrWillBeRawPtr<ElementShadow> ElementShadow::create()
+RawPtr<ElementShadow> ElementShadow::create()
 {
-    return adoptPtrWillBeNoop(new ElementShadow());
+    return new ElementShadow();
 }
 
 ElementShadow::ElementShadow()
@@ -168,7 +168,7 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRootType typ
     for (ShadowRoot* root = m_shadowRoots.head(); root; root = root->olderShadowRoot())
         root->lazyReattachIfAttached();
 
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost.document(), type);
+    RawPtr<ShadowRoot> shadowRoot = ShadowRoot::create(shadowHost.document(), type);
     shadowRoot->setParentOrShadowHostNode(&shadowHost);
     shadowRoot->setParentTreeScope(shadowHost.treeScope());
     m_shadowRoots.push(shadowRoot.get());
@@ -190,7 +190,7 @@ void ElementShadow::removeDetachedShadowRoots()
     Element* shadowHost = host();
     ASSERT(shadowHost);
 
-    while (RefPtrWillBeRawPtr<ShadowRoot> oldRoot = m_shadowRoots.head()) {
+    while (RawPtr<ShadowRoot> oldRoot = m_shadowRoots.head()) {
         InspectorInstrumentation::willPopShadowRoot(shadowHost, oldRoot.get());
         shadowHost->document().removeFocusedElementOfSubtree(oldRoot.get());
         m_shadowRoots.removeHead();
@@ -288,12 +288,12 @@ void ElementShadow::distribute()
 
 void ElementShadow::distributeV0()
 {
-    WillBeHeapVector<RawPtrWillBeMember<HTMLShadowElement>, 32> shadowInsertionPoints;
+    HeapVector<Member<HTMLShadowElement>, 32> shadowInsertionPoints;
     DistributionPool pool(*host());
 
     for (ShadowRoot* root = &youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         HTMLShadowElement* shadowInsertionPoint = 0;
-        const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& insertionPoints = root->descendantInsertionPoints();
+        const HeapVector<Member<InsertionPoint>>& insertionPoints = root->descendantInsertionPoints();
         for (size_t i = 0; i < insertionPoints.size(); ++i) {
             InsertionPoint* point = insertionPoints[i].get();
             if (!point->isActive())
@@ -341,7 +341,7 @@ void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertio
 #if ENABLE(OILPAN)
     NodeToDestinationInsertionPoints::AddResult result = m_nodeToInsertionPoints.add(node, nullptr);
     if (result.isNewEntry)
-        result.storedValue->value = adoptPtrWillBeNoop(new DestinationInsertionPoints());
+        result.storedValue->value = new DestinationInsertionPoints();
     result.storedValue->value->append(insertionPoint);
 #else
     NodeToDestinationInsertionPoints::AddResult result = m_nodeToInsertionPoints.add(node, DestinationInsertionPoints());

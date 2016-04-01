@@ -41,10 +41,9 @@
 
 namespace blink {
 
-class MutationObserverInterestGroup final : public NoBaseWillBeGarbageCollected<MutationObserverInterestGroup> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(MutationObserverInterestGroup);
+class MutationObserverInterestGroup final : public GarbageCollected<MutationObserverInterestGroup> {
 public:
-    static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createForChildListMutation(Node& target)
+    static RawPtr<MutationObserverInterestGroup> createForChildListMutation(Node& target)
     {
         if (!target.document().hasMutationObserversOfType(MutationObserver::ChildList))
             return nullptr;
@@ -53,7 +52,7 @@ public:
         return createIfNeeded(target, MutationObserver::ChildList, oldValueFlag);
     }
 
-    static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createForCharacterDataMutation(Node& target)
+    static RawPtr<MutationObserverInterestGroup> createForCharacterDataMutation(Node& target)
     {
         if (!target.document().hasMutationObserversOfType(MutationObserver::CharacterData))
             return nullptr;
@@ -61,7 +60,7 @@ public:
         return createIfNeeded(target, MutationObserver::CharacterData, MutationObserver::CharacterDataOldValue);
     }
 
-    static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createForAttributesMutation(Node& target, const QualifiedName& attributeName)
+    static RawPtr<MutationObserverInterestGroup> createForAttributesMutation(Node& target, const QualifiedName& attributeName)
     {
         if (!target.document().hasMutationObserversOfType(MutationObserver::Attributes))
             return nullptr;
@@ -70,17 +69,17 @@ public:
     }
 
     bool isOldValueRequested();
-    void enqueueMutationRecord(PassRefPtrWillBeRawPtr<MutationRecord>);
+    void enqueueMutationRecord(RawPtr<MutationRecord>);
 
     DECLARE_TRACE();
 
 private:
-    static PassOwnPtrWillBeRawPtr<MutationObserverInterestGroup> createIfNeeded(Node& target, MutationObserver::MutationType, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName = 0);
-    MutationObserverInterestGroup(WillBeHeapHashMap<RefPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag);
+    static RawPtr<MutationObserverInterestGroup> createIfNeeded(Node& target, MutationObserver::MutationType, MutationRecordDeliveryOptions oldValueFlag, const QualifiedName* attributeName = 0);
+    MutationObserverInterestGroup(HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>& observers, MutationRecordDeliveryOptions oldValueFlag);
 
     bool hasOldValue(MutationRecordDeliveryOptions options) { return options & m_oldValueFlag; }
 
-    WillBeHeapHashMap<RefPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions> m_observers;
+    HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions> m_observers;
     MutationRecordDeliveryOptions m_oldValueFlag;
 };
 

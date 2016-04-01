@@ -102,9 +102,9 @@ bool CustomElement::isValidName(const AtomicString& name, NameSet validNames)
     return false;
 }
 
-void CustomElement::define(Element* element, PassRefPtrWillBeRawPtr<CustomElementDefinition> passDefinition)
+void CustomElement::define(Element* element, RawPtr<CustomElementDefinition> passDefinition)
 {
-    RefPtrWillBeRawPtr<CustomElementDefinition> definition(passDefinition);
+    RawPtr<CustomElementDefinition> definition(passDefinition);
 
     switch (element->getCustomElementState()) {
     case Element::NotCustomElement:

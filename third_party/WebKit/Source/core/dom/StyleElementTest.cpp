@@ -20,9 +20,9 @@ TEST(StyleElementTest, CreateSheetUsesCache)
     document.documentElement()->setInnerHTML("<style id=style>a { top: 0; }</style>", ASSERT_NO_EXCEPTION);
 
     HTMLStyleElement& styleElement = toHTMLStyleElement(*document.getElementById("style"));
-    RefPtrWillBeRawPtr<StyleSheetContents> sheet = styleElement.sheet()->contents();
+    RawPtr<StyleSheetContents> sheet = styleElement.sheet()->contents();
 
-    RefPtrWillBeRawPtr<Comment> comment = document.createComment("hello!");
+    RawPtr<Comment> comment = document.createComment("hello!");
     styleElement.appendChild(comment);
     EXPECT_EQ(styleElement.sheet()->contents(), sheet);
 

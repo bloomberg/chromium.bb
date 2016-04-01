@@ -52,14 +52,14 @@ Attr::Attr(Document& document, const QualifiedName& name, const AtomicString& st
 {
 }
 
-PassRefPtrWillBeRawPtr<Attr> Attr::create(Element& element, const QualifiedName& name)
+RawPtr<Attr> Attr::create(Element& element, const QualifiedName& name)
 {
-    return adoptRefWillBeNoop(new Attr(element, name));
+    return new Attr(element, name);
 }
 
-PassRefPtrWillBeRawPtr<Attr> Attr::create(Document& document, const QualifiedName& name, const AtomicString& value)
+RawPtr<Attr> Attr::create(Document& document, const QualifiedName& name, const AtomicString& value)
 {
-    return adoptRefWillBeNoop(new Attr(document, name, value));
+    return new Attr(document, name, value);
 }
 
 Attr::~Attr()
@@ -115,10 +115,10 @@ void Attr::setNodeValue(const String& v)
     setValue(AtomicString(v));
 }
 
-PassRefPtrWillBeRawPtr<Node> Attr::cloneNode(bool /*deep*/)
+RawPtr<Node> Attr::cloneNode(bool /*deep*/)
 {
     UseCounter::count(document(), UseCounter::AttrCloneNode);
-    return adoptRefWillBeNoop(new Attr(document(), m_name, value()));
+    return new Attr(document(), m_name, value());
 }
 
 void Attr::detachFromElementWithValue(const AtomicString& value)

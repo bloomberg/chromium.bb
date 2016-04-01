@@ -40,11 +40,10 @@
 
 namespace blink {
 
-class CORE_EXPORT ElementShadow final : public NoBaseWillBeGarbageCollectedFinalized<ElementShadow> {
+class CORE_EXPORT ElementShadow final : public GarbageCollectedFinalized<ElementShadow> {
     WTF_MAKE_NONCOPYABLE(ElementShadow);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ElementShadow);
 public:
-    static PassOwnPtrWillBeRawPtr<ElementShadow> create();
+    static RawPtr<ElementShadow> create();
     ~ElementShadow();
 
     Element* host() const;
@@ -124,7 +123,7 @@ private:
     bool m_needsSelectFeatureSet;
 
     // TODO(hayato): ShadowRoot should be an owner of SlotAssigment
-    OwnPtrWillBeMember<SlotAssignment> m_slotAssignment;
+    Member<SlotAssignment> m_slotAssignment;
 };
 
 inline Element* ElementShadow::host() const

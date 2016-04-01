@@ -124,7 +124,7 @@ public:
     Iterator begin() { return Iterator(m_start); }
     Iterator end() { return Iterator::end(); }
 private:
-    RawPtrWillBeMember<const StartNodeType> m_start;
+    Member<const StartNodeType> m_start;
 };
 
 template <class TraversalNext>
@@ -137,7 +137,7 @@ public:
 protected:
     explicit TraversalIteratorBase(NodeType* current) : m_current(current) { }
 
-    RawPtrWillBeMember<NodeType> m_current;
+    Member<NodeType> m_current;
 };
 
 template <class TraversalNext>
@@ -175,7 +175,7 @@ public:
     static TraversalDescendantIterator end() { return TraversalDescendantIterator(); }
 private:
     TraversalDescendantIterator() : TraversalIteratorBase<TraversalNext>(nullptr), m_root(nullptr) { }
-    RawPtrWillBeMember<const Node> m_root;
+    Member<const Node> m_root;
 };
 
 template <class TraversalNext>
@@ -189,7 +189,7 @@ public:
     void operator++() { m_current = TraversalNext::next(*m_current, m_root); }
     static TraversalInclusiveDescendantIterator end() { return TraversalInclusiveDescendantIterator(nullptr); }
 private:
-    RawPtrWillBeMember<const StartNodeType> m_root;
+    Member<const StartNodeType> m_root;
 };
 
 inline TraversalRange<TraversalChildrenIterator<NodeTraversal>> NodeTraversal::childrenOf(const Node& parent)

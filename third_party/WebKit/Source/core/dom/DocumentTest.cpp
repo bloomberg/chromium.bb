@@ -76,13 +76,13 @@ void DocumentTest::setHtmlInnerHTML(const char* htmlContent)
 }
 
 class MockDocumentVisibilityObserver
-    : public NoBaseWillBeGarbageCollectedFinalized<MockDocumentVisibilityObserver>
+    : public GarbageCollectedFinalized<MockDocumentVisibilityObserver>
     , public DocumentVisibilityObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockDocumentVisibilityObserver);
+    USING_GARBAGE_COLLECTED_MIXIN(MockDocumentVisibilityObserver);
 public:
-    static PassOwnPtrWillBeRawPtr<MockDocumentVisibilityObserver> create(Document& document)
+    static RawPtr<MockDocumentVisibilityObserver> create(Document& document)
     {
-        return adoptPtrWillBeNoop(new MockDocumentVisibilityObserver(document));
+        return new MockDocumentVisibilityObserver(document);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -100,10 +100,10 @@ private:
 TEST_F(DocumentTest, VisibilityOberver)
 {
     page().setVisibilityState(PageVisibilityStateVisible, true); // initial state
-    OwnPtrWillBeRawPtr<MockDocumentVisibilityObserver> observer1 = MockDocumentVisibilityObserver::create(document());
+    RawPtr<MockDocumentVisibilityObserver> observer1 = MockDocumentVisibilityObserver::create(document());
 
     {
-        OwnPtrWillBeRawPtr<MockDocumentVisibilityObserver> observer2 = MockDocumentVisibilityObserver::create(document());
+        RawPtr<MockDocumentVisibilityObserver> observer2 = MockDocumentVisibilityObserver::create(document());
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
         EXPECT_CALL(*observer1, didChangeVisibilityState(PageVisibilityStateVisible)).Times(0);
         EXPECT_CALL(*observer2, didChangeVisibilityState(PageVisibilityStateHidden)).Times(0);
@@ -193,13 +193,13 @@ TEST_F(DocumentTest, LinkManifest)
     EXPECT_EQ(0, document().linkManifest());
 
     // Check that we use the first manifest with <link rel=manifest>
-    RefPtrWillBeRawPtr<HTMLLinkElement> link = HTMLLinkElement::create(document(), false);
+    RawPtr<HTMLLinkElement> link = HTMLLinkElement::create(document(), false);
     link->setAttribute(blink::HTMLNames::relAttr, "manifest");
     link->setAttribute(blink::HTMLNames::hrefAttr, "foo.json");
     document().head()->appendChild(link);
     EXPECT_EQ(link, document().linkManifest());
 
-    RefPtrWillBeRawPtr<HTMLLinkElement> link2 = HTMLLinkElement::create(document(), false);
+    RawPtr<HTMLLinkElement> link2 = HTMLLinkElement::create(document(), false);
     link2->setAttribute(blink::HTMLNames::relAttr, "manifest");
     link2->setAttribute(blink::HTMLNames::hrefAttr, "bar.json");
     document().head()->insertBefore(link2, link.get());

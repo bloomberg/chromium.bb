@@ -30,8 +30,6 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ElementDataCache)
-
 inline unsigned attributeHash(const Vector<Attribute>& attributes)
 {
     return StringHasher::hashMemory(attributes.data(), attributes.size() * sizeof(Attribute));
@@ -44,7 +42,7 @@ inline bool hasSameAttributes(const Vector<Attribute>& attributes, ShareableElem
     return !memcmp(attributes.data(), elementData.m_attributeArray, attributes.size() * sizeof(Attribute));
 }
 
-PassRefPtrWillBeRawPtr<ShareableElementData> ElementDataCache::cachedShareableElementDataWithAttributes(const Vector<Attribute>& attributes)
+RawPtr<ShareableElementData> ElementDataCache::cachedShareableElementDataWithAttributes(const Vector<Attribute>& attributes)
 {
     ASSERT(!attributes.isEmpty());
 

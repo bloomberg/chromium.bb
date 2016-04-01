@@ -38,8 +38,7 @@
 
 namespace blink {
 
-class ShadowRootRareData : public NoBaseWillBeGarbageCollected<ShadowRootRareData> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ShadowRootRareData);
+class ShadowRootRareData : public GarbageCollected<ShadowRootRareData> {
 public:
     ShadowRootRareData()
         : m_descendantShadowElementCount(0)
@@ -50,7 +49,7 @@ public:
     }
 
     HTMLShadowElement* shadowInsertionPointOfYoungerShadowRoot() const { return m_shadowInsertionPointOfYoungerShadowRoot.get(); }
-    void setShadowInsertionPointOfYoungerShadowRoot(PassRefPtrWillBeRawPtr<HTMLShadowElement> shadowInsertionPoint) { m_shadowInsertionPointOfYoungerShadowRoot = shadowInsertionPoint; }
+    void setShadowInsertionPointOfYoungerShadowRoot(RawPtr<HTMLShadowElement> shadowInsertionPoint) { m_shadowInsertionPointOfYoungerShadowRoot = shadowInsertionPoint; }
 
     void didAddInsertionPoint(InsertionPoint*);
     void didRemoveInsertionPoint(InsertionPoint*);
@@ -66,21 +65,21 @@ public:
 
     unsigned childShadowRootCount() const { return m_childShadowRootCount; }
 
-    const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& descendantInsertionPoints() { return m_descendantInsertionPoints; }
-    void setDescendantInsertionPoints(WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& list) { m_descendantInsertionPoints.swap(list); }
+    const HeapVector<Member<InsertionPoint>>& descendantInsertionPoints() { return m_descendantInsertionPoints; }
+    void setDescendantInsertionPoints(HeapVector<Member<InsertionPoint>>& list) { m_descendantInsertionPoints.swap(list); }
     void clearDescendantInsertionPoints() { m_descendantInsertionPoints.clear(); }
 
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
-    void setStyleSheets(PassRefPtrWillBeRawPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
+    void setStyleSheets(RawPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
 
     void didAddSlot() { ++m_descendantSlotCount; }
     void didRemoveSlot() { ASSERT(m_descendantSlotCount >= 1); --m_descendantSlotCount; }
 
     unsigned descendantSlotCount() const { return m_descendantSlotCount; }
 
-    const WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& descendantSlots() const { return m_descendantSlots; }
+    const HeapVector<Member<HTMLSlotElement>>& descendantSlots() const { return m_descendantSlots; }
 
-    void setDescendantSlots(WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& slots) { m_descendantSlots.swap(slots); }
+    void setDescendantSlots(HeapVector<Member<HTMLSlotElement>>& slots) { m_descendantSlots.swap(slots); }
     void clearDescendantSlots() { m_descendantSlots.clear(); }
 
     DEFINE_INLINE_TRACE()
@@ -92,14 +91,14 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<HTMLShadowElement> m_shadowInsertionPointOfYoungerShadowRoot;
+    Member<HTMLShadowElement> m_shadowInsertionPointOfYoungerShadowRoot;
     unsigned m_descendantShadowElementCount;
     unsigned m_descendantContentElementCount;
     unsigned m_childShadowRootCount;
-    WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>> m_descendantInsertionPoints;
-    RefPtrWillBeMember<StyleSheetList> m_styleSheetList;
+    HeapVector<Member<InsertionPoint>> m_descendantInsertionPoints;
+    Member<StyleSheetList> m_styleSheetList;
     unsigned m_descendantSlotCount;
-    WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>> m_descendantSlots;
+    HeapVector<Member<HTMLSlotElement>> m_descendantSlots;
 };
 
 inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)

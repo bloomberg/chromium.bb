@@ -44,7 +44,7 @@ private:
     Node& node() const { return *m_node; }
     NodeChildRemovalTracker* previous() { return m_previous; }
 
-    RawPtrWillBeMember<Node> m_node;
+    Member<Node> m_node;
     // Using raw pointers are safe because these NodeChildRemovalTrackers are
     // guaranteed to be on a stack.
     NodeChildRemovalTracker* m_previous;

@@ -36,21 +36,21 @@ namespace blink {
 
 class ExceptionState;
 
-class NodeIterator final : public RefCountedWillBeGarbageCollected<NodeIterator>, public ScriptWrappable, public NodeIteratorBase {
+class NodeIterator final : public GarbageCollected<NodeIterator>, public ScriptWrappable, public NodeIteratorBase {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NodeIterator);
+    USING_GARBAGE_COLLECTED_MIXIN(NodeIterator);
 public:
-    static PassRefPtrWillBeRawPtr<NodeIterator> create(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
+    static RawPtr<NodeIterator> create(RawPtr<Node> rootNode, unsigned whatToShow, RawPtr<NodeFilter> filter)
     {
-        return adoptRefWillBeNoop(new NodeIterator(rootNode, whatToShow, filter));
+        return new NodeIterator(rootNode, whatToShow, filter);
     }
 
 #if !ENABLE(OILPAN)
     ~NodeIterator();
 #endif
 
-    PassRefPtrWillBeRawPtr<Node> nextNode(ExceptionState&);
-    PassRefPtrWillBeRawPtr<Node> previousNode(ExceptionState&);
+    RawPtr<Node> nextNode(ExceptionState&);
+    RawPtr<Node> previousNode(ExceptionState&);
     void detach();
 
     Node* referenceNode() const { return m_referenceNode.node.get(); }
@@ -62,19 +62,19 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    NodeIterator(PassRefPtrWillBeRawPtr<Node>, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter>);
+    NodeIterator(RawPtr<Node>, unsigned whatToShow, RawPtr<NodeFilter>);
 
     class NodePointer {
         DISALLOW_NEW();
     public:
         NodePointer();
-        NodePointer(PassRefPtrWillBeRawPtr<Node>, bool);
+        NodePointer(RawPtr<Node>, bool);
 
         void clear();
         bool moveToNext(Node* root);
         bool moveToPrevious(Node* root);
 
-        RefPtrWillBeMember<Node> node;
+        Member<Node> node;
         bool isPointerBeforeNode;
 
         DEFINE_INLINE_TRACE()

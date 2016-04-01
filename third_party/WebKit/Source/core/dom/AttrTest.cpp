@@ -14,11 +14,11 @@ class AttrTest : public ::testing::Test {
 protected:
     void SetUp() override;
 
-    PassRefPtrWillBeRawPtr<Attr> createAttribute();
+    RawPtr<Attr> createAttribute();
     const AtomicString& value() const { return m_value; }
 
 private:
-    RefPtrWillBePersistent<Document> m_document;
+    Persistent<Document> m_document;
     AtomicString m_value;
 };
 
@@ -28,14 +28,14 @@ void AttrTest::SetUp()
     m_value = "value";
 }
 
-PassRefPtrWillBeRawPtr<Attr> AttrTest::createAttribute()
+RawPtr<Attr> AttrTest::createAttribute()
 {
     return m_document->createAttribute("name", ASSERT_NO_EXCEPTION);
 }
 
 TEST_F(AttrTest, InitialValueState)
 {
-    RefPtrWillBeRawPtr<Attr> attr = createAttribute();
+    RawPtr<Attr> attr = createAttribute();
     EXPECT_EQ(emptyAtom, attr->value());
     EXPECT_EQ(emptyString(), attr->toNode()->nodeValue());
     EXPECT_EQ(String(), attr->textContent());
@@ -43,7 +43,7 @@ TEST_F(AttrTest, InitialValueState)
 
 TEST_F(AttrTest, SetValue)
 {
-    RefPtrWillBeRawPtr<Attr> attr = createAttribute();
+    RawPtr<Attr> attr = createAttribute();
     attr->setValue(value());
     EXPECT_EQ(value(), attr->value());
     EXPECT_EQ(value(), attr->toNode()->nodeValue());
@@ -53,7 +53,7 @@ TEST_F(AttrTest, SetValue)
 
 TEST_F(AttrTest, SetNodeValue)
 {
-    RefPtrWillBeRawPtr<Attr> attr = createAttribute();
+    RawPtr<Attr> attr = createAttribute();
     attr->toNode()->setNodeValue(value());
     EXPECT_EQ(value(), attr->value());
     EXPECT_EQ(value(), attr->toNode()->nodeValue());
@@ -63,7 +63,7 @@ TEST_F(AttrTest, SetNodeValue)
 
 TEST_F(AttrTest, SetTextContent)
 {
-    RefPtrWillBeRawPtr<Attr> attr = createAttribute();
+    RawPtr<Attr> attr = createAttribute();
     // Node::setTextContent() does nothing for Attr.
     attr->setTextContent(value());
     EXPECT_EQ(emptyAtom, attr->value());
@@ -73,7 +73,7 @@ TEST_F(AttrTest, SetTextContent)
 
 TEST_F(AttrTest, LengthOfContents)
 {
-    RefPtrWillBeRawPtr<Attr> attr = createAttribute();
+    RawPtr<Attr> attr = createAttribute();
     EXPECT_EQ(0u, attr->lengthOfContents());
     attr->setValue(value());
     EXPECT_EQ(0u, attr->lengthOfContents());

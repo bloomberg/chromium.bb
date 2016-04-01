@@ -32,19 +32,19 @@
 
 namespace blink {
 
-TreeWalker::TreeWalker(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatToShow, PassRefPtrWillBeRawPtr<NodeFilter> filter)
+TreeWalker::TreeWalker(RawPtr<Node> rootNode, unsigned whatToShow, RawPtr<NodeFilter> filter)
     : NodeIteratorBase(rootNode, whatToShow, filter)
     , m_current(root())
 {
 }
 
-void TreeWalker::setCurrentNode(PassRefPtrWillBeRawPtr<Node> node)
+void TreeWalker::setCurrentNode(RawPtr<Node> node)
 {
     ASSERT(node);
     m_current = node;
 }
 
-inline Node* TreeWalker::setCurrent(PassRefPtrWillBeRawPtr<Node> node)
+inline Node* TreeWalker::setCurrent(RawPtr<Node> node)
 {
     m_current = node;
     return m_current.get();
@@ -52,7 +52,7 @@ inline Node* TreeWalker::setCurrent(PassRefPtrWillBeRawPtr<Node> node)
 
 Node* TreeWalker::parentNode(ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Node> node = m_current;
+    RawPtr<Node> node = m_current;
     while (node != root()) {
         node = node->parentNode();
         if (!node)
@@ -68,7 +68,7 @@ Node* TreeWalker::parentNode(ExceptionState& exceptionState)
 
 Node* TreeWalker::firstChild(ExceptionState& exceptionState)
 {
-    for (RefPtrWillBeRawPtr<Node> node = m_current->firstChild(); node; ) {
+    for (RawPtr<Node> node = m_current->firstChild(); node; ) {
         unsigned acceptNodeResult = acceptNode(node.get(), exceptionState);
         if (exceptionState.hadException())
             return 0;
@@ -101,7 +101,7 @@ Node* TreeWalker::firstChild(ExceptionState& exceptionState)
 
 Node* TreeWalker::lastChild(ExceptionState& exceptionState)
 {
-    for (RefPtrWillBeRawPtr<Node> node = m_current->lastChild(); node; ) {
+    for (RawPtr<Node> node = m_current->lastChild(); node; ) {
         unsigned acceptNodeResult = acceptNode(node.get(), exceptionState);
         if (exceptionState.hadException())
             return 0;
@@ -134,11 +134,11 @@ Node* TreeWalker::lastChild(ExceptionState& exceptionState)
 
 Node* TreeWalker::previousSibling(ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Node> node = m_current;
+    RawPtr<Node> node = m_current;
     if (node == root())
         return 0;
     while (1) {
-        for (RefPtrWillBeRawPtr<Node> sibling = node->previousSibling(); sibling; ) {
+        for (RawPtr<Node> sibling = node->previousSibling(); sibling; ) {
             unsigned acceptNodeResult = acceptNode(sibling.get(), exceptionState);
             if (exceptionState.hadException())
                 return 0;
@@ -171,11 +171,11 @@ Node* TreeWalker::previousSibling(ExceptionState& exceptionState)
 
 Node* TreeWalker::nextSibling(ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Node> node = m_current;
+    RawPtr<Node> node = m_current;
     if (node == root())
         return 0;
     while (1) {
-        for (RefPtrWillBeRawPtr<Node> sibling = node->nextSibling(); sibling; ) {
+        for (RawPtr<Node> sibling = node->nextSibling(); sibling; ) {
             unsigned acceptNodeResult = acceptNode(sibling.get(), exceptionState);
             if (exceptionState.hadException())
                 return 0;
@@ -208,7 +208,7 @@ Node* TreeWalker::nextSibling(ExceptionState& exceptionState)
 
 Node* TreeWalker::previousNode(ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Node> node = m_current;
+    RawPtr<Node> node = m_current;
     while (node != root()) {
         while (Node* previousSibling = node->previousSibling()) {
             node = previousSibling;
@@ -247,7 +247,7 @@ Node* TreeWalker::previousNode(ExceptionState& exceptionState)
 
 Node* TreeWalker::nextNode(ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Node> node = m_current;
+    RawPtr<Node> node = m_current;
 Children:
     while (Node* firstChild = node->firstChild()) {
         node = firstChild;

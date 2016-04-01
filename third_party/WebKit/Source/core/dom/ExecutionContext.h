@@ -59,7 +59,7 @@ class SecurityOrigin;
 class ScriptCallStack;
 
 class CORE_EXPORT ExecutionContext
-    : public ContextLifecycleNotifier, public WillBeHeapSupplementable<ExecutionContext> {
+    : public ContextLifecycleNotifier, public HeapSupplementable<ExecutionContext> {
     WTF_MAKE_NONCOPYABLE(ExecutionContext);
 public:
     DECLARE_VIRTUAL_TRACE();
@@ -106,9 +106,9 @@ public:
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-    void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, int scriptId, PassRefPtr<ScriptCallStack>, AccessControlStatus);
+    void reportException(RawPtr<ErrorEvent>, int scriptId, PassRefPtr<ScriptCallStack>, AccessControlStatus);
 
-    virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) = 0;
+    virtual void addConsoleMessage(RawPtr<ConsoleMessage>) = 0;
     virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
 
     PublicURLManager& publicURLManager();
@@ -158,7 +158,7 @@ public:
     ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
 
     // Override to enable experimental features through origin trials
-    virtual PassOwnPtrWillBeRawPtr<OriginTrialContext> createOriginTrialContext();
+    virtual RawPtr<OriginTrialContext> createOriginTrialContext();
 
 protected:
     ExecutionContext();
@@ -168,7 +168,7 @@ protected:
     virtual KURL virtualCompleteURL(const String&) const = 0;
 
 private:
-    bool dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent>, AccessControlStatus);
+    bool dispatchErrorEvent(RawPtr<ErrorEvent>, AccessControlStatus);
     void runSuspendableTasks();
 
 #if !ENABLE(OILPAN)
@@ -186,7 +186,7 @@ private:
     bool m_activeDOMObjectsAreSuspended;
     bool m_activeDOMObjectsAreStopped;
 
-    OwnPtrWillBeMember<PublicURLManager> m_publicURLManager;
+    Member<PublicURLManager> m_publicURLManager;
 
     // Counter that keeps track of how many window interaction calls are allowed
     // for this ExecutionContext. Callers are expected to call

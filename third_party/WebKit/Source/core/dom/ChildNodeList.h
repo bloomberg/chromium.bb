@@ -34,9 +34,9 @@ namespace blink {
 
 class ChildNodeList final : public NodeList {
 public:
-    static PassRefPtrWillBeRawPtr<ChildNodeList> create(ContainerNode& rootNode)
+    static RawPtr<ChildNodeList> create(ContainerNode& rootNode)
     {
-        return adoptRefWillBeNoop(new ChildNodeList(rootNode));
+        return new ChildNodeList(rootNode);
     }
 
     ~ChildNodeList() override;
@@ -66,7 +66,7 @@ private:
     bool isChildNodeList() const override { return true; }
     Node* virtualOwnerNode() const override;
 
-    RefPtrWillBeMember<ContainerNode> m_parent;
+    Member<ContainerNode> m_parent;
     mutable CollectionIndexCache<ChildNodeList, Node> m_collectionIndexCache;
 };
 

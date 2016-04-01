@@ -36,20 +36,20 @@ class CORE_EXPORT Text : public CharacterData {
 public:
     static const unsigned defaultLengthLimit = 1 << 16;
 
-    static PassRefPtrWillBeRawPtr<Text> create(Document&, const String&);
-    static PassRefPtrWillBeRawPtr<Text> createEditingText(Document&, const String&);
+    static RawPtr<Text> create(Document&, const String&);
+    static RawPtr<Text> createEditingText(Document&, const String&);
 
     LayoutText* layoutObject() const;
 
     // mergeNextSiblingNodesIfPossible() merges next sibling nodes if possible
     // then returns a node not merged.
-    PassRefPtrWillBeRawPtr<Node> mergeNextSiblingNodesIfPossible();
-    PassRefPtrWillBeRawPtr<Text> splitText(unsigned offset, ExceptionState&);
+    RawPtr<Node> mergeNextSiblingNodesIfPossible();
+    RawPtr<Text> splitText(unsigned offset, ExceptionState&);
 
     // DOM Level 3: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-1312295772
 
     String wholeText() const;
-    PassRefPtrWillBeRawPtr<Text> replaceWholeText(const String&);
+    RawPtr<Text> replaceWholeText(const String&);
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
     bool textLayoutObjectIsNeeded(const ComputedStyle&, const LayoutObject& parent) const;
@@ -70,13 +70,13 @@ protected:
 
 private:
     String nodeName() const override;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) final;
+    RawPtr<Node> cloneNode(bool deep) final;
 
     bool isTextNode() const = delete; // This will catch anyone doing an unnecessary check.
 
     bool needsWhitespaceLayoutObject();
 
-    virtual PassRefPtrWillBeRawPtr<Text> cloneWithData(const String&);
+    virtual RawPtr<Text> cloneWithData(const String&);
 
 #ifndef NDEBUG
     void formatForDebugger(char* buffer, unsigned length) const override;

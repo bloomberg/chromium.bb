@@ -28,7 +28,7 @@ namespace {
         }
 
     private:
-        const RefPtrWillBeMember<NodeList> m_nodeList;
+        const Member<NodeList> m_nodeList;
     };
 
 } // namespace

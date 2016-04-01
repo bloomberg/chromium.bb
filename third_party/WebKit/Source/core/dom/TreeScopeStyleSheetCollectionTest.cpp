@@ -13,8 +13,8 @@ namespace blink {
 
 class TreeScopeStyleSheetCollectionTest : public testing::Test {
 protected:
-    using SheetVector = WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>;
-    using ContentsVector = WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents>>;
+    using SheetVector = HeapVector<Member<CSSStyleSheet>>;
+    using ContentsVector = HeapVector<Member<StyleSheetContents>>;
 
     enum UpdateType {
         Reconstruct = TreeScopeStyleSheetCollection::Reconstruct,
@@ -22,7 +22,7 @@ protected:
         Additive = TreeScopeStyleSheetCollection::Additive
     };
 
-    static PassRefPtrWillBeRawPtr<CSSStyleSheet> createSheet()
+    static RawPtr<CSSStyleSheet> createSheet()
     {
         return CSSStyleSheet::create(StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr)));
     }
@@ -42,8 +42,8 @@ protected:
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsAppend)
 {
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet2 = createSheet();
+    RawPtr<CSSStyleSheet> sheet1 = createSheet();
+    RawPtr<CSSStyleSheet> sheet2 = createSheet();
 
     ContentsVector added;
     SheetVector previous;
@@ -61,8 +61,8 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsAppend)
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsPrepend)
 {
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet2 = createSheet();
+    RawPtr<CSSStyleSheet> sheet1 = createSheet();
+    RawPtr<CSSStyleSheet> sheet2 = createSheet();
 
     ContentsVector added;
     SheetVector previous;
@@ -80,9 +80,9 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsPrepend)
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsInsert)
 {
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet2 = createSheet();
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet3 = createSheet();
+    RawPtr<CSSStyleSheet> sheet1 = createSheet();
+    RawPtr<CSSStyleSheet> sheet2 = createSheet();
+    RawPtr<CSSStyleSheet> sheet3 = createSheet();
 
     ContentsVector added;
     SheetVector previous;
@@ -102,9 +102,9 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsInsert)
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsRemove)
 {
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet2 = createSheet();
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet3 = createSheet();
+    RawPtr<CSSStyleSheet> sheet1 = createSheet();
+    RawPtr<CSSStyleSheet> sheet2 = createSheet();
+    RawPtr<CSSStyleSheet> sheet3 = createSheet();
 
     ContentsVector added;
     SheetVector previous;
@@ -126,9 +126,9 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsRemove)
 
 TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsInsertRemove)
 {
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet1 = createSheet();
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet2 = createSheet();
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet3 = createSheet();
+    RawPtr<CSSStyleSheet> sheet1 = createSheet();
+    RawPtr<CSSStyleSheet> sheet2 = createSheet();
+    RawPtr<CSSStyleSheet> sheet3 = createSheet();
 
     ContentsVector added;
     SheetVector previous;

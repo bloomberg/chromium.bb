@@ -35,9 +35,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<MutationObserverRegistration> MutationObserverRegistration::create(MutationObserver& observer, Node* registrationNode, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
+RawPtr<MutationObserverRegistration> MutationObserverRegistration::create(MutationObserver& observer, Node* registrationNode, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
 {
-    return adoptPtrWillBeNoop(new MutationObserverRegistration(observer, registrationNode, options, attributeFilter));
+    return new MutationObserverRegistration(observer, registrationNode, options, attributeFilter);
 }
 
 MutationObserverRegistration::MutationObserverRegistration(MutationObserver& observer, Node* registrationNode, MutationObserverOptions options, const HashSet<AtomicString>& attributeFilter)
@@ -83,7 +83,7 @@ void MutationObserverRegistration::observedSubtreeNodeWillDetach(Node& node)
 
         ASSERT(m_registrationNode);
         ASSERT(!m_registrationNodeKeepAlive);
-        m_registrationNodeKeepAlive = PassRefPtrWillBeRawPtr<Node>(m_registrationNode.get()); // Balanced in clearTransientRegistrations.
+        m_registrationNodeKeepAlive = RawPtr<Node>(m_registrationNode.get()); // Balanced in clearTransientRegistrations.
     }
     m_transientRegistrationNodes->add(&node);
 }
@@ -129,7 +129,7 @@ bool MutationObserverRegistration::shouldReceiveMutationFrom(Node& node, Mutatio
     return m_attributeFilter.contains(attributeName->localName());
 }
 
-void MutationObserverRegistration::addRegistrationNodesToSet(WillBeHeapHashSet<RawPtrWillBeMember<Node>>& nodes) const
+void MutationObserverRegistration::addRegistrationNodesToSet(HeapHashSet<Member<Node>>& nodes) const
 {
     ASSERT(m_registrationNode);
     nodes.add(m_registrationNode.get());

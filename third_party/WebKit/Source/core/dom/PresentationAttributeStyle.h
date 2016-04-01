@@ -39,7 +39,7 @@ namespace blink {
 class Element;
 class StylePropertySet;
 
-PassRefPtrWillBeRawPtr<StylePropertySet> computePresentationAttributeStyle(Element&);
+RawPtr<StylePropertySet> computePresentationAttributeStyle(Element&);
 
 } // namespace blink
 

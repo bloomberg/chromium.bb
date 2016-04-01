@@ -29,9 +29,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<IdTargetObserverRegistry> IdTargetObserverRegistry::create()
+RawPtr<IdTargetObserverRegistry> IdTargetObserverRegistry::create()
 {
-    return adoptPtrWillBeNoop(new IdTargetObserverRegistry());
+    return new IdTargetObserverRegistry();
 }
 
 DEFINE_TRACE(IdTargetObserverRegistry)
@@ -49,7 +49,7 @@ void IdTargetObserverRegistry::addObserver(const AtomicString& id, IdTargetObser
 
     IdToObserverSetMap::AddResult result = m_registry.add(id.impl(), nullptr);
     if (result.isNewEntry)
-        result.storedValue->value = adoptPtrWillBeNoop(new ObserverSet());
+        result.storedValue->value = new ObserverSet();
 
     result.storedValue->value->add(observer);
 }
@@ -76,7 +76,7 @@ void IdTargetObserverRegistry::notifyObserversInternal(const AtomicString& id)
     if (!m_notifyingObserversInSet)
         return;
 
-    WillBeHeapVector<RawPtrWillBeMember<IdTargetObserver>> copy;
+    HeapVector<Member<IdTargetObserver>> copy;
     copyToVector(*m_notifyingObserversInSet, copy);
     for (const auto& observer : copy) {
         if (m_notifyingObserversInSet->contains(observer))

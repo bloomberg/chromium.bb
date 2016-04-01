@@ -38,9 +38,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskImportStep::create(HTMLImportChild* import)
+RawPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskImportStep::create(HTMLImportChild* import)
 {
-    return adoptPtrWillBeNoop(new CustomElementMicrotaskImportStep(import));
+    return new CustomElementMicrotaskImportStep(import);
 }
 
 CustomElementMicrotaskImportStep::CustomElementMicrotaskImportStep(HTMLImportChild* import)

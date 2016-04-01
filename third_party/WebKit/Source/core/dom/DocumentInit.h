@@ -48,8 +48,8 @@ class Settings;
 class CORE_EXPORT DocumentInit final {
     STACK_ALLOCATED();
 public:
-    DocumentInit(const KURL& = KURL(), LocalFrame* = nullptr, WeakPtrWillBeRawPtr<Document> contextDocument = nullptr, HTMLImportsController* = nullptr);
-    DocumentInit(PassRefPtrWillBeRawPtr<Document> ownerDocument, const KURL&, LocalFrame*, WeakPtrWillBeRawPtr<Document> contextDocument = nullptr, HTMLImportsController* = nullptr);
+    DocumentInit(const KURL& = KURL(), LocalFrame* = nullptr, RawPtr<Document> contextDocument = nullptr, HTMLImportsController* = nullptr);
+    DocumentInit(RawPtr<Document> ownerDocument, const KURL&, LocalFrame*, RawPtr<Document> contextDocument = nullptr, HTMLImportsController* = nullptr);
     DocumentInit(const DocumentInit&);
     ~DocumentInit();
 
@@ -76,21 +76,21 @@ public:
 
     DocumentInit& withRegistrationContext(CustomElementRegistrationContext*);
     DocumentInit& withNewRegistrationContext();
-    PassRefPtrWillBeRawPtr<CustomElementRegistrationContext> registrationContext(Document*) const;
-    WeakPtrWillBeRawPtr<Document> contextDocument() const;
+    RawPtr<CustomElementRegistrationContext> registrationContext(Document*) const;
+    RawPtr<Document> contextDocument() const;
 
-    static DocumentInit fromContext(WeakPtrWillBeRawPtr<Document> contextDocument, const KURL& = KURL());
+    static DocumentInit fromContext(RawPtr<Document> contextDocument, const KURL& = KURL());
 
 private:
     LocalFrame* frameForSecurityContext() const;
 
     KURL m_url;
-    RawPtrWillBeMember<LocalFrame> m_frame;
-    RefPtrWillBeMember<Document> m_parent;
-    RefPtrWillBeMember<Document> m_owner;
-    WeakPtrWillBeMember<Document> m_contextDocument;
-    RawPtrWillBeMember<HTMLImportsController> m_importsController;
-    RefPtrWillBeMember<CustomElementRegistrationContext> m_registrationContext;
+    Member<LocalFrame> m_frame;
+    Member<Document> m_parent;
+    Member<Document> m_owner;
+    Member<Document> m_contextDocument;
+    Member<HTMLImportsController> m_importsController;
+    Member<CustomElementRegistrationContext> m_registrationContext;
     bool m_createNewRegistrationContext;
 
     // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For example,

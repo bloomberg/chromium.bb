@@ -38,12 +38,11 @@ namespace blink {
 
 class Document;
 
-class VisitedLinkState : public NoBaseWillBeGarbageCollectedFinalized<VisitedLinkState> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(VisitedLinkState);
+class VisitedLinkState : public GarbageCollectedFinalized<VisitedLinkState> {
 public:
-    static PassOwnPtrWillBeRawPtr<VisitedLinkState> create(const Document& document)
+    static RawPtr<VisitedLinkState> create(const Document& document)
     {
-        return adoptPtrWillBeNoop(new VisitedLinkState(document));
+        return new VisitedLinkState(document);
     }
 
     void invalidateStyleForAllLinks(bool invalidateVisitedLinkHashes);
@@ -64,7 +63,7 @@ private:
 
     EInsideLink determineLinkStateSlowCase(const Element&);
 
-    RawPtrWillBeMember<const Document> m_document;
+    Member<const Document> m_document;
     HashSet<LinkHash, LinkHashHash> m_linksCheckedForVisitedState;
 };
 

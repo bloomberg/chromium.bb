@@ -39,7 +39,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<const LiveNodeList> m_list;
+    Member<const LiveNodeList> m_list;
 };
 
 } // namespace

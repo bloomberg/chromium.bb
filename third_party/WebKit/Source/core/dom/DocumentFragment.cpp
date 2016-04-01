@@ -33,9 +33,9 @@ DocumentFragment::DocumentFragment(Document* document, ConstructionType construc
 {
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> DocumentFragment::create(Document& document)
+RawPtr<DocumentFragment> DocumentFragment::create(Document& document)
 {
-    return adoptRefWillBeNoop(new DocumentFragment(&document, Node::CreateDocumentFragment));
+    return new DocumentFragment(&document, Node::CreateDocumentFragment);
 }
 
 String DocumentFragment::nodeName() const
@@ -62,9 +62,9 @@ bool DocumentFragment::childTypeAllowed(NodeType type) const
     }
 }
 
-PassRefPtrWillBeRawPtr<Node> DocumentFragment::cloneNode(bool deep)
+RawPtr<Node> DocumentFragment::cloneNode(bool deep)
 {
-    RefPtrWillBeRawPtr<DocumentFragment> clone = create(document());
+    RawPtr<DocumentFragment> clone = create(document());
     if (deep)
         cloneChildNodes(clone.get());
     return clone.release();

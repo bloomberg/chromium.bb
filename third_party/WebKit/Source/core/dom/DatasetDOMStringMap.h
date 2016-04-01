@@ -36,9 +36,9 @@ class ExceptionState;
 
 class DatasetDOMStringMap final : public DOMStringMap {
 public:
-    static PassOwnPtrWillBeRawPtr<DatasetDOMStringMap> create(Element* element)
+    static RawPtr<DatasetDOMStringMap> create(Element* element)
     {
-        return adoptPtrWillBeNoop(new DatasetDOMStringMap(element));
+        return new DatasetDOMStringMap(element);
     }
 
 #if !ENABLE(OILPAN)
@@ -62,7 +62,7 @@ private:
     {
     }
 
-    RawPtrWillBeMember<Element> m_element;
+    Member<Element> m_element;
 };
 
 } // namespace blink

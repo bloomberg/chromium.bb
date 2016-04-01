@@ -33,9 +33,8 @@
 
 namespace blink {
 
-class NodeListsNodeData final : public NoBaseWillBeGarbageCollectedFinalized<NodeListsNodeData> {
+class NodeListsNodeData final : public GarbageCollectedFinalized<NodeListsNodeData> {
     WTF_MAKE_NONCOPYABLE(NodeListsNodeData);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(NodeListsNodeData);
 public:
     ChildNodeList* childNodeList(ContainerNode& node)
     {
@@ -43,20 +42,20 @@ public:
         return toChildNodeList(m_childNodeList);
     }
 
-    PassRefPtrWillBeRawPtr<ChildNodeList> ensureChildNodeList(ContainerNode& node)
+    RawPtr<ChildNodeList> ensureChildNodeList(ContainerNode& node)
     {
         if (m_childNodeList)
             return toChildNodeList(m_childNodeList);
-        RefPtrWillBeRawPtr<ChildNodeList> list = ChildNodeList::create(node);
+        RawPtr<ChildNodeList> list = ChildNodeList::create(node);
         m_childNodeList = list.get();
         return list.release();
     }
 
-    PassRefPtrWillBeRawPtr<EmptyNodeList> ensureEmptyChildNodeList(Node& node)
+    RawPtr<EmptyNodeList> ensureEmptyChildNodeList(Node& node)
     {
         if (m_childNodeList)
             return toEmptyNodeList(m_childNodeList);
-        RefPtrWillBeRawPtr<EmptyNodeList> list = EmptyNodeList::create(node);
+        RawPtr<EmptyNodeList> list = EmptyNodeList::create(node);
         m_childNodeList = list.get();
         return list.release();
     }
@@ -93,11 +92,11 @@ public:
     // Explicit object unregistration in a non-Oilpan setting
     // on object destruction is replaced by the garbage collector
     // clearing out their weak reference.
-    typedef WillBeHeapHashMap<std::pair<unsigned char, StringImpl*>, RawPtrWillBeWeakMember<LiveNodeListBase>, NodeListAtomicCacheMapEntryHash> NodeListAtomicNameCacheMap;
-    typedef WillBeHeapHashMap<QualifiedName, RawPtrWillBeWeakMember<TagCollection>> TagCollectionCacheNS;
+    typedef HeapHashMap<std::pair<unsigned char, StringImpl*>, WeakMember<LiveNodeListBase>, NodeListAtomicCacheMapEntryHash> NodeListAtomicNameCacheMap;
+    typedef HeapHashMap<QualifiedName, WeakMember<TagCollection>> TagCollectionCacheNS;
 
     template<typename T>
-    PassRefPtrWillBeRawPtr<T> addCache(ContainerNode& node, CollectionType collectionType, const AtomicString& name)
+    RawPtr<T> addCache(ContainerNode& node, CollectionType collectionType, const AtomicString& name)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, name), nullptr);
         if (!result.isNewEntry) {
@@ -108,13 +107,13 @@ public:
 #endif
         }
 
-        RefPtrWillBeRawPtr<T> list = T::create(node, collectionType, name);
+        RawPtr<T> list = T::create(node, collectionType, name);
         result.storedValue->value = list.get();
         return list.release();
     }
 
     template<typename T>
-    PassRefPtrWillBeRawPtr<T> addCache(ContainerNode& node, CollectionType collectionType)
+    RawPtr<T> addCache(ContainerNode& node, CollectionType collectionType)
     {
         NodeListAtomicNameCacheMap::AddResult result = m_atomicNameCaches.add(namedNodeListKey(collectionType, starAtom), nullptr);
         if (!result.isNewEntry) {
@@ -125,7 +124,7 @@ public:
 #endif
         }
 
-        RefPtrWillBeRawPtr<T> list = T::create(node, collectionType);
+        RawPtr<T> list = T::create(node, collectionType);
         result.storedValue->value = list.get();
         return list.release();
     }
@@ -136,14 +135,14 @@ public:
         return static_cast<T*>(m_atomicNameCaches.get(namedNodeListKey(collectionType, starAtom)));
     }
 
-    PassRefPtrWillBeRawPtr<TagCollection> addCache(ContainerNode& node, const AtomicString& namespaceURI, const AtomicString& localName)
+    RawPtr<TagCollection> addCache(ContainerNode& node, const AtomicString& namespaceURI, const AtomicString& localName)
     {
         QualifiedName name(nullAtom, localName, namespaceURI);
         TagCollectionCacheNS::AddResult result = m_tagCollectionCacheNS.add(name, nullptr);
         if (!result.isNewEntry)
             return result.storedValue->value;
 
-        RefPtrWillBeRawPtr<TagCollection> list = TagCollection::create(node, namespaceURI, localName);
+        RawPtr<TagCollection> list = TagCollection::create(node, namespaceURI, localName);
         result.storedValue->value = list.get();
         return list.release();
     }
@@ -167,7 +166,7 @@ public:
     }
 #endif
 
-    static PassOwnPtrWillBeRawPtr<NodeListsNodeData> create()
+    static RawPtr<NodeListsNodeData> create()
     {
         return adoptPtrWillBeNoop(new NodeListsNodeData);
     }
@@ -221,7 +220,7 @@ private:
 #endif
 
     // Can be a ChildNodeList or an EmptyNodeList.
-    RawPtrWillBeWeakMember<NodeList> m_childNodeList;
+    WeakMember<NodeList> m_childNodeList;
     NodeListAtomicNameCacheMap m_atomicNameCaches;
     TagCollectionCacheNS m_tagCollectionCacheNS;
 };
@@ -238,19 +237,19 @@ inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLas
 #endif
 
 template <typename Collection>
-inline PassRefPtrWillBeRawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type)
+inline RawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type)
 {
     return ensureNodeLists().addCache<Collection>(*this, type);
 }
 
 template <typename Collection>
-inline PassRefPtrWillBeRawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& name)
+inline RawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& name)
 {
     return ensureNodeLists().addCache<Collection>(*this, type, name);
 }
 
 template <typename Collection>
-inline PassRefPtrWillBeRawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
+inline RawPtr<Collection> ContainerNode::ensureCachedCollection(CollectionType type, const AtomicString& namespaceURI, const AtomicString& localName)
 {
     ASSERT_UNUSED(type, type == TagCollectionType);
     return ensureNodeLists().addCache(*this, namespaceURI, localName);

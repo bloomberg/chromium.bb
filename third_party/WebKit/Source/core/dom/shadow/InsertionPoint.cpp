@@ -150,7 +150,7 @@ bool InsertionPoint::isActive() const
         return true;
 
     // Slow path only when there are more than one shadow elements in a shadow tree. That should be a rare case.
-    const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& insertionPoints = shadowRoot->descendantInsertionPoints();
+    const HeapVector<Member<InsertionPoint>>& insertionPoints = shadowRoot->descendantInsertionPoints();
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         InsertionPoint* point = insertionPoints[i].get();
         if (isHTMLShadowElement(*point))
@@ -169,11 +169,11 @@ bool InsertionPoint::isContentInsertionPoint() const
     return isHTMLContentElement(*this) && isActive();
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> InsertionPoint::getDistributedNodes()
+RawPtr<StaticNodeList> InsertionPoint::getDistributedNodes()
 {
     updateDistribution();
 
-    WillBeHeapVector<RefPtrWillBeMember<Node>> nodes;
+    HeapVector<Member<Node>> nodes;
     nodes.reserveInitialCapacity(m_distributedNodes.size());
     for (size_t i = 0; i < m_distributedNodes.size(); ++i)
         nodes.uncheckedAppend(m_distributedNodes.at(i));
@@ -274,7 +274,7 @@ const InsertionPoint* resolveReprojection(const Node* projectedNode)
     return insertionPoint;
 }
 
-void collectDestinationInsertionPoints(const Node& node, WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8>& results)
+void collectDestinationInsertionPoints(const Node& node, HeapVector<Member<InsertionPoint>, 8>& results)
 {
     const Node* current = &node;
     ElementShadow* lastElementShadow = 0;

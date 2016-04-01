@@ -49,8 +49,8 @@ public:
     void initialize(const CSSSelectorList&);
     bool matches(Element&) const;
     Element* closest(Element&) const;
-    PassRefPtrWillBeRawPtr<StaticElementList> queryAll(ContainerNode& rootNode) const;
-    PassRefPtrWillBeRawPtr<Element> queryFirst(ContainerNode& rootNode) const;
+    RawPtr<StaticElementList> queryAll(ContainerNode& rootNode) const;
+    RawPtr<Element> queryFirst(ContainerNode& rootNode) const;
 
 private:
     bool canUseFastQuery(const ContainerNode& rootNode) const;
@@ -93,8 +93,8 @@ public:
 
     bool matches(Element&) const;
     Element* closest(Element&) const;
-    PassRefPtrWillBeRawPtr<StaticElementList> queryAll(ContainerNode& rootNode) const;
-    PassRefPtrWillBeRawPtr<Element> queryFirst(ContainerNode& rootNode) const;
+    RawPtr<StaticElementList> queryAll(ContainerNode& rootNode) const;
+    RawPtr<Element> queryFirst(ContainerNode& rootNode) const;
 private:
     explicit SelectorQuery(CSSSelectorList);
 

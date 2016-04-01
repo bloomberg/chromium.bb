@@ -156,21 +156,21 @@ void NthIndexCache::cacheNthIndexDataForParent(Element& element)
 {
     ASSERT(element.parentNode());
     if (!m_parentMap)
-        m_parentMap = adoptPtrWillBeNoop(new ParentMap());
+        m_parentMap = new ParentMap();
 
     ParentMap::AddResult addResult = m_parentMap->add(element.parentNode(), nullptr);
     ASSERT(addResult.isNewEntry);
-    addResult.storedValue->value = adoptPtrWillBeNoop(new NthIndexData(*element.parentNode()));
+    addResult.storedValue->value = new NthIndexData(*element.parentNode());
 }
 
 NthIndexCache::IndexByType& NthIndexCache::ensureTypeIndexMap(ContainerNode& parent)
 {
     if (!m_parentMapForType)
-        m_parentMapForType = adoptPtrWillBeNoop(new ParentMapForType());
+        m_parentMapForType = new ParentMapForType();
 
     ParentMapForType::AddResult addResult = m_parentMapForType->add(&parent, nullptr);
     if (addResult.isNewEntry)
-        addResult.storedValue->value = adoptPtrWillBeNoop(new IndexByType());
+        addResult.storedValue->value = new IndexByType();
 
     ASSERT(addResult.storedValue->value);
     return *addResult.storedValue->value;
@@ -181,7 +181,7 @@ void NthIndexCache::cacheNthOfTypeIndexDataForParent(Element& element)
     ASSERT(element.parentNode());
     IndexByType::AddResult addResult = ensureTypeIndexMap(*element.parentNode()).add(element.tagName(), nullptr);
     ASSERT(addResult.isNewEntry);
-    addResult.storedValue->value = adoptPtrWillBeNoop(new NthIndexData(*element.parentNode(), element.tagQName()));
+    addResult.storedValue->value = new NthIndexData(*element.parentNode(), element.tagQName());
 }
 
 unsigned NthIndexData::nthIndex(Element& element) const

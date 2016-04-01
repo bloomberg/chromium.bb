@@ -56,13 +56,13 @@ void NodeIntersectionObserverData::dispose()
 }
 #endif
 
-WeakPtrWillBeRawPtr<Node> NodeIntersectionObserverData::createWeakPtr(Node* node)
+RawPtr<Node> NodeIntersectionObserverData::createWeakPtr(Node* node)
 {
 #if ENABLE(OILPAN)
     return node;
 #else
     if (!m_weakPointerFactory)
-        m_weakPointerFactory = adoptPtrWillBeNoop(new WeakPtrFactory<Node>(node));
+        m_weakPointerFactory = new WeakPtrFactory<Node>(node);
     WeakPtr<Node> result = m_weakPointerFactory->createWeakPtr();
     ASSERT(result.get() == node);
     return result;

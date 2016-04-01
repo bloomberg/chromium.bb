@@ -37,7 +37,6 @@ class MessagePort;
 class ExecutionContext;
 
 class MessageChannel final : public GarbageCollectedFinalized<MessageChannel>, public ScriptWrappable {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MessageChannel);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MessageChannel* create(ExecutionContext* context)

@@ -47,15 +47,13 @@ class CustomElementMicrotaskStep;
 class CustomElementRegistrationContext;
 class HTMLImportChild;
 
-class CustomElementScheduler final : public NoBaseWillBeGarbageCollected<CustomElementScheduler> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CustomElementScheduler);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementScheduler);
+class CustomElementScheduler final : public GarbageCollected<CustomElementScheduler> {
 public:
 
-    static void scheduleCallback(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks>, PassRefPtrWillBeRawPtr<Element>, CustomElementLifecycleCallbacks::CallbackType);
-    static void scheduleAttributeChangedCallback(PassRefPtrWillBeRawPtr<CustomElementLifecycleCallbacks>, PassRefPtrWillBeRawPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
+    static void scheduleCallback(RawPtr<CustomElementLifecycleCallbacks>, RawPtr<Element>, CustomElementLifecycleCallbacks::CallbackType);
+    static void scheduleAttributeChangedCallback(RawPtr<CustomElementLifecycleCallbacks>, RawPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
 
-    static void resolveOrScheduleResolution(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
+    static void resolveOrScheduleResolution(RawPtr<CustomElementRegistrationContext>, RawPtr<Element>, const CustomElementDescriptor&);
     static CustomElementMicrotaskImportStep* scheduleImport(HTMLImportChild*);
 
     static void microtaskDispatcherDidFinish();
@@ -64,7 +62,7 @@ public:
 private:
     CustomElementScheduler() { }
 
-    static void enqueueMicrotaskStep(Document&, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep>, bool importIsSync = true);
+    static void enqueueMicrotaskStep(Document&, RawPtr<CustomElementMicrotaskStep>, bool importIsSync = true);
 };
 
 } // namespace blink

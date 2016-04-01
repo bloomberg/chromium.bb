@@ -145,9 +145,9 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
     return !(getSecurityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event, int scriptId, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void ExecutionContext::reportException(RawPtr<ErrorEvent> event, int scriptId, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
 {
-    RefPtrWillBeRawPtr<ErrorEvent> errorEvent = event;
+    RawPtr<ErrorEvent> errorEvent = event;
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
             m_pendingExceptions = adoptPtr(new Vector<OwnPtr<PendingException>>());
@@ -169,13 +169,13 @@ void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event,
     m_pendingExceptions.clear();
 }
 
-bool ExecutionContext::dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent> event, AccessControlStatus corsStatus)
+bool ExecutionContext::dispatchErrorEvent(RawPtr<ErrorEvent> event, AccessControlStatus corsStatus)
 {
     EventTarget* target = errorEventTarget();
     if (!target)
         return false;
 
-    RefPtrWillBeRawPtr<ErrorEvent> errorEvent = event;
+    RawPtr<ErrorEvent> errorEvent = event;
     if (shouldSanitizeScriptError(errorEvent->filename(), corsStatus))
         errorEvent = ErrorEvent::createSanitizedError(errorEvent->world());
 
@@ -264,7 +264,7 @@ void ExecutionContext::setReferrerPolicy(ReferrerPolicy referrerPolicy)
     m_referrerPolicy = referrerPolicy;
 }
 
-PassOwnPtrWillBeRawPtr<OriginTrialContext> ExecutionContext::createOriginTrialContext()
+RawPtr<OriginTrialContext> ExecutionContext::createOriginTrialContext()
 {
     return nullptr;
 }

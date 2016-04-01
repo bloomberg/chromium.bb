@@ -120,11 +120,11 @@ static bool isPrefixed(const AtomicString& type)
     return type == EventTypeNames::webkitfullscreenchange || type == EventTypeNames::webkitfullscreenerror;
 }
 
-static PassRefPtrWillBeRawPtr<Event> createEvent(const AtomicString& type, EventTarget& target)
+static RawPtr<Event> createEvent(const AtomicString& type, EventTarget& target)
 {
     EventInit initializer;
     initializer.setBubbles(isPrefixed(type));
-    RefPtrWillBeRawPtr<Event> event = Event::create(type, initializer);
+    RawPtr<Event> event = Event::create(type, initializer);
     event->setTarget(&target);
     return event;
 }
@@ -139,7 +139,7 @@ Fullscreen& Fullscreen::from(Document& document)
     Fullscreen* fullscreen = fromIfExists(document);
     if (!fullscreen) {
         fullscreen = new Fullscreen(document);
-        WillBeHeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(fullscreen));
+        HeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(fullscreen));
     }
 
     return *fullscreen;
@@ -147,7 +147,7 @@ Fullscreen& Fullscreen::from(Document& document)
 
 Fullscreen* Fullscreen::fromIfExistsSlow(Document& document)
 {
-    return static_cast<Fullscreen*>(WillBeHeapSupplement<Document>::from(document, supplementName()));
+    return static_cast<Fullscreen*>(HeapSupplement<Document>::from(document, supplementName()));
 }
 
 Element* Fullscreen::fullscreenElementFrom(Document& document)
@@ -256,7 +256,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
         Document* currentDoc = document();
 
         // 3. Let docs be all doc's ancestor browsing context's documents (if any) and doc.
-        WillBeHeapDeque<RawPtrWillBeMember<Document>> docs;
+        HeapDeque<Member<Document>> docs;
 
         do {
             docs.prepend(currentDoc);
@@ -264,7 +264,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
         } while (currentDoc);
 
         // 4. For each document in docs, run these substeps:
-        WillBeHeapDeque<RawPtrWillBeMember<Document>>::iterator current = docs.begin(), following = docs.begin();
+        HeapDeque<Member<Document>>::iterator current = docs.begin(), following = docs.begin();
 
         do {
             ++following;
@@ -345,7 +345,7 @@ void Fullscreen::exitFullscreen()
     // 3. Let descendants be all the doc's descendant browsing context's documents with a non-empty fullscreen
     // element stack (if any), ordered so that the child of the doc is last and the document furthest
     // away from the doc is first.
-    WillBeHeapDeque<RefPtrWillBeMember<Document>> descendants;
+    HeapDeque<Member<Document>> descendants;
     for (Frame* descendant = document()->frame() ? document()->frame()->tree().traverseNext() : 0; descendant; descendant = descendant->tree().traverseNext()) {
         if (!descendant->isLocalFrame())
             continue;
@@ -528,7 +528,7 @@ void Fullscreen::fullScreenLayoutObjectDestroyed()
 
 void Fullscreen::enqueueChangeEvent(Document& document, RequestType requestType)
 {
-    RefPtrWillBeRawPtr<Event> event;
+    RawPtr<Event> event;
     if (requestType == UnprefixedRequest) {
         event = createEvent(EventTypeNames::fullscreenchange, document);
     } else {
@@ -547,7 +547,7 @@ void Fullscreen::enqueueChangeEvent(Document& document, RequestType requestType)
 
 void Fullscreen::enqueueErrorEvent(Element& element, RequestType requestType)
 {
-    RefPtrWillBeRawPtr<Event> event;
+    RawPtr<Event> event;
     if (requestType == UnprefixedRequest)
         event = createEvent(EventTypeNames::fullscreenerror, element.document());
     else
@@ -561,12 +561,12 @@ void Fullscreen::eventQueueTimerFired(Timer<Fullscreen>*)
     // Since we dispatch events in this function, it's possible that the
     // document will be detached and GC'd. We protect it here to make sure we
     // can finish the function successfully.
-    RefPtrWillBeRawPtr<Document> protectDocument(document());
-    WillBeHeapDeque<RefPtrWillBeMember<Event>> eventQueue;
+    RawPtr<Document> protectDocument(document());
+    HeapDeque<Member<Event>> eventQueue;
     m_eventQueue.swap(eventQueue);
 
     while (!eventQueue.isEmpty()) {
-        RefPtrWillBeRawPtr<Event> event = eventQueue.takeFirst();
+        RawPtr<Event> event = eventQueue.takeFirst();
         Node* target = event->target()->toNode();
 
         // If the element was removed from our tree, also message the documentElement.
@@ -627,7 +627,7 @@ DEFINE_TRACE(Fullscreen)
     visitor->trace(m_fullScreenElementStack);
     visitor->trace(m_eventQueue);
 #endif
-    WillBeHeapSupplement<Document>::trace(visitor);
+    HeapSupplement<Document>::trace(visitor);
     DocumentLifecycleObserver::trace(visitor);
 }
 

@@ -45,11 +45,10 @@ class LayoutFullScreen;
 class ComputedStyle;
 
 class CORE_EXPORT Fullscreen final
-    : public NoBaseWillBeGarbageCollectedFinalized<Fullscreen>
-    , public WillBeHeapSupplement<Document>
+    : public GarbageCollectedFinalized<Fullscreen>
+    , public HeapSupplement<Document>
     , public DocumentLifecycleObserver {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(Fullscreen);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
+    USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
 public:
     virtual ~Fullscreen();
     static const char* supplementName();
@@ -109,11 +108,11 @@ private:
     void enqueueErrorEvent(Element&, RequestType);
     void eventQueueTimerFired(Timer<Fullscreen>*);
 
-    RefPtrWillBeMember<Element> m_fullScreenElement;
-    WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, RequestType>> m_fullScreenElementStack;
+    Member<Element> m_fullScreenElement;
+    HeapVector<std::pair<Member<Element>, RequestType>> m_fullScreenElementStack;
     LayoutFullScreen* m_fullScreenLayoutObject;
     Timer<Fullscreen> m_eventQueueTimer;
-    WillBeHeapDeque<RefPtrWillBeMember<Event>> m_eventQueue;
+    HeapDeque<Member<Event>> m_eventQueue;
     LayoutRect m_savedPlaceholderFrameRect;
     RefPtr<ComputedStyle> m_savedPlaceholderComputedStyle;
 };

@@ -285,7 +285,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
 {
     ASSERT(m_element);
 
-    RefPtrWillBeRawPtr<Document> elementDocument(m_element->document());
+    RawPtr<Document> elementDocument(m_element->document());
     if (!m_element->inDocument() || m_element->document() != elementDocument)
         return false;
 
@@ -364,8 +364,8 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     if (sourceCode.isEmpty())
         return true;
 
-    RefPtrWillBeRawPtr<Document> elementDocument(m_element->document());
-    RefPtrWillBeRawPtr<Document> contextDocument = elementDocument->contextDocument().get();
+    RawPtr<Document> elementDocument(m_element->document());
+    RawPtr<Document> contextDocument = elementDocument->contextDocument().get();
     if (!contextDocument)
         return true;
 
@@ -446,7 +446,7 @@ void ScriptLoader::execute()
     ASSERT(m_pendingScript->resource());
     bool errorOccurred = false;
     ScriptSourceCode source = m_pendingScript->getSource(KURL(), errorOccurred);
-    RefPtrWillBeRawPtr<Element> element = m_pendingScript->releaseElementAndClear();
+    RawPtr<Element> element = m_pendingScript->releaseElementAndClear();
     ALLOW_UNUSED_LOCAL(element);
     if (errorOccurred) {
         dispatchErrorEvent();
@@ -463,8 +463,8 @@ void ScriptLoader::notifyFinished(Resource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
 
-    RefPtrWillBeRawPtr<Document> elementDocument(m_element->document());
-    RefPtrWillBeRawPtr<Document> contextDocument = elementDocument->contextDocument().get();
+    RawPtr<Document> elementDocument(m_element->document());
+    RawPtr<Document> contextDocument = elementDocument->contextDocument().get();
     if (!contextDocument)
         return;
 

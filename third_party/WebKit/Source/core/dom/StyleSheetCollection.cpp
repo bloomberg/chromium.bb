@@ -34,15 +34,13 @@ StyleSheetCollection::StyleSheetCollection()
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(StyleSheetCollection);
-
 void StyleSheetCollection::swap(StyleSheetCollection& other)
 {
     m_styleSheetsForStyleSheetList.swap(other.m_styleSheetsForStyleSheetList);
     m_activeAuthorStyleSheets.swap(other.m_activeAuthorStyleSheets);
 }
 
-void StyleSheetCollection::swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& sheets)
+void StyleSheetCollection::swapSheetsForSheetList(HeapVector<Member<StyleSheet>>& sheets)
 {
     // Only called for collection of HTML Imports that never has active sheets.
     ASSERT(m_activeAuthorStyleSheets.isEmpty());

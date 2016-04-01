@@ -46,19 +46,19 @@ namespace blink {
 static unsigned s_observerPriority = 0;
 
 struct MutationObserver::ObserverLessThan {
-    bool operator()(const RefPtrWillBeMember<MutationObserver>& lhs, const RefPtrWillBeMember<MutationObserver>& rhs)
+    bool operator()(const Member<MutationObserver>& lhs, const Member<MutationObserver>& rhs)
     {
         return lhs->m_priority < rhs->m_priority;
     }
 };
 
-PassRefPtrWillBeRawPtr<MutationObserver> MutationObserver::create(PassOwnPtrWillBeRawPtr<MutationCallback> callback)
+RawPtr<MutationObserver> MutationObserver::create(RawPtr<MutationCallback> callback)
 {
     ASSERT(isMainThread());
-    return adoptRefWillBeNoop(new MutationObserver(callback));
+    return new MutationObserver(callback);
 }
 
-MutationObserver::MutationObserver(PassOwnPtrWillBeRawPtr<MutationCallback> callback)
+MutationObserver::MutationObserver(RawPtr<MutationCallback> callback)
     : m_callback(callback)
     , m_priority(s_observerPriority++)
 {
@@ -166,17 +166,17 @@ void MutationObserver::observationEnded(MutationObserverRegistration* registrati
 
 static MutationObserverSet& activeMutationObservers()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<MutationObserverSet>, activeObservers, (adoptPtrWillBeNoop(new MutationObserverSet())));
+    DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, activeObservers, (new MutationObserverSet()));
     return *activeObservers;
 }
 
 static MutationObserverSet& suspendedMutationObservers()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<MutationObserverSet>, suspendedObservers, (adoptPtrWillBeNoop(new MutationObserverSet())));
+    DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, suspendedObservers, (new MutationObserverSet()));
     return *suspendedObservers;
 }
 
-static void activateObserver(PassRefPtrWillBeRawPtr<MutationObserver> observer)
+static void activateObserver(RawPtr<MutationObserver> observer)
 {
     if (activeMutationObservers().isEmpty())
         Microtask::enqueueMicrotask(WTF::bind(&MutationObserver::deliverMutations));
@@ -184,7 +184,7 @@ static void activateObserver(PassRefPtrWillBeRawPtr<MutationObserver> observer)
     activeMutationObservers().add(observer);
 }
 
-void MutationObserver::enqueueMutationRecord(PassRefPtrWillBeRawPtr<MutationRecord> mutation)
+void MutationObserver::enqueueMutationRecord(RawPtr<MutationRecord> mutation)
 {
     ASSERT(isMainThread());
     m_records.append(mutation);
@@ -198,9 +198,9 @@ void MutationObserver::setHasTransientRegistration()
     activateObserver(this);
 }
 
-WillBeHeapHashSet<RawPtrWillBeMember<Node>> MutationObserver::getObservedNodes() const
+HeapHashSet<Member<Node>> MutationObserver::getObservedNodes() const
 {
-    WillBeHeapHashSet<RawPtrWillBeMember<Node>> observedNodes;
+    HeapHashSet<Member<Node>> observedNodes;
     for (const auto& registration : m_registrations)
         registration->addRegistrationNodesToSet(observedNodes);
     return observedNodes;
@@ -217,7 +217,7 @@ void MutationObserver::deliver()
 
     // Calling clearTransientRegistrations() can modify m_registrations, so it's necessary
     // to make a copy of the transient registrations before operating on them.
-    WillBeHeapVector<RawPtrWillBeMember<MutationObserverRegistration>, 1> transientRegistrations;
+    HeapVector<Member<MutationObserverRegistration>, 1> transientRegistrations;
     for (auto& registration : m_registrations) {
         if (registration->hasTransientRegistrations())
             transientRegistrations.append(registration);

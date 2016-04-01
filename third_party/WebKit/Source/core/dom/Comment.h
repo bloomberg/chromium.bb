@@ -30,14 +30,14 @@ namespace blink {
 class Comment final : public CharacterData {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Comment> create(Document&, const String&);
+    static RawPtr<Comment> create(Document&, const String&);
 
 private:
     Comment(Document&, const String&);
 
     String nodeName() const override;
     NodeType getNodeType() const override;
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
+    RawPtr<Node> cloneNode(bool deep) override;
 };
 
 DEFINE_NODE_TYPE_CASTS(Comment, getNodeType() == Node::COMMENT_NODE);

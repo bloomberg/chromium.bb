@@ -36,9 +36,9 @@
 
 namespace blink {
 
-struct SameSizeAsElementData : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsElementData> {
+struct SameSizeAsElementData : public GarbageCollectedFinalized<SameSizeAsElementData> {
     unsigned bitfield;
-    RawPtrWillBeMember<void*> willbeMember;
+    Member<void*> willbeMember;
     void* pointers[2];
 };
 
@@ -97,11 +97,11 @@ void ElementData::destroy()
 }
 #endif
 
-PassRefPtrWillBeRawPtr<UniqueElementData> ElementData::makeUniqueCopy() const
+RawPtr<UniqueElementData> ElementData::makeUniqueCopy() const
 {
     if (isUnique())
-        return adoptRefWillBeNoop(new UniqueElementData(toUniqueElementData(*this)));
-    return adoptRefWillBeNoop(new UniqueElementData(toShareableElementData(*this)));
+        return new UniqueElementData(toUniqueElementData(*this));
+    return new UniqueElementData(toShareableElementData(*this));
 }
 
 bool ElementData::isEquivalent(const ElementData* other) const
@@ -161,7 +161,7 @@ ShareableElementData::ShareableElementData(const UniqueElementData& other)
         new (&m_attributeArray[i]) Attribute(other.m_attributeVector.at(i));
 }
 
-PassRefPtrWillBeRawPtr<ShareableElementData> ShareableElementData::createWithAttributes(const Vector<Attribute>& attributes)
+RawPtr<ShareableElementData> ShareableElementData::createWithAttributes(const Vector<Attribute>& attributes)
 {
 #if ENABLE(OILPAN)
     void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(attributes.size()));
@@ -196,12 +196,12 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
         m_attributeVector.uncheckedAppend(other.m_attributeArray[i]);
 }
 
-PassRefPtrWillBeRawPtr<UniqueElementData> UniqueElementData::create()
+RawPtr<UniqueElementData> UniqueElementData::create()
 {
     return adoptRefWillBeNoop(new UniqueElementData);
 }
 
-PassRefPtrWillBeRawPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
+RawPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
 {
 #if ENABLE(OILPAN)
     void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(m_attributeVector.size()));

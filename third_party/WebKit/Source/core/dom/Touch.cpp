@@ -86,9 +86,9 @@ Touch::Touch(LocalFrame* frame, const TouchInit& initializer)
     m_absoluteLocation = roundedLayoutPoint(m_pagePos.scaledBy(scaleFactor));
 }
 
-PassRefPtrWillBeRawPtr<Touch> Touch::cloneWithNewTarget(EventTarget* eventTarget) const
+RawPtr<Touch> Touch::cloneWithNewTarget(EventTarget* eventTarget) const
 {
-    return adoptRefWillBeNoop(new Touch(eventTarget, m_identifier, m_clientPos, m_screenPos, m_pagePos, m_radius, m_rotationAngle, m_force, m_region, m_absoluteLocation));
+    return new Touch(eventTarget, m_identifier, m_clientPos, m_screenPos, m_pagePos, m_radius, m_rotationAngle, m_force, m_region, m_absoluteLocation);
 }
 
 DEFINE_TRACE(Touch)

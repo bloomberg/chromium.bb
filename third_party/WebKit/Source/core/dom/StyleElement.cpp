@@ -101,7 +101,7 @@ void StyleElement::removedFrom(Element* element, ContainerNode* insertionPoint)
         m_registeredAsCandidate = false;
     }
 
-    RefPtrWillBeRawPtr<StyleSheet> removedSheet = m_sheet.get();
+    RawPtr<StyleSheet> removedSheet = m_sheet.get();
 
     if (m_sheet)
         clearSheet(element);
@@ -183,12 +183,12 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const Strin
         || csp->allowInlineStyle(e->document().url(), m_startPosition.m_line, text);
 
     // Clearing the current sheet may remove the cache entry so create the new sheet first
-    RefPtrWillBeRawPtr<CSSStyleSheet> newSheet = nullptr;
+    RawPtr<CSSStyleSheet> newSheet = nullptr;
 
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
     if (isCSS(e, type) && passesContentSecurityPolicyChecks) {
-        RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media());
+        RawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(media());
 
         MediaQueryEvaluator screenEval("screen", true);
         MediaQueryEvaluator printEval("print", true);

@@ -42,9 +42,9 @@ class Node;
 template <typename NodeType>
 class StaticNodeTypeList final : public NodeList {
 public:
-    static PassRefPtrWillBeRawPtr<StaticNodeTypeList> adopt(WillBeHeapVector<RefPtrWillBeMember<NodeType>>& nodes);
+    static RawPtr<StaticNodeTypeList> adopt(HeapVector<Member<NodeType>>& nodes);
 
-    static PassRefPtrWillBeRawPtr<StaticNodeTypeList> createEmpty()
+    static RawPtr<StaticNodeTypeList> createEmpty()
     {
         return adoptRefWillBeNoop(new StaticNodeTypeList);
     }
@@ -57,16 +57,16 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    WillBeHeapVector<RefPtrWillBeMember<NodeType>> m_nodes;
+    HeapVector<Member<NodeType>> m_nodes;
 };
 
 typedef StaticNodeTypeList<Node> StaticNodeList;
 typedef StaticNodeTypeList<Element> StaticElementList;
 
 template <typename NodeType>
-PassRefPtrWillBeRawPtr<StaticNodeTypeList<NodeType>> StaticNodeTypeList<NodeType>::adopt(WillBeHeapVector<RefPtrWillBeMember<NodeType>>& nodes)
+RawPtr<StaticNodeTypeList<NodeType>> StaticNodeTypeList<NodeType>::adopt(HeapVector<Member<NodeType>>& nodes)
 {
-    RefPtrWillBeRawPtr<StaticNodeTypeList<NodeType>> nodeList = adoptRefWillBeNoop(new StaticNodeTypeList<NodeType>);
+    RawPtr<StaticNodeTypeList<NodeType>> nodeList = adoptRefWillBeNoop(new StaticNodeTypeList<NodeType>);
     nodeList->m_nodes.swap(nodes);
     return nodeList.release();
 }

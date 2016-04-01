@@ -62,7 +62,7 @@ protected:
         return LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*m_node);
     }
 
-    RawPtrWillBeMember<NodeType> m_node;
+    Member<NodeType> m_node;
     LayoutObject* m_layoutObjectParent;
 };
 

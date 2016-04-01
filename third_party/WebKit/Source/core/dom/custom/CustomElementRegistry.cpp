@@ -66,7 +66,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
 
     ASSERT(!m_documentWasDetached);
 
-    RefPtrWillBeRawPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks();
+    RawPtr<CustomElementLifecycleCallbacks> lifecycleCallbacks = constructorBuilder->createCallbacks();
 
     // Consulting the constructor builder could execute script and
     // kill the document.
@@ -76,7 +76,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
     }
 
     const CustomElementDescriptor descriptor(type, tagName.namespaceURI(), tagName.localName());
-    RefPtrWillBeRawPtr<CustomElementDefinition> definition = CustomElementDefinition::create(descriptor, lifecycleCallbacks);
+    RawPtr<CustomElementDefinition> definition = CustomElementDefinition::create(descriptor, lifecycleCallbacks);
 
     if (!constructorBuilder->createConstructor(document, definition.get(), exceptionState))
         return 0;

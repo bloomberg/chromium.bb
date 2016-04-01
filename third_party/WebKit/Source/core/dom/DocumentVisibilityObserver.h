@@ -13,7 +13,7 @@ namespace blink {
 
 class Document;
 
-class CORE_EXPORT DocumentVisibilityObserver : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT DocumentVisibilityObserver : public GarbageCollectedMixin {
     WTF_MAKE_NONCOPYABLE(DocumentVisibilityObserver);
 public:
     explicit DocumentVisibilityObserver(Document&);
@@ -34,7 +34,7 @@ private:
     void registerObserver(Document&);
     void unregisterObserver();
 
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 };
 
 } // namespace blink

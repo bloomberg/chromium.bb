@@ -210,7 +210,7 @@ public:
     ContainerNode* parentElementOrDocumentFragment() const;
     Node* previousSibling() const { return m_previous; }
     Node* nextSibling() const { return m_next; }
-    PassRefPtrWillBeRawPtr<NodeList> childNodes();
+    RawPtr<NodeList> childNodes();
     Node* firstChild() const;
     Node* lastChild() const;
     Node& treeRoot() const;
@@ -224,13 +224,13 @@ public:
 
     const KURL& baseURI() const;
 
-    PassRefPtrWillBeRawPtr<Node> insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
-    PassRefPtrWillBeRawPtr<Node> replaceChild(PassRefPtrWillBeRawPtr<Node> newChild, PassRefPtrWillBeRawPtr<Node> oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
-    PassRefPtrWillBeRawPtr<Node> removeChild(PassRefPtrWillBeRawPtr<Node> child, ExceptionState& = ASSERT_NO_EXCEPTION);
-    PassRefPtrWillBeRawPtr<Node> appendChild(PassRefPtrWillBeRawPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    RawPtr<Node> insertBefore(RawPtr<Node> newChild, Node* refChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    RawPtr<Node> replaceChild(RawPtr<Node> newChild, RawPtr<Node> oldChild, ExceptionState& = ASSERT_NO_EXCEPTION);
+    RawPtr<Node> removeChild(RawPtr<Node> child, ExceptionState& = ASSERT_NO_EXCEPTION);
+    RawPtr<Node> appendChild(RawPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     bool hasChildren() const { return firstChild(); }
-    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) = 0;
+    virtual RawPtr<Node> cloneNode(bool deep) = 0;
     void normalize();
 
     bool isEqualNode(Node*) const;
@@ -635,12 +635,12 @@ public:
     virtual void* preDispatchEventHandler(Event*) { return nullptr; }
     virtual void postDispatchEventHandler(Event*, void* /*dataFromPreDispatch*/) { }
 
-    void dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event>);
+    void dispatchScopedEvent(RawPtr<Event>);
 
     virtual void handleLocalEvents(Event&);
 
     void dispatchSubtreeModifiedEvent();
-    DispatchEventResult dispatchDOMActivateEvent(int detail, PassRefPtrWillBeRawPtr<Event> underlyingEvent);
+    DispatchEventResult dispatchDOMActivateEvent(int detail, RawPtr<Event> underlyingEvent);
 
     DispatchEventResult dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = nullptr);
 
@@ -655,7 +655,7 @@ public:
     EventTargetData* eventTargetData() override;
     EventTargetData& ensureEventTargetData() override;
 
-    void getRegisteredMutationObserversOfType(WillBeHeapHashMap<RefPtrWillBeMember<MutationObserver>, MutationRecordDeliveryOptions>&, MutationObserver::MutationType, const QualifiedName* attributeName);
+    void getRegisteredMutationObserversOfType(HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>&, MutationObserver::MutationType, const QualifiedName* attributeName);
     void registerMutationObserver(MutationObserver&, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
     void unregisterMutationObserver(MutationObserverRegistration*);
     void registerTransientMutationObserver(MutationObserverRegistration*);
@@ -666,7 +666,7 @@ public:
     void incrementConnectedSubframeCount();
     void decrementConnectedSubframeCount();
 
-    PassRefPtrWillBeRawPtr<StaticNodeList> getDestinationInsertionPoints();
+    RawPtr<StaticNodeList> getDestinationInsertionPoints();
     HTMLSlotElement* assignedSlot() const;
     HTMLSlotElement* assignedSlotForBinding();
 
@@ -757,9 +757,9 @@ protected:
 
     virtual void didMoveToNewDocument(Document& oldDocument);
 
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
-    bool removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
-    DispatchEventResult dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
+    bool removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
+    DispatchEventResult dispatchEventInternal(RawPtr<Event>) override;
 
     static void reattachWhitespaceSiblingsIfNeeded(Text* start);
 
@@ -826,14 +826,14 @@ private:
 
     void trackForDebugging();
 
-    WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration>>* mutationObserverRegistry();
-    WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration>>* transientMutationObserverRegistry();
+    HeapVector<Member<MutationObserverRegistration>>* mutationObserverRegistry();
+    HeapHashSet<Member<MutationObserverRegistration>>* transientMutationObserverRegistry();
 
     uint32_t m_nodeFlags;
-    RawPtrWillBeMember<ContainerNode> m_parentOrShadowHostNode;
-    RawPtrWillBeMember<TreeScope> m_treeScope;
-    RawPtrWillBeMember<Node> m_previous;
-    RawPtrWillBeMember<Node> m_next;
+    Member<ContainerNode> m_parentOrShadowHostNode;
+    Member<TreeScope> m_treeScope;
+    Member<Node> m_previous;
+    Member<Node> m_next;
     // When a node has rare data we move the layoutObject into the rare data.
     union DataUnion {
         DataUnion() : m_layoutObject(nullptr) { }
@@ -911,11 +911,11 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)
     DEFINE_TYPE_CASTS(thisType, Node, node, is##thisType(*node), is##thisType(node))
 
 #define DECLARE_NODE_FACTORY(T) \
-    static PassRefPtrWillBeRawPtr<T> create(Document&)
+    static RawPtr<T> create(Document&)
 #define DEFINE_NODE_FACTORY(T) \
-PassRefPtrWillBeRawPtr<T> T::create(Document& document) \
+RawPtr<T> T::create(Document& document) \
 { \
-    return adoptRefWillBeNoop(new T(document)); \
+    return new T(document); \
 }
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const Node&);

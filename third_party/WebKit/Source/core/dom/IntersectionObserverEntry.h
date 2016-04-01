@@ -34,7 +34,7 @@ private:
     Member<ClientRect> m_boundingClientRect;
     Member<ClientRect> m_rootBounds;
     Member<ClientRect> m_intersectionRect;
-    RefPtrWillBeMember<Element> m_target;
+    Member<Element> m_target;
 };
 
 } // namespace blink

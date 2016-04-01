@@ -41,10 +41,9 @@ namespace blink {
 
 class QualifiedName;
 
-class MutationObserverRegistration final : public NoBaseWillBeGarbageCollectedFinalized<MutationObserverRegistration> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(MutationObserverRegistration);
+class MutationObserverRegistration final : public GarbageCollectedFinalized<MutationObserverRegistration> {
 public:
-    static PassOwnPtrWillBeRawPtr<MutationObserverRegistration> create(MutationObserver&, Node*, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
+    static RawPtr<MutationObserverRegistration> create(MutationObserver&, Node*, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
     ~MutationObserverRegistration();
 
     void resetObservation(MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
@@ -60,7 +59,7 @@ public:
     MutationRecordDeliveryOptions deliveryOptions() const { return m_options & (MutationObserver::AttributeOldValue | MutationObserver::CharacterDataOldValue); }
     MutationObserverOptions mutationTypes() const { return m_options & MutationObserver::AllMutationTypes; }
 
-    void addRegistrationNodesToSet(WillBeHeapHashSet<RawPtrWillBeMember<Node>>&) const;
+    void addRegistrationNodesToSet(HeapHashSet<Member<Node>>&) const;
 
     DECLARE_TRACE();
 
@@ -69,11 +68,11 @@ public:
 private:
     MutationObserverRegistration(MutationObserver&, Node*, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
 
-    RefPtrWillBeMember<MutationObserver> m_observer;
-    RawPtrWillBeWeakMember<Node> m_registrationNode;
-    RefPtrWillBeMember<Node> m_registrationNodeKeepAlive;
-    typedef WillBeHeapHashSet<RefPtrWillBeMember<Node>> NodeHashSet;
-    OwnPtrWillBeMember<NodeHashSet> m_transientRegistrationNodes;
+    Member<MutationObserver> m_observer;
+    WeakMember<Node> m_registrationNode;
+    Member<Node> m_registrationNodeKeepAlive;
+    typedef HeapHashSet<Member<Node>> NodeHashSet;
+    Member<NodeHashSet> m_transientRegistrationNodes;
 
     MutationObserverOptions m_options;
     HashSet<AtomicString> m_attributeFilter;

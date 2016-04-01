@@ -26,9 +26,9 @@ RemoteSecurityContext::RemoteSecurityContext()
     // grantUniversalAccess().
 }
 
-PassRefPtrWillBeRawPtr<RemoteSecurityContext> RemoteSecurityContext::create()
+RawPtr<RemoteSecurityContext> RemoteSecurityContext::create()
 {
-    return adoptRefWillBeNoop(new RemoteSecurityContext());
+    return new RemoteSecurityContext();
 }
 
 DEFINE_TRACE(RemoteSecurityContext)

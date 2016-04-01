@@ -45,11 +45,11 @@ class ScriptSourceCode;
 // A RefPtr alone does not prevent the underlying Resource
 // from purging its data buffer. This class holds a dummy client open for its
 // lifetime in order to guarantee that the data buffer will not be purged.
-class CORE_EXPORT PendingScript final : public NoBaseWillBeGarbageCollectedFinalized<PendingScript>, public ResourceOwner<ScriptResource> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PendingScript);
-    WILL_BE_USING_PRE_FINALIZER(PendingScript, dispose);
+class CORE_EXPORT PendingScript final : public GarbageCollectedFinalized<PendingScript>, public ResourceOwner<ScriptResource> {
+    USING_GARBAGE_COLLECTED_MIXIN(PendingScript);
+    USING_PRE_FINALIZER(PendingScript, dispose);
 public:
-    static PassOwnPtrWillBeRawPtr<PendingScript> create(Element*, ScriptResource*);
+    static RawPtr<PendingScript> create(Element*, ScriptResource*);
     ~PendingScript() override;
 
     PendingScript& operator=(const PendingScript&);
@@ -62,7 +62,7 @@ public:
 
     Element* element() const { return m_element.get(); }
     void setElement(Element*);
-    PassRefPtrWillBeRawPtr<Element> releaseElementAndClear();
+    RawPtr<Element> releaseElementAndClear();
 
     void setScriptResource(ScriptResource*);
 
@@ -74,7 +74,7 @@ public:
 
     ScriptSourceCode getSource(const KURL& documentURL, bool& errorOccurred) const;
 
-    void setStreamer(PassRefPtrWillBeRawPtr<ScriptStreamer>);
+    void setStreamer(RawPtr<ScriptStreamer>);
     void streamingFinished();
 
     bool isReady() const;
@@ -86,11 +86,11 @@ private:
     PendingScript(Element*, ScriptResource*);
 
     bool m_watchingForLoad;
-    RefPtrWillBeMember<Element> m_element;
+    Member<Element> m_element;
     TextPosition m_startingPosition; // Only used for inline script tags.
     bool m_integrityFailure;
 
-    RefPtrWillBeMember<ScriptStreamer> m_streamer;
+    Member<ScriptStreamer> m_streamer;
     ScriptResourceClient* m_client;
 };
 

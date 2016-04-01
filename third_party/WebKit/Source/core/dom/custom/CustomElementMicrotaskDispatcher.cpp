@@ -20,11 +20,9 @@ CustomElementMicrotaskDispatcher::CustomElementMicrotaskDispatcher()
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementMicrotaskDispatcher)
-
 CustomElementMicrotaskDispatcher& CustomElementMicrotaskDispatcher::instance()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<CustomElementMicrotaskDispatcher>, instance, (adoptPtrWillBeNoop(new CustomElementMicrotaskDispatcher())));
+    DEFINE_STATIC_LOCAL(Persistent<CustomElementMicrotaskDispatcher>, instance, (new CustomElementMicrotaskDispatcher()));
     return *instance;
 }
 

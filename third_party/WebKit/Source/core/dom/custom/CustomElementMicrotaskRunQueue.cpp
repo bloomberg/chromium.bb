@@ -11,8 +11,6 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementMicrotaskRunQueue)
-
 CustomElementMicrotaskRunQueue::CustomElementMicrotaskRunQueue()
     : m_syncQueue(CustomElementSyncMicrotaskQueue::create())
     , m_asyncQueue(CustomElementAsyncImportMicrotaskQueue::create())
@@ -23,7 +21,7 @@ CustomElementMicrotaskRunQueue::CustomElementMicrotaskRunQueue()
 {
 }
 
-void CustomElementMicrotaskRunQueue::enqueue(HTMLImportLoader* parentLoader, PassOwnPtrWillBeRawPtr<CustomElementMicrotaskStep> step, bool importIsSync)
+void CustomElementMicrotaskRunQueue::enqueue(HTMLImportLoader* parentLoader, RawPtr<CustomElementMicrotaskStep> step, bool importIsSync)
 {
     if (importIsSync) {
         if (parentLoader)
@@ -57,7 +55,7 @@ DEFINE_TRACE(CustomElementMicrotaskRunQueue)
 
 void CustomElementMicrotaskRunQueue::dispatch()
 {
-    RefPtrWillBeRawPtr<CustomElementMicrotaskRunQueue> protect(this);
+    RawPtr<CustomElementMicrotaskRunQueue> protect(this);
     m_dispatchIsPending = false;
     m_syncQueue->dispatch();
     if (m_syncQueue->isEmpty())

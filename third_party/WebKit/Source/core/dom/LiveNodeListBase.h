@@ -39,7 +39,7 @@ enum class NodeListRootType {
     TreeScope,
 };
 
-class CORE_EXPORT LiveNodeListBase : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT LiveNodeListBase : public GarbageCollectedMixin {
 public:
     LiveNodeListBase(ContainerNode& ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
         CollectionType collectionType)
@@ -88,7 +88,7 @@ protected:
     DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_ownerNode); }
 
 private:
-    RefPtrWillBeMember<ContainerNode> m_ownerNode; // Cannot be null.
+    Member<ContainerNode> m_ownerNode; // Cannot be null.
     const unsigned m_rootType : 1;
     const unsigned m_invalidationType : 4;
     const unsigned m_collectionType : 5;

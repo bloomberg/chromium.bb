@@ -40,7 +40,7 @@ class ExecutionContext;
 
 // FIXME: Some consumers of this class may benefit from lazily fetching items rather
 //        than creating the list statically as is currently the only option.
-class CORE_EXPORT DOMStringList final : public RefCountedWillBeGarbageCollectedFinalized<DOMStringList>, public ScriptWrappable {
+class CORE_EXPORT DOMStringList final : public GarbageCollectedFinalized<DOMStringList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // We would like to remove DOMStringList from the platform if possible.
@@ -49,9 +49,9 @@ public:
     // what path it should take. http://crbug.com/460726
     enum Source { IndexedDB, Location };
 
-    static PassRefPtrWillBeRawPtr<DOMStringList> create(Source source)
+    static RawPtr<DOMStringList> create(Source source)
     {
-        return adoptRefWillBeNoop(new DOMStringList(source));
+        return new DOMStringList(source);
     }
 
     bool isEmpty() const { return m_strings.isEmpty(); }

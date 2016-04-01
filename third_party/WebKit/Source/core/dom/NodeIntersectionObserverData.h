@@ -29,7 +29,7 @@ public:
     void dispose();
 #endif
 
-    WeakPtrWillBeRawPtr<Node> createWeakPtr(Node*);
+    RawPtr<Node> createWeakPtr(Node*);
 
 private:
     // IntersectionObservers for which the Node owning this data is root.
