@@ -1541,30 +1541,41 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
     if (!text)
         return;
 
+    // Merging Text nodes causes an additional layout. We'd like to skip it if the
+    // editable text is huge.
+    // TODO(tkent): 1024 was chosen by my intuition.  We need data.
+    const unsigned kMergeSizeLimit = 1024;
+    bool hasIncompleteSurrogate = text->data().length() >= 1 && (U16_IS_TRAIL(text->data()[0]) || U16_IS_LEAD(text->data()[text->data().length() - 1]));
+    if (!hasIncompleteSurrogate && text->data().length() > kMergeSizeLimit)
+        return;
     if (text->previousSibling() && text->previousSibling()->isTextNode()) {
         RefPtrWillBeRawPtr<Text> previous = toText(text->previousSibling());
-        insertTextIntoNode(text, 0, previous->data());
+        if (hasIncompleteSurrogate || previous->data().length() <= kMergeSizeLimit) {
+            insertTextIntoNode(text, 0, previous->data());
 
-        if (positionIsOffsetInAnchor)
-            position = Position(position.computeContainerNode(), previous->length() + position.offsetInContainerNode());
-        else
-            updatePositionForNodeRemoval(position, *previous);
+            if (positionIsOffsetInAnchor)
+                position = Position(position.computeContainerNode(), previous->length() + position.offsetInContainerNode());
+            else
+                updatePositionForNodeRemoval(position, *previous);
 
-        if (positionOnlyToBeUpdatedIsOffsetInAnchor) {
-            if (positionOnlyToBeUpdated.computeContainerNode() == text)
-                positionOnlyToBeUpdated = Position(text, previous->length() + positionOnlyToBeUpdated.offsetInContainerNode());
-            else if (positionOnlyToBeUpdated.computeContainerNode() == previous)
-                positionOnlyToBeUpdated = Position(text, positionOnlyToBeUpdated.offsetInContainerNode());
-        } else {
-            updatePositionForNodeRemoval(positionOnlyToBeUpdated, *previous);
+            if (positionOnlyToBeUpdatedIsOffsetInAnchor) {
+                if (positionOnlyToBeUpdated.computeContainerNode() == text)
+                    positionOnlyToBeUpdated = Position(text, previous->length() + positionOnlyToBeUpdated.offsetInContainerNode());
+                else if (positionOnlyToBeUpdated.computeContainerNode() == previous)
+                    positionOnlyToBeUpdated = Position(text, positionOnlyToBeUpdated.offsetInContainerNode());
+            } else {
+                updatePositionForNodeRemoval(positionOnlyToBeUpdated, *previous);
+            }
+
+            removeNode(previous, editingState);
+            if (editingState->isAborted())
+                return;
         }
-
-        removeNode(previous, editingState);
-        if (editingState->isAborted())
-            return;
     }
     if (text->nextSibling() && text->nextSibling()->isTextNode()) {
         RefPtrWillBeRawPtr<Text> next = toText(text->nextSibling());
+        if (!hasIncompleteSurrogate && next->data().length() > kMergeSizeLimit)
+            return;
         unsigned originalLength = text->length();
         insertTextIntoNode(text, originalLength, next->data());
 
