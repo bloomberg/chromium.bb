@@ -1764,6 +1764,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
   results.extend(_CheckAndroidNewMdpiAssetLocation(input_api, output_api))
   results.extend(_CheckAndroidToastUsage(input_api, output_api))
+  results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
   return results
 
 
@@ -1814,7 +1815,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForWindowsLineEndings(input_api, output_api))
   results.extend(_CheckSingletonInHeaders(input_api, output_api))
   results.extend(_CheckNoDeprecatedCompiledResourcesGYP(input_api, output_api))
-  results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
