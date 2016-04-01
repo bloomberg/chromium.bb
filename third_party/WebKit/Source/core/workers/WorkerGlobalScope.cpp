@@ -411,7 +411,6 @@ v8::Local<v8::Object> WorkerGlobalScope::associateWithWrapper(v8::Isolate*, cons
 
 DEFINE_TRACE(WorkerGlobalScope)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_console);
     visitor->trace(m_location);
     visitor->trace(m_navigator);
@@ -423,11 +422,10 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_messageStorage);
     visitor->trace(m_pendingMessages);
     visitor->trace(m_eventListeners);
-    HeapSupplementable<WorkerGlobalScope>::trace(visitor);
-#endif
     ExecutionContext::trace(visitor);
     EventTargetWithInlineData::trace(visitor);
     SecurityContext::trace(visitor);
+    Supplementable<WorkerGlobalScope>::trace(visitor);
 }
 
 } // namespace blink

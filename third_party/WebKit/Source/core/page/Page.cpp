@@ -526,7 +526,6 @@ void Page::purgeMemory(DeviceKind deviceKind)
 
 DEFINE_TRACE(Page)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_animator);
     visitor->trace(m_autoscrollController);
     visitor->trace(m_chromeClient);
@@ -542,8 +541,7 @@ DEFINE_TRACE(Page)
     visitor->trace(m_multisamplingChangedObservers);
     visitor->trace(m_frameHost);
     visitor->trace(m_memoryPurgeController);
-    HeapSupplementable<Page>::trace(visitor);
-#endif
+    Supplementable<Page>::trace(visitor);
     PageLifecycleNotifier::trace(visitor);
     MemoryPurgeClient::trace(visitor);
 }
@@ -610,6 +608,6 @@ Page::PageClients::~PageClients()
 {
 }
 
-template class CORE_TEMPLATE_EXPORT HeapSupplement<Page>;
+template class CORE_TEMPLATE_EXPORT Supplement<Page>;
 
 } // namespace blink

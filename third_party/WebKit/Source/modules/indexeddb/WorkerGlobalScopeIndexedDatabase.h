@@ -36,13 +36,13 @@ namespace blink {
 class IDBFactory;
 class WorkerGlobalScope;
 
-class WorkerGlobalScopeIndexedDatabase final : public GarbageCollectedFinalized<WorkerGlobalScopeIndexedDatabase>, public HeapSupplement<WorkerGlobalScope> {
+class WorkerGlobalScopeIndexedDatabase final : public GarbageCollectedFinalized<WorkerGlobalScopeIndexedDatabase>, public Supplement<WorkerGlobalScope> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeIndexedDatabase);
 public:
     virtual ~WorkerGlobalScopeIndexedDatabase();
-    static WorkerGlobalScopeIndexedDatabase& from(HeapSupplementable<WorkerGlobalScope>&);
+    static WorkerGlobalScopeIndexedDatabase& from(Supplementable<WorkerGlobalScope>&);
 
-    static IDBFactory* indexedDB(HeapSupplementable<WorkerGlobalScope>&);
+    static IDBFactory* indexedDB(Supplementable<WorkerGlobalScope>&);
 
     DECLARE_VIRTUAL_TRACE();
 

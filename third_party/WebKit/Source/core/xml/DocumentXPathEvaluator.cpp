@@ -35,17 +35,17 @@ DocumentXPathEvaluator::DocumentXPathEvaluator()
 {
 }
 
-DocumentXPathEvaluator& DocumentXPathEvaluator::from(HeapSupplementable<Document>& document)
+DocumentXPathEvaluator& DocumentXPathEvaluator::from(Supplementable<Document>& document)
 {
-    DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(HeapSupplement<Document>::from(document, supplementName()));
+    DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(Supplement<Document>::from(document, supplementName()));
     if (!cache) {
-        cache = new DocumentXPathEvaluator();
-        HeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(cache));
+        cache = new DocumentXPathEvaluator;
+        Supplement<Document>::provideTo(document, supplementName(), cache);
     }
     return *cache;
 }
 
-XPathExpression* DocumentXPathEvaluator::createExpression(HeapSupplementable<Document>& document, const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
+XPathExpression* DocumentXPathEvaluator::createExpression(Supplementable<Document>& document, const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
 {
     DocumentXPathEvaluator& suplement = from(document);
     if (!suplement.m_xpathEvaluator)
@@ -53,7 +53,7 @@ XPathExpression* DocumentXPathEvaluator::createExpression(HeapSupplementable<Doc
     return suplement.m_xpathEvaluator->createExpression(expression, resolver, exceptionState);
 }
 
-XPathNSResolver* DocumentXPathEvaluator::createNSResolver(HeapSupplementable<Document>& document, Node* nodeResolver)
+XPathNSResolver* DocumentXPathEvaluator::createNSResolver(Supplementable<Document>& document, Node* nodeResolver)
 {
     DocumentXPathEvaluator& suplement = from(document);
     if (!suplement.m_xpathEvaluator)
@@ -61,7 +61,7 @@ XPathNSResolver* DocumentXPathEvaluator::createNSResolver(HeapSupplementable<Doc
     return suplement.m_xpathEvaluator->createNSResolver(nodeResolver);
 }
 
-XPathResult* DocumentXPathEvaluator::evaluate(HeapSupplementable<Document>& document, const String& expression,
+XPathResult* DocumentXPathEvaluator::evaluate(Supplementable<Document>& document, const String& expression,
     Node* contextNode, XPathNSResolver* resolver, unsigned short type,
     const ScriptValue&, ExceptionState& exceptionState)
 {
@@ -74,7 +74,7 @@ XPathResult* DocumentXPathEvaluator::evaluate(HeapSupplementable<Document>& docu
 DEFINE_TRACE(DocumentXPathEvaluator)
 {
     visitor->trace(m_xpathEvaluator);
-    HeapSupplement<Document>::trace(visitor);
+    Supplement<Document>::trace(visitor);
 }
 
 } // namespace blink

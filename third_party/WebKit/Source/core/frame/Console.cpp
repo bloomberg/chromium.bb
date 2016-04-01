@@ -56,7 +56,7 @@ DEFINE_TRACE(Console)
 {
     ConsoleBase::trace(visitor);
     DOMWindowProperty::trace(visitor);
-    HeapSupplementable<Console>::trace(visitor);
+    Supplementable<Console>::trace(visitor);
 }
 
 ExecutionContext* Console::context()

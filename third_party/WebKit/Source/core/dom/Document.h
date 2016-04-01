@@ -212,8 +212,7 @@ enum DocumentClass {
 
 using DocumentClassFlags = unsigned char;
 
-class CORE_EXPORT Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext
-    , public HeapSupplementable<Document>, public DocumentLifecycleNotifier {
+class CORE_EXPORT Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public Supplementable<Document>, public DocumentLifecycleNotifier {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Document);
 public:
@@ -1405,7 +1404,7 @@ private:
     int m_nodeCount;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT HeapSupplement<Document>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
 
 inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin)
 {

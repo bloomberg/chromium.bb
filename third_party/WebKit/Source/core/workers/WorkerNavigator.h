@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class WorkerNavigator final : public GarbageCollectedFinalized<WorkerNavigator>, public ScriptWrappable, public NavigatorCPU, public NavigatorID, public NavigatorOnLine, public HeapSupplementable<WorkerNavigator> {
+class WorkerNavigator final : public GarbageCollectedFinalized<WorkerNavigator>, public ScriptWrappable, public NavigatorCPU, public NavigatorID, public NavigatorOnLine, public Supplementable<WorkerNavigator> {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
 public:

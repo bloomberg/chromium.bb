@@ -26,13 +26,10 @@
 #ifndef Supplementable_h
 #define Supplementable_h
 
-#include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 
 #if ENABLE(ASSERT)
 #include "wtf/Threading.h"
@@ -90,101 +87,35 @@ namespace blink {
 // Note that reattachThread() does nothing if assertion is not enabled.
 //
 
-template<typename T, bool isGarbageCollected>
-class SupplementBase;
-
-template<typename T, bool isGarbageCollected>
-class SupplementableBase;
-
-template<typename T, bool isGarbageCollected>
-struct SupplementableTraits;
+template<typename T>
+class Supplementable;
 
 template<typename T>
-struct SupplementableTraits<T, true> {
-    typedef RawPtr<SupplementBase<T, true>> SupplementArgumentType;
-};
-
-template<typename T>
-struct SupplementableTraits<T, false> {
-    typedef PassOwnPtr<SupplementBase<T, false>> SupplementArgumentType;
-};
-
-template<bool>
-class SupplementTracing;
-
-template<>
-class PLATFORM_EXPORT SupplementTracing<true> : public GarbageCollectedMixin { };
-
-template<>
-class GC_PLUGIN_IGNORE("crbug.com/476419") PLATFORM_EXPORT SupplementTracing<false> {
+class Supplement : public GarbageCollectedMixin {
 public:
-    virtual ~SupplementTracing() { }
-    // FIXME: Oilpan: this trace() method is only provided to minimize
-    // the use of ENABLE(OILPAN) for Supplements deriving from the
-    // transition type HeapSupplement<>.
-    //
-    // When that transition type is removed (or its use is substantially
-    // reduced), remove this dummy trace method also.
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-};
-
-template<typename T, bool isGarbageCollected = false>
-class SupplementBase : public SupplementTracing<isGarbageCollected> {
-public:
-#if ENABLE(SECURITY_ASSERT)
-    virtual bool isRefCountedWrapper() const { return false; }
-#endif
-
-    static void provideTo(SupplementableBase<T, isGarbageCollected>& host, const char* key, typename SupplementableTraits<T, isGarbageCollected>::SupplementArgumentType supplement)
+    static void provideTo(Supplementable<T>& host, const char* key, Supplement<T>* supplement)
     {
         host.provideSupplement(key, supplement);
     }
 
-    static SupplementBase<T, isGarbageCollected>* from(SupplementableBase<T, isGarbageCollected>& host, const char* key)
+    static Supplement<T>* from(Supplementable<T>& host, const char* key)
     {
         return host.requireSupplement(key);
     }
 
-    static SupplementBase<T, isGarbageCollected>* from(SupplementableBase<T, isGarbageCollected>* host, const char* key)
+    static Supplement<T>* from(Supplementable<T>* host, const char* key)
     {
         return host ? host->requireSupplement(key) : 0;
     }
 };
 
-template<typename T, bool isGarbageCollected>
-class SupplementableTracing;
-
-// SupplementableTracing<T,true> inherits GarbageCollectedMixin virtually
+// Supplementable<T> inherits from GarbageCollectedMixin virtually
 // to allow ExecutionContext to derive from two GC mixin classes.
 template<typename T>
-class SupplementableTracing<T, true> : public virtual GarbageCollectedMixin {
-    WTF_MAKE_NONCOPYABLE(SupplementableTracing);
+class Supplementable : public virtual GarbageCollectedMixin {
+    WTF_MAKE_NONCOPYABLE(Supplementable);
 public:
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_supplements);
-    }
-
-protected:
-    SupplementableTracing() { }
-    typedef HeapHashMap<const char*, Member<SupplementBase<T, true>>, PtrHash<const char>> SupplementMap;
-    SupplementMap m_supplements;
-};
-
-template<typename T>
-class SupplementableTracing<T, false> {
-    WTF_MAKE_NONCOPYABLE(SupplementableTracing);
-protected:
-    SupplementableTracing() { }
-    typedef HashMap<const char*, OwnPtr<SupplementBase<T, false>>, PtrHash<const char>> SupplementMap;
-    SupplementMap m_supplements;
-};
-
-// Helper class for implementing Supplementable and HeapSupplementable.
-template<typename T, bool isGarbageCollected = false>
-class SupplementableBase : public SupplementableTracing<T, isGarbageCollected> {
-public:
-    void provideSupplement(const char* key, typename SupplementableTraits<T, isGarbageCollected>::SupplementArgumentType supplement)
+    void provideSupplement(const char* key, Supplement<T>* supplement)
     {
         ASSERT(m_threadId == currentThread());
         ASSERT(!this->m_supplements.get(key));
@@ -197,7 +128,7 @@ public:
         this->m_supplements.remove(key);
     }
 
-    SupplementBase<T, isGarbageCollected>* requireSupplement(const char* key)
+    Supplement<T>* requireSupplement(const char* key)
     {
         ASSERT(m_threadId == currentThread());
         return this->m_supplements.get(key);
@@ -210,34 +141,38 @@ public:
 #endif
     }
 
-#if ENABLE(ASSERT)
-protected:
-    SupplementableBase() : m_threadId(currentThread()) { }
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_supplements);
+    }
 
+protected:
+    using SupplementMap = HeapHashMap<const char*, Member<Supplement<T>>, PtrHash<const char>>;
+    SupplementMap m_supplements;
+
+    Supplementable()
+#if ENABLE(ASSERT)
+        : m_threadId(currentThread())
+#endif
+    {
+    }
+
+#if ENABLE(ASSERT)
 private:
     ThreadIdentifier m_threadId;
 #endif
 };
 
-template<typename T>
-class HeapSupplement : public SupplementBase<T, true> { };
+// TODO(sof): replace all HeapSupplement<T> uses with Supplement<T>.
+#define HeapSupplement Supplement
 
 template<typename T>
-class HeapSupplementable : public SupplementableBase<T, true> { };
-
-template<typename T>
-class Supplement : public SupplementBase<T, false> { };
-
-template<typename T>
-class Supplementable : public SupplementableBase<T, false> { };
-
-template<typename T>
-struct ThreadingTrait<SupplementBase<T, true>> {
+struct ThreadingTrait<Supplement<T>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
 template<typename T>
-struct ThreadingTrait<SupplementableBase<T, true>> {
+struct ThreadingTrait<Supplementable<T>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 

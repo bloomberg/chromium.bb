@@ -72,7 +72,7 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(LocalFrame*);
 
-class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>, public HeapSupplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate, public MemoryPurgeClient {
+class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>, public Supplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate, public MemoryPurgeClient {
     USING_GARBAGE_COLLECTED_MIXIN(Page);
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
@@ -298,7 +298,7 @@ private:
     Timer<Page> m_timerForCompressStrings;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT HeapSupplement<Page>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;
 
 } // namespace blink
 

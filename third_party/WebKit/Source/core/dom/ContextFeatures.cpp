@@ -65,12 +65,12 @@ bool ContextFeatures::mutationEventsEnabled(Document* document)
 
 void provideContextFeaturesTo(Page& page, PassOwnPtr<ContextFeaturesClient> client)
 {
-    ContextFeatures::SupplementType::provideTo(page, ContextFeatures::supplementName(), ContextFeatures::create(client));
+    Supplement<Page>::provideTo(page, ContextFeatures::supplementName(), ContextFeatures::create(client));
 }
 
 void provideContextFeaturesToDocumentFrom(Document& document, Page& page)
 {
-    ContextFeatures* provided = static_cast<ContextFeatures*>(ContextFeatures::SupplementType::from(page, ContextFeatures::supplementName()));
+    ContextFeatures* provided = static_cast<ContextFeatures*>(Supplement<Page>::from(page, ContextFeatures::supplementName()));
     if (!provided)
         return;
     document.setContextFeatures(*provided);

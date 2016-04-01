@@ -496,10 +496,10 @@ static const char* supplementName()
 
 RawPtr<FontFaceSet> FontFaceSet::from(Document& document)
 {
-    RawPtr<FontFaceSet> fonts = static_cast<FontFaceSet*>(SupplementType::from(document, supplementName()));
+    RawPtr<FontFaceSet> fonts = static_cast<FontFaceSet*>(Supplement<Document>::from(document, supplementName()));
     if (!fonts) {
         fonts = FontFaceSet::create(document);
-        SupplementType::provideTo(document, supplementName(), fonts);
+        Supplement<Document>::provideTo(document, supplementName(), fonts);
     }
 
     return fonts.release();
@@ -507,7 +507,7 @@ RawPtr<FontFaceSet> FontFaceSet::from(Document& document)
 
 void FontFaceSet::didLayout(Document& document)
 {
-    if (FontFaceSet* fonts = static_cast<FontFaceSet*>(SupplementType::from(document, supplementName())))
+    if (FontFaceSet* fonts = static_cast<FontFaceSet*>(Supplement<Document>::from(document, supplementName())))
         fonts->didLayout();
 }
 
@@ -538,16 +538,14 @@ bool FontFaceSet::IterationSource::next(ScriptState*, Member<FontFace>& key, Mem
 
 DEFINE_TRACE(FontFaceSet)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_ready);
     visitor->trace(m_loadingFonts);
     visitor->trace(m_loadedFonts);
     visitor->trace(m_failedFonts);
     visitor->trace(m_nonCSSConnectedFaces);
     visitor->trace(m_asyncRunner);
-    HeapSupplement<Document>::trace(visitor);
-#endif
     EventTargetWithInlineData::trace(visitor);
+    Supplement<Document>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

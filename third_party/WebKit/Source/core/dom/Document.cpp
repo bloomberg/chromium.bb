@@ -5960,7 +5960,6 @@ LayoutViewItem Document::layoutViewItem() const
 
 DEFINE_TRACE(Document)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_importsController);
     visitor->trace(m_docType);
     visitor->trace(m_implementation);
@@ -6016,8 +6015,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_canvasFontCache);
     visitor->trace(m_intersectionObserverController);
     visitor->trace(m_intersectionObserverData);
-    HeapSupplementable<Document>::trace(visitor);
-#endif
+    Supplementable<Document>::trace(visitor);
     TreeScope::trace(visitor);
     ContainerNode::trace(visitor);
     ExecutionContext::trace(visitor);
@@ -6025,7 +6023,7 @@ DEFINE_TRACE(Document)
     SecurityContext::trace(visitor);
 }
 
-template class CORE_TEMPLATE_EXPORT HeapSupplement<Document>;
+template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 } // namespace blink
 

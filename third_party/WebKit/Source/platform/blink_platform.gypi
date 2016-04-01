@@ -102,7 +102,6 @@
       'PrerenderClient.h',
       'PurgeableVector.cpp',
       'PurgeableVector.h',
-      'RefCountedSupplement.h',
       'ScriptForbiddenScope.cpp',
       'ScriptForbiddenScope.h',
       'SecureTextInput.cpp',

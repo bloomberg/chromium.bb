@@ -46,17 +46,17 @@ const char* WorkerGlobalScopeIndexedDatabase::supplementName()
     return "WorkerGlobalScopeIndexedDatabase";
 }
 
-WorkerGlobalScopeIndexedDatabase& WorkerGlobalScopeIndexedDatabase::from(HeapSupplementable<WorkerGlobalScope>& context)
+WorkerGlobalScopeIndexedDatabase& WorkerGlobalScopeIndexedDatabase::from(Supplementable<WorkerGlobalScope>& context)
 {
-    WorkerGlobalScopeIndexedDatabase* supplement = static_cast<WorkerGlobalScopeIndexedDatabase*>(HeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
+    WorkerGlobalScopeIndexedDatabase* supplement = static_cast<WorkerGlobalScopeIndexedDatabase*>(Supplement<WorkerGlobalScope>::from(context, supplementName()));
     if (!supplement) {
-        supplement = new WorkerGlobalScopeIndexedDatabase();
-        provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
+        supplement = new WorkerGlobalScopeIndexedDatabase;
+        provideTo(context, supplementName(), supplement);
     }
     return *supplement;
 }
 
-IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB(HeapSupplementable<WorkerGlobalScope>& context)
+IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB(Supplementable<WorkerGlobalScope>& context)
 {
     return from(context).indexedDB();
 }
@@ -71,7 +71,7 @@ IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB()
 DEFINE_TRACE(WorkerGlobalScopeIndexedDatabase)
 {
     visitor->trace(m_idbFactory);
-    HeapSupplement<WorkerGlobalScope>::trace(visitor);
+    Supplement<WorkerGlobalScope>::trace(visitor);
 }
 
 } // namespace blink

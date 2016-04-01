@@ -50,7 +50,7 @@ class WebDragData;
 // A data object for holding data that would be in a clipboard or moved
 // during a drag-n-drop operation. This is the data that WebCore is aware
 // of and is not specific to a platform.
-class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>, public HeapSupplementable<DataObject> {
+class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>, public Supplementable<DataObject> {
     USING_GARBAGE_COLLECTED_MIXIN(DataObject);
 public:
     static DataObject* createFromPasteboard(PasteMode);

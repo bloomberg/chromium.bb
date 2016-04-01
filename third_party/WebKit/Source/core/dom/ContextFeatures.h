@@ -29,7 +29,6 @@
 
 #include "core/CoreExport.h"
 #include "core/page/Page.h"
-#include "platform/RefCountedSupplement.h"
 
 namespace blink {
 
@@ -37,16 +36,9 @@ class ContextFeaturesClient;
 class Document;
 class Page;
 
-#if ENABLE(OILPAN)
-class ContextFeatures final : public GarbageCollectedFinalized<ContextFeatures>, public HeapSupplement<Page> {
+class ContextFeatures final : public GarbageCollectedFinalized<ContextFeatures>, public Supplement<Page> {
     USING_GARBAGE_COLLECTED_MIXIN(ContextFeatures);
 public:
-    typedef HeapSupplement<Page> SupplementType;
-#else
-class ContextFeatures : public RefCountedSupplement<Page, ContextFeatures> {
-public:
-    typedef RefCountedSupplement<Page, ContextFeatures> SupplementType;
-#endif
     enum FeatureType {
         PagePopup = 0,
         MutationEvents,
@@ -62,10 +54,6 @@ public:
 
     bool isEnabled(Document*, FeatureType, bool) const;
     void urlDidChange(Document*);
-
-#if ENABLE(OILPAN)
-    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<Page>::trace(visitor); }
-#endif
 
 private:
     explicit ContextFeatures(PassOwnPtr<ContextFeaturesClient> client)

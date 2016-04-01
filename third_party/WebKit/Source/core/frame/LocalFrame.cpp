@@ -245,7 +245,6 @@ LocalFrame::~LocalFrame()
 DEFINE_TRACE(LocalFrame)
 {
     visitor->trace(m_instrumentingAgents);
-#if ENABLE(OILPAN)
     visitor->trace(m_loader);
     visitor->trace(m_navigationScheduler);
     visitor->trace(m_view);
@@ -258,10 +257,9 @@ DEFINE_TRACE(LocalFrame)
     visitor->trace(m_eventHandler);
     visitor->trace(m_console);
     visitor->trace(m_inputMethodController);
-    HeapSupplementable<LocalFrame>::trace(visitor);
-#endif
-    LocalFrameLifecycleNotifier::trace(visitor);
     Frame::trace(visitor);
+    LocalFrameLifecycleNotifier::trace(visitor);
+    Supplementable<LocalFrame>::trace(visitor);
 }
 
 DOMWindow* LocalFrame::domWindow() const

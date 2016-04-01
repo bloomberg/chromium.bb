@@ -39,7 +39,7 @@ namespace blink {
 
 class LocalFrame;
 
-class Screen final : public GarbageCollectedFinalized<Screen>, public ScriptWrappable, public DOMWindowProperty, public HeapSupplementable<Screen> {
+class Screen final : public GarbageCollectedFinalized<Screen>, public ScriptWrappable, public DOMWindowProperty, public Supplementable<Screen> {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Screen);
 public:

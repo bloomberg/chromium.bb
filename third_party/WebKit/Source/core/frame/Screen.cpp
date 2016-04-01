@@ -144,8 +144,8 @@ int Screen::availWidth() const
 
 DEFINE_TRACE(Screen)
 {
-    HeapSupplementable<Screen>::trace(visitor);
     DOMWindowProperty::trace(visitor);
+    Supplementable<Screen>::trace(visitor);
 }
 
 } // namespace blink

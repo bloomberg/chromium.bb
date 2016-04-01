@@ -34,7 +34,6 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
 #include "platform/AsyncMethodRunner.h"
-#include "platform/RefCountedSupplement.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
@@ -60,15 +59,8 @@ class ExecutionContext;
 
 using FontFaceSetIterable = PairIterable<Member<FontFace>, Member<FontFace>>;
 
-#if ENABLE(OILPAN)
-class FontFaceSet final : public EventTargetWithInlineData, public HeapSupplement<Document>, public ActiveDOMObject, public FontFaceSetIterable {
+class FontFaceSet final : public EventTargetWithInlineData, public Supplement<Document>, public ActiveDOMObject, public FontFaceSetIterable {
     USING_GARBAGE_COLLECTED_MIXIN(FontFaceSet);
-    using SupplementType = HeapSupplement<Document>;
-#else
-class FontFaceSet final : public EventTargetWithInlineData, public RefCountedSupplement<Document, FontFaceSet>, public ActiveDOMObject, public FontFaceSetIterable {
-    REFCOUNTED_EVENT_TARGET(FontFaceSet);
-    using SupplementType = RefCountedSupplement<Document, FontFaceSet>;
-#endif
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~FontFaceSet() override;

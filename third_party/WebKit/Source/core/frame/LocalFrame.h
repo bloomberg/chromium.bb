@@ -77,7 +77,7 @@ class WebFrameHostScheduler;
 class WebFrameScheduler;
 template <typename Strategy> class PositionWithAffinityTemplate;
 
-class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public HeapSupplementable<LocalFrame>, public DisplayItemClient {
+class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public Supplementable<LocalFrame>, public DisplayItemClient {
     USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:
     static RawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);

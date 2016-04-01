@@ -3610,7 +3610,6 @@ void HTMLMediaElement::defaultEventHandler(Event* event)
 
 DEFINE_TRACE(HTMLMediaElement)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_playedTimeRanges);
     visitor->trace(m_asyncEventQueue);
     visitor->trace(m_error);
@@ -3627,8 +3626,7 @@ DEFINE_TRACE(HTMLMediaElement)
     visitor->trace(m_autoplayHelperClient);
     visitor->trace(m_autoplayHelper);
     visitor->template registerWeakMembers<HTMLMediaElement, &HTMLMediaElement::clearWeakMembers>(this);
-    HeapSupplementable<HTMLMediaElement>::trace(visitor);
-#endif
+    Supplementable<HTMLMediaElement>::trace(visitor);
     HTMLElement::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

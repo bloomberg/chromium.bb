@@ -259,7 +259,7 @@ void DataObject::internalAddFileItem(DataObjectItem* item)
 DEFINE_TRACE(DataObject)
 {
     visitor->trace(m_itemList);
-    HeapSupplementable<DataObject>::trace(visitor);
+    Supplementable<DataObject>::trace(visitor);
 }
 
 DataObject* DataObject::create(WebDragData data)

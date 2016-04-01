@@ -36,15 +36,15 @@ class ExceptionState;
 class XPathExpression;
 class XPathResult;
 
-class DocumentXPathEvaluator final : public GarbageCollected<DocumentXPathEvaluator>, public HeapSupplement<Document> {
+class DocumentXPathEvaluator final : public GarbageCollected<DocumentXPathEvaluator>, public Supplement<Document> {
     USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
 public:
-    static DocumentXPathEvaluator& from(HeapSupplementable<Document>&);
+    static DocumentXPathEvaluator& from(Supplementable<Document>&);
 
-    static XPathExpression* createExpression(HeapSupplementable<Document>&,
+    static XPathExpression* createExpression(Supplementable<Document>&,
         const String& expression, XPathNSResolver*, ExceptionState&);
-    static XPathNSResolver* createNSResolver(HeapSupplementable<Document>&, Node* nodeResolver);
-    static XPathResult* evaluate(HeapSupplementable<Document>&,
+    static XPathNSResolver* createNSResolver(Supplementable<Document>&, Node* nodeResolver);
+    static XPathResult* evaluate(Supplementable<Document>&,
         const String& expression, Node* contextNode, XPathNSResolver*,
         unsigned short type, const ScriptValue&, ExceptionState&);
 

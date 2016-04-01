@@ -1498,7 +1498,6 @@ RawPtr<DOMWindow> LocalDOMWindow::open(const String& urlString, const AtomicStri
 
 DEFINE_TRACE(LocalDOMWindow)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_frameObserver);
     visitor->trace(m_document);
     visitor->trace(m_properties);
@@ -1516,9 +1515,8 @@ DEFINE_TRACE(LocalDOMWindow)
     visitor->trace(m_applicationCache);
     visitor->trace(m_eventQueue);
     visitor->trace(m_postMessageTimers);
-    HeapSupplementable<LocalDOMWindow>::trace(visitor);
-#endif
     DOMWindow::trace(visitor);
+    Supplementable<LocalDOMWindow>::trace(visitor);
     DOMWindowLifecycleNotifier::trace(visitor);
 }
 

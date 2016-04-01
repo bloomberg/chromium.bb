@@ -44,7 +44,7 @@ String WorkerNavigator::userAgent() const
 
 DEFINE_TRACE(WorkerNavigator)
 {
-    HeapSupplementable<WorkerNavigator>::trace(visitor);
+    Supplementable<WorkerNavigator>::trace(visitor);
 }
 
 } // namespace blink

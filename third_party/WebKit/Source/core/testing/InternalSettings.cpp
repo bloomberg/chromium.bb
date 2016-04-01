@@ -100,39 +100,12 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     RuntimeEnabledFeatures::setCompositorWorkerEnabled(m_originalCompositorWorkerEnabled);
 }
 
-#if ENABLE(OILPAN)
 InternalSettings* InternalSettings::from(Page& page)
 {
     if (!HeapSupplement<Page>::from(page, supplementName()))
         HeapSupplement<Page>::provideTo(page, supplementName(), new InternalSettings(page));
     return static_cast<InternalSettings*>(HeapSupplement<Page>::from(page, supplementName()));
 }
-#else
-// We can't use RefCountedSupplement because that would try to make InternalSettings RefCounted
-// and InternalSettings is already RefCounted via its base class, InternalSettingsGenerated.
-// Instead, we manually make InternalSettings supplement Page.
-class InternalSettingsWrapper : public Supplement<Page> {
-public:
-    explicit InternalSettingsWrapper(Page& page)
-        : m_internalSettings(InternalSettings::create(page)) { }
-    virtual ~InternalSettingsWrapper() { m_internalSettings->hostDestroyed(); }
-#if ENABLE(ASSERT)
-    bool isRefCountedWrapper() const override { return true; }
-#endif
-    InternalSettings* internalSettings() const { return m_internalSettings.get(); }
-
-private:
-    RefPtr<InternalSettings> m_internalSettings;
-};
-
-InternalSettings* InternalSettings::from(Page& page)
-{
-    if (!Supplement<Page>::from(page, supplementName()))
-        Supplement<Page>::provideTo(page, supplementName(), adoptPtr(new InternalSettingsWrapper(page)));
-    return static_cast<InternalSettingsWrapper*>(Supplement<Page>::from(page, supplementName()))->internalSettings();
-}
-#endif
-
 const char* InternalSettings::supplementName()
 {
     return "InternalSettings";
@@ -356,9 +329,7 @@ DEFINE_TRACE(InternalSettings)
 {
     visitor->trace(m_page);
     InternalSettingsGenerated::trace(visitor);
-#if ENABLE(OILPAN)
-    HeapSupplement<Page>::trace(visitor);
-#endif
+    Supplement<Page>::trace(visitor);
 }
 
 void InternalSettings::setAvailablePointerTypes(const String& pointers, ExceptionState& exceptionState)

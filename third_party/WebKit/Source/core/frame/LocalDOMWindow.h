@@ -63,7 +63,7 @@ enum PageshowEventPersistence {
 
 // Note: if you're thinking of returning something DOM-related by reference,
 // please ping dcheng@chromium.org first. You probably don't want to do that.
-class CORE_EXPORT LocalDOMWindow final : public DOMWindow, public HeapSupplementable<LocalDOMWindow>, public DOMWindowLifecycleNotifier {
+class CORE_EXPORT LocalDOMWindow final : public DOMWindow, public Supplementable<LocalDOMWindow>, public DOMWindowLifecycleNotifier {
     USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
     USING_PRE_FINALIZER(LocalDOMWindow, dispose);
 public:

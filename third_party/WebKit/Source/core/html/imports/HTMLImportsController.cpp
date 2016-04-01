@@ -50,7 +50,7 @@ void HTMLImportsController::provideTo(Document& master)
 {
     RawPtr<HTMLImportsController> controller = new HTMLImportsController(master);
     master.setImportsController(controller.get());
-    HeapSupplement<Document>::provideTo(master, supplementName(), controller.release());
+    Supplement<Document>::provideTo(master, supplementName(), controller.release());
 }
 
 void HTMLImportsController::removeFrom(Document& master)
@@ -58,7 +58,7 @@ void HTMLImportsController::removeFrom(Document& master)
     HTMLImportsController* controller = master.importsController();
     ASSERT(controller);
     controller->dispose();
-    static_cast<HeapSupplementable<Document>&>(master).removeSupplement(supplementName());
+    static_cast<Supplementable<Document>&>(master).removeSupplement(supplementName());
     master.setImportsController(nullptr);
 }
 
@@ -176,7 +176,7 @@ DEFINE_TRACE(HTMLImportsController)
 {
     visitor->trace(m_root);
     visitor->trace(m_loaders);
-    HeapSupplement<Document>::trace(visitor);
+    Supplement<Document>::trace(visitor);
 }
 
 } // namespace blink

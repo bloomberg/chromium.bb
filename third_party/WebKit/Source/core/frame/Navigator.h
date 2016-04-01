@@ -44,7 +44,7 @@ class Navigator final
     , public NavigatorOnLine
     , public ScriptWrappable
     , public DOMWindowProperty
-    , public HeapSupplementable<Navigator> {
+    , public Supplementable<Navigator> {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(Navigator);
 public:

@@ -192,16 +192,16 @@ const char* DocumentXSLT::supplementName()
 
 bool DocumentXSLT::hasTransformSourceDocument(Document& document)
 {
-    return static_cast<DocumentXSLT*>(HeapSupplement<Document>::from(document, supplementName()));
+    return static_cast<DocumentXSLT*>(Supplement<Document>::from(document, supplementName()));
 }
 
 
-DocumentXSLT& DocumentXSLT::from(HeapSupplementable<Document>& document)
+DocumentXSLT& DocumentXSLT::from(Supplementable<Document>& document)
 {
-    DocumentXSLT* supplement = static_cast<DocumentXSLT*>(HeapSupplement<Document>::from(document, supplementName()));
+    DocumentXSLT* supplement = static_cast<DocumentXSLT*>(Supplement<Document>::from(document, supplementName()));
     if (!supplement) {
-        supplement = new DocumentXSLT();
-        HeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(supplement));
+        supplement = new DocumentXSLT;
+        Supplement<Document>::provideTo(document, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -209,7 +209,7 @@ DocumentXSLT& DocumentXSLT::from(HeapSupplementable<Document>& document)
 DEFINE_TRACE(DocumentXSLT)
 {
     visitor->trace(m_transformSourceDocument);
-    HeapSupplement<Document>::trace(visitor);
+    Supplement<Document>::trace(visitor);
 }
 
 } // namespace blink

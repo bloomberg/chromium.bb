@@ -104,8 +104,8 @@ bool SharedWorker::hasPendingActivity() const
 DEFINE_TRACE(SharedWorker)
 {
     visitor->trace(m_port);
-    HeapSupplementable<SharedWorker>::trace(visitor);
     AbstractWorker::trace(visitor);
+    Supplementable<SharedWorker>::trace(visitor);
 }
 
 } // namespace blink

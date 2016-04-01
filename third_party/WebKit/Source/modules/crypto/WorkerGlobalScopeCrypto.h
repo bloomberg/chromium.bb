@@ -40,11 +40,11 @@ namespace blink {
 class Crypto;
 class WorkerGlobalScope;
 
-class WorkerGlobalScopeCrypto final : public GarbageCollected<WorkerGlobalScopeCrypto>, public HeapSupplement<WorkerGlobalScope> {
+class WorkerGlobalScopeCrypto final : public GarbageCollected<WorkerGlobalScopeCrypto>, public Supplement<WorkerGlobalScope> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeCrypto);
 public:
-    static WorkerGlobalScopeCrypto& from(HeapSupplementable<WorkerGlobalScope>&);
-    static Crypto* crypto(HeapSupplementable<WorkerGlobalScope>&);
+    static WorkerGlobalScopeCrypto& from(Supplementable<WorkerGlobalScope>&);
+    static Crypto* crypto(Supplementable<WorkerGlobalScope>&);
     Crypto* crypto() const;
 
     DECLARE_VIRTUAL_TRACE();

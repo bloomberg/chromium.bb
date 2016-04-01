@@ -42,7 +42,7 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT SharedWorker final : public AbstractWorker, public HeapSupplementable<SharedWorker>, public ActiveScriptWrappable {
+class CORE_EXPORT SharedWorker final : public AbstractWorker, public Supplementable<SharedWorker>, public ActiveScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
 public:

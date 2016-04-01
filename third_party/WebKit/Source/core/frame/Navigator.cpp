@@ -111,8 +111,8 @@ Vector<String> Navigator::languages()
 
 DEFINE_TRACE(Navigator)
 {
-    HeapSupplementable<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
+    Supplementable<Navigator>::trace(visitor);
 }
 
 } // namespace blink

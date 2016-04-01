@@ -41,7 +41,7 @@ namespace blink {
 
 class LocalFrame;
 
-class Console final : public ConsoleBase, public DOMWindowProperty, public HeapSupplementable<Console> {
+class Console final : public ConsoleBase, public DOMWindowProperty, public Supplementable<Console> {
     USING_GARBAGE_COLLECTED_MIXIN(Console);
     DEFINE_WRAPPERTYPEINFO();
 public:

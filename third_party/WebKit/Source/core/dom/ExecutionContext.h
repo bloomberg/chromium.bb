@@ -58,8 +58,7 @@ class PublicURLManager;
 class SecurityOrigin;
 class ScriptCallStack;
 
-class CORE_EXPORT ExecutionContext
-    : public ContextLifecycleNotifier, public HeapSupplementable<ExecutionContext> {
+class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier, public Supplementable<ExecutionContext> {
     WTF_MAKE_NONCOPYABLE(ExecutionContext);
 public:
     DECLARE_VIRTUAL_TRACE();

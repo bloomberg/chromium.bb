@@ -33,7 +33,7 @@ class ServiceWorkerRegistration final
     , public ActiveScriptWrappable
     , public ActiveDOMObject
     , public WebServiceWorkerRegistrationProxy
-    , public HeapSupplementable<ServiceWorkerRegistration> {
+    , public Supplementable<ServiceWorkerRegistration> {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ServiceWorkerRegistration);
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);

@@ -276,11 +276,9 @@ void ExecutionContext::removeURLFromMemoryCache(const KURL& url)
 
 DEFINE_TRACE(ExecutionContext)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_publicURLManager);
-    HeapSupplementable<ExecutionContext>::trace(visitor);
-#endif
     ContextLifecycleNotifier::trace(visitor);
+    Supplementable<ExecutionContext>::trace(visitor);
 }
 
 } // namespace blink

@@ -14,7 +14,7 @@ namespace blink {
 class Document;
 class ProcessingInstruction;
 
-class DocumentXSLT final : public GarbageCollected<DocumentXSLT>, public HeapSupplement<Document> {
+class DocumentXSLT final : public GarbageCollected<DocumentXSLT>, public Supplement<Document> {
     WTF_MAKE_NONCOPYABLE(DocumentXSLT);
     USING_GARBAGE_COLLECTED_MIXIN(DocumentXSLT);
 public:
@@ -29,7 +29,7 @@ public:
         m_transformSourceDocument = document;
     }
 
-    static DocumentXSLT& from(HeapSupplementable<Document>&);
+    static DocumentXSLT& from(Supplementable<Document>&);
     static const char* supplementName();
 
     // The following static methods don't use any instance of DocumentXSLT.

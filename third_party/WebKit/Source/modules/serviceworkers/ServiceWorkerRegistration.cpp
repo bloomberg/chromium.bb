@@ -124,8 +124,8 @@ DEFINE_TRACE(ServiceWorkerRegistration)
     visitor->trace(m_waiting);
     visitor->trace(m_active);
     RefCountedGarbageCollectedEventTargetWithInlineData<ServiceWorkerRegistration>::trace(visitor);
-    HeapSupplementable<ServiceWorkerRegistration>::trace(visitor);
     ActiveDOMObject::trace(visitor);
+    Supplementable<ServiceWorkerRegistration>::trace(visitor);
 }
 
 bool ServiceWorkerRegistration::hasPendingActivity() const
