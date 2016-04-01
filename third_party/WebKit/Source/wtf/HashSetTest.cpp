@@ -397,6 +397,56 @@ TEST(HashSetTest, MoveOnlyValue)
     set.clear();
 }
 
+TEST(HashSetTest, UniquePtr)
+{
+    using Pointer = std::unique_ptr<int>;
+    using Set = HashSet<Pointer>;
+    Set set;
+    int* onePointer = new int(1);
+    {
+        Set::AddResult addResult = set.add(Pointer(onePointer));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(onePointer, addResult.storedValue->get());
+        EXPECT_EQ(1, **addResult.storedValue);
+    }
+    auto iter = set.find(onePointer);
+    ASSERT_TRUE(iter != set.end());
+    EXPECT_EQ(onePointer, iter->get());
+
+    Pointer nonexistent(new int(42));
+    iter = set.find(nonexistent.get());
+    EXPECT_TRUE(iter == set.end());
+
+    // Insert more to cause a rehash.
+    for (int i = 2; i < 32; ++i) {
+        Set::AddResult addResult = set.add(Pointer(new int(i)));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(i, **addResult.storedValue);
+    }
+
+    iter = set.find(onePointer);
+    ASSERT_TRUE(iter != set.end());
+    EXPECT_EQ(onePointer, iter->get());
+
+    Pointer one(set.take(onePointer));
+    ASSERT_TRUE(one);
+    EXPECT_EQ(onePointer, one.get());
+
+    Pointer empty(set.take(nonexistent.get()));
+    EXPECT_TRUE(!empty);
+
+    iter = set.find(onePointer);
+    EXPECT_TRUE(iter == set.end());
+
+    // Re-insert to the deleted slot.
+    {
+        Set::AddResult addResult = set.add(std::move(one));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(onePointer, addResult.storedValue->get());
+        EXPECT_EQ(1, **addResult.storedValue);
+    }
+}
+
 } // anonymous namespace
 
 } // namespace WTF

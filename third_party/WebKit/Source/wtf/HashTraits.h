@@ -26,6 +26,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/TypeTraits.h"
 #include <limits>
+#include <memory>
 #include <string.h> // For memset.
 #include <type_traits>
 #include <utility>
@@ -210,6 +211,36 @@ template <typename P> struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPt
 };
 
 template <typename T> struct HashTraits<RawPtr<T>> : HashTraits<T*> { };
+
+template <typename T>
+struct HashTraits<std::unique_ptr<T>> : SimpleClassHashTraits<std::unique_ptr<T>> {
+    using EmptyValueType = std::nullptr_t;
+    static EmptyValueType emptyValue() { return nullptr; }
+
+    static const bool hasIsEmptyValueFunction = true;
+    static bool isEmptyValue(const std::unique_ptr<T>& value) { return !value; }
+
+    using PeekInType = T*;
+
+    using PassInType = std::unique_ptr<T>;
+    static void store(std::unique_ptr<T>&& value, std::unique_ptr<T>& storage) { storage = std::move(value); }
+
+    using PassOutType = std::unique_ptr<T>;
+    static std::unique_ptr<T>&& passOut(std::unique_ptr<T>& value) { return std::move(value); }
+    static std::unique_ptr<T> passOut(std::nullptr_t) { return nullptr; }
+
+    using PeekOutType = T*;
+    static PeekOutType peek(const std::unique_ptr<T>& value) { return value.get(); }
+    static PeekOutType peek(std::nullptr_t) { return nullptr; }
+
+    static void constructDeletedValue(std::unique_ptr<T>& slot, bool)
+    {
+        // Dirty trick: implant an invalid pointer to unique_ptr. Destructor isn't called for deleted buckets,
+        // so this is okay.
+        new (NotNull, &slot) std::unique_ptr<T>(reinterpret_cast<T*>(1u));
+    }
+    static bool isDeletedValue(const std::unique_ptr<T>& value) { return value.get() == reinterpret_cast<T*>(1u); }
+};
 
 template <> struct HashTraits<String> : SimpleClassHashTraits<String> {
     static const bool hasIsEmptyValueFunction = true;

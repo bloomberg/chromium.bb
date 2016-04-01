@@ -24,6 +24,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
+#include <memory>
 #include <stdint.h>
 #include <type_traits>
 
@@ -180,6 +181,15 @@ struct OwnPtrHash : PtrHash<T> {
     }
 };
 
+template <typename T>
+struct UniquePtrHash : PtrHash<T> {
+    using PtrHash<T>::hash;
+    static unsigned hash(const std::unique_ptr<T>& key) { return hash(key.get()); }
+    static bool equal(const std::unique_ptr<T>& a, const std::unique_ptr<T>& b) { return a == b; }
+    static bool equal(const std::unique_ptr<T>& a, const T* b) { return a.get() == b; }
+    static bool equal(const T* a, const std::unique_ptr<T>& b) { return a == b.get(); }
+};
+
 // Default hash function for each type.
 template <typename T>
 struct DefaultHash;
@@ -226,6 +236,10 @@ struct DefaultHash<RawPtr<T>> {
 template <typename T>
 struct DefaultHash<OwnPtr<T>> {
     using Hash = OwnPtrHash<T>;
+};
+template <typename T>
+struct DefaultHash<std::unique_ptr<T>> {
+    using Hash = UniquePtrHash<T>;
 };
 
 // Specializations for pairs.

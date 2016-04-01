@@ -31,6 +31,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+#include <memory>
 
 namespace WTF {
 
@@ -510,6 +511,101 @@ TEST(HashMapTest, MoveShouldNotMakeCopy)
     counter = 0;
     HashMap<int, CountCopy> yetAnother(std::move(map));
     EXPECT_EQ(0, counter);
+}
+
+TEST(HashMapTest, UniquePtrAsKey)
+{
+    using Pointer = std::unique_ptr<int>;
+    using Map = HashMap<Pointer, int>;
+    Map map;
+    int* onePointer = new int(1);
+    {
+        Map::AddResult addResult = map.add(Pointer(onePointer), 1);
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(onePointer, addResult.storedValue->key.get());
+        EXPECT_EQ(1, *addResult.storedValue->key);
+        EXPECT_EQ(1, addResult.storedValue->value);
+    }
+    auto iter = map.find(onePointer);
+    ASSERT_TRUE(iter != map.end());
+    EXPECT_EQ(onePointer, iter->key.get());
+    EXPECT_EQ(1, iter->value);
+
+    Pointer nonexistent(new int(42));
+    iter = map.find(nonexistent.get());
+    EXPECT_TRUE(iter == map.end());
+
+    // Insert more to cause a rehash.
+    for (int i = 2; i < 32; ++i) {
+        Map::AddResult addResult = map.add(Pointer(new int(i)), i);
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(i, *addResult.storedValue->key);
+        EXPECT_EQ(i, addResult.storedValue->value);
+    }
+
+    iter = map.find(onePointer);
+    ASSERT_TRUE(iter != map.end());
+    EXPECT_EQ(onePointer, iter->key.get());
+    EXPECT_EQ(1, iter->value);
+
+    EXPECT_EQ(1, map.take(onePointer));
+    // From now on, |onePointer| is a dangling pointer.
+
+    iter = map.find(onePointer);
+    EXPECT_TRUE(iter == map.end());
+}
+
+TEST(HashMapTest, UniquePtrAsValue)
+{
+    using Pointer = std::unique_ptr<int>;
+    using Map = HashMap<int, Pointer>;
+    Map map;
+    {
+        Map::AddResult addResult = map.add(1, Pointer(new int(1)));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(1, addResult.storedValue->key);
+        EXPECT_EQ(1, *addResult.storedValue->value);
+    }
+    auto iter = map.find(1);
+    ASSERT_TRUE(iter != map.end());
+    EXPECT_EQ(1, iter->key);
+    EXPECT_EQ(1, *iter->value);
+
+    int* onePointer = map.get(1);
+    EXPECT_TRUE(onePointer);
+    EXPECT_EQ(1, *onePointer);
+
+    iter = map.find(42);
+    EXPECT_TRUE(iter == map.end());
+
+    for (int i = 2; i < 32; ++i) {
+        Map::AddResult addResult = map.add(i, Pointer(new int(i)));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(i, addResult.storedValue->key);
+        EXPECT_EQ(i, *addResult.storedValue->value);
+    }
+
+    iter = map.find(1);
+    ASSERT_TRUE(iter != map.end());
+    EXPECT_EQ(1, iter->key);
+    EXPECT_EQ(1, *iter->value);
+
+    Pointer one(map.take(1));
+    ASSERT_TRUE(one);
+    EXPECT_EQ(1, *one);
+
+    Pointer empty(map.take(42));
+    EXPECT_TRUE(!empty);
+
+    iter = map.find(1);
+    EXPECT_TRUE(iter == map.end());
+
+    {
+        Map::AddResult addResult = map.add(1, std::move(one));
+        EXPECT_TRUE(addResult.isNewEntry);
+        EXPECT_EQ(1, addResult.storedValue->key);
+        EXPECT_EQ(1, *addResult.storedValue->value);
+    }
 }
 
 } // anonymous namespace
