@@ -111,4 +111,72 @@ bool CopyColour(const mkvparser::Colour& parser_colour,
   }
   return true;
 }
+
+// Format of VPx private data:
+//
+//   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//  |    ID Byte    |             Length            |               |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+               |
+//  |                                                               |
+//  :               Bytes 1..Length of Codec Feature                :
+//  |                                                               |
+//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//
+// ID Byte Format
+// ID byte is an unsigned byte.
+//   0 1 2 3 4 5 6 7
+//  +-+-+-+-+-+-+-+-+
+//  |X|    ID       |
+//  +-+-+-+-+-+-+-+-+
+//
+// The X bit is reserved.
+//
+// Currently only profile level is supported. ID byte must be set to 1, and
+// length must be 1. Supported values are:
+//
+//   10: Level 1
+//   11: Level 1.1
+//   20: Level 2
+//   21: Level 2.1
+//   30: Level 3
+//   31: Level 3.1
+//   40: Level 4
+//   41: Level 4.1
+//   50: Level 5
+//   51: Level 5.1
+//   52: Level 5.2
+//   60: Level 6
+//   61: Level 6.1
+//   62: Level 6.2
+//
+// See the following link for more information:
+// http://www.webmproject.org/vp9/profiles/
+int ParseVpxCodecPrivate(const uint8_t* private_data, int32_t length) {
+  const int kVpxCodecPrivateLength = 3;
+  if (!private_data || length != kVpxCodecPrivateLength)
+    return 0;
+
+  const uint8_t id_byte = *private_data;
+  if (id_byte != 1)
+    return 0;
+
+  const int kVpxProfileLength = 1;
+  const uint8_t length_byte = private_data[1];
+  if (length_byte != kVpxProfileLength)
+    return 0;
+
+  const int level = static_cast<int>(private_data[2]);
+
+  const int kNumLevels = 14;
+  const int levels[kNumLevels] = {10, 11, 20, 21, 30, 31, 40,
+                                  41, 50, 51, 52, 60, 61, 62};
+
+  for (int i = 0; i < kNumLevels; ++i) {
+    if (level == levels[i])
+      return level;
+  }
+
+  return 0;
+}
 }  // namespace libwebm

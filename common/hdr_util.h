@@ -8,6 +8,8 @@
 #ifndef LIBWEBM_COMMON_HDR_UTIL_H_
 #define LIBWEBM_COMMON_HDR_UTIL_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "mkvmuxer/mkvmuxer.h"
@@ -40,6 +42,9 @@ bool ColourValuePresent(long long value);
 
 bool CopyColour(const mkvparser::Colour& parser_colour,
                 mkvmuxer::Colour* muxer_colour);
+
+// Returns VP9 profile upon success or 0 upon failure.
+int ParseVpxCodecPrivate(const uint8_t* private_data, int32_t length);
 
 }  // namespace libwebm
 
