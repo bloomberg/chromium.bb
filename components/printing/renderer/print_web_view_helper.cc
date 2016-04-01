@@ -78,6 +78,9 @@ enum PrintPreviewHelperEvents {
 
 const double kMinDpi = 1.0;
 
+// Also set in third_party/WebKit/Source/core/page/PrintContext.cpp
+const float kPrintingMinimumShrinkFactor = 1.333f;
+
 #if defined(ENABLE_PRINT_PREVIEW)
 bool g_is_preview_enabled = true;
 
@@ -677,15 +680,19 @@ PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
 
 void PrepareFrameAndViewForPrint::ResizeForPrinting() {
   // Layout page according to printer page size. Since WebKit shrinks the
-  // size of the page automatically (from 125% to 200%) we trick it to
-  // think the page is 125% larger so the size of the page is correct for
+  // size of the page automatically (from 133.3% to 200%) we trick it to
+  // think the page is 133.3% larger so the size of the page is correct for
   // minimum (default) scaling.
+  // The scaling factor 1.25 was originally chosen as a magic number that
+  // was 'about right'. However per https://crbug.com/273306 1.333 seems to be
+  // the number that produces output with the correct physical size for elements
+  // that are specified in cm, mm, pt etc.
   // This is important for sites that try to fill the page.
-  // The 1.25 value is |printingMinimumShrinkFactor|.
   gfx::Size print_layout_size(web_print_params_.printContentArea.width,
                               web_print_params_.printContentArea.height);
   print_layout_size.set_height(
-      static_cast<int>(static_cast<double>(print_layout_size.height()) * 1.25));
+      static_cast<int>(static_cast<double>(print_layout_size.height()) *
+                       kPrintingMinimumShrinkFactor));
 
   if (!frame())
     return;
@@ -1780,12 +1787,12 @@ void PrintWebViewHelper::PrintPageInternal(
 
 #if defined(ENABLE_PRINT_PREVIEW)
   if (params.params.display_header_footer) {
-    // TODO(thestig): Figure out why Linux needs this. The value may be
-    // |printingMinimumShrinkFactor|.
+    // TODO(thestig): Figure out why Linux needs this. It is almost certainly
+    // |printingMinimumShrinkFactor| from Blink.
 #if defined(OS_WIN)
     const float fudge_factor = 1;
 #else
-    const float fudge_factor = 1.25;
+    const float fudge_factor = kPrintingMinimumShrinkFactor;
 #endif
     // |page_number| is 0-based, so 1 is added.
     PrintHeaderAndFooter(canvas, params.page_number + 1,
