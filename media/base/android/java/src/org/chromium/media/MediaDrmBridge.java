@@ -56,6 +56,10 @@ public class MediaDrmBridge {
     private static final char[] HEX_CHAR_LOOKUP = "0123456789ABCDEF".toCharArray();
     private static final long INVALID_NATIVE_MEDIA_DRM_BRIDGE = 0;
 
+    // Scheme UUID for Widevine. See http://dashif.org/identifiers/protection/
+    private static final UUID WIDEVINE_UUID =
+            UUID.fromString("edef8ba9-79d6-4ace-a3c8-27dcd51d21ed");
+
     // On Android L and before, MediaDrm doesn't support KeyStatus. Use a dummy
     // key ID to report key status info.
     // See details: https://github.com/w3c/encrypted-media/issues/32
@@ -181,6 +185,10 @@ public class MediaDrmBridge {
         return mNativeMediaDrmBridge != INVALID_NATIVE_MEDIA_DRM_BRIDGE;
     }
 
+    private boolean isWidevine() {
+        return mSchemeUUID.equals(WIDEVINE_UUID);
+    }
+
     @TargetApi(Build.VERSION_CODES.M)
     private MediaDrmBridge(UUID schemeUUID, long nativeMediaDrmBridge)
             throws android.media.UnsupportedSchemeException {
@@ -201,8 +209,10 @@ public class MediaDrmBridge {
             mMediaDrm.setOnKeyStatusChangeListener(new KeyStatusChangeListener(), null);
         }
 
-        mMediaDrm.setPropertyString(PRIVACY_MODE, ENABLE);
-        mMediaDrm.setPropertyString(SESSION_SHARING, ENABLE);
+        if (isWidevine()) {
+            mMediaDrm.setPropertyString(PRIVACY_MODE, ENABLE);
+            mMediaDrm.setPropertyString(SESSION_SHARING, ENABLE);
+        }
     }
 
     /**
@@ -353,6 +363,11 @@ public class MediaDrmBridge {
      * @return whether the security level was successfully set.
      */
     private boolean setSecurityLevel(String securityLevel) {
+        if (!isWidevine()) {
+            Log.d(TAG, "Security level is not supported.");
+            return true;
+        }
+
         assert mMediaDrm != null;
         assert !securityLevel.isEmpty();
 
@@ -386,6 +401,11 @@ public class MediaDrmBridge {
      */
     @CalledByNative
     private boolean setServerCertificate(byte[] certificate) {
+        if (!isWidevine()) {
+            Log.d(TAG, "Setting server certificate is not supported.");
+            return true;
+        }
+
         try {
             mMediaDrm.setPropertyByteArray(SERVER_CERTIFICATE, certificate);
             return true;
@@ -735,8 +755,8 @@ public class MediaDrmBridge {
      */
     @CalledByNative
     private String getSecurityLevel() {
-        if (mMediaDrm == null) {
-            Log.e(TAG, "getSecurityLevel() called when MediaDrm is null.");
+        if (mMediaDrm == null || !isWidevine()) {
+            Log.e(TAG, "getSecurityLevel(): MediaDrm is null or security level is not supported.");
             return null;
         }
         return mMediaDrm.getPropertyString("securityLevel");
