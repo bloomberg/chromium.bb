@@ -4,6 +4,10 @@
 
 #import "content/browser/cocoa/system_hotkey_map.h"
 
+#import <Carbon/Carbon.h>
+
+#include "base/mac/scoped_nsobject.h"
+
 #pragma mark - NSDictionary Helper Functions
 
 namespace {
@@ -75,10 +79,31 @@ bool SystemHotkeyMap::ParseDictionary(NSDictionary* dictionary) {
   if (!dictionary)
     return false;
 
-  NSDictionary* hotkey_dictionaries =
+  NSDictionary* user_hotkey_dictionaries =
       DictionaryForKey(dictionary, @"AppleSymbolicHotKeys");
-  if (!hotkey_dictionaries)
+  if (!user_hotkey_dictionaries)
     return false;
+
+  // Start with a dictionary of default OS X hotkeys that are not necessarily
+  // listed in com.apple.symbolichotkeys.plist, but should still be handled as
+  // reserved.
+  // If the user has overridden or disabled any of these hotkeys,
+  // -NSMutableDictionary addEntriesFromDictionary:] will ensure that the new
+  // values are used.
+  // See https://crbug.com/145062#c8
+  base::scoped_nsobject<NSMutableDictionary> hotkey_dictionaries([@{
+    // Default Window switch key binding: Command + `
+    // Note: The first parameter @96 is not used by |SystemHotkeyMap|.
+    @"27" : @{
+      @"enabled" : @YES,
+      @"value" : @{
+        @"type" : @"standard",
+        @"parameters" :
+            @[ @96 /* unused */, @(kVK_ANSI_Grave), @(NSCommandKeyMask) ],
+      }
+    }
+  } mutableCopy]);
+  [hotkey_dictionaries addEntriesFromDictionary:user_hotkey_dictionaries];
 
   for (NSString* hotkey_system_effect in [hotkey_dictionaries allKeys]) {
     if (![hotkey_system_effect isKindOfClass:[NSString class]])

@@ -134,13 +134,13 @@ TEST_F(SystemHotkeyMapTest, ParseMouse) {
   bool result = map.ParseDictionary(dictionary);
   EXPECT_TRUE(result);
 
-  // Command + ` is a common key binding. It is missing.
-  // TODO(erikchen): OSX uses the default value when the keybinding is missing,
-  // so the hotkey should still be reserved.
-  // http://crbug.com/383558
+  // Command + ` is a common key binding. It is missing, but since OS X uses the
+  // default value the hotkey should still be reserved.
+  // https://crbug.com/383558
+  // https://crbug.com/145062
   unsigned short key_code = kVK_ANSI_Grave;
   NSUInteger modifiers = NSCommandKeyMask;
-  EXPECT_FALSE(map.IsHotkeyReserved(key_code, modifiers));
+  EXPECT_TRUE(map.IsHotkeyReserved(key_code, modifiers));
 
   // There is a mouse keybinding for 0x08. It should not apply to keyboard
   // hotkeys.
