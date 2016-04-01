@@ -96,6 +96,7 @@ TEST(JsonSchemaCompilerMovableObjectsTest, MovableObjectsTest) {
   parent.pods = std::move(pods);
   parent.strs.push_back("pstr");
   parent.blob.additional_properties.SetString("key", "val");
+  parent.choice.as_string.reset(new std::string("string"));
 
   MovableParent parent2(std::move(parent));
   ASSERT_EQ(2u, parent2.pods.size());
@@ -109,10 +110,34 @@ TEST(JsonSchemaCompilerMovableObjectsTest, MovableObjectsTest) {
   EXPECT_FALSE(parent2.pods[1].b);
   ASSERT_EQ(1u, parent2.strs.size());
   EXPECT_EQ("pstr", parent2.strs[0]);
+  EXPECT_FALSE(parent2.choice.as_movable_pod.get());
+  ASSERT_TRUE(parent2.choice.as_string.get());
+  EXPECT_EQ("string", *parent2.choice.as_string);
   std::string blob_string;
   EXPECT_TRUE(
       parent2.blob.additional_properties.GetString("key", &blob_string));
   EXPECT_EQ("val", blob_string);
+
+  {
+    MovableParent parent_with_pod_choice;
+    MovablePod pod;
+    pod.foo = FOO_BAZ;
+    pod.str = "str";
+    pod.num = 10;
+    pod.b = false;
+    parent_with_pod_choice.choice.as_movable_pod.reset(
+        new MovablePod(std::move(pod)));
+    parent2 = std::move(parent_with_pod_choice);
+  }
+  EXPECT_TRUE(parent2.pods.empty());
+  EXPECT_TRUE(parent2.strs.empty());
+  EXPECT_TRUE(parent2.blob.additional_properties.empty());
+  EXPECT_FALSE(parent2.choice.as_string.get());
+  ASSERT_TRUE(parent2.choice.as_movable_pod.get());
+  EXPECT_EQ(FOO_BAZ, parent2.choice.as_movable_pod->foo);
+  EXPECT_EQ("str", parent2.choice.as_movable_pod->str);
+  EXPECT_EQ(10, parent2.choice.as_movable_pod->num);
+  EXPECT_FALSE(parent2.choice.as_movable_pod->b);
 
   MovableWithAdditional with_additional;
   with_additional.str = "str";

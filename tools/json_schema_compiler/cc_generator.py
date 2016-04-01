@@ -233,6 +233,11 @@ class _Generator(object):
       else:
         raise TypeError(t)
 
+    if type_.property_type == PropertyType.CHOICES:
+      for choice in type_.choices:
+        prop_name = 'as_%s' % choice.unix_name
+        props.append(move_str % (prop_name, prop_name))
+
     if (type_.property_type == PropertyType.OBJECT and
         type_.additional_properties is not None):
       if type_.additional_properties.property_type == PropertyType.ANY:

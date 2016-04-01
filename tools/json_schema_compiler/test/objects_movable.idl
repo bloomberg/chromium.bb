@@ -20,5 +20,6 @@
     MovablePod[] pods;
     DOMString[] strs;
     [instanceOf=Blob]object blob;
+    (DOMString or MovablePod) choice;
   };
 };
