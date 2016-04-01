@@ -617,8 +617,8 @@ String InlineTextBox::text() const
 void InlineTextBox::showBox(int printedCharacters) const
 {
     String value = text();
-    value.replaceWithLiteral('\\', "\\\\");
-    value.replaceWithLiteral('\n', "\\n");
+    value.replace('\\', "\\\\");
+    value.replace('\n', "\\n");
     printedCharacters += fprintf(stderr, "%s %p", boxName(), this);
     for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
         fputc(' ', stderr);

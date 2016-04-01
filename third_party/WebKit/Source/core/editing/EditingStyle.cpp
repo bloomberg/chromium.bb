@@ -1559,7 +1559,7 @@ void StyleChange::extractTextStyles(Document* document, MutableStylePropertySet*
 
     m_applyFontFace = style->getPropertyValue(CSSPropertyFontFamily);
     // Remove double quotes for Outlook 2007 compatibility. See https://bugs.webkit.org/show_bug.cgi?id=79448
-    m_applyFontFace.replaceWithLiteral('"', "");
+    m_applyFontFace.replace('"', "");
     style->removeProperty(CSSPropertyFontFamily);
 
     if (RefPtrWillBeRawPtr<CSSValue> fontSize = style->getPropertyCSSValue(CSSPropertyFontSize)) {

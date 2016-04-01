@@ -320,12 +320,11 @@ public:
         return *this;
     }
 
-    template<unsigned charactersCount>
-    ALWAYS_INLINE String& replaceWithLiteral(UChar a, const char (&characters)[charactersCount])
+    ALWAYS_INLINE String& replace(UChar a, const char* characters)
     {
+        ASSERT(characters);
         if (m_impl)
-            m_impl = m_impl->replace(a, characters, charactersCount - 1);
-
+            m_impl = m_impl->replace(a, characters, strlen(characters));
         return *this;
     }
 

@@ -116,39 +116,39 @@ TEST(StringTest, ReplaceWithLiteral)
     // Cases for 8Bit source.
     String testString = "1224";
     EXPECT_TRUE(testString.is8Bit());
-    testString.replaceWithLiteral('2', "");
+    testString.replace('2', "");
     EXPECT_STREQ("14", testString.utf8().data());
 
     testString = "1224";
     EXPECT_TRUE(testString.is8Bit());
-    testString.replaceWithLiteral('2', "3");
+    testString.replace('2', "3");
     EXPECT_STREQ("1334", testString.utf8().data());
 
     testString = "1224";
     EXPECT_TRUE(testString.is8Bit());
-    testString.replaceWithLiteral('2', "555");
+    testString.replace('2', "555");
     EXPECT_STREQ("15555554", testString.utf8().data());
 
     testString = "1224";
     EXPECT_TRUE(testString.is8Bit());
-    testString.replaceWithLiteral('3', "NotFound");
+    testString.replace('3', "NotFound");
     EXPECT_STREQ("1224", testString.utf8().data());
 
     // Cases for 16Bit source.
     // U+00E9 (=0xC3 0xA9 in UTF-8) is e with accent.
     testString = String::fromUTF8("r\xC3\xA9sum\xC3\xA9");
     EXPECT_FALSE(testString.is8Bit());
-    testString.replaceWithLiteral(UChar(0x00E9), "e");
+    testString.replace(UChar(0x00E9), "e");
     EXPECT_STREQ("resume", testString.utf8().data());
 
     testString = String::fromUTF8("r\xC3\xA9sum\xC3\xA9");
     EXPECT_FALSE(testString.is8Bit());
-    testString.replaceWithLiteral(UChar(0x00E9), "");
+    testString.replace(UChar(0x00E9), "");
     EXPECT_STREQ("rsum", testString.utf8().data());
 
     testString = String::fromUTF8("r\xC3\xA9sum\xC3\xA9");
     EXPECT_FALSE(testString.is8Bit());
-    testString.replaceWithLiteral('3', "NotFound");
+    testString.replace('3', "NotFound");
     EXPECT_STREQ("r\xC3\xA9sum\xC3\xA9", testString.utf8().data());
 }
 

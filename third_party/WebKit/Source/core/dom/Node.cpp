@@ -1561,8 +1561,8 @@ void Node::showNode(const char* prefix) const
         prefix = "";
     if (isTextNode()) {
         String value = nodeValue();
-        value.replaceWithLiteral('\\', "\\\\");
-        value.replaceWithLiteral('\n', "\\n");
+        value.replace('\\', "\\\\");
+        value.replace('\n', "\\n");
         WTFLogAlways("%s%s\t%p \"%s\"\n", prefix, nodeName().utf8().data(), this, value.utf8().data());
     } else if (isDocumentTypeNode()) {
         WTFLogAlways("%sDOCTYPE %s\t%p\n", prefix, nodeName().utf8().data(), this);

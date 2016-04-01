@@ -198,11 +198,11 @@ void MarkupFormatter::appendQuotedURLAttributeValue(StringBuilder& result, const
     if (protocolIsJavaScript(strippedURLString)) {
         // minimal escaping for javascript urls
         if (strippedURLString.contains('&'))
-            strippedURLString.replaceWithLiteral('&', "&amp;");
+            strippedURLString.replace('&', "&amp;");
 
         if (strippedURLString.contains('"')) {
             if (strippedURLString.contains('\''))
-                strippedURLString.replaceWithLiteral('"', "&quot;");
+                strippedURLString.replace('"', "&quot;");
             else
                 quoteChar = '\'';
         }

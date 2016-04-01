@@ -420,9 +420,9 @@ static void writeInlineTextBox(TextStream& ts, const InlineTextBox& textBox, int
 {
     writeInlineBox(ts, textBox, indent);
     String value = textBox.text();
-    value.replaceWithLiteral('\\', "\\\\");
-    value.replaceWithLiteral('\n', "\\n");
-    value.replaceWithLiteral('"', "\\\"");
+    value.replace('\\', "\\\\");
+    value.replace('\n', "\\n");
+    value.replace('"', "\\\"");
     ts << " range=(" << textBox.start() << "," << (textBox.start() + textBox.len()) << ")"
         << " \"" << value << "\"";
 }
