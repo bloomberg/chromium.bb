@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +32,8 @@
 
 namespace {
 
-base::TimeDelta gTimeDeltaForTesting;
+base::LazyInstance<base::TimeDelta> gTimeDeltaForTesting =
+    LAZY_INSTANCE_INITIALIZER;
 int gCurrentRequestID = -1;
 const char kPngExtension[] = ".png";
 
@@ -64,12 +66,12 @@ namespace banners {
 
 // static
 base::Time AppBannerDataFetcher::GetCurrentTime() {
-  return base::Time::Now() + gTimeDeltaForTesting;
+  return base::Time::Now() + gTimeDeltaForTesting.Get();
 }
 
 // static
 void AppBannerDataFetcher::SetTimeDeltaForTesting(int days) {
-  gTimeDeltaForTesting = base::TimeDelta::FromDays(days);
+  gTimeDeltaForTesting.Get() = base::TimeDelta::FromDays(days);
 }
 
 AppBannerDataFetcher::AppBannerDataFetcher(content::WebContents* web_contents,
