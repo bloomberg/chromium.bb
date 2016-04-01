@@ -1036,39 +1036,29 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     return false;
   }
 
-  IOSurfaceRef surface = CVPixelBufferGetIOSurface(frame.image.get());
+  IOSurfaceRef io_surface = CVPixelBufferGetIOSurface(frame.image.get());
+
+  scoped_refptr<gl::GLImageIOSurface> gl_image(
+      new gl::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
+  if (!gl_image->Initialize(io_surface, gfx::GenericSharedMemoryId(),
+        gfx::BufferFormat::UYVY_422)) {
+    NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
+        SFT_PLATFORM_ERROR);
+  }
+
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGLCoreProfile)
     glEnable(GL_TEXTURE_RECTANGLE_ARB);
   gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_RECTANGLE_ARB,
                                           picture_info->service_texture_id);
-  CGLContextObj cgl_context =
-      static_cast<CGLContextObj>(gfx::GLContext::GetCurrent()->GetHandle());
-  CGLError status = CGLTexImageIOSurface2D(
-      cgl_context,                  // ctx
-      GL_TEXTURE_RECTANGLE_ARB,     // target
-      GL_RGB,                       // internal_format
-      frame.coded_size.width(),     // width
-      frame.coded_size.height(),    // height
-      GL_YCBCR_422_APPLE,           // format
-      GL_UNSIGNED_SHORT_8_8_APPLE,  // type
-      surface,                      // io_surface
-      0);                           // plane
+  bool bind_result = gl_image->BindTexImage(GL_TEXTURE_RECTANGLE_ARB);
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGLCoreProfile)
     glDisable(GL_TEXTURE_RECTANGLE_ARB);
-  if (status != kCGLNoError) {
-    NOTIFY_STATUS("CGLTexImageIOSurface2D()", status, SFT_PLATFORM_ERROR);
+  if (!bind_result) {
+    NOTIFY_STATUS("Failed BindTexImage on GLImageIOSurface", PLATFORM_FAILURE,
+        SFT_PLATFORM_ERROR);
     return false;
   }
 
-  bool allow_overlay = false;
-  scoped_refptr<gl::GLImageIOSurface> gl_image(
-      new gl::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
-  if (gl_image->Initialize(surface, gfx::GenericSharedMemoryId(),
-                           gfx::BufferFormat::BGRA_8888)) {
-    allow_overlay = true;
-  } else {
-    gl_image = nullptr;
-  }
   bind_image_.Run(picture_info->client_texture_id, GL_TEXTURE_RECTANGLE_ARB,
                   gl_image);
 
@@ -1084,7 +1074,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   // coded size and fix it.
   client_->PictureReady(media::Picture(picture_id, frame.bitstream_id,
                                        gfx::Rect(frame.coded_size),
-                                       allow_overlay));
+                                       true));
   return true;
 }
 
