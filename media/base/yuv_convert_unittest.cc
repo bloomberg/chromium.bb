@@ -39,7 +39,8 @@ static const int kRGBSizeScaled = kScaledWidth * kScaledHeight * kBpp;
 static const int kRGB24Size = kSourceYSize * 3;
 static const int kRGBSizeConverted = kSourceYSize * kBpp;
 
-#if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY)
+#if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY) && \
+    !defined(OS_ANDROID)
 static const int kSourceAOffset = kSourceYSize * 12 / 8;
 static const int kYUVA12Size = kSourceYSize * 20 / 8;
 #endif
