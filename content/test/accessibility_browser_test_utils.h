@@ -47,11 +47,19 @@ class AccessibilityNotificationWaiter {
 
   // After WaitForNotification returns, use this to retrieve the id of the
   // node that was the target of the event.
-  int event_target_id() { return event_target_id_; }
+  int event_target_id() const { return event_target_id_; }
+
+  // After WaitForNotification returns, use this to retrieve the
+  // RenderFrameHostImpl that was the target of the event.
+  RenderFrameHostImpl* event_render_frame_host() const {
+    return event_render_frame_host_;
+  }
 
  private:
   // Callback from RenderViewHostImpl.
-  void OnAccessibilityEvent(ui::AXEvent event, int event_target_id);
+  void OnAccessibilityEvent(content::RenderFrameHostImpl* rfhi,
+                            ui::AXEvent event,
+                            int event_target_id);
 
   // Helper function to determine if the accessibility tree in
   // GetAXTree() is about the page with the url "about:blank".
@@ -61,6 +69,7 @@ class AccessibilityNotificationWaiter {
   ui::AXEvent event_to_wait_for_;
   scoped_refptr<MessageLoopRunner> loop_runner_;
   int event_target_id_;
+  RenderFrameHostImpl* event_render_frame_host_;
 
   base::WeakPtrFactory<AccessibilityNotificationWaiter> weak_factory_;
 

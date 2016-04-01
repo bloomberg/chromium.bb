@@ -191,6 +191,7 @@
       'browser/accessibility/accessibility_event_recorder_win.cc',
       'browser/accessibility/accessibility_ipc_error_browsertest.cc',
       'browser/accessibility/accessibility_mode_browsertest.cc',
+      'browser/accessibility/hit_testing_browsertest.cc',
       'browser/accessibility/cross_platform_accessibility_browsertest.cc',
       'browser/accessibility/dump_accessibility_browsertest_base.cc',
       'browser/accessibility/dump_accessibility_browsertest_base.h',
@@ -297,7 +298,6 @@
     ],
     'content_browsertests_android_sources': [
       'browser/accessibility/android_granularity_movement_browsertest.cc',
-      'browser/accessibility/android_hit_testing_browsertest.cc',
       'shell/android/browsertests_apk/content_browser_tests_jni_onload.cc',
     ],
     'content_browsertests_webrtc_sources': [

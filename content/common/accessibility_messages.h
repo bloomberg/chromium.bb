@@ -159,8 +159,13 @@ IPC_MESSAGE_ROUTED2(AccessibilityMsg_SetValue,
                     int /* object id */,
                     base::string16 /* Value */)
 
-// Determine the accessibility object under a given point and reply with
-// a AccessibilityHostMsg_HitTestResult with the same id.
+// Determine the accessibility object under a given point.
+//
+// If the target is an object with a child frame (like if the hit test
+// result is an iframe element), it responds with
+// AccessibilityHostMsg_ChildFrameHitTestResult so that the
+// hit test can be performed recursively on the child frame. Otherwise
+// it fires an accessibility event of type ui::AX_EVENT_HOVER on the target.
 IPC_MESSAGE_ROUTED1(AccessibilityMsg_HitTest,
                     gfx::Point /* location to test */)
 
@@ -213,10 +218,15 @@ IPC_MESSAGE_ROUTED1(
     AccessibilityHostMsg_LocationChanges,
     std::vector<AccessibilityHostMsg_LocationChangeParams>)
 
-// Sent to update the browser of the location of accessibility objects.
+// Sent to update the browser of Find In Page results.
 IPC_MESSAGE_ROUTED1(
     AccessibilityHostMsg_FindInPageResult,
     AccessibilityHostMsg_FindInPageResultParams)
+
+// Sent in response to AccessibilityMsg_HitTest.
+IPC_MESSAGE_ROUTED2(AccessibilityHostMsg_ChildFrameHitTestResult,
+                    gfx::Point /* location tested */,
+                    int /* node id of result */);
 
 // Sent in response to AccessibilityMsg_SnapshotTree. The callback id that was
 // passed to the request will be returned in |callback_id|, along with

@@ -1112,16 +1112,10 @@ IntRect AXObject::boundingBoxForQuads(LayoutObject* obj, const Vector<FloatQuad>
 
 AXObject* AXObject::elementAccessibilityHitTest(const IntPoint& point) const
 {
-    // Check if there are any mock elements or child frames that need to be handled.
+    // Check if there are any mock elements that need to be handled.
     for (const auto& child : m_children) {
         if (child->isMockObject() && child->elementRect().contains(point))
             return child->elementAccessibilityHitTest(point);
-
-        if (child->isWebArea()) {
-            FrameView* frameView = child->documentFrameView();
-            if (frameView)
-                return child->accessibilityHitTest(IntPoint(point - frameView->frameRect().location()));
-        }
     }
 
     return const_cast<AXObject*>(this);

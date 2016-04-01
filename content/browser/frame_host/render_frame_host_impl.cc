@@ -549,6 +549,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnAccessibilityLocationChanges)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageResult,
                         OnAccessibilityFindInPageResult)
+    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_ChildFrameHitTestResult,
+                        OnAccessibilityChildFrameHitTestResult)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
                         OnAccessibilitySnapshotResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ToggleFullscreen, OnToggleFullscreen)
@@ -1705,7 +1707,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
           CHECK(ax_tree_for_testing_->Unserialize(detail.update))
               << ax_tree_for_testing_->error();
         }
-        accessibility_testing_callback_.Run(detail.event_type, detail.id);
+        accessibility_testing_callback_.Run(this, detail.event_type, detail.id);
       }
     }
   }
@@ -1744,6 +1746,15 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
           params.request_id, params.match_index, params.start_id,
           params.start_offset, params.end_id, params.end_offset);
     }
+  }
+}
+
+void RenderFrameHostImpl::OnAccessibilityChildFrameHitTestResult(
+    const gfx::Point& point,
+    int hit_obj_id) {
+  if (browser_accessibility_manager_) {
+    browser_accessibility_manager_->OnChildFrameHitTestResult(point,
+                                                              hit_obj_id);
   }
 }
 
@@ -2421,7 +2432,8 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(
 }
 
 void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(
-    const base::Callback<void(ui::AXEvent, int)>& callback) {
+    const base::Callback<void(RenderFrameHostImpl*, ui::AXEvent, int)>&
+        callback) {
   accessibility_testing_callback_ = callback;
 }
 

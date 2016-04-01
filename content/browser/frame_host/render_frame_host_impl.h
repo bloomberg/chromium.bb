@@ -458,7 +458,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // renderer process, and the accessibility tree it sent can be
   // retrieved using GetAXTreeForTesting().
   void SetAccessibilityCallbackForTesting(
-      const base::Callback<void(ui::AXEvent, int)>& callback);
+      const base::Callback<void(RenderFrameHostImpl*, ui::AXEvent, int)>&
+          callback);
 
   // Called when the metadata about the accessibility tree for this frame
   // changes due to a browser-side change, as opposed to due to an IPC from
@@ -661,6 +662,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnAccessibilityFindInPageResult(
       const AccessibilityHostMsg_FindInPageResultParams& params);
+  void OnAccessibilityChildFrameHitTestResult(const gfx::Point& point,
+                                              int hit_obj_id);
   void OnAccessibilitySnapshotResponse(
       int callback_id,
       const AXContentTreeUpdate& snapshot);
@@ -921,7 +924,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   std::map<int, AXTreeSnapshotCallback> ax_tree_snapshot_callbacks_;
 
   // Callback when an event is received, for testing.
-  base::Callback<void(ui::AXEvent, int)> accessibility_testing_callback_;
+  base::Callback<void(RenderFrameHostImpl*, ui::AXEvent, int)>
+      accessibility_testing_callback_;
   // The most recently received accessibility tree - for testing only.
   scoped_ptr<ui::AXTree> ax_tree_for_testing_;
   // Flag to not create a BrowserAccessibilityManager, for testing. If one

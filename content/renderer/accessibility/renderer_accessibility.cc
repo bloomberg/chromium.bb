@@ -384,8 +384,24 @@ void RendererAccessibility::OnHitTest(gfx::Point point) {
     return;
 
   WebAXObject obj = root_obj.hitTest(point);
-  if (!obj.isDetached())
-    HandleAXEvent(obj, ui::AX_EVENT_HOVER);
+  if (obj.isDetached())
+    return;
+
+  // If the object that was hit has a child frame, we have to send a
+  // message back to the browser to do the hit test in the child frame,
+  // recursively.
+  AXContentNodeData data;
+  tree_source_.SerializeNode(obj, &data);
+  if (data.HasContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID) ||
+      data.HasContentIntAttribute(
+          AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID)) {
+    Send(new AccessibilityHostMsg_ChildFrameHitTestResult(routing_id(), point,
+                                                          obj.axID()));
+    return;
+  }
+
+  // Otherwise, send a HOVER event on the node that was hit.
+  HandleAXEvent(obj, ui::AX_EVENT_HOVER);
 }
 
 void RendererAccessibility::OnSetAccessibilityFocus(int acc_obj_id) {
