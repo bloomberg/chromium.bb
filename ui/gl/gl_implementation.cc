@@ -53,7 +53,7 @@ void CleanupNativeLibraries(void* unused) {
   }
 }
 
-}
+}  // namespace
 
 base::ThreadLocalPointer<GLApi>* g_current_gl_context_tls = NULL;
 OSMESAApi* g_current_osmesa_context;
