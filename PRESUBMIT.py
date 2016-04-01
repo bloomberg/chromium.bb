@@ -685,7 +685,10 @@ def _CheckFilePermissions(input_api, output_api):
   """Check that all files have their permissions properly set."""
   if input_api.platform == 'win32':
     return []
-  args = [input_api.python_executable, 'tools/checkperms/checkperms.py',
+  checkperms_tool = input_api.os_path.join(
+      input_api.PresubmitLocalPath(),
+      'tools', 'checkperms', 'checkperms.py')
+  args = [input_api.python_executable, checkperms_tool,
           '--root', input_api.change.RepositoryRoot()]
   for f in input_api.AffectedFiles():
     args += ['--file', f.LocalPath()]
