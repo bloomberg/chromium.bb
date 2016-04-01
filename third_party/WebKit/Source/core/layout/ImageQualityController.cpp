@@ -129,16 +129,14 @@ void ImageQualityController::objectDestroyed(const LayoutObject& object)
 
 void ImageQualityController::highQualityRepaintTimerFired(Timer<ImageQualityController>*)
 {
-    for (auto* layoutObject : m_objectLayerSizeMap.keys()) {
-        ObjectLayerSizeMap::iterator i = m_objectLayerSizeMap.find(layoutObject);
-        if (i != m_objectLayerSizeMap.end()) {
-            // Only invalidate the object if it is animating.
-            if (i->value.isResizing) {
-                // TODO(wangxianzhu): Use LayoutObject::getMutableForPainting().
-                const_cast<LayoutObject*>(layoutObject)->setShouldDoFullPaintInvalidation();
-            }
-            i->value.isResizing = false;
-        }
+    for (auto& i : m_objectLayerSizeMap) {
+        // Only invalidate the object if it is animating.
+        if (!i.value.isResizing)
+            continue;
+
+        // TODO(wangxianzhu): Use LayoutObject::getMutableForPainting().
+        const_cast<LayoutObject*>(i.key)->setShouldDoFullPaintInvalidation();
+        i.value.isResizing = false;
     }
 }
 
