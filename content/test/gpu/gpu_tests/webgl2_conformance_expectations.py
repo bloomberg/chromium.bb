@@ -332,13 +332,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
 
     # Win7 / NVidia / GeForce GT 730
+    # The following two use wildcards because the file names are over
+    # 255 characters and are causing problems on the Windows bots.
     self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
         'tex-image-and-sub-image-2d-with-image-bitmap-from-image-bitmap-' +
-        'r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html',
+        'r11f_g11f_b10f-*.html',
         ['win7', ('nvidia', 0xf02)], bug=483282)
     self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
         'tex-image-and-sub-image-3d-with-image-bitmap-from-image-bitmap-' +
-        'r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html',
+        'r11f_g11f_b10f-*.html',
         ['win7', ('nvidia', 0xf02)], bug=483282)
 
     # Mac only.
