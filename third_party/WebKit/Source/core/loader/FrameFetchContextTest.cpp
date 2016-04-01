@@ -433,8 +433,8 @@ TEST_F(FrameFetchContextTest, MainResource)
     document->frame()->loader().setLoadType(FrameLoadTypeReload);
     EXPECT_EQ(ValidatingCacheData, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
 
-    // Child frame as part of end to end reload
-    document->frame()->loader().setLoadType(FrameLoadTypeReloadFromOrigin);
+    // Child frame as part of reload bypassing cache
+    document->frame()->loader().setLoadType(FrameLoadTypeReloadBypassingCache);
     EXPECT_EQ(BypassingCache, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
 }
 

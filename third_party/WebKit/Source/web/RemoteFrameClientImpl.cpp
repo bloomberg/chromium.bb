@@ -141,7 +141,7 @@ void RemoteFrameClientImpl::navigate(const ResourceRequest& request, bool should
 void RemoteFrameClientImpl::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedirectPolicy)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->reload(loadType == FrameLoadTypeReloadFromOrigin, clientRedirectPolicy == ClientRedirect);
+        m_webFrame->client()->reload(loadType == FrameLoadTypeReloadBypassingCache, clientRedirectPolicy == ClientRedirect);
 }
 
 unsigned RemoteFrameClientImpl::backForwardLength()

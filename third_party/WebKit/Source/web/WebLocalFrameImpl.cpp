@@ -863,7 +863,7 @@ void WebLocalFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, bool ig
     // requests.
     ASSERT(frame());
     WebFrameLoadType loadType = ignoreCache ?
-        WebFrameLoadType::ReloadFromOrigin : WebFrameLoadType::Reload;
+        WebFrameLoadType::ReloadBypassingCache : WebFrameLoadType::Reload;
     WebURLRequest request = requestForReload(loadType, overrideUrl);
     if (request.isNull())
         return;

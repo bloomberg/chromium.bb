@@ -19,7 +19,7 @@ enum class WebFrameLoadType {
     ReplaceCurrentItem,
     InitialInChildFrame,
     InitialHistoryLoad, // history navigation in a newly created frame
-    ReloadFromOrigin, // reload bypassing cache
+    ReloadBypassingCache, // super reload
 };
 
 } // namespace blink

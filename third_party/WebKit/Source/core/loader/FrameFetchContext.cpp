@@ -143,7 +143,7 @@ CachePolicy FrameFetchContext::getCachePolicy() const
         return CachePolicyVerify;
 
     FrameLoadType loadType = frame()->loader().loadType();
-    if (loadType == FrameLoadTypeReloadFromOrigin)
+    if (loadType == FrameLoadTypeReloadBypassingCache)
         return CachePolicyReload;
 
     Frame* parentFrame = frame()->tree().parent();
@@ -193,7 +193,7 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
             frameLoadType = toLocalFrame(f)->loader().loadType();
             if (frameLoadType == FrameLoadTypeBackForward)
                 return ReturnCacheDataElseLoad;
-            if (frameLoadType == FrameLoadTypeReloadFromOrigin)
+            if (frameLoadType == FrameLoadTypeReloadBypassingCache)
                 return BypassingCache;
             if (frameLoadType == FrameLoadTypeReload)
                 return ValidatingCacheData;

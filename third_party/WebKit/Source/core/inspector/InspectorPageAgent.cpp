@@ -423,7 +423,7 @@ void InspectorPageAgent::reload(ErrorString*, const Maybe<bool>& optionalIgnoreC
     ErrorString unused;
     m_debuggerAgent->setSkipAllPauses(&unused, true);
     m_reloading = true;
-    m_inspectedFrames->root()->reload(optionalIgnoreCache.fromMaybe(false) ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload, NotClientRedirect);
+    m_inspectedFrames->root()->reload(optionalIgnoreCache.fromMaybe(false) ? FrameLoadTypeReloadBypassingCache : FrameLoadTypeReload, NotClientRedirect);
 }
 
 void InspectorPageAgent::navigate(ErrorString*, const String& url, String* outFrameId)

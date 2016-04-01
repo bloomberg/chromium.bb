@@ -100,6 +100,7 @@ public:
     void addScriptToEvaluateOnLoad(ErrorString*, const String& scriptSource, String* identifier) override;
     void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) override;
     void setAutoAttachToCreatedPages(ErrorString*, bool autoAttach) override;
+    // TODO(crbug.com/599364): Rename |ignoreCache| to |bypassCache|.
     void reload(ErrorString*, const Maybe<bool>& ignoreCache, const Maybe<String>& scriptToEvaluateOnLoad) override;
     void navigate(ErrorString*, const String& url, String* frameId) override;
     void getResourceTree(ErrorString*, OwnPtr<protocol::Page::FrameResourceTree>* frameTree) override;

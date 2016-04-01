@@ -111,7 +111,7 @@ bool isBackForwardLoadType(FrameLoadType type)
 static bool needsHistoryItemRestore(FrameLoadType type)
 {
     return type == FrameLoadTypeBackForward || type == FrameLoadTypeReload
-        || type == FrameLoadTypeReloadFromOrigin;
+        || type == FrameLoadTypeReloadBypassingCache;
 }
 
 // static
@@ -135,8 +135,8 @@ ResourceRequest FrameLoader::resourceRequestFromHistoryItem(HistoryItem* item,
 ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadType,
     const KURL& overrideURL, ClientRedirectPolicy clientRedirectPolicy)
 {
-    ASSERT(frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin);
-    ResourceRequestCachePolicy cachePolicy = frameLoadType == FrameLoadTypeReloadFromOrigin ? BypassingCache : ValidatingCacheData;
+    ASSERT(frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadBypassingCache);
+    ResourceRequestCachePolicy cachePolicy = frameLoadType == FrameLoadTypeReloadBypassingCache ? BypassingCache : ValidatingCacheData;
     if (!m_currentItem)
         return ResourceRequest();
     ResourceRequest request = resourceRequestFromHistoryItem(m_currentItem.get(), cachePolicy);
@@ -156,7 +156,7 @@ ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadTyp
         request.setURL(overrideURL);
         request.clearHTTPReferrer();
     }
-    request.setSkipServiceWorker(frameLoadType == FrameLoadTypeReloadFromOrigin);
+    request.setSkipServiceWorker(frameLoadType == FrameLoadTypeReloadBypassingCache);
     return request;
 }
 
@@ -776,7 +776,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
     if (request.resourceRequest().getCachePolicy() == ValidatingCacheData)
         return FrameLoadTypeReload;
     if (request.resourceRequest().getCachePolicy() == BypassingCache)
-        return FrameLoadTypeReloadFromOrigin;
+        return FrameLoadTypeReloadBypassingCache;
     // From the HTML5 spec for location.assign():
     //  "If the browsing context's session history contains only one Document,
     //   and that was the about:blank Document created when the browsing context
@@ -828,7 +828,7 @@ static bool shouldOpenInNewWindow(Frame* targetFrame, const FrameLoadRequest& re
 
 static NavigationType determineNavigationType(FrameLoadType frameLoadType, bool isFormSubmission, bool haveEvent)
 {
-    bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin;
+    bool isReload = frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadBypassingCache;
     bool isBackForward = isBackForwardLoadType(frameLoadType);
     if (isFormSubmission)
         return (isReload || isBackForward) ? NavigationTypeFormResubmitted : NavigationTypeFormSubmitted;
@@ -1271,7 +1271,7 @@ bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const S
     // currently displaying a frameset, or if the URL does not have a fragment.
     return (!isFormSubmission || equalIgnoringCase(httpMethod, HTTPNames::GET))
         && loadType != FrameLoadTypeReload
-        && loadType != FrameLoadTypeReloadFromOrigin
+        && loadType != FrameLoadTypeReloadBypassingCache
         && loadType != FrameLoadTypeSame
         && loadType != FrameLoadTypeBackForward
         && url.hasFragmentIdentifier()

@@ -301,7 +301,7 @@ void LocalFrame::navigate(const FrameLoadRequest& request)
 
 void LocalFrame::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedirectPolicy)
 {
-    ASSERT(loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadFromOrigin);
+    ASSERT(loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadBypassingCache);
     ASSERT(clientRedirectPolicy == NotClientRedirect || loadType == FrameLoadTypeReload);
     if (clientRedirectPolicy == NotClientRedirect) {
         if (!m_loader.currentItem())

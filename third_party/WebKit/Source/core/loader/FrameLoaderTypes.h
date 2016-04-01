@@ -39,7 +39,7 @@ enum FrameLoadType {
     FrameLoadTypeReplaceCurrentItem,
     FrameLoadTypeInitialInChildFrame,
     FrameLoadTypeInitialHistoryLoad,
-    FrameLoadTypeReloadFromOrigin,
+    FrameLoadTypeReloadBypassingCache,
 };
 
 enum NavigationType {

@@ -304,7 +304,7 @@ public:
 
     String markerTextForListItem(Element*);
 
-    void forceReload(bool endToEnd);
+    void forceReload(bool bypassCache);
 
     String getImageSourceURL(Element*);
 

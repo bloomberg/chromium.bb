@@ -2152,9 +2152,9 @@ PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(PassRefPtr<DOMArr
     return SerializedScriptValueFactory::instance().createFromWire(value);
 }
 
-void Internals::forceReload(bool endToEnd)
+void Internals::forceReload(bool bypassCache)
 {
-    frame()->reload(endToEnd ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload, NotClientRedirect);
+    frame()->reload(bypassCache ? FrameLoadTypeReloadBypassingCache : FrameLoadTypeReload, NotClientRedirect);
 }
 
 ClientRect* Internals::selectionBounds(ExceptionState& exceptionState)

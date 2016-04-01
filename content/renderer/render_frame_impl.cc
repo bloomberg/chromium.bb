@@ -5307,7 +5307,7 @@ void RenderFrameImpl::NavigateInternal(
   if (is_reload) {
     bool ignore_cache = (common_params.navigation_type ==
                          FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
-    load_type = ignore_cache ? blink::WebFrameLoadType::ReloadFromOrigin
+    load_type = ignore_cache ? blink::WebFrameLoadType::ReloadBypassingCache
                              : blink::WebFrameLoadType::Reload;
 
     if (!browser_side_navigation) {
@@ -5682,7 +5682,7 @@ void RenderFrameImpl::LoadDataURL(
   if (net::DataURL::Parse(data_url, &mime_type, &charset, &data)) {
     const GURL base_url = params.base_url_for_data_url.is_empty() ?
         params.url : params.base_url_for_data_url;
-    bool replace = load_type == blink::WebFrameLoadType::ReloadFromOrigin ||
+    bool replace = load_type == blink::WebFrameLoadType::ReloadBypassingCache ||
                    load_type == blink::WebFrameLoadType::Reload;
 
     frame->loadData(
