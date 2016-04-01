@@ -204,9 +204,9 @@ void TestWin10ImageLoadLowLabel(bool is_success_test) {
 
 namespace sandbox {
 
-// A shared helper test command that will attempt to CreateProcess
-// with a given command line. The second parameter, if set to non-zero
-// will cause the child process to return exit code STATUS_ACCESS_VIOLATION.
+// A shared helper test command that will attempt to CreateProcess with a given
+// command line. The second optional parameter will cause the child process to
+// return that as an exit code on termination.
 //
 // ***Make sure you've enabled basic process creation in the
 // test sandbox settings via:
@@ -214,12 +214,14 @@ namespace sandbox {
 // sandbox::TargetPolicy::SetTokenLevel(),
 // and TestRunner::SetDisableCsrss().
 SBOX_TESTS_COMMAND int TestChildProcess(int argc, wchar_t** argv) {
-  if (argc < 2)
+  if (argc < 1)
     return SBOX_TEST_INVALID_PARAMETER;
 
-  int desired_exit_code = _wtoi(argv[1]);
-  if (desired_exit_code)
-      desired_exit_code = STATUS_ACCESS_VIOLATION;
+  int desired_exit_code = 0;
+
+  if (argc == 2) {
+    desired_exit_code = wcstoul(argv[1], nullptr, 0);
+  }
 
   std::wstring cmd = argv[0];
   base::LaunchOptions options = base::LaunchOptionsForTest();
@@ -677,7 +679,6 @@ TEST(ProcessMitigationsTest, CheckChildProcessSuccess) {
 
   std::wstring test_command = L"TestChildProcess ";
   test_command += cmd.value().c_str();
-  test_command += L" 0";
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
 }
@@ -701,16 +702,17 @@ TEST(ProcessMitigationsTest, CheckChildProcessFailure) {
 
   std::wstring test_command = L"TestChildProcess ";
   test_command += cmd.value().c_str();
-  test_command += L" 0";
 
   EXPECT_EQ(SBOX_TEST_FAILED, runner.RunTest(test_command.c_str()));
 }
 
-// This test validates that we can spawn a child process if
-// MITIGATION_CHILD_PROCESS_CREATION_RESTRICTED mitigation is
-// not set. This also tests that a crashing child process is correctly handled
-// by the broker.
-TEST(ProcessMitigationsTest, CheckChildProcessSuccessAbnormalExit) {
+// This test validates that when the sandboxed target within a job spawns a
+// child process and the target process exits abnormally, the broker correctly
+// handles the JOB_OBJECT_MSG_ABNORMAL_EXIT_PROCESS message.
+// Because this involves spawning a child process from the target process and is
+// very similar to the above CheckChildProcess* tests, this test is here rather
+// than elsewhere closer to the other Job tests.
+TEST(ProcessMitigationsTest, CheckChildProcessAbnormalExit) {
   TestRunner runner;
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
@@ -723,36 +725,11 @@ TEST(ProcessMitigationsTest, CheckChildProcessSuccessAbnormalExit) {
   EXPECT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd));
   cmd = cmd.Append(L"calc.exe");
 
-  std::wstring test_command = L"TestChildProcess ";
-  test_command += cmd.value().c_str();
-  test_command += L" 1";
+  std::wstring test_command(base::StringPrintf(L"TestChildProcess %ls 0x%08X",
+                                               cmd.value().c_str(),
+                                               STATUS_ACCESS_VIOLATION));
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
-}
-
-// This test validates that setting the
-// MITIGATION_CHILD_PROCESS_CREATION_RESTRICTED mitigation prevents
-// the spawning of child processes.  This also tests that a crashing child
-// process is correctly handled by the broker.
-TEST(ProcessMitigationsTest, CheckChildProcessFailureAbnormalExit) {
-  TestRunner runner;
-  sandbox::TargetPolicy* policy = runner.GetPolicy();
-
-  // Now set the job level to be <= JOB_LIMITED_USER
-  // and ensure we can no longer create a child process.
-  policy->SetJobLevel(JOB_LIMITED_USER, 0);
-  policy->SetTokenLevel(USER_UNPROTECTED, USER_UNPROTECTED);
-  runner.SetDisableCsrss(false);
-
-  base::FilePath cmd;
-  EXPECT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd));
-  cmd = cmd.Append(L"calc.exe");
-
-  std::wstring test_command = L"TestChildProcess ";
-  test_command += cmd.value().c_str();
-  test_command += L" 1";
-
-  EXPECT_EQ(SBOX_TEST_FAILED, runner.RunTest(test_command.c_str()));
 }
 
 }  // namespace sandbox
