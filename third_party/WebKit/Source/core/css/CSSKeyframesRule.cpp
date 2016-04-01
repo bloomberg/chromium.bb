@@ -53,14 +53,14 @@ StyleRuleKeyframes::~StyleRuleKeyframes()
 {
 }
 
-void StyleRuleKeyframes::parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe)
+void StyleRuleKeyframes::parserAppendKeyframe(RawPtr<StyleRuleKeyframe> keyframe)
 {
     if (!keyframe)
         return;
     m_keyframes.append(keyframe);
 }
 
-void StyleRuleKeyframes::wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe)
+void StyleRuleKeyframes::wrapperAppendKeyframe(RawPtr<StyleRuleKeyframe> keyframe)
 {
     m_keyframes.append(keyframe);
     styleChanged();
@@ -122,7 +122,7 @@ void CSSKeyframesRule::appendRule(const String& ruleText)
 
     CSSStyleSheet* styleSheet = parentStyleSheet();
     CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
-    RefPtrWillBeRawPtr<StyleRuleKeyframe> keyframe = CSSParser::parseKeyframeRule(context, ruleText);
+    RawPtr<StyleRuleKeyframe> keyframe = CSSParser::parseKeyframeRule(context, ruleText);
     if (!keyframe)
         return;
 
@@ -187,9 +187,9 @@ CSSKeyframeRule* CSSKeyframesRule::item(unsigned index) const
         return nullptr;
 
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
-    RefPtrWillBeMember<CSSKeyframeRule>& rule = m_childRuleCSSOMWrappers[index];
+    Member<CSSKeyframeRule>& rule = m_childRuleCSSOMWrappers[index];
     if (!rule)
-        rule = adoptRefWillBeNoop(new CSSKeyframeRule(m_keyframesRule->keyframes()[index].get(), const_cast<CSSKeyframesRule*>(this)));
+        rule = new CSSKeyframeRule(m_keyframesRule->keyframes()[index].get(), const_cast<CSSKeyframesRule*>(this));
 
     return rule.get();
 }

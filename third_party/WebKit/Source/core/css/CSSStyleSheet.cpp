@@ -46,9 +46,9 @@ namespace blink {
 
 class StyleSheetCSSRuleList final : public CSSRuleList {
 public:
-    static PassOwnPtrWillBeRawPtr<StyleSheetCSSRuleList> create(CSSStyleSheet* sheet)
+    static RawPtr<StyleSheetCSSRuleList> create(CSSStyleSheet* sheet)
     {
-        return adoptPtrWillBeNoop(new StyleSheetCSSRuleList(sheet));
+        return new StyleSheetCSSRuleList(sheet);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -70,7 +70,7 @@ private:
 
     CSSStyleSheet* styleSheet() const override { return m_styleSheet; }
 
-    RawPtrWillBeMember<CSSStyleSheet> m_styleSheet;
+    Member<CSSStyleSheet> m_styleSheet;
 };
 
 #if ENABLE(ASSERT)
@@ -90,30 +90,30 @@ static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
 }
 #endif
 
-PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, CSSImportRule* ownerRule)
+RawPtr<CSSStyleSheet> CSSStyleSheet::create(RawPtr<StyleSheetContents> sheet, CSSImportRule* ownerRule)
 {
-    return adoptRefWillBeNoop(new CSSStyleSheet(sheet, ownerRule));
+    return new CSSStyleSheet(sheet, ownerRule);
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode)
+RawPtr<CSSStyleSheet> CSSStyleSheet::create(RawPtr<StyleSheetContents> sheet, Node* ownerNode)
 {
-    return adoptRefWillBeNoop(new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition()));
+    return new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition());
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::createInline(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode, const TextPosition& startPosition)
+RawPtr<CSSStyleSheet> CSSStyleSheet::createInline(RawPtr<StyleSheetContents> sheet, Node* ownerNode, const TextPosition& startPosition)
 {
     ASSERT(sheet);
-    return adoptRefWillBeNoop(new CSSStyleSheet(sheet, ownerNode, true, startPosition));
+    return new CSSStyleSheet(sheet, ownerNode, true, startPosition);
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
+RawPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
     CSSParserContext parserContext(ownerNode->document(), 0, baseURL, encoding);
-    RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(baseURL.getString(), parserContext);
-    return adoptRefWillBeNoop(new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition));
+    RawPtr<StyleSheetContents> sheet = StyleSheetContents::create(baseURL.getString(), parserContext);
+    return new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition);
 }
 
-CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents, CSSImportRule* ownerRule)
+CSSStyleSheet::CSSStyleSheet(RawPtr<StyleSheetContents> contents, CSSImportRule* ownerRule)
     : m_contents(contents)
     , m_isInlineStylesheet(false)
     , m_isDisabled(false)
@@ -125,7 +125,7 @@ CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents
     m_contents->registerClient(this);
 }
 
-CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition)
+CSSStyleSheet::CSSStyleSheet(RawPtr<StyleSheetContents> contents, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition)
     : m_contents(contents)
     , m_isInlineStylesheet(isInlineStylesheet)
     , m_isDisabled(false)
@@ -222,7 +222,7 @@ void CSSStyleSheet::setDisabled(bool disabled)
     didMutate();
 }
 
-void CSSStyleSheet::setMediaQueries(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaQueries)
+void CSSStyleSheet::setMediaQueries(RawPtr<MediaQuerySet> mediaQueries)
 {
     m_mediaQueries = mediaQueries;
     if (m_mediaCSSOMWrapper && m_mediaQueries)
@@ -245,7 +245,7 @@ CSSRule* CSSStyleSheet::item(unsigned index)
         m_childRuleCSSOMWrappers.grow(ruleCount);
     ASSERT(m_childRuleCSSOMWrappers.size() == ruleCount);
 
-    RefPtrWillBeMember<CSSRule>& cssRule = m_childRuleCSSOMWrappers[index];
+    Member<CSSRule>& cssRule = m_childRuleCSSOMWrappers[index];
     if (!cssRule)
         cssRule = m_contents->ruleAt(index)->createCSSOMWrapper(this);
     return cssRule.get();
@@ -276,7 +276,7 @@ bool CSSStyleSheet::canAccessRules() const
     return false;
 }
 
-PassRefPtrWillBeRawPtr<CSSRuleList> CSSStyleSheet::rules()
+RawPtr<CSSRuleList> CSSStyleSheet::rules()
 {
     return cssRules();
 }
@@ -290,7 +290,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
         return 0;
     }
     CSSParserContext context(m_contents->parserContext(), UseCounter::getFrom(this));
-    RefPtrWillBeRawPtr<StyleRuleBase> rule = CSSParser::parseRule(context, m_contents.get(), ruleString);
+    RawPtr<StyleRuleBase> rule = CSSParser::parseRule(context, m_contents.get(), ruleString);
 
     if (!rule) {
         exceptionState.throwDOMException(SyntaxError, "Failed to parse the rule '" + ruleString + "'.");
@@ -307,7 +307,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
         return 0;
     }
     if (!m_childRuleCSSOMWrappers.isEmpty())
-        m_childRuleCSSOMWrappers.insert(index, RefPtrWillBeMember<CSSRule>(nullptr));
+        m_childRuleCSSOMWrappers.insert(index, Member<CSSRule>(nullptr));
 
     return index;
 }
@@ -362,7 +362,7 @@ int CSSStyleSheet::addRule(const String& selector, const String& style, Exceptio
 }
 
 
-PassRefPtrWillBeRawPtr<CSSRuleList> CSSStyleSheet::cssRules()
+RawPtr<CSSRuleList> CSSStyleSheet::cssRules()
 {
     if (!canAccessRules())
         return nullptr;

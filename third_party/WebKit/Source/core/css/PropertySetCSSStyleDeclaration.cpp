@@ -115,8 +115,8 @@ private:
     static bool s_shouldNotifyInspector;
     static bool s_shouldDeliver;
 
-    OwnPtrWillBeMember<MutationObserverInterestGroup> m_mutationRecipients;
-    RefPtrWillBeMember<MutationRecord> m_mutation;
+    Member<MutationObserverInterestGroup> m_mutationRecipients;
+    Member<MutationRecord> m_mutation;
 };
 
 unsigned StyleAttributeMutationScope::s_scopeCount = 0;
@@ -270,7 +270,7 @@ String AbstractPropertySetCSSStyleDeclaration::removeProperty(const String& prop
     return result;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> AbstractPropertySetCSSStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
+RawPtr<CSSValue> AbstractPropertySetCSSStyleDeclaration::getPropertyCSSValueInternal(CSSPropertyID propertyID)
 {
     return propertySet().getPropertyCSSValue(propertyID);
 }

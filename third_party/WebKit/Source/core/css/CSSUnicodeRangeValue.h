@@ -33,9 +33,9 @@ namespace blink {
 
 class CSSUnicodeRangeValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSUnicodeRangeValue> create(UChar32 from, UChar32 to)
+    static RawPtr<CSSUnicodeRangeValue> create(UChar32 from, UChar32 to)
     {
-        return adoptRefWillBeNoop(new CSSUnicodeRangeValue(from, to));
+        return new CSSUnicodeRangeValue(from, to);
     }
 
     UChar32 from() const { return m_from; }

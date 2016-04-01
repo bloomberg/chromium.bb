@@ -13,9 +13,9 @@ namespace blink {
 
 class CSSURIValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSURIValue> create(const String& str)
+    static RawPtr<CSSURIValue> create(const String& str)
     {
-        return adoptRefWillBeNoop(new CSSURIValue(str));
+        return new CSSURIValue(str);
     }
 
     String value() const { return m_string; }

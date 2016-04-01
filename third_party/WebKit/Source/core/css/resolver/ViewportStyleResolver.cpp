@@ -43,8 +43,6 @@
 
 namespace blink {
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ViewportStyleResolver);
-
 ViewportStyleResolver::ViewportStyleResolver(Document* document)
     : m_document(document)
     , m_hasAuthorStyle(false)
@@ -73,7 +71,7 @@ void ViewportStyleResolver::collectViewportRules(RuleSet* rules, Origin origin)
 {
     rules->compactRulesIfNeeded();
 
-    const WillBeHeapVector<RawPtrWillBeMember<StyleRuleViewport>>& viewportRules = rules->viewportRules();
+    const HeapVector<Member<StyleRuleViewport>>& viewportRules = rules->viewportRules();
     for (size_t i = 0; i < viewportRules.size(); ++i)
         addViewportRule(viewportRules[i], origin);
 }
@@ -135,7 +133,7 @@ float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const
     if (id == CSSPropertyUserZoom)
         defaultValue = 1;
 
-    RefPtrWillBeRawPtr<CSSValue> value = m_propertySet->getPropertyCSSValue(id);
+    RawPtr<CSSValue> value = m_propertySet->getPropertyCSSValue(id);
     if (!value || !value->isPrimitiveValue())
         return defaultValue;
 
@@ -185,7 +183,7 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
         || id == CSSPropertyMaxWidth
         || id == CSSPropertyMinWidth);
 
-    RefPtrWillBeRawPtr<CSSValue> value = m_propertySet->getPropertyCSSValue(id);
+    RawPtr<CSSValue> value = m_propertySet->getPropertyCSSValue(id);
     if (!value || !value->isPrimitiveValue())
         return Length(); // auto
 

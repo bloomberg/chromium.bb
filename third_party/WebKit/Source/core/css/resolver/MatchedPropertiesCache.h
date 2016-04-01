@@ -36,10 +36,9 @@ namespace blink {
 class ComputedStyle;
 class StyleResolverState;
 
-class CachedMatchedProperties final : public NoBaseWillBeGarbageCollectedFinalized<CachedMatchedProperties> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CachedMatchedProperties);
+class CachedMatchedProperties final : public GarbageCollectedFinalized<CachedMatchedProperties> {
 public:
-    WillBeHeapVector<MatchedProperties> matchedProperties;
+    HeapVector<MatchedProperties> matchedProperties;
     RefPtr<ComputedStyle> computedStyle;
     RefPtr<ComputedStyle> parentComputedStyle;
 

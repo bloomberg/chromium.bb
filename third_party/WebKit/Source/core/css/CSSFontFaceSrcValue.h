@@ -39,13 +39,13 @@ class Document;
 
 class CSSFontFaceSrcValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> create(const String& specifiedResource, const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
+    static RawPtr<CSSFontFaceSrcValue> create(const String& specifiedResource, const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
     {
-        return adoptRefWillBeNoop(new CSSFontFaceSrcValue(specifiedResource, absoluteResource, false, shouldCheckContentSecurityPolicy));
+        return new CSSFontFaceSrcValue(specifiedResource, absoluteResource, false, shouldCheckContentSecurityPolicy);
     }
-    static PassRefPtrWillBeRawPtr<CSSFontFaceSrcValue> createLocal(const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
+    static RawPtr<CSSFontFaceSrcValue> createLocal(const String& absoluteResource, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
     {
-        return adoptRefWillBeNoop(new CSSFontFaceSrcValue(emptyString(), absoluteResource, true, shouldCheckContentSecurityPolicy));
+        return new CSSFontFaceSrcValue(emptyString(), absoluteResource, true, shouldCheckContentSecurityPolicy);
     }
 
     const String& resource() const { return m_absoluteResource; }
@@ -91,25 +91,25 @@ private:
     ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;
 
 
-    class FontResourceHelper : public NoBaseWillBeGarbageCollectedFinalized<FontResourceHelper>, public ResourceOwner<FontResource> {
-        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
+    class FontResourceHelper : public GarbageCollectedFinalized<FontResourceHelper>, public ResourceOwner<FontResource> {
+        USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
     public:
-        static PassOwnPtrWillBeRawPtr<FontResourceHelper> create(PassRefPtrWillBeRawPtr<FontResource> resource)
+        static RawPtr<FontResourceHelper> create(RawPtr<FontResource> resource)
         {
-            return adoptPtrWillBeNoop(new FontResourceHelper(resource));
+            return new FontResourceHelper(resource);
         }
 
         DEFINE_INLINE_VIRTUAL_TRACE() { ResourceOwner<FontResource>::trace(visitor); }
 
     private:
-        FontResourceHelper(PassRefPtrWillBeRawPtr<FontResource> resource)
+        FontResourceHelper(RawPtr<FontResource> resource)
         {
             setResource(resource);
         }
 
         String debugName() const override { return "CSSFontFaceSrcValue::FontResourceHelper"; }
     };
-    OwnPtrWillBeMember<FontResourceHelper> m_fetched;
+    Member<FontResourceHelper> m_fetched;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFaceSrcValue, isFontFaceSrcValue());

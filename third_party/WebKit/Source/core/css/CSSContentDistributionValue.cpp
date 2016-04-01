@@ -23,7 +23,7 @@ CSSContentDistributionValue::~CSSContentDistributionValue()
 
 String CSSContentDistributionValue::customCSSText() const
 {
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
 
     if (m_distribution != CSSValueInvalid)
         list->append(distribution());

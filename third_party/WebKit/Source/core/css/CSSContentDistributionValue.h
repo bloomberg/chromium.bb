@@ -13,17 +13,17 @@ namespace blink {
 
 class CSSContentDistributionValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSContentDistributionValue> create(CSSValueID distribution, CSSValueID position, CSSValueID overflow)
+    static RawPtr<CSSContentDistributionValue> create(CSSValueID distribution, CSSValueID position, CSSValueID overflow)
     {
-        return adoptRefWillBeNoop(new CSSContentDistributionValue(distribution, position, overflow));
+        return new CSSContentDistributionValue(distribution, position, overflow);
     }
     ~CSSContentDistributionValue();
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> distribution() const { return cssValuePool().createIdentifierValue(m_distribution); }
+    RawPtr<CSSPrimitiveValue> distribution() const { return cssValuePool().createIdentifierValue(m_distribution); }
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> position() const { return cssValuePool().createIdentifierValue(m_position); }
+    RawPtr<CSSPrimitiveValue> position() const { return cssValuePool().createIdentifierValue(m_position); }
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> overflow() const { return cssValuePool().createIdentifierValue(m_overflow); }
+    RawPtr<CSSPrimitiveValue> overflow() const { return cssValuePool().createIdentifierValue(m_overflow); }
 
     String customCSSText() const;
 

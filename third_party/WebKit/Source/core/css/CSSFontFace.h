@@ -43,8 +43,7 @@ class FontDescription;
 class RemoteFontFaceSource;
 class SimpleFontData;
 
-class CORE_EXPORT CSSFontFace final : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFace> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CSSFontFace);
+class CORE_EXPORT CSSFontFace final : public GarbageCollectedFinalized<CSSFontFace> {
     WTF_MAKE_NONCOPYABLE(CSSFontFace);
 public:
     CSSFontFace(FontFace* fontFace, Vector<UnicodeRange>& ranges)
@@ -64,7 +63,7 @@ public:
 
     bool isValid() const { return !m_sources.isEmpty(); }
 
-    void addSource(PassOwnPtrWillBeRawPtr<CSSFontFaceSource>);
+    void addSource(RawPtr<CSSFontFaceSource>);
 
     void didBeginLoad();
     void fontLoaded(RemoteFontFaceSource*);
@@ -86,9 +85,9 @@ private:
     void setLoadStatus(FontFace::LoadStatusType);
 
     RefPtr<UnicodeRangeSet> m_ranges;
-    RawPtrWillBeMember<CSSSegmentedFontFace> m_segmentedFontFace;
-    WillBeHeapDeque<OwnPtrWillBeMember<CSSFontFaceSource>> m_sources;
-    RawPtrWillBeMember<FontFace> m_fontFace;
+    Member<CSSSegmentedFontFace> m_segmentedFontFace;
+    HeapDeque<Member<CSSFontFaceSource>> m_sources;
+    Member<FontFace> m_fontFace;
 };
 
 } // namespace blink

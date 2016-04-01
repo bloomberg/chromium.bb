@@ -36,18 +36,18 @@
 
 namespace blink {
 
-struct SameSizeAsStyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsStyleRuleBase> {
+struct SameSizeAsStyleRuleBase : public GarbageCollectedFinalized<SameSizeAsStyleRuleBase> {
     unsigned bitfields;
 };
 
 static_assert(sizeof(StyleRuleBase) <= sizeof(SameSizeAsStyleRuleBase), "StyleRuleBase should stay small");
 
-PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet) const
+RawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet) const
 {
     return createCSSOMWrapper(parentSheet, 0);
 }
 
-PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSRule* parentRule) const
+RawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSRule* parentRule) const
 {
     return createCSSOMWrapper(0, parentRule);
 }
@@ -172,7 +172,7 @@ void StyleRuleBase::destroy()
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
+RawPtr<StyleRuleBase> StyleRuleBase::copy() const
 {
     switch (type()) {
     case Style:
@@ -203,9 +203,9 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const
+RawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const
 {
-    RefPtrWillBeRawPtr<CSSRule> rule = nullptr;
+    RawPtr<CSSRule> rule = nullptr;
     StyleRuleBase* self = const_cast<StyleRuleBase*>(this);
     switch (type()) {
     case Style:
@@ -250,7 +250,7 @@ unsigned StyleRule::averageSizeInBytes()
     return sizeof(StyleRule) + sizeof(CSSSelector) + StylePropertySet::averageSizeInBytes();
 }
 
-StyleRule::StyleRule(CSSSelectorList selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+StyleRule::StyleRule(CSSSelectorList selectorList, RawPtr<StylePropertySet> properties)
     : StyleRuleBase(Style)
     , m_properties(properties)
 {
@@ -281,7 +281,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRule)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRulePage::StyleRulePage(CSSSelectorList selectorList, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+StyleRulePage::StyleRulePage(CSSSelectorList selectorList, RawPtr<StylePropertySet> properties)
     : StyleRuleBase(Page)
     , m_properties(properties)
     , m_selectorList(std::move(selectorList))
@@ -312,7 +312,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRulePage)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRuleFontFace::StyleRuleFontFace(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+StyleRuleFontFace::StyleRuleFontFace(RawPtr<StylePropertySet> properties)
     : StyleRuleBase(FontFace)
     , m_properties(properties)
 {
@@ -341,7 +341,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleFontFace)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRuleGroup::StyleRuleGroup(RuleType type, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& adoptRule)
+StyleRuleGroup::StyleRuleGroup(RuleType type, HeapVector<Member<StyleRuleBase>>& adoptRule)
     : StyleRuleBase(type)
 {
     m_childRules.swap(adoptRule);
@@ -355,7 +355,7 @@ StyleRuleGroup::StyleRuleGroup(const StyleRuleGroup& o)
         m_childRules[i] = o.m_childRules[i]->copy();
 }
 
-void StyleRuleGroup::wrapperInsertRule(unsigned index, PassRefPtrWillBeRawPtr<StyleRuleBase> rule)
+void StyleRuleGroup::wrapperInsertRule(unsigned index, RawPtr<StyleRuleBase> rule)
 {
     m_childRules.insert(index, rule);
 }
@@ -371,7 +371,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleGroup)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRuleMedia::StyleRuleMedia(PassRefPtrWillBeRawPtr<MediaQuerySet> media, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& adoptRules)
+StyleRuleMedia::StyleRuleMedia(RawPtr<MediaQuerySet> media, HeapVector<Member<StyleRuleBase>>& adoptRules)
     : StyleRuleGroup(Media, adoptRules)
     , m_mediaQueries(media)
 {
@@ -390,7 +390,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleMedia)
     StyleRuleGroup::traceAfterDispatch(visitor);
 }
 
-StyleRuleSupports::StyleRuleSupports(const String& conditionText, bool conditionIsSupported, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>>& adoptRules)
+StyleRuleSupports::StyleRuleSupports(const String& conditionText, bool conditionIsSupported, HeapVector<Member<StyleRuleBase>>& adoptRules)
     : StyleRuleGroup(Supports, adoptRules)
     , m_conditionText(conditionText)
     , m_conditionIsSupported(conditionIsSupported)
@@ -404,7 +404,7 @@ StyleRuleSupports::StyleRuleSupports(const StyleRuleSupports& o)
 {
 }
 
-StyleRuleViewport::StyleRuleViewport(PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+StyleRuleViewport::StyleRuleViewport(RawPtr<StylePropertySet> properties)
     : StyleRuleBase(Viewport)
     , m_properties(properties)
 {

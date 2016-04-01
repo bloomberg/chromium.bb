@@ -17,8 +17,8 @@ class StylePath;
 
 class CSSPathValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSPathValue> create(PassRefPtr<StylePath>);
-    static PassRefPtrWillBeRawPtr<CSSPathValue> create(PassOwnPtr<SVGPathByteStream>);
+    static RawPtr<CSSPathValue> create(PassRefPtr<StylePath>);
+    static RawPtr<CSSPathValue> create(PassOwnPtr<SVGPathByteStream>);
 
     static CSSPathValue* emptyPathValue();
 

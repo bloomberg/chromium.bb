@@ -12,11 +12,11 @@
 
 namespace blink {
 
-struct FontLoader::FontToLoad : public NoBaseWillBeGarbageCollectedFinalized<FontLoader::FontToLoad> {
+struct FontLoader::FontToLoad : public GarbageCollectedFinalized<FontLoader::FontToLoad> {
 public:
-    static PassOwnPtrWillBeRawPtr<FontToLoad> create(FontResource* fontResource, Document& document)
+    static RawPtr<FontToLoad> create(FontResource* fontResource, Document& document)
     {
-        return adoptPtrWillBeNoop(new FontToLoad(fontResource, document));
+        return new FontToLoad(fontResource, document);
     }
 
     virtual ~FontToLoad()
@@ -24,7 +24,7 @@ public:
         ASSERT(!fontResource);
     }
 
-    RefPtrWillBeMember<FontResource> fontResource;
+    Member<FontResource> fontResource;
     OwnPtr<IncrementLoadEventDelayCount> delay;
 
     void dispose()

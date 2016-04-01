@@ -81,7 +81,7 @@ void CSSFontSelector::dispatchInvalidationCallbacks()
 {
     m_fontFaceCache.incrementVersion();
 
-    WillBeHeapVector<RawPtrWillBeMember<CSSFontSelectorClient>> clients;
+    HeapVector<Member<CSSFontSelectorClient>> clients;
     copyToVector(m_clients, clients);
     for (auto& client : clients)
         client->fontsNeedUpdate(this);

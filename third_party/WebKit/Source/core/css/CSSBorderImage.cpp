@@ -21,15 +21,15 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<CSSValueList> createBorderImageValue(PassRefPtrWillBeRawPtr<CSSValue> image, PassRefPtrWillBeRawPtr<CSSValue> imageSlice,
-    PassRefPtrWillBeRawPtr<CSSValue> borderSlice, PassRefPtrWillBeRawPtr<CSSValue> outset, PassRefPtrWillBeRawPtr<CSSValue> repeat)
+RawPtr<CSSValueList> createBorderImageValue(RawPtr<CSSValue> image, RawPtr<CSSValue> imageSlice,
+    RawPtr<CSSValue> borderSlice, RawPtr<CSSValue> outset, RawPtr<CSSValue> repeat)
 {
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    RawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     if (image)
         list->append(image);
 
     if (borderSlice || outset) {
-        RefPtrWillBeRawPtr<CSSValueList> listSlash = CSSValueList::createSlashSeparated();
+        RawPtr<CSSValueList> listSlash = CSSValueList::createSlashSeparated();
         if (imageSlice)
             listSlash->append(imageSlice);
 

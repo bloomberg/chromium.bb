@@ -13,9 +13,9 @@ namespace blink {
 
 class CSSPaintValue : public CSSImageGeneratorValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSPaintValue> create(PassRefPtrWillBeRawPtr<CSSCustomIdentValue> name)
+    static RawPtr<CSSPaintValue> create(RawPtr<CSSCustomIdentValue> name)
     {
-        return adoptRefWillBeNoop(new CSSPaintValue(name));
+        return new CSSPaintValue(name);
     }
     ~CSSPaintValue();
 
@@ -37,9 +37,9 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    explicit CSSPaintValue(PassRefPtrWillBeRawPtr<CSSCustomIdentValue> name);
+    explicit CSSPaintValue(RawPtr<CSSCustomIdentValue> name);
 
-    RefPtrWillBeMember<CSSCustomIdentValue> m_name;
+    Member<CSSCustomIdentValue> m_name;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPaintValue, isPaintValue());

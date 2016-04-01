@@ -40,7 +40,7 @@
 
 namespace blink {
 
-void CSSPropertyParser::addProperty(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> value, bool important, bool implicit)
+void CSSPropertyParser::addProperty(CSSPropertyID propId, RawPtr<CSSValue> value, bool important, bool implicit)
 {
     ASSERT(!isPropertyAlias(propId));
 
@@ -192,7 +192,7 @@ bool CSSPropertyParser::validUnit(CSSParserValue* value, Units unitflags, CSSPar
     }
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimitiveNumericValue(CSSParserValue* value)
+RawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimitiveNumericValue(CSSParserValue* value)
 {
     if (m_parsedCalculation) {
         ASSERT(isCalculation(value));
@@ -206,7 +206,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::createPrimitiveNume
     return cssValuePool().createValue(value->fValue, value->unit());
 }
 
-inline PassRefPtrWillBeRawPtr<CSSCustomIdentValue> CSSPropertyParser::createPrimitiveCustomIdentValue(CSSParserValue* value)
+inline RawPtr<CSSCustomIdentValue> CSSPropertyParser::createPrimitiveCustomIdentValue(CSSParserValue* value)
 {
     ASSERT(value->m_unit == CSSParserValue::String || value->m_unit == CSSParserValue::Identifier);
     return CSSCustomIdentValue::create(value->string);
@@ -224,7 +224,7 @@ static inline bool isForwardSlashOperator(CSSParserValue* value)
     return value->m_unit == CSSParserValue::Operator && value->iValue == '/';
 }
 
-void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue> prpValue, bool important)
+void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, RawPtr<CSSValue> prpValue, bool important)
 {
     const StylePropertyShorthand& shorthand = shorthandForProperty(propId);
     unsigned shorthandLength = shorthand.length();
@@ -233,7 +233,7 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRe
         return;
     }
 
-    RefPtrWillBeRawPtr<CSSValue> value = prpValue;
+    RawPtr<CSSValue> value = prpValue;
     ShorthandScope scope(this, propId);
     const CSSPropertyID* longhands = shorthand.properties();
     for (unsigned i = 0; i < shorthandLength; ++i)
@@ -242,14 +242,14 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRe
 
 bool CSSPropertyParser::legacyParseAndApplyValue(CSSPropertyID propertyID, bool important)
 {
-    RefPtrWillBeRawPtr<CSSValue> result = legacyParseValue(propertyID);
+    RawPtr<CSSValue> result = legacyParseValue(propertyID);
     if (!result)
         return false;
     addProperty(propertyID, result.release(), important);
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSPropertyID unresolvedProperty)
+RawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID propId = resolveCSSPropertyID(unresolvedProperty);
 
@@ -257,7 +257,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
     // FIXME: This is to avoid having to pass parsedCalc to all validUnit callers.
     ASSERT(!m_parsedCalculation);
 
-    RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
+    RawPtr<CSSValue> parsedValue = nullptr;
 
     switch (propId) {
     case CSSPropertyGridAutoFlow:
@@ -306,11 +306,11 @@ static inline bool isValidCustomIdentForGridPositions(const CSSParserValue& valu
     return value.m_unit == CSSParserValue::Identifier && value.id != CSSValueSpan && value.id != CSSValueAuto && !isCSSWideKeyword(value);
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTemplateColumns(bool important)
+RawPtr<CSSValue> CSSPropertyParser::parseGridTemplateColumns(bool important)
 {
     if (!(m_valueList->current() && isForwardSlashOperator(m_valueList->current()) && m_valueList->next()))
         return nullptr;
-    if (RefPtrWillBeRawPtr<CSSValue> columnsValue = parseGridTrackList()) {
+    if (RawPtr<CSSValue> columnsValue = parseGridTrackList()) {
         if (m_valueList->current())
             return nullptr;
         return columnsValue;
@@ -325,7 +325,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreasAndColumns(bool important)
     size_t rowCount = 0;
     size_t columnCount = 0;
     bool trailingIdentWasAdded = false;
-    RefPtrWillBeRawPtr<CSSValueList> templateRows = CSSValueList::createSpaceSeparated();
+    RawPtr<CSSValueList> templateRows = CSSValueList::createSpaceSeparated();
 
     // At least template-areas strings must be defined.
     if (!m_valueList->current() || isForwardSlashOperator(m_valueList->current()))
@@ -347,7 +347,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreasAndColumns(bool important)
 
         // Handle template-rows's track-size.
         if (m_valueList->current() && m_valueList->current()->m_unit != CSSParserValue::Operator && m_valueList->current()->m_unit != CSSParserValue::String) {
-            RefPtrWillBeRawPtr<CSSValue> value = parseGridTrackSize(*m_valueList);
+            RawPtr<CSSValue> value = parseGridTrackSize(*m_valueList);
             if (!value)
                 return false;
             templateRows->append(value);
@@ -361,7 +361,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreasAndColumns(bool important)
         trailingIdentWasAdded = templateRows->item(templateRows->length() - 1)->isGridLineNamesValue();
     }
 
-    RefPtrWillBeRawPtr<CSSValue> columnsValue = nullptr;
+    RawPtr<CSSValue> columnsValue = nullptr;
     if (m_valueList->current()) {
         ASSERT(isForwardSlashOperator(m_valueList->current()));
         columnsValue = parseGridTemplateColumns(important);
@@ -375,7 +375,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreasAndColumns(bool important)
     addProperty(CSSPropertyGridTemplateRows, templateRows.release(), important);
     addProperty(CSSPropertyGridTemplateColumns, columnsValue ? columnsValue.release() : cssValuePool().createIdentifierValue(CSSValueNone), important);
 
-    RefPtrWillBeRawPtr<CSSValue> templateAreas = CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
+    RawPtr<CSSValue> templateAreas = CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
     addProperty(CSSPropertyGridTemplateAreas, templateAreas.release(), important);
 
     return true;
@@ -404,7 +404,7 @@ bool CSSPropertyParser::parseGridTemplateShorthand(bool important)
     }
 
     // 2- <grid-template-rows> / <grid-template-columns>
-    RefPtrWillBeRawPtr<CSSValue> rowsValue = nullptr;
+    RawPtr<CSSValue> rowsValue = nullptr;
     if (firstValueIsNone) {
         rowsValue = cssValuePool().createIdentifierValue(CSSValueNone);
     } else {
@@ -412,7 +412,7 @@ bool CSSPropertyParser::parseGridTemplateShorthand(bool important)
     }
 
     if (rowsValue) {
-        RefPtrWillBeRawPtr<CSSValue> columnsValue = parseGridTemplateColumns(important);
+        RawPtr<CSSValue> columnsValue = parseGridTemplateColumns(important);
         if (!columnsValue)
             return false;
 
@@ -452,8 +452,8 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     if (!legacyParseAndApplyValue(CSSPropertyGridAutoFlow, important))
         return false;
 
-    RefPtrWillBeRawPtr<CSSValue> autoColumnsValue = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> autoRowsValue = nullptr;
+    RawPtr<CSSValue> autoColumnsValue = nullptr;
+    RawPtr<CSSValue> autoRowsValue = nullptr;
 
     if (m_valueList->current()) {
         autoRowsValue = parseGridTrackSize(*m_valueList);
@@ -505,7 +505,7 @@ bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSVal
     // Skip '['
     inputList.next();
 
-    RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = previousNamedAreaTrailingLineNames;
+    RawPtr<CSSGridLineNamesValue> lineNames = previousNamedAreaTrailingLineNames;
     if (!lineNames)
         lineNames = CSSGridLineNamesValue::create();
 
@@ -516,7 +516,7 @@ bool CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSVal
         if (!isValidCustomIdentForGridPositions(*identValue))
             return false;
 
-        RefPtrWillBeRawPtr<CSSCustomIdentValue> lineName = createPrimitiveCustomIdentValue(identValue);
+        RawPtr<CSSCustomIdentValue> lineName = createPrimitiveCustomIdentValue(identValue);
         lineNames->append(lineName.release());
         inputList.next();
     }
@@ -554,7 +554,7 @@ bool allTracksAreFixedSized(CSSValueList& valueList)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
+RawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
 {
     ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
 
@@ -564,7 +564,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
         return cssValuePool().createIdentifierValue(CSSValueNone);
     }
 
-    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
+    RawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
     // Handle leading  <custom-ident>*.
     if (!parseGridLineNames(*m_valueList, *values))
         return nullptr;
@@ -583,7 +583,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackList()
             seenTrackSizeOrRepeatFunction = true;
             seenAutoRepeat = seenAutoRepeat || isAutoRepeat;
         } else {
-            RefPtrWillBeRawPtr<CSSValue> value = parseGridTrackSize(*m_valueList, seenAutoRepeat ? FixedSizeOnly : AllowAll);
+            RawPtr<CSSValue> value = parseGridTrackSize(*m_valueList, seenAutoRepeat ? FixedSizeOnly : AllowAll);
             if (!value)
                 return nullptr;
             values->append(value);
@@ -621,7 +621,7 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list, bool& i
     // because it will be computed later, let's set it to 1.
     size_t repetitions = isAutoRepeat ? 1 : clampTo<size_t>(currentValue->fValue, 0, kGridMaxTracks);
 
-    RefPtrWillBeRawPtr<CSSValueList> repeatedValues = isAutoRepeat ? CSSGridAutoRepeatValue::create(currentValue->id) : CSSValueList::createSpaceSeparated();
+    RawPtr<CSSValueList> repeatedValues = isAutoRepeat ? CSSGridAutoRepeatValue::create(currentValue->id) : CSSValueList::createSpaceSeparated();
     arguments->next(); // Skip the repetition count.
     arguments->next(); // Skip the comma.
 
@@ -635,7 +635,7 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list, bool& i
         if (isAutoRepeat && numberOfTracks)
             return false;
 
-        RefPtrWillBeRawPtr<CSSValue> trackSize = parseGridTrackSize(*arguments, restriction);
+        RawPtr<CSSValue> trackSize = parseGridTrackSize(*arguments, restriction);
         if (!trackSize)
             return false;
 
@@ -670,7 +670,7 @@ bool CSSPropertyParser::parseGridTrackRepeatFunction(CSSValueList& list, bool& i
 }
 
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackSize(CSSParserValueList& inputList, TrackSizeRestriction restriction)
+RawPtr<CSSValue> CSSPropertyParser::parseGridTrackSize(CSSParserValueList& inputList, TrackSizeRestriction restriction)
 {
     ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
 
@@ -686,15 +686,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackSize(CSSParser
         if (!arguments || arguments->size() != 3 || !isComma(arguments->valueAt(1)))
             return nullptr;
 
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> minTrackBreadth = parseGridBreadth(arguments->valueAt(0), restriction);
+        RawPtr<CSSPrimitiveValue> minTrackBreadth = parseGridBreadth(arguments->valueAt(0), restriction);
         if (!minTrackBreadth)
             return nullptr;
 
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> maxTrackBreadth = parseGridBreadth(arguments->valueAt(2));
+        RawPtr<CSSPrimitiveValue> maxTrackBreadth = parseGridBreadth(arguments->valueAt(2));
         if (!maxTrackBreadth)
             return nullptr;
 
-        RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueMinmax);
+        RawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueMinmax);
         result->append(minTrackBreadth);
         result->append(maxTrackBreadth);
         return result.release();
@@ -703,7 +703,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTrackSize(CSSParser
     return parseGridBreadth(currentValue, restriction);
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseGridBreadth(CSSParserValue* currentValue, TrackSizeRestriction restriction)
+RawPtr<CSSPrimitiveValue> CSSPropertyParser::parseGridBreadth(CSSParserValue* currentValue, TrackSizeRestriction restriction)
 {
     if (currentValue->id == CSSValueMinContent || currentValue->id == CSSValueMaxContent || currentValue->id == CSSValueAuto)
         return restriction == AllowAll ? cssValuePool().createIdentifierValue(currentValue->id) : nullptr;
@@ -821,7 +821,7 @@ bool parseGridTemplateAreasRow(const String& gridRowNames, NamedGridAreaMap& gri
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserValueList& list)
+RawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserValueList& list)
 {
     // [ row | column ] || dense
     ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
@@ -830,7 +830,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserV
     if (!value)
         return nullptr;
 
-    RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
+    RawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
 
     // First parameter.
     CSSValueID firstId = value->id;

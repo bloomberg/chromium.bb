@@ -36,8 +36,7 @@ class CSSFontFace;
 class FontDescription;
 class SimpleFontData;
 
-class CSSFontFaceSource : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFaceSource> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CSSFontFaceSource);
+class CSSFontFaceSource : public GarbageCollectedFinalized<CSSFontFaceSource> {
     WTF_MAKE_NONCOPYABLE(CSSFontFaceSource);
 public:
     virtual ~CSSFontFaceSource();
@@ -65,7 +64,7 @@ protected:
 
     using FontDataTable = HashMap<unsigned, RefPtr<SimpleFontData>>; // The hash key is composed of size synthetic styles.
 
-    RawPtrWillBeMember<CSSFontFace> m_face; // Our owning font face.
+    Member<CSSFontFace> m_face; // Our owning font face.
     FontDataTable m_fontDataTable;
 };
 

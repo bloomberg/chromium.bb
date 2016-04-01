@@ -128,7 +128,7 @@ private:
         RecursionData* m_data;
     };
 
-    using PendingInvalidationMap = WillBeHeapHashMap<RawPtrWillBeMember<Element>, OwnPtr<PendingInvalidations>>;
+    using PendingInvalidationMap = HeapHashMap<Member<Element>, OwnPtr<PendingInvalidations>>;
 
     PendingInvalidations& ensurePendingInvalidations(Element&);
 

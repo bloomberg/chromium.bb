@@ -23,9 +23,9 @@ public:
 
 TEST(MediaQueryListTest, CrashInStop)
 {
-    RefPtrWillBeRawPtr<Document> document = Document::create();
-    RefPtrWillBeRawPtr<MediaQueryList> list = MediaQueryList::create(document.get(), MediaQueryMatcher::create(*document), MediaQuerySet::create());
-    list->addListener(adoptRefWillBeNoop(new TestListener()));
+    RawPtr<Document> document = Document::create();
+    RawPtr<MediaQueryList> list = MediaQueryList::create(document.get(), MediaQueryMatcher::create(*document), MediaQuerySet::create());
+    list->addListener(new TestListener());
     list->stop();
     // This test passes if it's not crashed.
 }

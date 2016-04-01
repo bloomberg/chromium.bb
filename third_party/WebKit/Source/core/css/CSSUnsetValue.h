@@ -12,7 +12,7 @@ namespace blink {
 
 class CSSUnsetValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSUnsetValue> create()
+    static RawPtr<CSSUnsetValue> create()
     {
         return adoptRefWillBeNoop(new CSSUnsetValue);
     }

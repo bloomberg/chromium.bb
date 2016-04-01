@@ -71,15 +71,15 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
         // the image resource.
         document()->fetcher()->setAutoLoadImages(false);
 
-        RefPtrWillBeRawPtr<CSSStyleSheetResource> cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
+        RawPtr<CSSStyleSheetResource> cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
         memoryCache()->add(cssResource.get());
         cssResource->responseReceived(ResourceResponse(cssURL, "style/css", 0, nullAtom, String()), nullptr);
         cssResource->finish();
 
-        RefPtrWillBeRawPtr<StyleSheetContents> contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
-        RefPtrWillBeRawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(contents, document());
+        RawPtr<StyleSheetContents> contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+        RawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(contents, document());
         EXPECT_TRUE(sheet);
-        RefPtrWillBeRawPtr<CSSCrossfadeValue> crossfade = CSSCrossfadeValue::create(
+        RawPtr<CSSCrossfadeValue> crossfade = CSSCrossfadeValue::create(
             CSSImageValue::create(String("image"), imageURL),
             CSSImageValue::create(String("image"), imageURL),
             CSSPrimitiveValue::create(1.0, CSSPrimitiveValue::UnitType::Number));
@@ -92,7 +92,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
             StyleRule::create(CSSSelectorList::adoptSelectorVector(selectors), ImmutableStylePropertySet::create(&property, 1, HTMLStandardMode)));
 
         crossfade->loadSubimages(document());
-        RefPtrWillBeRawPtr<Resource> imageResource = memoryCache()->resourceForURL(imageURL, MemoryCache::defaultCacheIdentifier());
+        RawPtr<Resource> imageResource = memoryCache()->resourceForURL(imageURL, MemoryCache::defaultCacheIdentifier());
         ASSERT_TRUE(imageResource);
         ResourceResponse imageResponse;
         imageResponse.setURL(imageURL);
@@ -126,17 +126,17 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached)
 
     // Emulate using <img> to do async stylesheet preloads.
 
-    RefPtrWillBeRawPtr<Resource> imageResource = ImageResource::create(ResourceRequest(imageURL), nullptr);
+    RawPtr<Resource> imageResource = ImageResource::create(ResourceRequest(imageURL), nullptr);
     ASSERT_TRUE(imageResource);
     memoryCache()->add(imageResource.get());
     ASSERT_TRUE(memoryCache()->contains(imageResource.get()));
 
-    RefPtrWillBeRawPtr<CSSStyleSheetResource> cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
+    RawPtr<CSSStyleSheetResource> cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
     cssResource->responseReceived(ResourceResponse(cssURL, "style/css", 0, nullAtom, String()), nullptr);
     cssResource->finish();
 
-    RefPtrWillBeRawPtr<StyleSheetContents> contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
-    RefPtrWillBeRawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(contents, document());
+    RawPtr<StyleSheetContents> contents = StyleSheetContents::create(CSSParserContext(HTMLStandardMode, nullptr));
+    RawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(contents, document());
     EXPECT_TRUE(sheet);
 
     contents->checkLoaded();

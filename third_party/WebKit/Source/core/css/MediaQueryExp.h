@@ -80,10 +80,9 @@ struct MediaQueryExpValue {
     }
 };
 
-class CORE_EXPORT MediaQueryExp  : public NoBaseWillBeGarbageCollectedFinalized<MediaQueryExp> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(MediaQueryExp);
+class CORE_EXPORT MediaQueryExp  : public GarbageCollectedFinalized<MediaQueryExp> {
 public:
-    static PassOwnPtrWillBeRawPtr<MediaQueryExp> createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>&);
+    static RawPtr<MediaQueryExp> createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>&);
     ~MediaQueryExp();
 
     const String& mediaFeature() const { return m_mediaFeature; }
@@ -98,7 +97,7 @@ public:
 
     String serialize() const;
 
-    PassOwnPtrWillBeRawPtr<MediaQueryExp> copy() const { return adoptPtrWillBeNoop(new MediaQueryExp(*this)); }
+    RawPtr<MediaQueryExp> copy() const { return new MediaQueryExp(*this); }
 
     MediaQueryExp(const MediaQueryExp& other);
 

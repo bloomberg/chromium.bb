@@ -23,9 +23,9 @@ namespace blink {
 // allows us to keep the parsing algorithm almost intact.
 class CSSGridAutoRepeatValue : public CSSValueList {
 public:
-    static PassRefPtrWillBeRawPtr<CSSGridAutoRepeatValue> create(CSSValueID id)
+    static RawPtr<CSSGridAutoRepeatValue> create(CSSValueID id)
     {
-        return adoptRefWillBeNoop(new CSSGridAutoRepeatValue(id));
+        return new CSSGridAutoRepeatValue(id);
     }
 
     String customCSSText() const;

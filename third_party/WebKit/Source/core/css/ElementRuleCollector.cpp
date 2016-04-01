@@ -68,13 +68,13 @@ const MatchResult& ElementRuleCollector::matchedResult() const
     return m_result;
 }
 
-PassRefPtrWillBeRawPtr<StyleRuleList> ElementRuleCollector::matchedStyleRuleList()
+RawPtr<StyleRuleList> ElementRuleCollector::matchedStyleRuleList()
 {
     ASSERT(m_mode == SelectorChecker::CollectingStyleRules);
     return m_styleRuleList.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSRuleList> ElementRuleCollector::matchedCSSRuleList()
+RawPtr<CSSRuleList> ElementRuleCollector::matchedCSSRuleList()
 {
     ASSERT(m_mode == SelectorChecker::CollectingCSSRules);
     return m_cssRuleList.release();
@@ -254,7 +254,7 @@ void ElementRuleCollector::appendCSSOMWrapperForRule(CSSStyleSheet* parentStyleS
     // |parentStyleSheet| is 0 if and only if the |rule| is coming from User Agent. In this case,
     // it is safe to create CSSOM wrappers without parentStyleSheets as they will be used only
     // by inspector which will not try to edit them.
-    RefPtrWillBeRawPtr<CSSRule> cssRule = nullptr;
+    RawPtr<CSSRule> cssRule = nullptr;
     if (parentStyleSheet)
         cssRule = findStyleRule(parentStyleSheet, rule);
     else

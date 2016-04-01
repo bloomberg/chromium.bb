@@ -26,12 +26,12 @@
 namespace blink {
 
 // Used for text-shadow and box-shadow
-CSSShadowValue::CSSShadowValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> x,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> y,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blur,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> spread,
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> style,
-    PassRefPtrWillBeRawPtr<CSSValue> color)
+CSSShadowValue::CSSShadowValue(RawPtr<CSSPrimitiveValue> x,
+    RawPtr<CSSPrimitiveValue> y,
+    RawPtr<CSSPrimitiveValue> blur,
+    RawPtr<CSSPrimitiveValue> spread,
+    RawPtr<CSSPrimitiveValue> style,
+    RawPtr<CSSValue> color)
     : CSSValue(ShadowClass)
     , x(x)
     , y(y)

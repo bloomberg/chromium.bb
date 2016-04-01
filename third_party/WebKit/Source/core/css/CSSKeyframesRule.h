@@ -39,14 +39,14 @@ class StyleRuleKeyframe;
 
 class StyleRuleKeyframes final : public StyleRuleBase {
 public:
-    static PassRefPtrWillBeRawPtr<StyleRuleKeyframes> create() { return adoptRefWillBeNoop(new StyleRuleKeyframes()); }
+    static RawPtr<StyleRuleKeyframes> create() { return new StyleRuleKeyframes(); }
 
     ~StyleRuleKeyframes();
 
-    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>& keyframes() const { return m_keyframes; }
+    const HeapVector<Member<StyleRuleKeyframe>>& keyframes() const { return m_keyframes; }
 
-    void parserAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe>);
-    void wrapperAppendKeyframe(PassRefPtrWillBeRawPtr<StyleRuleKeyframe>);
+    void parserAppendKeyframe(RawPtr<StyleRuleKeyframe>);
+    void wrapperAppendKeyframe(RawPtr<StyleRuleKeyframe>);
     void wrapperRemoveKeyframe(unsigned);
 
     String name() const { return m_name; }
@@ -57,7 +57,7 @@ public:
 
     int findKeyframeIndex(const String& key) const;
 
-    PassRefPtrWillBeRawPtr<StyleRuleKeyframes> copy() const { return adoptRefWillBeNoop(new StyleRuleKeyframes(*this)); }
+    RawPtr<StyleRuleKeyframes> copy() const { return new StyleRuleKeyframes(*this); }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
@@ -68,7 +68,7 @@ private:
     StyleRuleKeyframes();
     explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
 
-    WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>> m_keyframes;
+    HeapVector<Member<StyleRuleKeyframe>> m_keyframes;
     AtomicString m_name;
     unsigned m_version : 31;
     unsigned m_isPrefixed : 1;
@@ -79,9 +79,9 @@ DEFINE_STYLE_RULE_TYPE_CASTS(Keyframes);
 class CSSKeyframesRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet)
+    static RawPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeNoop(new CSSKeyframesRule(rule, sheet));
+        return new CSSKeyframesRule(rule, sheet);
     }
 
     ~CSSKeyframesRule() override;
@@ -117,9 +117,9 @@ private:
 
     CSSRule::Type type() const override { return KEYFRAMES_RULE; }
 
-    RefPtrWillBeMember<StyleRuleKeyframes> m_keyframesRule;
-    mutable WillBeHeapVector<RefPtrWillBeMember<CSSKeyframeRule>> m_childRuleCSSOMWrappers;
-    mutable OwnPtrWillBeMember<CSSRuleList> m_ruleListCSSOMWrapper;
+    Member<StyleRuleKeyframes> m_keyframesRule;
+    mutable HeapVector<Member<CSSKeyframeRule>> m_childRuleCSSOMWrappers;
+    mutable Member<CSSRuleList> m_ruleListCSSOMWrapper;
     bool m_isPrefixed;
 };
 

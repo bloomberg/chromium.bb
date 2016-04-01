@@ -24,7 +24,7 @@ public:
 
     double value() const { return m_value; }
 
-    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override
+    RawPtr<CSSValue> toCSSValue() const override
     {
         return cssValuePool().createValue(m_value, CSSPrimitiveValue::UnitType::
 Number);

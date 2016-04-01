@@ -48,7 +48,7 @@ public:
 
     // Accessors to functions on the property API.
     CSSPropertyID id() const { return m_id; }
-    PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSParserTokenRange& range, const CSSParserContext& context) const { return m_parseSingleValue(range, context); }
+    RawPtr<CSSValue> parseSingleValue(CSSParserTokenRange& range, const CSSParserContext& context) const { return m_parseSingleValue(range, context); }
 
 private:
     // Used internally to check whether an array entry is filled or not.

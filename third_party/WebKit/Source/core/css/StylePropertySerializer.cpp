@@ -647,7 +647,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
     const unsigned size = shorthand.length();
 
     // Begin by collecting the properties into a vector.
-    WillBeHeapVector<RawPtrWillBeMember<const CSSValue>> values(size);
+    HeapVector<Member<const CSSValue>> values(size);
     // If the below loop succeeds, there should always be at minimum 1 layer.
     size_t numLayers = 1U;
 

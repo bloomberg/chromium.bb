@@ -15,9 +15,9 @@ class StyleRuleNamespace;
 class CSSNamespaceRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CSSNamespaceRule> create(StyleRuleNamespace* rule, CSSStyleSheet* sheet)
+    static RawPtr<CSSNamespaceRule> create(StyleRuleNamespace* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeNoop(new CSSNamespaceRule(rule, sheet));
+        return new CSSNamespaceRule(rule, sheet);
     }
 
     ~CSSNamespaceRule() override;
@@ -35,7 +35,7 @@ private:
 
     CSSRule::Type type() const override { return NAMESPACE_RULE; }
 
-    RefPtrWillBeMember<StyleRuleNamespace> m_namespaceRule;
+    Member<StyleRuleNamespace> m_namespaceRule;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSNamespaceRule, NAMESPACE_RULE);

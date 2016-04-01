@@ -66,7 +66,7 @@ public:
     PseudoId pseudoId;
     RequestType type;
     ScrollbarPart scrollbarPart;
-    RawPtrWillBeMember<LayoutScrollbar> scrollbar;
+    Member<LayoutScrollbar> scrollbar;
 };
 
 } // namespace blink

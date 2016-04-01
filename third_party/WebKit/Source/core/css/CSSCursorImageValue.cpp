@@ -42,7 +42,7 @@ static inline SVGCursorElement* resourceReferencedByCursorElement(const String& 
     return isSVGCursorElement(element) ? toSVGCursorElement(element) : nullptr;
 }
 
-CSSCursorImageValue::CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
+CSSCursorImageValue::CSSCursorImageValue(RawPtr<CSSValue> imageValue, bool hotSpotSpecified, const IntPoint& hotSpot)
     : CSSValue(CursorImageClass)
     , m_imageValue(imageValue)
     , m_hotSpotSpecified(hotSpotSpecified)
@@ -144,10 +144,10 @@ StyleImage* CSSCursorImageValue::cacheImage(Document* document, float deviceScal
         // to change the URL of the CSSImageValue (which would then change behavior like cssText),
         // we create an alternate CSSImageValue to use.
         if (isSVGCursor() && document) {
-            RefPtrWillBeRawPtr<CSSImageValue> imageValue = toCSSImageValue(m_imageValue.get());
+            RawPtr<CSSImageValue> imageValue = toCSSImageValue(m_imageValue.get());
             // FIXME: This will fail if the <cursor> element is in a shadow DOM (bug 59827)
             if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), *document)) {
-                RefPtrWillBeRawPtr<CSSImageValue> svgImageValue = CSSImageValue::create(document->completeURL(cursorElement->href()->currentValue()->value()));
+                RawPtr<CSSImageValue> svgImageValue = CSSImageValue::create(document->completeURL(cursorElement->href()->currentValue()->value()));
                 svgImageValue->setReferrer(imageValue->referrer());
                 m_cachedImage = svgImageValue->cacheImage(document);
                 return m_cachedImage.get();
@@ -166,7 +166,7 @@ StyleImage* CSSCursorImageValue::cacheImage(Document* document, float deviceScal
 bool CSSCursorImageValue::isSVGCursor() const
 {
     if (m_imageValue->isImageValue()) {
-        RefPtrWillBeRawPtr<CSSImageValue> imageValue = toCSSImageValue(m_imageValue.get());
+        RawPtr<CSSImageValue> imageValue = toCSSImageValue(m_imageValue.get());
         KURL kurl(ParsedURLString, imageValue->url());
         return kurl.hasFragmentIdentifier();
     }

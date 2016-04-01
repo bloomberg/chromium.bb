@@ -44,7 +44,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value)
     CSSPropertyID unresolvedProperty = unresolvedCSSPropertyID(property);
     if (unresolvedProperty == CSSPropertyInvalid) {
         if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::isValidVariableName(property)) {
-            RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create(HTMLStandardMode);
+            RawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create(HTMLStandardMode);
             return CSSParser::parseValueForCustomProperty(dummyStyle.get(), "--valid", value, false, 0);
         }
         return false;
@@ -53,7 +53,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value)
     ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
 
     // This will return false when !important is present
-    RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create(HTMLStandardMode);
+    RawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create(HTMLStandardMode);
     return CSSParser::parseValue(dummyStyle.get(), unresolvedProperty, value, false, 0);
 }
 

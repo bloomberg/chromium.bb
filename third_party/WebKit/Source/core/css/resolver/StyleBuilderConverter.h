@@ -88,7 +88,7 @@ public:
     static LengthSize convertRadius(StyleResolverState&, const CSSValue&);
     static EPaintOrder convertPaintOrder(StyleResolverState&, const CSSValue&);
     static PassRefPtr<ShadowList> convertShadow(StyleResolverState&, const CSSValue&);
-    static PassRefPtrWillBeRawPtr<ShapeValue> convertShapeValue(StyleResolverState&, const CSSValue&);
+    static RawPtr<ShapeValue> convertShapeValue(StyleResolverState&, const CSSValue&);
     static float convertSpacing(StyleResolverState&, const CSSValue&);
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, const CSSValue&);
     static PassRefPtr<SVGDashArray> convertStrokeDasharray(StyleResolverState&, const CSSValue&);

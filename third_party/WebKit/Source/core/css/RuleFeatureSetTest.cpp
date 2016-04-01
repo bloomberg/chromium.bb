@@ -28,7 +28,7 @@ public:
     void SetUp()
     {
         m_document = HTMLDocument::create();
-        RefPtrWillBeRawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*m_document);
+        RawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*m_document);
         html->appendChild(HTMLBodyElement::create(*m_document));
         m_document->appendChild(html.release());
 
@@ -39,7 +39,7 @@ public:
     {
         CSSSelectorList selectorList = CSSParser::parseSelector(strictCSSParserContext(), nullptr, selectorText);
 
-        RefPtrWillBeRawPtr<StyleRule> styleRule = StyleRule::create(std::move(selectorList), MutableStylePropertySet::create(HTMLStandardMode));
+        RawPtr<StyleRule> styleRule = StyleRule::create(std::move(selectorList), MutableStylePropertySet::create(HTMLStandardMode));
         RuleData ruleData(styleRule.get(), 0, 0, RuleHasNoSpecialState);
         return m_ruleFeatureSet.collectFeaturesFromRuleData(ruleData);
     }
@@ -190,7 +190,7 @@ public:
 
 private:
     RuleFeatureSet m_ruleFeatureSet;
-    RefPtrWillBePersistent<Document> m_document;
+    Persistent<Document> m_document;
 };
 
 TEST_F(RuleFeatureSetTest, interleavedDescendantSibling1)

@@ -16,11 +16,11 @@ class CSSFontSelector;
 class Document;
 class FontResource;
 
-class FontLoader : public RefCountedWillBeGarbageCollectedFinalized<FontLoader> {
+class FontLoader : public GarbageCollectedFinalized<FontLoader> {
 public:
-    static PassRefPtrWillBeRawPtr<FontLoader> create(CSSFontSelector* fontSelector, Document* document)
+    static RawPtr<FontLoader> create(CSSFontSelector* fontSelector, Document* document)
     {
-        return adoptRefWillBeNoop(new FontLoader(fontSelector, document));
+        return new FontLoader(fontSelector, document);
     }
     ~FontLoader();
 
@@ -43,10 +43,10 @@ private:
     Timer<FontLoader> m_beginLoadingTimer;
 
     struct FontToLoad;
-    using FontsToLoadVector = WillBeHeapVector<OwnPtrWillBeMember<FontToLoad>>;
+    using FontsToLoadVector = HeapVector<Member<FontToLoad>>;
     FontsToLoadVector m_fontsToBeginLoading;
-    RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
-    RawPtrWillBeWeakMember<Document> m_document;
+    Member<CSSFontSelector> m_fontSelector;
+    WeakMember<Document> m_document;
 };
 
 } // namespace blink

@@ -19,9 +19,9 @@ TranslationTransformComponent* TranslationTransformComponent::create(LengthValue
     return new TranslationTransformComponent(x, y, z);
 }
 
-PassRefPtrWillBeRawPtr<CSSFunctionValue> TranslationTransformComponent::toCSSValue() const
+RawPtr<CSSFunctionValue> TranslationTransformComponent::toCSSValue() const
 {
-    RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(is2D() ? CSSValueTranslate : CSSValueTranslate3d);
+    RawPtr<CSSFunctionValue> result = CSSFunctionValue::create(is2D() ? CSSValueTranslate : CSSValueTranslate3d);
     result->append(m_x->toCSSValue());
     result->append(m_y->toCSSValue());
     if (!is2D())

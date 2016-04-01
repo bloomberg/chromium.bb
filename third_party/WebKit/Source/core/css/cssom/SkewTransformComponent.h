@@ -29,7 +29,7 @@ public:
         return MatrixTransformComponent::skew(m_ax, m_ay);
     }
 
-    PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
+    RawPtr<CSSFunctionValue> toCSSValue() const override;
 
 private:
     SkewTransformComponent(double ax, double ay) : TransformComponent(), m_ax(ax), m_ay(ay) { }

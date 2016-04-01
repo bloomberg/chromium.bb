@@ -13,9 +13,9 @@ class Document;
 
 class MediaValuesDynamic final : public MediaValues {
 public:
-    static PassRefPtrWillBeRawPtr<MediaValues> create(Document&);
-    static PassRefPtrWillBeRawPtr<MediaValues> create(LocalFrame*);
-    PassRefPtrWillBeRawPtr<MediaValues> copy() const override;
+    static RawPtr<MediaValues> create(Document&);
+    static RawPtr<MediaValues> create(LocalFrame*);
+    RawPtr<MediaValues> copy() const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
 
@@ -46,7 +46,7 @@ protected:
 
     // This raw ptr is safe, as MediaValues would not outlive MediaQueryEvaluator, and
     // MediaQueryEvaluator is reset on |Document::detach|.
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    Member<LocalFrame> m_frame;
     bool m_viewportDimensionsOverridden;
     double m_viewportWidthOverride;
     double m_viewportHeightOverride;

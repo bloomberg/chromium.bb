@@ -35,9 +35,9 @@ public:
         SerializeAsQuad
     };
 
-    static PassRefPtrWillBeRawPtr<CSSQuadValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> left, TypeForSerialization serializationType)
+    static RawPtr<CSSQuadValue> create(RawPtr<CSSPrimitiveValue> top, RawPtr<CSSPrimitiveValue> right, RawPtr<CSSPrimitiveValue> bottom, RawPtr<CSSPrimitiveValue> left, TypeForSerialization serializationType)
     {
-        return adoptRefWillBeNoop(new CSSQuadValue(top, right, bottom, left, serializationType));
+        return new CSSQuadValue(top, right, bottom, left, serializationType);
     }
 
     CSSPrimitiveValue* top() const { return m_top.get(); }
@@ -60,7 +60,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
-    CSSQuadValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> left, TypeForSerialization serializationType)
+    CSSQuadValue(RawPtr<CSSPrimitiveValue> top, RawPtr<CSSPrimitiveValue> right, RawPtr<CSSPrimitiveValue> bottom, RawPtr<CSSPrimitiveValue> left, TypeForSerialization serializationType)
         : CSSValue(QuadClass)
         , m_serializationType(serializationType)
         , m_top(top)
@@ -70,10 +70,10 @@ protected:
 
 private:
     TypeForSerialization m_serializationType;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_top;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_right;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_bottom;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_left;
+    Member<CSSPrimitiveValue> m_top;
+    Member<CSSPrimitiveValue> m_right;
+    Member<CSSPrimitiveValue> m_bottom;
+    Member<CSSPrimitiveValue> m_left;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSQuadValue, isQuadValue());

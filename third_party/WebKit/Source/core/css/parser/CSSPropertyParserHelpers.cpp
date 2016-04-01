@@ -56,14 +56,14 @@ public:
     }
 
     const CSSCalcValue* value() const { return m_calcValue.get(); }
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeValue()
+    RawPtr<CSSPrimitiveValue> consumeValue()
     {
         if (!m_calcValue)
             return nullptr;
         m_sourceRange = m_range;
         return CSSPrimitiveValue::create(m_calcValue.release());
     }
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeNumber()
+    RawPtr<CSSPrimitiveValue> consumeNumber()
     {
         if (!m_calcValue)
             return nullptr;
@@ -84,10 +84,10 @@ public:
 private:
     CSSParserTokenRange& m_sourceRange;
     CSSParserTokenRange m_range;
-    RefPtrWillBeMember<CSSCalcValue> m_calcValue;
+    Member<CSSCalcValue> m_calcValue;
 };
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange& range, double minimumValue)
+RawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange& range, double minimumValue)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == NumberToken) {
@@ -107,7 +107,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeInteger(CSSParserTokenRange& ra
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePositiveInteger(CSSParserTokenRange& range)
+RawPtr<CSSPrimitiveValue> consumePositiveInteger(CSSParserTokenRange& range)
 {
     return consumeInteger(range, 1);
 }
@@ -123,7 +123,7 @@ bool consumeNumberRaw(CSSParserTokenRange& range, double& result)
 }
 
 // TODO(timloh): Work out if this can just call consumeNumberRaw
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeNumber(CSSParserTokenRange& range, ValueRange valueRange)
+RawPtr<CSSPrimitiveValue> consumeNumber(CSSParserTokenRange& range, ValueRange valueRange)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == NumberToken) {
@@ -150,7 +150,7 @@ inline bool shouldAcceptUnitlessLength(double value, CSSParserMode cssParserMode
         || (cssParserMode == HTMLQuirksMode && unitless == UnitlessQuirk::Allow);
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless)
+RawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == DimensionToken) {
@@ -199,7 +199,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLength(CSSParserTokenRange& ran
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePercent(CSSParserTokenRange& range, ValueRange valueRange)
+RawPtr<CSSPrimitiveValue> consumePercent(CSSParserTokenRange& range, ValueRange valueRange)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == PercentageToken) {
@@ -215,7 +215,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePercent(CSSParserTokenRange& ra
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless)
+RawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParserTokenRange& range, CSSParserMode cssParserMode, ValueRange valueRange, UnitlessQuirk unitless)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == DimensionToken || token.type() == NumberToken)
@@ -230,7 +230,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeLengthOrPercent(CSSParserTokenR
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange& range)
+RawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange& range)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == DimensionToken) {
@@ -256,7 +256,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeAngle(CSSParserTokenRange& rang
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeTime(CSSParserTokenRange& range, ValueRange valueRange)
+RawPtr<CSSPrimitiveValue> consumeTime(CSSParserTokenRange& range, ValueRange valueRange)
 {
     const CSSParserToken& token = range.peek();
     if (token.type() == DimensionToken) {
@@ -275,28 +275,28 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeTime(CSSParserTokenRange& range
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeIdent(CSSParserTokenRange& range)
+RawPtr<CSSPrimitiveValue> consumeIdent(CSSParserTokenRange& range)
 {
     if (range.peek().type() != IdentToken)
         return nullptr;
     return cssValuePool().createIdentifierValue(range.consumeIncludingWhitespace().id());
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeIdentRange(CSSParserTokenRange& range, CSSValueID lower, CSSValueID upper)
+RawPtr<CSSPrimitiveValue> consumeIdentRange(CSSParserTokenRange& range, CSSValueID lower, CSSValueID upper)
 {
     if (range.peek().id() < lower || range.peek().id() > upper)
         return nullptr;
     return consumeIdent(range);
 }
 
-PassRefPtrWillBeRawPtr<CSSCustomIdentValue> consumeCustomIdent(CSSParserTokenRange& range)
+RawPtr<CSSCustomIdentValue> consumeCustomIdent(CSSParserTokenRange& range)
 {
     if (range.peek().type() != IdentToken || isCSSWideKeyword(range.peek().id()))
         return nullptr;
     return CSSCustomIdentValue::create(range.consumeIncludingWhitespace().value());
 }
 
-PassRefPtrWillBeRawPtr<CSSStringValue> consumeString(CSSParserTokenRange& range)
+RawPtr<CSSStringValue> consumeString(CSSParserTokenRange& range)
 {
     if (range.peek().type() != StringToken)
         return nullptr;
@@ -338,7 +338,7 @@ static bool parseRGBParameters(CSSParserTokenRange& range, RGBA32& result, bool 
 {
     ASSERT(range.peek().functionId() == CSSValueRgb || range.peek().functionId() == CSSValueRgba);
     CSSParserTokenRange args = consumeFunction(range);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> colorParameter = consumeInteger(args);
+    RawPtr<CSSPrimitiveValue> colorParameter = consumeInteger(args);
     if (!colorParameter)
         colorParameter = consumePercent(args, ValueRangeAll);
     if (!colorParameter)
@@ -374,7 +374,7 @@ static bool parseHSLParameters(CSSParserTokenRange& range, RGBA32& result, bool 
 {
     ASSERT(range.peek().functionId() == CSSValueHsl || range.peek().functionId() == CSSValueHsla);
     CSSParserTokenRange args = consumeFunction(range);
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> hslValue = consumeNumber(args, ValueRangeAll);
+    RawPtr<CSSPrimitiveValue> hslValue = consumeNumber(args, ValueRangeAll);
     if (!hslValue)
         return false;
     double colorArray[3];
@@ -440,7 +440,7 @@ static bool parseColorFunction(CSSParserTokenRange& range, RGBA32& result)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> consumeColor(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool acceptQuirkyColors)
+RawPtr<CSSValue> consumeColor(CSSParserTokenRange& range, CSSParserMode cssParserMode, bool acceptQuirkyColors)
 {
     CSSValueID id = range.peek().id();
     if (CSSPropertyParser::isColorKeyword(id)) {
@@ -454,7 +454,7 @@ PassRefPtrWillBeRawPtr<CSSValue> consumeColor(CSSParserTokenRange& range, CSSPar
     return cssValuePool().createColorValue(color);
 }
 
-static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePositionComponent(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+static RawPtr<CSSPrimitiveValue> consumePositionComponent(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
 {
     if (range.peek().type() == IdentToken)
         return consumeIdent<CSSValueLeft, CSSValueTop, CSSValueBottom, CSSValueRight, CSSValueCenter>(range);
@@ -471,7 +471,7 @@ static bool isVerticalPositionKeywordOnly(const CSSPrimitiveValue& value)
     return value.isValueID() && (value.getValueID() == CSSValueTop || value.getValueID() == CSSValueBottom);
 }
 
-static void positionFromOneValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+static void positionFromOneValue(RawPtr<CSSPrimitiveValue> value, RawPtr<CSSValue>& resultX, RawPtr<CSSValue>& resultY)
 {
     bool valueAppliesToYAxisOnly = isVerticalPositionKeywordOnly(*value);
     resultX = value;
@@ -480,8 +480,8 @@ static void positionFromOneValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value
         swap(resultX, resultY);
 }
 
-static bool positionFromTwoValues(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value1, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> value2,
-    RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+static bool positionFromTwoValues(RawPtr<CSSPrimitiveValue> value1, RawPtr<CSSPrimitiveValue> value2,
+    RawPtr<CSSValue>& resultX, RawPtr<CSSValue>& resultY)
 {
     bool mustOrderAsXY = isHorizontalPositionKeywordOnly(*value1) || isVerticalPositionKeywordOnly(*value2)
         || !value1->isValueID() || !value2->isValueID();
@@ -495,7 +495,7 @@ static bool positionFromTwoValues(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valu
     return true;
 }
 
-static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, RawPtr<CSSValue>& resultX, RawPtr<CSSValue>& resultY)
 {
     CSSPrimitiveValue* center = nullptr;
     for (int i = 0; values[i]; i++) {
@@ -511,7 +511,7 @@ static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, RefPtrWill
             continue;
         }
 
-        RefPtrWillBeRawPtr<CSSValue> result = nullptr;
+        RawPtr<CSSValue> result = nullptr;
         if (values[i + 1] && !values[i + 1]->isValueID()) {
             result = CSSValuePair::create(currentValue, values[++i], CSSValuePair::KeepIdenticalValues);
         } else {
@@ -546,23 +546,23 @@ static bool positionFromThreeOrFourValues(CSSPrimitiveValue** values, RefPtrWill
 
 // TODO(timloh): This may consume from the range upon failure. The background
 // shorthand works around it, but we should just fix it here.
-bool consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+bool consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, RawPtr<CSSValue>& resultX, RawPtr<CSSValue>& resultY)
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> value1 = consumePositionComponent(range, cssParserMode, unitless);
+    RawPtr<CSSPrimitiveValue> value1 = consumePositionComponent(range, cssParserMode, unitless);
     if (!value1)
         return false;
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> value2 = consumePositionComponent(range, cssParserMode, unitless);
+    RawPtr<CSSPrimitiveValue> value2 = consumePositionComponent(range, cssParserMode, unitless);
     if (!value2) {
         positionFromOneValue(value1.release(), resultX, resultY);
         return true;
     }
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> value3 = consumePositionComponent(range, cssParserMode, unitless);
+    RawPtr<CSSPrimitiveValue> value3 = consumePositionComponent(range, cssParserMode, unitless);
     if (!value3)
         return positionFromTwoValues(value1.release(), value2.release(), resultX, resultY);
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> value4 = consumePositionComponent(range, cssParserMode, unitless);
+    RawPtr<CSSPrimitiveValue> value4 = consumePositionComponent(range, cssParserMode, unitless);
     CSSPrimitiveValue* values[5];
     values[0] = value1.get();
     values[1] = value2.get();
@@ -572,21 +572,21 @@ bool consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, Un
     return positionFromThreeOrFourValues(values, resultX, resultY);
 }
 
-PassRefPtrWillBeRawPtr<CSSValuePair> consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
+RawPtr<CSSValuePair> consumePosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless)
 {
-    RefPtrWillBeRawPtr<CSSValue> resultX = nullptr;
-    RefPtrWillBeRawPtr<CSSValue> resultY = nullptr;
+    RawPtr<CSSValue> resultX = nullptr;
+    RawPtr<CSSValue> resultY = nullptr;
     if (consumePosition(range, cssParserMode, unitless, resultX, resultY))
         return CSSValuePair::create(resultX.release(), resultY.release(), CSSValuePair::KeepIdenticalValues);
     return nullptr;
 }
 
-bool consumeOneOrTwoValuedPosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, RefPtrWillBeRawPtr<CSSValue>& resultX, RefPtrWillBeRawPtr<CSSValue>& resultY)
+bool consumeOneOrTwoValuedPosition(CSSParserTokenRange& range, CSSParserMode cssParserMode, UnitlessQuirk unitless, RawPtr<CSSValue>& resultX, RawPtr<CSSValue>& resultY)
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> value1 = consumePositionComponent(range, cssParserMode, unitless);
+    RawPtr<CSSPrimitiveValue> value1 = consumePositionComponent(range, cssParserMode, unitless);
     if (!value1)
         return false;
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> value2 = consumePositionComponent(range, cssParserMode, unitless);
+    RawPtr<CSSPrimitiveValue> value2 = consumePositionComponent(range, cssParserMode, unitless);
     if (!value2) {
         positionFromOneValue(value1.release(), resultX, resultY);
         return true;

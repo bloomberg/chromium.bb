@@ -11,7 +11,7 @@
 
 namespace blink {
 
-SizesAttributeParser::SizesAttributeParser(PassRefPtrWillBeRawPtr<MediaValues> mediaValues, const String& attribute)
+SizesAttributeParser::SizesAttributeParser(RawPtr<MediaValues> mediaValues, const String& attribute)
     : m_mediaValues(mediaValues)
     , m_length(0)
     , m_lengthWasSet(false)
@@ -53,7 +53,7 @@ bool SizesAttributeParser::calculateLengthInPixels(CSSParserTokenRange range, fl
     return false;
 }
 
-bool SizesAttributeParser::mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition)
+bool SizesAttributeParser::mediaConditionMatches(RawPtr<MediaQuerySet> mediaCondition)
 {
     // A Media Condition cannot have a media type other then screen.
     MediaQueryEvaluator mediaQueryEvaluator(*m_mediaValues);
@@ -79,7 +79,7 @@ bool SizesAttributeParser::parse(CSSParserTokenRange range)
         float length;
         if (!calculateLengthInPixels(range.makeSubRange(lengthTokenStart, lengthTokenEnd), length))
             continue;
-        RefPtrWillBeRawPtr<MediaQuerySet> mediaCondition = MediaQueryParser::parseMediaCondition(range.makeSubRange(mediaConditionStart, lengthTokenStart));
+        RawPtr<MediaQuerySet> mediaCondition = MediaQueryParser::parseMediaCondition(range.makeSubRange(mediaConditionStart, lengthTokenStart));
         if (!mediaCondition || !mediaConditionMatches(mediaCondition))
             continue;
         m_length = length;

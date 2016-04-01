@@ -39,27 +39,26 @@ class ExceptionState;
 class MediaList;
 class MediaQuery;
 
-class CORE_EXPORT MediaQuerySet : public RefCountedWillBeGarbageCollected<MediaQuerySet> {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQuerySet);
+class CORE_EXPORT MediaQuerySet : public GarbageCollected<MediaQuerySet> {
 public:
-    static PassRefPtrWillBeRawPtr<MediaQuerySet> create()
+    static RawPtr<MediaQuerySet> create()
     {
-        return adoptRefWillBeNoop(new MediaQuerySet());
+        return new MediaQuerySet();
     }
-    static PassRefPtrWillBeRawPtr<MediaQuerySet> create(const String& mediaString);
-    static PassRefPtrWillBeRawPtr<MediaQuerySet> createOffMainThread(const String& mediaString);
+    static RawPtr<MediaQuerySet> create(const String& mediaString);
+    static RawPtr<MediaQuerySet> createOffMainThread(const String& mediaString);
 
     bool set(const String&);
     bool add(const String&);
     bool remove(const String&);
 
-    void addMediaQuery(PassOwnPtrWillBeRawPtr<MediaQuery>);
+    void addMediaQuery(RawPtr<MediaQuery>);
 
-    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery>>& queryVector() const { return m_queries; }
+    const HeapVector<Member<MediaQuery>>& queryVector() const { return m_queries; }
 
     String mediaText() const;
 
-    PassRefPtrWillBeRawPtr<MediaQuerySet> copy() const { return adoptRefWillBeNoop(new MediaQuerySet(*this)); }
+    RawPtr<MediaQuerySet> copy() const { return new MediaQuerySet(*this); }
 
     DECLARE_TRACE();
 
@@ -67,21 +66,20 @@ private:
     MediaQuerySet();
     MediaQuerySet(const MediaQuerySet&);
 
-    WillBeHeapVector<OwnPtrWillBeMember<MediaQuery>> m_queries;
+    HeapVector<Member<MediaQuery>> m_queries;
 };
 
-class MediaList final : public RefCountedWillBeGarbageCollected<MediaList>, public ScriptWrappable {
+class MediaList final : public GarbageCollected<MediaList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaList);
 public:
-    static PassRefPtrWillBeRawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
+    static RawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
     {
-        return adoptRefWillBeNoop(new MediaList(mediaQueries, parentSheet));
+        return new MediaList(mediaQueries, parentSheet);
     }
 
-    static PassRefPtrWillBeRawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSRule* parentRule)
+    static RawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSRule* parentRule)
     {
-        return adoptRefWillBeNoop(new MediaList(mediaQueries, parentRule));
+        return new MediaList(mediaQueries, parentRule);
     }
 
     unsigned length() const { return m_mediaQueries->queryVector().size(); }
@@ -111,11 +109,11 @@ private:
     MediaList(MediaQuerySet*, CSSStyleSheet* parentSheet);
     MediaList(MediaQuerySet*, CSSRule* parentRule);
 
-    RefPtrWillBeMember<MediaQuerySet> m_mediaQueries;
+    Member<MediaQuerySet> m_mediaQueries;
     // Cleared in ~CSSStyleSheet destructor when oilpan is not enabled.
-    RawPtrWillBeMember<CSSStyleSheet> m_parentStyleSheet;
+    Member<CSSStyleSheet> m_parentStyleSheet;
     // Cleared in the ~CSSMediaRule and ~CSSImportRule destructors when oilpan is not enabled.
-    RawPtrWillBeMember<CSSRule> m_parentRule;
+    Member<CSSRule> m_parentRule;
 };
 
 } // namespace blink

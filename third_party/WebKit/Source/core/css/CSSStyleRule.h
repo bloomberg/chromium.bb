@@ -34,9 +34,9 @@ class StyleRule;
 class CORE_EXPORT CSSStyleRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CSSStyleRule> create(StyleRule* rule, CSSStyleSheet* sheet)
+    static RawPtr<CSSStyleRule> create(StyleRule* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeNoop(new CSSStyleRule(rule, sheet));
+        return new CSSStyleRule(rule, sheet);
     }
 
     ~CSSStyleRule() override;
@@ -61,8 +61,8 @@ private:
 
     String generateSelectorText() const;
 
-    RefPtrWillBeMember<StyleRule> m_styleRule;
-    mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    Member<StyleRule> m_styleRule;
+    mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSStyleRule, STYLE_RULE);

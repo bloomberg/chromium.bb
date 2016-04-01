@@ -14,9 +14,9 @@ namespace blink {
 // Represents the non-keyword subset of <color>.
 class CSSColorValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSColorValue> create(Color color)
+    static RawPtr<CSSColorValue> create(Color color)
     {
-        return adoptRefWillBeNoop(new CSSColorValue(color));
+        return new CSSColorValue(color);
     }
 
     String customCSSText() const

@@ -38,9 +38,9 @@ namespace blink {
 
 class CSSGridLineNamesValue : public CSSValueList {
 public:
-    static PassRefPtrWillBeRawPtr<CSSGridLineNamesValue> create()
+    static RawPtr<CSSGridLineNamesValue> create()
     {
-        return adoptRefWillBeNoop(new CSSGridLineNamesValue());
+        return new CSSGridLineNamesValue();
     }
 
     String customCSSText() const;

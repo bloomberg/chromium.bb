@@ -17,7 +17,7 @@ namespace blink {
 class CORE_EXPORT SizesAttributeParser {
     STACK_ALLOCATED();
 public:
-    SizesAttributeParser(PassRefPtrWillBeRawPtr<MediaValues>, const String&);
+    SizesAttributeParser(RawPtr<MediaValues>, const String&);
 
     float length();
 
@@ -25,11 +25,11 @@ private:
     bool parse(CSSParserTokenRange);
     float effectiveSize();
     bool calculateLengthInPixels(CSSParserTokenRange, float& result);
-    bool mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition);
+    bool mediaConditionMatches(RawPtr<MediaQuerySet> mediaCondition);
     unsigned effectiveSizeDefaultValue();
 
-    RefPtrWillBeMember<MediaQuerySet> m_mediaCondition;
-    RefPtrWillBeMember<MediaValues> m_mediaValues;
+    Member<MediaQuerySet> m_mediaCondition;
+    Member<MediaValues> m_mediaValues;
     float m_length;
     bool m_lengthWasSet;
     bool m_isValid;

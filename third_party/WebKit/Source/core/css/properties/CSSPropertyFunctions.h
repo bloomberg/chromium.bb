@@ -25,7 +25,7 @@ public:
     // Consumes and parses a single value for this property from by the token range,
     // returning the corresponding CSSValue. This function does not check for the end
     // of the token range. Returns nullptr if the input is invalid.
-    static PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSParserTokenRange&, const CSSParserContext&);
+    static RawPtr<CSSValue> parseSingleValue(CSSParserTokenRange&, const CSSParserContext&);
     using parseSingleValueFunction = decltype(&parseSingleValue);
 };
 

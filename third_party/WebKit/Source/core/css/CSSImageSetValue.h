@@ -39,9 +39,9 @@ class StyleImage;
 class CSSImageSetValue : public CSSValueList {
 public:
 
-    static PassRefPtrWillBeRawPtr<CSSImageSetValue> create()
+    static RawPtr<CSSImageSetValue> create()
     {
-        return adoptRefWillBeNoop(new CSSImageSetValue());
+        return new CSSImageSetValue();
     }
     ~CSSImageSetValue();
 
@@ -58,7 +58,7 @@ public:
         float scaleFactor;
     };
 
-    PassRefPtrWillBeRawPtr<CSSImageSetValue> valueWithURLsMadeAbsolute();
+    RawPtr<CSSImageSetValue> valueWithURLsMadeAbsolute();
 
     bool hasFailedOrCanceledSubresources() const;
 
@@ -74,7 +74,7 @@ private:
     static inline bool compareByScaleFactor(ImageWithScale first, ImageWithScale second) { return first.scaleFactor < second.scaleFactor; }
 
     float m_cachedScaleFactor;
-    RefPtrWillBeMember<StyleImage> m_cachedImage;
+    Member<StyleImage> m_cachedImage;
 
     Vector<ImageWithScale> m_imagesInSet;
 };

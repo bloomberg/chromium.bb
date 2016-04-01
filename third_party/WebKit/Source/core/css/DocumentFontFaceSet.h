@@ -38,7 +38,7 @@ class FontFaceSet;
 class DocumentFontFaceSet {
     STATIC_ONLY(DocumentFontFaceSet);
 public:
-    static PassRefPtrWillBeRawPtr<FontFaceSet> fonts(Document&);
+    static RawPtr<FontFaceSet> fonts(Document&);
 };
 
 } // namespace blink

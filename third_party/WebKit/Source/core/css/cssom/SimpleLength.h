@@ -41,7 +41,7 @@ public:
 
     StyleValueType type() const override { return StyleValueType::SimpleLengthType; }
 
-    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
+    RawPtr<CSSValue> toCSSValue() const override;
 
 protected:
     virtual LengthValue* addInternal(const LengthValue* other, ExceptionState&);

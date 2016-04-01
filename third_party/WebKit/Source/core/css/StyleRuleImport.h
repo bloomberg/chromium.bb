@@ -33,10 +33,9 @@ class MediaQuerySet;
 class StyleSheetContents;
 
 class StyleRuleImport : public StyleRuleBase {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRuleImport);
-    WILL_BE_USING_PRE_FINALIZER(StyleRuleImport, dispose);
+    USING_PRE_FINALIZER(StyleRuleImport, dispose);
 public:
-    static PassRefPtrWillBeRawPtr<StyleRuleImport> create(const String& href, PassRefPtrWillBeRawPtr<MediaQuerySet>);
+    static RawPtr<StyleRuleImport> create(const String& href, RawPtr<MediaQuerySet>);
 
     ~StyleRuleImport();
 
@@ -75,23 +74,23 @@ private:
         }
 
     private:
-        RawPtrWillBeMember<StyleRuleImport> m_ownerRule;
+        Member<StyleRuleImport> m_ownerRule;
     };
 
     void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*);
     friend class ImportedStyleSheetClient;
 
-    StyleRuleImport(const String& href, PassRefPtrWillBeRawPtr<MediaQuerySet>);
+    StyleRuleImport(const String& href, RawPtr<MediaQuerySet>);
 
     void dispose();
 
-    RawPtrWillBeMember<StyleSheetContents> m_parentStyleSheet;
+    Member<StyleSheetContents> m_parentStyleSheet;
 
     ImportedStyleSheetClient m_styleSheetClient;
     String m_strHref;
-    RefPtrWillBeMember<MediaQuerySet> m_mediaQueries;
-    RefPtrWillBeMember<StyleSheetContents> m_styleSheet;
-    RefPtrWillBeMember<CSSStyleSheetResource> m_resource;
+    Member<MediaQuerySet> m_mediaQueries;
+    Member<StyleSheetContents> m_styleSheet;
+    Member<CSSStyleSheetResource> m_resource;
     bool m_loading;
 };
 

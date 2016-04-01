@@ -27,7 +27,7 @@
 
 namespace blink {
 
-struct SameSizeAsCSSRule : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsCSSRule>, public ScriptWrappable {
+struct SameSizeAsCSSRule : public GarbageCollectedFinalized<SameSizeAsCSSRule>, public ScriptWrappable {
     virtual ~SameSizeAsCSSRule();
     unsigned char bitfields;
     void* pointerUnion;

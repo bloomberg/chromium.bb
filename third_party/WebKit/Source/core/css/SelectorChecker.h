@@ -54,7 +54,7 @@ public:
         bool isUARule = false;
         bool isQuerySelector = false;
         ComputedStyle* elementStyle = nullptr;
-        RawPtrWillBeMember<LayoutScrollbar> scrollbar = nullptr;
+        Member<LayoutScrollbar> scrollbar = nullptr;
         ScrollbarPart scrollbarPart = NoPart;
     };
 
@@ -88,9 +88,9 @@ public:
         }
 
         const CSSSelector* selector;
-        RawPtrWillBeMember<Element> element;
-        RawPtrWillBeMember<Element> previousElement;
-        RawPtrWillBeMember<const ContainerNode> scope;
+        Member<Element> element;
+        Member<Element> previousElement;
+        Member<const ContainerNode> scope;
         VisitedMatchType visitedMatchType;
         PseudoId pseudoId;
         bool isSubSelector;
@@ -144,7 +144,7 @@ private:
     bool m_isUARule;
     bool m_isQuerySelector;
     ComputedStyle* m_elementStyle;
-    RawPtrWillBeMember<LayoutScrollbar> m_scrollbar;
+    Member<LayoutScrollbar> m_scrollbar;
     ScrollbarPart m_scrollbarPart;
 };
 

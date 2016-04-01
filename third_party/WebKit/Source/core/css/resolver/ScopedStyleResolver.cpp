@@ -56,7 +56,7 @@ ScopedStyleResolver* ScopedStyleResolver::parent() const
 
 void ScopedStyleResolver::addKeyframeRules(const RuleSet& ruleSet)
 {
-    const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes>> keyframesRules = ruleSet.keyframesRules();
+    const HeapVector<Member<StyleRuleKeyframes>> keyframesRules = ruleSet.keyframesRules();
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
         addKeyframeStyle(keyframesRules[i]);
 }
@@ -69,9 +69,9 @@ void ScopedStyleResolver::addFontFaceRules(const RuleSet& ruleSet)
 
     Document& document = treeScope().document();
     CSSFontSelector* cssFontSelector = document.styleEngine().fontSelector();
-    const WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace>> fontFaceRules = ruleSet.fontFaceRules();
+    const HeapVector<Member<StyleRuleFontFace>> fontFaceRules = ruleSet.fontFaceRules();
     for (auto& fontFaceRule : fontFaceRules) {
-        if (RefPtrWillBeRawPtr<FontFace> fontFace = FontFace::create(&document, fontFaceRule))
+        if (RawPtr<FontFace> fontFace = FontFace::create(&document, fontFaceRule))
             cssFontSelector->fontFaceCache()->add(cssFontSelector, fontFaceRule, fontFace);
     }
     if (fontFaceRules.size())
@@ -93,7 +93,7 @@ void ScopedStyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet, const Med
     treeScope().document().styleResolver()->addDeviceDependentMediaQueries(ruleSet.deviceDependentMediaQueryResults());
 }
 
-void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, WillBeHeapHashSet<RawPtrWillBeMember<const StyleSheetContents>>& visitedSharedStyleSheetContents) const
+void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, HeapHashSet<Member<const StyleSheetContents>>& visitedSharedStyleSheetContents) const
 {
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
         ASSERT(m_authorStyleSheets[i]->ownerNode());
@@ -129,7 +129,7 @@ StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const String
     return it->value.get();
 }
 
-void ScopedStyleResolver::addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyframes> rule)
+void ScopedStyleResolver::addKeyframeStyle(RawPtr<StyleRuleKeyframes> rule)
 {
     AtomicString s(rule->name());
 
@@ -199,7 +199,7 @@ DEFINE_TRACE(ScopedStyleResolver)
 #endif
 }
 
-static void addRules(RuleSet* ruleSet, const WillBeHeapVector<MinimalRuleData>& rules)
+static void addRules(RuleSet* ruleSet, const HeapVector<MinimalRuleData>& rules)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
         const MinimalRuleData& info = rules[i];
@@ -217,7 +217,7 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
     if (!authorRules.deepCombinatorOrShadowPseudoRules().isEmpty())
         m_hasDeepOrShadowSelector = true;
 
-    OwnPtrWillBeRawPtr<RuleSet> ruleSetForScope = RuleSet::create();
+    RawPtr<RuleSet> ruleSetForScope = RuleSet::create();
     addRules(ruleSetForScope.get(), authorRules.deepCombinatorOrShadowPseudoRules());
 
     if (!isDocumentScope) {
@@ -226,7 +226,7 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
     }
 
     if (!m_treeBoundaryCrossingRuleSet) {
-        m_treeBoundaryCrossingRuleSet = adoptPtrWillBeNoop(new CSSStyleSheetRuleSubSet());
+        m_treeBoundaryCrossingRuleSet = new CSSStyleSheetRuleSubSet();
         treeScope().document().styleResolver()->addTreeBoundaryCrossingScope(treeScope().rootNode());
     }
 

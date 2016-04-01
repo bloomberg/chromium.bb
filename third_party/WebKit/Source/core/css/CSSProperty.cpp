@@ -27,7 +27,7 @@ namespace blink {
 
 struct SameSizeAsCSSProperty {
     uint32_t bitfields;
-    RawPtrWillBeMember<void*> value;
+    Member<void*> value;
 };
 
 static_assert(sizeof(CSSProperty) == sizeof(SameSizeAsCSSProperty), "CSSProperty should stay small");

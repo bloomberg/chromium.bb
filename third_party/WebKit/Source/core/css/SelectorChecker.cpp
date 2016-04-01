@@ -406,7 +406,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
 SelectorChecker::Match SelectorChecker::matchForPseudoContent(const SelectorCheckingContext& context, const Element& element, MatchResult& result) const
 {
-    WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
+    HeapVector<Member<InsertionPoint>, 8> insertionPoints;
     collectDestinationInsertionPoints(element, insertionPoints);
     SelectorCheckingContext nextContext(context);
     for (const auto& insertionPoint : insertionPoints) {

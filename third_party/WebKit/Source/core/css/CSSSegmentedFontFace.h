@@ -45,11 +45,11 @@ class FontDescription;
 class FontFace;
 class SegmentedFontData;
 
-class CSSSegmentedFontFace final : public RefCountedWillBeGarbageCollectedFinalized<CSSSegmentedFontFace> {
+class CSSSegmentedFontFace final : public GarbageCollectedFinalized<CSSSegmentedFontFace> {
 public:
-    static PassRefPtrWillBeRawPtr<CSSSegmentedFontFace> create(CSSFontSelector* selector, FontTraits traits)
+    static RawPtr<CSSSegmentedFontFace> create(CSSFontSelector* selector, FontTraits traits)
     {
-        return adoptRefWillBeNoop(new CSSSegmentedFontFace(selector, traits));
+        return new CSSSegmentedFontFace(selector, traits);
     }
     ~CSSSegmentedFontFace();
 
@@ -60,14 +60,14 @@ public:
     // so cached FontData must be discarded.
     void fontFaceInvalidated();
 
-    void addFontFace(PassRefPtrWillBeRawPtr<FontFace>, bool cssConnected);
-    void removeFontFace(PassRefPtrWillBeRawPtr<FontFace>);
+    void addFontFace(RawPtr<FontFace>, bool cssConnected);
+    void removeFontFace(RawPtr<FontFace>);
     bool isEmpty() const { return m_fontFaces.isEmpty(); }
 
     PassRefPtr<FontData> getFontData(const FontDescription&);
 
     bool checkFont(const String&) const;
-    void match(const String&, WillBeHeapVector<RefPtrWillBeMember<FontFace>>&) const;
+    void match(const String&, HeapVector<Member<FontFace>>&) const;
     void willUseFontData(const FontDescription&, UChar32);
     void willUseRange(const FontDescription&, const blink::FontDataForRangeSet&);
 
@@ -79,9 +79,9 @@ private:
     void pruneTable();
     bool isValid() const;
 
-    using FontFaceList = WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>;
+    using FontFaceList = HeapListHashSet<Member<FontFace>>;
 
-    RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
+    Member<CSSFontSelector> m_fontSelector;
     FontTraits m_traits;
     HashMap<unsigned, RefPtr<SegmentedFontData>> m_fontDataTable;
     // All non-CSS-connected FontFaces are stored after the CSS-connected ones.

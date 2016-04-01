@@ -37,7 +37,7 @@ public:
             : MatrixTransformComponent::rotate3d(m_angle, m_x, m_y, m_z);
     }
 
-    PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
+    RawPtr<CSSFunctionValue> toCSSValue() const override;
 
 private:
     RotationTransformComponent(double angle)

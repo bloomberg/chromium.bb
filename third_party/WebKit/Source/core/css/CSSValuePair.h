@@ -36,15 +36,15 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
 public:
     enum IdenticalValuesPolicy { DropIdenticalValues, KeepIdenticalValues };
 
-    static PassRefPtrWillBeRawPtr<CSSValuePair> create(PassRefPtrWillBeRawPtr<CSSValue> first, PassRefPtrWillBeRawPtr<CSSValue> second,
+    static RawPtr<CSSValuePair> create(RawPtr<CSSValue> first, RawPtr<CSSValue> second,
         IdenticalValuesPolicy identicalValuesPolicy)
     {
-        return adoptRefWillBeNoop(new CSSValuePair(first, second, identicalValuesPolicy));
+        return new CSSValuePair(first, second, identicalValuesPolicy);
     }
 
-    static PassRefPtrWillBeRawPtr<CSSValuePair> create(const LengthSize& lengthSize, const ComputedStyle& style)
+    static RawPtr<CSSValuePair> create(const LengthSize& lengthSize, const ComputedStyle& style)
     {
-        return adoptRefWillBeNoop(new CSSValuePair(CSSPrimitiveValue::create(lengthSize.width(), style.effectiveZoom()), CSSPrimitiveValue::create(lengthSize.height(), style.effectiveZoom()), KeepIdenticalValues));
+        return new CSSValuePair(CSSPrimitiveValue::create(lengthSize.width(), style.effectiveZoom()), CSSPrimitiveValue::create(lengthSize.height(), style.effectiveZoom()), KeepIdenticalValues);
     }
 
     // TODO(sashab): Remove these non-const versions.
@@ -72,7 +72,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSValuePair(PassRefPtrWillBeRawPtr<CSSValue> first, PassRefPtrWillBeRawPtr<CSSValue> second, IdenticalValuesPolicy identicalValuesPolicy)
+    CSSValuePair(RawPtr<CSSValue> first, RawPtr<CSSValue> second, IdenticalValuesPolicy identicalValuesPolicy)
         : CSSValue(ValuePairClass)
         , m_first(first)
         , m_second(second)
@@ -82,8 +82,8 @@ private:
         ASSERT(m_second);
     }
 
-    RefPtrWillBeMember<CSSValue> m_first;
-    RefPtrWillBeMember<CSSValue> m_second;
+    Member<CSSValue> m_first;
+    Member<CSSValue> m_second;
     IdenticalValuesPolicy m_identicalValuesPolicy;
 };
 

@@ -203,7 +203,7 @@ MediaQueryExp::MediaQueryExp(const String& mediaFeature, const MediaQueryExpValu
 {
 }
 
-PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>& tokenList)
+RawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String& mediaFeature, const Vector<CSSParserToken, 4>& tokenList)
 {
     ASSERT(!mediaFeature.isNull());
 
@@ -267,7 +267,7 @@ PassOwnPtrWillBeRawPtr<MediaQueryExp> MediaQueryExp::createIfValid(const String&
         return nullptr;
     }
 
-    return adoptPtrWillBeNoop(new MediaQueryExp(lowerMediaFeature, expValue));
+    return new MediaQueryExp(lowerMediaFeature, expValue);
 }
 
 MediaQueryExp::~MediaQueryExp()

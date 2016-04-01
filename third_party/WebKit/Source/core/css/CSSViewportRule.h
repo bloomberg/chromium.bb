@@ -43,9 +43,9 @@ class StyleRuleCSSStyleDeclaration;
 class CSSViewportRule final: public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CSSViewportRule> create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
+    static RawPtr<CSSViewportRule> create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeNoop(new CSSViewportRule(viewportRule, sheet));
+        return new CSSViewportRule(viewportRule, sheet);
     }
     ~CSSViewportRule() override;
 
@@ -61,8 +61,8 @@ private:
 
     CSSRule::Type type() const override { return VIEWPORT_RULE; }
 
-    RefPtrWillBeMember<StyleRuleViewport> m_viewportRule;
-    mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    Member<StyleRuleViewport> m_viewportRule;
+    mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSViewportRule, VIEWPORT_RULE);

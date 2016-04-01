@@ -48,8 +48,8 @@ public:
     bool distributedToInsertionPoint() const { return m_distributedToInsertionPoint; }
 
 private:
-    RawPtrWillBeMember<Element> m_element;
-    RawPtrWillBeMember<ContainerNode> m_parentNode;
+    Member<Element> m_element;
+    Member<ContainerNode> m_parentNode;
     const ComputedStyle* m_rootElementStyle;
     EInsideLink m_elementLinkState;
     bool m_distributedToInsertionPoint;

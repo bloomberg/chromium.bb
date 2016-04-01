@@ -69,9 +69,9 @@ public:
     void setFontSmoothing(FontSmoothingMode);
 
     // FIXME: These need to just vend a Font object eventually.
-    void createFont(PassRefPtrWillBeRawPtr<FontSelector>, ComputedStyle&);
+    void createFont(RawPtr<FontSelector>, ComputedStyle&);
 
-    void createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector>, ComputedStyle&);
+    void createFontForDocument(RawPtr<FontSelector>, ComputedStyle&);
 
     bool fontDirty() const { return m_flags; }
 
@@ -103,7 +103,7 @@ private:
 
     float getComputedSizeFromSpecifiedSize(FontDescription&, float effectiveZoom, float specifiedSize);
 
-    RawPtrWillBeMember<const Document> m_document;
+    Member<const Document> m_document;
     FontDescription m_fontDescription;
 
     enum class PropertySetFlag {

@@ -33,36 +33,36 @@ class CSSPrimitiveValue;
 // Used for text-shadow and box-shadow
 class CORE_EXPORT CSSShadowValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSShadowValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> x,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> y,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blur,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> spread,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> style,
-        PassRefPtrWillBeRawPtr<CSSValue> color)
+    static RawPtr<CSSShadowValue> create(RawPtr<CSSPrimitiveValue> x,
+        RawPtr<CSSPrimitiveValue> y,
+        RawPtr<CSSPrimitiveValue> blur,
+        RawPtr<CSSPrimitiveValue> spread,
+        RawPtr<CSSPrimitiveValue> style,
+        RawPtr<CSSValue> color)
     {
-        return adoptRefWillBeNoop(new CSSShadowValue(x, y, blur, spread, style, color));
+        return new CSSShadowValue(x, y, blur, spread, style, color);
     }
 
     String customCSSText() const;
 
     bool equals(const CSSShadowValue&) const;
 
-    RefPtrWillBeMember<CSSPrimitiveValue> x;
-    RefPtrWillBeMember<CSSPrimitiveValue> y;
-    RefPtrWillBeMember<CSSPrimitiveValue> blur;
-    RefPtrWillBeMember<CSSPrimitiveValue> spread;
-    RefPtrWillBeMember<CSSPrimitiveValue> style;
-    RefPtrWillBeMember<CSSValue> color;
+    Member<CSSPrimitiveValue> x;
+    Member<CSSPrimitiveValue> y;
+    Member<CSSPrimitiveValue> blur;
+    Member<CSSPrimitiveValue> spread;
+    Member<CSSPrimitiveValue> style;
+    Member<CSSValue> color;
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSShadowValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> x,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> y,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> blur,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> spread,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> style,
-        PassRefPtrWillBeRawPtr<CSSValue> color);
+    CSSShadowValue(RawPtr<CSSPrimitiveValue> x,
+        RawPtr<CSSPrimitiveValue> y,
+        RawPtr<CSSPrimitiveValue> blur,
+        RawPtr<CSSPrimitiveValue> spread,
+        RawPtr<CSSPrimitiveValue> style,
+        RawPtr<CSSValue> color);
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSShadowValue, isShadowValue());

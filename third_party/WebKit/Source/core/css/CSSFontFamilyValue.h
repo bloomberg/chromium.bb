@@ -13,9 +13,9 @@ namespace blink {
 
 class CSSFontFamilyValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSFontFamilyValue> create(const String& str)
+    static RawPtr<CSSFontFamilyValue> create(const String& str)
     {
-        return adoptRefWillBeNoop(new CSSFontFamilyValue(str));
+        return new CSSFontFamilyValue(str);
     }
 
     String value() const { return m_string; }

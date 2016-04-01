@@ -36,14 +36,14 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 
-class CSSMatrix final : public RefCountedWillBeGarbageCollectedFinalized<CSSMatrix>, public ScriptWrappable {
+class CSSMatrix final : public GarbageCollectedFinalized<CSSMatrix>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CSSMatrix> create(const TransformationMatrix& m)
+    static RawPtr<CSSMatrix> create(const TransformationMatrix& m)
     {
-        return adoptRefWillBeNoop(new CSSMatrix(m));
+        return new CSSMatrix(m);
     }
-    static PassRefPtrWillBeRawPtr<CSSMatrix> create(ExecutionContext*, const String&, ExceptionState&);
+    static RawPtr<CSSMatrix> create(ExecutionContext*, const String&, ExceptionState&);
 
     double a() const { return m_matrix->a(); }
     double b() const { return m_matrix->b(); }
@@ -99,48 +99,48 @@ public:
     // specified operation applied. The this value is not modified.
 
     // Multiply this matrix by secondMatrix, on the right (result = this * secondMatrix)
-    PassRefPtrWillBeRawPtr<CSSMatrix> multiply(CSSMatrix* secondMatrix) const;
+    RawPtr<CSSMatrix> multiply(CSSMatrix* secondMatrix) const;
 
     // Return the inverse of this matrix. Throw an exception if the matrix is not invertible
-    PassRefPtrWillBeRawPtr<CSSMatrix> inverse(ExceptionState&) const;
+    RawPtr<CSSMatrix> inverse(ExceptionState&) const;
 
     // Return this matrix translated by the passed values.
     // Passing a NaN will use a value of 0. This allows the 3D form to used for 2D operations
     // Operation is performed as though the this matrix is multiplied by a matrix with
     // the translation values on the left (result = translation(x,y,z) * this)
-    PassRefPtrWillBeRawPtr<CSSMatrix> translate(double x, double y, double z) const;
+    RawPtr<CSSMatrix> translate(double x, double y, double z) const;
 
     // Returns this matrix scaled by the passed values.
     // Passing scaleX or scaleZ as NaN uses a value of 1, but passing scaleY of NaN
     // makes it the same as scaleX. This allows the 3D form to used for 2D operations
     // Operation is performed as though the this matrix is multiplied by a matrix with
     // the scale values on the left (result = scale(x,y,z) * this)
-    PassRefPtrWillBeRawPtr<CSSMatrix> scale(double scaleX, double scaleY, double scaleZ) const;
+    RawPtr<CSSMatrix> scale(double scaleX, double scaleY, double scaleZ) const;
 
     // Returns this matrix rotated by the passed values.
     // If rotY and rotZ are NaN, rotate about Z (rotX=0, rotateY=0, rotateZ=rotX).
     // Otherwise use a rotation value of 0 for any passed NaN.
     // Operation is performed as though the this matrix is multiplied by a matrix with
     // the rotation values on the left (result = rotation(x,y,z) * this)
-    PassRefPtrWillBeRawPtr<CSSMatrix> rotate(double rotX, double rotY, double rotZ) const;
+    RawPtr<CSSMatrix> rotate(double rotX, double rotY, double rotZ) const;
 
     // Returns this matrix rotated about the passed axis by the passed angle.
     // Passing a NaN will use a value of 0. If the axis is (0,0,0) use a value
     // Operation is performed as though the this matrix is multiplied by a matrix with
     // the rotation values on the left (result = rotation(x,y,z,angle) * this)
-    PassRefPtrWillBeRawPtr<CSSMatrix> rotateAxisAngle(double x, double y, double z, double angle) const;
+    RawPtr<CSSMatrix> rotateAxisAngle(double x, double y, double z, double angle) const;
 
     // Return this matrix skewed along the X axis by the passed values.
     // Passing a NaN will use a value of 0.
     // Operation is performed as though the this matrix is multiplied by a matrix with
     // the skew values on the left (result = skewX(angle) * this)
-    PassRefPtrWillBeRawPtr<CSSMatrix> skewX(double angle) const;
+    RawPtr<CSSMatrix> skewX(double angle) const;
 
     // Return this matrix skewed along the Y axis by the passed values.
     // Passing a NaN will use a value of 0.
     // Operation is performed as though the this matrix is multiplied by a matrix with
     // the skew values on the left (result = skewY(angle) * this)
-    PassRefPtrWillBeRawPtr<CSSMatrix> skewY(double angle) const;
+    RawPtr<CSSMatrix> skewY(double angle) const;
 
     const TransformationMatrix& transform() const { return *m_matrix; }
 

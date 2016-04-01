@@ -18,7 +18,7 @@ class CSSVariableParser {
 public:
     static bool containsValidVariableReferences(CSSParserTokenRange);
 
-    static PassRefPtrWillBeRawPtr<CSSCustomPropertyDeclaration> parseDeclarationValue(const AtomicString&, CSSParserTokenRange);
+    static RawPtr<CSSCustomPropertyDeclaration> parseDeclarationValue(const AtomicString&, CSSParserTokenRange);
 
     static bool isValidVariableName(const CSSParserToken&);
     static bool isValidVariableName(const String&);

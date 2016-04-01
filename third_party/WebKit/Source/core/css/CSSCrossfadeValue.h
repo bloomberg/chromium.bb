@@ -41,11 +41,11 @@ class LayoutObject;
 
 class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
     friend class CrossfadeSubimageObserverProxy;
-    WILL_BE_USING_PRE_FINALIZER(CSSCrossfadeValue, dispose);
+    USING_PRE_FINALIZER(CSSCrossfadeValue, dispose);
 public:
-    static PassRefPtrWillBeRawPtr<CSSCrossfadeValue> create(PassRefPtrWillBeRawPtr<CSSValue> fromValue, PassRefPtrWillBeRawPtr<CSSValue> toValue, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> percentageValue)
+    static RawPtr<CSSCrossfadeValue> create(RawPtr<CSSValue> fromValue, RawPtr<CSSValue> toValue, RawPtr<CSSPrimitiveValue> percentageValue)
     {
-        return adoptRefWillBeNoop(new CSSCrossfadeValue(fromValue, toValue, percentageValue));
+        return new CSSCrossfadeValue(fromValue, toValue, percentageValue);
     }
 
     ~CSSCrossfadeValue();
@@ -65,12 +65,12 @@ public:
 
     bool equals(const CSSCrossfadeValue&) const;
 
-    PassRefPtrWillBeRawPtr<CSSCrossfadeValue> valueWithURLsMadeAbsolute();
+    RawPtr<CSSCrossfadeValue> valueWithURLsMadeAbsolute();
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSCrossfadeValue(PassRefPtrWillBeRawPtr<CSSValue> fromValue, PassRefPtrWillBeRawPtr<CSSValue> toValue, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> percentageValue);
+    CSSCrossfadeValue(RawPtr<CSSValue> fromValue, RawPtr<CSSValue> toValue, RawPtr<CSSPrimitiveValue> percentageValue);
 
     void dispose();
 
@@ -91,18 +91,18 @@ private:
         String debugName() const override { return "CrossfadeSubimageObserverProxy"; }
         void setReady(bool ready) { m_ready = ready; }
     private:
-        RawPtrWillBeMember<CSSCrossfadeValue> m_ownerValue;
+        Member<CSSCrossfadeValue> m_ownerValue;
         bool m_ready;
     };
 
     void crossfadeChanged(const IntRect&);
 
-    RefPtrWillBeMember<CSSValue> m_fromValue;
-    RefPtrWillBeMember<CSSValue> m_toValue;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_percentageValue;
+    Member<CSSValue> m_fromValue;
+    Member<CSSValue> m_toValue;
+    Member<CSSPrimitiveValue> m_percentageValue;
 
-    RefPtrWillBeMember<ImageResource> m_cachedFromImage;
-    RefPtrWillBeMember<ImageResource> m_cachedToImage;
+    Member<ImageResource> m_cachedFromImage;
+    Member<ImageResource> m_cachedToImage;
 
     CrossfadeSubimageObserverProxy m_crossfadeSubimageObserver;
 };

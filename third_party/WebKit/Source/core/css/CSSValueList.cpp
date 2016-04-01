@@ -41,7 +41,7 @@ bool CSSValueList::removeAll(CSSValue* val)
 {
     bool found = false;
     for (int index = m_values.size() - 1; index >= 0; --index) {
-        RefPtrWillBeMember<CSSValue>& value = m_values.at(index);
+        Member<CSSValue>& value = m_values.at(index);
         if (value && val && value->equals(*val)) {
             m_values.remove(index);
             found = true;
@@ -54,16 +54,16 @@ bool CSSValueList::removeAll(CSSValue* val)
 bool CSSValueList::hasValue(CSSValue* val) const
 {
     for (size_t index = 0; index < m_values.size(); index++) {
-        const RefPtrWillBeMember<CSSValue>& value = m_values.at(index);
+        const Member<CSSValue>& value = m_values.at(index);
         if (value && val && value->equals(*val))
             return true;
     }
     return false;
 }
 
-PassRefPtrWillBeRawPtr<CSSValueList> CSSValueList::copy()
+RawPtr<CSSValueList> CSSValueList::copy()
 {
-    RefPtrWillBeRawPtr<CSSValueList> newList = nullptr;
+    RawPtr<CSSValueList> newList = nullptr;
     switch (m_valueListSeparator) {
     case SpaceSeparator:
         newList = createSpaceSeparated();

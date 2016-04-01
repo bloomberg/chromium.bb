@@ -9,12 +9,12 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<CSSPathValue> CSSPathValue::create(PassRefPtr<StylePath> stylePath)
+RawPtr<CSSPathValue> CSSPathValue::create(PassRefPtr<StylePath> stylePath)
 {
-    return adoptRefWillBeNoop(new CSSPathValue(stylePath));
+    return new CSSPathValue(stylePath);
 }
 
-PassRefPtrWillBeRawPtr<CSSPathValue> CSSPathValue::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
+RawPtr<CSSPathValue> CSSPathValue::create(PassOwnPtr<SVGPathByteStream> pathByteStream)
 {
     return CSSPathValue::create(StylePath::create(pathByteStream));
 }
@@ -28,7 +28,7 @@ CSSPathValue::CSSPathValue(PassRefPtr<StylePath> stylePath)
 
 namespace {
 
-PassRefPtrWillBeRawPtr<CSSPathValue> createPathValue()
+RawPtr<CSSPathValue> createPathValue()
 {
     OwnPtr<SVGPathByteStream> pathByteStream = SVGPathByteStream::create();
     // Need to be registered as LSan ignored, as it will be reachable and
@@ -41,7 +41,7 @@ PassRefPtrWillBeRawPtr<CSSPathValue> createPathValue()
 
 CSSPathValue* CSSPathValue::emptyPathValue()
 {
-    DEFINE_STATIC_LOCAL(RefPtrWillBePersistent<CSSPathValue>, empty, (createPathValue()));
+    DEFINE_STATIC_LOCAL(Persistent<CSSPathValue>, empty, (createPathValue()));
     return empty.get();
 }
 

@@ -57,14 +57,14 @@ class StringOrArrayBufferOrArrayBufferView;
 class StylePropertySet;
 class StyleRuleFontFace;
 
-class FontFace : public RefCountedWillBeGarbageCollectedFinalized<FontFace>, public ScriptWrappable, public ActiveScriptWrappable, public ActiveDOMObject {
+class FontFace : public GarbageCollectedFinalized<FontFace>, public ScriptWrappable, public ActiveScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FontFace);
+    USING_GARBAGE_COLLECTED_MIXIN(FontFace);
 public:
     enum LoadStatusType { Unloaded, Loading, Loaded, Error };
 
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, StringOrArrayBufferOrArrayBufferView&, const FontFaceDescriptors&);
-    static PassRefPtrWillBeRawPtr<FontFace> create(Document*, const StyleRuleFontFace*);
+    static RawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, StringOrArrayBufferOrArrayBufferView&, const FontFaceDescriptors&);
+    static RawPtr<FontFace> create(Document*, const StyleRuleFontFace*);
 
     ~FontFace();
 
@@ -101,55 +101,55 @@ public:
 
     bool hadBlankText() const;
 
-    class LoadFontCallback : public RefCountedWillBeGarbageCollectedFinalized<LoadFontCallback> {
+    class LoadFontCallback : public GarbageCollectedFinalized<LoadFontCallback> {
     public:
         virtual ~LoadFontCallback() { }
         virtual void notifyLoaded(FontFace*) = 0;
         virtual void notifyError(FontFace*) = 0;
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
-    void loadWithCallback(PassRefPtrWillBeRawPtr<LoadFontCallback>, ExecutionContext*);
+    void loadWithCallback(RawPtr<LoadFontCallback>, ExecutionContext*);
 
     // ActiveScriptWrappable.
     bool hasPendingActivity() const final;
 
 private:
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBuffer> source, const FontFaceDescriptors&);
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBufferView>, const FontFaceDescriptors&);
-    static PassRefPtrWillBeRawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const FontFaceDescriptors&);
+    static RawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBuffer> source, const FontFaceDescriptors&);
+    static RawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, PassRefPtr<DOMArrayBufferView>, const FontFaceDescriptors&);
+    static RawPtr<FontFace> create(ExecutionContext*, const AtomicString& family, const String& source, const FontFaceDescriptors&);
 
     explicit FontFace(ExecutionContext*);
     FontFace(ExecutionContext*, const AtomicString& family, const FontFaceDescriptors&);
 
-    void initCSSFontFace(Document*, PassRefPtrWillBeRawPtr<CSSValue> src);
+    void initCSSFontFace(Document*, RawPtr<CSSValue> src);
     void initCSSFontFace(const unsigned char* data, size_t);
     void setPropertyFromString(const Document*, const String&, CSSPropertyID, ExceptionState* = 0);
     bool setPropertyFromStyle(const StylePropertySet&, CSSPropertyID);
-    bool setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue>, CSSPropertyID);
+    bool setPropertyValue(RawPtr<CSSValue>, CSSPropertyID);
     bool setFamilyValue(const CSSValue&);
     void loadInternal(ExecutionContext*);
     ScriptPromise fontStatusPromise(ScriptState*);
 
-    using LoadedProperty = ScriptPromiseProperty<RawPtrWillBeMember<FontFace>, RawPtrWillBeMember<FontFace>, Member<DOMException>>;
+    using LoadedProperty = ScriptPromiseProperty<Member<FontFace>, Member<FontFace>, Member<DOMException>>;
 
     AtomicString m_family;
     String m_otsParseMessage;
-    RefPtrWillBeMember<CSSValue> m_style;
-    RefPtrWillBeMember<CSSValue> m_weight;
-    RefPtrWillBeMember<CSSValue> m_stretch;
-    RefPtrWillBeMember<CSSValue> m_unicodeRange;
-    RefPtrWillBeMember<CSSValue> m_variant;
-    RefPtrWillBeMember<CSSValue> m_featureSettings;
-    RefPtrWillBeMember<CSSValue> m_display;
+    Member<CSSValue> m_style;
+    Member<CSSValue> m_weight;
+    Member<CSSValue> m_stretch;
+    Member<CSSValue> m_unicodeRange;
+    Member<CSSValue> m_variant;
+    Member<CSSValue> m_featureSettings;
+    Member<CSSValue> m_display;
     LoadStatusType m_status;
-    PersistentWillBeMember<DOMException> m_error;
+    Member<DOMException> m_error;
 
-    PersistentWillBeMember<LoadedProperty> m_loadedProperty;
-    OwnPtrWillBeMember<CSSFontFace> m_cssFontFace;
-    WillBeHeapVector<RefPtrWillBeMember<LoadFontCallback>> m_callbacks;
+    Member<LoadedProperty> m_loadedProperty;
+    Member<CSSFontFace> m_cssFontFace;
+    HeapVector<Member<LoadFontCallback>> m_callbacks;
 };
 
-using FontFaceArray = WillBeHeapVector<RefPtrWillBeMember<FontFace>>;
+using FontFaceArray = HeapVector<Member<FontFace>>;
 
 } // namespace blink
 

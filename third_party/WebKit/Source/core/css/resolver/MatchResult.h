@@ -41,7 +41,7 @@ public:
 
     DECLARE_TRACE();
 
-    RefPtrWillBeMember<StylePropertySet> properties;
+    Member<StylePropertySet> properties;
 
     union {
         struct {
@@ -59,7 +59,7 @@ WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MatchedProperties);
 
 namespace blink {
 
-using MatchedPropertiesVector = WillBeHeapVector<MatchedProperties, 64>;
+using MatchedPropertiesVector = HeapVector<MatchedProperties, 64>;
 
 // MatchedPropertiesRange is used to represent a subset of the matched properties from
 // a given origin, for instance UA rules, author rules, or a shadow tree scope. This is

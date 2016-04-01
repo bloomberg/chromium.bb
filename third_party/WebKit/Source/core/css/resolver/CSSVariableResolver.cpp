@@ -130,7 +130,7 @@ bool CSSVariableResolver::resolveTokenRange(CSSParserTokenRange range,
     return success;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(StyleVariableData* styleVariableData, CSSPropertyID id, const CSSVariableReferenceValue& value)
+RawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(StyleVariableData* styleVariableData, CSSPropertyID id, const CSSVariableReferenceValue& value)
 {
     ASSERT(!isShorthandProperty(id));
 
@@ -138,7 +138,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(
     Vector<CSSParserToken> tokens;
     if (!resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens))
         return cssValuePool().createUnsetValue();
-    RefPtrWillBeRawPtr<CSSValue> result = CSSPropertyParser::parseSingleValue(id, tokens, strictCSSParserContext());
+    RawPtr<CSSValue> result = CSSPropertyParser::parseSingleValue(id, tokens, strictCSSParserContext());
     if (!result)
         return cssValuePool().createUnsetValue();
     return result.release();
@@ -152,7 +152,7 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
     if (resolver.resolveTokenRange(value.variableDataValue()->tokens(), tokens)) {
         CSSParserContext context(HTMLStandardMode, 0);
 
-        WillBeHeapVector<CSSProperty, 256> parsedProperties;
+        HeapVector<CSSProperty, 256> parsedProperties;
 
         // TODO: Non-shorthands should just call CSSPropertyParser::parseSingleValue
         if (CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::RuleType::Style)) {
@@ -163,7 +163,7 @@ void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& 
         }
     }
 
-    RefPtrWillBeRawPtr<CSSUnsetValue> unset = cssValuePool().createUnsetValue();
+    RawPtr<CSSUnsetValue> unset = cssValuePool().createUnsetValue();
     if (isShorthandProperty(id)) {
         StylePropertyShorthand shorthand = shorthandForProperty(id);
         for (unsigned i = 0; i < shorthand.length(); i++)

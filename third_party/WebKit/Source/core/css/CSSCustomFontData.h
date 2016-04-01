@@ -69,7 +69,7 @@ private:
 
     // TODO(Oilpan): consider moving (Custom)FontFace hierarchy to the heap,
     // thereby making this reference a Member<>.
-    RawPtrWillBeWeakPersistent<RemoteFontFaceSource> m_fontFaceSource;
+    WeakPersistent<RemoteFontFaceSource> m_fontFaceSource;
     FallbackVisibility m_fallbackVisibility;
     mutable bool m_isLoading;
 };

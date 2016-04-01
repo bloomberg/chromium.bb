@@ -31,7 +31,7 @@
 
 namespace blink {
 
-using SelectorTextCache = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<const CSSStyleRule>, String>;
+using SelectorTextCache = PersistentHeapHashMap<WeakMember<const CSSStyleRule>, String>;
 
 static SelectorTextCache& selectorTextCache()
 {

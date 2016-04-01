@@ -34,7 +34,7 @@ namespace blink {
 
 CSSValuePool& cssValuePool()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<CSSValuePool>, pool, (adoptPtrWillBeNoop(new CSSValuePool())));
+    DEFINE_STATIC_LOCAL(Persistent<CSSValuePool>, pool, (new CSSValuePool()));
     return *pool;
 }
 
@@ -53,7 +53,7 @@ CSSValuePool::CSSValuePool()
     m_numberValueCache.resize(maximumCacheableIntegerValue + 1);
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSValueID ident)
+RawPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CSSValueID ident)
 {
     if (ident <= 0)
         return CSSPrimitiveValue::createIdentifier(ident);
@@ -63,12 +63,12 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createIdentifierValue(CS
     return m_identifierValueCache[ident];
 }
 
-PassRefPtrWillBeRawPtr<CSSCustomIdentValue> CSSValuePool::createIdentifierValue(CSSPropertyID ident)
+RawPtr<CSSCustomIdentValue> CSSValuePool::createIdentifierValue(CSSPropertyID ident)
 {
     return CSSCustomIdentValue::create(ident);
 }
 
-PassRefPtrWillBeRawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbValue)
+RawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbValue)
 {
     // These are the empty and deleted values of the hash table.
     if (rgbValue == Color::transparent)
@@ -92,7 +92,7 @@ PassRefPtrWillBeRawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbV
     if (m_colorValueCache.size() > maximumColorCacheSize)
         m_colorValueCache.clear();
 
-    RefPtrWillBeRawPtr<CSSColorValue> dummyValue = nullptr;
+    RawPtr<CSSColorValue> dummyValue = nullptr;
     ColorValueCache::AddResult entry = m_colorValueCache.add(rgbValue, dummyValue);
     if (entry.isNewEntry)
         entry.storedValue->value = CSSColorValue::create(rgbValue);
@@ -100,7 +100,7 @@ PassRefPtrWillBeRawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbV
     return entry.storedValue->value;
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value, CSSPrimitiveValue::UnitType type)
+RawPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value, CSSPrimitiveValue::UnitType type)
 {
     if (std::isinf(value))
         value = 0;
@@ -131,31 +131,31 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value
     }
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const ComputedStyle& style)
+RawPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const ComputedStyle& style)
 {
     return CSSPrimitiveValue::create(value, style.effectiveZoom());
 }
 
-PassRefPtrWillBeRawPtr<CSSFontFamilyValue> CSSValuePool::createFontFamilyValue(const String& familyName)
+RawPtr<CSSFontFamilyValue> CSSValuePool::createFontFamilyValue(const String& familyName)
 {
     if (familyName.isNull())
         return CSSFontFamilyValue::create(familyName);
-    RefPtrWillBeMember<CSSFontFamilyValue>& value = m_fontFamilyValueCache.add(familyName, nullptr).storedValue->value;
+    Member<CSSFontFamilyValue>& value = m_fontFamilyValueCache.add(familyName, nullptr).storedValue->value;
     if (!value)
         value = CSSFontFamilyValue::create(familyName);
     return value;
 }
 
-PassRefPtrWillBeRawPtr<CSSValueList> CSSValuePool::createFontFaceValue(const AtomicString& string)
+RawPtr<CSSValueList> CSSValuePool::createFontFaceValue(const AtomicString& string)
 {
     // Just wipe out the cache and start rebuilding if it gets too big.
     const unsigned maximumFontFaceCacheSize = 128;
     if (m_fontFaceValueCache.size() > maximumFontFaceCacheSize)
         m_fontFaceValueCache.clear();
 
-    RefPtrWillBeMember<CSSValueList>& value = m_fontFaceValueCache.add(string, nullptr).storedValue->value;
+    Member<CSSValueList>& value = m_fontFaceValueCache.add(string, nullptr).storedValue->value;
     if (!value) {
-        RefPtrWillBeRawPtr<CSSValue> parsedValue = CSSParser::parseSingleValue(CSSPropertyFontFamily, string);
+        RawPtr<CSSValue> parsedValue = CSSParser::parseSingleValue(CSSPropertyFontFamily, string);
         if (parsedValue && parsedValue->isValueList())
             value = toCSSValueList(parsedValue.get());
     }

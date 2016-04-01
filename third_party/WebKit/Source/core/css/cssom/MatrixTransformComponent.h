@@ -58,7 +58,7 @@ public:
     // Bindings require a non const return value.
     MatrixTransformComponent* asMatrix() const override { return const_cast<MatrixTransformComponent*>(this); }
 
-    PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
+    RawPtr<CSSFunctionValue> toCSSValue() const override;
 
     static MatrixTransformComponent* perspective(double length);
 

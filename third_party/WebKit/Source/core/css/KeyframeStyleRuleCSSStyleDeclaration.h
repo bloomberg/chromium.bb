@@ -13,9 +13,9 @@ class CSSKeyframeRule;
 
 class KeyframeStyleRuleCSSStyleDeclaration final : public StyleRuleCSSStyleDeclaration {
 public:
-    static PassRefPtrWillBeRawPtr<KeyframeStyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSKeyframeRule* parentRule)
+    static RawPtr<KeyframeStyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSKeyframeRule* parentRule)
     {
-        return adoptRefWillBeNoop(new KeyframeStyleRuleCSSStyleDeclaration(propertySet, parentRule));
+        return new KeyframeStyleRuleCSSStyleDeclaration(propertySet, parentRule);
     }
 
 private:

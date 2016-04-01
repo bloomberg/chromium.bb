@@ -17,9 +17,9 @@ PerspectiveTransformComponent* PerspectiveTransformComponent::create(const Lengt
     return new PerspectiveTransformComponent(length);
 }
 
-PassRefPtrWillBeRawPtr<CSSFunctionValue> PerspectiveTransformComponent::toCSSValue() const
+RawPtr<CSSFunctionValue> PerspectiveTransformComponent::toCSSValue() const
 {
-    RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValuePerspective);
+    RawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValuePerspective);
     result->append(m_length->toCSSValue());
     return result.release();
 }

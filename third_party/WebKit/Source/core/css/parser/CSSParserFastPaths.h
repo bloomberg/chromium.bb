@@ -21,13 +21,13 @@ class CSSParserFastPaths {
 public:
     // Parses simple values like '10px' or 'green', but makes no guarantees
     // about handling any property completely.
-    static PassRefPtrWillBeRawPtr<CSSValue> maybeParseValue(CSSPropertyID, const String&, CSSParserMode);
+    static RawPtr<CSSValue> maybeParseValue(CSSPropertyID, const String&, CSSParserMode);
 
     // Properties handled here shouldn't be explicitly handled in CSSPropertyParser
     static bool isKeywordPropertyID(CSSPropertyID);
     static bool isValidKeywordPropertyAndValue(CSSPropertyID, CSSValueID);
 
-    static PassRefPtrWillBeRawPtr<CSSValue> parseColor(const String&, CSSParserMode);
+    static RawPtr<CSSValue> parseColor(const String&, CSSParserMode);
 };
 
 } // namespace blink

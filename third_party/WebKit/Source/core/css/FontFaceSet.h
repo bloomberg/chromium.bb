@@ -58,7 +58,7 @@ class FontFaceCache;
 class FontResource;
 class ExecutionContext;
 
-using FontFaceSetIterable = PairIterable<RefPtrWillBeMember<FontFace>, RefPtrWillBeMember<FontFace>>;
+using FontFaceSetIterable = PairIterable<Member<FontFace>, Member<FontFace>>;
 
 #if ENABLE(OILPAN)
 class FontFaceSet final : public EventTargetWithInlineData, public HeapSupplement<Document>, public ActiveDOMObject, public FontFaceSetIterable {
@@ -81,7 +81,7 @@ public:
     ScriptPromise load(ScriptState*, const String& font, const String& text);
     ScriptPromise ready(ScriptState*);
 
-    PassRefPtrWillBeRawPtr<FontFaceSet> addForBinding(ScriptState*, FontFace*, ExceptionState&);
+    RawPtr<FontFaceSet> addForBinding(ScriptState*, FontFace*, ExceptionState&);
     void clearForBinding(ScriptState*, ExceptionState&);
     bool deleteForBinding(ScriptState*, FontFace*, ExceptionState&);
     bool hasForBinding(ScriptState*, FontFace*, ExceptionState&) const;
@@ -104,7 +104,7 @@ public:
     void resume() override;
     void stop() override;
 
-    static PassRefPtrWillBeRawPtr<FontFaceSet> from(Document&);
+    static RawPtr<FontFaceSet> from(Document&);
     static void didLayout(Document&);
 
     void addFontFacesToFontFaceCache(FontFaceCache*, CSSFontSelector*);
@@ -112,19 +112,19 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    static PassRefPtrWillBeRawPtr<FontFaceSet> create(Document& document)
+    static RawPtr<FontFaceSet> create(Document& document)
     {
-        return adoptRefWillBeNoop(new FontFaceSet(document));
+        return new FontFaceSet(document);
     }
 
     FontFaceSetIterable::IterationSource* startIteration(ScriptState*, ExceptionState&) override;
 
     class IterationSource final : public FontFaceSetIterable::IterationSource {
     public:
-        explicit IterationSource(const WillBeHeapVector<RefPtrWillBeMember<FontFace>>& fontFaces)
+        explicit IterationSource(const HeapVector<Member<FontFace>>& fontFaces)
             : m_index(0)
             , m_fontFaces(fontFaces) { }
-        bool next(ScriptState*, RefPtrWillBeMember<FontFace>&, RefPtrWillBeMember<FontFace>&, ExceptionState&) override;
+        bool next(ScriptState*, Member<FontFace>&, Member<FontFace>&, ExceptionState&) override;
 
         DEFINE_INLINE_VIRTUAL_TRACE()
         {
@@ -134,7 +134,7 @@ private:
 
     private:
         size_t m_index;
-        WillBeHeapVector<RefPtrWillBeMember<FontFace>> m_fontFaces;
+        HeapVector<Member<FontFace>> m_fontFaces;
     };
 
     class FontLoadHistogram {
@@ -155,28 +155,28 @@ private:
     FontFaceSet(Document&);
 
     bool inActiveDocumentContext() const;
-    void addToLoadingFonts(PassRefPtrWillBeRawPtr<FontFace>);
-    void removeFromLoadingFonts(PassRefPtrWillBeRawPtr<FontFace>);
+    void addToLoadingFonts(RawPtr<FontFace>);
+    void removeFromLoadingFonts(RawPtr<FontFace>);
     void fireLoadingEvent();
     void fireDoneEventIfPossible();
     bool resolveFontStyle(const String&, Font&);
     void handlePendingEventsAndPromisesSoon();
     void handlePendingEventsAndPromises();
-    const WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>>& cssConnectedFontFaceList() const;
+    const HeapListHashSet<Member<FontFace>>& cssConnectedFontFaceList() const;
     bool isCSSConnectedFontFace(FontFace*) const;
     bool shouldSignalReady() const;
 
-    using ReadyProperty = ScriptPromiseProperty<RawPtrWillBeMember<FontFaceSet>, RawPtrWillBeMember<FontFaceSet>, Member<DOMException>>;
+    using ReadyProperty = ScriptPromiseProperty<Member<FontFaceSet>, Member<FontFaceSet>, Member<DOMException>>;
 
-    WillBeHeapHashSet<RefPtrWillBeMember<FontFace>> m_loadingFonts;
+    HeapHashSet<Member<FontFace>> m_loadingFonts;
     bool m_shouldFireLoadingEvent;
     bool m_isLoading;
-    PersistentWillBeMember<ReadyProperty> m_ready;
+    Member<ReadyProperty> m_ready;
     FontFaceArray m_loadedFonts;
     FontFaceArray m_failedFonts;
-    WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>> m_nonCSSConnectedFaces;
+    HeapListHashSet<Member<FontFace>> m_nonCSSConnectedFaces;
 
-    PersistentWillBeMember<AsyncMethodRunner<FontFaceSet>> m_asyncRunner;
+    Member<AsyncMethodRunner<FontFaceSet>> m_asyncRunner;
 
     FontLoadHistogram m_histogram;
 };

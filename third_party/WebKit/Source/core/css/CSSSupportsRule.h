@@ -38,9 +38,9 @@ class StyleRuleSupports;
 class CSSSupportsRule final : public CSSGroupingRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CSSSupportsRule> create(StyleRuleSupports* rule, CSSStyleSheet* sheet)
+    static RawPtr<CSSSupportsRule> create(StyleRuleSupports* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeNoop(new CSSSupportsRule(rule, sheet));
+        return new CSSSupportsRule(rule, sheet);
     }
 
     ~CSSSupportsRule() override { }

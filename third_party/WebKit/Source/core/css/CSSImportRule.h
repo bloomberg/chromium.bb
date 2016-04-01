@@ -33,9 +33,9 @@ class StyleRuleImport;
 class CSSImportRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CSSImportRule> create(StyleRuleImport* rule, CSSStyleSheet* sheet)
+    static RawPtr<CSSImportRule> create(StyleRuleImport* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeNoop(new CSSImportRule(rule, sheet));
+        return new CSSImportRule(rule, sheet);
     }
 
     ~CSSImportRule() override;
@@ -54,9 +54,9 @@ private:
 
     CSSRule::Type type() const override { return IMPORT_RULE; }
 
-    RefPtrWillBeMember<StyleRuleImport> m_importRule;
-    mutable RefPtrWillBeMember<MediaList> m_mediaCSSOMWrapper;
-    mutable RefPtrWillBeMember<CSSStyleSheet> m_styleSheetCSSOMWrapper;
+    Member<StyleRuleImport> m_importRule;
+    mutable Member<MediaList> m_mediaCSSOMWrapper;
+    mutable Member<CSSStyleSheet> m_styleSheetCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSImportRule, IMPORT_RULE);

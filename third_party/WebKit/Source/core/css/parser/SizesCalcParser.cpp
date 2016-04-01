@@ -9,7 +9,7 @@
 
 namespace blink {
 
-SizesCalcParser::SizesCalcParser(CSSParserTokenRange range, PassRefPtrWillBeRawPtr<MediaValues> mediaValues)
+SizesCalcParser::SizesCalcParser(CSSParserTokenRange range, RawPtr<MediaValues> mediaValues)
     : m_mediaValues(mediaValues)
     , m_result(0)
 {

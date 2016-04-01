@@ -19,7 +19,7 @@ protected:
     }
 
 private:
-    WillBePersistentHeapVector<RefPtrWillBeMember<MutableStylePropertySet>, 6> propertySets;
+    PersistentHeapVector<Member<MutableStylePropertySet>, 6> propertySets;
 };
 
 void MatchResultTest::SetUp()

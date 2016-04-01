@@ -24,15 +24,15 @@ class ComputedStyleCSSValueMapping {
     STATIC_ONLY(ComputedStyleCSSValueMapping);
 public:
     // FIXME: Resolve computed auto alignment in applyProperty/ComputedStyle and remove this non-const styledNode parameter.
-    static PassRefPtrWillBeRawPtr<CSSValue> get(CSSPropertyID, const ComputedStyle&, const LayoutObject* = nullptr, Node* styledNode = nullptr, bool allowVisitedStyle = false);
-    static PassRefPtrWillBeRawPtr<CSSValue> get(const AtomicString customPropertyName, const ComputedStyle&);
+    static RawPtr<CSSValue> get(CSSPropertyID, const ComputedStyle&, const LayoutObject* = nullptr, Node* styledNode = nullptr, bool allowVisitedStyle = false);
+    static RawPtr<CSSValue> get(const AtomicString customPropertyName, const ComputedStyle&);
     static const HashMap<AtomicString, RefPtr<CSSVariableData>>* getVariables(const ComputedStyle&);
 private:
-    static PassRefPtrWillBeRawPtr<CSSValue> currentColorOrValidColor(const ComputedStyle&, const StyleColor&);
-    static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowData(const ShadowData&, const ComputedStyle&, bool useSpread);
-    static PassRefPtrWillBeRawPtr<CSSValue> valueForShadowList(const ShadowList*, const ComputedStyle&, bool useSpread);
-    static PassRefPtrWillBeRawPtr<CSSValue> valueForFilter(const ComputedStyle&, const FilterOperations&);
-    static PassRefPtrWillBeRawPtr<CSSValue> valueForFont(const ComputedStyle&);
+    static RawPtr<CSSValue> currentColorOrValidColor(const ComputedStyle&, const StyleColor&);
+    static RawPtr<CSSValue> valueForShadowData(const ShadowData&, const ComputedStyle&, bool useSpread);
+    static RawPtr<CSSValue> valueForShadowList(const ShadowList*, const ComputedStyle&, bool useSpread);
+    static RawPtr<CSSValue> valueForFilter(const ComputedStyle&, const FilterOperations&);
+    static RawPtr<CSSValue> valueForFont(const ComputedStyle&);
 };
 
 } // namespace blink

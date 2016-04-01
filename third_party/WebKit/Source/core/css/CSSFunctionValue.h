@@ -12,9 +12,9 @@ namespace blink {
 
 class CSSFunctionValue : public CSSValueList {
 public:
-    static PassRefPtrWillBeRawPtr<CSSFunctionValue> create(CSSValueID id)
+    static RawPtr<CSSFunctionValue> create(CSSValueID id)
     {
-        return adoptRefWillBeNoop(new CSSFunctionValue(id));
+        return new CSSFunctionValue(id);
     }
 
     String customCSSText() const;

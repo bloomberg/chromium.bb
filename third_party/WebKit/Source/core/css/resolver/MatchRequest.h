@@ -44,9 +44,9 @@ public:
         ruleSet->compactRulesIfNeeded();
     }
 
-    RawPtrWillBeMember<const RuleSet> ruleSet;
-    RawPtrWillBeMember<const ContainerNode> scope;
-    RawPtrWillBeMember<const CSSStyleSheet> styleSheet;
+    Member<const RuleSet> ruleSet;
+    Member<const ContainerNode> scope;
+    Member<const CSSStyleSheet> styleSheet;
     const unsigned styleSheetIndex;
 };
 

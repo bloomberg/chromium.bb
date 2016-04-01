@@ -28,8 +28,7 @@
 namespace blink {
 
 // See http://dev.w3.org/csswg/cssom-view/#the-mediaquerylist-interface
-class CORE_EXPORT MediaQueryListListener : public RefCountedWillBeGarbageCollected<MediaQueryListListener> {
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryListListener);
+class CORE_EXPORT MediaQueryListListener : public GarbageCollected<MediaQueryListListener> {
 public:
     virtual void notifyMediaQueryChanged() = 0;
 

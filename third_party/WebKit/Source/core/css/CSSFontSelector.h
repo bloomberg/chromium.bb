@@ -44,9 +44,9 @@ class FontDescription;
 
 class CORE_EXPORT CSSFontSelector : public FontSelector {
 public:
-    static PassRefPtrWillBeRawPtr<CSSFontSelector> create(Document* document)
+    static RawPtr<CSSFontSelector> create(Document* document)
     {
-        return adoptRefWillBeNoop(new CSSFontSelector(document));
+        return new CSSFontSelector(document);
     }
     ~CSSFontSelector() override;
 
@@ -89,12 +89,12 @@ private:
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will
     // currently leak because ComputedStyle and its data are not on the heap.
     // See crbug.com/383860 for details.
-    RawPtrWillBeWeakMember<Document> m_document;
+    WeakMember<Document> m_document;
     // FIXME: Move to Document or StyleEngine.
     FontFaceCache m_fontFaceCache;
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSFontSelectorClient>> m_clients;
+    HeapHashSet<WeakMember<CSSFontSelectorClient>> m_clients;
 
-    RefPtrWillBeMember<FontLoader> m_fontLoader;
+    Member<FontLoader> m_fontLoader;
     GenericFontFamilySettings m_genericFontFamilySettings;
 };
 

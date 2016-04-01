@@ -131,9 +131,9 @@ bool MediaQueryEvaluator::eval(const MediaQuery* query, MediaQueryResultList* vi
     for (; i < expressions.size(); ++i) {
         bool exprResult = eval(expressions.at(i).get());
         if (viewportDependentMediaQueryResults && expressions.at(i)->isViewportDependent())
-            viewportDependentMediaQueryResults->append(adoptRefWillBeNoop(new MediaQueryResult(*expressions.at(i), exprResult)));
+            viewportDependentMediaQueryResults->append(new MediaQueryResult(*expressions.at(i), exprResult));
         if (deviceDependentMediaQueryResults && expressions.at(i)->isDeviceDependent())
-            deviceDependentMediaQueryResults->append(adoptRefWillBeNoop(new MediaQueryResult(*expressions.at(i), exprResult)));
+            deviceDependentMediaQueryResults->append(new MediaQueryResult(*expressions.at(i), exprResult));
         if (!exprResult)
             break;
     }
@@ -147,7 +147,7 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultLi
     if (!querySet)
         return true;
 
-    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery>>& queries = querySet->queryVector();
+    const HeapVector<Member<MediaQuery>>& queries = querySet->queryVector();
     if (!queries.size())
         return true; // Empty query list evaluates to true.
 

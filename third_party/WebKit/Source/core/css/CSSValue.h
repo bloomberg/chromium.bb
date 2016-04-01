@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class CORE_EXPORT CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue> {
+class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
 #if ENABLE(OILPAN)
 public:
     // Override operator new to allocate CSSValue subtype objects onto
@@ -229,15 +229,15 @@ private:
 };
 
 template<typename CSSValueType, size_t inlineCapacity>
-inline bool compareCSSValueVector(const WillBeHeapVector<RefPtrWillBeMember<CSSValueType>, inlineCapacity>& firstVector, const WillBeHeapVector<RefPtrWillBeMember<CSSValueType>, inlineCapacity>& secondVector)
+inline bool compareCSSValueVector(const HeapVector<Member<CSSValueType>, inlineCapacity>& firstVector, const HeapVector<Member<CSSValueType>, inlineCapacity>& secondVector)
 {
     size_t size = firstVector.size();
     if (size != secondVector.size())
         return false;
 
     for (size_t i = 0; i < size; i++) {
-        const RefPtrWillBeMember<CSSValueType>& firstPtr = firstVector[i];
-        const RefPtrWillBeMember<CSSValueType>& secondPtr = secondVector[i];
+        const Member<CSSValueType>& firstPtr = firstVector[i];
+        const Member<CSSValueType>& secondPtr = secondVector[i];
         if (firstPtr == secondPtr || (firstPtr && secondPtr && firstPtr->equals(*secondPtr)))
             continue;
         return false;

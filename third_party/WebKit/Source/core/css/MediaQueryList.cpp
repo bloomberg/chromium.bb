@@ -27,14 +27,14 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<MediaQueryList> MediaQueryList::create(ExecutionContext* context, PassRefPtrWillBeRawPtr<MediaQueryMatcher> matcher, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
+RawPtr<MediaQueryList> MediaQueryList::create(ExecutionContext* context, RawPtr<MediaQueryMatcher> matcher, RawPtr<MediaQuerySet> media)
 {
-    RefPtrWillBeRawPtr<MediaQueryList> list = adoptRefWillBeNoop(new MediaQueryList(context, matcher, media));
+    RawPtr<MediaQueryList> list = new MediaQueryList(context, matcher, media);
     list->suspendIfNeeded();
     return list.release();
 }
 
-MediaQueryList::MediaQueryList(ExecutionContext* context, PassRefPtrWillBeRawPtr<MediaQueryMatcher> matcher, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
+MediaQueryList::MediaQueryList(ExecutionContext* context, RawPtr<MediaQueryMatcher> matcher, RawPtr<MediaQuerySet> media)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(context)
     , m_matcher(matcher)
@@ -58,7 +58,7 @@ String MediaQueryList::media() const
     return m_media->mediaText();
 }
 
-void MediaQueryList::addDeprecatedListener(PassRefPtrWillBeRawPtr<EventListener> listener)
+void MediaQueryList::addDeprecatedListener(RawPtr<EventListener> listener)
 {
     if (!listener)
         return;
@@ -66,7 +66,7 @@ void MediaQueryList::addDeprecatedListener(PassRefPtrWillBeRawPtr<EventListener>
     addEventListener(EventTypeNames::change, listener, false);
 }
 
-void MediaQueryList::removeDeprecatedListener(PassRefPtrWillBeRawPtr<EventListener> listener)
+void MediaQueryList::removeDeprecatedListener(RawPtr<EventListener> listener)
 {
     if (!listener)
         return;
@@ -74,7 +74,7 @@ void MediaQueryList::removeDeprecatedListener(PassRefPtrWillBeRawPtr<EventListen
     removeEventListener(EventTypeNames::change, listener, false);
 }
 
-void MediaQueryList::addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener> listener)
+void MediaQueryList::addListener(RawPtr<MediaQueryListListener> listener)
 {
     if (!listener)
         return;
@@ -82,12 +82,12 @@ void MediaQueryList::addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener> 
     m_listeners.add(listener);
 }
 
-void MediaQueryList::removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListener> listener)
+void MediaQueryList::removeListener(RawPtr<MediaQueryListListener> listener)
 {
     if (!listener)
         return;
 
-    RefPtrWillBeRawPtr<MediaQueryList> protect(this);
+    RawPtr<MediaQueryList> protect(this);
     m_listeners.remove(listener);
 }
 
@@ -99,12 +99,12 @@ bool MediaQueryList::hasPendingActivity() const
 void MediaQueryList::stop()
 {
     // m_listeners.clear() can drop the last ref to this MediaQueryList.
-    RefPtrWillBeRawPtr<MediaQueryList> protect(this);
+    RawPtr<MediaQueryList> protect(this);
     m_listeners.clear();
     removeAllEventListeners();
 }
 
-bool MediaQueryList::mediaFeaturesChanged(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener>>* listenersToNotify)
+bool MediaQueryList::mediaFeaturesChanged(HeapVector<Member<MediaQueryListListener>>* listenersToNotify)
 {
     m_matchesDirty = true;
     if (!updateMatches())

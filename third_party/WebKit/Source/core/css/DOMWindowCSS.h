@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class DOMWindowCSS : public RefCountedWillBeGarbageCollected<DOMWindowCSS>, public ScriptWrappable {
+class DOMWindowCSS : public GarbageCollected<DOMWindowCSS>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static bool supports(const String& property, const String& value);

@@ -65,8 +65,7 @@ enum CalculationCategory {
     CalcOther
 };
 
-class CSSCalcExpressionNode : public RefCountedWillBeGarbageCollected<CSSCalcExpressionNode> {
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(CSSCalcExpressionNode);
+class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
 public:
     enum Type {
         CssCalcPrimitiveValue = 1,
@@ -100,14 +99,14 @@ protected:
     bool m_isInteger;
 };
 
-class CORE_EXPORT CSSCalcValue : public RefCountedWillBeGarbageCollected<CSSCalcValue> {
+class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
 public:
-    static PassRefPtrWillBeRawPtr<CSSCalcValue> create(const CSSParserTokenRange&, ValueRange);
-    static PassRefPtrWillBeRawPtr<CSSCalcValue> create(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);
+    static RawPtr<CSSCalcValue> create(const CSSParserTokenRange&, ValueRange);
+    static RawPtr<CSSCalcValue> create(RawPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);
 
-    static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, bool isInteger = false);
-    static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, CalcOperator);
-    static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(double pixels, double percent);
+    static RawPtr<CSSCalcExpressionNode> createExpressionNode(RawPtr<CSSPrimitiveValue>, bool isInteger = false);
+    static RawPtr<CSSCalcExpressionNode> createExpressionNode(RawPtr<CSSCalcExpressionNode>, RawPtr<CSSCalcExpressionNode>, CalcOperator);
+    static RawPtr<CSSCalcExpressionNode> createExpressionNode(double pixels, double percent);
 
     PassRefPtr<CalculationValue> toCalcValue(const CSSToLengthConversionData& conversionData) const
     {
@@ -133,7 +132,7 @@ public:
     }
 
 private:
-    CSSCalcValue(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> expression, ValueRange range)
+    CSSCalcValue(RawPtr<CSSCalcExpressionNode> expression, ValueRange range)
         : m_expression(expression)
         , m_nonNegative(range == ValueRangeNonNegative)
     {
@@ -141,7 +140,7 @@ private:
 
     double clampToPermittedRange(double) const;
 
-    const RefPtrWillBeMember<CSSCalcExpressionNode> m_expression;
+    const Member<CSSCalcExpressionNode> m_expression;
     const bool m_nonNegative;
 };
 

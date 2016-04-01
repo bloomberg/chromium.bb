@@ -45,25 +45,25 @@ using namespace HTMLNames;
 
 CSSDefaultStyleSheets& CSSDefaultStyleSheets::instance()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<CSSDefaultStyleSheets>, cssDefaultStyleSheets, (adoptPtrWillBeNoop(new CSSDefaultStyleSheets())));
+    DEFINE_STATIC_LOCAL(Persistent<CSSDefaultStyleSheets>, cssDefaultStyleSheets, (new CSSDefaultStyleSheets()));
     return *cssDefaultStyleSheets;
 }
 
 static const MediaQueryEvaluator& screenEval()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<MediaQueryEvaluator>, staticScreenEval, (adoptPtrWillBeNoop (new MediaQueryEvaluator("screen"))));
+    DEFINE_STATIC_LOCAL(Persistent<MediaQueryEvaluator>, staticScreenEval, (new MediaQueryEvaluator("screen")));
     return *staticScreenEval;
 }
 
 static const MediaQueryEvaluator& printEval()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<MediaQueryEvaluator>, staticPrintEval, (adoptPtrWillBeNoop (new MediaQueryEvaluator("print"))));
+    DEFINE_STATIC_LOCAL(Persistent<MediaQueryEvaluator>, staticPrintEval, (new MediaQueryEvaluator("print")));
     return *staticPrintEval;
 }
 
-static PassRefPtrWillBeRawPtr<StyleSheetContents> parseUASheet(const String& str)
+static RawPtr<StyleSheetContents> parseUASheet(const String& str)
 {
-    RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
+    RawPtr<StyleSheetContents> sheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
     sheet->parseString(str);
     // User Agent stylesheets are parsed once for the lifetime of the renderer
     // process and are intentionally leaked.
@@ -107,7 +107,7 @@ RuleSet* CSSDefaultStyleSheets::defaultViewSourceStyle()
     if (!m_defaultViewSourceStyle) {
         m_defaultViewSourceStyle = RuleSet::create();
         // Loaded stylesheet is leaked on purpose.
-        RefPtrWillBeRawPtr<StyleSheetContents> stylesheet = parseUASheet(loadResourceAsASCIIString("view-source.css"));
+        RawPtr<StyleSheetContents> stylesheet = parseUASheet(loadResourceAsASCIIString("view-source.css"));
         m_defaultViewSourceStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
     }
     return m_defaultViewSourceStyle.get();
@@ -118,7 +118,7 @@ RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle()
     if (!m_defaultXHTMLMobileProfileStyle) {
         m_defaultXHTMLMobileProfileStyle = RuleSet::create();
         // Loaded stylesheet is leaked on purpose.
-        RefPtrWillBeRawPtr<StyleSheetContents> stylesheet = parseUASheet(loadResourceAsASCIIString("xhtmlmp.css"));
+        RawPtr<StyleSheetContents> stylesheet = parseUASheet(loadResourceAsASCIIString("xhtmlmp.css"));
         m_defaultXHTMLMobileProfileStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
     }
     return m_defaultXHTMLMobileProfileStyle.get();

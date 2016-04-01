@@ -30,9 +30,9 @@ namespace blink {
 
 class CSSCounterValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSCounterValue> create(PassRefPtrWillBeRawPtr<CSSCustomIdentValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSCustomIdentValue> separator)
+    static RawPtr<CSSCounterValue> create(RawPtr<CSSCustomIdentValue> identifier, RawPtr<CSSPrimitiveValue> listStyle, RawPtr<CSSCustomIdentValue> separator)
     {
-        return adoptRefWillBeNoop(new CSSCounterValue(identifier, listStyle, separator));
+        return new CSSCounterValue(identifier, listStyle, separator);
     }
 
     String identifier() const { return m_identifier->value(); }
@@ -51,7 +51,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSCounterValue(PassRefPtrWillBeRawPtr<CSSCustomIdentValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSCustomIdentValue> separator)
+    CSSCounterValue(RawPtr<CSSCustomIdentValue> identifier, RawPtr<CSSPrimitiveValue> listStyle, RawPtr<CSSCustomIdentValue> separator)
         : CSSValue(CounterClass)
         , m_identifier(identifier)
         , m_listStyle(listStyle)
@@ -60,9 +60,9 @@ private:
         ASSERT(m_listStyle->isValueID());
     }
 
-    RefPtrWillBeMember<CSSCustomIdentValue> m_identifier; // string
-    RefPtrWillBeMember<CSSPrimitiveValue> m_listStyle; // ident
-    RefPtrWillBeMember<CSSCustomIdentValue> m_separator; // string
+    Member<CSSCustomIdentValue> m_identifier; // string
+    Member<CSSPrimitiveValue> m_listStyle; // ident
+    Member<CSSCustomIdentValue> m_separator; // string
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCounterValue, isCounterValue());

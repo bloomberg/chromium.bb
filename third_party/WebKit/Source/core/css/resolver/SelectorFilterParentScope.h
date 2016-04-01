@@ -24,10 +24,10 @@ public:
 private:
     void pushParentIfNeeded();
 
-    RawPtrWillBeMember<Element> m_parent;
+    Member<Element> m_parent;
     bool m_pushed;
     SelectorFilterParentScope* m_previous;
-    RawPtrWillBeMember<StyleResolver> m_resolver;
+    Member<StyleResolver> m_resolver;
 
     static SelectorFilterParentScope* s_currentScope;
 };

@@ -35,7 +35,7 @@ public:
     bool addExpression();
     bool tryAddParserToken(CSSParserTokenType, const CSSParserToken&);
     void setMediaType(const String&);
-    PassOwnPtrWillBeRawPtr<MediaQuery> takeMediaQuery();
+    RawPtr<MediaQuery> takeMediaQuery();
 
     inline bool currentMediaQueryChanged() const
     {
@@ -51,9 +51,9 @@ public:
 class CORE_EXPORT MediaQueryParser {
     STACK_ALLOCATED();
 public:
-    static PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaQuerySet(const String&);
-    static PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaQuerySet(CSSParserTokenRange);
-    static PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaCondition(CSSParserTokenRange);
+    static RawPtr<MediaQuerySet> parseMediaQuerySet(const String&);
+    static RawPtr<MediaQuerySet> parseMediaQuerySet(CSSParserTokenRange);
+    static RawPtr<MediaQuerySet> parseMediaCondition(CSSParserTokenRange);
 
 private:
     enum ParserType {
@@ -64,7 +64,7 @@ private:
     MediaQueryParser(ParserType);
     virtual ~MediaQueryParser();
 
-    PassRefPtrWillBeRawPtr<MediaQuerySet> parseImpl(CSSParserTokenRange);
+    RawPtr<MediaQuerySet> parseImpl(CSSParserTokenRange);
 
     void processToken(const CSSParserToken&);
 
@@ -89,7 +89,7 @@ private:
     State m_state;
     ParserType m_parserType;
     MediaQueryData m_mediaQueryData;
-    RefPtrWillBeMember<MediaQuerySet> m_querySet;
+    Member<MediaQuerySet> m_querySet;
     MediaQueryBlockWatcher m_blockWatcher;
 
     const static State ReadRestrictor;

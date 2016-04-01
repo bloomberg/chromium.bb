@@ -37,7 +37,7 @@
 
 namespace blink {
 
-void CSSFontFace::addSource(PassOwnPtrWillBeRawPtr<CSSFontFaceSource> source)
+void CSSFontFace::addSource(RawPtr<CSSFontFaceSource> source)
 {
     source->setFontFace(this);
     m_sources.append(source);
@@ -90,7 +90,7 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
         return nullptr;
 
     while (!m_sources.isEmpty()) {
-        OwnPtrWillBeMember<CSSFontFaceSource>& source = m_sources.first();
+        Member<CSSFontFaceSource>& source = m_sources.first();
         if (RefPtr<SimpleFontData> result = source->getFontData(fontDescription)) {
             if (loadStatus() == FontFace::Unloaded && (source->isLoading() || source->isLoaded()))
                 setLoadStatus(FontFace::Loading);
@@ -146,7 +146,7 @@ void CSSFontFace::load(const FontDescription& fontDescription)
     ASSERT(loadStatus() == FontFace::Loading);
 
     while (!m_sources.isEmpty()) {
-        OwnPtrWillBeMember<CSSFontFaceSource>& source = m_sources.first();
+        Member<CSSFontFaceSource>& source = m_sources.first();
         if (source->isValid()) {
             if (source->isLocal()) {
                 if (source->isLocalFontAvailable(fontDescription)) {

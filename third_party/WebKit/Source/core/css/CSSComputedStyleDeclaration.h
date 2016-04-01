@@ -47,9 +47,9 @@ class StylePropertyShorthand;
 
 class CORE_EXPORT CSSComputedStyleDeclaration final : public CSSStyleDeclaration {
 public:
-    static PassRefPtrWillBeRawPtr<CSSComputedStyleDeclaration> create(PassRefPtrWillBeRawPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
+    static RawPtr<CSSComputedStyleDeclaration> create(RawPtr<Node> node, bool allowVisitedStyle = false, const String& pseudoElementName = String())
     {
-        return adoptRefWillBeNoop(new CSSComputedStyleDeclaration(node, allowVisitedStyle, pseudoElementName));
+        return new CSSComputedStyleDeclaration(node, allowVisitedStyle, pseudoElementName);
     }
     ~CSSComputedStyleDeclaration() override;
 
@@ -61,21 +61,21 @@ public:
     String getPropertyValue(CSSPropertyID) const;
     bool getPropertyPriority(CSSPropertyID) const;
 
-    PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyProperties() const;
+    RawPtr<MutableStylePropertySet> copyProperties() const;
 
-    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
-    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(AtomicString customPropertyName) const;
+    RawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID) const;
+    RawPtr<CSSValue> getPropertyCSSValue(AtomicString customPropertyName) const;
     const HashMap<AtomicString, RefPtr<CSSVariableData>>* getVariables() const;
 
-    PassRefPtrWillBeRawPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
+    RawPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
     bool isMonospaceFont() const;
 
-    PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
+    RawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    CSSComputedStyleDeclaration(PassRefPtrWillBeRawPtr<Node>, bool allowVisitedStyle, const String&);
+    CSSComputedStyleDeclaration(RawPtr<Node>, bool allowVisitedStyle, const String&);
 
     // The styled node is either the node passed into getComputedStyle, or the
     // PseudoElement for :before and :after if they exist.
@@ -99,13 +99,13 @@ private:
     void setCSSFloat(const String&, ExceptionState&);
     String cssText() const override;
     void setCSSText(const String&, ExceptionState&) override;
-    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) override;
+    RawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) override;
     String getPropertyValueInternal(CSSPropertyID) override;
     void setPropertyInternal(CSSPropertyID, const String& customPropertyName, const String& value, bool important, ExceptionState&) override;
 
     bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const override;
 
-    RefPtrWillBeMember<Node> m_node;
+    Member<Node> m_node;
     PseudoId m_pseudoElementSpecifier;
     bool m_allowVisitedStyle;
 #if !ENABLE(OILPAN)

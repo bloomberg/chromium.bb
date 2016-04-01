@@ -62,7 +62,7 @@ private:
 
     // Parsed representation for @apply
     bool m_cachedPropertySet;
-    RefPtrWillBePersistent<StylePropertySet> m_propertySet;
+    Persistent<StylePropertySet> m_propertySet;
 };
 
 } // namespace blink

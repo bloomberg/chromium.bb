@@ -14,24 +14,24 @@ namespace blink {
 class MediaQueryListEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<MediaQueryListEvent> create()
+    static RawPtr<MediaQueryListEvent> create()
     {
         return adoptRefWillBeNoop(new MediaQueryListEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<MediaQueryListEvent> create(PassRefPtrWillBeRawPtr<MediaQueryList> list)
+    static RawPtr<MediaQueryListEvent> create(RawPtr<MediaQueryList> list)
     {
-        return adoptRefWillBeNoop(new MediaQueryListEvent(list));
+        return new MediaQueryListEvent(list);
     }
 
-    static PassRefPtrWillBeRawPtr<MediaQueryListEvent> create(const String& media, bool matches)
+    static RawPtr<MediaQueryListEvent> create(const String& media, bool matches)
     {
-        return adoptRefWillBeNoop(new MediaQueryListEvent(media, matches));
+        return new MediaQueryListEvent(media, matches);
     }
 
-    static PassRefPtrWillBeRawPtr<MediaQueryListEvent> create(const AtomicString& eventType, const MediaQueryListEventInit& initializer)
+    static RawPtr<MediaQueryListEvent> create(const AtomicString& eventType, const MediaQueryListEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new MediaQueryListEvent(eventType, initializer));
+        return new MediaQueryListEvent(eventType, initializer);
     }
 
     String media() const { return m_mediaQueryList ? m_mediaQueryList->media() : m_media; }
@@ -54,7 +54,7 @@ private:
         , m_media(media)
         , m_matches(matches) { }
 
-    explicit MediaQueryListEvent(PassRefPtrWillBeRawPtr<MediaQueryList> list)
+    explicit MediaQueryListEvent(RawPtr<MediaQueryList> list)
         : Event(EventTypeNames::change, false, false)
         , m_mediaQueryList(list)
         , m_matches(false) { }
@@ -71,7 +71,7 @@ private:
 
     // We have m_media/m_matches for JS-created events; we use m_mediaQueryList
     // for events that blink generates.
-    RefPtrWillBeMember<MediaQueryList> m_mediaQueryList;
+    Member<MediaQueryList> m_mediaQueryList;
     String m_media;
     bool m_matches;
 };

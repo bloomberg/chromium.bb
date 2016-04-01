@@ -65,7 +65,7 @@
 
 namespace blink {
 
-struct SameSizeAsCSSValue : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsCSSValue> {
+struct SameSizeAsCSSValue : public GarbageCollectedFinalized<SameSizeAsCSSValue> {
     uint32_t bitfields;
 };
 

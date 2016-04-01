@@ -45,7 +45,7 @@ public:
 
     DECLARE_TRACE();
 
-    RawPtrWillBeMember<StyleRule> rule;
+    Member<StyleRule> rule;
     unsigned selectorIndex;
     bool hasDocumentSecurityOrigin;
 };
@@ -96,8 +96,8 @@ public:
 
     DECLARE_TRACE();
 
-    WillBeHeapVector<RuleFeature> siblingRules;
-    WillBeHeapVector<RuleFeature> uncommonAttributeRules;
+    HeapVector<RuleFeature> siblingRules;
+    HeapVector<RuleFeature> uncommonAttributeRules;
 
 protected:
     InvalidationSet* invalidationSetForSelector(const CSSSelector&, InvalidationType);

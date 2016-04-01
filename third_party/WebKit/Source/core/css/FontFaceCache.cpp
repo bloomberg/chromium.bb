@@ -47,17 +47,17 @@ FontFaceCache::FontFaceCache()
 {
 }
 
-void FontFaceCache::add(CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule, PassRefPtrWillBeRawPtr<FontFace> prpFontFace)
+void FontFaceCache::add(CSSFontSelector* cssFontSelector, const StyleRuleFontFace* fontFaceRule, RawPtr<FontFace> prpFontFace)
 {
-    RefPtrWillBeRawPtr<FontFace> fontFace = prpFontFace;
+    RawPtr<FontFace> fontFace = prpFontFace;
     if (!m_styleRuleToFontFace.add(fontFaceRule, fontFace).isNewEntry)
         return;
     addFontFace(cssFontSelector, fontFace, true);
 }
 
-void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, PassRefPtrWillBeRawPtr<FontFace> prpFontFace, bool cssConnected)
+void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, RawPtr<FontFace> prpFontFace, bool cssConnected)
 {
-    RefPtrWillBeRawPtr<FontFace> fontFace = prpFontFace;
+    RawPtr<FontFace> fontFace = prpFontFace;
 
     FamilyToTraitsMap::AddResult traitsResult = m_fontFaces.add(fontFace->family(), nullptr);
     if (!traitsResult.storedValue->value)
@@ -94,7 +94,7 @@ void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected)
     TraitsMap::iterator familyFontFacesIter = familyFontFaces->find(fontFace->traits().bitfield());
     if (familyFontFacesIter == familyFontFaces->end())
         return;
-    RefPtrWillBeRawPtr<CSSSegmentedFontFace> segmentedFontFace = familyFontFacesIter->value;
+    RawPtr<CSSSegmentedFontFace> segmentedFontFace = familyFontFacesIter->value;
 
     segmentedFontFace->removeFontFace(fontFace);
     if (segmentedFontFace->isEmpty()) {

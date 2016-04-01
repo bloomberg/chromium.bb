@@ -122,7 +122,7 @@ StyleImage* CSSImageSetValue::cacheImage(Document* document, float deviceScaleFa
         if (crossOrigin != CrossOriginAttributeNotSet)
             request.setCrossOriginAccessControl(document->getSecurityOrigin(), crossOrigin);
 
-        if (RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher()))
+        if (RawPtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher()))
             m_cachedImage = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this, request.url());
         else
             m_cachedImage = StyleInvalidImage::create(image.imageURL);
@@ -177,9 +177,9 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSImageSetValue)
     CSSValueList::traceAfterDispatch(visitor);
 }
 
-PassRefPtrWillBeRawPtr<CSSImageSetValue> CSSImageSetValue::valueWithURLsMadeAbsolute()
+RawPtr<CSSImageSetValue> CSSImageSetValue::valueWithURLsMadeAbsolute()
 {
-    RefPtrWillBeRawPtr<CSSImageSetValue> value = CSSImageSetValue::create();
+    RawPtr<CSSImageSetValue> value = CSSImageSetValue::create();
     for (auto& item : *this)
         item->isImageValue() ? value->append(toCSSImageValue(*item).valueWithURLMadeAbsolute()) : value->append(item);
     return value.release();

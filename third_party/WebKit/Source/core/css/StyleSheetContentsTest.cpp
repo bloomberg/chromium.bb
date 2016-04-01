@@ -14,7 +14,7 @@ TEST(StyleSheetContentsTest, InsertMediaRule)
 {
     CSSParserContext context(HTMLStandardMode, nullptr);
 
-    RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(context);
+    RawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(context);
     styleSheet->parseString("@namespace ns url(test);");
     EXPECT_EQ(1U, styleSheet->ruleCount());
 

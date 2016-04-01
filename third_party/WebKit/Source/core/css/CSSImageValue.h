@@ -37,21 +37,21 @@ class LayoutObject;
 
 class CORE_EXPORT CSSImageValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url, StyleFetchedImage* image = 0)
+    static RawPtr<CSSImageValue> create(const KURL& url, StyleFetchedImage* image = 0)
     {
         return create(url.getString(), url, image);
     }
-    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const String& rawValue, const KURL& url, StyleFetchedImage* image = 0)
+    static RawPtr<CSSImageValue> create(const String& rawValue, const KURL& url, StyleFetchedImage* image = 0)
     {
         return create(AtomicString(rawValue), url, image);
     }
-    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const AtomicString& rawValue, const KURL& url, StyleFetchedImage* image = 0)
+    static RawPtr<CSSImageValue> create(const AtomicString& rawValue, const KURL& url, StyleFetchedImage* image = 0)
     {
-        return adoptRefWillBeNoop(new CSSImageValue(rawValue, url, image));
+        return new CSSImageValue(rawValue, url, image);
     }
-    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const AtomicString& absoluteURL)
+    static RawPtr<CSSImageValue> create(const AtomicString& absoluteURL)
     {
-        return adoptRefWillBeNoop(new CSSImageValue(absoluteURL));
+        return new CSSImageValue(absoluteURL);
     }
     ~CSSImageValue();
 
@@ -74,7 +74,7 @@ public:
 
     bool knownToBeOpaque(const LayoutObject&) const;
 
-    PassRefPtrWillBeRawPtr<CSSImageValue> valueWithURLMadeAbsolute()
+    RawPtr<CSSImageValue> valueWithURLMadeAbsolute()
     {
         return create(KURL(ParsedURLString, m_absoluteURL), m_cachedImage.get());
     }
@@ -92,7 +92,7 @@ private:
     AtomicString m_absoluteURL;
     Referrer m_referrer;
     bool m_isCachePending;
-    RefPtrWillBeMember<StyleFetchedImage> m_cachedImage;
+    Member<StyleFetchedImage> m_cachedImage;
     AtomicString m_initiatorName;
 };
 

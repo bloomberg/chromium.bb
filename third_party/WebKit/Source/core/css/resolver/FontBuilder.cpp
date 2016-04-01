@@ -339,7 +339,7 @@ void FontBuilder::updateComputedSize(FontDescription& fontDescription, const Com
     fontDescription.setComputedSize(computedSize);
 }
 
-void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, ComputedStyle& style)
+void FontBuilder::createFont(RawPtr<FontSelector> fontSelector, ComputedStyle& style)
 {
     if (!m_flags)
         return;
@@ -389,7 +389,7 @@ void FontBuilder::createFont(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, 
     m_flags = 0;
 }
 
-void FontBuilder::createFontForDocument(PassRefPtrWillBeRawPtr<FontSelector> fontSelector, ComputedStyle& documentStyle)
+void FontBuilder::createFontForDocument(RawPtr<FontSelector> fontSelector, ComputedStyle& documentStyle)
 {
     FontDescription fontDescription = FontDescription();
     fontDescription.setLocale(documentStyle.locale());

@@ -31,7 +31,7 @@ public:
 
     bool is2D() const;
 
-    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
+    RawPtr<CSSValue> toCSSValue() const override;
 
     StyleValueType type() const override { return TransformValueType; }
 

@@ -23,11 +23,11 @@ enum FontDisplay {
 };
 
 class RemoteFontFaceSource final : public CSSFontFaceSource, public FontResourceClient {
-    WILL_BE_USING_PRE_FINALIZER(RemoteFontFaceSource, dispose);
+    USING_PRE_FINALIZER(RemoteFontFaceSource, dispose);
 public:
     enum DisplayPeriod { BlockPeriod, SwapPeriod, FailurePeriod };
 
-    explicit RemoteFontFaceSource(PassRefPtrWillBeRawPtr<FontResource>, PassRefPtrWillBeRawPtr<FontLoader>, FontDisplay);
+    explicit RemoteFontFaceSource(RawPtr<FontResource>, RawPtr<FontLoader>, FontDisplay);
     ~RemoteFontFaceSource() override;
     void dispose();
 
@@ -78,8 +78,8 @@ private:
     void switchToSwapPeriod();
     void switchToFailurePeriod();
 
-    RefPtrWillBeMember<FontResource> m_font;
-    RefPtrWillBeMember<FontLoader> m_fontLoader;
+    Member<FontResource> m_font;
+    Member<FontLoader> m_fontLoader;
     const FontDisplay m_display;
     DisplayPeriod m_period;
     FontLoadHistograms m_histograms;

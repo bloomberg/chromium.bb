@@ -262,7 +262,7 @@ TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix)
     };
 
     CSSParserContext context(HTMLStandardMode, nullptr);
-    RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(context);
+    RawPtr<StyleSheetContents> sheet = StyleSheetContents::create(context);
 
     for (auto testCase : testCases) {
         CSSTokenizer::Scope scope(testCase);
@@ -292,7 +292,7 @@ TEST(CSSSelectorParserTest, SerializedUniversal)
     };
 
     CSSParserContext context(HTMLStandardMode, nullptr);
-    RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(context);
+    RawPtr<StyleSheetContents> sheet = StyleSheetContents::create(context);
     sheet->parserAddNamespace("ns", "http://ns.org");
 
     for (auto testCase : testCases) {

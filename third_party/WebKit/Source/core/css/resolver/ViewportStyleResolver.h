@@ -43,13 +43,11 @@ class Document;
 class MutableStylePropertySet;
 class StyleRuleViewport;
 
-class CORE_EXPORT ViewportStyleResolver : public NoBaseWillBeGarbageCollected<ViewportStyleResolver> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ViewportStyleResolver);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ViewportStyleResolver);
+class CORE_EXPORT ViewportStyleResolver : public GarbageCollected<ViewportStyleResolver> {
 public:
-    static PassOwnPtrWillBeRawPtr<ViewportStyleResolver> create(Document* document)
+    static RawPtr<ViewportStyleResolver> create(Document* document)
     {
-        return adoptPtrWillBeNoop(new ViewportStyleResolver(document));
+        return new ViewportStyleResolver(document);
     }
 
     enum Origin { UserAgentOrigin, AuthorOrigin };
@@ -68,8 +66,8 @@ private:
     float viewportArgumentValue(CSSPropertyID) const;
     Length viewportLengthValue(CSSPropertyID) const;
 
-    RawPtrWillBeMember<Document> m_document;
-    RefPtrWillBeMember<MutableStylePropertySet> m_propertySet;
+    Member<Document> m_document;
+    Member<MutableStylePropertySet> m_propertySet;
     bool m_hasAuthorStyle;
 };
 

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<CSSValue> SimpleLength::toCSSValue() const
+RawPtr<CSSValue> SimpleLength::toCSSValue() const
 {
     return cssValuePool().createValue(m_value, m_unit);
 }

@@ -23,7 +23,7 @@ public:
     const String& keywordValue() const;
     CSSValueID keywordValueID() const;
 
-    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
+    RawPtr<CSSValue> toCSSValue() const override;
 
 private:
     KeywordValue(const String& keyword) : m_keywordValue(keyword) {}

@@ -123,10 +123,10 @@ LengthValue* StyleCalcLength::divideInternal(double x, ExceptionState& exception
     return result;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> StyleCalcLength::toCSSValue() const
+RawPtr<CSSValue> StyleCalcLength::toCSSValue() const
 {
     // Create a CSS Calc Value, then put it into a CSSPrimitiveValue
-    RefPtrWillBeRawPtr<CSSCalcExpressionNode> node = nullptr;
+    RawPtr<CSSCalcExpressionNode> node = nullptr;
     for (unsigned i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
         if (!hasAtIndex(i))
             continue;

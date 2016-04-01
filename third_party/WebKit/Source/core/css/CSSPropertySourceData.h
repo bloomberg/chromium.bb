@@ -69,10 +69,10 @@ public:
     SourceRange range;
 };
 
-struct CSSStyleSourceData : public RefCountedWillBeGarbageCollected<CSSStyleSourceData> {
-    static PassRefPtrWillBeRawPtr<CSSStyleSourceData> create()
+struct CSSStyleSourceData : public GarbageCollected<CSSStyleSourceData> {
+    static RawPtr<CSSStyleSourceData> create()
     {
-        return adoptRefWillBeNoop(new CSSStyleSourceData());
+        return new CSSStyleSourceData();
     }
 
     DEFINE_INLINE_TRACE()
@@ -82,7 +82,7 @@ struct CSSStyleSourceData : public RefCountedWillBeGarbageCollected<CSSStyleSour
 #endif
     }
 
-    WillBeHeapVector<CSSPropertySourceData> propertyData;
+    HeapVector<CSSPropertySourceData> propertyData;
 };
 
 struct CSSMediaQueryExpSourceData {
@@ -96,10 +96,10 @@ public:
     SourceRange valueRange;
 };
 
-struct CSSMediaQuerySourceData : public RefCountedWillBeGarbageCollected<CSSMediaQuerySourceData> {
-    static PassRefPtrWillBeRawPtr<CSSMediaQuerySourceData> create()
+struct CSSMediaQuerySourceData : public GarbageCollected<CSSMediaQuerySourceData> {
+    static RawPtr<CSSMediaQuerySourceData> create()
     {
-        return adoptRefWillBeNoop(new CSSMediaQuerySourceData());
+        return new CSSMediaQuerySourceData();
     }
 
     DEFINE_INLINE_TRACE()
@@ -109,13 +109,13 @@ struct CSSMediaQuerySourceData : public RefCountedWillBeGarbageCollected<CSSMedi
 #endif
     }
 
-    WillBeHeapVector<CSSMediaQueryExpSourceData> expData;
+    HeapVector<CSSMediaQueryExpSourceData> expData;
 };
 
-struct CSSMediaSourceData : public RefCountedWillBeGarbageCollected<CSSMediaSourceData> {
-    static PassRefPtrWillBeRawPtr<CSSMediaSourceData> create()
+struct CSSMediaSourceData : public GarbageCollected<CSSMediaSourceData> {
+    static RawPtr<CSSMediaSourceData> create()
     {
-        return adoptRefWillBeNoop(new CSSMediaSourceData());
+        return new CSSMediaSourceData();
     }
 
     DEFINE_INLINE_TRACE()
@@ -125,17 +125,17 @@ struct CSSMediaSourceData : public RefCountedWillBeGarbageCollected<CSSMediaSour
 #endif
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<CSSMediaQuerySourceData>> queryData;
+    HeapVector<Member<CSSMediaQuerySourceData>> queryData;
 };
 
 struct CSSRuleSourceData;
-using RuleSourceDataList = WillBeHeapVector<RefPtrWillBeMember<CSSRuleSourceData>>;
-using SelectorRangeList = WillBeHeapVector<SourceRange>;
+using RuleSourceDataList = HeapVector<Member<CSSRuleSourceData>>;
+using SelectorRangeList = HeapVector<SourceRange>;
 
-struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSourceData> {
-    static PassRefPtrWillBeRawPtr<CSSRuleSourceData> create(StyleRule::RuleType type)
+struct CSSRuleSourceData : public GarbageCollected<CSSRuleSourceData> {
+    static RawPtr<CSSRuleSourceData> create(StyleRule::RuleType type)
     {
-        return adoptRefWillBeNoop(new CSSRuleSourceData(type));
+        return new CSSRuleSourceData(type);
     }
 
     CSSRuleSourceData(StyleRule::RuleType type)
@@ -161,13 +161,13 @@ struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSource
     SelectorRangeList selectorRanges;
 
     // Only for CSSStyleRules, CSSFontFaceRules, and CSSPageRules.
-    RefPtrWillBeMember<CSSStyleSourceData> styleSourceData;
+    Member<CSSStyleSourceData> styleSourceData;
 
     // Only for CSSMediaRules.
     RuleSourceDataList childRules;
 
     // Only for CSSMediaRules and CSSImportRules.
-    RefPtrWillBeMember<CSSMediaSourceData> mediaSourceData;
+    Member<CSSMediaSourceData> mediaSourceData;
 };
 
 } // namespace blink

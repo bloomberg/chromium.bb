@@ -9,9 +9,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<CSSFunctionValue> SkewTransformComponent::toCSSValue() const
+RawPtr<CSSFunctionValue> SkewTransformComponent::toCSSValue() const
 {
-    RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueSkew);
+    RawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueSkew);
     result->append(cssValuePool().createValue(m_ax, CSSPrimitiveValue::UnitType::Number));
     result->append(cssValuePool().createValue(m_ay, CSSPrimitiveValue::UnitType::Number));
     return result.release();

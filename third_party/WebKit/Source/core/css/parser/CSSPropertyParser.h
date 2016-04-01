@@ -71,10 +71,10 @@ public:
 
     static bool parseValue(CSSPropertyID, bool important,
         const CSSParserTokenRange&, const CSSParserContext&,
-        WillBeHeapVector<CSSProperty, 256>&, StyleRule::RuleType);
+        HeapVector<CSSProperty, 256>&, StyleRule::RuleType);
 
     // Parses a non-shorthand CSS property
-    static PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID, const CSSParserTokenRange&, const CSSParserContext&);
+    static RawPtr<CSSValue> parseSingleValue(CSSPropertyID, const CSSParserTokenRange&, const CSSParserContext&);
 
     // TODO(timloh): This doesn't seem like the right place for these
     static bool isSystemColor(CSSValueID);
@@ -83,14 +83,14 @@ public:
 
 private:
     CSSPropertyParser(const CSSParserTokenRange&, const CSSParserContext&,
-        WillBeHeapVector<CSSProperty, 256>*);
+        HeapVector<CSSProperty, 256>*);
 
     // TODO(timloh): Rename once the CSSParserValue-based parseValue is removed
     bool parseValueStart(CSSPropertyID unresolvedProperty, bool important);
     bool consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, bool important);
-    PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID);
+    RawPtr<CSSValue> parseSingleValue(CSSPropertyID);
 
-    PassRefPtrWillBeRawPtr<CSSValue> legacyParseValue(CSSPropertyID);
+    RawPtr<CSSValue> legacyParseValue(CSSPropertyID);
     bool legacyParseAndApplyValue(CSSPropertyID, bool important);
     bool legacyParseShorthand(CSSPropertyID, bool important);
 
@@ -100,8 +100,8 @@ private:
     bool parseViewportDescriptor(CSSPropertyID propId, bool important);
     bool parseFontFaceDescriptor(CSSPropertyID);
 
-    void addProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important, bool implicit = false);
-    void addExpandedPropertyForValue(CSSPropertyID propId, PassRefPtrWillBeRawPtr<CSSValue>, bool);
+    void addProperty(CSSPropertyID, RawPtr<CSSValue>, bool important, bool implicit = false);
+    void addExpandedPropertyForValue(CSSPropertyID propId, RawPtr<CSSValue>, bool);
 
     bool consumeBorder(bool important);
 
@@ -116,17 +116,17 @@ private:
     bool consumeColumns(bool important);
 
     bool consumeGridItemPositionShorthand(CSSPropertyID, bool important);
-    PassRefPtrWillBeRawPtr<CSSValue> parseGridTemplateColumns(bool important);
+    RawPtr<CSSValue> parseGridTemplateColumns(bool important);
     bool parseGridTemplateRowsAndAreasAndColumns(bool important);
     bool parseGridTemplateShorthand(bool important);
     bool parseGridShorthand(bool important);
     bool consumeGridAreaShorthand(bool important);
-    PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackList();
+    RawPtr<CSSValue> parseGridTrackList();
     bool parseGridTrackRepeatFunction(CSSValueList&, bool& isAutoRepeat);
-    PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackSize(CSSParserValueList& inputList, TrackSizeRestriction = AllowAll);
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*, TrackSizeRestriction = AllowAll);
+    RawPtr<CSSValue> parseGridTrackSize(CSSParserValueList& inputList, TrackSizeRestriction = AllowAll);
+    RawPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*, TrackSizeRestriction = AllowAll);
     bool parseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = nullptr);
-    PassRefPtrWillBeRawPtr<CSSValue> parseGridAutoFlow(CSSParserValueList&);
+    RawPtr<CSSValue> parseGridAutoFlow(CSSParserValueList&);
 
     bool consumeFont(bool important);
     bool consumeSystemFont(bool important);
@@ -142,8 +142,8 @@ private:
 
     bool parseCalculation(CSSParserValue*, ValueRange);
 
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
-    PassRefPtrWillBeRawPtr<CSSCustomIdentValue> createPrimitiveCustomIdentValue(CSSParserValue*);
+    RawPtr<CSSPrimitiveValue> createPrimitiveNumericValue(CSSParserValue*);
+    RawPtr<CSSCustomIdentValue> createPrimitiveCustomIdentValue(CSSParserValue*);
 
     class ShorthandScope {
         STACK_ALLOCATED();
@@ -187,12 +187,12 @@ private:
     const CSSParserContext& m_context;
 
     // Outputs:
-    WillBeHeapVector<CSSProperty, 256>* m_parsedProperties;
+    HeapVector<CSSProperty, 256>* m_parsedProperties;
 
     // Locals during parsing:
     int m_inParseShorthand;
     CSSPropertyID m_currentShorthand;
-    RefPtrWillBeMember<CSSCalcValue> m_parsedCalculation;
+    Member<CSSCalcValue> m_parsedCalculation;
 };
 
 // TODO(rob.buis): should move to CSSPropertyParser after conversion.

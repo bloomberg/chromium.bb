@@ -154,7 +154,7 @@ bool CSSPrimitiveValue::colorIsDerivedFromElement() const
     }
 }
 
-using CSSTextCache = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<const CSSPrimitiveValue>, String>;
+using CSSTextCache = PersistentHeapHashMap<WeakMember<const CSSPrimitiveValue>, String>;
 
 static CSSTextCache& cssTextCache()
 {
@@ -289,7 +289,7 @@ void CSSPrimitiveValue::init(UnitType type)
     m_primitiveUnitType = static_cast<unsigned>(type);
 }
 
-void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<CSSCalcValue> c)
+void CSSPrimitiveValue::init(RawPtr<CSSCalcValue> c)
 {
     init(UnitType::Calc);
     m_hasCachedCSSText = false;

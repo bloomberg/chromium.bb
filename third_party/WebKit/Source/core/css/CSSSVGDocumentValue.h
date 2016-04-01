@@ -34,9 +34,9 @@ class Document;
 
 class CSSSVGDocumentValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSSVGDocumentValue> create(const String& url)
+    static RawPtr<CSSSVGDocumentValue> create(const String& url)
     {
-        return adoptRefWillBeNoop(new CSSSVGDocumentValue(url));
+        return new CSSSVGDocumentValue(url);
     }
     ~CSSSVGDocumentValue();
 
@@ -58,7 +58,7 @@ private:
     CSSSVGDocumentValue(const String& url);
 
     String m_url;
-    RefPtrWillBeMember<DocumentResource> m_document;
+    Member<DocumentResource> m_document;
     bool m_loadRequested;
 };
 

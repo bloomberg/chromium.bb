@@ -13,11 +13,10 @@ class MutableStylePropertySet;
 class StylePropertySet;
 
 class StyleRuleKeyframe final : public StyleRuleBase {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRuleKeyframe);
 public:
-    static PassRefPtrWillBeRawPtr<StyleRuleKeyframe> create(PassOwnPtr<Vector<double>> keys, PassRefPtrWillBeRawPtr<StylePropertySet> properties)
+    static RawPtr<StyleRuleKeyframe> create(PassOwnPtr<Vector<double>> keys, RawPtr<StylePropertySet> properties)
     {
-        return adoptRefWillBeNoop(new StyleRuleKeyframe(keys, properties));
+        return new StyleRuleKeyframe(keys, properties);
     }
 
     // Exposed to JavaScript.
@@ -35,9 +34,9 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    StyleRuleKeyframe(PassOwnPtr<Vector<double>>, PassRefPtrWillBeRawPtr<StylePropertySet>);
+    StyleRuleKeyframe(PassOwnPtr<Vector<double>>, RawPtr<StylePropertySet>);
 
-    RefPtrWillBeMember<StylePropertySet> m_properties;
+    Member<StylePropertySet> m_properties;
     Vector<double> m_keys;
 };
 

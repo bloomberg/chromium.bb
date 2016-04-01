@@ -28,7 +28,7 @@ public:
 
     StyleValueType type() const override { return PositionType; }
 
-    PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
+    RawPtr<CSSValue> toCSSValue() const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

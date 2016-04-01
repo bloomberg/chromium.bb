@@ -40,10 +40,10 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::create(ExecutionContext* executionContext, const String& s, ExceptionState& exceptionState)
+RawPtr<CSSMatrix> CSSMatrix::create(ExecutionContext* executionContext, const String& s, ExceptionState& exceptionState)
 {
     UseCounter::count(executionContext, UseCounter::WebKitCSSMatrix);
-    return adoptRefWillBeNoop(new CSSMatrix(s, exceptionState));
+    return new CSSMatrix(s, exceptionState);
 }
 
 CSSMatrix::CSSMatrix(const TransformationMatrix& m)
@@ -69,7 +69,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
     if (string.isEmpty())
         return;
 
-    if (RefPtrWillBeRawPtr<CSSValue> value = CSSParser::parseSingleValue(CSSPropertyTransform, string)) {
+    if (RawPtr<CSSValue> value = CSSParser::parseSingleValue(CSSPropertyTransform, string)) {
         // Check for a "none" transform. In these cases we can use the default identity matrix.
         if (value->isPrimitiveValue() && (toCSSPrimitiveValue(value.get()))->getValueID() == CSSValueNone)
             return;
@@ -90,7 +90,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
 }
 
 // Perform a concatenation of the matrices (this * secondMatrix)
-PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
+RawPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
 {
     if (!secondMatrix)
         return nullptr;
@@ -98,7 +98,7 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) c
     return CSSMatrix::create(TransformationMatrix(*m_matrix).multiply(*secondMatrix->m_matrix));
 }
 
-PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& exceptionState) const
+RawPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& exceptionState) const
 {
     if (!m_matrix->isInvertible()) {
         exceptionState.throwDOMException(NotSupportedError, "The matrix is not invertable.");
@@ -108,7 +108,7 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& exceptionSt
     return CSSMatrix::create(m_matrix->inverse());
 }
 
-PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::translate(double x, double y, double z) const
+RawPtr<CSSMatrix> CSSMatrix::translate(double x, double y, double z) const
 {
     if (std::isnan(x))
         x = 0;
@@ -119,7 +119,7 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::translate(double x, double y, doubl
     return CSSMatrix::create(TransformationMatrix(*m_matrix).translate3d(x, y, z));
 }
 
-PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::scale(double scaleX, double scaleY, double scaleZ) const
+RawPtr<CSSMatrix> CSSMatrix::scale(double scaleX, double scaleY, double scaleZ) const
 {
     if (std::isnan(scaleX))
         scaleX = 1;
@@ -130,7 +130,7 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::scale(double scaleX, double scaleY,
     return CSSMatrix::create(TransformationMatrix(*m_matrix).scale3d(scaleX, scaleY, scaleZ));
 }
 
-PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotate(double rotX, double rotY, double rotZ) const
+RawPtr<CSSMatrix> CSSMatrix::rotate(double rotX, double rotY, double rotZ) const
 {
     if (std::isnan(rotX))
         rotX = 0;
@@ -148,7 +148,7 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotate(double rotX, double rotY, do
     return CSSMatrix::create(TransformationMatrix(*m_matrix).rotate3d(rotX, rotY, rotZ));
 }
 
-PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotateAxisAngle(double x, double y, double z, double angle) const
+RawPtr<CSSMatrix> CSSMatrix::rotateAxisAngle(double x, double y, double z, double angle) const
 {
     if (std::isnan(x))
         x = 0;
@@ -163,14 +163,14 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotateAxisAngle(double x, double y,
     return CSSMatrix::create(TransformationMatrix(*m_matrix).rotate3d(x, y, z, angle));
 }
 
-PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::skewX(double angle) const
+RawPtr<CSSMatrix> CSSMatrix::skewX(double angle) const
 {
     if (std::isnan(angle))
         angle = 0;
     return CSSMatrix::create(TransformationMatrix(*m_matrix).skewX(angle));
 }
 
-PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::skewY(double angle) const
+RawPtr<CSSMatrix> CSSMatrix::skewY(double angle) const
 {
     if (std::isnan(angle))
         angle = 0;

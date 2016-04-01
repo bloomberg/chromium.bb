@@ -36,10 +36,10 @@ class CSSPrimitiveValue;
 
 class CSSReflectValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSReflectValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> direction,
-        PassRefPtrWillBeRawPtr<CSSPrimitiveValue> offset, PassRefPtrWillBeRawPtr<CSSValue> mask)
+    static RawPtr<CSSReflectValue> create(RawPtr<CSSPrimitiveValue> direction,
+        RawPtr<CSSPrimitiveValue> offset, RawPtr<CSSValue> mask)
     {
-        return adoptRefWillBeNoop(new CSSReflectValue(direction, offset, mask));
+        return new CSSReflectValue(direction, offset, mask);
     }
 
     CSSPrimitiveValue* direction() const { return m_direction.get(); }
@@ -53,7 +53,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSReflectValue(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> direction, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> offset, PassRefPtrWillBeRawPtr<CSSValue> mask)
+    CSSReflectValue(RawPtr<CSSPrimitiveValue> direction, RawPtr<CSSPrimitiveValue> offset, RawPtr<CSSValue> mask)
         : CSSValue(ReflectClass)
         , m_direction(direction)
         , m_offset(offset)
@@ -61,9 +61,9 @@ private:
     {
     }
 
-    RefPtrWillBeMember<CSSPrimitiveValue> m_direction;
-    RefPtrWillBeMember<CSSPrimitiveValue> m_offset;
-    RefPtrWillBeMember<CSSValue> m_mask;
+    Member<CSSPrimitiveValue> m_direction;
+    Member<CSSPrimitiveValue> m_offset;
+    Member<CSSValue> m_mask;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSReflectValue, isReflectValue());

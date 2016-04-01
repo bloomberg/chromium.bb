@@ -69,19 +69,19 @@ String MediaQuery::serialize() const
     return result.toString();
 }
 
-static bool expressionCompare(const OwnPtrWillBeMember<MediaQueryExp>& a, const OwnPtrWillBeMember<MediaQueryExp>& b)
+static bool expressionCompare(const Member<MediaQueryExp>& a, const Member<MediaQueryExp>& b)
 {
     return codePointCompare(a->serialize(), b->serialize()) < 0;
 }
 
-PassOwnPtrWillBeRawPtr<MediaQuery> MediaQuery::createNotAll()
+RawPtr<MediaQuery> MediaQuery::createNotAll()
 {
-    return adoptPtrWillBeNoop(new MediaQuery(MediaQuery::Not, MediaTypeNames::all, ExpressionHeapVector()));
+    return new MediaQuery(MediaQuery::Not, MediaTypeNames::all, ExpressionHeapVector());
 }
 
-PassOwnPtrWillBeRawPtr<MediaQuery> MediaQuery::create(RestrictorType restrictor, String mediaType, ExpressionHeapVector expressions)
+RawPtr<MediaQuery> MediaQuery::create(RestrictorType restrictor, String mediaType, ExpressionHeapVector expressions)
 {
-    return adoptPtrWillBeNoop(new MediaQuery(restrictor, std::move(mediaType), std::move(expressions)));
+    return new MediaQuery(restrictor, std::move(mediaType), std::move(expressions));
 }
 
 MediaQuery::MediaQuery(RestrictorType restrictor, String mediaType, ExpressionHeapVector expressions)

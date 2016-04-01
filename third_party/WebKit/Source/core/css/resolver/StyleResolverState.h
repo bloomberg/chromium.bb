@@ -118,7 +118,7 @@ public:
     // FIXME: Once styleImage can be made to not take a StyleResolverState
     // this convenience function should be removed. As-is, without this, call
     // sites are extremely verbose.
-    PassRefPtrWillBeRawPtr<StyleImage> styleImage(CSSPropertyID propertyId, const CSSValue& value)
+    RawPtr<StyleImage> styleImage(CSSPropertyID propertyId, const CSSValue& value)
     {
         return m_elementStyleResources.styleImage(propertyId, value);
     }
@@ -161,7 +161,7 @@ public:
 
 private:
     ElementResolveContext m_elementContext;
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 
     // m_style is the primary output for each element's style resolve.
     RefPtr<ComputedStyle> m_style;
@@ -184,7 +184,7 @@ private:
 
     ElementStyleResources m_elementStyleResources;
 
-    WillBeHeapHashMap<String, RefPtrWillBeMember<StylePropertySet>> m_customPropertySetsForApplyAtRule;
+    HeapHashMap<String, Member<StylePropertySet>> m_customPropertySetsForApplyAtRule;
 };
 
 } // namespace blink

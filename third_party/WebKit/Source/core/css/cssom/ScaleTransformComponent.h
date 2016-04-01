@@ -36,7 +36,7 @@ public:
             : MatrixTransformComponent::scale3d(m_x, m_y, m_z);
     }
 
-    PassRefPtrWillBeRawPtr<CSSFunctionValue> toCSSValue() const override;
+    RawPtr<CSSFunctionValue> toCSSValue() const override;
 
 private:
     ScaleTransformComponent(double x, double y) : m_x(x), m_y(y), m_z(1), m_is2D(true) { }

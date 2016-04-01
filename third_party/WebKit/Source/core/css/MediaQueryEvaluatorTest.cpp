@@ -124,7 +124,7 @@ TestCase printTestCases[] = {
 
 void testMQEvaluator(TestCase* testCases, const MediaQueryEvaluator& mediaQueryEvaluator)
 {
-    RefPtrWillBePersistent<MediaQuerySet> querySet = nullptr;
+    Persistent<MediaQuerySet> querySet = nullptr;
     for (unsigned i = 0; testCases[i].input; ++i) {
         querySet = MediaQuerySet::create(testCases[i].input);
         ASSERT_EQ(testCases[i].output, mediaQueryEvaluator.eval(querySet.get()));
@@ -148,7 +148,7 @@ TEST(MediaQueryEvaluatorTest, Cached)
     data.mediaType = MediaTypeNames::screen;
     data.strictMode = true;
     data.displayMode = WebDisplayModeBrowser;
-    RefPtrWillBeRawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
+    RawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
 
     MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
     testMQEvaluator(screenTestCases, mediaQueryEvaluator);
@@ -174,11 +174,11 @@ TEST(MediaQueryEvaluatorTest, Dynamic)
 TEST(MediaQueryEvaluatorTest, DynamicNoView)
 {
     OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(500, 500));
-    RefPtrWillBeRawPtr<LocalFrame> frame = &pageHolder->frame();
+    RawPtr<LocalFrame> frame = &pageHolder->frame();
     pageHolder.clear();
     ASSERT_EQ(nullptr, frame->view());
     MediaQueryEvaluator mediaQueryEvaluator(frame.get());
-    RefPtrWillBeRawPtr<MediaQuerySet> querySet = MediaQuerySet::create("foobar");
+    RawPtr<MediaQuerySet> querySet = MediaQuerySet::create("foobar");
     EXPECT_FALSE(mediaQueryEvaluator.eval(querySet.get()));
 }
 
@@ -187,7 +187,7 @@ TEST(MediaQueryEvaluatorTest, CachedFloatViewport)
     MediaValuesCached::MediaValuesCachedData data;
     data.viewportWidth = 600.5;
     data.viewportHeight = 700.125;
-    RefPtrWillBeRawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
+    RawPtr<MediaValues> mediaValues = MediaValuesCached::create(data);
 
     MediaQueryEvaluator mediaQueryEvaluator(*mediaValues);
     testMQEvaluator(floatViewportTestCases, mediaQueryEvaluator);

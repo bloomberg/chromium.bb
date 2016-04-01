@@ -60,7 +60,7 @@ private:
     void setCSSFloat(const String&, ExceptionState&);
     String cssText() const final;
     void setCSSText(const String&, ExceptionState&) final;
-    PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) final;
+    RawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) final;
     String getPropertyValueInternal(CSSPropertyID) final;
     void setPropertyInternal(CSSPropertyID, const String& customPropertyName, const String& value, bool important, ExceptionState&) final;
 
@@ -87,14 +87,14 @@ public:
 protected:
     MutableStylePropertySet& propertySet() const final { ASSERT(m_propertySet); return *m_propertySet; }
 
-    RawPtrWillBeMember<MutableStylePropertySet> m_propertySet; // Cannot be null
+    Member<MutableStylePropertySet> m_propertySet; // Cannot be null
 };
 
 class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
 public:
-    static PassRefPtrWillBeRawPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSRule* parentRule)
+    static RawPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSRule* parentRule)
     {
-        return adoptRefWillBeNoop(new StyleRuleCSSStyleDeclaration(propertySet, parentRule));
+        return new StyleRuleCSSStyleDeclaration(propertySet, parentRule);
     }
 
 #if !ENABLE(OILPAN)
@@ -122,7 +122,7 @@ protected:
 #if !ENABLE(OILPAN)
     unsigned m_refCount;
 #endif
-    RawPtrWillBeMember<CSSRule> m_parentRule;
+    Member<CSSRule> m_parentRule;
 };
 
 class InlineCSSStyleDeclaration final : public AbstractPropertySetCSSStyleDeclaration {
@@ -145,7 +145,7 @@ private:
 
     void didMutate(MutationType) override;
 
-    RawPtrWillBeMember<Element> m_parentElement;
+    Member<Element> m_parentElement;
 };
 
 } // namespace blink

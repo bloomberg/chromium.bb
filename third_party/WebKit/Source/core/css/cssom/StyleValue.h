@@ -29,7 +29,7 @@ public:
 
     static ScriptValue parse(ScriptState*, const String& property, const String& cssText);
 
-    virtual PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const = 0;
+    virtual RawPtr<CSSValue> toCSSValue() const = 0;
     virtual String cssString() const
     {
         return toCSSValue()->cssText();

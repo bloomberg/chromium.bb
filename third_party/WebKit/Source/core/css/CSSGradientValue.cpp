@@ -104,7 +104,7 @@ struct GradientStop {
     { }
 };
 
-static void replaceColorHintsWithColorStops(Vector<GradientStop>& stops, const WillBeHeapVector<CSSGradientColorStop, 2>& cssGradientStops)
+static void replaceColorHintsWithColorStops(Vector<GradientStop>& stops, const HeapVector<CSSGradientColorStop, 2>& cssGradientStops)
 {
     // This algorithm will replace each color interpolation hint with 9 regular
     // color stops. The color values for the new color stops will be calculated
@@ -573,7 +573,7 @@ bool CSSGradientValue::knownToBeOpaque(const LayoutObject& object) const
     return true;
 }
 
-void CSSGradientValue::getStopColors(WillBeHeapVector<Color>& stopColors, const LayoutObject& object) const
+void CSSGradientValue::getStopColors(HeapVector<Color>& stopColors, const LayoutObject& object) const
 {
     for (auto& stop : m_stops) {
         if (!stop.isHint())

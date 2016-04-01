@@ -9,9 +9,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<CSSFunctionValue> ScaleTransformComponent::toCSSValue() const
+RawPtr<CSSFunctionValue> ScaleTransformComponent::toCSSValue() const
 {
-    RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(m_is2D ? CSSValueScale : CSSValueScale3d);
+    RawPtr<CSSFunctionValue> result = CSSFunctionValue::create(m_is2D ? CSSValueScale : CSSValueScale3d);
 
     result->append(cssValuePool().createValue(m_x, CSSPrimitiveValue::UnitType::Number));
     result->append(cssValuePool().createValue(m_y, CSSPrimitiveValue::UnitType::Number));

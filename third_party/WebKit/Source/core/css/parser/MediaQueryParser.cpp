@@ -11,17 +11,17 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(const String& queryString)
+RawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(const String& queryString)
 {
     return parseMediaQuerySet(CSSTokenizer::Scope(queryString).tokenRange());
 }
 
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(CSSParserTokenRange range)
+RawPtr<MediaQuerySet> MediaQueryParser::parseMediaQuerySet(CSSParserTokenRange range)
 {
     return MediaQueryParser(MediaQuerySetParser).parseImpl(range);
 }
 
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(CSSParserTokenRange range)
+RawPtr<MediaQuerySet> MediaQueryParser::parseMediaCondition(CSSParserTokenRange range)
 {
     return MediaQueryParser(MediaConditionParser).parseImpl(range);
 }
@@ -214,7 +214,7 @@ void MediaQueryParser::processToken(const CSSParserToken& token)
 }
 
 // The state machine loop
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQueryParser::parseImpl(CSSParserTokenRange range)
+RawPtr<MediaQuerySet> MediaQueryParser::parseImpl(CSSParserTokenRange range)
 {
     while (!range.atEnd())
         processToken(range.consume());
@@ -248,16 +248,16 @@ void MediaQueryData::clear()
     m_expressions.clear();
 }
 
-PassOwnPtrWillBeRawPtr<MediaQuery> MediaQueryData::takeMediaQuery()
+RawPtr<MediaQuery> MediaQueryData::takeMediaQuery()
 {
-    OwnPtrWillBeRawPtr<MediaQuery> mediaQuery = MediaQuery::create(m_restrictor, std::move(m_mediaType), std::move(m_expressions));
+    RawPtr<MediaQuery> mediaQuery = MediaQuery::create(m_restrictor, std::move(m_mediaType), std::move(m_expressions));
     clear();
     return mediaQuery.release();
 }
 
 bool MediaQueryData::addExpression()
 {
-    OwnPtrWillBeRawPtr<MediaQueryExp> expression = MediaQueryExp::createIfValid(m_mediaFeature, m_valueList);
+    RawPtr<MediaQueryExp> expression = MediaQueryExp::createIfValid(m_mediaFeature, m_valueList);
     bool isValid = !!expression;
     m_expressions.append(expression.release());
     m_valueList.clear();

@@ -171,8 +171,8 @@ TEST(MediaQuerySetTest, Basic)
     };
 
     for (unsigned i = 0; testCases[i].input; ++i) {
-        RefPtrWillBeRawPtr<MediaQuerySet> oldParserQuerySet = MediaQuerySet::create(testCases[i].input);
-        RefPtrWillBeRawPtr<MediaQuerySet> threadSafeQuerySet = MediaQuerySet::createOffMainThread(testCases[i].input);
+        RawPtr<MediaQuerySet> oldParserQuerySet = MediaQuerySet::create(testCases[i].input);
+        RawPtr<MediaQuerySet> threadSafeQuerySet = MediaQuerySet::createOffMainThread(testCases[i].input);
         testMediaQuery(testCases[i], *oldParserQuerySet, true);
         testMediaQuery(testCases[i], *threadSafeQuerySet, false);
     }

@@ -56,8 +56,8 @@ private:
 
     CSSRule::Type type() const override { return KEYFRAME_RULE; }
 
-    RefPtrWillBeMember<StyleRuleKeyframe> m_keyframe;
-    mutable RefPtrWillBeMember<KeyframeStyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    Member<StyleRuleKeyframe> m_keyframe;
+    mutable Member<KeyframeStyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 
     friend class CSSKeyframesRule;
 };

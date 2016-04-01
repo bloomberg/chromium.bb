@@ -43,19 +43,19 @@ namespace blink {
 class FontFaceSetLoadEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<FontFaceSetLoadEvent> create()
+    static RawPtr<FontFaceSetLoadEvent> create()
     {
-        return adoptRefWillBeNoop(new FontFaceSetLoadEvent());
+        return new FontFaceSetLoadEvent();
     }
 
-    static PassRefPtrWillBeRawPtr<FontFaceSetLoadEvent> create(const AtomicString& type, const FontFaceSetLoadEventInit& initializer)
+    static RawPtr<FontFaceSetLoadEvent> create(const AtomicString& type, const FontFaceSetLoadEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new FontFaceSetLoadEvent(type, initializer));
+        return new FontFaceSetLoadEvent(type, initializer);
     }
 
-    static PassRefPtrWillBeRawPtr<FontFaceSetLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
+    static RawPtr<FontFaceSetLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
     {
-        return adoptRefWillBeNoop(new FontFaceSetLoadEvent(type, fontfaces));
+        return new FontFaceSetLoadEvent(type, fontfaces);
     }
 
     ~FontFaceSetLoadEvent() override;

@@ -29,7 +29,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<FontFaceSet> DocumentFontFaceSet::fonts(Document& document)
+RawPtr<FontFaceSet> DocumentFontFaceSet::fonts(Document& document)
 {
     return FontFaceSet::from(document);
 }

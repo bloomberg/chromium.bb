@@ -32,8 +32,7 @@ class Element;
 class RuleSet;
 class StyleSheetContents;
 
-class CSSDefaultStyleSheets : public NoBaseWillBeGarbageCollected<CSSDefaultStyleSheets> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CSSDefaultStyleSheets);
+class CSSDefaultStyleSheets : public GarbageCollected<CSSDefaultStyleSheets> {
     WTF_MAKE_NONCOPYABLE(CSSDefaultStyleSheets);
 public:
     static CSSDefaultStyleSheets& instance();
@@ -62,20 +61,20 @@ public:
 private:
     CSSDefaultStyleSheets();
 
-    OwnPtrWillBeMember<RuleSet> m_defaultStyle;
-    OwnPtrWillBeMember<RuleSet> m_defaultMobileViewportStyle;
-    OwnPtrWillBeMember<RuleSet> m_defaultQuirksStyle;
-    OwnPtrWillBeMember<RuleSet> m_defaultPrintStyle;
-    OwnPtrWillBeMember<RuleSet> m_defaultViewSourceStyle;
-    OwnPtrWillBeMember<RuleSet> m_defaultXHTMLMobileProfileStyle;
+    Member<RuleSet> m_defaultStyle;
+    Member<RuleSet> m_defaultMobileViewportStyle;
+    Member<RuleSet> m_defaultQuirksStyle;
+    Member<RuleSet> m_defaultPrintStyle;
+    Member<RuleSet> m_defaultViewSourceStyle;
+    Member<RuleSet> m_defaultXHTMLMobileProfileStyle;
 
-    RefPtrWillBeMember<StyleSheetContents> m_defaultStyleSheet;
-    RefPtrWillBeMember<StyleSheetContents> m_mobileViewportStyleSheet;
-    RefPtrWillBeMember<StyleSheetContents> m_quirksStyleSheet;
-    RefPtrWillBeMember<StyleSheetContents> m_svgStyleSheet;
-    RefPtrWillBeMember<StyleSheetContents> m_mathmlStyleSheet;
-    RefPtrWillBeMember<StyleSheetContents> m_mediaControlsStyleSheet;
-    RefPtrWillBeMember<StyleSheetContents> m_fullscreenStyleSheet;
+    Member<StyleSheetContents> m_defaultStyleSheet;
+    Member<StyleSheetContents> m_mobileViewportStyleSheet;
+    Member<StyleSheetContents> m_quirksStyleSheet;
+    Member<StyleSheetContents> m_svgStyleSheet;
+    Member<StyleSheetContents> m_mathmlStyleSheet;
+    Member<StyleSheetContents> m_mediaControlsStyleSheet;
+    Member<StyleSheetContents> m_fullscreenStyleSheet;
 };
 
 } // namespace blink

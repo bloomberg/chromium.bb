@@ -54,9 +54,9 @@ bool TransformValue::is2D() const
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> TransformValue::toCSSValue() const
+RawPtr<CSSValue> TransformValue::toCSSValue() const
 {
-    RefPtrWillBeRawPtr<CSSValueList> transformCSSValue = CSSValueList::createSpaceSeparated();
+    RawPtr<CSSValueList> transformCSSValue = CSSValueList::createSpaceSeparated();
     for (size_t i = 0; i < m_transformComponents.size(); i++) {
         transformCSSValue->append(m_transformComponents[i]->toCSSValue());
     }

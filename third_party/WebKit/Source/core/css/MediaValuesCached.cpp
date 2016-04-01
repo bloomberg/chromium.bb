@@ -42,14 +42,14 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(Document& docume
     }
 }
 
-PassRefPtrWillBeRawPtr<MediaValuesCached> MediaValuesCached::create()
+RawPtr<MediaValuesCached> MediaValuesCached::create()
 {
-    return adoptRefWillBeNoop(new MediaValuesCached());
+    return new MediaValuesCached();
 }
 
-PassRefPtrWillBeRawPtr<MediaValuesCached> MediaValuesCached::create(const MediaValuesCachedData& data)
+RawPtr<MediaValuesCached> MediaValuesCached::create(const MediaValuesCachedData& data)
 {
-    return adoptRefWillBeNoop(new MediaValuesCached(data));
+    return new MediaValuesCached(data);
 }
 
 MediaValuesCached::MediaValuesCached()
@@ -61,9 +61,9 @@ MediaValuesCached::MediaValuesCached(const MediaValuesCachedData& data)
 {
 }
 
-PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::copy() const
+RawPtr<MediaValues> MediaValuesCached::copy() const
 {
-    return adoptRefWillBeNoop(new MediaValuesCached(m_data));
+    return new MediaValuesCached(m_data);
 }
 
 bool MediaValuesCached::computeLength(double value, CSSPrimitiveValue::UnitType type, int& result) const

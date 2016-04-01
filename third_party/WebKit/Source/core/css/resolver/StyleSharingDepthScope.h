@@ -26,7 +26,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<StyleResolver> m_resolver;
+    Member<StyleResolver> m_resolver;
 };
 
 } // namespace blink

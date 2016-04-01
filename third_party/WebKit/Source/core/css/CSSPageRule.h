@@ -35,9 +35,9 @@ class StyleRuleCSSStyleDeclaration;
 class CORE_EXPORT CSSPageRule final : public CSSRule {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CSSPageRule> create(StyleRulePage* rule, CSSStyleSheet* sheet)
+    static RawPtr<CSSPageRule> create(StyleRulePage* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeNoop(new CSSPageRule(rule, sheet));
+        return new CSSPageRule(rule, sheet);
     }
 
     ~CSSPageRule() override;
@@ -57,8 +57,8 @@ private:
 
     CSSRule::Type type() const override { return PAGE_RULE; }
 
-    RefPtrWillBeMember<StyleRulePage> m_pageRule;
-    mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
+    Member<StyleRulePage> m_pageRule;
+    mutable Member<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSPageRule, PAGE_RULE);

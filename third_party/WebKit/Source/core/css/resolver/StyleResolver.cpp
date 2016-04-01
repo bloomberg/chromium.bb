@@ -154,7 +154,7 @@ static StylePropertySet* rightToLeftDeclaration()
     return rightToLeftDecl;
 }
 
-static void collectScopedResolversForHostedShadowTrees(const Element& element, WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8>& resolvers)
+static void collectScopedResolversForHostedShadowTrees(const Element& element, HeapVector<Member<ScopedStyleResolver>, 8>& resolvers)
 {
     ElementShadow* shadow = element.shadow();
     if (!shadow)
@@ -178,10 +178,10 @@ StyleResolver::StyleResolver(Document& document)
 {
     FrameView* view = document.view();
     if (view) {
-        m_medium = adoptPtrWillBeNoop(new MediaQueryEvaluator(&view->frame()));
+        m_medium = new MediaQueryEvaluator(&view->frame());
         m_printMediaType = equalIgnoringCase(view->mediaType(), MediaTypeNames::print);
     } else {
-        m_medium = adoptPtrWillBeNoop(new MediaQueryEvaluator("all"));
+        m_medium = new MediaQueryEvaluator("all");
     }
 
     initWatchedSelectorRules();
@@ -202,7 +202,7 @@ void StyleResolver::initWatchedSelectorRules()
     CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(*m_document);
     if (!watch)
         return;
-    const WillBeHeapVector<RefPtrWillBeMember<StyleRule>>& watchedSelectors = watch->watchedCallbackSelectors();
+    const HeapVector<Member<StyleRule>>& watchedSelectors = watch->watchedCallbackSelectors();
     if (!watchedSelectors.size())
         return;
     m_watchedSelectorsRules = RuleSet::create();
@@ -210,14 +210,14 @@ void StyleResolver::initWatchedSelectorRules()
         m_watchedSelectorsRules->addStyleRule(watchedSelectors[i].get(), RuleHasNoSpecialState);
 }
 
-void StyleResolver::lazyAppendAuthorStyleSheets(unsigned firstNew, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& styleSheets)
+void StyleResolver::lazyAppendAuthorStyleSheets(unsigned firstNew, const HeapVector<Member<CSSStyleSheet>>& styleSheets)
 {
     unsigned size = styleSheets.size();
     for (unsigned i = firstNew; i < size; ++i)
         m_pendingStyleSheets.add(styleSheets[i].get());
 }
 
-void StyleResolver::removePendingAuthorStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& styleSheets)
+void StyleResolver::removePendingAuthorStyleSheets(const HeapVector<Member<CSSStyleSheet>>& styleSheets)
 {
     for (unsigned i = 0; i < styleSheets.size(); ++i)
         m_pendingStyleSheets.remove(styleSheets[i].get());
@@ -259,7 +259,7 @@ void StyleResolver::appendPendingAuthorStyleSheets()
     finishAppendAuthorStyleSheets();
 }
 
-void StyleResolver::appendAuthorStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& styleSheets)
+void StyleResolver::appendAuthorStyleSheets(const HeapVector<Member<CSSStyleSheet>>& styleSheets)
 {
     // This handles sheets added to the end of the stylesheet list only. In other cases the style resolver
     // needs to be reconstructed. To handle insertions too the rule order numbers would need to be updated.
@@ -312,12 +312,12 @@ void StyleResolver::resetAuthorStyle(TreeScope& treeScope)
     treeScope.clearScopedStyleResolver();
 }
 
-static PassOwnPtrWillBeRawPtr<RuleSet> makeRuleSet(const WillBeHeapVector<RuleFeature>& rules)
+static RawPtr<RuleSet> makeRuleSet(const HeapVector<RuleFeature>& rules)
 {
     size_t size = rules.size();
     if (!size)
         return nullptr;
-    OwnPtrWillBeRawPtr<RuleSet> ruleSet = RuleSet::create();
+    RawPtr<RuleSet> ruleSet = RuleSet::create();
     for (size_t i = 0; i < size; ++i)
         ruleSet->addRule(rules[i].rule, rules[i].selectorIndex, rules[i].hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState);
     return ruleSet.release();
@@ -539,7 +539,7 @@ void StyleResolver::matchAuthorRulesV0(const Element& element, ElementRuleCollec
     collector.clearMatchedRules();
 
     CascadeOrder cascadeOrder = 0;
-    WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolversInShadowTree;
+    HeapVector<Member<ScopedStyleResolver>, 8> resolversInShadowTree;
     collectScopedResolversForHostedShadowTrees(element, resolversInShadowTree);
 
     // Apply :host and :host-context rules from inner scopes.
@@ -834,14 +834,14 @@ PassRefPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(StyleRe
     return CSSAnimatableValueFactory::create(property, *state.style());
 }
 
-PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElement(Element* parent, PseudoId pseudoId)
+RawPtr<PseudoElement> StyleResolver::createPseudoElement(Element* parent, PseudoId pseudoId)
 {
     if (pseudoId == PseudoIdFirstLetter)
         return FirstLetterPseudoElement::create(parent);
     return PseudoElement::create(parent, pseudoId);
 }
 
-PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
+RawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
 {
     LayoutObject* parentLayoutObject = parent.layoutObject();
     if (!parentLayoutObject)
@@ -878,7 +878,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     if (!pseudoElementLayoutObjectIsNeeded(style.get()))
         return nullptr;
 
-    RefPtrWillBeRawPtr<PseudoElement> pseudo = createPseudoElement(&parent, pseudoId);
+    RawPtr<PseudoElement> pseudo = createPseudoElement(&parent, pseudoId);
 
     setAnimationUpdateIfNeeded(state, *pseudo);
     if (ElementAnimations* elementAnimations = pseudo->elementAnimations())
@@ -1037,7 +1037,7 @@ void StyleResolver::updateFont(StyleResolverState& state)
     state.setConversionZoom(state.style()->effectiveZoom());
 }
 
-PassRefPtrWillBeRawPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
+RawPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
 {
     ASSERT(element);
     StyleResolverState state(document(), element);
@@ -1047,7 +1047,7 @@ PassRefPtrWillBeRawPtr<StyleRuleList> StyleResolver::styleRulesForElement(Elemen
     return collector.matchedStyleRuleList();
 }
 
-PassRefPtrWillBeRawPtr<CSSRuleList> StyleResolver::pseudoCSSRulesForElement(Element* element, PseudoId pseudoId, unsigned rulesToInclude)
+RawPtr<CSSRuleList> StyleResolver::pseudoCSSRulesForElement(Element* element, PseudoId pseudoId, unsigned rulesToInclude)
 {
     ASSERT(element);
     StyleResolverState state(document(), element);
@@ -1057,7 +1057,7 @@ PassRefPtrWillBeRawPtr<CSSRuleList> StyleResolver::pseudoCSSRulesForElement(Elem
     return collector.matchedCSSRuleList();
 }
 
-PassRefPtrWillBeRawPtr<CSSRuleList> StyleResolver::cssRulesForElement(Element* element, unsigned rulesToInclude)
+RawPtr<CSSRuleList> StyleResolver::cssRulesForElement(Element* element, unsigned rulesToInclude)
 {
     return pseudoCSSRulesForElement(element, PseudoIdNone, rulesToInclude);
 }
@@ -1124,7 +1124,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
 
 StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, const AtomicString& animationName)
 {
-    WillBeHeapVector<RawPtrWillBeMember<ScopedStyleResolver>, 8> resolvers;
+    HeapVector<Member<ScopedStyleResolver>, 8> resolvers;
     collectScopedResolversForHostedShadowTrees(*element, resolvers);
     if (ScopedStyleResolver* scopedResolver = element->treeScope().scopedStyleResolver())
         resolvers.append(scopedResolver);
@@ -1638,7 +1638,7 @@ void StyleResolver::applyCallbackSelectors(StyleResolverState& state)
     collector.collectMatchingRules(matchRequest);
     collector.sortAndTransferMatchedRules();
 
-    RefPtrWillBeRawPtr<StyleRuleList> rules = collector.matchedStyleRuleList();
+    RawPtr<StyleRuleList> rules = collector.matchedStyleRuleList();
     if (!rules)
         return;
     for (size_t i = 0; i < rules->size(); i++)

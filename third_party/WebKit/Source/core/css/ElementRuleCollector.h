@@ -75,7 +75,7 @@ private:
     const RuleData* m_ruleData;
     unsigned m_specificity;
     uint64_t m_position;
-    RawPtrWillBeMember<const CSSStyleSheet> m_parentStyleSheet;
+    Member<const CSSStyleSheet> m_parentStyleSheet;
 };
 
 } // namespace blink
@@ -118,8 +118,8 @@ public:
     bool hasAnyMatchingRules(RuleSet*);
 
     const MatchResult& matchedResult() const;
-    PassRefPtrWillBeRawPtr<StyleRuleList> matchedStyleRuleList();
-    PassRefPtrWillBeRawPtr<CSSRuleList> matchedCSSRuleList();
+    RawPtr<StyleRuleList> matchedStyleRuleList();
+    RawPtr<CSSRuleList> matchedCSSRuleList();
 
     void collectMatchingRules(const MatchRequest&, CascadeOrder = ignoreCascadeOrder, bool matchingTreeBoundaryRules = false);
     void collectMatchingShadowHostRules(const MatchRequest&, CascadeOrder = ignoreCascadeOrder);
@@ -159,11 +159,11 @@ private:
     bool m_matchingUARules;
     bool m_includeEmptyRules;
 
-    WillBeHeapVector<MatchedRule, 32> m_matchedRules;
+    HeapVector<MatchedRule, 32> m_matchedRules;
 
     // Output.
-    RefPtrWillBeMember<StaticCSSRuleList> m_cssRuleList;
-    RefPtrWillBeMember<StyleRuleList> m_styleRuleList;
+    Member<StaticCSSRuleList> m_cssRuleList;
+    Member<StyleRuleList> m_styleRuleList;
     MatchResult m_result;
 };
 

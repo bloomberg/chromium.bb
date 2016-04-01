@@ -793,7 +793,7 @@ PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& 
     return ShadowList::adopt(shadows);
 }
 
-PassRefPtrWillBeRawPtr<ShapeValue> StyleBuilderConverter::convertShapeValue(StyleResolverState& state, const CSSValue& value)
+RawPtr<ShapeValue> StyleBuilderConverter::convertShapeValue(StyleResolverState& state, const CSSValue& value)
 {
     if (value.isPrimitiveValue()) {
         ASSERT(toCSSPrimitiveValue(value).getValueID() == CSSValueNone);

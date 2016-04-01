@@ -34,9 +34,9 @@ namespace blink {
 
 class CSSBorderImageSliceValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> create(PassRefPtrWillBeRawPtr<CSSQuadValue> slices, bool fill)
+    static RawPtr<CSSBorderImageSliceValue> create(RawPtr<CSSQuadValue> slices, bool fill)
     {
-        return adoptRefWillBeNoop(new CSSBorderImageSliceValue(slices, fill));
+        return new CSSBorderImageSliceValue(slices, fill);
     }
 
     String customCSSText() const;
@@ -49,11 +49,11 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSBorderImageSliceValue(PassRefPtrWillBeRawPtr<CSSQuadValue> slices, bool fill);
+    CSSBorderImageSliceValue(RawPtr<CSSQuadValue> slices, bool fill);
 
     // These four values are used to make "cuts" in the border image. They can be numbers
     // or percentages.
-    RefPtrWillBeMember<CSSQuadValue> m_slices;
+    Member<CSSQuadValue> m_slices;
     bool m_fill;
 };
 
