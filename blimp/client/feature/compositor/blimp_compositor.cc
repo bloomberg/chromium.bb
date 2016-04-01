@@ -165,6 +165,9 @@ void BlimpCompositor::SetVisibleInternal(bool visible) {
   if (!host_)
     return;
 
+  VLOG(1) << "Setting visibility to: " << visible
+          << " for render widget: " << render_widget_id_;
+
   if (visible && window_ != gfx::kNullAcceleratedWidget) {
     // If we're supposed to be visible and we have a valid
     // gfx::AcceleratedWidget make our compositor visible. If the compositor
@@ -186,6 +189,7 @@ void BlimpCompositor::SetVisibleInternal(bool visible) {
 void BlimpCompositor::CreateLayerTreeHost(
     const cc::proto::InitializeImpl& initialize_message) {
   DCHECK(!host_);
+  VLOG(1) << "Creating LayerTreeHost for render widget: " << render_widget_id_;
 
   // Create the LayerTreeHost
   cc::LayerTreeHost::InitParams params;
@@ -217,6 +221,8 @@ void BlimpCompositor::CreateLayerTreeHost(
 
 void BlimpCompositor::DestroyLayerTreeHost() {
   DCHECK(host_);
+  VLOG(1) << "Destroying LayerTreeHost for render widget: "
+          << render_widget_id_;
   // Tear down the output surface connection with the old LayerTreeHost
   // instance.
   SetVisibleInternal(false);

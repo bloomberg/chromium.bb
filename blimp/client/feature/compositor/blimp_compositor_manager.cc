@@ -89,6 +89,8 @@ void BlimpCompositorManager::OnRenderWidgetInitialized(int render_widget_id) {
     return;
 
   if (active_compositor_) {
+    VLOG(1) << "Hiding currently active compositor for render widget: "
+            << active_compositor_->render_widget_id();
     active_compositor_->SetVisible(false);
     active_compositor_->ReleaseAcceleratedWidget();
   }

@@ -46,14 +46,15 @@ TEST_F(LoggingTest, Compositor) {
   BlimpMessage base_msg;
   base_msg.set_type(BlimpMessage::COMPOSITOR);
   base_msg.set_target_tab_id(kTargetTab);
-  VerifyLogOutput("type=COMPOSITOR target_tab_id=123", base_msg);
+  VerifyLogOutput("type=COMPOSITOR render_widget_id=0 target_tab_id=123",
+                  base_msg);
 }
 
 TEST_F(LoggingTest, Input) {
   BlimpMessage base_msg;
   base_msg.set_type(BlimpMessage::INPUT);
   base_msg.set_target_tab_id(kTargetTab);
-  VerifyLogOutput("type=INPUT target_tab_id=123", base_msg);
+  VerifyLogOutput("type=INPUT render_widget_id=0 target_tab_id=123", base_msg);
 }
 
 TEST_F(LoggingTest, Navigation) {

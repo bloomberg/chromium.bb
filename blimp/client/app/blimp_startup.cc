@@ -37,8 +37,12 @@ void InitializeLogging() {
   // TODO(haibinlu): Remove this before release.
   // Enables a few verbose log by default.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch("vmodule")) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        "vmodule", "blimp_message_pump=1, blimp_connection=1");
+    std::string log_filter =
+        std::string("blimp_message_pump=1, blimp_connection=1,") +
+        std::string("blimp_compositor=1, blimp_compositor_manager=1,") +
+        std::string("remote_channel_impl=1");
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII("vmodule",
+                                                              log_filter);
   }
 
   logging::LoggingSettings settings;

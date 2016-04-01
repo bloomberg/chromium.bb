@@ -4,6 +4,7 @@
 
 #include "blimp/engine/app/blimp_content_main_delegate.h"
 
+#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -17,6 +18,13 @@ namespace blimp {
 namespace engine {
 namespace {
 void InitLogging() {
+  // TODO(haibinlu): Remove this before release.
+  // Enables a few verbose log by default.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("vmodule")) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "vmodule", "remote_channel_main=1");
+  }
+
   logging::LoggingSettings settings;
   base::FilePath log_filename;
   PathService::Get(base::DIR_EXE, &log_filename);

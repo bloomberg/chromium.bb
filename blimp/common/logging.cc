@@ -133,6 +133,23 @@ class NavigationLogExtractor : public LogExtractor {
   }
 };
 
+// Logs fields from COMPOSITOR messages.
+class CompositorLogExtractor : public LogExtractor {
+  void ExtractFields(const BlimpMessage& message,
+                     LogFields* output) const override {
+    AddField("render_widget_id", message.compositor().render_widget_id(),
+             output);
+  }
+};
+
+// Logs fields from INPUT messages.
+class InputLogExtractor : public LogExtractor {
+  void ExtractFields(const BlimpMessage& message,
+                     LogFields* output) const override {
+    AddField("render_widget_id", message.input().render_widget_id(), output);
+  }
+};
+
 // Logs fields from RENDER_WIDGET messages.
 class RenderWidgetLogExtractor : public LogExtractor {
   void ExtractFields(const BlimpMessage& message,
@@ -190,9 +207,9 @@ class NullLogExtractor : public LogExtractor {
 
 BlimpMessageLogger::BlimpMessageLogger() {
   AddHandler("COMPOSITOR", BlimpMessage::COMPOSITOR,
-             make_scoped_ptr(new NullLogExtractor));
+             make_scoped_ptr(new CompositorLogExtractor));
   AddHandler("INPUT", BlimpMessage::INPUT,
-             make_scoped_ptr(new NullLogExtractor));
+             make_scoped_ptr(new InputLogExtractor));
   AddHandler("NAVIGATION", BlimpMessage::NAVIGATION,
              make_scoped_ptr(new NavigationLogExtractor));
   AddHandler("PROTOCOL_CONTROL", BlimpMessage::PROTOCOL_CONTROL,

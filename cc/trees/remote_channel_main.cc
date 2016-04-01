@@ -83,6 +83,7 @@ void RemoteChannelMain::SetDeferCommitsOnImpl(bool defer_commits) {
       to_impl_proto->mutable_defer_commits_message();
   defer_commits_message->set_defer_commits(defer_commits);
 
+  VLOG(1) << "Sending defer commits: " << defer_commits << " to client.";
   SendMessageProto(proto);
 }
 
@@ -118,6 +119,7 @@ void RemoteChannelMain::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
       to_impl_proto->mutable_set_needs_redraw_message();
   RectToProto(damage_rect, set_needs_redraw_message->mutable_damaged_rect());
 
+  VLOG(1) << "Sending redraw request to client.";
   SendMessageProto(proto);
 
   // The client will not inform us when the frame buffers are swapped.
@@ -132,6 +134,7 @@ void RemoteChannelMain::SetNeedsCommitOnImpl() {
   to_impl_proto->set_message_type(
       proto::CompositorMessageToImpl::SET_NEEDS_COMMIT);
 
+  VLOG(1) << "Sending commit request to client.";
   SendMessageProto(proto);
 }
 
@@ -147,6 +150,8 @@ void RemoteChannelMain::BeginMainFrameAbortedOnImpl(
   CommitEarlyOutReasonToProtobuf(
       reason, begin_main_frame_aborted_message->mutable_reason());
 
+  VLOG(1) << "Sending BeginMainFrameAborted message to client with reason: "
+          << CommitEarlyOutReasonToString(reason);
   SendMessageProto(proto);
 }
 
@@ -163,6 +168,8 @@ void RemoteChannelMain::StartCommitOnImpl(
   layer_tree_host->ToProtobufForCommit(
       start_commit_message->mutable_layer_tree_host());
 
+  VLOG(1) << "Sending commit message to client. Commit bytes size: "
+          << proto.ByteSize();
   SendMessageProto(proto);
 
   // In order to avoid incurring the overhead for the client to send us a
@@ -197,6 +204,7 @@ void RemoteChannelMain::SynchronouslyInitializeImpl(
       initialize_impl_proto->mutable_layer_tree_settings();
   layer_tree_host->settings().ToProtobuf(settings_proto);
 
+  VLOG(1) << "Sending initialize message to client";
   SendMessageProto(proto);
   initialized_ = true;
 }
@@ -207,6 +215,7 @@ void RemoteChannelMain::SynchronouslyCloseImpl() {
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
   to_impl_proto->set_message_type(proto::CompositorMessageToImpl::CLOSE_IMPL);
 
+  VLOG(1) << "Sending close message to client.";
   SendMessageProto(proto);
   initialized_ = false;
 }
@@ -225,6 +234,7 @@ void RemoteChannelMain::HandleProto(
       NOTIMPLEMENTED() << "Ignoring message proto of unknown type";
       break;
     case proto::CompositorMessageToMain::BEGIN_MAIN_FRAME: {
+      VLOG(1) << "Received BeginMainFrame request from client.";
       const proto::BeginMainFrame& begin_main_frame_message =
           proto.begin_main_frame_message();
       scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state;
