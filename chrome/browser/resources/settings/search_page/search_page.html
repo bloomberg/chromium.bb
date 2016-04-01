@@ -13,6 +13,11 @@
 <dom-module id="settings-search-page">
   <template>
     <style include="settings-shared">
+      paper-dropdown-menu {
+        /* TODO(dschuyler): share styling with settings-dropdown-menu */
+        --iron-icon-fill-color: var(--paper-grey-600);
+      }
+
       paper-listbox div {
         align-items: center;
         display: flex;
