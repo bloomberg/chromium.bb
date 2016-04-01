@@ -644,7 +644,6 @@
       'android_blink_rel': 'tbd',
       'android_chromium_variable': 'tbd',
       'android_coverage': 'tbd',
-      'android_deterministic': 'tbd',
       'cast_shell_android': 'tbd',
 
       'android_arm64_dbg_recipe': 'swarming_android_gyp_debug_trybot_arm64',
@@ -694,8 +693,6 @@
       'linux_chromium_chromeos_ozone_rel_ng': 'tbd',
       'linux_chromium_chromeos_variable': 'tbd',
       'linux_chromium_variable': 'tbd',
-      'linux_nacl_sdk': 'tbd',
-      'linux_nacl_sdk_build': 'tbd',
 
       'cast_shell_linux': 'cast_gn_release_trybot',
       'linux_arm': 'swarming_gyp_release_trybot_arm',
@@ -721,9 +718,10 @@
       'linux_chromium_practice_rel_ng': 'gyp_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'linux_chromium_tsan_rel_ng': 'swarming_tsan_gyp_release_trybot',
-      'linux_deterministic': 'swarming_deterministic_gyp_release_bot',
       'linux_ecs_ozone': 'embedded_gyp_debug_bot',
       'linux_full_bisect_builder': 'swarming_gyp_release_bot',
+      'linux_nacl_sdk': 'nacl_annotator',
+      'linux_nacl_sdk_build': 'nacl_annotator',
       'linux_optional_gpu_tests_rel':
         'swarming_gpu_fyi_tests_gn_release_trybot',
       'linux_site_isolation': 'gn_release_trybot',
@@ -740,9 +738,6 @@
       'mac_chromium_dbg_ng': 'tbd',
       'mac_chromium_rel_ng': 'tbd',
       'mac_chromium_variable': 'tbd',
-      'mac_deterministic': 'tbd',
-      'mac_nacl_sdk': 'tbd',
-      'mac_nacl_sdk_build': 'tbd',
       'mac_optional_gpu_tests_rel': 'tbd',
 
       'ios_dbg_simulator': 'ios_gyp',
@@ -755,6 +750,8 @@
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
       'mac_chromium_gn_rel': 'gn_release_trybot',
       'mac_chromium_gn_upload': 'gn_release_bot',
+      'mac_nacl_sdk': 'nacl_annotator',
+      'mac_nacl_sdk_build': 'nacl_annotator',
     },
 
     'tryserver.chromium.perf': {
@@ -814,9 +811,6 @@
       'win_clang_dbg': 'tbd',
       'win_clang_rel': 'tbd',
       'win_clang_x64_rel': 'tbd',
-      'win_deterministic': 'tbd',
-      'win_nacl_sdk': 'tbd',
-      'win_nacl_sdk_build': 'tbd',
       'win_optional_gpu_tests_rel': 'tbd',
 
       'win8_chromium_gn_dbg': 'gn_debug_bot_minimal_symbols_x86',
@@ -829,6 +823,8 @@
       'win10_chromium_x64_rel_ng': 'gn_release_trybot',
       'win_clang': 'win_clang_debug_bot',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
+      'win_nacl_sdk': 'nacl_annotator',
+      'win_nacl_sdk_build': 'nacl_annotator',
       'win_pgo': 'gyp_official_winpgo',
     },
 
@@ -1174,6 +1170,10 @@
 
     'ios_gyp': ['gyp', 'error'],
 
+    # This is used to indicate that the bot runs the nacl annotator-based
+    # configs and switching them is out of scope for MB.
+    'nacl_annotator': [ 'error' ],
+
     # This is used for tracking purposes; any bot that uses this config
     # should never actually run MB.
     'none': [
@@ -1238,10 +1238,6 @@
 
     'swarming_msan_gyp_release_trybot': [
       'swarming', 'chromeos', 'msan', 'gyp', 'release_trybot',
-    ],
-
-    'swarming_deterministic_gyp_release_bot': [
-      'swarming', 'deterministic', 'gyp', 'release_bot',
     ],
 
     'swarming_gpu_fyi_tests_gn_debug_bot': [
@@ -1583,12 +1579,6 @@
 
     'debug_trybot': {
       'mixins': ['debug_bot_minimal_symbols'],
-    },
-
-    # TODO(zforman): This doesn't do anything now, find out if it can
-    # be removed, and remove it.
-    'deterministic': {
-      'gn_args': 'error',
     },
 
     'disable_nacl': {
