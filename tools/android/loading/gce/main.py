@@ -84,23 +84,6 @@ class ServerApp(object):
     blob.upload_from_string(data_string)
     return blob.public_url
 
-  def _DeleteFile(self, filename):
-    client = self._GetStorageClient()
-    bucket = self._GetStorageBucket(client)
-    try:
-      bucket.delete_blob(filename)
-      return True
-    except NotFound:
-      return False
-
-  def _ReadFile(self, filename):
-    client = self._GetStorageClient()
-    bucket = self._GetStorageBucket(client)
-    blob = bucket.get_blob(filename)
-    if not blob:
-      return None
-    return blob.download_as_string()
-
   def _GenerateTrace(self, url, filename, log_filename):
     """ Generates a trace using analyze.py
 
@@ -117,7 +100,7 @@ class ServerApp(object):
     except OSError:
       pass  # Nothing to remove.
     analyze_path = self._src_path + '/tools/android/loading/analyze.py'
-    command_line = ['python', analyze_path, 'log_requests',
+    command_line = ['python', analyze_path, 'log_requests', '--local_noisy',
         '--clear_cache', '--local', '--headless', '--local_binary',
         self._chrome_path, '--url', url, '--output', filename]
     with open(log_filename, 'w') as log_file:
