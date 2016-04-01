@@ -129,8 +129,8 @@ function documentSubscribePush() {
 
 function documentSubscribePushBadKey() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
-    var invalidApplicationServerKey = Uint8Array.from(kApplicationServerKey);
-    invalidApplicationServerKey[0] = 0x05;
+    var invalidApplicationServerKey = new Uint8Array(300);
+    invalidApplicationServerKey.fill('0x05', 1, 300);
     pushSubscriptionOptions.applicationServerKey =
         invalidApplicationServerKey.buffer;
     return swRegistration.pushManager.subscribe(pushSubscriptionOptions)

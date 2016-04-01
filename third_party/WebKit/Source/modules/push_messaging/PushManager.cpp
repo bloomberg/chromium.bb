@@ -27,6 +27,8 @@
 namespace blink {
 namespace {
 
+const int kMaxApplicationServerKeyLength = 255;
+
 WebPushProvider* pushProvider()
 {
     WebPushProvider* webPushProvider = Platform::current()->pushProvider();
@@ -55,7 +57,7 @@ String bufferSourceToString(const ArrayBufferOrArrayBufferView& applicationServe
 
     // If the key is valid, just treat it as a string of bytes and pass it to
     // the push service.
-    if (length == 65 && input[0] == 0x04)
+    if (length <= kMaxApplicationServerKeyLength)
         return WebString::fromLatin1(input, length);
 
     exceptionState.throwDOMException(InvalidAccessError, "The provided applicationServerKey is not valid.");

@@ -14,12 +14,12 @@
 namespace blink {
 namespace {
 
-const char kValidKeyMarker = 0x04;
-const unsigned kValidKeyLength = 65;
+const unsigned kMaxKeyLength = 255;
 
 // NIST P-256 public key made available to tests. Must be an uncompressed
 // point in accordance with SEC1 2.3.3.
-const uint8_t kApplicationServerKey[65] = {
+const unsigned kApplicationServerKeyLength = 65;
+const uint8_t kApplicationServerKey[kApplicationServerKeyLength] = {
     0x04, 0x55, 0x52, 0x6A, 0xA5, 0x6E, 0x8E, 0xAA, 0x47, 0x97, 0x36, 0x10, 0xC1,
     0x66, 0x3C, 0x1E, 0x65, 0xBF, 0xA1, 0x7B, 0xEE, 0x48, 0xC9, 0xC6, 0xBB, 0xBF,
     0x02, 0x18, 0x53, 0x72, 0x1D, 0x0C, 0x7B, 0xA9, 0xE3, 0x11, 0xB7, 0x03, 0x52,
@@ -32,47 +32,31 @@ TEST(PushManagerTest, ValidSenderKey)
     PushSubscriptionOptions options;
     options.setApplicationServerKey(
         ArrayBufferOrArrayBufferView::fromArrayBuffer(
-            DOMArrayBuffer::create(kApplicationServerKey, kValidKeyLength)));
+            DOMArrayBuffer::create(kApplicationServerKey, kApplicationServerKeyLength)));
 
     TrackExceptionState exceptionState;
     WebPushSubscriptionOptions output = PushManager::toWebPushSubscriptionOptions(options, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
-    EXPECT_EQ(output.applicationServerKey.length(), kValidKeyLength);
+    EXPECT_EQ(output.applicationServerKey.length(), kApplicationServerKeyLength);
 
     // Copy the key into a size+1 buffer so that it can be treated as a null
     // terminated string for the purposes of EXPECT_EQ.
-    uint8_t senderKey[kValidKeyLength+1];
-    for (unsigned i = 0; i < kValidKeyLength; i++)
+    uint8_t senderKey[kApplicationServerKeyLength+1];
+    for (unsigned i = 0; i < kApplicationServerKeyLength; i++)
         senderKey[i] = kApplicationServerKey[i];
-    senderKey[kValidKeyLength] = 0x0;
+    senderKey[kApplicationServerKeyLength] = 0x0;
     EXPECT_EQ(reinterpret_cast<const char*>(senderKey), output.applicationServerKey.latin1());
     EXPECT_FALSE(output.applicationServerKey.isEmpty());
 }
 
-TEST(PushManagerTest, InvalidSenderKeyMarker)
-{
-    uint8_t senderKey[kValidKeyLength];
-    memset(senderKey, 0, sizeof(senderKey));
-    senderKey[0] = 0x05;
-    PushSubscriptionOptions options;
-    options.setApplicationServerKey(
-        ArrayBufferOrArrayBufferView::fromArrayBuffer(
-            DOMArrayBuffer::create(senderKey, kValidKeyLength)));
-
-    TrackExceptionState exceptionState;
-    WebPushSubscriptionOptions output = PushManager::toWebPushSubscriptionOptions(options, exceptionState);
-    EXPECT_TRUE(exceptionState.hadException());
-}
-
 TEST(PushManagerTest, InvalidSenderKeyLength)
 {
-    uint8_t senderKey[kValidKeyLength - 1];
+    uint8_t senderKey[kMaxKeyLength + 1];
     memset(senderKey, 0, sizeof(senderKey));
-    senderKey[0] = kValidKeyMarker;
     PushSubscriptionOptions options;
     options.setApplicationServerKey(
         ArrayBufferOrArrayBufferView::fromArrayBuffer(
-            DOMArrayBuffer::create(senderKey, kValidKeyLength - 1)));
+            DOMArrayBuffer::create(senderKey, kMaxKeyLength + 1)));
 
     TrackExceptionState exceptionState;
     WebPushSubscriptionOptions output = PushManager::toWebPushSubscriptionOptions(options, exceptionState);
