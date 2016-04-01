@@ -187,7 +187,14 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
     case blink::WebBackForwardCommit:
       if (!provisional_entry_)
         return;
-      current_entry_.reset(provisional_entry_.release());
+      // Commit the provisional entry, but only if this back/forward item
+      // matches it.  Otherwise it could be a commit from an earlier attempt to
+      // go back/forward, and we should leave the provisional entry in place.
+      if (HistoryEntry::HistoryNode* node =
+              provisional_entry_->GetHistoryNodeForFrame(frame)) {
+        if (node->item().itemSequenceNumber() == item.itemSequenceNumber())
+          current_entry_.reset(provisional_entry_.release());
+      }
       if (HistoryEntry::HistoryNode* node =
               current_entry_->GetHistoryNodeForFrame(frame)) {
         node->set_item(item);
