@@ -28,7 +28,7 @@ cp -r tools/android/loading/gce $tmp_src_dir/tools/android/loading
 # Copy other dependencies.
 mkdir $tmp_src_dir/third_party
 rsync -av --exclude=".*" --exclude "*.pyc" --exclude "*.html" --exclude "*.md" \
-  --delete third_party/catapult $tmp_src_dir/third_party
+  third_party/catapult $tmp_src_dir/third_party
 mkdir $tmp_src_dir/tools/perf
 cp -r tools/perf/chrome_telemetry_build $tmp_src_dir/tools/perf
 mkdir -p $tmp_src_dir/build/android
@@ -36,6 +36,10 @@ cp build/android/devil_chromium.py $tmp_src_dir/build/android/
 cp build/android/video_recorder.py $tmp_src_dir/build/android/
 cp build/android/devil_chromium.json $tmp_src_dir/build/android/
 cp -r build/android/pylib $tmp_src_dir/build/android/
+mkdir -p \
+  $tmp_src_dir/third_party/WebKit/Source/devtools/front_end/emulated_devices
+cp third_party/WebKit/Source/devtools/front_end/emulated_devices/module.json \
+  $tmp_src_dir/third_party/WebKit/Source/devtools/front_end/emulated_devices/
 
 # Tar up the source and copy it to Google Cloud Storage.
 source_tarball=$tmpdir/source.tgz
