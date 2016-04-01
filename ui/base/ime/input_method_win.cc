@@ -654,7 +654,10 @@ void InputMethodWin::UpdateIMEState() {
   // Use switch here in case we are going to add more text input types.
   // We disable input method in password field.
   const HWND window_handle = toplevel_window_handle_;
-  const TextInputType text_input_type = GetTextInputType();
+  const TextInputType text_input_type =
+      (GetEngine() && GetEngine()->IsInterestedInKeyEvent())
+          ? TEXT_INPUT_TYPE_NONE
+          : GetTextInputType();
   const TextInputMode text_input_mode = GetTextInputMode();
   switch (text_input_type) {
     case ui::TEXT_INPUT_TYPE_NONE:
@@ -685,7 +688,7 @@ void InputMethodWin::UpdateIMEState() {
   if (engine) {
     if (old_text_input_type != ui::TEXT_INPUT_TYPE_NONE)
       engine->FocusOut();
-    if (text_input_type != ui::TEXT_INPUT_TYPE_NONE)
+    if (GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
       engine->FocusIn(context);
   }
 }
