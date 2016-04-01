@@ -224,6 +224,7 @@
         'src/process_mitigations_test.cc',
         'src/process_policy_test.cc',
         'src/registry_policy_test.cc',
+        'src/restricted_token_test.cc',
         'src/sync_policy_test.cc',
         'src/sync_policy_test.h',
         'src/unload_dll_test.cc',

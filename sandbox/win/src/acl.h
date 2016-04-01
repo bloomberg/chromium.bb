@@ -25,9 +25,15 @@ bool GetDefaultDacl(
 bool AddSidToDacl(const Sid& sid, ACL* old_dacl, ACCESS_MODE access_mode,
                   ACCESS_MASK access, ACL** new_dacl);
 
-// Adds and ACE represented by |sid| and |access| to the default dacl present
-// in the token.
-bool AddSidToDefaultDacl(HANDLE token, const Sid& sid, ACCESS_MASK access);
+// Adds an ACE represented by |sid| and |access| with |access_mode| to the
+// default dacl present in the token.
+bool AddSidToDefaultDacl(HANDLE token,
+                         const Sid& sid,
+                         ACCESS_MODE access_mode,
+                         ACCESS_MASK access);
+
+// Revokes access to the logon SID for the default dacl present in the token.
+bool RevokeLogonSidFromDefaultDacl(HANDLE token);
 
 // Adds an ACE represented by the user sid and |access| to the default dacl
 // present in the token.

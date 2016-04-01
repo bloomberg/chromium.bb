@@ -21,9 +21,12 @@ namespace sandbox {
 DWORD CreateRestrictedToken(TokenLevel security_level,
                             IntegrityLevel integrity_level,
                             TokenType token_type,
+                            bool lockdown_default_dacl,
                             base::win::ScopedHandle* token) {
   RestrictedToken restricted_token;
   restricted_token.Init(NULL);  // Initialized with the current process token
+  if (lockdown_default_dacl)
+    restricted_token.SetLockdownDefaultDacl();
 
   std::vector<base::string16> privilege_exceptions;
   std::vector<Sid> sid_exceptions;

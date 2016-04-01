@@ -57,7 +57,10 @@ bool AddSidToDacl(const Sid& sid, ACL* old_dacl, ACCESS_MODE access_mode,
   return true;
 }
 
-bool AddSidToDefaultDacl(HANDLE token, const Sid& sid, ACCESS_MASK access) {
+bool AddSidToDefaultDacl(HANDLE token,
+                         const Sid& sid,
+                         ACCESS_MODE access_mode,
+                         ACCESS_MASK access) {
   if (token == NULL)
     return false;
 
@@ -66,7 +69,7 @@ bool AddSidToDefaultDacl(HANDLE token, const Sid& sid, ACCESS_MASK access) {
     return false;
 
   ACL* new_dacl = NULL;
-  if (!AddSidToDacl(sid, default_dacl->DefaultDacl, GRANT_ACCESS, access,
+  if (!AddSidToDacl(sid, default_dacl->DefaultDacl, access_mode, access,
                     &new_dacl))
     return false;
 
@@ -77,6 +80,23 @@ bool AddSidToDefaultDacl(HANDLE token, const Sid& sid, ACCESS_MASK access) {
                                    sizeof(new_token_dacl));
   ::LocalFree(new_dacl);
   return (TRUE == ret);
+}
+
+bool RevokeLogonSidFromDefaultDacl(HANDLE token) {
+  DWORD size = sizeof(TOKEN_GROUPS) + SECURITY_MAX_SID_SIZE;
+  TOKEN_GROUPS* logon_sid = reinterpret_cast<TOKEN_GROUPS*>(malloc(size));
+
+  scoped_ptr<TOKEN_GROUPS, base::FreeDeleter> logon_sid_ptr(logon_sid);
+
+  if (!::GetTokenInformation(token, TokenLogonSid, logon_sid, size, &size))
+    return false;
+  if (logon_sid->GroupCount < 1) {
+    ::SetLastError(ERROR_INVALID_TOKEN);
+    return false;
+  }
+  return AddSidToDefaultDacl(token,
+                             reinterpret_cast<SID*>(logon_sid->Groups[0].Sid),
+                             REVOKE_ACCESS, 0);
 }
 
 bool AddUserSidToDefaultDacl(HANDLE token, ACCESS_MASK access) {
@@ -90,7 +110,7 @@ bool AddUserSidToDefaultDacl(HANDLE token, ACCESS_MASK access) {
 
   return AddSidToDefaultDacl(token,
                              reinterpret_cast<SID*>(token_user->User.Sid),
-                             access);
+                             GRANT_ACCESS, access);
 }
 
 bool AddKnownSidToObject(HANDLE object, SE_OBJECT_TYPE object_type,

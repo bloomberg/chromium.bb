@@ -71,6 +71,7 @@ class PolicyBase final : public TargetPolicy {
   ResultCode AddKernelObjectToClose(const base::char16* handle_type,
                                     const base::char16* handle_name) override;
   void AddHandleToShare(HANDLE handle) override;
+  void SetLockdownDefaultDacl() override;
 
   // Creates a Job object with the level specified in a previous call to
   // SetJobLevel().
@@ -158,6 +159,7 @@ class PolicyBase final : public TargetPolicy {
   PSID lowbox_sid_;
   base::win::ScopedHandle lowbox_directory_;
   scoped_ptr<Dispatcher> dispatcher_;
+  bool lockdown_default_dacl_;
 
   static HDESK alternate_desktop_handle_;
   static HWINSTA alternate_winstation_handle_;

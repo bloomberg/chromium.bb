@@ -254,6 +254,11 @@ class TargetPolicy {
   // Adds a handle that will be shared with the target process. Does not take
   // ownership of the handle.
   virtual void AddHandleToShare(HANDLE handle) = 0;
+
+  // Locks down the default DACL of the created lockdown and initial tokens
+  // to restrict what other processes are allowed to access a process' kernel
+  // resources.
+  virtual void SetLockdownDefaultDacl() = 0;
 };
 
 }  // namespace sandbox

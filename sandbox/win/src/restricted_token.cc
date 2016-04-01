@@ -45,8 +45,8 @@ namespace sandbox {
 
 RestrictedToken::RestrictedToken()
     : integrity_level_(INTEGRITY_LEVEL_LAST),
-      init_(false) {
-}
+      init_(false),
+      lockdown_default_dacl_(false) {}
 
 RestrictedToken::~RestrictedToken() {
 }
@@ -158,10 +158,19 @@ DWORD RestrictedToken::GetRestrictedToken(
 
   base::win::ScopedHandle new_token(new_token_handle);
 
-  // Modify the default dacl on the token to contain Restricted and the user.
-  if (!AddSidToDefaultDacl(new_token.Get(), WinRestrictedCodeSid, GENERIC_ALL))
-    return ::GetLastError();
+  if (lockdown_default_dacl_) {
+    // Don't add Restricted sid and also remove logon sid access.
+    if (!RevokeLogonSidFromDefaultDacl(new_token.Get()))
+      return ::GetLastError();
+  } else {
+    // Modify the default dacl on the token to contain Restricted.
+    if (!AddSidToDefaultDacl(new_token.Get(), WinRestrictedCodeSid,
+                             GRANT_ACCESS, GENERIC_ALL)) {
+      return ::GetLastError();
+    }
+  }
 
+  // Add user to default dacl.
   if (!AddUserSidToDefaultDacl(new_token.Get(), GENERIC_ALL))
     return ::GetLastError();
 
@@ -420,6 +429,10 @@ DWORD RestrictedToken::AddRestrictingSidAllSids() {
 DWORD RestrictedToken::SetIntegrityLevel(IntegrityLevel integrity_level) {
   integrity_level_ = integrity_level;
   return ERROR_SUCCESS;
+}
+
+void RestrictedToken::SetLockdownDefaultDacl() {
+  lockdown_default_dacl_ = true;
 }
 
 }  // namespace sandbox
