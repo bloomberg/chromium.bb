@@ -5,7 +5,6 @@
 #include "core/animation/StringKeyframe.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/animation/ConstantStyleInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/LegacyStyleInterpolation.h"
