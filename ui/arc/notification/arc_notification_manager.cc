@@ -4,6 +4,8 @@
 
 #include "ui/arc/notification/arc_notification_manager.h"
 
+#include "ash/shell.h"
+#include "ash/system/toast/toast_manager.h"
 #include "base/stl_util.h"
 #include "ui/arc/notification/arc_notification_item.h"
 
@@ -172,6 +174,14 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
   }
 
   notifications_instance->SendNotificationEventToAndroid(key, command);
+}
+
+void ArcNotificationManager::OnToastPosted(ArcToastDataPtr data) {
+  ash::Shell::GetInstance()->toast_manager()->Show(data->text, data->duration);
+}
+
+void ArcNotificationManager::OnToastCancelled(ArcToastDataPtr data) {
+  // TODO(yoshiki): Implement cancel.
 }
 
 }  // namespace arc

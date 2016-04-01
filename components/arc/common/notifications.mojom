@@ -63,15 +63,33 @@ struct ArcNotificationData {
   bool ongoing_event;
 };
 
+[MinVersion=2]
+struct ArcToastData {
+  // Unique identifier
+  string id;
+  // Toast text.
+  string text;
+  // Toast duration in milliseconds.
+  int32 duration;
+};
+
 interface NotificationsHost {
   // Tells the Chrome that a notification is posted (created or updated) on
   // Android.
   // |notification_data| is the data of notification (id, texts, icon and ...).
-  OnNotificationPosted(ArcNotificationData notification_data);
+  OnNotificationPosted@0(ArcNotificationData notification_data);
 
   // Notifies that a notification is removed on Android.
   // |key| is the identifier of the notification.
-  OnNotificationRemoved(string key);
+  OnNotificationRemoved@1(string key);
+
+  [MinVersion=2]
+  // Shows a toast, or queues it if another toast is visible.
+  OnToastPosted@2(ArcToastData data);
+
+  [MinVersion=2]
+  // Hides the visible toast immediately, or cancels the scheduled one.
+  OnToastCancelled@3(ArcToastData data);
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.

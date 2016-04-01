@@ -39,6 +39,8 @@ class ArcNotificationManager : public ArcService,
   // NotificationsHost implementation:
   void OnNotificationPosted(ArcNotificationDataPtr data) override;
   void OnNotificationRemoved(const mojo::String& key) override;
+  void OnToastPosted(ArcToastDataPtr data) override;
+  void OnToastCancelled(ArcToastDataPtr data) override;
 
   // Methods called from ArcNotificationItem:
   void SendNotificationRemovedFromChrome(const std::string& key);
