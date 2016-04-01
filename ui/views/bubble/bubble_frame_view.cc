@@ -35,9 +35,6 @@ namespace views {
 
 namespace {
 
-// The horizontal padding between the title and the icon.
-const int kTitleHorizontalPadding = 5;
-
 // Background color of the footnote view.
 const SkColor kFootnoteBackgroundColor = SkColorSetRGB(245, 245, 245);
 
@@ -159,7 +156,9 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
   // Allow dialogs to show the system menu and be dragged.
   if (GetWidget()->widget_delegate()->AsDialogDelegate() &&
       !GetWidget()->widget_delegate()->AsBubbleDialogDelegate()) {
-    gfx::Rect sys_rect(0, 0, title_->x(), title_->y());
+    gfx::Rect bounds(GetContentsBounds());
+    bounds.Inset(title_margins_);
+    gfx::Rect sys_rect(0, 0, bounds.x(), bounds.y());
     sys_rect.set_origin(gfx::Point(GetMirroredXForRect(sys_rect), 0));
     if (sys_rect.Contains(point))
       return HTSYSMENU;
@@ -302,30 +301,24 @@ void BubbleFrameView::Layout() {
   close_position += gfx::Vector2d(-close_->width() - 7, 6);
   close_->SetPosition(close_position);
 
-  gfx::Size title_icon_size(title_icon_->GetPreferredSize());
-  gfx::Size title_label_size(title_->GetPreferredSize());
+  gfx::Size title_icon_pref_size(title_icon_->GetPreferredSize());
   int padding = 0;
-  if (title_icon_size.width() > 0 && title_label_size.width() > 0)
-    padding = kTitleHorizontalPadding;
-  const int title_height = std::max(title_icon_size.height(),
-                                    title_label_size.height());
 
-  const int title_icon_width = std::max(0, close_->x() - bounds.x());
-  title_icon_size.SetToMin(gfx::Size(title_icon_width, title_height));
-  gfx::Rect title_icon_bounds(
-      bounds.x(), bounds.y(), title_icon_size.width(), title_height);
-  title_icon_->SetBoundsRect(title_icon_bounds);
+  if (title_->visible() && !title_->text().empty()) {
+    if (title_icon_pref_size.width() > 0)
+      padding = title_margins_.left();
 
-  const int title_label_x = title_icon_->bounds().right() + padding;
-  const int title_label_width = std::max(0, close_->x() - title_label_x);
-  title_label_size.SetToMin(gfx::Size(title_label_width,
-                                      title_label_size.height()));
-  gfx::Rect title_label_bounds(
-      title_label_x, bounds.y(), title_label_size.width(), title_height);
-  title_->SetBoundsRect(title_label_bounds);
+    const int title_label_x =
+        bounds.x() + title_icon_pref_size.width() + padding;
+    title_->SizeToFit(std::max(1, close_->x() - title_label_x));
+    title_->SetPosition(gfx::Point(title_label_x, bounds.y()));
+  }
 
-  bounds.set_width(
-      title_icon_size.width() + title_label_size.width() + padding);
+  const int title_height =
+      std::max(title_icon_pref_size.height(), title_->height());
+  title_icon_->SetBounds(bounds.x(), bounds.y(), title_icon_pref_size.width(),
+                         title_height);
+  bounds.set_width(title_->bounds().right() - bounds.x());
   bounds.set_height(title_height);
 
   if (footnote_container_) {
@@ -508,7 +501,7 @@ gfx::Size BubbleFrameView::GetSizeForClientSize(
   gfx::Size title_icon_size = title_icon_->GetPreferredSize();
   gfx::Size title_label_size = title_->GetPreferredSize();
   if (title_icon_size.width() > 0 && title_label_size.width() > 0)
-    title_bar_width += kTitleHorizontalPadding;
+    title_bar_width += title_margins_.left();
   title_bar_width += title_icon_size.width();
   if (close_->visible())
     title_bar_width += close_->width() + 1;

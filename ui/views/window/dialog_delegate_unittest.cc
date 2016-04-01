@@ -202,7 +202,8 @@ TEST_F(DialogTest, HitTest_HiddenTitle) {
   for (size_t i = 0; i < arraysize(cases); ++i) {
     gfx::Point point(cases[i].point, cases[i].point);
     EXPECT_EQ(cases[i].hit, frame->NonClientHitTest(point))
-        << " with border: " << border << ", at point " << cases[i].point;
+        << " case " << i << " with border: " << border << ", at point "
+        << cases[i].point;
   }
 }
 

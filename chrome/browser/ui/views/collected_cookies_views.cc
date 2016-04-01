@@ -331,6 +331,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   // Create the controls that go into the pane.
   allowed_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL));
+  allowed_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   allowed_cookies_tree_model_ =
       content_settings->CreateAllowedCookiesTreeModel();
