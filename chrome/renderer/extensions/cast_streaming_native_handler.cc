@@ -31,6 +31,7 @@
 #include "extensions/renderer/script_context.h"
 #include "media/audio/audio_parameters.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -733,8 +734,8 @@ bool CastStreamingNativeHandler::IPEndPointFromArg(
         v8::String::NewFromUtf8(isolate, kInvalidDestination)));
     return false;
   }
-  net::IPAddressNumber ip;
-  if (!net::ParseIPLiteralToNumber(destination->address, &ip)) {
+  net::IPAddress ip;
+  if (!ip.AssignFromIPLiteral(destination->address)) {
     isolate->ThrowException(v8::Exception::TypeError(
         v8::String::NewFromUtf8(isolate, kInvalidDestination)));
     return false;

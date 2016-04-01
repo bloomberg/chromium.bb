@@ -247,8 +247,8 @@ CastChannelOpenFunction::~CastChannelOpenFunction() { }
 
 net::IPEndPoint* CastChannelOpenFunction::ParseConnectInfo(
     const ConnectInfo& connect_info) {
-  net::IPAddressNumber ip_address;
-  CHECK(net::ParseIPLiteralToNumber(connect_info.ip_address, &ip_address));
+  net::IPAddress ip_address;
+  CHECK(ip_address.AssignFromIPLiteral(connect_info.ip_address));
   return new net::IPEndPoint(ip_address,
                              static_cast<uint16_t>(connect_info.port));
 }
