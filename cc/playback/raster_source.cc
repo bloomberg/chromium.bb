@@ -86,52 +86,27 @@ RasterSource::~RasterSource() {
       this);
 }
 
-void RasterSource::PlaybackToSharedCanvas(SkCanvas* raster_canvas,
-                                          const gfx::Rect& canvas_rect,
-                                          float contents_scale,
-                                          bool include_images) const {
-  // TODO(vmpstr): This can be improved by plumbing whether the tile itself has
-  // discardable images. This way we would only pay for the hijack canvas if the
-  // tile actually needed it.
-  if (!include_images) {
-    SkipImageCanvas canvas(raster_canvas);
-    RasterCommon(&canvas, nullptr, canvas_rect, canvas_rect, contents_scale);
-  } else if (display_list_->MayHaveDiscardableImages()) {
-    const SkImageInfo& info = raster_canvas->imageInfo();
-    ImageHijackCanvas canvas(info.width(), info.height(),
-                             image_decode_controller_);
-    canvas.addCanvas(raster_canvas);
-
-    RasterCommon(&canvas, nullptr, canvas_rect, canvas_rect, contents_scale);
-  } else {
-    RasterCommon(raster_canvas, nullptr, canvas_rect, canvas_rect,
-                 contents_scale);
-  }
-}
-
-void RasterSource::RasterForAnalysis(skia::AnalysisCanvas* canvas,
-                                     const gfx::Rect& canvas_rect,
-                                     float contents_scale) const {
-  RasterCommon(canvas, canvas, canvas_rect, canvas_rect, contents_scale);
-}
-
 void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
                                     const gfx::Rect& canvas_bitmap_rect,
                                     const gfx::Rect& canvas_playback_rect,
                                     float contents_scale,
-                                    bool include_images) const {
-  PrepareForPlaybackToCanvas(raster_canvas, canvas_bitmap_rect,
-                             canvas_playback_rect, contents_scale);
+                                    const PlaybackSettings& settings) const {
+  if (!settings.playback_to_shared_canvas) {
+    PrepareForPlaybackToCanvas(raster_canvas, canvas_bitmap_rect,
+                               canvas_playback_rect, contents_scale);
+  }
 
-  if (!include_images) {
+  if (settings.skip_images) {
     SkipImageCanvas canvas(raster_canvas);
     RasterCommon(&canvas, nullptr, canvas_bitmap_rect, canvas_playback_rect,
                  contents_scale);
-  } else if (display_list_->MayHaveDiscardableImages()) {
+  } else if (settings.use_image_hijack_canvas &&
+             display_list_->MayHaveDiscardableImages()) {
     const SkImageInfo& info = raster_canvas->imageInfo();
     ImageHijackCanvas canvas(info.width(), info.height(),
                              image_decode_controller_);
     canvas.addCanvas(raster_canvas);
+
     RasterCommon(&canvas, nullptr, canvas_bitmap_rect, canvas_playback_rect,
                  contents_scale);
   } else {
@@ -282,7 +257,7 @@ bool RasterSource::PerformSolidColorAnalysis(const gfx::Rect& content_rect,
 
   layer_rect.Intersect(gfx::Rect(size_));
   skia::AnalysisCanvas canvas(layer_rect.width(), layer_rect.height());
-  RasterForAnalysis(&canvas, layer_rect, 1.0f);
+  RasterCommon(&canvas, &canvas, layer_rect, layer_rect, 1.0f);
   return canvas.GetColorIfSolid(color);
 }
 
@@ -372,5 +347,10 @@ bool RasterSource::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
   }
   return true;
 }
+
+RasterSource::PlaybackSettings::PlaybackSettings()
+    : playback_to_shared_canvas(false),
+      skip_images(false),
+      use_image_hijack_canvas(true) {}
 
 }  // namespace cc

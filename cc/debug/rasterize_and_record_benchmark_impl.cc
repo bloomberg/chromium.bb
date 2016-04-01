@@ -53,9 +53,9 @@ void RunBenchmark(RasterSource* raster_source,
                                                     content_rect.height()));
       SkCanvas canvas(bitmap);
 
-      const bool include_images = true;
       raster_source->PlaybackToCanvas(&canvas, content_rect, content_rect,
-                                      contents_scale, include_images);
+                                      contents_scale,
+                                      RasterSource::PlaybackSettings());
 
       timer.NextLap();
     } while (!timer.HasTimeLimitExpired());

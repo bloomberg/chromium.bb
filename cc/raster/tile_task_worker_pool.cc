@@ -60,15 +60,16 @@ bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
 }  // anonymous namespace
 
 // static
-void TileTaskWorkerPool::PlaybackToMemory(void* memory,
-                                          ResourceFormat format,
-                                          const gfx::Size& size,
-                                          size_t stride,
-                                          const RasterSource* raster_source,
-                                          const gfx::Rect& canvas_bitmap_rect,
-                                          const gfx::Rect& canvas_playback_rect,
-                                          float scale,
-                                          bool include_images) {
+void TileTaskWorkerPool::PlaybackToMemory(
+    void* memory,
+    ResourceFormat format,
+    const gfx::Size& size,
+    size_t stride,
+    const RasterSource* raster_source,
+    const gfx::Rect& canvas_bitmap_rect,
+    const gfx::Rect& canvas_playback_rect,
+    float scale,
+    const RasterSource::PlaybackSettings& playback_settings) {
   TRACE_EVENT0("cc", "TileTaskWorkerPool::PlaybackToMemory");
 
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
@@ -95,7 +96,7 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
           SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
       raster_source->PlaybackToCanvas(surface->getCanvas(), canvas_bitmap_rect,
                                       canvas_playback_rect, scale,
-                                      include_images);
+                                      playback_settings);
       return;
     }
     case RGBA_4444:
@@ -106,7 +107,7 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
       // playback rect passed to PlaybackToCanvas. crbug.com/519070
       raster_source->PlaybackToCanvas(surface->getCanvas(), canvas_bitmap_rect,
                                       canvas_bitmap_rect, scale,
-                                      include_images);
+                                      playback_settings);
 
       if (format == ETC1) {
         TRACE_EVENT0("cc",

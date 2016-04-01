@@ -28,6 +28,21 @@ class ImageDecodeController;
 class CC_EXPORT RasterSource : public base::trace_event::MemoryDumpProvider,
                                public base::RefCountedThreadSafe<RasterSource> {
  public:
+  struct CC_EXPORT PlaybackSettings {
+    PlaybackSettings();
+
+    // If set to true, this indicates that the canvas has already been
+    // rasterized into. This means that the canvas cannot be cleared safely.
+    bool playback_to_shared_canvas;
+
+    // If set to true, none of the images will be rasterized.
+    bool skip_images;
+
+    // If set to true, we will use an image hijack canvas, which enables
+    // compositor image caching.
+    bool use_image_hijack_canvas;
+  };
+
   static scoped_refptr<RasterSource> CreateFromRecordingSource(
       const RecordingSource* other,
       bool can_use_lcd_text);
@@ -47,15 +62,7 @@ class CC_EXPORT RasterSource : public base::trace_event::MemoryDumpProvider,
                                 const gfx::Rect& canvas_bitmap_rect,
                                 const gfx::Rect& canvas_playback_rect,
                                 float contents_scale,
-                                bool include_images) const;
-
-  // Similar to above, except that the canvas passed here can (or was already)
-  // rasterized into by another raster source. That is, it is not safe to clear
-  // the canvas or discard its underlying memory.
-  void PlaybackToSharedCanvas(SkCanvas* canvas,
-                              const gfx::Rect& canvas_rect,
-                              float contents_scale,
-                              bool include_images) const;
+                                const PlaybackSettings& settings) const;
 
   // Returns whether the given rect at given scale is of solid color in
   // this raster source, as well as the solid color value.
@@ -146,12 +153,6 @@ class CC_EXPORT RasterSource : public base::trace_event::MemoryDumpProvider,
   ImageDecodeController* image_decode_controller_;
 
  private:
-  // Called when analyzing a tile. We can use AnalysisCanvas as
-  // SkPicture::AbortCallback, which allows us to early out from analysis.
-  void RasterForAnalysis(skia::AnalysisCanvas* canvas,
-                         const gfx::Rect& canvas_rect,
-                         float contents_scale) const;
-
   void RasterCommon(SkCanvas* canvas,
                     SkPicture::AbortCallback* callback,
                     const gfx::Rect& canvas_bitmap_rect,

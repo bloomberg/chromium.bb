@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
+#include "cc/playback/raster_source.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/tiles/tile.h"
 #include "third_party/skia/include/core/SkMultiPictureDraw.h"
@@ -27,7 +28,8 @@ class CC_EXPORT GpuRasterizer {
                        const RasterSource* raster_source,
                        const gfx::Rect& raster_full_rect,
                        const gfx::Rect& playback_rect,
-                       float scale);
+                       float scale,
+                       const RasterSource::PlaybackSettings& playback_settings);
 
   ResourceProvider* resource_provider() { return resource_provider_; }
 

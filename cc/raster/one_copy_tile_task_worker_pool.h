@@ -84,7 +84,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
       const gfx::Rect& raster_full_rect,
       const gfx::Rect& raster_dirty_rect,
       float scale,
-      bool include_images,
+      const RasterSource::PlaybackSettings& playback_settings,
       uint64_t resource_content_id,
       uint64_t previous_content_id);
 

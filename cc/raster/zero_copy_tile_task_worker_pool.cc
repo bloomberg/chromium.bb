@@ -29,12 +29,13 @@ class RasterBufferImpl : public RasterBuffer {
       : lock_(resource_provider, resource->id()), resource_(resource) {}
 
   // Overridden from RasterBuffer:
-  void Playback(const RasterSource* raster_source,
-                const gfx::Rect& raster_full_rect,
-                const gfx::Rect& raster_dirty_rect,
-                uint64_t new_content_id,
-                float scale,
-                bool include_images) override {
+  void Playback(
+      const RasterSource* raster_source,
+      const gfx::Rect& raster_full_rect,
+      const gfx::Rect& raster_dirty_rect,
+      uint64_t new_content_id,
+      float scale,
+      const RasterSource::PlaybackSettings& playback_settings) override {
     gfx::GpuMemoryBuffer* buffer = lock_.GetGpuMemoryBuffer();
     if (!buffer)
       return;
@@ -50,7 +51,7 @@ class RasterBufferImpl : public RasterBuffer {
     TileTaskWorkerPool::PlaybackToMemory(
         buffer->memory(0), resource_->format(), resource_->size(),
         buffer->stride(0), raster_source, raster_full_rect, raster_full_rect,
-        scale, include_images);
+        scale, playback_settings);
     buffer->Unmap();
   }
 

@@ -38,7 +38,7 @@ class FakeRasterSource : public RasterSource {
                         const gfx::Rect& canvas_bitmap_rect,
                         const gfx::Rect& canvas_playback_rect,
                         float contents_scale,
-                        bool include_images) const override;
+                        const PlaybackSettings& settings) const override;
 
  protected:
   FakeRasterSource(const RecordingSource* recording_source, bool can_use_lcd);

@@ -366,7 +366,8 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
 
   TRACE_EVENT0("cc", "SoftwareRenderer::DrawPictureQuad");
 
-  const bool include_images = true;
+  RasterSource::PlaybackSettings playback_settings;
+  playback_settings.playback_to_shared_canvas = true;
   if (needs_transparency || disable_image_filtering) {
     // TODO(aelias): This isn't correct in all cases. We should detect these
     // cases and fall back to a persistent bitmap backing
@@ -377,13 +378,13 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
     skia::OpacityFilterCanvas filtered_canvas(current_canvas_,
                                               quad->shared_quad_state->opacity,
                                               disable_image_filtering);
-    quad->raster_source->PlaybackToSharedCanvas(
-        &filtered_canvas, quad->content_rect, quad->contents_scale,
-        include_images);
+    quad->raster_source->PlaybackToCanvas(
+        &filtered_canvas, quad->content_rect, quad->content_rect,
+        quad->contents_scale, playback_settings);
   } else {
-    quad->raster_source->PlaybackToSharedCanvas(
-        current_canvas_, quad->content_rect, quad->contents_scale,
-        include_images);
+    quad->raster_source->PlaybackToCanvas(
+        current_canvas_, quad->content_rect, quad->content_rect,
+        quad->contents_scale, playback_settings);
   }
 }
 

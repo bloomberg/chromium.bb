@@ -47,15 +47,16 @@ class RasterBufferImpl : public RasterBuffer {
   ~RasterBufferImpl() override {}
 
   // Overridden from RasterBuffer:
-  void Playback(const RasterSource* raster_source,
-                const gfx::Rect& raster_full_rect,
-                const gfx::Rect& raster_dirty_rect,
-                uint64_t new_content_id,
-                float scale,
-                bool include_images) override {
+  void Playback(
+      const RasterSource* raster_source,
+      const gfx::Rect& raster_full_rect,
+      const gfx::Rect& raster_dirty_rect,
+      uint64_t new_content_id,
+      float scale,
+      const RasterSource::PlaybackSettings& playback_settings) override {
     worker_pool_->PlaybackAndCopyOnWorkerThread(
         resource_, &lock_, raster_source, raster_full_rect, raster_dirty_rect,
-        scale, include_images, previous_content_id_, new_content_id);
+        scale, playback_settings, previous_content_id_, new_content_id);
   }
 
  private:
@@ -322,7 +323,7 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
     float scale,
-    bool include_images,
+    const RasterSource::PlaybackSettings& playback_settings,
     uint64_t previous_content_id,
     uint64_t new_content_id) {
   base::AutoLock lock(lock_);
@@ -368,7 +369,7 @@ void OneCopyTileTaskWorkerPool::PlaybackAndCopyOnWorkerThread(
       TileTaskWorkerPool::PlaybackToMemory(
           buffer->memory(0), resource->format(), staging_buffer->size,
           buffer->stride(0), raster_source, raster_full_rect, playback_rect,
-          scale, include_images);
+          scale, playback_settings);
       buffer->Unmap();
       staging_buffer->content_id = new_content_id;
     }

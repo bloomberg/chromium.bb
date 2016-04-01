@@ -48,7 +48,7 @@ class RasterTaskImpl : public RasterTask {
                  const gfx::Rect& content_rect,
                  const gfx::Rect& invalid_content_rect,
                  float contents_scale,
-                 bool include_images,
+                 const RasterSource::PlaybackSettings& playback_settings,
                  TileResolution tile_resolution,
                  int layer_id,
                  uint64_t source_prepare_tiles_id,
@@ -65,7 +65,7 @@ class RasterTaskImpl : public RasterTask {
         content_rect_(content_rect),
         invalid_content_rect_(invalid_content_rect),
         contents_scale_(contents_scale),
-        include_images_(include_images),
+        playback_settings_(playback_settings),
         tile_resolution_(tile_resolution),
         layer_id_(layer_id),
         source_prepare_tiles_id_(source_prepare_tiles_id),
@@ -93,7 +93,7 @@ class RasterTaskImpl : public RasterTask {
 
     raster_buffer_->Playback(raster_source_.get(), content_rect_,
                              invalid_content_rect_, new_content_id_,
-                             contents_scale_, include_images_);
+                             contents_scale_, playback_settings_);
   }
 
   // Overridden from TileTask:
@@ -116,7 +116,7 @@ class RasterTaskImpl : public RasterTask {
   gfx::Rect content_rect_;
   gfx::Rect invalid_content_rect_;
   float contents_scale_;
-  bool include_images_;
+  RasterSource::PlaybackSettings playback_settings_;
   TileResolution tile_resolution_;
   int layer_id_;
   uint64_t source_prepare_tiles_id_;
@@ -848,17 +848,21 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   }
 
   // For LOW_RESOLUTION tiles, we don't draw or predecode images.
-  const bool include_images =
-      prioritized_tile.priority().resolution != LOW_RESOLUTION;
+  RasterSource::PlaybackSettings playback_settings;
+  playback_settings.skip_images =
+      prioritized_tile.priority().resolution == LOW_RESOLUTION;
 
   // Create and queue all image decode tasks that this tile depends on.
   ImageDecodeTask::Vector decode_tasks;
   std::vector<DrawImage>& images = scheduled_draw_images_[tile->id()];
   images.clear();
-  if (include_images) {
+  if (!playback_settings.skip_images) {
     prioritized_tile.raster_source()->GetDiscardableImagesInRect(
         tile->enclosing_layer_rect(), tile->contents_scale(), &images);
   }
+
+  // TODO(vmpstr): We should disable image hijack canvas in
+  // |playback_settings| here if |images| is empty.
 
   for (auto it = images.begin(); it != images.end();) {
     scoped_refptr<ImageDecodeTask> task;
@@ -876,10 +880,11 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
 
   return make_scoped_refptr(new RasterTaskImpl(
       resource, prioritized_tile.raster_source(), tile->content_rect(),
-      tile->invalidated_content_rect(), tile->contents_scale(), include_images,
-      prioritized_tile.priority().resolution, tile->layer_id(),
-      prepare_tiles_count_, static_cast<const void*>(tile), tile->id(),
-      tile->invalidated_id(), resource_content_id, tile->source_frame_number(),
+      tile->invalidated_content_rect(), tile->contents_scale(),
+      playback_settings, prioritized_tile.priority().resolution,
+      tile->layer_id(), prepare_tiles_count_, static_cast<const void*>(tile),
+      tile->id(), tile->invalidated_id(), resource_content_id,
+      tile->source_frame_number(),
       base::Bind(&TileManager::OnRasterTaskCompleted, base::Unretained(this),
                  tile->id(), resource),
       &decode_tasks));
