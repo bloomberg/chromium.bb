@@ -17,8 +17,7 @@
 
 namespace content {
 
-AudioRendererMixerManager::AudioRendererMixerManager()
-    : sink_for_testing_(nullptr) {}
+AudioRendererMixerManager::AudioRendererMixerManager() {}
 
 AudioRendererMixerManager::~AudioRendererMixerManager() {
   // References to AudioRendererMixers may be owned by garbage collected
@@ -35,15 +34,8 @@ media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
                  source_render_frame_id),
       base::Bind(&AudioRendererMixerManager::RemoveMixer,
                  base::Unretained(this), source_render_frame_id),
-      base::Bind(&AudioRendererMixerManager::GetHardwareOutputParams,
-                 source_render_frame_id, 0),  // Session id is 0.
       device_id,
       security_origin);
-}
-
-void AudioRendererMixerManager::SetAudioRendererSinkForTesting(
-    media::AudioRendererSink* sink) {
-  sink_for_testing_ = sink;
 }
 
 media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
@@ -69,17 +61,13 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
   }
 
   scoped_refptr<media::AudioRendererSink> sink =
-      sink_for_testing_
-          ? sink_for_testing_
-          : AudioDeviceFactory::NewOutputDevice(source_render_frame_id, 0,
-                                                device_id, security_origin)
-                .get();
+      AudioDeviceFactory::NewAudioRendererMixerSink(source_render_frame_id, 0,
+                                                    device_id, security_origin);
 
-  media::OutputDeviceStatus new_device_status =
-      sink->GetOutputDevice()->GetDeviceStatus();
+  const media::OutputDeviceInfo& device_info = sink->GetOutputDeviceInfo();
   if (device_status)
-    *device_status = new_device_status;
-  if (new_device_status != media::OUTPUT_DEVICE_STATUS_OK) {
+    *device_status = device_info.device_status();
+  if (device_info.device_status() != media::OUTPUT_DEVICE_STATUS_OK) {
     sink->Stop();
     return nullptr;
   }
@@ -91,8 +79,7 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
       media::AudioHardwareConfig::GetHighLatencyBufferSize(sample_rate, 0);
 
 #if !defined(OS_CHROMEOS)
-  media::AudioParameters hardware_params =
-      sink->GetOutputDevice()->GetOutputParameters();
+  const media::AudioParameters& hardware_params = device_info.output_params();
 
   // If we have valid, non-fake hardware parameters, use them.  Otherwise, pass
   // on the input params and let the browser side handle automatic fallback.
@@ -137,31 +124,6 @@ void AudioRendererMixerManager::RemoveMixer(
     delete it->second.mixer;
     mixers_.erase(it);
   }
-}
-
-// static
-media::AudioParameters AudioRendererMixerManager::GetHardwareOutputParams(
-    int render_frame_id,
-    int session_id,
-    const std::string& device_id,
-    const url::Origin& security_origin) {
-  media::AudioParameters params;  // Invalid parameters to return by default.
-
-  // TODO(olka): First try to lookup an existing device (cached or belonging
-  // to some mixer) and reuse it. http://crbug.com/586161
-
-  // AudioOutputDevice is the only interface we have to communicate with output
-  // device via IPC. So, that's how we get the parameters when there is no
-  // AudioOutputDevice:
-  scoped_refptr<media::AudioOutputDevice> device =
-      AudioDeviceFactory::NewOutputDevice(render_frame_id, session_id,
-                                          device_id, security_origin);
-
-  if (device->GetDeviceStatus() == media::OUTPUT_DEVICE_STATUS_OK)
-    params = device->GetOutputParameters();
-
-  device->Stop();  // TODO(olka): temporary cash for future reuse.
-  return params;
 }
 
 AudioRendererMixerManager::MixerKey::MixerKey(

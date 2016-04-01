@@ -26,7 +26,7 @@ class WebMediaSession;
 
 namespace media {
 
-class RestartableAudioRendererSink;
+class SwitchableAudioRendererSink;
 class MediaLog;
 class SurfaceManager;
 
@@ -48,7 +48,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   // |context_3d_cb| may be null.
   WebMediaPlayerParams(
       const DeferLoadCB& defer_load_cb,
-      const scoped_refptr<RestartableAudioRendererSink>& audio_renderer_sink,
+      const scoped_refptr<SwitchableAudioRendererSink>& audio_renderer_sink,
       const scoped_refptr<MediaLog>& media_log,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
@@ -63,7 +63,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
   DeferLoadCB defer_load_cb() const { return defer_load_cb_; }
 
-  const scoped_refptr<RestartableAudioRendererSink>& audio_renderer_sink()
+  const scoped_refptr<SwitchableAudioRendererSink>& audio_renderer_sink()
       const {
     return audio_renderer_sink_;
   }
@@ -101,7 +101,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
  private:
   DeferLoadCB defer_load_cb_;
-  scoped_refptr<RestartableAudioRendererSink> audio_renderer_sink_;
+  scoped_refptr<SwitchableAudioRendererSink> audio_renderer_sink_;
   scoped_refptr<MediaLog> media_log_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;

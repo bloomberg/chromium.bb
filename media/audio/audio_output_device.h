@@ -75,14 +75,13 @@
 #include "media/audio/scoped_task_runner_observer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_export.h"
-#include "media/base/output_device.h"
+#include "media/base/output_device_info.h"
 
 namespace media {
 
 class MEDIA_EXPORT AudioOutputDevice
     : NON_EXPORTED_BASE(public AudioRendererSink),
       NON_EXPORTED_BASE(public AudioOutputIPCDelegate),
-      NON_EXPORTED_BASE(public OutputDevice),
       NON_EXPORTED_BASE(public ScopedTaskRunnerObserver) {
  public:
   // NOTE: Clients must call Initialize() before using.
@@ -104,11 +103,7 @@ class MEDIA_EXPORT AudioOutputDevice
   void Play() override;
   void Pause() override;
   bool SetVolume(double volume) override;
-  OutputDevice* GetOutputDevice() override;
-
-  // OutputDevice implementation
-  AudioParameters GetOutputParameters() override;
-  OutputDeviceStatus GetDeviceStatus() override;
+  OutputDeviceInfo GetOutputDeviceInfo() override;
 
   // Methods called on IO thread ----------------------------------------------
   // AudioOutputIPCDelegate methods.
@@ -137,11 +132,6 @@ class MEDIA_EXPORT AudioOutputDevice
     PAUSED,   // Paused.  OnStreamCreated() has been called.  Can Play()/Stop().
     PLAYING,  // Playing back.  Can Pause()/Stop().
   };
-
-  // Unsupported OutputDevice implementation
-  void SwitchOutputDevice(const std::string& device_id,
-                          const url::Origin& security_origin,
-                          const SwitchOutputDeviceCB& callback) override;
 
   // Methods called on IO thread ----------------------------------------------
   // The following methods are tasks posted on the IO thread that need to
@@ -203,7 +193,7 @@ class MEDIA_EXPORT AudioOutputDevice
   bool stopping_hack_;
 
   base::WaitableEvent did_receive_auth_;
-  media::AudioParameters output_params_;
+  AudioParameters output_params_;
   OutputDeviceStatus device_status_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputDevice);

@@ -138,27 +138,10 @@ bool AudioOutputDevice::SetVolume(double volume) {
   return true;
 }
 
-OutputDevice* AudioOutputDevice::GetOutputDevice() {
-  return this;
-}
-
-void AudioOutputDevice::SwitchOutputDevice(
-    const std::string& device_id,
-    const url::Origin& security_origin,
-    const SwitchOutputDeviceCB& callback) {
-  NOTREACHED();
-}
-
-AudioParameters AudioOutputDevice::GetOutputParameters() {
+OutputDeviceInfo AudioOutputDevice::GetOutputDeviceInfo() {
   CHECK(!task_runner()->BelongsToCurrentThread());
   did_receive_auth_.Wait();
-  return output_params_;
-}
-
-OutputDeviceStatus AudioOutputDevice::GetDeviceStatus() {
-  CHECK(!task_runner()->BelongsToCurrentThread());
-  did_receive_auth_.Wait();
-  return device_status_;
+  return OutputDeviceInfo(device_id_, device_status_, output_params_);
 }
 
 void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {

@@ -8,21 +8,13 @@
 #include <stdint.h>
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
-#include "media/base/media_export.h"
-#include "media/base/output_device.h"
-#include "url/gurl.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
+#include "media/base/output_device_info.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -71,12 +63,12 @@ class AudioRendererSink
   // Returns |true| on success.
   virtual bool SetVolume(double volume) = 0;
 
-  // Returns a pointer to the internal output device.
-  // This pointer is not to be owned by the caller and is valid only during
-  // the lifetime of the AudioRendererSink.
-  // It can be null, which means that access to the output device is not
-  // supported.
-  virtual OutputDevice* GetOutputDevice() = 0;
+  // Returns current output device information. If the information is not
+  // available yet, this method may block until it becomes available.
+  // If the sink is not associated with any output device, |device_status| of
+  // OutputDeviceInfo should be set to OUTPUT_DEVICE_STATUS_ERROR_INTERNAL.
+  // Must never be called on the IO thread.
+  virtual OutputDeviceInfo GetOutputDeviceInfo() = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<AudioRendererSink>;
@@ -91,6 +83,21 @@ class AudioRendererSink
 class RestartableAudioRendererSink : public AudioRendererSink {
  protected:
   ~RestartableAudioRendererSink() override {}
+};
+
+class SwitchableAudioRendererSink : public RestartableAudioRendererSink {
+ public:
+  // Attempts to switch the audio output device associated with a sink.
+  // Once the attempt is finished, |callback| is invoked with the
+  // result of the operation passed as a parameter. The result is a value from
+  // the media::OutputDeviceStatus enum.
+  // There is no guarantee about the thread where |callback| will be invoked.
+  virtual void SwitchOutputDevice(const std::string& device_id,
+                                  const url::Origin& security_origin,
+                                  const OutputDeviceStatusCB& callback) = 0;
+
+ protected:
+  ~SwitchableAudioRendererSink() override {}
 };
 
 }  // namespace media

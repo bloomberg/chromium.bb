@@ -21,6 +21,19 @@ AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
 
 namespace {
 
+scoped_refptr<media::AudioOutputDevice> NewOutputDevice(
+    int render_frame_id,
+    int session_id,
+    const std::string& device_id,
+    const url::Origin& security_origin) {
+  AudioMessageFilter* const filter = AudioMessageFilter::Get();
+  scoped_refptr<media::AudioOutputDevice> device(new media::AudioOutputDevice(
+      filter->CreateAudioOutputIPC(render_frame_id), filter->io_task_runner(),
+      session_id, device_id, security_origin));
+  device->RequestDeviceAuthorization();
+  return device;
+}
+
 // This is where we decide which audio will go to mixers and which one to
 // AudioOutpuDevice directly.
 bool IsMixable(AudioDeviceFactory::SourceType source_type) {
@@ -32,7 +45,7 @@ bool IsMixable(AudioDeviceFactory::SourceType source_type) {
   return false;
 }
 
-scoped_refptr<media::RestartableAudioRendererSink> NewMixableSink(
+scoped_refptr<media::SwitchableAudioRendererSink> NewMixableSink(
     int render_frame_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
@@ -47,31 +60,27 @@ scoped_refptr<media::AudioRendererSink> NewUnmixableSink(
     int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  return AudioDeviceFactory::NewOutputDevice(render_frame_id, session_id,
-                                             device_id, security_origin);
+  return NewOutputDevice(render_frame_id, session_id, device_id,
+                         security_origin);
 }
 
 }  // namespace
 
-// static
-scoped_refptr<media::AudioOutputDevice> AudioDeviceFactory::NewOutputDevice(
+scoped_refptr<media::AudioRendererSink>
+AudioDeviceFactory::NewAudioRendererMixerSink(
     int render_frame_id,
     int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
   if (factory_) {
-    media::AudioOutputDevice* const device = factory_->CreateOutputDevice(
-        render_frame_id, session_id, device_id, security_origin);
-    if (device)
-      return device;
+    scoped_refptr<media::AudioRendererSink> sink =
+        factory_->CreateAudioRendererMixerSink(render_frame_id, session_id,
+                                               device_id, security_origin);
+    if (sink)
+      return sink;
   }
-
-  AudioMessageFilter* const filter = AudioMessageFilter::Get();
-  scoped_refptr<media::AudioOutputDevice> device = new media::AudioOutputDevice(
-      filter->CreateAudioOutputIPC(render_frame_id), filter->io_task_runner(),
-      session_id, device_id, security_origin);
-  device->RequestDeviceAuthorization();
-  return device;
+  return NewOutputDevice(render_frame_id, session_id, device_id,
+                         security_origin);
 }
 
 // static
@@ -82,8 +91,10 @@ AudioDeviceFactory::NewAudioRendererSink(SourceType source_type,
                                          const std::string& device_id,
                                          const url::Origin& security_origin) {
   if (factory_) {
-    media::AudioRendererSink* const device = factory_->CreateAudioRendererSink(
-        source_type, render_frame_id, session_id, device_id, security_origin);
+    scoped_refptr<media::AudioRendererSink> device =
+        factory_->CreateAudioRendererSink(source_type, render_frame_id,
+                                          session_id, device_id,
+                                          security_origin);
     if (device)
       return device;
   }
@@ -96,20 +107,20 @@ AudioDeviceFactory::NewAudioRendererSink(SourceType source_type,
 }
 
 // static
-scoped_refptr<media::RestartableAudioRendererSink>
-AudioDeviceFactory::NewRestartableAudioRendererSink(
+scoped_refptr<media::SwitchableAudioRendererSink>
+AudioDeviceFactory::NewSwitchableAudioRendererSink(
     SourceType source_type,
     int render_frame_id,
     int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
   if (factory_) {
-    media::RestartableAudioRendererSink* const device =
-        factory_->CreateRestartableAudioRendererSink(
-            source_type, render_frame_id, session_id, device_id,
-            security_origin);
-    if (device)
-      return device;
+    scoped_refptr<media::SwitchableAudioRendererSink> sink =
+        factory_->CreateSwitchableAudioRendererSink(source_type,
+                                                    render_frame_id, session_id,
+                                                    device_id, security_origin);
+    if (sink)
+      return sink;
   }
 
   if (IsMixable(source_type))
@@ -122,13 +133,13 @@ AudioDeviceFactory::NewRestartableAudioRendererSink(
 }
 
 // static
-scoped_refptr<media::AudioInputDevice> AudioDeviceFactory::NewInputDevice(
-    int render_frame_id) {
+scoped_refptr<media::AudioCapturerSource>
+AudioDeviceFactory::NewAudioCapturerSource(int render_frame_id) {
   if (factory_) {
-    media::AudioInputDevice* const device =
-        factory_->CreateInputDevice(render_frame_id);
-    if (device)
-      return device;
+    scoped_refptr<media::AudioCapturerSource> source =
+        factory_->CreateAudioCapturerSource(render_frame_id);
+    if (source)
+      return source;
   }
 
   AudioInputMessageFilter* const filter = AudioInputMessageFilter::Get();
@@ -139,17 +150,17 @@ scoped_refptr<media::AudioInputDevice> AudioDeviceFactory::NewInputDevice(
 // static
 // TODO(http://crbug.com/587461): Find a better way to check if device exists
 // and is authorized.
-media::OutputDeviceStatus AudioDeviceFactory::GetOutputDeviceStatus(
+media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
     int render_frame_id,
     int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
   scoped_refptr<media::AudioOutputDevice> device =
       NewOutputDevice(render_frame_id, session_id, device_id, security_origin);
-  media::OutputDeviceStatus status = device->GetDeviceStatus();
 
+  const media::OutputDeviceInfo& device_info = device->GetOutputDeviceInfo();
   device->Stop();  // Must be stopped.
-  return status;
+  return device_info;
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {

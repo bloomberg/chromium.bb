@@ -3,24 +3,49 @@
 // found in the LICENSE file.
 
 #include "media/base/mock_audio_renderer_sink.h"
-#include "media/base/fake_output_device.h"
 
 namespace media {
 MockAudioRendererSink::MockAudioRendererSink()
     : MockAudioRendererSink(OUTPUT_DEVICE_STATUS_OK) {}
 
 MockAudioRendererSink::MockAudioRendererSink(OutputDeviceStatus device_status)
-    : output_device_(new FakeOutputDevice(device_status)) {}
+    : MockAudioRendererSink(std::string(), device_status) {}
+
+MockAudioRendererSink::MockAudioRendererSink(const std::string& device_id,
+                                             OutputDeviceStatus device_status)
+    : MockAudioRendererSink(
+          device_id,
+          device_status,
+          media::AudioParameters(media::AudioParameters::AUDIO_FAKE,
+                                 media::CHANNEL_LAYOUT_STEREO,
+                                 media::AudioParameters::kTelephoneSampleRate,
+                                 16,
+                                 1)) {}
+
+MockAudioRendererSink::MockAudioRendererSink(
+    const std::string& device_id,
+    OutputDeviceStatus device_status,
+    const AudioParameters& device_output_params)
+    : output_device_info_(device_id, device_status, device_output_params) {}
 
 MockAudioRendererSink::~MockAudioRendererSink() {}
+
+void MockAudioRendererSink::SwitchOutputDevice(
+    const std::string& device_id,
+    const url::Origin& security_origin,
+    const OutputDeviceStatusCB& callback) {
+  // NB: output device won't be changed, since it's not required by any tests
+  // now.
+  callback.Run(output_device_info_.device_status());
+}
 
 void MockAudioRendererSink::Initialize(const AudioParameters& params,
                                        RenderCallback* renderer) {
   callback_ = renderer;
 }
 
-OutputDevice* MockAudioRendererSink::GetOutputDevice() {
-  return output_device_.get();
+OutputDeviceInfo MockAudioRendererSink::GetOutputDeviceInfo() {
+  return output_device_info_;
 }
 
 }  // namespace media

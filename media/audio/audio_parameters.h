@@ -177,6 +177,9 @@ class MEDIA_EXPORT AudioParameters {
   AudioParameters(const AudioParameters&);
   AudioParameters& operator=(const AudioParameters&);
 
+  // Creates reasonable dummy parameters in case no device is available.
+  static AudioParameters UnavailableDeviceParams();
+
  private:
   Format format_;                 // Format of the stream.
   ChannelLayout channel_layout_;  // Order of surround sound channels.

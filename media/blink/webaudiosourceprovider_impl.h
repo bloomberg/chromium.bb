@@ -41,13 +41,13 @@ namespace media {
 // All calls are protected by a lock.
 class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
     : NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
-      NON_EXPORTED_BASE(public RestartableAudioRendererSink) {
+      NON_EXPORTED_BASE(public SwitchableAudioRendererSink) {
  public:
   using CopyAudioCB = base::Callback<
       void(scoped_ptr<AudioBus>, uint32_t delay_milliseconds, int sample_rate)>;
 
   explicit WebAudioSourceProviderImpl(
-      const scoped_refptr<RestartableAudioRendererSink>& sink);
+      const scoped_refptr<SwitchableAudioRendererSink>& sink);
 
   // blink::WebAudioSourceProvider implementation.
   void setClient(blink::WebAudioSourceProviderClient* client) override;
@@ -60,9 +60,12 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
   void Play() override;
   void Pause() override;
   bool SetVolume(double volume) override;
-  OutputDevice* GetOutputDevice() override;
+  OutputDeviceInfo GetOutputDeviceInfo() override;
   void Initialize(const AudioParameters& params,
                   RenderCallback* renderer) override;
+  void SwitchOutputDevice(const std::string& device_id,
+                          const url::Origin& security_origin,
+                          const OutputDeviceStatusCB& callback) override;
 
   // These methods allow a client to get a copy of the rendered audio.
   void SetCopyAudioCallback(const CopyAudioCB& callback);
@@ -91,7 +94,7 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
 
   // Where audio ends up unless overridden by |client_|.
   base::Lock sink_lock_;
-  const scoped_refptr<RestartableAudioRendererSink> sink_;
+  const scoped_refptr<SwitchableAudioRendererSink> sink_;
   scoped_ptr<AudioBus> bus_wrapper_;
 
   // An inner class acting as a T filter where actual data can be tapped.

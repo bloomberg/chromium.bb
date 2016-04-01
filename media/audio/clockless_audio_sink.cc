@@ -121,8 +121,8 @@ bool ClocklessAudioSink::SetVolume(double volume) {
   return volume == 0.0;
 }
 
-OutputDevice* ClocklessAudioSink::GetOutputDevice() {
-  return nullptr;
+OutputDeviceInfo ClocklessAudioSink::GetOutputDeviceInfo() {
+  return OutputDeviceInfo();
 }
 
 void ClocklessAudioSink::StartAudioHashForTesting() {

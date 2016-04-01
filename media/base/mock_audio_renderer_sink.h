@@ -16,18 +16,27 @@ namespace media {
 
 class FakeOutputDevice;
 
-class MockAudioRendererSink : public RestartableAudioRendererSink {
+class MockAudioRendererSink : public SwitchableAudioRendererSink {
  public:
   MockAudioRendererSink();
   explicit MockAudioRendererSink(OutputDeviceStatus device_status);
+  MockAudioRendererSink(const std::string& device_id,
+                        OutputDeviceStatus device_status);
+  MockAudioRendererSink(const std::string& device_id,
+                        OutputDeviceStatus device_status,
+                        const AudioParameters& device_output_params);
 
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
-  OutputDevice* GetOutputDevice();
 
+  OutputDeviceInfo GetOutputDeviceInfo();
+
+  void SwitchOutputDevice(const std::string& device_id,
+                          const url::Origin& security_origin,
+                          const OutputDeviceStatusCB& callback) override;
   void Initialize(const AudioParameters& params,
                   RenderCallback* renderer) override;
   AudioRendererSink::RenderCallback* callback() { return callback_; }
@@ -37,7 +46,7 @@ class MockAudioRendererSink : public RestartableAudioRendererSink {
 
  private:
   RenderCallback* callback_;
-  scoped_ptr<FakeOutputDevice> output_device_;
+  OutputDeviceInfo output_device_info_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererSink);
 };

@@ -97,13 +97,8 @@ const double kMaxRate = 16.0;
 void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
                             const std::string& device_id,
                             const url::Origin& security_origin,
-                            const SwitchOutputDeviceCB& callback) {
-  if (sink->GetOutputDevice()) {
-    sink->GetOutputDevice()->SwitchOutputDevice(device_id, security_origin,
-                                                callback);
-  } else {
-    callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
-  }
+                            const OutputDeviceStatusCB& callback) {
+  sink->SwitchOutputDevice(device_id, security_origin, callback);
 }
 
 bool IsSuspendUponHiddenEnabled() {
@@ -505,8 +500,8 @@ void WebMediaPlayerImpl::setSinkId(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__;
 
-  media::SwitchOutputDeviceCB callback =
-      media::ConvertToSwitchOutputDeviceCB(web_callback);
+  media::OutputDeviceStatusCB callback =
+      media::ConvertToOutputDeviceStatusCB(web_callback);
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SetSinkIdOnMediaThread, audio_source_provider_,

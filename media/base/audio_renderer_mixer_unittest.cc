@@ -95,9 +95,6 @@ class AudioRendererMixerTest
                     const std::string&,
                     const url::Origin&));
 
-  MOCK_METHOD2(GetOutputHWParams,
-               AudioParameters(const std::string&, const url::Origin&));
-
   void InitializeInputs(int inputs_per_sample_rate) {
     mixer_inputs_.reserve(inputs_per_sample_rate * input_parameters_.size());
     fake_callbacks_.reserve(inputs_per_sample_rate * input_parameters_.size());
@@ -118,8 +115,6 @@ class AudioRendererMixerTest
             base::Bind(&AudioRendererMixerTest::GetMixer,
                        base::Unretained(this)),
             base::Bind(&AudioRendererMixerTest::RemoveMixer,
-                       base::Unretained(this)),
-            base::Bind(&AudioRendererMixerTest::GetOutputHWParams,
                        base::Unretained(this)),
             // Default device ID and security origin.
             std::string(), url::Origin()));
@@ -469,12 +464,10 @@ TEST_P(AudioRendererMixerBehavioralTest, OnRenderErrorPausedInput) {
 // not call RemoveMixer().
 TEST_P(AudioRendererMixerBehavioralTest, NoInitialize) {
   EXPECT_CALL(*this, RemoveMixer(testing::_, testing::_, testing::_)).Times(0);
-  scoped_refptr<AudioRendererMixerInput> audio_renderer_mixer =
+  scoped_refptr<AudioRendererMixerInput> audio_renderer_mixer_input =
       new AudioRendererMixerInput(
           base::Bind(&AudioRendererMixerTest::GetMixer, base::Unretained(this)),
           base::Bind(&AudioRendererMixerTest::RemoveMixer,
-                     base::Unretained(this)),
-          base::Bind(&AudioRendererMixerTest::GetOutputHWParams,
                      base::Unretained(this)),
           // Default device ID and security origin.
           std::string(), url::Origin());

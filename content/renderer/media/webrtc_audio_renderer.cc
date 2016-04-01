@@ -20,6 +20,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/sample_rates.h"
+#include "media/base/audio_capturer_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/media/base/audiorenderer.h"
@@ -118,9 +119,17 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     on_play_state_changed_.Run(media_stream_, &playing_state_);
   }
 
-  media::OutputDevice* GetOutputDevice() override {
+  media::OutputDeviceInfo GetOutputDeviceInfo() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return delegate_->GetOutputDevice();
+    return delegate_->GetOutputDeviceInfo();
+  }
+
+  void SwitchOutputDevice(
+      const std::string& device_id,
+      const url::Origin& security_origin,
+      const media::OutputDeviceStatusCB& callback) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    return delegate_->SwitchOutputDevice(device_id, security_origin, callback);
   }
 
   base::TimeDelta GetCurrentRenderTime() const override {
@@ -224,7 +233,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
       AudioDeviceFactory::kSourceWebRtc, source_render_frame_id_, session_id_,
       output_device_id_, security_origin_);
 
-  if (sink_->GetOutputDevice()->GetDeviceStatus() !=
+  if (sink_->GetOutputDeviceInfo().device_status() !=
       media::OUTPUT_DEVICE_STATUS_OK) {
     return false;
   }
@@ -355,9 +364,9 @@ void WebRtcAudioRenderer::SetVolume(float volume) {
   OnPlayStateChanged(media_stream_, &playing_state_);
 }
 
-media::OutputDevice* WebRtcAudioRenderer::GetOutputDevice() {
+media::OutputDeviceInfo WebRtcAudioRenderer::GetOutputDeviceInfo() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return this;
+  return sink_ ? sink_->GetOutputDeviceInfo() : media::OutputDeviceInfo();
 }
 
 base::TimeDelta WebRtcAudioRenderer::GetCurrentRenderTime() const {
@@ -373,7 +382,7 @@ bool WebRtcAudioRenderer::IsLocalRenderer() const {
 void WebRtcAudioRenderer::SwitchOutputDevice(
     const std::string& device_id,
     const url::Origin& security_origin,
-    const media::SwitchOutputDeviceCB& callback) {
+    const media::OutputDeviceStatusCB& callback) {
   DVLOG(1) << "WebRtcAudioRenderer::SwitchOutputDevice()";
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(session_id_, 0);
@@ -387,9 +396,10 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
       AudioDeviceFactory::NewAudioRendererSink(
           AudioDeviceFactory::kSourceWebRtc, source_render_frame_id_,
           session_id_, device_id, security_origin);
-  if (new_sink->GetOutputDevice()->GetDeviceStatus() !=
-      media::OUTPUT_DEVICE_STATUS_OK) {
-    callback.Run(new_sink->GetOutputDevice()->GetDeviceStatus());
+  media::OutputDeviceStatus status =
+      new_sink->GetOutputDeviceInfo().device_status();
+  if (status != media::OUTPUT_DEVICE_STATUS_OK) {
+    callback.Run(status);
     return;
   }
 
@@ -409,22 +419,6 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   sink_->Start();
 
   callback.Run(media::OUTPUT_DEVICE_STATUS_OK);
-}
-
-media::AudioParameters WebRtcAudioRenderer::GetOutputParameters() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!sink_.get())
-    return media::AudioParameters();
-
-  return sink_->GetOutputDevice()->GetOutputParameters();
-}
-
-media::OutputDeviceStatus WebRtcAudioRenderer::GetDeviceStatus() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!sink_.get())
-    return media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
-
-  return sink_->GetOutputDevice()->GetDeviceStatus();
 }
 
 int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
@@ -627,14 +621,17 @@ void WebRtcAudioRenderer::PrepareSink() {
     base::AutoLock lock(lock_);
     new_sink_params = sink_params_;
   }
+
+  const media::OutputDeviceInfo& device_info = sink_->GetOutputDeviceInfo();
+  DCHECK_EQ(device_info.device_status(), media::OUTPUT_DEVICE_STATUS_OK);
+
   // WebRTC does not yet support higher rates than 96000 on the client side
   // and 48000 is the preferred sample rate. Therefore, if 192000 is detected,
   // we change the rate to 48000 instead. The consequence is that the native
   // layer will be opened up at 192kHz but WebRTC will provide data at 48kHz
   // which will then be resampled by the audio converted on the browser side
   // to match the native audio layer.
-  int sample_rate =
-      sink_->GetOutputDevice()->GetOutputParameters().sample_rate();
+  int sample_rate = device_info.output_params().sample_rate();
   DVLOG(1) << "Audio output hardware sample rate: " << sample_rate;
   if (sample_rate >= 192000) {
     DVLOG(1) << "Resampling from 48000 to " << sample_rate << " is required";
@@ -656,8 +653,7 @@ void WebRtcAudioRenderer::PrepareSink() {
 
   // Setup sink parameters.
   const int sink_frames_per_buffer = GetOptimalBufferSize(
-      sample_rate,
-      sink_->GetOutputDevice()->GetOutputParameters().frames_per_buffer());
+      sample_rate, device_info.output_params().frames_per_buffer());
   new_sink_params.set_sample_rate(sample_rate);
   new_sink_params.set_frames_per_buffer(sink_frames_per_buffer);
 

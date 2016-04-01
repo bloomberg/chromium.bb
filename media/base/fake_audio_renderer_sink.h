@@ -12,10 +12,9 @@
 #include "base/macros.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/output_device_info.h"
 
 namespace media {
-
-class FakeOutputDevice;
 
 class FakeAudioRendererSink : public AudioRendererSink {
  public:
@@ -37,7 +36,7 @@ class FakeAudioRendererSink : public AudioRendererSink {
   void Pause() override;
   void Play() override;
   bool SetVolume(double volume) override;
-  OutputDevice* GetOutputDevice() override;
+  OutputDeviceInfo GetOutputDeviceInfo() override;
 
   // Attempts to call Render() on the callback provided to
   // Initialize() with |dest| and |audio_delay_milliseconds|.
@@ -61,7 +60,7 @@ class FakeAudioRendererSink : public AudioRendererSink {
 
   State state_;
   RenderCallback* callback_;
-  scoped_ptr<FakeOutputDevice> output_device_;
+  OutputDeviceInfo output_device_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioRendererSink);
 };

@@ -20,7 +20,6 @@
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/base/output_device.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace media {
@@ -53,8 +52,7 @@ namespace content {
 class CONTENT_EXPORT TrackAudioRenderer
     : NON_EXPORTED_BASE(public MediaStreamAudioRenderer),
       NON_EXPORTED_BASE(public MediaStreamAudioSink),
-      NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
-      NON_EXPORTED_BASE(public media::OutputDevice) {
+      NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback) {
  public:
   // Creates a renderer for the given |audio_track|.  |playout_render_frame_id|
   // refers to the RenderFrame that owns this instance (e.g., it contains the
@@ -76,16 +74,12 @@ class CONTENT_EXPORT TrackAudioRenderer
   void Play() override;
   void Pause() override;
   void SetVolume(float volume) override;
-  media::OutputDevice* GetOutputDevice() override;
+  media::OutputDeviceInfo GetOutputDeviceInfo() override;
   base::TimeDelta GetCurrentRenderTime() const override;
   bool IsLocalRenderer() const override;
-
-  // media::OutputDevice implementation
   void SwitchOutputDevice(const std::string& device_id,
                           const url::Origin& security_origin,
-                          const media::SwitchOutputDeviceCB& callback) override;
-  media::AudioParameters GetOutputParameters() override;
-  media::OutputDeviceStatus GetDeviceStatus() override;
+                          const media::OutputDeviceStatusCB& callback) override;
 
  protected:
   ~TrackAudioRenderer() override;

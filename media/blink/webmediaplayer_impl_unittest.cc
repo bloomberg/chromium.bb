@@ -105,7 +105,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         url_index_,
         WebMediaPlayerParams(
             WebMediaPlayerParams::DeferLoadCB(),
-            scoped_refptr<RestartableAudioRendererSink>(), media_log_,
+            scoped_refptr<SwitchableAudioRendererSink>(), media_log_,
             media_thread_.task_runner(), message_loop_.task_runner(),
             message_loop_.task_runner(), WebMediaPlayerParams::Context3DCB(),
             base::Bind(&OnAdjustAllocatedMemory), nullptr, nullptr, nullptr)));

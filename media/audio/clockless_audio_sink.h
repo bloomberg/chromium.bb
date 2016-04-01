@@ -19,7 +19,6 @@ class SingleThreadTaskRunner;
 namespace media {
 class AudioBus;
 class ClocklessAudioSinkThread;
-class OutputDevice;
 
 // Implementation of an AudioRendererSink that consumes the audio as fast as
 // possible. This class does not support multiple Play()/Pause() events.
@@ -36,7 +35,7 @@ class MEDIA_EXPORT ClocklessAudioSink
   void Pause() override;
   void Play() override;
   bool SetVolume(double volume) override;
-  OutputDevice* GetOutputDevice() override;
+  OutputDeviceInfo GetOutputDeviceInfo() override;
 
   // Returns the time taken to consume all the audio.
   base::TimeDelta render_time() { return playback_time_; }

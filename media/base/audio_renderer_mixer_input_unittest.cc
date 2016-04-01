@@ -44,8 +44,6 @@ class AudioRendererMixerInputTest : public testing::Test {
                    base::Unretained(this)),
         base::Bind(&AudioRendererMixerInputTest::RemoveMixer,
                    base::Unretained(this)),
-        base::Bind(&AudioRendererMixerInputTest::GetOutputHWParams,
-                   base::Unretained(this)),
         device_id, url::Origin());
   }
 
@@ -88,9 +86,6 @@ class AudioRendererMixerInputTest : public testing::Test {
                void(const AudioParameters&,
                     const std::string&,
                     const url::Origin&));
-
-  MOCK_METHOD2(GetOutputHWParams,
-               AudioParameters(const std::string&, const url::Origin&));
 
   MOCK_METHOD1(SwitchCallbackCalled, void(OutputDeviceStatus));
   void SwitchCallback(base::RunLoop* loop, OutputDeviceStatus result) {

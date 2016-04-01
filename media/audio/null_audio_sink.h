@@ -19,10 +19,9 @@ namespace media {
 class AudioBus;
 class AudioHash;
 class FakeAudioWorker;
-class OutputDevice;
 
 class MEDIA_EXPORT NullAudioSink
-    : NON_EXPORTED_BASE(public RestartableAudioRendererSink) {
+    : NON_EXPORTED_BASE(public SwitchableAudioRendererSink) {
  public:
   NullAudioSink(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
@@ -34,7 +33,10 @@ class MEDIA_EXPORT NullAudioSink
   void Pause() override;
   void Play() override;
   bool SetVolume(double volume) override;
-  OutputDevice* GetOutputDevice() override;
+  OutputDeviceInfo GetOutputDeviceInfo() override;
+  void SwitchOutputDevice(const std::string& device_id,
+                          const url::Origin& security_origin,
+                          const OutputDeviceStatusCB& callback) override;
 
   // Enables audio frame hashing.  Must be called prior to Initialize().
   void StartAudioHashForTesting();

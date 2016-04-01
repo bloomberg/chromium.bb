@@ -49,13 +49,6 @@ namespace {
 base::LazyInstance<media::AudioStreamsTracker> g_audio_streams_tracker =
     LAZY_INSTANCE_INITIALIZER;
 
-media::AudioParameters DummyParams() {
-  return media::AudioParameters(
-      media::AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
-      media::AudioParameters::kAudioCDSampleRate, 16,
-      media::AudioParameters::kAudioCDSampleRate / 10);
-}
-
 std::pair<int, std::pair<bool, std::string>> MakeAuthorizationData(
     int stream_id,
     bool authorized,
@@ -124,7 +117,7 @@ void MaybeFixAudioParameters(media::AudioParameters* params) {
   // If hardware parameters are still invalid, use dummy parameters with
   // fake audio path and let the client handle the error.
   if (!params->IsValid())
-    *params = DummyParams();
+    *params = media::AudioParameters::UnavailableDeviceParams();
 }
 
 }  // namespace
@@ -427,7 +420,8 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
 
   if (!IsValidDeviceId(device_id)) {
     Send(new AudioMsg_NotifyDeviceAuthorized(
-        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, DummyParams()));
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND,
+        media::AudioParameters::UnavailableDeviceParams()));
     return;
   }
 
@@ -482,7 +476,7 @@ void AudioRendererHost::OnDeviceAuthorized(int stream_id,
     authorizations_.erase(auth_data);
     Send(new AudioMsg_NotifyDeviceAuthorized(
         stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
-        DummyParams()));
+        media::AudioParameters::UnavailableDeviceParams()));
     return;
   }
 
@@ -521,7 +515,8 @@ void AudioRendererHost::OnDeviceIDTranslated(
   if (!device_found) {
     authorizations_.erase(auth_data);
     Send(new AudioMsg_NotifyDeviceAuthorized(
-        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, DummyParams()));
+        stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND,
+        media::AudioParameters::UnavailableDeviceParams()));
     return;
   }
 
@@ -817,8 +812,9 @@ void AudioRendererHost::TranslateDeviceID(
     }
   }
   DCHECK(!device_id.empty());  // Default device must always be found
-  AudioOutputDeviceInfo device_info = {std::string(), std::string(),
-                                       DummyParams()};
+  AudioOutputDeviceInfo device_info = {
+      std::string(), std::string(),
+      media::AudioParameters::UnavailableDeviceParams()};
   callback.Run(false, device_info);
 }
 

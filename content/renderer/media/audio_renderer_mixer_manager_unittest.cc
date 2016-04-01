@@ -6,16 +6,18 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
-#include "ipc/ipc_message.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/audio_hardware_config.h"
+#include "media/base/audio_capturer_source.h"
 #include "media/base/audio_renderer_mixer.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/fake_audio_render_callback.h"
 #include "media/base/mock_audio_renderer_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -25,24 +27,26 @@ static const int kBufferSize = 8192;
 static const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 static const media::ChannelLayout kAnotherChannelLayout =
     media::CHANNEL_LAYOUT_2_1;
-static const std::string kDefaultDeviceId;
-static const url::Origin kSecurityOrigin;
+static const char* const kDefaultDeviceId =
+    media::AudioManagerBase::kDefaultDeviceId;
+static const char kAnotherDeviceId[] = "another-device-id";
+static const char kNonexistentDeviceId[] = "nonexistent-device-id";
 
 static const int kRenderFrameId = 124;
 static const int kAnotherRenderFrameId = 678;
 
 using media::AudioParameters;
 
-class AudioRendererMixerManagerTest : public testing::Test {
+class AudioRendererMixerManagerTest : public testing::Test,
+                                      public AudioDeviceFactory {
  public:
-  AudioRendererMixerManagerTest() {
-    manager_.reset(new AudioRendererMixerManager());
-
-    // We don't want to deal with instantiating a real AudioOutputDevice since
-    // it's not important to our testing, so we inject a mock.
-    mock_sink_ = new media::MockAudioRendererSink();
-    manager_->SetAudioRendererSinkForTesting(mock_sink_.get());
-  }
+  AudioRendererMixerManagerTest()
+      : manager_(new AudioRendererMixerManager()),
+        mock_sink_(new media::MockAudioRendererSink()),
+        mock_sink_no_device_(new media::MockAudioRendererSink(
+            kNonexistentDeviceId,
+            media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND)),
+        kSecurityOrigin2(GURL("http://localhost")) {}
 
   media::AudioRendererMixer* GetMixer(
       int source_render_frame_id,
@@ -62,20 +66,55 @@ class AudioRendererMixerManagerTest : public testing::Test {
                                  security_origin);
   }
 
-  void UseNonexistentSink() {
-    mock_sink_ = new media::MockAudioRendererSink(
-        media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND);
-    manager_->SetAudioRendererSinkForTesting(mock_sink_.get());
-  }
-
   // Number of instantiated mixers.
   int mixer_count() {
     return manager_->mixers_.size();
   }
 
  protected:
+  MOCK_METHOD1(CreateAudioCapturerSource,
+               scoped_refptr<media::AudioCapturerSource>(int));
+  MOCK_METHOD5(
+      CreateSwitchableAudioRendererSink,
+      scoped_refptr<media::SwitchableAudioRendererSink>(SourceType,
+                                                        int,
+                                                        int,
+                                                        const std::string&,
+                                                        const url::Origin&));
+  MOCK_METHOD5(CreateAudioRendererSink,
+               scoped_refptr<media::AudioRendererSink>(SourceType,
+                                                       int,
+                                                       int,
+                                                       const std::string&,
+                                                       const url::Origin&));
+
+  scoped_refptr<media::AudioRendererSink> CreateAudioRendererMixerSink(
+      int render_frame_id,
+      int session_id,
+      const std::string& device_id,
+      const url::Origin& security_origin) {
+    if ((device_id == kDefaultDeviceId) || (device_id == kAnotherDeviceId)) {
+      // We don't care about separate sinks for these devices
+      return mock_sink_;
+    }
+    if (device_id == kNonexistentDeviceId) {
+      return mock_sink_no_device_;
+    }
+    if (device_id.empty()) {
+      return mock_sink_;
+    }
+
+    NOTREACHED();
+    return nullptr;
+  }
+
   scoped_ptr<AudioRendererMixerManager> manager_;
   scoped_refptr<media::MockAudioRendererSink> mock_sink_;
+  scoped_refptr<media::MockAudioRendererSink> mock_sink_no_device_;
+
+  // To avoid global/static non-POD constants.
+  const url::Origin kSecurityOrigin;
+  const url::Origin kSecurityOrigin2;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerManagerTest);
@@ -90,7 +129,7 @@ TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
   EXPECT_CALL(*mock_sink_.get(), Stop()).Times(2);
 
   // There should be no mixers outstanding to start with.
-  EXPECT_EQ(mixer_count(), 0);
+  EXPECT_EQ(0, mixer_count());
 
   media::AudioParameters params1(
       AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, kSampleRate,
@@ -99,16 +138,16 @@ TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
   media::AudioRendererMixer* mixer1 = GetMixer(
       kRenderFrameId, params1, kDefaultDeviceId, kSecurityOrigin, nullptr);
   ASSERT_TRUE(mixer1);
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
 
   // The same parameters should return the same mixer1.
   EXPECT_EQ(mixer1, GetMixer(kRenderFrameId, params1, kDefaultDeviceId,
                              kSecurityOrigin, nullptr));
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
 
   // Remove the extra mixer we just acquired.
   RemoveMixer(kRenderFrameId, params1, kDefaultDeviceId, kSecurityOrigin);
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
 
   media::AudioParameters params2(
       AudioParameters::AUDIO_PCM_LINEAR, kAnotherChannelLayout, kSampleRate * 2,
@@ -116,16 +155,16 @@ TEST_F(AudioRendererMixerManagerTest, GetRemoveMixer) {
   media::AudioRendererMixer* mixer2 = GetMixer(
       kRenderFrameId, params2, kDefaultDeviceId, kSecurityOrigin, nullptr);
   ASSERT_TRUE(mixer2);
-  EXPECT_EQ(mixer_count(), 2);
+  EXPECT_EQ(2, mixer_count());
 
   // Different parameters should result in a different mixer1.
   EXPECT_NE(mixer1, mixer2);
 
   // Remove both outstanding mixers.
   RemoveMixer(kRenderFrameId, params1, kDefaultDeviceId, kSecurityOrigin);
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
   RemoveMixer(kRenderFrameId, params2, kDefaultDeviceId, kSecurityOrigin);
-  EXPECT_EQ(mixer_count(), 0);
+  EXPECT_EQ(0, mixer_count());
 }
 
 // Verify GetMixer() correctly deduplicates mixer with irrelevant AudioParameter
@@ -143,7 +182,7 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
   media::AudioRendererMixer* mixer1 = GetMixer(
       kRenderFrameId, params1, kDefaultDeviceId, kSecurityOrigin, nullptr);
   ASSERT_TRUE(mixer1);
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
 
   // Different sample rates, formats, bit depths, and buffer sizes should not
   // result in a different mixer.
@@ -154,9 +193,9 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
                                  kBufferSize * 2);
   EXPECT_EQ(mixer1, GetMixer(kRenderFrameId, params2, kDefaultDeviceId,
                              kSecurityOrigin, nullptr));
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
   RemoveMixer(kRenderFrameId, params2, kDefaultDeviceId, kSecurityOrigin);
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
 
   // Modify some parameters that do matter: channel layout
   media::AudioParameters params3(AudioParameters::AUDIO_PCM_LOW_LATENCY,
@@ -168,13 +207,13 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
 
   EXPECT_NE(mixer1, GetMixer(kRenderFrameId, params3, kDefaultDeviceId,
                              kSecurityOrigin, nullptr));
-  EXPECT_EQ(mixer_count(), 2);
+  EXPECT_EQ(2, mixer_count());
   RemoveMixer(kRenderFrameId, params3, kDefaultDeviceId, kSecurityOrigin);
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
 
   // Remove final mixer.
   RemoveMixer(kRenderFrameId, params1, kDefaultDeviceId, kSecurityOrigin);
-  EXPECT_EQ(mixer_count(), 0);
+  EXPECT_EQ(0, mixer_count());
 }
 
 // Verify CreateInput() provides AudioRendererMixerInput with the appropriate
@@ -192,33 +231,33 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
       kBitsPerChannel, kBufferSize);
 
   // Create two mixer inputs and ensure this doesn't instantiate any mixers yet.
-  EXPECT_EQ(mixer_count(), 0);
+  EXPECT_EQ(0, mixer_count());
   media::FakeAudioRenderCallback callback(0);
   scoped_refptr<media::AudioRendererMixerInput> input(
       manager_->CreateInput(kRenderFrameId, kDefaultDeviceId, kSecurityOrigin));
   input->Initialize(params, &callback);
-  EXPECT_EQ(mixer_count(), 0);
+  EXPECT_EQ(0, mixer_count());
   media::FakeAudioRenderCallback another_callback(1);
   scoped_refptr<media::AudioRendererMixerInput> another_input(
       manager_->CreateInput(kAnotherRenderFrameId, kDefaultDeviceId,
                             kSecurityOrigin));
   another_input->Initialize(params, &another_callback);
-  EXPECT_EQ(mixer_count(), 0);
+  EXPECT_EQ(0, mixer_count());
 
   // Implicitly test that AudioRendererMixerInput was provided with the expected
   // callbacks needed to acquire an AudioRendererMixer and remove it.
   input->Start();
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
   another_input->Start();
-  EXPECT_EQ(mixer_count(), 2);
+  EXPECT_EQ(2, mixer_count());
 
   // Destroying the inputs should destroy the mixers.
   input->Stop();
-  input = NULL;
-  EXPECT_EQ(mixer_count(), 1);
+  input = nullptr;
+  EXPECT_EQ(1, mixer_count());
   another_input->Stop();
-  another_input = NULL;
-  EXPECT_EQ(mixer_count(), 0);
+  another_input = nullptr;
+  EXPECT_EQ(0, mixer_count());
 }
 
 // Verify GetMixer() correctly creates different mixers with the same
@@ -226,7 +265,7 @@ TEST_F(AudioRendererMixerManagerTest, CreateInput) {
 TEST_F(AudioRendererMixerManagerTest, MixerDevices) {
   EXPECT_CALL(*mock_sink_.get(), Start()).Times(3);
   EXPECT_CALL(*mock_sink_.get(), Stop()).Times(3);
-  EXPECT_EQ(mixer_count(), 0);
+  EXPECT_EQ(0, mixer_count());
 
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
                                 kChannelLayout, kSampleRate, kBitsPerChannel,
@@ -234,48 +273,44 @@ TEST_F(AudioRendererMixerManagerTest, MixerDevices) {
   media::AudioRendererMixer* mixer1 = GetMixer(
       kRenderFrameId, params, kDefaultDeviceId, kSecurityOrigin, nullptr);
   ASSERT_TRUE(mixer1);
-  EXPECT_EQ(mixer_count(), 1);
+  EXPECT_EQ(1, mixer_count());
 
-  std::string device_id2("fake-device-id");
-  media::AudioRendererMixer* mixer2 =
-      GetMixer(kRenderFrameId, params, device_id2, kSecurityOrigin, nullptr);
+  media::AudioRendererMixer* mixer2 = GetMixer(
+      kRenderFrameId, params, kAnotherDeviceId, kSecurityOrigin, nullptr);
   ASSERT_TRUE(mixer2);
-  EXPECT_EQ(mixer_count(), 2);
+  EXPECT_EQ(2, mixer_count());
   EXPECT_NE(mixer1, mixer2);
 
-  url::Origin security_origin2(GURL("http://localhost"));
   media::AudioRendererMixer* mixer3 = GetMixer(
-      kRenderFrameId, params, kDefaultDeviceId, security_origin2, nullptr);
+      kRenderFrameId, params, kAnotherDeviceId, kSecurityOrigin2, nullptr);
   ASSERT_TRUE(mixer3);
-  EXPECT_EQ(mixer_count(), 3);
+  EXPECT_EQ(3, mixer_count());
   EXPECT_NE(mixer1, mixer3);
   EXPECT_NE(mixer2, mixer3);
 
   RemoveMixer(kRenderFrameId, params, kDefaultDeviceId, kSecurityOrigin);
-  EXPECT_EQ(mixer_count(), 2);
-  RemoveMixer(kRenderFrameId, params, device_id2, kSecurityOrigin);
-  EXPECT_EQ(mixer_count(), 1);
-  RemoveMixer(kRenderFrameId, params, kDefaultDeviceId, security_origin2);
-  EXPECT_EQ(mixer_count(), 0);
+  EXPECT_EQ(2, mixer_count());
+  RemoveMixer(kRenderFrameId, params, kAnotherDeviceId, kSecurityOrigin);
+  EXPECT_EQ(1, mixer_count());
+  RemoveMixer(kRenderFrameId, params, kAnotherDeviceId, kSecurityOrigin2);
+  EXPECT_EQ(0, mixer_count());
 }
 
 // Verify that GetMixer() correctly returns a null mixer and an appropriate
 // status code when a nonexistent device is requested.
 TEST_F(AudioRendererMixerManagerTest, NonexistentDevice) {
-  EXPECT_EQ(mixer_count(), 0);
-  UseNonexistentSink();
+  EXPECT_EQ(0, mixer_count());
   media::AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR,
                                 kChannelLayout, kSampleRate, kBitsPerChannel,
                                 kBufferSize);
-  std::string nonexistent_device_id("nonexistent-device-id");
   media::OutputDeviceStatus device_status = media::OUTPUT_DEVICE_STATUS_OK;
-  EXPECT_CALL(*mock_sink_.get(), Stop());
+  EXPECT_CALL(*mock_sink_no_device_.get(), Stop());
   media::AudioRendererMixer* mixer =
-      GetMixer(kRenderFrameId, params, nonexistent_device_id, kSecurityOrigin,
+      GetMixer(kRenderFrameId, params, kNonexistentDeviceId, kSecurityOrigin,
                &device_status);
   EXPECT_FALSE(mixer);
-  EXPECT_EQ(device_status, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND);
-  EXPECT_EQ(mixer_count(), 0);
+  EXPECT_EQ(media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, device_status);
+  EXPECT_EQ(0, mixer_count());
 }
 
 }  // namespace content

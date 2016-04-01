@@ -96,4 +96,12 @@ bool AudioParameters::Equals(const AudioParameters& other) const {
          effects_ == other.effects() && mic_positions_ == other.mic_positions_;
 }
 
+// static
+AudioParameters AudioParameters::UnavailableDeviceParams() {
+  return media::AudioParameters(
+      media::AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
+      media::AudioParameters::kAudioCDSampleRate, 16,
+      media::AudioParameters::kAudioCDSampleRate / 10);
+}
+
 }  // namespace media

@@ -175,8 +175,8 @@ bool WebRtcAudioCapturer::Initialize() {
 
   // Create and configure the default audio capturing source.
   SetCapturerSourceInternal(
-      AudioDeviceFactory::NewInputDevice(render_frame_id_), channel_layout,
-      device_info_.device.input.sample_rate);
+      AudioDeviceFactory::NewAudioCapturerSource(render_frame_id_),
+      channel_layout, device_info_.device.input.sample_rate);
 
   // Add the capturer to the WebRtcAudioDeviceImpl since it needs some hardware
   // information from the capturer.
@@ -351,9 +351,9 @@ void WebRtcAudioCapturer::EnablePeerConnectionMode() {
 
   // Create a new audio stream as source which will open the hardware using
   // WebRtc native buffer size.
-  SetCapturerSourceInternal(AudioDeviceFactory::NewInputDevice(render_frame_id),
-                            input_params.channel_layout(),
-                            input_params.sample_rate());
+  SetCapturerSourceInternal(
+      AudioDeviceFactory::NewAudioCapturerSource(render_frame_id),
+      input_params.channel_layout(), input_params.sample_rate());
 }
 
 void WebRtcAudioCapturer::Start() {

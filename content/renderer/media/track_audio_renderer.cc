@@ -137,7 +137,7 @@ TrackAudioRenderer::TrackAudioRenderer(
 
 TrackAudioRenderer::~TrackAudioRenderer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!sink_.get());
+  DCHECK(!sink_);
   DVLOG(1) << "TrackAudioRenderer::~TrackAudioRenderer()";
 }
 
@@ -149,7 +149,7 @@ void TrackAudioRenderer::Start() {
   // We get audio data from |audio_track_|...
   MediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
   // ...and |sink_| will get audio data from us.
-  DCHECK(!sink_.get());
+  DCHECK(!sink_);
   sink_ = AudioDeviceFactory::NewAudioRendererSink(
       AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
       session_id_, output_device_id_, security_origin_);
@@ -168,7 +168,7 @@ void TrackAudioRenderer::Stop() {
   // Stop the output audio stream, i.e, stop asking for data to render.
   // It is safer to call Stop() on the |sink_| to clean up the resources even
   // when the |sink_| is never started.
-  if (sink_.get()) {
+  if (sink_) {
     sink_->Stop();
     sink_ = NULL;
   }
@@ -187,7 +187,7 @@ void TrackAudioRenderer::Play() {
   DVLOG(1) << "TrackAudioRenderer::Play()";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!sink_.get())
+  if (!sink_)
     return;
 
   playing_ = true;
@@ -199,7 +199,7 @@ void TrackAudioRenderer::Pause() {
   DVLOG(1) << "TrackAudioRenderer::Pause()";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!sink_.get())
+  if (!sink_)
     return;
 
   playing_ = false;
@@ -215,13 +215,13 @@ void TrackAudioRenderer::SetVolume(float volume) {
   // Cache the volume.  Whenever |sink_| is re-created, call SetVolume() with
   // this cached volume.
   volume_ = volume;
-  if (sink_.get())
+  if (sink_)
     sink_->SetVolume(volume);
 }
 
-media::OutputDevice* TrackAudioRenderer::GetOutputDevice() {
+media::OutputDeviceInfo TrackAudioRenderer::GetOutputDeviceInfo() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return this;
+  return sink_ ? sink_->GetOutputDeviceInfo() : media::OutputDeviceInfo();
 }
 
 base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() const {
@@ -243,7 +243,7 @@ bool TrackAudioRenderer::IsLocalRenderer() const {
 void TrackAudioRenderer::SwitchOutputDevice(
     const std::string& device_id,
     const url::Origin& security_origin,
-    const media::SwitchOutputDeviceCB& callback) {
+    const media::OutputDeviceStatusCB& callback) {
   DVLOG(1) << "TrackAudioRenderer::SwitchOutputDevice()";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -256,8 +256,9 @@ void TrackAudioRenderer::SwitchOutputDevice(
       AudioDeviceFactory::NewAudioRendererSink(
           AudioDeviceFactory::kSourceNonRtcAudioTrack, playout_render_frame_id_,
           session_id_, device_id, security_origin);
+
   media::OutputDeviceStatus new_sink_status =
-      new_sink->GetOutputDevice()->GetDeviceStatus();
+      new_sink->GetOutputDeviceInfo().device_status();
   if (new_sink_status != media::OUTPUT_DEVICE_STATUS_OK) {
     callback.Run(new_sink_status);
     return;
@@ -267,7 +268,7 @@ void TrackAudioRenderer::SwitchOutputDevice(
   security_origin_ = security_origin;
   bool was_sink_started = sink_started_;
 
-  if (sink_.get())
+  if (sink_)
     sink_->Stop();
 
   sink_started_ = false;
@@ -278,35 +279,11 @@ void TrackAudioRenderer::SwitchOutputDevice(
   callback.Run(media::OUTPUT_DEVICE_STATUS_OK);
 }
 
-media::AudioParameters TrackAudioRenderer::GetOutputParameters() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!sink_ || !source_params_.IsValid())
-    return media::AudioParameters();
-
-  // Output parameters consist of the same channel layout and sample rate as the
-  // source, but having the buffer duration preferred by the hardware.
-  const media::AudioParameters& preferred_params =
-      sink_->GetOutputDevice()->GetOutputParameters();
-  return media::AudioParameters(
-      preferred_params.format(), source_params_.channel_layout(),
-      source_params_.sample_rate(), source_params_.bits_per_sample(),
-      preferred_params.frames_per_buffer() * source_params_.sample_rate() /
-          preferred_params.sample_rate());
-}
-
-media::OutputDeviceStatus TrackAudioRenderer::GetDeviceStatus() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!sink_.get())
-    return media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
-
-  return sink_->GetOutputDevice()->GetDeviceStatus();
-}
-
 void TrackAudioRenderer::MaybeStartSink() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "TrackAudioRenderer::MaybeStartSink()";
 
-  if (!sink_.get() || !source_params_.IsValid() || !playing_)
+  if (!sink_ || !source_params_.IsValid() || !playing_)
     return;
 
   // Re-create the AudioShifter to drop old audio data and reset to a starting
@@ -315,17 +292,26 @@ void TrackAudioRenderer::MaybeStartSink() {
   // time-sync state is invalid.
   CreateAudioShifter();
 
-  if (sink_started_ ||
-      sink_->GetOutputDevice()->GetDeviceStatus() !=
-          media::OUTPUT_DEVICE_STATUS_OK) {
+  if (sink_started_)
     return;
-  }
 
+  const media::OutputDeviceInfo& device_info = sink_->GetOutputDeviceInfo();
+  if (device_info.device_status() != media::OUTPUT_DEVICE_STATUS_OK)
+    return;
+
+  // Output parameters consist of the same channel layout and sample rate as the
+  // source, but having the buffer duration preferred by the hardware.
+  const media::AudioParameters& hardware_params = device_info.output_params();
+  media::AudioParameters sink_params(
+      hardware_params.format(), source_params_.channel_layout(),
+      source_params_.sample_rate(), source_params_.bits_per_sample(),
+      hardware_params.frames_per_buffer() * source_params_.sample_rate() /
+          hardware_params.sample_rate());
   DVLOG(1) << ("TrackAudioRenderer::MaybeStartSink() -- Starting sink.  "
                "source_params_={")
            << source_params_.AsHumanReadableString() << "}, sink parameters={"
-           << GetOutputParameters().AsHumanReadableString() << '}';
-  sink_->Initialize(GetOutputParameters(), this);
+           << sink_params.AsHumanReadableString() << '}';
+  sink_->Initialize(sink_params, this);
   sink_->Start();
   sink_->SetVolume(volume_);
   sink_->Play();  // Not all the sinks play on start.
@@ -345,7 +331,7 @@ void TrackAudioRenderer::ReconfigureSink(const media::AudioParameters& params) {
     return;
   source_params_ = params;
 
-  if (!sink_.get())
+  if (!sink_)
     return;  // TrackAudioRenderer has not yet been started.
 
   // Stop |sink_| and re-create a new one to be initialized with different audio

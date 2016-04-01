@@ -235,7 +235,7 @@ void RunSetSinkIdCallback(const SetSinkIdCallback& callback,
 
 }  // namespace
 
-SwitchOutputDeviceCB ConvertToSwitchOutputDeviceCB(
+OutputDeviceStatusCB ConvertToOutputDeviceStatusCB(
     blink::WebSetSinkIdCallbacks* web_callbacks) {
   return media::BindToCurrentLoop(
       base::Bind(RunSetSinkIdCallback, SetSinkIdCallback(web_callbacks)));

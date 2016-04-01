@@ -233,11 +233,11 @@ void WebMediaPlayerMS::setSinkId(
     blink::WebSetSinkIdCallbacks* web_callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  const media::SwitchOutputDeviceCB callback =
-      media::ConvertToSwitchOutputDeviceCB(web_callback);
-  if (audio_renderer_ && audio_renderer_->GetOutputDevice()) {
-    audio_renderer_->GetOutputDevice()->SwitchOutputDevice(
-        sink_id.utf8(), security_origin, callback);
+  const media::OutputDeviceStatusCB callback =
+      media::ConvertToOutputDeviceStatusCB(web_callback);
+  if (audio_renderer_) {
+    audio_renderer_->SwitchOutputDevice(sink_id.utf8(), security_origin,
+                                        callback);
   } else {
     callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   }

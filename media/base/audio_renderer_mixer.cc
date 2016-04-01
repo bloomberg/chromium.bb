@@ -112,10 +112,10 @@ void AudioRendererMixer::RemoveErrorCallback(const base::Closure& error_cb) {
   NOTREACHED();
 }
 
-OutputDevice* AudioRendererMixer::GetOutputDevice() {
+OutputDeviceInfo AudioRendererMixer::GetOutputDeviceInfo() {
   DVLOG(1) << __FUNCTION__;
   base::AutoLock auto_lock(lock_);
-  return audio_sink_->GetOutputDevice();
+  return audio_sink_->GetOutputDeviceInfo();
 }
 
 int AudioRendererMixer::Render(AudioBus* audio_bus,

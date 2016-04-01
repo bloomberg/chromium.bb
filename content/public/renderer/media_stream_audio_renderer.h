@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "media/base/output_device.h"
-#include "url/gurl.h"
+#include "media/base/output_device_info.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -34,12 +34,24 @@ class MediaStreamAudioRenderer
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;
 
-  // Returns a pointer to the internal output device.
-  // The pointer is not to be owned by the caller and is valid only during
-  // the lifetime of the MediaStreamAudioRenderer.
-  // It can be null, which means that access to the output device is not
-  // supported.
-  virtual media::OutputDevice* GetOutputDevice() = 0;
+  // Returns current output device information. If the information is not
+  // available yet, this method may block until it becomes available.
+  // If the renderer is not associated with any output device, |device_status|
+  // of OutputDeviceInfo should be set to OUTPUT_DEVICE_STATUS_ERROR_INTERNAL.
+  // Must never be called on the IO thread.
+  virtual media::OutputDeviceInfo GetOutputDeviceInfo() = 0;
+
+  // Attempts to switch the audio output device.
+  // Once the attempt is finished, |callback| is invoked with the result of the
+  // operation passed as a parameter. The result is a value from the
+  // media::OutputDeviceStatus enum.
+  // There is no guarantee about the thread where |callback| will be invoked.
+  // TODO(olka): make sure callback is always called on the client thread,
+  // update clients accordingly and fix the comment.
+  virtual void SwitchOutputDevice(
+      const std::string& device_id,
+      const url::Origin& security_origin,
+      const media::OutputDeviceStatusCB& callback) = 0;
 
   // Time stamp that reflects the current render time. Should not be updated
   // when paused.

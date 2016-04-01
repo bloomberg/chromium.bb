@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/output_device.h"
+#include "media/base/output_device_info.h"
 #include "url/origin.h"
 
 namespace media {
@@ -119,22 +119,9 @@ class CONTENT_EXPORT AudioRendererMixerManager {
   typedef std::map<MixerKey, AudioRendererMixerReference, MixerKeyCompare>
       AudioRendererMixerMap;
 
-  // Overrides the AudioRendererSink implementation for unit testing.
-  void SetAudioRendererSinkForTesting(media::AudioRendererSink* sink);
-
-  // A helper to get hardware output parameters in the absence of
-  // AudioOutputDevice.
-  static media::AudioParameters GetHardwareOutputParams(
-      int render_frame_id,
-      int session_id,
-      const std::string& device_id,
-      const url::Origin& security_origin);
-
   // Active mixers.
   AudioRendererMixerMap mixers_;
   base::Lock mixers_lock_;
-
-  media::AudioRendererSink* sink_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerManager);
 };

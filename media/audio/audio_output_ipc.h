@@ -11,7 +11,7 @@
 #include "base/sync_socket.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/media_export.h"
-#include "media/base/output_device.h"
+#include "media/base/output_device_info.h"
 #include "url/origin.h"
 
 namespace media {

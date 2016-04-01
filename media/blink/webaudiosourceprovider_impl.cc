@@ -87,7 +87,7 @@ class WebAudioSourceProviderImpl::TeeFilter
 };
 
 WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
-    const scoped_refptr<RestartableAudioRendererSink>& sink)
+    const scoped_refptr<SwitchableAudioRendererSink>& sink)
     : volume_(1.0),
       state_(kStopped),
       client_(nullptr),
@@ -199,9 +199,20 @@ bool WebAudioSourceProviderImpl::SetVolume(double volume) {
   return true;
 }
 
-OutputDevice* WebAudioSourceProviderImpl::GetOutputDevice() {
+media::OutputDeviceInfo WebAudioSourceProviderImpl::GetOutputDeviceInfo() {
   base::AutoLock auto_lock(sink_lock_);
-  return sink_->GetOutputDevice();
+  return client_ ? media::OutputDeviceInfo() : sink_->GetOutputDeviceInfo();
+}
+
+void WebAudioSourceProviderImpl::SwitchOutputDevice(
+    const std::string& device_id,
+    const url::Origin& security_origin,
+    const OutputDeviceStatusCB& callback) {
+  base::AutoLock auto_lock(sink_lock_);
+  if (client_)
+    callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+  else
+    sink_->SwitchOutputDevice(device_id, security_origin, callback);
 }
 
 void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,

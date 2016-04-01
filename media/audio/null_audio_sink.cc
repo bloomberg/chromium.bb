@@ -75,8 +75,14 @@ bool NullAudioSink::SetVolume(double volume) {
   return volume == 0.0;
 }
 
-OutputDevice* NullAudioSink::GetOutputDevice() {
-  return nullptr;
+OutputDeviceInfo NullAudioSink::GetOutputDeviceInfo() {
+  return OutputDeviceInfo();
+}
+
+void NullAudioSink::SwitchOutputDevice(const std::string& device_id,
+                                       const url::Origin& security_origin,
+                                       const OutputDeviceStatusCB& callback) {
+  callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
 }
 
 void NullAudioSink::CallRender() {
