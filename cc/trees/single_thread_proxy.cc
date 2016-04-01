@@ -17,6 +17,7 @@
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"

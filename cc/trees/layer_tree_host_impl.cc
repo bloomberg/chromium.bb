@@ -1625,13 +1625,11 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
   if (is_new_trace) {
     if (pending_tree_) {
-      LayerTreeHostCommon::CallFunctionForSubtree(
-          pending_tree_->root_layer(),
-          [](LayerImpl* layer) { layer->DidBeginTracing(); });
+      LayerTreeHostCommon::CallFunctionForEveryLayer(
+          pending_tree(), [](LayerImpl* layer) { layer->DidBeginTracing(); });
     }
-    LayerTreeHostCommon::CallFunctionForSubtree(
-        active_tree_->root_layer(),
-        [](LayerImpl* layer) { layer->DidBeginTracing(); });
+    LayerTreeHostCommon::CallFunctionForEveryLayer(
+        active_tree(), [](LayerImpl* layer) { layer->DidBeginTracing(); });
   }
 
   {

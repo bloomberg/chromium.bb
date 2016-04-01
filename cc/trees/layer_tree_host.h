@@ -39,7 +39,6 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_host_client.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/proxy.h"

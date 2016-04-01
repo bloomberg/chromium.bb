@@ -125,8 +125,8 @@ RasterizeAndRecordBenchmarkImpl::~RasterizeAndRecordBenchmarkImpl() {}
 
 void RasterizeAndRecordBenchmarkImpl::DidCompleteCommit(
     LayerTreeHostImpl* host) {
-  LayerTreeHostCommon::CallFunctionForSubtree(
-      host->RootLayer(), [this](LayerImpl* layer) {
+  LayerTreeHostCommon::CallFunctionForEveryLayer(
+      host->active_tree(), [this](LayerImpl* layer) {
         rasterize_results_.total_layers++;
         layer->RunMicroBenchmark(this);
       });

@@ -39,16 +39,16 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
   debug_rects_.clear();
 
   if (debug_state.show_touch_event_handler_rects)
-    SaveTouchEventHandlerRects(root_layer);
+    SaveTouchEventHandlerRects(root_layer->layer_tree_impl());
 
   if (debug_state.show_wheel_event_handler_rects)
     SaveWheelEventHandlerRects(root_layer);
 
   if (debug_state.show_scroll_event_handler_rects)
-    SaveScrollEventHandlerRects(root_layer);
+    SaveScrollEventHandlerRects(root_layer->layer_tree_impl());
 
   if (debug_state.show_non_fast_scrollable_rects)
-    SaveNonFastScrollableRects(root_layer);
+    SaveNonFastScrollableRects(root_layer->layer_tree_impl());
 
   if (debug_state.show_paint_rects)
     SavePaintRects(root_layer);
@@ -157,10 +157,10 @@ void DebugRectHistory::SaveScreenSpaceRects(
   }
 }
 
-void DebugRectHistory::SaveTouchEventHandlerRects(LayerImpl* layer) {
-  LayerTreeHostCommon::CallFunctionForSubtree(layer, [this](LayerImpl* layer) {
-    SaveTouchEventHandlerRectsCallback(layer);
-  });
+void DebugRectHistory::SaveTouchEventHandlerRects(LayerTreeImpl* tree_impl) {
+  LayerTreeHostCommon::CallFunctionForEveryLayer(
+      tree_impl,
+      [this](LayerImpl* layer) { SaveTouchEventHandlerRectsCallback(layer); });
 }
 
 void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
@@ -196,10 +196,10 @@ void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* root_layer) {
                                         gfx::Rect(inner_viewport->bounds()))));
 }
 
-void DebugRectHistory::SaveScrollEventHandlerRects(LayerImpl* layer) {
-  LayerTreeHostCommon::CallFunctionForSubtree(layer, [this](LayerImpl* layer) {
-    SaveScrollEventHandlerRectsCallback(layer);
-  });
+void DebugRectHistory::SaveScrollEventHandlerRects(LayerTreeImpl* tree_impl) {
+  LayerTreeHostCommon::CallFunctionForEveryLayer(
+      tree_impl,
+      [this](LayerImpl* layer) { SaveScrollEventHandlerRectsCallback(layer); });
 }
 
 void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
@@ -212,10 +212,10 @@ void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
                                                   gfx::Rect(layer->bounds()))));
 }
 
-void DebugRectHistory::SaveNonFastScrollableRects(LayerImpl* layer) {
-  LayerTreeHostCommon::CallFunctionForSubtree(layer, [this](LayerImpl* layer) {
-    SaveNonFastScrollableRectsCallback(layer);
-  });
+void DebugRectHistory::SaveNonFastScrollableRects(LayerTreeImpl* tree_impl) {
+  LayerTreeHostCommon::CallFunctionForEveryLayer(
+      tree_impl,
+      [this](LayerImpl* layer) { SaveNonFastScrollableRectsCallback(layer); });
 }
 
 void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {

@@ -105,15 +105,15 @@ void LayerTreeImpl::Shutdown() {
 
 void LayerTreeImpl::ReleaseResources() {
   if (root_layer_) {
-    LayerTreeHostCommon::CallFunctionForSubtree(
-        root_layer_, [](LayerImpl* layer) { layer->ReleaseResources(); });
+    LayerTreeHostCommon::CallFunctionForEveryLayer(
+        this, [](LayerImpl* layer) { layer->ReleaseResources(); });
   }
 }
 
 void LayerTreeImpl::RecreateResources() {
   if (root_layer_) {
-    LayerTreeHostCommon::CallFunctionForSubtree(
-        root_layer_, [](LayerImpl* layer) { layer->RecreateResources(); });
+    LayerTreeHostCommon::CallFunctionForEveryLayer(
+        this, [](LayerImpl* layer) { layer->RecreateResources(); });
   }
 }
 
@@ -125,8 +125,8 @@ void LayerTreeImpl::GatherFrameTimingRequestIds(
   // TODO(vmpstr): Early out if there are no requests on any of the layers. For
   // that, we need to inform LayerTreeImpl whenever there are requests when we
   // get them.
-  LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer_, [request_ids](LayerImpl* layer) {
+  LayerTreeHostCommon::CallFunctionForEveryLayer(
+      this, [request_ids](LayerImpl* layer) {
         layer->GatherFrameTimingRequestIds(request_ids);
       });
 }
@@ -564,10 +564,9 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   // frame to a newly-committed property tree.
   if (!root_layer())
     return;
-  LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer(), [](LayerImpl* layer) {
-        layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
-      });
+  LayerTreeHostCommon::CallFunctionForEveryLayer(this, [](LayerImpl* layer) {
+    layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
+  });
 }
 
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
@@ -853,7 +852,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     occlusion_tracker.set_minimum_tracking_size(
         settings().minimum_occlusion_tracking_size);
 
-    // LayerIterator is used here instead of CallFunctionForSubtree to only
+    // LayerIterator is used here instead of CallFunctionForEveryLayer to only
     // UpdateTilePriorities on layers that will be visible (and thus have valid
     // draw properties) and not because any ordering is required.
     LayerIterator end = LayerIterator::End(&render_surface_layer_list_);
@@ -1077,8 +1076,8 @@ void LayerTreeImpl::DidBecomeActive() {
   layer_tree_host_impl_->ResetRequiresHighResToDraw();
 
   if (root_layer()) {
-    LayerTreeHostCommon::CallFunctionForSubtree(
-        root_layer(), [](LayerImpl* layer) { layer->DidBecomeActive(); });
+    LayerTreeHostCommon::CallFunctionForEveryLayer(
+        this, [](LayerImpl* layer) { layer->DidBecomeActive(); });
   }
 
   for (const auto& swap_promise : swap_promise_list_)

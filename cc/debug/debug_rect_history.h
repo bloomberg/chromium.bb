@@ -15,6 +15,7 @@ namespace cc {
 
 class LayerImpl;
 class LayerTreeDebugState;
+class LayerTreeImpl;
 
 // There are currently six types of debug rects:
 //
@@ -84,12 +85,12 @@ class DebugRectHistory {
       const LayerImplList& render_surface_layer_list);
   void SaveScreenSpaceRects(
       const LayerImplList& render_surface_layer_list);
-  void SaveTouchEventHandlerRects(LayerImpl* layer);
+  void SaveTouchEventHandlerRects(LayerTreeImpl* layer);
   void SaveTouchEventHandlerRectsCallback(LayerImpl* layer);
   void SaveWheelEventHandlerRects(LayerImpl* layer);
-  void SaveScrollEventHandlerRects(LayerImpl* layer);
+  void SaveScrollEventHandlerRects(LayerTreeImpl* layer);
   void SaveScrollEventHandlerRectsCallback(LayerImpl* layer);
-  void SaveNonFastScrollableRects(LayerImpl* layer);
+  void SaveNonFastScrollableRects(LayerTreeImpl* layer);
   void SaveNonFastScrollableRectsCallback(LayerImpl* layer);
   void SaveLayerAnimationBoundsRects(
       const LayerImplList& render_surface_layer_list);

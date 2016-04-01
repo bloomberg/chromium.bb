@@ -21,6 +21,7 @@
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/task_runner_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"

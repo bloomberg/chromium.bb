@@ -14,7 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
+#include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/layers/layer_impl.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -133,9 +137,13 @@ class CC_EXPORT LayerTreeHostCommon {
   static bool RenderSurfaceContributesToTarget(LayerType*,
                                                int target_surface_layer_id);
 
-  template <typename LayerType, typename Function>
-  static void CallFunctionForSubtree(LayerType* layer,
-                                     const Function& function);
+  template <typename Function>
+  static void CallFunctionForEveryLayer(LayerTreeHost* layer,
+                                        const Function& function);
+
+  template <typename Function>
+  static void CallFunctionForEveryLayer(LayerTreeImpl* layer,
+                                        const Function& function);
 
   static Layer* get_layer_as_raw_ptr(const LayerList& layers, size_t index) {
     return layers[index].get();
@@ -195,8 +203,7 @@ bool LayerTreeHostCommon::RenderSurfaceContributesToTarget(
 }
 
 template <typename LayerType, typename Function>
-void LayerTreeHostCommon::CallFunctionForSubtree(LayerType* layer,
-                                                 const Function& function) {
+static void CallFunctionForLayer(LayerType* layer, const Function& function) {
   function(layer);
 
   if (LayerType* mask_layer = layer->mask_layer())
@@ -206,11 +213,29 @@ void LayerTreeHostCommon::CallFunctionForSubtree(LayerType* layer,
     if (LayerType* mask_layer = replica_layer->mask_layer())
       function(mask_layer);
   }
+}
+
+template <typename Function>
+static void CallFunctionForEveryLayerInternal(Layer* layer,
+                                              const Function& function) {
+  CallFunctionForLayer(layer, function);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    CallFunctionForSubtree(get_layer_as_raw_ptr(layer->children(), i),
-                           function);
+    CallFunctionForEveryLayerInternal(layer->children()[i].get(), function);
   }
+}
+
+template <typename Function>
+void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeHost* host,
+                                                    const Function& function) {
+  CallFunctionForEveryLayerInternal(host->root_layer(), function);
+}
+
+template <typename Function>
+void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeImpl* host_impl,
+                                                    const Function& function) {
+  for (auto* layer : *host_impl)
+    CallFunctionForLayer(layer, function);
 }
 
 CC_EXPORT PropertyTrees* GetPropertyTrees(Layer* layer);
