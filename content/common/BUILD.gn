@@ -178,6 +178,7 @@ source_set("common") {
     "//ipc/mojo",
     "//media",
     "//media:shared_memory_support",
+    "//media/gpu/ipc/common",
     "//media/midi",
     "//mojo/common:common_base",
     "//mojo/converters/network",

@@ -10,12 +10,15 @@
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
 
+namespace media {
+struct CreateVideoEncoderParams;
+}
+
 namespace content {
 
 class GpuChannel;
 class GpuCommandBufferStub;
 class MediaChannelDispatchHelper;
-struct CreateVideoEncoderParams;
 
 class MediaChannel : public IPC::Listener, public IPC::Sender {
  public:
@@ -38,7 +41,7 @@ class MediaChannel : public IPC::Listener, public IPC::Sender {
                             int32_t route_id,
                             IPC::Message* reply_message);
   void OnCreateVideoEncoder(int32_t command_buffer_route_id,
-                            const CreateVideoEncoderParams& params,
+                            const media::CreateVideoEncoderParams& params,
                             IPC::Message* reply_message);
 
   GpuChannel* const channel_;

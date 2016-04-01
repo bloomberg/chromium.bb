@@ -10,10 +10,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/common/gpu/media/media_messages.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "media/gpu/ipc/common/media_messages.h"
 
 using media::VideoDecodeAccelerator;
 namespace content {

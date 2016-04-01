@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
-#include "content/common/gpu/media/media_messages.h"
+#include "media/gpu/ipc/common/media_messages.h"
 
 namespace IPC {
 

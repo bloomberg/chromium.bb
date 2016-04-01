@@ -8,9 +8,9 @@
 #include "base/logging.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
-#include "content/common/gpu/media/media_messages.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/ipc/common/media_messages.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -93,7 +93,7 @@ bool GpuVideoEncodeAcceleratorHost::Initialize(
   int32_t route_id = channel_->GenerateRouteID();
   channel_->AddRoute(route_id, weak_this_factory_.GetWeakPtr());
 
-  CreateVideoEncoderParams params;
+  media::CreateVideoEncoderParams params;
   params.input_format = input_format;
   params.input_visible_size = input_visible_size;
   params.output_profile = output_profile;

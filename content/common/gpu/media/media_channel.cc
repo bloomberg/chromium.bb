@@ -7,7 +7,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
-#include "content/common/gpu/media/media_messages.h"
+#include "media/gpu/ipc/common/media_messages.h"
 
 namespace content {
 
@@ -44,7 +44,7 @@ class MediaChannelDispatchHelper {
                                    reply_message);
   }
 
-  void OnCreateVideoEncoder(const CreateVideoEncoderParams& params,
+  void OnCreateVideoEncoder(const media::CreateVideoEncoderParams& params,
                             IPC::Message* reply_message) {
     channel_->OnCreateVideoEncoder(routing_id_, params, reply_message);
   }
@@ -117,9 +117,10 @@ void MediaChannel::OnCreateVideoDecoder(
   // self-delete during destruction of this stub.
 }
 
-void MediaChannel::OnCreateVideoEncoder(int32_t command_buffer_route_id,
-                                        const CreateVideoEncoderParams& params,
-                                        IPC::Message* reply_message) {
+void MediaChannel::OnCreateVideoEncoder(
+    int32_t command_buffer_route_id,
+    const media::CreateVideoEncoderParams& params,
+    IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "MediaChannel::OnCreateVideoEncoder");
   GpuCommandBufferStub* stub =
       channel_->LookupCommandBuffer(command_buffer_route_id);

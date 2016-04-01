@@ -9,7 +9,9 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/demuxer_stream_player_params.h"
+#include "media/base/decrypt_config.h"
 #include "media/blink/renderer_media_player_interface.h"
+#include "media/gpu/ipc/common/media_param_traits.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 

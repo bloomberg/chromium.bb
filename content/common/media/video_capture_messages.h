@@ -19,7 +19,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::VideoCaptureState,
                           content::VIDEO_CAPTURE_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::ResolutionChangePolicy,
                           media::RESOLUTION_POLICY_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::StorageType,
                           media::VideoFrame::STORAGE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelStorage, media::PIXEL_STORAGE_MAX)

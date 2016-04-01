@@ -17,6 +17,7 @@
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"
+#include "media/gpu/ipc/common/media_param_traits.h"
 #include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT

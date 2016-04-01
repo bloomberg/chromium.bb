@@ -1,5 +1,6 @@
 include_rules = [
   "+cc/blink",
+  "+media/gpu/ipc/common",
   "+media/video/jpeg_decode_accelerator.h",
   "+media/video/video_decode_accelerator.h",
   "+media/video/video_encode_accelerator.h",

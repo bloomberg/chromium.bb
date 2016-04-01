@@ -14,12 +14,12 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
-#include "content/common/gpu/media/media_messages.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/ipc/common/media_messages.h"
 
 #if defined(OS_CHROMEOS)
 #if defined(USE_V4L2_CODEC)

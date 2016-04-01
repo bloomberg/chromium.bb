@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_CREATE_VIDEO_ENCODER_PARAMS_H_
-#define CONTENT_COMMON_GPU_MEDIA_CREATE_VIDEO_ENCODER_PARAMS_H_
+#ifndef MEDIA_GPU_IPC_COMMON_CREATE_VIDEO_ENCODER_PARAMS_H_
+#define MEDIA_GPU_IPC_COMMON_CREATE_VIDEO_ENCODER_PARAMS_H_
 
 #include "media/base/video_codecs.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace content {
+namespace media {
 
 struct CreateVideoEncoderParams {
   CreateVideoEncoderParams();
@@ -21,6 +21,6 @@ struct CreateVideoEncoderParams {
   int32_t encoder_route_id;
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_CREATE_VIDEO_ENCODER_PARAMS_H_
+#endif  // MEDIA_GPU_IPC_COMMON_CREATE_VIDEO_ENCODER_PARAMS_H_

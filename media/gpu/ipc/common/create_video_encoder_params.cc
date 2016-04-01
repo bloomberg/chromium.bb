@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/media/create_video_encoder_params.h"
+#include "media/gpu/ipc/common/create_video_encoder_params.h"
 
 #include "ipc/ipc_message.h"
 
-namespace content {
+namespace media {
 
 CreateVideoEncoderParams::CreateVideoEncoderParams()
     : input_format(media::PIXEL_FORMAT_UNKNOWN),
@@ -16,4 +16,4 @@ CreateVideoEncoderParams::CreateVideoEncoderParams()
 
 CreateVideoEncoderParams::~CreateVideoEncoderParams() {}
 
-}  // namespace content
+}  // namespace media
