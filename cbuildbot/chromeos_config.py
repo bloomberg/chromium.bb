@@ -441,6 +441,7 @@ _x86_internal_release_boards = frozenset([
     'buddy',
     'butterfly',
     'candy',
+    'cave',
     'celes',
     'chell',
     'cid',
@@ -2888,6 +2889,7 @@ def GetConfig():
   # glados-based boards
   _AddGroupConfig(
       'glados', 'glados', (
+          'cave',
           'chell',
           'glados-cheets',
       ),
@@ -2993,6 +2995,7 @@ def GetConfig():
       'banon',
       'butterfly',
       'candy',
+      'cave',
       'chell',
       'clapper',
       'cyan',
