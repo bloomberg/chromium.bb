@@ -1118,10 +1118,6 @@ crbug.com/595483 [ Android ] editing/caret/caret-color.html [ Failure Crash ]
 crbug.com/595483 [ Android ] fast/invalid/009.html [ Failure Crash ]
 crbug.com/595483 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Crash ]
 
-# TODO(radu.velea): uncomment the next 2 lines after https://codereview.chromium.org/1779163002/ lands
-# crbug.com/591901 [ Win ] fast/images/color-profile-background-clip-text.html [ Failure ]
-# crbug.com/591901 [ Win ] fast/images/color-profile-svg-fill-text.html [ Failure ]
-
 crbug.com/521730 [ Win10 ] fast/forms/month-multiple-fields/month-multiple-fields-preserve-value-after-history-back.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/month-multiple-fields/month-multiple-fields-value-set-empty.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/forms/suggested-value.html [ Failure ]
