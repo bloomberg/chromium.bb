@@ -73,10 +73,7 @@ component("wtf") {
     cflags = [ "/wd4068" ]  # Unknown pragma.
   } else {
     # Non-Windows.
-    sources -= [
-      "ThreadSpecificWin.cpp",
-      "ThreadingWin.cpp",
-    ]
+    sources -= [ "ThreadingWin.cpp" ]
   }
 
   if (is_android) {

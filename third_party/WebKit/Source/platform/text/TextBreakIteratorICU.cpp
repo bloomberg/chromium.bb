@@ -39,13 +39,13 @@ class LineBreakIteratorPool final {
     USING_FAST_MALLOC(LineBreakIteratorPool);
     WTF_MAKE_NONCOPYABLE(LineBreakIteratorPool);
 public:
+    LineBreakIteratorPool() { }
+
     static LineBreakIteratorPool& sharedPool()
     {
         static WTF::ThreadSpecific<LineBreakIteratorPool>* pool = new WTF::ThreadSpecific<LineBreakIteratorPool>;
         return **pool;
     }
-
-    static PassOwnPtr<LineBreakIteratorPool> create() { return adoptPtr(new LineBreakIteratorPool); }
 
     icu::BreakIterator* take(const AtomicString& locale)
     {
@@ -93,16 +93,12 @@ public:
     }
 
 private:
-    LineBreakIteratorPool() { }
-
     static const size_t capacity = 4;
 
     typedef std::pair<AtomicString, icu::BreakIterator*> Entry;
     typedef Vector<Entry, capacity> Pool;
     Pool m_pool;
     HashMap<icu::BreakIterator*, AtomicString> m_vendedIterators;
-
-    friend WTF::ThreadSpecific<LineBreakIteratorPool>::operator LineBreakIteratorPool*();
 };
 
 enum TextContext { NoContext, PriorContext, PrimaryContext };
