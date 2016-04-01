@@ -278,8 +278,8 @@ def _GetDesiredVsToolchainHashes():
   """Load a list of SHA1s corresponding to the toolchains that we want installed
   to build with."""
   if GetVisualStudioVersion() == '2015':
-    # Update 1 with hot fixes.
-    return ['a3796183a9fc4d22a687c5212b9c76dbd136d70d']
+    # Update 2.
+    return ['95ddda401ec5678f15eeed01d2bee08fcbc5ee97']
   else:
     return ['4087e065abebdca6dbd0caca2910c6718d2ec67f']
 
