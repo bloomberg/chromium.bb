@@ -67,13 +67,12 @@ enum class SelectionDirectionalMode { NonDirectional, Directional };
 
 enum class CaretVisibility;
 
-class CORE_EXPORT FrameSelection final : public NoBaseWillBeGarbageCollectedFinalized<FrameSelection> {
+class CORE_EXPORT FrameSelection final : public GarbageCollectedFinalized<FrameSelection> {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(FrameSelection);
 public:
-    static PassOwnPtrWillBeRawPtr<FrameSelection> create(LocalFrame* frame = nullptr)
+    static RawPtr<FrameSelection> create(LocalFrame* frame = nullptr)
     {
-        return adoptPtrWillBeNoop(new FrameSelection(frame));
+        return new FrameSelection(frame);
     }
     ~FrameSelection();
 
@@ -175,7 +174,7 @@ public:
 
     // If this FrameSelection has a logical range which is still valid, this function return its clone. Otherwise,
     // the return value from underlying VisibleSelection's firstRange() is returned.
-    PassRefPtrWillBeRawPtr<Range> firstRange() const;
+    RawPtr<Range> firstRange() const;
 
     void nodeWillBeRemoved(Node&);
     void didUpdateCharacterData(CharacterData*, unsigned offset, unsigned oldLength, unsigned newLength);
@@ -219,7 +218,7 @@ public:
     void notifyLayoutObjectOfSelectionChange(EUserTriggered);
 
     EditingStyle* typingStyle() const;
-    void setTypingStyle(PassRefPtrWillBeRawPtr<EditingStyle>);
+    void setTypingStyle(RawPtr<EditingStyle>);
     void clearTypingStyle();
 
     String selectedHTMLForClipboard() const;
@@ -293,20 +292,20 @@ private:
     bool shouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
     bool isPreviousCaretDirtyForTesting() const { return m_previousCaretNode; }
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
-    const OwnPtrWillBeMember<PendingSelection> m_pendingSelection;
-    const OwnPtrWillBeMember<SelectionEditor> m_selectionEditor;
+    Member<LocalFrame> m_frame;
+    const Member<PendingSelection> m_pendingSelection;
+    const Member<SelectionEditor> m_selectionEditor;
 
     // Used to store base before the adjustment at bidi boundary
     VisiblePosition m_originalBase;
     VisiblePositionInFlatTree m_originalBaseInFlatTree;
     TextGranularity m_granularity;
 
-    RefPtrWillBeMember<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
+    Member<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
     LayoutRect m_previousCaretRect;
     CaretVisibility m_previousCaretVisibility;
 
-    RefPtrWillBeMember<EditingStyle> m_typingStyle;
+    Member<EditingStyle> m_typingStyle;
 
     Timer<FrameSelection> m_caretBlinkTimer;
 
@@ -332,7 +331,7 @@ inline void FrameSelection::clearTypingStyle()
     m_typingStyle.clear();
 }
 
-inline void FrameSelection::setTypingStyle(PassRefPtrWillBeRawPtr<EditingStyle> style)
+inline void FrameSelection::setTypingStyle(RawPtr<EditingStyle> style)
 {
     m_typingStyle = style;
 }

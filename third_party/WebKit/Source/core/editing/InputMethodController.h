@@ -41,8 +41,7 @@ class LocalFrame;
 class Range;
 class Text;
 
-class CORE_EXPORT InputMethodController final : public NoBaseWillBeGarbageCollectedFinalized<InputMethodController> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InputMethodController);
+class CORE_EXPORT InputMethodController final : public GarbageCollectedFinalized<InputMethodController> {
     WTF_MAKE_NONCOPYABLE(InputMethodController);
 public:
     enum ConfirmCompositionBehavior {
@@ -50,7 +49,7 @@ public:
         KeepSelection,
     };
 
-    static PassOwnPtrWillBeRawPtr<InputMethodController> create(LocalFrame&);
+    static RawPtr<InputMethodController> create(LocalFrame&);
     ~InputMethodController();
     DECLARE_TRACE();
 
@@ -71,7 +70,7 @@ public:
     void cancelComposition();
     void cancelCompositionIfSelectionIsInvalid();
     EphemeralRange compositionEphemeralRange() const;
-    PassRefPtrWillBeRawPtr<Range> compositionRange() const;
+    RawPtr<Range> compositionRange() const;
 
     void clear();
     void documentDetached();
@@ -89,13 +88,13 @@ private:
         explicit SelectionOffsetsScope(InputMethodController*);
         ~SelectionOffsetsScope();
     private:
-        RawPtrWillBeMember<InputMethodController> m_inputMethodController;
+        Member<InputMethodController> m_inputMethodController;
         const PlainTextRange m_offsets;
     };
     friend class SelectionOffsetsScope;
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
-    RefPtrWillBeMember<Range> m_compositionRange;
+    Member<LocalFrame> m_frame;
+    Member<Range> m_compositionRange;
     bool m_isDirty;
     bool m_hasComposition;
 

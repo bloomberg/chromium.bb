@@ -31,19 +31,18 @@
 
 namespace blink {
 
-class SelectionEditor final : public NoBaseWillBeGarbageCollectedFinalized<SelectionEditor>, public VisibleSelectionChangeObserver {
+class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>, public VisibleSelectionChangeObserver {
     WTF_MAKE_NONCOPYABLE(SelectionEditor);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(SelectionEditor);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
+    USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 public:
     // TODO(yosin) We should move |EAlteration| and |VerticalDirection| out
     // from |FrameSelection| class like |EUserTriggered|.
     typedef FrameSelection::EAlteration EAlteration;
     typedef FrameSelection::VerticalDirection VerticalDirection;
 
-    static PassOwnPtrWillBeRawPtr<SelectionEditor> create(FrameSelection& frameSelection)
+    static RawPtr<SelectionEditor> create(FrameSelection& frameSelection)
     {
-        return adoptPtrWillBeNoop(new SelectionEditor(frameSelection));
+        return new SelectionEditor(frameSelection);
     }
     virtual ~SelectionEditor();
     void dispose();
@@ -72,7 +71,7 @@ public:
     // If this FrameSelection has a logical range which is still valid, this
     // function return its clone. Otherwise, the return value from underlying
     // |VisibleSelection|'s |firstRange()| is returned.
-    PassRefPtrWillBeRawPtr<Range> firstRange() const;
+    RawPtr<Range> firstRange() const;
 
     // VisibleSelectionChangeObserver interface.
     void didChangeVisibleSelection() override;
@@ -114,7 +113,7 @@ private:
     LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
     DispatchEventResult dispatchSelectStart();
 
-    RawPtrWillBeMember<FrameSelection> m_frameSelection;
+    Member<FrameSelection> m_frameSelection;
 
     LayoutUnit m_xPosForVerticalArrowNavigation;
     VisibleSelection m_selection;
@@ -125,7 +124,7 @@ private:
     // (hence "logical"). This will be invalidated if the underlying
     // |VisibleSelection| changes. If that happens, this variable will
     // become |nullptr|, in which case logical positions == visible positions.
-    RefPtrWillBeMember<Range> m_logicalRange;
+    Member<Range> m_logicalRange;
 };
 
 } // namespace blink

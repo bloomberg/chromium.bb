@@ -157,18 +157,18 @@ private:
 
     // Current position, not necessarily of the text being returned, but position
     // as we walk through the DOM tree.
-    RawPtrWillBeMember<Node> m_node;
+    Member<Node> m_node;
     int m_offset;
     IterationProgress m_iterationProgress;
     FullyClippedStateStackAlgorithm<Strategy> m_fullyClippedStack;
     int m_shadowDepth;
 
     // The range.
-    RawPtrWillBeMember<Node> m_startContainer;
+    Member<Node> m_startContainer;
     int m_startOffset;
-    RawPtrWillBeMember<Node> m_endContainer;
+    Member<Node> m_endContainer;
     int m_endOffset;
-    RawPtrWillBeMember<Node> m_pastEndNode;
+    Member<Node> m_pastEndNode;
 
     // Used when there is still some pending text from the current node; when these
     // are false and 0, we go back to normal iterating.
@@ -181,7 +181,7 @@ private:
     LayoutText* m_firstLetterText;
 
     // Used to do the whitespace collapsing logic.
-    RawPtrWillBeMember<Text> m_lastTextNode;
+    Member<Text> m_lastTextNode;
     bool m_lastTextNodeEndedWithCollapsedSpace;
 
     // Used when text boxes are out of order (Hebrew/Arabic w/ embeded LTR text)

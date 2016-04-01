@@ -36,8 +36,8 @@
 namespace blink {
 
 SpellCheckRequest::SpellCheckRequest(
-    PassRefPtrWillBeRawPtr<Range> checkingRange,
-    PassRefPtrWillBeRawPtr<Range> paragraphRange,
+    RawPtr<Range> checkingRange,
+    RawPtr<Range> paragraphRange,
     const String& text,
     TextCheckingTypeMask mask,
     TextCheckingProcessType processType,
@@ -80,7 +80,7 @@ void SpellCheckRequest::dispose()
 }
 
 // static
-PassRefPtrWillBeRawPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber)
+RawPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber)
 {
     if (checkingRange.isNull())
         return nullptr;
@@ -91,8 +91,8 @@ PassRefPtrWillBeRawPtr<SpellCheckRequest> SpellCheckRequest::create(TextChecking
     if (text.isEmpty())
         return nullptr;
 
-    RefPtrWillBeRawPtr<Range> checkingRangeObject = createRange(checkingRange);
-    RefPtrWillBeRawPtr<Range> paragraphRangeObject = nullptr;
+    RawPtr<Range> checkingRangeObject = createRange(checkingRange);
+    RawPtr<Range> paragraphRangeObject = nullptr;
     // Share identical Range objects.
     if (checkingRange == paragraphRange)
         paragraphRangeObject = checkingRangeObject;
@@ -107,7 +107,7 @@ PassRefPtrWillBeRawPtr<SpellCheckRequest> SpellCheckRequest::create(TextChecking
         offsets[i] = markers[i]->startOffset();
     }
 
-    return adoptRefWillBeNoop(new SpellCheckRequest(checkingRangeObject, paragraphRangeObject, text, textCheckingOptions, processType, hashes, offsets, requestNumber));
+    return new SpellCheckRequest(checkingRangeObject, paragraphRangeObject, text, textCheckingOptions, processType, hashes, offsets, requestNumber);
 }
 
 const TextCheckingRequestData& SpellCheckRequest::data() const
@@ -200,7 +200,7 @@ bool SpellCheckRequester::isCheckable(Range* range) const
     return true;
 }
 
-void SpellCheckRequester::requestCheckingFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> request)
+void SpellCheckRequester::requestCheckingFor(RawPtr<SpellCheckRequest> request)
 {
     if (!request || !canCheckAsynchronously(request->paragraphRange().get()))
         return;
@@ -239,7 +239,7 @@ void SpellCheckRequester::prepareForLeakDetection()
     m_requestQueue.clear();
 }
 
-void SpellCheckRequester::invokeRequest(PassRefPtrWillBeRawPtr<SpellCheckRequest> request)
+void SpellCheckRequester::invokeRequest(RawPtr<SpellCheckRequest> request)
 {
     ASSERT(!m_processingRequest);
     m_processingRequest = request;
@@ -255,12 +255,12 @@ void SpellCheckRequester::clearProcessingRequest()
     m_processingRequest.clear();
 }
 
-void SpellCheckRequester::enqueueRequest(PassRefPtrWillBeRawPtr<SpellCheckRequest> request)
+void SpellCheckRequester::enqueueRequest(RawPtr<SpellCheckRequest> request)
 {
     ASSERT(request);
     bool continuation = false;
     if (!m_requestQueue.isEmpty()) {
-        RefPtrWillBeRawPtr<SpellCheckRequest> lastRequest = m_requestQueue.last();
+        RawPtr<SpellCheckRequest> lastRequest = m_requestQueue.last();
         // It's a continuation if the number of the last request got incremented in the new one and
         // both apply to the same editable.
         continuation = request->rootEditableElement() == lastRequest->rootEditableElement()
@@ -310,7 +310,7 @@ void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckin
         if (!requestData.maskContains(TextCheckingTypeGrammar))
             markers.remove(DocumentMarker::Grammar);
         if (m_processingRequest->isValid()) {
-            RefPtrWillBeRawPtr<Range> checkingRange = m_processingRequest->checkingRange();
+            RawPtr<Range> checkingRange = m_processingRequest->checkingRange();
             frame().document()->markers().removeMarkers(EphemeralRange(checkingRange.get()), markers);
         }
     }

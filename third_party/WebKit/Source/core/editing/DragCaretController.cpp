@@ -36,7 +36,7 @@ DragCaretController::DragCaretController()
 {
 }
 
-PassOwnPtrWillBeRawPtr<DragCaretController> DragCaretController::create()
+RawPtr<DragCaretController> DragCaretController::create()
 {
     return adoptPtrWillBeNoop(new DragCaretController);
 }

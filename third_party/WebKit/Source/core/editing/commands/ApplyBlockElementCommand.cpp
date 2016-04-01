@@ -85,9 +85,9 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
     VisiblePosition endOfSelection = selection.visibleEnd();
     ASSERT(!startOfSelection.isNull());
     ASSERT(!endOfSelection.isNull());
-    RefPtrWillBeRawPtr<ContainerNode> startScope = nullptr;
+    RawPtr<ContainerNode> startScope = nullptr;
     int startIndex = indexForVisiblePosition(startOfSelection, startScope);
-    RefPtrWillBeRawPtr<ContainerNode> endScope = nullptr;
+    RawPtr<ContainerNode> endScope = nullptr;
     int endIndex = indexForVisiblePosition(endOfSelection, endScope);
 
     formatSelection(startOfSelection, endOfSelection, editingState);
@@ -113,11 +113,11 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
     // and there's nothing to move.
     Position start = mostForwardCaretPosition(startOfSelection.deepEquivalent());
     if (isAtUnsplittableElement(start)) {
-        RefPtrWillBeRawPtr<HTMLElement> blockquote = createBlockElement();
+        RawPtr<HTMLElement> blockquote = createBlockElement();
         insertNodeAt(blockquote, start, editingState);
         if (editingState->isAborted())
             return;
-        RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
+        RawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
         appendNode(placeholder, blockquote, editingState);
         if (editingState->isAborted())
             return;
@@ -125,7 +125,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         return;
     }
 
-    RefPtrWillBeRawPtr<HTMLElement> blockquoteForNextIndent = nullptr;
+    RawPtr<HTMLElement> blockquoteForNextIndent = nullptr;
     VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
     VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
     VisiblePosition endAfterSelection = endOfParagraph(nextPositionOf(endOfLastParagraph));
@@ -239,7 +239,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
 
         // If end is in the middle of a text node, split.
         if (endStyle->userModify() != READ_ONLY && !endStyle->collapseWhiteSpace() && end.offsetInContainerNode() && end.offsetInContainerNode() < end.computeContainerNode()->maxCharacterOffset()) {
-            RefPtrWillBeRawPtr<Text> endContainer = toText(end.computeContainerNode());
+            RawPtr<Text> endContainer = toText(end.computeContainerNode());
             splitTextNode(endContainer, end.offsetInContainerNode());
             if (isStartAndEndOnSameNode)
                 start = firstPositionInOrBeforeNode(endContainer->previousSibling());
@@ -262,7 +262,7 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
     if (!style)
         return endOfNextParagraph;
 
-    RefPtrWillBeRawPtr<Text> text = toText(position.computeContainerNode());
+    RawPtr<Text> text = toText(position.computeContainerNode());
     if (!style->preserveNewline() || !position.offsetInContainerNode() || !isNewLineAtPosition(firstPositionInNode(text.get())))
         return endOfNextParagraph;
 
@@ -293,9 +293,9 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
     return createVisiblePosition(Position(text.get(), position.offsetInContainerNode() - 1));
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> ApplyBlockElementCommand::createBlockElement() const
+RawPtr<HTMLElement> ApplyBlockElementCommand::createBlockElement() const
 {
-    RefPtrWillBeRawPtr<HTMLElement> element = createHTMLElement(document(), m_tagName);
+    RawPtr<HTMLElement> element = createHTMLElement(document(), m_tagName);
     if (m_inlineStyle.length())
         element->setAttribute(styleAttr, m_inlineStyle);
     return element.release();

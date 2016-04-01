@@ -32,7 +32,7 @@
 // TODO(yoichio): All long types should be unsigned long. crbug.com/391673
 [
     ImplementedAs=DOMSelection,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface Selection {
     [MeasureAs=SelectionAnchorNode] readonly attribute Node? anchorNode;
     [MeasureAs=SelectionAnchorOffset] readonly attribute long anchorOffset;

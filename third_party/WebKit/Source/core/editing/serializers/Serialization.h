@@ -51,18 +51,18 @@ enum EChildrenOnly { IncludeNode, ChildrenOnly };
 enum EAbsoluteURLs { DoNotResolveURLs, ResolveAllURLs, ResolveNonLocalURLs };
 enum class ConvertBlocksToInlines { NotConvert, Convert };
 
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralRange& context, const String& text);
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document&, const String& markup, const String& baseURL, ParserContentPolicy = AllowScriptingContent);
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document&, const String& markup, unsigned fragmentStart, unsigned fragmentEnd, const String& baseURL, ParserContentPolicy);
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String&, Element*, ParserContentPolicy, const char* method, ExceptionState&);
-PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentForTransformToFragment(const String&, const String& sourceMIMEType, Document& outputDoc);
-PassRefPtrWillBeRawPtr<DocumentFragment> createContextualFragment(const String&, Element*, ParserContentPolicy, ExceptionState&);
+RawPtr<DocumentFragment> createFragmentFromText(const EphemeralRange& context, const String& text);
+RawPtr<DocumentFragment> createFragmentFromMarkup(Document&, const String& markup, const String& baseURL, ParserContentPolicy = AllowScriptingContent);
+RawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document&, const String& markup, unsigned fragmentStart, unsigned fragmentEnd, const String& baseURL, ParserContentPolicy);
+RawPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String&, Element*, ParserContentPolicy, const char* method, ExceptionState&);
+RawPtr<DocumentFragment> createFragmentForTransformToFragment(const String&, const String& sourceMIMEType, Document& outputDoc);
+RawPtr<DocumentFragment> createContextualFragment(const String&, Element*, ParserContentPolicy, ExceptionState&);
 
 bool isPlainTextMarkup(Node*);
 
 // These methods are used by HTMLElement & ShadowRoot to replace the
 // children with respected fragment/text.
-void replaceChildrenWithFragment(ContainerNode*, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
+void replaceChildrenWithFragment(ContainerNode*, RawPtr<DocumentFragment>, ExceptionState&);
 void replaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 
 CORE_EXPORT String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsoluteURLs = DoNotResolveURLs);

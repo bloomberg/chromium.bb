@@ -36,7 +36,7 @@ class CompositeEditCommand;
 class Document;
 class EditingState;
 
-class EditCommand : public RefCountedWillBeGarbageCollectedFinalized<EditCommand> {
+class EditCommand : public GarbageCollectedFinalized<EditCommand> {
 public:
     virtual ~EditCommand();
 
@@ -71,10 +71,10 @@ protected:
     static bool isRenderedCharacter(const Position&);
 
 private:
-    RefPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
     VisibleSelection m_startingSelection;
     VisibleSelection m_endingSelection;
-    RawPtrWillBeMember<CompositeEditCommand> m_parent;
+    Member<CompositeEditCommand> m_parent;
 };
 
 enum ShouldAssumeContentIsAlwaysEditable {

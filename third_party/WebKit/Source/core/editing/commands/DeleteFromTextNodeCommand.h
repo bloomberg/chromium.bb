@@ -34,20 +34,20 @@ class Text;
 
 class DeleteFromTextNodeCommand final : public SimpleEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<DeleteFromTextNodeCommand> create(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, unsigned count)
+    static RawPtr<DeleteFromTextNodeCommand> create(RawPtr<Text> node, unsigned offset, unsigned count)
     {
-        return adoptRefWillBeNoop(new DeleteFromTextNodeCommand(node, offset, count));
+        return new DeleteFromTextNodeCommand(node, offset, count);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    DeleteFromTextNodeCommand(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);
+    DeleteFromTextNodeCommand(RawPtr<Text>, unsigned offset, unsigned count);
 
     void doApply(EditingState*) override;
     void doUnapply() override;
 
-    RefPtrWillBeMember<Text> m_node;
+    Member<Text> m_node;
     unsigned m_offset;
     unsigned m_count;
     String m_text;

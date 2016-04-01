@@ -74,8 +74,8 @@ private:
 
     bool isValid() const { return !m_anchorNode || m_domTreeVersion == m_anchorNode->document().domTreeVersion(); }
 
-    RawPtrWillBeMember<Node> m_anchorNode;
-    RawPtrWillBeMember<Node> m_nodeAfterPositionInAnchor; // If this is non-null, Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode;
+    Member<Node> m_anchorNode;
+    Member<Node> m_nodeAfterPositionInAnchor; // If this is non-null, Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode;
     int m_offsetInAnchor;
     size_t m_depthToAnchorNode;
     // If |m_nodeAfterPositionInAnchor| is not null,

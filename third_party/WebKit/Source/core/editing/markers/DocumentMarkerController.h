@@ -53,9 +53,8 @@ private:
     Vector<String> m_words;
 };
 
-class CORE_EXPORT DocumentMarkerController final : public NoBaseWillBeGarbageCollected<DocumentMarkerController> {
-    WTF_MAKE_NONCOPYABLE(DocumentMarkerController); USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentMarkerController);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentMarkerController);
+class CORE_EXPORT DocumentMarkerController final : public GarbageCollected<DocumentMarkerController> {
+    WTF_MAKE_NONCOPYABLE(DocumentMarkerController);
 public:
 
     DocumentMarkerController();
@@ -102,10 +101,10 @@ public:
 private:
     void addMarker(Node*, const DocumentMarker&);
 
-    using MarkerList = WillBeHeapVector<OwnPtrWillBeMember<RenderedDocumentMarker>>;
-    using MarkerLists = WillBeHeapVector<OwnPtrWillBeMember<MarkerList>, DocumentMarker::MarkerTypeIndexesCount>;
-    using MarkerMap = WillBeHeapHashMap<RawPtrWillBeWeakMember<const Node>, OwnPtrWillBeMember<MarkerLists>>;
-    void mergeOverlapping(MarkerList*, PassOwnPtrWillBeRawPtr<RenderedDocumentMarker>);
+    using MarkerList = HeapVector<Member<RenderedDocumentMarker>>;
+    using MarkerLists = HeapVector<Member<MarkerList>, DocumentMarker::MarkerTypeIndexesCount>;
+    using MarkerMap = HeapHashMap<WeakMember<const Node>, Member<MarkerLists>>;
+    void mergeOverlapping(MarkerList*, RawPtr<RenderedDocumentMarker>);
     bool possiblyHasMarkers(DocumentMarker::MarkerTypes);
     void removeMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);
     void removeMarkers(TextIterator&, DocumentMarker::MarkerTypes, RemovePartiallyOverlappingMarkerOrNot);

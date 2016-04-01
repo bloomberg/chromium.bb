@@ -52,7 +52,7 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     const char* bodyContent = "<span id=host><a id=one>1</a><a id=two>22</a></span>";
     const char* shadowContent = "<p><b id=three>333</b><content select=#two></content><b id=four>4444</b><span id=space>  </span><content select=#one></content><b id=five>55555</b></p>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* one = document().getElementById("one")->firstChild();
@@ -159,7 +159,7 @@ TEST_F(VisibleSelectionTest, Initialisation)
     EXPECT_TRUE(selection.isCaret());
     EXPECT_TRUE(selectionInFlatTree.isCaret());
 
-    RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
+    RawPtr<Range> range = firstRangeOf(selection);
     EXPECT_EQ(0, range->startOffset());
     EXPECT_EQ(0, range->endOffset());
     EXPECT_EQ("", range->text());
@@ -171,12 +171,12 @@ TEST_F(VisibleSelectionTest, ShadowCrossing)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
     const char* shadowContent = "<a><span id='s4'>44</span><content select=#two></content><span id='s5'>55</span><content select=#one></content><span id='s6'>66</span></a>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
 
-    RefPtrWillBeRawPtr<Element> body = document().body();
-    RefPtrWillBeRawPtr<Element> host = body->querySelector("#host", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> six = shadowRoot->querySelector("#s6", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> body = document().body();
+    RawPtr<Element> host = body->querySelector("#host", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> six = shadowRoot->querySelector("#s6", ASSERT_NO_EXCEPTION);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot.get()));
     VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one.get()), PositionInFlatTree::lastPositionInNode(host.get()));
@@ -192,12 +192,12 @@ TEST_F(VisibleSelectionTest, ShadowV0DistributedNodes)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
     const char* shadowContent = "<a><span id='s4'>44</span><content select=#two></content><span id='s5'>55</span><content select=#one></content><span id='s6'>66</span></a>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
 
-    RefPtrWillBeRawPtr<Element> body = document().body();
-    RefPtrWillBeRawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> body = document().body();
+    RawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(two.get()));
     VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one.get()), PositionInFlatTree::lastPositionInNode(two.get()));
@@ -214,8 +214,8 @@ TEST_F(VisibleSelectionTest, ShadowNested)
     const char* shadowContent = "<a><span id='s4'>44</span><content select=#two></content><span id='s5'>55</span><content select=#one></content><span id='s6'>66</span></a>";
     const char* shadowContent2 = "<span id='s7'>77</span><content></content><span id='s8'>88</span>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot2 = createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot, "s5", shadowContent2);
+    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    RawPtr<ShadowRoot> shadowRoot2 = createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot, "s5", shadowContent2);
 
     // Flat tree is something like below:
     //  <p id="host">
@@ -225,10 +225,10 @@ TEST_F(VisibleSelectionTest, ShadowNested)
     //    <b id="one">11</b>
     //    <span id="s6">66</span>
     //  </p>
-    RefPtrWillBeRawPtr<Element> body = document().body();
-    RefPtrWillBeRawPtr<Element> host = body->querySelector("#host", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> eight = shadowRoot2->querySelector("#s8", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> body = document().body();
+    RawPtr<Element> host = body->querySelector("#host", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> eight = shadowRoot2->querySelector("#s8", ASSERT_NO_EXCEPTION);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot2.get()));
     VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one.get()), PositionInFlatTree::afterNode(eight.get()));
@@ -253,7 +253,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         selection.expandUsingGranularity(WordGranularity);
         selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
+        RawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(0, range->startOffset());
         EXPECT_EQ(5, range->endOffset());
         EXPECT_EQ("Lorem", range->text());
@@ -268,7 +268,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         selection.expandUsingGranularity(WordGranularity);
         selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
+        RawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(6, range->startOffset());
         EXPECT_EQ(11, range->endOffset());
         EXPECT_EQ("ipsum", range->text());
@@ -285,7 +285,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         selection.expandUsingGranularity(WordGranularity);
         selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
+        RawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(5, range->startOffset());
         EXPECT_EQ(6, range->endOffset());
         EXPECT_EQ(" ", range->text());
@@ -301,7 +301,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         selection.expandUsingGranularity(WordGranularity);
         selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
+        RawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(26, range->startOffset());
         EXPECT_EQ(27, range->endOffset());
         EXPECT_EQ(",", range->text());
@@ -315,7 +315,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         selection.expandUsingGranularity(WordGranularity);
         selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
+        RawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(27, range->startOffset());
         EXPECT_EQ(28, range->endOffset());
         EXPECT_EQ(" ", range->text());
@@ -329,7 +329,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         selection.expandUsingGranularity(WordGranularity);
         selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
+        RawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(0, range->startOffset());
         EXPECT_EQ(5, range->endOffset());
         EXPECT_EQ("Lorem", range->text());
@@ -343,7 +343,7 @@ TEST_F(VisibleSelectionTest, WordGranularity)
         selection.expandUsingGranularity(WordGranularity);
         selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
-        RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
+        RawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(0, range->startOffset());
         EXPECT_EQ(11, range->endOffset());
         EXPECT_EQ("Lorem ipsum", range->text());

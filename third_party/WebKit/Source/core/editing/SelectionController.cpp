@@ -45,9 +45,9 @@
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
-PassOwnPtrWillBeRawPtr<SelectionController> SelectionController::create(LocalFrame& frame)
+RawPtr<SelectionController> SelectionController::create(LocalFrame& frame)
 {
-    return adoptPtrWillBeNoop(new SelectionController(frame));
+    return new SelectionController(frame);
 }
 
 SelectionController::SelectionController(LocalFrame& frame)

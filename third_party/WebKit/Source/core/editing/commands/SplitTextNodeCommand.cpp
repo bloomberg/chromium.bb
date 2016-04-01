@@ -34,7 +34,7 @@
 
 namespace blink {
 
-SplitTextNodeCommand::SplitTextNodeCommand(PassRefPtrWillBeRawPtr<Text> text, int offset)
+SplitTextNodeCommand::SplitTextNodeCommand(RawPtr<Text> text, int offset)
     : SimpleEditCommand(text->document())
     , m_text2(text)
     , m_offset(offset)

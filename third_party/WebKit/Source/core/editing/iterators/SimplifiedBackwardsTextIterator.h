@@ -91,21 +91,21 @@ private:
 
     // Current position, not necessarily of the text being returned, but position
     // as we walk through the DOM tree.
-    RawPtrWillBeMember<Node> m_node;
+    Member<Node> m_node;
     int m_offset;
     bool m_handledNode;
     bool m_handledChildren;
     FullyClippedStateStackAlgorithm<Strategy> m_fullyClippedStack;
 
     // End of the range.
-    RawPtrWillBeMember<Node> m_startNode;
+    Member<Node> m_startNode;
     int m_startOffset;
     // Start of the range.
-    RawPtrWillBeMember<Node> m_endNode;
+    Member<Node> m_endNode;
     int m_endOffset;
 
     // The current text and its position, in the form to be returned from the iterator.
-    RawPtrWillBeMember<Node> m_positionNode;
+    Member<Node> m_positionNode;
     int m_positionStartOffset;
     int m_positionEndOffset;
 

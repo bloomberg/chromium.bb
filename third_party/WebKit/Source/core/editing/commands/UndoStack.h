@@ -40,15 +40,13 @@ namespace blink {
 class LocalFrame;
 class UndoStep;
 
-class UndoStack final : public NoBaseWillBeGarbageCollected<UndoStack> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(UndoStack);
+class UndoStack final : public GarbageCollected<UndoStack> {
     WTF_MAKE_NONCOPYABLE(UndoStack);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(UndoStack)
 public:
-    static PassOwnPtrWillBeRawPtr<UndoStack> create();
+    static RawPtr<UndoStack> create();
 
-    void registerUndoStep(PassRefPtrWillBeRawPtr<UndoStep>);
-    void registerRedoStep(PassRefPtrWillBeRawPtr<UndoStep>);
+    void registerUndoStep(RawPtr<UndoStep>);
+    void registerRedoStep(RawPtr<UndoStep>);
     void didUnloadFrame(const LocalFrame&);
     bool canUndo() const;
     bool canRedo() const;
@@ -60,7 +58,7 @@ public:
 private:
     UndoStack();
 
-    typedef WillBeHeapDeque<RefPtrWillBeMember<UndoStep>> UndoStepStack;
+    typedef HeapDeque<Member<UndoStep>> UndoStepStack;
 
     void filterOutUndoSteps(UndoStepStack&, const LocalFrame&);
 

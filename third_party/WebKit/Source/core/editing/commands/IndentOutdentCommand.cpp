@@ -69,26 +69,26 @@ IndentOutdentCommand::IndentOutdentCommand(Document& document, EIndentType typeO
 bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const Position& end, EditingState* editingState)
 {
     // If our selection is not inside a list, bail out.
-    RefPtrWillBeRawPtr<Node> lastNodeInSelectedParagraph = start.anchorNode();
-    RefPtrWillBeRawPtr<HTMLElement> listElement = enclosingList(lastNodeInSelectedParagraph.get());
+    RawPtr<Node> lastNodeInSelectedParagraph = start.anchorNode();
+    RawPtr<HTMLElement> listElement = enclosingList(lastNodeInSelectedParagraph.get());
     if (!listElement)
         return false;
 
     // Find the block that we want to indent.  If it's not a list item (e.g., a div inside a list item), we bail out.
-    RefPtrWillBeRawPtr<Element> selectedListItem = enclosingBlock(lastNodeInSelectedParagraph.get());
+    RawPtr<Element> selectedListItem = enclosingBlock(lastNodeInSelectedParagraph.get());
 
     // FIXME: we need to deal with the case where there is no li (malformed HTML)
     if (!isHTMLLIElement(selectedListItem))
         return false;
 
     // FIXME: previousElementSibling does not ignore non-rendered content like <span></span>.  Should we?
-    RefPtrWillBeRawPtr<Element> previousList = ElementTraversal::previousSibling(*selectedListItem);
-    RefPtrWillBeRawPtr<Element> nextList = ElementTraversal::nextSibling(*selectedListItem);
+    RawPtr<Element> previousList = ElementTraversal::previousSibling(*selectedListItem);
+    RawPtr<Element> nextList = ElementTraversal::nextSibling(*selectedListItem);
 
     // We should calculate visible range in list item because inserting new
     // list element will change visibility of list item, e.g. :first-child
     // CSS selector.
-    RefPtrWillBeRawPtr<HTMLElement> newList = toHTMLElement(document().createElement(listElement->tagQName(), false).get());
+    RawPtr<HTMLElement> newList = toHTMLElement(document().createElement(listElement->tagQName(), false).get());
     insertNodeBefore(newList, selectedListItem.get(), editingState);
     if (editingState->isAborted())
         return false;
@@ -121,7 +121,7 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     return true;
 }
 
-void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Position& end, RefPtrWillBeRawPtr<HTMLElement>& targetBlockquote, EditingState* editingState)
+void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Position& end, RawPtr<HTMLElement>& targetBlockquote, EditingState* editingState)
 {
     Element* enclosingCell = toElement(enclosingNodeOfType(start, &isTableCell));
     Element* elementToSplitTo;
@@ -135,7 +135,7 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
     if (!elementToSplitTo)
         return;
 
-    RefPtrWillBeRawPtr<Node> outerBlock = (start.computeContainerNode() == elementToSplitTo) ? start.computeContainerNode() : splitTreeToNode(start.computeContainerNode(), elementToSplitTo).get();
+    RawPtr<Node> outerBlock = (start.computeContainerNode() == elementToSplitTo) ? start.computeContainerNode() : splitTreeToNode(start.computeContainerNode(), elementToSplitTo).get();
 
     VisiblePosition startOfContents = createVisiblePosition(start);
     if (!targetBlockquote) {
@@ -213,7 +213,7 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
             insertNodeAt(HTMLBRElement::create(document()), visibleEndOfParagraph.deepEquivalent(), editingState);
         return;
     }
-    RefPtrWillBeRawPtr<Node> splitBlockquoteNode = enclosingElement;
+    RawPtr<Node> splitBlockquoteNode = enclosingElement;
     if (Element* enclosingBlockFlow = enclosingBlock(visibleStartOfParagraph.deepEquivalent().anchorNode())) {
         if (enclosingBlockFlow != enclosingElement) {
             splitBlockquoteNode = splitTreeToNode(enclosingBlockFlow, enclosingElement, true);
@@ -227,7 +227,7 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
     VisiblePosition endOfParagraphToMove = endOfParagraph(visibleEndOfParagraph);
     if (startOfParagraphToMove.isNull() || endOfParagraphToMove.isNull())
         return;
-    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
+    RawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
     insertNodeBefore(placeholder, splitBlockquoteNode, editingState);
     if (editingState->isAborted())
         return;
@@ -281,7 +281,7 @@ void IndentOutdentCommand::formatSelection(const VisiblePosition& startOfSelecti
         outdentRegion(startOfSelection, endOfSelection, editingState);
 }
 
-void IndentOutdentCommand::formatRange(const Position& start, const Position& end, const Position&, RefPtrWillBeRawPtr<HTMLElement>& blockquoteForNextIndent, EditingState* editingState)
+void IndentOutdentCommand::formatRange(const Position& start, const Position& end, const Position&, RawPtr<HTMLElement>& blockquoteForNextIndent, EditingState* editingState)
 {
     bool indentingAsListItemResult = tryIndentingAsListItem(start, end, editingState);
     if (editingState->isAborted())

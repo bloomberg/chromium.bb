@@ -17,13 +17,13 @@ TEST_F(VisiblePositionTest, ShadowV0DistributedNodes)
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
     const char* shadowContent = "<a><span id='s4'>44</span><content select=#two></content><span id='s5'>55</span><content select=#one></content><span id='s6'>66</span></a>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
 
-    RefPtrWillBeRawPtr<Element> body = document().body();
-    RefPtrWillBeRawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> four = shadowRoot->querySelector("#s4", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> body = document().body();
+    RawPtr<Element> one = body->querySelector("#one", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> two = body->querySelector("#two", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> four = shadowRoot->querySelector("#s4", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
 
     EXPECT_EQ(Position(one->firstChild(), 0), canonicalPositionOf(Position(one, 0)));
     EXPECT_EQ(Position(one->firstChild(), 0), createVisiblePosition(Position(one, 0)).deepEquivalent());

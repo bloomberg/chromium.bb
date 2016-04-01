@@ -50,7 +50,7 @@ enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, D
 //
 // Objects implementing |VisibleSelectionChangeObserver| interface must outlive
 // the |VisibleSelection| object.
-class CORE_EXPORT VisibleSelectionChangeObserver : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT VisibleSelectionChangeObserver : public GarbageCollectedMixin {
     WTF_MAKE_NONCOPYABLE(VisibleSelectionChangeObserver);
 public:
     VisibleSelectionChangeObserver();
@@ -62,7 +62,6 @@ public:
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
     DISALLOW_NEW();
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(VisibleSelectionTemplate);
 public:
     VisibleSelectionTemplate();
     VisibleSelectionTemplate(const PositionTemplate<Strategy>&, TextAffinity, bool isDirectional = false);
@@ -191,7 +190,7 @@ private:
 
     // Oilpan: this reference has a lifetime that is at least as long
     // as this object.
-    RawPtrWillBeMember<VisibleSelectionChangeObserver> m_changeObserver;
+    Member<VisibleSelectionChangeObserver> m_changeObserver;
 
     // these are cached, can be recalculated by validate()
     SelectionType m_selectionType; // None, Caret, Range
@@ -221,7 +220,7 @@ bool equalSelectionsInDOMTree(const VisibleSelection&, const VisibleSelection&);
 CORE_EXPORT EphemeralRange firstEphemeralRangeOf(const VisibleSelection&);
 
 // TODO(sof): move more firstRangeOf() uses to be over EphemeralRange instead.
-CORE_EXPORT PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection&);
+CORE_EXPORT RawPtr<Range> firstRangeOf(const VisibleSelection&);
 
 } // namespace blink
 

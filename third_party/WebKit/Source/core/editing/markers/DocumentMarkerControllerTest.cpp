@@ -54,21 +54,21 @@ protected:
     Document& document() const { return m_dummyPageHolder->document(); }
     DocumentMarkerController& markerController() const { return document().markers(); }
 
-    PassRefPtrWillBeRawPtr<Text> createTextNode(const char*);
-    void markNodeContents(PassRefPtrWillBeRawPtr<Node>);
-    void markNodeContentsWithComposition(PassRefPtrWillBeRawPtr<Node>);
+    RawPtr<Text> createTextNode(const char*);
+    void markNodeContents(RawPtr<Node>);
+    void markNodeContentsWithComposition(RawPtr<Node>);
     void setBodyInnerHTML(const char*);
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
 };
 
-PassRefPtrWillBeRawPtr<Text> DocumentMarkerControllerTest::createTextNode(const char* textContents)
+RawPtr<Text> DocumentMarkerControllerTest::createTextNode(const char* textContents)
 {
     return document().createTextNode(String::fromUTF8(textContents));
 }
 
-void DocumentMarkerControllerTest::markNodeContents(PassRefPtrWillBeRawPtr<Node> node)
+void DocumentMarkerControllerTest::markNodeContents(RawPtr<Node> node)
 {
     // Force layoutObjects to be created; TextIterator, which is used in
     // DocumentMarkerControllerTest::addMarker(), needs them.
@@ -77,7 +77,7 @@ void DocumentMarkerControllerTest::markNodeContents(PassRefPtrWillBeRawPtr<Node>
     markerController().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);
 }
 
-void DocumentMarkerControllerTest::markNodeContentsWithComposition(PassRefPtrWillBeRawPtr<Node> node)
+void DocumentMarkerControllerTest::markNodeContentsWithComposition(RawPtr<Node> node)
 {
     // Force layoutObjects to be created; TextIterator, which is used in
     // DocumentMarkerControllerTest::addMarker(), needs them.
@@ -94,10 +94,10 @@ void DocumentMarkerControllerTest::setBodyInnerHTML(const char* bodyContent)
 TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument)
 {
     setBodyInnerHTML("<b><i>foo</i></b>");
-    RefPtrWillBeRawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
+    RawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
     markNodeContents(parent.get());
     EXPECT_EQ(1u, markerController().markers().size());
-    RefPtrWillBePersistent<Document> anotherDocument = Document::create();
+    Persistent<Document> anotherDocument = Document::create();
     anotherDocument->adoptNode(parent.get(), ASSERT_NO_EXCEPTION);
 
     // No more reference to marked node.
@@ -110,7 +110,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize)
 {
     setBodyInnerHTML("<b><i>foo</i></b>");
     {
-        RefPtrWillBeRawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
+        RawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
         parent->appendChild(createTextNode("bar").get());
         markNodeContents(parent.get());
         EXPECT_EQ(2u, markerController().markers().size());
@@ -124,7 +124,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize)
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveChildren)
 {
     setBodyInnerHTML("<b><i>foo</i></b>");
-    RefPtrWillBeRawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
+    RawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
     markNodeContents(parent.get());
     EXPECT_EQ(1u, markerController().markers().size());
     parent->removeChildren();
@@ -137,7 +137,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked)
 {
     setBodyInnerHTML("<b><i>foo</i></b>");
     {
-        RefPtrWillBeRawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
+        RawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
         markNodeContents(parent);
         EXPECT_EQ(1u, markerController().markers().size());
         parent->removeChild(parent->firstChild());
@@ -151,7 +151,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor)
 {
     setBodyInnerHTML("<b><i>foo</i></b>");
     {
-        RefPtrWillBeRawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
+        RawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
         markNodeContents(parent);
         EXPECT_EQ(1u, markerController().markers().size());
         parent->parentNode()->parentNode()->removeChild(parent->parentNode());
@@ -165,7 +165,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveParent)
 {
     setBodyInnerHTML("<b><i>foo</i></b>");
     {
-        RefPtrWillBeRawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
+        RawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
         markNodeContents(parent);
         EXPECT_EQ(1u, markerController().markers().size());
         parent->parentNode()->removeChild(parent.get());
@@ -179,7 +179,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild)
 {
     setBodyInnerHTML("<b><i>foo</i></b>");
     {
-        RefPtrWillBeRawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
+        RawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
         markNodeContents(parent.get());
         EXPECT_EQ(1u, markerController().markers().size());
         parent->replaceChild(createTextNode("bar").get(), parent->firstChild());
@@ -193,7 +193,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML)
 {
     setBodyInnerHTML("<b><i>foo</i></b>");
     {
-        RefPtrWillBeRawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
+        RawPtr<Element> parent = toElement(document().body()->firstChild()->firstChild());
         markNodeContents(parent);
         EXPECT_EQ(1u, markerController().markers().size());
         setBodyInnerHTML("");
@@ -208,7 +208,7 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects)
     IntRect invalidRect(RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect());
 
     setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
-    RefPtrWillBeRawPtr<Element> div = toElement(document().body()->firstChild());
+    RawPtr<Element> div = toElement(document().body()->firstChild());
     markNodeContents(div);
     Vector<IntRect> renderedRects = markerController().renderedRectsForMarkers(DocumentMarker::Spelling);
     EXPECT_EQ(1u, renderedRects.size());
@@ -226,7 +226,7 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRectsForComposition)
     IntRect invalidRect(RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect());
 
     setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
-    RefPtrWillBeRawPtr<Element> div = toElement(document().body()->firstChild());
+    RawPtr<Element> div = toElement(document().body()->firstChild());
     markNodeContentsWithComposition(div);
     Vector<IntRect> renderedRects = markerController().renderedRectsForMarkers(DocumentMarker::Composition);
     EXPECT_EQ(1u, renderedRects.size());
@@ -244,7 +244,7 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged)
     IntRect invalidRect(RenderedDocumentMarker::create(DocumentMarker(0, 0, false))->renderedRect());
 
     setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
-    RefPtrWillBeRawPtr<Node> text = document().body()->firstChild()->firstChild();
+    RawPtr<Node> text = document().body()->firstChild()->firstChild();
     document().updateLayout();
     markerController().addCompositionMarker(Position(text, 0), Position(text, 1), Color::black, false, Color::black);
     markerController().addCompositionMarker(Position(text, 1), Position(text, 3), Color::black, true, Color::black);
@@ -255,11 +255,11 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged)
 TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest)
 {
     setBodyInnerHTML("<b>foo</b>");
-    RefPtrWillBeRawPtr<Element> bElement = toElement(document().body()->firstChild());
+    RawPtr<Element> bElement = toElement(document().body()->firstChild());
     EphemeralRange ephemeralRange = EphemeralRange::rangeOfContents(*bElement);
     Position startBElement = toPositionInDOMTree(ephemeralRange.startPosition());
     Position endBElement = toPositionInDOMTree(ephemeralRange.endPosition());
-    RefPtrWillBeRawPtr<Range> range = Range::create(document(), startBElement, endBElement);
+    RawPtr<Range> range = Range::create(document(), startBElement, endBElement);
     // Try to make active a marker that doesn't exist.
     EXPECT_FALSE(markerController().setMarkersActive(range.get(), true));
 

@@ -33,14 +33,14 @@ protected:
     const VisibleSelection& visibleSelectionInDOMTree() const { return selection().selection(); }
     const VisibleSelectionInFlatTree& visibleSelectionInFlatTree() const { return selection().selectionInFlatTree(); }
 
-    PassRefPtrWillBeRawPtr<Text> appendTextNode(const String& data);
+    RawPtr<Text> appendTextNode(const String& data);
     int layoutCount() const { return dummyPageHolder().frameView().layoutCount(); }
 
     bool shouldPaintCaretForTesting() const { return selection().shouldPaintCaretForTesting(); }
     bool isPreviousCaretDirtyForTesting() const { return selection().isPreviousCaretDirtyForTesting(); }
 
 private:
-    RefPtrWillBePersistent<Text> m_textNode;
+    Persistent<Text> m_textNode;
 };
 
 void FrameSelectionTest::setSelection(const VisibleSelection& newSelection)
@@ -53,16 +53,16 @@ FrameSelection& FrameSelectionTest::selection() const
     return dummyPageHolder().frame().selection();
 }
 
-PassRefPtrWillBeRawPtr<Text> FrameSelectionTest::appendTextNode(const String& data)
+RawPtr<Text> FrameSelectionTest::appendTextNode(const String& data)
 {
-    RefPtrWillBeRawPtr<Text> text = document().createTextNode(data);
+    RawPtr<Text> text = document().createTextNode(data);
     document().body()->appendChild(text);
     return text.release();
 }
 
 TEST_F(FrameSelectionTest, SetValidSelection)
 {
-    RefPtrWillBeRawPtr<Text> text = appendTextNode("Hello, World!");
+    RawPtr<Text> text = appendTextNode("Hello, World!");
     VisibleSelection validSelection(Position(text, 0), Position(text, 5));
     EXPECT_FALSE(validSelection.isNone());
     setSelection(validSelection);
@@ -73,10 +73,10 @@ TEST_F(FrameSelectionTest, SetInvalidSelection)
 {
     // Create a new document without frame by using DOMImplementation.
     DocumentInit dummy;
-    RefPtrWillBeRawPtr<Document> documentWithoutFrame = Document::create();
-    RefPtrWillBeRawPtr<Element> body = HTMLBodyElement::create(*documentWithoutFrame);
+    RawPtr<Document> documentWithoutFrame = Document::create();
+    RawPtr<Element> body = HTMLBodyElement::create(*documentWithoutFrame);
     documentWithoutFrame->appendChild(body);
-    RefPtrWillBeRawPtr<Text> anotherText = documentWithoutFrame->createTextNode("Hello, another world");
+    RawPtr<Text> anotherText = documentWithoutFrame->createTextNode("Hello, another world");
     body->appendChild(anotherText);
 
     // Create a new VisibleSelection for the new document without frame and
@@ -90,7 +90,7 @@ TEST_F(FrameSelectionTest, SetInvalidSelection)
 
 TEST_F(FrameSelectionTest, InvalidateCaretRect)
 {
-    RefPtrWillBeRawPtr<Text> text = appendTextNode("Hello, World!");
+    RawPtr<Text> text = appendTextNode("Hello, World!");
     document().view()->updateAllLifecyclePhases();
 
     VisibleSelection validSelection(Position(text, 0), Position(text, 0));
@@ -110,7 +110,7 @@ TEST_F(FrameSelectionTest, InvalidateCaretRect)
 
 TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
 {
-    RefPtrWillBeRawPtr<Text> text = appendTextNode("Hello, World!");
+    RawPtr<Text> text = appendTextNode("Hello, World!");
     document().view()->updateAllLifecyclePhases();
 
     document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
@@ -141,7 +141,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
 
 TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter)
 {
-    RefPtrWillBeRawPtr<Text> text = appendTextNode("Hello, World!");
+    RawPtr<Text> text = appendTextNode("Hello, World!");
     document().view()->updateAllLifecyclePhases();
 
     document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
@@ -193,7 +193,7 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter)
 TEST_F(FrameSelectionTest, SelectWordAroundPosition)
 {
     // "Foo Bar  Baz,"
-    RefPtrWillBeRawPtr<Text> text = appendTextNode("Foo Bar&nbsp;&nbsp;Baz,");
+    RawPtr<Text> text = appendTextNode("Foo Bar&nbsp;&nbsp;Baz,");
     // "Fo|o Bar  Baz,"
     EXPECT_TRUE(selection().selectWordAroundPosition(createVisiblePosition(Position(text, 2))));
     EXPECT_EQ_SELECTED_TEXT("Foo");
@@ -212,7 +212,7 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree)
     setBodyContent("<span id=host></span>one");
     setShadowContent("two<content></content>", "host");
     updateLayoutAndStyleForPainting();
-    RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
+    RawPtr<Element> host = document().getElementById("host");
     Node* const two = FlatTreeTraversal::firstChild(*host);
     // Select "two" for selection in DOM tree
     // Select "twoone" for selection in Flat tree
@@ -227,7 +227,7 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree)
 TEST_F(FrameSelectionTest, MoveRangeSelectionTest)
 {
     // "Foo Bar Baz,"
-    RefPtrWillBeRawPtr<Text> text = appendTextNode("Foo Bar Baz,");
+    RawPtr<Text> text = appendTextNode("Foo Bar Baz,");
     // Itinitializes with "Foo B|a>r Baz," (| means start and > means end).
     selection().setSelection(VisibleSelection(Position(text, 5), Position(text, 6)));
     EXPECT_EQ_SELECTED_TEXT("a");
@@ -251,7 +251,7 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded)
     const char* bodyContent = "<span id=top>top</span><span id=host></span>";
     const char* shadowContent = "<span id=bottom>bottom</span>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    RawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     updateLayoutAndStyleForPainting();
 
     Node* top = document().getElementById("top")->firstChild();
@@ -285,7 +285,7 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded)
 
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot)
 {
-    RefPtrWillBeRawPtr<Element> select = document().createElement("select", ASSERT_NO_EXCEPTION);
+    RawPtr<Element> select = document().createElement("select", ASSERT_NO_EXCEPTION);
     document().replaceChild(select.get(), document().documentElement());
     selection().selectAll();
     EXPECT_TRUE(selection().isNone()) << "Nothing should be selected if the content of the documentElement is not selctable.";

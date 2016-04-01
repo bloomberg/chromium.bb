@@ -87,7 +87,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
 
     pos = positionOutsideTabSpan(pos);
 
-    RefPtrWillBeRawPtr<Node> nodeToInsert = nullptr;
+    RawPtr<Node> nodeToInsert = nullptr;
     if (shouldUseBreakElement(pos))
         nodeToInsert = HTMLBRElement::create(document());
     else
@@ -103,7 +103,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
             return;
 
         if (needExtraLineBreak) {
-            RefPtrWillBeRawPtr<Node> extraNode;
+            RawPtr<Node> extraNode;
             // TODO(tkent): Can we remove HTMLTextFormControlElement dependency?
             if (HTMLTextFormControlElement* textControl = enclosingTextFormControl(nodeToInsert.get()))
                 extraNode = textControl->createPlaceholderBreakElement();
@@ -159,7 +159,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
             if (textNode->inDocument()) {
                 insertTextIntoNode(textNode, 0, nonBreakingSpaceString());
             } else {
-                RefPtrWillBeRawPtr<Text> nbspNode = document().createTextNode(nonBreakingSpaceString());
+                RawPtr<Text> nbspNode = document().createTextNode(nonBreakingSpaceString());
                 insertNodeAt(nbspNode.get(), positionBeforeTextNode, editingState);
                 if (editingState->isAborted())
                     return;
@@ -172,7 +172,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
 
     // Handle the case where there is a typing style.
 
-    RefPtrWillBeRawPtr<EditingStyle> typingStyle = document().frame()->selection().typingStyle();
+    RawPtr<EditingStyle> typingStyle = document().frame()->selection().typingStyle();
 
     if (typingStyle && !typingStyle->isEmpty()) {
         // Apply the typing style to the inserted line break, so that if the selection

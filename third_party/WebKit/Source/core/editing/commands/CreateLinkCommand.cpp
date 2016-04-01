@@ -41,7 +41,7 @@ void CreateLinkCommand::doApply(EditingState* editingState)
     if (endingSelection().isNone())
         return;
 
-    RefPtrWillBeRawPtr<HTMLAnchorElement> anchorElement = HTMLAnchorElement::create(document());
+    RawPtr<HTMLAnchorElement> anchorElement = HTMLAnchorElement::create(document());
     anchorElement->setHref(AtomicString(m_url));
 
     if (endingSelection().isRange()) {
@@ -52,7 +52,7 @@ void CreateLinkCommand::doApply(EditingState* editingState)
         insertNodeAt(anchorElement.get(), endingSelection().start(), editingState);
         if (editingState->isAborted())
             return;
-        RefPtrWillBeRawPtr<Text> textNode = Text::create(document(), m_url);
+        RawPtr<Text> textNode = Text::create(document(), m_url);
         appendNode(textNode.get(), anchorElement.get(), editingState);
         if (editingState->isAborted())
             return;

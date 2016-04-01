@@ -25,10 +25,10 @@ protected:
     Document& document() const;
     DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
 
-    static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope&, const char* hostElementID, const char* shadowRootContent);
+    static RawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope&, const char* hostElementID, const char* shadowRootContent);
 
     void setBodyContent(const std::string&);
-    PassRefPtrWillBeRawPtr<ShadowRoot> setShadowContent(const char* shadowContent, const char* shadowHostId);
+    RawPtr<ShadowRoot> setShadowContent(const char* shadowContent, const char* shadowHostId);
     void updateLayoutAndStyleForPainting();
 
 private:

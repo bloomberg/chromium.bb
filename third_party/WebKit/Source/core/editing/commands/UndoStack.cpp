@@ -44,14 +44,12 @@ UndoStack::UndoStack()
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(UndoStack)
-
-PassOwnPtrWillBeRawPtr<UndoStack> UndoStack::create()
+RawPtr<UndoStack> UndoStack::create()
 {
-    return adoptPtrWillBeNoop(new UndoStack());
+    return new UndoStack();
 }
 
-void UndoStack::registerUndoStep(PassRefPtrWillBeRawPtr<UndoStep> step)
+void UndoStack::registerUndoStep(RawPtr<UndoStep> step)
 {
     if (m_undoStack.size() == maximumUndoStackDepth)
         m_undoStack.removeFirst(); // drop oldest item off the far end
@@ -60,7 +58,7 @@ void UndoStack::registerUndoStep(PassRefPtrWillBeRawPtr<UndoStep> step)
     m_undoStack.append(step);
 }
 
-void UndoStack::registerRedoStep(PassRefPtrWillBeRawPtr<UndoStep> step)
+void UndoStack::registerRedoStep(RawPtr<UndoStep> step)
 {
     m_redoStack.append(step);
 }
@@ -98,7 +96,7 @@ void UndoStack::undo()
 {
     if (canUndo()) {
         UndoStepStack::iterator back = --m_undoStack.end();
-        RefPtrWillBeRawPtr<UndoStep> step(back->get());
+        RawPtr<UndoStep> step(back->get());
         m_undoStack.remove(back);
         step->unapply();
         // unapply will call us back to push this command onto the redo stack.
@@ -109,7 +107,7 @@ void UndoStack::redo()
 {
     if (canRedo()) {
         UndoStepStack::iterator back = --m_redoStack.end();
-        RefPtrWillBeRawPtr<UndoStep> step(back->get());
+        RawPtr<UndoStep> step(back->get());
         m_redoStack.remove(back);
 
         ASSERT(!m_inRedo);

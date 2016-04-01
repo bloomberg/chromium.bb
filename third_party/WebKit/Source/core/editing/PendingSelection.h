@@ -32,12 +32,11 @@ class Document;
 class FrameSelection;
 class LayoutView;
 
-class PendingSelection final : public NoBaseWillBeGarbageCollected<PendingSelection> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(PendingSelection);
+class PendingSelection final : public GarbageCollected<PendingSelection> {
 public:
-    static PassOwnPtrWillBeRawPtr<PendingSelection> create(FrameSelection& frameSelection)
+    static RawPtr<PendingSelection> create(FrameSelection& frameSelection)
     {
-        return adoptPtrWillBeNoop(new PendingSelection(frameSelection));
+        return new PendingSelection(frameSelection);
     }
 
     bool hasPendingSelection() const { return m_hasPendingSelection; }
@@ -53,7 +52,7 @@ private:
 
     VisibleSelectionInFlatTree calcVisibleSelection(const VisibleSelectionInFlatTree&) const;
 
-    RawPtrWillBeMember<FrameSelection> m_frameSelection;
+    Member<FrameSelection> m_frameSelection;
     bool m_hasPendingSelection : 1;
 };
 

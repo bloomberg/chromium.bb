@@ -32,7 +32,7 @@
 
 namespace blink {
 
-RemoveNodeCommand::RemoveNodeCommand(PassRefPtrWillBeRawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
+RemoveNodeCommand::RemoveNodeCommand(RawPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     : SimpleEditCommand(node->document())
     , m_node(node)
     , m_shouldAssumeContentIsAlwaysEditable(shouldAssumeContentIsAlwaysEditable)
@@ -62,8 +62,8 @@ void RemoveNodeCommand::doApply(EditingState* editingState)
 
 void RemoveNodeCommand::doUnapply()
 {
-    RefPtrWillBeRawPtr<ContainerNode> parent = m_parent.release();
-    RefPtrWillBeRawPtr<Node> refChild = m_refChild.release();
+    RawPtr<ContainerNode> parent = m_parent.release();
+    RawPtr<Node> refChild = m_refChild.release();
     if (!parent || !parent->hasEditableStyle())
         return;
 

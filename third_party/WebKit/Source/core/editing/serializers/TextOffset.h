@@ -16,7 +16,7 @@ class TextOffset {
     STACK_ALLOCATED();
 public:
     TextOffset();
-    TextOffset(PassRefPtrWillBeRawPtr<Text>, int);
+    TextOffset(RawPtr<Text>, int);
     TextOffset(const TextOffset&);
 
     Text* text() const { return m_text.get(); }
@@ -26,7 +26,7 @@ public:
     bool isNotNull() const;
 
 private:
-    RefPtrWillBeMember<Text> m_text;
+    Member<Text> m_text;
     int m_offset;
 };
 

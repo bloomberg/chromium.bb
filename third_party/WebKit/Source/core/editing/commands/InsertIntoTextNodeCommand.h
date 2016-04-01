@@ -34,20 +34,20 @@ class Text;
 
 class InsertIntoTextNodeCommand final : public SimpleEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<InsertIntoTextNodeCommand> create(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, const String& text)
+    static RawPtr<InsertIntoTextNodeCommand> create(RawPtr<Text> node, unsigned offset, const String& text)
     {
-        return adoptRefWillBeNoop(new InsertIntoTextNodeCommand(node, offset, text));
+        return new InsertIntoTextNodeCommand(node, offset, text);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    InsertIntoTextNodeCommand(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, const String& text);
+    InsertIntoTextNodeCommand(RawPtr<Text> node, unsigned offset, const String& text);
 
     void doApply(EditingState*) override;
     void doUnapply() override;
 
-    RefPtrWillBeMember<Text> m_node;
+    Member<Text> m_node;
     unsigned m_offset;
     String m_text;
 };

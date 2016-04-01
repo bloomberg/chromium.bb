@@ -37,9 +37,9 @@ class InsertListCommand final : public CompositeEditCommand {
 public:
     enum Type { OrderedList, UnorderedList };
 
-    static PassRefPtrWillBeRawPtr<InsertListCommand> create(Document& document, Type listType)
+    static RawPtr<InsertListCommand> create(Document& document, Type listType)
     {
-        return adoptRefWillBeNoop(new InsertListCommand(document, listType));
+        return new InsertListCommand(document, listType);
     }
 
     bool preservesTypingStyle() const override { return true; }
@@ -54,11 +54,11 @@ private:
 
     HTMLUListElement* fixOrphanedListChild(Node*, EditingState*);
     bool selectionHasListOfType(const VisibleSelection&, const HTMLQualifiedName&);
-    PassRefPtrWillBeRawPtr<HTMLElement> mergeWithNeighboringLists(PassRefPtrWillBeRawPtr<HTMLElement>, EditingState*);
+    RawPtr<HTMLElement> mergeWithNeighboringLists(RawPtr<HTMLElement>, EditingState*);
     bool doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName&, Range& currentSelection, EditingState*);
     void unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode, EditingState*);
     void listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag, EditingState*);
-    void moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition&, PassRefPtrWillBeRawPtr<HTMLLIElement>, EditingState*);
+    void moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition&, RawPtr<HTMLLIElement>, EditingState*);
 
     Type m_type;
 };

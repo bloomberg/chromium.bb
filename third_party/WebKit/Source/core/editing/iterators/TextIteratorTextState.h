@@ -74,8 +74,8 @@ private:
     UChar m_singleCharacterBuffer;
 
     // The current text and its position, in the form to be returned from the iterator.
-    RawPtrWillBeMember<Node> m_positionNode;
-    mutable RawPtrWillBeMember<Node> m_positionOffsetBaseNode;
+    Member<Node> m_positionNode;
+    mutable Member<Node> m_positionOffsetBaseNode;
     mutable int m_positionStartOffset;
     mutable int m_positionEndOffset;
 

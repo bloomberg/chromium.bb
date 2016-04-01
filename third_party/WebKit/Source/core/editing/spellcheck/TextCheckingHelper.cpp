@@ -117,7 +117,7 @@ TextCheckingParagraph::TextCheckingParagraph(const EphemeralRange& checkingRange
 {
 }
 
-TextCheckingParagraph::TextCheckingParagraph(PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange)
+TextCheckingParagraph::TextCheckingParagraph(RawPtr<Range> checkingRange, RawPtr<Range> paragraphRange)
     : m_checkingRange(checkingRange.get())
     , m_paragraphRange(paragraphRange.get())
     , m_checkingStart(-1)

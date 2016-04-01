@@ -26,7 +26,7 @@ void EditorTest::makeDocumentEmpty()
 
 TEST_F(EditorTest, tidyUpHTMLStructureFromBody)
 {
-    RefPtrWillBeRawPtr<Element> body = HTMLBodyElement::create(document());
+    RawPtr<Element> body = HTMLBodyElement::create(document());
     makeDocumentEmpty();
     document().setDesignMode("on");
     document().appendChild(body);
@@ -39,7 +39,7 @@ TEST_F(EditorTest, tidyUpHTMLStructureFromBody)
 
 TEST_F(EditorTest, tidyUpHTMLStructureFromDiv)
 {
-    RefPtrWillBeRawPtr<Element> div = HTMLDivElement::create(document());
+    RawPtr<Element> div = HTMLDivElement::create(document());
     makeDocumentEmpty();
     document().setDesignMode("on");
     document().appendChild(div);
@@ -52,7 +52,7 @@ TEST_F(EditorTest, tidyUpHTMLStructureFromDiv)
 
 TEST_F(EditorTest, tidyUpHTMLStructureFromHead)
 {
-    RefPtrWillBeRawPtr<Element> head = HTMLHeadElement::create(document());
+    RawPtr<Element> head = HTMLHeadElement::create(document());
     makeDocumentEmpty();
     document().setDesignMode("on");
     document().appendChild(head);

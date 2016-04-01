@@ -59,11 +59,10 @@ class UndoStack;
 enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM };
 enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSeparatorIsP };
 
-class CORE_EXPORT Editor final : public NoBaseWillBeGarbageCollectedFinalized<Editor> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(Editor);
+class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     WTF_MAKE_NONCOPYABLE(Editor);
 public:
-    static PassOwnPtrWillBeRawPtr<Editor> create(LocalFrame&);
+    static RawPtr<Editor> create(LocalFrame&);
     ~Editor();
 
     EditorClient& client() const;
@@ -114,9 +113,9 @@ public:
     void applyStyleToSelection(StylePropertySet*, EditAction);
     void applyParagraphStyleToSelection(StylePropertySet*, EditAction);
 
-    void appliedEditing(PassRefPtrWillBeRawPtr<CompositeEditCommand>);
-    void unappliedEditing(PassRefPtrWillBeRawPtr<EditCommandComposition>);
-    void reappliedEditing(PassRefPtrWillBeRawPtr<EditCommandComposition>);
+    void appliedEditing(RawPtr<CompositeEditCommand>);
+    void unappliedEditing(RawPtr<EditCommandComposition>);
+    void reappliedEditing(RawPtr<EditCommandComposition>);
 
     void setShouldStyleWithCSS(bool flag) { m_shouldStyleWithCSS = flag; }
     bool shouldStyleWithCSS() const { return m_shouldStyleWithCSS; }
@@ -125,7 +124,7 @@ public:
         STACK_ALLOCATED();
     public:
         Command();
-        Command(const EditorInternalCommand*, EditorCommandSource, PassRefPtrWillBeRawPtr<LocalFrame>);
+        Command(const EditorInternalCommand*, EditorCommandSource, RawPtr<LocalFrame>);
 
         bool execute(const String& parameter = String(), Event* triggeringEvent = nullptr) const;
         bool execute(Event* triggeringEvent) const;
@@ -149,7 +148,7 @@ public:
 
         const EditorInternalCommand* m_command;
         EditorCommandSource m_source;
-        RefPtrWillBeMember<LocalFrame> m_frame;
+        Member<LocalFrame> m_frame;
     };
     Command createCommand(const String& commandName); // Command source is CommandFromMenuOrKeyBinding.
     Command createCommand(const String& commandName, EditorCommandSource);
@@ -195,16 +194,16 @@ public:
 
     void addToKillRing(const EphemeralRange&);
 
-    void pasteAsFragment(PassRefPtrWillBeRawPtr<DocumentFragment>, bool smartReplace, bool matchStyle);
+    void pasteAsFragment(RawPtr<DocumentFragment>, bool smartReplace, bool matchStyle);
     void pasteAsPlainText(const String&, bool smartReplace);
 
     Element* findEventTargetFrom(const VisibleSelection&) const;
 
     bool findString(const String&, FindOptions);
 
-    PassRefPtrWillBeRawPtr<Range> findStringAndScrollToVisible(const String&, Range*, FindOptions);
-    PassRefPtrWillBeRawPtr<Range> findRangeOfString(const String& target, const EphemeralRange& referenceRange, FindOptions);
-    PassRefPtrWillBeRawPtr<Range> findRangeOfString(const String& target, const EphemeralRangeInFlatTree& referenceRange, FindOptions);
+    RawPtr<Range> findStringAndScrollToVisible(const String&, Range*, FindOptions);
+    RawPtr<Range> findRangeOfString(const String& target, const EphemeralRange& referenceRange, FindOptions);
+    RawPtr<Range> findRangeOfString(const String& target, const EphemeralRangeInFlatTree& referenceRange, FindOptions);
 
     const VisibleSelection& mark() const; // Mark, to be used as emacs uses it.
     void setMark(const VisibleSelection&);
@@ -219,12 +218,12 @@ public:
     bool markedTextMatchesAreHighlighted() const;
     void setMarkedTextMatchesAreHighlighted(bool);
 
-    void replaceSelectionWithFragment(PassRefPtrWillBeRawPtr<DocumentFragment>, bool selectReplacement, bool smartReplace, bool matchStyle);
+    void replaceSelectionWithFragment(RawPtr<DocumentFragment>, bool selectReplacement, bool smartReplace, bool matchStyle);
     void replaceSelectionWithText(const String&, bool selectReplacement, bool smartReplace);
 
     // TODO(xiaochengh): Replace |bool| parameters by |enum|.
-    void replaceSelectionAfterDragging(PassRefPtrWillBeRawPtr<DocumentFragment>, bool smartReplace, bool plainText);
-    void moveSelectionAfterDragging(PassRefPtrWillBeRawPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);
+    void replaceSelectionAfterDragging(RawPtr<DocumentFragment>, bool smartReplace, bool plainText);
+    void moveSelectionAfterDragging(RawPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);
 
     EditorParagraphSeparator defaultParagraphSeparator() const { return m_defaultParagraphSeparator; }
     void setDefaultParagraphSeparator(EditorParagraphSeparator separator) { m_defaultParagraphSeparator = separator; }
@@ -238,15 +237,15 @@ public:
         explicit RevealSelectionScope(Editor*);
         ~RevealSelectionScope();
     private:
-        RawPtrWillBeMember<Editor> m_editor;
+        Member<Editor> m_editor;
     };
     friend class RevealSelectionScope;
 
     DECLARE_TRACE();
 
 private:
-    RawPtrWillBeMember<LocalFrame> m_frame;
-    RefPtrWillBeMember<CompositeEditCommand> m_lastEditCommand;
+    Member<LocalFrame> m_frame;
+    Member<CompositeEditCommand> m_lastEditCommand;
     int m_preventRevealSelection;
     bool m_shouldStartNewKillRingSequence;
     bool m_shouldStyleWithCSS;

@@ -153,7 +153,7 @@ TEST_F(StyledMarkupSerializerTest, ShadowTreeNested)
     const char* shadowContent1 = "<a><content select=#two></content><b id=host2></b><content select=#one></content></a>";
     const char* shadowContent2 = "NESTED";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot1 = setShadowContent(shadowContent1, "host");
+    RawPtr<ShadowRoot> shadowRoot1 = setShadowContent(shadowContent1, "host");
     createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot1, "host2", shadowContent2);
 
     EXPECT_EQ("<p id=\"host\"><b id=\"one\">11</b><b id=\"two\">22</b></p>", serialize<EditingStrategy>())
@@ -201,8 +201,8 @@ TEST_F(StyledMarkupSerializerTest, ShadowTreeStyle)
 {
     const char* bodyContent = "<p id='host' style='color: red'><span style='font-weight: bold;'><span id='one'>11</span></span></p>\n";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
-    RefPtrWillBeRawPtr<Text> text = toText(one->firstChild());
+    RawPtr<Element> one = document().getElementById("one");
+    RawPtr<Text> text = toText(one->firstChild());
     Position startDOM(text, 0);
     Position endDOM(text, 2);
     const std::string& serializedDOM = serializePart<EditingStrategy>(startDOM, endDOM, AnnotateForInterchange);
@@ -224,8 +224,8 @@ TEST_F(StyledMarkupSerializerTest, AcrossShadow)
 {
     const char* bodyContent = "<p id='host1'>[<span id='one'>11</span>]</p><p id='host2'>[<span id='two'>22</span>]</p>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<Element> one = document().getElementById("one");
-    RefPtrWillBeRawPtr<Element> two = document().getElementById("two");
+    RawPtr<Element> one = document().getElementById("one");
+    RawPtr<Element> two = document().getElementById("two");
     Position startDOM(toText(one->firstChild()), 0);
     Position endDOM(toText(two->firstChild()), 2);
     const std::string& serializedDOM = serializePart<EditingStrategy>(startDOM, endDOM, AnnotateForInterchange);
@@ -249,8 +249,8 @@ TEST_F(StyledMarkupSerializerTest, AcrossInvisibleElements)
 {
     const char* bodyContent = "<span id='span1' style='display: none'>11</span><span id='span2' style='display: none'>22</span>";
     setBodyContent(bodyContent);
-    RefPtrWillBeRawPtr<Element> span1 = document().getElementById("span1");
-    RefPtrWillBeRawPtr<Element> span2 = document().getElementById("span2");
+    RawPtr<Element> span1 = document().getElementById("span1");
+    RawPtr<Element> span2 = document().getElementById("span2");
     Position startDOM = Position::firstPositionInNode(span1.get());
     Position endDOM = Position::lastPositionInNode(span2.get());
     EXPECT_EQ("", serializePart<EditingStrategy>(startDOM, endDOM));

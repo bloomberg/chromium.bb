@@ -292,7 +292,7 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
         // TODO(hajimehoshi): validateSelection already checks if the selection
         // is valid, thus we don't need this 'if' clause any more.
         if (document.frame() && document.frame() != m_frame && document != m_frame->document()) {
-            RefPtrWillBeRawPtr<LocalFrame> guard(document.frame());
+            RawPtr<LocalFrame> guard(document.frame());
             document.frame()->selection().setSelection(s, options, align, granularity);
             // It's possible that during the above set selection, this
             // |FrameSelection| has been modified by
@@ -342,7 +342,7 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
     // Always clear the x position used for vertical arrow navigation.
     // It will be restored by the vertical arrow navigation code if necessary.
     m_selectionEditor->resetXPosForVerticalArrowNavigation();
-    RefPtrWillBeRawPtr<LocalFrame> protector(m_frame.get());
+    RawPtr<LocalFrame> protector(m_frame.get());
     // This may dispatch a synchronous focus-related events.
     selectFrameElementInParentIfFullySelected();
     notifyLayoutObjectOfSelectionChange(userTriggered);
@@ -840,7 +840,7 @@ void FrameSelection::selectAll()
         }
     }
 
-    RefPtrWillBeRawPtr<Node> root = nullptr;
+    RawPtr<Node> root = nullptr;
     Node* selectStartTarget = nullptr;
     if (isContentEditable()) {
         root = highestEditableRoot(selection().start());
@@ -887,7 +887,7 @@ bool FrameSelection::setSelectedRange(const EphemeralRange& range, TextAffinity 
     return m_selectionEditor->setSelectedRange(range, affinity, directional, options);
 }
 
-PassRefPtrWillBeRawPtr<Range> FrameSelection::firstRange() const
+RawPtr<Range> FrameSelection::firstRange() const
 {
     return m_selectionEditor->firstRange();
 }
@@ -922,7 +922,7 @@ void FrameSelection::notifyEventHandlerForSelectionChange()
 void FrameSelection::focusedOrActiveStateChanged()
 {
     bool activeAndFocused = isFocusedAndActive();
-    RefPtrWillBeRawPtr<Document> document = m_frame->document();
+    RawPtr<Document> document = m_frame->document();
 
     // Trigger style invalidation from the focused element. Even though
     // the focused element hasn't changed, the evaluation of focus pseudo

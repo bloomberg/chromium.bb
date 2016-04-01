@@ -32,9 +32,9 @@ namespace blink {
 
 class SimplifyMarkupCommand final : public CompositeEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<SimplifyMarkupCommand> create(Document& document, Node* firstNode, Node* nodeAfterLast)
+    static RawPtr<SimplifyMarkupCommand> create(Document& document, Node* firstNode, Node* nodeAfterLast)
     {
-        return adoptRefWillBeNoop(new SimplifyMarkupCommand(document, firstNode, nodeAfterLast));
+        return new SimplifyMarkupCommand(document, firstNode, nodeAfterLast);
     }
 
     DECLARE_VIRTUAL_TRACE();
@@ -43,10 +43,10 @@ private:
     SimplifyMarkupCommand(Document&, Node* firstNode, Node* nodeAfterLast);
 
     void doApply(EditingState*) override;
-    int pruneSubsequentAncestorsToRemove(WillBeHeapVector<RefPtrWillBeMember<ContainerNode>>& nodesToRemove, size_t startNodeIndex, EditingState*);
+    int pruneSubsequentAncestorsToRemove(HeapVector<Member<ContainerNode>>& nodesToRemove, size_t startNodeIndex, EditingState*);
 
-    RefPtrWillBeMember<Node> m_firstNode;
-    RefPtrWillBeMember<Node> m_nodeAfterLast;
+    Member<Node> m_firstNode;
+    Member<Node> m_nodeAfterLast;
 };
 
 } // namespace blink

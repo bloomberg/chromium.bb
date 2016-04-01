@@ -32,9 +32,9 @@ namespace blink {
 
 class RemoveFormatCommand final : public CompositeEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<RemoveFormatCommand> create(Document& document)
+    static RawPtr<RemoveFormatCommand> create(Document& document)
     {
-        return adoptRefWillBeNoop(new RemoveFormatCommand(document));
+        return new RemoveFormatCommand(document);
     }
 
 private:

@@ -44,13 +44,13 @@ class StyledMarkupAccumulator final {
     WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
     STACK_ALLOCATED();
 public:
-    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, ConvertBlocksToInlines);
+    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const RawPtr<Document>, EAnnotateForInterchange, ConvertBlocksToInlines);
 
     void appendEndTag(const Element&);
     void appendInterchangeNewline();
 
     void appendText(Text&);
-    void appendTextWithInlineStyle(Text&, PassRefPtrWillBeRawPtr<EditingStyle>);
+    void appendTextWithInlineStyle(Text&, RawPtr<EditingStyle>);
 
     void wrapWithStyleNode(StylePropertySet*);
     String takeResults();
@@ -59,8 +59,8 @@ public:
 
     void appendElement(const Element&);
     void appendElement(StringBuilder&, const Element&);
-    void appendElementWithInlineStyle(const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
-    void appendElementWithInlineStyle(StringBuilder&, const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
+    void appendElementWithInlineStyle(const Element&, RawPtr<EditingStyle>);
+    void appendElementWithInlineStyle(StringBuilder&, const Element&, RawPtr<EditingStyle>);
     void appendStartMarkup(Node&);
 
     bool shouldAnnotate() const;
@@ -75,7 +75,7 @@ private:
     MarkupFormatter m_formatter;
     const TextOffset m_start;
     const TextOffset m_end;
-    const RefPtrWillBeMember<Document> m_document;
+    const Member<Document> m_document;
     const EAnnotateForInterchange m_shouldAnnotate;
     StringBuilder m_result;
     Vector<String> m_reversedPrecedingMarkup;

@@ -19,7 +19,7 @@ class Range;
 // position.
 //
 //  Example usage:
-//    RefPtrWillBeRawPtr<Range> range = produceRange();
+//    RawPtr<Range> range = produceRange();
 //    consumeRange(range.get());
 //    ... no DOM modification ...
 //    consumeRange2(range.get());
@@ -93,7 +93,7 @@ using EphemeralRangeInFlatTree = EphemeralRangeTemplate<EditingInFlatTreeStrateg
 
 // Returns a newly created |Range| object from |range| or |nullptr| if
 // |range.isNull()| returns true.
-CORE_EXPORT PassRefPtrWillBeRawPtr<Range> createRange(const EphemeralRange& /* range */);
+CORE_EXPORT RawPtr<Range> createRange(const EphemeralRange& /* range */);
 
 } // namespace blink
 

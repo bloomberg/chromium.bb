@@ -34,23 +34,23 @@ class HTMLSpanElement;
 
 class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<WrapContentsInDummySpanCommand> create(PassRefPtrWillBeRawPtr<Element> element)
+    static RawPtr<WrapContentsInDummySpanCommand> create(RawPtr<Element> element)
     {
-        return adoptRefWillBeNoop(new WrapContentsInDummySpanCommand(element));
+        return new WrapContentsInDummySpanCommand(element);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit WrapContentsInDummySpanCommand(PassRefPtrWillBeRawPtr<Element>);
+    explicit WrapContentsInDummySpanCommand(RawPtr<Element>);
 
     void doApply(EditingState*) override;
     void doUnapply() override;
     void doReapply() override;
     void executeApply();
 
-    RefPtrWillBeMember<Element> m_element;
-    RefPtrWillBeMember<HTMLSpanElement> m_dummySpan;
+    Member<Element> m_element;
+    Member<HTMLSpanElement> m_dummySpan;
 };
 
 } // namespace blink

@@ -66,7 +66,7 @@ void FormatBlockCommand::formatSelection(const VisiblePosition& startOfSelection
     m_didApply = true;
 }
 
-void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockElement, EditingState* editingState)
+void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RawPtr<HTMLElement>& blockElement, EditingState* editingState)
 {
     Element* refElement = enclosingBlockFlowElement(createVisiblePosition(end));
     Element* root = rootEditableElementOf(start);
@@ -75,9 +75,9 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
         return;
 
     Node* nodeToSplitTo = enclosingBlockToSplitTreeTo(start.anchorNode());
-    RefPtrWillBeRawPtr<Node> outerBlock = (start.anchorNode() == nodeToSplitTo) ? start.anchorNode() : splitTreeToNode(start.anchorNode(), nodeToSplitTo).get();
-    RefPtrWillBeRawPtr<Node> nodeAfterInsertionPosition = outerBlock;
-    RefPtrWillBeRawPtr<Range> range = Range::create(document(), start, endOfSelection);
+    RawPtr<Node> outerBlock = (start.anchorNode() == nodeToSplitTo) ? start.anchorNode() : splitTreeToNode(start.anchorNode(), nodeToSplitTo).get();
+    RawPtr<Node> nodeAfterInsertionPosition = outerBlock;
+    RawPtr<Range> range = Range::create(document(), start, endOfSelection);
 
     if (isElementForFormatBlock(refElement->tagQName()) && createVisiblePosition(start).deepEquivalent() == startOfBlock(createVisiblePosition(start)).deepEquivalent()
         && (createVisiblePosition(end).deepEquivalent() == endOfBlock(createVisiblePosition(end)).deepEquivalent() || isNodeVisiblyContainedWithin(*refElement, *range))

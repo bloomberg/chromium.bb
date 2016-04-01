@@ -33,20 +33,20 @@ namespace blink {
 
 class SetNodeAttributeCommand final : public SimpleEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<SetNodeAttributeCommand> create(PassRefPtrWillBeRawPtr<Element> element, const QualifiedName& attribute, const AtomicString& value)
+    static RawPtr<SetNodeAttributeCommand> create(RawPtr<Element> element, const QualifiedName& attribute, const AtomicString& value)
     {
-        return adoptRefWillBeNoop(new SetNodeAttributeCommand(element, attribute, value));
+        return new SetNodeAttributeCommand(element, attribute, value);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SetNodeAttributeCommand(PassRefPtrWillBeRawPtr<Element>, const QualifiedName& attribute, const AtomicString& value);
+    SetNodeAttributeCommand(RawPtr<Element>, const QualifiedName& attribute, const AtomicString& value);
 
     void doApply(EditingState*) override;
     void doUnapply() override;
 
-    RefPtrWillBeMember<Element> m_element;
+    Member<Element> m_element;
     QualifiedName m_attribute;
     AtomicString m_value;
     AtomicString m_oldValue;

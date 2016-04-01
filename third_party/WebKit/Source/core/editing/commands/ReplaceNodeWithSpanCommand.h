@@ -41,9 +41,9 @@ class HTMLSpanElement;
 // More accurately, this is ReplaceElementWithSpanPreservingChildrenAndAttributesCommand
 class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<ReplaceNodeWithSpanCommand> create(PassRefPtrWillBeRawPtr<HTMLElement> element)
+    static RawPtr<ReplaceNodeWithSpanCommand> create(RawPtr<HTMLElement> element)
     {
-        return adoptRefWillBeNoop(new ReplaceNodeWithSpanCommand(element));
+        return new ReplaceNodeWithSpanCommand(element);
     }
 
     HTMLSpanElement* spanElement() { return m_spanElement.get(); }
@@ -51,13 +51,13 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit ReplaceNodeWithSpanCommand(PassRefPtrWillBeRawPtr<HTMLElement>);
+    explicit ReplaceNodeWithSpanCommand(RawPtr<HTMLElement>);
 
     void doApply(EditingState*) override;
     void doUnapply() override;
 
-    RefPtrWillBeMember<HTMLElement> m_elementToReplace;
-    RefPtrWillBeMember<HTMLSpanElement> m_spanElement;
+    Member<HTMLElement> m_elementToReplace;
+    Member<HTMLSpanElement> m_spanElement;
 };
 
 } // namespace blink

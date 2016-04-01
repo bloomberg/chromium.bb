@@ -40,7 +40,7 @@ class TextCheckingParagraph {
 public:
     explicit TextCheckingParagraph(const EphemeralRange& checkingRange);
     TextCheckingParagraph(const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange);
-    TextCheckingParagraph(PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange);
+    TextCheckingParagraph(RawPtr<Range> checkingRange, RawPtr<Range> paragraphRange);
     ~TextCheckingParagraph();
 
     int rangeLength() const;

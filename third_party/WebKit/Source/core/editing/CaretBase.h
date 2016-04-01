@@ -44,7 +44,6 @@ enum class CaretVisibility { Visible, Hidden };
 
 class CORE_EXPORT CaretBase {
     WTF_MAKE_NONCOPYABLE(CaretBase);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CaretBase);
 public:
     explicit CaretBase(CaretVisibility = CaretVisibility::Hidden);
 

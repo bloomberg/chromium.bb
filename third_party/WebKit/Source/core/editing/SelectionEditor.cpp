@@ -582,7 +582,7 @@ static bool isBoundary(TextGranularity granularity)
 bool SelectionEditor::modify(EAlteration alter, SelectionDirection direction, TextGranularity granularity, EUserTriggered userTriggered)
 {
     if (userTriggered == UserTriggered) {
-        OwnPtrWillBeRawPtr<FrameSelection> trialFrameSelection = FrameSelection::create();
+        RawPtr<FrameSelection> trialFrameSelection = FrameSelection::create();
         trialFrameSelection->setSelection(m_selection);
         trialFrameSelection->modify(alter, direction, granularity, NotUserTriggered);
 
@@ -695,7 +695,7 @@ bool SelectionEditor::modify(EAlteration alter, unsigned verticalDistance, Verti
         return false;
 
     if (userTriggered == UserTriggered) {
-        OwnPtrWillBeRawPtr<FrameSelection> trialFrameSelection = FrameSelection::create();
+        RawPtr<FrameSelection> trialFrameSelection = FrameSelection::create();
         trialFrameSelection->setSelection(m_selection);
         trialFrameSelection->modify(alter, verticalDistance, direction, NotUserTriggered);
     }
@@ -850,7 +850,7 @@ bool SelectionEditor::setSelectedRange(const EphemeralRange& range, TextAffinity
     return true;
 }
 
-PassRefPtrWillBeRawPtr<Range> SelectionEditor::firstRange() const
+RawPtr<Range> SelectionEditor::firstRange() const
 {
     if (m_logicalRange)
         return m_logicalRange->cloneRange();

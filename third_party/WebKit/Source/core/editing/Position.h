@@ -66,14 +66,14 @@ public:
     }
 
     static const TreeScope* commonAncestorTreeScope(const PositionTemplate<Strategy>&, const PositionTemplate<Strategy>& b);
-    static PositionTemplate<Strategy> editingPositionOf(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
+    static PositionTemplate<Strategy> editingPositionOf(RawPtr<Node> anchorNode, int offset);
 
     // For creating before/after positions:
-    PositionTemplate(PassRefPtrWillBeRawPtr<Node> anchorNode, PositionAnchorType);
+    PositionTemplate(RawPtr<Node> anchorNode, PositionAnchorType);
 
     // For creating offset positions:
     // FIXME: This constructor should eventually go away. See bug 63040.
-    PositionTemplate(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
+    PositionTemplate(RawPtr<Node> anchorNode, int offset);
 
     PositionTemplate(const PositionTemplate&);
 
@@ -186,7 +186,7 @@ private:
         return isAfterAnchor() || isAfterChildren();
     }
 
-    RefPtrWillBeMember<Node> m_anchorNode;
+    Member<Node> m_anchorNode;
     // m_offset can be the offset inside m_anchorNode, or if editingIgnoresContent(m_anchorNode)
     // returns true, then other places in editing will treat m_offset == 0 as "before the anchor"
     // and m_offset > 0 as "after the anchor node".  See parentAnchoredEquivalent for more info.

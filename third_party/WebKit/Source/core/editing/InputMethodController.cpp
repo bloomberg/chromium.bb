@@ -56,9 +56,9 @@ InputMethodController::SelectionOffsetsScope::~SelectionOffsetsScope()
 
 // ----------------------------
 
-PassOwnPtrWillBeRawPtr<InputMethodController> InputMethodController::create(LocalFrame& frame)
+RawPtr<InputMethodController> InputMethodController::create(LocalFrame& frame)
 {
-    return adoptPtrWillBeNoop(new InputMethodController(frame));
+    return new InputMethodController(frame);
 }
 
 InputMethodController::InputMethodController(LocalFrame& frame)
@@ -130,7 +130,7 @@ static void dispatchCompositionEndEvent(LocalFrame& frame, const String& text)
     if (!target)
         return;
 
-    RefPtrWillBeRawPtr<CompositionEvent> event =
+    RawPtr<CompositionEvent> event =
         CompositionEvent::create(EventTypeNames::compositionend, frame.domWindow(), text);
     target->dispatchEvent(event);
 }
@@ -261,7 +261,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         // 3. Canceling the ongoing composition.
         //    Send a compositionend event when function deletes the existing composition node, i.e.
         //    !hasComposition() && test.isEmpty().
-        RefPtrWillBeRawPtr<CompositionEvent> event = nullptr;
+        RawPtr<CompositionEvent> event = nullptr;
         if (!hasComposition()) {
             // We should send a compositionstart event only when the given text is not empty because this
             // function doesn't create a composition node when the text is empty.
@@ -321,7 +321,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 
     unsigned start = std::min(baseOffset + selectionStart, extentOffset);
     unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
-    RefPtrWillBeRawPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
+    RawPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
     frame().selection().setSelectedRange(selectedRange.get(), TextAffinity::Downstream, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
 
     if (underlines.isEmpty()) {
@@ -381,7 +381,7 @@ EphemeralRange InputMethodController::compositionEphemeralRange() const
     return EphemeralRange(m_compositionRange.get());
 }
 
-PassRefPtrWillBeRawPtr<Range> InputMethodController::compositionRange() const
+RawPtr<Range> InputMethodController::compositionRange() const
 {
     return hasComposition() ? m_compositionRange : nullptr;
 }

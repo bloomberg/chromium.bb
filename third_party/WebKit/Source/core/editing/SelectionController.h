@@ -39,11 +39,10 @@ class FrameSelection;
 class HitTestResult;
 class LocalFrame;
 
-class SelectionController final : public NoBaseWillBeGarbageCollected<SelectionController> {
+class SelectionController final : public GarbageCollected<SelectionController> {
     WTF_MAKE_NONCOPYABLE(SelectionController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(SelectionController);
 public:
-    static PassOwnPtrWillBeRawPtr<SelectionController> create(LocalFrame&);
+    static RawPtr<SelectionController> create(LocalFrame&);
     DECLARE_TRACE();
 
     void handleMousePressEvent(const MouseEventWithHitTestResults&);
@@ -81,7 +80,7 @@ private:
 
     FrameSelection& selection() const;
 
-    RawPtrWillBeMember<LocalFrame> const m_frame;
+    Member<LocalFrame> const m_frame;
     bool m_mouseDownMayStartSelect;
     bool m_mouseDownWasSingleClickInSelection;
     bool m_mouseDownAllowsMultiClick;

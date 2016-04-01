@@ -13,7 +13,7 @@ TextOffset::TextOffset()
 {
 }
 
-TextOffset::TextOffset(PassRefPtrWillBeRawPtr<Text> text, int offset)
+TextOffset::TextOffset(RawPtr<Text> text, int offset)
     : m_text(text)
     , m_offset(offset)
 {

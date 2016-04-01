@@ -51,7 +51,7 @@ const TreeScope* PositionTemplate<Strategy>::commonAncestorTreeScope(const Posit
 
 
 template <typename Strategy>
-PositionTemplate<Strategy> PositionTemplate<Strategy>::editingPositionOf(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset)
+PositionTemplate<Strategy> PositionTemplate<Strategy>::editingPositionOf(RawPtr<Node> anchorNode, int offset)
 {
     if (!anchorNode || anchorNode->isTextNode())
         return PositionTemplate<Strategy>(anchorNode, offset);
@@ -69,7 +69,7 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::editingPositionOf(PassRef
 }
 
 template <typename Strategy>
-PositionTemplate<Strategy>::PositionTemplate(PassRefPtrWillBeRawPtr<Node> anchorNode, PositionAnchorType anchorType)
+PositionTemplate<Strategy>::PositionTemplate(RawPtr<Node> anchorNode, PositionAnchorType anchorType)
     : m_anchorNode(anchorNode)
     , m_offset(0)
     , m_anchorType(anchorType)
@@ -87,7 +87,7 @@ PositionTemplate<Strategy>::PositionTemplate(PassRefPtrWillBeRawPtr<Node> anchor
 }
 
 template <typename Strategy>
-PositionTemplate<Strategy>::PositionTemplate(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset)
+PositionTemplate<Strategy>::PositionTemplate(RawPtr<Node> anchorNode, int offset)
     : m_anchorNode(anchorNode)
     , m_offset(offset)
     , m_anchorType(PositionAnchorType::OffsetInAnchor)

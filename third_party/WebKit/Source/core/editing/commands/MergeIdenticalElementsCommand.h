@@ -32,22 +32,22 @@ namespace blink {
 
 class MergeIdenticalElementsCommand final : public SimpleEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<MergeIdenticalElementsCommand> create(PassRefPtrWillBeRawPtr<Element> element1, PassRefPtrWillBeRawPtr<Element> element2)
+    static RawPtr<MergeIdenticalElementsCommand> create(RawPtr<Element> element1, RawPtr<Element> element2)
     {
-        return adoptRefWillBeNoop(new MergeIdenticalElementsCommand(element1, element2));
+        return new MergeIdenticalElementsCommand(element1, element2);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MergeIdenticalElementsCommand(PassRefPtrWillBeRawPtr<Element>, PassRefPtrWillBeRawPtr<Element>);
+    MergeIdenticalElementsCommand(RawPtr<Element>, RawPtr<Element>);
 
     void doApply(EditingState*) override;
     void doUnapply() override;
 
-    RefPtrWillBeMember<Element> m_element1;
-    RefPtrWillBeMember<Element> m_element2;
-    RefPtrWillBeMember<Node> m_atChild;
+    Member<Element> m_element1;
+    Member<Element> m_element2;
+    Member<Node> m_atChild;
 };
 
 } // namespace blink

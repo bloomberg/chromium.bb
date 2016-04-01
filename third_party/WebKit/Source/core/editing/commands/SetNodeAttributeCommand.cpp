@@ -30,7 +30,7 @@
 
 namespace blink {
 
-SetNodeAttributeCommand::SetNodeAttributeCommand(PassRefPtrWillBeRawPtr<Element> element,
+SetNodeAttributeCommand::SetNodeAttributeCommand(RawPtr<Element> element,
     const QualifiedName& attribute, const AtomicString& value)
     : SimpleEditCommand(element->document())
     , m_element(element)

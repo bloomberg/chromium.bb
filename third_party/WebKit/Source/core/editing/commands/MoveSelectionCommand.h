@@ -34,20 +34,20 @@ class DocumentFragment;
 
 class MoveSelectionCommand final : public CompositeEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<MoveSelectionCommand> create(PassRefPtrWillBeRawPtr<DocumentFragment> fragment, const Position& position, bool smartInsert = false, bool smartDelete = false)
+    static RawPtr<MoveSelectionCommand> create(RawPtr<DocumentFragment> fragment, const Position& position, bool smartInsert = false, bool smartDelete = false)
     {
-        return adoptRefWillBeNoop(new MoveSelectionCommand(fragment, position, smartInsert, smartDelete));
+        return new MoveSelectionCommand(fragment, position, smartInsert, smartDelete);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MoveSelectionCommand(PassRefPtrWillBeRawPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);
+    MoveSelectionCommand(RawPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);
 
     void doApply(EditingState*) override;
     EditAction editingAction() const override;
 
-    RefPtrWillBeMember<DocumentFragment> m_fragment;
+    Member<DocumentFragment> m_fragment;
     Position m_position;
     bool m_smartInsert;
     bool m_smartDelete;

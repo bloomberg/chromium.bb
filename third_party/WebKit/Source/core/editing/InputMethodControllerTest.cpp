@@ -26,7 +26,7 @@ private:
     void SetUp() override;
 
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    RefPtrWillBePersistent<HTMLDocument> m_document;
+    Persistent<HTMLDocument> m_document;
 };
 
 void InputMethodControllerTest::SetUp()
@@ -97,7 +97,7 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText)
     underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
     controller().setCompositionFromExistingText(underlines, 0, 5);
 
-    RefPtrWillBeRawPtr<Range> range = controller().compositionRange();
+    RawPtr<Range> range = controller().compositionRange();
     EXPECT_EQ(0, range->startOffset());
     EXPECT_EQ(5, range->endOffset());
 
@@ -157,7 +157,7 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithCollapsedWhi
     underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
     controller().setCompositionFromExistingText(underlines, 0, 5);
 
-    RefPtrWillBeRawPtr<Range> range = controller().compositionRange();
+    RawPtr<Range> range = controller().compositionRange();
     EXPECT_EQ(1, range->startOffset());
     EXPECT_EQ(6, range->endOffset());
 

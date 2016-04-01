@@ -34,23 +34,23 @@ class Text;
 
 class SplitTextNodeCommand final : public SimpleEditCommand {
 public:
-    static PassRefPtrWillBeRawPtr<SplitTextNodeCommand> create(PassRefPtrWillBeRawPtr<Text> node, int offset)
+    static RawPtr<SplitTextNodeCommand> create(RawPtr<Text> node, int offset)
     {
-        return adoptRefWillBeNoop(new SplitTextNodeCommand(node, offset));
+        return new SplitTextNodeCommand(node, offset);
     }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SplitTextNodeCommand(PassRefPtrWillBeRawPtr<Text>, int offset);
+    SplitTextNodeCommand(RawPtr<Text>, int offset);
 
     void doApply(EditingState*) override;
     void doUnapply() override;
     void doReapply() override;
     void insertText1AndTrimText2();
 
-    RefPtrWillBeMember<Text> m_text1;
-    RefPtrWillBeMember<Text> m_text2;
+    Member<Text> m_text1;
+    Member<Text> m_text2;
     unsigned m_offset;
 };
 

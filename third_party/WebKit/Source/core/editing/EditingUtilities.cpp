@@ -1279,7 +1279,7 @@ bool isEmptyTableCell(const Node* node)
     return !childLayoutObject->nextSibling();
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document& document)
+RawPtr<HTMLElement> createDefaultParagraphElement(Document& document)
 {
     switch (document.frame()->editor().defaultParagraphSeparator()) {
     case EditorParagraphSeparatorIsDiv:
@@ -1292,7 +1292,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> createDefaultParagraphElement(Document& docu
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(Document& document, const QualifiedName& name)
+RawPtr<HTMLElement> createHTMLElement(Document& document, const QualifiedName& name)
 {
     return HTMLElementFactory::createHTMLElement(name.localName(), document, 0, false);
 }
@@ -1315,12 +1315,12 @@ HTMLSpanElement* tabSpanElement(const Node* node)
     return isTabHTMLSpanElementTextNode(node) ? toHTMLSpanElement(node->parentNode()) : 0;
 }
 
-static PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document, PassRefPtrWillBeRawPtr<Text> prpTabTextNode)
+static RawPtr<HTMLSpanElement> createTabSpanElement(Document& document, RawPtr<Text> prpTabTextNode)
 {
-    RefPtrWillBeRawPtr<Text> tabTextNode = prpTabTextNode;
+    RawPtr<Text> tabTextNode = prpTabTextNode;
 
     // Make the span to hold the tab.
-    RefPtrWillBeRawPtr<HTMLSpanElement> spanElement = HTMLSpanElement::create(document);
+    RawPtr<HTMLSpanElement> spanElement = HTMLSpanElement::create(document);
     spanElement->setAttribute(classAttr, AppleTabSpanClass);
     spanElement->setAttribute(styleAttr, "white-space:pre");
 
@@ -1333,14 +1333,14 @@ static PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& do
     return spanElement.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document, const String& tabText)
+RawPtr<HTMLSpanElement> createTabSpanElement(Document& document, const String& tabText)
 {
     return createTabSpanElement(document, document.createTextNode(tabText));
 }
 
-PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document)
+RawPtr<HTMLSpanElement> createTabSpanElement(Document& document)
 {
-    return createTabSpanElement(document, PassRefPtrWillBeRawPtr<Text>(nullptr));
+    return createTabSpanElement(document, RawPtr<Text>(nullptr));
 }
 
 bool isNodeRendered(const Node& node)
@@ -1537,7 +1537,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
 // opertion is unreliable. TextIterator's TextIteratorEmitsCharactersBetweenAllVisiblePositions mode needs to be fixed,
 // or these functions need to be changed to iterate using actual VisiblePositions.
 // FIXME: Deploy these functions everywhere that TextIterators are used to convert between VisiblePositions and indices.
-int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtrWillBeRawPtr<ContainerNode>& scope)
+int indexForVisiblePosition(const VisiblePosition& visiblePosition, RawPtr<ContainerNode>& scope)
 {
     if (visiblePosition.isNull())
         return 0;
@@ -1551,7 +1551,7 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtrWillBe
     else
         scope = document.documentElement();
 
-    RefPtrWillBeRawPtr<Range> range = Range::create(document, firstPositionInNode(scope.get()), p.parentAnchoredEquivalent());
+    RawPtr<Range> range = Range::create(document, firstPositionInNode(scope.get()), p.parentAnchoredEquivalent());
 
     return TextIterator::rangeLength(range->startPosition(), range->endPosition(), true);
 }

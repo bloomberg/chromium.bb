@@ -214,7 +214,7 @@ EphemeralRange firstEphemeralRangeOf(const VisibleSelection& selection)
     return EphemeralRange(start, end);
 }
 
-PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection& selection)
+RawPtr<Range> firstRangeOf(const VisibleSelection& selection)
 {
     return createRange(firstEphemeralRangeOf(selection));
 }

@@ -11,10 +11,10 @@ namespace blink {
 namespace {
 
 class MockVisibleSelectionChangeObserver final :
-    public NoBaseWillBeGarbageCollectedFinalized<MockVisibleSelectionChangeObserver>,
+    public GarbageCollectedFinalized<MockVisibleSelectionChangeObserver>,
     public VisibleSelectionChangeObserver {
     WTF_MAKE_NONCOPYABLE(MockVisibleSelectionChangeObserver);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockVisibleSelectionChangeObserver);
+    USING_GARBAGE_COLLECTED_MIXIN(MockVisibleSelectionChangeObserver);
 public:
     MockVisibleSelectionChangeObserver() = default;
     ~MockVisibleSelectionChangeObserver() final = default;

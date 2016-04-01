@@ -103,7 +103,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     if (!topBlockquote || !topBlockquote->parentNode())
         return;
 
-    RefPtrWillBeRawPtr<HTMLBRElement> breakElement = HTMLBRElement::create(document());
+    RawPtr<HTMLBRElement> breakElement = HTMLBRElement::create(document());
 
     bool isLastVisPosInNode = isLastVisiblePositionInNode(visiblePos, topBlockquote);
 
@@ -172,12 +172,12 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     }
 
     // Build up list of ancestors in between the start node and the top blockquote.
-    WillBeHeapVector<RefPtrWillBeMember<Element>> ancestors;
+    HeapVector<Member<Element>> ancestors;
     for (Element* node = startNode->parentElement(); node && node != topBlockquote; node = node->parentElement())
         ancestors.append(node);
 
     // Insert a clone of the top blockquote after the break.
-    RefPtrWillBeRawPtr<Element> clonedBlockquote = topBlockquote->cloneElementWithoutChildren();
+    RawPtr<Element> clonedBlockquote = topBlockquote->cloneElementWithoutChildren();
     insertNodeAfter(clonedBlockquote.get(), breakElement.get(), editingState);
     if (editingState->isAborted())
         return;
@@ -186,9 +186,9 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     // On exiting this loop, clonedAncestor is the lowest ancestor
     // that was cloned (i.e. the clone of either ancestors.last()
     // or clonedBlockquote if ancestors is empty).
-    RefPtrWillBeRawPtr<Element> clonedAncestor = clonedBlockquote;
+    RawPtr<Element> clonedAncestor = clonedBlockquote;
     for (size_t i = ancestors.size(); i != 0; --i) {
-        RefPtrWillBeRawPtr<Element> clonedChild = ancestors[i - 1]->cloneElementWithoutChildren();
+        RawPtr<Element> clonedChild = ancestors[i - 1]->cloneElementWithoutChildren();
         // Preserve list item numbering in cloned lists.
         if (isHTMLOListElement(*clonedChild)) {
             Node* listChildNode = i > 1 ? ancestors[i - 2].get() : startNode;
@@ -215,8 +215,8 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
         // Throughout this loop, clonedParent is the clone of ancestor's parent.
         // This is so we can clone ancestor's siblings and place the clones
         // into the clone corresponding to the ancestor's parent.
-        RefPtrWillBeRawPtr<Element> ancestor = nullptr;
-        RefPtrWillBeRawPtr<Element> clonedParent = nullptr;
+        RawPtr<Element> ancestor = nullptr;
+        RawPtr<Element> clonedParent = nullptr;
         for (ancestor = ancestors.first(), clonedParent = clonedAncestor->parentElement();
             ancestor && ancestor != topBlockquote;
             ancestor = ancestor->parentElement(), clonedParent = clonedParent->parentElement()) {

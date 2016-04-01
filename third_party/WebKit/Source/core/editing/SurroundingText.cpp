@@ -89,7 +89,7 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
     ASSERT(m_contentRange);
 }
 
-PassRefPtrWillBeRawPtr<Range> SurroundingText::rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent)
+RawPtr<Range> SurroundingText::rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent)
 {
     if (startOffsetInContent >= endOffsetInContent || endOffsetInContent > content().length())
         return nullptr;

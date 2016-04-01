@@ -41,7 +41,7 @@ SimplifyMarkupCommand::SimplifyMarkupCommand(Document& document, Node* firstNode
 void SimplifyMarkupCommand::doApply(EditingState* editingState)
 {
     ContainerNode* rootNode = m_firstNode->parentNode();
-    WillBeHeapVector<RefPtrWillBeMember<ContainerNode>> nodesToRemove;
+    HeapVector<Member<ContainerNode>> nodesToRemove;
 
     // Walk through the inserted nodes, to see if there are elements that could be removed
     // without affecting the style. The goal is to produce leaner markup even when starting
@@ -100,7 +100,7 @@ void SimplifyMarkupCommand::doApply(EditingState* editingState)
     }
 }
 
-int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<RefPtrWillBeMember<ContainerNode>>& nodesToRemove, size_t startNodeIndex, EditingState* editingState)
+int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(HeapVector<Member<ContainerNode>>& nodesToRemove, size_t startNodeIndex, EditingState* editingState)
 {
     size_t pastLastNodeToRemove = startNodeIndex + 1;
     for (; pastLastNodeToRemove < nodesToRemove.size(); ++pastLastNodeToRemove) {
@@ -110,7 +110,7 @@ int SimplifyMarkupCommand::pruneSubsequentAncestorsToRemove(WillBeHeapVector<Ref
     }
 
     ContainerNode* highestAncestorToRemove = nodesToRemove[pastLastNodeToRemove - 1].get();
-    RefPtrWillBeRawPtr<ContainerNode> parent = highestAncestorToRemove->parentNode();
+    RawPtr<ContainerNode> parent = highestAncestorToRemove->parentNode();
     if (!parent) // Parent has already been removed.
         return -1;
 
