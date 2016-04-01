@@ -35,7 +35,7 @@ void DataConsumerHandleTestUtil::Thread::initialize()
         m_scriptState = ScriptState::create(v8::Context::New(isolate()), DOMWrapperWorld::create(isolate()));
     }
     if (m_initializationPolicy >= WithExecutionContext) {
-        m_executionContext = adoptRefWillBeNoop(new NullExecutionContext());
+        m_executionContext = new NullExecutionContext();
     }
     m_waitableEvent->signal();
 }

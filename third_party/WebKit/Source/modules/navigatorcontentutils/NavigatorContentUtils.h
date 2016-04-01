@@ -40,9 +40,8 @@ class ExceptionState;
 class LocalFrame;
 class Navigator;
 
-class MODULES_EXPORT NavigatorContentUtils final : public NoBaseWillBeGarbageCollectedFinalized<NavigatorContentUtils>, public WillBeHeapSupplement<LocalFrame> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorContentUtils);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(NavigatorContentUtils);
+class MODULES_EXPORT NavigatorContentUtils final : public GarbageCollectedFinalized<NavigatorContentUtils>, public HeapSupplement<LocalFrame> {
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorContentUtils);
 public:
     virtual ~NavigatorContentUtils();
 
@@ -53,25 +52,25 @@ public:
     static String isProtocolHandlerRegistered(Navigator&, const String& scheme, const String& url, ExceptionState&);
     static void unregisterProtocolHandler(Navigator&, const String& scheme, const String& url, ExceptionState&);
 
-    static PassOwnPtrWillBeRawPtr<NavigatorContentUtils> create(PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient>);
+    static RawPtr<NavigatorContentUtils> create(RawPtr<NavigatorContentUtilsClient>);
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_client);
-        WillBeHeapSupplement<LocalFrame>::trace(visitor);
+        HeapSupplement<LocalFrame>::trace(visitor);
     }
 
-    void setClientForTest(PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient> client) { m_client = client; }
+    void setClientForTest(RawPtr<NavigatorContentUtilsClient> client) { m_client = client; }
 
 private:
-    explicit NavigatorContentUtils(PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient> client)
+    explicit NavigatorContentUtils(RawPtr<NavigatorContentUtilsClient> client)
         : m_client(client)
     {
     }
 
     NavigatorContentUtilsClient* client() { return m_client.get(); }
 
-    OwnPtrWillBeMember<NavigatorContentUtilsClient> m_client;
+    Member<NavigatorContentUtilsClient> m_client;
 };
 
 } // namespace blink

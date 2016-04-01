@@ -36,10 +36,8 @@ namespace blink {
 
 class DOMWindow;
 
-class MODULES_EXPORT DOMWindowSpeechSynthesis final : public NoBaseWillBeGarbageCollected<DOMWindowSpeechSynthesis>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowSpeechSynthesis);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowSpeechSynthesis);
+class MODULES_EXPORT DOMWindowSpeechSynthesis final : public GarbageCollected<DOMWindowSpeechSynthesis>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
 public:
     static SpeechSynthesis* speechSynthesis(DOMWindow&);
     static DOMWindowSpeechSynthesis& from(LocalDOMWindow&);
@@ -52,7 +50,7 @@ private:
     SpeechSynthesis* speechSynthesis();
     static const char* supplementName();
 
-    PersistentWillBeMember<SpeechSynthesis> m_speechSynthesis;
+    Member<SpeechSynthesis> m_speechSynthesis;
 };
 
 } // namespace blink

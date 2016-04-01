@@ -21,7 +21,7 @@ class NetworkInformation final
     , public ActiveDOMObject
     , public NetworkStateNotifier::NetworkStateObserver {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(NetworkInformation);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NetworkInformation);
+    USING_GARBAGE_COLLECTED_MIXIN(NetworkInformation);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static NetworkInformation* create(ExecutionContext*);
@@ -51,8 +51,8 @@ public:
 
 protected:
     // EventTarget overrides.
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
-    bool removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
+    bool removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     explicit NetworkInformation(ExecutionContext*);

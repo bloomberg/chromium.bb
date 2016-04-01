@@ -49,9 +49,9 @@ class DictionaryValue;
 
 class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, protocol::Frontend::DOMStorage>, public protocol::Backend::DOMStorage {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorDOMStorageAgent> create(Page* page)
+    static RawPtr<InspectorDOMStorageAgent> create(Page* page)
     {
-        return adoptPtrWillBeNoop(new InspectorDOMStorageAgent(page));
+        return new InspectorDOMStorageAgent(page);
     }
 
     ~InspectorDOMStorageAgent() override;
@@ -75,7 +75,7 @@ private:
     StorageArea* findStorageArea(ErrorString*, PassOwnPtr<protocol::DOMStorage::StorageId>, LocalFrame*&);
     PassOwnPtr<protocol::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
-    RawPtrWillBeMember<Page> m_page;
+    Member<Page> m_page;
     bool m_isEnabled;
 };
 

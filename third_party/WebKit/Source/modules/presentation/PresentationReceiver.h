@@ -19,7 +19,7 @@ class PresentationReceiver final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationReceiver>
     , DOMWindowProperty {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationReceiver);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
+    USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
     DEFINE_WRAPPERTYPEINFO();
 public:
     PresentationReceiver(LocalFrame*);

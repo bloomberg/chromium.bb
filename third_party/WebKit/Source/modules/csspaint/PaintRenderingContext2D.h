@@ -16,15 +16,14 @@ namespace blink {
 class CanvasImageSource;
 class Color;
 
-class MODULES_EXPORT PaintRenderingContext2D : public BaseRenderingContext2D, public RefCountedWillBeGarbageCollectedFinalized<PaintRenderingContext2D>, public ScriptWrappable {
+class MODULES_EXPORT PaintRenderingContext2D : public BaseRenderingContext2D, public GarbageCollectedFinalized<PaintRenderingContext2D>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
+    USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
     WTF_MAKE_NONCOPYABLE(PaintRenderingContext2D);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(PaintRenderingContext2D);
 public:
-    static PassRefPtrWillBeRawPtr<PaintRenderingContext2D> create(PassOwnPtr<ImageBuffer> imageBuffer)
+    static RawPtr<PaintRenderingContext2D> create(PassOwnPtr<ImageBuffer> imageBuffer)
     {
-        return adoptRefWillBeNoop(new PaintRenderingContext2D(imageBuffer));
+        return new PaintRenderingContext2D(imageBuffer);
     }
 
     // BaseRenderingContext2D

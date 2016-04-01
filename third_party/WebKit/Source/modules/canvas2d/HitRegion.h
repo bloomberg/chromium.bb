@@ -17,11 +17,11 @@
 
 namespace blink {
 
-class HitRegion final : public RefCountedWillBeGarbageCollectedFinalized<HitRegion> {
+class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
 public:
-    static PassRefPtrWillBeRawPtr<HitRegion> create(const Path& path, const HitRegionOptions& options)
+    static RawPtr<HitRegion> create(const Path& path, const HitRegionOptions& options)
     {
-        return adoptRefWillBeNoop(new HitRegion(path, options));
+        return new HitRegion(path, options);
     }
 
     virtual ~HitRegion() { }
@@ -40,7 +40,7 @@ private:
     HitRegion(const Path&, const HitRegionOptions&);
 
     String m_id;
-    RefPtrWillBeMember<Element> m_control;
+    Member<Element> m_control;
     Path m_path;
     WindRule m_fillRule;
 };
@@ -51,7 +51,7 @@ public:
     static HitRegionManager* create() { return new HitRegionManager; }
     ~HitRegionManager() { }
 
-    void addHitRegion(PassRefPtrWillBeRawPtr<HitRegion>);
+    void addHitRegion(RawPtr<HitRegion>);
 
     void removeHitRegion(HitRegion*);
     void removeHitRegionById(const String& id);
@@ -70,10 +70,10 @@ public:
 private:
     HitRegionManager() { }
 
-    typedef WillBeHeapListHashSet<RefPtrWillBeMember<HitRegion>> HitRegionList;
+    typedef HeapListHashSet<Member<HitRegion>> HitRegionList;
     typedef HitRegionList::const_reverse_iterator HitRegionIterator;
-    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<HitRegion>> HitRegionIdMap;
-    typedef WillBeHeapHashMap<RefPtrWillBeMember<Element>, RefPtrWillBeMember<HitRegion>> HitRegionControlMap;
+    typedef HeapHashMap<String, Member<HitRegion>> HitRegionIdMap;
+    typedef HeapHashMap<Member<Element>, Member<HitRegion>> HitRegionControlMap;
 
     HitRegionList m_hitRegionList;
     HitRegionIdMap m_hitRegionIdMap;

@@ -16,7 +16,7 @@ class FetchRequestData;
 class ScriptState;
 
 class FetchManager final : public GarbageCollectedFinalized<FetchManager>, public ContextLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
+    USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
 public:
     static FetchManager* create(ExecutionContext*);
     explicit FetchManager(ExecutionContext*);

@@ -6,7 +6,7 @@
 
 [
     Exposed=PaintWorklet,
-    WillBeGarbageCollected,
+    GarbageCollected,
     RuntimeEnabled=CSSPaintAPI,
 ] interface PaintRenderingContext2D {
     // state

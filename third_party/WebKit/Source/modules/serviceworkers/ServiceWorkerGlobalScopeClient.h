@@ -53,7 +53,7 @@ class WebURL;
 class WorkerClients;
 
 // See WebServiceWorkerContextClient for documentation for the methods in this class.
-class MODULES_EXPORT ServiceWorkerGlobalScopeClient : public WillBeHeapSupplement<WorkerClients> {
+class MODULES_EXPORT ServiceWorkerGlobalScopeClient : public HeapSupplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
     DISALLOW_NEW();
 public:
@@ -94,7 +94,7 @@ protected:
     ServiceWorkerGlobalScopeClient() { }
 };
 
-MODULES_EXPORT void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient>);
+MODULES_EXPORT void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients*, RawPtr<ServiceWorkerGlobalScopeClient>);
 
 } // namespace blink
 

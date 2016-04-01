@@ -25,7 +25,7 @@ class SVGMatrixTearOff;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap CanvasImageSourceUnion;
 
-class MODULES_EXPORT BaseRenderingContext2D : public WillBeGarbageCollectedMixin, public CanvasPathMethods {
+class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin, public CanvasPathMethods {
     WTF_MAKE_NONCOPYABLE(BaseRenderingContext2D);
 public:
     ~BaseRenderingContext2D() override;
@@ -78,8 +78,8 @@ public:
     void save();
     void restore();
 
-    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> currentTransform() const;
-    void setCurrentTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>);
+    RawPtr<SVGMatrixTearOff> currentTransform() const;
+    void setCurrentTransform(RawPtr<SVGMatrixTearOff>);
 
     void scale(double sx, double sy);
     void rotate(double angleInRadians);
@@ -178,7 +178,7 @@ protected:
 
     void checkOverdraw(const SkRect&, const SkPaint*, CanvasRenderingContext2DState::ImageType, DrawType);
 
-    WillBeHeapVector<OwnPtrWillBeMember<CanvasRenderingContext2DState>> m_stateStack;
+    HeapVector<Member<CanvasRenderingContext2DState>> m_stateStack;
     AntiAliasingMode m_clipAntialiasing;
 
 private:

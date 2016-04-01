@@ -28,12 +28,12 @@ public:
 
 protected:
     ExecutionContext* context() final;
-    void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) final;
+    void reportMessageToConsole(RawPtr<ConsoleMessage>) final;
 
 private:
     explicit WorkletConsole(WorkletGlobalScope*);
 
-    RawPtrWillBeMember<WorkletGlobalScope> m_scope;
+    Member<WorkletGlobalScope> m_scope;
 };
 
 } // namespace blink

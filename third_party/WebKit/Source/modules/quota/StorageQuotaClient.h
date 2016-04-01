@@ -47,7 +47,7 @@ class ScriptState;
 class StorageErrorCallback;
 class StorageQuotaCallback;
 
-class StorageQuotaClient : public WillBeHeapSupplement<Page> {
+class StorageQuotaClient : public HeapSupplement<Page> {
     WTF_MAKE_NONCOPYABLE(StorageQuotaClient);
 public:
     StorageQuotaClient() { }
@@ -60,7 +60,7 @@ public:
     static StorageQuotaClient* from(ExecutionContext*);
 };
 
-MODULES_EXPORT void provideStorageQuotaClientTo(Page&, PassOwnPtrWillBeRawPtr<StorageQuotaClient>);
+MODULES_EXPORT void provideStorageQuotaClientTo(Page&, RawPtr<StorageQuotaClient>);
 
 } // namespace blink
 

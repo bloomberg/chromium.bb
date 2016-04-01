@@ -15,9 +15,8 @@ namespace blink {
 
 // A supplement to HTMLMediaElement responsible for the integration of
 // MediaSession with HTMLMediaElement.
-class MODULES_EXPORT HTMLMediaElementMediaSession final : public NoBaseWillBeGarbageCollected<HTMLMediaElementMediaSession>, public WillBeHeapSupplement<HTMLMediaElement> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementMediaSession);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLMediaElementMediaSession);
+class MODULES_EXPORT HTMLMediaElementMediaSession final : public GarbageCollected<HTMLMediaElementMediaSession>, public HeapSupplement<HTMLMediaElement> {
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementMediaSession);
 public:
     static MediaSession* session(HTMLMediaElement&);
     static void setSession(HTMLMediaElement&, MediaSession*, ExceptionState&);
@@ -29,7 +28,7 @@ private:
     static HTMLMediaElementMediaSession* fromIfExists(HTMLMediaElement&);
     static const char* supplementName();
 
-    PersistentWillBeMember<MediaSession> m_session;
+    Member<MediaSession> m_session;
 };
 
 } // namespace blink

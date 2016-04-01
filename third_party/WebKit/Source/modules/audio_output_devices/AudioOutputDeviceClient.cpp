@@ -24,10 +24,10 @@ AudioOutputDeviceClient* AudioOutputDeviceClient::from(ExecutionContext* context
     if (!document->frame() || !document->frame()->isLocalFrame())
         return nullptr;
 
-    return static_cast<AudioOutputDeviceClient*>(WillBeHeapSupplement<LocalFrame>::from(document->frame(), supplementName()));
+    return static_cast<AudioOutputDeviceClient*>(HeapSupplement<LocalFrame>::from(document->frame(), supplementName()));
 }
 
-void provideAudioOutputDeviceClientTo(LocalFrame& frame, PassOwnPtrWillBeRawPtr<AudioOutputDeviceClient> client)
+void provideAudioOutputDeviceClientTo(LocalFrame& frame, RawPtr<AudioOutputDeviceClient> client)
 {
     frame.provideSupplement(AudioOutputDeviceClient::supplementName(), client);
 }

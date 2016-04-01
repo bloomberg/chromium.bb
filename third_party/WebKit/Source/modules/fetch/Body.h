@@ -34,7 +34,7 @@ class MODULES_EXPORT Body
     , public ActiveDOMObject {
     WTF_MAKE_NONCOPYABLE(Body);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Body);
+    USING_GARBAGE_COLLECTED_MIXIN(Body);
 public:
     explicit Body(ExecutionContext*);
     ~Body() override { }

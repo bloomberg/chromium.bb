@@ -18,12 +18,10 @@ DOMWindowStorageController::DOMWindowStorageController(Document& document)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowStorageController);
-
 DEFINE_TRACE(DOMWindowStorageController)
 {
     visitor->trace(m_document);
-    WillBeHeapSupplement<Document>::trace(visitor);
+    HeapSupplement<Document>::trace(visitor);
     DOMWindowLifecycleObserver::trace(visitor);
 }
 
@@ -36,10 +34,10 @@ const char* DOMWindowStorageController::supplementName()
 // static
 DOMWindowStorageController& DOMWindowStorageController::from(Document& document)
 {
-    DOMWindowStorageController* controller = static_cast<DOMWindowStorageController*>(WillBeHeapSupplement<Document>::from(document, supplementName()));
+    DOMWindowStorageController* controller = static_cast<DOMWindowStorageController*>(HeapSupplement<Document>::from(document, supplementName()));
     if (!controller) {
         controller = new DOMWindowStorageController(document);
-        WillBeHeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
+        HeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
     }
     return *controller;
 }

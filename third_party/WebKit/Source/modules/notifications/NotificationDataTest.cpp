@@ -44,13 +44,13 @@ class NotificationDataTest : public ::testing::Test {
 public:
     void SetUp() override
     {
-        m_executionContext = adoptRefWillBeNoop(new NullExecutionContext());
+        m_executionContext = new NullExecutionContext();
     }
 
     ExecutionContext* getExecutionContext() { return m_executionContext.get(); }
 
 private:
-    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
+    Persistent<ExecutionContext> m_executionContext;
 };
 
 TEST_F(NotificationDataTest, ReflectProperties)

@@ -163,7 +163,7 @@ void UserMediaRequest::succeed(MediaStreamDescriptor* streamDescriptor)
     if (!getExecutionContext())
         return;
 
-    RefPtrWillBeRawPtr<MediaStream> stream = MediaStream::create(getExecutionContext(), streamDescriptor);
+    RawPtr<MediaStream> stream = MediaStream::create(getExecutionContext(), streamDescriptor);
 
     MediaStreamTrackVector audioTracks = stream->getAudioTracks();
     for (MediaStreamTrackVector::iterator iter = audioTracks.begin(); iter != audioTracks.end(); ++iter) {

@@ -143,7 +143,7 @@ private:
 };
 
 class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext, public Page::MultisamplingChangedObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebGLRenderingContextBase);
+    USING_GARBAGE_COLLECTED_MIXIN(WebGLRenderingContextBase);
 public:
     ~WebGLRenderingContextBase() override;
 
@@ -294,7 +294,7 @@ public:
     void texImage2D(GLenum target, GLint level, GLint internalformat,
         GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
     void texImage2D(GLenum target, GLint level, GLint internalformat,
-        GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap>, ExceptionState&);
+        GLenum format, GLenum type, RawPtr<ImageBitmap>, ExceptionState&);
 
     void texParameterf(GLenum target, GLenum pname, GLfloat param);
     void texParameteri(GLenum target, GLenum pname, GLint param);
@@ -311,7 +311,7 @@ public:
     void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
         GLenum format, GLenum type, HTMLVideoElement*, ExceptionState&);
     void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap>, ExceptionState&);
+        GLenum format, GLenum type, RawPtr<ImageBitmap>, ExceptionState&);
 
     void uniform1f(const WebGLUniformLocation*, GLfloat x);
     void uniform1fv(const WebGLUniformLocation*, const FlexibleFloat32ArrayView&);
@@ -525,13 +525,13 @@ protected:
     HashSet<UntracedMember<WebGLContextObject>> m_contextObjects;
 #endif
 
-    PersistentWillBeMember<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;
+    Member<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;
 
     // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and stored values for ELEMENT_ARRAY_BUFFER
-    PersistentWillBeMember<WebGLBuffer> m_boundArrayBuffer;
+    Member<WebGLBuffer> m_boundArrayBuffer;
 
-    PersistentWillBeMember<WebGLVertexArrayObjectBase> m_defaultVertexArrayObject;
-    PersistentWillBeMember<WebGLVertexArrayObjectBase> m_boundVertexArrayObject;
+    Member<WebGLVertexArrayObjectBase> m_defaultVertexArrayObject;
+    Member<WebGLVertexArrayObjectBase> m_boundVertexArrayObject;
     bool m_preservedDefaultVAOObjectWrapper;
     void setBoundVertexArrayObject(ScriptState*, WebGLVertexArrayObjectBase*);
 
@@ -545,12 +545,12 @@ protected:
     unsigned m_maxVertexAttribs;
     void setVertexAttribType(GLuint index, VertexAttribValueType);
 
-    PersistentWillBeMember<WebGLProgram> m_currentProgram;
-    PersistentWillBeMember<WebGLFramebuffer> m_framebufferBinding;
-    PersistentWillBeMember<WebGLRenderbuffer> m_renderbufferBinding;
-    PersistentWillBeMember<CHROMIUMValuebuffer> m_valuebufferBinding;
+    Member<WebGLProgram> m_currentProgram;
+    Member<WebGLFramebuffer> m_framebufferBinding;
+    Member<WebGLRenderbuffer> m_renderbufferBinding;
+    Member<CHROMIUMValuebuffer> m_valuebufferBinding;
 
-    PersistentHeapVectorWillBeHeapVector<TextureUnitState> m_textureUnits;
+    HeapVector<TextureUnitState> m_textureUnits;
     unsigned long m_activeTextureUnit;
 
     Vector<GLenum> m_compressedTextureFormats;
@@ -654,7 +654,7 @@ protected:
     template <typename T>
     class TypedExtensionTracker final : public ExtensionTracker {
     public:
-        static TypedExtensionTracker<T>* create(PersistentWillBeMember<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
+        static TypedExtensionTracker<T>* create(Member<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
         {
             return new TypedExtensionTracker<T>(extensionField, flags, prefixes);
         }
@@ -695,24 +695,24 @@ protected:
         }
 
     private:
-        TypedExtensionTracker(PersistentWillBeMember<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
+        TypedExtensionTracker(Member<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
             : ExtensionTracker(flags, prefixes)
             , m_extensionField(extensionField)
         {
         }
 
         GC_PLUGIN_IGNORE("http://crbug.com/519953")
-        PersistentWillBeMember<T>& m_extensionField;
+        Member<T>& m_extensionField;
         // ExtensionTracker holds it's own reference to the extension to ensure
         // that it is not deleted before this object's destructor is called
         Member<T> m_extension;
     };
 
     bool m_extensionEnabled[WebGLExtensionNameCount];
-    PersistentHeapVectorWillBeHeapVector<Member<ExtensionTracker>> m_extensions;
+    HeapVector<Member<ExtensionTracker>> m_extensions;
 
     template <typename T>
-    void registerExtension(PersistentWillBeMember<T>& extensionPtr, ExtensionFlags flags = ApprovedExtension, const char* const* prefixes = nullptr)
+    void registerExtension(Member<T>& extensionPtr, ExtensionFlags flags = ApprovedExtension, const char* const* prefixes = nullptr)
     {
         m_extensions.append(TypedExtensionTracker<T>::create(extensionPtr, flags, prefixes));
     }

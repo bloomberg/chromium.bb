@@ -15,11 +15,11 @@ namespace blink {
 class WebUSBClient;
 
 class MODULES_EXPORT USBController final
-    : public NoBaseWillBeGarbageCollectedFinalized<USBController>
-    , public WillBeHeapSupplement<LocalFrame>
+    : public GarbageCollectedFinalized<USBController>
+    , public HeapSupplement<LocalFrame>
     , public LocalFrameLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(USBController);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(USBController);
+    USING_GARBAGE_COLLECTED_MIXIN(USBController);
 public:
     virtual ~USBController();
 

@@ -22,7 +22,7 @@ class PresentationRequest final
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationRequest);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationRequest);
+    USING_GARBAGE_COLLECTED_MIXIN(PresentationRequest);
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~PresentationRequest() = default;
@@ -48,7 +48,7 @@ public:
 
 protected:
     // EventTarget implementation.
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     PresentationRequest(ExecutionContext*, const KURL&);

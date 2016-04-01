@@ -66,7 +66,7 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<CanvasRenderingContext> WebGLRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
+RawPtr<CanvasRenderingContext> WebGLRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
 {
     WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
     OwnPtr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(canvas, attributes, 1));
@@ -81,7 +81,7 @@ PassOwnPtrWillBeRawPtr<CanvasRenderingContext> WebGLRenderingContext::Factory::c
         gl->PushGroupMarkerEXT(0, contextLabel.ascii().data());
     }
 
-    OwnPtrWillBeRawPtr<WebGLRenderingContext> renderingContext = adoptPtrWillBeNoop(new WebGLRenderingContext(canvas, contextProvider.release(), attributes));
+    RawPtr<WebGLRenderingContext> renderingContext = new WebGLRenderingContext(canvas, contextProvider.release(), attributes);
 
     if (!renderingContext->drawingBuffer()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
@@ -110,7 +110,7 @@ WebGLRenderingContext::~WebGLRenderingContext()
 
 void WebGLRenderingContext::setCanvasGetContextResult(RenderingContext& result)
 {
-    result.setWebGLRenderingContext(PassRefPtrWillBeRawPtr<WebGLRenderingContext>(this));
+    result.setWebGLRenderingContext(RawPtr<WebGLRenderingContext>(this));
 }
 
 void WebGLRenderingContext::registerContextExtensions()

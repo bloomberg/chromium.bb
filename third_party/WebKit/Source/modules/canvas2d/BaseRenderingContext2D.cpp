@@ -376,7 +376,7 @@ void BaseRenderingContext2D::setFilter(const String& filterString)
     if (filterString == state().unparsedFilter())
         return;
 
-    RefPtrWillBeRawPtr<CSSValue> filterValue = CSSParser::parseSingleValue(CSSPropertyWebkitFilter, filterString, CSSParserContext(HTMLStandardMode, 0));
+    RawPtr<CSSValue> filterValue = CSSParser::parseSingleValue(CSSPropertyWebkitFilter, filterString, CSSParserContext(HTMLStandardMode, 0));
 
     if (!filterValue || filterValue->isInitialValue() || filterValue->isInheritedValue())
         return;
@@ -385,14 +385,14 @@ void BaseRenderingContext2D::setFilter(const String& filterString)
     modifiableState().setFilter(filterValue.release());
 }
 
-PassRefPtrWillBeRawPtr<SVGMatrixTearOff> BaseRenderingContext2D::currentTransform() const
+RawPtr<SVGMatrixTearOff> BaseRenderingContext2D::currentTransform() const
 {
     return SVGMatrixTearOff::create(state().transform());
 }
 
-void BaseRenderingContext2D::setCurrentTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff> passMatrixTearOff)
+void BaseRenderingContext2D::setCurrentTransform(RawPtr<SVGMatrixTearOff> passMatrixTearOff)
 {
-    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrixTearOff = passMatrixTearOff;
+    RawPtr<SVGMatrixTearOff> matrixTearOff = passMatrixTearOff;
     const AffineTransform& transform = matrixTearOff->value();
     setTransform(transform.a(), transform.b(), transform.c(), transform.d(), transform.e(), transform.f());
 }

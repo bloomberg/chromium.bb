@@ -74,9 +74,9 @@ private:
     OwnPtr<AsyncFileSystemCallbacks> m_callbacks;
 };
 
-PassOwnPtrWillBeRawPtr<LocalFileSystem> LocalFileSystem::create(PassOwnPtr<FileSystemClient> client)
+RawPtr<LocalFileSystem> LocalFileSystem::create(PassOwnPtr<FileSystemClient> client)
 {
-    return adoptPtrWillBeNoop(new LocalFileSystem(client));
+    return new LocalFileSystem(client);
 }
 
 LocalFileSystem::~LocalFileSystem()
@@ -85,7 +85,7 @@ LocalFileSystem::~LocalFileSystem()
 
 void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    RefPtrWillBeRawPtr<ExecutionContext> contextPtr(context);
+    RawPtr<ExecutionContext> contextPtr(context);
     CallbackWrapper* wrapper = new CallbackWrapper(callbacks);
     requestFileSystemAccessInternal(context,
         bind(&LocalFileSystem::resolveURLInternal, this, contextPtr, fileSystemURL, wrapper),
@@ -94,7 +94,7 @@ void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSyst
 
 void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    RefPtrWillBeRawPtr<ExecutionContext> contextPtr(context);
+    RawPtr<ExecutionContext> contextPtr(context);
     CallbackWrapper* wrapper = new CallbackWrapper(callbacks);
     requestFileSystemAccessInternal(context,
         bind(&LocalFileSystem::fileSystemAllowedInternal, this, contextPtr, type, wrapper),
@@ -103,7 +103,7 @@ void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemTyp
 
 void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    RefPtrWillBeRawPtr<ExecutionContext> contextPtr(context);
+    RawPtr<ExecutionContext> contextPtr(context);
     ASSERT(context);
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
 
@@ -139,21 +139,21 @@ void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context,
 }
 
 void LocalFileSystem::fileSystemNotAvailable(
-    PassRefPtrWillBeRawPtr<ExecutionContext> context,
+    RawPtr<ExecutionContext> context,
     CallbackWrapper* callbacks)
 {
     context->postTask(BLINK_FROM_HERE, createSameThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
 }
 
 void LocalFileSystem::fileSystemNotAllowedInternal(
-    PassRefPtrWillBeRawPtr<ExecutionContext> context,
+    RawPtr<ExecutionContext> context,
     CallbackWrapper* callbacks)
 {
     context->postTask(BLINK_FROM_HERE, createSameThreadTask(&reportFailure, callbacks->release(), FileError::ABORT_ERR));
 }
 
 void LocalFileSystem::fileSystemAllowedInternal(
-    PassRefPtrWillBeRawPtr<ExecutionContext> context,
+    RawPtr<ExecutionContext> context,
     FileSystemType type,
     CallbackWrapper* callbacks)
 {
@@ -167,7 +167,7 @@ void LocalFileSystem::fileSystemAllowedInternal(
 }
 
 void LocalFileSystem::resolveURLInternal(
-    PassRefPtrWillBeRawPtr<ExecutionContext> context,
+    RawPtr<ExecutionContext> context,
     const KURL& fileSystemURL,
     CallbackWrapper* callbacks)
 {
@@ -179,7 +179,7 @@ void LocalFileSystem::resolveURLInternal(
 }
 
 void LocalFileSystem::deleteFileSystemInternal(
-    PassRefPtrWillBeRawPtr<ExecutionContext> context,
+    RawPtr<ExecutionContext> context,
     FileSystemType type,
     CallbackWrapper* callbacks)
 {
@@ -204,11 +204,11 @@ const char* LocalFileSystem::supplementName()
 LocalFileSystem* LocalFileSystem::from(ExecutionContext& context)
 {
     if (context.isDocument())
-        return static_cast<LocalFileSystem*>(WillBeHeapSupplement<LocalFrame>::from(toDocument(context).frame(), supplementName()));
+        return static_cast<LocalFileSystem*>(HeapSupplement<LocalFrame>::from(toDocument(context).frame(), supplementName()));
 
     WorkerClients* clients = toWorkerGlobalScope(context).clients();
     ASSERT(clients);
-    return static_cast<LocalFileSystem*>(WillBeHeapSupplement<WorkerClients>::from(clients, supplementName()));
+    return static_cast<LocalFileSystem*>(HeapSupplement<WorkerClients>::from(clients, supplementName()));
 }
 
 void provideLocalFileSystemTo(LocalFrame& frame, PassOwnPtr<FileSystemClient> client)

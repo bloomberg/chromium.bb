@@ -358,7 +358,7 @@ size_t Notification::maxActions()
     return notificationManager()->maxActions();
 }
 
-DispatchEventResult Notification::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult Notification::dispatchEventInternal(RawPtr<Event> event)
 {
     ASSERT(getExecutionContext()->isContextThread());
     return EventTarget::dispatchEventInternal(event);

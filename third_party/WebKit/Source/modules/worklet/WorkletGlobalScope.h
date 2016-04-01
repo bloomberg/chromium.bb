@@ -22,9 +22,9 @@ class LocalFrame;
 class WorkerOrWorkletScriptController;
 class WorkletConsole;
 
-class WorkletGlobalScope : public RefCountedWillBeGarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public MainThreadWorkletGlobalScope, public ScriptWrappable {
+class WorkletGlobalScope : public GarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public MainThreadWorkletGlobalScope, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
+    USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
 public:
 #if !ENABLE(OILPAN)
     using RefCounted<WorkletGlobalScope>::ref;
@@ -64,7 +64,7 @@ public:
     }
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
-    void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) final;
+    void addConsoleMessage(RawPtr<ConsoleMessage>) final;
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) final;
 
     DECLARE_VIRTUAL_TRACE();
@@ -86,11 +86,11 @@ private:
     EventTarget* errorEventTarget() final { return nullptr; }
     void didUpdateSecurityOrigin() final { }
 
-    mutable PersistentWillBeMember<WorkletConsole> m_console;
+    mutable Member<WorkletConsole> m_console;
 
     KURL m_url;
     String m_userAgent;
-    OwnPtrWillBeMember<WorkerOrWorkletScriptController> m_scriptController;
+    Member<WorkerOrWorkletScriptController> m_scriptController;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope, ExecutionContext, context, context->isWorkletGlobalScope(), context.isWorkletGlobalScope());

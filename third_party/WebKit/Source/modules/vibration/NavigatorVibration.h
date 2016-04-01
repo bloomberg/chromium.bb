@@ -34,11 +34,10 @@ class Navigator;
 class UnsignedLongOrUnsignedLongSequence;
 
 class MODULES_EXPORT NavigatorVibration final
-    : public NoBaseWillBeGarbageCollectedFinalized<NavigatorVibration>
-    , public WillBeHeapSupplement<Page>
+    : public GarbageCollectedFinalized<NavigatorVibration>
+    , public HeapSupplement<Page>
     , public PageLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(NavigatorVibration);
+    USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
 public:
     typedef Vector<unsigned> VibrationPattern;
 

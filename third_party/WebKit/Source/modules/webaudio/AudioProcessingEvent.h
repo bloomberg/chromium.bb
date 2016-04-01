@@ -37,8 +37,8 @@ class AudioBuffer;
 class AudioProcessingEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<AudioProcessingEvent> create();
-    static PassRefPtrWillBeRawPtr<AudioProcessingEvent> create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime);
+    static RawPtr<AudioProcessingEvent> create();
+    static RawPtr<AudioProcessingEvent> create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime);
 
     ~AudioProcessingEvent() override;
 
@@ -54,8 +54,8 @@ private:
     AudioProcessingEvent();
     AudioProcessingEvent(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime);
 
-    PersistentWillBeMember<AudioBuffer> m_inputBuffer;
-    PersistentWillBeMember<AudioBuffer> m_outputBuffer;
+    Member<AudioBuffer> m_inputBuffer;
+    Member<AudioBuffer> m_outputBuffer;
     double m_playbackTime;
 };
 

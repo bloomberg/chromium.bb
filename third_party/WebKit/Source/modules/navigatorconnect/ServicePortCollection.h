@@ -28,7 +28,7 @@ class MODULES_EXPORT ServicePortCollection final
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ServicePortCollection);
     WTF_MAKE_NONCOPYABLE(ServicePortCollection);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServicePortCollection);
+    USING_GARBAGE_COLLECTED_MIXIN(ServicePortCollection);
 public:
     static ServicePortCollection* create(ExecutionContext*);
     ~ServicePortCollection() override;

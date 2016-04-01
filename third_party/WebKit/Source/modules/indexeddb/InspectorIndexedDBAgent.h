@@ -43,7 +43,7 @@ class InspectedFrames;
 
 class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, protocol::Frontend::IndexedDB>, public protocol::Backend::IndexedDB {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> create(InspectedFrames*);
+    static RawPtr<InspectorIndexedDBAgent> create(InspectedFrames*);
 
     ~InspectorIndexedDBAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -61,7 +61,7 @@ public:
 private:
     explicit InspectorIndexedDBAgent(InspectedFrames*);
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    Member<InspectedFrames> m_inspectedFrames;
 };
 
 } // namespace blink

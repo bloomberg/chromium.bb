@@ -20,17 +20,17 @@ class PushEventInit;
 class MODULES_EXPORT PushEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<PushEvent> create()
+    static RawPtr<PushEvent> create()
     {
         return adoptRefWillBeNoop(new PushEvent);
     }
-    static PassRefPtrWillBeRawPtr<PushEvent> create(const AtomicString& type, PushMessageData* data, WaitUntilObserver* observer)
+    static RawPtr<PushEvent> create(const AtomicString& type, PushMessageData* data, WaitUntilObserver* observer)
     {
-        return adoptRefWillBeNoop(new PushEvent(type, data, observer));
+        return new PushEvent(type, data, observer);
     }
-    static PassRefPtrWillBeRawPtr<PushEvent> create(const AtomicString& type, const PushEventInit& initializer)
+    static RawPtr<PushEvent> create(const AtomicString& type, const PushEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new PushEvent(type, initializer));
+        return new PushEvent(type, initializer);
     }
 
     ~PushEvent() override;
@@ -46,7 +46,7 @@ private:
     PushEvent(const AtomicString& type, PushMessageData*, WaitUntilObserver*);
     PushEvent(const AtomicString& type, const PushEventInit&);
 
-    PersistentWillBeMember<PushMessageData> m_data;
+    Member<PushMessageData> m_data;
 };
 
 } // namespace blink

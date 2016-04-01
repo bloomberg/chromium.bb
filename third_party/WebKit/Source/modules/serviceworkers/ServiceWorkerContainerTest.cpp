@@ -164,7 +164,7 @@ protected:
 
     void provide(PassOwnPtr<WebServiceWorkerProvider> provider)
     {
-        WillBeHeapSupplement<Document>::provideTo(m_page->document(), ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(provider));
+        HeapSupplement<Document>::provideTo(m_page->document(), ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(provider));
     }
 
     void setPageURL(const String& url)

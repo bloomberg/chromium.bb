@@ -60,7 +60,7 @@ public:
     {
         return new IDBAny(idbObject);
     }
-    static IDBAny* create(PassRefPtrWillBeRawPtr<DOMStringList> domStringList)
+    static IDBAny* create(RawPtr<DOMStringList> domStringList)
     {
         return new IDBAny(domStringList);
     }
@@ -110,7 +110,7 @@ public:
 
 private:
     explicit IDBAny(Type);
-    explicit IDBAny(PassRefPtrWillBeRawPtr<DOMStringList>);
+    explicit IDBAny(RawPtr<DOMStringList>);
     explicit IDBAny(IDBCursor*);
     explicit IDBAny(IDBDatabase*);
     explicit IDBAny(IDBIndex*);
@@ -123,7 +123,7 @@ private:
     const Type m_type;
 
     // Only one of the following should ever be in use at any given time.
-    const RefPtrWillBeMember<DOMStringList> m_domStringList;
+    const Member<DOMStringList> m_domStringList;
     const Member<IDBCursor> m_idbCursor;
     const Member<IDBDatabase> m_idbDatabase;
     const Member<IDBIndex> m_idbIndex;

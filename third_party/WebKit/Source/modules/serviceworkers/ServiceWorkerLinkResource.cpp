@@ -35,14 +35,14 @@ public:
 private:
     WTF_MAKE_NONCOPYABLE(RegistrationCallback);
 
-    RawPtrWillBePersistent<LinkLoaderClient> m_client;
+    Persistent<LinkLoaderClient> m_client;
 };
 
 }
 
-PassOwnPtrWillBeRawPtr<ServiceWorkerLinkResource> ServiceWorkerLinkResource::create(HTMLLinkElement* owner)
+RawPtr<ServiceWorkerLinkResource> ServiceWorkerLinkResource::create(HTMLLinkElement* owner)
 {
-    return adoptPtrWillBeNoop(new ServiceWorkerLinkResource(owner));
+    return new ServiceWorkerLinkResource(owner);
 }
 
 ServiceWorkerLinkResource::~ServiceWorkerLinkResource()

@@ -10,21 +10,21 @@
 namespace blink {
 
 // static
-PassRefPtrWillBeRawPtr<BlobEvent> BlobEvent::create()
+RawPtr<BlobEvent> BlobEvent::create()
 {
     return adoptRefWillBeNoop(new BlobEvent);
 }
 
 // static
-PassRefPtrWillBeRawPtr<BlobEvent> BlobEvent::create(const AtomicString& type, const BlobEventInit& initializer)
+RawPtr<BlobEvent> BlobEvent::create(const AtomicString& type, const BlobEventInit& initializer)
 {
-    return adoptRefWillBeNoop(new BlobEvent(type, initializer));
+    return new BlobEvent(type, initializer);
 }
 
 // static
-PassRefPtrWillBeRawPtr<BlobEvent> BlobEvent::create(const AtomicString& type, Blob* blob)
+RawPtr<BlobEvent> BlobEvent::create(const AtomicString& type, Blob* blob)
 {
-    return adoptRefWillBeNoop(new BlobEvent(type, blob));
+    return new BlobEvent(type, blob);
 }
 
 const AtomicString& BlobEvent::interfaceName() const

@@ -187,12 +187,12 @@ protected:
 
 private:
 
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
     HeapHashMap<AXID, Member<AXObject>> m_objects;
     // LayoutObject and AbstractInlineTextBox are not on the Oilpan heap so we
     // do not use HeapHashMap for those mappings.
     HashMap<LayoutObject*, AXID> m_layoutObjectMapping;
-    WillBeHeapHashMap<RawPtrWillBeMember<Node>, AXID> m_nodeObjectMapping;
+    HeapHashMap<Member<Node>, AXID> m_nodeObjectMapping;
     HashMap<AbstractInlineTextBox*, AXID> m_inlineTextBoxObjectMapping;
     int m_modificationCount;
 

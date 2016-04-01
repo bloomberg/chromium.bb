@@ -36,14 +36,14 @@ class MediaEncryptedEvent final : public Event {
 public:
     ~MediaEncryptedEvent() override;
 
-    static PassRefPtrWillBeRawPtr<MediaEncryptedEvent> create()
+    static RawPtr<MediaEncryptedEvent> create()
     {
         return adoptRefWillBeNoop(new MediaEncryptedEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<MediaEncryptedEvent> create(const AtomicString& type, const MediaEncryptedEventInit& initializer)
+    static RawPtr<MediaEncryptedEvent> create(const AtomicString& type, const MediaEncryptedEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new MediaEncryptedEvent(type, initializer));
+        return new MediaEncryptedEvent(type, initializer);
     }
 
     const AtomicString& interfaceName() const override;

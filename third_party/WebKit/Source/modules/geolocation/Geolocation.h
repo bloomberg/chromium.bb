@@ -52,7 +52,7 @@ class MODULES_EXPORT Geolocation final
     , public ScriptWrappable
     , public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
+    USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
 public:
     static Geolocation* create(ExecutionContext*);
     ~Geolocation() override;

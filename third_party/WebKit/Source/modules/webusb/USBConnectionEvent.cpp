@@ -9,14 +9,14 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<USBConnectionEvent> USBConnectionEvent::create(const AtomicString& type, const USBConnectionEventInit& initializer)
+RawPtr<USBConnectionEvent> USBConnectionEvent::create(const AtomicString& type, const USBConnectionEventInit& initializer)
 {
-    return adoptRefWillBeNoop(new USBConnectionEvent(type, initializer));
+    return new USBConnectionEvent(type, initializer);
 }
 
-PassRefPtrWillBeRawPtr<USBConnectionEvent> USBConnectionEvent::create(const AtomicString& type, USBDevice* device)
+RawPtr<USBConnectionEvent> USBConnectionEvent::create(const AtomicString& type, USBDevice* device)
 {
-    return adoptRefWillBeNoop(new USBConnectionEvent(type, device));
+    return new USBConnectionEvent(type, device);
 }
 
 USBConnectionEvent::USBConnectionEvent(const AtomicString& type, const USBConnectionEventInit& initializer)

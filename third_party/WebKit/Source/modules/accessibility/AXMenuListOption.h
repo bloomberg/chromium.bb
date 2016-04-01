@@ -61,7 +61,7 @@ private:
     String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*) const override;
     bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
-    RawPtrWillBeMember<HTMLOptionElement> m_element;
+    Member<HTMLOptionElement> m_element;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListOption, isMenuListOption());

@@ -31,7 +31,7 @@ public:
 
 private:
     Persistent<ScriptPromiseResolver> m_resolver;
-    RefPtrWillBePersistent<HTMLMediaElement> m_element;
+    Persistent<HTMLMediaElement> m_element;
     String m_sinkId;
 };
 

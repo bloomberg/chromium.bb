@@ -33,7 +33,7 @@ class DOMPlugin;
 class LocalFrame;
 
 class DOMMimeType final : public GarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public LocalFrameLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
+    USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMMimeType* create(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)

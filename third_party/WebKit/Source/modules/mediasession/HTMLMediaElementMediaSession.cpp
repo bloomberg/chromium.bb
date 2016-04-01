@@ -43,13 +43,13 @@ HTMLMediaElementMediaSession& HTMLMediaElementMediaSession::from(HTMLMediaElemen
 
 HTMLMediaElementMediaSession* HTMLMediaElementMediaSession::fromIfExists(HTMLMediaElement& element)
 {
-    return static_cast<HTMLMediaElementMediaSession*>(WillBeHeapSupplement<HTMLMediaElement>::from(element, supplementName()));
+    return static_cast<HTMLMediaElementMediaSession*>(HeapSupplement<HTMLMediaElement>::from(element, supplementName()));
 }
 
 DEFINE_TRACE(HTMLMediaElementMediaSession)
 {
     visitor->trace(m_session);
-    WillBeHeapSupplement<HTMLMediaElement>::trace(visitor);
+    HeapSupplement<HTMLMediaElement>::trace(visitor);
 }
 
 } // namespace blink

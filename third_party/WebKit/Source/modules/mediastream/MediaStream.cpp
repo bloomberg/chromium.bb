@@ -382,7 +382,7 @@ void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
     }
 }
 
-void MediaStream::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+void MediaStream::scheduleDispatchEvent(RawPtr<Event> event)
 {
     m_scheduledEvents.append(event);
 
@@ -395,10 +395,10 @@ void MediaStream::scheduledEventTimerFired(Timer<MediaStream>*)
     if (m_stopped)
         return;
 
-    WillBeHeapVector<RefPtrWillBeMember<Event>> events;
+    HeapVector<Member<Event>> events;
     events.swap(m_scheduledEvents);
 
-    WillBeHeapVector<RefPtrWillBeMember<Event>>::iterator it = events.begin();
+    HeapVector<Member<Event>>::iterator it = events.begin();
     for (; it != events.end(); ++it)
         dispatchEvent((*it).release());
 

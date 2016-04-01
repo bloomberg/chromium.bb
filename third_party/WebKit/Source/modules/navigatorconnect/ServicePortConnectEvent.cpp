@@ -11,19 +11,19 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<ServicePortConnectEvent> ServicePortConnectEvent::create()
+RawPtr<ServicePortConnectEvent> ServicePortConnectEvent::create()
 {
-    return adoptRefWillBeNoop(new ServicePortConnectEvent());
+    return new ServicePortConnectEvent();
 }
 
-PassRefPtrWillBeRawPtr<ServicePortConnectEvent> ServicePortConnectEvent::create(const AtomicString& type, const ServicePortConnectEventInit& initializer)
+RawPtr<ServicePortConnectEvent> ServicePortConnectEvent::create(const AtomicString& type, const ServicePortConnectEventInit& initializer)
 {
-    return adoptRefWillBeNoop(new ServicePortConnectEvent(type, initializer, nullptr));
+    return new ServicePortConnectEvent(type, initializer, nullptr);
 }
 
-PassRefPtrWillBeRawPtr<ServicePortConnectEvent> ServicePortConnectEvent::create(const AtomicString& type, const ServicePortConnectEventInit& initializer, AcceptConnectionObserver* observer)
+RawPtr<ServicePortConnectEvent> ServicePortConnectEvent::create(const AtomicString& type, const ServicePortConnectEventInit& initializer, AcceptConnectionObserver* observer)
 {
-    return adoptRefWillBeNoop(new ServicePortConnectEvent(type, initializer, observer));
+    return new ServicePortConnectEvent(type, initializer, observer);
 }
 
 ScriptPromise ServicePortConnectEvent::respondWith(ScriptState* scriptState, const ScriptPromise& response, ExceptionState& exceptionState)

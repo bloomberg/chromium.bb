@@ -39,13 +39,13 @@ class DeviceMotionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~DeviceMotionEvent() override;
-    static PassRefPtrWillBeRawPtr<DeviceMotionEvent> create()
+    static RawPtr<DeviceMotionEvent> create()
     {
         return adoptRefWillBeNoop(new DeviceMotionEvent);
     }
-    static PassRefPtrWillBeRawPtr<DeviceMotionEvent> create(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
+    static RawPtr<DeviceMotionEvent> create(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
     {
-        return adoptRefWillBeNoop(new DeviceMotionEvent(eventType, deviceMotionData));
+        return new DeviceMotionEvent(eventType, deviceMotionData);
     }
 
     void initDeviceMotionEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceMotionData*);
@@ -65,10 +65,10 @@ private:
     DeviceMotionEvent();
     DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData*);
 
-    PersistentWillBeMember<DeviceMotionData> m_deviceMotionData;
-    PersistentWillBeMember<DeviceAcceleration> m_acceleration;
-    PersistentWillBeMember<DeviceAcceleration> m_accelerationIncludingGravity;
-    PersistentWillBeMember<DeviceRotationRate> m_rotationRate;
+    Member<DeviceMotionData> m_deviceMotionData;
+    Member<DeviceAcceleration> m_acceleration;
+    Member<DeviceAcceleration> m_accelerationIncludingGravity;
+    Member<DeviceRotationRate> m_rotationRate;
 };
 
 DEFINE_TYPE_CASTS(DeviceMotionEvent, Event, event, event->interfaceName() == EventNames::DeviceMotionEvent, event.interfaceName() == EventNames::DeviceMotionEvent);

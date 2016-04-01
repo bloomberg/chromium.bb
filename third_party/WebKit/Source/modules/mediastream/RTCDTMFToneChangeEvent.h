@@ -37,9 +37,9 @@ class RTCDTMFToneChangeEvent final : public Event {
 public:
     ~RTCDTMFToneChangeEvent() override;
 
-    static PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> create();
-    static PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> create(const String& tone);
-    static PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer);
+    static RawPtr<RTCDTMFToneChangeEvent> create();
+    static RawPtr<RTCDTMFToneChangeEvent> create(const String& tone);
+    static RawPtr<RTCDTMFToneChangeEvent> create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer);
 
     const String& tone() const;
 

@@ -27,20 +27,20 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create()
+RawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create()
 {
     return adoptRefWillBeNoop(new RTCDTMFToneChangeEvent);
 }
 
-PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const String& tone)
+RawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const String& tone)
 {
-    return adoptRefWillBeNoop(new RTCDTMFToneChangeEvent(tone));
+    return new RTCDTMFToneChangeEvent(tone);
 }
 
-PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer)
+RawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer)
 {
     ASSERT(type == EventTypeNames::tonechange);
-    return adoptRefWillBeNoop(new RTCDTMFToneChangeEvent(initializer));
+    return new RTCDTMFToneChangeEvent(initializer);
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent()

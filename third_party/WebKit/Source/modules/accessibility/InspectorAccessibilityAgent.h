@@ -16,9 +16,9 @@ class Page;
 class MODULES_EXPORT InspectorAccessibilityAgent : public InspectorBaseAgent<InspectorAccessibilityAgent, protocol::Frontend::Accessibility>, public protocol::Backend::Accessibility {
     WTF_MAKE_NONCOPYABLE(InspectorAccessibilityAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorAccessibilityAgent> create(Page* page)
+    static RawPtr<InspectorAccessibilityAgent> create(Page* page)
     {
-        return adoptPtrWillBeNoop(new InspectorAccessibilityAgent(page));
+        return new InspectorAccessibilityAgent(page);
     }
 
     // Base agent methods.
@@ -30,7 +30,7 @@ public:
 private:
     explicit InspectorAccessibilityAgent(Page*);
 
-    RawPtrWillBeMember<Page> m_page;
+    Member<Page> m_page;
 };
 
 } // namespace blink

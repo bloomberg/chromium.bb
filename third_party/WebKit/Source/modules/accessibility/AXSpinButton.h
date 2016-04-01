@@ -54,7 +54,7 @@ private:
     void detach() override;
     void detachFromParent() override;
 
-    RawPtrWillBeMember<SpinButtonElement> m_spinButtonElement;
+    Member<SpinButtonElement> m_spinButtonElement;
 };
 
 class AXSpinButtonPart final : public AXMockObject {

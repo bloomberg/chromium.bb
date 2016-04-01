@@ -825,7 +825,7 @@ String AXObject::ariaTextAlternative(bool recursive, bool inAriaLabelledByTraver
     return textAlternative;
 }
 
-String AXObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXRelatedObjectVector* relatedObjects) const
+String AXObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSet& visited, HeapVector<Member<Element>>& elements, AXRelatedObjectVector* relatedObjects) const
 {
     StringBuilder accumulatedText;
     bool foundValidElement = false;
@@ -866,7 +866,7 @@ void AXObject::tokenVectorFromAttribute(Vector<String>& tokens, const QualifiedN
     attributeValue.split(' ', tokens);
 }
 
-void AXObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName& attribute) const
+void AXObject::elementsFromAttribute(HeapVector<Member<Element>>& elements, const QualifiedName& attribute) const
 {
     Vector<String> ids;
     tokenVectorFromAttribute(ids, attribute);
@@ -880,7 +880,7 @@ void AXObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element
     }
 }
 
-void AXObject::ariaLabelledbyElementVector(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const
+void AXObject::ariaLabelledbyElementVector(HeapVector<Member<Element>>& elements) const
 {
     // Try both spellings, but prefer aria-labelledby, which is the official spec.
     elementsFromAttribute(elements, aria_labelledbyAttr);
@@ -890,7 +890,7 @@ void AXObject::ariaLabelledbyElementVector(WillBeHeapVector<RawPtrWillBeMember<E
 
 String AXObject::textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjectVector* relatedObjects) const
 {
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    HeapVector<Member<Element>> elements;
     ariaLabelledbyElementVector(elements);
     return textFromElements(true, visited, elements, relatedObjects);
 }
@@ -898,7 +898,7 @@ String AXObject::textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjectVec
 String AXObject::textFromAriaDescribedby(AXRelatedObjectVector* relatedObjects) const
 {
     AXObjectSet visited;
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    HeapVector<Member<Element>> elements;
     elementsFromAttribute(elements, aria_describedbyAttr);
     return textFromElements(true, visited, elements, relatedObjects);
 }

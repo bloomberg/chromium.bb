@@ -339,12 +339,12 @@ const String& IDBTransaction::mode() const
     return IndexedDBNames::readonly;
 }
 
-PassRefPtrWillBeRawPtr<DOMStringList> IDBTransaction::objectStoreNames() const
+RawPtr<DOMStringList> IDBTransaction::objectStoreNames() const
 {
     if (m_mode == WebIDBTransactionModeVersionChange)
         return m_database->objectStoreNames();
 
-    RefPtrWillBeRawPtr<DOMStringList> objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
+    RawPtr<DOMStringList> objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
     for (const String& name : m_objectStoreNames)
         objectStoreNames->append(name);
     objectStoreNames->sort();
@@ -361,7 +361,7 @@ ExecutionContext* IDBTransaction::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-DispatchEventResult IDBTransaction::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult IDBTransaction::dispatchEventInternal(RawPtr<Event> event)
 {
     IDB_TRACE("IDBTransaction::dispatchEvent");
     if (m_contextStopped || !getExecutionContext()) {
@@ -384,7 +384,7 @@ DispatchEventResult IDBTransaction::dispatchEventInternal(PassRefPtrWillBeRawPtr
     m_createdObjectStores.clear();
     m_deletedObjectStores.clear();
 
-    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> targets;
+    HeapVector<Member<EventTarget>> targets;
     targets.append(this);
     targets.append(db());
 
@@ -411,7 +411,7 @@ void IDBTransaction::stop()
     abort(IGNORE_EXCEPTION);
 }
 
-void IDBTransaction::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
+void IDBTransaction::enqueueEvent(RawPtr<Event> event)
 {
     DCHECK_NE(m_state, Finished) << "A finished transaction tried to enqueue an event of type " << event->type() << ".";
     if (m_contextStopped || !getExecutionContext())

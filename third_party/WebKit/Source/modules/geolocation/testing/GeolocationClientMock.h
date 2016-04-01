@@ -75,10 +75,10 @@ private:
 
     void clearError();
 
-    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<GeolocationController>> GeolocationControllers;
+    typedef HeapHashSet<WeakMember<GeolocationController>> GeolocationControllers;
     GeolocationControllers m_controllers;
 
-    PersistentWillBeMember<GeolocationPosition> m_lastPosition;
+    Member<GeolocationPosition> m_lastPosition;
     bool m_hasError;
     String m_errorMessage;
     Timer<GeolocationClientMock> m_controllerTimer;
@@ -93,7 +93,7 @@ private:
 
     PermissionState m_permissionState;
 
-    typedef PersistentHeapHashSetWillBeHeapHashSet<Member<Geolocation>> GeolocationSet;
+    typedef HeapHashSet<Member<Geolocation>> GeolocationSet;
     GeolocationSet m_pendingPermissions;
 };
 

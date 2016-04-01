@@ -16,17 +16,17 @@ class DeviceLightEvent final : public Event {
 public:
     ~DeviceLightEvent() override;
 
-    static PassRefPtrWillBeRawPtr<DeviceLightEvent> create()
+    static RawPtr<DeviceLightEvent> create()
     {
         return adoptRefWillBeNoop(new DeviceLightEvent);
     }
-    static PassRefPtrWillBeRawPtr<DeviceLightEvent> create(const AtomicString& eventType, double value)
+    static RawPtr<DeviceLightEvent> create(const AtomicString& eventType, double value)
     {
-        return adoptRefWillBeNoop(new DeviceLightEvent(eventType, value));
+        return new DeviceLightEvent(eventType, value);
     }
-    static PassRefPtrWillBeRawPtr<DeviceLightEvent> create(const AtomicString& eventType, const DeviceLightEventInit& initializer)
+    static RawPtr<DeviceLightEvent> create(const AtomicString& eventType, const DeviceLightEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new DeviceLightEvent(eventType, initializer));
+        return new DeviceLightEvent(eventType, initializer);
     }
 
     double value() const { return m_value; }

@@ -111,14 +111,14 @@ const double secondsBetweenRestoreAttempts = 1.0;
 const int maxGLErrorsAllowedToConsole = 256;
 const unsigned maxGLActiveContexts = 16;
 
-using WebGLRenderingContextBaseSet = WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<WebGLRenderingContextBase>>;
+using WebGLRenderingContextBaseSet = PersistentHeapHashSet<WeakMember<WebGLRenderingContextBase>>;
 WebGLRenderingContextBaseSet& activeContexts()
 {
     DEFINE_STATIC_LOCAL(WebGLRenderingContextBaseSet, activeContexts, ());
     return activeContexts;
 }
 
-using WebGLRenderingContextBaseMap = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<WebGLRenderingContextBase>, int>;
+using WebGLRenderingContextBaseMap = PersistentHeapHashMap<WeakMember<WebGLRenderingContextBase>, int>;
 WebGLRenderingContextBaseMap& forciblyEvictedContexts()
 {
     DEFINE_STATIC_LOCAL(WebGLRenderingContextBaseMap, forciblyEvictedContexts, ());
@@ -137,7 +137,7 @@ void WebGLRenderingContextBase::forciblyLoseOldestContext(const String& reason)
     // been lost. Garbage collection might be triggered in the middle of this function, for
     // example, printWarningToConsole() causes an upcall to JavaScript.
     // Must make sure that the context is not deleted until the call stack unwinds.
-    RefPtrWillBeRawPtr<WebGLRenderingContextBase> protect(candidate);
+    RawPtr<WebGLRenderingContextBase> protect(candidate);
 
     candidate->printWarningToConsole(reason);
     InspectorInstrumentation::didFireWebGLWarning(candidate->canvas());
@@ -473,7 +473,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
+    Member<WebGLRenderingContextBase> m_context;
 };
 
 class ScopedFramebufferRestorer {
@@ -490,7 +490,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
+    Member<WebGLRenderingContextBase> m_context;
 };
 
 class WebGLRenderingContextErrorMessageCallback final : public GarbageCollectedFinalized<WebGLRenderingContextErrorMessageCallback>, public WebGraphicsContext3D::WebGraphicsErrorMessageCallback {
@@ -518,7 +518,7 @@ private:
     explicit WebGLRenderingContextErrorMessageCallback(WebGLRenderingContextBase* context)
         : m_context(context) { }
 
-    RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
+    Member<WebGLRenderingContextBase> m_context;
 };
 
 static void formatWebGLStatusString(const String& glInfo, const String& infostring, String& statusMessage)
@@ -4247,7 +4247,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat,
-    GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
+    GLenum format, GLenum type, RawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
 {
     if (isContextLost())
         return;
@@ -4513,7 +4513,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-    GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
+    GLenum format, GLenum type, RawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
 {
     if (isContextLost())
         return;
@@ -5962,7 +5962,7 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, G
 
 void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingContextBase>*)
 {
-    RefPtrWillBeRawPtr<WebGLContextEvent> event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
+    RawPtr<WebGLContextEvent> event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
     canvas()->dispatchEvent(event);
     m_restoreAllowed = event->defaultPrevented();
     if (m_restoreAllowed && !m_isHidden) {

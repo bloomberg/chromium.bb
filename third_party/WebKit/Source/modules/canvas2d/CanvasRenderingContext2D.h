@@ -64,8 +64,8 @@ typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap Canva
 
 class MODULES_EXPORT CanvasRenderingContext2D final : public CanvasRenderingContext, public BaseRenderingContext2D, public WebThread::TaskObserver, public SVGResourceClient {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2D);
-    WILL_BE_USING_PRE_FINALIZER(CanvasRenderingContext2D, dispose);
+    USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2D);
+    USING_PRE_FINALIZER(CanvasRenderingContext2D, dispose);
 public:
     class Factory : public CanvasRenderingContextFactory {
         WTF_MAKE_NONCOPYABLE(Factory);
@@ -73,9 +73,9 @@ public:
         Factory() {}
         ~Factory() override {}
 
-        PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document) override
+        RawPtr<CanvasRenderingContext> create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document) override
         {
-            return adoptPtrWillBeNoop(new CanvasRenderingContext2D(canvas, attrs, document));
+            return new CanvasRenderingContext2D(canvas, attrs, document);
         }
         CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::Context2d; }
         void onError(HTMLCanvasElement*, const String& error) override { }
@@ -205,7 +205,7 @@ private:
 
     WebLayer* platformLayer() const override;
 
-    PersistentWillBeMember<HitRegionManager> m_hitRegionManager;
+    Member<HitRegionManager> m_hitRegionManager;
     bool m_hasAlpha;
     LostContextMode m_contextLostMode;
     bool m_contextRestorable;

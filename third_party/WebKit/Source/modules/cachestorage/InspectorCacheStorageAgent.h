@@ -17,9 +17,9 @@ class MODULES_EXPORT InspectorCacheStorageAgent final : public InspectorBaseAgen
     WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
 
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorCacheStorageAgent> create()
+    static RawPtr<InspectorCacheStorageAgent> create()
     {
-        return adoptPtrWillBeNoop(new InspectorCacheStorageAgent());
+        return new InspectorCacheStorageAgent();
     }
 
     ~InspectorCacheStorageAgent() override;

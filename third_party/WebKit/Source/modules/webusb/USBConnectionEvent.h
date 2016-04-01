@@ -16,8 +16,8 @@ class USBDevice;
 class USBConnectionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<USBConnectionEvent> create(const AtomicString& type, const USBConnectionEventInit&);
-    static PassRefPtrWillBeRawPtr<USBConnectionEvent> create(const AtomicString& type, USBDevice*);
+    static RawPtr<USBConnectionEvent> create(const AtomicString& type, const USBConnectionEventInit&);
+    static RawPtr<USBConnectionEvent> create(const AtomicString& type, USBDevice*);
 
     USBConnectionEvent(const AtomicString& type, const USBConnectionEventInit&);
     USBConnectionEvent(const AtomicString& type, USBDevice*);
@@ -27,7 +27,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    PersistentWillBeMember<USBDevice> m_device;
+    Member<USBDevice> m_device;
 };
 
 } // namespace blink

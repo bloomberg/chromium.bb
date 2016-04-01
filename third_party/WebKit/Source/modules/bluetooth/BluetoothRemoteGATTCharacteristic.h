@@ -40,7 +40,7 @@ class BluetoothRemoteGATTCharacteristic final
     USING_PRE_FINALIZER(BluetoothRemoteGATTCharacteristic, dispose);
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(BluetoothRemoteGATTCharacteristic);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothRemoteGATTCharacteristic);
+    USING_GARBAGE_COLLECTED_MIXIN(BluetoothRemoteGATTCharacteristic);
 public:
     explicit BluetoothRemoteGATTCharacteristic(ExecutionContext*, PassOwnPtr<WebBluetoothRemoteGATTCharacteristicInit>);
 
@@ -86,7 +86,7 @@ public:
 
 protected:
     // EventTarget overrides.
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     OwnPtr<WebBluetoothRemoteGATTCharacteristicInit> m_webCharacteristic;

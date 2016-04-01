@@ -63,7 +63,7 @@ class SourceBuffer final
     , public FileReaderLoaderClient
     , public WebSourceBufferClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(SourceBuffer);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
+    USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SourceBuffer* create(PassOwnPtr<WebSourceBuffer>, MediaSource*, GenericEventQueue*);
@@ -145,7 +145,7 @@ private:
     OwnPtr<WebSourceBuffer> m_webSourceBuffer;
     Member<MediaSource> m_source;
     Member<TrackDefaultList> m_trackDefaults;
-    RawPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
+    Member<GenericEventQueue> m_asyncEventQueue;
 
     AtomicString m_mode;
     bool m_updating;

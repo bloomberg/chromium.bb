@@ -18,12 +18,11 @@ class CanvasStyle;
 class CSSValue;
 class Element;
 
-class CanvasRenderingContext2DState final : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext2DState>, public CSSFontSelectorClient {
+class CanvasRenderingContext2DState final : public GarbageCollectedFinalized<CanvasRenderingContext2DState>, public CSSFontSelectorClient {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext2DState);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CanvasRenderingContext2DState);
+    USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
 public:
-    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2DState> create()
+    static RawPtr<CanvasRenderingContext2DState> create()
     {
         return adoptPtrWillBeNoop(new CanvasRenderingContext2DState);
     }
@@ -43,9 +42,9 @@ public:
         ImagePaintType,
     };
 
-    static PassOwnPtrWillBeRawPtr<CanvasRenderingContext2DState> create(const CanvasRenderingContext2DState& other, ClipListCopyMode mode)
+    static RawPtr<CanvasRenderingContext2DState> create(const CanvasRenderingContext2DState& other, ClipListCopyMode mode)
     {
-        return adoptPtrWillBeNoop(new CanvasRenderingContext2DState(other, mode));
+        return new CanvasRenderingContext2DState(other, mode);
     }
 
     // CSSFontSelectorClient implementation
@@ -83,7 +82,7 @@ public:
     void setUnparsedFont(const String& font) { m_unparsedFont = font; }
     const String& unparsedFont() const { return m_unparsedFont; }
 
-    void setFilter(PassRefPtrWillBeRawPtr<CSSValue>);
+    void setFilter(RawPtr<CSSValue>);
     void setUnparsedFilter(const String& filterString) { m_unparsedFilter = filterString; }
     const String& unparsedFilter() const { return m_unparsedFilter; }
     SkImageFilter* getFilter(Element*, const Font&, IntSize canvasSize, CanvasRenderingContext2D*) const;
@@ -183,8 +182,8 @@ private:
 
     String m_unparsedStrokeColor;
     String m_unparsedFillColor;
-    PersistentWillBeMember<CanvasStyle> m_strokeStyle;
-    PersistentWillBeMember<CanvasStyle> m_fillStyle;
+    Member<CanvasStyle> m_strokeStyle;
+    Member<CanvasStyle> m_fillStyle;
 
     mutable SkPaint m_strokePaint;
     mutable SkPaint m_fillPaint;
@@ -208,7 +207,7 @@ private:
     Font m_font;
 
     String m_unparsedFilter;
-    RefPtrWillBeMember<CSSValue> m_filterValue;
+    Member<CSSValue> m_filterValue;
     mutable RefPtr<SkImageFilter> m_resolvedFilter;
 
     // Text state.

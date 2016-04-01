@@ -240,7 +240,7 @@ void IDBRequest::onSuccess(const Vector<String>& stringList)
     if (!shouldEnqueueEvent())
         return;
 
-    RefPtrWillBeRawPtr<DOMStringList> domStringList = DOMStringList::create(DOMStringList::IndexedDB);
+    RawPtr<DOMStringList> domStringList = DOMStringList::create(DOMStringList::IndexedDB);
     for (size_t i = 0; i < stringList.size(); ++i)
         domStringList->append(stringList[i]);
     onSuccessInternal(IDBAny::create(domStringList.release()));
@@ -411,7 +411,7 @@ ExecutionContext* IDBRequest::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-DispatchEventResult IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult IDBRequest::dispatchEventInternal(RawPtr<Event> event)
 {
     IDB_TRACE("IDBRequest::dispatchEvent");
     if (m_contextStopped || !getExecutionContext())
@@ -427,7 +427,7 @@ DispatchEventResult IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Eve
         m_readyState = DONE;
     dequeueEvent(event.get());
 
-    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> targets;
+    HeapVector<Member<EventTarget>> targets;
     targets.append(this);
     if (m_transaction && !m_preventPropagation) {
         targets.append(m_transaction);
@@ -510,7 +510,7 @@ void IDBRequest::transactionDidFinishAndDispatch()
     m_readyState = PENDING;
 }
 
-void IDBRequest::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
+void IDBRequest::enqueueEvent(RawPtr<Event> event)
 {
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
 

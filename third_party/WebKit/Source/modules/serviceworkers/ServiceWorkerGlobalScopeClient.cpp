@@ -44,10 +44,10 @@ ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::from(ExecutionCo
 {
     WorkerClients* clients = toWorkerGlobalScope(context)->clients();
     ASSERT(clients);
-    return static_cast<ServiceWorkerGlobalScopeClient*>(WillBeHeapSupplement<WorkerClients>::from(clients, supplementName()));
+    return static_cast<ServiceWorkerGlobalScopeClient*>(HeapSupplement<WorkerClients>::from(clients, supplementName()));
 }
 
-void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients* clients, PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient> client)
+void provideServiceWorkerGlobalScopeClientToWorker(WorkerClients* clients, RawPtr<ServiceWorkerGlobalScopeClient> client)
 {
     clients->provideSupplement(ServiceWorkerGlobalScopeClient::supplementName(), client);
 }

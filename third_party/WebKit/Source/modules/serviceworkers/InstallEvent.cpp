@@ -11,19 +11,19 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create()
+RawPtr<InstallEvent> InstallEvent::create()
 {
-    return adoptRefWillBeNoop(new InstallEvent());
+    return new InstallEvent();
 }
 
-PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
+RawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
 {
-    return adoptRefWillBeNoop(new InstallEvent(type, eventInit));
+    return new InstallEvent(type, eventInit);
 }
 
-PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
+RawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
 {
-    return adoptRefWillBeNoop(new InstallEvent(type, eventInit, observer));
+    return new InstallEvent(type, eventInit, observer);
 }
 
 InstallEvent::~InstallEvent()

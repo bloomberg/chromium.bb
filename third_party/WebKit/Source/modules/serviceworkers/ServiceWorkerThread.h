@@ -44,7 +44,7 @@ public:
     ~ServiceWorkerThread() override;
 
 protected:
-    PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
+    RawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
     WebThreadSupportingGC& backingThread() override;
 
 private:

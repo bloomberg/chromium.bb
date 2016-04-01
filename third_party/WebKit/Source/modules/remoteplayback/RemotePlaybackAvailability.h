@@ -19,7 +19,7 @@ class ScriptPromiseResolver;
 class RemotePlaybackAvailability final : public RefCountedGarbageCollectedEventTargetWithInlineData<RemotePlaybackAvailability>, public ContextLifecycleObserver {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RemotePlaybackAvailability);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemotePlaybackAvailability);
+    USING_GARBAGE_COLLECTED_MIXIN(RemotePlaybackAvailability);
 public:
     static RemotePlaybackAvailability* take(ScriptPromiseResolver*, bool);
     ~RemotePlaybackAvailability() override;

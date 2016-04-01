@@ -27,12 +27,12 @@ void ScreenOrientationController::provideTo(LocalFrame& frame, WebScreenOrientat
     ASSERT(RuntimeEnabledFeatures::screenOrientationEnabled());
 
     ScreenOrientationController* controller = new ScreenOrientationController(frame, client);
-    WillBeHeapSupplement<LocalFrame>::provideTo(frame, supplementName(), adoptPtrWillBeNoop(controller));
+    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), adoptPtrWillBeNoop(controller));
 }
 
 ScreenOrientationController* ScreenOrientationController::from(LocalFrame& frame)
 {
-    return static_cast<ScreenOrientationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
+    return static_cast<ScreenOrientationController*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
 }
 
 ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, WebScreenOrientationClient* client)
@@ -129,7 +129,7 @@ void ScreenOrientationController::notifyOrientationChanged()
     // Keep track of the frames that need to be notified before notifying the
     // current frame as it will prevent side effects from the change event
     // handlers.
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> childFrames;
+    HeapVector<Member<LocalFrame>> childFrames;
     for (Frame* child = frame()->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             childFrames.append(toLocalFrame(child));
@@ -214,7 +214,7 @@ DEFINE_TRACE(ScreenOrientationController)
 {
     visitor->trace(m_orientation);
     LocalFrameLifecycleObserver::trace(visitor);
-    WillBeHeapSupplement<LocalFrame>::trace(visitor);
+    HeapSupplement<LocalFrame>::trace(visitor);
     PlatformEventController::trace(visitor);
 }
 

@@ -25,9 +25,9 @@ PresentationController::~PresentationController()
 }
 
 // static
-PassOwnPtrWillBeRawPtr<PresentationController> PresentationController::create(LocalFrame& frame, WebPresentationClient* client)
+RawPtr<PresentationController> PresentationController::create(LocalFrame& frame, WebPresentationClient* client)
 {
-    return adoptPtrWillBeNoop(new PresentationController(frame, client));
+    return new PresentationController(frame, client);
 }
 
 // static
@@ -39,13 +39,13 @@ const char* PresentationController::supplementName()
 // static
 PresentationController* PresentationController::from(LocalFrame& frame)
 {
-    return static_cast<PresentationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
+    return static_cast<PresentationController*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
 }
 
 // static
 void PresentationController::provideTo(LocalFrame& frame, WebPresentationClient* client)
 {
-    WillBeHeapSupplement<LocalFrame>::provideTo(frame, PresentationController::supplementName(), PresentationController::create(frame, client));
+    HeapSupplement<LocalFrame>::provideTo(frame, PresentationController::supplementName(), PresentationController::create(frame, client));
 }
 
 WebPresentationClient* PresentationController::client()
@@ -57,7 +57,7 @@ DEFINE_TRACE(PresentationController)
 {
     visitor->trace(m_presentation);
     visitor->trace(m_connections);
-    WillBeHeapSupplement<LocalFrame>::trace(visitor);
+    HeapSupplement<LocalFrame>::trace(visitor);
     LocalFrameLifecycleObserver::trace(visitor);
 }
 

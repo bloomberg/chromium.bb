@@ -36,8 +36,7 @@ namespace blink {
 
 class LocalFrame;
 
-class NavigatorContentUtilsClient : public NoBaseWillBeGarbageCollectedFinalized<NavigatorContentUtilsClient> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(NavigatorContentUtilsClient);
+class NavigatorContentUtilsClient : public GarbageCollectedFinalized<NavigatorContentUtilsClient> {
 public:
     virtual ~NavigatorContentUtilsClient() { }
     virtual void registerProtocolHandler(const String& scheme, const KURL&, const String& title) = 0;
@@ -54,7 +53,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
-MODULES_EXPORT void provideNavigatorContentUtilsTo(LocalFrame&, PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient>);
+MODULES_EXPORT void provideNavigatorContentUtilsTo(LocalFrame&, RawPtr<NavigatorContentUtilsClient>);
 
 } // namespace blink
 

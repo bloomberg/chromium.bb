@@ -36,8 +36,8 @@ class RTCDataChannelEvent final : public Event {
 public:
     ~RTCDataChannelEvent() override;
 
-    static PassRefPtrWillBeRawPtr<RTCDataChannelEvent> create();
-    static PassRefPtrWillBeRawPtr<RTCDataChannelEvent> create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
+    static RawPtr<RTCDataChannelEvent> create();
+    static RawPtr<RTCDataChannelEvent> create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
 
     RTCDataChannel* channel() const;
 
@@ -49,7 +49,7 @@ private:
     RTCDataChannelEvent();
     RTCDataChannelEvent(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel*);
 
-    PersistentWillBeMember<RTCDataChannel> m_channel;
+    Member<RTCDataChannel> m_channel;
 };
 
 } // namespace blink

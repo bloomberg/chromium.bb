@@ -65,13 +65,13 @@ OffscreenCanvasRenderingContext2D* OffscreenCanvas::getContext(const String& id,
     return static_cast<OffscreenCanvasRenderingContext2D*>(m_context.get());
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionState)
+RawPtr<ImageBitmap> OffscreenCanvas::transferToImageBitmap(ExceptionState& exceptionState)
 {
     if (!m_context) {
         exceptionState.throwDOMException(InvalidStateError, "Cannot transfer an ImageBitmap from an OffscreenCanvas with no context");
         return nullptr;
     }
-    RefPtrWillBeRawPtr<ImageBitmap> image = m_context->transferToImageBitmap(exceptionState);
+    RawPtr<ImageBitmap> image = m_context->transferToImageBitmap(exceptionState);
     if (!image) {
         // Undocumented exception (not in spec)
         exceptionState.throwDOMException(V8GeneralError, "Out of memory");

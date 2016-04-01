@@ -16,10 +16,8 @@ namespace blink {
 class Document;
 class Event;
 
-class MODULES_EXPORT DOMWindowStorageController final : public NoBaseWillBeGarbageCollected<DOMWindowStorageController>, public WillBeHeapSupplement<Document>, public DOMWindowLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorageController);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowStorageController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowStorageController);
+class MODULES_EXPORT DOMWindowStorageController final : public GarbageCollected<DOMWindowStorageController>, public HeapSupplement<Document>, public DOMWindowLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorageController);
 public:
     DECLARE_VIRTUAL_TRACE();
 
@@ -35,7 +33,7 @@ protected:
 private:
     Document& document() const { return *m_document; }
 
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 };
 
 } // namespace blink

@@ -24,7 +24,7 @@ class NFC final
     , public LocalFrameLifecycleObserver
     , public PageLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NFC);
+    USING_GARBAGE_COLLECTED_MIXIN(NFC);
 
 public:
     static NFC* create(LocalFrame*);

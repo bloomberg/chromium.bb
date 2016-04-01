@@ -87,7 +87,7 @@ private:
     // m_contextMap can have two or more entries even though we don't support
     // Web SQL on workers because single Blink process can have multiple main
     // contexts.
-    typedef PersistentHeapHashMap<RawPtrWillBeMember<ExecutionContext>, Member<DatabaseContext>> ContextMap;
+    typedef PersistentHeapHashMap<Member<ExecutionContext>, Member<DatabaseContext>> ContextMap;
     ContextMap m_contextMap;
 #if ENABLE(ASSERT)
     int m_databaseContextRegisteredCount;

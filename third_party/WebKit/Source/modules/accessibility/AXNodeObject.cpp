@@ -112,7 +112,7 @@ static String accessibleNameForNode(Node* node)
     return String();
 }
 
-String AXNodeObject::accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element>> &elements) const
+String AXNodeObject::accessibilityDescriptionForElements(HeapVector<Member<Element>> &elements) const
 {
     StringBuilder builder;
     unsigned size = elements.size();
@@ -552,7 +552,7 @@ AccessibilityRole AXNodeObject::determineAriaRoleAttribute() const
 
 void AXNodeObject::accessibilityChildrenFromAttribute(QualifiedName attr, AXObject::AXObjectVector& children) const
 {
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    HeapVector<Member<Element>> elements;
     elementsFromAttribute(elements, attr);
 
     AXObjectCacheImpl& cache = axObjectCache();
@@ -1300,7 +1300,7 @@ InvalidState AXNodeObject::getInvalidState() const
     if (getNode() && getNode()->isElementNode()
         && toElement(getNode())->isFormControlElement()) {
         HTMLFormControlElement* element = toHTMLFormControlElement(getNode());
-        WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>
+        HeapVector<Member<HTMLFormControlElement>>
             invalidControls;
         bool isInvalid = !element->checkValidity(
             &invalidControls, CheckValidityDispatchNoEvent);
@@ -1412,7 +1412,7 @@ String AXNodeObject::stringValue() const
     if (isHTMLSelectElement(*node)) {
         HTMLSelectElement& selectElement = toHTMLSelectElement(*node);
         int selectedIndex = selectElement.selectedIndex();
-        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement.listItems();
+        const HeapVector<Member<HTMLElement>>& listItems = selectElement.listItems();
         if (selectedIndex >= 0 && static_cast<size_t>(selectedIndex) < listItems.size()) {
             const AtomicString& overriddenDescription = listItems[selectedIndex]->fastGetAttribute(aria_labelAttr);
             if (!overriddenDescription.isNull())
@@ -1440,7 +1440,7 @@ String AXNodeObject::stringValue() const
 
 String AXNodeObject::ariaDescribedByAttribute() const
 {
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    HeapVector<Member<Element>> elements;
     elementsFromAttribute(elements, aria_describedbyAttr);
 
     return accessibilityDescriptionForElements(elements);
@@ -1448,7 +1448,7 @@ String AXNodeObject::ariaDescribedByAttribute() const
 
 String AXNodeObject::ariaLabelledbyAttribute() const
 {
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    HeapVector<Member<Element>> elements;
     ariaLabelledbyElementVector(elements);
 
     return accessibilityDescriptionForElements(elements);
@@ -1660,7 +1660,7 @@ bool AXNodeObject::nameFromLabelElement() const
         return false;
 
     // Step 2B from: http://www.w3.org/TR/accname-aam-1.1
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    HeapVector<Member<Element>> elements;
     ariaLabelledbyElementVector(elements);
     if (elements.size() > 0)
         return false;

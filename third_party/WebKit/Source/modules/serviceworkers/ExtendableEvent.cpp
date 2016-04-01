@@ -35,19 +35,19 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<ExtendableEvent> ExtendableEvent::create()
+RawPtr<ExtendableEvent> ExtendableEvent::create()
 {
-    return adoptRefWillBeNoop(new ExtendableEvent());
+    return new ExtendableEvent();
 }
 
-PassRefPtrWillBeRawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
+RawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
 {
-    return adoptRefWillBeNoop(new ExtendableEvent(type, eventInit));
+    return new ExtendableEvent(type, eventInit);
 }
 
-PassRefPtrWillBeRawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
+RawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
 {
-    return adoptRefWillBeNoop(new ExtendableEvent(type, eventInit, observer));
+    return new ExtendableEvent(type, eventInit, observer);
 }
 
 ExtendableEvent::~ExtendableEvent()

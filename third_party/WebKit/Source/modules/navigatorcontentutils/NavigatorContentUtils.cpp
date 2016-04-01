@@ -138,16 +138,16 @@ static bool verifyCustomHandlerScheme(const String& scheme, ExceptionState& exce
 
 NavigatorContentUtils* NavigatorContentUtils::from(LocalFrame& frame)
 {
-    return static_cast<NavigatorContentUtils*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
+    return static_cast<NavigatorContentUtils*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
 }
 
 NavigatorContentUtils::~NavigatorContentUtils()
 {
 }
 
-PassOwnPtrWillBeRawPtr<NavigatorContentUtils> NavigatorContentUtils::create(PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient> client)
+RawPtr<NavigatorContentUtils> NavigatorContentUtils::create(RawPtr<NavigatorContentUtilsClient> client)
 {
-    return adoptPtrWillBeNoop(new NavigatorContentUtils(client));
+    return new NavigatorContentUtils(client);
 }
 
 void NavigatorContentUtils::registerProtocolHandler(Navigator& navigator, const String& scheme, const String& url, const String& title, ExceptionState& exceptionState)
@@ -229,7 +229,7 @@ const char* NavigatorContentUtils::supplementName()
     return "NavigatorContentUtils";
 }
 
-void provideNavigatorContentUtilsTo(LocalFrame& frame, PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClient> client)
+void provideNavigatorContentUtilsTo(LocalFrame& frame, RawPtr<NavigatorContentUtilsClient> client)
 {
     NavigatorContentUtils::provideTo(frame, NavigatorContentUtils::supplementName(), NavigatorContentUtils::create(client));
 }

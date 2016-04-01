@@ -14,7 +14,7 @@ namespace blink {
 
 class MODULES_EXPORT OffscreenCanvasRenderingContext2D final : public OffscreenCanvasRenderingContext, public BaseRenderingContext2D {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(OffscreenCanvasRenderingContext2D);
+    USING_GARBAGE_COLLECTED_MIXIN(OffscreenCanvasRenderingContext2D);
 public:
     class Factory : public OffscreenCanvasRenderingContextFactory {
     public:
@@ -67,7 +67,7 @@ public:
     bool hasAlpha() const override { return m_hasAlpha; }
     bool isContextLost() const override;
 
-    PassRefPtrWillBeRawPtr<ImageBitmap> transferToImageBitmap(ExceptionState&) final;
+    RawPtr<ImageBitmap> transferToImageBitmap(ExceptionState&) final;
 
 protected:
     OffscreenCanvasRenderingContext2D(OffscreenCanvas*, const CanvasContextCreationAttributes& attrs);

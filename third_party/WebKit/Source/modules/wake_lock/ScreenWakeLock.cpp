@@ -47,17 +47,17 @@ const char* ScreenWakeLock::supplementName()
 // static
 ScreenWakeLock* ScreenWakeLock::from(LocalFrame* frame)
 {
-    return static_cast<ScreenWakeLock*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
+    return static_cast<ScreenWakeLock*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
 }
 
 // static
 void ScreenWakeLock::provideTo(LocalFrame& frame, WebWakeLockClient* client)
 {
     ASSERT(RuntimeEnabledFeatures::wakeLockEnabled());
-    WillBeHeapSupplement<LocalFrame>::provideTo(
+    HeapSupplement<LocalFrame>::provideTo(
         frame,
         ScreenWakeLock::supplementName(),
-        adoptPtrWillBeNoop(new ScreenWakeLock(frame, client)));
+        new ScreenWakeLock(frame, client));
 }
 
 void ScreenWakeLock::pageVisibilityChanged()
@@ -80,7 +80,7 @@ void ScreenWakeLock::willDetachFrameHost()
 
 DEFINE_TRACE(ScreenWakeLock)
 {
-    WillBeHeapSupplement<LocalFrame>::trace(visitor);
+    HeapSupplement<LocalFrame>::trace(visitor);
     PageLifecycleObserver::trace(visitor);
     LocalFrameLifecycleObserver::trace(visitor);
 }

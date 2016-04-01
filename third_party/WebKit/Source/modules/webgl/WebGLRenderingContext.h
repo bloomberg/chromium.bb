@@ -42,7 +42,7 @@ public:
         Factory() {}
         ~Factory() override {}
 
-        PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
+        RawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
         CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextWebgl; }
         void onError(HTMLCanvasElement*, const String& error) override;
     };
@@ -62,31 +62,31 @@ private:
     WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
 
     // Enabled extension objects.
-    PersistentWillBeMember<ANGLEInstancedArrays> m_angleInstancedArrays;
-    PersistentWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
-    PersistentWillBeMember<EXTBlendMinMax> m_extBlendMinMax;
-    PersistentWillBeMember<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
-    PersistentWillBeMember<EXTFragDepth> m_extFragDepth;
-    PersistentWillBeMember<EXTShaderTextureLOD> m_extShaderTextureLOD;
-    PersistentWillBeMember<EXTsRGB> m_extsRGB;
-    PersistentWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
-    PersistentWillBeMember<OESTextureFloat> m_oesTextureFloat;
-    PersistentWillBeMember<OESTextureFloatLinear> m_oesTextureFloatLinear;
-    PersistentWillBeMember<OESTextureHalfFloat> m_oesTextureHalfFloat;
-    PersistentWillBeMember<OESTextureHalfFloatLinear> m_oesTextureHalfFloatLinear;
-    PersistentWillBeMember<OESStandardDerivatives> m_oesStandardDerivatives;
-    PersistentWillBeMember<OESVertexArrayObject> m_oesVertexArrayObject;
-    PersistentWillBeMember<OESElementIndexUint> m_oesElementIndexUint;
-    PersistentWillBeMember<WebGLLoseContext> m_webglLoseContext;
-    PersistentWillBeMember<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
-    PersistentWillBeMember<WebGLDebugShaders> m_webglDebugShaders;
-    PersistentWillBeMember<WebGLDrawBuffers> m_webglDrawBuffers;
-    PersistentWillBeMember<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
-    PersistentWillBeMember<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
-    PersistentWillBeMember<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
-    PersistentWillBeMember<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
-    PersistentWillBeMember<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
-    PersistentWillBeMember<WebGLDepthTexture> m_webglDepthTexture;
+    Member<ANGLEInstancedArrays> m_angleInstancedArrays;
+    Member<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
+    Member<EXTBlendMinMax> m_extBlendMinMax;
+    Member<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
+    Member<EXTFragDepth> m_extFragDepth;
+    Member<EXTShaderTextureLOD> m_extShaderTextureLOD;
+    Member<EXTsRGB> m_extsRGB;
+    Member<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
+    Member<OESTextureFloat> m_oesTextureFloat;
+    Member<OESTextureFloatLinear> m_oesTextureFloatLinear;
+    Member<OESTextureHalfFloat> m_oesTextureHalfFloat;
+    Member<OESTextureHalfFloatLinear> m_oesTextureHalfFloatLinear;
+    Member<OESStandardDerivatives> m_oesStandardDerivatives;
+    Member<OESVertexArrayObject> m_oesVertexArrayObject;
+    Member<OESElementIndexUint> m_oesElementIndexUint;
+    Member<WebGLLoseContext> m_webglLoseContext;
+    Member<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
+    Member<WebGLDebugShaders> m_webglDebugShaders;
+    Member<WebGLDrawBuffers> m_webglDrawBuffers;
+    Member<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
+    Member<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
+    Member<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
+    Member<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
+    Member<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
+    Member<WebGLDepthTexture> m_webglDepthTexture;
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContext, CanvasRenderingContext, context,

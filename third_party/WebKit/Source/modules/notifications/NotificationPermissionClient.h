@@ -17,7 +17,7 @@ class LocalFrame;
 class NotificationPermissionCallback;
 class ScriptState;
 
-class NotificationPermissionClient : public WillBeHeapSupplement<LocalFrame> {
+class NotificationPermissionClient : public HeapSupplement<LocalFrame> {
 public:
     virtual ~NotificationPermissionClient() { }
 
@@ -25,12 +25,12 @@ public:
     // current frame. The provided callback will be ran when the user has made a decision.
     virtual ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback*) = 0;
 
-    // WillBeHeapSupplement requirements.
+    // HeapSupplement requirements.
     static const char* supplementName();
     static NotificationPermissionClient* from(ExecutionContext*);
 };
 
-MODULES_EXPORT void provideNotificationPermissionClientTo(LocalFrame&, PassOwnPtrWillBeRawPtr<NotificationPermissionClient>);
+MODULES_EXPORT void provideNotificationPermissionClientTo(LocalFrame&, RawPtr<NotificationPermissionClient>);
 
 } // namespace blink
 

@@ -40,20 +40,19 @@ class MIDIAccessInitializer;
 class MIDIClient;
 class MIDIOptions;
 
-class MIDIController final : public NoBaseWillBeGarbageCollectedFinalized<MIDIController>, public WillBeHeapSupplement<LocalFrame> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(MIDIController);
+class MIDIController final : public GarbageCollectedFinalized<MIDIController>, public HeapSupplement<LocalFrame> {
+    USING_GARBAGE_COLLECTED_MIXIN(MIDIController);
 public:
     virtual ~MIDIController();
 
     void requestPermission(MIDIAccessInitializer*, const MIDIOptions&);
     void cancelPermissionRequest(MIDIAccessInitializer*);
 
-    static PassOwnPtrWillBeRawPtr<MIDIController> create(PassOwnPtr<MIDIClient>);
+    static RawPtr<MIDIController> create(PassOwnPtr<MIDIClient>);
     static const char* supplementName();
-    static MIDIController* from(LocalFrame* frame) { return static_cast<MIDIController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
+    static MIDIController* from(LocalFrame* frame) { return static_cast<MIDIController*>(HeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { WillBeHeapSupplement<LocalFrame>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<LocalFrame>::trace(visitor); }
 
 protected:
     explicit MIDIController(PassOwnPtr<MIDIClient>);

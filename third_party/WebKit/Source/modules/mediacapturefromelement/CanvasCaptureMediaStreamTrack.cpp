@@ -12,12 +12,12 @@
 
 namespace blink {
 
-CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler)
+CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, RawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler)
 {
     return new CanvasCaptureMediaStreamTrack(component, element, handler);
 }
 
-CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
+CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::create(MediaStreamComponent* component, RawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
 {
     return new CanvasCaptureMediaStreamTrack(component, element, handler, frameRate);
 }
@@ -56,7 +56,7 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(const CanvasCapture
     m_canvasElement->addListener(m_drawListener.get());
 }
 
-CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler)
+CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, RawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler)
     : MediaStreamTrack(element->getExecutionContext(), component)
     , m_canvasElement(element)
 {
@@ -65,7 +65,7 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponen
     m_canvasElement->addListener(m_drawListener.get());
 }
 
-CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, PassRefPtrWillBeRawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
+CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponent* component, RawPtr<HTMLCanvasElement> element, const PassOwnPtr<WebCanvasCaptureHandler> handler, double frameRate)
     : MediaStreamTrack(element->getExecutionContext(), component)
     , m_canvasElement(element)
 {

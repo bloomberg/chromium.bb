@@ -14,10 +14,9 @@ class WebBluetooth;
 // This class is attached to a LocalFrame in WebLocalFrameImpl::setCoreFrame, to
 // pass WebFrameClient::bluetooth() (accessible by web/ only) to the Bluetooth
 // code in modules/.
-class BLINK_EXPORT BluetoothSupplement : public NoBaseWillBeGarbageCollected<BluetoothSupplement>, public WillBeHeapSupplement<LocalFrame> {
+class BLINK_EXPORT BluetoothSupplement : public GarbageCollected<BluetoothSupplement>, public HeapSupplement<LocalFrame> {
     WTF_MAKE_NONCOPYABLE(BluetoothSupplement);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(BluetoothSupplement);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothSupplement);
+    USING_GARBAGE_COLLECTED_MIXIN(BluetoothSupplement);
 
 public:
     static const char* supplementName();

@@ -18,17 +18,17 @@ class NotificationEventInit;
 class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<NotificationEvent> create()
+    static RawPtr<NotificationEvent> create()
     {
         return adoptRefWillBeNoop(new NotificationEvent);
     }
-    static PassRefPtrWillBeRawPtr<NotificationEvent> create(const AtomicString& type, const NotificationEventInit& initializer)
+    static RawPtr<NotificationEvent> create(const AtomicString& type, const NotificationEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new NotificationEvent(type, initializer));
+        return new NotificationEvent(type, initializer);
     }
-    static PassRefPtrWillBeRawPtr<NotificationEvent> create(const AtomicString& type, const NotificationEventInit& initializer, WaitUntilObserver* observer)
+    static RawPtr<NotificationEvent> create(const AtomicString& type, const NotificationEventInit& initializer, WaitUntilObserver* observer)
     {
-        return adoptRefWillBeNoop(new NotificationEvent(type, initializer, observer));
+        return new NotificationEvent(type, initializer, observer);
     }
 
     ~NotificationEvent() override;
@@ -45,7 +45,7 @@ private:
     NotificationEvent(const AtomicString& type, const NotificationEventInit&);
     NotificationEvent(const AtomicString& type, const NotificationEventInit&, WaitUntilObserver*);
 
-    PersistentWillBeMember<Notification> m_notification;
+    Member<Notification> m_notification;
     String m_action;
 };
 

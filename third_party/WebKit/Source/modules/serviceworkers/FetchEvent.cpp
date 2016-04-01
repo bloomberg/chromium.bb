@@ -10,19 +10,19 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create()
+RawPtr<FetchEvent> FetchEvent::create()
 {
-    return adoptRefWillBeNoop(new FetchEvent());
+    return new FetchEvent();
 }
 
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer)
+RawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer)
 {
-    return adoptRefWillBeNoop(new FetchEvent(type, initializer, nullptr));
+    return new FetchEvent(type, initializer, nullptr);
 }
 
-PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* observer)
+RawPtr<FetchEvent> FetchEvent::create(const AtomicString& type, const FetchEventInit& initializer, RespondWithObserver* observer)
 {
-    return adoptRefWillBeNoop(new FetchEvent(type, initializer, observer));
+    return new FetchEvent(type, initializer, observer);
 }
 
 Request* FetchEvent::request() const

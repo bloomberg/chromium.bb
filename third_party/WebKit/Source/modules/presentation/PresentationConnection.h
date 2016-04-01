@@ -29,7 +29,7 @@ class PresentationConnection final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationConnection>
     , public DOMWindowProperty {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationConnection);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);
+    USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);
     DEFINE_WRAPPERTYPEINFO();
 public:
     // For CallbackPromiseAdapter.
@@ -79,7 +79,7 @@ public:
 
 protected:
     // EventTarget implementation.
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     class BlobLoader;

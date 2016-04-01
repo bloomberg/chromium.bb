@@ -294,7 +294,7 @@ ExecutionContext* RTCDataChannel::getExecutionContext() const
     return m_executionContext;
 }
 
-void RTCDataChannel::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+void RTCDataChannel::scheduleDispatchEvent(RawPtr<Event> event)
 {
     m_scheduledEvents.append(event);
 
@@ -304,10 +304,10 @@ void RTCDataChannel::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 
 void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Event>> events;
+    HeapVector<Member<Event>> events;
     events.swap(m_scheduledEvents);
 
-    WillBeHeapVector<RefPtrWillBeMember<Event>>::iterator it = events.begin();
+    HeapVector<Member<Event>>::iterator it = events.begin();
     for (; it != events.end(); ++it)
         dispatchEvent((*it).release());
 

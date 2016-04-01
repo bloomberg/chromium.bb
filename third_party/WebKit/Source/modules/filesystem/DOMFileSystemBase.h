@@ -125,7 +125,7 @@ protected:
     friend class DOMFileSystemBaseTest;
     friend class DOMFileSystemSync;
 
-    RawPtrWillBeMember<ExecutionContext> m_context;
+    Member<ExecutionContext> m_context;
     String m_name;
     FileSystemType m_type;
     KURL m_filesystemRootURL;

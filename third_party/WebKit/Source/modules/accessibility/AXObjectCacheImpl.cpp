@@ -653,7 +653,7 @@ void AXObjectCacheImpl::childrenChanged(AXObject* obj)
 
 void AXObjectCacheImpl::notificationPostTimerFired(Timer<AXObjectCacheImpl>*)
 {
-    RefPtrWillBeRawPtr<Document> protectorForCacheOwner(m_document.get());
+    RawPtr<Document> protectorForCacheOwner(m_document.get());
 
     m_notificationPostTimer.stop();
 

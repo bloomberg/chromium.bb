@@ -95,7 +95,7 @@ ExecutionContext* BluetoothRemoteGATTCharacteristic::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-bool BluetoothRemoteGATTCharacteristic::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
+bool BluetoothRemoteGATTCharacteristic::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     // We will also need to unregister a characteristic once all the event
     // listeners have been removed. See http://crbug.com/541390

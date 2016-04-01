@@ -22,9 +22,9 @@ class ServicePortConnectEventInit;
 class MODULES_EXPORT ServicePortConnectEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ServicePortConnectEvent> create();
-    static PassRefPtrWillBeRawPtr<ServicePortConnectEvent> create(const AtomicString& type, const ServicePortConnectEventInit&);
-    static PassRefPtrWillBeRawPtr<ServicePortConnectEvent> create(const AtomicString& type, const ServicePortConnectEventInit&, AcceptConnectionObserver*);
+    static RawPtr<ServicePortConnectEvent> create();
+    static RawPtr<ServicePortConnectEvent> create(const AtomicString& type, const ServicePortConnectEventInit&);
+    static RawPtr<ServicePortConnectEvent> create(const AtomicString& type, const ServicePortConnectEventInit&, AcceptConnectionObserver*);
 
     // ServicePortConnectEvent.idl
     String targetURL() const { return m_targetURL; }
@@ -40,7 +40,7 @@ protected:
     ServicePortConnectEvent(const AtomicString& type, const ServicePortConnectEventInit&, AcceptConnectionObserver*);
 
 private:
-    PersistentWillBeMember<AcceptConnectionObserver> m_observer;
+    Member<AcceptConnectionObserver> m_observer;
     String m_targetURL;
     String m_origin;
 };

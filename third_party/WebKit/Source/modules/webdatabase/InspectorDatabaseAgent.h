@@ -48,9 +48,9 @@ class Page;
 class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, protocol::Frontend::Database>, public protocol::Backend::Database {
     WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorDatabaseAgent> create(Page* page)
+    static RawPtr<InspectorDatabaseAgent> create(Page* page)
     {
-        return adoptPtrWillBeNoop(new InspectorDatabaseAgent(page));
+        return new InspectorDatabaseAgent(page);
     }
     ~InspectorDatabaseAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -71,8 +71,8 @@ private:
     blink::Database* databaseForId(const String& databaseId);
     InspectorDatabaseResource* findByFileName(const String& fileName);
 
-    RawPtrWillBeMember<Page> m_page;
-    typedef PersistentHeapHashMapWillBeHeapHashMap<String, Member<InspectorDatabaseResource>> DatabaseResourcesHeapMap;
+    Member<Page> m_page;
+    typedef HeapHashMap<String, Member<InspectorDatabaseResource>> DatabaseResourcesHeapMap;
     DatabaseResourcesHeapMap m_resources;
     bool m_enabled;
 };

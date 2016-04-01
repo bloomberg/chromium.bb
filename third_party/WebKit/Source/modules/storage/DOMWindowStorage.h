@@ -15,10 +15,8 @@ class DOMWindow;
 class ExceptionState;
 class Storage;
 
-class DOMWindowStorage final : public NoBaseWillBeGarbageCollected<DOMWindowStorage>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorage);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowStorage);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowStorage);
+class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorage);
 public:
     static DOMWindowStorage& from(LocalDOMWindow&);
     static Storage* sessionStorage(DOMWindow&, ExceptionState&);
@@ -35,9 +33,9 @@ private:
     explicit DOMWindowStorage(LocalDOMWindow&);
     static const char* supplementName();
 
-    RawPtrWillBeMember<LocalDOMWindow> m_window;
-    mutable PersistentWillBeMember<Storage> m_sessionStorage;
-    mutable PersistentWillBeMember<Storage> m_localStorage;
+    Member<LocalDOMWindow> m_window;
+    mutable Member<Storage> m_sessionStorage;
+    mutable Member<Storage> m_localStorage;
 
 };
 

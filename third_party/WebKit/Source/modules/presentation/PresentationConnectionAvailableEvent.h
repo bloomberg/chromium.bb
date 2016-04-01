@@ -21,17 +21,17 @@ class PresentationConnectionAvailableEvent final : public Event {
 public:
     ~PresentationConnectionAvailableEvent() override;
 
-    static PassRefPtrWillBeRawPtr<PresentationConnectionAvailableEvent> create()
+    static RawPtr<PresentationConnectionAvailableEvent> create()
     {
         return adoptRefWillBeNoop(new PresentationConnectionAvailableEvent);
     }
-    static PassRefPtrWillBeRawPtr<PresentationConnectionAvailableEvent> create(const AtomicString& eventType, PresentationConnection* connection)
+    static RawPtr<PresentationConnectionAvailableEvent> create(const AtomicString& eventType, PresentationConnection* connection)
     {
-        return adoptRefWillBeNoop(new PresentationConnectionAvailableEvent(eventType, connection));
+        return new PresentationConnectionAvailableEvent(eventType, connection);
     }
-    static PassRefPtrWillBeRawPtr<PresentationConnectionAvailableEvent> create(const AtomicString& eventType, const PresentationConnectionAvailableEventInit& initializer)
+    static RawPtr<PresentationConnectionAvailableEvent> create(const AtomicString& eventType, const PresentationConnectionAvailableEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new PresentationConnectionAvailableEvent(eventType, initializer));
+        return new PresentationConnectionAvailableEvent(eventType, initializer);
     }
 
     PresentationConnection* connection() { return m_connection.get(); }
@@ -45,7 +45,7 @@ private:
     PresentationConnectionAvailableEvent(const AtomicString& eventType, PresentationConnection*);
     PresentationConnectionAvailableEvent(const AtomicString& eventType, const PresentationConnectionAvailableEventInit& initializer);
 
-    PersistentWillBeMember<PresentationConnection> m_connection;
+    Member<PresentationConnection> m_connection;
 };
 
 DEFINE_TYPE_CASTS(PresentationConnectionAvailableEvent, Event, event, event->interfaceName() == EventNames::PresentationConnectionAvailableEvent, event.interfaceName() == EventNames::PresentationConnectionAvailableEvent);

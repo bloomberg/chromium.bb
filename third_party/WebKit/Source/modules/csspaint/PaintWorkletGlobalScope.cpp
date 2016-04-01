@@ -10,9 +10,9 @@
 namespace blink {
 
 // static
-PassRefPtrWillBeRawPtr<PaintWorkletGlobalScope> PaintWorkletGlobalScope::create(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
+RawPtr<PaintWorkletGlobalScope> PaintWorkletGlobalScope::create(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
 {
-    RefPtrWillBeRawPtr<PaintWorkletGlobalScope> paintWorkletGlobalScope = adoptRefWillBeNoop(new PaintWorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate));
+    RawPtr<PaintWorkletGlobalScope> paintWorkletGlobalScope = new PaintWorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate);
     paintWorkletGlobalScope->scriptController()->initializeContextIfNeeded();
     MainThreadDebugger::instance()->contextCreated(paintWorkletGlobalScope->scriptController()->getScriptState(), paintWorkletGlobalScope->frame(), paintWorkletGlobalScope->getSecurityOrigin());
     return paintWorkletGlobalScope.release();

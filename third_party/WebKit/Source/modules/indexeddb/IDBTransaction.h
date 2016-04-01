@@ -54,7 +54,7 @@ class MODULES_EXPORT IDBTransaction final
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBTransaction);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
+    USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static IDBTransaction* create(ScriptState*, int64_t, const HashSet<String>& objectStoreNames, WebIDBTransactionMode, IDBDatabase*);
@@ -76,7 +76,7 @@ public:
 
     // Implement the IDBTransaction IDL
     const String& mode() const;
-    PassRefPtrWillBeRawPtr<DOMStringList> objectStoreNames() const;
+    RawPtr<DOMStringList> objectStoreNames() const;
     IDBDatabase* db() const { return m_database.get(); }
     DOMException* error() const { return m_error; }
     IDBObjectStore* objectStore(const String& name, ExceptionState&);
@@ -108,12 +108,12 @@ public:
 
 protected:
     // EventTarget
-    DispatchEventResult dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
+    DispatchEventResult dispatchEventInternal(RawPtr<Event>) override;
 
 private:
     IDBTransaction(ScriptState*, int64_t, const HashSet<String>&, WebIDBTransactionMode, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata&);
 
-    void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
+    void enqueueEvent(RawPtr<Event>);
 
     enum State {
         Inactive, // Created or started, but not in an event callback

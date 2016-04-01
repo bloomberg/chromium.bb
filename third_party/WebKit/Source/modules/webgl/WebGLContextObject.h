@@ -64,7 +64,7 @@ protected:
     gpu::gles2::GLES2Interface* getAGLInterface() const final;
 
 private:
-    RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
+    Member<WebGLRenderingContextBase> m_context;
 };
 
 } // namespace blink

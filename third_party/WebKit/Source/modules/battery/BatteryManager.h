@@ -20,7 +20,7 @@ namespace blink {
 class BatteryManager final : public RefCountedGarbageCollectedEventTargetWithInlineData<BatteryManager>, public ActiveScriptWrappable, public ActiveDOMObject, public PlatformEventController {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(BatteryManager);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
+    USING_GARBAGE_COLLECTED_MIXIN(BatteryManager);
 public:
     static BatteryManager* create(ExecutionContext*);
     ~BatteryManager() override;

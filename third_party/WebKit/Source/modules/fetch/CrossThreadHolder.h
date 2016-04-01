@@ -91,7 +91,7 @@ private:
     class Bridge
         : public GarbageCollectedFinalized<Bridge>
         , public ActiveDOMObject {
-        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Bridge);
+        USING_GARBAGE_COLLECTED_MIXIN(Bridge);
     public:
         Bridge(ExecutionContext* executionContext, PassOwnPtr<T> obj, PassRefPtr<MutexWrapper> mutex, CrossThreadHolder* holder)
             : ActiveDOMObject(executionContext)

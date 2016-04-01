@@ -26,9 +26,9 @@ class RespondWithObserver;
 class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<FetchEvent> create();
-    static PassRefPtrWillBeRawPtr<FetchEvent> create(const AtomicString& type, const FetchEventInit&);
-    static PassRefPtrWillBeRawPtr<FetchEvent> create(const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
+    static RawPtr<FetchEvent> create();
+    static RawPtr<FetchEvent> create(const AtomicString& type, const FetchEventInit&);
+    static RawPtr<FetchEvent> create(const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
 
     Request* request() const;
     String clientId() const;
@@ -45,8 +45,8 @@ protected:
     FetchEvent(const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
 
 private:
-    PersistentWillBeMember<RespondWithObserver> m_observer;
-    PersistentWillBeMember<Request> m_request;
+    Member<RespondWithObserver> m_observer;
+    Member<Request> m_request;
     String m_clientId;
     bool m_isReload;
 };

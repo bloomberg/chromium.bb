@@ -130,20 +130,20 @@ bool AXTable::isDataTable() const
     if (elementHasAriaRole(tableElement->tFoot()))
         return false;
 
-    RefPtrWillBeRawPtr<HTMLCollection> bodies = tableElement->tBodies();
+    RawPtr<HTMLCollection> bodies = tableElement->tBodies();
     for (unsigned bodyIndex = 0; bodyIndex < bodies->length(); ++bodyIndex) {
         Element* bodyElement = bodies->item(bodyIndex);
         if (elementHasAriaRole(bodyElement))
             return false;
     }
 
-    RefPtrWillBeRawPtr<HTMLTableRowsCollection> rows = tableElement->rows();
+    RawPtr<HTMLTableRowsCollection> rows = tableElement->rows();
     unsigned rowCount = rows->length();
     for (unsigned rowIndex = 0; rowIndex < rowCount; ++rowIndex) {
         HTMLTableRowElement* rowElement = rows->item(rowIndex);
         if (elementHasAriaRole(rowElement))
             return false;
-        RefPtrWillBeRawPtr<HTMLCollection> cells = rowElement->cells();
+        RawPtr<HTMLCollection> cells = rowElement->cells();
         for (unsigned cellIndex = 0; cellIndex < cells->length(); ++cellIndex) {
             if (elementHasAriaRole(cells->item(cellIndex)))
                 return false;

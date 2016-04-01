@@ -40,8 +40,6 @@ DOMWindowCrypto::DOMWindowCrypto(LocalDOMWindow& window)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowCrypto);
-
 const char* DOMWindowCrypto::supplementName()
 {
     return "DOMWindowCrypto";
@@ -49,7 +47,7 @@ const char* DOMWindowCrypto::supplementName()
 
 DOMWindowCrypto& DOMWindowCrypto::from(LocalDOMWindow& window)
 {
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(WillBeHeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowCrypto(window);
         provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -72,7 +70,7 @@ Crypto* DOMWindowCrypto::crypto() const
 DEFINE_TRACE(DOMWindowCrypto)
 {
     visitor->trace(m_crypto);
-    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
+    HeapSupplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

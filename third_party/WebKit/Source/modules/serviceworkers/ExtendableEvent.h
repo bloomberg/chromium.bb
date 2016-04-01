@@ -43,9 +43,9 @@ class WaitUntilObserver;
 class MODULES_EXPORT ExtendableEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ExtendableEvent> create();
-    static PassRefPtrWillBeRawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&);
-    static PassRefPtrWillBeRawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
+    static RawPtr<ExtendableEvent> create();
+    static RawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&);
+    static RawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 
     ~ExtendableEvent() override;
 
@@ -59,7 +59,7 @@ protected:
     ExtendableEvent(const AtomicString& type, const ExtendableEventInit&);
     ExtendableEvent(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 
-    PersistentWillBeMember<WaitUntilObserver> m_observer;
+    Member<WaitUntilObserver> m_observer;
 };
 
 } // namespace blink

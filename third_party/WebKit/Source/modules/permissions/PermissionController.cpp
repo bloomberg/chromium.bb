@@ -19,12 +19,12 @@ void PermissionController::provideTo(LocalFrame& frame, WebPermissionClient* cli
     ASSERT(RuntimeEnabledFeatures::permissionsEnabled());
 
     PermissionController* controller = new PermissionController(frame, client);
-    WillBeHeapSupplement<LocalFrame>::provideTo(frame, supplementName(), adoptPtrWillBeNoop(controller));
+    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), adoptPtrWillBeNoop(controller));
 }
 
 PermissionController* PermissionController::from(LocalFrame& frame)
 {
-    return static_cast<PermissionController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName()));
+    return static_cast<PermissionController*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
 }
 
 PermissionController::PermissionController(LocalFrame& frame, WebPermissionClient* client)
@@ -51,7 +51,7 @@ void PermissionController::willDetachFrameHost()
 DEFINE_TRACE(PermissionController)
 {
     LocalFrameLifecycleObserver::trace(visitor);
-    WillBeHeapSupplement<LocalFrame>::trace(visitor);
+    HeapSupplement<LocalFrame>::trace(visitor);
 }
 
 } // namespace blink

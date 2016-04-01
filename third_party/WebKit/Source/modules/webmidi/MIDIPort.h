@@ -46,7 +46,7 @@ class MIDIAccess;
 class MIDIPort : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort>, public ActiveScriptWrappable, public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MIDIPort);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
+    USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
 public:
     enum ConnectionState {
         ConnectionStateOpen,

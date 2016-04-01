@@ -27,30 +27,30 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create()
+RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create()
 {
     return adoptRefWillBeNoop(new SpeechRecognitionEvent);
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
+RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)
 {
-    return adoptRefWillBeNoop(new SpeechRecognitionEvent(eventName, initializer));
+    return new SpeechRecognitionEvent(eventName, initializer);
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results)
+RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results)
 {
-    return adoptRefWillBeNoop(new SpeechRecognitionEvent(EventTypeNames::result, resultIndex, SpeechRecognitionResultList::create(results)));
+    return new SpeechRecognitionEvent(EventTypeNames::result, resultIndex, SpeechRecognitionResultList::create(results));
 }
 
-PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(SpeechRecognitionResult* result)
+RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(SpeechRecognitionResult* result)
 {
     if (result) {
         HeapVector<Member<SpeechRecognitionResult>> results;
         results.append(result);
-        return adoptRefWillBeNoop(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, SpeechRecognitionResultList::create(results)));
+        return new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, SpeechRecognitionResultList::create(results));
     }
 
-    return adoptRefWillBeNoop(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, nullptr));
+    return new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, nullptr);
 }
 
 const AtomicString& SpeechRecognitionEvent::interfaceName() const

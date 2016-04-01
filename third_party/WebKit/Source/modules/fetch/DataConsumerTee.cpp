@@ -325,7 +325,7 @@ private:
 
 // Bound to the created thread.
 class SourceContext final : public GarbageCollectedFinalized<SourceContext>, public ActiveDOMObject, public WebDataConsumerHandle::Client {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceContext);
+    USING_GARBAGE_COLLECTED_MIXIN(SourceContext);
 public:
     SourceContext(
         PassRefPtr<TeeRootObject> root,

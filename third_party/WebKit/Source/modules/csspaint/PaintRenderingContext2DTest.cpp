@@ -17,7 +17,7 @@ class PaintRenderingContext2DTest : public ::testing::Test {
 protected:
     void SetUp() override;
 
-    RefPtrWillBePersistent<PaintRenderingContext2D> m_ctx;
+    Persistent<PaintRenderingContext2D> m_ctx;
 };
 
 void PaintRenderingContext2DTest::SetUp()

@@ -304,7 +304,7 @@ void PaymentRequest::OnShippingAddressChange(mojom::wtf::ShippingAddressPtr addr
     }
 
     m_shippingAddress = new ShippingAddress(std::move(address));
-    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::shippingaddresschange);
+    RawPtr<Event> event = Event::create(EventTypeNames::shippingaddresschange);
     event->setTarget(this);
     getExecutionContext()->getEventQueue()->enqueueEvent(event);
 }
@@ -314,7 +314,7 @@ void PaymentRequest::OnShippingOptionChange(const String& shippingOptionId)
     DCHECK(m_showResolver);
     DCHECK(!m_completeResolver);
     m_shippingOption = shippingOptionId;
-    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::shippingoptionchange);
+    RawPtr<Event> event = Event::create(EventTypeNames::shippingoptionchange);
     event->setTarget(this);
     getExecutionContext()->getEventQueue()->enqueueEvent(event);
 }

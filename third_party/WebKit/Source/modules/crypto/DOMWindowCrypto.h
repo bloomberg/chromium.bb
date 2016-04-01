@@ -40,10 +40,8 @@ namespace blink {
 class Crypto;
 class DOMWindow;
 
-class DOMWindowCrypto final : public NoBaseWillBeGarbageCollected<DOMWindowCrypto>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowCrypto);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowCrypto);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowCrypto);
+class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(DOMWindowCrypto);
 public:
     static DOMWindowCrypto& from(LocalDOMWindow&);
     static Crypto* crypto(DOMWindow&);
@@ -55,7 +53,7 @@ private:
     explicit DOMWindowCrypto(LocalDOMWindow&);
     static const char* supplementName();
 
-    mutable PersistentWillBeMember<Crypto> m_crypto;
+    mutable Member<Crypto> m_crypto;
 };
 
 } // namespace blink

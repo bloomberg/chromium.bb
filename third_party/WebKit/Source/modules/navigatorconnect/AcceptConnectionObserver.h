@@ -24,7 +24,7 @@ class ScriptValue;
 // and notifies the client of the result. Created for each instance of
 // ServicePortConnectEvent.
 class MODULES_EXPORT AcceptConnectionObserver final : public GarbageCollectedFinalized<AcceptConnectionObserver>, public ContextLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AcceptConnectionObserver);
+    USING_GARBAGE_COLLECTED_MIXIN(AcceptConnectionObserver);
 public:
     static AcceptConnectionObserver* create(ServicePortCollection*, PassOwnPtr<WebServicePortConnectEventCallbacks>, WebServicePortID, const KURL& targetURL);
 

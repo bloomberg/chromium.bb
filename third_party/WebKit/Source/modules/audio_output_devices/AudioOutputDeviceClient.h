@@ -17,19 +17,19 @@ class LocalFrame;
 class WebString;
 class ScriptState;
 
-class AudioOutputDeviceClient : public WillBeHeapSupplement<LocalFrame> {
+class AudioOutputDeviceClient : public HeapSupplement<LocalFrame> {
 public:
     virtual ~AudioOutputDeviceClient() {}
 
     // Checks that a given sink exists and has permissions to be used from the origin of the current frame.
     virtual void checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext*, const WebString& sinkId, PassOwnPtr<WebSetSinkIdCallbacks>) = 0;
 
-    // WillBeHeapSupplement requirements.
+    // HeapSupplement requirements.
     static AudioOutputDeviceClient* from(ExecutionContext*);
     static const char* supplementName();
 };
 
-MODULES_EXPORT void provideAudioOutputDeviceClientTo(LocalFrame&, PassOwnPtrWillBeRawPtr<AudioOutputDeviceClient>);
+MODULES_EXPORT void provideAudioOutputDeviceClientTo(LocalFrame&, RawPtr<AudioOutputDeviceClient>);
 
 } // namespace blink
 

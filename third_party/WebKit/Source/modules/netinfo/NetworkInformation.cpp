@@ -103,7 +103,7 @@ ExecutionContext* NetworkInformation::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-bool NetworkInformation::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
+bool NetworkInformation::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (!EventTargetWithInlineData::addEventListenerInternal(eventType, listener, options))
         return false;
@@ -111,7 +111,7 @@ bool NetworkInformation::addEventListenerInternal(const AtomicString& eventType,
     return true;
 }
 
-bool NetworkInformation::removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
+bool NetworkInformation::removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (!EventTargetWithInlineData::removeEventListenerInternal(eventType, listener, options))
         return false;

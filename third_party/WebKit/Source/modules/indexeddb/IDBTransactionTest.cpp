@@ -74,7 +74,7 @@ public:
 
 private:
     V8TestingScope m_scope;
-    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
+    Persistent<ExecutionContext> m_executionContext;
 };
 
 class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {

@@ -61,7 +61,7 @@ class MODULES_EXPORT IDBRequest
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBRequest);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
+    USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);
 public:
     static IDBRequest* create(ScriptState*, IDBAny* source, IDBTransaction*);
     ~IDBRequest() override;
@@ -131,14 +131,14 @@ public:
 
 protected:
     IDBRequest(ScriptState*, IDBAny* source, IDBTransaction*);
-    void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
+    void enqueueEvent(RawPtr<Event>);
     void dequeueEvent(Event*);
     virtual bool shouldEnqueueEvent() const;
     void onSuccessInternal(IDBAny*);
     void setResult(IDBAny*);
 
     // EventTarget
-    DispatchEventResult dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
+    DispatchEventResult dispatchEventInternal(RawPtr<Event>) override;
 
     bool m_contextStopped = false;
     Member<IDBTransaction> m_transaction;
@@ -156,7 +156,7 @@ private:
     Member<DOMException> m_error;
 
     bool m_hasPendingActivity = true;
-    WillBeHeapVector<RefPtrWillBeMember<Event>> m_enqueuedEvents;
+    HeapVector<Member<Event>> m_enqueuedEvents;
 
     // Only used if the result type will be a cursor.
     IndexedDB::CursorType m_cursorType = IndexedDB::CursorKeyAndValue;

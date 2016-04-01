@@ -16,8 +16,8 @@ class LocalFrame;
 class Screen;
 class WebWakeLockClient;
 
-class MODULES_EXPORT ScreenWakeLock final : public NoBaseWillBeGarbageCollected<ScreenWakeLock>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver, public LocalFrameLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenWakeLock);
+class MODULES_EXPORT ScreenWakeLock final : public GarbageCollected<ScreenWakeLock>, public HeapSupplement<LocalFrame>, public PageLifecycleObserver, public LocalFrameLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(ScreenWakeLock);
     WTF_MAKE_NONCOPYABLE(ScreenWakeLock);
 public:
     static bool keepAwake(Screen&);

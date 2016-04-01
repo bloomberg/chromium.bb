@@ -26,17 +26,16 @@ enum class WebPresentationConnectionState;
 // The coordinator between the various page exposed properties and the content
 // layer represented via |WebPresentationClient|.
 class MODULES_EXPORT PresentationController final
-    : public NoBaseWillBeGarbageCollectedFinalized<PresentationController>
-    , public WillBeHeapSupplement<LocalFrame>
+    : public GarbageCollectedFinalized<PresentationController>
+    , public HeapSupplement<LocalFrame>
     , public LocalFrameLifecycleObserver
     , public WebPresentationController {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(PresentationController);
+    USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
     WTF_MAKE_NONCOPYABLE(PresentationController);
 public:
     ~PresentationController() override;
 
-    static PassOwnPtrWillBeRawPtr<PresentationController> create(LocalFrame&, WebPresentationClient*);
+    static RawPtr<PresentationController> create(LocalFrame&, WebPresentationClient*);
 
     static const char* supplementName();
     static PresentationController* from(LocalFrame&);
@@ -85,14 +84,14 @@ private:
     WebPresentationClient* m_client;
 
     // Default PresentationRequest used by the embedder.
-    // PersistentWillBeMember<PresentationRequest> m_defaultRequest;
+    // Member<PresentationRequest> m_defaultRequest;
     WeakMember<Presentation> m_presentation;
 
     // The presentation connections associated with that frame.
     // TODO(mlamouri): the PresentationController will keep any created
     // connections alive until the frame is detached. These should be weak ptr
     // so that the connection can be GC'd.
-    PersistentHeapHashSetWillBeHeapHashSet<Member<PresentationConnection>> m_connections;
+    HeapHashSet<Member<PresentationConnection>> m_connections;
 };
 
 } // namespace blink

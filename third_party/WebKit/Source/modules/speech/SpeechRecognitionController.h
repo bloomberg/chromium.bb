@@ -34,9 +34,8 @@ namespace blink {
 
 class MediaStreamTrack;
 
-class SpeechRecognitionController final : public NoBaseWillBeGarbageCollectedFinalized<SpeechRecognitionController>, public WillBeHeapSupplement<Page> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(SpeechRecognitionController);
+class SpeechRecognitionController final : public GarbageCollectedFinalized<SpeechRecognitionController>, public HeapSupplement<Page> {
+    USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
 public:
     virtual ~SpeechRecognitionController();
 
@@ -48,11 +47,11 @@ public:
     void stop(SpeechRecognition* recognition) { m_client->stop(recognition); }
     void abort(SpeechRecognition* recognition) { m_client->abort(recognition); }
 
-    static PassOwnPtrWillBeRawPtr<SpeechRecognitionController> create(PassOwnPtr<SpeechRecognitionClient>);
+    static RawPtr<SpeechRecognitionController> create(PassOwnPtr<SpeechRecognitionClient>);
     static const char* supplementName();
-    static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(WillBeHeapSupplement<Page>::from(page, supplementName())); }
+    static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(HeapSupplement<Page>::from(page, supplementName())); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { WillBeHeapSupplement<Page>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<Page>::trace(visitor); }
 
 private:
     explicit SpeechRecognitionController(PassOwnPtr<SpeechRecognitionClient>);

@@ -88,9 +88,9 @@ namespace {
 class GetDatabaseNamesCallback final : public EventListener {
     WTF_MAKE_NONCOPYABLE(GetDatabaseNamesCallback);
 public:
-    static PassRefPtrWillBeRawPtr<GetDatabaseNamesCallback> create(PassOwnPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
+    static RawPtr<GetDatabaseNamesCallback> create(PassOwnPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
     {
-        return adoptRefWillBeNoop(new GetDatabaseNamesCallback(requestCallback, securityOrigin));
+        return new GetDatabaseNamesCallback(requestCallback, securityOrigin);
     }
 
     ~GetDatabaseNamesCallback() override { }
@@ -114,7 +114,7 @@ public:
             return;
         }
 
-        RefPtrWillBeRawPtr<DOMStringList> databaseNamesList = requestResult->domStringList();
+        RawPtr<DOMStringList> databaseNamesList = requestResult->domStringList();
         OwnPtr<protocol::Array<String>> databaseNames = protocol::Array<String>::create();
         for (size_t i = 0; i < databaseNamesList->length(); ++i)
             databaseNames->addItem(databaseNamesList->anonymousIndexedGetter(i));
@@ -151,9 +151,9 @@ private:
 
 class OpenDatabaseCallback final : public EventListener {
 public:
-    static PassRefPtrWillBeRawPtr<OpenDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
+    static RawPtr<OpenDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
     {
-        return adoptRefWillBeNoop(new OpenDatabaseCallback(executableWithDatabase));
+        return new OpenDatabaseCallback(executableWithDatabase);
     }
 
     ~OpenDatabaseCallback() override { }
@@ -192,9 +192,9 @@ private:
 
 class UpgradeDatabaseCallback final : public EventListener {
 public:
-    static PassRefPtrWillBeRawPtr<UpgradeDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
+    static RawPtr<UpgradeDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
     {
-        return adoptRefWillBeNoop(new UpgradeDatabaseCallback(executableWithDatabase));
+        return new UpgradeDatabaseCallback(executableWithDatabase);
     }
 
     ~UpgradeDatabaseCallback() override { }
@@ -229,8 +229,8 @@ private:
 
 void ExecutableWithDatabase::start(IDBFactory* idbFactory, SecurityOrigin*, const String& databaseName)
 {
-    RefPtrWillBeRawPtr<OpenDatabaseCallback> openCallback = OpenDatabaseCallback::create(this);
-    RefPtrWillBeRawPtr<UpgradeDatabaseCallback> upgradeCallback = UpgradeDatabaseCallback::create(this);
+    RawPtr<OpenDatabaseCallback> openCallback = OpenDatabaseCallback::create(this);
+    RawPtr<UpgradeDatabaseCallback> upgradeCallback = UpgradeDatabaseCallback::create(this);
     TrackExceptionState exceptionState;
     IDBOpenDBRequest* idbOpenDBRequest = idbFactory->open(getScriptState(), databaseName, exceptionState);
     if (exceptionState.hadException()) {
@@ -407,9 +407,9 @@ class DataLoader;
 
 class OpenCursorCallback final : public EventListener {
 public:
-    static PassRefPtrWillBeRawPtr<OpenCursorCallback> create(ScriptState* scriptState, PassOwnPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
+    static RawPtr<OpenCursorCallback> create(ScriptState* scriptState, PassOwnPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
     {
-        return adoptRefWillBeNoop(new OpenCursorCallback(scriptState, requestCallback, skipCount, pageSize));
+        return new OpenCursorCallback(scriptState, requestCallback, skipCount, pageSize);
     }
 
     ~OpenCursorCallback() override { }
@@ -544,7 +544,7 @@ public:
         } else {
             idbRequest = idbObjectStore->openCursor(getScriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
         }
-        RefPtrWillBeRawPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(getScriptState(), m_requestCallback.release(), m_skipCount, m_pageSize);
+        RawPtr<OpenCursorCallback> openCursorCallback = OpenCursorCallback::create(getScriptState(), m_requestCallback.release(), m_skipCount, m_pageSize);
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }
 
@@ -571,9 +571,9 @@ public:
 } // namespace
 
 // static
-PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> InspectorIndexedDBAgent::create(InspectedFrames* inspectedFrames)
+RawPtr<InspectorIndexedDBAgent> InspectorIndexedDBAgent::create(InspectedFrames* inspectedFrames)
 {
-    return adoptPtrWillBeNoop(new InspectorIndexedDBAgent(inspectedFrames));
+    return new InspectorIndexedDBAgent(inspectedFrames);
 }
 
 InspectorIndexedDBAgent::InspectorIndexedDBAgent(InspectedFrames* inspectedFrames)
@@ -705,9 +705,9 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString,
 class ClearObjectStoreListener final : public EventListener {
     WTF_MAKE_NONCOPYABLE(ClearObjectStoreListener);
 public:
-    static PassRefPtrWillBeRawPtr<ClearObjectStoreListener> create(PassOwnPtr<ClearObjectStoreCallback> requestCallback)
+    static RawPtr<ClearObjectStoreListener> create(PassOwnPtr<ClearObjectStoreCallback> requestCallback)
     {
-        return adoptRefWillBeNoop(new ClearObjectStoreListener(requestCallback));
+        return new ClearObjectStoreListener(requestCallback);
     }
 
     ~ClearObjectStoreListener() override { }

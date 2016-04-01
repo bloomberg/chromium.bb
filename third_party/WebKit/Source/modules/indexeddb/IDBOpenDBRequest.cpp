@@ -162,7 +162,7 @@ bool IDBOpenDBRequest::shouldEnqueueEvent() const
     return true;
 }
 
-DispatchEventResult IDBOpenDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult IDBOpenDBRequest::dispatchEventInternal(RawPtr<Event> event)
 {
     // If the connection closed between onUpgradeNeeded and the delivery of the "success" event,
     // an "error" event should be fired instead.

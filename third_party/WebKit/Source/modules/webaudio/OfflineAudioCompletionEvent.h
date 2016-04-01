@@ -37,8 +37,8 @@ class AudioBuffer;
 class OfflineAudioCompletionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create();
-    static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create(AudioBuffer* renderedBuffer);
+    static RawPtr<OfflineAudioCompletionEvent> create();
+    static RawPtr<OfflineAudioCompletionEvent> create(AudioBuffer* renderedBuffer);
 
     ~OfflineAudioCompletionEvent() override;
 
@@ -52,7 +52,7 @@ private:
     OfflineAudioCompletionEvent();
     explicit OfflineAudioCompletionEvent(AudioBuffer* renderedBuffer);
 
-    PersistentWillBeMember<AudioBuffer> m_renderedBuffer;
+    Member<AudioBuffer> m_renderedBuffer;
 };
 
 } // namespace blink

@@ -18,9 +18,8 @@ namespace blink {
 class HTMLMediaElement;
 class ScriptState;
 
-class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final : public NoBaseWillBeGarbageCollectedFinalized<HTMLMediaElementAudioOutputDevice>, public WillBeHeapSupplement<HTMLMediaElement> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementAudioOutputDevice);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLMediaElementAudioOutputDevice);
+class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final : public GarbageCollectedFinalized<HTMLMediaElementAudioOutputDevice>, public HeapSupplement<HTMLMediaElement> {
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementAudioOutputDevice);
 public:
     DECLARE_VIRTUAL_TRACE();
     static String sinkId(HTMLMediaElement&);

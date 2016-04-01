@@ -26,7 +26,7 @@ class ScreenOrientation final
     , public DOMWindowProperty {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ScreenOrientation);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
+    USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 public:
     static ScreenOrientation* create(LocalFrame*);
 

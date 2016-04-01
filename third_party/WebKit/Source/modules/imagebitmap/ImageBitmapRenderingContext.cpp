@@ -22,7 +22,7 @@ ImageBitmapRenderingContext::~ImageBitmapRenderingContext() { }
 
 void ImageBitmapRenderingContext::setCanvasGetContextResult(RenderingContext& result)
 {
-    result.setImageBitmapRenderingContext(PassRefPtrWillBeRawPtr<ImageBitmapRenderingContext>(this));
+    result.setImageBitmapRenderingContext(RawPtr<ImageBitmapRenderingContext>(this));
 }
 
 void ImageBitmapRenderingContext::transferImageBitmap(ImageBitmap* imageBitmap)
@@ -58,11 +58,11 @@ bool ImageBitmapRenderingContext::paint(GraphicsContext& gc, const IntRect& r)
     return true;
 }
 
-PassOwnPtrWillBeRawPtr<CanvasRenderingContext> ImageBitmapRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document)
+RawPtr<CanvasRenderingContext> ImageBitmapRenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document& document)
 {
     if (!RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled())
         return nullptr;
-    return adoptPtrWillBeNoop(new ImageBitmapRenderingContext(canvas, attrs, document));
+    return new ImageBitmapRenderingContext(canvas, attrs, document);
 }
 
 void ImageBitmapRenderingContext::stop()

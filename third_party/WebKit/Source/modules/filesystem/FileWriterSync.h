@@ -52,7 +52,7 @@ class FileWriterSync final
     , public ScriptWrappable
     , public WebFileWriterClient {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
+    USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
 public:
     static FileWriterSync* create()
     {

@@ -40,14 +40,13 @@ class GeolocationClient;
 class GeolocationError;
 class GeolocationPosition;
 
-class MODULES_EXPORT GeolocationController : public NoBaseWillBeGarbageCollectedFinalized<GeolocationController>, public WillBeHeapSupplement<LocalFrame>, public PageLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GeolocationController);
+class MODULES_EXPORT GeolocationController : public GarbageCollectedFinalized<GeolocationController>, public HeapSupplement<LocalFrame>, public PageLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(GeolocationController);
     WTF_MAKE_NONCOPYABLE(GeolocationController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(GeolocationController);
 public:
     virtual ~GeolocationController();
 
-    static PassOwnPtrWillBeRawPtr<GeolocationController> create(LocalFrame&, GeolocationClient*);
+    static RawPtr<GeolocationController> create(LocalFrame&, GeolocationClient*);
 
     void addObserver(Geolocation*, bool enableHighAccuracy);
     void removeObserver(Geolocation*);
@@ -68,7 +67,7 @@ public:
     void pageVisibilityChanged() override;
 
     static const char* supplementName();
-    static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
+    static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(HeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
     // Inherited from Supplement.
     DECLARE_VIRTUAL_TRACE();
@@ -79,11 +78,11 @@ private:
     void startUpdatingIfNeeded();
     void stopUpdatingIfNeeded();
 
-    RawPtrWillBeMember<GeolocationClient> m_client;
+    Member<GeolocationClient> m_client;
     bool m_hasClientForTest;
 
-    PersistentWillBeMember<GeolocationPosition> m_lastPosition;
-    typedef PersistentHeapHashSetWillBeHeapHashSet<Member<Geolocation>> ObserversSet;
+    Member<GeolocationPosition> m_lastPosition;
+    typedef HeapHashSet<Member<Geolocation>> ObserversSet;
     // All observers; both those requesting high accuracy and those not.
     ObserversSet m_observers;
     ObserversSet m_highAccuracyObservers;

@@ -14,7 +14,7 @@ namespace blink {
 class PaintWorkletGlobalScope : public WorkletGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<PaintWorkletGlobalScope> create(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
+    static RawPtr<PaintWorkletGlobalScope> create(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
     ~PaintWorkletGlobalScope() override;
 
     bool isPaintWorkletGlobalScope() const final { return true; }

@@ -29,10 +29,10 @@ const char* DeviceOrientationAbsoluteController::supplementName()
 
 DeviceOrientationAbsoluteController& DeviceOrientationAbsoluteController::from(Document& document)
 {
-    DeviceOrientationAbsoluteController* controller = static_cast<DeviceOrientationAbsoluteController*>(WillBeHeapSupplement<Document>::from(document, DeviceOrientationAbsoluteController::supplementName()));
+    DeviceOrientationAbsoluteController* controller = static_cast<DeviceOrientationAbsoluteController*>(HeapSupplement<Document>::from(document, DeviceOrientationAbsoluteController::supplementName()));
     if (!controller) {
         controller = new DeviceOrientationAbsoluteController(document);
-        WillBeHeapSupplement<Document>::provideTo(document, DeviceOrientationAbsoluteController::supplementName(), adoptPtrWillBeNoop(controller));
+        HeapSupplement<Document>::provideTo(document, DeviceOrientationAbsoluteController::supplementName(), adoptPtrWillBeNoop(controller));
     }
     return *controller;
 }

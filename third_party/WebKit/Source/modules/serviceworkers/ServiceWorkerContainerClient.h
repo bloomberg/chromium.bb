@@ -18,14 +18,13 @@ class WebServiceWorkerProvider;
 // This mainly exists to provide access to WebServiceWorkerProvider.
 // Owned by Document (or WorkerClients).
 class MODULES_EXPORT ServiceWorkerContainerClient final
-    : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerContainerClient>
-    , public WillBeHeapSupplement<Document>
-    , public WillBeHeapSupplement<WorkerClients> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
+    : public GarbageCollectedFinalized<ServiceWorkerContainerClient>
+    , public HeapSupplement<Document>
+    , public HeapSupplement<WorkerClients> {
+    USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ServiceWorkerContainerClient);
 public:
-    static PassOwnPtrWillBeRawPtr<ServiceWorkerContainerClient> create(PassOwnPtr<WebServiceWorkerProvider>);
+    static RawPtr<ServiceWorkerContainerClient> create(PassOwnPtr<WebServiceWorkerProvider>);
     virtual ~ServiceWorkerContainerClient();
 
     WebServiceWorkerProvider* provider() { return m_provider.get(); }
@@ -35,8 +34,8 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        WillBeHeapSupplement<Document>::trace(visitor);
-        WillBeHeapSupplement<WorkerClients>::trace(visitor);
+        HeapSupplement<Document>::trace(visitor);
+        HeapSupplement<WorkerClients>::trace(visitor);
     }
 
 protected:

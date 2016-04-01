@@ -72,7 +72,7 @@ public:
         OwnPtr<WebThreadSupportingGC> m_thread;
         const InitializationPolicy m_initializationPolicy;
         OwnPtr<WaitableEvent> m_waitableEvent;
-        RefPtrWillBePersistent<NullExecutionContext> m_executionContext;
+        Persistent<NullExecutionContext> m_executionContext;
         OwnPtr<gin::IsolateHolder> m_isolateHolder;
         RefPtr<ScriptState> m_scriptState;
     };

@@ -36,14 +36,13 @@ namespace blink {
 class IDBFactory;
 class WorkerGlobalScope;
 
-class WorkerGlobalScopeIndexedDatabase final : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeIndexedDatabase>, public WillBeHeapSupplement<WorkerGlobalScope> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeIndexedDatabase);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerGlobalScopeIndexedDatabase);
+class WorkerGlobalScopeIndexedDatabase final : public GarbageCollectedFinalized<WorkerGlobalScopeIndexedDatabase>, public HeapSupplement<WorkerGlobalScope> {
+    USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeIndexedDatabase);
 public:
     virtual ~WorkerGlobalScopeIndexedDatabase();
-    static WorkerGlobalScopeIndexedDatabase& from(WillBeHeapSupplementable<WorkerGlobalScope>&);
+    static WorkerGlobalScopeIndexedDatabase& from(HeapSupplementable<WorkerGlobalScope>&);
 
-    static IDBFactory* indexedDB(WillBeHeapSupplementable<WorkerGlobalScope>&);
+    static IDBFactory* indexedDB(HeapSupplementable<WorkerGlobalScope>&);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -53,7 +52,7 @@ private:
     IDBFactory* indexedDB();
     static const char* supplementName();
 
-    PersistentWillBeMember<IDBFactory> m_idbFactory;
+    Member<IDBFactory> m_idbFactory;
 };
 
 } // namespace blink

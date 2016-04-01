@@ -58,7 +58,7 @@ public:
 
     void SetUp() override
     {
-        m_executionContext = adoptRefWillBeNoop(new NullExecutionContext());
+        m_executionContext = new NullExecutionContext();
         m_scope.getScriptState()->setExecutionContext(m_executionContext.get());
     }
 
@@ -74,7 +74,7 @@ public:
 
 private:
     V8TestingScope m_scope;
-    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
+    Persistent<ExecutionContext> m_executionContext;
 };
 
 TEST_F(IDBRequestTest, EventsAfterStopping)

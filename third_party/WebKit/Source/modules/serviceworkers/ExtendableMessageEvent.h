@@ -16,12 +16,12 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create();
-    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer);
-    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
-    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver*);
-    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorkerClient* source, WaitUntilObserver*);
-    static PassRefPtrWillBeRawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorker* source, WaitUntilObserver*);
+    static RawPtr<ExtendableMessageEvent> create();
+    static RawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer);
+    static RawPtr<ExtendableMessageEvent> create(const AtomicString& type, const ExtendableMessageEventInit& initializer, WaitUntilObserver*);
+    static RawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, WaitUntilObserver*);
+    static RawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorkerClient* source, WaitUntilObserver*);
+    static RawPtr<ExtendableMessageEvent> create(PassRefPtr<SerializedScriptValue> data, const String& origin, MessagePortArray* ports, ServiceWorker* source, WaitUntilObserver*);
 
     SerializedScriptValue* serializedData() const { return m_serializedData.get(); }
     void setSerializedData(PassRefPtr<SerializedScriptValue> serializedData) { m_serializedData = serializedData; }
@@ -44,10 +44,10 @@ private:
     RefPtr<SerializedScriptValue> m_serializedData;
     String m_origin;
     String m_lastEventId;
-    PersistentWillBeMember<ServiceWorkerClient> m_sourceAsClient;
-    PersistentWillBeMember<ServiceWorker> m_sourceAsServiceWorker;
-    PersistentWillBeMember<MessagePort> m_sourceAsMessagePort;
-    PersistentWillBeMember<MessagePortArray> m_ports;
+    Member<ServiceWorkerClient> m_sourceAsClient;
+    Member<ServiceWorker> m_sourceAsServiceWorker;
+    Member<MessagePort> m_sourceAsMessagePort;
+    Member<MessagePortArray> m_ports;
 };
 
 } // namespace blink

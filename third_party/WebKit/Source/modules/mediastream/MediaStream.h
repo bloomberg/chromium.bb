@@ -101,7 +101,7 @@ private:
 
     bool emptyOrOnlyEndedTracks();
 
-    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
+    void scheduleDispatchEvent(RawPtr<Event>);
     void scheduledEventTimerFired(Timer<MediaStream>*);
 
     bool m_stopped;
@@ -111,7 +111,7 @@ private:
     Member<MediaStreamDescriptor> m_descriptor;
 
     Timer<MediaStream> m_scheduledEventTimer;
-    WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
+    HeapVector<Member<Event>> m_scheduledEvents;
 };
 
 typedef HeapVector<Member<MediaStream>> MediaStreamVector;

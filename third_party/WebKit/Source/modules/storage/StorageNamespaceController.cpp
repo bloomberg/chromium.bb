@@ -27,7 +27,7 @@ StorageNamespaceController::~StorageNamespaceController()
 
 DEFINE_TRACE(StorageNamespaceController)
 {
-    WillBeHeapSupplement<Page>::trace(visitor);
+    HeapSupplement<Page>::trace(visitor);
     visitor->trace(m_inspectorAgent);
 }
 
@@ -40,7 +40,7 @@ StorageNamespace* StorageNamespaceController::sessionStorage(bool optionalCreate
 
 void StorageNamespaceController::provideStorageNamespaceTo(Page& page, StorageClient* client)
 {
-    StorageNamespaceController::provideTo(page, supplementName(), adoptPtrWillBeNoop(new StorageNamespaceController(client)));
+    StorageNamespaceController::provideTo(page, supplementName(), new StorageNamespaceController(client));
 }
 
 } // namespace blink

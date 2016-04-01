@@ -14,17 +14,17 @@ namespace blink {
 class GamepadEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<GamepadEvent> create()
+    static RawPtr<GamepadEvent> create()
     {
         return adoptRefWillBeNoop(new GamepadEvent);
     }
-    static PassRefPtrWillBeRawPtr<GamepadEvent> create(const AtomicString& type, bool canBubble, bool cancelable, Gamepad* gamepad)
+    static RawPtr<GamepadEvent> create(const AtomicString& type, bool canBubble, bool cancelable, Gamepad* gamepad)
     {
-        return adoptRefWillBeNoop(new GamepadEvent(type, canBubble, cancelable, gamepad));
+        return new GamepadEvent(type, canBubble, cancelable, gamepad);
     }
-    static PassRefPtrWillBeRawPtr<GamepadEvent> create(const AtomicString& type, const GamepadEventInit& initializer)
+    static RawPtr<GamepadEvent> create(const AtomicString& type, const GamepadEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new GamepadEvent(type, initializer));
+        return new GamepadEvent(type, initializer);
     }
     ~GamepadEvent() override;
 
@@ -39,7 +39,7 @@ private:
     GamepadEvent(const AtomicString& type, bool canBubble, bool cancelable, Gamepad*);
     GamepadEvent(const AtomicString&, const GamepadEventInit&);
 
-    PersistentWillBeMember<Gamepad> m_gamepad;
+    Member<Gamepad> m_gamepad;
 };
 
 } // namespace blink

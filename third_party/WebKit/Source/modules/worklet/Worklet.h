@@ -21,7 +21,7 @@ class WorkerScriptLoader;
 
 class Worklet : public GarbageCollectedFinalized<Worklet>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Worklet);
+    USING_GARBAGE_COLLECTED_MIXIN(Worklet);
     WTF_MAKE_NONCOPYABLE(Worklet);
 public:
     virtual WorkletGlobalScope* workletGlobalScope() const = 0;

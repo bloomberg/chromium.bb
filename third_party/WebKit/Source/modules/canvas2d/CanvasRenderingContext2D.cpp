@@ -105,7 +105,7 @@ public:
         m_context->validateStateStack();
     }
 private:
-    RawPtrWillBeMember<CanvasRenderingContext2D> m_context;
+    Member<CanvasRenderingContext2D> m_context;
     int m_saveCount;
 };
 
@@ -130,7 +130,7 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, co
 
 void CanvasRenderingContext2D::setCanvasGetContextResult(RenderingContext& result)
 {
-    result.setCanvasRenderingContext2D(PassRefPtrWillBeRawPtr<CanvasRenderingContext2D>(this));
+    result.setCanvasRenderingContext2D(RawPtr<CanvasRenderingContext2D>(this));
 }
 
 void CanvasRenderingContext2D::unwindStateStack()
@@ -228,7 +228,7 @@ DEFINE_TRACE(CanvasRenderingContext2D)
 void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*)
 {
     if (contextLostRestoredEventsEnabled()) {
-        RefPtrWillBeRawPtr<Event> event = Event::createCancelable(EventTypeNames::contextlost);
+        RawPtr<Event> event = Event::createCancelable(EventTypeNames::contextlost);
         canvas()->dispatchEvent(event);
         if (event->defaultPrevented()) {
             m_contextRestorable = false;
@@ -273,7 +273,7 @@ void CanvasRenderingContext2D::dispatchContextRestoredEvent(Timer<CanvasRenderin
     reset();
     m_contextLostMode = NotLostContext;
     if (contextLostRestoredEventsEnabled()) {
-        RefPtrWillBeRawPtr<Event> event(Event::create(EventTypeNames::contextrestored));
+        RawPtr<Event> event(Event::create(EventTypeNames::contextrestored));
         canvas()->dispatchEvent(event);
     }
 }
@@ -297,7 +297,7 @@ void CanvasRenderingContext2D::restoreCanvasMatrixClipStack(SkCanvas* c) const
 {
     if (!c)
         return;
-    WillBeHeapVector<OwnPtrWillBeMember<CanvasRenderingContext2DState>>::const_iterator currState;
+    HeapVector<Member<CanvasRenderingContext2DState>>::const_iterator currState;
     ASSERT(m_stateStack.begin() < m_stateStack.end());
     for (currState = m_stateStack.begin(); currState < m_stateStack.end(); currState++) {
         c->setMatrix(SkMatrix::I());
@@ -1013,7 +1013,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, Exc
     m_hitRegionManager->removeHitRegionById(options.id());
     m_hitRegionManager->removeHitRegionByControl(options.control());
 
-    RefPtrWillBeRawPtr<HitRegion> hitRegion = HitRegion::create(hitRegionPath, options);
+    RawPtr<HitRegion> hitRegion = HitRegion::create(hitRegionPath, options);
     Element* element = hitRegion->control();
     if (element && element->isDescendantOf(canvas()))
         updateElementAccessibility(hitRegion->path(), hitRegion->control());

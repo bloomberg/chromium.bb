@@ -332,7 +332,7 @@ void MediaRecorder::stopRecording()
     scheduleDispatchEvent(Event::create(EventTypeNames::stop));
 }
 
-void MediaRecorder::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+void MediaRecorder::scheduleDispatchEvent(RawPtr<Event> event)
 {
     m_scheduledEvents.append(event);
 
@@ -341,7 +341,7 @@ void MediaRecorder::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 
 void MediaRecorder::dispatchScheduledEvent()
 {
-    WillBeHeapVector<RefPtrWillBeMember<Event>> events;
+    HeapVector<Member<Event>> events;
     events.swap(m_scheduledEvents);
 
     for (const auto& event : events)

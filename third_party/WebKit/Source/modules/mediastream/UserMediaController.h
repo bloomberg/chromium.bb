@@ -34,12 +34,10 @@ namespace blink {
 class MediaDevicesRequest;
 class UserMediaRequest;
 
-class UserMediaController final : public NoBaseWillBeGarbageCollected<UserMediaController>, public WillBeHeapSupplement<LocalFrame> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(UserMediaController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(UserMediaController);
+class UserMediaController final : public GarbageCollected<UserMediaController>, public HeapSupplement<LocalFrame> {
+    USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
 public:
-    static PassOwnPtrWillBeRawPtr<UserMediaController> create(UserMediaClient*);
+    static RawPtr<UserMediaController> create(UserMediaClient*);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -54,7 +52,7 @@ public:
     void requestSources(MediaStreamTrackSourcesRequest*);
 
     static const char* supplementName();
-    static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(WillBeHeapSupplement<LocalFrame>::from(frame, supplementName())); }
+    static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(HeapSupplement<LocalFrame>::from(frame, supplementName())); }
 
 private:
     explicit UserMediaController(UserMediaClient*);

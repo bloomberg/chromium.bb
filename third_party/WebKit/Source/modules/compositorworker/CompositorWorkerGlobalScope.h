@@ -17,7 +17,7 @@ class WorkerThreadStartupData;
 class CompositorWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CompositorWorkerGlobalScope> create(CompositorWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
+    static RawPtr<CompositorWorkerGlobalScope> create(CompositorWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
     ~CompositorWorkerGlobalScope() override;
 
     // EventTarget
@@ -36,7 +36,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    CompositorWorkerGlobalScope(const KURL&, const String& userAgent, CompositorWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, PassOwnPtrWillBeRawPtr<WorkerClients>);
+    CompositorWorkerGlobalScope(const KURL&, const String& userAgent, CompositorWorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, RawPtr<WorkerClients>);
     CompositorWorkerThread* thread() const;
 
     FrameRequestCallbackCollection m_callbackCollection;

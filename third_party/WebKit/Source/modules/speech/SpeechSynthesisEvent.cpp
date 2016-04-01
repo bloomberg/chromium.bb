@@ -27,14 +27,14 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
+RawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
 {
     return adoptRefWillBeNoop(new SpeechSynthesisEvent);
 }
 
-PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned charIndex, float elapsedTime, const String& name)
+RawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned charIndex, float elapsedTime, const String& name)
 {
-    return adoptRefWillBeNoop(new SpeechSynthesisEvent(type, utterance, charIndex, elapsedTime, name));
+    return new SpeechSynthesisEvent(type, utterance, charIndex, elapsedTime, name);
 }
 
 SpeechSynthesisEvent::SpeechSynthesisEvent()

@@ -129,7 +129,7 @@ public:
     void stop(double when, ExceptionState&);
 
     EventListener* onended();
-    void setOnended(PassRefPtrWillBeRawPtr<EventListener>);
+    void setOnended(RawPtr<EventListener>);
 
     // ActiveScriptWrappable
     bool hasPendingActivity() const final;

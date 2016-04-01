@@ -18,7 +18,7 @@ class Page;
 class MODULES_EXPORT DeviceOrientationInspectorAgent final : public InspectorBaseAgent<DeviceOrientationInspectorAgent, protocol::Frontend::DeviceOrientation>, public protocol::Backend::DeviceOrientation {
     WTF_MAKE_NONCOPYABLE(DeviceOrientationInspectorAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<DeviceOrientationInspectorAgent> create(Page*);
+    static RawPtr<DeviceOrientationInspectorAgent> create(Page*);
 
     ~DeviceOrientationInspectorAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -35,7 +35,7 @@ public:
 private:
     explicit DeviceOrientationInspectorAgent(Page&);
     DeviceOrientationController& controller();
-    RawPtrWillBeMember<Page> m_page;
+    Member<Page> m_page;
 };
 
 } // namespace blink

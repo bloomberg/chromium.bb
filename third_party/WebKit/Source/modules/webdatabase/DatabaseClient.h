@@ -44,7 +44,7 @@ class ExecutionContext;
 class InspectorDatabaseAgent;
 class Page;
 
-class MODULES_EXPORT DatabaseClient : public WillBeHeapSupplement<Page> {
+class MODULES_EXPORT DatabaseClient : public HeapSupplement<Page> {
     WTF_MAKE_NONCOPYABLE(DatabaseClient);
 public:
     DatabaseClient();
@@ -63,10 +63,10 @@ public:
     void setInspectorAgent(InspectorDatabaseAgent*);
 
 private:
-    RawPtrWillBeMember<InspectorDatabaseAgent> m_inspectorAgent;
+    Member<InspectorDatabaseAgent> m_inspectorAgent;
 };
 
-MODULES_EXPORT void provideDatabaseClientTo(Page&, PassOwnPtrWillBeRawPtr<DatabaseClient>);
+MODULES_EXPORT void provideDatabaseClientTo(Page&, RawPtr<DatabaseClient>);
 
 } // namespace blink
 

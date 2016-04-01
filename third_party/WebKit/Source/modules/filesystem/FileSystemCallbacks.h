@@ -75,7 +75,7 @@ protected:
 
     Persistent<ErrorCallback> m_errorCallback;
     Persistent<DOMFileSystemBase> m_fileSystem;
-    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
+    Persistent<ExecutionContext> m_executionContext;
     int m_asyncOperationId;
 };
 

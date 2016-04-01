@@ -45,7 +45,7 @@ class RTCSessionDescriptionCallback;
 class WebRTCSessionDescription;
 
 class RTCSessionDescriptionRequestImpl final : public RTCSessionDescriptionRequest, public ActiveDOMObject {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
+    USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
 public:
     static RTCSessionDescriptionRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*);
     ~RTCSessionDescriptionRequestImpl() override;

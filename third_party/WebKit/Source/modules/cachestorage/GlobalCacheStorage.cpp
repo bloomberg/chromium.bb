@@ -19,15 +19,15 @@ namespace blink {
 namespace {
 
 template <typename T>
-class GlobalCacheStorageImpl final : public NoBaseWillBeGarbageCollectedFinalized<GlobalCacheStorageImpl<T>>, public WillBeHeapSupplement<T> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(GlobalCacheStorageImpl);
+class GlobalCacheStorageImpl final : public GarbageCollectedFinalized<GlobalCacheStorageImpl<T>>, public HeapSupplement<T> {
+    USING_GARBAGE_COLLECTED_MIXIN(GlobalCacheStorageImpl);
 public:
     static GlobalCacheStorageImpl& from(T& supplementable, ExecutionContext* executionContext)
     {
-        GlobalCacheStorageImpl* supplement = static_cast<GlobalCacheStorageImpl*>(WillBeHeapSupplement<T>::from(supplementable, name()));
+        GlobalCacheStorageImpl* supplement = static_cast<GlobalCacheStorageImpl*>(HeapSupplement<T>::from(supplementable, name()));
         if (!supplement) {
             supplement = new GlobalCacheStorageImpl();
-            WillBeHeapSupplement<T>::provideTo(supplementable, name(), adoptPtrWillBeNoop(supplement));
+            HeapSupplement<T>::provideTo(supplementable, name(), adoptPtrWillBeNoop(supplement));
         }
         return *supplement;
     }
@@ -62,7 +62,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_caches);
-        WillBeHeapSupplement<T>::trace(visitor);
+        HeapSupplement<T>::trace(visitor);
     }
 
 private:
@@ -72,7 +72,7 @@ private:
 
     static const char* name() { return "CacheStorage"; }
 
-    PersistentWillBeMember<CacheStorage> m_caches;
+    Member<CacheStorage> m_caches;
 };
 
 } // namespace

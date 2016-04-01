@@ -75,7 +75,7 @@ public:
 
     // (Empty) WorkerReportingProxy implementation:
     virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) {}
-    void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override {}
+    void reportConsoleMessage(RawPtr<ConsoleMessage>) override {}
     void postMessageToPageInspector(const String&) override {}
     void postWorkerConsoleAgentEnabled() override {}
 
@@ -94,7 +94,7 @@ private:
     {
     }
 
-    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
+    Persistent<ExecutionContext> m_executionContext;
 };
 
 class CompositorWorkerTestPlatform : public TestingPlatformSupport {
@@ -137,7 +137,7 @@ public:
     PassOwnPtr<TestCompositorWorkerThread> createCompositorWorker(WaitableEvent* startEvent)
     {
         TestCompositorWorkerThread* workerThread = new TestCompositorWorkerThread(nullptr, *m_objectProxy, 0, startEvent);
-        OwnPtrWillBeRawPtr<WorkerClients> clients = nullptr;
+        RawPtr<WorkerClients> clients = nullptr;
         workerThread->start(WorkerThreadStartupData::create(
             KURL(ParsedURLString, "http://fake.url/"),
             "fake user agent",

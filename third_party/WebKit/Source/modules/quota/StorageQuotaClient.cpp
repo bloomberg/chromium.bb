@@ -45,10 +45,10 @@ StorageQuotaClient* StorageQuotaClient::from(ExecutionContext* context)
 {
     if (!context->isDocument())
         return 0;
-    return static_cast<StorageQuotaClient*>(WillBeHeapSupplement<Page>::from(toDocument(context)->page(), supplementName()));
+    return static_cast<StorageQuotaClient*>(HeapSupplement<Page>::from(toDocument(context)->page(), supplementName()));
 }
 
-void provideStorageQuotaClientTo(Page& page, PassOwnPtrWillBeRawPtr<StorageQuotaClient> client)
+void provideStorageQuotaClientTo(Page& page, RawPtr<StorageQuotaClient> client)
 {
     page.provideSupplement(StorageQuotaClient::supplementName(), client);
 }

@@ -20,9 +20,9 @@ class MODULES_EXPORT BlobEvent final : public Event {
 public:
     ~BlobEvent() override {}
 
-    static PassRefPtrWillBeRawPtr<BlobEvent> create();
-    static PassRefPtrWillBeRawPtr<BlobEvent> create(const AtomicString& type, const BlobEventInit& initializer);
-    static PassRefPtrWillBeRawPtr<BlobEvent> create(const AtomicString& type, Blob*);
+    static RawPtr<BlobEvent> create();
+    static RawPtr<BlobEvent> create(const AtomicString& type, const BlobEventInit& initializer);
+    static RawPtr<BlobEvent> create(const AtomicString& type, Blob*);
 
     Blob* data() const { return m_blob.get(); }
 
@@ -36,7 +36,7 @@ private:
     BlobEvent(const AtomicString& type, const BlobEventInit& initializer);
     BlobEvent(const AtomicString& type, Blob*);
 
-    PersistentWillBeMember<Blob> m_blob;
+    Member<Blob> m_blob;
 };
 
 } // namespace blink

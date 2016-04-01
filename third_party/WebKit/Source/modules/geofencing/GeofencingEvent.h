@@ -20,14 +20,14 @@ class GeofencingRegion;
 class MODULES_EXPORT GeofencingEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<GeofencingEvent> create()
+    static RawPtr<GeofencingEvent> create()
     {
         return adoptRefWillBeNoop(new GeofencingEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<GeofencingEvent> create(const AtomicString& type, const String& id, GeofencingRegion* region)
+    static RawPtr<GeofencingEvent> create(const AtomicString& type, const String& id, GeofencingRegion* region)
     {
-        return adoptRefWillBeNoop(new GeofencingEvent(type, id, region));
+        return new GeofencingEvent(type, id, region);
     }
 
     ~GeofencingEvent() override;
@@ -43,7 +43,7 @@ private:
     GeofencingEvent();
     GeofencingEvent(const AtomicString& type, const String& id, GeofencingRegion*);
     String m_id;
-    PersistentWillBeMember<GeofencingRegion> m_region;
+    Member<GeofencingRegion> m_region;
 };
 
 } // namespace blink

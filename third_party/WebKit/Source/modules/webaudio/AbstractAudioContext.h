@@ -83,7 +83,7 @@ class WaveShaperNode;
 
 class MODULES_EXPORT AbstractAudioContext : public RefCountedGarbageCollectedEventTargetWithInlineData<AbstractAudioContext>, public ActiveScriptWrappable, public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(AbstractAudioContext);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AbstractAudioContext);
+    USING_GARBAGE_COLLECTED_MIXIN(AbstractAudioContext);
     DEFINE_WRAPPERTYPEINFO();
 public:
     // The state of an audio context.  On creation, the state is Suspended. The state is Running if

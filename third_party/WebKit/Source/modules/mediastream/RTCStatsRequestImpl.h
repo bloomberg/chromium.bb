@@ -39,7 +39,7 @@ class RTCPeerConnection;
 class RTCStatsCallback;
 
 class RTCStatsRequestImpl final : public RTCStatsRequest, public ActiveDOMObject {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
+    USING_GARBAGE_COLLECTED_MIXIN(RTCStatsRequestImpl);
 public:
     static RTCStatsRequestImpl* create(ExecutionContext*, RTCPeerConnection*, RTCStatsCallback*, MediaStreamTrack*);
     ~RTCStatsRequestImpl() override;

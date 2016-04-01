@@ -31,7 +31,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<StorageEvent> StorageEvent::create()
+RawPtr<StorageEvent> StorageEvent::create()
 {
     return adoptRefWillBeNoop(new StorageEvent);
 }
@@ -44,14 +44,14 @@ StorageEvent::~StorageEvent()
 {
 }
 
-PassRefPtrWillBeRawPtr<StorageEvent> StorageEvent::create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)
+RawPtr<StorageEvent> StorageEvent::create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)
 {
-    return adoptRefWillBeNoop(new StorageEvent(type, key, oldValue, newValue, url, storageArea));
+    return new StorageEvent(type, key, oldValue, newValue, url, storageArea);
 }
 
-PassRefPtrWillBeRawPtr<StorageEvent> StorageEvent::create(const AtomicString& type, const StorageEventInit& initializer)
+RawPtr<StorageEvent> StorageEvent::create(const AtomicString& type, const StorageEventInit& initializer)
 {
-    return adoptRefWillBeNoop(new StorageEvent(type, initializer));
+    return new StorageEvent(type, initializer);
 }
 
 StorageEvent::StorageEvent(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea)

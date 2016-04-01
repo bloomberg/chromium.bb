@@ -23,14 +23,12 @@ DOMWindowStorage::DOMWindowStorage(LocalDOMWindow& window)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowStorage);
-
 DEFINE_TRACE(DOMWindowStorage)
 {
     visitor->trace(m_window);
     visitor->trace(m_sessionStorage);
     visitor->trace(m_localStorage);
-    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
+    HeapSupplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
@@ -43,7 +41,7 @@ const char* DOMWindowStorage::supplementName()
 // static
 DOMWindowStorage& DOMWindowStorage::from(LocalDOMWindow& window)
 {
-    DOMWindowStorage* supplement = static_cast<DOMWindowStorage*>(WillBeHeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    DOMWindowStorage* supplement = static_cast<DOMWindowStorage*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowStorage(window);
         provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));

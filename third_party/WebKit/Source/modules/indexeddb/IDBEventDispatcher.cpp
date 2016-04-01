@@ -33,7 +33,7 @@
 
 namespace blink {
 
-DispatchEventResult IDBEventDispatcher::dispatch(Event* event, WillBeHeapVector<RefPtrWillBeMember<EventTarget>>& eventTargets)
+DispatchEventResult IDBEventDispatcher::dispatch(Event* event, HeapVector<Member<EventTarget>>& eventTargets)
 {
     size_t size = eventTargets.size();
     ASSERT(size);

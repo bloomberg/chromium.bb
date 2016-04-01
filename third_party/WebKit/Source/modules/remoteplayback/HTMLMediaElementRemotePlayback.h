@@ -17,9 +17,8 @@ class RemotePlayback;
 
 // Class used to implement the Remote Playback API. It is a supplement to
 // HTMLMediaElement.
-class HTMLMediaElementRemotePlayback final : public NoBaseWillBeGarbageCollected<HTMLMediaElementRemotePlayback>, public WillBeHeapSupplement<HTMLMediaElement> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementRemotePlayback);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLMediaElementRemotePlayback);
+class HTMLMediaElementRemotePlayback final : public GarbageCollected<HTMLMediaElementRemotePlayback>, public HeapSupplement<HTMLMediaElement> {
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementRemotePlayback);
 public:
     static bool fastHasAttribute(const QualifiedName&, const HTMLMediaElement&);
     static void setBooleanAttribute(const QualifiedName&, HTMLMediaElement&, bool);
@@ -32,7 +31,7 @@ public:
 private:
     static const char* supplementName();
 
-    PersistentWillBeMember<RemotePlayback> m_remote;
+    Member<RemotePlayback> m_remote;
 };
 
 } // namespace blink

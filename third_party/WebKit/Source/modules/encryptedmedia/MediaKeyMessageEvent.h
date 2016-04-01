@@ -39,14 +39,14 @@ class MediaKeyMessageEvent final : public Event {
 public:
     ~MediaKeyMessageEvent() override;
 
-    static PassRefPtrWillBeRawPtr<MediaKeyMessageEvent> create()
+    static RawPtr<MediaKeyMessageEvent> create()
     {
         return adoptRefWillBeNoop(new MediaKeyMessageEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<MediaKeyMessageEvent> create(const AtomicString& type, const MediaKeyMessageEventInit& initializer)
+    static RawPtr<MediaKeyMessageEvent> create(const AtomicString& type, const MediaKeyMessageEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new MediaKeyMessageEvent(type, initializer));
+        return new MediaKeyMessageEvent(type, initializer);
     }
 
     const AtomicString& interfaceName() const override;

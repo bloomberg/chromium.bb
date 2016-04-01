@@ -16,10 +16,8 @@ class ExecutionContext;
 class PaintWorklet;
 class Worklet;
 
-class WindowPaintWorklet final : public NoBaseWillBeGarbageCollected<WindowPaintWorklet>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WindowPaintWorklet);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(WindowPaintWorklet);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(WindowPaintWorklet);
+class WindowPaintWorklet final : public GarbageCollected<WindowPaintWorklet>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(WindowPaintWorklet);
 public:
     static WindowPaintWorklet& from(LocalDOMWindow&);
     static Worklet* paintWorklet(ExecutionContext*, DOMWindow&);
@@ -31,7 +29,7 @@ private:
     explicit WindowPaintWorklet(LocalDOMWindow&);
     static const char* supplementName();
 
-    mutable PersistentWillBeMember<PaintWorklet> m_paintWorklet;
+    mutable Member<PaintWorklet> m_paintWorklet;
 };
 
 } // namespace blink

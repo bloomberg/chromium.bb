@@ -913,10 +913,10 @@ protected:
     static String recursiveTextAlternative(const AXObject&, bool inAriaLabelledByTraversal, AXObjectSet& visited);
     bool isHiddenForTextAlternativeCalculation() const;
     String ariaTextAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXRelatedObjectVector*, NameSources*, bool* foundTextAlternative) const;
-    String textFromElements(bool inAriaLabelledByTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXRelatedObjectVector* relatedObjects) const;
+    String textFromElements(bool inAriaLabelledByTraversal, AXObjectSet& visited, HeapVector<Member<Element>>& elements, AXRelatedObjectVector* relatedObjects) const;
     void tokenVectorFromAttribute(Vector<String>&, const QualifiedName&) const;
-    void elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, const QualifiedName&) const;
-    void ariaLabelledbyElementVector(WillBeHeapVector<RawPtrWillBeMember<Element>>& elements) const;
+    void elementsFromAttribute(HeapVector<Member<Element>>& elements, const QualifiedName&) const;
+    void ariaLabelledbyElementVector(HeapVector<Member<Element>>& elements) const;
     String textFromAriaLabelledby(AXObjectSet& visited, AXRelatedObjectVector* relatedObjects) const;
     String textFromAriaDescribedby(AXRelatedObjectVector* relatedObjects) const;
 

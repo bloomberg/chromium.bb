@@ -16,19 +16,19 @@ namespace blink {
 class MODULES_EXPORT ServiceWorkerMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ServiceWorkerMessageEvent> create()
+    static RawPtr<ServiceWorkerMessageEvent> create()
     {
         return adoptRefWillBeNoop(new ServiceWorkerMessageEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<ServiceWorkerMessageEvent> create(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer)
+    static RawPtr<ServiceWorkerMessageEvent> create(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new ServiceWorkerMessageEvent(type, initializer));
+        return new ServiceWorkerMessageEvent(type, initializer);
     }
 
-    static PassRefPtrWillBeRawPtr<ServiceWorkerMessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, ServiceWorker* source, const String& origin)
+    static RawPtr<ServiceWorkerMessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, ServiceWorker* source, const String& origin)
     {
-        return adoptRefWillBeNoop(new ServiceWorkerMessageEvent(data, origin, String(), source, ports));
+        return new ServiceWorkerMessageEvent(data, origin, String(), source, ports);
     }
 
     ~ServiceWorkerMessageEvent() override;
@@ -53,9 +53,9 @@ private:
     RefPtr<SerializedScriptValue> m_serializedData;
     String m_origin;
     String m_lastEventId;
-    PersistentWillBeMember<ServiceWorker> m_sourceAsServiceWorker;
-    PersistentWillBeMember<MessagePort> m_sourceAsMessagePort;
-    PersistentWillBeMember<MessagePortArray> m_ports;
+    Member<ServiceWorker> m_sourceAsServiceWorker;
+    Member<MessagePort> m_sourceAsMessagePort;
+    Member<MessagePortArray> m_ports;
 };
 
 } // namespace blink

@@ -72,7 +72,7 @@ private:
     // This Persistent doesn't make a reference cycle. The reference from
     // HTMLMediaElement to AudioSourceProvideClient, which
     // MediaElementAudioSourceNode implements, is weak.
-    RefPtrWillBePersistent<HTMLMediaElement> m_mediaElement;
+    Persistent<HTMLMediaElement> m_mediaElement;
     Mutex m_processLock;
 
     unsigned m_sourceNumberOfChannels;

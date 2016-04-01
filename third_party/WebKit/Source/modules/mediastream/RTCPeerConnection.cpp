@@ -356,7 +356,7 @@ RTCOfferOptionsPlatform* parseOfferOptions(const Dictionary& options)
 } // namespace
 
 RTCPeerConnection::EventWrapper::EventWrapper(
-    PassRefPtrWillBeRawPtr<Event> event,
+    RawPtr<Event> event,
     PassOwnPtr<BoolFunction> function)
     : m_event(event)
     , m_setupFunction(function)
@@ -1131,12 +1131,12 @@ void RTCPeerConnection::closeInternal()
     changeSignalingState(SignalingStateClosed);
 }
 
-void RTCPeerConnection::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+void RTCPeerConnection::scheduleDispatchEvent(RawPtr<Event> event)
 {
     scheduleDispatchEvent(event, nullptr);
 }
 
-void RTCPeerConnection::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event,
+void RTCPeerConnection::scheduleDispatchEvent(RawPtr<Event> event,
     PassOwnPtr<BoolFunction> setupFunction)
 {
     m_scheduledEvents.append(new EventWrapper(event, setupFunction));

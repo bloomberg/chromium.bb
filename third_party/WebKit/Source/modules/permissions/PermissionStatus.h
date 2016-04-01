@@ -28,7 +28,7 @@ class PermissionStatus final
     , public ActiveDOMObject
     , public WebPermissionObserver {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PermissionStatus);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
+    USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PermissionStatus* take(ScriptPromiseResolver*, WebPermissionStatus, WebPermissionType);

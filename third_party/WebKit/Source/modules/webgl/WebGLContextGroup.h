@@ -70,7 +70,7 @@ private:
     // registration with WebGLContextGroup, and vice versa, the
     // WebGLContextGroup takes care of detaching the group objects if
     // the set of WebGLRenderingContextBase contexts becomes empty.
-    HashSet<RawPtrWillBeUntracedMember<WebGLRenderingContextBase>> m_contexts;
+    HashSet<UntracedMember<WebGLRenderingContextBase>> m_contexts;
     HashSet<UntracedMember<WebGLSharedObject>> m_groupObjects;
 };
 

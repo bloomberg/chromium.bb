@@ -26,7 +26,7 @@ public:
 
     OffscreenCanvas* getOffscreenCanvas() const { return m_offscreenCanvas; }
     virtual ContextType getContextType() const = 0;
-    virtual PassRefPtrWillBeRawPtr<ImageBitmap> transferToImageBitmap(ExceptionState&) = 0;
+    virtual RawPtr<ImageBitmap> transferToImageBitmap(ExceptionState&) = 0;
 
     virtual bool is2d() const { return false; }
 

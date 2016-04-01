@@ -38,13 +38,11 @@ DOMWindowIndexedDatabase::DOMWindowIndexedDatabase(LocalDOMWindow& window)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowIndexedDatabase);
-
 DEFINE_TRACE(DOMWindowIndexedDatabase)
 {
     visitor->trace(m_window);
     visitor->trace(m_idbFactory);
-    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
+    HeapSupplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
@@ -55,7 +53,7 @@ const char* DOMWindowIndexedDatabase::supplementName()
 
 DOMWindowIndexedDatabase& DOMWindowIndexedDatabase::from(LocalDOMWindow& window)
 {
-    DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(WillBeHeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowIndexedDatabase(window);
         provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));

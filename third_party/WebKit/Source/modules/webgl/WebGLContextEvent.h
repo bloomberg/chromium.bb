@@ -35,17 +35,17 @@ class WebGLContextEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static PassRefPtrWillBeRawPtr<WebGLContextEvent> create()
+    static RawPtr<WebGLContextEvent> create()
     {
         return adoptRefWillBeNoop(new WebGLContextEvent);
     }
-    static PassRefPtrWillBeRawPtr<WebGLContextEvent> create(const AtomicString& type, bool canBubble, bool cancelable, const String& statusMessage)
+    static RawPtr<WebGLContextEvent> create(const AtomicString& type, bool canBubble, bool cancelable, const String& statusMessage)
     {
-        return adoptRefWillBeNoop(new WebGLContextEvent(type, canBubble, cancelable, statusMessage));
+        return new WebGLContextEvent(type, canBubble, cancelable, statusMessage);
     }
-    static PassRefPtrWillBeRawPtr<WebGLContextEvent> create(const AtomicString& type, const WebGLContextEventInit& initializer)
+    static RawPtr<WebGLContextEvent> create(const AtomicString& type, const WebGLContextEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new WebGLContextEvent(type, initializer));
+        return new WebGLContextEvent(type, initializer);
     }
     ~WebGLContextEvent() override;
 

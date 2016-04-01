@@ -61,7 +61,7 @@ class WebSocketHandshakeResponseInfo;
 // This class is a WebSocketChannel subclass that works with a Document in a
 // DOMWindow (i.e. works in the main thread).
 class MODULES_EXPORT DocumentWebSocketChannel final : public WebSocketChannel, public WebSocketHandleClient, public ContextLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DocumentWebSocketChannel);
+    USING_GARBAGE_COLLECTED_MIXIN(DocumentWebSocketChannel);
 public:
     // You can specify the source file and the line number information
     // explicitly by passing the last parameter.

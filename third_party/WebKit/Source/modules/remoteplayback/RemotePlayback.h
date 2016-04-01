@@ -28,7 +28,7 @@ class RemotePlayback final
     , private WebRemotePlaybackClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RemotePlayback);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
+    USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 public:
     static RemotePlayback* create(HTMLMediaElement&);
 
@@ -57,7 +57,7 @@ private:
     WebRemotePlaybackState m_state;
     bool m_availability;
     HeapVector<Member<RemotePlaybackAvailability>> m_availabilityObjects;
-    WeakPtrWillBeMember<HTMLMediaElement> m_mediaElement;
+    Member<HTMLMediaElement> m_mediaElement;
     HeapVector<Member<ScriptPromiseResolver>> m_connectPromiseResolvers;
 };
 

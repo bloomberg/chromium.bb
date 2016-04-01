@@ -46,19 +46,19 @@ namespace blink {
 class CloseEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CloseEvent> create()
+    static RawPtr<CloseEvent> create()
     {
-        return adoptRefWillBeNoop(new CloseEvent());
+        return new CloseEvent();
     }
 
-    static PassRefPtrWillBeRawPtr<CloseEvent> create(bool wasClean, unsigned short code, const String& reason)
+    static RawPtr<CloseEvent> create(bool wasClean, unsigned short code, const String& reason)
     {
-        return adoptRefWillBeNoop(new CloseEvent(wasClean, code, reason));
+        return new CloseEvent(wasClean, code, reason);
     }
 
-    static PassRefPtrWillBeRawPtr<CloseEvent> create(const AtomicString& type, const CloseEventInit& initializer)
+    static RawPtr<CloseEvent> create(const AtomicString& type, const CloseEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new CloseEvent(type, initializer));
+        return new CloseEvent(type, initializer);
     }
 
     bool wasClean() const { return m_wasClean; }

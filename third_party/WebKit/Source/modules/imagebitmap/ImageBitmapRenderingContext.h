@@ -23,7 +23,7 @@ public:
         Factory() {}
         ~Factory() override {}
 
-        PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
+        RawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
         CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextImageBitmap; }
         void onError(HTMLCanvasElement*, const String& error) override { }
     };

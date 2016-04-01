@@ -55,7 +55,7 @@ class MediaSource final
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaSource);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
+    USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 public:
     static const AtomicString& openKeyword();
     static const AtomicString& closedKeyword();
@@ -133,8 +133,8 @@ private:
 
     OwnPtr<WebMediaSource> m_webMediaSource;
     AtomicString m_readyState;
-    OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
-    RawPtrWillBeWeakMember<HTMLMediaElement> m_attachedElement;
+    Member<GenericEventQueue> m_asyncEventQueue;
+    WeakMember<HTMLMediaElement> m_attachedElement;
 
     Member<SourceBufferList> m_sourceBuffers;
     Member<SourceBufferList> m_activeSourceBuffers;

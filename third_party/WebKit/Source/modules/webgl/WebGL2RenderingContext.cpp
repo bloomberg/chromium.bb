@@ -31,7 +31,7 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<CanvasRenderingContext> WebGL2RenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
+RawPtr<CanvasRenderingContext> WebGL2RenderingContext::Factory::create(HTMLCanvasElement* canvas, const CanvasContextCreationAttributes& attrs, Document&)
 {
     if (!RuntimeEnabledFeatures::unsafeES3APIsEnabled()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Creation of WebGL2 contexts disabled."));
@@ -51,7 +51,7 @@ PassOwnPtrWillBeRawPtr<CanvasRenderingContext> WebGL2RenderingContext::Factory::
         gl->PushGroupMarkerEXT(0, contextLabel.ascii().data());
     }
 
-    OwnPtrWillBeRawPtr<WebGL2RenderingContext> renderingContext = adoptPtrWillBeNoop(new WebGL2RenderingContext(canvas, contextProvider.release(), attributes));
+    RawPtr<WebGL2RenderingContext> renderingContext = new WebGL2RenderingContext(canvas, contextProvider.release(), attributes);
 
     if (!renderingContext->drawingBuffer()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL2 context."));
@@ -81,7 +81,7 @@ WebGL2RenderingContext::~WebGL2RenderingContext()
 
 void WebGL2RenderingContext::setCanvasGetContextResult(RenderingContext& result)
 {
-    result.setWebGL2RenderingContext(PassRefPtrWillBeRawPtr<WebGL2RenderingContext>(this));
+    result.setWebGL2RenderingContext(RawPtr<WebGL2RenderingContext>(this));
 }
 
 void WebGL2RenderingContext::registerContextExtensions()

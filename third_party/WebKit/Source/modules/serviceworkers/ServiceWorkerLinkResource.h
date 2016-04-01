@@ -16,10 +16,9 @@ namespace blink {
 class HTMLLinkElement;
 
 class MODULES_EXPORT ServiceWorkerLinkResource final : public LinkResource {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ServiceWorkerLinkResource);
 public:
 
-    static PassOwnPtrWillBeRawPtr<ServiceWorkerLinkResource> create(HTMLLinkElement* owner);
+    static RawPtr<ServiceWorkerLinkResource> create(HTMLLinkElement* owner);
 
     ~ServiceWorkerLinkResource() override;
 

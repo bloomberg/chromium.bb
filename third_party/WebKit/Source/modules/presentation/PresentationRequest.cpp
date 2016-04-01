@@ -71,7 +71,7 @@ ExecutionContext* PresentationRequest::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-bool PresentationRequest::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
+bool PresentationRequest::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::connectionavailable)
         UseCounter::count(getExecutionContext(), UseCounter::PresentationRequestConnectionAvailableEventListener);

@@ -35,10 +35,8 @@ namespace blink {
 class IDBFactory;
 class DOMWindow;
 
-class DOMWindowIndexedDatabase final : public NoBaseWillBeGarbageCollected<DOMWindowIndexedDatabase>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowIndexedDatabase);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowIndexedDatabase);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowIndexedDatabase);
+class DOMWindowIndexedDatabase final : public GarbageCollected<DOMWindowIndexedDatabase>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(DOMWindowIndexedDatabase);
 public:
     static DOMWindowIndexedDatabase& from(LocalDOMWindow&);
 
@@ -55,8 +53,8 @@ private:
     IDBFactory* indexedDB();
     static const char* supplementName();
 
-    RawPtrWillBeMember<LocalDOMWindow> m_window;
-    PersistentWillBeMember<IDBFactory> m_idbFactory;
+    Member<LocalDOMWindow> m_window;
+    Member<IDBFactory> m_idbFactory;
 };
 
 } // namespace blink

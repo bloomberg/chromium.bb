@@ -14,9 +14,9 @@ PushController::PushController(WebPushClient* client)
 {
 }
 
-PassOwnPtrWillBeRawPtr<PushController> PushController::create(WebPushClient* client)
+RawPtr<PushController> PushController::create(WebPushClient* client)
 {
-    return adoptPtrWillBeNoop(new PushController(client));
+    return new PushController(client);
 }
 
 WebPushClient& PushController::clientFrom(LocalFrame* frame)

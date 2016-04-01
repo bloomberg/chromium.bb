@@ -313,7 +313,7 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
 
         StyleBuilder::applyProperty(CSSPropertyWebkitFilter, resolverState, m_filterValue.get());
         resolverState.loadPendingResources();
-        RefPtrWillBeRawPtr<FilterEffectBuilder> filterEffectBuilder = FilterEffectBuilder::create();
+        RawPtr<FilterEffectBuilder> filterEffectBuilder = FilterEffectBuilder::create();
 
         // We can't reuse m_fillPaint and m_strokePaint for the filter, since these incorporate
         // the global alpha, which isn't applicable here.
@@ -328,7 +328,7 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
         filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom, &floatCanvasSize, &fillPaintForFilter, &strokePaintForFilter);
 
         SkiaImageFilterBuilder imageFilterBuilder;
-        RefPtrWillBeRawPtr<FilterEffect> lastEffect = filterEffectBuilder->lastEffect();
+        RawPtr<FilterEffect> lastEffect = filterEffectBuilder->lastEffect();
         m_resolvedFilter = imageFilterBuilder.build(lastEffect.get(), ColorSpaceDeviceRGB);
         if (m_resolvedFilter) {
             updateFilterReferences(toHTMLCanvasElement(styleResolutionHost), context, filterStyle->filter());
@@ -432,7 +432,7 @@ void CanvasRenderingContext2DState::setShadowColor(SkColor shadowColor)
     shadowParameterChanged();
 }
 
-void CanvasRenderingContext2DState::setFilter(PassRefPtrWillBeRawPtr<CSSValue> filterValue)
+void CanvasRenderingContext2DState::setFilter(RawPtr<CSSValue> filterValue)
 {
     m_filterValue = filterValue;
     m_resolvedFilter.clear();

@@ -44,9 +44,9 @@ const char* WorkerGlobalScopeCrypto::supplementName()
     return "WorkerGlobalScopeCrypto";
 }
 
-WorkerGlobalScopeCrypto& WorkerGlobalScopeCrypto::from(WillBeHeapSupplementable<WorkerGlobalScope>& context)
+WorkerGlobalScopeCrypto& WorkerGlobalScopeCrypto::from(HeapSupplementable<WorkerGlobalScope>& context)
 {
-    WorkerGlobalScopeCrypto* supplement = static_cast<WorkerGlobalScopeCrypto*>(WillBeHeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
+    WorkerGlobalScopeCrypto* supplement = static_cast<WorkerGlobalScopeCrypto*>(HeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
     if (!supplement) {
         supplement = new WorkerGlobalScopeCrypto();
         provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -54,7 +54,7 @@ WorkerGlobalScopeCrypto& WorkerGlobalScopeCrypto::from(WillBeHeapSupplementable<
     return *supplement;
 }
 
-Crypto* WorkerGlobalScopeCrypto::crypto(WillBeHeapSupplementable<WorkerGlobalScope>& context)
+Crypto* WorkerGlobalScopeCrypto::crypto(HeapSupplementable<WorkerGlobalScope>& context)
 {
     return WorkerGlobalScopeCrypto::from(context).crypto();
 }
@@ -69,7 +69,7 @@ Crypto* WorkerGlobalScopeCrypto::crypto() const
 DEFINE_TRACE(WorkerGlobalScopeCrypto)
 {
     visitor->trace(m_crypto);
-    WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
+    HeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
 } // namespace blink

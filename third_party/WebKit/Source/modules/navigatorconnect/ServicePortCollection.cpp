@@ -142,7 +142,7 @@ void ServicePortCollection::postMessage(WebServicePortID portId, const WebString
     RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().createFromWire(messageString);
 
     MessagePortArray* ports = MessagePort::entanglePorts(*getExecutionContext(), channels.release());
-    RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports, message.release());
+    RawPtr<Event> evt = MessageEvent::create(ports, message.release());
     // TODO(mek): Lookup ServicePort and set events source attribute.
     dispatchEvent(evt.release());
 }
@@ -153,7 +153,7 @@ void ServicePortCollection::dispatchConnectEvent(PassOwnPtr<WebServicePortConnec
     ServicePortConnectEventInit init;
     init.setTargetURL(targetURL.string());
     init.setOrigin(origin);
-    RefPtrWillBeRawPtr<Event> event = ServicePortConnectEvent::create(EventTypeNames::connect, init, observer);
+    RawPtr<Event> event = ServicePortConnectEvent::create(EventTypeNames::connect, init, observer);
     dispatchEvent(event.release());
     observer->didDispatchEvent();
 }

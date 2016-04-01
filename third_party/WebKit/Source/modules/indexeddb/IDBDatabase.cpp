@@ -160,9 +160,9 @@ void IDBDatabase::onComplete(int64_t transactionId)
     m_transactions.get(transactionId)->onComplete();
 }
 
-PassRefPtrWillBeRawPtr<DOMStringList> IDBDatabase::objectStoreNames() const
+RawPtr<DOMStringList> IDBDatabase::objectStoreNames() const
 {
-    RefPtrWillBeRawPtr<DOMStringList> objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
+    RawPtr<DOMStringList> objectStoreNames = DOMStringList::create(DOMStringList::IndexedDB);
     for (const auto& it : m_metadata.objectStores)
         objectStoreNames->append(it.value.name);
     objectStoreNames->sort();
@@ -378,7 +378,7 @@ void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::versionchange, oldVersion, newVersionNullable));
 }
 
-void IDBDatabase::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
+void IDBDatabase::enqueueEvent(RawPtr<Event> event)
 {
     ASSERT(!m_contextStopped);
     ASSERT(getExecutionContext());
@@ -388,7 +388,7 @@ void IDBDatabase::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
     m_enqueuedEvents.append(event);
 }
 
-DispatchEventResult IDBDatabase::dispatchEventInternal(PassRefPtrWillBeRawPtr<Event> event)
+DispatchEventResult IDBDatabase::dispatchEventInternal(RawPtr<Event> event)
 {
     IDB_TRACE("IDBDatabase::dispatchEvent");
     if (m_contextStopped || !getExecutionContext())

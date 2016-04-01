@@ -46,9 +46,9 @@ const char* WorkerGlobalScopeIndexedDatabase::supplementName()
     return "WorkerGlobalScopeIndexedDatabase";
 }
 
-WorkerGlobalScopeIndexedDatabase& WorkerGlobalScopeIndexedDatabase::from(WillBeHeapSupplementable<WorkerGlobalScope>& context)
+WorkerGlobalScopeIndexedDatabase& WorkerGlobalScopeIndexedDatabase::from(HeapSupplementable<WorkerGlobalScope>& context)
 {
-    WorkerGlobalScopeIndexedDatabase* supplement = static_cast<WorkerGlobalScopeIndexedDatabase*>(WillBeHeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
+    WorkerGlobalScopeIndexedDatabase* supplement = static_cast<WorkerGlobalScopeIndexedDatabase*>(HeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
     if (!supplement) {
         supplement = new WorkerGlobalScopeIndexedDatabase();
         provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -56,7 +56,7 @@ WorkerGlobalScopeIndexedDatabase& WorkerGlobalScopeIndexedDatabase::from(WillBeH
     return *supplement;
 }
 
-IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB(WillBeHeapSupplementable<WorkerGlobalScope>& context)
+IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB(HeapSupplementable<WorkerGlobalScope>& context)
 {
     return from(context).indexedDB();
 }
@@ -71,7 +71,7 @@ IDBFactory* WorkerGlobalScopeIndexedDatabase::indexedDB()
 DEFINE_TRACE(WorkerGlobalScopeIndexedDatabase)
 {
     visitor->trace(m_idbFactory);
-    WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
+    HeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
 } // namespace blink

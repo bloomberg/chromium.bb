@@ -43,7 +43,7 @@ class RTCDTMFSender final
     , public WebRTCDTMFSenderHandlerClient
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDTMFSender);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
+    USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCDTMFSender* create(ExecutionContext*, WebRTCPeerConnectionHandler*, MediaStreamTrack*, ExceptionState&);
@@ -75,7 +75,7 @@ public:
 private:
     RTCDTMFSender(ExecutionContext*, MediaStreamTrack*, PassOwnPtr<WebRTCDTMFSenderHandler>);
 
-    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
+    void scheduleDispatchEvent(RawPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);
 
     // WebRTCDTMFSenderHandlerClient
@@ -90,7 +90,7 @@ private:
     bool m_stopped;
 
     Timer<RTCDTMFSender> m_scheduledEventTimer;
-    WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
+    HeapVector<Member<Event>> m_scheduledEvents;
 };
 
 } // namespace blink

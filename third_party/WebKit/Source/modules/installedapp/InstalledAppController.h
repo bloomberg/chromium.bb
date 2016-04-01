@@ -15,8 +15,8 @@ namespace blink {
 class WebSecurityOrigin;
 
 class MODULES_EXPORT InstalledAppController final
-    : public NoBaseWillBeGarbageCollectedFinalized<InstalledAppController>, public WillBeHeapSupplement<LocalFrame>, public LocalFrameLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);
+    : public GarbageCollectedFinalized<InstalledAppController>, public HeapSupplement<LocalFrame>, public LocalFrameLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);
     WTF_MAKE_NONCOPYABLE(InstalledAppController);
 public:
     virtual ~InstalledAppController();

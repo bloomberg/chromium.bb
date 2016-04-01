@@ -46,7 +46,7 @@ public:
     ~MIDIInput() override { }
 
     EventListener* onmidimessage();
-    void setOnmidimessage(PassRefPtrWillBeRawPtr<EventListener>);
+    void setOnmidimessage(RawPtr<EventListener>);
 
     // EventTarget
     const AtomicString& interfaceName() const override { return EventTargetNames::MIDIInput; }
@@ -57,7 +57,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     MIDIInput(MIDIAccess*, const String& id, const String& manufacturer, const String& name, const String& version, MIDIAccessor::MIDIPortState);

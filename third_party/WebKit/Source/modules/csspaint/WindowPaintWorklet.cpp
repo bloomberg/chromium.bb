@@ -15,8 +15,6 @@ WindowPaintWorklet::WindowPaintWorklet(LocalDOMWindow& window)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(WindowPaintWorklet);
-
 const char* WindowPaintWorklet::supplementName()
 {
     return "WindowPaintWorklet";
@@ -25,7 +23,7 @@ const char* WindowPaintWorklet::supplementName()
 // static
 WindowPaintWorklet& WindowPaintWorklet::from(LocalDOMWindow& window)
 {
-    WindowPaintWorklet* supplement = static_cast<WindowPaintWorklet*>(WillBeHeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    WindowPaintWorklet* supplement = static_cast<WindowPaintWorklet*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new WindowPaintWorklet(window);
         provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -49,7 +47,7 @@ PaintWorklet* WindowPaintWorklet::paintWorklet(ExecutionContext* executionContex
 DEFINE_TRACE(WindowPaintWorklet)
 {
     visitor->trace(m_paintWorklet);
-    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
+    HeapSupplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

@@ -48,7 +48,7 @@ DEFINE_TRACE(DatabaseClient)
 
 DatabaseClient* DatabaseClient::fromPage(Page* page)
 {
-    return static_cast<DatabaseClient*>(WillBeHeapSupplement<Page>::from(page, supplementName()));
+    return static_cast<DatabaseClient*>(HeapSupplement<Page>::from(page, supplementName()));
 }
 
 DatabaseClient* DatabaseClient::from(ExecutionContext* context)
@@ -73,7 +73,7 @@ void DatabaseClient::setInspectorAgent(InspectorDatabaseAgent* agent)
     m_inspectorAgent = agent;
 }
 
-void provideDatabaseClientTo(Page& page, PassOwnPtrWillBeRawPtr<DatabaseClient> client)
+void provideDatabaseClientTo(Page& page, RawPtr<DatabaseClient> client)
 {
     page.provideSupplement(DatabaseClient::supplementName(), client);
 }

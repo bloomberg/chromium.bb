@@ -23,7 +23,7 @@ public:
 private:
     PaintWorklet(LocalFrame*, ExecutionContext*);
 
-    RefPtrWillBeMember<WorkletGlobalScope> m_paintWorkletGlobalScope;
+    Member<WorkletGlobalScope> m_paintWorkletGlobalScope;
 };
 
 } // namespace blink

@@ -36,8 +36,7 @@ class GeolocationController;
 class GeolocationPosition;
 class LocalFrame;
 
-class GeolocationClient : public NoBaseWillBeGarbageCollectedFinalized<GeolocationClient> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(GeolocationClient);
+class GeolocationClient : public GarbageCollectedFinalized<GeolocationClient> {
 public:
     virtual ~GeolocationClient() { }
 

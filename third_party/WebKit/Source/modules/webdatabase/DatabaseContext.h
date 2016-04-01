@@ -41,7 +41,7 @@ class SecurityOrigin;
 class DatabaseContext final
     : public GarbageCollectedFinalized<DatabaseContext>
     , public ActiveDOMObject {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DatabaseContext);
+    USING_GARBAGE_COLLECTED_MIXIN(DatabaseContext);
 public:
     friend class DatabaseManager;
 

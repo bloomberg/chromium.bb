@@ -62,7 +62,7 @@ protected:
     const AXObject* inheritsPresentationalRoleFrom() const override;
     virtual AccessibilityRole determineAccessibilityRole();
     virtual AccessibilityRole nativeAccessibilityRoleIgnoringAria() const;
-    String accessibilityDescriptionForElements(WillBeHeapVector<RawPtrWillBeMember<Element>> &elements) const;
+    String accessibilityDescriptionForElements(HeapVector<Member<Element>> &elements) const;
     void alterSliderValue(bool increase);
     String ariaAccessibilityDescription() const;
     String ariaAutoComplete() const;
@@ -202,7 +202,7 @@ protected:
     void computeAriaOwnsChildren(HeapVector<Member<AXObject>>& ownedChildren) const;
 
 private:
-    RawPtrWillBeMember<Node> m_node;
+    Member<Node> m_node;
 
     bool isNativeCheckboxInMixedState() const;
     String textFromDescendants(AXObjectSet& visited, bool recursive) const override;

@@ -30,7 +30,7 @@ class MODULES_EXPORT PresentationAvailability final
     , public PageLifecycleObserver
     , public WebPresentationAvailabilityObserver {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationAvailability);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
+    USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PresentationAvailability* take(ScriptPromiseResolver*, const KURL&, bool);
@@ -63,7 +63,7 @@ public:
 
 protected:
     // EventTarget implementation.
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     // Current state of the ActiveDOMObject. It is Active when created. It

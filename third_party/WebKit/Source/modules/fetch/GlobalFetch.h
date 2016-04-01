@@ -21,14 +21,14 @@ class WorkerGlobalScope;
 class GlobalFetch {
     STATIC_ONLY(GlobalFetch);
 public:
-    class MODULES_EXPORT ScopedFetcher : public WillBeGarbageCollectedMixin {
+    class MODULES_EXPORT ScopedFetcher : public GarbageCollectedMixin {
     public:
         virtual ~ScopedFetcher();
 
         virtual ScriptPromise fetch(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&) = 0;
 
-        static WeakPtrWillBeRawPtr<ScopedFetcher> from(DOMWindow&);
-        static WeakPtrWillBeRawPtr<ScopedFetcher> from(WorkerGlobalScope&);
+        static RawPtr<ScopedFetcher> from(DOMWindow&);
+        static RawPtr<ScopedFetcher> from(WorkerGlobalScope&);
 
         DECLARE_VIRTUAL_TRACE();
     };

@@ -42,17 +42,17 @@ namespace blink {
 class IDBVersionChangeEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create()
+    static RawPtr<IDBVersionChangeEvent> create()
     {
-        return adoptRefWillBeNoop(new IDBVersionChangeEvent());
+        return new IDBVersionChangeEvent();
     }
-    static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss dataLoss = WebIDBDataLossNone, const String& dataLossMessage = String())
+    static RawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, WebIDBDataLoss dataLoss = WebIDBDataLossNone, const String& dataLossMessage = String())
     {
-        return adoptRefWillBeNoop(new IDBVersionChangeEvent(eventType, oldVersion, newVersion, dataLoss, dataLossMessage));
+        return new IDBVersionChangeEvent(eventType, oldVersion, newVersion, dataLoss, dataLossMessage);
     }
-    static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, const IDBVersionChangeEventInit& initializer)
+    static RawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, const IDBVersionChangeEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new IDBVersionChangeEvent(eventType, initializer));
+        return new IDBVersionChangeEvent(eventType, initializer);
     }
 
     unsigned long long oldVersion() const { return m_oldVersion; }

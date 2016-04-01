@@ -107,10 +107,10 @@ public:
 private:
     RTCDataChannel(ExecutionContext*, PassOwnPtr<WebRTCDataChannelHandler>);
 
-    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
+    void scheduleDispatchEvent(RawPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
 
-    RawPtrWillBeMember<ExecutionContext> m_executionContext;
+    Member<ExecutionContext> m_executionContext;
 
     OwnPtr<WebRTCDataChannelHandler> m_handler;
 
@@ -123,7 +123,7 @@ private:
     BinaryType m_binaryType;
 
     Timer<RTCDataChannel> m_scheduledEventTimer;
-    WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
+    HeapVector<Member<Event>> m_scheduledEvents;
 
     unsigned m_bufferedAmountLowThreshold;
 

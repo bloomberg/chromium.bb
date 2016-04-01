@@ -19,7 +19,7 @@ WorkletConsole::~WorkletConsole()
 {
 }
 
-void WorkletConsole::reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
+void WorkletConsole::reportMessageToConsole(RawPtr<ConsoleMessage> consoleMessage)
 {
     m_scope->addConsoleMessage(consoleMessage);
 }

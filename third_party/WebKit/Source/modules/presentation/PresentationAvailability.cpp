@@ -64,7 +64,7 @@ ExecutionContext* PresentationAvailability::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-bool PresentationAvailability::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
+bool PresentationAvailability::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::change)
         UseCounter::count(getExecutionContext(), UseCounter::PresentationAvailabilityChangeEventListener);

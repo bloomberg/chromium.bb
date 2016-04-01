@@ -28,14 +28,14 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create()
+RawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create()
 {
     return adoptRefWillBeNoop(new MediaStreamTrackEvent);
 }
 
-PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack* track)
+RawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack* track)
 {
-    return adoptRefWillBeNoop(new MediaStreamTrackEvent(type, canBubble, cancelable, track));
+    return new MediaStreamTrackEvent(type, canBubble, cancelable, track);
 }
 
 

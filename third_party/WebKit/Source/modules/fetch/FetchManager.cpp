@@ -175,7 +175,7 @@ private:
     Member<SRIVerifier> m_integrityVerifier;
     bool m_didFinishLoading;
     bool m_isIsolatedWorld;
-    RawPtrWillBeMember<ExecutionContext> m_executionContext;
+    Member<ExecutionContext> m_executionContext;
 };
 
 FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request, bool isIsolatedWorld)

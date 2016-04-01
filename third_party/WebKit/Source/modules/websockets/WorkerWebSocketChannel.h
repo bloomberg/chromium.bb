@@ -147,7 +147,7 @@ public:
         bool waitForMethodCompletion(PassOwnPtr<ExecutionContextTask>);
 
         Member<WebSocketChannelClient> m_client;
-        RefPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
+        Member<WorkerGlobalScope> m_workerGlobalScope;
         RefPtr<WorkerLoaderProxy> m_loaderProxy;
         Member<WebSocketChannelSyncHelper> m_syncHelper;
         Member<Peer> m_peer;

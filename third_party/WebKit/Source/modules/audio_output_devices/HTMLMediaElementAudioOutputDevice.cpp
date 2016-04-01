@@ -28,7 +28,7 @@ private:
     SetSinkIdResolver(ScriptState*, HTMLMediaElement&, const String& sinkId);
     void timerFired(Timer<SetSinkIdResolver>*);
 
-    RefPtrWillBeMember<HTMLMediaElement> m_element;
+    Member<HTMLMediaElement> m_element;
     String m_sinkId;
     Timer<SetSinkIdResolver> m_timer;
 };
@@ -117,7 +117,7 @@ const char* HTMLMediaElementAudioOutputDevice::supplementName()
 
 HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::from(HTMLMediaElement& element)
 {
-    HTMLMediaElementAudioOutputDevice* supplement = static_cast<HTMLMediaElementAudioOutputDevice*>(WillBeHeapSupplement<HTMLMediaElement>::from(element, supplementName()));
+    HTMLMediaElementAudioOutputDevice* supplement = static_cast<HTMLMediaElementAudioOutputDevice*>(HeapSupplement<HTMLMediaElement>::from(element, supplementName()));
     if (!supplement) {
         supplement = new HTMLMediaElementAudioOutputDevice();
         provideTo(element, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -127,7 +127,7 @@ HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::from(HTMLM
 
 DEFINE_TRACE(HTMLMediaElementAudioOutputDevice)
 {
-    WillBeHeapSupplement<HTMLMediaElement>::trace(visitor);
+    HeapSupplement<HTMLMediaElement>::trace(visitor);
 }
 
 } // namespace blink

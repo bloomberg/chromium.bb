@@ -52,7 +52,7 @@ class MIDIOutputMap;
 class MIDIAccess final : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDIAccess>, public ActiveScriptWrappable, public ActiveDOMObject, public MIDIAccessorClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MIDIAccess);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
+    USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
 public:
     static MIDIAccess* create(PassOwnPtr<MIDIAccessor> accessor, bool sysexEnabled, const Vector<MIDIAccessInitializer::PortDescriptor>& ports, ExecutionContext* executionContext)
     {
@@ -66,7 +66,7 @@ public:
     MIDIOutputMap* outputs() const;
 
     EventListener* onstatechange();
-    void setOnstatechange(PassRefPtrWillBeRawPtr<EventListener>);
+    void setOnstatechange(RawPtr<EventListener>);
 
     bool sysexEnabled() const { return m_sysexEnabled; }
 

@@ -46,7 +46,7 @@ private:
     void setFailed(ExceptionCode, const String& errorMessage);
 
     // Keep media element alive until promise is fulfilled
-    RefPtrWillBeMember<HTMLMediaElement> m_element;
+    Member<HTMLMediaElement> m_element;
     Member<MediaKeys> m_newMediaKeys;
     bool m_madeReservation;
     Timer<SetMediaKeysHandler> m_timer;
@@ -300,7 +300,7 @@ const char* HTMLMediaElementEncryptedMedia::supplementName()
 
 HTMLMediaElementEncryptedMedia& HTMLMediaElementEncryptedMedia::from(HTMLMediaElement& element)
 {
-    HTMLMediaElementEncryptedMedia* supplement = static_cast<HTMLMediaElementEncryptedMedia*>(WillBeHeapSupplement<HTMLMediaElement>::from(element, supplementName()));
+    HTMLMediaElementEncryptedMedia* supplement = static_cast<HTMLMediaElementEncryptedMedia*>(HeapSupplement<HTMLMediaElement>::from(element, supplementName()));
     if (!supplement) {
         supplement = new HTMLMediaElementEncryptedMedia(element);
         provideTo(element, supplementName(), adoptPtrWillBeNoop(supplement));
@@ -341,7 +341,7 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(ScriptState* scriptSt
 }
 
 // Create a MediaEncryptedEvent for WD EME.
-static PassRefPtrWillBeRawPtr<Event> createEncryptedEvent(WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, unsigned initDataLength)
+static RawPtr<Event> createEncryptedEvent(WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, unsigned initDataLength)
 {
     MediaEncryptedEventInit initializer;
     initializer.setInitDataType(EncryptedMediaUtils::convertFromInitDataType(initDataType));
@@ -356,7 +356,7 @@ void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType ini
 {
     WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::encrypted");
 
-    RefPtrWillBeRawPtr<Event> event;
+    RawPtr<Event> event;
     if (m_mediaElement->isMediaDataCORSSameOrigin(m_mediaElement->getExecutionContext()->getSecurityOrigin())) {
         event = createEncryptedEvent(initDataType, initData, initDataLength);
     } else {
@@ -382,7 +382,7 @@ void HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey()
     // 2. If the media element's waiting for key value is false, queue a task
     //    to fire a simple event named waitingforkey at the media element.
     if (!m_isWaitingForKey) {
-        RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::waitingforkey);
+        RawPtr<Event> event = Event::create(EventTypeNames::waitingforkey);
         event->setTarget(m_mediaElement);
         m_mediaElement->scheduleEvent(event.release());
     }
@@ -413,7 +413,7 @@ DEFINE_TRACE(HTMLMediaElementEncryptedMedia)
 {
     visitor->trace(m_mediaElement);
     visitor->trace(m_mediaKeys);
-    WillBeHeapSupplement<HTMLMediaElement>::trace(visitor);
+    HeapSupplement<HTMLMediaElement>::trace(visitor);
 }
 
 } // namespace blink

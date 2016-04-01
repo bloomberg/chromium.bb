@@ -51,7 +51,7 @@ class WebContentDecryptionModule;
 // References are held by JS and HTMLMediaElement.
 // The WebContentDecryptionModule has the same lifetime as this object.
 class MediaKeys : public GarbageCollectedFinalized<MediaKeys>, public ActiveScriptWrappable, public ActiveDOMObject, public ScriptWrappable {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
+    USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static MediaKeys* create(ExecutionContext*, const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes, PassOwnPtr<WebContentDecryptionModule>);
@@ -107,7 +107,7 @@ private:
     // before this object. This is due to WebMediaPlayerImpl (owned by
     // HTMLMediaElement) possibly having a pointer to Decryptor created
     // by WebContentDecryptionModuleImpl (owned by this object).
-    RawPtrWillBeWeakMember<HTMLMediaElement> m_mediaElement;
+    WeakMember<HTMLMediaElement> m_mediaElement;
 
     // Keep track of whether this object has been reserved by HTMLMediaElement
     // (i.e. a setMediaKeys operation is in progress). Destruction of this

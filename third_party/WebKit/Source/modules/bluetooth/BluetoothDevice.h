@@ -37,7 +37,7 @@ class BluetoothDevice final
     USING_PRE_FINALIZER(BluetoothDevice, dispose);
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(BluetoothDevice);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
+    USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
 public:
     BluetoothDevice(ExecutionContext*, PassOwnPtr<WebBluetoothDevice>);
 

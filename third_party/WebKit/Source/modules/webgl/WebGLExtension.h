@@ -45,7 +45,7 @@ public:
     WebGLRenderingContextBase* context() const { return m_context.get(); }
 
 private:
-    RefPtrWillBeMember<WebGLRenderingContextBase> m_context;
+    Member<WebGLRenderingContextBase> m_context;
 };
 
 class WebGLExtension : public GarbageCollectedFinalized<WebGLExtension>, public ScriptWrappable {
@@ -79,7 +79,7 @@ protected:
 private:
     friend WebGLExtensionScopedContext;
 
-    RawPtrWillBeWeakMember<WebGLRenderingContextBase> m_context;
+    WeakMember<WebGLRenderingContextBase> m_context;
 };
 
 } // namespace blink

@@ -20,9 +20,9 @@ static const char overrideEnabled[] = "overrideEnabled";
 }
 
 // static
-PassOwnPtrWillBeRawPtr<DeviceOrientationInspectorAgent> DeviceOrientationInspectorAgent::create(Page* page)
+RawPtr<DeviceOrientationInspectorAgent> DeviceOrientationInspectorAgent::create(Page* page)
 {
-    return adoptPtrWillBeNoop(new DeviceOrientationInspectorAgent(*page));
+    return new DeviceOrientationInspectorAgent(*page);
 }
 
 DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent()

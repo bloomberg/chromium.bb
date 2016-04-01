@@ -183,7 +183,7 @@ ExecutionContext* PresentationConnection::getExecutionContext() const
     return frame()->document();
 }
 
-bool PresentationConnection::addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
+bool PresentationConnection::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::statechange)
         Deprecation::countDeprecation(getExecutionContext(), UseCounter::PresentationConnectionStateChangeEventListener);

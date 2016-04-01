@@ -41,19 +41,19 @@ class MIDIMessageEventInit;
 class MIDIMessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create()
+    static RawPtr<MIDIMessageEvent> create()
     {
-        return adoptRefWillBeNoop(new MIDIMessageEvent());
+        return new MIDIMessageEvent();
     }
 
-    static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create(double receivedTime, PassRefPtr<DOMUint8Array> data)
+    static RawPtr<MIDIMessageEvent> create(double receivedTime, PassRefPtr<DOMUint8Array> data)
     {
-        return adoptRefWillBeNoop(new MIDIMessageEvent(receivedTime, data));
+        return new MIDIMessageEvent(receivedTime, data);
     }
 
-    static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create(const AtomicString& type, const MIDIMessageEventInit& initializer)
+    static RawPtr<MIDIMessageEvent> create(const AtomicString& type, const MIDIMessageEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new MIDIMessageEvent(type, initializer));
+        return new MIDIMessageEvent(type, initializer);
     }
 
     double receivedTime() { return m_receivedTime; }

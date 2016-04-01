@@ -60,7 +60,7 @@ class ScriptState;
 
 class MODULES_EXPORT Notification final : public RefCountedGarbageCollectedEventTargetWithInlineData<Notification>, public ActiveScriptWrappable, public ActiveDOMObject, public WebNotificationDelegate {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Notification);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
+    USING_GARBAGE_COLLECTED_MIXIN(Notification);
     DEFINE_WRAPPERTYPEINFO();
 public:
     // Used for JavaScript instantiations of the Notification object. Will automatically schedule for
@@ -122,7 +122,7 @@ public:
 
 protected:
     // EventTarget interface.
-    DispatchEventResult dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) final;
+    DispatchEventResult dispatchEventInternal(RawPtr<Event>) final;
 
 private:
     Notification(ExecutionContext*, const WebNotificationData&);

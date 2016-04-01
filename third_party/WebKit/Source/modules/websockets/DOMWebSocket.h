@@ -154,7 +154,7 @@ private:
         // Dispatches the event if this queue is active.
         // Queues the event if this queue is suspended.
         // Does nothing otherwise.
-        void dispatch(PassRefPtrWillBeRawPtr<Event> /* event */);
+        void dispatch(RawPtr<Event> /* event */);
 
         bool isEmpty() const;
 
@@ -179,8 +179,8 @@ private:
         void resumeTimerFired(Timer<EventQueue>*);
 
         State m_state;
-        RawPtrWillBeMember<EventTarget> m_target;
-        WillBeHeapDeque<RefPtrWillBeMember<Event>> m_events;
+        Member<EventTarget> m_target;
+        HeapDeque<Member<Event>> m_events;
         Timer<EventQueue> m_resumeTimer;
     };
 

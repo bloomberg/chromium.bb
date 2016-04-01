@@ -71,7 +71,7 @@ DOMWebSocket::EventQueue::EventQueue(EventTarget* target)
 
 DOMWebSocket::EventQueue::~EventQueue() { stop(); }
 
-void DOMWebSocket::EventQueue::dispatch(PassRefPtrWillBeRawPtr<Event> event)
+void DOMWebSocket::EventQueue::dispatch(RawPtr<Event> event)
 {
     switch (m_state) {
     case Active:
@@ -126,7 +126,7 @@ void DOMWebSocket::EventQueue::dispatchQueuedEvents()
     if (m_state != Active)
         return;
 
-    WillBeHeapDeque<RefPtrWillBeMember<Event>> events;
+    HeapDeque<Member<Event>> events;
     events.swap(m_events);
     while (!events.isEmpty()) {
         if (m_state == Stopped || m_state == Suspended)

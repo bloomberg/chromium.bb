@@ -64,7 +64,7 @@ public:
     int64_t id() const { return m_metadata.id; }
     const String& name() const { return m_metadata.name; }
     ScriptValue keyPath(ScriptState*) const;
-    PassRefPtrWillBeRawPtr<DOMStringList> indexNames() const;
+    RawPtr<DOMStringList> indexNames() const;
     IDBTransaction* transaction() const { return m_transaction.get(); }
     bool autoIncrement() const { return m_metadata.autoIncrement; }
 

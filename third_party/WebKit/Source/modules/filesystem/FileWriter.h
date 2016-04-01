@@ -59,7 +59,7 @@ class FileWriter final
     , public WebFileWriterClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(FileWriterBase);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
+    USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 public:
     static FileWriter* create(ExecutionContext*);
     ~FileWriter() override;

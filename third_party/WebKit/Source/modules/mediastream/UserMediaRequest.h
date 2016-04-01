@@ -50,7 +50,7 @@ class MediaStreamDescriptor;
 class UserMediaController;
 
 class MODULES_EXPORT UserMediaRequest final : public GarbageCollectedFinalized<UserMediaRequest>, public ContextLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(UserMediaRequest);
+    USING_GARBAGE_COLLECTED_MIXIN(UserMediaRequest);
 public:
     static UserMediaRequest* create(ExecutionContext*, UserMediaController*, const MediaStreamConstraints& options, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*, MediaErrorState&);
     static UserMediaRequest* createForTesting(const WebMediaConstraints& audio, const WebMediaConstraints& video);
@@ -87,7 +87,7 @@ private:
     WebMediaConstraints m_audio;
     WebMediaConstraints m_video;
 
-    RawPtrWillBeMember<UserMediaController> m_controller;
+    Member<UserMediaController> m_controller;
 
     Member<NavigatorUserMediaSuccessCallback> m_successCallback;
     Member<NavigatorUserMediaErrorCallback> m_errorCallback;

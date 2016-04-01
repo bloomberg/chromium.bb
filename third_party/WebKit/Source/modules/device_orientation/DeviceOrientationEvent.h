@@ -38,13 +38,13 @@ class DeviceOrientationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~DeviceOrientationEvent() override;
-    static PassRefPtrWillBeRawPtr<DeviceOrientationEvent> create()
+    static RawPtr<DeviceOrientationEvent> create()
     {
         return adoptRefWillBeNoop(new DeviceOrientationEvent);
     }
-    static PassRefPtrWillBeRawPtr<DeviceOrientationEvent> create(const AtomicString& eventType, DeviceOrientationData* orientation)
+    static RawPtr<DeviceOrientationEvent> create(const AtomicString& eventType, DeviceOrientationData* orientation)
     {
-        return adoptRefWillBeNoop(new DeviceOrientationEvent(eventType, orientation));
+        return new DeviceOrientationEvent(eventType, orientation);
     }
 
     void initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, const Nullable<double>& alpha, const Nullable<double>& beta, const Nullable<double>& gamma, bool absolute);
@@ -64,7 +64,7 @@ private:
     DeviceOrientationEvent();
     DeviceOrientationEvent(const AtomicString& eventType, DeviceOrientationData*);
 
-    PersistentWillBeMember<DeviceOrientationData> m_orientation;
+    Member<DeviceOrientationData> m_orientation;
 };
 
 DEFINE_TYPE_CASTS(DeviceOrientationEvent, Event, event, event->interfaceName() == EventNames::DeviceOrientationEvent, event.interfaceName() == EventNames::DeviceOrientationEvent);

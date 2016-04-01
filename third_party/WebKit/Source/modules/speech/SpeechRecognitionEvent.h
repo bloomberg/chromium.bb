@@ -39,12 +39,12 @@ class Document;
 class SpeechRecognitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create();
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);
+    static RawPtr<SpeechRecognitionEvent> create();
+    static RawPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);
     ~SpeechRecognitionEvent() override;
 
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results);
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionEvent> createNoMatch(SpeechRecognitionResult*);
+    static RawPtr<SpeechRecognitionEvent> createResult(unsigned long resultIndex, const HeapVector<Member<SpeechRecognitionResult>>& results);
+    static RawPtr<SpeechRecognitionEvent> createNoMatch(SpeechRecognitionResult*);
 
     unsigned long resultIndex() const { return m_resultIndex; }
     SpeechRecognitionResultList* results() const { return m_results; }
@@ -64,7 +64,7 @@ private:
     SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, SpeechRecognitionResultList* results);
 
     unsigned long m_resultIndex;
-    PersistentWillBeMember<SpeechRecognitionResultList> m_results;
+    Member<SpeechRecognitionResultList> m_results;
 };
 
 } // namespace blink

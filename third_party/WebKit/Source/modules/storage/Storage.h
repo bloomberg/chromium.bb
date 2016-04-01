@@ -41,7 +41,7 @@ class LocalFrame;
 
 class Storage final : public GarbageCollectedFinalized<Storage>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Storage);
+    USING_GARBAGE_COLLECTED_MIXIN(Storage);
 public:
     static Storage* create(LocalFrame*, StorageArea*);
     virtual ~Storage();

@@ -214,7 +214,7 @@ private:
     Persistent<ScriptPromiseResolver> m_resolver;
 };
 
-CacheStorage* CacheStorage::create(WeakPtrWillBeRawPtr<GlobalFetch::ScopedFetcher> fetcher, WebServiceWorkerCacheStorage* webCacheStorage)
+CacheStorage* CacheStorage::create(RawPtr<GlobalFetch::ScopedFetcher> fetcher, WebServiceWorkerCacheStorage* webCacheStorage)
 {
     return new CacheStorage(fetcher, adoptPtr(webCacheStorage));
 }
@@ -325,7 +325,7 @@ ScriptPromise CacheStorage::matchImpl(ScriptState* scriptState, const Request* r
     return promise;
 }
 
-CacheStorage::CacheStorage(WeakPtrWillBeRawPtr<GlobalFetch::ScopedFetcher> fetcher, PassOwnPtr<WebServiceWorkerCacheStorage> webCacheStorage)
+CacheStorage::CacheStorage(RawPtr<GlobalFetch::ScopedFetcher> fetcher, PassOwnPtr<WebServiceWorkerCacheStorage> webCacheStorage)
     : m_scopedFetcher(fetcher)
     , m_webCacheStorage(webCacheStorage)
 {

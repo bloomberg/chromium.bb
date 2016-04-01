@@ -37,8 +37,8 @@ class MediaStreamTrackEvent final : public Event {
 public:
     ~MediaStreamTrackEvent() override;
 
-    static PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> create();
-    static PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack*);
+    static RawPtr<MediaStreamTrackEvent> create();
+    static RawPtr<MediaStreamTrackEvent> create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack*);
 
     MediaStreamTrack* track() const;
 
@@ -51,7 +51,7 @@ private:
     MediaStreamTrackEvent();
     MediaStreamTrackEvent(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack*);
 
-    PersistentWillBeMember<MediaStreamTrack> m_track;
+    Member<MediaStreamTrack> m_track;
 };
 
 } // namespace blink

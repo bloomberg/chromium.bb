@@ -52,7 +52,7 @@ private:
     void performCallback();
 
     Member<MediaStreamTrackSourcesCallback> m_callback;
-    RefPtrWillBeMember<ExecutionContext> m_executionContext;
+    Member<ExecutionContext> m_executionContext;
     SourceInfoVector m_sourceInfos;
 };
 

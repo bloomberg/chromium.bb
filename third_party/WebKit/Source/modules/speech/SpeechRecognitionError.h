@@ -50,9 +50,9 @@ public:
         ErrorCodeLanguageNotSupported = 8
     };
 
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionError> create(ErrorCode, const String&);
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionError> create();
-    static PassRefPtrWillBeRawPtr<SpeechRecognitionError> create(const AtomicString&, const SpeechRecognitionErrorInit&);
+    static RawPtr<SpeechRecognitionError> create(ErrorCode, const String&);
+    static RawPtr<SpeechRecognitionError> create();
+    static RawPtr<SpeechRecognitionError> create(const AtomicString&, const SpeechRecognitionErrorInit&);
 
     const String& error() { return m_error; }
     const String& message() { return m_message; }

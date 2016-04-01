@@ -66,7 +66,7 @@ class MediaKeySession final
     , private WebContentDecryptionModuleSession::Client {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaKeySession);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
+    USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
 public:
     static MediaKeySession* create(ScriptState*, MediaKeys*, WebEncryptedMediaSessionType);
     ~MediaKeySession() override;
@@ -119,7 +119,7 @@ private:
     // Called by LoadSessionResult when the session has been loaded.
     void finishLoad();
 
-    OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
+    Member<GenericEventQueue> m_asyncEventQueue;
     OwnPtr<WebContentDecryptionModuleSession> m_session;
 
     // Used to determine if MediaKeys is still active.

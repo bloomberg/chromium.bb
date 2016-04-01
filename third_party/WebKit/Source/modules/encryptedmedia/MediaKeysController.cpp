@@ -26,7 +26,7 @@ WebEncryptedMediaClient* MediaKeysController::encryptedMediaClient(ExecutionCont
 
 void MediaKeysController::provideMediaKeysTo(Page& page, MediaKeysClient* client)
 {
-    MediaKeysController::provideTo(page, supplementName(), adoptPtrWillBeNoop(new MediaKeysController(client)));
+    MediaKeysController::provideTo(page, supplementName(), new MediaKeysController(client));
 }
 
 } // namespace blink

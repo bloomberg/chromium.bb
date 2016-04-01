@@ -1096,7 +1096,7 @@ String AXLayoutObject::stringValue() const
         // This has to be overridden in the case where the selected item has an ARIA label.
         HTMLSelectElement* selectElement = toHTMLSelectElement(m_layoutObject->node());
         int selectedIndex = selectElement->selectedIndex();
-        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement->listItems();
+        const HeapVector<Member<HTMLElement>>& listItems = selectElement->listItems();
         if (selectedIndex >= 0 && static_cast<size_t>(selectedIndex) < listItems.size()) {
             const AtomicString& overriddenDescription = listItems[selectedIndex]->fastGetAttribute(aria_labelAttr);
             if (!overriddenDescription.isNull())
@@ -1851,7 +1851,7 @@ AXObject::AXRange AXLayoutObject::selectionUnderObject() const
         return AXRange();
 
     VisibleSelection selection = getLayoutObject()->frame()->selection().selection();
-    RefPtrWillBeRawPtr<Range> selectionRange = firstRangeOf(selection);
+    RawPtr<Range> selectionRange = firstRangeOf(selection);
     ContainerNode* parentNode = getNode()->parentNode();
     int nodeIndex = getNode()->nodeIndex();
     if (!selectionRange
@@ -1915,7 +1915,7 @@ int AXLayoutObject::indexForVisiblePosition(const VisiblePosition& position) con
     if (indexPosition.isNull())
         return 0;
 
-    RefPtrWillBeRawPtr<Range> range = Range::create(*getDocument());
+    RawPtr<Range> range = Range::create(*getDocument());
     range->setStart(getNode(), 0, IGNORE_EXCEPTION);
     range->setEnd(indexPosition, IGNORE_EXCEPTION);
 
@@ -2221,7 +2221,7 @@ bool AXLayoutObject::isTabItemSelected() const
     if (!focusedElement)
         return false;
 
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    HeapVector<Member<Element>> elements;
     elementsFromAttribute(elements, aria_controlsAttr);
 
     for (const auto& element : elements) {

@@ -22,7 +22,7 @@ public:
         Factory() {}
         ~Factory() override {}
 
-        PassOwnPtrWillBeRawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
+        RawPtr<CanvasRenderingContext> create(HTMLCanvasElement*, const CanvasContextCreationAttributes&, Document&) override;
         CanvasRenderingContext::ContextType getContextType() const override { return CanvasRenderingContext::ContextWebgl2; }
         void onError(HTMLCanvasElement*, const String& error) override;
     };
@@ -40,19 +40,19 @@ public:
 protected:
     WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes& requestedAttributes);
 
-    PersistentWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
-    PersistentWillBeMember<EXTColorBufferFloat> m_extColorBufferFloat;
-    PersistentWillBeMember<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
-    PersistentWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
-    PersistentWillBeMember<OESTextureFloatLinear> m_oesTextureFloatLinear;
-    PersistentWillBeMember<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
-    PersistentWillBeMember<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
-    PersistentWillBeMember<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
-    PersistentWillBeMember<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
-    PersistentWillBeMember<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
-    PersistentWillBeMember<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
-    PersistentWillBeMember<WebGLDebugShaders> m_webglDebugShaders;
-    PersistentWillBeMember<WebGLLoseContext> m_webglLoseContext;
+    Member<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
+    Member<EXTColorBufferFloat> m_extColorBufferFloat;
+    Member<EXTDisjointTimerQuery> m_extDisjointTimerQuery;
+    Member<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
+    Member<OESTextureFloatLinear> m_oesTextureFloatLinear;
+    Member<WebGLCompressedTextureASTC> m_webglCompressedTextureASTC;
+    Member<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
+    Member<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
+    Member<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
+    Member<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
+    Member<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
+    Member<WebGLDebugShaders> m_webglDebugShaders;
+    Member<WebGLLoseContext> m_webglLoseContext;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContext, CanvasRenderingContext, context,

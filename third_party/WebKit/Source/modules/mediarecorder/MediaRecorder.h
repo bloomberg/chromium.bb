@@ -28,7 +28,7 @@ class MODULES_EXPORT MediaRecorder final
     , public ActiveScriptWrappable
     , public ActiveDOMObject {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaRecorder);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
+    USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum class State {
@@ -90,7 +90,7 @@ private:
     void createBlobEvent(Blob*);
 
     void stopRecording();
-    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
+    void scheduleDispatchEvent(RawPtr<Event>);
     void dispatchScheduledEvent();
 
     Member<MediaStream> m_stream;
@@ -108,7 +108,7 @@ private:
     OwnPtr<WebMediaRecorderHandler> m_recorderHandler;
 
     Member<AsyncMethodRunner<MediaRecorder>> m_dispatchScheduledEventRunner;
-    WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
+    HeapVector<Member<Event>> m_scheduledEvents;
 };
 
 } // namespace blink

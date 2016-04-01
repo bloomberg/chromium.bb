@@ -24,7 +24,7 @@ class Presentation final
     : public GarbageCollectedFinalized<Presentation>
     , public ScriptWrappable
     , public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Presentation);
+    USING_GARBAGE_COLLECTED_MIXIN(Presentation);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Presentation* create(LocalFrame*);
