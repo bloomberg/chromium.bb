@@ -373,6 +373,48 @@ TEST_F(DataReductionProxyParamsTest, LoFiPreviewFieldTrial) {
   }
 }
 
+TEST_F(DataReductionProxyParamsTest, HoldbackEnabledFieldTrial) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_enabled;
+  } tests[] = {
+      {"Enabled", true},
+      {"Enabled_Control", true},
+      {"Disabled", false},
+      {"enabled", false},
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "DataCompressionProxyHoldback", test.trial_group_name));
+    EXPECT_EQ(test.expected_enabled, params::IsIncludedInHoldbackFieldTrial())
+        << test.trial_group_name;
+  }
+}
+
+TEST_F(DataReductionProxyParamsTest, PromoFieldTrial) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_enabled;
+  } tests[] = {
+      {"Enabled", true},
+      {"Enabled_Control", true},
+      {"Disabled", false},
+      {"enabled", false},
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "DataCompressionProxyPromoVisibility", test.trial_group_name));
+    EXPECT_EQ(test.expected_enabled, params::IsIncludedInPromoFieldTrial())
+        << test.trial_group_name;
+  }
+}
+
 TEST_F(DataReductionProxyParamsTest, GetConfigServiceURL) {
   const struct {
     std::string test_case;

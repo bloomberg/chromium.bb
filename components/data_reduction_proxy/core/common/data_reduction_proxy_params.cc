@@ -63,13 +63,13 @@ namespace data_reduction_proxy {
 namespace params {
 
 bool IsIncludedInPromoFieldTrial() {
-  return FieldTrialList::FindFullName(
-      "DataCompressionProxyPromoVisibility") == kEnabled;
+  return FieldTrialList::FindFullName("DataCompressionProxyPromoVisibility")
+             .find(kEnabled) == 0;
 }
 
 bool IsIncludedInHoldbackFieldTrial() {
-  return FieldTrialList::FindFullName(
-      "DataCompressionProxyHoldback") == kEnabled;
+  return FieldTrialList::FindFullName("DataCompressionProxyHoldback")
+             .find(kEnabled) == 0;
 }
 
 bool IsIncludedInAndroidOnePromoFieldTrial(const char* build_fingerprint) {
