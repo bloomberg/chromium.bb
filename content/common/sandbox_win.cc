@@ -414,6 +414,7 @@ bool AddPolicyForSandboxedProcess(sandbox::TargetPolicy* policy) {
   // Prevents the renderers from manipulating low-integrity processes.
   policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
   policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+  policy->SetLockdownDefaultDacl();
 
   if (sandbox::SBOX_ALL_OK !=  policy->SetAlternateDesktop(true)) {
     DLOG(WARNING) << "Failed to apply desktop security to the renderer";
