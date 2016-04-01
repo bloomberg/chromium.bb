@@ -151,10 +151,6 @@ class SCHEDULER_EXPORT TimeDomain {
   // only be accessed from the main thread.
   std::set<internal::TaskQueueImpl*> updatable_queue_set_;
 
-#if DCHECK_IS_ON()
-  std::set<internal::TaskQueueImpl*> registered_task_queues_;
-#endif
-
   Observer* observer_;  // NOT OWNED.
 
   base::ThreadChecker main_thread_checker_;
