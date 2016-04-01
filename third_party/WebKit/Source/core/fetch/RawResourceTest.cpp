@@ -171,6 +171,69 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
     EXPECT_EQ(0u, client->data().size());
 }
 
+TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
+{
+    RefPtrWillBeRawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    ResourceResponse response;
+    response.setHTTPStatusCode(200);
+    response.addHTTPHeaderField("keep-alive", "keep-alive value");
+    response.addHTTPHeaderField("expires", "expires value");
+    response.addHTTPHeaderField("last-modified", "last-modified value");
+    response.addHTTPHeaderField("proxy-authenticate", "proxy-authenticate value");
+    response.addHTTPHeaderField("proxy-connection", "proxy-connection value");
+    response.addHTTPHeaderField("x-custom", "custom value");
+    resource->responseReceived(response, nullptr);
+    resource->finish();
+    memoryCache()->add(resource.get());
+
+    // Simulate a successful revalidation.
+    resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
+
+    // Validate that these headers pre-update.
+    EXPECT_EQ("keep-alive value", resource->response().httpHeaderField("keep-alive"));
+    EXPECT_EQ("expires value", resource->response().httpHeaderField("expires"));
+    EXPECT_EQ("last-modified value", resource->response().httpHeaderField("last-modified"));
+    EXPECT_EQ("proxy-authenticate value", resource->response().httpHeaderField("proxy-authenticate"));
+    EXPECT_EQ("proxy-authenticate value", resource->response().httpHeaderField("proxy-authenticate"));
+    EXPECT_EQ("proxy-connection value", resource->response().httpHeaderField("proxy-connection"));
+    EXPECT_EQ("custom value", resource->response().httpHeaderField("x-custom"));
+
+    OwnPtr<DummyClient> client = adoptPtr(new DummyClient);
+    resource->addClient(client.get());
+
+    // Perform a revalidation step.
+    ResourceResponse revalidatingResponse;
+    revalidatingResponse.setHTTPStatusCode(304);
+    // Headers that aren't copied with an 304 code.
+    revalidatingResponse.addHTTPHeaderField("keep-alive", "garbage");
+    revalidatingResponse.addHTTPHeaderField("expires", "garbage");
+    revalidatingResponse.addHTTPHeaderField("last-modified", "garbage");
+    revalidatingResponse.addHTTPHeaderField("proxy-authenticate", "garbage");
+    revalidatingResponse.addHTTPHeaderField("proxy-connection", "garbage");
+    // Header that is updated with 304 code.
+    revalidatingResponse.addHTTPHeaderField("x-custom", "updated");
+    resource->responseReceived(revalidatingResponse, nullptr);
+
+    // Validate the original response.
+    EXPECT_EQ(200, resource->response().httpStatusCode());
+
+    // Validate that these headers are not updated.
+    EXPECT_EQ("keep-alive value", resource->response().httpHeaderField("keep-alive"));
+    EXPECT_EQ("expires value", resource->response().httpHeaderField("expires"));
+    EXPECT_EQ("last-modified value", resource->response().httpHeaderField("last-modified"));
+    EXPECT_EQ("proxy-authenticate value", resource->response().httpHeaderField("proxy-authenticate"));
+    EXPECT_EQ("proxy-authenticate value", resource->response().httpHeaderField("proxy-authenticate"));
+    EXPECT_EQ("proxy-connection value", resource->response().httpHeaderField("proxy-connection"));
+    EXPECT_EQ("updated", resource->response().httpHeaderField("x-custom"));
+
+    memoryCache()->remove(resource.get());
+
+    resource->removeClient(client.get());
+    EXPECT_FALSE(resource->hasClientsOrObservers());
+    EXPECT_FALSE(client->called());
+    EXPECT_EQ(0u, client->data().size());
+}
+
 TEST(RawResourceTest, AddClientDuringCallback)
 {
     RawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
