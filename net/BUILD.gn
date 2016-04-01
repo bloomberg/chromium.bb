@@ -1432,14 +1432,6 @@ bundle_data("net_unittests_bundle_data") {
 test("net_unittests") {
   sources = gypi_values.net_test_sources
 
-  if (is_ios) {
-    sources -= [
-      "websockets/websocket_stream_cookie_test.cc",
-      "websockets/websocket_stream_create_test_base.cc",
-      "websockets/websocket_stream_create_test_base.h",
-    ]
-  }
-
   configs += [
     "//build/config:precompiled_headers",
 
@@ -1451,7 +1443,6 @@ test("net_unittests") {
   deps = [
     ":balsa",
     ":extras",
-    ":http_server",
     ":net",
     ":net_unittests_bundle_data",
     ":simple_quic_tools",
@@ -1572,32 +1563,9 @@ test("net_unittests") {
     sources -= [ "ssl/openssl_client_key_store_unittest.cc" ]
   }
 
-  if (!enable_websockets) {
-    sources -= [
-      "server/http_connection_unittest.cc",
-      "server/http_server_response_info_unittest.cc",
-      "server/http_server_unittest.cc",
-      "server/web_socket_encoder_unittest.cc",
-      "websockets/websocket_basic_stream_test.cc",
-      "websockets/websocket_channel_test.cc",
-      "websockets/websocket_deflate_parameters_test.cc",
-      "websockets/websocket_deflate_predictor_impl_test.cc",
-      "websockets/websocket_deflate_stream_test.cc",
-      "websockets/websocket_deflater_test.cc",
-      "websockets/websocket_end_to_end_test.cc",
-      "websockets/websocket_errors_test.cc",
-      "websockets/websocket_extension_parser_test.cc",
-      "websockets/websocket_extension_test.cc",
-      "websockets/websocket_frame_parser_test.cc",
-      "websockets/websocket_frame_test.cc",
-      "websockets/websocket_handshake_challenge_test.cc",
-      "websockets/websocket_handshake_stream_create_helper_test.cc",
-      "websockets/websocket_inflater_test.cc",
-      "websockets/websocket_stream_test.cc",
-      "websockets/websocket_test_util.cc",
-      "websockets/websocket_test_util.h",
-    ]
-    deps -= [ ":http_server" ]
+  if (enable_websockets) {
+    sources += gypi_values.net_websockets_test_sources
+    deps += [ ":http_server" ]
   }
 
   if (disable_file_support) {

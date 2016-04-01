@@ -136,7 +136,6 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../url/url.gyp:url_lib',
         'balsa',
-        'http_server',
         'net',
         'net_quic_proto',
         'net_derived_sources',
@@ -263,12 +262,11 @@
               'ssl/openssl_client_key_store_unittest.cc',
             ],
         }],
-        [ 'enable_websockets != 1', {
-            'sources/': [
-              ['exclude', '^websockets/'],
-              ['exclude', '^server/'],
+        [ 'enable_websockets == 1', {
+            'sources': [
+              '<@(net_websockets_test_sources)',
             ],
-            'dependencies!': [
+            'dependencies': [
               'http_server',
             ],
         }],
