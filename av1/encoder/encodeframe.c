@@ -2646,7 +2646,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   init_encode_frame_mb_context(cpi);
   cm->use_prev_frame_mvs =
       !cm->error_resilient_mode && cm->width == cm->last_width &&
-      cm->height == cm->last_height && !cm->intra_only && cm->last_show_frame;
+      cm->height == cm->last_height && !cm->intra_only &&
+      cm->last_show_frame && (cm->last_frame_type != KEY_FRAME);
   // Special case: set prev_mi to NULL when the previous mode info
   // context cannot be used.
   cm->prev_mi =
