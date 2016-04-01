@@ -4166,171 +4166,6 @@
             "-chrome_internal"
         ]
     },
-    "cave-chrome-pfq": {
-        "_template": "chrome-pfq",
-        "boards": [
-            "cave"
-        ],
-        "important": false,
-        "manifest": "official.xml"
-    },
-    "cave-chromium-pfq": {
-        "_template": "chromium-pfq",
-        "boards": [
-            "cave"
-        ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
-    "cave-compile-only-pre-cq": {
-        "_template": "compile-only-pre-cq",
-        "boards": [
-            "cave"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "cave-firmware": {
-        "_template": "firmware",
-        "boards": [
-            "cave"
-        ],
-        "manifest": "official.xml",
-        "useflags": [
-            "chrome_internal",
-            "chromeless_tty"
-        ]
-    },
-    "cave-full": {
-        "_template": "full",
-        "boards": [
-            "cave"
-        ],
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
-    "cave-no-vmtest-pre-cq": {
-        "_template": "no-vmtest-pre-cq",
-        "boards": [
-            "cave"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "cave-paladin": {
-        "_template": "paladin",
-        "boards": [
-            "cave"
-        ],
-        "description": "Commit Queue (internal)",
-        "important": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "cave-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "cave"
-        ]
-    },
-    "cave-pre-cq": {
-        "_template": "pre-cq",
-        "boards": [
-            "cave"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "cave-release": {
-        "_template": "release",
-        "boards": [
-            "cave"
-        ]
-    },
-    "cave-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "cave"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "cave"
-                ],
-                "grouped": true,
-                "name": "cave-release-afdo-generate"
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "cave"
-                ],
-                "grouped": true,
-                "name": "cave-release-afdo-use"
-            }
-        ]
-    },
-    "cave-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "cave"
-        ]
-    },
-    "cave-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "cave"
-        ]
-    },
-    "cave-tot-chrome-pfq-informational": {
-        "_template": "chrome-pfq-informational",
-        "boards": [
-            "cave"
-        ],
-        "manifest": "official.xml"
-    },
-    "cave-tot-chromium-pfq-informational": {
-        "_template": "chromium-pfq-informational",
-        "boards": [
-            "cave"
-        ],
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
     "celes-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -8021,22 +7856,6 @@
             {
                 "_template": "full",
                 "boards": [
-                    "cave"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "cave-full",
-                "prebuilts": "public",
-                "unittests": null,
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "_template": "full",
-                "boards": [
                     "chell"
                 ],
                 "build_packages_in_background": true,
@@ -8067,7 +7886,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: glados, cave, chell, glados-cheets)",
+        "description": "Full Builds; Group config (boards: glados, chell, glados-cheets)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -8182,18 +8001,6 @@
             {
                 "_template": "release",
                 "boards": [
-                    "cave"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "cave-release",
-                "unittests": null,
-                "vm_tests": []
-            },
-            {
-                "_template": "release",
-                "boards": [
                     "chell"
                 ],
                 "build_packages_in_background": true,
@@ -8216,7 +8023,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: glados, cave, chell, glados-cheets)"
+        "description": "Release Builds (canary) (internal); Group config (boards: glados, chell, glados-cheets)"
     },
     "glados-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
