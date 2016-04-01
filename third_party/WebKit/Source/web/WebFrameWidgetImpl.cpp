@@ -35,6 +35,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/PlainTextRange.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
@@ -199,7 +200,10 @@ void WebFrameWidgetImpl::sendResizeEventAndRepaint()
 
 void WebFrameWidgetImpl::resizeVisualViewport(const WebSize& newSize)
 {
-    // FIXME: Implement visual viewport for out-of-process iframes.
+    // TODO(alexmos, kenrb): resizing behavior such as this should be changed
+    // to use Page messages.  https://crbug.com/599688.
+    page()->frameHost().visualViewport().setSize(newSize);
+    page()->frameHost().visualViewport().clampToBoundaries();
 }
 
 void WebFrameWidgetImpl::updateMainFrameLayoutSize()

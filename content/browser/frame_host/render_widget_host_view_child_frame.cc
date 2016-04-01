@@ -121,6 +121,27 @@ gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() const {
   return rect;
 }
 
+gfx::Size RenderWidgetHostViewChildFrame::GetVisibleViewportSize() const {
+  // For subframes, the visual viewport corresponds to the main frame size, so
+  // this bubbles up to the parent until it hits the main frame's
+  // RenderWidgetHostView.
+  //
+  // Currently this excludes webview guests, since they expect the visual
+  // viewport to return the guest's size rather than the page's; one reason why
+  // is that Blink ends up using the visual viewport to calculate things like
+  // window.innerWidth/innerHeight for main frames, and a guest is considered
+  // to be a main frame.  This should be cleaned up eventually.
+  bool is_guest = BrowserPluginGuest::IsGuest(RenderViewHostImpl::From(host_));
+  if (frame_connector_ && !is_guest) {
+    RenderWidgetHostView* parent_view =
+        frame_connector_->GetParentRenderWidgetHostView();
+    // The parent_view can be null in unit tests when using a TestWebContents.
+    if (parent_view)
+      return parent_view->GetVisibleViewportSize();
+  }
+  return GetViewBounds().size();
+}
+
 gfx::Vector2dF RenderWidgetHostViewChildFrame::GetLastScrollOffset() const {
   return last_scroll_offset_;
 }
