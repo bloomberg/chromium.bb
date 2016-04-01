@@ -20,7 +20,7 @@ class HTMLSelectElement;
 
 class PopupMenuImpl final : public PopupMenu, public PagePopupClient {
 public:
-    static PassRefPtrWillBeRawPtr<PopupMenuImpl> create(ChromeClientImpl*, HTMLSelectElement&);
+    static RawPtr<PopupMenuImpl> create(ChromeClientImpl*, HTMLSelectElement&);
     ~PopupMenuImpl() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -53,8 +53,8 @@ private:
     Locale& locale() override;
     void didClosePopup() override;
 
-    RawPtrWillBeMember<ChromeClientImpl> m_chromeClient;
-    RawPtrWillBeMember<HTMLSelectElement> m_ownerElement;
+    Member<ChromeClientImpl> m_chromeClient;
+    Member<HTMLSelectElement> m_ownerElement;
     PagePopup* m_popup;
     bool m_needsUpdate;
 };

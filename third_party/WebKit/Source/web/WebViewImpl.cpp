@@ -279,9 +279,9 @@ UserGestureNotifier::~UserGestureNotifier()
 
 class EmptyEventListener final : public EventListener {
 public:
-    static PassRefPtrWillBeRawPtr<EmptyEventListener> create()
+    static RawPtr<EmptyEventListener> create()
     {
-        return adoptRefWillBeNoop(new EmptyEventListener());
+        return new EmptyEventListener();
     }
 
     bool operator==(const EventListener& other) const override
@@ -854,7 +854,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(const WebGestureEvent& event
 
             if (m_webSettings->multiTargetTapNotificationEnabled()) {
                 Vector<IntRect> goodTargets;
-                WillBeHeapVector<RawPtrWillBeMember<Node>> highlightNodes;
+                HeapVector<Member<Node>> highlightNodes;
                 findGoodTouchTargets(boundingBox, mainFrameImpl()->frame(), goodTargets, highlightNodes);
                 // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
                 // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
@@ -1093,7 +1093,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
         return WebInputEventResult::HandledSystem;
     }
 
-    RefPtrWillBeRawPtr<Frame> focusedFrame = focusedCoreFrame();
+    RawPtr<Frame> focusedFrame = focusedCoreFrame();
     if (focusedFrame && focusedFrame->isRemoteFrame()) {
         WebRemoteFrameImpl* webFrame = WebRemoteFrameImpl::fromFrame(*toRemoteFrame(focusedFrame.get()));
         webFrame->client()->forwardInputEvent(&event);
@@ -1407,13 +1407,13 @@ void WebViewImpl::enableTapHighlightAtPoint(const GestureEventWithHitTestResults
 {
     Node* touchNode = bestTapNode(targetedTapEvent);
 
-    WillBeHeapVector<RawPtrWillBeMember<Node>> highlightNodes;
+    HeapVector<Member<Node>> highlightNodes;
     highlightNodes.append(touchNode);
 
     enableTapHighlights(highlightNodes);
 }
 
-void WebViewImpl::enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node>>& highlightNodes)
+void WebViewImpl::enableTapHighlights(HeapVector<Member<Node>>& highlightNodes)
 {
     if (highlightNodes.isEmpty())
         return;
@@ -1547,7 +1547,7 @@ WebInputEventResult WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& ev
 }
 #endif
 
-void WebViewImpl::showContextMenuAtPoint(float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
+void WebViewImpl::showContextMenuAtPoint(float x, float y, RawPtr<ContextMenuProvider> menuProvider)
 {
     if (!page()->mainFrame()->isLocalFrame())
         return;
@@ -2172,7 +2172,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
     if (m_mouseCaptureNode && WebInputEvent::isMouseEventType(inputEvent.type)) {
         TRACE_EVENT1("input", "captured mouse event", "type", inputEvent.type);
         // Save m_mouseCaptureNode since mouseCaptureLost() will clear it.
-        RefPtrWillBeRawPtr<Node> node = m_mouseCaptureNode;
+        RawPtr<Node> node = m_mouseCaptureNode;
 
         // Not all platforms call mouseCaptureLost() directly.
         if (inputEvent.type == WebInputEvent::MouseUp)
@@ -2248,7 +2248,7 @@ void WebViewImpl::setFocus(bool enable)
     m_page->focusController().setFocused(enable);
     if (enable) {
         m_page->focusController().setActive(true);
-        RefPtrWillBeRawPtr<LocalFrame> focusedFrame = m_page->focusController().focusedFrame();
+        RawPtr<LocalFrame> focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame) {
             Element* element = focusedFrame->document()->focusedElement();
             if (element && focusedFrame->selection().selection().isNone()) {
@@ -2280,7 +2280,7 @@ void WebViewImpl::setFocus(bool enable)
         if (!frame)
             return;
 
-        RefPtrWillBeRawPtr<LocalFrame> focusedFrame = m_page->focusController().focusedFrame();
+        RawPtr<LocalFrame> focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame) {
             // Finish an ongoing composition to delete the composition node.
             if (focusedFrame->inputMethodController().hasComposition()) {
@@ -2901,17 +2901,17 @@ void WebViewImpl::setInitialFocus(bool reverse)
 
 void WebViewImpl::clearFocusedElement()
 {
-    RefPtrWillBeRawPtr<Frame> frame = focusedCoreFrame();
+    RawPtr<Frame> frame = focusedCoreFrame();
     if (!frame || !frame->isLocalFrame())
         return;
 
     LocalFrame* localFrame = toLocalFrame(frame.get());
 
-    RefPtrWillBeRawPtr<Document> document = localFrame->document();
+    RawPtr<Document> document = localFrame->document();
     if (!document)
         return;
 
-    RefPtrWillBeRawPtr<Element> oldFocusedElement = document->focusedElement();
+    RawPtr<Element> oldFocusedElement = document->focusedElement();
     document->clearFocusedElement();
     if (!oldFocusedElement)
         return;
@@ -3405,7 +3405,7 @@ void WebViewImpl::updateMainFrameLayoutSize()
     if (m_shouldAutoResize || !mainFrameImpl())
         return;
 
-    RefPtrWillBeRawPtr<FrameView> view = mainFrameImpl()->frameView();
+    RawPtr<FrameView> view = mainFrameImpl()->frameView();
     if (!view)
         return;
 
@@ -3490,11 +3490,11 @@ void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
                                            const WebPoint& location)
 {
     HitTestResult result = hitTestResultForViewportPos(location);
-    RefPtrWillBeRawPtr<Node> node = result.innerNode();
+    RawPtr<Node> node = result.innerNode();
     if (!isHTMLVideoElement(*node) && !isHTMLAudioElement(*node))
         return;
 
-    RefPtrWillBeRawPtr<HTMLMediaElement> mediaElement = static_pointer_cast<HTMLMediaElement>(node);
+    RawPtr<HTMLMediaElement> mediaElement = static_pointer_cast<HTMLMediaElement>(node);
     switch (action.type) {
     case WebMediaPlayerAction::Play:
         if (action.enable)
@@ -3521,7 +3521,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
 {
     // FIXME: Location is probably in viewport coordinates
     HitTestResult result = hitTestResultForRootFramePos(location);
-    RefPtrWillBeRawPtr<Node> node = result.innerNode();
+    RawPtr<Node> node = result.innerNode();
     if (!isHTMLObjectElement(*node) && !isHTMLEmbedElement(*node))
         return;
 

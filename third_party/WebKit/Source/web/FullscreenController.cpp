@@ -45,9 +45,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<FullscreenController> FullscreenController::create(WebViewImpl* webViewImpl)
+RawPtr<FullscreenController> FullscreenController::create(WebViewImpl* webViewImpl)
 {
-    return adoptPtrWillBeNoop(new FullscreenController(webViewImpl));
+    return new FullscreenController(webViewImpl);
 }
 
 FullscreenController::FullscreenController(WebViewImpl* webViewImpl)
@@ -63,7 +63,7 @@ void FullscreenController::didEnterFullScreen()
     if (!m_provisionalFullScreenElement)
         return;
 
-    RefPtrWillBeRawPtr<Element> element = m_provisionalFullScreenElement.release();
+    RawPtr<Element> element = m_provisionalFullScreenElement.release();
     Document& document = element->document();
     m_fullScreenFrame = document.frame();
 

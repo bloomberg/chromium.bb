@@ -11,9 +11,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<AudioOutputDeviceClientImpl> AudioOutputDeviceClientImpl::create()
+RawPtr<AudioOutputDeviceClientImpl> AudioOutputDeviceClientImpl::create()
 {
-    return adoptPtrWillBeNoop(new AudioOutputDeviceClientImpl());
+    return new AudioOutputDeviceClientImpl();
 }
 
 AudioOutputDeviceClientImpl::AudioOutputDeviceClientImpl()

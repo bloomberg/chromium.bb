@@ -103,11 +103,11 @@ const char* textTransformToString(ETextTransform transform)
 } // anonymous namespace
 
 class PopupMenuCSSFontSelector : public CSSFontSelector, private CSSFontSelectorClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PopupMenuCSSFontSelector);
+    USING_GARBAGE_COLLECTED_MIXIN(PopupMenuCSSFontSelector);
 public:
-    static PassRefPtrWillBeRawPtr<PopupMenuCSSFontSelector> create(Document* document, CSSFontSelector* ownerFontSelector)
+    static RawPtr<PopupMenuCSSFontSelector> create(Document* document, CSSFontSelector* ownerFontSelector)
     {
-        return adoptRefWillBeNoop(new PopupMenuCSSFontSelector(document, ownerFontSelector));
+        return new PopupMenuCSSFontSelector(document, ownerFontSelector);
     }
 
     ~PopupMenuCSSFontSelector();
@@ -123,7 +123,7 @@ private:
 
     void fontsNeedUpdate(CSSFontSelector*) override;
 
-    RefPtrWillBeMember<CSSFontSelector> m_ownerFontSelector;
+    Member<CSSFontSelector> m_ownerFontSelector;
 };
 
 PopupMenuCSSFontSelector::PopupMenuCSSFontSelector(Document* document, CSSFontSelector* ownerFontSelector)
@@ -233,9 +233,9 @@ public:
 
 // ----------------------------------------------------------------
 
-PassRefPtrWillBeRawPtr<PopupMenuImpl> PopupMenuImpl::create(ChromeClientImpl* chromeClient, HTMLSelectElement& ownerElement)
+RawPtr<PopupMenuImpl> PopupMenuImpl::create(ChromeClientImpl* chromeClient, HTMLSelectElement& ownerElement)
 {
-    return adoptRefWillBeNoop(new PopupMenuImpl(chromeClient, ownerElement));
+    return new PopupMenuImpl(chromeClient, ownerElement);
 }
 
 PopupMenuImpl::PopupMenuImpl(ChromeClientImpl* chromeClient, HTMLSelectElement& ownerElement)
@@ -273,7 +273,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     ItemIterationContext context(*ownerStyle, data);
     context.serializeBaseStyle();
     PagePopupClient::addString("children: [\n", data);
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = ownerElement.listItems();
+    const HeapVector<Member<HTMLElement>>& items = ownerElement.listItems();
     for (; context.m_listIndex < items.size(); ++context.m_listIndex) {
         Element& child = *items[context.m_listIndex];
         if (!isHTMLOptGroupElement(child.parentNode()))
@@ -406,7 +406,7 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
 {
     ASSERT(m_popup);
     ASSERT(m_ownerElement);
-    RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
+    RawPtr<PopupMenuImpl> protector(this);
     bool success;
     int listIndex = stringValue.toInt(&success);
     ASSERT(success);
@@ -423,7 +423,7 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
     // Other browsers dispatch click events before and after showing the popup.
     if (m_ownerElement) {
         PlatformMouseEvent event;
-        RefPtrWillBeRawPtr<Element> owner = &ownerElement();
+        RawPtr<Element> owner = &ownerElement();
         owner->dispatchMouseEvent(event, EventTypeNames::mouseup);
         owner->dispatchMouseEvent(event, EventTypeNames::click);
     }
@@ -442,7 +442,7 @@ void PopupMenuImpl::didClosePopup()
 {
     // Clearing m_popup first to prevent from trying to close the popup again.
     m_popup = nullptr;
-    RefPtrWillBeRawPtr<PopupMenuImpl> protector(this);
+    RawPtr<PopupMenuImpl> protector(this);
     if (m_ownerElement)
         m_ownerElement->popupDidHide();
 }
@@ -488,7 +488,7 @@ void PopupMenuImpl::updateFromElement()
     if (m_needsUpdate)
         return;
     m_needsUpdate = true;
-    ownerElement().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&PopupMenuImpl::update, PassRefPtrWillBeRawPtr<PopupMenuImpl>(this)));
+    ownerElement().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&PopupMenuImpl::update, RawPtr<PopupMenuImpl>(this)));
 }
 
 void PopupMenuImpl::update()
@@ -512,7 +512,7 @@ void PopupMenuImpl::update()
     ItemIterationContext context(*m_ownerElement->computedStyle(), data.get());
     context.serializeBaseStyle();
     PagePopupClient::addString("children: [", data.get());
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = m_ownerElement->listItems();
+    const HeapVector<Member<HTMLElement>>& items = m_ownerElement->listItems();
     for (; context.m_listIndex < items.size(); ++context.m_listIndex) {
         Element& child = *items[context.m_listIndex];
         if (!isHTMLOptGroupElement(child.parentNode()))

@@ -348,7 +348,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
     SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
-    OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
+    RawPtr<WorkerClients> workerClients = WorkerClients::create();
     provideContentSettingsClientToWorker(workerClients.get(), m_contentSettingsClient.release());
     provideServiceWorkerGlobalScopeClientToWorker(workerClients.get(), ServiceWorkerGlobalScopeClientImpl::create(*m_workerContextClient));
     provideServiceWorkerContainerClientToWorker(workerClients.get(), adoptPtr(m_workerContextClient->createServiceWorkerProvider()));

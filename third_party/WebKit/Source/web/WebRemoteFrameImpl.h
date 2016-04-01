@@ -140,7 +140,7 @@ public:
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name, const AtomicString& uniqueName) override;
     RemoteFrame* frame() const override { return m_frame.get(); }
 
-    void setCoreFrame(PassRefPtrWillBeRawPtr<RemoteFrame>);
+    void setCoreFrame(RawPtr<RemoteFrame>);
 
     WebRemoteFrameClient* client() const { return m_client; }
 
@@ -178,8 +178,8 @@ private:
     bool isWebRemoteFrame() const override;
     WebRemoteFrame* toWebRemoteFrame() override;
 
-    OwnPtrWillBeMember<RemoteFrameClientImpl> m_frameClient;
-    RefPtrWillBeMember<RemoteFrame> m_frame;
+    Member<RemoteFrameClientImpl> m_frameClient;
+    Member<RemoteFrame> m_frame;
     WebRemoteFrameClient* m_client;
 
 #if ENABLE(OILPAN)

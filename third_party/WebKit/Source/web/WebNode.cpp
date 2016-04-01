@@ -257,7 +257,7 @@ void WebNode::querySelectorAll(const WebString& selector, WebVector<WebElement>&
     if (!m_private->isContainerNode())
         return;
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<StaticElementList> elements = toContainerNode(m_private.get())->querySelectorAll(selector, exceptionState);
+    RawPtr<StaticElementList> elements = toContainerNode(m_private.get())->querySelectorAll(selector, exceptionState);
     ec = exceptionState.code();
     if (exceptionState.hadException())
         return;
@@ -305,18 +305,18 @@ WebAXObject WebNode::accessibilityObject()
     return cache ? WebAXObject(cache->get(node)) : WebAXObject();
 }
 
-WebNode::WebNode(const PassRefPtrWillBeRawPtr<Node>& node)
+WebNode::WebNode(const RawPtr<Node>& node)
     : m_private(node)
 {
 }
 
-WebNode& WebNode::operator=(const PassRefPtrWillBeRawPtr<Node>& node)
+WebNode& WebNode::operator=(const RawPtr<Node>& node)
 {
     m_private = node;
     return *this;
 }
 
-WebNode::operator PassRefPtrWillBeRawPtr<Node>() const
+WebNode::operator RawPtr<Node>() const
 {
     return m_private.get();
 }

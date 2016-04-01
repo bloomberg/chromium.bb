@@ -158,20 +158,20 @@ WebImage WebElement::imageContents()
     return WebImage(unwrap<Element>()->imageContents());
 }
 
-WebElement::WebElement(const PassRefPtrWillBeRawPtr<Element>& elem)
+WebElement::WebElement(const RawPtr<Element>& elem)
     : WebNode(elem)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebElement, isElementNode());
 
-WebElement& WebElement::operator=(const PassRefPtrWillBeRawPtr<Element>& elem)
+WebElement& WebElement::operator=(const RawPtr<Element>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebElement::operator PassRefPtrWillBeRawPtr<Element>() const
+WebElement::operator RawPtr<Element>() const
 {
     return toElement(m_private.get());
 }

@@ -10,17 +10,17 @@
 
 namespace blink {
 
-class NotificationPermissionClientImpl : public NoBaseWillBeGarbageCollectedFinalized<NotificationPermissionClientImpl>, public NotificationPermissionClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NotificationPermissionClientImpl);
+class NotificationPermissionClientImpl : public GarbageCollectedFinalized<NotificationPermissionClientImpl>, public NotificationPermissionClient {
+    USING_GARBAGE_COLLECTED_MIXIN(NotificationPermissionClientImpl);
 public:
-    static PassOwnPtrWillBeRawPtr<NotificationPermissionClientImpl> create();
+    static RawPtr<NotificationPermissionClientImpl> create();
 
     ~NotificationPermissionClientImpl() override;
 
     // NotificationPermissionClient implementation.
     ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback*) override;
 
-    // NoBaseWillBeGarbageCollectedFinalized implementation.
+    // GarbageCollectedFinalized implementation.
     DEFINE_INLINE_VIRTUAL_TRACE() { NotificationPermissionClient::trace(visitor); }
 
 private:

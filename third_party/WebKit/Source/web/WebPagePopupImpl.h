@@ -106,8 +106,8 @@ private:
     WebWidgetClient* m_widgetClient;
     WebRect m_windowRectInScreen;
     WebViewImpl* m_webView;
-    OwnPtrWillBePersistent<Page> m_page;
-    OwnPtrWillBePersistent<PagePopupChromeClient> m_chromeClient;
+    Persistent<Page> m_page;
+    Persistent<PagePopupChromeClient> m_chromeClient;
     PagePopupClient* m_popupClient;
     bool m_closing;
 

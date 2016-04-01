@@ -40,13 +40,13 @@ namespace blink {
 class Worker;
 class WorkerGlobalScopeProxy;
 
-class WorkerGlobalScopeProxyProviderImpl final : public NoBaseWillBeGarbageCollectedFinalized<WorkerGlobalScopeProxyProviderImpl>, public WorkerGlobalScopeProxyProvider {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeProxyProviderImpl);
+class WorkerGlobalScopeProxyProviderImpl final : public GarbageCollectedFinalized<WorkerGlobalScopeProxyProviderImpl>, public WorkerGlobalScopeProxyProvider {
+    USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeProxyProviderImpl);
     WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProviderImpl);
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerGlobalScopeProxyProviderImpl> create()
+    static RawPtr<WorkerGlobalScopeProxyProviderImpl> create()
     {
-        return adoptPtrWillBeNoop(new WorkerGlobalScopeProxyProviderImpl());
+        return new WorkerGlobalScopeProxyProviderImpl();
     }
 
     ~WorkerGlobalScopeProxyProviderImpl() override { }

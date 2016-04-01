@@ -42,11 +42,10 @@ class WebServiceWorkerContextClient;
 class WebServiceWorkerResponse;
 class WebURL;
 
-class ServiceWorkerGlobalScopeClientImpl final : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>, public ServiceWorkerGlobalScopeClient {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ServiceWorkerGlobalScopeClientImpl);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClientImpl);
+class ServiceWorkerGlobalScopeClientImpl final : public GarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>, public ServiceWorkerGlobalScopeClient {
+    USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClientImpl);
 public:
-    static PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient> create(WebServiceWorkerContextClient&);
+    static RawPtr<ServiceWorkerGlobalScopeClient> create(WebServiceWorkerContextClient&);
     ~ServiceWorkerGlobalScopeClientImpl() override;
 
     void getClient(const WebString&, WebServiceWorkerClientCallbacks*) override;

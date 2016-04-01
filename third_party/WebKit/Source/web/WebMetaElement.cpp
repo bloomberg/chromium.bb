@@ -16,20 +16,20 @@ WebString WebMetaElement::computeEncoding() const
     return String(constUnwrap<HTMLMetaElement>()->computeEncoding().name());
 }
 
-WebMetaElement::WebMetaElement(const PassRefPtrWillBeRawPtr<HTMLMetaElement>& element)
+WebMetaElement::WebMetaElement(const RawPtr<HTMLMetaElement>& element)
     : WebElement(element)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebMetaElement, isHTMLMetaElement(constUnwrap<Node>()));
 
-WebMetaElement& WebMetaElement::operator=(const PassRefPtrWillBeRawPtr<HTMLMetaElement>& element)
+WebMetaElement& WebMetaElement::operator=(const RawPtr<HTMLMetaElement>& element)
 {
     m_private = element;
     return *this;
 }
 
-WebMetaElement::operator PassRefPtrWillBeRawPtr<HTMLMetaElement>() const
+WebMetaElement::operator RawPtr<HTMLMetaElement>() const
 {
     return toHTMLMetaElement(m_private.get());
 }

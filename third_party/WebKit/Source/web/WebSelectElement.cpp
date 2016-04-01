@@ -40,7 +40,7 @@ namespace blink {
 
 WebVector<WebElement> WebSelectElement::listItems() const
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& sourceItems = constUnwrap<HTMLSelectElement>()->listItems();
+    const HeapVector<Member<HTMLElement>>& sourceItems = constUnwrap<HTMLSelectElement>()->listItems();
     WebVector<WebElement> items(sourceItems.size());
     for (size_t i = 0; i < sourceItems.size(); ++i)
         items[i] = WebElement(sourceItems[i].get());
@@ -48,20 +48,20 @@ WebVector<WebElement> WebSelectElement::listItems() const
     return items;
 }
 
-WebSelectElement::WebSelectElement(const PassRefPtrWillBeRawPtr<HTMLSelectElement>& element)
+WebSelectElement::WebSelectElement(const RawPtr<HTMLSelectElement>& element)
     : WebFormControlElement(element)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebSelectElement, isHTMLSelectElement(constUnwrap<Node>()));
 
-WebSelectElement& WebSelectElement::operator=(const PassRefPtrWillBeRawPtr<HTMLSelectElement>& element)
+WebSelectElement& WebSelectElement::operator=(const RawPtr<HTMLSelectElement>& element)
 {
     m_private = element;
     return *this;
 }
 
-WebSelectElement::operator PassRefPtrWillBeRawPtr<HTMLSelectElement>() const
+WebSelectElement::operator RawPtr<HTMLSelectElement>() const
 {
     return toHTMLSelectElement(m_private.get());
 }

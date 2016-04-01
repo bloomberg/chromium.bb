@@ -81,7 +81,7 @@ public:
 
 private:
     // Specified frame which need to be serialized;
-    RawPtrWillBeMember<WebLocalFrameImpl> m_specifiedWebLocalFrameImpl;
+    Member<WebLocalFrameImpl> m_specifiedWebLocalFrameImpl;
     // Pointer of WebFrameSerializerClient
     WebFrameSerializerClient* m_client;
     // Pointer of WebFrameSerializer::LinkRewritingDelegate
@@ -100,12 +100,12 @@ private:
 
         const KURL& url;
         const WTF::TextEncoding& textEncoding;
-        RawPtrWillBeMember<Document> document;
+        Member<Document> document;
         bool isHTMLDocument; // document.isHTMLDocument()
         bool haveSeenDocType;
         bool haveAddedCharsetDeclaration;
         // This meta element need to be skipped when serializing DOM.
-        RawPtrWillBeMember<const Element> skipMetaElement;
+        Member<const Element> skipMetaElement;
         bool haveAddedXMLProcessingDirective;
         // Flag indicates whether we have added additional contents before end tag.
         // This flag will be re-assigned in each call of function

@@ -337,7 +337,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     modifierKey = static_cast<PlatformEvent::Modifiers>(PlatformEvent::MetaKey | PlatformEvent::NumLockOn | PlatformEvent::IsLeft);
 #endif
     PlatformKeyboardEvent platformKeyboardEventC(PlatformEvent::RawKeyDown, "", "", "67", "", "", 67, 0, false, modifierKey, 0.0);
-    RefPtrWillBeRawPtr<KeyboardEvent> keyEventC = KeyboardEvent::create(platformKeyboardEventC, 0);
+    RawPtr<KeyboardEvent> keyEventC = KeyboardEvent::create(platformKeyboardEventC, 0);
     toWebPluginContainerImpl(pluginContainerOneElement.pluginContainer())->handleEvent(keyEventC.get());
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 
@@ -346,7 +346,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     EXPECT_EQ(WebString(""), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 
     PlatformKeyboardEvent platformKeyboardEventInsert(PlatformEvent::RawKeyDown, "", "", "45", "", "", 45, 0, false, modifierKey, 0.0);
-    RefPtrWillBeRawPtr<KeyboardEvent> keyEventInsert = KeyboardEvent::create(platformKeyboardEventInsert, 0);
+    RawPtr<KeyboardEvent> keyEventInsert = KeyboardEvent::create(platformKeyboardEventInsert, 0);
     toWebPluginContainerImpl(pluginContainerOneElement.pluginContainer())->handleEvent(keyEventInsert.get());
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 }
@@ -427,7 +427,7 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest)
     webView->updateAllLifecyclePhases();
     runPendingTasks();
 
-    RefPtrWillBeRawPtr<WebPluginContainerImpl> pluginContainerImpl =
+    RawPtr<WebPluginContainerImpl> pluginContainerImpl =
         toWebPluginContainerImpl(getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin")));
     pluginContainerImpl->setFrameRect(IntRect(0, 0, 300, 300));
 
@@ -464,7 +464,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement)
     runPendingTasks();
 
     WebElement pluginElement = webView->mainFrame()->firstChild()->document().getElementById("translated-plugin");
-    RefPtrWillBeRawPtr<WebPluginContainerImpl> pluginContainerImpl = toWebPluginContainerImpl(pluginElement.pluginContainer());
+    RawPtr<WebPluginContainerImpl> pluginContainerImpl = toWebPluginContainerImpl(pluginElement.pluginContainer());
 
     ASSERT(pluginContainerImpl.get());
     pluginContainerImpl->setFrameRect(IntRect(0, 0, 300, 300));
@@ -494,7 +494,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin)
     runPendingTasks();
 
     WebElement pluginElement = webView->mainFrame()->document().getElementById("subpixel-positioned-plugin");
-    RefPtrWillBeRawPtr<WebPluginContainerImpl> pluginContainerImpl = toWebPluginContainerImpl(pluginElement.pluginContainer());
+    RawPtr<WebPluginContainerImpl> pluginContainerImpl = toWebPluginContainerImpl(pluginElement.pluginContainer());
 
     ASSERT(pluginContainerImpl.get());
 
@@ -545,7 +545,7 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest)
     webView->updateAllLifecyclePhases();
     runPendingTasks();
 
-    RefPtrWillBeRawPtr<WebPluginContainerImpl> pluginContainerImpl =
+    RawPtr<WebPluginContainerImpl> pluginContainerImpl =
         toWebPluginContainerImpl(getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin")));
     pluginContainerImpl->setFrameRect(IntRect(0, 0, 300, 300));
 
@@ -617,7 +617,7 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2)
 
     WebPluginContainerImpl* container = static_cast<WebPluginContainerImpl*>(getWebPluginContainer(webView, WebString::fromUTF8("plugin")));
     ASSERT_TRUE(container);
-    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(container->element());
+    RawPtr<Element> element = static_cast<RawPtr<Element>>(container->element());
     const auto* plugin = static_cast<const CompositedPlugin*>(container->plugin());
 
     OwnPtr<PaintController> paintController = PaintController::create();

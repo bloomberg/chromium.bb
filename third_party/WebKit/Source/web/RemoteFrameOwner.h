@@ -16,12 +16,12 @@ namespace blink {
 // 1. Allows the local frame's loader to retrieve sandbox flags associated with
 //    its owner element in another process.
 // 2. Trigger a load event on its owner element once it finishes a load.
-class RemoteFrameOwner final : public RefCountedWillBeGarbageCollectedFinalized<RemoteFrameOwner>, public FrameOwner {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameOwner);
+class RemoteFrameOwner final : public GarbageCollectedFinalized<RemoteFrameOwner>, public FrameOwner {
+    USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameOwner);
 public:
-    static PassRefPtrWillBeRawPtr<RemoteFrameOwner> create(SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
+    static RawPtr<RemoteFrameOwner> create(SandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
     {
-        return adoptRefWillBeNoop(new RemoteFrameOwner(flags, frameOwnerProperties));
+        return new RemoteFrameOwner(flags, frameOwnerProperties);
     }
 
     // FrameOwner overrides:
@@ -47,7 +47,7 @@ public:
 private:
     RemoteFrameOwner(SandboxFlags, const WebFrameOwnerProperties&);
 
-    RawPtrWillBeMember<Frame> m_frame;
+    Member<Frame> m_frame;
     SandboxFlags m_sandboxFlags;
     ScrollbarMode m_scrolling;
     int m_marginWidth;

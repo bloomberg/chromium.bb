@@ -40,7 +40,7 @@ class WebViewClient;
 
 class ExternalDateTimeChooser final : public DateTimeChooser {
 public:
-    static PassRefPtrWillBeRawPtr<ExternalDateTimeChooser> create(ChromeClientImpl*, WebViewClient*, DateTimeChooserClient*, const DateTimeChooserParameters&);
+    static RawPtr<ExternalDateTimeChooser> create(ChromeClientImpl*, WebViewClient*, DateTimeChooserClient*, const DateTimeChooserParameters&);
     ~ExternalDateTimeChooser() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -57,7 +57,7 @@ private:
     void endChooser() override;
     AXObject* rootAXObject() override;
 
-    RawPtrWillBeMember<DateTimeChooserClient> m_client;
+    Member<DateTimeChooserClient> m_client;
 };
 
 }

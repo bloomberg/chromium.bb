@@ -12,7 +12,7 @@ class WebRemoteFrameImpl;
 
 class RemoteFrameClientImpl final : public RemoteFrameClient {
 public:
-    static PassOwnPtrWillBeRawPtr<RemoteFrameClientImpl> create(WebRemoteFrameImpl*);
+    static RawPtr<RemoteFrameClientImpl> create(WebRemoteFrameImpl*);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -45,7 +45,7 @@ public:
 private:
     explicit RemoteFrameClientImpl(WebRemoteFrameImpl*);
 
-    RawPtrWillBeMember<WebRemoteFrameImpl> m_webFrame;
+    Member<WebRemoteFrameImpl> m_webFrame;
 };
 
 } // namespace blink

@@ -50,7 +50,7 @@ WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalSc
     if (worker->getExecutionContext()->isDocument()) {
         Document* document = toDocument(worker->getExecutionContext());
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-        OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
+        RawPtr<WorkerClients> workerClients = WorkerClients::create();
         provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
         provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerContentSettingsClientProxy()));
         // FIXME: call provideServiceWorkerContainerClientToWorker here when we

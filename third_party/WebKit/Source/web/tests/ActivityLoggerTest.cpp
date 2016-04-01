@@ -90,7 +90,7 @@ protected:
     void executeScriptInIsolatedWorld(const String& script) const
     {
         v8::HandleScope scope(v8::Isolate::GetCurrent());
-        WillBeHeapVector<ScriptSourceCode> sources;
+        HeapVector<ScriptSourceCode> sources;
         sources.append(ScriptSourceCode(script));
         Vector<v8::Local<v8::Value>> results;
         m_scriptController->executeScriptInIsolatedWorld(isolatedWorldId, sources, extensionGroup, 0);
@@ -109,7 +109,7 @@ private:
     static const int extensionGroup = 0;
 
     WebViewHelper m_webViewHelper;
-    RawPtrWillBePersistent<ScriptController> m_scriptController;
+    Persistent<ScriptController> m_scriptController;
     // TestActivityLogger is owned by a static table within V8DOMActivityLogger
     // and should be alive as long as not overwritten.
     TestActivityLogger* m_activityLogger;

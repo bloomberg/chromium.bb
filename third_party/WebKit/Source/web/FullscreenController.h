@@ -44,9 +44,9 @@ class Element;
 class LocalFrame;
 class WebViewImpl;
 
-class FullscreenController final : public NoBaseWillBeGarbageCollected<FullscreenController> {
+class FullscreenController final : public GarbageCollected<FullscreenController> {
 public:
-    static PassOwnPtrWillBeRawPtr<FullscreenController> create(WebViewImpl*);
+    static RawPtr<FullscreenController> create(WebViewImpl*);
 
     void didEnterFullScreen();
     void didExitFullScreen();
@@ -74,10 +74,10 @@ private:
     FloatPoint m_exitFullscreenVisualViewportOffset;
 
     // If set, the WebView is transitioning to fullscreen for this element.
-    RefPtrWillBeMember<Element> m_provisionalFullScreenElement;
+    Member<Element> m_provisionalFullScreenElement;
 
     // If set, the WebView is in fullscreen mode for an element in this frame.
-    RefPtrWillBeMember<LocalFrame> m_fullScreenFrame;
+    Member<LocalFrame> m_fullScreenFrame;
 
     bool m_isCancelingFullScreen;
 };

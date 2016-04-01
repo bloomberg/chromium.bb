@@ -62,12 +62,12 @@ struct WebPrintParams;
 struct WebPrintPresetOptions;
 
 class WEB_EXPORT WebPluginContainerImpl final : public PluginView, WTF_NON_EXPORTED_BASE(public WebPluginContainer), public LocalFrameLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
-    WILL_BE_USING_PRE_FINALIZER(WebPluginContainerImpl, dispose);
+    USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
+    USING_PRE_FINALIZER(WebPluginContainerImpl, dispose);
 public:
-    static PassRefPtrWillBeRawPtr<WebPluginContainerImpl> create(HTMLPlugInElement* element, WebPlugin* webPlugin)
+    static RawPtr<WebPluginContainerImpl> create(HTMLPlugInElement* element, WebPlugin* webPlugin)
     {
-        return adoptRefWillBeNoop(new WebPluginContainerImpl(element, webPlugin));
+        return new WebPluginContainerImpl(element, webPlugin);
     }
 
     // PluginView methods
@@ -190,7 +190,7 @@ private:
 
     friend class WebPluginContainerTest;
 
-    RawPtrWillBeMember<HTMLPlugInElement> m_element;
+    Member<HTMLPlugInElement> m_element;
     WebPlugin* m_webPlugin;
 
     WebLayer* m_webLayer;

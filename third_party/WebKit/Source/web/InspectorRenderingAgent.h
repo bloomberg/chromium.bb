@@ -16,7 +16,7 @@ class WebViewImpl;
 class InspectorRenderingAgent final : public InspectorBaseAgent<InspectorRenderingAgent, protocol::Frontend::Rendering>, public protocol::Backend::Rendering {
     WTF_MAKE_NONCOPYABLE(InspectorRenderingAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> create(WebLocalFrameImpl*, InspectorOverlay*);
+    static RawPtr<InspectorRenderingAgent> create(WebLocalFrameImpl*, InspectorOverlay*);
 
     // protocol::Dispatcher::PageCommandHandler implementation.
     void setShowPaintRects(ErrorString*, bool show) override;
@@ -36,8 +36,8 @@ private:
     bool compositingEnabled(ErrorString*);
     WebViewImpl* webViewImpl();
 
-    RawPtrWillBeMember<WebLocalFrameImpl> m_webLocalFrameImpl;
-    RawPtrWillBeMember<InspectorOverlay> m_overlay;
+    Member<WebLocalFrameImpl> m_webLocalFrameImpl;
+    Member<InspectorOverlay> m_overlay;
 };
 
 

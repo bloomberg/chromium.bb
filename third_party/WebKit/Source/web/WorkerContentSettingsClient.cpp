@@ -38,9 +38,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WorkerContentSettingsClient> WorkerContentSettingsClient::create(PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)
+RawPtr<WorkerContentSettingsClient> WorkerContentSettingsClient::create(PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)
 {
-    return adoptPtrWillBeNoop(new WorkerContentSettingsClient(proxy));
+    return new WorkerContentSettingsClient(proxy);
 }
 
 WorkerContentSettingsClient::~WorkerContentSettingsClient()
@@ -70,7 +70,7 @@ WorkerContentSettingsClient* WorkerContentSettingsClient::from(ExecutionContext&
 {
     WorkerClients* clients = toWorkerGlobalScope(context).clients();
     ASSERT(clients);
-    return static_cast<WorkerContentSettingsClient*>(WillBeHeapSupplement<WorkerClients>::from(*clients, supplementName()));
+    return static_cast<WorkerContentSettingsClient*>(HeapSupplement<WorkerClients>::from(*clients, supplementName()));
 }
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)

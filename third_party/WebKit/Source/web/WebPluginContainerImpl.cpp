@@ -202,7 +202,7 @@ void WebPluginContainerImpl::handleEvent(Event* event)
     if (!m_webPlugin->acceptsInputEvents())
         return;
 
-    RefPtrWillBeRawPtr<WebPluginContainerImpl> protector(this);
+    RawPtr<WebPluginContainerImpl> protector(this);
     // The events we pass are defined at:
     //    http://devedge-temp.mozilla.org/library/manuals/2002/plugin/1.0/structures5.html#1000000
     // Don't take the documentation as truth, however.  There are many cases
@@ -401,7 +401,7 @@ WebElement WebPluginContainerImpl::element()
 
 void WebPluginContainerImpl::dispatchProgressEvent(const WebString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const WebString& url)
 {
-    RefPtrWillBeRawPtr<ProgressEvent> event;
+    RawPtr<ProgressEvent> event;
     if (url.isEmpty()) {
         event = ProgressEvent::create(type, lengthComputable, loaded, total);
     } else {
@@ -624,7 +624,7 @@ v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isol
     // v8ScriptableObject below. crbug.com/458776. Hold a reference to the
     // plugin container to prevent this from happening. For Oilpan, 'this'
     // is already stack reachable, so redundant.
-    RefPtrWillBeRawPtr<WebPluginContainerImpl> protector(this);
+    RawPtr<WebPluginContainerImpl> protector(this);
 
     v8::Local<v8::Object> object = m_webPlugin->v8ScriptableObject(isolate);
 

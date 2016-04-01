@@ -81,9 +81,9 @@ DevToolsEmulator::~DevToolsEmulator()
 {
 }
 
-PassOwnPtrWillBeRawPtr<DevToolsEmulator> DevToolsEmulator::create(WebViewImpl* webViewImpl)
+RawPtr<DevToolsEmulator> DevToolsEmulator::create(WebViewImpl* webViewImpl)
 {
-    return adoptPtrWillBeNoop(new DevToolsEmulator(webViewImpl));
+    return new DevToolsEmulator(webViewImpl);
 }
 
 DEFINE_TRACE(DevToolsEmulator)

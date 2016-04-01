@@ -199,7 +199,7 @@ public:
         WebDOMMessageEvent) override { }
 
 private:
-    RawPtrWillBePersistent<WebRemoteFrameImpl> const m_frame;
+    Persistent<WebRemoteFrameImpl> const m_frame;
 };
 
 } // namespace FrameTestHelpers

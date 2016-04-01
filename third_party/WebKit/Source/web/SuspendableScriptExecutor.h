@@ -16,9 +16,9 @@ class ScriptSourceCode;
 class WebScriptExecutionCallback;
 
 class SuspendableScriptExecutor final : public GarbageCollectedFinalized<SuspendableScriptExecutor>, public SuspendableTimer {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
+    USING_GARBAGE_COLLECTED_MIXIN(SuspendableScriptExecutor);
 public:
-    static void createAndRun(LocalFrame*, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
+    static void createAndRun(LocalFrame*, int worldID, const HeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
     ~SuspendableScriptExecutor() override;
 
     void contextDestroyed() override;
@@ -26,7 +26,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SuspendableScriptExecutor(LocalFrame*, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
+    SuspendableScriptExecutor(LocalFrame*, int worldID, const HeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback*);
 
     void fired() override;
 
@@ -34,8 +34,8 @@ private:
     void executeAndDestroySelf();
     void dispose();
 
-    RefPtrWillBeMember<LocalFrame> m_frame;
-    WillBeHeapVector<ScriptSourceCode> m_sources;
+    Member<LocalFrame> m_frame;
+    HeapVector<ScriptSourceCode> m_sources;
     WebScriptExecutionCallback* m_callback;
 
     SelfKeepAlive<SuspendableScriptExecutor> m_keepAlive;

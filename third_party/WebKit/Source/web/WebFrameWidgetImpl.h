@@ -59,9 +59,9 @@ class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebFrameWidgetImpl;
 
-using WebFrameWidgetsSet = WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<WebFrameWidgetImpl>>;
+using WebFrameWidgetsSet = PersistentHeapHashSet<WeakMember<WebFrameWidgetImpl>>;
 
-class WebFrameWidgetImpl final : public RefCountedWillBeGarbageCollectedFinalized<WebFrameWidgetImpl>
+class WebFrameWidgetImpl final : public GarbageCollectedFinalized<WebFrameWidgetImpl>
     , public WebFrameWidget
     , public PageWidgetEventHandler {
 public:
@@ -200,12 +200,12 @@ private:
 
     // WebFrameWidget is associated with a subtree of the frame tree, corresponding to a maximal
     // connected tree of LocalFrames. This member points to the root of that subtree.
-    RawPtrWillBeMember<WebLocalFrameImpl> m_localRoot;
+    Member<WebLocalFrameImpl> m_localRoot;
 
     WebSize m_size;
 
     // If set, the (plugin) node which has mouse capture.
-    RefPtrWillBeMember<Node> m_mouseCaptureNode;
+    Member<Node> m_mouseCaptureNode;
     RefPtr<UserGestureToken> m_mouseCaptureGestureToken;
 
     WebLayerTreeView* m_layerTreeView;

@@ -117,7 +117,7 @@ protected:
     WebViewImpl* m_webView;
     WebFrame* m_mainFrame;
     TestWebFrameClient m_webFrameClient;
-    RawPtrWillBePersistent<ChromeClientImpl> m_chromeClientImpl;
+    Persistent<ChromeClientImpl> m_chromeClientImpl;
 };
 
 TEST_F(GetNavigationPolicyTest, LeftClick)

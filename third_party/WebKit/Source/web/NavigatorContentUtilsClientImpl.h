@@ -15,7 +15,7 @@ class WebLocalFrameImpl;
 
 class NavigatorContentUtilsClientImpl final : public NavigatorContentUtilsClient {
 public:
-    static PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClientImpl> create(WebLocalFrameImpl*);
+    static RawPtr<NavigatorContentUtilsClientImpl> create(WebLocalFrameImpl*);
     ~NavigatorContentUtilsClientImpl() override { }
 
     void registerProtocolHandler(const String& scheme, const KURL&, const String& title) override;
@@ -27,7 +27,7 @@ public:
 private:
     explicit NavigatorContentUtilsClientImpl(WebLocalFrameImpl*);
 
-    RawPtrWillBeMember<WebLocalFrameImpl> m_webFrame;
+    Member<WebLocalFrameImpl> m_webFrame;
 };
 
 } // namespace blink

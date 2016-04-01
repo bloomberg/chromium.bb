@@ -82,8 +82,8 @@ private:
     void dispatchEvent(Timer<ExternalPopupMenu>*);
     void update();
 
-    RawPtrWillBeMember<HTMLSelectElement> m_ownerElement;
-    RefPtrWillBeMember<LocalFrame> m_localFrame;
+    Member<HTMLSelectElement> m_ownerElement;
+    Member<LocalFrame> m_localFrame;
     WebViewImpl& m_webView;
     OwnPtr<WebMouseEvent> m_syntheticEvent;
     Timer<ExternalPopupMenu> m_dispatchEventTimer;

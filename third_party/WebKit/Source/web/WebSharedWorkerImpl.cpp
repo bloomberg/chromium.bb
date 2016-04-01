@@ -217,7 +217,7 @@ void WebSharedWorkerImpl::reportException(const String& errorMessage, int lineNu
     // Not suppported in SharedWorker.
 }
 
-void WebSharedWorkerImpl::reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>)
+void WebSharedWorkerImpl::reportConsoleMessage(RawPtr<ConsoleMessage>)
 {
     // Not supported in SharedWorker.
 }
@@ -323,11 +323,11 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
     SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
-    OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
+    RawPtr<WorkerClients> workerClients = WorkerClients::create();
     provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->getSecurityOrigin());
     provideContentSettingsClientToWorker(workerClients.get(), adoptPtr(m_client->createWorkerContentSettingsClientProxy(webSecurityOrigin)));
-    RefPtrWillBeRawPtr<ContentSecurityPolicy> contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
+    RawPtr<ContentSecurityPolicy> contentSecurityPolicy = m_mainScriptLoader->releaseContentSecurityPolicy();
     WorkerThreadStartMode startMode = m_workerInspectorProxy->workerStartMode(document);
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(
         m_url,

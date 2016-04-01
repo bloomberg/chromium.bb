@@ -74,9 +74,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, Document& document, WebServiceWorkerContextClient& client)
+RawPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebEmbeddedWorkerImpl& embeddedWorker, Document& document, WebServiceWorkerContextClient& client)
 {
-    return adoptPtrWillBeNoop(new ServiceWorkerGlobalScopeProxy(embeddedWorker, document, client));
+    return new ServiceWorkerGlobalScopeProxy(embeddedWorker, document, client);
 }
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
@@ -99,7 +99,7 @@ void ServiceWorkerGlobalScopeProxy::setRegistration(WebPassOwnPtr<WebServiceWork
 void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Activate, eventID);
-    RefPtrWillBeRawPtr<Event> event(ExtendableEvent::create(EventTypeNames::activate, ExtendableEventInit(), observer));
+    RawPtr<Event> event(ExtendableEvent::create(EventTypeNames::activate, ExtendableEventInit(), observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
@@ -119,7 +119,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
         source = ServiceWorkerClient::create(client);
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
 
-    RefPtrWillBeRawPtr<Event> event(ExtendableMessageEvent::create(value, origin, ports, source, observer));
+    RawPtr<Event> event(ExtendableMessageEvent::create(value, origin, ports, source, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
@@ -135,7 +135,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
     ServiceWorker* source = ServiceWorker::from(m_workerGlobalScope->getExecutionContext(), handle.release());
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
 
-    RefPtrWillBeRawPtr<Event> event(ExtendableMessageEvent::create(value, origin, ports, source, observer));
+    RawPtr<Event> event(ExtendableMessageEvent::create(value, origin, ports, source, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
@@ -158,7 +158,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchGeofencingEvent(int eventID, WebGeof
 void ServiceWorkerGlobalScopeProxy::dispatchInstallEvent(int eventID)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Install, eventID);
-    RefPtrWillBeRawPtr<Event> event;
+    RawPtr<Event> event;
     if (RuntimeEnabledFeatures::foreignFetchEnabled())
         event = InstallEvent::create(EventTypeNames::install, ExtendableEventInit(), observer);
     else
@@ -180,7 +180,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, 
     eventInit.setNotification(Notification::create(workerGlobalScope(), notificationID, data, true /* showing */));
     if (0 <= actionIndex && actionIndex < static_cast<int>(data.actions.size()))
         eventInit.setAction(data.actions[actionIndex].action);
-    RefPtrWillBeRawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclick, eventInit, observer));
+    RawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclick, eventInit, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
@@ -190,14 +190,14 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationCloseEvent(int eventID, 
     NotificationEventInit eventInit;
     eventInit.setAction(WTF::String()); // initialize as null.
     eventInit.setNotification(Notification::create(workerGlobalScope(), notificationID, data, false /* showing */));
-    RefPtrWillBeRawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclose, eventInit, observer));
+    RawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclose, eventInit, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebString& data)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Push, eventID);
-    RefPtrWillBeRawPtr<Event> event(PushEvent::create(EventTypeNames::push, PushMessageData::create(data), observer));
+    RawPtr<Event> event(PushEvent::create(EventTypeNames::push, PushMessageData::create(data), observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
@@ -215,7 +215,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebStri
         return;
     }
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Sync, eventID);
-    RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, tag, lastChance == IsLastChance, observer));
+    RawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, tag, lastChance == IsLastChance, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
@@ -224,7 +224,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginMessageEvent(const WebCro
     MessagePortArray* ports = MessagePort::toMessagePortArray(workerGlobalScope(), webChannels);
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
     // FIXME: Have proper source for this MessageEvent.
-    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create(ports, value, webClient.origin.string());
+    RawPtr<MessageEvent> event = MessageEvent::create(ports, value, webClient.origin.string());
     event->setType(EventTypeNames::crossoriginmessage);
     workerGlobalScope()->dispatchEvent(event);
 }
@@ -234,7 +234,7 @@ void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, 
     client().reportException(errorMessage, lineNumber, columnNumber, sourceURL);
 }
 
-void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
+void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(RawPtr<ConsoleMessage> consoleMessage)
 {
     client().reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url());
 }
@@ -325,7 +325,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEventImpl(int eventID, const We
     eventInit.setRequest(request);
     eventInit.setClientId(webRequest.isMainResourceLoad() ? WebString() : webRequest.clientId());
     eventInit.setIsReload(webRequest.isReload());
-    RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(eventTypeName, eventInit, observer));
+    RawPtr<FetchEvent> fetchEvent(FetchEvent::create(eventTypeName, eventInit, observer));
     DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent.release());
     observer->didDispatchEvent(dispatchResult);
 }

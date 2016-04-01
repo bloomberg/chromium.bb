@@ -46,7 +46,7 @@ protected:
 
     FrameTestHelpers::WebViewHelper m_helper;
     WebViewImpl* m_webView = nullptr;
-    RawPtrWillBePersistent<WebLocalFrameImpl> m_mainFrame = nullptr;
+    Persistent<WebLocalFrameImpl> m_mainFrame = nullptr;
 };
 
 void LinkSelectionTestBase::emulateMouseDrag(const IntPoint& downPoint, const IntPoint& upPoint, int modifiers, DragFlags dragFlags)
@@ -200,7 +200,7 @@ TEST_F(LinkSelectionTest, SingleClickWithAltStartsDownloadWhenTextSelected)
     ASSERT_NE(nullptr, textToSelect);
 
     // Select some page text outside the link element.
-    const RefPtrWillBeRawPtr<Range> rangeToSelect = Range::create(*document, textToSelect, 1, textToSelect, 20);
+    const RawPtr<Range> rangeToSelect = Range::create(*document, textToSelect, 1, textToSelect, 20);
     const auto& selectionRect = rangeToSelect->boundingBox();
     m_mainFrame->moveRangeSelection(selectionRect.minXMinYCorner(), selectionRect.maxXMaxYCorner());
     EXPECT_FALSE(getSelectionText().isEmpty());
@@ -213,9 +213,9 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
 protected:
     class MockEventListener final : public EventListener {
     public:
-        static PassRefPtrWillBeRawPtr<MockEventListener> create()
+        static RawPtr<MockEventListener> create()
         {
-            return adoptRefWillBeNoop(new MockEventListener());
+            return new MockEventListener();
         }
 
         bool operator==(const EventListener& other) const final
@@ -262,10 +262,10 @@ protected:
                 m_element->removeAllEventListeners();
             }
 
-            RawPtrWillBePersistent<Element> m_element;
+            Persistent<Element> m_element;
         } const listenersCleaner(&element);
 
-        RefPtrWillBeRawPtr<MockEventListener> eventHandler = MockEventListener::create();
+        RawPtr<MockEventListener> eventHandler = MockEventListener::create();
         element.addEventListener(
             doubleClickEvent ? EventTypeNames::dblclick : EventTypeNames::click,
             eventHandler);

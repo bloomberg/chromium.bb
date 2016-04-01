@@ -51,7 +51,7 @@ WebDOMMessageEvent::WebDOMMessageEvent(const WebSerializedScriptValue& messageDa
         window = sourceFrame->toImplBase()->frame()->domWindow();
     MessagePortArray* ports = nullptr;
     if (!targetDocument.isNull()) {
-        RefPtrWillBeRawPtr<Document> coreDocument = PassRefPtrWillBeRawPtr<Document>(targetDocument);
+        RawPtr<Document> coreDocument = RawPtr<Document>(targetDocument);
         ports = MessagePort::toMessagePortArray(coreDocument.get(), channels);
     }
     // Use an empty array for |ports| when it is null because this function

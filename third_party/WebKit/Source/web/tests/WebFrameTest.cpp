@@ -215,9 +215,9 @@ protected:
 
     void applyViewportStyleOverride(FrameTestHelpers::WebViewHelper* webViewHelper)
     {
-        RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
+        RawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
         styleSheet->parseString(loadResourceAsASCIIString("viewportAndroid.css"));
-        OwnPtrWillBeRawPtr<RuleSet> ruleSet = RuleSet::create();
+        RawPtr<RuleSet> ruleSet = RuleSet::create();
         ruleSet->addRulesFromSheet(styleSheet.get(), MediaQueryEvaluator("screen"));
 
         Document* document = toLocalFrame(webViewHelper->webViewImpl()->page()->mainFrame())->document();
@@ -256,7 +256,7 @@ protected:
         registerMockedHttpURLLoad("nodeimage.html");
         webViewHelper->initializeAndLoad(m_baseURL + "nodeimage.html");
         webViewHelper->resize(WebSize(640, 480));
-        RefPtrWillBeRawPtr<LocalFrame> frame = toLocalFrame(webViewHelper->webViewImpl()->page()->mainFrame());
+        RawPtr<LocalFrame> frame = toLocalFrame(webViewHelper->webViewImpl()->page()->mainFrame());
         ASSERT(frame);
         Element* element = frame->document()->getElementById(testcase.c_str());
         return frame->nodeImage(*element);
@@ -847,7 +847,7 @@ TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank");
 
-    RefPtrWillBeRawPtr<LocalFrame> frame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
+    RawPtr<LocalFrame> frame = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame());
     NonThrowableExceptionState exceptionState;
     frame->domWindow()->postMessage(SerializedScriptValueFactory::instance().create("message"), 0, "*", frame->localDOMWindow(), exceptionState);
     webViewHelper.reset();
@@ -3933,8 +3933,8 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    RefPtrWillBeRawPtr<WebLocalFrameImpl> secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
-    RefPtrWillBeRawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
+    RawPtr<WebLocalFrameImpl> secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
+    RawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
 
     // Detach the frame before finding.
     removeElementById(mainFrame, "frame");
@@ -3972,7 +3972,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     WebLocalFrameImpl* secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
-    RefPtrWillBeRawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
+    RawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
@@ -4010,7 +4010,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebLocalFrameImpl* mainFrame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
     WebLocalFrameImpl* secondFrame = toWebLocalFrameImpl(mainFrame->traverseNext(false));
-    RefPtrWillBeRawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
+    RawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
@@ -4085,7 +4085,7 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks)
 
     // Get the tickmarks for the original find request.
     FrameView* frameView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
-    RefPtrWillBeRawPtr<Scrollbar> scrollbar = frameView->createScrollbar(HorizontalScrollbar);
+    RawPtr<Scrollbar> scrollbar = frameView->createScrollbar(HorizontalScrollbar);
     Vector<IntRect> originalTickmarks;
     scrollbar->getTickmarks(originalTickmarks);
     EXPECT_EQ(4u, originalTickmarks.size());
@@ -5805,7 +5805,7 @@ TEST_P(ParameterizedWebFrameTest, SimulateFragmentAnchorMiddleClick)
     KURL destination = document->url();
     destination.setFragmentIdentifier("test");
 
-    RefPtrWillBeRawPtr<Event> event = MouseEvent::create(EventTypeNames::click, false, false,
+    RawPtr<Event> event = MouseEvent::create(EventTypeNames::click, false, false,
         document->domWindow(), 0, 0, 0, 0, 0, 0, 0, PlatformEvent::NoModifiers, 1, 0, nullptr, 0,
         PlatformMouseEvent::RealOrIndistinguishable, String());
     FrameLoadRequest frameRequest(document, ResourceRequest(destination));
@@ -5855,7 +5855,7 @@ TEST_P(ParameterizedWebFrameTest, ModifiedClickNewWindow)
     KURL destination = toKURL(m_baseURL + "hello_world.html");
 
     // ctrl+click event
-    RefPtrWillBeRawPtr<Event> event = MouseEvent::create(EventTypeNames::click, false, false,
+    RawPtr<Event> event = MouseEvent::create(EventTypeNames::click, false, false,
         document->domWindow(), 0, 0, 0, 0, 0, 0, 0, PlatformEvent::CtrlKey, 0, 0, nullptr, 0,
         PlatformMouseEvent::RealOrIndistinguishable, String());
     FrameLoadRequest frameRequest(document, ResourceRequest(destination));
@@ -5875,7 +5875,7 @@ TEST_P(ParameterizedWebFrameTest, BackToReload)
     webViewHelper.initializeAndLoad(m_baseURL + "fragment_middle_click.html", true);
     WebFrame* frame = webViewHelper.webView()->mainFrame();
     const FrameLoader& mainFrameLoader = webViewHelper.webViewImpl()->mainFrameImpl()->frame()->loader();
-    RefPtrWillBePersistent<HistoryItem> firstItem = mainFrameLoader.currentItem();
+    Persistent<HistoryItem> firstItem = mainFrameLoader.currentItem();
     EXPECT_TRUE(firstItem);
 
     registerMockedHttpURLLoad("white-1x1.png");
@@ -5940,7 +5940,7 @@ TEST_P(ParameterizedWebFrameTest, LoadHistoryItemReload)
     webViewHelper.initializeAndLoad(m_baseURL + "fragment_middle_click.html", true);
     WebFrame* frame = webViewHelper.webView()->mainFrame();
     const FrameLoader& mainFrameLoader = webViewHelper.webViewImpl()->mainFrameImpl()->frame()->loader();
-    RefPtrWillBePersistent<HistoryItem> firstItem = mainFrameLoader.currentItem();
+    Persistent<HistoryItem> firstItem = mainFrameLoader.currentItem();
     EXPECT_TRUE(firstItem);
 
     registerMockedHttpURLLoad("white-1x1.png");
@@ -6024,7 +6024,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadIframe)
     webViewHelper.initializeAndLoad(m_baseURL + "iframe_reload.html", true, &mainClient);
 
     WebLocalFrameImpl* mainFrame = webViewHelper.webViewImpl()->mainFrameImpl();
-    RefPtrWillBeRawPtr<WebLocalFrameImpl> childFrame = toWebLocalFrameImpl(mainFrame->firstChild());
+    RawPtr<WebLocalFrameImpl> childFrame = toWebLocalFrameImpl(mainFrame->firstChild());
     ASSERT_EQ(childFrame->client(), &childClient);
     EXPECT_EQ(mainClient.childFrameCreationCount(), 1);
     EXPECT_EQ(childClient.willSendRequestCallCount(), 1);
@@ -6205,7 +6205,7 @@ TEST_P(ParameterizedWebFrameTest, SameDocumentHistoryNavigationCommitType)
     TestDidNavigateCommitTypeWebFrameClient client;
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "push_state.html", true, &client);
-    RefPtrWillBePersistent<HistoryItem> item = toLocalFrame(webViewImpl->page()->mainFrame())->loader().currentItem();
+    Persistent<HistoryItem> item = toLocalFrame(webViewImpl->page()->mainFrame())->loader().currentItem();
     runPendingTasks();
 
     toLocalFrame(webViewImpl->page()->mainFrame())->loader().load(
@@ -6806,7 +6806,7 @@ TEST_P(ParameterizedWebFrameTest, NotifyManifestChange)
     EXPECT_EQ(14, webFrameClient.manifestChangeCount());
 }
 
-static PassRefPtrWillBeRawPtr<Resource> fetchManifest(Document* document, const KURL& url)
+static RawPtr<Resource> fetchManifest(Document* document, const KURL& url)
 {
     FetchRequest fetchRequest = FetchRequest(ResourceRequest(url), FetchInitiatorInfo());
     fetchRequest.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextManifest);
@@ -6823,7 +6823,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestFetch)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
     Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
 
-    RefPtrWillBeRawPtr<Resource> resource = fetchManifest(document, toKURL(m_baseURL + "link-manifest-fetch.json"));
+    RawPtr<Resource> resource = fetchManifest(document, toKURL(m_baseURL + "link-manifest-fetch.json"));
 
     EXPECT_TRUE(resource->isLoaded());
 }
@@ -6837,7 +6837,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchAllow)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
     Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
 
-    RefPtrWillBeRawPtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
+    RawPtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
 
     EXPECT_TRUE(resource->isLoaded());
 }
@@ -6851,7 +6851,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelf)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
     Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
 
-    RefPtrWillBeRawPtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
+    RawPtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
 
     EXPECT_EQ(0, resource.get()); // Fetching resource wasn't allowed.
 }
@@ -6865,7 +6865,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelfReportOnly)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
     Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
 
-    RefPtrWillBeRawPtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
+    RawPtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
 
     EXPECT_TRUE(resource->isLoaded());
 }
@@ -7029,7 +7029,7 @@ TEST_P(ParameterizedWebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
     WebLocalFrame* childFrame = FrameTestHelpers::createLocalChild(view->mainFrame()->toWebRemoteFrame());
 
     // Purposely keep the LocalFrame alive so it's the last thing to be destroyed.
-    RefPtrWillBePersistent<Frame> childCoreFrame = childFrame->toImplBase()->frame();
+    Persistent<Frame> childCoreFrame = childFrame->toImplBase()->frame();
     view->close();
     childCoreFrame.clear();
 }
@@ -7633,7 +7633,7 @@ TEST_F(WebFrameSwapTest, WindowOpenOnRemoteFrame)
 
     // Pointing a named frame to an empty URL should just return a reference to
     // the frame's window without navigating it.
-    RefPtrWillBeRawPtr<DOMWindow> result = mainWindow->open("", "frame1", "", mainWindow, mainWindow);
+    RawPtr<DOMWindow> result = mainWindow->open("", "frame1", "", mainWindow, mainWindow);
     EXPECT_EQ(remoteClient.lastRequest().url(), WebURL(destination));
     EXPECT_EQ(result, remoteFrame->toImplBase()->frame()->domWindow());
 
@@ -7830,7 +7830,7 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess)
     KURL resourceUrl(ParsedURLString, "chrome://test.pdf");
     registerMockedChromeURLLoad("test.pdf");
 
-    RefPtrWillBeRawPtr<LocalFrame> frame(toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame()));
+    RawPtr<LocalFrame> frame(toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame()));
 
     MockDocumentThreadableLoaderClient client;
     ThreadableLoaderOptions options;
@@ -8485,7 +8485,7 @@ private:
     TestWebRemoteFrameClientForVisibility m_remoteFrameClient;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
     WebFrame* m_frame;
-    RawPtrWillBePersistent<WebRemoteFrameImpl> m_webRemoteFrame;
+    Persistent<WebRemoteFrameImpl> m_webRemoteFrame;
 };
 
 TEST_F(WebFrameVisibilityChangeTest, RemoteFrameVisibilityChange)

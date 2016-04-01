@@ -10,18 +10,18 @@
 
 namespace blink {
 
-class AudioOutputDeviceClientImpl : public NoBaseWillBeGarbageCollectedFinalized<AudioOutputDeviceClientImpl>, public AudioOutputDeviceClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AudioOutputDeviceClientImpl);
+class AudioOutputDeviceClientImpl : public GarbageCollectedFinalized<AudioOutputDeviceClientImpl>, public AudioOutputDeviceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(AudioOutputDeviceClientImpl);
     WTF_MAKE_NONCOPYABLE(AudioOutputDeviceClientImpl);
 public:
-    static PassOwnPtrWillBeRawPtr<AudioOutputDeviceClientImpl> create();
+    static RawPtr<AudioOutputDeviceClientImpl> create();
 
     ~AudioOutputDeviceClientImpl() override;
 
     // AudioOutputDeviceClient implementation.
     void checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext*, const WebString& sinkId, PassOwnPtr<WebSetSinkIdCallbacks>) override;
 
-    // NoBaseWillBeGarbageCollectedFinalized implementation.
+    // GarbageCollectedFinalized implementation.
     DEFINE_INLINE_VIRTUAL_TRACE() { AudioOutputDeviceClient::trace(visitor); }
 
 private:

@@ -37,9 +37,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<DatabaseClientImpl> DatabaseClientImpl::create()
+RawPtr<DatabaseClientImpl> DatabaseClientImpl::create()
 {
-    return adoptPtrWillBeNoop(new DatabaseClientImpl());
+    return new DatabaseClientImpl();
 }
 
 DatabaseClientImpl::~DatabaseClientImpl()

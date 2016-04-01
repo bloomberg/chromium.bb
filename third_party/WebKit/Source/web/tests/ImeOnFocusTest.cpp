@@ -68,7 +68,7 @@ protected:
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
-    RefPtrWillBePersistent<Document> m_document;
+    Persistent<Document> m_document;
 };
 
 void ImeOnFocusTest::sendGestureTap(WebView* webView, IntPoint clientPoint)

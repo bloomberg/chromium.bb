@@ -244,7 +244,7 @@ protected:
 
     void testTextInputType(WebTextInputType expectedType, const std::string& htmlFile);
     void testInputMode(const WebString& expectedInputMode, const std::string& htmlFile);
-    bool tapElement(WebInputEvent::Type, const PassRefPtrWillBeRawPtr<Element>&);
+    bool tapElement(WebInputEvent::Type, const RawPtr<Element>&);
     bool tapElementById(WebInputEvent::Type, const WebString& id);
 
     std::string m_baseURL;
@@ -1236,11 +1236,11 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
     // Emulate a user scroll
     webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 900));
     LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
-    RefPtrWillBePersistent<HistoryItem> item1 = mainFrameLocal->loader().currentItem();
+    Persistent<HistoryItem> item1 = mainFrameLocal->loader().currentItem();
 
     // Click an anchor
     mainFrameLocal->loader().load(FrameLoadRequest(mainFrameLocal->document(), ResourceRequest(mainFrameLocal->document()->completeURL("#a"))));
-    RefPtrWillBePersistent<HistoryItem> item2 = mainFrameLocal->loader().currentItem();
+    Persistent<HistoryItem> item2 = mainFrameLocal->loader().currentItem();
 
     // Go back, then forward, then back again.
     mainFrameLocal->loader().load(
@@ -1258,7 +1258,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
 
     // Click a different anchor
     mainFrameLocal->loader().load(FrameLoadRequest(mainFrameLocal->document(), ResourceRequest(mainFrameLocal->document()->completeURL("#b"))));
-    RefPtrWillBePersistent<HistoryItem> item3 = mainFrameLocal->loader().currentItem();
+    Persistent<HistoryItem> item3 = mainFrameLocal->loader().currentItem();
 
     // Go back, then forward. The scroll position should be properly set on the forward navigation.
     mainFrameLocal->loader().load(
@@ -1293,7 +1293,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(12, webViewImpl->visualViewportOffset().x);
     EXPECT_EQ(20, webViewImpl->visualViewportOffset().y);
 
-    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(webViewImpl->mainFrame()->document().body());
+    RawPtr<Element> element = static_cast<RawPtr<Element>>(webViewImpl->mainFrame()->document().body());
     webViewImpl->enterFullScreenForElement(element.get());
     webViewImpl->didEnterFullScreen();
 
@@ -1302,7 +1302,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
 
     // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
-    RefPtrWillBeRawPtr<Element> otherElement = static_cast<PassRefPtrWillBeRawPtr<Element>>(webViewImpl->mainFrame()->document().head());
+    RawPtr<Element> otherElement = static_cast<RawPtr<Element>>(webViewImpl->mainFrame()->document().head());
     webViewImpl->enterFullScreenForElement(otherElement.get());
 
     // Confirm that exiting fullscreen restores the parameters.
@@ -1437,7 +1437,7 @@ private:
     WebContentDetectionResult m_contentDetectionResult;
 };
 
-bool WebViewTest::tapElement(WebInputEvent::Type type, const PassRefPtrWillBeRawPtr<Element>& element)
+bool WebViewTest::tapElement(WebInputEvent::Type type, const RawPtr<Element>& element)
 {
     if (!element || !element->layoutObject())
         return false;
@@ -1463,7 +1463,7 @@ bool WebViewTest::tapElement(WebInputEvent::Type type, const PassRefPtrWillBeRaw
 bool WebViewTest::tapElementById(WebInputEvent::Type type, const WebString& id)
 {
     ASSERT(m_webViewHelper.webView());
-    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(m_webViewHelper.webView()->mainFrame()->document().getElementById(id));
+    RawPtr<Element> element = static_cast<RawPtr<Element>>(m_webViewHelper.webView()->mainFrame()->document().getElementById(id));
     return tapElement(type, element);
 }
 
@@ -1535,7 +1535,7 @@ TEST_F(WebViewTest, ContentDetectionInIframe)
 
     WebURL intentURL = toKURL(m_baseURL);
     client.setContentDetectionResult(WebContentDetectionResult(WebRange(), WebString(), intentURL));
-    RefPtrWillBeRawPtr<Element> element = static_cast<PassRefPtrWillBeRawPtr<Element>>(webView->findFrameByName(frameName)->document().getElementById(noListener));
+    RawPtr<Element> element = static_cast<RawPtr<Element>>(webView->findFrameByName(frameName)->document().getElementById(noListener));
     EXPECT_TRUE(tapElement(WebInputEvent::GestureTap, element));
     EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
     EXPECT_FALSE(client.wasInMainFrame());
@@ -2435,7 +2435,7 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler)
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "simple_div.html");
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(url, true);
 
-    RefPtrWillBePersistent<Document> document = webViewImpl->mainFrameImpl()->frame()->document();
+    Persistent<Document> document = webViewImpl->mainFrameImpl()->frame()->document();
     Element* div = document->getElementById("div");
     EventHandlerRegistry& registry = document->frameHost()->eventHandlerRegistry();
 

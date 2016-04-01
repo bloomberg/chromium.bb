@@ -122,15 +122,15 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<InspectorOverlay> m_overlay;
+    Member<InspectorOverlay> m_overlay;
 };
 
 
 class InspectorOverlay::InspectorOverlayChromeClient final : public EmptyChromeClient {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorOverlayChromeClient> create(ChromeClient& client, InspectorOverlay& overlay)
+    static RawPtr<InspectorOverlayChromeClient> create(ChromeClient& client, InspectorOverlay& overlay)
     {
-        return adoptPtrWillBeNoop(new InspectorOverlayChromeClient(client, overlay));
+        return new InspectorOverlayChromeClient(client, overlay);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -172,8 +172,8 @@ private:
         , m_overlay(&overlay)
     { }
 
-    RawPtrWillBeMember<ChromeClient> m_client;
-    RawPtrWillBeMember<InspectorOverlay> m_overlay;
+    Member<ChromeClient> m_client;
+    Member<InspectorOverlay> m_overlay;
 };
 
 
@@ -414,7 +414,7 @@ void InspectorOverlay::drawNodeHighlight()
         return;
 
     String selectors = m_nodeHighlightConfig.selectorList;
-    RefPtrWillBeRawPtr<StaticElementList> elements = nullptr;
+    RawPtr<StaticElementList> elements = nullptr;
     TrackExceptionState exceptionState;
     ContainerNode* queryBase = m_highlightNode->containingShadowRoot();
     if (!queryBase)
@@ -468,7 +468,7 @@ Page* InspectorOverlay::overlayPage()
 
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
 
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FrameLoaderClient>, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
+    DEFINE_STATIC_LOCAL(Persistent<FrameLoaderClient>, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     ASSERT(!m_overlayChromeClient);
@@ -495,7 +495,7 @@ Page* InspectorOverlay::overlayPage()
     // through some non-composited paint function.
     overlaySettings.setAcceleratedCompositingEnabled(false);
 
-    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(dummyFrameLoaderClient.get(), &m_overlayPage->frameHost(), 0);
+    RawPtr<LocalFrame> frame = LocalFrame::create(dummyFrameLoaderClient.get(), &m_overlayPage->frameHost(), 0);
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     FrameLoader& loader = frame->loader();

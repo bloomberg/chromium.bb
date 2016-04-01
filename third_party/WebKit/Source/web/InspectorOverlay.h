@@ -64,16 +64,15 @@ class Value;
 }
 
 class InspectorOverlay final
-    : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlay>
+    : public GarbageCollectedFinalized<InspectorOverlay>
     , public InspectorDOMAgent::Client
     , public InspectorProfilerAgent::Client
     , public InspectorOverlayHost::Listener {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorOverlay);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlay);
+    USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlay);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorOverlay> create(WebViewImpl* webViewImpl)
+    static RawPtr<InspectorOverlay> create(WebViewImpl* webViewImpl)
     {
-        return adoptPtrWillBeNoop(new InspectorOverlay(webViewImpl));
+        return new InspectorOverlay(webViewImpl);
     }
 
     ~InspectorOverlay() override;
@@ -146,13 +145,13 @@ private:
 
     WebViewImpl* m_webViewImpl;
     String m_pausedInDebuggerMessage;
-    RefPtrWillBeMember<Node> m_highlightNode;
-    RefPtrWillBeMember<Node> m_eventTargetNode;
+    Member<Node> m_highlightNode;
+    Member<Node> m_eventTargetNode;
     InspectorHighlightConfig m_nodeHighlightConfig;
     OwnPtr<FloatQuad> m_highlightQuad;
-    OwnPtrWillBeMember<Page> m_overlayPage;
-    OwnPtrWillBeMember<InspectorOverlayChromeClient> m_overlayChromeClient;
-    RefPtrWillBeMember<InspectorOverlayHost> m_overlayHost;
+    Member<Page> m_overlayPage;
+    Member<InspectorOverlayChromeClient> m_overlayChromeClient;
+    Member<InspectorOverlayHost> m_overlayHost;
     InspectorHighlightConfig m_quadHighlightConfig;
     bool m_drawViewSize;
     bool m_resizeTimerActive;
@@ -161,12 +160,12 @@ private:
     int m_suspendCount;
     bool m_inLayout;
     bool m_needsUpdate;
-    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
-    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
-    OwnPtrWillBeMember<LayoutEditor> m_layoutEditor;
+    Member<InspectorDebuggerAgent> m_debuggerAgent;
+    Member<InspectorDOMAgent> m_domAgent;
+    Member<InspectorCSSAgent> m_cssAgent;
+    Member<LayoutEditor> m_layoutEditor;
     OwnPtr<PageOverlay> m_pageOverlay;
-    RefPtrWillBeMember<Node> m_hoveredNodeForInspectMode;
+    Member<Node> m_hoveredNodeForInspectMode;
     InspectorDOMAgent::SearchMode m_inspectMode;
     OwnPtr<InspectorHighlightConfig> m_inspectModeHighlightConfig;
 };

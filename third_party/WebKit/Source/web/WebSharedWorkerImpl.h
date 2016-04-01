@@ -77,7 +77,7 @@ public:
     // WorkerReportingProxy methods:
     void reportException(
         const WTF::String&, int, int, const WTF::String&, int) override;
-    void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
+    void reportConsoleMessage(RawPtr<ConsoleMessage>) override;
     void postMessageToPageInspector(const WTF::String&) override;
     void postWorkerConsoleAgentEnabled() override { }
     void didEvaluateWorkerScript(bool success) override { }
@@ -135,15 +135,15 @@ private:
     bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>);
 
     // 'shadow page' - created to proxy loading requests from the worker.
-    RefPtrWillBePersistent<ExecutionContext> m_loadingDocument;
+    Persistent<ExecutionContext> m_loadingDocument;
     WebView* m_webView;
-    RefPtrWillBePersistent<WebLocalFrameImpl> m_mainFrame;
+    Persistent<WebLocalFrameImpl> m_mainFrame;
     bool m_askedToTerminate;
 
     // This one is bound to and used only on the main thread.
     OwnPtr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
-    OwnPtrWillBePersistent<WorkerInspectorProxy> m_workerInspectorProxy;
+    Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
     OwnPtr<WorkerThread> m_workerThread;
 

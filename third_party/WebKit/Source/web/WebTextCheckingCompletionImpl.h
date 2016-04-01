@@ -40,7 +40,7 @@ namespace blink {
 
 class WebTextCheckingCompletionImpl final : public WebTextCheckingCompletion {
 public:
-    explicit WebTextCheckingCompletionImpl(PassRefPtrWillBeRawPtr<TextCheckingRequest> request)
+    explicit WebTextCheckingCompletionImpl(RawPtr<TextCheckingRequest> request)
         : m_request(request)
     {
     }
@@ -51,7 +51,7 @@ public:
 private:
     virtual ~WebTextCheckingCompletionImpl() { }
 
-    RefPtrWillBePersistent<TextCheckingRequest> m_request;
+    Persistent<TextCheckingRequest> m_request;
 };
 
 } // namespace blink

@@ -44,9 +44,9 @@ private:
 
 } // namespace
 
-PassOwnPtrWillBeRawPtr<NotificationPermissionClientImpl> NotificationPermissionClientImpl::create()
+RawPtr<NotificationPermissionClientImpl> NotificationPermissionClientImpl::create()
 {
-    return adoptPtrWillBeNoop(new NotificationPermissionClientImpl());
+    return new NotificationPermissionClientImpl();
 }
 
 NotificationPermissionClientImpl::NotificationPermissionClientImpl()

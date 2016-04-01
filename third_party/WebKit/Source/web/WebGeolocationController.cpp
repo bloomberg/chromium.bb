@@ -37,11 +37,11 @@ namespace blink {
 
 // TODO(Oilpan): once GeolocationController is always on the heap,
 // shorten out this GeolocationControllerPrivate intermediary.
-class GeolocationControllerPrivate final : public RefCountedWillBeGarbageCollected<GeolocationControllerPrivate> {
+class GeolocationControllerPrivate final : public GarbageCollected<GeolocationControllerPrivate> {
 public:
-    static PassRefPtrWillBeRawPtr<GeolocationControllerPrivate> create(GeolocationController* controller)
+    static RawPtr<GeolocationControllerPrivate> create(GeolocationController* controller)
     {
-        return adoptRefWillBeNoop(new GeolocationControllerPrivate(controller));
+        return new GeolocationControllerPrivate(controller);
     }
 
     static GeolocationController& controller(const WebPrivatePtr<GeolocationControllerPrivate>& controller)
@@ -65,7 +65,7 @@ private:
     // Non-Oilpan, this bare pointer is owned as a supplement and kept alive
     // by the frame of the WebLocalFrame which creates the WebGeolocationController
     // object that wraps it all up.
-    RawPtrWillBeMember<GeolocationController> m_controller;
+    Member<GeolocationController> m_controller;
 };
 
 WebGeolocationController::WebGeolocationController(GeolocationController* controller)

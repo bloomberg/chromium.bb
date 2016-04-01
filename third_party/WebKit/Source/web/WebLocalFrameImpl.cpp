@@ -246,9 +246,9 @@ namespace blink {
 
 static int frameCount = 0;
 
-static WillBeHeapVector<ScriptSourceCode> createSourcesVector(const WebScriptSource* sourcesIn, unsigned numSources)
+static HeapVector<ScriptSourceCode> createSourcesVector(const WebScriptSource* sourcesIn, unsigned numSources)
 {
-    WillBeHeapVector<ScriptSourceCode> sources;
+    HeapVector<ScriptSourceCode> sources;
     sources.append(sourcesIn, numSources);
     return sources;
 }
@@ -411,7 +411,7 @@ protected:
 private:
     void dispatchEventsForPrintingOnAllFrames()
     {
-        WillBeHeapVector<RefPtrWillBeMember<Document>> documents;
+        HeapVector<Member<Document>> documents;
         for (Frame* currentFrame = frame(); currentFrame; currentFrame = currentFrame->tree().traverseNext(frame())) {
             if (currentFrame->isLocalFrame())
                 documents.append(toLocalFrame(currentFrame)->document());
@@ -483,7 +483,7 @@ protected:
 
 private:
     // Set when printing.
-    RawPtrWillBeMember<WebPluginContainerImpl> m_plugin;
+    Member<WebPluginContainerImpl> m_plugin;
     WebPrintParams m_printParams;
 };
 
@@ -542,7 +542,7 @@ WebLocalFrame* WebLocalFrame::frameForContext(v8::Local<v8::Context> context)
 
 WebLocalFrame* WebLocalFrame::fromFrameOwnerElement(const WebElement& element)
 {
-    return WebLocalFrameImpl::fromFrameOwnerElement(PassRefPtrWillBeRawPtr<Element>(element).get());
+    return WebLocalFrameImpl::fromFrameOwnerElement(RawPtr<Element>(element).get());
 }
 
 bool WebLocalFrameImpl::isWebLocalFrame() const
@@ -725,7 +725,7 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScrip
     RELEASE_ASSERT(worldID > 0);
     RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
 
-    WillBeHeapVector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
+    HeapVector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
     v8::HandleScope handleScope(toIsolate(frame()));
     frame()->script().executeScriptInIsolatedWorld(worldID, sources, extensionGroup, 0);
 }
@@ -804,7 +804,7 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScrip
     RELEASE_ASSERT(worldID > 0);
     RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
 
-    WillBeHeapVector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
+    HeapVector<ScriptSourceCode> sources = createSourcesVector(sourcesIn, numSources);
 
     if (results) {
         Vector<v8::Local<v8::Value>> scriptResults;
@@ -1166,7 +1166,7 @@ void WebLocalFrameImpl::selectRange(const WebPoint& baseInViewport, const WebPoi
 void WebLocalFrameImpl::selectRange(const WebRange& webRange)
 {
     TRACE_EVENT0("blink", "WebLocalFrameImpl::selectRange");
-    if (RefPtrWillBeRawPtr<Range> range = static_cast<PassRefPtrWillBeRawPtr<Range>>(webRange))
+    if (RawPtr<Range> range = static_cast<RawPtr<Range>>(webRange))
         frame()->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
 }
 
@@ -1264,9 +1264,9 @@ int WebLocalFrameImpl::printBegin(const WebPrintParams& printParams, const WebNo
     }
 
     if (pluginContainer && pluginContainer->supportsPaginatedPrint())
-        m_printContext = adoptPtrWillBeNoop(new ChromePluginPrintContext(frame(), pluginContainer, printParams));
+        m_printContext = new ChromePluginPrintContext(frame(), pluginContainer, printParams);
     else
-        m_printContext = adoptPtrWillBeNoop(new ChromePrintContext(frame()));
+        m_printContext = new ChromePrintContext(frame());
 
     FloatRect rect(0, 0, static_cast<float>(printParams.printContentArea.width), static_cast<float>(printParams.printContentArea.height));
     m_printContext->begin(rect.width(), rect.height());
@@ -1415,7 +1415,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameCli
 
 WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
 {
-    RefPtrWillBeRawPtr<WebLocalFrameImpl> webFrame = adoptRefWillBeNoop(new WebLocalFrameImpl(oldWebFrame, client));
+    RawPtr<WebLocalFrameImpl> webFrame = new WebLocalFrameImpl(oldWebFrame, client);
     Frame* oldFrame = oldWebFrame->toImplBase()->frame();
     webFrame->setParent(oldWebFrame->parent());
     webFrame->setOpener(oldWebFrame->opener());
@@ -1423,9 +1423,9 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, 
     // When a core Frame is created with no owner, it attempts to set itself as
     // the main frame of the Page. However, this is a provisional frame, and may
     // disappear, so Page::m_mainFrame can't be updated just yet.
-    OwnPtrWillBeRawPtr<FrameOwner> tempOwner = DummyFrameOwner::create();
+    RawPtr<FrameOwner> tempOwner = DummyFrameOwner::create();
     // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to reuse it here.
-    RefPtrWillBeRawPtr<LocalFrame> frame = LocalFrame::create(webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
+    RawPtr<LocalFrame> frame = LocalFrame::create(webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner.get());
     // Set the name and unique name directly, bypassing any of the normal logic
     // to calculate unique name.
     frame->tree().setPrecalculatedName(toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().name(), toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().uniqueName());
@@ -1502,7 +1502,7 @@ DEFINE_TRACE(WebLocalFrameImpl)
 }
 #endif
 
-void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
+void WebLocalFrameImpl::setCoreFrame(RawPtr<LocalFrame> frame)
 {
     m_frame = frame;
 
@@ -1558,7 +1558,7 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner, 
     frame()->init();
 }
 
-PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request,
+RawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request,
     const AtomicString& name, HTMLFrameOwnerElement* ownerElement)
 {
     ASSERT(m_client);
@@ -1573,7 +1573,7 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
     // which can identify the element.
     AtomicString uniqueName = frame()->tree().calculateUniqueNameForNewChildFrame(
         name, ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
-    RefPtrWillBeRawPtr<WebLocalFrameImpl> webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, uniqueName, static_cast<WebSandboxFlags>(ownerElement->getSandboxFlags()), ownerProperties));
+    RawPtr<WebLocalFrameImpl> webframeChild = toWebLocalFrameImpl(m_client->createChildFrame(this, scope, name, uniqueName, static_cast<WebSandboxFlags>(ownerElement->getSandboxFlags()), ownerProperties));
     if (!webframeChild)
         return nullptr;
 
@@ -1585,9 +1585,9 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
 
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
-    RefPtrWillBeRawPtr<HistoryItem> childItem = nullptr;
+    RawPtr<HistoryItem> childItem = nullptr;
     if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = PassRefPtrWillBeRawPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame());
+        childItem = RawPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame());
 
     FrameLoadRequest newRequest = request;
     FrameLoadType loadType = FrameLoadTypeStandard;
@@ -1798,7 +1798,7 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
     if (!frame()->document() || !frame()->page())
         return;
 
-    RefPtrWillBeRawPtr<Document> ownerDocument(frame()->document());
+    RawPtr<Document> ownerDocument(frame()->document());
 
     // Protect privileged pages against bookmarklets and other javascript manipulations.
     if (SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(frame()->document()->url().protocol()))
@@ -1895,7 +1895,7 @@ void WebLocalFrameImpl::sendPings(const WebNode& contextNode, const WebURL& dest
 WebURLRequest WebLocalFrameImpl::requestFromHistoryItem(const WebHistoryItem& item,
     WebURLRequest::CachePolicy cachePolicy) const
 {
-    RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
+    RawPtr<HistoryItem> historyItem = RawPtr<HistoryItem>(item);
     ResourceRequest request = FrameLoader::resourceRequestFromHistoryItem(
         historyItem.get(), static_cast<ResourceRequestCachePolicy>(cachePolicy));
     return WrappedResourceRequest(request);
@@ -1926,7 +1926,7 @@ void WebLocalFrameImpl::load(const WebURLRequest& request, WebFrameLoadType webF
     FrameLoadRequest frameRequest = FrameLoadRequest(nullptr, resourceRequest);
     if (isClientRedirect)
         frameRequest.setClientRedirect(ClientRedirect);
-    RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
+    RawPtr<HistoryItem> historyItem = RawPtr<HistoryItem>(item);
     frame()->loader().load(
         frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem.get(),
         static_cast<HistoryLoadType>(webHistoryLoadType));
@@ -1957,7 +1957,7 @@ void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType,
     if (isClientRedirect)
         frameRequest.setClientRedirect(ClientRedirect);
 
-    RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
+    RawPtr<HistoryItem> historyItem = RawPtr<HistoryItem>(item);
     frame()->loader().load(
         frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem.get(),
         static_cast<HistoryLoadType>(webHistoryLoadType));

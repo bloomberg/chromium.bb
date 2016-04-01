@@ -262,7 +262,7 @@ public:
     static WebLocalFrameImpl* createProvisional(WebFrameClient*, WebRemoteFrame*, WebSandboxFlags, const WebFrameOwnerProperties&);
     ~WebLocalFrameImpl() override;
 
-    PassRefPtrWillBeRawPtr<LocalFrame> createChildFrame(const FrameLoadRequest&, const AtomicString& name, HTMLFrameOwnerElement*);
+    RawPtr<LocalFrame> createChildFrame(const FrameLoadRequest&, const AtomicString& name, HTMLFrameOwnerElement*);
 
     void didChangeContentsSize(const IntSize&);
 
@@ -359,21 +359,21 @@ private:
     WebRemoteFrame* toWebRemoteFrame() override;
 
     // Sets the local core frame and registers destruction observers.
-    void setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame>);
+    void setCoreFrame(RawPtr<LocalFrame>);
 
     void loadJavaScriptURL(const KURL&);
 
     WebPlugin* focusedPluginIfInputMethodSupported();
     ScrollableArea* layoutViewportScrollableArea() const;
 
-    OwnPtrWillBeMember<FrameLoaderClientImpl> m_frameLoaderClientImpl;
+    Member<FrameLoaderClientImpl> m_frameLoaderClientImpl;
 
     // The embedder retains a reference to the WebCore LocalFrame while it is active in the DOM. This
     // reference is released when the frame is removed from the DOM or the entire page is closed.
     // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
-    RefPtrWillBeMember<LocalFrame> m_frame;
+    Member<LocalFrame> m_frame;
 
-    OwnPtrWillBeMember<WebDevToolsAgentImpl> m_devToolsAgent;
+    Member<WebDevToolsAgentImpl> m_devToolsAgent;
 
     // This is set if the frame is the root of a local frame tree, and requires a widget for layout.
     WebFrameWidget* m_frameWidget;
@@ -384,11 +384,11 @@ private:
     OwnPtr<SharedWorkerRepositoryClientImpl> m_sharedWorkerRepositoryClient;
 
     // Will be initialized after first call to find() or scopeStringMatches().
-    OwnPtrWillBeMember<TextFinder> m_textFinder;
+    Member<TextFinder> m_textFinder;
 
     // Valid between calls to BeginPrint() and EndPrint(). Containts the print
     // information. Is used by PrintPage().
-    OwnPtrWillBeMember<ChromePrintContext> m_printContext;
+    Member<ChromePrintContext> m_printContext;
 
     // Stores the additional input events offset and scale when device metrics emulation is enabled.
     IntSize m_inputEventsOffsetForEmulation;
@@ -396,7 +396,7 @@ private:
 
     UserMediaClientImpl m_userMediaClientImpl;
 
-    OwnPtrWillBeMember<GeolocationClientProxy> m_geolocationClientProxy;
+    Member<GeolocationClientProxy> m_geolocationClientProxy;
 
     WebDevToolsFrontendImpl* m_webDevToolsFrontend;
 

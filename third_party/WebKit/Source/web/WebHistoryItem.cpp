@@ -219,18 +219,18 @@ WebVector<WebString> WebHistoryItem::getReferencedFilePaths() const
     return results;
 }
 
-WebHistoryItem::WebHistoryItem(const PassRefPtrWillBeRawPtr<HistoryItem>& item)
+WebHistoryItem::WebHistoryItem(const RawPtr<HistoryItem>& item)
     : m_private(item)
 {
 }
 
-WebHistoryItem& WebHistoryItem::operator=(const PassRefPtrWillBeRawPtr<HistoryItem>& item)
+WebHistoryItem& WebHistoryItem::operator=(const RawPtr<HistoryItem>& item)
 {
     m_private = item;
     return *this;
 }
 
-WebHistoryItem::operator PassRefPtrWillBeRawPtr<HistoryItem>() const
+WebHistoryItem::operator RawPtr<HistoryItem>() const
 {
     return m_private.get();
 }

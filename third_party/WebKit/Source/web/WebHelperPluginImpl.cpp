@@ -76,14 +76,14 @@ bool WebHelperPluginImpl::initialize(const String& pluginType, WebLocalFrameImpl
     Vector<String> attributeNames;
     Vector<String> attributeValues;
     ASSERT(frame->frame()->document()->url().isValid());
-    m_pluginContainer = adoptRefWillBeNoop(toWebPluginContainerImpl(frame->frame()->loader().client()->createPlugin(
+    m_pluginContainer = toWebPluginContainerImpl(frame->frame()->loader().client()->createPlugin(
         m_objectElement.get(),
         frame->frame()->document()->url(),
         attributeNames,
         attributeValues,
         pluginType,
         false,
-        FrameLoaderClient::AllowDetachedPlugin).leakRef()));
+        FrameLoaderClient::AllowDetachedPlugin).leakRef());
 
     if (!m_pluginContainer)
         return false;

@@ -190,12 +190,12 @@ double WebPerformance::firstContentfulPaint() const
     return millisecondsToSeconds(m_private->timing()->firstContentfulPaint());
 }
 
-WebPerformance::WebPerformance(const PassRefPtrWillBeRawPtr<Performance>& performance)
+WebPerformance::WebPerformance(const RawPtr<Performance>& performance)
     : m_private(performance)
 {
 }
 
-WebPerformance& WebPerformance::operator=(const PassRefPtrWillBeRawPtr<Performance>& performance)
+WebPerformance& WebPerformance::operator=(const RawPtr<Performance>& performance)
 {
     m_private = performance;
     return *this;

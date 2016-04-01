@@ -898,7 +898,7 @@ TEST_P(ParameterizedVisualViewportTest, TestNavigateToSmallerFrameViewHistoryIte
     visualViewport.setScale(2);
     visualViewport.setLocation(FloatPoint(350, 350));
 
-    RefPtrWillBePersistent<HistoryItem> firstItem = webViewImpl()->mainFrameImpl()->frame()->loader().currentItem();
+    Persistent<HistoryItem> firstItem = webViewImpl()->mainFrameImpl()->frame()->loader().currentItem();
     EXPECT_POINT_EQ(IntPoint(0, 1000), firstItem->scrollPoint());
 
     // Now navigate to a page which causes a smaller frameView. Make sure that

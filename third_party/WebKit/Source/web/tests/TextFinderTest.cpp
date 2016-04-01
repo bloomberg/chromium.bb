@@ -35,7 +35,7 @@ protected:
         WebLocalFrameImpl& frameImpl = *m_webViewHelper.webViewImpl()->mainFrameImpl();
         frameImpl.viewImpl()->resize(WebSize(640, 480));
         frameImpl.viewImpl()->updateAllLifecyclePhases();
-        m_document = PassRefPtrWillBeRawPtr<Document>(frameImpl.document());
+        m_document = RawPtr<Document>(frameImpl.document());
         m_textFinder = &frameImpl.ensureTextFinder();
     }
 
@@ -46,8 +46,8 @@ protected:
 
 private:
     FrameTestHelpers::WebViewHelper m_webViewHelper;
-    RefPtrWillBePersistent<Document> m_document;
-    RawPtrWillBePersistent<TextFinder> m_textFinder;
+    Persistent<Document> m_document;
+    Persistent<TextFinder> m_textFinder;
 };
 
 Document& TextFinderTest::document() const
@@ -62,7 +62,7 @@ TextFinder& TextFinderTest::textFinder() const
 
 WebFloatRect TextFinderTest::findInPageRect(Node* startContainer, int startOffset, Node* endContainer, int endOffset)
 {
-    RefPtrWillBeRawPtr<Range> range = Range::create(startContainer->document(), startContainer, startOffset, endContainer, endOffset);
+    RawPtr<Range> range = Range::create(startContainer->document(), startContainer, startOffset, endContainer, endOffset);
     return WebFloatRect(findInPageRectFromRange(range.get()));
 }
 
@@ -186,7 +186,7 @@ TEST_F(TextFinderTest, FindTextNotFound)
 TEST_F(TextFinderTest, FindTextInShadowDOM)
 {
     document().body()->setInnerHTML("<b>FOO</b><i>foo</i>", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = document().body()->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+    RawPtr<ShadowRoot> shadowRoot = document().body()->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
     shadowRoot->setInnerHTML("<content select=\"i\"></content><u>Foo</u><content></content>", ASSERT_NO_EXCEPTION);
     Node* textInBElement = document().body()->firstChild()->firstChild();
     Node* textInIElement = document().body()->lastChild()->firstChild();
@@ -300,7 +300,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple)
 TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM)
 {
     document().body()->setInnerHTML("<b>FOO</b><i>foo</i>", ASSERT_NO_EXCEPTION);
-    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = document().body()->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
+    RawPtr<ShadowRoot> shadowRoot = document().body()->createShadowRootInternal(ShadowRootType::V0, ASSERT_NO_EXCEPTION);
     shadowRoot->setInnerHTML("<content select=\"i\"></content><u>Foo</u><content></content>", ASSERT_NO_EXCEPTION);
     Node* textInBElement = document().body()->firstChild()->firstChild();
     Node* textInIElement = document().body()->lastChild()->firstChild();

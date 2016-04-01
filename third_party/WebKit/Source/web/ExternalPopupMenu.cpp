@@ -152,7 +152,7 @@ void ExternalPopupMenu::updateFromElement()
     if (m_shownDOMTreeVersion == m_ownerElement->document().domTreeVersion())
         return;
     m_needsUpdate = true;
-    m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, PassRefPtrWillBeRawPtr<ExternalPopupMenu>(this)));
+    m_ownerElement->document().postTask(BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update, RawPtr<ExternalPopupMenu>(this)));
 }
 
 void ExternalPopupMenu::update()
@@ -187,7 +187,7 @@ void ExternalPopupMenu::didAcceptIndex(int index)
     // derefed. This ensures it does not get deleted while we are running this
     // method.
     int popupMenuItemIndex = toPopupMenuItemIndex(index, *m_ownerElement);
-    RefPtrWillBeRawPtr<ExternalPopupMenu> guard(this);
+    RawPtr<ExternalPopupMenu> guard(this);
 
     if (m_ownerElement) {
         m_ownerElement->popupDidHide();
@@ -206,8 +206,8 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
     // Calling methods on the HTMLSelectElement might lead to this object being
     // derefed. This ensures it does not get deleted while we are running this
     // method.
-    RefPtrWillBeRawPtr<ExternalPopupMenu> protect(this);
-    RefPtrWillBeRawPtr<HTMLSelectElement> ownerElement(m_ownerElement.get());
+    RawPtr<ExternalPopupMenu> protect(this);
+    RawPtr<HTMLSelectElement> ownerElement(m_ownerElement.get());
     ownerElement->popupDidHide();
 
     if (indices.size() == 0) {
@@ -223,7 +223,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
 void ExternalPopupMenu::didCancel()
 {
     // See comment in didAcceptIndex on why we need this.
-    RefPtrWillBeRawPtr<ExternalPopupMenu> guard(this);
+    RawPtr<ExternalPopupMenu> guard(this);
 
     if (m_ownerElement)
         m_ownerElement->popupDidHide();
@@ -232,7 +232,7 @@ void ExternalPopupMenu::didCancel()
 
 void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info, HTMLSelectElement& ownerElement)
 {
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = ownerElement.listItems();
+    const HeapVector<Member<HTMLElement>>& listItems = ownerElement.listItems();
     size_t itemCount = listItems.size();
     size_t count = 0;
     Vector<WebMenuItemInfo> items(itemCount);
@@ -277,7 +277,7 @@ int ExternalPopupMenu::toPopupMenuItemIndex(int externalPopupMenuItemIndex, HTML
         return externalPopupMenuItemIndex;
 
     int indexTracker = 0;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = ownerElement.listItems();
+    const HeapVector<Member<HTMLElement>>& items = ownerElement.listItems();
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         if (ownerElement.itemIsDisplayNone(*items[i]))
             continue;
@@ -293,7 +293,7 @@ int ExternalPopupMenu::toExternalPopupMenuItemIndex(int popupMenuItemIndex, HTML
         return popupMenuItemIndex;
 
     size_t indexTracker = 0;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = ownerElement.listItems();
+    const HeapVector<Member<HTMLElement>>& items = ownerElement.listItems();
     for (int i = 0; i < static_cast<int>(items.size()); ++i) {
         if (ownerElement.itemIsDisplayNone(*items[i]))
             continue;

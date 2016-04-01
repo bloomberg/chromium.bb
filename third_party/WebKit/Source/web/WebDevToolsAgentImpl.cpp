@@ -178,7 +178,7 @@ private:
         agent->flushPendingProtocolNotifications();
 
         Vector<WebViewImpl*> views;
-        WillBeHeapVector<RawPtrWillBeMember<WebFrameWidgetImpl>> widgets;
+        HeapVector<Member<WebFrameWidgetImpl>> widgets;
 
         // 1. Disable input events.
         const HashSet<WebViewImpl*>& viewImpls = WebViewImpl::allInstances();
@@ -218,7 +218,7 @@ private:
                 (*it)->setIgnoreInputEvents(false);
             }
         }
-        for (WillBeHeapVector<RawPtrWillBeMember<WebFrameWidgetImpl>>::iterator it = widgets.begin(); it != widgets.end(); ++it) {
+        for (HeapVector<Member<WebFrameWidgetImpl>>::iterator it = widgets.begin(); it != widgets.end(); ++it) {
             if (m_frozenWidgets.contains(*it)) {
                 // The widget was not closed during the dispatch.
                 (*it)->setIgnoreInputEvents(false);
@@ -265,7 +265,7 @@ private:
 ClientMessageLoopAdapter* ClientMessageLoopAdapter::s_instance = nullptr;
 
 // static
-PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLocalFrameImpl* frame, WebDevToolsAgentClient* client)
+RawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLocalFrameImpl* frame, WebDevToolsAgentClient* client)
 {
     WebViewImpl* view = frame->viewImpl();
     // TODO(dgozman): sometimes view->mainFrameImpl() does return null, even though |frame| is meant to be main frame.
@@ -297,7 +297,7 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* webLocalFrameImpl,
     WebDevToolsAgentClient* client,
-    PassOwnPtrWillBeRawPtr<InspectorOverlay> overlay)
+    RawPtr<InspectorOverlay> overlay)
     : m_client(client)
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_attached(false)
@@ -388,27 +388,27 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
 
-    OwnPtrWillBeRawPtr<InspectorInspectorAgent> inspectorAgent = InspectorInspectorAgent::create();
+    RawPtr<InspectorInspectorAgent> inspectorAgent = InspectorInspectorAgent::create();
     InspectorInspectorAgent* inspectorAgentPtr = inspectorAgent.get();
     m_agents.append(inspectorAgent.release());
 
-    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgent = PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
+    RawPtr<PageRuntimeAgent> pageRuntimeAgent = PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
     V8RuntimeAgent* runtimeAgent = pageRuntimeAgent->v8Agent();
     m_agents.append(pageRuntimeAgent.release());
 
-    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgent = InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), runtimeAgent, m_overlay.get());
+    RawPtr<InspectorDOMAgent> domAgent = InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), runtimeAgent, m_overlay.get());
     m_domAgent = domAgent.get();
     m_agents.append(domAgent.release());
 
-    OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgent = InspectorLayerTreeAgent::create(m_inspectedFrames.get());
+    RawPtr<InspectorLayerTreeAgent> layerTreeAgent = InspectorLayerTreeAgent::create(m_inspectedFrames.get());
     m_layerTreeAgent = layerTreeAgent.get();
     m_agents.append(layerTreeAgent.release());
 
-    OwnPtrWillBeRawPtr<InspectorResourceAgent> resourceAgent = InspectorResourceAgent::create(m_inspectedFrames.get());
+    RawPtr<InspectorResourceAgent> resourceAgent = InspectorResourceAgent::create(m_inspectedFrames.get());
     m_resourceAgent = resourceAgent.get();
     m_agents.append(resourceAgent.release());
 
-    OwnPtrWillBeRawPtr<InspectorCSSAgent> cssAgent = InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get());
+    RawPtr<InspectorCSSAgent> cssAgent = InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get());
     InspectorCSSAgent* cssAgentPtr = cssAgent.get();
     m_agents.append(cssAgent.release());
 
@@ -420,19 +420,19 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorIndexedDBAgent::create(m_inspectedFrames.get()));
 
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgent = PageDebuggerAgent::create(m_inspectedFrames.get(), runtimeAgent);
+    RawPtr<InspectorDebuggerAgent> debuggerAgent = PageDebuggerAgent::create(m_inspectedFrames.get(), runtimeAgent);
     InspectorDebuggerAgent* debuggerAgentPtr = debuggerAgent.get();
     m_agents.append(debuggerAgent.release());
 
-    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgent = PageConsoleAgent::create(runtimeAgent, debuggerAgentPtr->v8Agent(), m_domAgent, m_inspectedFrames.get());
+    RawPtr<PageConsoleAgent> pageConsoleAgent = PageConsoleAgent::create(runtimeAgent, debuggerAgentPtr->v8Agent(), m_domAgent, m_inspectedFrames.get());
     PageConsoleAgent* pageConsoleAgentPtr = pageConsoleAgent.get();
     m_agents.append(pageConsoleAgent.release());
 
-    OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgent = InspectorWorkerAgent::create(m_inspectedFrames.get(), pageConsoleAgentPtr);
+    RawPtr<InspectorWorkerAgent> workerAgent = InspectorWorkerAgent::create(m_inspectedFrames.get(), pageConsoleAgentPtr);
     InspectorWorkerAgent* workerAgentPtr = workerAgent.get();
     m_agents.append(workerAgent.release());
 
-    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgent = InspectorTracingAgent::create(this, workerAgentPtr, m_inspectedFrames.get());
+    RawPtr<InspectorTracingAgent> tracingAgent = InspectorTracingAgent::create(this, workerAgentPtr, m_inspectedFrames.get());
     m_tracingAgent = tracingAgent.get();
     m_agents.append(tracingAgent.release());
 
@@ -444,7 +444,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorHeapProfilerAgent::create(isolate, runtimeAgent));
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgentPtr);
+    RawPtr<InspectorPageAgent> pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgentPtr);
     m_pageAgent = pageAgent.get();
     m_agents.append(pageAgent.release());
 

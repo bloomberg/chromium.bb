@@ -129,9 +129,9 @@ FrameLoaderClientImpl::FrameLoaderClientImpl(WebLocalFrameImpl* frame)
 {
 }
 
-PassOwnPtrWillBeRawPtr<FrameLoaderClientImpl> FrameLoaderClientImpl::create(WebLocalFrameImpl* frame)
+RawPtr<FrameLoaderClientImpl> FrameLoaderClientImpl::create(WebLocalFrameImpl* frame)
 {
-    return adoptPtrWillBeNoop(new FrameLoaderClientImpl(frame));
+    return new FrameLoaderClientImpl(frame);
 }
 
 FrameLoaderClientImpl::~FrameLoaderClientImpl()
@@ -382,7 +382,7 @@ void FrameLoaderClientImpl::detached(FrameDetachType type)
 {
     // Alert the client that the frame is being detached. This is the last
     // chance we have to communicate with the client.
-    RefPtrWillBeRawPtr<WebLocalFrameImpl> protector(m_webFrame.get());
+    RawPtr<WebLocalFrameImpl> protector(m_webFrame.get());
 
     WebFrameClient* client = m_webFrame->client();
     if (!client)
@@ -734,9 +734,9 @@ void FrameLoaderClientImpl::selectorMatchChanged(const Vector<String>& addedSele
         client->didMatchCSS(m_webFrame, WebVector<WebString>(addedSelectors), WebVector<WebString>(removedSelectors));
 }
 
-PassRefPtrWillBeRawPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
+RawPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
 {
-    RefPtrWillBeRawPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(frame, request, data);
+    RawPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(frame, request, data);
     if (m_webFrame->client())
         m_webFrame->client()->didCreateDataSource(m_webFrame, ds.get());
     return ds.release();
@@ -768,7 +768,7 @@ void FrameLoaderClientImpl::transitionToCommittedForNewPage()
     m_webFrame->createFrameView();
 }
 
-PassRefPtrWillBeRawPtr<LocalFrame> FrameLoaderClientImpl::createFrame(
+RawPtr<LocalFrame> FrameLoaderClientImpl::createFrame(
     const FrameLoadRequest& request,
     const AtomicString& name,
     HTMLFrameOwnerElement* ownerElement)
@@ -784,7 +784,7 @@ bool FrameLoaderClientImpl::canCreatePluginWithoutRenderer(const String& mimeTyp
     return m_webFrame->client()->canCreatePluginWithoutRenderer(mimeType);
 }
 
-PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createPlugin(
+RawPtr<Widget> FrameLoaderClientImpl::createPlugin(
     HTMLPlugInElement* element,
     const KURL& url,
     const Vector<String>& paramNames,
@@ -808,7 +808,7 @@ PassRefPtrWillBeRawPtr<Widget> FrameLoaderClientImpl::createPlugin(
         return nullptr;
 
     // The container takes ownership of the WebPlugin.
-    RefPtrWillBeRawPtr<WebPluginContainerImpl> container =
+    RawPtr<WebPluginContainerImpl> container =
         WebPluginContainerImpl::create(element, webPlugin);
 
     if (!webPlugin->initialize(container.get()))
@@ -1058,7 +1058,7 @@ BlameContext* FrameLoaderClientImpl::frameBlameContext()
     return m_webFrame->client()->frameBlameContext();
 }
 
-PassOwnPtrWillBeRawPtr<LinkResource> FrameLoaderClientImpl::createServiceWorkerLinkResource(HTMLLinkElement* owner)
+RawPtr<LinkResource> FrameLoaderClientImpl::createServiceWorkerLinkResource(HTMLLinkElement* owner)
 {
     return ServiceWorkerLinkResource::create(owner);
 }

@@ -95,7 +95,7 @@ private:
     OwnPtr<WebLayer> m_clipLayer;
     Path m_path;
 
-    RefPtrWillBePersistent<Node> m_node;
+    Persistent<Node> m_node;
     WebViewImpl* m_owningWebViewImpl;
     GraphicsLayer* m_currentGraphicsLayer;
     OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;

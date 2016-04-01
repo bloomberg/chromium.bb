@@ -21,9 +21,9 @@ static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char emulatedMedia[] = "emulatedMedia";
 }
 
-PassOwnPtrWillBeRawPtr<InspectorEmulationAgent> InspectorEmulationAgent::create(WebLocalFrameImpl* webLocalFrameImpl, Client* client)
+RawPtr<InspectorEmulationAgent> InspectorEmulationAgent::create(WebLocalFrameImpl* webLocalFrameImpl, Client* client)
 {
-    return adoptPtrWillBeNoop(new InspectorEmulationAgent(webLocalFrameImpl, client));
+    return new InspectorEmulationAgent(webLocalFrameImpl, client);
 }
 
 InspectorEmulationAgent::InspectorEmulationAgent(WebLocalFrameImpl* webLocalFrameImpl, Client* client)

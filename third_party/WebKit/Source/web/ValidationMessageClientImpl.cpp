@@ -47,9 +47,9 @@ ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewImpl& webView)
 {
 }
 
-PassOwnPtrWillBeRawPtr<ValidationMessageClientImpl> ValidationMessageClientImpl::create(WebViewImpl& webView)
+RawPtr<ValidationMessageClientImpl> ValidationMessageClientImpl::create(WebViewImpl& webView)
 {
-    return adoptPtrWillBeNoop(new ValidationMessageClientImpl(webView));
+    return new ValidationMessageClientImpl(webView);
 }
 
 ValidationMessageClientImpl::~ValidationMessageClientImpl()

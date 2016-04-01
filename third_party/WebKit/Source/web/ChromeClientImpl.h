@@ -48,7 +48,7 @@ struct WebCursorInfo;
 // Handles window-level notifications from core on behalf of a WebView.
 class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
 public:
-    static PassOwnPtrWillBeRawPtr<ChromeClientImpl> create(WebViewImpl*);
+    static RawPtr<ChromeClientImpl> create(WebViewImpl*);
     ~ChromeClientImpl() override;
 
     void* webView() const override;
@@ -106,8 +106,8 @@ public:
     void dispatchViewportPropertiesDidChange(const ViewportDescription&) const override;
     void printDelegate(LocalFrame*) override;
     void annotatedRegionsChanged() override;
-    PassOwnPtrWillBeRawPtr<ColorChooser> openColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
-    PassRefPtrWillBeRawPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
+    RawPtr<ColorChooser> openColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
+    RawPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
     void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
     void enumerateChosenDirectory(FileChooser*) override;
     void setCursor(const Cursor&, LocalFrame* localRoot) override;
@@ -142,7 +142,7 @@ public:
     void setCursorOverridden(bool);
 
     bool hasOpenedPopup() const override;
-    PassRefPtrWillBeRawPtr<PopupMenu> openPopupMenu(LocalFrame&, HTMLSelectElement&) override;
+    RawPtr<PopupMenu> openPopupMenu(LocalFrame&, HTMLSelectElement&) override;
     PagePopup* openPagePopup(PagePopupClient*);
     void closePagePopup(PagePopup*);
     DOMWindow* pagePopupWindowForTesting() const override;
@@ -153,7 +153,7 @@ public:
     void requestPointerUnlock() override;
 
     // AutofillClient pass throughs:
-    void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element>>&, LocalFrame*) override;
+    void didAssociateFormControls(const HeapVector<Member<Element>>&, LocalFrame*) override;
     void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) override;
     void didChangeValueInTextField(HTMLFormControlElement&) override;
     void didEndEditingOnTextField(HTMLInputElement&) override;

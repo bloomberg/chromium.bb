@@ -61,13 +61,12 @@ class WebServiceWorkerRequest;
 // workerThreadTerminated() is called by its corresponding
 // WorkerGlobalScope.
 class ServiceWorkerGlobalScopeProxy final
-    : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerGlobalScopeProxy>
+    : public GarbageCollectedFinalized<ServiceWorkerGlobalScopeProxy>
     , public WebServiceWorkerContextProxy
     , public WorkerReportingProxy {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeProxy);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ServiceWorkerGlobalScopeProxy);
 public:
-    static PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, Document&, WebServiceWorkerContextClient&);
+    static RawPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, Document&, WebServiceWorkerContextClient&);
     ~ServiceWorkerGlobalScopeProxy() override;
 
     // WebServiceWorkerContextProxy overrides:
@@ -89,7 +88,7 @@ public:
 
     // WorkerReportingProxy overrides:
     void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;
-    void reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
+    void reportConsoleMessage(RawPtr<ConsoleMessage>) override;
     void postMessageToPageInspector(const String&) override;
     void postWorkerConsoleAgentEnabled() override { }
     void didEvaluateWorkerScript(bool success) override;
@@ -120,11 +119,11 @@ private:
     // Non-null until the WebEmbeddedWorkerImpl explicitly detach()es
     // as part of its finalization.
     WebEmbeddedWorkerImpl* m_embeddedWorker;
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 
     WebServiceWorkerContextClient* m_client;
 
-    RawPtrWillBeMember<ServiceWorkerGlobalScope> m_workerGlobalScope;
+    Member<ServiceWorkerGlobalScope> m_workerGlobalScope;
 };
 
 } // namespace blink

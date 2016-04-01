@@ -44,7 +44,7 @@ class WebLocalFrameImpl;
 
 class FrameLoaderClientImpl final : public FrameLoaderClient {
 public:
-    static PassOwnPtrWillBeRawPtr<FrameLoaderClientImpl> create(WebLocalFrameImpl*);
+    static RawPtr<FrameLoaderClientImpl> create(WebLocalFrameImpl*);
 
     ~FrameLoaderClientImpl() override;
 
@@ -119,13 +119,13 @@ public:
     void didRunContentWithCertificateErrors(const KURL&, const CString& securityInfo, const WebURL& mainResourceUrl, const CString& mainResourceSecurityInfo) override;
     void didChangePerformanceTiming() override;
     void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) override;
-    PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
+    RawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
     WTF::String userAgent() override;
     WTF::String doNotTrackValue() override;
     void transitionToCommittedForNewPage() override;
-    PassRefPtrWillBeRawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const WTF::AtomicString& name, HTMLFrameOwnerElement*) override;
+    RawPtr<LocalFrame> createFrame(const FrameLoadRequest&, const WTF::AtomicString& name, HTMLFrameOwnerElement*) override;
     virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const;
-    PassRefPtrWillBeRawPtr<Widget> createPlugin(
+    RawPtr<Widget> createPlugin(
         HTMLPlugInElement*, const KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,
         const WTF::String&, bool loadManually, DetachedPluginPolicy) override;
@@ -184,7 +184,7 @@ public:
 
     BlameContext* frameBlameContext() override;
 
-    PassOwnPtrWillBeRawPtr<LinkResource> createServiceWorkerLinkResource(HTMLLinkElement*) override;
+    RawPtr<LinkResource> createServiceWorkerLinkResource(HTMLLinkElement*) override;
 
 private:
     explicit FrameLoaderClientImpl(WebLocalFrameImpl*);
@@ -193,7 +193,7 @@ private:
 
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.
-    RawPtrWillBeMember<WebLocalFrameImpl> m_webFrame;
+    Member<WebLocalFrameImpl> m_webFrame;
 
     String m_userAgent;
 };

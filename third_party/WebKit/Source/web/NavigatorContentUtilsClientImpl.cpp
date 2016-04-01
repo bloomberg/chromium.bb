@@ -9,9 +9,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<NavigatorContentUtilsClientImpl> NavigatorContentUtilsClientImpl::create(WebLocalFrameImpl* webFrame)
+RawPtr<NavigatorContentUtilsClientImpl> NavigatorContentUtilsClientImpl::create(WebLocalFrameImpl* webFrame)
 {
-    return adoptPtrWillBeNoop(new NavigatorContentUtilsClientImpl(webFrame));
+    return new NavigatorContentUtilsClientImpl(webFrame);
 }
 
 NavigatorContentUtilsClientImpl::NavigatorContentUtilsClientImpl(WebLocalFrameImpl* webFrame)

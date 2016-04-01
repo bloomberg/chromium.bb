@@ -181,7 +181,7 @@ WebElementCollection WebDocument::all()
 
 void WebDocument::forms(WebVector<WebFormElement>& results) const
 {
-    RefPtrWillBeRawPtr<HTMLCollection> forms = const_cast<Document*>(constUnwrap<Document>())->forms();
+    RawPtr<HTMLCollection> forms = const_cast<Document*>(constUnwrap<Document>())->forms();
     size_t sourceLength = forms->length();
     Vector<WebFormElement> temp;
     temp.reserveCapacity(sourceLength);
@@ -211,16 +211,16 @@ WebElement WebDocument::focusedElement() const
 
 void WebDocument::insertStyleSheet(const WebString& sourceCode)
 {
-    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
+    RawPtr<Document> document = unwrap<Document>();
     ASSERT(document);
-    RefPtrWillBeRawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(*document, 0));
+    RawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(*document, 0));
     parsedSheet->parseString(sourceCode);
     document->styleEngine().injectAuthorSheet(parsedSheet);
 }
 
 void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors)
 {
-    RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
+    RawPtr<Document> document = unwrap<Document>();
     CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(*document);
     if (!watch && webSelectors.isEmpty())
         return;
@@ -328,20 +328,20 @@ WebDistillabilityFeatures WebDocument::distillabilityFeatures()
     return DocumentStatisticsCollector::collectStatistics(*unwrap<Document>());
 }
 
-WebDocument::WebDocument(const PassRefPtrWillBeRawPtr<Document>& elem)
+WebDocument::WebDocument(const RawPtr<Document>& elem)
     : WebNode(elem)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebDocument, constUnwrap<Node>()->isDocumentNode());
 
-WebDocument& WebDocument::operator=(const PassRefPtrWillBeRawPtr<Document>& elem)
+WebDocument& WebDocument::operator=(const RawPtr<Document>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebDocument::operator PassRefPtrWillBeRawPtr<Document>() const
+WebDocument::operator RawPtr<Document>() const
 {
     return toDocument(m_private.get());
 }

@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void SuspendableScriptExecutor::createAndRun(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
+void SuspendableScriptExecutor::createAndRun(LocalFrame* frame, int worldID, const HeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
 {
     SuspendableScriptExecutor* executor = new SuspendableScriptExecutor(frame, worldID, sources, extensionGroup, userGesture, callback);
     executor->run();
@@ -27,7 +27,7 @@ void SuspendableScriptExecutor::contextDestroyed()
     dispose();
 }
 
-SuspendableScriptExecutor::SuspendableScriptExecutor(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
+SuspendableScriptExecutor::SuspendableScriptExecutor(LocalFrame* frame, int worldID, const HeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
     : SuspendableTimer(frame->document())
     , m_frame(frame)
     , m_sources(sources)

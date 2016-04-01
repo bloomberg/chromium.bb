@@ -66,8 +66,8 @@ private:
     void reallyDestroy(Timer<WebHelperPluginImpl>*);
 
     Timer<WebHelperPluginImpl> m_destructionTimer;
-    RefPtrWillBePersistent<HTMLObjectElement> m_objectElement;
-    RefPtrWillBePersistent<WebPluginContainerImpl> m_pluginContainer;
+    Persistent<HTMLObjectElement> m_objectElement;
+    Persistent<WebPluginContainerImpl> m_pluginContainer;
 };
 
 } // namespace blink

@@ -37,9 +37,9 @@ class WebGeolocationClient;
 
 class GeolocationClientProxy final : public GeolocationClient {
 public:
-    static PassOwnPtrWillBeRawPtr<GeolocationClientProxy> create(WebGeolocationClient* client)
+    static RawPtr<GeolocationClientProxy> create(WebGeolocationClient* client)
     {
-        return adoptPtrWillBeNoop(new GeolocationClientProxy(client));
+        return new GeolocationClientProxy(client);
     }
 
     ~GeolocationClientProxy() override;
@@ -58,7 +58,7 @@ private:
     explicit GeolocationClientProxy(WebGeolocationClient*);
 
     WebGeolocationClient* m_client;
-    PersistentWillBeMember<GeolocationPosition> m_lastPosition;
+    Member<GeolocationPosition> m_lastPosition;
 };
 
 } // namespace blink

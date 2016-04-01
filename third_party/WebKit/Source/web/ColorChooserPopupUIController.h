@@ -37,11 +37,11 @@ class ColorChooserClient;
 class PagePopup;
 
 class ColorChooserPopupUIController final : public ColorChooserUIController, public PagePopupClient  {
-    WILL_BE_USING_PRE_FINALIZER(ColorChooserPopupUIController, dispose);
+    USING_PRE_FINALIZER(ColorChooserPopupUIController, dispose);
 public:
-    static PassOwnPtrWillBeRawPtr<ColorChooserPopupUIController> create(LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
+    static RawPtr<ColorChooserPopupUIController> create(LocalFrame* frame, ChromeClientImpl* chromeClient, ColorChooserClient* client)
     {
-        return adoptPtrWillBeNoop(new ColorChooserPopupUIController(frame, chromeClient, client));
+        return new ColorChooserPopupUIController(frame, chromeClient, client);
     }
 
     ~ColorChooserPopupUIController() override;
@@ -70,7 +70,7 @@ private:
     void openPopup();
     void dispose();
 
-    RawPtrWillBeMember<ChromeClientImpl> m_chromeClient;
+    Member<ChromeClientImpl> m_chromeClient;
     PagePopup* m_popup;
     Locale& m_locale;
 };

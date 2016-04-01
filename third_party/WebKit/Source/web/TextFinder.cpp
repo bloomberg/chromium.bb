@@ -58,7 +58,7 @@
 
 namespace blink {
 
-TextFinder::FindMatch::FindMatch(PassRefPtrWillBeRawPtr<Range> range, int ordinal)
+TextFinder::FindMatch::FindMatch(RawPtr<Range> range, int ordinal)
     : m_range(range)
     , m_ordinal(ordinal)
 {
@@ -69,11 +69,11 @@ DEFINE_TRACE(TextFinder::FindMatch)
     visitor->trace(m_range);
 }
 
-class TextFinder::DeferredScopeStringMatches : public NoBaseWillBeGarbageCollectedFinalized<TextFinder::DeferredScopeStringMatches> {
+class TextFinder::DeferredScopeStringMatches : public GarbageCollectedFinalized<TextFinder::DeferredScopeStringMatches> {
 public:
-    static PassOwnPtrWillBeRawPtr<DeferredScopeStringMatches> create(TextFinder* textFinder, int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
+    static RawPtr<DeferredScopeStringMatches> create(TextFinder* textFinder, int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
     {
-        return adoptPtrWillBeNoop(new DeferredScopeStringMatches(textFinder, identifier, searchText, options, reset));
+        return new DeferredScopeStringMatches(textFinder, identifier, searchText, options, reset);
     }
 
     DEFINE_INLINE_TRACE()
@@ -105,7 +105,7 @@ private:
     }
 
     Timer<DeferredScopeStringMatches> m_timer;
-    RawPtrWillBeMember<TextFinder> m_textFinder;
+    Member<TextFinder> m_textFinder;
     const int m_identifier;
     const WebString m_searchText;
     const WebFindOptions m_options;
@@ -313,7 +313,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
             // Not found.
             break;
         }
-        RefPtrWillBeRawPtr<Range> resultRange = Range::create(result.document(), toPositionInDOMTree(result.startPosition()), toPositionInDOMTree(result.endPosition()));
+        RawPtr<Range> resultRange = Range::create(result.document(), toPositionInDOMTree(result.startPosition()), toPositionInDOMTree(result.endPosition()));
         if (resultRange->collapsed()) {
             // resultRange will be collapsed if the matched text spans over multiple TreeScopes.
             // FIXME: Show such matches to users.
@@ -510,7 +510,7 @@ void TextFinder::updateFindMatchRects()
 
     // Remove any invalid matches from the cache.
     if (deadMatches) {
-        WillBeHeapVector<FindMatch> filteredMatches;
+        HeapVector<FindMatch> filteredMatches;
         filteredMatches.reserveCapacity(m_findMatchesCache.size() - deadMatches);
 
         for (const FindMatch& match : m_findMatchesCache) {
@@ -603,7 +603,7 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_findMatchesCache.size());
 
-    RefPtrWillBeRawPtr<Range> range = m_findMatchesCache[index].m_range;
+    RawPtr<Range> range = m_findMatchesCache[index].m_range;
     if (!range->boundaryPointsValid() || !range->startContainer()->inDocument())
         return -1;
 
@@ -650,9 +650,9 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
     return ordinalOfFirstMatch() + m_activeMatchIndexInCurrentFrame + 1;
 }
 
-PassOwnPtrWillBeRawPtr<TextFinder> TextFinder::create(WebLocalFrameImpl& ownerFrame)
+RawPtr<TextFinder> TextFinder::create(WebLocalFrameImpl& ownerFrame)
 {
-    return adoptPtrWillBeNoop(new TextFinder(ownerFrame));
+    return new TextFinder(ownerFrame);
 }
 
 TextFinder::TextFinder(WebLocalFrameImpl& ownerFrame)

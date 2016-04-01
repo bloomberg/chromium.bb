@@ -57,9 +57,9 @@ DateTimeChooserImpl::DateTimeChooserImpl(ChromeClientImpl* chromeClient, DateTim
     m_popup = m_chromeClient->openPagePopup(this);
 }
 
-PassRefPtrWillBeRawPtr<DateTimeChooserImpl> DateTimeChooserImpl::create(ChromeClientImpl* chromeClient, DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
+RawPtr<DateTimeChooserImpl> DateTimeChooserImpl::create(ChromeClientImpl* chromeClient, DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
 {
-    return adoptRefWillBeNoop(new DateTimeChooserImpl(chromeClient, client, parameters));
+    return new DateTimeChooserImpl(chromeClient, client, parameters);
 }
 
 DateTimeChooserImpl::~DateTimeChooserImpl()
@@ -187,7 +187,7 @@ Locale& DateTimeChooserImpl::locale()
 
 void DateTimeChooserImpl::setValueAndClosePopup(int numValue, const String& stringValue)
 {
-    RefPtrWillBeRawPtr<DateTimeChooserImpl> protector(this);
+    RawPtr<DateTimeChooserImpl> protector(this);
     if (numValue >= 0)
         setValue(stringValue);
     endChooser();

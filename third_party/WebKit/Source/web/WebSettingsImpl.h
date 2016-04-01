@@ -213,7 +213,7 @@ public:
 
 private:
     Settings* m_settings;
-    RawPtrWillBeUntracedMember<DevToolsEmulator> m_devToolsEmulator;
+    UntracedMember<DevToolsEmulator> m_devToolsEmulator;
     bool m_showFPSCounter;
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;

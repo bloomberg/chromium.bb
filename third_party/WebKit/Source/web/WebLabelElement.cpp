@@ -42,20 +42,20 @@ WebElement WebLabelElement::correspondingControl()
     return WebElement(unwrap<HTMLLabelElement>()->control());
 }
 
-WebLabelElement::WebLabelElement(const PassRefPtrWillBeRawPtr<HTMLLabelElement>& elem)
+WebLabelElement::WebLabelElement(const RawPtr<HTMLLabelElement>& elem)
     : WebElement(elem)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebLabelElement, isHTMLLabelElement(constUnwrap<Node>()));
 
-WebLabelElement& WebLabelElement::operator=(const PassRefPtrWillBeRawPtr<HTMLLabelElement>& elem)
+WebLabelElement& WebLabelElement::operator=(const RawPtr<HTMLLabelElement>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebLabelElement::operator PassRefPtrWillBeRawPtr<HTMLLabelElement>() const
+WebLabelElement::operator RawPtr<HTMLLabelElement>() const
 {
     return toHTMLLabelElement(m_private.get());
 }

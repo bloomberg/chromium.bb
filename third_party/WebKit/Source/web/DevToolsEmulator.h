@@ -18,10 +18,10 @@ class IntPoint;
 class WebInputEvent;
 class WebViewImpl;
 
-class DevToolsEmulator final : public NoBaseWillBeGarbageCollectedFinalized<DevToolsEmulator> {
+class DevToolsEmulator final : public GarbageCollectedFinalized<DevToolsEmulator> {
 public:
     ~DevToolsEmulator();
-    static PassOwnPtrWillBeRawPtr<DevToolsEmulator> create(WebViewImpl*);
+    static RawPtr<DevToolsEmulator> create(WebViewImpl*);
     DECLARE_TRACE();
 
     // Settings overrides.

@@ -101,7 +101,7 @@ public:
 private:
     WebWidgetClient* m_client;
     RefPtr<WebViewImpl> m_webView;
-    RefPtrWillBePersistent<WebLocalFrameImpl> m_mainFrame;
+    Persistent<WebLocalFrameImpl> m_mainFrame;
 };
 
 } // namespace blink

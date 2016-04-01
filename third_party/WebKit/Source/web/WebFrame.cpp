@@ -28,7 +28,7 @@ namespace blink {
 bool WebFrame::swap(WebFrame* frame)
 {
     using std::swap;
-    RefPtrWillBeRawPtr<Frame> oldFrame = toImplBase()->frame();
+    RawPtr<Frame> oldFrame = toImplBase()->frame();
 #if !ENABLE(OILPAN)
     RefPtr<WebFrameImplBase> protectThis = toImplBase();
 #endif
@@ -276,7 +276,7 @@ WebFrame* WebFrame::findChildByName(const WebString& name) const
 
 WebFrame* WebFrame::fromFrameOwnerElement(const WebElement& webElement)
 {
-    Element* element = PassRefPtrWillBeRawPtr<Element>(webElement).get();
+    Element* element = RawPtr<Element>(webElement).get();
 
     if (!element->isFrameOwnerElement())
         return nullptr;

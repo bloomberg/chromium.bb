@@ -38,12 +38,12 @@ class ColorChooserClient;
 class LocalFrame;
 class WebColorChooser;
 
-class ColorChooserUIController : public NoBaseWillBeGarbageCollectedFinalized<ColorChooserUIController>, public WebColorChooserClient, public ColorChooser {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
+class ColorChooserUIController : public GarbageCollectedFinalized<ColorChooserUIController>, public WebColorChooserClient, public ColorChooser {
+    USING_GARBAGE_COLLECTED_MIXIN(ColorChooserUIController);
 public:
-    static PassOwnPtrWillBeRawPtr<ColorChooserUIController> create(LocalFrame* frame, ColorChooserClient* client)
+    static RawPtr<ColorChooserUIController> create(LocalFrame* frame, ColorChooserClient* client)
     {
-        return adoptPtrWillBeNoop(new ColorChooserUIController(frame, client));
+        return new ColorChooserUIController(frame, client);
     }
 
     ~ColorChooserUIController() override;
@@ -65,9 +65,9 @@ protected:
 
     void openColorChooser();
     OwnPtr<WebColorChooser> m_chooser;
-    RawPtrWillBeMember<ColorChooserClient> m_client;
+    Member<ColorChooserClient> m_client;
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    Member<LocalFrame> m_frame;
 };
 
 } // namespace blink

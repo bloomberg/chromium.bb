@@ -37,9 +37,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<WebDataSourceImpl> WebDataSourceImpl::create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
+RawPtr<WebDataSourceImpl> WebDataSourceImpl::create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
 {
-    return adoptRefWillBeNoop(new WebDataSourceImpl(frame, request, data));
+    return new WebDataSourceImpl(frame, request, data);
 }
 
 const WebURLRequest& WebDataSourceImpl::originalRequest() const
@@ -143,7 +143,7 @@ WebDataSourceImpl::~WebDataSourceImpl()
 
 void WebDataSourceImpl::detachFromFrame()
 {
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RawPtr<DocumentLoader> protect(this);
 
     DocumentLoader::detachFromFrame();
     m_extraData.clear();

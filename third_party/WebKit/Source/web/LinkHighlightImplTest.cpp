@@ -226,7 +226,7 @@ TEST(LinkHighlightImplTest, multipleHighlights)
     touchEvent.data.tap.height = 30;
 
     Vector<IntRect> goodTargets;
-    WillBeHeapVector<RawPtrWillBeMember<Node>> highlightNodes;
+    HeapVector<Member<Node>> highlightNodes;
     IntRect boundingBox(touchEvent.x - touchEvent.data.tap.width / 2, touchEvent.y - touchEvent.data.tap.height / 2, touchEvent.data.tap.width, touchEvent.data.tap.height);
     findGoodTouchTargets(boundingBox, webViewImpl->mainFrameImpl()->frame(), goodTargets, highlightNodes);
 

@@ -52,20 +52,20 @@ WebString WebOptionElement::label() const
     return constUnwrap<HTMLOptionElement>()->label();
 }
 
-WebOptionElement::WebOptionElement(const PassRefPtrWillBeRawPtr<HTMLOptionElement>& elem)
+WebOptionElement::WebOptionElement(const RawPtr<HTMLOptionElement>& elem)
     : WebElement(elem)
 {
 }
 
 DEFINE_WEB_NODE_TYPE_CASTS(WebOptionElement, isHTMLOptionElement(constUnwrap<Node>()));
 
-WebOptionElement& WebOptionElement::operator=(const PassRefPtrWillBeRawPtr<HTMLOptionElement>& elem)
+WebOptionElement& WebOptionElement::operator=(const RawPtr<HTMLOptionElement>& elem)
 {
     m_private = elem;
     return *this;
 }
 
-WebOptionElement::operator PassRefPtrWillBeRawPtr<HTMLOptionElement>() const
+WebOptionElement::operator RawPtr<HTMLOptionElement>() const
 {
     return toHTMLOptionElement(m_private.get());
 }

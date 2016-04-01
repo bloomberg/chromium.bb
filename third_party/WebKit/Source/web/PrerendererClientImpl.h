@@ -41,8 +41,8 @@ namespace blink {
 class Prerender;
 class WebPrerendererClient;
 
-class PrerendererClientImpl final : public NoBaseWillBeGarbageCollected<PrerendererClientImpl>, public PrerendererClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PrerendererClientImpl);
+class PrerendererClientImpl final : public GarbageCollected<PrerendererClientImpl>, public PrerendererClient {
+    USING_GARBAGE_COLLECTED_MIXIN(PrerendererClientImpl);
     WTF_MAKE_NONCOPYABLE(PrerendererClientImpl);
 public:
     explicit PrerendererClientImpl(WebPrerendererClient*);

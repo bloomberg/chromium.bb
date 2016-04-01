@@ -168,9 +168,9 @@ ChromeClientImpl::~ChromeClientImpl()
 {
 }
 
-PassOwnPtrWillBeRawPtr<ChromeClientImpl> ChromeClientImpl::create(WebViewImpl* webView)
+RawPtr<ChromeClientImpl> ChromeClientImpl::create(WebViewImpl* webView)
 {
-    return adoptPtrWillBeNoop(new ChromeClientImpl(webView));
+    return new ChromeClientImpl(webView);
 }
 
 void* ChromeClientImpl::webView() const
@@ -657,10 +657,10 @@ void ChromeClientImpl::printDelegate(LocalFrame* frame)
         m_webView->client()->printPage(WebLocalFrameImpl::fromFrame(frame));
 }
 
-PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::openColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
+RawPtr<ColorChooser> ChromeClientImpl::openColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
 {
     notifyPopupOpeningObservers();
-    OwnPtrWillBeRawPtr<ColorChooserUIController> controller = nullptr;
+    RawPtr<ColorChooserUIController> controller = nullptr;
     if (RuntimeEnabledFeatures::pagePopupEnabled())
         controller = ColorChooserPopupUIController::create(frame, this, chooserClient);
     else
@@ -669,7 +669,7 @@ PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::openColorChooser(LocalFra
     return controller.release();
 }
 
-PassRefPtrWillBeRawPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
+RawPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
 {
     notifyPopupOpeningObservers();
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -876,11 +876,11 @@ bool ChromeClientImpl::hasOpenedPopup() const
     return m_webView->hasOpenedPopup();
 }
 
-PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::openPopupMenu(LocalFrame& frame, HTMLSelectElement& select)
+RawPtr<PopupMenu> ChromeClientImpl::openPopupMenu(LocalFrame& frame, HTMLSelectElement& select)
 {
     notifyPopupOpeningObservers();
     if (WebViewImpl::useExternalPopupMenus())
-        return adoptRefWillBeNoop(new ExternalPopupMenu(frame, select, *m_webView));
+        return new ExternalPopupMenu(frame, select, *m_webView);
 
     ASSERT(RuntimeEnabledFeatures::pagePopupEnabled());
     return PopupMenuImpl::create(this, select);
@@ -960,7 +960,7 @@ void ChromeClientImpl::annotatedRegionsChanged()
         client->draggableRegionsChanged();
 }
 
-void ChromeClientImpl::didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element>>& elements, LocalFrame* frame)
+void ChromeClientImpl::didAssociateFormControls(const HeapVector<Member<Element>>& elements, LocalFrame* frame)
 {
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe->autofillClient())

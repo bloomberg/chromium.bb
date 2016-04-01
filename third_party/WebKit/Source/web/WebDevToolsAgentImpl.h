@@ -69,7 +69,7 @@ class Value;
 }
 
 class WebDevToolsAgentImpl final
-    : public NoBaseWillBeGarbageCollectedFinalized<WebDevToolsAgentImpl>
+    : public GarbageCollectedFinalized<WebDevToolsAgentImpl>
     , public WebDevToolsAgent
     , public InspectorEmulationAgent::Client
     , public InspectorTracingAgent::Client
@@ -78,7 +78,7 @@ class WebDevToolsAgentImpl final
     , public protocol::FrontendChannel
     , private WebThread::TaskObserver {
 public:
-    static PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> create(WebLocalFrameImpl*, WebDevToolsAgentClient*);
+    static RawPtr<WebDevToolsAgentImpl> create(WebLocalFrameImpl*, WebDevToolsAgentClient*);
     ~WebDevToolsAgentImpl() override;
     void dispose();
     DECLARE_VIRTUAL_TRACE();
@@ -109,7 +109,7 @@ public:
     WebString evaluateInWebInspectorOverlay(const WebString& script) override;
 
 private:
-    WebDevToolsAgentImpl(WebLocalFrameImpl*, WebDevToolsAgentClient*, PassOwnPtrWillBeRawPtr<InspectorOverlay>);
+    WebDevToolsAgentImpl(WebLocalFrameImpl*, WebDevToolsAgentClient*, RawPtr<InspectorOverlay>);
 
     // InspectorTracingAgent::Client implementation.
     void enableTracing(const WTF::String& categoryFilter) override;
@@ -141,22 +141,22 @@ private:
     static void runDebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor>);
 
     WebDevToolsAgentClient* m_client;
-    RawPtrWillBeMember<WebLocalFrameImpl> m_webLocalFrameImpl;
+    Member<WebLocalFrameImpl> m_webLocalFrameImpl;
     bool m_attached;
 #if ENABLE(ASSERT)
     bool m_hasBeenDisposed;
 #endif
 
-    RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    OwnPtrWillBeMember<InspectorResourceContentLoader> m_resourceContentLoader;
-    OwnPtrWillBeMember<InspectorOverlay> m_overlay;
-    OwnPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    Member<InstrumentingAgents> m_instrumentingAgents;
+    Member<InspectorResourceContentLoader> m_resourceContentLoader;
+    Member<InspectorOverlay> m_overlay;
+    Member<InspectedFrames> m_inspectedFrames;
 
-    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
-    RawPtrWillBeMember<InspectorLayerTreeAgent> m_layerTreeAgent;
-    RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
+    Member<InspectorDOMAgent> m_domAgent;
+    Member<InspectorPageAgent> m_pageAgent;
+    Member<InspectorResourceAgent> m_resourceAgent;
+    Member<InspectorLayerTreeAgent> m_layerTreeAgent;
+    Member<InspectorTracingAgent> m_tracingAgent;
 
     OwnPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;
     OwnPtr<protocol::Frontend> m_inspectorFrontend;

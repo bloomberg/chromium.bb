@@ -21,9 +21,9 @@ static const char showScrollBottleneckRects[] = "showScrollBottleneckRects";
 static const char showSizeOnResize[] = "showSizeOnResize";
 }
 
-PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> InspectorRenderingAgent::create(WebLocalFrameImpl* webLocalFrameImpl, InspectorOverlay* overlay)
+RawPtr<InspectorRenderingAgent> InspectorRenderingAgent::create(WebLocalFrameImpl* webLocalFrameImpl, InspectorOverlay* overlay)
 {
-    return adoptPtrWillBeNoop(new InspectorRenderingAgent(webLocalFrameImpl, overlay));
+    return new InspectorRenderingAgent(webLocalFrameImpl, overlay);
 }
 
 InspectorRenderingAgent::InspectorRenderingAgent(WebLocalFrameImpl* webLocalFrameImpl, InspectorOverlay* overlay)

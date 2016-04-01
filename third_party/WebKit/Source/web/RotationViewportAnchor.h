@@ -51,7 +51,7 @@ private:
     // normalized to the outer viewport size.
     FloatSize m_normalizedVisualViewportOffset;
 
-    RefPtrWillBeMember<Node> m_anchorNode;
+    Member<Node> m_anchorNode;
     LayoutRect m_anchorNodeBounds;
 
     FloatSize m_anchorInInnerViewCoords;

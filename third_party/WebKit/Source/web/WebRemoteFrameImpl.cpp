@@ -583,7 +583,7 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, cons
 {
     WebLocalFrameImpl* child = WebLocalFrameImpl::create(scope, client, opener);
     insertAfter(child, previousSibling);
-    RefPtrWillBeRawPtr<RemoteFrameOwner> owner = RemoteFrameOwner::create(static_cast<SandboxFlags>(sandboxFlags), frameOwnerProperties);
+    RawPtr<RemoteFrameOwner> owner = RemoteFrameOwner::create(static_cast<SandboxFlags>(sandboxFlags), frameOwnerProperties);
     // FIXME: currently this calls LocalFrame::init() on the created LocalFrame, which may
     // result in the browser observing two navigations to about:blank (one from the initial
     // frame creation, and one from swapping it into the remote process). FrameLoader might
@@ -606,12 +606,12 @@ WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(WebTreeScopeType scope, co
 {
     WebRemoteFrameImpl* child = WebRemoteFrameImpl::create(scope, client, opener);
     appendChild(child);
-    RefPtrWillBeRawPtr<RemoteFrameOwner> owner = RemoteFrameOwner::create(static_cast<SandboxFlags>(sandboxFlags), WebFrameOwnerProperties());
+    RawPtr<RemoteFrameOwner> owner = RemoteFrameOwner::create(static_cast<SandboxFlags>(sandboxFlags), WebFrameOwnerProperties());
     child->initializeCoreFrame(frame()->host(), owner.get(), name, uniqueName);
     return child;
 }
 
-void WebRemoteFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<RemoteFrame> frame)
+void WebRemoteFrameImpl::setCoreFrame(RawPtr<RemoteFrame> frame)
 {
     m_frame = frame;
 }

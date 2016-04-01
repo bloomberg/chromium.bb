@@ -38,9 +38,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient> ServiceWorkerGlobalScopeClientImpl::create(WebServiceWorkerContextClient& client)
+RawPtr<ServiceWorkerGlobalScopeClient> ServiceWorkerGlobalScopeClientImpl::create(WebServiceWorkerContextClient& client)
 {
-    return adoptPtrWillBeNoop(new ServiceWorkerGlobalScopeClientImpl(client));
+    return new ServiceWorkerGlobalScopeClientImpl(client);
 }
 
 ServiceWorkerGlobalScopeClientImpl::~ServiceWorkerGlobalScopeClientImpl()

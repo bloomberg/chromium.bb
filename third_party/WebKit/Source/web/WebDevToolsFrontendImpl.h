@@ -55,14 +55,14 @@ public:
 
     bool isUnderTest() override;
 
-    void showContextMenu(LocalFrame*, float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>) override;
+    void showContextMenu(LocalFrame*, float x, float y, RawPtr<ContextMenuProvider>) override;
 
     void setInjectedScriptForOrigin(const String& origin, const String& source) override;
 
 private:
-    RefPtrWillBePersistent<WebLocalFrameImpl> m_webFrame;
+    Persistent<WebLocalFrameImpl> m_webFrame;
     WebDevToolsFrontendClient* m_client;
-    RefPtrWillBePersistent<DevToolsHost> m_devtoolsHost;
+    Persistent<DevToolsHost> m_devtoolsHost;
     typedef HashMap<String, String> InjectedScriptForOriginMap;
     InjectedScriptForOriginMap m_injectedScriptForOrigin;
 };
