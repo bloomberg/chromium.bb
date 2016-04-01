@@ -20,7 +20,7 @@
 namespace libwebm {
 
 std::string GetTempFileName() {
-#ifndef _MSC_VER
+#if !defined _MSC_VER && !defined __MINGW32__
   char temp_file_name_template[] = "libwebm_temp.XXXXXX";
   int fd = mkstemp(temp_file_name_template);
   if (fd != -1) {
