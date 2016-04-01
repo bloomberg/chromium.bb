@@ -42,8 +42,11 @@ if (is_win) {
   config("browser_win_linker_flags") {
     libs = [
       "credui.lib",
+      "cryptui.lib",
+      "dwmapi.lib",
       "netapi32.lib",
       "ndfapi.lib",  # Used by browser/net/net_error_diagnostics_dialog_win.h
+      "pdh.lib",
     ]
     ldflags = [ "/DELAYLOAD:ndfapi.dll" ]
   }

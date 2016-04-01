@@ -17,4 +17,8 @@ source_set("path_parser") {
     "//chrome/common:constants",
     "//components/policy",
   ]
+
+  if (is_win) {
+    libs = [ "wtsapi32.lib" ]
+  }
 }

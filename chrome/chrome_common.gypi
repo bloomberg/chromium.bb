@@ -494,7 +494,7 @@
           'sources': [ '<@(chrome_common_importer_sources)' ],
           'dependencies': [
             '<(DEPTH)/url/ipc/url_ipc.gyp:url_ipc',
-	  ],
+        ],
         }],
         ['OS=="win"', {
           'include_dirs': [
@@ -503,6 +503,22 @@
           'dependencies': [
             '<(DEPTH)/components/components.gyp:dom_distiller_core',  # Needed by chrome_content_client.cc.
           ],
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'AdditionalDependencies': [
+                  'wintrust.lib',
+                ],
+              },
+            },
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalDependencies': [
+                'wintrust.lib',
+              ],
+            },
+          },
         }],
         ['OS=="mac"', {
           'dependencies': [

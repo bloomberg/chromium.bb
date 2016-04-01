@@ -13,8 +13,6 @@
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 
-#pragma comment(lib, "dwmapi.lib")
-
 AppWindowDesktopWindowTreeHostWin::AppWindowDesktopWindowTreeHostWin(
     ChromeNativeAppWindowViewsWin* app_window,
     views::DesktopNativeWidgetAura* desktop_native_widget_aura)

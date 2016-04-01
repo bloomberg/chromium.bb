@@ -121,6 +121,12 @@ static_library("with_no_strings") {
       "//third_party/lzma_sdk",
     ]
 
+    libs = [
+      "urlmon.lib",
+      "wbemuuid.lib",
+      "wtsapi32.lib",
+    ]
+
     configs += [
       "//build/config:precompiled_headers",
 

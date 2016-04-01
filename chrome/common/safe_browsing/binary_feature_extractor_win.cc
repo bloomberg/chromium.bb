@@ -15,8 +15,6 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/pe_image_reader_win.h"
 
-#pragma comment(lib, "wintrust.lib")
-
 namespace safe_browsing {
 
 namespace {

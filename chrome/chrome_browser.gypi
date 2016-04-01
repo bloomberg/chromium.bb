@@ -3859,7 +3859,11 @@
                 'ndfapi.dll',
               ],
               'AdditionalDependencies': [
+                'cryptui.lib',
+                'dwmapi.lib',
                 'ndfapi.lib',
+                'pdh.lib',
+                'wtsapi32.lib',
               ],
             },
           },
@@ -3870,7 +3874,11 @@
                   'ndfapi.dll',
                 ],
                 'AdditionalDependencies': [
+                  'cryptui.lib',
+                  'dwmapi.lib',
                   'ndfapi.lib',
+                  'pdh.lib',
+                  'wtsapi32.lib',
                 ],
               },
             },

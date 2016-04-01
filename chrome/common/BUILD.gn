@@ -245,6 +245,8 @@ static_library("common") {
       "//components/dom_distiller/core",  # Needed by chrome_content_client.cc.
       "//third_party/wtl",
     ]
+
+    libs = [ "wintrust.lib" ]
   }
 
   if (is_mac) {

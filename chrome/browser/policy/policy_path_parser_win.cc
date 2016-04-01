@@ -5,7 +5,6 @@
 #include <shlobj.h>
 #include <stddef.h>
 #include <wtsapi32.h>
-#pragma comment(lib, "wtsapi32.lib")
 
 #include "chrome/browser/policy/policy_path_parser.h"
 

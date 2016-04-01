@@ -13,9 +13,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/win/windows_version.h"
 
-// Link pdh.lib (import library for pdh.dll) whenever this file is linked in.
-#pragma comment(lib, "pdh.lib")
-
 PrivateWorkingSetSnapshot::PrivateWorkingSetSnapshot() {}
 
 PrivateWorkingSetSnapshot::~PrivateWorkingSetSnapshot() {}

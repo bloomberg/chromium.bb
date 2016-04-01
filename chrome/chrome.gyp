@@ -456,6 +456,13 @@
             'common/safe_browsing/pe_image_reader_win.h',
             'tools/safe_browsing/sb_sigutil.cc',
           ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalDependencies': [
+                'wintrust.lib',
+              ],
+            },
+          },
         },
       ],  # 'targets'
       'includes': [

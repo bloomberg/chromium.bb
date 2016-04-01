@@ -6,7 +6,6 @@
 
 #include <windows.h>
 #include <cryptuiapi.h>
-#pragma comment(lib, "cryptui.lib")
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

@@ -23,8 +23,6 @@
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 
-#pragma comment(lib, "dwmapi.lib")
-
 namespace {
 
 const int kClientEdgeThickness = 3;

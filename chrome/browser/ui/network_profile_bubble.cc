@@ -8,8 +8,6 @@
 #include <stdint.h>
 
 #include <wtsapi32.h>
-// Make sure we link the wtsapi lib file in.
-#pragma comment(lib, "wtsapi32.lib")
 
 #include "base/bind.h"
 #include "base/command_line.h"

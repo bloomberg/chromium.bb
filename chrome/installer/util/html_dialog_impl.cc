@@ -9,8 +9,6 @@
 #include "base/win/scoped_variant.h"
 #include "chrome/installer/util/html_dialog.h"
 
-#pragma comment(lib, "urlmon.lib")
-
 namespace installer {
 
 // Windows implementation of the HTML dialog class. The main danger with
