@@ -56,13 +56,29 @@ var testing = {};
     var noAnimationStyle = document.createElement('style');
     noAnimationStyle.id = 'no-animation';
     noAnimationStyle.textContent =
-      '* {' +
+      '*, * /deep/ * {' +
       '  -webkit-transition-duration: 0ms !important;' +
       '  -webkit-transition-delay: 0ms !important;' +
       '  -webkit-animation-duration: 0ms !important;' +
       '  -webkit-animation-delay: 0ms !important;' +
       '}';
     document.querySelector('head').appendChild(noAnimationStyle);
+
+    var realElementAnimate = Element.prototype.animate;
+    Element.prototype.animate = function(keyframes, opt_options) {
+      if (typeof opt_options == 'object')
+        opt_options.duration = 0;
+      else
+        opt_options = 0;
+      return realElementAnimate.call(this, keyframes, opt_options);
+    };
+    if (document.timeline && document.timeline.play) {
+      var realTimelinePlay = document.timeline.play;
+      document.timeline.play = function(a) {
+        a.timing.duration = 0;
+        return realTimelinePlay.call(document.timeline, a);
+      };
+    }
   };
 
   Test.prototype = {
