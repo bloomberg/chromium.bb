@@ -23,6 +23,18 @@ using base::ASCIIToUTF16;
 using testing::Eq;
 using testing::Property;
 
+namespace {
+
+struct SortEntry {
+  const char* const origin;
+  const char* const username;
+  const char* const password;
+  const char* const affiliated_web_realm;
+  const int expected_position;
+};
+
+}  // namespace
+
 class MockPasswordUIView : public PasswordUIView {
  public:
   explicit MockPasswordUIView(Profile* profile)
@@ -75,6 +87,9 @@ class PasswordManagerPresenterTest : public testing::Test {
   void AddPasswordException(const GURL& origin);
   void UpdateLists();
   MockPasswordUIView* GetUIController() { return mock_controller_.get(); }
+  void SortAndCheckPositions(const SortEntry test_entries[],
+                             size_t number_of_entries,
+                             bool username_and_password_in_key);
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -108,6 +123,53 @@ void PasswordManagerPresenterTest::AddPasswordException(const GURL& origin) {
 void PasswordManagerPresenterTest::UpdateLists() {
   mock_controller_->GetPasswordManagerPresenter()->SetPasswordList();
   mock_controller_->GetPasswordManagerPresenter()->SetPasswordExceptionList();
+}
+
+void PasswordManagerPresenterTest::SortAndCheckPositions(
+    const SortEntry test_entries[],
+    size_t number_of_entries,
+    bool username_and_password_in_key) {
+  std::vector<scoped_ptr<autofill::PasswordForm>> list;
+  size_t expected_number_of_unique_entries = 0;
+  for (size_t i = 0; i < number_of_entries; i++) {
+    const SortEntry& entry = test_entries[i];
+    scoped_ptr<autofill::PasswordForm> form(new autofill::PasswordForm());
+    form->signon_realm = entry.origin;
+    form->origin = GURL(base::ASCIIToUTF16(entry.origin));
+    if (username_and_password_in_key) {
+      form->username_value = base::ASCIIToUTF16(entry.username);
+      form->password_value = base::ASCIIToUTF16(entry.password);
+    }
+    if (entry.affiliated_web_realm)
+      form->affiliated_web_realm = entry.affiliated_web_realm;
+    list.push_back(std::move(form));
+    if (entry.expected_position >= 0)
+      expected_number_of_unique_entries++;
+  }
+
+  DuplicatesMap duplicates;
+  std::string languages;
+  mock_controller_->GetPasswordManagerPresenter()->SortEntriesAndHideDuplicates(
+      languages, &list, &duplicates, username_and_password_in_key);
+
+  ASSERT_EQ(expected_number_of_unique_entries, list.size());
+  ASSERT_EQ(number_of_entries - expected_number_of_unique_entries,
+            duplicates.size());
+  for (size_t i = 0; i < number_of_entries; i++) {
+    const SortEntry& entry = test_entries[i];
+    if (entry.expected_position >= 0) {
+      SCOPED_TRACE(testing::Message("position in sorted list: ")
+                   << entry.expected_position);
+      EXPECT_EQ(GURL(base::ASCIIToUTF16(entry.origin)),
+                list[entry.expected_position]->origin);
+      if (username_and_password_in_key) {
+        EXPECT_EQ(base::ASCIIToUTF16(entry.username),
+                  list[entry.expected_position]->username_value);
+        EXPECT_EQ(base::ASCIIToUTF16(entry.password),
+                  list[entry.expected_position]->password_value);
+      }
+    }
+  }
 }
 
 namespace {
@@ -163,6 +225,67 @@ TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {
       SetPasswordExceptionList(Property(
           &std::vector<scoped_ptr<autofill::PasswordForm>>::size, Eq(1u))));
   UpdateLists();
+}
+
+TEST_F(PasswordManagerPresenterTest, Sorting_DifferentOrigins) {
+  const SortEntry test_cases[] = {
+      {"http://example-b.com", "user_a", "pwd", nullptr, 2},
+      {"http://example-a.com", "user_a1", "pwd", nullptr, 0},
+      {"http://example-a.com", "user_a2", "pwd", nullptr, 1},
+      {"http://example-c.com", "user_a", "pwd", nullptr, 3}};
+  SortAndCheckPositions(test_cases, arraysize(test_cases), true);
+}
+
+TEST_F(PasswordManagerPresenterTest, Sorting_DifferentUsernames) {
+  const SortEntry test_cases[] = {
+      {"http://example.com", "user_a", "pwd", nullptr, 0},
+      {"http://example.com", "user_c", "pwd", nullptr, 2},
+      {"http://example.com", "user_b", "pwd", nullptr, 1}};
+  SortAndCheckPositions(test_cases, arraysize(test_cases), true);
+}
+
+TEST_F(PasswordManagerPresenterTest, Sorting_DifferentPasswords) {
+  const SortEntry test_cases[] = {
+      {"http://example.com", "user_a", "1", nullptr, 0},
+      {"http://example.com", "user_a", "2", nullptr, 1},
+      {"http://example.com", "user_a", "3", nullptr, 2}};
+  SortAndCheckPositions(test_cases, arraysize(test_cases), true);
+}
+
+TEST_F(PasswordManagerPresenterTest, Sorting_HideDuplicates) {
+  const SortEntry test_cases[] = {
+      {"http://example.com", "user_a", "pwd", nullptr, 0},
+      // Different username.
+      {"http://example.com", "user_b", "pwd", nullptr, 2},
+      // Different password.
+      {"http://example.com", "user_a", "secret", nullptr, 1},
+      // Different origin.
+      {"http://sub1.example.com", "user_a", "pwd", nullptr, 3},
+      {"http://example.com", "user_a", "pwd", nullptr, -1}  // Hide it.
+  };
+  SortAndCheckPositions(test_cases, arraysize(test_cases), true);
+}
+
+TEST_F(PasswordManagerPresenterTest, Sorting_DontUseUsernameAndPasswordInKey) {
+  const SortEntry test_cases[] = {
+      {"http://example-b.com", nullptr, nullptr, nullptr, 1},
+      {"http://example-a.com", nullptr, nullptr, nullptr, 0},
+      {"http://example-a.com", nullptr, nullptr, nullptr, -1},  // Hide it.
+      {"http://example-c.com", nullptr, nullptr, nullptr, 2}};
+  SortAndCheckPositions(test_cases, arraysize(test_cases), false);
+}
+
+TEST_F(PasswordManagerPresenterTest, Sorting_AndroidCredentials) {
+  const SortEntry test_cases[] = {
+      {"https://alpha.com", "user", "secret", nullptr, 0},
+      {"android://hash@com.alpha", "user", "secret", "https://alpha.com", 1},
+      {"android://hash@com.alpha", "user", "secret", "https://alpha.com", -1},
+      {"android://hash@com.alpha", "user", "secret", nullptr, 2},
+
+      {"android://hash@com.betta.android", "user", "secret",
+       "https://betta.com", 3},
+      {"android://hash@com.betta.android", "user", "secret", nullptr, 4}};
+  SortAndCheckPositions(test_cases, arraysize(test_cases), true);
 }
 
 }  // namespace

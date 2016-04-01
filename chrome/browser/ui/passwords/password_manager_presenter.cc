@@ -9,6 +9,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -26,11 +29,13 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
@@ -38,7 +43,93 @@
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
 #endif
 
+using base::StringPiece;
 using password_manager::PasswordStore;
+
+namespace {
+
+const int kAndroidAppSchemeAndDelimiterLength = 10;  // Length of 'android://'.
+
+const char kSortKeyPartsSeparator = ' ';
+
+// Reverse order of subdomains in hostname.
+std::string SplitByDotAndReverse(StringPiece host) {
+  std::vector<std::string> parts =
+      base::SplitString(host, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::reverse(parts.begin(), parts.end());
+  return base::JoinString(parts, ".");
+}
+
+// Helper function that returns the type of the entry (non-Android credentials,
+// Android w/ affiliated web realm (i.e. clickable) or w/o web realm).
+std::string GetEntryTypeCode(bool is_android_uri, bool is_clickable) {
+  if (!is_android_uri)
+    return "0";
+  if (is_clickable)
+    return "1";
+  return "2";
+}
+
+// Creates key for sorting password or password exception entries.
+// The key is eTLD+1 followed by subdomains
+// (e.g. secure.accounts.example.com => example.com.accounts.secure).
+// If |username_and_password_in_key == true|, username and password is appended
+// to the key. The entry type code (non-Android, Android w/ or w/o affiliated
+// web realm) is also appended to the key.
+std::string CreateSortKey(const autofill::PasswordForm& form,
+                          const std::string& languages,
+                          bool username_and_password_in_key) {
+  bool is_android_uri = false;
+  bool is_clickable = false;
+  GURL link_url;
+  std::string origin = password_manager::GetShownOriginAndLinkUrl(
+      form, languages, &is_android_uri, &link_url, &is_clickable);
+
+  if (!is_clickable) {  // e.g. android://com.example.r => r.example.com.
+    origin = SplitByDotAndReverse(
+        StringPiece(&origin[kAndroidAppSchemeAndDelimiterLength],
+                    origin.length() - kAndroidAppSchemeAndDelimiterLength));
+  }
+
+  std::string site_name =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  if (site_name.empty())  // e.g. localhost.
+    site_name = origin;
+  std::string key =
+      site_name + SplitByDotAndReverse(StringPiece(
+                      &origin[0], origin.length() - site_name.length()));
+
+  if (username_and_password_in_key) {
+    key = key + kSortKeyPartsSeparator +
+          base::UTF16ToUTF8(form.username_value) + kSortKeyPartsSeparator +
+          base::UTF16ToUTF8(form.password_value);
+  }
+
+  // Since Android and non-Android entries shouldn't be merged into one entry,
+  // add the entry type code to the sort key.
+  key +=
+      kSortKeyPartsSeparator + GetEntryTypeCode(is_android_uri, is_clickable);
+  return key;
+}
+
+// Finds duplicates of |form| in |duplicates|, removes them from |store| and
+// from |duplicates|.
+void RemoveDuplicates(const autofill::PasswordForm& form,
+                      const std::string& languages,
+                      DuplicatesMap* duplicates,
+                      PasswordStore* store,
+                      bool username_and_password_in_key) {
+  std::string key =
+      CreateSortKey(form, languages, username_and_password_in_key);
+  std::pair<DuplicatesMap::iterator, DuplicatesMap::iterator> dups =
+      duplicates->equal_range(key);
+  for (DuplicatesMap::iterator it = dups.first; it != dups.second; ++it)
+    store->RemoveLogin(*it->second);
+  duplicates->erase(key);
+}
+
+}  // namespace
 
 PasswordManagerPresenter::PasswordManagerPresenter(
     PasswordUIView* password_view)
@@ -98,7 +189,9 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
 
   // Reset the current lists.
   password_list_.clear();
+  password_duplicates_.clear();
   password_exception_list_.clear();
+  password_exception_duplicates_.clear();
 
   populater_.Populate();
   exception_populater_.Populate();
@@ -114,6 +207,9 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
   PasswordStore* store = GetPasswordStore();
   if (!store)
     return;
+
+  RemoveDuplicates(*password_list_[index], languages_, &password_duplicates_,
+                   store, true);
   store->RemoveLogin(*password_list_[index]);
   content::RecordAction(
       base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
@@ -129,6 +225,8 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   PasswordStore* store = GetPasswordStore();
   if (!store)
     return;
+  RemoveDuplicates(*password_exception_list_[index], languages_,
+                   &password_exception_duplicates_, store, false);
   store->RemoveLogin(*password_exception_list_[index]);
   content::RecordAction(
       base::UserMetricsAction("PasswordManager_RemovePasswordException"));
@@ -221,6 +319,38 @@ void PasswordManagerPresenter::SetPasswordExceptionList() {
   password_view_->SetPasswordExceptionList(password_exception_list_);
 }
 
+void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
+    const std::string& languages,
+    std::vector<scoped_ptr<autofill::PasswordForm>>* list,
+    DuplicatesMap* duplicates,
+    bool username_and_password_in_key) {
+  std::vector<std::pair<std::string, scoped_ptr<autofill::PasswordForm>>> pairs;
+  pairs.reserve(list->size());
+  for (auto& form : *list) {
+    pairs.push_back(std::make_pair(
+        CreateSortKey(*form, languages, username_and_password_in_key),
+        std::move(form)));
+  }
+
+  std::sort(
+      pairs.begin(), pairs.end(),
+      [](const std::pair<std::string, scoped_ptr<autofill::PasswordForm>>& left,
+         const std::pair<std::string, scoped_ptr<autofill::PasswordForm>>&
+             right) { return left.first < right.first; });
+
+  list->clear();
+  duplicates->clear();
+  std::string previous_key;
+  for (auto& pair : pairs) {
+    if (pair.first != previous_key) {
+      list->push_back(std::move(pair.second));
+      previous_key = pair.first;
+    } else {
+      duplicates->insert(std::make_pair(previous_key, std::move(pair.second)));
+    }
+  }
+}
+
 PasswordManagerPresenter::ListPopulater::ListPopulater(
     PasswordManagerPresenter* page) : page_(page) {
 }
@@ -246,6 +376,9 @@ void PasswordManagerPresenter::PasswordListPopulater::OnGetPasswordStoreResults(
     ScopedVector<autofill::PasswordForm> results) {
   page_->password_list_ =
       password_manager_util::ConvertScopedVector(std::move(results));
+  page_->SortEntriesAndHideDuplicates(page_->languages_, &page_->password_list_,
+                                      &page_->password_duplicates_,
+                                      true /* use username and password */);
   page_->SetPasswordList();
 }
 
@@ -268,5 +401,9 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::
     OnGetPasswordStoreResults(ScopedVector<autofill::PasswordForm> results) {
   page_->password_exception_list_ =
       password_manager_util::ConvertScopedVector(std::move(results));
+  page_->SortEntriesAndHideDuplicates(
+      page_->languages_, &page_->password_exception_list_,
+      &page_->password_exception_duplicates_,
+      false /* don't use username and password*/);
   page_->SetPasswordExceptionList();
 }
