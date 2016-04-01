@@ -57,12 +57,12 @@ public:
 
 protected:
     ExecutionContext* context() override;
-    void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
+    void reportMessageToConsole(RawPtr<ConsoleMessage>) override;
 
 private:
     explicit WorkerConsole(WorkerGlobalScope*);
 
-    RawPtrWillBeMember<WorkerGlobalScope> m_scope;
+    Member<WorkerGlobalScope> m_scope;
 };
 
 } // namespace blink

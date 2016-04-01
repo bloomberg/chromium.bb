@@ -31,7 +31,7 @@ namespace blink {
 class Event;
 class ExecutionContext;
 
-class CORE_EXPORT EventListener : public RefCountedWillBeGarbageCollectedFinalized<EventListener> {
+class CORE_EXPORT EventListener : public GarbageCollectedFinalized<EventListener> {
 public:
     enum ListenerType {
         JSEventListenerType,

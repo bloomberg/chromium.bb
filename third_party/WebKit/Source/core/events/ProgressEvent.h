@@ -35,17 +35,17 @@ namespace blink {
 class CORE_EXPORT ProgressEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ProgressEvent> create()
+    static RawPtr<ProgressEvent> create()
     {
         return adoptRefWillBeNoop(new ProgressEvent);
     }
-    static PassRefPtrWillBeRawPtr<ProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
+    static RawPtr<ProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
     {
-        return adoptRefWillBeNoop(new ProgressEvent(type, lengthComputable, loaded, total));
+        return new ProgressEvent(type, lengthComputable, loaded, total);
     }
-    static PassRefPtrWillBeRawPtr<ProgressEvent> create(const AtomicString& type, const ProgressEventInit& initializer)
+    static RawPtr<ProgressEvent> create(const AtomicString& type, const ProgressEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new ProgressEvent(type, initializer));
+        return new ProgressEvent(type, initializer);
     }
 
     bool lengthComputable() const { return m_lengthComputable; }

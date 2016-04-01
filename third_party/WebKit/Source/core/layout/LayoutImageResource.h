@@ -33,13 +33,12 @@ namespace blink {
 
 class LayoutObject;
 
-class LayoutImageResource : public NoBaseWillBeGarbageCollectedFinalized<LayoutImageResource> {
+class LayoutImageResource : public GarbageCollectedFinalized<LayoutImageResource> {
     WTF_MAKE_NONCOPYABLE(LayoutImageResource);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(LayoutImageResource);
 public:
     virtual ~LayoutImageResource();
 
-    static PassOwnPtrWillBeRawPtr<LayoutImageResource> create()
+    static RawPtr<LayoutImageResource> create()
     {
         return adoptPtrWillBeNoop(new LayoutImageResource);
     }
@@ -68,7 +67,7 @@ public:
 protected:
     LayoutImageResource();
     LayoutObject* m_layoutObject;
-    RefPtrWillBeMember<ImageResource> m_cachedImage;
+    Member<ImageResource> m_cachedImage;
 };
 
 } // namespace blink

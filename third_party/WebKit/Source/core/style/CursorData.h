@@ -33,7 +33,7 @@ namespace blink {
 class CursorData {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    CursorData(PassRefPtrWillBeRawPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
+    CursorData(RawPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
         : m_image(image)
         , m_hotSpotSpecified(hotSpotSpecified)
         , m_hotSpot(hotSpot)
@@ -51,7 +51,7 @@ public:
     }
 
     StyleImage* image() const { return m_image.get(); }
-    void setImage(PassRefPtrWillBeRawPtr<StyleImage> image) { m_image = image; }
+    void setImage(RawPtr<StyleImage> image) { m_image = image; }
 
     bool hotSpotSpecified() const { return m_hotSpotSpecified; }
 
@@ -64,7 +64,7 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<StyleImage> m_image;
+    Member<StyleImage> m_image;
     bool m_hotSpotSpecified;
     IntPoint m_hotSpot; // for CSS3 support
 };

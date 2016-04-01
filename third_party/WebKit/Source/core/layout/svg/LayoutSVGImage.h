@@ -72,7 +72,7 @@ private:
     bool m_needsTransformUpdate : 1;
     AffineTransform m_localTransform;
     FloatRect m_objectBoundingBox;
-    OwnPtrWillBePersistent<LayoutImageResource> m_imageResource;
+    Persistent<LayoutImageResource> m_imageResource;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGImage, isSVGImage());

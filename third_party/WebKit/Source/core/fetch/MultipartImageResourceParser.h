@@ -52,7 +52,7 @@ namespace blink {
 class CORE_EXPORT MultipartImageResourceParser final : public GarbageCollectedFinalized<MultipartImageResourceParser> {
     WTF_MAKE_NONCOPYABLE(MultipartImageResourceParser);
 public:
-    class CORE_EXPORT Client : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT Client : public GarbageCollectedMixin {
     public:
         virtual ~Client() = default;
         virtual void onePartInMultipartReceived(const ResourceResponse&) = 0;
@@ -79,7 +79,7 @@ private:
 
     const ResourceResponse m_originalResponse;
     Vector<char> m_boundary;
-    RawPtrWillBeMember<Client> m_client;
+    Member<Client> m_client;
 
     Vector<char> m_data;
     bool m_isParsingTop = true;

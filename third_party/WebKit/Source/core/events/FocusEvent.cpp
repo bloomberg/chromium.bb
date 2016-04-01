@@ -44,7 +44,7 @@ FocusEvent::FocusEvent()
 {
 }
 
-FocusEvent::FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, int detail, EventTarget* relatedTarget, InputDeviceCapabilities* sourceCapabilities)
+FocusEvent::FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView> view, int detail, EventTarget* relatedTarget, InputDeviceCapabilities* sourceCapabilities)
     : UIEvent(type, canBubble, cancelable, relatedTarget, view, detail, sourceCapabilities)
     , m_relatedTarget(relatedTarget)
 {
@@ -57,7 +57,7 @@ FocusEvent::FocusEvent(const AtomicString& type, const FocusEventInit& initializ
         m_relatedTarget = initializer.relatedTarget();
 }
 
-PassRefPtrWillBeRawPtr<EventDispatchMediator> FocusEvent::createMediator()
+RawPtr<EventDispatchMediator> FocusEvent::createMediator()
 {
     return FocusEventDispatchMediator::create(this);
 }
@@ -68,12 +68,12 @@ DEFINE_TRACE(FocusEvent)
     UIEvent::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<FocusEventDispatchMediator> FocusEventDispatchMediator::create(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+RawPtr<FocusEventDispatchMediator> FocusEventDispatchMediator::create(RawPtr<FocusEvent> focusEvent)
 {
-    return adoptRefWillBeNoop(new FocusEventDispatchMediator(focusEvent));
+    return new FocusEventDispatchMediator(focusEvent);
 }
 
-FocusEventDispatchMediator::FocusEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+FocusEventDispatchMediator::FocusEventDispatchMediator(RawPtr<FocusEvent> focusEvent)
     : EventDispatchMediator(focusEvent)
 {
 }

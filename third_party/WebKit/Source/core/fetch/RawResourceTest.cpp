@@ -47,7 +47,7 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
     ResourceRequest jpegRequest;
     jpegRequest.setHTTPAccept("image/jpeg");
 
-    RefPtrWillBeRawPtr<RawResource> jpegResource(RawResource::create(jpegRequest, Resource::Raw));
+    RawPtr<RawResource> jpegResource(RawResource::create(jpegRequest, Resource::Raw));
 
     ResourceRequest pngRequest;
     pngRequest.setHTTPAccept("image/png");
@@ -105,13 +105,13 @@ public:
     }
 private:
     DummyClient* m_dummyClient;
-    RefPtrWillBePersistent<Resource> m_resource;
+    Persistent<Resource> m_resource;
     Timer<AddingClient> m_removeClientTimer;
 };
 
 TEST(RawResourceTest, RevalidationSucceeded)
 {
-    RefPtrWillBeRawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    RawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
     ResourceResponse response;
     response.setHTTPStatusCode(200);
     resource->responseReceived(response, nullptr);
@@ -143,7 +143,7 @@ TEST(RawResourceTest, RevalidationSucceeded)
 
 TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
 {
-    RefPtrWillBeRawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    RawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
     ResourceResponse response;
     response.setHTTPStatusCode(200);
     resource->responseReceived(response, nullptr);
@@ -173,7 +173,7 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
 
 TEST(RawResourceTest, AddClientDuringCallback)
 {
-    RefPtrWillBeRawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    RawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
 
     // Create a non-null response.
     ResourceResponse response = raw->response();
@@ -212,7 +212,7 @@ private:
 
 TEST(RawResourceTest, RemoveClientDuringCallback)
 {
-    RefPtrWillBeRawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    RawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
 
     // Create a non-null response.
     ResourceResponse response = raw->response();

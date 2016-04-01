@@ -19,13 +19,13 @@ namespace blink {
 class CORE_EXPORT PromiseRejectionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<PromiseRejectionEvent> create()
+    static RawPtr<PromiseRejectionEvent> create()
     {
         return adoptRefWillBeNoop(new PromiseRejectionEvent);
     }
-    static PassRefPtrWillBeRawPtr<PromiseRejectionEvent> create(ScriptState* state, const AtomicString& type, const PromiseRejectionEventInit& initializer)
+    static RawPtr<PromiseRejectionEvent> create(ScriptState* state, const AtomicString& type, const PromiseRejectionEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new PromiseRejectionEvent(state, type, initializer));
+        return new PromiseRejectionEvent(state, type, initializer);
     }
 
     ScriptValue reason(ScriptState*) const;

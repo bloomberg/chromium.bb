@@ -76,7 +76,7 @@ public:
     ExecutionContext* getExecutionContext() const { return m_executionContext.get(); }
 
 protected:
-    WorkerMessagingProxy(InProcessWorkerBase*, PassOwnPtrWillBeRawPtr<WorkerClients>);
+    WorkerMessagingProxy(InProcessWorkerBase*, RawPtr<WorkerClients>);
     ~WorkerMessagingProxy() override;
 
     virtual PassOwnPtr<WorkerThread> createWorkerThread(double originTime) = 0;
@@ -94,7 +94,7 @@ private:
     void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override;
     bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override;
 
-    RefPtrWillBePersistent<ExecutionContext> m_executionContext;
+    Persistent<ExecutionContext> m_executionContext;
     OwnPtr<WorkerObjectProxy> m_workerObjectProxy;
     WeakPersistent<InProcessWorkerBase> m_workerObject;
     bool m_mayBeDestroyed;
@@ -106,9 +106,9 @@ private:
     bool m_askedToTerminate;
 
     Vector<OwnPtr<ExecutionContextTask>> m_queuedEarlyTasks; // Tasks are queued here until there's a thread object created.
-    OwnPtrWillBePersistent<WorkerInspectorProxy> m_workerInspectorProxy;
+    Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
-    OwnPtrWillBePersistent<WorkerClients> m_workerClients;
+    Persistent<WorkerClients> m_workerClients;
 
     RefPtr<WorkerLoaderProxy> m_loaderProxy;
 };

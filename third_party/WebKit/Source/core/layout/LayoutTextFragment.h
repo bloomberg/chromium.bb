@@ -89,7 +89,7 @@ private:
     RefPtr<StringImpl> m_contentString;
     // Reference back to FirstLetterPseudoElement; cleared by FirstLetterPseudoElement::detach() if
     // it goes away first.
-    RawPtrWillBeUntracedMember<FirstLetterPseudoElement> m_firstLetterPseudoElement;
+    UntracedMember<FirstLetterPseudoElement> m_firstLetterPseudoElement;
 };
 
 DEFINE_TYPE_CASTS(LayoutTextFragment, LayoutObject, object, toLayoutText(object)->isTextFragment(), toLayoutText(object).isTextFragment());

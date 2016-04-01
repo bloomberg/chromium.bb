@@ -41,7 +41,7 @@ namespace blink {
 
 namespace {
 
-using ResourceReferenceMap = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<const FilterOperation>, OwnPtr<DocumentResourceReference>>;
+using ResourceReferenceMap = PersistentHeapHashMap<WeakMember<const FilterOperation>, OwnPtr<DocumentResourceReference>>;
 
 ResourceReferenceMap& documentResourceReferences()
 {
@@ -69,7 +69,7 @@ void ReferenceFilterBuilder::clearDocumentResourceReference(const FilterOperatio
 }
 #endif
 
-PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
+RawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
 {
     TreeScope* treeScope = &element->treeScope();
 
@@ -110,7 +110,7 @@ PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element
     FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), referenceBox);
     bool primitiveBoundingBoxMode = filterElement.primitiveUnits()->currentValue()->enumValue() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
     Filter::UnitScaling unitScaling = primitiveBoundingBoxMode ? Filter::BoundingBox : Filter::UserSpace;
-    RefPtrWillBeRawPtr<Filter> result(Filter::create(referenceBox, filterRegion, zoom, unitScaling));
+    RawPtr<Filter> result(Filter::create(referenceBox, filterRegion, zoom, unitScaling));
     if (!previousEffect)
         previousEffect = result->getSourceGraphic();
 

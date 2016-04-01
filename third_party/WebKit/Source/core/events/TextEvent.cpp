@@ -30,29 +30,29 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<TextEvent> TextEvent::create()
+RawPtr<TextEvent> TextEvent::create()
 {
     return adoptRefWillBeNoop(new TextEvent);
 }
 
-PassRefPtrWillBeRawPtr<TextEvent> TextEvent::create(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
+RawPtr<TextEvent> TextEvent::create(RawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
 {
-    return adoptRefWillBeNoop(new TextEvent(view, data, inputType));
+    return new TextEvent(view, data, inputType);
 }
 
-PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForPlainTextPaste(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, bool shouldSmartReplace)
+RawPtr<TextEvent> TextEvent::createForPlainTextPaste(RawPtr<AbstractView> view, const String& data, bool shouldSmartReplace)
 {
-    return adoptRefWillBeNoop(new TextEvent(view, data, nullptr, shouldSmartReplace, false));
+    return new TextEvent(view, data, nullptr, shouldSmartReplace, false);
 }
 
-PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtrWillBeRawPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle)
+RawPtr<TextEvent> TextEvent::createForFragmentPaste(RawPtr<AbstractView> view, RawPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle)
 {
-    return adoptRefWillBeNoop(new TextEvent(view, "", data, shouldSmartReplace, shouldMatchStyle));
+    return new TextEvent(view, "", data, shouldSmartReplace, shouldMatchStyle);
 }
 
-PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForDrop(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data)
+RawPtr<TextEvent> TextEvent::createForDrop(RawPtr<AbstractView> view, const String& data)
 {
-    return adoptRefWillBeNoop(new TextEvent(view, data, TextEventInputDrop));
+    return new TextEvent(view, data, TextEventInputDrop);
 }
 
 TextEvent::TextEvent()
@@ -62,7 +62,7 @@ TextEvent::TextEvent()
 {
 }
 
-TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
+TextEvent::TextEvent(RawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
     : UIEvent(EventTypeNames::textInput, true, true, view, 0)
     , m_inputType(inputType)
     , m_data(data)
@@ -72,7 +72,7 @@ TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& da
 {
 }
 
-TextEvent::TextEvent(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, PassRefPtrWillBeRawPtr<DocumentFragment> pastingFragment,
+TextEvent::TextEvent(RawPtr<AbstractView> view, const String& data, RawPtr<DocumentFragment> pastingFragment,
                      bool shouldSmartReplace, bool shouldMatchStyle)
     : UIEvent(EventTypeNames::textInput, true, true, view, 0)
     , m_inputType(TextEventInputPaste)
@@ -87,7 +87,7 @@ TextEvent::~TextEvent()
 {
 }
 
-void TextEvent::initTextEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, const String& data)
+void TextEvent::initTextEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView> view, const String& data)
 {
     if (dispatched())
         return;

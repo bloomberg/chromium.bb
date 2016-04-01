@@ -44,7 +44,7 @@ class FontResource final : public Resource {
 public:
     using ClientType = FontResourceClient;
 
-    static PassRefPtrWillBeRawPtr<FontResource> fetch(FetchRequest&, ResourceFetcher*);
+    static RawPtr<FontResource> fetch(FetchRequest&, ResourceFetcher*);
     ~FontResource() override;
 
     void load(ResourceFetcher*) override;
@@ -74,9 +74,9 @@ private:
         FontResourceFactory()
             : ResourceFactory(Resource::Font) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new FontResource(request, options));
+            return new FontResource(request, options);
         }
     };
     FontResource(const ResourceRequest&, const ResourceLoaderOptions&);

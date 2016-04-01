@@ -43,7 +43,7 @@ class PaintInvalidationState;
 
 class LayoutScrollbar final : public Scrollbar {
 public:
-    static PassRefPtrWillBeRawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = nullptr);
+    static RawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = nullptr);
     ~LayoutScrollbar() override;
 
     LayoutBox* owningLayoutObject() const;
@@ -89,9 +89,9 @@ private:
     // so we keep a reference to the Node which caused this custom scrollbar creation.
     // This will not create a reference cycle as the Widget tree is owned by our containing
     // FrameView which this Node pointer can in no way keep alive. See webkit bug 80610.
-    RefPtrWillBeMember<Node> m_owner;
+    Member<Node> m_owner;
 
-    RawPtrWillBeMember<LocalFrame> m_owningFrame;
+    Member<LocalFrame> m_owningFrame;
 
     HashMap<unsigned, LayoutScrollbarPart*> m_parts;
 };

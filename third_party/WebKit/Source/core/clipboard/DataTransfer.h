@@ -130,8 +130,8 @@ private:
     Member<DataObject> m_dataObject;
 
     IntPoint m_dragLoc;
-    RefPtrWillBeMember<ImageResource> m_dragImage;
-    RefPtrWillBeMember<Node> m_dragImageElement;
+    Member<ImageResource> m_dragImage;
+    Member<Node> m_dragImageElement;
 };
 
 DragOperation convertDropZoneOperationToDragOperation(const String& dragOperation);

@@ -29,19 +29,19 @@ namespace blink {
 class HashChangeEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HashChangeEvent> create()
+    static RawPtr<HashChangeEvent> create()
     {
         return adoptRefWillBeNoop(new HashChangeEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<HashChangeEvent> create(const String& oldURL, const String& newURL)
+    static RawPtr<HashChangeEvent> create(const String& oldURL, const String& newURL)
     {
-        return adoptRefWillBeNoop(new HashChangeEvent(oldURL, newURL));
+        return new HashChangeEvent(oldURL, newURL);
     }
 
-    static PassRefPtrWillBeRawPtr<HashChangeEvent> create(const AtomicString& type, const HashChangeEventInit& initializer)
+    static RawPtr<HashChangeEvent> create(const AtomicString& type, const HashChangeEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new HashChangeEvent(type, initializer));
+        return new HashChangeEvent(type, initializer);
     }
 
     const String& oldURL() const { return m_oldURL; }

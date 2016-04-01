@@ -39,14 +39,13 @@ namespace blink {
 // This is created on the main thread, passed to the worker thread and
 // attached to WorkerGlobalScope when it is created.
 // This class can be used to provide "client" implementations to Workers.
-class WorkerClients final : public NoBaseWillBeGarbageCollectedFinalized<WorkerClients>, public WillBeHeapSupplementable<WorkerClients> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerClients);
+class WorkerClients final : public GarbageCollectedFinalized<WorkerClients>, public HeapSupplementable<WorkerClients> {
+    USING_GARBAGE_COLLECTED_MIXIN(WorkerClients);
     WTF_MAKE_NONCOPYABLE(WorkerClients);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerClients);
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerClients> create()
+    static RawPtr<WorkerClients> create()
     {
-        return adoptPtrWillBeNoop(new WorkerClients());
+        return new WorkerClients();
     }
 
     virtual ~WorkerClients() { }

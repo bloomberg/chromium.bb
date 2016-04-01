@@ -13,8 +13,7 @@ namespace blink {
 class CachedMetadata;
 
 // Handler class for caching operations.
-class CachedMetadataHandler : public NoBaseWillBeGarbageCollectedFinalized<CachedMetadataHandler> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CachedMetadataHandler);
+class CachedMetadataHandler : public GarbageCollectedFinalized<CachedMetadataHandler> {
 public:
     enum CacheType {
         SendToPlatform, // send cache data to blink::Platform::cacheMetadata

@@ -45,25 +45,24 @@ using StaticNodeList = StaticNodeTypeList<Node>;
 class TouchEventContext;
 class TreeScope;
 
-class CORE_EXPORT TreeScopeEventContext final : public RefCountedWillBeGarbageCollected<TreeScopeEventContext> {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TreeScopeEventContext);
+class CORE_EXPORT TreeScopeEventContext final : public GarbageCollected<TreeScopeEventContext> {
 public:
-    static PassRefPtrWillBeRawPtr<TreeScopeEventContext> create(TreeScope&);
+    static RawPtr<TreeScopeEventContext> create(TreeScope&);
     DECLARE_TRACE();
 
     TreeScope& treeScope() const { return *m_treeScope; }
     Node& rootNode() const { return *m_rootNode; }
 
     EventTarget* target() const { return m_target.get(); }
-    void setTarget(PassRefPtrWillBeRawPtr<EventTarget>);
+    void setTarget(RawPtr<EventTarget>);
 
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
-    void setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget>);
+    void setRelatedTarget(RawPtr<EventTarget>);
 
     TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
     TouchEventContext* ensureTouchEventContext();
 
-    WillBeHeapVector<RefPtrWillBeMember<EventTarget>>& ensureEventPath(EventPath&);
+    HeapVector<Member<EventTarget>>& ensureEventPath(EventPath&);
 
     bool isInclusiveAncestorOf(const TreeScopeEventContext&) const;
     bool isDescendantOf(const TreeScopeEventContext&) const;
@@ -87,15 +86,15 @@ private:
 
     bool isUnclosedTreeOf(const TreeScopeEventContext& other);
 
-    RawPtrWillBeMember<TreeScope> m_treeScope;
-    RefPtrWillBeMember<Node> m_rootNode; // Prevents TreeScope from being freed. TreeScope itself isn't RefCounted.
-    RefPtrWillBeMember<EventTarget> m_target;
-    RefPtrWillBeMember<EventTarget> m_relatedTarget;
-    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<EventTarget>>> m_eventPath;
-    RefPtrWillBeMember<TouchEventContext> m_touchEventContext;
-    RawPtrWillBeMember<TreeScopeEventContext> m_containingClosedShadowTree;
+    Member<TreeScope> m_treeScope;
+    Member<Node> m_rootNode; // Prevents TreeScope from being freed. TreeScope itself isn't RefCounted.
+    Member<EventTarget> m_target;
+    Member<EventTarget> m_relatedTarget;
+    Member<HeapVector<Member<EventTarget>>> m_eventPath;
+    Member<TouchEventContext> m_touchEventContext;
+    Member<TreeScopeEventContext> m_containingClosedShadowTree;
 
-    WillBeHeapVector<RawPtrWillBeMember<TreeScopeEventContext>> m_children;
+    HeapVector<Member<TreeScopeEventContext>> m_children;
     int m_preOrder;
     int m_postOrder;
 };
@@ -108,14 +107,14 @@ inline bool TreeScopeEventContext::isUnreachableNode(EventTarget& target)
 }
 #endif
 
-inline void TreeScopeEventContext::setTarget(PassRefPtrWillBeRawPtr<EventTarget> target)
+inline void TreeScopeEventContext::setTarget(RawPtr<EventTarget> target)
 {
     ASSERT(target);
     ASSERT(!isUnreachableNode(*target));
     m_target = target;
 }
 
-inline void TreeScopeEventContext::setRelatedTarget(PassRefPtrWillBeRawPtr<EventTarget> relatedTarget)
+inline void TreeScopeEventContext::setRelatedTarget(RawPtr<EventTarget> relatedTarget)
 {
     ASSERT(relatedTarget);
     ASSERT(!isUnreachableNode(*relatedTarget));

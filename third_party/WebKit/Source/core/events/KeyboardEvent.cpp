@@ -59,11 +59,11 @@ static inline KeyboardEvent::KeyLocationCode keyLocationCode(const PlatformKeybo
     return KeyboardEvent::DOM_KEY_LOCATION_STANDARD;
 }
 
-PassRefPtrWillBeRawPtr<KeyboardEvent> KeyboardEvent::create(ScriptState* scriptState, const AtomicString& type, const KeyboardEventInit& initializer)
+RawPtr<KeyboardEvent> KeyboardEvent::create(ScriptState* scriptState, const AtomicString& type, const KeyboardEventInit& initializer)
 {
     if (scriptState->world().isIsolatedWorld())
         UIEventWithKeyState::didCreateEventInIsolatedWorld(initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey());
-    return adoptRefWillBeNoop(new KeyboardEvent(type, initializer));
+    return new KeyboardEvent(type, initializer);
 }
 
 KeyboardEvent::KeyboardEvent()

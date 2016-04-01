@@ -43,7 +43,7 @@ class CORE_EXPORT GestureEvent final : public MouseRelatedEvent {
 public:
     ~GestureEvent() override { }
 
-    static PassRefPtrWillBeRawPtr<GestureEvent> create(PassRefPtrWillBeRawPtr<AbstractView>, const PlatformGestureEvent&);
+    static RawPtr<GestureEvent> create(RawPtr<AbstractView>, const PlatformGestureEvent&);
 
     bool isGestureEvent() const override;
 
@@ -64,7 +64,7 @@ public:
 
 private:
     GestureEvent();
-    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, bool synthetic, ScrollGranularity deltaUnits, double platformTimeStamp, int resendingPluginId, GestureSource);
+    GestureEvent(const AtomicString& type, RawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, bool synthetic, ScrollGranularity deltaUnits, double platformTimeStamp, int resendingPluginId, GestureSource);
 
     float m_deltaX;
     float m_deltaY;

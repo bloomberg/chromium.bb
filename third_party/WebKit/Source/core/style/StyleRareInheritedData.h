@@ -70,7 +70,7 @@ public:
     bool shadowDataEquivalent(const StyleRareInheritedData&) const;
     bool quotesDataEquivalent(const StyleRareInheritedData&) const;
 
-    RefPtrWillBePersistent<StyleImage> listStyleImage;
+    Persistent<StyleImage> listStyleImage;
 
     StyleColor textStrokeColor() const { return m_textStrokeColorIsCurrentColor ? StyleColor::currentColor() : StyleColor(m_textStrokeColor); }
     StyleColor textFillColor() const { return m_textFillColorIsCurrentColor ? StyleColor::currentColor() : StyleColor(m_textFillColor); }
@@ -98,7 +98,7 @@ public:
     RefPtr<ShadowList> textShadow; // Our text shadow information for shadowed text drawing.
     AtomicString highlight; // Apple-specific extension for custom highlight rendering.
 
-    RefPtrWillBePersistent<CursorList> cursorData;
+    Persistent<CursorList> cursorData;
 
     Length indent;
     float m_effectiveZoom;

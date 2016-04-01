@@ -34,7 +34,7 @@ class BeforeUnloadEvent final : public Event {
 public:
     ~BeforeUnloadEvent() override;
 
-    static PassRefPtrWillBeRawPtr<BeforeUnloadEvent> create()
+    static RawPtr<BeforeUnloadEvent> create()
     {
         return adoptRefWillBeNoop(new BeforeUnloadEvent);
     }

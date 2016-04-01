@@ -33,14 +33,14 @@ namespace blink {
 class SecurityPolicyViolationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SecurityPolicyViolationEvent> create()
+    static RawPtr<SecurityPolicyViolationEvent> create()
     {
-        return adoptRefWillBeNoop(new SecurityPolicyViolationEvent());
+        return new SecurityPolicyViolationEvent();
     }
 
-    static PassRefPtrWillBeRawPtr<SecurityPolicyViolationEvent> create(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
+    static RawPtr<SecurityPolicyViolationEvent> create(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new SecurityPolicyViolationEvent(type, initializer));
+        return new SecurityPolicyViolationEvent(type, initializer);
     }
 
     const String& documentURI() const { return m_documentURI; }

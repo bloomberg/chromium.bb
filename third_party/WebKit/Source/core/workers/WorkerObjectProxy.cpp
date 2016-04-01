@@ -71,7 +71,7 @@ void WorkerObjectProxy::reportException(const String& errorMessage, int lineNumb
     getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::reportException, m_messagingProxy, errorMessage, lineNumber, columnNumber, sourceURL, exceptionId));
 }
 
-void WorkerObjectProxy::reportConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
+void WorkerObjectProxy::reportConsoleMessage(RawPtr<ConsoleMessage> consoleMessage)
 {
     getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::reportConsoleMessage, m_messagingProxy, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url()));
 }

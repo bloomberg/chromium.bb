@@ -46,7 +46,7 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
     typedef WorkerGlobalScope Base;
-    static PassRefPtrWillBeRawPtr<SharedWorkerGlobalScope> create(const String& name, SharedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
+    static RawPtr<SharedWorkerGlobalScope> create(const String& name, SharedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
     ~SharedWorkerGlobalScope() override;
 
     bool isSharedWorkerGlobalScope() const override { return true; }
@@ -63,13 +63,13 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, PassOwnPtr<SecurityOrigin::PrivilegeData>, PassOwnPtrWillBeRawPtr<WorkerClients>);
+    SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, PassOwnPtr<SecurityOrigin::PrivilegeData>, RawPtr<WorkerClients>);
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) override;
 
     String m_name;
 };
 
-CORE_EXPORT PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(MessagePort*);
+CORE_EXPORT RawPtr<MessageEvent> createConnectEvent(MessagePort*);
 
 } // namespace blink
 

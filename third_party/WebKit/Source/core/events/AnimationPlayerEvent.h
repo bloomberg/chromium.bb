@@ -13,17 +13,17 @@ namespace blink {
 class AnimationPlayerEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<AnimationPlayerEvent> create()
+    static RawPtr<AnimationPlayerEvent> create()
     {
         return adoptRefWillBeNoop(new AnimationPlayerEvent);
     }
-    static PassRefPtrWillBeRawPtr<AnimationPlayerEvent> create(const AtomicString& type, double currentTime, double timelineTime)
+    static RawPtr<AnimationPlayerEvent> create(const AtomicString& type, double currentTime, double timelineTime)
     {
-        return adoptRefWillBeNoop(new AnimationPlayerEvent(type, currentTime, timelineTime));
+        return new AnimationPlayerEvent(type, currentTime, timelineTime);
     }
-    static PassRefPtrWillBeRawPtr<AnimationPlayerEvent> create(const AtomicString& type, const AnimationPlayerEventInit& initializer)
+    static RawPtr<AnimationPlayerEvent> create(const AtomicString& type, const AnimationPlayerEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new AnimationPlayerEvent(type, initializer));
+        return new AnimationPlayerEvent(type, initializer);
     }
 
     ~AnimationPlayerEvent() override;

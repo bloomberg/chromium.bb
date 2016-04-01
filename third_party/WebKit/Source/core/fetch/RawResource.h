@@ -39,18 +39,18 @@ class CORE_EXPORT RawResource final : public Resource {
 public:
     using ClientType = RawResourceClient;
 
-    static PassRefPtrWillBeRawPtr<Resource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetch(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchMainResource(FetchRequest&, ResourceFetcher*, const SubstituteData&);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchImport(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchMedia(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchTextTrack(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchManifest(FetchRequest&, ResourceFetcher*);
+    static RawPtr<Resource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
+    static RawPtr<RawResource> fetch(FetchRequest&, ResourceFetcher*);
+    static RawPtr<RawResource> fetchMainResource(FetchRequest&, ResourceFetcher*, const SubstituteData&);
+    static RawPtr<RawResource> fetchImport(FetchRequest&, ResourceFetcher*);
+    static RawPtr<RawResource> fetchMedia(FetchRequest&, ResourceFetcher*);
+    static RawPtr<RawResource> fetchTextTrack(FetchRequest&, ResourceFetcher*);
+    static RawPtr<RawResource> fetchManifest(FetchRequest&, ResourceFetcher*);
 
     // Exposed for testing
-    static RefPtrWillBeRawPtr<RawResource> create(const ResourceRequest& request, Type type)
+    static RawPtr<RawResource> create(const ResourceRequest& request, Type type)
     {
-        return adoptRefWillBeNoop(new RawResource(request, type, ResourceLoaderOptions()));
+        return new RawResource(request, type, ResourceLoaderOptions());
     }
 
     // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and therefore shouldn't
@@ -66,9 +66,9 @@ private:
         RawResourceFactory(Resource::Type type)
             : ResourceFactory(type) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new RawResource(request, m_type, options));
+            return new RawResource(request, m_type, options);
         }
     };
 
@@ -94,7 +94,7 @@ inline bool isRawResource(const Resource& resource)
     return type == Resource::MainResource || type == Resource::Raw || type == Resource::TextTrack || type == Resource::Media || type == Resource::Manifest || type == Resource::ImportResource;
 }
 #endif
-inline PassRefPtrWillBeRawPtr<RawResource> toRawResource(const PassRefPtrWillBeRawPtr<Resource>& resource)
+inline RawPtr<RawResource> toRawResource(const RawPtr<Resource>& resource)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!resource || isRawResource(*resource.get()));
     return static_cast<RawResource*>(resource.get());

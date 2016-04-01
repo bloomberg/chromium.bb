@@ -40,7 +40,7 @@ class DOMWrapperWorld;
 class EventTarget;
 class ExecutionContext;
 
-class CORE_EXPORT Event : public RefCountedWillBeGarbageCollectedFinalized<Event>,  public ScriptWrappable {
+class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,  public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum PhaseType {
@@ -75,7 +75,7 @@ public:
         RailsModeVertical   = 2
     };
 
-    static PassRefPtrWillBeRawPtr<Event> create()
+    static RawPtr<Event> create()
     {
         return adoptRefWillBeNoop(new Event);
     }
@@ -83,26 +83,26 @@ public:
     // A factory for a simple event. The event doesn't bubble, and isn't
     // cancelable.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#fire-a-simple-event
-    static PassRefPtrWillBeRawPtr<Event> create(const AtomicString& type)
+    static RawPtr<Event> create(const AtomicString& type)
     {
-        return adoptRefWillBeNoop(new Event(type, false, false));
+        return new Event(type, false, false);
     }
-    static PassRefPtrWillBeRawPtr<Event> createCancelable(const AtomicString& type)
+    static RawPtr<Event> createCancelable(const AtomicString& type)
     {
-        return adoptRefWillBeNoop(new Event(type, false, true));
+        return new Event(type, false, true);
     }
-    static PassRefPtrWillBeRawPtr<Event> createBubble(const AtomicString& type)
+    static RawPtr<Event> createBubble(const AtomicString& type)
     {
-        return adoptRefWillBeNoop(new Event(type, true, false));
+        return new Event(type, true, false);
     }
-    static PassRefPtrWillBeRawPtr<Event> createCancelableBubble(const AtomicString& type)
+    static RawPtr<Event> createCancelableBubble(const AtomicString& type)
     {
-        return adoptRefWillBeNoop(new Event(type, true, true));
+        return new Event(type, true, true);
     }
 
-    static PassRefPtrWillBeRawPtr<Event> create(const AtomicString& type, const EventInit& initializer)
+    static RawPtr<Event> create(const AtomicString& type, const EventInit& initializer)
     {
-        return adoptRefWillBeNoop(new Event(type, initializer));
+        return new Event(type, initializer);
     }
 
     virtual ~Event();
@@ -114,7 +114,7 @@ public:
     void setType(const AtomicString& type) { m_type = type; }
 
     EventTarget* target() const { return m_target.get(); }
-    void setTarget(PassRefPtrWillBeRawPtr<EventTarget>);
+    void setTarget(RawPtr<EventTarget>);
 
     EventTarget* currentTarget() const;
     void setCurrentTarget(EventTarget* currentTarget) { m_currentTarget = currentTarget; }
@@ -183,13 +183,13 @@ public:
     void setCancelBubble(bool cancel) { m_cancelBubble = cancel; }
 
     Event* underlyingEvent() const { return m_underlyingEvent.get(); }
-    void setUnderlyingEvent(PassRefPtrWillBeRawPtr<Event>);
+    void setUnderlyingEvent(RawPtr<Event>);
 
     EventPath& eventPath() { ASSERT(m_eventPath); return *m_eventPath; }
     void initEventPath(Node&);
 
-    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> path(ScriptState*) const;
-    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> deepPath(ScriptState*) const;
+    HeapVector<Member<EventTarget>> path(ScriptState*) const;
+    HeapVector<Member<EventTarget>> deepPath(ScriptState*) const;
 
     bool isBeingDispatched() const { return eventPhase(); }
 
@@ -197,7 +197,7 @@ public:
     // ErrorEvent behaves, can override this method.
     virtual bool canBeDispatchedInWorld(const DOMWrapperWorld&) const { return true; }
 
-    virtual PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator();
+    virtual RawPtr<EventDispatchMediator> createMediator();
 
     bool isTrusted() const { return m_isTrusted; }
     void setTrusted(bool value) { m_isTrusted = value; }
@@ -227,7 +227,7 @@ private:
         NonEmptyAfterDispatch
     };
 
-    WillBeHeapVector<RefPtrWillBeMember<EventTarget>> pathInternal(ScriptState*, EventPathMode) const;
+    HeapVector<Member<EventTarget>> pathInternal(ScriptState*, EventPathMode) const;
 
     AtomicString m_type;
     unsigned m_canBubble:1;
@@ -244,11 +244,11 @@ private:
     unsigned m_handlingPassive : 1;
 
     unsigned short m_eventPhase;
-    RefPtrWillBeMember<EventTarget> m_currentTarget;
-    RefPtrWillBeMember<EventTarget> m_target;
+    Member<EventTarget> m_currentTarget;
+    Member<EventTarget> m_target;
     DOMTimeStamp m_createTime;
-    RefPtrWillBeMember<Event> m_underlyingEvent;
-    OwnPtrWillBeMember<EventPath> m_eventPath;
+    Member<Event> m_underlyingEvent;
+    Member<EventPath> m_eventPath;
     // The monotonic platform time in seconds, for input events it is the
     // event timestamp provided by the host OS and reported in the original
     // WebInputEvent instance.

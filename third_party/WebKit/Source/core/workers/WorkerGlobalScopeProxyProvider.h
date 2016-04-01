@@ -43,7 +43,7 @@ class Page;
 class WorkerGlobalScopeProxy;
 class Worker;
 
-class WorkerGlobalScopeProxyProvider : public WillBeHeapSupplement<Page> {
+class WorkerGlobalScopeProxyProvider : public HeapSupplement<Page> {
     WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProvider);
 public:
     WorkerGlobalScopeProxyProvider() { }
@@ -55,7 +55,7 @@ public:
     static const char* supplementName();
 };
 
-CORE_EXPORT void provideWorkerGlobalScopeProxyProviderTo(Page&, PassOwnPtrWillBeRawPtr<WorkerGlobalScopeProxyProvider>);
+CORE_EXPORT void provideWorkerGlobalScopeProxyProviderTo(Page&, RawPtr<WorkerGlobalScopeProxyProvider>);
 
 } // namespace blink
 

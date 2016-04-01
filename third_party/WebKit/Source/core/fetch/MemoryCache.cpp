@@ -202,11 +202,11 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL, const String& cac
     return resource;
 }
 
-WillBeHeapVector<RawPtrWillBeMember<Resource>> MemoryCache::resourcesForURL(const KURL& resourceURL)
+HeapVector<Member<Resource>> MemoryCache::resourcesForURL(const KURL& resourceURL)
 {
     ASSERT(WTF::isMainThread());
     KURL url = removeFragmentIdentifierIfNeeded(resourceURL);
-    WillBeHeapVector<RawPtrWillBeMember<Resource>> results;
+    HeapVector<Member<Resource>> results;
     for (const auto& resourceMapIter : m_resourceMaps) {
         if (MemoryCacheEntry* entry = resourceMapIter.value->get(url))
             results.append(entry->m_resource.get());
@@ -570,7 +570,7 @@ void MemoryCache::updateDecodedResource(Resource* resource, UpdateReason reason)
 
 void MemoryCache::removeURLFromCache(const KURL& url)
 {
-    WillBeHeapVector<RawPtrWillBeMember<Resource>> resources = resourcesForURL(url);
+    HeapVector<Member<Resource>> resources = resourcesForURL(url);
     for (Resource* resource : resources)
         memoryCache()->remove(resource);
 }
@@ -771,7 +771,7 @@ void MemoryCache::dumpLRULists(bool includeLive) const
         printf("\n\nList %d: ", i);
         MemoryCacheEntry* current = m_allResources[i].m_tail;
         while (current) {
-            RefPtrWillBeRawPtr<Resource> currentResource = current->m_resource;
+            RawPtr<Resource> currentResource = current->m_resource;
             if (includeLive || !currentResource->hasClientsOrObservers())
                 printf("(%.1fK, %.1fK, %uA, %dR, %d); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClientsOrObservers(), currentResource->isPurgeable());
 

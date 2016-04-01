@@ -42,8 +42,8 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
 public:
     enum class MIMETypeCheck { Strict, Lax };
 
-    static PassRefPtrWillBeRawPtr<CSSStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<CSSStyleSheetResource> createForTest(const ResourceRequest&, const String& charset);
+    static RawPtr<CSSStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
+    static RawPtr<CSSStyleSheetResource> createForTest(const ResourceRequest&, const String& charset);
 
     ~CSSStyleSheetResource() override;
     DECLARE_VIRTUAL_TRACE();
@@ -52,8 +52,8 @@ public:
 
     void didAddClient(ResourceClient*) override;
 
-    PassRefPtrWillBeRawPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
-    void saveParsedStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>);
+    RawPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
+    void saveParsedStyleSheet(RawPtr<StyleSheetContents>);
 
 protected:
     bool isSafeToUnlock() const override;
@@ -66,9 +66,9 @@ private:
         CSSStyleSheetResourceFactory()
             : ResourceFactory(Resource::CSSStyleSheet) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new CSSStyleSheetResource(request, options, charset));
+            return new CSSStyleSheetResource(request, options, charset);
         }
     };
     CSSStyleSheetResource(const ResourceRequest&, const ResourceLoaderOptions&, const String& charset);
@@ -79,7 +79,7 @@ private:
 
     String m_decodedSheetText;
 
-    RefPtrWillBeMember<StyleSheetContents> m_parsedStyleSheetCache;
+    Member<StyleSheetContents> m_parsedStyleSheetCache;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(CSSStyleSheet);

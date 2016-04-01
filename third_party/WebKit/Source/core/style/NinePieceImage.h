@@ -49,7 +49,7 @@ public:
     unsigned fill : 1;
     unsigned horizontalRule : 2; // ENinePieceImageRule
     unsigned verticalRule : 2; // ENinePieceImageRule
-    RefPtrWillBePersistent<StyleImage> image;
+    Persistent<StyleImage> image;
     LengthBox imageSlices;
     BorderImageLengthBox borderSlices;
     BorderImageLengthBox outset;
@@ -63,7 +63,7 @@ class CORE_EXPORT NinePieceImage {
     DISALLOW_NEW();
 public:
     NinePieceImage();
-    NinePieceImage(PassRefPtrWillBeRawPtr<StyleImage>, LengthBox imageSlices, bool fill, const BorderImageLengthBox& borderSlices,
+    NinePieceImage(RawPtr<StyleImage>, LengthBox imageSlices, bool fill, const BorderImageLengthBox& borderSlices,
         const BorderImageLengthBox& outset, ENinePieceImageRule horizontalRule, ENinePieceImageRule verticalRule);
 
     bool operator==(const NinePieceImage& other) const { return m_data == other.m_data; }
@@ -71,7 +71,7 @@ public:
 
     bool hasImage() const { return m_data->image; }
     StyleImage* image() const { return m_data->image.get(); }
-    void setImage(PassRefPtrWillBeRawPtr<StyleImage> image) { m_data.access()->image = image; }
+    void setImage(RawPtr<StyleImage> image) { m_data.access()->image = image; }
 
     const LengthBox& imageSlices() const { return m_data->imageSlices; }
     void setImageSlices(const LengthBox& slices) { m_data.access()->imageSlices = slices; }

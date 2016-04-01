@@ -71,7 +71,7 @@
 
 namespace blink {
 
-WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData, RawPtr<WorkerClients> workerClients)
     : m_url(url)
     , m_userAgent(userAgent)
     , m_v8CacheOptions(V8CacheOptionsDefault)
@@ -103,7 +103,7 @@ WorkerGlobalScope::~WorkerGlobalScope()
 void WorkerGlobalScope::applyContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>& headers)
 {
     if (!contentSecurityPolicy()) {
-        RefPtrWillBeRawPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
+        RawPtr<ContentSecurityPolicy> csp = ContentSecurityPolicy::create();
         setContentSecurityPolicy(csp);
     }
     for (const auto& policyAndType : headers)
@@ -206,7 +206,7 @@ void WorkerGlobalScope::dispose()
     // Event listeners would keep DOMWrapperWorld objects alive for too long. Also, they have references to JS objects,
     // which become dangling once Heap is destroyed.
     for (auto it = m_eventListeners.begin(); it != m_eventListeners.end(); ) {
-        RefPtrWillBeRawPtr<V8AbstractEventListener> listener = *it;
+        RawPtr<V8AbstractEventListener> listener = *it;
         // clearListenerObject() will unregister the listener from
         // m_eventListeners, and invalidate the iterator, so we have to advance
         // it first.
@@ -266,9 +266,9 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
         InspectorInstrumentation::scriptImported(&executionContext, scriptLoader->identifier(), scriptLoader->script());
         scriptLoaded(scriptLoader->script().length(), scriptLoader->cachedMetadata() ? scriptLoader->cachedMetadata()->size() : 0);
 
-        RefPtrWillBeRawPtr<ErrorEvent> errorEvent = nullptr;
+        RawPtr<ErrorEvent> errorEvent = nullptr;
         OwnPtr<Vector<char>> cachedMetaData(scriptLoader->releaseCachedMetadata());
-        OwnPtrWillBeRawPtr<CachedMetadataHandler> handler(createWorkerScriptCachedMetadataHandler(completeURL, cachedMetaData.get()));
+        RawPtr<CachedMetadataHandler> handler(createWorkerScriptCachedMetadataHandler(completeURL, cachedMetaData.get()));
         m_scriptController->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent, handler.get(), m_v8CacheOptions);
         if (errorEvent) {
             m_scriptController->rethrowExceptionFromImportedScript(errorEvent.release(), exceptionState);
@@ -285,7 +285,7 @@ EventTarget* WorkerGlobalScope::errorEventTarget()
 void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack)
 {
     unsigned long exceptionId = ++m_workerExceptionUniqueIdentifier;
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber);
+    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber);
     consoleMessage->setCallStack(callStack);
     m_pendingMessages.set(exceptionId, consoleMessage);
 
@@ -297,15 +297,15 @@ void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& di
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
 }
 
-void WorkerGlobalScope::addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleMessage)
+void WorkerGlobalScope::addConsoleMessage(RawPtr<ConsoleMessage> prpConsoleMessage)
 {
     ASSERT(isContextThread());
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
+    RawPtr<ConsoleMessage> consoleMessage = prpConsoleMessage;
     thread()->workerReportingProxy().reportConsoleMessage(consoleMessage);
     addMessageToWorkerConsole(consoleMessage.release());
 }
 
-void WorkerGlobalScope::addMessageToWorkerConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
+void WorkerGlobalScope::addMessageToWorkerConsole(RawPtr<ConsoleMessage> consoleMessage)
 {
     ASSERT(isContextThread());
     m_messageStorage->reportMessage(this, consoleMessage);
@@ -366,7 +366,7 @@ ConsoleMessageStorage* WorkerGlobalScope::messageStorage()
 
 void WorkerGlobalScope::exceptionHandled(int exceptionId, bool isHandled)
 {
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = m_pendingMessages.take(exceptionId);
+    RawPtr<ConsoleMessage> consoleMessage = m_pendingMessages.take(exceptionId);
     if (!isHandled)
         addConsoleMessage(consoleMessage.release());
 }

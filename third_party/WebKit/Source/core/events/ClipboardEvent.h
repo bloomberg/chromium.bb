@@ -33,14 +33,14 @@ class ClipboardEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~ClipboardEvent() override;
-    static PassRefPtrWillBeRawPtr<ClipboardEvent> create()
+    static RawPtr<ClipboardEvent> create()
     {
-        return adoptRefWillBeNoop(new ClipboardEvent());
+        return new ClipboardEvent();
     }
 
-    static PassRefPtrWillBeRawPtr<ClipboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* dataTransfer)
+    static RawPtr<ClipboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* dataTransfer)
     {
-        return adoptRefWillBeNoop(new ClipboardEvent(type, canBubble, cancelable, dataTransfer));
+        return new ClipboardEvent(type, canBubble, cancelable, dataTransfer);
     }
 
     DataTransfer* clipboardData() const { return m_clipboardData.get(); }
@@ -54,7 +54,7 @@ private:
     const AtomicString& interfaceName() const override;
     bool isClipboardEvent() const override;
 
-    PersistentWillBeMember<DataTransfer> m_clipboardData;
+    Member<DataTransfer> m_clipboardData;
 };
 
 } // namespace blink

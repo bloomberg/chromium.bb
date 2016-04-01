@@ -75,7 +75,7 @@ public:
     DECLARE_TRACE();
     void dispose();
 
-    RefPtrWillBeMember<Resource> m_resource;
+    Member<Resource> m_resource;
     bool m_inLiveDecodedResourcesList;
     unsigned m_accessCount;
     double m_lastDecodedAccessTime; // Used as a thrash guard
@@ -165,7 +165,7 @@ public:
 
     Resource* resourceForURL(const KURL&);
     Resource* resourceForURL(const KURL&, const String& cacheIdentifier);
-    WillBeHeapVector<RawPtrWillBeMember<Resource>> resourcesForURL(const KURL&);
+    HeapVector<Member<Resource>> resourcesForURL(const KURL&);
 
     void add(Resource*);
     void remove(Resource*);

@@ -44,8 +44,7 @@ class TouchEvent;
 class TouchList;
 class TreeScope;
 
-class CORE_EXPORT EventPath final : public NoBaseWillBeGarbageCollectedFinalized<EventPath> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(EventPath);
+class CORE_EXPORT EventPath final : public GarbageCollectedFinalized<EventPath> {
     WTF_MAKE_NONCOPYABLE(EventPath);
 public:
     explicit EventPath(Node&, Event* = nullptr);
@@ -86,12 +85,12 @@ private:
     void shrink(size_t newSize) { ASSERT(!m_windowEventContext); m_nodeEventContexts.shrink(newSize); }
     void shrinkIfNeeded(const Node& target, const EventTarget& relatedTarget);
 
-    void adjustTouchList(const TouchList*, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes);
+    void adjustTouchList(const TouchList*, HeapVector<Member<TouchList>> adjustedTouchList, const HeapVector<Member<TreeScope>>& treeScopes);
 
-    using TreeScopeEventContextMap = WillBeHeapHashMap<RawPtrWillBeMember<TreeScope>, RefPtrWillBeMember<TreeScopeEventContext>>;
+    using TreeScopeEventContextMap = HeapHashMap<Member<TreeScope>, Member<TreeScopeEventContext>>;
     TreeScopeEventContext* ensureTreeScopeEventContext(Node* currentTarget, TreeScope*, TreeScopeEventContextMap&);
 
-    using RelatedTargetMap = WillBeHeapHashMap<RawPtrWillBeMember<TreeScope>, RawPtrWillBeMember<EventTarget>>;
+    using RelatedTargetMap = HeapHashMap<Member<TreeScope>, Member<EventTarget>>;
 
     static void buildRelatedNodeMap(const Node&, RelatedTargetMap&);
     static EventTarget* findRelatedNode(TreeScope&, RelatedTargetMap&);
@@ -102,11 +101,11 @@ private:
 
     const NodeEventContext& topNodeEventContext();
 
-    WillBeHeapVector<NodeEventContext> m_nodeEventContexts;
-    RawPtrWillBeMember<Node> m_node;
-    RawPtrWillBeMember<Event> m_event;
-    WillBeHeapVector<RefPtrWillBeMember<TreeScopeEventContext>> m_treeScopeEventContexts;
-    OwnPtrWillBeMember<WindowEventContext> m_windowEventContext;
+    HeapVector<NodeEventContext> m_nodeEventContexts;
+    Member<Node> m_node;
+    Member<Event> m_event;
+    HeapVector<Member<TreeScopeEventContext>> m_treeScopeEventContexts;
+    Member<WindowEventContext> m_windowEventContext;
 };
 
 } // namespace blink

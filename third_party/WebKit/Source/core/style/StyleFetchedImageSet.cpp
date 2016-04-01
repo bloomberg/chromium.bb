@@ -68,12 +68,12 @@ ImageResource* StyleFetchedImageSet::cachedImage() const
     return m_bestFitImage.get();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImageSet::cssValue() const
+RawPtr<CSSValue> StyleFetchedImageSet::cssValue() const
 {
     return m_imageSetValue;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImageSet::computedCSSValue() const
+RawPtr<CSSValue> StyleFetchedImageSet::computedCSSValue() const
 {
     return m_imageSetValue->valueWithURLsMadeAbsolute();
 }

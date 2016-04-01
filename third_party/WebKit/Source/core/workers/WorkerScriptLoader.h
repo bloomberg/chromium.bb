@@ -80,7 +80,7 @@ public:
     const Vector<char>* cachedMetadata() const { return m_cachedMetadata.get(); }
 
     ContentSecurityPolicy* contentSecurityPolicy() { return m_contentSecurityPolicy.get(); }
-    PassRefPtrWillBeRawPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
+    RawPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
     WebAddressSpace responseAddressSpace() const { return m_responseAddressSpace; }
 
@@ -122,7 +122,7 @@ private:
     long long m_appCacheID;
     OwnPtr<Vector<char>> m_cachedMetadata;
     WebURLRequest::RequestContext m_requestContext;
-    RefPtrWillBePersistent<ContentSecurityPolicy> m_contentSecurityPolicy;
+    Persistent<ContentSecurityPolicy> m_contentSecurityPolicy;
     WebAddressSpace m_responseAddressSpace;
 };
 

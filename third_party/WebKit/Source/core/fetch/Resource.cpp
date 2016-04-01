@@ -95,9 +95,9 @@ static inline bool shouldUpdateHeaderAfterRevalidation(const AtomicString& heade
 
 class Resource::CacheHandler : public CachedMetadataHandler {
 public:
-    static PassOwnPtrWillBeRawPtr<CacheHandler> create(Resource* resource)
+    static RawPtr<CacheHandler> create(Resource* resource)
     {
-        return adoptPtrWillBeNoop(new CacheHandler(resource));
+        return new CacheHandler(resource);
     }
     ~CacheHandler() override { }
     DECLARE_VIRTUAL_TRACE();
@@ -108,7 +108,7 @@ public:
 
 private:
     explicit CacheHandler(Resource*);
-    RawPtrWillBeMember<Resource> m_resource;
+    Member<Resource> m_resource;
 };
 
 Resource::CacheHandler::CacheHandler(Resource* resource)
@@ -495,7 +495,7 @@ void Resource::clearCachedMetadata(CachedMetadataHandler::CacheType cacheType)
         Platform::current()->cacheMetadata(m_response.url(), m_response.responseTime(), 0, 0);
 }
 
-WeakPtrWillBeRawPtr<Resource> Resource::asWeakPtr()
+RawPtr<Resource> Resource::asWeakPtr()
 {
 #if ENABLE(OILPAN)
     return this;
@@ -638,7 +638,7 @@ void Resource::removeClient(ResourceClient* client)
 void Resource::didRemoveClientOrObserver()
 {
     if (!hasClientsOrObservers()) {
-        RefPtrWillBeRawPtr<Resource> protect(this);
+        RawPtr<Resource> protect(this);
         memoryCache()->makeDead(this);
         allClientsAndObserversRemoved();
 
@@ -673,7 +673,7 @@ void Resource::cancelTimerFired(Timer<Resource>* timer)
     ASSERT_UNUSED(timer, timer == &m_cancelTimer);
     if (hasClientsOrObservers() || !m_loader)
         return;
-    RefPtrWillBeRawPtr<Resource> protect(this);
+    RawPtr<Resource> protect(this);
     m_loader->cancelIfNotFinishing();
     memoryCache()->remove(this);
 }
@@ -920,7 +920,7 @@ Resource::ResourceCallback* Resource::ResourceCallback::callbackHandler()
     //
     // Keep it out of LSan's reach instead.
     LEAK_SANITIZER_DISABLED_SCOPE;
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<ResourceCallback>, callbackHandler, (adoptPtrWillBeNoop(new ResourceCallback)));
+    DEFINE_STATIC_LOCAL(Persistent<ResourceCallback>, callbackHandler, (adoptPtrWillBeNoop(new ResourceCallback)));
     return callbackHandler.get();
 }
 
@@ -957,8 +957,8 @@ bool Resource::ResourceCallback::isScheduled(Resource* resource) const
 
 void Resource::ResourceCallback::runTask()
 {
-    WillBeHeapVector<RefPtrWillBeMember<Resource>> resources;
-    for (const RefPtrWillBeMember<Resource>& resource : m_resourcesWithPendingClients)
+    HeapVector<Member<Resource>> resources;
+    for (const Member<Resource>& resource : m_resourcesWithPendingClients)
         resources.append(resource.get());
     m_resourcesWithPendingClients.clear();
 

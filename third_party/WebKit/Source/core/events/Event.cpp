@@ -241,7 +241,7 @@ void Event::preventDefault()
         m_defaultPrevented = true;
 }
 
-void Event::setTarget(PassRefPtrWillBeRawPtr<EventTarget> target)
+void Event::setTarget(RawPtr<EventTarget> target)
 {
     if (m_target == target)
         return;
@@ -255,7 +255,7 @@ void Event::receivedTarget()
 {
 }
 
-void Event::setUnderlyingEvent(PassRefPtrWillBeRawPtr<Event> ue)
+void Event::setUnderlyingEvent(RawPtr<Event> ue)
 {
     // Prohibit creation of a cycle -- just do nothing in that case.
     for (Event* e = ue.get(); e; e = e->underlyingEvent())
@@ -267,23 +267,23 @@ void Event::setUnderlyingEvent(PassRefPtrWillBeRawPtr<Event> ue)
 void Event::initEventPath(Node& node)
 {
     if (!m_eventPath) {
-        m_eventPath = adoptPtrWillBeNoop(new EventPath(node, this));
+        m_eventPath = new EventPath(node, this);
     } else {
         m_eventPath->initializeWith(node, this);
     }
 }
 
-WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::path(ScriptState* scriptState) const
+HeapVector<Member<EventTarget>> Event::path(ScriptState* scriptState) const
 {
     return pathInternal(scriptState, NonEmptyAfterDispatch);
 }
 
-WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::deepPath(ScriptState* scriptState) const
+HeapVector<Member<EventTarget>> Event::deepPath(ScriptState* scriptState) const
 {
     return pathInternal(scriptState, EmptyAfterDispatch);
 }
 
-WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::pathInternal(ScriptState* scriptState, EventPathMode mode) const
+HeapVector<Member<EventTarget>> Event::pathInternal(ScriptState* scriptState, EventPathMode mode) const
 {
     if (m_target)
         OriginsUsingFeatures::countOriginOrIsolatedWorldHumanReadableName(scriptState, *m_target, OriginsUsingFeatures::Feature::EventPath);
@@ -292,12 +292,12 @@ WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::pathInternal(ScriptStat
         ASSERT(m_eventPhase == Event::NONE);
         if (!m_eventPath) {
             // Before dispatching the event
-            return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>();
+            return HeapVector<Member<EventTarget>>();
         }
         ASSERT(!m_eventPath->isEmpty());
         // After dispatching the event
         if (mode == EmptyAfterDispatch)
-            return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>();
+            return HeapVector<Member<EventTarget>>();
         return m_eventPath->last().treeScopeEventContext().ensureEventPath(*m_eventPath);
     }
 
@@ -315,12 +315,12 @@ WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::pathInternal(ScriptStat
     // Returns [window] for events that are directly dispatched to the window object;
     // e.g., window.load, pageshow, etc.
     if (LocalDOMWindow* window = m_currentTarget->toDOMWindow())
-        return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>(1, window);
+        return HeapVector<Member<EventTarget>>(1, window);
 
-    return WillBeHeapVector<RefPtrWillBeMember<EventTarget>>();
+    return HeapVector<Member<EventTarget>>();
 }
 
-PassRefPtrWillBeRawPtr<EventDispatchMediator> Event::createMediator()
+RawPtr<EventDispatchMediator> Event::createMediator()
 {
     return EventDispatchMediator::create(this);
 }

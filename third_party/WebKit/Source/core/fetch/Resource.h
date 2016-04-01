@@ -55,9 +55,8 @@ class SharedBuffer;
 // A resource that is held in the cache. Classes who want to use this object should derive
 // from ResourceClient, to get the function calls in case the requested data has arrived.
 // This class also does the actual communication with the loader to obtain the resource from the network.
-class CORE_EXPORT Resource : public RefCountedWillBeGarbageCollectedFinalized<Resource> {
+class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource> {
     WTF_MAKE_NONCOPYABLE(Resource);
-    USING_FAST_MALLOC_WITH_TYPE_NAME_WILL_BE_REMOVED(blink::Resource);
 public:
     enum Type {
         MainResource,
@@ -86,9 +85,9 @@ public:
     };
 
     // Exposed for testing.
-    static PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options = ResourceLoaderOptions())
+    static RawPtr<Resource> create(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options = ResourceLoaderOptions())
     {
-        return adoptRefWillBeNoop(new Resource(request, type, options));
+        return new Resource(request, type, options);
     }
     virtual ~Resource();
 
@@ -247,7 +246,7 @@ public:
     static const char* resourceTypeName(Type);
 
     // TODO(japhet): Remove once oilpan ships, it doesn't need the WeakPtr.
-    WeakPtrWillBeRawPtr<Resource> asWeakPtr();
+    RawPtr<Resource> asWeakPtr();
 
 protected:
     Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
@@ -273,7 +272,7 @@ protected:
     HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;
     HashCountedSet<ResourceClient*> m_finishedClients;
 
-    class ResourceCallback : public NoBaseWillBeGarbageCollectedFinalized<ResourceCallback> {
+    class ResourceCallback : public GarbageCollectedFinalized<ResourceCallback> {
     public:
         static ResourceCallback* callbackHandler();
         DECLARE_TRACE();
@@ -284,7 +283,7 @@ protected:
         ResourceCallback();
         void runTask();
         OwnPtr<CancellableTaskFactory> m_callbackTaskFactory;
-        WillBeHeapHashSet<RefPtrWillBeMember<Resource>> m_resourcesWithPendingClients;
+        HeapHashSet<Member<Resource>> m_resourcesWithPendingClients;
     };
 
     bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client) || m_finishedClients.contains(client); }
@@ -314,7 +313,7 @@ protected:
     ResourceRequest m_resourceRequest;
     ResourceRequest m_revalidatingRequest;
     AtomicString m_accept;
-    PersistentWillBeMember<ResourceLoader> m_loader;
+    Member<ResourceLoader> m_loader;
     ResourceLoaderOptions m_options;
 
     ResourceResponse m_response;
@@ -345,7 +344,7 @@ private:
 #endif
 
     RefPtr<CachedMetadata> m_cachedMetadata;
-    OwnPtrWillBeMember<CacheHandler> m_cacheHandler;
+    Member<CacheHandler> m_cacheHandler;
 
     ResourceError m_error;
 
@@ -380,7 +379,7 @@ private:
 class ResourceFactory {
     STACK_ALLOCATED();
 public:
-    virtual PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest&, const ResourceLoaderOptions&, const String&) const = 0;
+    virtual RawPtr<Resource> create(const ResourceRequest&, const ResourceLoaderOptions&, const String&) const = 0;
     Resource::Type type() const { return m_type; }
 
 protected:
@@ -391,7 +390,7 @@ protected:
 
 #define DEFINE_RESOURCE_TYPE_CASTS(typeName) \
     DEFINE_TYPE_CASTS(typeName##Resource, Resource, resource, resource->getType() == Resource::typeName, resource.getType() == Resource::typeName); \
-    inline typeName##Resource* to##typeName##Resource(const RefPtrWillBeRawPtr<Resource>& ptr) { return to##typeName##Resource(ptr.get()); }
+    inline typeName##Resource* to##typeName##Resource(const RawPtr<Resource>& ptr) { return to##typeName##Resource(ptr.get()); }
 
 } // namespace blink
 

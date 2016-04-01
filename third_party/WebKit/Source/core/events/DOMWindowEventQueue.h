@@ -47,12 +47,12 @@ class ExecutionContext;
 
 class DOMWindowEventQueue final : DOMWINDOWEVENTQUEUE_BASE_CLASSES {
 public:
-    static PassRefPtrWillBeRawPtr<DOMWindowEventQueue> create(ExecutionContext*);
+    static RawPtr<DOMWindowEventQueue> create(ExecutionContext*);
     ~DOMWindowEventQueue() override;
 
     // EventQueue
     DECLARE_VIRTUAL_TRACE();
-    bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override;
+    bool enqueueEvent(RawPtr<Event>) override;
     bool cancelEvent(Event*) override;
     void close() override;
 
@@ -60,10 +60,10 @@ private:
     explicit DOMWindowEventQueue(ExecutionContext*);
 
     void pendingEventTimerFired();
-    void dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
+    void dispatchEvent(RawPtr<Event>);
 
-    OwnPtrWillBeMember<DOMWindowEventQueueTimer> m_pendingEventTimer;
-    WillBeHeapListHashSet<RefPtrWillBeMember<Event>, 16> m_queuedEvents;
+    Member<DOMWindowEventQueueTimer> m_pendingEventTimer;
+    HeapListHashSet<Member<Event>, 16> m_queuedEvents;
     bool m_isClosed;
 
     friend class DOMWindowEventQueueTimer;

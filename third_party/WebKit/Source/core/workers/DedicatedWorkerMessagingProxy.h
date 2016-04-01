@@ -14,7 +14,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy final : public WorkerMessagingPr
     WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxy);
     USING_FAST_MALLOC(WorkerMessagingProxy);
 public:
-    DedicatedWorkerMessagingProxy(InProcessWorkerBase*, PassOwnPtrWillBeRawPtr<WorkerClients>);
+    DedicatedWorkerMessagingProxy(InProcessWorkerBase*, RawPtr<WorkerClients>);
     ~DedicatedWorkerMessagingProxy() override;
 
     PassOwnPtr<WorkerThread> createWorkerThread(double originTime) override;

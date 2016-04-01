@@ -36,13 +36,12 @@ class Document;
 class LayoutObject;
 class ComputedStyle;
 
-class ContentData : public NoBaseWillBeGarbageCollectedFinalized<ContentData> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ContentData);
+class ContentData : public GarbageCollectedFinalized<ContentData> {
 public:
-    static PassOwnPtrWillBeRawPtr<ContentData> create(PassRefPtrWillBeRawPtr<StyleImage>);
-    static PassOwnPtrWillBeRawPtr<ContentData> create(const String&);
-    static PassOwnPtrWillBeRawPtr<ContentData> create(PassOwnPtr<CounterContent>);
-    static PassOwnPtrWillBeRawPtr<ContentData> create(QuoteType);
+    static RawPtr<ContentData> create(RawPtr<StyleImage>);
+    static RawPtr<ContentData> create(const String&);
+    static RawPtr<ContentData> create(PassOwnPtr<CounterContent>);
+    static RawPtr<ContentData> create(QuoteType);
 
     virtual ~ContentData() { }
 
@@ -53,19 +52,19 @@ public:
 
     virtual LayoutObject* createLayoutObject(Document&, ComputedStyle&) const = 0;
 
-    virtual PassOwnPtrWillBeRawPtr<ContentData> clone() const;
+    virtual RawPtr<ContentData> clone() const;
 
     ContentData* next() const { return m_next.get(); }
-    void setNext(PassOwnPtrWillBeRawPtr<ContentData> next) { m_next = next; }
+    void setNext(RawPtr<ContentData> next) { m_next = next; }
 
     virtual bool equals(const ContentData&) const = 0;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual PassOwnPtrWillBeRawPtr<ContentData> cloneInternal() const = 0;
+    virtual RawPtr<ContentData> cloneInternal() const = 0;
 
-    OwnPtrWillBeMember<ContentData> m_next;
+    Member<ContentData> m_next;
 };
 
 #define DEFINE_CONTENT_DATA_TYPE_CASTS(typeName) \
@@ -76,7 +75,7 @@ class ImageContentData final : public ContentData {
 public:
     const StyleImage* image() const { return m_image.get(); }
     StyleImage* image() { return m_image.get(); }
-    void setImage(PassRefPtrWillBeRawPtr<StyleImage> image) { ASSERT(image); m_image = image; }
+    void setImage(RawPtr<StyleImage> image) { ASSERT(image); m_image = image; }
 
     bool isImage() const override { return true; }
     LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
@@ -91,19 +90,19 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ImageContentData(PassRefPtrWillBeRawPtr<StyleImage> image)
+    ImageContentData(RawPtr<StyleImage> image)
         : m_image(image)
     {
         ASSERT(m_image);
     }
 
-    PassOwnPtrWillBeRawPtr<ContentData> cloneInternal() const override
+    RawPtr<ContentData> cloneInternal() const override
     {
-        RefPtrWillBeRawPtr<StyleImage> image = const_cast<StyleImage*>(this->image());
+        RawPtr<StyleImage> image = const_cast<StyleImage*>(this->image());
         return create(image.release());
     }
 
-    RefPtrWillBeMember<StyleImage> m_image;
+    Member<StyleImage> m_image;
 };
 
 DEFINE_CONTENT_DATA_TYPE_CASTS(Image);
@@ -130,7 +129,7 @@ private:
     {
     }
 
-    PassOwnPtrWillBeRawPtr<ContentData> cloneInternal() const override { return create(text()); }
+    RawPtr<ContentData> cloneInternal() const override { return create(text()); }
 
     String m_text;
 };
@@ -152,7 +151,7 @@ private:
     {
     }
 
-    PassOwnPtrWillBeRawPtr<ContentData> cloneInternal() const override
+    RawPtr<ContentData> cloneInternal() const override
     {
         OwnPtr<CounterContent> counterData = adoptPtr(new CounterContent(*counter()));
         return create(counterData.release());
@@ -192,7 +191,7 @@ private:
     {
     }
 
-    PassOwnPtrWillBeRawPtr<ContentData> cloneInternal() const override { return create(quote()); }
+    RawPtr<ContentData> cloneInternal() const override { return create(quote()); }
 
     QuoteType m_quote;
 };

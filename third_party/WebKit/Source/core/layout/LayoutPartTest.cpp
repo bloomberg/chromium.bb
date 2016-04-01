@@ -23,7 +23,7 @@ public:
 
 TEST_F(LayoutPartTest, DestroyUpdatesImageQualityController)
 {
-    RefPtrWillBeRawPtr<Element> element = HTMLElement::create(HTMLNames::divTag, document());
+    RawPtr<Element> element = HTMLElement::create(HTMLNames::divTag, document());
     LayoutObject* part = new OverriddenLayoutPart(element.get());
     // The third and forth arguments are not important in this test.
     ImageQualityController::imageQualityController()->set(*part, 0, this, LayoutSize(1, 1), false);

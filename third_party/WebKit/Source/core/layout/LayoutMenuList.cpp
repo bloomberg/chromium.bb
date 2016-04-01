@@ -165,7 +165,7 @@ void LayoutMenuList::styleDidChange(StyleDifference diff, const ComputedStyle* o
 void LayoutMenuList::updateOptionsWidth()
 {
     float maxOptionWidth = 0;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = selectElement()->listItems();
+    const HeapVector<Member<HTMLElement>>& listItems = selectElement()->listItems();
     int size = listItems.size();
 
     for (int i = 0; i < size; ++i) {
@@ -220,7 +220,7 @@ void LayoutMenuList::updateText()
 void LayoutMenuList::setTextFromOption(int optionIndex)
 {
     HTMLSelectElement* select = selectElement();
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems = select->listItems();
+    const HeapVector<Member<HTMLElement>>& listItems = select->listItems();
     const int size = listItems.size();
 
     String text = emptyString();

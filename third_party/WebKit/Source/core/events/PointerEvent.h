@@ -15,14 +15,14 @@ class PointerEvent final : public MouseEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static PassRefPtrWillBeRawPtr<PointerEvent> create()
+    static RawPtr<PointerEvent> create()
     {
         return adoptRefWillBeNoop(new PointerEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<PointerEvent> create(const AtomicString& type, const PointerEventInit& initializer)
+    static RawPtr<PointerEvent> create(const AtomicString& type, const PointerEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new PointerEvent(type, initializer));
+        return new PointerEvent(type, initializer);
     }
 
     int pointerId() const { return m_pointerId; }
@@ -38,7 +38,7 @@ public:
     bool isMouseEvent() const override;
     bool isPointerEvent() const override;
 
-    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
+    RawPtr<EventDispatchMediator> createMediator() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -59,10 +59,10 @@ private:
 
 class PointerEventDispatchMediator final : public EventDispatchMediator {
 public:
-    static PassRefPtrWillBeRawPtr<PointerEventDispatchMediator> create(PassRefPtrWillBeRawPtr<PointerEvent>);
+    static RawPtr<PointerEventDispatchMediator> create(RawPtr<PointerEvent>);
 
 private:
-    explicit PointerEventDispatchMediator(PassRefPtrWillBeRawPtr<PointerEvent>);
+    explicit PointerEventDispatchMediator(RawPtr<PointerEvent>);
     PointerEvent& event() const;
     DispatchEventResult dispatchEvent(EventDispatcher&) const override;
 };

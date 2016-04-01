@@ -77,7 +77,7 @@ private:
     ExamineResult examine(const LayoutObject*) const;
 
     // The scroller that owns and is adjusted by this ScrollAnchor.
-    RawPtrWillBeMember<ScrollableArea> m_scroller;
+    Member<ScrollableArea> m_scroller;
 
     // The LayoutObject we should anchor to. Lazily computed.
     LayoutObject* m_anchorObject;

@@ -41,7 +41,7 @@ TouchEvent::TouchEvent()
 
 TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
     TouchList* changedTouches, const AtomicString& type,
-    PassRefPtrWillBeRawPtr<AbstractView> view,
+    RawPtr<AbstractView> view,
     PlatformEvent::Modifiers modifiers, bool cancelable, bool causesScrollingIfUncanceled,
     double platformTimeStamp)
     // Pass a sourceCapabilities including the ability to fire touchevents when creating this touchevent, which is always created from input device capabilities from EventHandler.
@@ -64,7 +64,7 @@ TouchEvent::~TouchEvent()
 
 void TouchEvent::initTouchEvent(ScriptState* scriptState, TouchList* touches, TouchList* targetTouches,
     TouchList* changedTouches, const AtomicString& type,
-    PassRefPtrWillBeRawPtr<AbstractView> view,
+    RawPtr<AbstractView> view,
     int, int, int, int,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
 {
@@ -109,7 +109,7 @@ void TouchEvent::preventDefault()
     }
 }
 
-PassRefPtrWillBeRawPtr<EventDispatchMediator> TouchEvent::createMediator()
+RawPtr<EventDispatchMediator> TouchEvent::createMediator()
 {
     return TouchEventDispatchMediator::create(this);
 }
@@ -122,12 +122,12 @@ DEFINE_TRACE(TouchEvent)
     UIEventWithKeyState::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<TouchEventDispatchMediator> TouchEventDispatchMediator::create(PassRefPtrWillBeRawPtr<TouchEvent> touchEvent)
+RawPtr<TouchEventDispatchMediator> TouchEventDispatchMediator::create(RawPtr<TouchEvent> touchEvent)
 {
-    return adoptRefWillBeNoop(new TouchEventDispatchMediator(touchEvent));
+    return new TouchEventDispatchMediator(touchEvent);
 }
 
-TouchEventDispatchMediator::TouchEventDispatchMediator(PassRefPtrWillBeRawPtr<TouchEvent> touchEvent)
+TouchEventDispatchMediator::TouchEventDispatchMediator(RawPtr<TouchEvent> touchEvent)
     : EventDispatchMediator(touchEvent)
 {
 }

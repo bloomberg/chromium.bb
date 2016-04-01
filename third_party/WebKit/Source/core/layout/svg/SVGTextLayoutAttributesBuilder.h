@@ -67,7 +67,7 @@ public:
 
         DECLARE_TRACE();
 
-        RawPtrWillBeMember<SVGTextPositioningElement> element;
+        Member<SVGTextPositioningElement> element;
         unsigned start;
         unsigned length;
     };
@@ -79,7 +79,7 @@ private:
 
 private:
     unsigned m_textLength;
-    WillBePersistentHeapVector<TextPosition> m_textPositions;
+    PersistentHeapVector<TextPosition> m_textPositions;
     SVGCharacterDataMap m_characterDataMap;
 };
 

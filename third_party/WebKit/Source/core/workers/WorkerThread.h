@@ -118,7 +118,7 @@ protected:
     WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
     // Factory method for creating a new worker context for the thread.
-    virtual PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
+    virtual RawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) = 0;
 
     virtual void postInitialize() { }
 
@@ -165,7 +165,7 @@ private:
     // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|, |m_isolate|, |m_runningDebuggerTask|, |m_shouldTerminateV8Execution| and |m_microtaskRunner|.
     Mutex m_threadStateMutex;
 
-    RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
+    Persistent<WorkerGlobalScope> m_workerGlobalScope;
 
     v8::Isolate* m_isolate;
 

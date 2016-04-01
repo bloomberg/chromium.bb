@@ -35,17 +35,17 @@ namespace blink {
 class TransitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<TransitionEvent> create()
+    static RawPtr<TransitionEvent> create()
     {
         return adoptRefWillBeNoop(new TransitionEvent);
     }
-    static PassRefPtrWillBeRawPtr<TransitionEvent> create(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
+    static RawPtr<TransitionEvent> create(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
     {
-        return adoptRefWillBeNoop(new TransitionEvent(type, propertyName, elapsedTime, pseudoElement));
+        return new TransitionEvent(type, propertyName, elapsedTime, pseudoElement);
     }
-    static PassRefPtrWillBeRawPtr<TransitionEvent> create(const AtomicString& type, const TransitionEventInit& initializer)
+    static RawPtr<TransitionEvent> create(const AtomicString& type, const TransitionEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new TransitionEvent(type, initializer));
+        return new TransitionEvent(type, initializer);
     }
 
     ~TransitionEvent() override;

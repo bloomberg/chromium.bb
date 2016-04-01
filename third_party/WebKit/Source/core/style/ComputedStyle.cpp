@@ -813,7 +813,7 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
     }
 }
 
-void ComputedStyle::addCursor(PassRefPtrWillBeRawPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
+void ComputedStyle::addCursor(RawPtr<StyleImage> image, bool hotSpotSpecified, const IntPoint& hotSpot)
 {
     if (!rareInheritedData.access()->cursorData) {
 #if ENABLE(OILPAN)
@@ -825,7 +825,7 @@ void ComputedStyle::addCursor(PassRefPtrWillBeRawPtr<StyleImage> image, bool hot
     rareInheritedData.access()->cursorData->append(CursorData(image, hotSpotSpecified, hotSpot));
 }
 
-void ComputedStyle::setCursorList(PassRefPtrWillBeRawPtr<CursorList> other)
+void ComputedStyle::setCursorList(RawPtr<CursorList> other)
 {
     rareInheritedData.access()->cursorData = other;
 }
@@ -853,9 +853,9 @@ void ComputedStyle::clearContent()
         rareNonInheritedData.access()->m_content = nullptr;
 }
 
-void ComputedStyle::appendContent(PassOwnPtrWillBeRawPtr<ContentData> contentData)
+void ComputedStyle::appendContent(RawPtr<ContentData> contentData)
 {
-    OwnPtrWillBePersistent<ContentData>& content = rareNonInheritedData.access()->m_content;
+    Persistent<ContentData>& content = rareNonInheritedData.access()->m_content;
     if (!content) {
         content = contentData;
         return;
@@ -866,14 +866,14 @@ void ComputedStyle::appendContent(PassOwnPtrWillBeRawPtr<ContentData> contentDat
     lastContent->setNext(contentData);
 }
 
-void ComputedStyle::setContent(PassRefPtrWillBeRawPtr<StyleImage> image)
+void ComputedStyle::setContent(RawPtr<StyleImage> image)
 {
     appendContent(ContentData::create(image));
 }
 
 void ComputedStyle::setContent(const String& string)
 {
-    OwnPtrWillBePersistent<ContentData>& content = rareNonInheritedData.access()->m_content;
+    Persistent<ContentData>& content = rareNonInheritedData.access()->m_content;
     if (!content) {
         content = ContentData::create(string);
         return;
@@ -1062,7 +1062,7 @@ static FloatRoundedRect::Radii calcRadiiFor(const BorderData& border, LayoutSize
 }
 
 StyleImage* ComputedStyle::listStyleImage() const { return rareInheritedData->listStyleImage.get(); }
-void ComputedStyle::setListStyleImage(PassRefPtrWillBeRawPtr<StyleImage> v)
+void ComputedStyle::setListStyleImage(RawPtr<StyleImage> v)
 {
     if (rareInheritedData->listStyleImage != v)
         rareInheritedData.access()->listStyleImage = v;
@@ -1764,7 +1764,7 @@ LayoutRectOutsets ComputedStyle::imageOutsets(const NinePieceImage& image) const
         NinePieceImage::computeOutset(image.outset().left(), borderLeftWidth()));
 }
 
-void ComputedStyle::setBorderImageSource(PassRefPtrWillBeRawPtr<StyleImage> image)
+void ComputedStyle::setBorderImageSource(RawPtr<StyleImage> image)
 {
     if (surround->border.m_image.image() == image.get())
         return;

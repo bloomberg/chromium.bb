@@ -85,7 +85,7 @@ void LayoutImage::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
         intrinsicSizeChanged();
 }
 
-void LayoutImage::setImageResource(PassOwnPtrWillBeRawPtr<LayoutImageResource> imageResource)
+void LayoutImage::setImageResource(RawPtr<LayoutImageResource> imageResource)
 {
     ASSERT(!m_imageResource);
     m_imageResource = imageResource;

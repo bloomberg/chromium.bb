@@ -40,19 +40,19 @@ public:
         REMOVAL         = 3  // NOLINT
     };
 
-    static PassRefPtrWillBeRawPtr<MutationEvent> create()
+    static RawPtr<MutationEvent> create()
     {
         return adoptRefWillBeNoop(new MutationEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<MutationEvent> create(
-        const AtomicString& type, bool canBubble, PassRefPtrWillBeRawPtr<Node> relatedNode = nullptr,
+    static RawPtr<MutationEvent> create(
+        const AtomicString& type, bool canBubble, RawPtr<Node> relatedNode = nullptr,
         const String& prevValue = String(), const String& newValue = String(), const String& attrName = String(), unsigned short attrChange = 0)
     {
-        return adoptRefWillBeNoop(new MutationEvent(type, canBubble, false, relatedNode, prevValue, newValue, attrName, attrChange));
+        return new MutationEvent(type, canBubble, false, relatedNode, prevValue, newValue, attrName, attrChange);
     }
 
-    void initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Node> relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
+    void initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<Node> relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
 
     Node* relatedNode() const { return m_relatedNode.get(); }
     String prevValue() const { return m_prevValue; }
@@ -66,9 +66,9 @@ public:
 
 private:
     MutationEvent();
-    MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Node> relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
+    MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<Node> relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
 
-    RefPtrWillBeMember<Node> m_relatedNode;
+    Member<Node> m_relatedNode;
     String m_prevValue;
     String m_newValue;
     String m_attrName;

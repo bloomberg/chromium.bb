@@ -29,7 +29,7 @@ namespace blink {
 struct SameSizeAsFillLayer {
     FillLayer* m_next;
 
-    RefPtrWillBePersistent<StyleImage> m_image;
+    Persistent<StyleImage> m_image;
 
     Length m_xPosition;
     Length m_yPosition;

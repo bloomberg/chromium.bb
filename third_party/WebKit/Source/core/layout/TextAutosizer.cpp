@@ -54,7 +54,7 @@ namespace blink {
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
 class WriteDebugInfoTask : public ExecutionContextTask {
 public:
-    WriteDebugInfoTask(PassRefPtrWillBeRawPtr<Element> element, AtomicString value)
+    WriteDebugInfoTask(RawPtr<Element> element, AtomicString value)
         : m_element(element)
         , m_value(value)
     {
@@ -66,7 +66,7 @@ public:
     }
 
 private:
-    RefPtrWillBePersistent<Element> m_element;
+    Persistent<Element> m_element;
     AtomicString m_value;
 };
 

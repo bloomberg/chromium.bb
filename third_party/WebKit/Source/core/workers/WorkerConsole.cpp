@@ -46,7 +46,7 @@ WorkerConsole::~WorkerConsole()
 {
 }
 
-void WorkerConsole::reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage)
+void WorkerConsole::reportMessageToConsole(RawPtr<ConsoleMessage> consoleMessage)
 {
     m_scope->addConsoleMessage(consoleMessage);
 }

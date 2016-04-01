@@ -34,9 +34,9 @@ class BeforeTextInsertedEvent final : public Event {
 public:
     ~BeforeTextInsertedEvent() override;
 
-    static PassRefPtrWillBeRawPtr<BeforeTextInsertedEvent> create(const String& text)
+    static RawPtr<BeforeTextInsertedEvent> create(const String& text)
     {
-        return adoptRefWillBeNoop(new BeforeTextInsertedEvent(text));
+        return new BeforeTextInsertedEvent(text);
     }
 
     const AtomicString& interfaceName() const override;

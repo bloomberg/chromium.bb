@@ -66,12 +66,12 @@ ImageResource* StyleFetchedImage::cachedImage() const
     return m_image.get();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImage::cssValue() const
+RawPtr<CSSValue> StyleFetchedImage::cssValue() const
 {
     return CSSImageValue::create(m_image->url(), const_cast<StyleFetchedImage*>(this));
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> StyleFetchedImage::computedCSSValue() const
+RawPtr<CSSValue> StyleFetchedImage::computedCSSValue() const
 {
     return cssValue();
 }

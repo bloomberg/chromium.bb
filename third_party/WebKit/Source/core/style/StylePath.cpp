@@ -54,7 +54,7 @@ bool StylePath::isClosed() const
     return path().isClosed();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> StylePath::computedCSSValue() const
+RawPtr<CSSValue> StylePath::computedCSSValue() const
 {
     return CSSPathValue::create(const_cast<StylePath*>(this));
 }

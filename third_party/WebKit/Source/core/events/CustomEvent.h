@@ -39,14 +39,14 @@ class CORE_EXPORT CustomEvent final : public Event {
 public:
     ~CustomEvent() override;
 
-    static PassRefPtrWillBeRawPtr<CustomEvent> create()
+    static RawPtr<CustomEvent> create()
     {
         return adoptRefWillBeNoop(new CustomEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<CustomEvent> create(const AtomicString& type, const CustomEventInit& initializer)
+    static RawPtr<CustomEvent> create(const AtomicString& type, const CustomEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new CustomEvent(type, initializer));
+        return new CustomEvent(type, initializer);
     }
 
     void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, const ScriptValue& detail);

@@ -23,7 +23,7 @@ class RenderingTest : public testing::Test {
 public:
     virtual FrameSettingOverrideFunction settingOverrider() const { return nullptr; }
 
-    RenderingTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> = nullptr);
+    RenderingTest(RawPtr<FrameLoaderClient> = nullptr);
 
 protected:
     void SetUp() override;
@@ -57,15 +57,15 @@ protected:
     }
 
 private:
-    RefPtrWillBePersistent<LocalFrame> m_subframe;
-    OwnPtrWillBePersistent<FrameLoaderClient> m_frameLoaderClient;
-    OwnPtrWillBePersistent<FrameLoaderClient> m_childFrameLoaderClient;
+    Persistent<LocalFrame> m_subframe;
+    Persistent<FrameLoaderClient> m_frameLoaderClient;
+    Persistent<FrameLoaderClient> m_childFrameLoaderClient;
     OwnPtr<DummyPageHolder> m_pageHolder;
 };
 
 class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
 public:
-    static PassOwnPtrWillBeRawPtr<SingleChildFrameLoaderClient> create() { return adoptPtrWillBeNoop(new SingleChildFrameLoaderClient); }
+    static RawPtr<SingleChildFrameLoaderClient> create() { return adoptPtrWillBeNoop(new SingleChildFrameLoaderClient); }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -81,14 +81,14 @@ public:
 private:
     SingleChildFrameLoaderClient() : m_child(nullptr) { }
 
-    RefPtrWillBeMember<Frame> m_child;
+    Member<Frame> m_child;
 };
 
 class FrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
 public:
-    static PassOwnPtrWillBeRawPtr<FrameLoaderClientWithParent> create(Frame* parent)
+    static RawPtr<FrameLoaderClientWithParent> create(Frame* parent)
     {
-        return adoptPtrWillBeNoop(new FrameLoaderClientWithParent(parent));
+        return new FrameLoaderClientWithParent(parent);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -102,7 +102,7 @@ public:
 private:
     explicit FrameLoaderClientWithParent(Frame* parent) : m_parent(parent) { }
 
-    RefPtrWillBeMember<Frame> m_parent;
+    Member<Frame> m_parent;
 };
 
 } // namespace blink

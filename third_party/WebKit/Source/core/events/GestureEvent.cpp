@@ -30,7 +30,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr<AbstractView> view, const PlatformGestureEvent& event)
+RawPtr<GestureEvent> GestureEvent::create(RawPtr<AbstractView> view, const PlatformGestureEvent& event)
 {
     AtomicString eventType;
     float deltaX = 0;
@@ -98,7 +98,7 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     default:
         return nullptr;
     }
-    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.getModifiers(), deltaX, deltaY, velocityX, velocityY, inertial, synthetic, deltaUnits, event.timestamp(), event.resendingPluginId(), source));
+    return new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.getModifiers(), deltaX, deltaY, velocityX, velocityY, inertial, synthetic, deltaUnits, event.timestamp(), event.resendingPluginId(), source);
 }
 
 const AtomicString& GestureEvent::interfaceName() const
@@ -127,7 +127,7 @@ GestureEvent::GestureEvent()
 {
 }
 
-GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, bool synthetic, ScrollGranularity deltaUnits, double platformTimeStamp, int resendingPluginId, GestureSource source)
+GestureEvent::GestureEvent(const AtomicString& type, RawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, bool synthetic, ScrollGranularity deltaUnits, double platformTimeStamp, int resendingPluginId, GestureSource source)
     : MouseRelatedEvent(type, true, true, nullptr, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), modifiers, platformTimeStamp, PositionType::Position)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)

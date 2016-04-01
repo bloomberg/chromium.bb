@@ -34,17 +34,17 @@ namespace blink {
 class AnimationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<AnimationEvent> create()
+    static RawPtr<AnimationEvent> create()
     {
         return adoptRefWillBeNoop(new AnimationEvent);
     }
-    static PassRefPtrWillBeRawPtr<AnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
+    static RawPtr<AnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
     {
-        return adoptRefWillBeNoop(new AnimationEvent(type, animationName, elapsedTime));
+        return new AnimationEvent(type, animationName, elapsedTime);
     }
-    static PassRefPtrWillBeRawPtr<AnimationEvent> create(const AtomicString& type, const AnimationEventInit& initializer)
+    static RawPtr<AnimationEvent> create(const AtomicString& type, const AnimationEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new AnimationEvent(type, initializer));
+        return new AnimationEvent(type, initializer);
     }
 
     ~AnimationEvent() override;

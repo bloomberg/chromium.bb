@@ -38,17 +38,16 @@ class CSSImageSetValue;
 // This class keeps one cached image and has access to a set of alternatives.
 
 class StyleFetchedImageSet final : public StyleImage, private ResourceClient {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleFetchedImageSet);
-    WILL_BE_USING_PRE_FINALIZER(StyleFetchedImageSet, dispose);
+    USING_PRE_FINALIZER(StyleFetchedImageSet, dispose);
 public:
-    static PassRefPtrWillBeRawPtr<StyleFetchedImageSet> create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value, const KURL& url)
+    static RawPtr<StyleFetchedImageSet> create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value, const KURL& url)
     {
-        return adoptRefWillBeNoop(new StyleFetchedImageSet(image, imageScaleFactor, value, url));
+        return new StyleFetchedImageSet(image, imageScaleFactor, value, url);
     }
     ~StyleFetchedImageSet() override;
 
-    PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
-    PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override;
+    RawPtr<CSSValue> cssValue() const override;
+    RawPtr<CSSValue> computedCSSValue() const override;
 
     // FIXME: This is used by StyleImage for equals comparison, but this implementation
     // only looks at the image from the set that we have loaded. I'm not sure if that is
@@ -81,10 +80,10 @@ private:
 
     String debugName() const override { return "StyleFetchedImageSet"; }
 
-    RefPtrWillBeMember<ImageResource> m_bestFitImage;
+    Member<ImageResource> m_bestFitImage;
     float m_imageScaleFactor;
 
-    RawPtrWillBeMember<CSSImageSetValue> m_imageSetValue; // Not retained; it owns us.
+    Member<CSSImageSetValue> m_imageSetValue; // Not retained; it owns us.
     const KURL m_url;
 };
 

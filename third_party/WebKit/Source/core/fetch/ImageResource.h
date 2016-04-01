@@ -45,21 +45,21 @@ class SecurityOrigin;
 
 class CORE_EXPORT ImageResource final : public Resource, public ImageObserver, public MultipartImageResourceParser::Client {
     friend class MemoryCache;
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageResource);
+    USING_GARBAGE_COLLECTED_MIXIN(ImageResource);
 public:
     using ClientType = ResourceClient;
 
-    static PassRefPtrWillBeRawPtr<ImageResource> fetch(FetchRequest&, ResourceFetcher*);
+    static RawPtr<ImageResource> fetch(FetchRequest&, ResourceFetcher*);
 
-    static PassRefPtrWillBeRawPtr<ImageResource> create(blink::Image* image)
+    static RawPtr<ImageResource> create(blink::Image* image)
     {
-        return adoptRefWillBeNoop(new ImageResource(image, ResourceLoaderOptions()));
+        return new ImageResource(image, ResourceLoaderOptions());
     }
 
     // Exposed for testing
-    static PassRefPtrWillBeRawPtr<ImageResource> create(const ResourceRequest& request, blink::Image* image)
+    static RawPtr<ImageResource> create(const ResourceRequest& request, blink::Image* image)
     {
-        return adoptRefWillBeNoop(new ImageResource(request, image, ResourceLoaderOptions()));
+        return new ImageResource(request, image, ResourceLoaderOptions());
     }
 
     ~ImageResource() override;
@@ -143,9 +143,9 @@ private:
         ImageResourceFactory()
             : ResourceFactory(Resource::Image) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String&) const override
+        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String&) const override
         {
-            return adoptRefWillBeNoop(new ImageResource(request, options));
+            return new ImageResource(request, options);
         }
     };
     ImageResource(const ResourceRequest&, const ResourceLoaderOptions&);
@@ -162,7 +162,7 @@ private:
 
     float m_devicePixelRatioHeaderValue;
 
-    PersistentWillBeMember<MultipartImageResourceParser> m_multipartParser;
+    Member<MultipartImageResourceParser> m_multipartParser;
     RefPtr<blink::Image> m_image;
     MultipartParsingState m_multipartParsingState = MultipartParsingState::WaitingForFirstPart;
     bool m_hasDevicePixelRatioHeaderValue;

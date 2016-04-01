@@ -33,9 +33,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WorkerEventQueue> WorkerEventQueue::create(ExecutionContext* context)
+RawPtr<WorkerEventQueue> WorkerEventQueue::create(ExecutionContext* context)
 {
-    return adoptPtrWillBeNoop(new WorkerEventQueue(context));
+    return new WorkerEventQueue(context);
 }
 
 WorkerEventQueue::WorkerEventQueue(ExecutionContext* context)
@@ -60,7 +60,7 @@ DEFINE_TRACE(WorkerEventQueue)
 
 class WorkerEventQueue::EventDispatcherTask : public ExecutionContextTask {
 public:
-    static PassOwnPtr<EventDispatcherTask> create(PassRefPtrWillBeRawPtr<Event> event, WorkerEventQueue* eventQueue)
+    static PassOwnPtr<EventDispatcherTask> create(RawPtr<Event> event, WorkerEventQueue* eventQueue)
     {
         return adoptPtr(new EventDispatcherTask(event, eventQueue));
     }
@@ -71,13 +71,13 @@ public:
             m_eventQueue->removeEvent(m_event.get());
     }
 
-    void dispatchEvent(ExecutionContext*, PassRefPtrWillBeRawPtr<Event> prpEvent)
+    void dispatchEvent(ExecutionContext*, RawPtr<Event> prpEvent)
     {
-        // Stash the event on the stack in a RefPtrWillBeRawPtr; trying to do this
+        // Stash the event on the stack in a RawPtr; trying to do this
         // in a single line causes an optimization bug with MSVC. MSVC generates code
-        // that passes the event arg (forcing PassRefPtrWillBeRawPtr to be released)
+        // that passes the event arg (forcing RawPtr to be released)
         // before the target is queried.
-        RefPtrWillBeRawPtr<Event> event = prpEvent;
+        RawPtr<Event> event = prpEvent;
         event->target()->dispatchEvent(event);
     }
 
@@ -97,15 +97,15 @@ public:
     }
 
 private:
-    EventDispatcherTask(PassRefPtrWillBeRawPtr<Event> event, WorkerEventQueue* eventQueue)
+    EventDispatcherTask(RawPtr<Event> event, WorkerEventQueue* eventQueue)
         : m_event(event)
         , m_eventQueue(eventQueue)
         , m_isCancelled(false)
     {
     }
 
-    RefPtrWillBePersistent<Event> m_event;
-    RawPtrWillBePersistent<WorkerEventQueue> m_eventQueue;
+    Persistent<Event> m_event;
+    Persistent<WorkerEventQueue> m_eventQueue;
     bool m_isCancelled;
 };
 
@@ -115,11 +115,11 @@ void WorkerEventQueue::removeEvent(Event* event)
     m_eventTaskMap.remove(event);
 }
 
-bool WorkerEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> prpEvent)
+bool WorkerEventQueue::enqueueEvent(RawPtr<Event> prpEvent)
 {
     if (m_isClosed)
         return false;
-    RefPtrWillBeRawPtr<Event> event = prpEvent;
+    RawPtr<Event> event = prpEvent;
     InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
     OwnPtr<EventDispatcherTask> task = EventDispatcherTask::create(event, this);
     m_eventTaskMap.add(event.release(), task.get());

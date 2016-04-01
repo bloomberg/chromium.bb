@@ -10,14 +10,14 @@
 
 namespace blink {
 
-RenderingTest::RenderingTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient)
+RenderingTest::RenderingTest(RawPtr<FrameLoaderClient> frameLoaderClient)
     : m_frameLoaderClient(frameLoaderClient) { }
 
 void RenderingTest::SetUp()
 {
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<EmptyChromeClient>, chromeClient, (EmptyChromeClient::create()));
+    DEFINE_STATIC_LOCAL(Persistent<EmptyChromeClient>, chromeClient, (EmptyChromeClient::create()));
     pageClients.chromeClient = chromeClient.get();
     m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients, m_frameLoaderClient.release(), settingOverrider());
 

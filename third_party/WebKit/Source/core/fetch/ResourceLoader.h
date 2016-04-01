@@ -106,7 +106,7 @@ private:
     };
     bool isFinishing() { return m_state >= ConnectionStateFinishedLoading && m_state <= ConnectionStateFailed; }
 
-    RefPtrWillBeMember<Resource> m_resource;
+    Member<Resource> m_resource;
 
     // Used for sanity checking to make sure we don't experience illegal state
     // transitions.

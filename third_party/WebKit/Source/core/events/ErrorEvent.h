@@ -42,21 +42,21 @@ namespace blink {
 class ErrorEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ErrorEvent> create()
+    static RawPtr<ErrorEvent> create()
     {
         return adoptRefWillBeNoop(new ErrorEvent);
     }
-    static PassRefPtrWillBeRawPtr<ErrorEvent> create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld* world)
+    static RawPtr<ErrorEvent> create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld* world)
     {
-        return adoptRefWillBeNoop(new ErrorEvent(message, fileName, lineNumber, columnNumber, world));
+        return new ErrorEvent(message, fileName, lineNumber, columnNumber, world);
     }
-    static PassRefPtrWillBeRawPtr<ErrorEvent> create(const AtomicString& type, const ErrorEventInit& initializer)
+    static RawPtr<ErrorEvent> create(const AtomicString& type, const ErrorEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new ErrorEvent(type, initializer));
+        return new ErrorEvent(type, initializer);
     }
-    static PassRefPtrWillBeRawPtr<ErrorEvent> createSanitizedError(DOMWrapperWorld* world)
+    static RawPtr<ErrorEvent> createSanitizedError(DOMWrapperWorld* world)
     {
-        return adoptRefWillBeNoop(new ErrorEvent("Script error.", String(), 0, 0, world));
+        return new ErrorEvent("Script error.", String(), 0, 0, world);
     }
     ~ErrorEvent() override;
 

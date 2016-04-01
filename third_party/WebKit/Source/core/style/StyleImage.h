@@ -42,7 +42,7 @@ class SVGImage;
 
 typedef void* WrappedImagePtr;
 
-class CORE_EXPORT StyleImage : public RefCountedWillBeGarbageCollectedFinalized<StyleImage> {
+class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
 public:
     virtual ~StyleImage() { }
 
@@ -51,8 +51,8 @@ public:
         return data() == other.data();
     }
 
-    virtual PassRefPtrWillBeRawPtr<CSSValue> cssValue() const = 0;
-    virtual PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const = 0;
+    virtual RawPtr<CSSValue> cssValue() const = 0;
+    virtual RawPtr<CSSValue> computedCSSValue() const = 0;
 
     virtual bool canRender() const { return true; }
     virtual bool isLoaded() const { return true; }
@@ -103,7 +103,7 @@ protected:
 
 #define DEFINE_STYLE_IMAGE_TYPE_CASTS(thisType, function) \
     DEFINE_TYPE_CASTS(thisType, StyleImage, styleImage, styleImage->function, styleImage.function); \
-    inline thisType* to##thisType(const RefPtrWillBeMember<StyleImage>& styleImage) { return to##thisType(styleImage.get()); } \
+    inline thisType* to##thisType(const Member<StyleImage>& styleImage) { return to##thisType(styleImage.get()); } \
     typedef int NeedsSemiColonAfterDefineStyleImageTypeCasts
 
 } // namespace blink

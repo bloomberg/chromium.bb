@@ -53,7 +53,7 @@ public:
     ~MockWorkerReportingProxy() override { }
 
     MOCK_METHOD5(reportException, void(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId));
-    MOCK_METHOD1(reportConsoleMessage, void(PassRefPtrWillBeRawPtr<ConsoleMessage>));
+    MOCK_METHOD1(reportConsoleMessage, void(RawPtr<ConsoleMessage>));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
     MOCK_METHOD0(postWorkerConsoleAgentEnabled, void());
     MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
@@ -69,7 +69,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
 public:
     typedef WorkerGlobalScope Base;
 
-    FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
+    FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, RawPtr<WorkerClients> workerClients)
         : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), starterOriginPrivilegeData, workerClients)
         , m_thread(thread)
     {
@@ -124,9 +124,9 @@ public:
         WorkerThread::willDestroyIsolate();
     }
 
-    PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData) override
+    RawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData> startupData) override
     {
-        return adoptRefWillBeNoop(new FakeWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, this, startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release()));
+        return new FakeWorkerGlobalScope(startupData->m_scriptURL, startupData->m_userAgent, this, startupData->m_starterOriginPrivilegeData.release(), startupData->m_workerClients.release());
     }
 
     void waitUntilScriptLoaded()
@@ -145,7 +145,7 @@ public:
         CSPHeaderAndType headerAndType("contentSecurityPolicy", ContentSecurityPolicyHeaderTypeReport);
         headers->append(headerAndType);
 
-        OwnPtrWillBeRawPtr<WorkerClients> clients = nullptr;
+        RawPtr<WorkerClients> clients = nullptr;
 
         start(WorkerThreadStartupData::create(
             KURL(ParsedURLString, "http://fake.url/"),

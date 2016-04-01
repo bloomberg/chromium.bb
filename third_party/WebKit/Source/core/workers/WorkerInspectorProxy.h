@@ -19,10 +19,9 @@ class WorkerGlobalScopeProxy;
 
 // A proxy for talking to the worker inspector on the worker thread.
 // All of these methods should be called on the main thread.
-class CORE_EXPORT WorkerInspectorProxy final : public NoBaseWillBeGarbageCollectedFinalized<WorkerInspectorProxy> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerInspectorProxy);
+class CORE_EXPORT WorkerInspectorProxy final : public GarbageCollectedFinalized<WorkerInspectorProxy> {
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerInspectorProxy> create();
+    static RawPtr<WorkerInspectorProxy> create();
 
     ~WorkerInspectorProxy();
     DECLARE_TRACE();
@@ -49,14 +48,14 @@ public:
     Document* getDocument() { return m_document; }
     const String& inspectorId();
 
-    using WorkerInspectorProxySet = WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<WorkerInspectorProxy>>;
+    using WorkerInspectorProxySet = PersistentHeapHashSet<WeakMember<WorkerInspectorProxy>>;
     static const WorkerInspectorProxySet& allProxies();
 
 private:
     WorkerInspectorProxy();
 
     WorkerThread* m_workerThread;
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
     PageInspector* m_pageInspector;
     String m_url;
     String m_inspectorId;

@@ -31,8 +31,7 @@
 
 namespace blink {
 
-class FilterData final : public NoBaseWillBeGarbageCollectedFinalized<FilterData> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(FilterData);
+class FilterData final : public GarbageCollectedFinalized<FilterData> {
 public:
     /*
      * The state transitions should follow the following:
@@ -50,17 +49,17 @@ public:
         PaintingFilterCycleDetected
     };
 
-    static PassOwnPtrWillBeRawPtr<FilterData> create()
+    static RawPtr<FilterData> create()
     {
-        return adoptPtrWillBeNoop(new FilterData());
+        return new FilterData();
     }
 
     void dispose();
 
     DECLARE_TRACE();
 
-    RefPtrWillBeMember<Filter> filter;
-    RefPtrWillBeMember<SVGFilterGraphNodeMap> nodeMap;
+    Member<Filter> filter;
+    Member<SVGFilterGraphNodeMap> nodeMap;
     FilterDataState m_state;
 
 private:
@@ -91,7 +90,7 @@ public:
     LayoutSVGResourceType resourceType() const override { return s_resourceType; }
 
     FilterData* getFilterDataForLayoutObject(const LayoutObject* object) { return m_filter.get(const_cast<LayoutObject*>(object)); }
-    void setFilterDataForLayoutObject(LayoutObject* object, PassOwnPtrWillBeRawPtr<FilterData> filterData) { m_filter.set(object, filterData); }
+    void setFilterDataForLayoutObject(LayoutObject* object, RawPtr<FilterData> filterData) { m_filter.set(object, filterData); }
 
 protected:
     void willBeDestroyed() override;
@@ -99,7 +98,7 @@ protected:
 private:
     void disposeFilterMap();
 
-    using FilterMap = WillBePersistentHeapHashMap<LayoutObject*, OwnPtrWillBeMember<FilterData>>;
+    using FilterMap = PersistentHeapHashMap<LayoutObject*, Member<FilterData>>;
     FilterMap m_filter;
 };
 

@@ -60,7 +60,7 @@ private:
     void onFinished();
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
-    RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
+    Member<ContentSecurityPolicy> m_contentSecurityPolicy;
     WorkerGlobalScopeProxy* m_contextProxy; // The proxy outlives the worker to perform thread shutdown.
 };
 

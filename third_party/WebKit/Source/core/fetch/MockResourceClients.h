@@ -40,7 +40,7 @@ namespace blink {
 
 class MockResourceClient : public ResourceClient {
 public:
-    explicit MockResourceClient(const PassRefPtrWillBeRawPtr<Resource>);
+    explicit MockResourceClient(const RawPtr<Resource>);
     ~MockResourceClient() override;
 
     void notifyFinished(Resource*) override;
@@ -51,13 +51,13 @@ public:
 
 protected:
     // TODO(Oilpan): properly trace when ResourceClient is on the heap.
-    RawPtrWillBeUntracedMember<Resource> m_resource;
+    UntracedMember<Resource> m_resource;
     bool m_notifyFinishedCalled;
 };
 
 class MockImageResourceClient final : public MockResourceClient, public ImageResourceObserver {
 public:
-    explicit MockImageResourceClient(const PassRefPtrWillBeRawPtr<ImageResource>);
+    explicit MockImageResourceClient(const RawPtr<ImageResource>);
     ~MockImageResourceClient() override;
 
     void imageNotifyFinished(ImageResource*) override;

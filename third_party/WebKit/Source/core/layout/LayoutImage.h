@@ -55,7 +55,7 @@ public:
 
     static LayoutImage* createAnonymous(Document*);
 
-    void setImageResource(PassOwnPtrWillBeRawPtr<LayoutImageResource>);
+    void setImageResource(RawPtr<LayoutImageResource>);
 
     LayoutImageResource* imageResource() { return m_imageResource.get(); }
     const LayoutImageResource* imageResource() const { return m_imageResource.get(); }
@@ -123,7 +123,7 @@ private:
     // * For generated content, the resource is loaded during style resolution
     // and thus is stored in ComputedStyle (see ContentData::image) that gets
     // propagated to the anonymous LayoutImage in LayoutObject::createObject.
-    OwnPtrWillBePersistent<LayoutImageResource> m_imageResource;
+    Persistent<LayoutImageResource> m_imageResource;
     bool m_didIncrementVisuallyNonEmptyPixelCount;
 
     // This field stores whether this image is generated with 'content'.

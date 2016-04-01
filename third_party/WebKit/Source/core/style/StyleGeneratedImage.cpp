@@ -36,12 +36,12 @@ StyleGeneratedImage::StyleGeneratedImage(const CSSImageGeneratorValue& value)
     m_isGeneratedImage = true;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::cssValue() const
+RawPtr<CSSValue> StyleGeneratedImage::cssValue() const
 {
     return m_imageGeneratorValue.get();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> StyleGeneratedImage::computedCSSValue() const
+RawPtr<CSSValue> StyleGeneratedImage::computedCSSValue() const
 {
     return m_imageGeneratorValue->valueWithURLsMadeAbsolute();
 }

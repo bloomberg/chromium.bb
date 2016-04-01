@@ -55,12 +55,12 @@ public:
 class CORE_EXPORT ScriptResource final : public TextResource {
 public:
     using ClientType = ScriptResourceClient;
-    static PassRefPtrWillBeRawPtr<ScriptResource> fetch(FetchRequest&, ResourceFetcher*);
+    static RawPtr<ScriptResource> fetch(FetchRequest&, ResourceFetcher*);
 
     // Public for testing
-    static PassRefPtrWillBeRawPtr<ScriptResource> create(const ResourceRequest& request, const String& charset)
+    static RawPtr<ScriptResource> create(const ResourceRequest& request, const String& charset)
     {
-        return adoptRefWillBeNoop(new ScriptResource(request, ResourceLoaderOptions(), charset));
+        return new ScriptResource(request, ResourceLoaderOptions(), charset);
     }
 
     ~ScriptResource() override;
@@ -89,9 +89,9 @@ private:
         ScriptResourceFactory()
             : ResourceFactory(Resource::Script) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new ScriptResource(request, options, charset));
+            return new ScriptResource(request, options, charset);
         }
     };
 

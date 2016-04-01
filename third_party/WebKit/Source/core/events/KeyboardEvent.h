@@ -43,24 +43,24 @@ public:
         DOM_KEY_LOCATION_NUMPAD     = 0x03
     };
 
-    static PassRefPtrWillBeRawPtr<KeyboardEvent> create()
+    static RawPtr<KeyboardEvent> create()
     {
         return adoptRefWillBeNoop(new KeyboardEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const PlatformKeyboardEvent& platformEvent, AbstractView* view)
+    static RawPtr<KeyboardEvent> create(const PlatformKeyboardEvent& platformEvent, AbstractView* view)
     {
-        return adoptRefWillBeNoop(new KeyboardEvent(platformEvent, view));
+        return new KeyboardEvent(platformEvent, view);
     }
 
-    static PassRefPtrWillBeRawPtr<KeyboardEvent> create(ScriptState*, const AtomicString& type, const KeyboardEventInit&);
+    static RawPtr<KeyboardEvent> create(ScriptState*, const AtomicString& type, const KeyboardEventInit&);
 
-    static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
+    static RawPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
         const String& keyIdentifier, const String& code, const String& key, unsigned location,
         PlatformEvent::Modifiers modifiers, double platformTimeStamp)
     {
-        return adoptRefWillBeNoop(new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, code, key, location,
-            modifiers, platformTimeStamp));
+        return new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, code, key, location,
+            modifiers, platformTimeStamp);
     }
 
     ~KeyboardEvent() override;

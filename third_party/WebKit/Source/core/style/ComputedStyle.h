@@ -1098,7 +1098,7 @@ public:
     void setBackgroundColor(const StyleColor& v) { SET_VAR(m_background, m_color, v); }
 
     void setBorderImage(const NinePieceImage& b) { SET_VAR(surround, border.m_image, b); }
-    void setBorderImageSource(PassRefPtrWillBeRawPtr<StyleImage>);
+    void setBorderImageSource(RawPtr<StyleImage>);
     void setBorderImageSlices(const LengthBox&);
     void setBorderImageSlicesFill(bool);
     void setBorderImageWidth(const BorderImageLengthBox&);
@@ -1222,7 +1222,7 @@ public:
     }
 
     void setMaskBoxImage(const NinePieceImage& b) { SET_VAR(rareNonInheritedData, m_maskBoxImage, b); }
-    void setMaskBoxImageSource(PassRefPtrWillBeRawPtr<StyleImage> v) { rareNonInheritedData.access()->m_maskBoxImage.setImage(v); }
+    void setMaskBoxImageSource(RawPtr<StyleImage> v) { rareNonInheritedData.access()->m_maskBoxImage.setImage(v); }
     void setMaskBoxImageSlices(const LengthBox& slices)
     {
         rareNonInheritedData.access()->m_maskBoxImage.setImageSlices(slices);
@@ -1247,7 +1247,7 @@ public:
     void setCaptionSide(ECaptionSide v) { inherited_flags._caption_side = v; }
 
     void setListStyleType(EListStyleType v) { inherited_flags._list_style_type = v; }
-    void setListStyleImage(PassRefPtrWillBeRawPtr<StyleImage>);
+    void setListStyleImage(RawPtr<StyleImage>);
     void setListStylePosition(EListStylePosition v) { inherited_flags._list_style_position = v; }
 
     void setMarginTop(const Length& v) { SET_VAR(surround, margin.m_top, v); }
@@ -1265,8 +1265,8 @@ public:
     void setPaddingRight(const Length& v) { SET_VAR(surround, padding.m_right, v); }
 
     void setCursor(ECursor c) { inherited_flags._cursor_style = c; }
-    void addCursor(PassRefPtrWillBeRawPtr<StyleImage>, bool hotSpotSpecified, const IntPoint& hotSpot = IntPoint());
-    void setCursorList(PassRefPtrWillBeRawPtr<CursorList>);
+    void addCursor(RawPtr<StyleImage>, bool hotSpotSpecified, const IntPoint& hotSpot = IntPoint());
+    void setCursorList(RawPtr<CursorList>);
     void clearCursorList();
 
     void setInsideLink(EInsideLink insideLink) { inherited_flags._insideLink = insideLink; }
@@ -1551,7 +1551,7 @@ public:
         svgStyle.setBaselineShiftValue(value);
     }
 
-    void setShapeOutside(PassRefPtrWillBeRawPtr<ShapeValue> value)
+    void setShapeOutside(RawPtr<ShapeValue> value)
     {
         if (rareNonInheritedData->m_shapeOutside == value)
             return;
@@ -1587,7 +1587,7 @@ public:
     bool contentDataEquivalent(const ComputedStyle* otherStyle) const { return const_cast<ComputedStyle*>(this)->rareNonInheritedData->contentDataEquivalent(*const_cast<ComputedStyle*>(otherStyle)->rareNonInheritedData); }
     void clearContent();
     void setContent(const String&);
-    void setContent(PassRefPtrWillBeRawPtr<StyleImage>);
+    void setContent(RawPtr<StyleImage>);
     void setContent(PassOwnPtr<CounterContent>);
     void setContent(QuoteType);
 
@@ -1917,7 +1917,7 @@ private:
     Color floodColor() const { return svgStyle().floodColor(); }
     Color lightingColor() const { return svgStyle().lightingColor(); }
 
-    void appendContent(PassOwnPtrWillBeRawPtr<ContentData>);
+    void appendContent(RawPtr<ContentData>);
     void addAppliedTextDecoration(const AppliedTextDecoration&);
     void applyMotionPathTransform(float originX, float originY, TransformationMatrix&) const;
 

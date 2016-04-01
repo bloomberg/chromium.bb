@@ -17,19 +17,19 @@ class ApplicationCacheErrorEvent final : public Event {
 public:
     ~ApplicationCacheErrorEvent() override;
 
-    static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create()
+    static RawPtr<ApplicationCacheErrorEvent> create()
     {
         return adoptRefWillBeNoop(new ApplicationCacheErrorEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create(WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
+    static RawPtr<ApplicationCacheErrorEvent> create(WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
     {
-        return adoptRefWillBeNoop(new ApplicationCacheErrorEvent(reason, url, status, message));
+        return new ApplicationCacheErrorEvent(reason, url, status, message);
     }
 
-    static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer)
+    static RawPtr<ApplicationCacheErrorEvent> create(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new ApplicationCacheErrorEvent(eventType, initializer));
+        return new ApplicationCacheErrorEvent(eventType, initializer);
     }
 
     const String& reason() const { return m_reason; }

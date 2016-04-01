@@ -45,27 +45,27 @@ public:
         DOM_DELTA_PAGE
     };
 
-    static PassRefPtrWillBeRawPtr<WheelEvent> create()
+    static RawPtr<WheelEvent> create()
     {
         return adoptRefWillBeNoop(new WheelEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<WheelEvent> create(const PlatformWheelEvent& platformEvent, PassRefPtrWillBeRawPtr<AbstractView>);
+    static RawPtr<WheelEvent> create(const PlatformWheelEvent& platformEvent, RawPtr<AbstractView>);
 
-    static PassRefPtrWillBeRawPtr<WheelEvent> create(const AtomicString& type, const WheelEventInit& initializer)
+    static RawPtr<WheelEvent> create(const AtomicString& type, const WheelEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new WheelEvent(type, initializer));
+        return new WheelEvent(type, initializer);
     }
 
-    static PassRefPtrWillBeRawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
-        const FloatPoint& rawDelta, unsigned deltaMode, PassRefPtrWillBeRawPtr<AbstractView> view,
+    static RawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
+        const FloatPoint& rawDelta, unsigned deltaMode, RawPtr<AbstractView> view,
         const IntPoint& screenLocation, const IntPoint& windowLocation,
         PlatformEvent::Modifiers modifiers, unsigned short buttons, double platformTimeStamp,
         bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode)
     {
-        return adoptRefWillBeNoop(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
+        return new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
             screenLocation, windowLocation, modifiers, buttons, platformTimeStamp,
-            canScroll, resendingPluginId,  hasPreciseScrollingDeltas, railsMode));
+            canScroll, resendingPluginId,  hasPreciseScrollingDeltas, railsMode);
     }
 
     double deltaX() const { return m_deltaX; } // Positive when scrolling right.
@@ -86,7 +86,7 @@ public:
     bool isMouseEvent() const override;
     bool isWheelEvent() const override;
 
-    PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
+    RawPtr<EventDispatchMediator> createMediator() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -94,7 +94,7 @@ private:
     WheelEvent();
     WheelEvent(const AtomicString&, const WheelEventInit&);
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
-        unsigned, PassRefPtrWillBeRawPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& windowLocation,
+        unsigned, RawPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& windowLocation,
         PlatformEvent::Modifiers, unsigned short buttons, double platformTimeStamp,
         bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode);
 

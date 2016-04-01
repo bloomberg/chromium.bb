@@ -32,7 +32,7 @@ CompositionEvent::CompositionEvent()
 {
 }
 
-CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, const String& data)
+CompositionEvent::CompositionEvent(const AtomicString& type, RawPtr<AbstractView> view, const String& data)
     : UIEvent(type, true, true, view, 0, InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
     , m_data(data)
 {
@@ -49,7 +49,7 @@ CompositionEvent::~CompositionEvent()
 {
 }
 
-void CompositionEvent::initCompositionEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, const String& data)
+void CompositionEvent::initCompositionEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView> view, const String& data)
 {
     if (dispatched())
         return;

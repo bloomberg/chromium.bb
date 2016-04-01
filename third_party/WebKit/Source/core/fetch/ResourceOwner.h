@@ -36,8 +36,8 @@
 namespace blink {
 
 template<class R, class C = typename R::ClientType>
-class ResourceOwner : public WillBeGarbageCollectedMixin, public C {
-    WILL_BE_USING_PRE_FINALIZER(ResourceOwner, clearResource);
+class ResourceOwner : public GarbageCollectedMixin, public C {
+    USING_PRE_FINALIZER(ResourceOwner, clearResource);
 public:
     using ResourceType = R;
 
@@ -49,11 +49,11 @@ public:
 protected:
     ResourceOwner();
 
-    void setResource(const PassRefPtrWillBeRawPtr<ResourceType>&);
+    void setResource(const RawPtr<ResourceType>&);
     void clearResource() { setResource(nullptr); }
 
 private:
-    RefPtrWillBeMember<ResourceType> m_resource;
+    Member<ResourceType> m_resource;
 };
 
 template<class R, class C>
@@ -73,14 +73,14 @@ inline ResourceOwner<R, C>::~ResourceOwner()
 }
 
 template<class R, class C>
-inline void ResourceOwner<R, C>::setResource(const PassRefPtrWillBeRawPtr<R>& newResource)
+inline void ResourceOwner<R, C>::setResource(const RawPtr<R>& newResource)
 {
     if (newResource == m_resource)
         return;
 
     // Some ResourceClient implementations reenter this so
     // we need to prevent double removal.
-    if (RefPtrWillBeRawPtr<ResourceType> oldResource = m_resource.release())
+    if (RawPtr<ResourceType> oldResource = m_resource.release())
         oldResource->removeClient(this);
 
     if (newResource) {

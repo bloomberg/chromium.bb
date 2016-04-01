@@ -34,11 +34,10 @@ namespace blink {
 // size of 1.
 #define HIT_TEST_CACHE_SIZE (2)
 
-class CORE_EXPORT HitTestCache final : public NoBaseWillBeGarbageCollectedFinalized<HitTestCache> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(HitTestCache);
+class CORE_EXPORT HitTestCache final : public GarbageCollectedFinalized<HitTestCache> {
     WTF_MAKE_NONCOPYABLE(HitTestCache);
 public:
-    static PassOwnPtrWillBeRawPtr<HitTestCache> create()
+    static RawPtr<HitTestCache> create()
     {
         return adoptPtrWillBeNoop(new HitTestCache);
     }
@@ -76,7 +75,7 @@ private:
     };
 
     unsigned m_updateIndex;
-    WillBeHeapVector<HitTestResult, HIT_TEST_CACHE_SIZE> m_items;
+    HeapVector<HitTestResult, HIT_TEST_CACHE_SIZE> m_items;
     uint64_t m_domTreeVersion;
 };
 

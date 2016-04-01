@@ -43,35 +43,35 @@ namespace blink {
 class CORE_EXPORT MessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<MessageEvent> create()
+    static RawPtr<MessageEvent> create()
     {
         return adoptRefWillBeNoop(new MessageEvent);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(MessagePortArray* ports, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr, const String& suborigin = String())
+    static RawPtr<MessageEvent> create(MessagePortArray* ports, const String& origin = String(), const String& lastEventId = String(), RawPtr<EventTarget> source = nullptr, const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(origin, lastEventId, source, ports, suborigin));
+        return new MessageEvent(origin, lastEventId, source, ports, suborigin);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr, const String& suborigin = String())
+    static RawPtr<MessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), RawPtr<EventTarget> source = nullptr, const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, ports, suborigin));
+        return new MessageEvent(data, origin, lastEventId, source, ports, suborigin);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), PassRefPtrWillBeRawPtr<EventTarget> source = nullptr, const String& suborigin = String())
+    static RawPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), RawPtr<EventTarget> source = nullptr, const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin, lastEventId, source, std::move(channels), suborigin));
+        return new MessageEvent(data, origin, lastEventId, source, std::move(channels), suborigin);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(const String& data, const String& origin = String(), const String& suborigin = String())
+    static RawPtr<MessageEvent> create(const String& data, const String& origin = String(), const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin, suborigin));
+        return new MessageEvent(data, origin, suborigin);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(Blob* data, const String& origin = String(), const String& suborigin = String())
+    static RawPtr<MessageEvent> create(Blob* data, const String& origin = String(), const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin, suborigin));
+        return new MessageEvent(data, origin, suborigin);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(PassRefPtr<DOMArrayBuffer> data, const String& origin = String(), const String& suborigin = String())
+    static RawPtr<MessageEvent> create(PassRefPtr<DOMArrayBuffer> data, const String& origin = String(), const String& suborigin = String())
     {
-        return adoptRefWillBeNoop(new MessageEvent(data, origin, suborigin));
+        return new MessageEvent(data, origin, suborigin);
     }
-    static PassRefPtrWillBeRawPtr<MessageEvent> create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
+    static RawPtr<MessageEvent> create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
     ~MessageEvent() override;
 
     void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, ScriptValue data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray*);
@@ -116,9 +116,9 @@ public:
 private:
     MessageEvent();
     MessageEvent(const AtomicString&, const MessageEventInit&);
-    MessageEvent(const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, MessagePortArray*, const String& suborigin);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, MessagePortArray*, const String& suborigin);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>, const String& suborigin);
+    MessageEvent(const String& origin, const String& lastEventId, RawPtr<EventTarget> source, MessagePortArray*, const String& suborigin);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, RawPtr<EventTarget> source, MessagePortArray*, const String& suborigin);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, RawPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>, const String& suborigin);
 
     MessageEvent(const String& data, const String& origin, const String& suborigin);
     MessageEvent(Blob* data, const String& origin, const String& suborigin);
@@ -128,15 +128,15 @@ private:
     ScriptValue m_dataAsScriptValue;
     RefPtr<SerializedScriptValue> m_dataAsSerializedScriptValue;
     String m_dataAsString;
-    PersistentWillBeMember<Blob> m_dataAsBlob;
+    Member<Blob> m_dataAsBlob;
     RefPtr<DOMArrayBuffer> m_dataAsArrayBuffer;
     String m_origin;
     String m_lastEventId;
-    RefPtrWillBeMember<EventTarget> m_source;
+    Member<EventTarget> m_source;
     // m_ports are the MessagePorts in an engtangled state, and m_channels are
     // the MessageChannels in a disentangled state. Only one of them can be
     // non-empty at a time. entangleMessagePorts() moves between the states.
-    PersistentWillBeMember<MessagePortArray> m_ports;
+    Member<MessagePortArray> m_ports;
     OwnPtr<MessagePortChannelArray> m_channels;
     String m_suborigin;
 };

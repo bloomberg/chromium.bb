@@ -12,16 +12,16 @@ namespace blink {
 
 class StyleInvalidImage final : public StyleImage {
 public:
-    static PassRefPtrWillBeRawPtr<StyleInvalidImage> create(const String& url)
+    static RawPtr<StyleInvalidImage> create(const String& url)
     {
-        return adoptRefWillBeNoop(new StyleInvalidImage(url));
+        return new StyleInvalidImage(url);
     }
 
     WrappedImagePtr data() const override { return m_url.impl(); }
 
-    PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override { return CSSImageValue::create(AtomicString(m_url)); }
+    RawPtr<CSSValue> cssValue() const override { return CSSImageValue::create(AtomicString(m_url)); }
 
-    PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override { return cssValue(); }
+    RawPtr<CSSValue> computedCSSValue() const override { return cssValue(); }
 
     LayoutSize imageSize(const LayoutObject&, float /*multiplier*/, const LayoutSize& /*defaultObjectSize*/) const override { return LayoutSize(); }
     bool imageHasRelativeSize() const override { return false; }

@@ -99,13 +99,13 @@ void EventPath::calculatePath()
     // path using as few bytes as possible and with as few allocations
     // as possible which is why we gather the data on the stack before
     // storing it in a perfectly sized m_nodeEventContexts Vector.
-    WillBeHeapVector<RawPtrWillBeMember<Node>, 64> nodesInPath;
+    HeapVector<Member<Node>, 64> nodesInPath;
     Node* current = m_node;
     nodesInPath.append(current);
     while (current) {
         if (m_event && current->keepEventInNode(m_event))
             break;
-        WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
+        HeapVector<Member<InsertionPoint>, 8> insertionPoints;
         collectDestinationInsertionPoints(*current, insertionPoints);
         if (!insertionPoints.isEmpty()) {
             for (const auto& insertionPoint : insertionPoints) {
@@ -159,7 +159,7 @@ void EventPath::calculateTreeOrderAndSetNearestAncestorClosedTree()
     // Precondition:
     //   - TreeScopes in m_treeScopeEventContexts must be *connected* in the same composed tree.
     //   - The root tree must be included.
-    WillBeHeapHashMap<RawPtrWillBeMember<const TreeScope>, RawPtrWillBeMember<TreeScopeEventContext>> treeScopeEventContextMap;
+    HeapHashMap<Member<const TreeScope>, Member<TreeScopeEventContext>> treeScopeEventContextMap;
     for (const auto& treeScopeEventContext : m_treeScopeEventContexts)
         treeScopeEventContextMap.add(&treeScopeEventContext->treeScope(), treeScopeEventContext.get());
     TreeScopeEventContext* rootTree = nullptr;
@@ -228,7 +228,7 @@ void EventPath::calculateAdjustedTargets()
 
 void EventPath::buildRelatedNodeMap(const Node& relatedNode, RelatedTargetMap& relatedTargetMap)
 {
-    OwnPtrWillBeRawPtr<EventPath> relatedTargetEventPath = adoptPtrWillBeNoop(new EventPath(const_cast<Node&>(relatedNode)));
+    RawPtr<EventPath> relatedTargetEventPath = new EventPath(const_cast<Node&>(relatedNode));
     for (size_t i = 0; i < relatedTargetEventPath->m_treeScopeEventContexts.size(); ++i) {
         TreeScopeEventContext* treeScopeEventContext = relatedTargetEventPath->m_treeScopeEventContexts[i].get();
         relatedTargetMap.add(&treeScopeEventContext->treeScope(), treeScopeEventContext->target());
@@ -242,7 +242,7 @@ void EventPath::buildRelatedNodeMap(const Node& relatedNode, RelatedTargetMap& r
 
 EventTarget* EventPath::findRelatedNode(TreeScope& scope, RelatedTargetMap& relatedTargetMap)
 {
-    WillBeHeapVector<RawPtrWillBeMember<TreeScope>, 32> parentTreeScopes;
+    HeapVector<Member<TreeScope>, 32> parentTreeScopes;
     EventTarget* relatedNode = nullptr;
     for (TreeScope* current = &scope; current; current = current->olderShadowRootOrParentTreeScope()) {
         parentTreeScopes.append(current);
@@ -304,10 +304,10 @@ void EventPath::shrinkIfNeeded(const Node& target, const EventTarget& relatedTar
 
 void EventPath::adjustForTouchEvent(TouchEvent& touchEvent)
 {
-    WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouches;
-    WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTargetTouches;
-    WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedChangedTouches;
-    WillBeHeapVector<RawPtrWillBeMember<TreeScope>> treeScopes;
+    HeapVector<Member<TouchList>> adjustedTouches;
+    HeapVector<Member<TouchList>> adjustedTargetTouches;
+    HeapVector<Member<TouchList>> adjustedChangedTouches;
+    HeapVector<Member<TreeScope>> treeScopes;
 
     for (const auto& treeScopeEventContext : m_treeScopeEventContexts) {
         TouchEventContext* touchEventContext = treeScopeEventContext->ensureTouchEventContext();
@@ -332,7 +332,7 @@ void EventPath::adjustForTouchEvent(TouchEvent& touchEvent)
 #endif
 }
 
-void EventPath::adjustTouchList(const TouchList* touchList, WillBeHeapVector<RawPtrWillBeMember<TouchList>> adjustedTouchList, const WillBeHeapVector<RawPtrWillBeMember<TreeScope>>& treeScopes)
+void EventPath::adjustTouchList(const TouchList* touchList, HeapVector<Member<TouchList>> adjustedTouchList, const HeapVector<Member<TreeScope>>& treeScopes)
 {
     if (!touchList)
         return;
@@ -363,7 +363,7 @@ void EventPath::ensureWindowEventContext()
 {
     ASSERT(m_event);
     if (!m_windowEventContext)
-        m_windowEventContext = adoptPtrWillBeNoop(new WindowEventContext(*m_event, topNodeEventContext()));
+        m_windowEventContext = new WindowEventContext(*m_event, topNodeEventContext());
 }
 
 #if ENABLE(ASSERT)

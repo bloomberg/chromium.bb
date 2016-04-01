@@ -58,7 +58,7 @@ bool PointerEvent::isPointerEvent() const
     return true;
 }
 
-PassRefPtrWillBeRawPtr<EventDispatchMediator> PointerEvent::createMediator()
+RawPtr<EventDispatchMediator> PointerEvent::createMediator()
 {
     return PointerEventDispatchMediator::create(this);
 }
@@ -68,12 +68,12 @@ DEFINE_TRACE(PointerEvent)
     MouseEvent::trace(visitor);
 }
 
-PassRefPtrWillBeRawPtr<PointerEventDispatchMediator> PointerEventDispatchMediator::create(PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent)
+RawPtr<PointerEventDispatchMediator> PointerEventDispatchMediator::create(RawPtr<PointerEvent> pointerEvent)
 {
-    return adoptRefWillBeNoop(new PointerEventDispatchMediator(pointerEvent));
+    return new PointerEventDispatchMediator(pointerEvent);
 }
 
-PointerEventDispatchMediator::PointerEventDispatchMediator(PassRefPtrWillBeRawPtr<PointerEvent> pointerEvent)
+PointerEventDispatchMediator::PointerEventDispatchMediator(RawPtr<PointerEvent> pointerEvent)
     : EventDispatchMediator(pointerEvent)
 {
 }

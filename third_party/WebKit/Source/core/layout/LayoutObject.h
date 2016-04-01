@@ -1651,7 +1651,7 @@ private:
     RefPtr<ComputedStyle> m_style;
 
     // Oilpan: This untraced pointer to the owning Node is considered safe.
-    RawPtrWillBeUntracedMember<Node> m_node;
+    UntracedMember<Node> m_node;
 
     LayoutObject* m_parent;
     LayoutObject* m_previous;

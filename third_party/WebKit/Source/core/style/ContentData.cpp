@@ -31,33 +31,33 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<ContentData> ContentData::create(PassRefPtrWillBeRawPtr<StyleImage> image)
+RawPtr<ContentData> ContentData::create(RawPtr<StyleImage> image)
 {
-    return adoptPtrWillBeNoop(new ImageContentData(image));
+    return new ImageContentData(image);
 }
 
-PassOwnPtrWillBeRawPtr<ContentData> ContentData::create(const String& text)
+RawPtr<ContentData> ContentData::create(const String& text)
 {
-    return adoptPtrWillBeNoop(new TextContentData(text));
+    return new TextContentData(text);
 }
 
-PassOwnPtrWillBeRawPtr<ContentData> ContentData::create(PassOwnPtr<CounterContent> counter)
+RawPtr<ContentData> ContentData::create(PassOwnPtr<CounterContent> counter)
 {
-    return adoptPtrWillBeNoop(new CounterContentData(counter));
+    return new CounterContentData(counter);
 }
 
-PassOwnPtrWillBeRawPtr<ContentData> ContentData::create(QuoteType quote)
+RawPtr<ContentData> ContentData::create(QuoteType quote)
 {
-    return adoptPtrWillBeNoop(new QuoteContentData(quote));
+    return new QuoteContentData(quote);
 }
 
-PassOwnPtrWillBeRawPtr<ContentData> ContentData::clone() const
+RawPtr<ContentData> ContentData::clone() const
 {
-    OwnPtrWillBeRawPtr<ContentData> result = cloneInternal();
+    RawPtr<ContentData> result = cloneInternal();
 
     ContentData* lastNewData = result.get();
     for (const ContentData* contentData = next(); contentData; contentData = contentData->next()) {
-        OwnPtrWillBeRawPtr<ContentData> newData = contentData->cloneInternal();
+        RawPtr<ContentData> newData = contentData->cloneInternal();
         lastNewData->setNext(newData.release());
         lastNewData = lastNewData->next();
     }

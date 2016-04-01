@@ -38,7 +38,7 @@ public:
     DocumentResource* document() { return m_document.get(); }
 private:
     String debugName() const override { return "DocumentResourceReference"; }
-    RefPtrWillBePersistent<DocumentResource> m_document;
+    Persistent<DocumentResource> m_document;
 };
 
 } // namespace blink

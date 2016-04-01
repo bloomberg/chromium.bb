@@ -32,7 +32,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<TouchEventContext> TouchEventContext::create()
+RawPtr<TouchEventContext> TouchEventContext::create()
 {
     return adoptRefWillBeNoop(new TouchEventContext);
 }
@@ -43,8 +43,6 @@ TouchEventContext::TouchEventContext()
     , m_changedTouches(TouchList::create())
 {
 }
-
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TouchEventContext)
 
 void TouchEventContext::handleLocalEvents(Event& event) const
 {

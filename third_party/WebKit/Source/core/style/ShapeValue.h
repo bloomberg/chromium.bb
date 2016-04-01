@@ -39,7 +39,7 @@
 
 namespace blink {
 
-class ShapeValue final : public RefCountedWillBeGarbageCollectedFinalized<ShapeValue> {
+class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
 public:
     enum ShapeValueType {
         // The Auto value is defined by a null ShapeValue*
@@ -48,19 +48,19 @@ public:
         Image
     };
 
-    static PassRefPtrWillBeRawPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
+    static RawPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
     {
-        return adoptRefWillBeNoop(new ShapeValue(shape, cssBox));
+        return new ShapeValue(shape, cssBox);
     }
 
-    static PassRefPtrWillBeRawPtr<ShapeValue> createBoxShapeValue(CSSBoxType cssBox)
+    static RawPtr<ShapeValue> createBoxShapeValue(CSSBoxType cssBox)
     {
-        return adoptRefWillBeNoop(new ShapeValue(cssBox));
+        return new ShapeValue(cssBox);
     }
 
-    static PassRefPtrWillBeRawPtr<ShapeValue> createImageValue(PassRefPtrWillBeRawPtr<StyleImage> image)
+    static RawPtr<ShapeValue> createImageValue(RawPtr<StyleImage> image)
     {
-        return adoptRefWillBeNoop(new ShapeValue(image));
+        return new ShapeValue(image);
     }
 
     ShapeValueType type() const { return m_type; }
@@ -75,7 +75,7 @@ public:
             return image()->cachedImage() && image()->cachedImage()->hasImage();
         return image()->isGeneratedImage();
     }
-    void setImage(PassRefPtrWillBeRawPtr<StyleImage> image)
+    void setImage(RawPtr<StyleImage> image)
     {
         ASSERT(type() == Image);
         if (m_image != image)
@@ -102,7 +102,7 @@ private:
         , m_cssBox(BoxMissing)
     {
     }
-    ShapeValue(PassRefPtrWillBeRawPtr<StyleImage> image)
+    ShapeValue(RawPtr<StyleImage> image)
         : m_type(Image)
         , m_image(image)
         , m_cssBox(ContentBox)
@@ -117,7 +117,7 @@ private:
 
     ShapeValueType m_type;
     RefPtr<BasicShape> m_shape;
-    RefPtrWillBeMember<StyleImage> m_image;
+    Member<StyleImage> m_image;
     CSSBoxType m_cssBox;
 };
 

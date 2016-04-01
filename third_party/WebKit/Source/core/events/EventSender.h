@@ -34,13 +34,12 @@
 namespace blink {
 
 template<typename T>
-class EventSender final : public NoBaseWillBeGarbageCollectedFinalized<EventSender<T>> {
+class EventSender final : public GarbageCollectedFinalized<EventSender<T>> {
     WTF_MAKE_NONCOPYABLE(EventSender);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(EventSender);
 public:
-    static PassOwnPtrWillBeRawPtr<EventSender> create(const AtomicString& eventType)
+    static RawPtr<EventSender> create(const AtomicString& eventType)
     {
-        return adoptPtrWillBeNoop(new EventSender(eventType));
+        return new EventSender(eventType);
     }
 
     const AtomicString& eventType() const { return m_eventType; }
@@ -68,8 +67,8 @@ private:
 
     AtomicString m_eventType;
     Timer<EventSender<T>> m_timer;
-    WillBeHeapVector<RawPtrWillBeMember<T>> m_dispatchSoonList;
-    WillBeHeapVector<RawPtrWillBeMember<T>> m_dispatchingList;
+    HeapVector<Member<T>> m_dispatchSoonList;
+    HeapVector<Member<T>> m_dispatchingList;
 };
 
 template<typename T> EventSender<T>::EventSender(const AtomicString& eventType)

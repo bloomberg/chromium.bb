@@ -35,8 +35,8 @@ class ResourceFetcher;
 
 class XSLStyleSheetResource final : public StyleSheetResource {
 public:
-    static PassRefPtrWillBeRawPtr<XSLStyleSheetResource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<XSLStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
+    static RawPtr<XSLStyleSheetResource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
+    static RawPtr<XSLStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
 
     const String& sheet() const { return m_sheet; }
 
@@ -48,9 +48,9 @@ protected:
         XSLStyleSheetResourceFactory()
             : ResourceFactory(Resource::XSLStyleSheet) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
+        RawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new XSLStyleSheetResource(request, options, charset));
+            return new XSLStyleSheetResource(request, options, charset);
         }
     };
     XSLStyleSheetResource(const ResourceRequest&, const ResourceLoaderOptions&, const String& charset);

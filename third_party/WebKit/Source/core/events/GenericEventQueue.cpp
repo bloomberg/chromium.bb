@@ -31,9 +31,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<GenericEventQueue> GenericEventQueue::create(EventTarget* owner)
+RawPtr<GenericEventQueue> GenericEventQueue::create(EventTarget* owner)
 {
-    return adoptPtrWillBeNoop(new GenericEventQueue(owner));
+    return new GenericEventQueue(owner);
 }
 
 GenericEventQueue::GenericEventQueue(EventTarget* owner)
@@ -54,7 +54,7 @@ DEFINE_TRACE(GenericEventQueue)
     EventQueue::trace(visitor);
 }
 
-bool GenericEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool GenericEventQueue::enqueueEvent(RawPtr<Event> event)
 {
     if (m_isClosed)
         return false;
@@ -93,10 +93,10 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
     ASSERT(!m_timer.isActive());
     ASSERT(!m_pendingEvents.isEmpty());
 
-    WillBeHeapVector<RefPtrWillBeMember<Event>> pendingEvents;
+    HeapVector<Member<Event>> pendingEvents;
     m_pendingEvents.swap(pendingEvents);
 
-    RefPtrWillBeRawPtr<EventTarget> protect(m_owner.get());
+    RawPtr<EventTarget> protect(m_owner.get());
     for (const auto& pendingEvent : pendingEvents) {
         Event* event = pendingEvent.get();
         EventTarget* target = event->target() ? event->target() : m_owner.get();

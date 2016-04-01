@@ -33,19 +33,18 @@ class Document;
 class ImageResource;
 
 class StyleFetchedImage final : public StyleImage, private ResourceClient {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(StyleFetchedImage);
-    WILL_BE_USING_PRE_FINALIZER(StyleFetchedImage, dispose);
+    USING_PRE_FINALIZER(StyleFetchedImage, dispose);
 public:
-    static PassRefPtrWillBeRawPtr<StyleFetchedImage> create(ImageResource* image, Document* document, const KURL& url)
+    static RawPtr<StyleFetchedImage> create(ImageResource* image, Document* document, const KURL& url)
     {
-        return adoptRefWillBeNoop(new StyleFetchedImage(image, document, url));
+        return new StyleFetchedImage(image, document, url);
     }
     ~StyleFetchedImage() override;
 
     WrappedImagePtr data() const override;
 
-    PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override;
-    PassRefPtrWillBeRawPtr<CSSValue> computedCSSValue() const override;
+    RawPtr<CSSValue> cssValue() const override;
+    RawPtr<CSSValue> computedCSSValue() const override;
 
     bool canRender() const override;
     bool isLoaded() const override;
@@ -68,8 +67,8 @@ private:
 
     void dispose();
 
-    RefPtrWillBeMember<ImageResource> m_image;
-    RawPtrWillBeMember<Document> m_document;
+    Member<ImageResource> m_image;
+    Member<Document> m_document;
     const KURL m_url;
 };
 

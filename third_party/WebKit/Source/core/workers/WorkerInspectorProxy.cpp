@@ -39,9 +39,9 @@ WorkerInspectorProxy::WorkerInspectorProxy()
 {
 }
 
-PassOwnPtrWillBeRawPtr<WorkerInspectorProxy> WorkerInspectorProxy::create()
+RawPtr<WorkerInspectorProxy> WorkerInspectorProxy::create()
 {
-    return adoptPtrWillBeNoop(new WorkerInspectorProxy());
+    return new WorkerInspectorProxy();
 }
 
 WorkerInspectorProxy::~WorkerInspectorProxy()

@@ -225,7 +225,7 @@ WebTaskRunner* ResourceFetcher::loadingTaskRunner()
 Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
 {
     KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(resourceURL);
-    const WeakPtrWillBeWeakMember<Resource>& resource = m_documentResources.get(url);
+    const WeakMember<Resource>& resource = m_documentResources.get(url);
     return resource.get();
 }
 
@@ -302,7 +302,7 @@ static PassOwnPtr<TracedValue> urlForTraceEvent(const KURL& url)
     return value.release();
 }
 
-PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::resourceForStaticData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
+RawPtr<Resource> ResourceFetcher::resourceForStaticData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     const KURL& url = request.resourceRequest().url();
     ASSERT(url.protocolIsData() || substituteData.isValid() || m_archive);
@@ -347,7 +347,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::resourceForStaticData(const Fe
     response.setHTTPStatusCode(200);
     response.setHTTPStatusText("OK");
 
-    RefPtrWillBeRawPtr<Resource> resource = factory.create(request.resourceRequest(), request.options(), request.charset());
+    RawPtr<Resource> resource = factory.create(request.resourceRequest(), request.options(), request.charset());
     resource->setNeedsSynchronousCacheHit(substituteData.forceSynchronousLoad());
     // FIXME: We should provide a body stream here.
     resource->responseReceived(response, nullptr);
@@ -396,7 +396,7 @@ void ResourceFetcher::updateMemoryCacheStats(Resource* resource, RevalidationPol
     }
 }
 
-PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
+RawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw || factory.type() == Resource::XSLStyleSheet);
 
@@ -434,7 +434,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& 
     }
 
     bool isStaticData = request.resourceRequest().url().protocolIsData() || substituteData.isValid() || m_archive;
-    RefPtrWillBeRawPtr<Resource> resource(nullptr);
+    RawPtr<Resource> resource(nullptr);
     if (isStaticData)
         resource = resourceForStaticData(request, factory, substituteData);
     if (!resource)
@@ -570,14 +570,14 @@ void ResourceFetcher::initializeRevalidation(const FetchRequest& request, Resour
     resource->setRevalidatingRequest(revalidatingRequest);
 }
 
-PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::createResourceForLoading(FetchRequest& request, const String& charset, const ResourceFactory& factory)
+RawPtr<Resource> ResourceFetcher::createResourceForLoading(FetchRequest& request, const String& charset, const ResourceFactory& factory)
 {
     const String cacheIdentifier = getCacheIdentifier();
     ASSERT(!memoryCache()->resourceForURL(request.resourceRequest().url(), cacheIdentifier));
 
     WTF_LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
 
-    RefPtrWillBeRawPtr<Resource> resource = factory.create(request.resourceRequest(), request.options(), charset);
+    RawPtr<Resource> resource = factory.create(request.resourceRequest(), request.options(), charset);
     resource->setLinkPreload(request.isLinkPreload());
     resource->setCacheIdentifier(cacheIdentifier);
 
@@ -854,7 +854,7 @@ void ResourceFetcher::preloadStarted(Resource* resource)
     resource->increasePreloadCount();
 
     if (!m_preloads)
-        m_preloads = adoptPtrWillBeNoop(new WillBeHeapListHashSet<RefPtrWillBeMember<Resource>>);
+        m_preloads = adoptPtrWillBeNoop(new HeapListHashSet<Member<Resource>>);
     m_preloads->add(resource);
 
 #if PRELOAD_DEBUG

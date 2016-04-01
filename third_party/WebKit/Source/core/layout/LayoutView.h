@@ -230,7 +230,7 @@ private:
     int viewLogicalWidthForBoxSizing() const;
     int viewLogicalHeightForBoxSizing() const;
 
-    RawPtrWillBeUntracedMember<FrameView> m_frameView;
+    UntracedMember<FrameView> m_frameView;
 
     // The current selection represented as 2 boundaries.
     // Selection boundaries are represented in LayoutView by a tuple
@@ -272,7 +272,7 @@ private:
 
     unsigned m_hitTestCount;
     unsigned m_hitTestCacheHits;
-    OwnPtrWillBePersistent<HitTestCache> m_hitTestCache;
+    Persistent<HitTestCache> m_hitTestCache;
 
     Vector<LayoutMedia*> m_mediaForPositionNotification;
 };

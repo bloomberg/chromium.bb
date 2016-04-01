@@ -10,7 +10,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<Resource> LinkFetchResource::fetch(Resource::Type type, FetchRequest& request, ResourceFetcher* fetcher)
+RawPtr<Resource> LinkFetchResource::fetch(Resource::Type type, FetchRequest& request, ResourceFetcher* fetcher)
 {
     ASSERT(type == LinkPrefetch);
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
