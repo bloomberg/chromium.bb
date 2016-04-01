@@ -9799,6 +9799,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_DefaultBackgroundSyncSettingChanged">
+  <owner>nsatragno@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <description>
+    Triggers when the default content setting for Background Sync is changed.
+  </description>
+</action>
+
 <action name="Options_DefaultCookieSettingChanged">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

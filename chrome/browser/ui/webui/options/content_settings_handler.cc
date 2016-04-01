@@ -148,6 +148,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
   {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, "protectedContent"},
 #endif
   {CONTENT_SETTINGS_TYPE_KEYGEN, "keygen"},
+  {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "background-sync"},
 };
 
 ChooserContextBase* GetUsbChooserContext(Profile* profile) {
@@ -257,6 +258,11 @@ const ExceptionsInfoMap& GetExceptionsInfoMap() {
         ContentSettingWithExceptions(
             false,
             UserMetricsAction("Options_DefaultMIDISysExSettingChanged"))));
+    exceptions_info_map.insert(std::make_pair(
+        CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+        ContentSettingWithExceptions(
+            false,
+            UserMetricsAction("Options_DefaultBackgroundSyncSettingChanged"))));
   }
 
   return exceptions_info_map;
@@ -577,24 +583,30 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"ppapiBrokerAllow", IDS_PPAPI_BROKER_ALLOW_RADIO},
     {"ppapiBrokerAsk", IDS_PPAPI_BROKER_ASK_RADIO},
     {"ppapiBrokerBlock", IDS_PPAPI_BROKER_BLOCK_RADIO},
-    // Multiple automatic downloads
+    // Multiple automatic downloads.
     {"multipleAutomaticDownloadsTabLabel", IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL},
     {"multipleAutomaticDownloadsHeader", IDS_AUTOMATIC_DOWNLOADS_TAB_LABEL},
     {"multipleAutomaticDownloadsAllow", IDS_AUTOMATIC_DOWNLOADS_ALLOW_RADIO},
     {"multipleAutomaticDownloadsAsk", IDS_AUTOMATIC_DOWNLOADS_ASK_RADIO},
     {"multipleAutomaticDownloadsBlock", IDS_AUTOMATIC_DOWNLOADS_BLOCK_RADIO},
-    // MIDI system exclusive messages
+    // MIDI system exclusive messages.
     {"midiSysexHeader", IDS_MIDI_SYSEX_TAB_LABEL},
     {"midiSysExAllow", IDS_MIDI_SYSEX_ALLOW_RADIO},
     {"midiSysExAsk", IDS_MIDI_SYSEX_ASK_RADIO},
     {"midiSysExBlock", IDS_MIDI_SYSEX_BLOCK_RADIO},
-    // Push messaging strings
+    // Push messaging strings.
     {"pushMessagingHeader", IDS_PUSH_MESSAGES_TAB_LABEL},
     {"pushMessagingAllow", IDS_PUSH_MESSSAGING_ALLOW_RADIO},
     {"pushMessagingAsk", IDS_PUSH_MESSSAGING_ASK_RADIO},
     {"pushMessagingBlock", IDS_PUSH_MESSSAGING_BLOCK_RADIO},
+    // USB devices.
     {"usbDevicesHeader", IDS_USB_DEVICES_HEADER_AND_TAB_LABEL},
     {"usbDevicesManage", IDS_USB_DEVICES_MANAGE_BUTTON},
+    // Background sync.
+    {"backgroundSyncHeader", IDS_BACKGROUND_SYNC_HEADER},
+    {"backgroundSyncAllow", IDS_BACKGROUND_SYNC_ALLOW_RADIO},
+    {"backgroundSyncBlock", IDS_BACKGROUND_SYNC_BLOCK_RADIO},
+    // Zoom levels.
     {"zoomlevelsHeader", IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL},
     {"zoomLevelsManage", IDS_ZOOMLEVELS_MANAGE_BUTTON},
     // Keygen filter.
@@ -656,6 +668,8 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_MIDI_SYSEX_TAB_LABEL);
   RegisterTitle(localized_strings, "usb-devices",
                 IDS_USB_DEVICES_HEADER_AND_TAB_LABEL);
+  RegisterTitle(localized_strings, "background-sync",
+                IDS_BACKGROUND_SYNC_HEADER);
   RegisterTitle(localized_strings, "zoomlevels",
                 IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL);
   RegisterTitle(localized_strings, "keygen", IDS_KEYGEN_TAB_LABEL);

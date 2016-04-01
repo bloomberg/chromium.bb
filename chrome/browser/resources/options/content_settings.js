@@ -19,21 +19,6 @@ cr.define('options', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
-  // Lookup table to generate the i18n strings.
-  /** @const */ var permissionsLookup = {
-    'cookies': 'cookies',
-    'images': 'images',
-    'javascript': 'javascript',
-    'keygen': 'keygen',
-    'location': 'location',
-    'media-stream-camera': 'mediaStreamCamera',
-    'media-stream-mic': 'mediaStreamMic',
-    'multiple-automatic-downloads': 'multipleAutomaticDownloads',
-    'notifications': 'notifications',
-    'plugins': 'plugins',
-    'popups': 'popups',
-  };
-
   //////////////////////////////////////////////////////////////////////////////
   // ContentSettings class:
 
@@ -117,14 +102,6 @@ cr.define('options', function() {
    */
   ContentSettings.setContentFilterSettingsValue = function(dict) {
     for (var group in dict) {
-      var settingLabel = $(group + '-default-string');
-      if (settingLabel) {
-        var value = dict[group].value;
-        var valueId =
-            permissionsLookup[group] + value[0].toUpperCase() + value.slice(1);
-        settingLabel.textContent = loadTimeData.getString(valueId);
-      }
-
       var managedBy = dict[group].managedBy;
       var controlledBy = managedBy == 'policy' || managedBy == 'extension' ?
           managedBy : null;

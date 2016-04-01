@@ -8020,6 +8020,16 @@ I don't think this site should be blocked!
         Manage...
       </message>
 
+      <message name="IDS_BACKGROUND_SYNC_HEADER" desc="Header for background sync on the Content Settings dialog. Background sync allows websites to queue an operation for the next time the device is online.">
+        Background sync
+      </message>
+      <message name="IDS_BACKGROUND_SYNC_ALLOW_RADIO" desc="A radio button on the Content Settings dialog to allow all sites to use background sync.">
+        Allow recently closed sites to finish sending and receiving data (recommended)
+      </message>
+      <message name="IDS_BACKGROUND_SYNC_BLOCK_RADIO" desc="A radio button on the Content Settings dialog to block all sites from using background sync.">
+        Do not allow recently closed sites to finish sending and receiving data
+      </message>
+
       <message name="IDS_ZOOMLEVELS_HEADER_AND_TAB_LABEL" desc="Label for Zoom Level tab and a header the on Content Settings dialog (zoom levels indicate that a page should be shown for example at 110% magnification).">
         Zoom Levels
       </message>
