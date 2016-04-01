@@ -95,10 +95,6 @@ template("process_version") {
 
     args = []
 
-    if (is_official_build) {
-      args += [ "--official" ]
-    }
-
     if (defined(invoker.sources)) {
       inputs += invoker.sources
       foreach(i, invoker.sources) {
