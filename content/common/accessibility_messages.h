@@ -226,7 +226,7 @@ IPC_MESSAGE_ROUTED1(
 // Sent in response to AccessibilityMsg_HitTest.
 IPC_MESSAGE_ROUTED2(AccessibilityHostMsg_ChildFrameHitTestResult,
                     gfx::Point /* location tested */,
-                    int /* node id of result */);
+                    int /* node id of result */)
 
 // Sent in response to AccessibilityMsg_SnapshotTree. The callback id that was
 // passed to the request will be returned in |callback_id|, along with
