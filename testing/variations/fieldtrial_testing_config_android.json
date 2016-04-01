@@ -110,6 +110,14 @@
             }
         }
     ],
+    "DocumentWriteEvaluator": [
+        {
+            "enable_features": [
+                "DocumentWriteEvaluator"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "EnableMediaThreadForMediaPlayback": [
         {
             "group_name": "Enabled"

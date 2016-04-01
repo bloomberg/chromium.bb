@@ -49,6 +49,14 @@
             "group_name": "Enabled"
         }
     ],
+    "DocumentWriteEvaluator": [
+        {
+            "enable_features": [
+                "DocumentWriteEvaluator"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "EnableGoogleCachedCopyTextExperiment": [
         {
             "group_name": "Button"

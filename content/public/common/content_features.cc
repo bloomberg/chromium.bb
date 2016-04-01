@@ -24,6 +24,12 @@ const base::Feature kCredentialManagementAPI{"CredentialManagementAPI",
 const base::Feature kDownloadResumption{"DownloadResumption",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Speculatively pre-evaluate Javascript which will likely use document.write to
+// load an external script. The feature extracts the written markup and sends it
+// to the preload scanner.
+const base::Feature kDocumentWriteEvaluator{"DocumentWriteEvaluator",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // The Experimental Framework for controlling access to API experiments.
 const base::Feature kExperimentalFramework{"ExperimentalFramework",
                                            base::FEATURE_ENABLED_BY_DEFAULT};

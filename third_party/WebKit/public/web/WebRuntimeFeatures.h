@@ -76,6 +76,8 @@ public:
 
     BLINK_EXPORT static void enableCompositorAnimationTimelines(bool);
 
+    BLINK_EXPORT static void enableDocumentWriteEvaluator(bool);
+
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
 
     BLINK_EXPORT static void enableExperimentalFramework(bool);
