@@ -125,7 +125,9 @@ static const ProfileMap kProfileMap[] = {
     // media::H264PROFILE_HIGH*.
     {media::H264PROFILE_HIGH, VAProfileH264High},
     {media::VP8PROFILE_ANY, VAProfileVP8Version0_3},
-    {media::VP9PROFILE_ANY, VAProfileVP9Profile0},
+    // TODO(servolk): Need to add VP9 profiles 1,2,3 here after rolling
+    // third_party/libva to 1.7. crbug.com/598118
+    {media::VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
 };
 
 static std::vector<VAConfigAttrib> GetRequiredAttribs(

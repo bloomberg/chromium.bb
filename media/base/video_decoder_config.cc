@@ -29,7 +29,10 @@ VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
       return kCodecH264;
     case VP8PROFILE_ANY:
       return kCodecVP8;
-    case VP9PROFILE_ANY:
+    case VP9PROFILE_PROFILE0:
+    case VP9PROFILE_PROFILE1:
+    case VP9PROFILE_PROFILE2:
+    case VP9PROFILE_PROFILE3:
       return kCodecVP9;
   }
   NOTREACHED();

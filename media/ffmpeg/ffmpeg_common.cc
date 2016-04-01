@@ -461,7 +461,9 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   if (codec == kCodecVP8)
     profile = VP8PROFILE_ANY;
   else if (codec == kCodecVP9)
-    profile = VP9PROFILE_ANY;
+    // TODO(servolk): Find a way to obtain actual VP9 profile from FFmpeg.
+    // crbug.com/592074
+    profile = VP9PROFILE_PROFILE0;
   else
     profile = ProfileIDToVideoCodecProfile(stream->codec->profile);
 

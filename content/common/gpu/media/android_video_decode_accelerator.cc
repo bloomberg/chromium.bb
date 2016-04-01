@@ -1149,7 +1149,6 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
   }
 
   if (media::PlatformHasVp9Support()) {
-    profile.profile = media::VP9PROFILE_ANY;
     profile.min_resolution.SetSize(0, 0);
     profile.max_resolution.SetSize(1920, 1088);
     // If we know MediaCodec will just create a software codec, prefer our
@@ -1159,6 +1158,13 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     // the buffers and let us use our internal software decoders.
     profile.encrypted_only = media::VideoCodecBridge::IsKnownUnaccelerated(
         media::kCodecVP9, media::MEDIA_CODEC_DECODER);
+    profile.profile = media::VP9PROFILE_PROFILE0;
+    profiles.push_back(profile);
+    profile.profile = media::VP9PROFILE_PROFILE1;
+    profiles.push_back(profile);
+    profile.profile = media::VP9PROFILE_PROFILE2;
+    profiles.push_back(profile);
+    profile.profile = media::VP9PROFILE_PROFILE3;
     profiles.push_back(profile);
   }
 

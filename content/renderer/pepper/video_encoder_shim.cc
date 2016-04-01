@@ -74,7 +74,9 @@ void GetVpxCodecParameters(media::VideoCodecProfile codec,
       *max_quantizer = kVp8DefaultMaxQuantizer;
       *cpu_used = kVp8DefaultCpuUsed;
       break;
-    case media::VP9PROFILE_ANY:
+    // Only VP9 profile 0 is supported by PPAPI at the moment. VP9 profiles 1-3
+    // are not supported due to backward compatibility.
+    case media::VP9PROFILE_PROFILE0:
       *vpx_codec = vpx_codec_vp9_cx();
       *min_quantizer = kVp9DefaultMinQuantizer;
       *max_quantizer = kVp9DefaultMaxQuantizer;
@@ -165,6 +167,12 @@ void VideoEncoderShim::EncoderImpl::Initialize(
   gfx::Size coded_size =
       media::VideoFrame::PlaneSize(input_format, 0, input_visible_size);
 
+  // Only VP9 profile 0 is supported by PPAPI at the moment. VP9 profiles 1-3
+  // are not supported due to backward compatibility.
+  DCHECK_NE(output_profile, media::VP9PROFILE_PROFILE1);
+  DCHECK_NE(output_profile, media::VP9PROFILE_PROFILE2);
+  DCHECK_NE(output_profile, media::VP9PROFILE_PROFILE3);
+
   vpx_codec_iface_t* vpx_codec;
   int32_t min_quantizer, max_quantizer, cpu_used;
   GetVpxCodecParameters(output_profile, &vpx_codec, &min_quantizer,
@@ -196,7 +204,7 @@ void VideoEncoderShim::EncoderImpl::Initialize(
   // Use Q/CQ mode if no target bitrate is given. Note that in the VP8/CQ case
   // the meaning of rc_target_bitrate changes to target maximum rate.
   if (initial_bitrate == 0) {
-    if (output_profile == media::VP9PROFILE_ANY) {
+    if (output_profile == media::VP9PROFILE_PROFILE0) {
       config_.rc_end_usage = VPX_Q;
     } else if (output_profile == media::VP8PROFILE_ANY) {
       config_.rc_end_usage = VPX_CQ;
@@ -223,7 +231,7 @@ void VideoEncoderShim::EncoderImpl::Initialize(
     return;
   }
 
-  if (output_profile == media::VP9PROFILE_ANY) {
+  if (output_profile == media::VP9PROFILE_PROFILE0) {
     if (vpx_codec_control(&encoder_, VP9E_SET_AQ_MODE,
                           kVp9AqModeCyclicRefresh) != VPX_CODEC_OK) {
       NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
@@ -389,10 +397,10 @@ VideoEncoderShim::GetSupportedProfiles() {
   ret = vpx_codec_enc_config_default(vpx_codec_vp9_cx(), &config, 0);
   if (ret == VPX_CODEC_OK) {
     media::VideoEncodeAccelerator::SupportedProfile profile;
-    profile.profile = media::VP9PROFILE_ANY;
     profile.max_resolution = gfx::Size(kMaxWidth, kMaxHeight);
     profile.max_framerate_numerator = config.g_timebase.den;
     profile.max_framerate_denominator = config.g_timebase.num;
+    profile.profile = media::VP9PROFILE_PROFILE0;
     profiles.push_back(profile);
   }
 
@@ -412,7 +420,7 @@ bool VideoEncoderShim::Initialize(
     return false;
 
   if (output_profile != media::VP8PROFILE_ANY &&
-      output_profile != media::VP9PROFILE_ANY)
+      output_profile != media::VP9PROFILE_PROFILE0)
     return false;
 
   media_task_runner_->PostTask(

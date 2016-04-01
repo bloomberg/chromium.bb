@@ -84647,7 +84647,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="H.264 StereoHigh"/>
   <int value="10" label="H.264 MultiviewHigh"/>
   <int value="11" label="VP8"/>
-  <int value="12" label="VP9"/>
+  <int value="12" label="VP9 Profile0"/>
+  <int value="13" label="VP9 Profile1"/>
+  <int value="14" label="VP9 Profile2"/>
+  <int value="15" label="VP9 Profile3"/>
 </enum>
 
 <enum name="VideoDecodeAcceleratorError" type="int">

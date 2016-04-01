@@ -110,8 +110,14 @@ VideoProfile ToVideoProfile(const ::media::VideoCodecProfile codec_profile) {
       return kH264MultiviewHigh;
     case ::media::VP8PROFILE_ANY:
       return kVP8ProfileAny;
-    case ::media::VP9PROFILE_ANY:
-      return kVP9ProfileAny;
+    case ::media::VP9PROFILE_PROFILE0:
+      return kVP9Profile0;
+    case ::media::VP9PROFILE_PROFILE1:
+      return kVP9Profile1;
+    case ::media::VP9PROFILE_PROFILE2:
+      return kVP9Profile2;
+    case ::media::VP9PROFILE_PROFILE3:
+      return kVP9Profile3;
     default:
       LOG(INFO) << "Unsupported video codec profile " << codec_profile;
   }

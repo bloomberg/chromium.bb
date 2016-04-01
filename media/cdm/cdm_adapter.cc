@@ -153,7 +153,14 @@ cdm::VideoDecoderConfig::VideoCodecProfile ToCdmVideoCodecProfile(
     VideoCodecProfile profile) {
   switch (profile) {
     case VP8PROFILE_ANY:
-    case VP9PROFILE_ANY:
+    // TODO(servolk): See crbug.com/592074. We'll need to update this code to
+    // handle different VP9 profiles properly after adding VP9 profiles in
+    // media/cdm/api/content_decryption_module.h in a separate CL.
+    // For now return kProfileNotNeeded to avoid breaking unit tests.
+    case VP9PROFILE_PROFILE0:
+    case VP9PROFILE_PROFILE1:
+    case VP9PROFILE_PROFILE2:
+    case VP9PROFILE_PROFILE3:
       return cdm::VideoDecoderConfig::kProfileNotNeeded;
     case H264PROFILE_BASELINE:
       return cdm::VideoDecoderConfig::kH264ProfileBaseline;

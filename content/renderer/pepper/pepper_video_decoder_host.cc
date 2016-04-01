@@ -65,7 +65,7 @@ media::VideoCodecProfile PepperToMediaVideoProfile(PP_VideoProfile profile) {
     case PP_VIDEOPROFILE_VP8_ANY:
       return media::VP8PROFILE_ANY;
     case PP_VIDEOPROFILE_VP9_ANY:
-      return media::VP9PROFILE_ANY;
+      return media::VP9PROFILE_PROFILE0;
     // No default case, to catch unhandled PP_VideoProfile values.
   }
 

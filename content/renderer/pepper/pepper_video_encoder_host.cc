@@ -80,7 +80,7 @@ media::VideoCodecProfile PP_ToMediaVideoProfile(PP_VideoProfile profile) {
     case PP_VIDEOPROFILE_VP8_ANY:
       return media::VP8PROFILE_ANY;
     case PP_VIDEOPROFILE_VP9_ANY:
-      return media::VP9PROFILE_ANY;
+      return media::VP9PROFILE_PROFILE0;
     // No default case, to catch unhandled PP_VideoProfile values.
   }
   return media::VIDEO_CODEC_PROFILE_UNKNOWN;
@@ -112,7 +112,7 @@ PP_VideoProfile PP_FromMediaVideoProfile(media::VideoCodecProfile profile) {
       return PP_VIDEOPROFILE_H264MULTIVIEWHIGH;
     case media::VP8PROFILE_ANY:
       return PP_VIDEOPROFILE_VP8_ANY;
-    case media::VP9PROFILE_ANY:
+    case media::VP9PROFILE_PROFILE0:
       return PP_VIDEOPROFILE_VP9_ANY;
     default:
       NOTREACHED();
@@ -454,6 +454,11 @@ void PepperVideoEncoderHost::GetSupportedProfiles(
     profiles = GpuVideoAcceleratorUtil::ConvertGpuToMediaEncodeProfiles(
         channel_->gpu_info().video_encode_accelerator_supported_profiles);
     for (media::VideoEncodeAccelerator::SupportedProfile profile : profiles) {
+      if (profile.profile == media::VP9PROFILE_PROFILE1 ||
+          profile.profile == media::VP9PROFILE_PROFILE2 ||
+          profile.profile == media::VP9PROFILE_PROFILE3) {
+        continue;
+      }
       pp_profiles->push_back(
           PP_FromVideoEncodeAcceleratorSupportedProfile(profile, PP_TRUE));
     }

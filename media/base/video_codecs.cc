@@ -64,8 +64,14 @@ std::string GetProfileName(VideoCodecProfile profile) {
       return "h264 multiview high";
     case VP8PROFILE_ANY:
       return "vp8";
-    case VP9PROFILE_ANY:
-      return "vp9";
+    case VP9PROFILE_PROFILE0:
+      return "vp9 profile0";
+    case VP9PROFILE_PROFILE1:
+      return "vp9 profile1";
+    case VP9PROFILE_PROFILE2:
+      return "vp9 profile2";
+    case VP9PROFILE_PROFILE3:
+      return "vp9 profile3";
   }
   NOTREACHED();
   return "";

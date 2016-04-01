@@ -169,7 +169,10 @@ PP_VideoCodecProfile MediaVideoCodecProfileToPpVideoCodecProfile(
     media::VideoCodecProfile profile) {
   switch (profile) {
     case media::VP8PROFILE_ANY:
-    case media::VP9PROFILE_ANY:
+    case media::VP9PROFILE_PROFILE0:
+    case media::VP9PROFILE_PROFILE1:
+    case media::VP9PROFILE_PROFILE2:
+    case media::VP9PROFILE_PROFILE3:
       return PP_VIDEOCODECPROFILE_NOT_NEEDED;
     case media::H264PROFILE_BASELINE:
       return PP_VIDEOCODECPROFILE_H264_BASELINE;

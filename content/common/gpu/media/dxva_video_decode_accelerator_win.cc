@@ -155,7 +155,10 @@ static const media::VideoCodecProfile kSupportedProfiles[] = {
   media::H264PROFILE_MAIN,
   media::H264PROFILE_HIGH,
   media::VP8PROFILE_ANY,
-  media::VP9PROFILE_ANY
+  media::VP9PROFILE_PROFILE0,
+  media::VP9PROFILE_PROFILE1,
+  media::VP9PROFILE_PROFILE2,
+  media::VP9PROFILE_PROFILE3
 };
 
 CreateDXGIDeviceManager DXVAVideoDecodeAccelerator::create_dxgi_device_manager_
@@ -1406,7 +1409,10 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
     clsid = __uuidof(CMSH264DecoderMFT);
   } else if (enable_accelerated_vpx_decode_ &&
              (profile == media::VP8PROFILE_ANY ||
-              profile == media::VP9PROFILE_ANY)) {
+              profile == media::VP9PROFILE_PROFILE0 ||
+              profile == media::VP9PROFILE_PROFILE1 ||
+              profile == media::VP9PROFILE_PROFILE2 ||
+              profile == media::VP9PROFILE_PROFILE3)) {
     int program_files_key = base::DIR_PROGRAM_FILES;
     if (base::win::OSInfo::GetInstance()->wow64_status() ==
         base::win::OSInfo::WOW64_ENABLED) {

@@ -307,7 +307,13 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
         profiles.push_back(profile);
         break;
       case V4L2_PIX_FMT_VP9:
-        profile.profile = media::VP9PROFILE_ANY;
+        profile.profile = media::VP9PROFILE_PROFILE0;
+        profiles.push_back(profile);
+        profile.profile = media::VP9PROFILE_PROFILE1;
+        profiles.push_back(profile);
+        profile.profile = media::VP9PROFILE_PROFILE2;
+        profiles.push_back(profile);
+        profile.profile = media::VP9PROFILE_PROFILE3;
         profiles.push_back(profile);
         break;
     }
