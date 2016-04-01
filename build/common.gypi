@@ -5904,14 +5904,10 @@
                   '/ignore:4199',
                   '/ignore:4221',
                   '/nxcompat',
+                  '/largeaddressaware',
                 ],
               },
               'conditions': [
-                ['syzyasan==0', {
-                  'VCLinkerTool': {
-                    'AdditionalOptions': ['/largeaddressaware'],
-                  },
-                }],
                 ['asan==1', {
                   # TODO(asan/win): Move this down into the general
                   # win-target_defaults section once the 64-bit asan runtime

@@ -224,15 +224,13 @@ config("sdk_link") {
     ldflags = [
       "/MACHINE:X86",
       "/SAFESEH",  # Not compatible with x64 so use only for x86.
+      "/largeaddressaware",
     ]
     lib_dirs = [
       "$windows_sdk_path\Lib\winv6.3\um\x86",
       "$visual_studio_path\VC\lib",
       "$visual_studio_path\VC\atlmfc\lib",
     ]
-    if (!is_syzyasan) {
-      ldflags += [ "/largeaddressaware" ]
-    }
   }
 }
 
