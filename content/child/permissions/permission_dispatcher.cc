@@ -14,57 +14,58 @@
 #include "third_party/WebKit/public/platform/modules/permissions/WebPermissionObserver.h"
 
 using blink::WebPermissionObserver;
+using blink::mojom::PermissionName;
+using blink::mojom::PermissionStatus;
 
 namespace content {
 
 namespace {
 
-mojom::PermissionName GetPermissionName(blink::WebPermissionType type) {
+PermissionName GetPermissionName(blink::WebPermissionType type) {
   switch (type) {
     case blink::WebPermissionTypeGeolocation:
-      return mojom::PermissionName::GEOLOCATION;
+      return PermissionName::GEOLOCATION;
     case blink::WebPermissionTypeNotifications:
-      return mojom::PermissionName::NOTIFICATIONS;
+      return PermissionName::NOTIFICATIONS;
     case blink::WebPermissionTypePushNotifications:
-      return mojom::PermissionName::PUSH_NOTIFICATIONS;
+      return PermissionName::PUSH_NOTIFICATIONS;
     case blink::WebPermissionTypeMidiSysEx:
-      return mojom::PermissionName::MIDI_SYSEX;
+      return PermissionName::MIDI_SYSEX;
     case blink::WebPermissionTypeDurableStorage:
-      return mojom::PermissionName::DURABLE_STORAGE;
+      return PermissionName::DURABLE_STORAGE;
     case blink::WebPermissionTypeMidi:
-      return mojom::PermissionName::MIDI;
+      return PermissionName::MIDI;
     case blink::WebPermissionTypeBackgroundSync:
-      return mojom::PermissionName::BACKGROUND_SYNC;
+      return PermissionName::BACKGROUND_SYNC;
     default:
       // The default statement is only there to prevent compilation failures if
       // WebPermissionType enum gets extended.
       NOTREACHED();
-      return mojom::PermissionName::GEOLOCATION;
+      return PermissionName::GEOLOCATION;
   }
 }
 
-mojom::PermissionStatus GetPermissionStatus(blink::WebPermissionStatus status) {
+PermissionStatus GetPermissionStatus(blink::WebPermissionStatus status) {
   switch (status) {
     case blink::WebPermissionStatusGranted:
-      return mojom::PermissionStatus::GRANTED;
+      return PermissionStatus::GRANTED;
     case blink::WebPermissionStatusDenied:
-      return mojom::PermissionStatus::DENIED;
+      return PermissionStatus::DENIED;
     case blink::WebPermissionStatusPrompt:
-      return mojom::PermissionStatus::ASK;
+      return PermissionStatus::ASK;
   }
 
   NOTREACHED();
-  return mojom::PermissionStatus::DENIED;
+  return PermissionStatus::DENIED;
 }
 
-blink::WebPermissionStatus GetWebPermissionStatus(
-    mojom::PermissionStatus status) {
+blink::WebPermissionStatus GetWebPermissionStatus(PermissionStatus status) {
   switch (status) {
-    case mojom::PermissionStatus::GRANTED:
+    case PermissionStatus::GRANTED:
       return blink::WebPermissionStatusGranted;
-    case mojom::PermissionStatus::DENIED:
+    case PermissionStatus::DENIED:
       return blink::WebPermissionStatusDenied;
-    case mojom::PermissionStatus::ASK:
+    case PermissionStatus::ASK:
       return blink::WebPermissionStatusPrompt;
   }
 
@@ -141,7 +142,7 @@ void PermissionDispatcher::startListening(
                           // should be a no-op. After the first notification,
                           // GetNextPermissionChange will be called with the
                           // latest known value.
-                          mojom::PermissionStatus::ASK);
+                          PermissionStatus::ASK);
 }
 
 void PermissionDispatcher::stopListening(WebPermissionObserver* observer) {
@@ -191,7 +192,7 @@ void PermissionDispatcher::StartListeningForWorker(
       // value. Worst case, the observer will get notified about a non-change
       // which should be a no-op. After the first notification,
       // GetNextPermissionChange will be called with the latest known value.
-      mojom::PermissionStatus::ASK,
+      PermissionStatus::ASK,
       base::Bind(&PermissionDispatcher::OnPermissionChangedForWorker,
                  base::Unretained(this), worker_thread_id, callback));
 }
@@ -225,12 +226,13 @@ void PermissionDispatcher::RunPermissionsCallbackOnWorkerThread(
   callback->onSuccess(blink::adoptWebPtr(statuses.release()));
 }
 
-mojom::PermissionServicePtr& PermissionDispatcher::GetPermissionServicePtr() {
+blink::mojom::PermissionService*
+PermissionDispatcher::GetPermissionServicePtr() {
   if (!permission_service_.get()) {
     service_registry_->ConnectToRemoteService(
         mojo::GetProxy(&permission_service_));
   }
-  return permission_service_;
+  return permission_service_.get();
 }
 
 void PermissionDispatcher::QueryPermissionInternal(
@@ -290,7 +292,7 @@ void PermissionDispatcher::RequestPermissionsInternal(
   permissions_callbacks_.add(callback_key,
       scoped_ptr<blink::WebPermissionsCallback>(callback));
 
-  mojo::Array<mojom::PermissionName> names(types.size());
+  mojo::Array<PermissionName> names(types.size());
   for (size_t i = 0; i < types.size(); ++i)
     names[i] = GetPermissionName(types[i]);
 
@@ -322,10 +324,9 @@ void PermissionDispatcher::RevokePermissionInternal(
                  callback_key));
 }
 
-void PermissionDispatcher::OnPermissionResponse(
-    int worker_thread_id,
-    uintptr_t callback_key,
-    mojom::PermissionStatus result) {
+void PermissionDispatcher::OnPermissionResponse(int worker_thread_id,
+                                                uintptr_t callback_key,
+                                                PermissionStatus result) {
   scoped_ptr<blink::WebPermissionCallback> callback =
       permission_callbacks_.take_and_erase(callback_key);
   blink::WebPermissionStatus status = GetWebPermissionStatus(result);
@@ -346,7 +347,7 @@ void PermissionDispatcher::OnPermissionResponse(
 void PermissionDispatcher::OnRequestPermissionsResponse(
     int worker_thread_id,
     uintptr_t callback_key,
-    const mojo::Array<mojom::PermissionStatus>& result) {
+    const mojo::Array<PermissionStatus>& result) {
   scoped_ptr<blink::WebPermissionsCallback> callback =
       permissions_callbacks_.take_and_erase(callback_key);
   scoped_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses(
@@ -371,7 +372,7 @@ void PermissionDispatcher::OnRequestPermissionsResponse(
 void PermissionDispatcher::OnPermissionChanged(blink::WebPermissionType type,
                                                const std::string& origin,
                                                WebPermissionObserver* observer,
-                                               mojom::PermissionStatus status) {
+                                               PermissionStatus status) {
   if (!IsObserverRegistered(observer))
     return;
 
@@ -383,7 +384,7 @@ void PermissionDispatcher::OnPermissionChanged(blink::WebPermissionType type,
 void PermissionDispatcher::OnPermissionChangedForWorker(
     int worker_thread_id,
     const base::Callback<void(blink::WebPermissionStatus)>& callback,
-    mojom::PermissionStatus status) {
+    PermissionStatus status) {
   DCHECK(worker_thread_id != kNoWorkerThread);
 
   WorkerThread::PostTask(worker_thread_id,
@@ -394,7 +395,7 @@ void PermissionDispatcher::GetNextPermissionChange(
     blink::WebPermissionType type,
     const std::string& origin,
     WebPermissionObserver* observer,
-    mojom::PermissionStatus current_status) {
+    PermissionStatus current_status) {
   GetPermissionServicePtr()->GetNextPermissionChange(
       GetPermissionName(type),
       origin,

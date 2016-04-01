@@ -536,10 +536,8 @@ mojom("mojo_bindings") {
   sources = [
     "application_setup.mojom",
     "background_sync_service.mojom",
-    "geolocation_service.mojom",
     "image_downloader/image_downloader.mojom",
     "leveldb_wrapper.mojom",
-    "permission_service.mojom",
     "presentation/presentation_service.mojom",
     "process_control.mojom",
     "render_frame_setup.mojom",

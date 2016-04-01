@@ -6,17 +6,17 @@
 #include <string>
 #include <vector>
 
-#include "content/public/common/permission_status.mojom.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START LayoutTestMsgStart
 
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::mojom::PermissionStatus,
-                              content::mojom::PermissionStatus::GRANTED,
-                              content::mojom::PermissionStatus::ASK)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::mojom::PermissionStatus,
+                              blink::mojom::PermissionStatus::GRANTED,
+                              blink::mojom::PermissionStatus::ASK)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(LayoutTestHostMsg_ReadFileToString,
                            base::FilePath /* local path */,
@@ -38,7 +38,7 @@ IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_AcceptAllCookies,
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_DeleteAllCookies)
 IPC_MESSAGE_ROUTED4(LayoutTestHostMsg_SetPermission,
                     std::string /* name */,
-                    content::mojom::PermissionStatus /* status */,
+                    blink::mojom::PermissionStatus /* status */,
                     GURL /* origin */,
                     GURL /* embedding_origin */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ResetPermissions)

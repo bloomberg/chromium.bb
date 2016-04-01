@@ -21,8 +21,8 @@ int BlimpPermissionManager::RequestPermission(
     content::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& origin,
-    const base::Callback<void(content::mojom::PermissionStatus)>& callback) {
-  callback.Run(content::mojom::PermissionStatus::DENIED);
+    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
+  callback.Run(blink::mojom::PermissionStatus::DENIED);
   return kNoPendingOperation;
 }
 
@@ -31,9 +31,9 @@ int BlimpPermissionManager::RequestPermissions(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const base::Callback<
-        void(const std::vector<content::mojom::PermissionStatus>&)>& callback) {
-  callback.Run(std::vector<content::mojom::PermissionStatus>(
-      permission.size(), content::mojom::PermissionStatus::DENIED));
+        void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
+  callback.Run(std::vector<blink::mojom::PermissionStatus>(
+      permission.size(), blink::mojom::PermissionStatus::DENIED));
   return kNoPendingOperation;
 }
 
@@ -43,11 +43,11 @@ void BlimpPermissionManager::ResetPermission(content::PermissionType permission,
                                              const GURL& requesting_origin,
                                              const GURL& embedding_origin) {}
 
-content::mojom::PermissionStatus BlimpPermissionManager::GetPermissionStatus(
+blink::mojom::PermissionStatus BlimpPermissionManager::GetPermissionStatus(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  return content::mojom::PermissionStatus::DENIED;
+  return blink::mojom::PermissionStatus::DENIED;
 }
 
 void BlimpPermissionManager::RegisterPermissionUsage(
@@ -59,7 +59,7 @@ int BlimpPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(content::mojom::PermissionStatus)>& callback) {
+    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   return -1;
 }
 

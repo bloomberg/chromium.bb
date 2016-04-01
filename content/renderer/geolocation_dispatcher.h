@@ -6,9 +6,9 @@
 #define CONTENT_RENDERER_GEOLOCATION_DISPATCHER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/geolocation_service.mojom.h"
-#include "content/common/permission_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "third_party/WebKit/public/platform/modules/geolocation/geolocation.mojom.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 #include "third_party/WebKit/public/web/WebGeolocationClient.h"
 #include "third_party/WebKit/public/web/WebGeolocationController.h"
 
@@ -45,19 +45,19 @@ class GeolocationDispatcher
       const blink::WebGeolocationPermissionRequest& permissionRequest) override;
 
   void QueryNextPosition();
-  void OnPositionUpdate(mojom::MojoGeopositionPtr geoposition);
+  void OnPositionUpdate(blink::mojom::GeopositionPtr geoposition);
 
   // Permission for using geolocation has been set.
   void OnPermissionSet(int permission_request_id,
-                       mojom::PermissionStatus status);
+                       blink::mojom::PermissionStatus status);
 
   scoped_ptr<blink::WebGeolocationController> controller_;
 
   scoped_ptr<blink::WebGeolocationPermissionRequestManager>
       pending_permissions_;
-  mojom::GeolocationServicePtr geolocation_service_;
+  blink::mojom::GeolocationServicePtr geolocation_service_;
   bool enable_high_accuracy_;
-  mojom::PermissionServicePtr permission_service_;
+  blink::mojom::PermissionServicePtr permission_service_;
 };
 
 }  // namespace content

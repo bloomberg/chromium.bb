@@ -36,7 +36,7 @@ void NotificationPermissionDispatcher::RequestPermission(
   // base::Unretained is safe here because the Mojo channel, with associated
   // callbacks, will be deleted before the "this" instance is deleted.
   permission_service_->RequestPermission(
-      mojom::PermissionName::NOTIFICATIONS, origin.toString().utf8(),
+      blink::mojom::PermissionName::NOTIFICATIONS, origin.toString().utf8(),
       base::Bind(&NotificationPermissionDispatcher::OnPermissionRequestComplete,
                  base::Unretained(this),
                  base::Passed(std::move(owned_callback))));
@@ -44,19 +44,19 @@ void NotificationPermissionDispatcher::RequestPermission(
 
 void NotificationPermissionDispatcher::OnPermissionRequestComplete(
     scoped_ptr<WebNotificationPermissionCallback> callback,
-    mojom::PermissionStatus status) {
+    blink::mojom::PermissionStatus status) {
   DCHECK(callback);
 
   blink::WebNotificationPermission permission =
       blink::WebNotificationPermissionDefault;
   switch (status) {
-    case mojom::PermissionStatus::GRANTED:
+    case blink::mojom::PermissionStatus::GRANTED:
       permission = blink::WebNotificationPermissionAllowed;
       break;
-    case mojom::PermissionStatus::DENIED:
+    case blink::mojom::PermissionStatus::DENIED:
       permission = blink::WebNotificationPermissionDenied;
       break;
-    case mojom::PermissionStatus::ASK:
+    case blink::mojom::PermissionStatus::ASK:
       permission = blink::WebNotificationPermissionDefault;
       break;
   }

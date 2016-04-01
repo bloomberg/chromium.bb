@@ -1903,7 +1903,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   if (!permission_service_context_)
     permission_service_context_.reset(new PermissionServiceContext(this));
 
-  GetServiceRegistry()->AddService<mojom::PermissionService>(
+  GetServiceRegistry()->AddService(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
 

@@ -79,7 +79,7 @@ BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
 
 // Returns PermissionStatus::DENIED if the permission manager cannot be
 // accessed for any reason.
-mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
+blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
     const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -87,12 +87,12 @@ mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
   BrowserContext* browser_context =
       GetBrowserContextOnUIThread(service_worker_context);
   if (!browser_context)
-    return mojom::PermissionStatus::DENIED;
+    return blink::mojom::PermissionStatus::DENIED;
 
   PermissionManager* permission_manager =
       browser_context->GetPermissionManager();
   if (!permission_manager)
-    return mojom::PermissionStatus::DENIED;
+    return blink::mojom::PermissionStatus::DENIED;
 
   // The requesting origin always matches the embedding origin.
   return permission_manager->GetPermissionStatus(
@@ -464,15 +464,15 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
     const StatusAndRegistrationCallback& callback,
-    mojom::PermissionStatus permission_status) {
+    blink::mojom::PermissionStatus permission_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (permission_status == mojom::PermissionStatus::DENIED) {
+  if (permission_status == blink::mojom::PermissionStatus::DENIED) {
     RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_PERMISSION_DENIED,
                               callback);
     return;
   }
-  DCHECK(permission_status == mojom::PermissionStatus::GRANTED);
+  DCHECK(permission_status == blink::mojom::PermissionStatus::GRANTED);
 
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);

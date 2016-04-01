@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
+#include "third_party/WebKit/public/platform/modules/geolocation/geolocation.mojom.h"
 
 namespace content {
 
@@ -22,8 +23,9 @@ class GeolocationServiceContext {
   // Creates a GeolocationServiceImpl that is weakly bound to |request|.
   // |update_callback| will be called when services send
   // location updates to their clients.
-  void CreateService(const base::Closure& update_callback,
-                     mojo::InterfaceRequest<mojom::GeolocationService> request);
+  void CreateService(
+      const base::Closure& update_callback,
+      mojo::InterfaceRequest<blink::mojom::GeolocationService> request);
 
   // Called when a service has a connection error. After this call, it is no
   // longer safe to access |service|.

@@ -10,20 +10,22 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
-namespace content {
-
+namespace blink {
 namespace mojom {
 class PermissionService;
 }
+}
+
+namespace content {
 
 class PermissionServiceImpl;
 class RenderFrameHost;
 class RenderProcessHost;
 
 // Provides information to a PermissionService. It is used by the
-// mojom::PermissionService to handle request permission UI.
+// PermissionServiceImpl to handle request permission UI.
 // There is one PermissionServiceContext per RenderFrameHost/RenderProcessHost
-// which owns it. It then owns all mojom::PermissionService associated to their
+// which owns it. It then owns all PermissionServiceImpl associated to their
 // owner.
 class PermissionServiceContext : public WebContentsObserver {
  public:
@@ -31,9 +33,10 @@ class PermissionServiceContext : public WebContentsObserver {
   explicit PermissionServiceContext(RenderProcessHost* render_process_host);
   ~PermissionServiceContext() override;
 
-  void CreateService(mojo::InterfaceRequest<mojom::PermissionService> request);
+  void CreateService(
+      mojo::InterfaceRequest<blink::mojom::PermissionService> request);
 
-  // Called by a mojom::PermissionService identified as |service| when it has a
+  // Called by a PermissionServiceImpl identified as |service| when it has a
   // connection error in order to get unregistered and killed.
   void ServiceHadConnectionError(PermissionServiceImpl* service);
 

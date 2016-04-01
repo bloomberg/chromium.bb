@@ -137,10 +137,11 @@ void LayoutTestMessageFilter::OnDeleteAllCookies() {
       ->DeleteAllAsync(net::CookieStore::DeleteCallback());
 }
 
-void LayoutTestMessageFilter::OnSetPermission(const std::string& name,
-                                              mojom::PermissionStatus status,
-                                              const GURL& origin,
-                                              const GURL& embedding_origin) {
+void LayoutTestMessageFilter::OnSetPermission(
+    const std::string& name,
+    blink::mojom::PermissionStatus status,
+    const GURL& origin,
+    const GURL& embedding_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::PermissionType type;

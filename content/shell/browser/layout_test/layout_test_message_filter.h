@@ -11,7 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/common/permission_status.mojom.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class GURL;
 
@@ -62,7 +62,7 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
   void OnAcceptAllCookies(bool accept);
   void OnDeleteAllCookies();
   void OnSetPermission(const std::string& name,
-                       mojom::PermissionStatus status,
+                       blink::mojom::PermissionStatus status,
                        const GURL& origin,
                        const GURL& embedding_origin);
   void OnResetPermissions();

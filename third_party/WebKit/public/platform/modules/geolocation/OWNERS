@@ -1,4 +1,4 @@
-mlamouri@chromium.org
+mvanouwerkerk@chromium.org
 
 # Changes to Mojo interfaces require a security review to avoid
 # introducing new sandbox escapes.

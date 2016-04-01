@@ -179,8 +179,11 @@ grit("image_resources") {
 mojom("mojo_bindings_blink") {
   sources = [
     "platform/modules/bluetooth/web_bluetooth.mojom",
+    "platform/modules/geolocation/geolocation.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/payments/payment_request.mojom",
+    "platform/modules/permissions/permission.mojom",
+    "platform/modules/permissions/permission_status.mojom",
   ]
   for_blink = true
   variant = "wtf"
@@ -190,7 +193,10 @@ mojom("mojo_bindings_blink") {
 mojom("mojo_bindings") {
   sources = [
     "platform/modules/bluetooth/web_bluetooth.mojom",
+    "platform/modules/geolocation/geolocation.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/payments/payment_request.mojom",
+    "platform/modules/permissions/permission.mojom",
+    "platform/modules/permissions/permission_status.mojom",
   ]
 }

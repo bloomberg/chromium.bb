@@ -20,15 +20,15 @@
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/permission_status.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace {
 
 void DoNothing(ContentSetting content_setting) {}
-void DoNothing2(content::mojom::PermissionStatus status) {}
+void DoNothing2(blink::mojom::PermissionStatus status) {}
 
 class TestNotificationPermissionContext : public NotificationPermissionContext {
  public:

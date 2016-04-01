@@ -14,8 +14,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using blink::mojom::PermissionStatus;
 using content::PermissionType;
-using content::mojom::PermissionStatus;
 
 namespace {
 
@@ -45,7 +45,7 @@ class PermissionManagerTest : public testing::Test {
       : url_("https://example.com"),
         other_url_("https://foo.com"),
         callback_called_(false),
-        callback_result_(content::mojom::PermissionStatus::ASK) {}
+        callback_result_(PermissionStatus::ASK) {}
 
   PermissionManager* GetPermissionManager() {
     return profile_.GetPermissionManager();
@@ -82,7 +82,7 @@ class PermissionManagerTest : public testing::Test {
 
   void Reset() {
     callback_called_ = false;
-    callback_result_ = content::mojom::PermissionStatus::ASK;
+    callback_result_ = PermissionStatus::ASK;
   }
 
  private:
@@ -95,42 +95,36 @@ class PermissionManagerTest : public testing::Test {
 };
 
 TEST_F(PermissionManagerTest, GetPermissionStatusDefault) {
-  CheckPermissionStatus(PermissionType::MIDI_SYSEX,
-                        content::mojom::PermissionStatus::ASK);
-  CheckPermissionStatus(PermissionType::PUSH_MESSAGING,
-                        content::mojom::PermissionStatus::ASK);
-  CheckPermissionStatus(PermissionType::NOTIFICATIONS,
-                        content::mojom::PermissionStatus::ASK);
-  CheckPermissionStatus(PermissionType::GEOLOCATION,
-                        content::mojom::PermissionStatus::ASK);
+  CheckPermissionStatus(PermissionType::MIDI_SYSEX, PermissionStatus::ASK);
+  CheckPermissionStatus(PermissionType::PUSH_MESSAGING, PermissionStatus::ASK);
+  CheckPermissionStatus(PermissionType::NOTIFICATIONS, PermissionStatus::ASK);
+  CheckPermissionStatus(PermissionType::GEOLOCATION, PermissionStatus::ASK);
 #if defined(OS_ANDROID)
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-                        content::mojom::PermissionStatus::ASK);
+                        PermissionStatus::ASK);
 #endif
 }
 
 TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
   SetPermission(CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::GEOLOCATION,
-                        content::mojom::PermissionStatus::GRANTED);
+  CheckPermissionStatus(PermissionType::GEOLOCATION, PermissionStatus::GRANTED);
 
   SetPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::NOTIFICATIONS,
-                        content::mojom::PermissionStatus::GRANTED);
+                        PermissionStatus::GRANTED);
 
   SetPermission(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ALLOW);
-  CheckPermissionStatus(PermissionType::MIDI_SYSEX,
-                        content::mojom::PermissionStatus::GRANTED);
+  CheckPermissionStatus(PermissionType::MIDI_SYSEX, PermissionStatus::GRANTED);
 
   SetPermission(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::PUSH_MESSAGING,
-                        content::mojom::PermissionStatus::GRANTED);
+                        PermissionStatus::GRANTED);
 
 #if defined(OS_ANDROID)
   SetPermission(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
                 CONTENT_SETTING_ALLOW);
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-                        content::mojom::PermissionStatus::GRANTED);
+                        PermissionStatus::GRANTED);
 #endif
 }
 
@@ -145,7 +139,7 @@ TEST_F(PermissionManagerTest, SameTypeChangeNotifies) {
       CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
-  EXPECT_EQ(content::mojom::PermissionStatus::GRANTED, callback_result());
+  EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
 
   GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
 }
@@ -224,7 +218,7 @@ TEST_F(PermissionManagerTest, WildCardPatternNotifies) {
       CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
-  EXPECT_EQ(content::mojom::PermissionStatus::GRANTED, callback_result());
+  EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
 
   GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
 }
@@ -243,7 +237,7 @@ TEST_F(PermissionManagerTest, ClearSettingsNotifies) {
       CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
   EXPECT_TRUE(callback_called());
-  EXPECT_EQ(content::mojom::PermissionStatus::ASK, callback_result());
+  EXPECT_EQ(PermissionStatus::ASK, callback_result());
 
   GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
 }
@@ -259,7 +253,7 @@ TEST_F(PermissionManagerTest, NewValueCorrectlyPassed) {
       CONTENT_SETTING_BLOCK);
 
   EXPECT_TRUE(callback_called());
-  EXPECT_EQ(content::mojom::PermissionStatus::DENIED, callback_result());
+  EXPECT_EQ(PermissionStatus::DENIED, callback_result());
 
   GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
 }
@@ -298,7 +292,7 @@ TEST_F(PermissionManagerTest, ChangesBackAndForth) {
       CONTENT_SETTING_ALLOW);
 
   EXPECT_TRUE(callback_called());
-  EXPECT_EQ(content::mojom::PermissionStatus::GRANTED, callback_result());
+  EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
 
   Reset();
 
@@ -307,7 +301,7 @@ TEST_F(PermissionManagerTest, ChangesBackAndForth) {
       CONTENT_SETTING_ASK);
 
   EXPECT_TRUE(callback_called());
-  EXPECT_EQ(content::mojom::PermissionStatus::ASK, callback_result());
+  EXPECT_EQ(PermissionStatus::ASK, callback_result());
 
   GetPermissionManager()->UnsubscribePermissionStatusChange(subscription_id);
 }

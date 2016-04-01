@@ -19,11 +19,11 @@
 #include "content/common/media/cdm_messages.h"
 #include "content/common/media/cdm_messages_enums.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/common/permission_status.mojom.h"
 #include "ipc/ipc_message.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_keys.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 struct CdmHostMsg_CreateSessionAndGenerateRequest_Params;

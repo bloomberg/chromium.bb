@@ -17,10 +17,8 @@
           # NOTE: Sources duplicated in //content/common/BUILD.gn:mojo_bindings.
           'common/application_setup.mojom',
           'common/background_sync_service.mojom',
-          'common/geolocation_service.mojom',
           'common/image_downloader/image_downloader.mojom',
           'common/leveldb_wrapper.mojom',
-          'common/permission_service.mojom',
           'common/presentation/presentation_service.mojom',
           'common/process_control.mojom',
           'common/render_frame_setup.mojom',
@@ -33,8 +31,6 @@
           # NOTE: Sources duplicated in
           # //content/public/common/BUILD.gn:mojo_bindings.
           'public/common/background_sync.mojom',
-          'public/common/mojo_geoposition.mojom',
-          'public/common/permission_status.mojom',
           'public/common/service_worker_event_status.mojom',
         ],
       },

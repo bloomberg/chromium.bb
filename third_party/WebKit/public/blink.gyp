@@ -34,8 +34,11 @@
     'variables': {
         'blink_mojo_sources': [
             'platform/modules/bluetooth/web_bluetooth.mojom',
+            'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/notifications/notification.mojom',
             'platform/modules/payments/payment_request.mojom',
+            'platform/modules/permissions/permission.mojom',
+            'platform/modules/permissions/permission_status.mojom',
         ],
     },
     'targets': [

@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #endif
 
-using content::mojom::PermissionStatus;
+using blink::mojom::PermissionStatus;
 using content::PermissionType;
 
 namespace {
@@ -34,11 +34,11 @@ PermissionStatus ContentSettingToPermissionStatus(ContentSetting setting) {
   switch (setting) {
     case CONTENT_SETTING_ALLOW:
     case CONTENT_SETTING_SESSION_ONLY:
-      return content::mojom::PermissionStatus::GRANTED;
+      return PermissionStatus::GRANTED;
     case CONTENT_SETTING_BLOCK:
-      return content::mojom::PermissionStatus::DENIED;
+      return PermissionStatus::DENIED;
     case CONTENT_SETTING_ASK:
-      return content::mojom::PermissionStatus::ASK;
+      return PermissionStatus::ASK;
     case CONTENT_SETTING_DETECT_IMPORTANT_CONTENT:
     case CONTENT_SETTING_DEFAULT:
     case CONTENT_SETTING_NUM_SETTINGS:
@@ -46,7 +46,7 @@ PermissionStatus ContentSettingToPermissionStatus(ContentSetting setting) {
   }
 
   NOTREACHED();
-  return content::mojom::PermissionStatus::DENIED;
+  return PermissionStatus::DENIED;
 }
 
 // Wrap a callback taking a PermissionStatus to pass it as a callback taking a
@@ -148,7 +148,7 @@ class PermissionManager::PendingRequest {
         render_frame_id_(render_frame_host->GetRoutingID()),
         callback_(callback),
         permissions_(permissions),
-        results_(permissions.size(), content::mojom::PermissionStatus::DENIED),
+        results_(permissions.size(), PermissionStatus::DENIED),
         remaining_results_(permissions.size()) {}
 
   void SetPermissionStatus(int permission_id, PermissionStatus status) {
@@ -326,7 +326,7 @@ PermissionStatus PermissionManager::GetPermissionStatus(
 
   PermissionContextBase* context = PermissionContext::Get(profile_, permission);
   if (!context)
-    return content::mojom::PermissionStatus::DENIED;
+    return PermissionStatus::DENIED;
 
   return ContentSettingToPermissionStatus(context->GetPermissionStatus(
       requesting_origin.GetOrigin(), embedding_origin.GetOrigin()));

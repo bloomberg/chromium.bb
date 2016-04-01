@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/permission_service.mojom.h"
 #include "media/base/media_permission.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -26,8 +26,8 @@ namespace content {
 // MediaPermission implementation using content PermissionService.
 class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
  public:
-  using ConnectToServiceCB =
-      base::Callback<void(mojo::InterfaceRequest<mojom::PermissionService>)>;
+  using ConnectToServiceCB = base::Callback<void(
+      mojo::InterfaceRequest<blink::mojom::PermissionService>)>;
 
   explicit MediaPermissionDispatcher(
       const ConnectToServiceCB& connect_to_service_cb);
@@ -49,17 +49,18 @@ class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
   typedef std::map<uint32_t, PermissionStatusCB> RequestMap;
 
   // Register PermissionStatusCBs. Returns |request_id| that can be used to make
-  // mojom::PermissionService calls.
+  // PermissionService calls.
   uint32_t RegisterCallback(const PermissionStatusCB& permission_status_cb);
 
   // Callback for |permission_service_| calls.
-  void OnPermissionStatus(uint32_t request_id, mojom::PermissionStatus status);
+  void OnPermissionStatus(uint32_t request_id,
+                          blink::mojom::PermissionStatus status);
 
   ConnectToServiceCB connect_to_service_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   uint32_t next_request_id_;
   RequestMap requests_;
-  mojom::PermissionServicePtr permission_service_;
+  blink::mojom::PermissionServicePtr permission_service_;
 
   // Used to safely post MediaPermission calls for execution on |task_runner_|.
   base::WeakPtr<MediaPermissionDispatcher> weak_ptr_;

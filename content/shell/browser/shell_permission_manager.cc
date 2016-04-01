@@ -23,10 +23,10 @@ int ShellPermissionManager::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(mojom::PermissionStatus)>& callback) {
+    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   callback.Run(permission == PermissionType::GEOLOCATION
-                   ? mojom::PermissionStatus::GRANTED
-                   : mojom::PermissionStatus::DENIED);
+                   ? blink::mojom::PermissionStatus::GRANTED
+                   : blink::mojom::PermissionStatus::DENIED);
   return kNoPendingOperation;
 }
 
@@ -34,13 +34,13 @@ int ShellPermissionManager::RequestPermissions(
     const std::vector<PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(const std::vector<mojom::PermissionStatus>&)>&
-        callback) {
-  std::vector<mojom::PermissionStatus> result(permissions.size());
+    const base::Callback<
+        void(const std::vector<blink::mojom::PermissionStatus>&)>& callback) {
+  std::vector<blink::mojom::PermissionStatus> result(permissions.size());
   for (const auto& permission : permissions) {
     result.push_back(permission == PermissionType::GEOLOCATION
-                         ? mojom::PermissionStatus::GRANTED
-                         : mojom::PermissionStatus::DENIED);
+                         ? blink::mojom::PermissionStatus::GRANTED
+                         : blink::mojom::PermissionStatus::DENIED);
   }
   callback.Run(result);
   return kNoPendingOperation;
@@ -55,7 +55,7 @@ void ShellPermissionManager::ResetPermission(
     const GURL& embedding_origin) {
 }
 
-mojom::PermissionStatus ShellPermissionManager::GetPermissionStatus(
+blink::mojom::PermissionStatus ShellPermissionManager::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
@@ -63,16 +63,16 @@ mojom::PermissionStatus ShellPermissionManager::GetPermissionStatus(
   // TODO(nsatragno): add a command line flag so that it's only granted for
   // tests.
   if (permission == PermissionType::BACKGROUND_SYNC)
-    return mojom::PermissionStatus::GRANTED;
+    return blink::mojom::PermissionStatus::GRANTED;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if ((permission == PermissionType::AUDIO_CAPTURE ||
        permission == PermissionType::VIDEO_CAPTURE) &&
       command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream) &&
       command_line->HasSwitch(switches::kUseFakeUIForMediaStream)) {
-    return mojom::PermissionStatus::GRANTED;
+    return blink::mojom::PermissionStatus::GRANTED;
   }
-  return mojom::PermissionStatus::DENIED;
+  return blink::mojom::PermissionStatus::DENIED;
 }
 
 void ShellPermissionManager::RegisterPermissionUsage(
@@ -85,7 +85,7 @@ int ShellPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(mojom::PermissionStatus)>& callback) {
+    const base::Callback<void(blink::mojom::PermissionStatus)>& callback) {
   return kNoPendingOperation;
 }
 

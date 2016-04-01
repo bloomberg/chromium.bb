@@ -15,17 +15,17 @@ namespace {
 
 using Type = media::MediaPermission::Type;
 
-content::mojom::PermissionName MediaPermissionTypeToPermissionName(Type type) {
+blink::mojom::PermissionName MediaPermissionTypeToPermissionName(Type type) {
   switch (type) {
     case Type::PROTECTED_MEDIA_IDENTIFIER:
-      return content::mojom::PermissionName::PROTECTED_MEDIA_IDENTIFIER;
+      return blink::mojom::PermissionName::PROTECTED_MEDIA_IDENTIFIER;
     case Type::AUDIO_CAPTURE:
-      return content::mojom::PermissionName::AUDIO_CAPTURE;
+      return blink::mojom::PermissionName::AUDIO_CAPTURE;
     case Type::VIDEO_CAPTURE:
-      return content::mojom::PermissionName::VIDEO_CAPTURE;
+      return blink::mojom::PermissionName::VIDEO_CAPTURE;
   }
   NOTREACHED();
-  return content::mojom::PermissionName::PROTECTED_MEDIA_IDENTIFIER;
+  return blink::mojom::PermissionName::PROTECTED_MEDIA_IDENTIFIER;
 }
 
 }  // namespace
@@ -115,7 +115,7 @@ uint32_t MediaPermissionDispatcher::RegisterCallback(
 
 void MediaPermissionDispatcher::OnPermissionStatus(
     uint32_t request_id,
-    mojom::PermissionStatus status) {
+    blink::mojom::PermissionStatus status) {
   DVLOG(2) << __FUNCTION__ << ": (" << request_id << ", " << status << ")";
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
@@ -125,7 +125,7 @@ void MediaPermissionDispatcher::OnPermissionStatus(
   PermissionStatusCB permission_status_cb = iter->second;
   requests_.erase(iter);
 
-  permission_status_cb.Run(status == mojom::PermissionStatus::GRANTED);
+  permission_status_cb.Run(status == blink::mojom::PermissionStatus::GRANTED);
 }
 
 }  // namespace content

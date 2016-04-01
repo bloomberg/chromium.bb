@@ -138,8 +138,6 @@ source_set("common_sources") {
 mojom("mojo_bindings") {
   sources = [
     "background_sync.mojom",
-    "mojo_geoposition.mojom",
-    "permission_status.mojom",
     "service_worker_event_status.mojom",
   ]
 }

@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file declares the Geoposition structure, used to represent a position
-// fix. It was originally derived from:
+module blink.mojom;
+
+// A Geoposition represents a position fix. It was originally derived from:
 // http://gears.googlecode.com/svn/trunk/gears/geolocation/geolocation.h
 // TODO(blundell): Investigate killing content::Geoposition in favor of using
-// this struct everywhere (and renaming it to Geoposition).
-
-module content.mojom;
-
-struct MojoGeoposition {
+// this struct everywhere.
+struct Geoposition {
   // These values follow the W3C geolocation specification and can be returned
   // to JavaScript without the need for a conversion.
   enum ErrorCode {
@@ -53,4 +51,17 @@ struct MojoGeoposition {
   ErrorCode error_code;
   // Human-readable error message.
   string error_message;
+};
+
+// The Geolocation service provides updates on the device's location.  By
+// default, it provides updates with low accuracy, but |SetHighAccuracy()| may
+// be called to change this.
+interface GeolocationService {
+  SetHighAccuracy(bool high_accuracy);
+
+  // Position is reported once it changes or immediately (to report the initial
+  // position) if this is the first call to QueryNextPosition on this instance.
+  // Position updates may be throttled by the service. Overlapping calls to
+  // this method are prohibited and will be treated as a connection error.
+  QueryNextPosition() => (Geoposition geoposition);
 };

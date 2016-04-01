@@ -68,13 +68,13 @@ void RecordDeliveryStatus(content::PushDeliveryStatus status) {
 }
 
 blink::WebPushPermissionStatus ToPushPermission(
-    content::mojom::PermissionStatus permission_status) {
+    blink::mojom::PermissionStatus permission_status) {
   switch (permission_status) {
-    case content::mojom::PermissionStatus::GRANTED:
+    case blink::mojom::PermissionStatus::GRANTED:
       return blink::WebPushPermissionStatusGranted;
-    case content::mojom::PermissionStatus::DENIED:
+    case blink::mojom::PermissionStatus::DENIED:
       return blink::WebPushPermissionStatusDenied;
-    case content::mojom::PermissionStatus::ASK:
+    case blink::mojom::PermissionStatus::ASK:
       return blink::WebPushPermissionStatusPrompt;
     default:
       NOTREACHED();
@@ -517,8 +517,8 @@ void PushMessagingServiceImpl::DidRequestPermission(
     const PushMessagingAppIdentifier& app_identifier,
     const content::PushSubscriptionOptions& options,
     const content::PushMessagingService::RegisterCallback& register_callback,
-    content::mojom::PermissionStatus permission_status) {
-  if (permission_status != content::mojom::PermissionStatus::GRANTED) {
+    blink::mojom::PermissionStatus permission_status) {
+  if (permission_status != blink::mojom::PermissionStatus::GRANTED) {
     SubscribeEndWithError(register_callback,
                           content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;
