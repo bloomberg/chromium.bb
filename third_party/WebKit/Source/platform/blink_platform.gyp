@@ -137,6 +137,7 @@
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
       '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings_wtf_support',
       '<(DEPTH)/skia/skia.gyp:skia',
+      '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
       '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
@@ -202,7 +203,7 @@
     'sources/': [
       # Exclude all platform specific things, reinclude them below on a per-platform basis
       # FIXME: Figure out how to store these patterns in a variable.
-      ['exclude', '(cf|cg|mac|opentype|win)/'],
+      ['exclude', '(cf|cg|mac|win)/'],
       ['exclude', '(?<!Chromium)(CF|CG|Mac|Win)\\.(cpp|mm?)$'],
 
       # *NEON.cpp files need special compile options.
@@ -220,17 +221,6 @@
           ['include', 'graphics/cpu/x86/WebGLImageConversionSSE\\.h$'],
         ],
       }],
-      ['OS=="linux" or OS=="android" or OS=="win"', {
-        'sources/': [
-          # Cherry-pick files excluded by the broader regular expressions above.
-          ['include', 'fonts/opentype/OpenTypeTypes\\.h$'],
-          ['include', 'fonts/opentype/OpenTypeVerticalData\\.(cpp|h)$'],
-        ],
-        'dependencies': [
-          '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
-        ],
-      },
-      ],
       ['OS=="linux" or OS=="android"', {
         'sources/': [
           ['include', 'fonts/linux/FontPlatformDataLinux\\.cpp$'],
@@ -241,9 +231,6 @@
         ]
       }],
       ['OS=="mac"', {
-        'dependencies': [
-          '<(DEPTH)/third_party/harfbuzz-ng/harfbuzz.gyp:harfbuzz-ng',
-        ],
         'link_settings': {
           'libraries': [
             '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
@@ -265,10 +252,6 @@
 
           # Use native Mac font code from core.
           ['include', '(fonts/)?mac/[^/]*Font[^/]*\\.(cpp|mm?)$'],
-
-          # TODO(dro): Merge the opentype vertical data files inclusion across all platforms.
-          ['include', 'fonts/opentype/OpenTypeTypes\\.h$'],
-          ['include', 'fonts/opentype/OpenTypeVerticalData\\.(cpp|h)$'],
 
           # Cherry-pick some files that can't be included by broader regexps.
           # Some of these are used instead of Chromium platform files, see
@@ -330,7 +313,6 @@
 
           ['include', 'clipboard/ClipboardUtilitiesWin\\.(cpp|h)$'],
 
-          ['include', 'fonts/opentype/'],
           ['include', 'fonts/win/FontCacheSkiaWin\\.cpp$'],
           ['include', 'fonts/win/FontFallbackWin\\.(cpp|h)$'],
           ['include', 'fonts/win/FontPlatformDataWin\\.cpp$'],
@@ -343,7 +325,6 @@
           ['exclude', 'win/'],
           ['exclude', 'Win\\.cpp$'],
           ['exclude', '/(Windows)[^/]*\\.cpp$'],
-          ['include', 'fonts/opentype/OpenTypeSanitizer\\.cpp$'],
         ],
       }],
       ['OS=="win" and chromium_win_pch==1', {
