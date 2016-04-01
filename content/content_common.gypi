@@ -13,6 +13,11 @@
     '../gpu/gpu.gyp:command_buffer_service',
     '../gpu/gpu.gyp:gles2_c_lib',
     '../gpu/gpu.gyp:gles2_implementation',
+
+    # TODO(markdittmer): This should be removed once content/common/gpu/media
+    # is refactored into media/ipc.
+    '../gpu/gpu.gyp:gpu_ipc_service',
+
     # TODO: the dependency on gl_in_process_context should be decoupled from
     # content and moved to android_webview. See crbug.com/365797.
     '../gpu/gpu.gyp:gl_in_process_context',
@@ -342,12 +347,6 @@
       'common/geofencing_types.cc',
       'common/geofencing_types.h',
       'common/gin_java_bridge_messages.h',
-      'common/gpu/ca_layer_partial_damage_tree_mac.h',
-      'common/gpu/ca_layer_partial_damage_tree_mac.mm',
-      'common/gpu/ca_layer_tree_mac.h',
-      'common/gpu/ca_layer_tree_mac.mm',
-      'common/gpu/child_window_surface_win.cc',
-      'common/gpu/child_window_surface_win.h',
       'common/gpu/client/command_buffer_metrics.cc',
       'common/gpu/client/command_buffer_metrics.h',
       'common/gpu/client/context_provider_command_buffer.cc',
@@ -362,30 +361,6 @@
       'common/gpu/client/grcontext_for_webgraphicscontext3d.h',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.cc',
       'common/gpu/client/webgraphicscontext3d_command_buffer_impl.h',
-      'common/gpu/gpu_channel.cc',
-      'common/gpu/gpu_channel.h',
-      'common/gpu/gpu_channel_manager.cc',
-      'common/gpu/gpu_channel_manager.h',
-      'common/gpu/gpu_channel_manager_delegate.h',
-      'common/gpu/gpu_command_buffer_stub.cc',
-      'common/gpu/gpu_command_buffer_stub.h',
-      'common/gpu/gpu_config.h',
-      'common/gpu/gpu_memory_buffer_factory.cc',
-      'common/gpu/gpu_memory_buffer_factory.h',
-      'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.cc',
-      'common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h',
-      'common/gpu/gpu_memory_manager.cc',
-      'common/gpu/gpu_memory_manager.h',
-      'common/gpu/gpu_memory_tracking.cc',
-      'common/gpu/gpu_memory_tracking.h',
-      'common/gpu/gpu_watchdog.h',
-      'common/gpu/image_transport_surface.h',
-      'common/gpu/image_transport_surface_android.cc',
-      'common/gpu/image_transport_surface_linux.cc',
-      'common/gpu/image_transport_surface_mac.mm',
-      'common/gpu/image_transport_surface_overlay_mac.h',
-      'common/gpu/image_transport_surface_overlay_mac.mm',
-      'common/gpu/image_transport_surface_win.cc',
       'common/gpu/media/fake_video_decode_accelerator.cc',
       'common/gpu/media/fake_video_decode_accelerator.h',
       'common/gpu/media/gpu_jpeg_decode_accelerator.cc',
@@ -402,10 +377,6 @@
       'common/gpu/media/media_service.h',
       'common/gpu/media/shared_memory_region.cc',
       'common/gpu/media/shared_memory_region.h',
-      'common/gpu/pass_through_image_transport_surface.cc',
-      'common/gpu/pass_through_image_transport_surface.h',
-      'common/gpu/stream_texture_android.cc',
-      'common/gpu/stream_texture_android.h',
       'common/gpu_host_messages.h',
       'common/gpu_process_launch_causes.h',
       'common/host_discardable_shared_memory_manager.cc',
@@ -647,8 +618,6 @@
         '../ui/accelerated_widget_mac/accelerated_widget_mac.gyp:accelerated_widget_mac'
       ],
       'sources': [
-        'common/gpu/gpu_memory_buffer_factory_io_surface.cc',
-        'common/gpu/gpu_memory_buffer_factory_io_surface.h',
         'common/gpu/media/vt_mac.h',
         'common/gpu/media/vt_video_decode_accelerator_mac.cc',
         'common/gpu/media/vt_video_decode_accelerator_mac.h',
@@ -709,10 +678,6 @@
       ],
     }],
     ['OS=="android"',{
-      'sources': [
-        'common/gpu/gpu_memory_buffer_factory_surface_texture.cc',
-        'common/gpu/gpu_memory_buffer_factory_surface_texture.h',
-      ],
       'link_settings': {
         'libraries': [
           '-landroid',  # ANativeWindow
@@ -737,11 +702,6 @@
       ],
       'dependencies': [
          '<(DEPTH)/build/linux/system.gyp:xcomposite',
-      ],
-    }],
-    ['use_x11 == 1 and (target_arch != "arm" or chromeos == 0)', {
-      'sources': [
-        'common/gpu/x_util.h',
       ],
     }],
     ['enable_plugins==1', {

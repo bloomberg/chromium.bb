@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/gpu/gpu_watchdog.h"
+#include "gpu/ipc/service/gpu_watchdog.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_X11)
@@ -32,7 +32,7 @@ namespace content {
 // A thread that intermitently sends tasks to a group of watched message loops
 // and deliberately crashes if one of them does not respond after a timeout.
 class GpuWatchdogThread : public base::Thread,
-                          public GpuWatchdog,
+                          public gpu::GpuWatchdog,
                           public base::PowerObserver,
                           public base::RefCountedThreadSafe<GpuWatchdogThread> {
  public:
@@ -42,7 +42,7 @@ class GpuWatchdogThread : public base::Thread,
   bool armed() const { return armed_; }
   void PostAcknowledge();
 
-  // Implement GpuWatchdog.
+  // Implement gpu::GpuWatchdog.
   void CheckArmed() override;
 
   // Must be called after a PowerMonitor has been created. Can be called from

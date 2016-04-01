@@ -47,6 +47,7 @@ component("gpu") {
     "//gpu/config:config_sources",
     "//gpu/ipc/client:ipc_client_sources",
     "//gpu/ipc/common:ipc_common_sources",
+    "//gpu/ipc/service:ipc_service_sources",
   ]
 }
 

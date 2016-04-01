@@ -13,15 +13,18 @@
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
 
-namespace content {
-
+namespace gpu {
 class GpuChannel;
 class GpuChannelManager;
+}
+
+namespace content {
+
 class MediaChannel;
 
 class MediaService {
  public:
-  MediaService(GpuChannelManager* channel_manager);
+  MediaService(gpu::GpuChannelManager* channel_manager);
   ~MediaService();
 
   void AddChannel(int32_t client_id);
@@ -29,7 +32,7 @@ class MediaService {
   void DestroyAllChannels();
 
  private:
-  GpuChannelManager* const channel_manager_;
+  gpu::GpuChannelManager* const channel_manager_;
   base::ScopedPtrHashMap<int32_t, scoped_ptr<MediaChannel>> media_channels_;
   DISALLOW_COPY_AND_ASSIGN(MediaService);
 };

@@ -4,9 +4,9 @@
 
 #include "content/common/gpu/media/media_channel.h"
 
-#include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
+#include "gpu/ipc/service/gpu_channel.h"
 #include "media/gpu/ipc/common/media_messages.h"
 
 namespace content {
@@ -16,8 +16,8 @@ namespace {
 void SendCreateJpegDecoderResult(
     scoped_ptr<IPC::Message> reply_message,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    base::WeakPtr<GpuChannel> channel,
-    scoped_refptr<GpuChannelMessageFilter> filter,
+    base::WeakPtr<gpu::GpuChannel> channel,
+    scoped_refptr<gpu::GpuChannelMessageFilter> filter,
     bool result) {
   GpuChannelMsg_CreateJpegDecoder::WriteReplyParams(reply_message.get(),
                                                     result);
@@ -55,7 +55,7 @@ class MediaChannelDispatchHelper {
   DISALLOW_COPY_AND_ASSIGN(MediaChannelDispatchHelper);
 };
 
-MediaChannel::MediaChannel(GpuChannel* channel) : channel_(channel) {}
+MediaChannel::MediaChannel(gpu::GpuChannel* channel) : channel_(channel) {}
 
 MediaChannel::~MediaChannel() {}
 
@@ -99,7 +99,7 @@ void MediaChannel::OnCreateVideoDecoder(
     int32_t decoder_route_id,
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "MediaChannel::OnCreateVideoDecoder");
-  GpuCommandBufferStub* stub =
+  gpu::GpuCommandBufferStub* stub =
       channel_->LookupCommandBuffer(command_buffer_route_id);
   if (!stub) {
     reply_message->set_reply_error();
@@ -122,7 +122,7 @@ void MediaChannel::OnCreateVideoEncoder(
     const media::CreateVideoEncoderParams& params,
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "MediaChannel::OnCreateVideoEncoder");
-  GpuCommandBufferStub* stub =
+  gpu::GpuCommandBufferStub* stub =
       channel_->LookupCommandBuffer(command_buffer_route_id);
   if (!stub) {
     reply_message->set_reply_error();

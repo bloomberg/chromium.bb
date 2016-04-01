@@ -173,6 +173,10 @@ source_set("common") {
     "//gpu/command_buffer/service",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
+
+    # TODO(markdittmer): This should be removed once content/common/gpu/media
+    # is refactored into media/ipc.
+    "//gpu/ipc/service",
     "//gpu/skia_bindings",
     "//ipc",
     "//ipc/mojo",
@@ -226,8 +230,6 @@ source_set("common") {
 
   if (is_mac) {
     sources += [
-                 "gpu/gpu_memory_buffer_factory_io_surface.cc",
-                 "gpu/gpu_memory_buffer_factory_io_surface.h",
                  "gpu/media/vt_mac.h",
                  "gpu/media/vt_video_decode_accelerator_mac.cc",
                  "gpu/media/vt_video_decode_accelerator_mac.h",
@@ -258,11 +260,6 @@ source_set("common") {
   }
 
   if (is_android) {
-    sources += [
-      "gpu/gpu_memory_buffer_factory_surface_texture.cc",
-      "gpu/gpu_memory_buffer_factory_surface_texture.h",
-    ]
-
     deps += [
       "//content/public/android:common_aidl",
       "//content/public/android:jni",
@@ -284,8 +281,6 @@ source_set("common") {
     sources -= [
       "cursors/webcursor_ozone.cc",
       "font_list_ozone.cc",
-      "gpu/gpu_memory_buffer_factory_ozone_native_pixmap.cc",
-      "gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h",
     ]
   }
 
@@ -306,17 +301,6 @@ source_set("common") {
     }
   } else {
     sources -= [ "font_list_pango.cc" ]
-  }
-
-  if (use_x11) {
-    configs += [
-      "//build/config/linux:xcomposite",
-      "//third_party/khronos:khronos_headers",
-    ]
-
-    if (current_cpu != "arm" || !is_chromeos) {
-      sources += [ "gpu/x_util.h" ]
-    }
   }
 
   if (enable_plugins) {

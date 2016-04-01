@@ -12,13 +12,13 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 
 namespace gpu {
-struct GpuPreferences;
+class GpuMemoryBufferFactory;
 class SyncPointManager;
+struct GpuPreferences;
 }
 
 namespace content {
 
-class GpuMemoryBufferFactory;
 class GpuProcess;
 
 // This class creates a GPU thread (instead of a GPU process), when running
@@ -48,7 +48,7 @@ class InProcessGpuThread : public base::Thread {
   // Non-owning.
   gpu::SyncPointManager* sync_point_manager_override_;
 
-  scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
+  scoped_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessGpuThread);
 };

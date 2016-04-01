@@ -15,7 +15,6 @@
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/establish_channel_params.h"
-#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/media/gpu_jpeg_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
@@ -31,6 +30,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/memory_stats.h"
+#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ui/gl/gl_implementation.h"
@@ -72,7 +72,7 @@ bool GpuProcessLogMessageHandler(int severity,
 class GpuMemoryBufferMessageFilter : public IPC::MessageFilter {
  public:
   explicit GpuMemoryBufferMessageFilter(
-      GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
       : gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
         sender_(nullptr) {}
 
@@ -124,12 +124,12 @@ class GpuMemoryBufferMessageFilter : public IPC::MessageFilter {
             params.client_id)));
   }
 
-  GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
   IPC::Sender* sender_;
 };
 
 ChildThreadImpl::Options GetOptions(
-    GpuMemoryBufferFactory* gpu_memory_buffer_factory) {
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory) {
   ChildThreadImpl::Options::Builder builder;
 
   builder.AddStartupFilter(
@@ -153,7 +153,7 @@ GpuChildThread::GpuChildThread(
     bool dead_on_arrival,
     const gpu::GPUInfo& gpu_info,
     const DeferredMessages& deferred_messages,
-    GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     gpu::SyncPointManager* sync_point_manager)
     : ChildThreadImpl(GetOptions(gpu_memory_buffer_factory)),
       dead_on_arrival_(dead_on_arrival),
@@ -172,7 +172,7 @@ GpuChildThread::GpuChildThread(
 GpuChildThread::GpuChildThread(
     const gpu::GpuPreferences& gpu_preferences,
     const InProcessChildThreadParams& params,
-    GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     gpu::SyncPointManager* sync_point_manager)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
                           .InBrowserProcess(params)
@@ -396,7 +396,7 @@ void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
   gpu_channel_manager_.reset(
-      new GpuChannelManager(gpu_preferences_, this, watchdog_thread_.get(),
+      new gpu::GpuChannelManager(gpu_preferences_, this, watchdog_thread_.get(),
                             base::ThreadTaskRunnerHandle::Get().get(),
                             ChildProcess::current()->io_task_runner(),
                             ChildProcess::current()->GetShutDownEvent(),

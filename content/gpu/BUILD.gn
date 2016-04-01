@@ -52,6 +52,7 @@ source_set("gpu_sources") {
     "//content/public/common:common_sources",
     "//gpu:gpu",
     "//gpu/ipc/common:command_buffer_traits",
+    "//gpu/ipc/service",
     "//ipc",
     "//media/mojo/services:application_factory",
     "//mojo/shell/public/interfaces",

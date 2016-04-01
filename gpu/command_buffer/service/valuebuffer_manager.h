@@ -15,7 +15,7 @@
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/gpu_export.h"
 
-namespace content {
+namespace gpu {
 class GpuChannel;
 }
 

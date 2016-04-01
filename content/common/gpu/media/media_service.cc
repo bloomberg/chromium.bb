@@ -6,23 +6,23 @@
 
 #include <utility>
 
-#include "ipc/ipc_message_macros.h"
-#include "ipc/param_traits_macros.h"
-#include "content/common/gpu/gpu_channel.h"
-#include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/gpu/media/media_channel.h"
+#include "gpu/ipc/service/gpu_channel.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
+#include "ipc/ipc_message_macros.h"
+#include "ipc/param_traits_macros.h"
 
 namespace content {
 
-MediaService::MediaService(GpuChannelManager* channel_manager)
+MediaService::MediaService(gpu::GpuChannelManager* channel_manager)
     : channel_manager_(channel_manager) {}
 
 MediaService::~MediaService() {}
 
 void MediaService::AddChannel(int32_t client_id) {
-  GpuChannel* gpu_channel = channel_manager_->LookupChannel(client_id);
+  gpu::GpuChannel* gpu_channel = channel_manager_->LookupChannel(client_id);
   DCHECK(gpu_channel);
   scoped_ptr<MediaChannel> media_channel(new MediaChannel(gpu_channel));
   gpu_channel->SetUnhandledMessageListener(media_channel.get());
