@@ -136,11 +136,8 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
 using ::testing::Combine;
 using ::testing::Values;
 
-#if !defined(OS_ANDROID)
-// Encrypted media playback with SRC is not supported on Android.
 INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(SRC)));
-#endif  // !defined(OS_ANDROID)
 
 INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(MSE)));
