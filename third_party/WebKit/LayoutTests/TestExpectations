@@ -1370,4 +1370,4 @@ crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [
 crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
-crbug.com/599662 inspector/sources/debugger-ui/debugger-save-to-temp-var.html [ Failure ]
+crbug.com/599662 inspector/sources/debugger-ui/debugger-save-to-temp-var.html [ Failure Crash ]
