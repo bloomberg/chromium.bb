@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/browser.h"
 
 #include "base/macros.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -61,6 +63,28 @@ TEST_F(BrowserUnitTest, ReloadCrashedTab) {
   EXPECT_TRUE(tab_strip_model->IsTabSelected(1));
   EXPECT_FALSE(contents2->IsLoading());
   EXPECT_TRUE(contents2->IsCrashed());
+}
+
+// Ensure the print command gets disabled when a tab crashes.
+TEST_F(BrowserUnitTest, DisablePrintOnCrashedTab) {
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+
+  WebContents* contents = CreateTestWebContents();
+  tab_strip_model->AppendWebContents(contents, true);
+  WebContentsTester::For(contents)->NavigateAndCommit(GURL("about:blank"));
+
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
+
+  EXPECT_FALSE(contents->IsCrashed());
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
+  EXPECT_TRUE(chrome::CanPrint(browser()));
+
+  contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+
+  EXPECT_TRUE(contents->IsCrashed());
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_PRINT));
+  EXPECT_FALSE(chrome::CanPrint(browser()));
 }
 
 class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {

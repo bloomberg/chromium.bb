@@ -877,14 +877,17 @@ void Print(Browser* browser) {
 
 bool CanPrint(Browser* browser) {
   // Do not print when printing is disabled via pref or policy.
+  // Do not print when a page has crashed.
   // Do not print when a constrained window is showing. It's confusing.
   // TODO(gbillock): Need to re-assess the call to
   // IsShowingWebContentsModalDialog after a popup management policy is
   // refined -- we will probably want to just queue the print request, not
   // block it.
+  WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
   return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
+      (current_tab && !current_tab->IsCrashed()) &&
       !(IsShowingWebContentsModalDialog(browser) ||
-      GetContentRestrictions(browser) & CONTENT_RESTRICTION_PRINT);
+        GetContentRestrictions(browser) & CONTENT_RESTRICTION_PRINT);
 }
 
 #if defined(ENABLE_BASIC_PRINTING)

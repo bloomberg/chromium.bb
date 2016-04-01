@@ -1557,7 +1557,8 @@ void Browser::NavigationStateChanged(WebContents* source,
   // need to update the command state early on load to always present usable
   // actions in the face of slow-to-commit pages.
   if (changed_flags & (content::INVALIDATE_TYPE_URL |
-                       content::INVALIDATE_TYPE_LOAD))
+                       content::INVALIDATE_TYPE_LOAD |
+                       content::INVALIDATE_TYPE_TAB))
     command_controller_->TabStateChanged();
 
   if (hosted_app_controller_)
