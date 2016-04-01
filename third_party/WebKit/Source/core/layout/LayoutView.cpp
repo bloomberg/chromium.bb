@@ -490,12 +490,9 @@ bool LayoutView::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ance
         return true;
 
     if (style()->isFlippedBlocksWritingMode()) {
-        // We have to flip by hand since the view's logical height has not been determined.  We
-        // can use the viewport width and height.
-        if (style()->isHorizontalWritingMode())
-            rect.setY(viewHeight() - rect.maxY());
-        else
-            rect.setX(viewWidth() - rect.maxX());
+        // We have to flip by hand since the view's logical width has not been determined.  We
+        // can use the viewport width.
+        rect.setX(viewWidth() - rect.maxX());
     }
 
     if (mode & IsFixed)

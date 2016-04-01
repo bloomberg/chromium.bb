@@ -800,30 +800,24 @@ public:
     LayoutSize flipForWritingMode(const LayoutSize& offset) const WARN_UNUSED_RETURN {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return offset;
-        return isHorizontalWritingMode() ? LayoutSize(offset.width(), m_frameRect.height() - offset.height()) : LayoutSize(m_frameRect.width() - offset.width(), offset.height());
+        return LayoutSize(m_frameRect.width() - offset.width(), offset.height());
     }
     void flipForWritingMode(LayoutRect& rect) const
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return;
-        if (isHorizontalWritingMode())
-            rect.setY(m_frameRect.height() - rect.maxY());
-        else
-            rect.setX(m_frameRect.width() - rect.maxX());
+        rect.setX(m_frameRect.width() - rect.maxX());
     }
     FloatPoint flipForWritingMode(const FloatPoint& position) const WARN_UNUSED_RETURN {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return position;
-        return isHorizontalWritingMode() ? FloatPoint(position.x(), m_frameRect.height() - position.y()) : FloatPoint(m_frameRect.width() - position.x(), position.y());
+        return FloatPoint(m_frameRect.width() - position.x(), position.y());
     }
     void flipForWritingMode(FloatRect& rect) const
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))
             return;
-        if (isHorizontalWritingMode())
-            rect.setY(m_frameRect.height() - rect.maxY());
-        else
-            rect.setX(m_frameRect.width() - rect.maxX());
+        rect.setX(m_frameRect.width() - rect.maxX());
     }
     // These represent your location relative to your container as a physical offset.
     // In layout related methods you almost always want the logical location (e.g. x() and y()).

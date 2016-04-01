@@ -2180,11 +2180,9 @@ LayoutPoint LayoutBlockFlow::flipFloatForWritingModeForChild(const FloatingObjec
     if (!style()->isFlippedBlocksWritingMode())
         return point;
 
-    // This is similar to LayoutBox::flipForWritingModeForChild. We have to subtract out our left/top offsets twice, since
+    // This is similar to LayoutBox::flipForWritingModeForChild. We have to subtract out our left offsets twice, since
     // it's going to get added back in. We hide this complication here so that the calling code looks normal for the unflipped
     // case.
-    if (isHorizontalWritingMode())
-        return LayoutPoint(point.x(), point.y() + size().height() - child.layoutObject()->size().height() - 2 * yPositionForFloatIncludingMargin(child));
     return LayoutPoint(point.x() + size().width() - child.layoutObject()->size().width() - 2 * xPositionForFloatIncludingMargin(child), point.y());
 }
 

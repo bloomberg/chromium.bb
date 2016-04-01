@@ -964,12 +964,8 @@ void LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect) const
     ASSERT(hasOverflowClip());
 
     LayoutSize offset = LayoutSize(-scrolledContentOffset());
-    if (UNLIKELY(hasFlippedBlocksWritingMode())) {
-        if (isHorizontalWritingMode())
-            offset.setHeight(-offset.height());
-        else
-            offset.setWidth(-offset.width());
-    }
+    if (UNLIKELY(hasFlippedBlocksWritingMode()))
+        offset.setWidth(-offset.width());
     rect.move(offset);
 }
 
@@ -4018,12 +4014,8 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const
     }
 
     // Box-shadow and border-image-outsets are in physical direction. Flip into block direction.
-    if (UNLIKELY(hasFlippedBlocksWritingMode())) {
-        if (isHorizontalWritingMode())
-            std::swap(top, bottom);
-        else
-            std::swap(left, right);
-    }
+    if (UNLIKELY(hasFlippedBlocksWritingMode()))
+        std::swap(left, right);
 
     if (style()->hasOutline()) {
         Vector<LayoutRect> outlineRects;
@@ -4382,10 +4374,8 @@ LayoutPoint LayoutBox::flipForWritingModeForChild(const LayoutBox* child, const 
     if (!style()->isFlippedBlocksWritingMode())
         return point;
 
-    // The child is going to add in its x() and y(), so we have to make sure it ends up in
+    // The child is going to add in its x(), so we have to make sure it ends up in
     // the right place.
-    if (isHorizontalWritingMode())
-        return LayoutPoint(point.x(), point.y() + size().height() - child->size().height() - (2 * child->location().y()));
     return LayoutPoint(point.x() + size().width() - child->size().width() - (2 * child->location().x()), point.y());
 }
 
