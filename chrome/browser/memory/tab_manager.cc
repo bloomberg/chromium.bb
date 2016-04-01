@@ -10,9 +10,6 @@
 #include <set>
 #include <vector>
 
-#include "ash/multi_profile_uma.h"
-#include "ash/session/session_state_delegate.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -54,7 +51,11 @@
 #include "content/public/common/page_importance_signals.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/multi_profile_uma.h"
+#include "ash/session/session_state_delegate.h"
+#include "ash/shell.h"
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 using base::TimeDelta;
@@ -221,32 +222,13 @@ void TabManager::Stop() {
   memory_pressure_listener_.reset();
 }
 
-// Things to collect on the browser thread (because TabStripModel isn't thread
-// safe):
-// 1) whether or not a tab is pinned
-// 2) last time a tab was selected
-// 3) is the tab currently selected
 TabStatsList TabManager::GetTabStats() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabStatsList stats_list;
-  stats_list.reserve(32);  // 99% of users have < 30 tabs open.
-
-  // TODO(chrisha): Move this code to a TabStripModel enumeration delegate!
-  if (!test_tab_strip_models_.empty()) {
-    for (size_t i = 0; i < test_tab_strip_models_.size(); ++i) {
-      AddTabStats(test_tab_strip_models_[i].first,   // tab_strip_model
-                  test_tab_strip_models_[i].second,  // is_app
-                  i == 0,                            // is_active
-                  &stats_list);
-    }
-  } else {
-    // The code here can only be tested under a full browser test.
-    AddTabStats(&stats_list);
-  }
+  TabStatsList stats_list(GetUnsortedTabStats());
 
   // Sort the collected data so that least desirable to be killed is first, most
   // desirable is last.
   std::sort(stats_list.begin(), stats_list.end(), CompareTabStats);
+
   return stats_list;
 }
 
@@ -290,23 +272,18 @@ bool TabManager::IsTabDiscarded(content::WebContents* contents) const {
   return GetWebContentsData(contents)->IsDiscarded();
 }
 
-// TODO(jamescook): This should consider tabs with references to other tabs,
-// such as tabs created with JavaScript window.open(). Potentially consider
-// discarding the entire set together, or use that in the priority computation.
-bool TabManager::DiscardTab() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabStatsList stats = GetTabStats();
-  if (stats.empty())
-    return false;
-  // Loop until a non-discarded tab to kill is found.
-  for (TabStatsList::const_reverse_iterator stats_rit = stats.rbegin();
-       stats_rit != stats.rend(); ++stats_rit) {
-    int64_t least_important_tab_id = stats_rit->tab_contents_id;
-    if (CanDiscardTab(least_important_tab_id) &&
-        DiscardTabById(least_important_tab_id))
-      return true;
+void TabManager::DiscardTab() {
+#if defined(OS_CHROMEOS)
+  // If --enable-arc-memory-management is on, call Chrome OS specific low memory
+  // handling process.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableArcMemoryManagement)) {
+    delegate_->LowMemoryKill(weak_ptr_factory_.GetWeakPtr(),
+                             GetUnsortedTabStats());
+    return;
   }
-  return false;
+#endif
+  DiscardTabImpl();
 }
 
 WebContents* TabManager::DiscardTabById(int64_t target_web_contents_id) {
@@ -817,6 +794,52 @@ void TabManager::DoChildProcessDispatch() {
       base::Bind(&TabManager::DoChildProcessDispatch,
                  weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kRendererNotificationDelayInSeconds));
+}
+
+// TODO(jamescook): This should consider tabs with references to other tabs,
+// such as tabs created with JavaScript window.open(). Potentially consider
+// discarding the entire set together, or use that in the priority computation.
+bool TabManager::DiscardTabImpl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TabStatsList stats = GetTabStats();
+
+  if (stats.empty())
+    return false;
+  // Loop until a non-discarded tab to kill is found.
+  for (TabStatsList::const_reverse_iterator stats_rit = stats.rbegin();
+       stats_rit != stats.rend(); ++stats_rit) {
+    int64_t least_important_tab_id = stats_rit->tab_contents_id;
+    if (CanDiscardTab(least_important_tab_id) &&
+        DiscardTabById(least_important_tab_id))
+      return true;
+  }
+  return false;
+}
+
+// Things to collect on the browser thread (because TabStripModel isn't thread
+// safe):
+// 1) whether or not a tab is pinned
+// 2) last time a tab was selected
+// 3) is the tab currently selected
+TabStatsList TabManager::GetUnsortedTabStats() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  TabStatsList stats_list;
+  stats_list.reserve(32);  // 99% of users have < 30 tabs open.
+
+  // TODO(chrisha): Move this code to a TabStripModel enumeration delegate!
+  if (!test_tab_strip_models_.empty()) {
+    for (size_t i = 0; i < test_tab_strip_models_.size(); ++i) {
+      AddTabStats(test_tab_strip_models_[i].first,   // tab_strip_model
+                  test_tab_strip_models_[i].second,  // is_app
+                  i == 0,                            // is_active
+                  &stats_list);
+    }
+  } else {
+    // The code here can only be tested under a full browser test.
+    AddTabStats(&stats_list);
+  }
+
+  return stats_list;
 }
 
 }  // namespace memory

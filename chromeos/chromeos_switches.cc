@@ -4,6 +4,8 @@
 
 #include "chromeos/chromeos_switches.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 
@@ -121,6 +123,9 @@ const char kEafePath[] = "eafe-path";
 
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
+
+// Enable ARC memory management in user space.
+const char kEnableArcMemoryManagement[] = "enable-arc-memory-management";
 
 // Enables consumer management, which allows user to enroll, remotely lock and
 // locate the device.

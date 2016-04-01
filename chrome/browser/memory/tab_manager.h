@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -81,7 +82,7 @@ class TabManager : public TabStripModelObserver {
   void Stop();
 
   // Returns the list of the stats for all renderers. Must be called on the UI
-  // thread.
+  // thread. The returned list is sorted by reversed importance.
   TabStatsList GetTabStats();
 
   // Returns a sorted list of renderers, from most important to least important.
@@ -90,10 +91,14 @@ class TabManager : public TabStripModelObserver {
   // Returns true if |contents| is currently discarded.
   bool IsTabDiscarded(content::WebContents* contents) const;
 
+  // Goes through a list of checks to see if a tab is allowed to be discarded by
+  // the automatic tab discarding mechanism. Note that this is not used when
+  // discarding a particular tab from about:discards.
+  bool CanDiscardTab(int64_t target_web_contents_id) const;
+
   // Discards a tab to free the memory occupied by its renderer. The tab still
-  // exists in the tab-strip; clicking on it will reload it. Returns true if it
-  // successfully found a tab and discarded it.
-  bool DiscardTab();
+  // exists in the tab-strip; clicking on it will reload it.
+  void DiscardTab();
 
   // Discards a tab with the given unique ID. The tab still exists in the
   // tab-strip; clicking on it will reload it. Returns true if it successfully
@@ -120,6 +125,7 @@ class TabManager : public TabStripModelObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, InvalidOrEmptyURL);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInternalPage);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OomPressureListener);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectPDFPages);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectRecentlyUsedTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ReloadDiscardedTabContextMenu);
@@ -185,11 +191,6 @@ class TabManager : public TabStripModelObserver {
   // that need to be run periodically (see comment in implementation).
   void UpdateTimerCallback();
 
-  // Goes through a list of checks to see if a tab is allowed to be discarded by
-  // the automatic tab discarding mechanism. Note that this is not used when
-  // discarding a particular tab from about:discards.
-  bool CanDiscardTab(int64_t target_web_contents_id) const;
-
   // Does the actual discard by destroying the WebContents in |model| at |index|
   // and replacing it by an empty one. Returns the new WebContents or NULL if
   // the operation fails (return value used only in testing).
@@ -231,6 +232,13 @@ class TabManager : public TabStripModelObserver {
   // Dispatches a memory pressure message to a single child process, and
   // schedules another call to itself as long as memory pressure continues.
   void DoChildProcessDispatch();
+
+  // Implementation of DiscardTab.
+  bool DiscardTabImpl();
+
+  // Returns the list of the stats for all renderers. Must be called on the UI
+  // thread.
+  TabStatsList GetUnsortedTabStats();
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;

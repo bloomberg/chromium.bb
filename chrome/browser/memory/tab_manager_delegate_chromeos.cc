@@ -4,15 +4,25 @@
 
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
 
+#include <algorithm>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "base/bind.h"
 #include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/arc/arc_process.h"
+#include "chrome/browser/chromeos/arc/arc_process_service.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/common/process.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -32,6 +42,59 @@ namespace {
 // a little while before doing the adjustment.
 const int kFocusedTabScoreAdjustIntervalMs = 500;
 
+// TODO(cylee): Check whether the app is in foreground or not.
+int AppStateToPriority(
+    const arc::ProcessState& process_state) {
+  // Logic copied from Android:
+  // frameworks/base/core/java/android/app/ActivityManager.java
+  // Note that ProcessState enumerates from most important (lower value) to
+  // least important (higher value), while ProcessPriority enumerates the
+  // opposite.
+  if (process_state >= arc::ProcessState::HOME) {
+    return ProcessPriority::ANDROID_BACKGROUND;
+  } else if (process_state >= arc::ProcessState::SERVICE) {
+    return ProcessPriority::ANDROID_SERVICE;
+  } else if (process_state > arc::ProcessState::HEAVY_WEIGHT) {
+    return ProcessPriority::ANDROID_CANT_SAVE_STATE;
+  } else if (process_state >= arc::ProcessState::IMPORTANT_BACKGROUND) {
+    return ProcessPriority::ANDROID_PERCEPTIBLE;
+  } else if (process_state >= arc::ProcessState::IMPORTANT_FOREGROUND) {
+    return ProcessPriority::ANDROID_VISIBLE;
+  } else if (process_state >= arc::ProcessState::TOP_SLEEPING) {
+    return ProcessPriority::ANDROID_TOP_SLEEPING;
+  } else if (process_state >= arc::ProcessState::FOREGROUND_SERVICE) {
+    return ProcessPriority::ANDROID_FOREGROUND_SERVICE;
+  } else if (process_state >= arc::ProcessState::TOP) {
+    return ProcessPriority::ANDROID_TOP;
+  } else if (process_state >= arc::ProcessState::PERSISTENT) {
+    return ProcessPriority::ANDROID_PERSISTENT;
+  }
+  return ProcessPriority::ANDROID_NON_EXISTS;
+}
+
+// TODO(cylee): Check whether the tab is in foreground or not.
+int TabStatsToPriority(const TabStats& tab) {
+  int priority = 0;
+  if (tab.is_app) {
+    priority = ProcessPriority::CHROME_APP;
+  } else if (tab.is_internal_page) {
+    priority = ProcessPriority::CHROME_INTERNAL;
+  } else {
+    priority = ProcessPriority::CHROME_NORMAL;
+  }
+
+  if (tab.is_selected)
+    priority |= ProcessPriority::CHROME_SELECTED;
+  if (tab.is_pinned)
+    priority |= ProcessPriority::CHROME_PINNED;
+  if (tab.is_media)
+    priority |= ProcessPriority::CHROME_MEDIA;
+  if (tab.has_form_entry)
+    priority |= ProcessPriority::CHROME_CANT_SAVE_STATE;
+
+  return priority;
+}
+
 }  // namespace
 
 TabManagerDelegate::TabManagerDelegate()
@@ -45,6 +108,24 @@ TabManagerDelegate::TabManagerDelegate()
 }
 
 TabManagerDelegate::~TabManagerDelegate() {}
+
+// If able to get the list of ARC procsses, prioritize tabs and apps as a whole.
+// Otherwise try to kill tabs only.
+void TabManagerDelegate::LowMemoryKill(
+    const base::WeakPtr<TabManager>& tab_manager,
+    const TabStatsList& tab_list) {
+  arc::ArcProcessService* arc_process_service = arc::ArcProcessService::Get();
+  if (arc_process_service && arc_process_service->RequestProcessList(
+      base::Bind(&TabManagerDelegate::LowMemoryKillImpl,
+                 tab_manager, tab_list))) {
+    // LowMemoryKillImpl will be called asynchronously so nothing left to do.
+    return;
+  }
+  // If the list of ARC processes is not available, call LowMemoryKillImpl
+  // synchronously with an empty list of apps.
+  std::vector<arc::ArcProcess> dummy_apps;
+  LowMemoryKillImpl(tab_manager, tab_list, dummy_apps);
+}
 
 int TabManagerDelegate::GetOomScore(int child_process_host_id) {
   base::AutoLock oom_score_autolock(oom_score_lock_);
@@ -168,6 +249,65 @@ TabManagerDelegate::GetChildProcessInfos(const TabStatsList& stats_list) {
                                            iterator->renderer_handle));
   }
   return process_infos;
+}
+
+// static
+std::vector<TabManagerDelegate::KillCandidate>
+TabManagerDelegate::GetSortedKillCandidates(
+    const TabStatsList& tab_list,
+    const std::vector<arc::ArcProcess>& arc_processes) {
+
+  std::vector<KillCandidate> candidates;
+  candidates.reserve(tab_list.size() + arc_processes.size());
+
+  for (const auto& tab : tab_list) {
+    candidates.push_back(KillCandidate(&tab, TabStatsToPriority(tab)));
+  }
+
+  for (const auto& app : arc_processes) {
+    candidates.push_back(
+        KillCandidate(&app, AppStateToPriority(app.process_state)));
+  }
+
+  // Sort candidates according to priority.
+  // TODO(cylee): Missing LRU property. Fix it when apps has the information.
+  std::sort(candidates.begin(), candidates.end());
+
+  return candidates;
+}
+
+// static
+void TabManagerDelegate::LowMemoryKillImpl(
+    const base::WeakPtr<TabManager>& tab_manager,
+    const TabStatsList& tab_list,
+    const std::vector<arc::ArcProcess>& arc_processes) {
+  arc::ProcessInstance* arc_process_instance =
+      arc::ArcBridgeService::Get() ?
+      arc::ArcBridgeService::Get()->process_instance() :
+      nullptr;
+
+  std::vector<TabManagerDelegate::KillCandidate> candidates =
+      GetSortedKillCandidates(tab_list, arc_processes);
+  for (const auto& entry : candidates) {
+    // Never kill persistent process.
+    if (entry.priority >= ProcessPriority::ANDROID_PERSISTENT) {
+      break;
+    }
+    if (entry.is_arc_app) {
+      if (arc_process_instance) {
+        arc_process_instance->KillProcess(entry.app->nspid, "LowMemoryKill");
+        break;
+      }
+    } else {
+      int64_t tab_id = entry.tab->tab_contents_id;
+      // Check |tab_manager| is alive before taking tabs into consideration.
+      if (tab_manager &&
+          tab_manager->CanDiscardTab(tab_id) &&
+          tab_manager->DiscardTabById(tab_id)) {
+        break;
+      }
+    }
+  }
 }
 
 void TabManagerDelegate::AdjustOomPrioritiesOnFileThread(
