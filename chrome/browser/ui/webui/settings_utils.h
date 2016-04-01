@@ -5,7 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_UTILS_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_UTILS_H_
 
+#include <string>
+
 #include "base/macros.h"
+
+class GURL;
 
 namespace content {
 class WebContents;
@@ -18,6 +22,11 @@ void ShowNetworkProxySettings(content::WebContents* web_contents);
 
 // Invoke UI for SSL certificates.
 void ShowManageSSLCertificates(content::WebContents* web_contents);
+
+// Returns whether |url_string| is a valid startup page. |fixed_url| is set to
+// the fixed up, valid URL if not null.
+bool FixupAndValidateStartupPage(const std::string& url_string,
+                                 GURL* fixed_url);
 
 }  // namespace settings_utils
 

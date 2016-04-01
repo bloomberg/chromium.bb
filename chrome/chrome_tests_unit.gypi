@@ -1565,6 +1565,7 @@
       'browser/ui/webui/options/sync_setup_handler_unittest.cc',
       'browser/ui/webui/settings/people_handler_unittest.cc',
       'browser/ui/webui/settings/reset_settings_handler_unittest.cc',
+      'browser/ui/webui/settings_utils_unittest.cc',
       'browser/ui/webui/signin/login_ui_service_unittest.cc',
       'browser/ui/webui/sync_internals_message_handler_unittest.cc',
       'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',

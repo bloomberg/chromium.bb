@@ -2045,6 +2045,7 @@
       'browser/ui/webui/settings/settings_startup_pages_handler.h',
       'browser/ui/webui/settings/site_settings_handler.cc',
       'browser/ui/webui/settings/site_settings_handler.h',
+      'browser/ui/webui/settings_utils.cc',
       'browser/ui/webui/settings_utils.h',
       'browser/ui/webui/settings_utils_linux.cc',
       'browser/ui/webui/settings_utils_mac.mm',
