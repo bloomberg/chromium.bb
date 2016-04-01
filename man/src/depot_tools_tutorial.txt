@@ -88,7 +88,7 @@ ifdef::backend-xhtml11[]
 WINDOWS
 ^^^^^^^
 Download the 'depot_tools'
-link:https://src.chromium.org/svn/trunk/tools/depot_tools.zip[bundle] and
+link:https://storage.googleapis.com/chrome-infra/depot_tools.zip[bundle] and
 extract it somewhere.
 
 [WARNING]
