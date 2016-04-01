@@ -332,6 +332,8 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
     if (coll_blk_count == 0)
       mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+  } else {
+    mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
   }
 
   // Scan the second outer area.
