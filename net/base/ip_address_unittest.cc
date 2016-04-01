@@ -299,6 +299,31 @@ TEST(IPAddressTest, ParseCIDRBlock_Valid) {
   EXPECT_EQ(112u, prefix_length_in_bits);
 }
 
+TEST(IPAddressTest, ParseURLHostnameToAddress_FailParse) {
+  IPAddress address;
+  EXPECT_FALSE(ParseURLHostnameToAddress("bad value", &address));
+  EXPECT_FALSE(ParseURLHostnameToAddress("bad:value", &address));
+  EXPECT_FALSE(ParseURLHostnameToAddress(std::string(), &address));
+  EXPECT_FALSE(ParseURLHostnameToAddress("192.168.0.1:30", &address));
+  EXPECT_FALSE(ParseURLHostnameToAddress("  192.168.0.1  ", &address));
+  EXPECT_FALSE(ParseURLHostnameToAddress("::1", &address));
+  EXPECT_FALSE(ParseURLHostnameToAddress("[192.169.0.1]", &address));
+}
+
+TEST(IPAddressTest, ParseURLHostnameToAddress_IPv4) {
+  IPAddress address;
+  EXPECT_TRUE(ParseURLHostnameToAddress("192.168.0.1", &address));
+  EXPECT_EQ("192,168,0,1", DumpIPAddress(address));
+  EXPECT_EQ("192.168.0.1", address.ToString());
+}
+
+TEST(IPAddressTest, ParseURLHostnameToAddress_IPv6) {
+  IPAddress address;
+  EXPECT_TRUE(ParseURLHostnameToAddress("[1:abcd::3:4:ff]", &address));
+  EXPECT_EQ("0,1,171,205,0,0,0,0,0,0,0,3,0,4,0,255", DumpIPAddress(address));
+  EXPECT_EQ("1:abcd::3:4:ff", address.ToString());
+}
+
 TEST(IPAddressTest, IPAddressStartsWith) {
   IPAddress ipv4_address(192, 168, 10, 5);
 
