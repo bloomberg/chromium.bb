@@ -7,6 +7,7 @@
 
 #include <d3d11.h>
 #include <d3d9.h>
+#include <initguid.h>
 #include <stdint.h>
 // Work around bug in this header by disabling the relevant warning for it.
 // https://connect.microsoft.com/VisualStudio/feedback/details/911260/dxva2api-h-in-win8-sdk-triggers-c4201-with-w4
@@ -126,6 +127,17 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
  private:
   typedef void* EGLConfig;
   typedef void* EGLSurface;
+
+  // Returns the minimum resolution for the |profile| passed in.
+  static std::pair<int, int> GetMinResolution(
+    const media::VideoCodecProfile profile);
+
+  // Returns the maximum resolution for the |profile| passed in.
+  static std::pair<int, int> GetMaxResolution(
+    const media::VideoCodecProfile profile);
+
+  // Returns the maximum resolution for H264 video.
+  static std::pair<int, int> GetMaxH264Resolution();
 
   // Creates and initializes an instance of the D3D device and the
   // corresponding device manager. The device manager instance is eventually

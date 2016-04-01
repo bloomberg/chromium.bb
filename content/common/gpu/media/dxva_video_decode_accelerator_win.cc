@@ -111,6 +111,11 @@ DEFINE_GUID(CLSID_VideoProcessorMFT,
 DEFINE_GUID(MF_XVP_PLAYBACK_MODE, 0x3c5d293f, 0xad67, 0x4e29, 0xaf, 0x12,
             0xcf, 0x3e, 0x23, 0x8a, 0xcc, 0xe9);
 
+// Defines the GUID for the Intel H264 DXVA device.
+static const GUID DXVA2_Intel_ModeH264_E = {
+  0x604F8E68, 0x4951, 0x4c54,{ 0x88, 0xFE, 0xAB, 0xD2, 0x5C, 0x15, 0xB3, 0xD6}
+};
+
 // Provides scoped access to the underlying buffer in an IMFMediaBuffer
 // instance.
 class MediaBufferScopedPointer {
@@ -320,50 +325,75 @@ template<class T>
 base::win::ScopedComPtr<T> QueryDeviceObjectFromANGLE(int object_type) {
   base::win::ScopedComPtr<T> device_object;
 
-  EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
+  EGLDisplay egl_display = nullptr;
   intptr_t egl_device = 0;
   intptr_t device = 0;
+
+  {
+    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. GetHardwareDisplay");
+    egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
+  }
 
   RETURN_ON_FAILURE(
       gfx::GLSurfaceEGL::HasEGLExtension("EGL_EXT_device_query"),
       "EGL_EXT_device_query missing",
       device_object);
 
-  PFNEGLQUERYDISPLAYATTRIBEXTPROC QueryDisplayAttribEXT =
-      reinterpret_cast<PFNEGLQUERYDISPLAYATTRIBEXTPROC>(eglGetProcAddress(
-        "eglQueryDisplayAttribEXT"));
+  PFNEGLQUERYDISPLAYATTRIBEXTPROC QueryDisplayAttribEXT = nullptr;
 
-  RETURN_ON_FAILURE(
-      QueryDisplayAttribEXT,
-      "Failed to get the eglQueryDisplayAttribEXT function from ANGLE",
-      device_object);
+  {
+    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. eglGetProcAddress");
 
-  PFNEGLQUERYDEVICEATTRIBEXTPROC QueryDeviceAttribEXT =
-      reinterpret_cast<PFNEGLQUERYDEVICEATTRIBEXTPROC>(eglGetProcAddress(
-          "eglQueryDeviceAttribEXT"));
+    QueryDisplayAttribEXT =
+        reinterpret_cast<PFNEGLQUERYDISPLAYATTRIBEXTPROC>(eglGetProcAddress(
+            "eglQueryDisplayAttribEXT"));
 
-  RETURN_ON_FAILURE(
-      QueryDeviceAttribEXT,
-      "Failed to get the eglQueryDeviceAttribEXT function from ANGLE",
-      device_object);
+    RETURN_ON_FAILURE(
+        QueryDisplayAttribEXT,
+        "Failed to get the eglQueryDisplayAttribEXT function from ANGLE",
+        device_object);
+  }
 
-  RETURN_ON_FAILURE(
-      QueryDisplayAttribEXT(egl_display, EGL_DEVICE_EXT, &egl_device),
-      "The eglQueryDisplayAttribEXT function failed to get the EGL device",
-      device_object);
+  PFNEGLQUERYDEVICEATTRIBEXTPROC QueryDeviceAttribEXT = nullptr;
+
+  {
+    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. eglGetProcAddress");
+
+    QueryDeviceAttribEXT =
+        reinterpret_cast<PFNEGLQUERYDEVICEATTRIBEXTPROC>(eglGetProcAddress(
+            "eglQueryDeviceAttribEXT"));
+
+    RETURN_ON_FAILURE(
+        QueryDeviceAttribEXT,
+        "Failed to get the eglQueryDeviceAttribEXT function from ANGLE",
+        device_object);
+  }
+
+  {
+    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. QueryDisplayAttribEXT");
+
+    RETURN_ON_FAILURE(
+        QueryDisplayAttribEXT(egl_display, EGL_DEVICE_EXT, &egl_device),
+        "The eglQueryDisplayAttribEXT function failed to get the EGL device",
+        device_object);
+  }
 
   RETURN_ON_FAILURE(
       egl_device,
       "Failed to get the EGL device",
       device_object);
 
-  RETURN_ON_FAILURE(
-      QueryDeviceAttribEXT(
-      reinterpret_cast<EGLDeviceEXT>(egl_device), object_type, &device),
-      "The eglQueryDeviceAttribEXT function failed to get the device",
-      device_object);
+  {
+    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. QueryDisplayAttribEXT");
 
-  RETURN_ON_FAILURE(device, "Failed to get the ANGLE device", device_object);
+    RETURN_ON_FAILURE(
+        QueryDeviceAttribEXT(
+            reinterpret_cast<EGLDeviceEXT>(egl_device), object_type, &device),
+            "The eglQueryDeviceAttribEXT function failed to get the device",
+            device_object);
+
+    RETURN_ON_FAILURE(device, "Failed to get the ANGLE device", device_object);
+  }
 
   device_object = reinterpret_cast<T*>(device);
   return device_object;
@@ -1345,17 +1375,19 @@ GLenum DXVAVideoDecodeAccelerator::GetSurfaceInternalFormat() const {
 // static
 media::VideoDecodeAccelerator::SupportedProfiles
 DXVAVideoDecodeAccelerator::GetSupportedProfiles() {
+  TRACE_EVENT0("gpu,startup",
+    "DXVAVideoDecodeAccelerator::GetSupportedProfiles");
+
   // TODO(henryhsu): Need to ensure the profiles are actually supported.
   SupportedProfiles profiles;
   for (const auto& supported_profile : kSupportedProfiles) {
+    std::pair<int, int> min_resolution = GetMinResolution(supported_profile);
+    std::pair<int, int> max_resolution = GetMaxResolution(supported_profile);
+
     SupportedProfile profile;
     profile.profile = supported_profile;
-    // Windows Media Foundation H.264 decoding does not support decoding videos
-    // with any dimension smaller than 48 pixels:
-    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd797815
-    profile.min_resolution.SetSize(48, 48);
-    // Use 1088 to account for 16x16 macroblocks.
-    profile.max_resolution.SetSize(1920, 1088);
+    profile.min_resolution.SetSize(min_resolution.first, min_resolution.second);
+    profile.max_resolution.SetSize(max_resolution.first, max_resolution.second);
     profiles.push_back(profile);
   }
   return profiles;
@@ -1375,6 +1407,150 @@ void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
     LoadLibrary(L"mshtmlmedia.dll");
 #endif
   }
+}
+
+// static
+std::pair<int, int> DXVAVideoDecodeAccelerator::GetMinResolution(
+    media::VideoCodecProfile profile) {
+  TRACE_EVENT0("gpu,startup",
+    "DXVAVideoDecodeAccelerator::GetMinResolution");
+  std::pair<int, int> min_resolution;
+  if (profile >= media::H264PROFILE_BASELINE &&
+      profile <= media::H264PROFILE_HIGH) {
+    // Windows Media Foundation H.264 decoding does not support decoding videos
+    // with any dimension smaller than 48 pixels:
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd797815
+    min_resolution = std::make_pair(48, 48);
+  } else {
+    // TODO(ananta)
+    // Detect this properly for VP8/VP9 profiles.
+    min_resolution = std::make_pair(16, 16);
+  }
+  return min_resolution;
+}
+
+// static
+std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxResolution(
+    const media::VideoCodecProfile profile) {
+  TRACE_EVENT0("gpu,startup",
+               "DXVAVideoDecodeAccelerator::GetMaxResolution");
+  std::pair<int, int> max_resolution;
+  if (profile >= media::H264PROFILE_BASELINE &&
+      profile <= media::H264PROFILE_HIGH) {
+    max_resolution = GetMaxH264Resolution();
+  } else {
+    // TODO(ananta)
+    // Detect this properly for VP8/VP9 profiles.
+    max_resolution = std::make_pair(4096, 2160);
+  }
+  return max_resolution;
+}
+
+std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxH264Resolution() {
+  TRACE_EVENT0("gpu,startup",
+               "DXVAVideoDecodeAccelerator::GetMaxH264Resolution");
+  // The H.264 resolution detection operation is expensive. This static flag
+  // allows us to run the detection once.
+  static bool resolution_detected = false;
+  // Use 1088 to account for 16x16 macroblocks.
+  static std::pair<int, int> max_resolution = std::make_pair(1920, 1088);
+  if (resolution_detected)
+    return max_resolution;
+
+  resolution_detected = true;
+
+  // On Windows 7 the maximum resolution supported by media foundation is
+  // 1920 x 1088.
+  if (base::win::GetVersion() == base::win::VERSION_WIN7)
+    return max_resolution;
+
+  // To detect if a driver supports the desired resolutions, we try and create
+  // a DXVA decoder instance for that resolution and profile. If that succeeds
+  // we assume that the driver supports H/W H.264 decoding for that resolution.
+  HRESULT hr = E_FAIL;
+  base::win::ScopedComPtr<ID3D11Device> device;
+
+  {
+    TRACE_EVENT0("gpu,startup",
+      "GetMaxH264Resolution. QueryDeviceObjectFromANGLE");
+
+    device = QueryDeviceObjectFromANGLE<ID3D11Device>(EGL_D3D11_DEVICE_ANGLE);
+    if (!device.get())
+      return max_resolution;
+  }
+
+  base::win::ScopedComPtr<ID3D11VideoDevice> video_device;
+  hr = device.QueryInterface(IID_ID3D11VideoDevice,
+                             video_device.ReceiveVoid());
+  if (FAILED(hr))
+    return max_resolution;
+
+  GUID decoder_guid = {};
+
+  {
+    TRACE_EVENT0("gpu,startup",
+                 "GetMaxH264Resolution. H.264 guid search begin");
+    // Enumerate supported video profiles and look for the H264 profile.
+    bool found = false;
+    UINT profile_count = video_device->GetVideoDecoderProfileCount();
+    for (UINT profile_idx = 0; profile_idx < profile_count; profile_idx++) {
+      GUID profile_id = {};
+      hr = video_device->GetVideoDecoderProfile(profile_idx, &profile_id);
+      if (SUCCEEDED(hr) &&
+          (profile_id == DXVA2_ModeH264_E ||
+          profile_id == DXVA2_Intel_ModeH264_E)) {
+        decoder_guid = profile_id;
+        found = true;
+        break;
+      }
+    }
+    if (!found)
+      return max_resolution;
+  }
+
+  // We look for the following resolutions in the driver.
+  // TODO(ananta)
+  // Look into whether this list needs to be expanded.
+  static std::pair<int, int> resolution_array[] = {
+    // Use 1088 to account for 16x16 macroblocks.
+    std::make_pair(1920, 1088),
+    std::make_pair(2560, 1440),
+    std::make_pair(3840, 2160),
+    std::make_pair(4096, 2160),
+    std::make_pair(4096, 2304),
+  };
+
+  {
+    TRACE_EVENT0("gpu,startup",
+                 "GetMaxH264Resolution. Resolution search begin");
+
+    for (size_t res_idx = 0; res_idx < arraysize(resolution_array);
+         res_idx++) {
+      D3D11_VIDEO_DECODER_DESC desc = {};
+      desc.Guid = decoder_guid;
+      desc.SampleWidth = resolution_array[res_idx].first;
+      desc.SampleHeight = resolution_array[res_idx].second;
+      desc.OutputFormat = DXGI_FORMAT_NV12;
+      UINT config_count = 0;
+      hr = video_device->GetVideoDecoderConfigCount(&desc, &config_count);
+      if (FAILED(hr) || config_count == 0)
+        return max_resolution;
+
+      D3D11_VIDEO_DECODER_CONFIG config = {};
+      hr = video_device->GetVideoDecoderConfig(&desc, 0, &config);
+      if (FAILED(hr))
+        return max_resolution;
+
+      base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder;
+      hr = video_device->CreateVideoDecoder(&desc, &config,
+          video_decoder.Receive());
+      if (!video_decoder.get())
+        return max_resolution;
+
+      max_resolution = resolution_array[res_idx];
+    }
+  }
+  return max_resolution;
 }
 
 bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
@@ -1744,7 +1920,6 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
       PendingSampleInfo* pending_sample = NULL;
       {
         base::AutoLock lock(decoder_lock_);
-
         PendingSampleInfo& sample_info = pending_output_samples_.front();
         if (sample_info.picture_buffer_id != -1)
           continue;
