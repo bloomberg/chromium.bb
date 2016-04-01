@@ -38,10 +38,11 @@ group("remoting_all") {
 
   if (is_win) {
     deps += [
-      #"//remoting:remoting_breakpad_tester",
-      #"//remoting:remoting_console",
-      #"//remoting:remoting_desktop",
-      #"//remoting:remoting_host_installation",
+      "//remoting:remoting_breakpad_tester",
+      "//remoting/host:remoting_console",
+      "//remoting/host:remoting_desktop",
+
+      # "//remoting:remoting_host_installation",
     ]
   }
 
@@ -87,6 +88,8 @@ if (is_win) {
       "//remoting/host",
     ]
 
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
     sources = [
       "tools/breakpad_tester_win.cc",
     ]
@@ -112,7 +115,12 @@ source_set("test_support") {
   ]
 
   if (enable_configuration_policy) {
-    deps += [ "//components/policy:test_support" ]
+    deps += [
+      "//components/policy:test_support",
+
+      # TODO(zijiehe): This should belong to //components/policy:test_support
+      "//components/prefs",
+    ]
   }
 
   if (enable_remoting_host) {
@@ -123,6 +131,9 @@ source_set("test_support") {
 # TODO(GYP) remoting_unittests on Mac. Needs to be tested.
 if (!is_mac) {
   test("remoting_unittests") {
+    defines = []
+    libs = []
+
     configs += [
       ":version",
 
@@ -138,6 +149,7 @@ if (!is_mac) {
 
     deps = [
       ":test_support",
+      "//base",
       "//google_apis",
       "//remoting/base:unit_tests",
       "//remoting/client:unit_tests",
@@ -163,6 +175,19 @@ if (!is_mac) {
 
     if (is_android) {
       deps += [ "//net/android:net_java" ]
+    }
+
+    if (is_win) {
+      defines += [ "_ALT_NO_EXCEPTIONS" ]
+
+      libs += [
+        "rpcrt4.lib",
+        "wtsapi32.lib",
+      ]
+    }
+
+    if (enable_configuration_policy) {
+      deps += [ "//components/policy:policy_component_test_support" ]
     }
   }
 
