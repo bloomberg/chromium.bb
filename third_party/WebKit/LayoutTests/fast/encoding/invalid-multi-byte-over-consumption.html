@@ -29,6 +29,6 @@ function runTest() {
 <body onload="runTest();">
 <p>Test if an invalid multi-byte sequence is onverconsumed leading to an
 XSS vector</p>
-<input id="input1" src="" type="xssï¿½">ABCD" onchange="test='Failed'" using malformed byte sequence 0x83 0x22<br>
+<input id="input1" src="" type="xssƒ">ABCD" onchange="test='Failed'" using malformed byte sequence 0x83 0x22<br>
 <div id="result"></div>
 </body>
