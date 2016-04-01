@@ -313,6 +313,7 @@ extern const char kTabManagementExperimentTypeBasil[];
 extern const char kTabManagementExperimentTypeChive[];
 extern const char kTabManagementExperimentTypeDill[];
 extern const char kTabManagementExperimentTypeElderberry[];
+extern const char kEnableForcedMigrationToTabbedMode[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)

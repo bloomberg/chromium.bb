@@ -862,7 +862,7 @@ public class ChromeApplication extends ContentApplication {
      */
     private void cacheNativeFlags() {
         if (sIsFinishedCachingNativeFlags) return;
-        FeatureUtilities.cacheHerbFlavor();
+        FeatureUtilities.cacheNativeFlags();
         sIsFinishedCachingNativeFlags = true;
     }
 }

@@ -212,6 +212,7 @@ public class TabDelegate extends TabCreator {
      * @return Whether the TabDelegate is allowed to directly launch a DocumentActivity.
      */
     protected boolean isAllowedToLaunchDocumentActivity(Context context) {
-        return !CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_FORCED_MIGRATION);
+        return !CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.ENABLE_FORCED_MIGRATION_TO_TABBED_MODE);
     }
 }

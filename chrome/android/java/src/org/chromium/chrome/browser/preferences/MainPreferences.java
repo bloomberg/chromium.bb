@@ -109,7 +109,8 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
         // TODO(dfalcantara): Delete this preference entirely.  https://crbug.com/582539
         Preference documentMode = findPreference(PREF_DOCUMENT_MODE);
         boolean showDocumentToggle = FeatureUtilities.isDocumentModeEligible(getActivity());
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_FORCED_MIGRATION)) {
+        if (CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.ENABLE_FORCED_MIGRATION_TO_TABBED_MODE)) {
             showDocumentToggle &=
                     FeatureUtilities.isDocumentMode(ApplicationStatus.getApplicationContext());
         }
