@@ -73,7 +73,9 @@ where `urls.json` is a JSON dictionary with the keys:
 
 *   `urls`: array of URLs
 *   `repeat_count`: Number of times each URL will be loaded. Each load of a URL
-    generates a separate trace file.
+    generates a separate trace file. Optional.
+*   `emulate_device`: Name of the device to emulate. Optional.
+*   `emulate_network`: Type of network emulation. Optional.
 
 ## Stop the app in the cloud
 

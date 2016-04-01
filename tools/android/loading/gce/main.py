@@ -84,13 +84,16 @@ class ServerApp(object):
     blob.upload_from_string(data_string)
     return blob.public_url
 
-  def _GenerateTrace(self, url, filename, log_filename):
+  def _GenerateTrace(self, url, emulate_device, emulate_network, filename,
+                     log_filename):
     """ Generates a trace using analyze.py
 
     Args:
-      url: url as a string.
-      filename: name of the file where the trace is saved.
-      log_filename: name of the file where standard output and errors are logged
+      url: URL as a string.
+      emulate_device: Name of the device to emulate. Empty for no emulation.
+      emulate_network: Type of network emulation. Empty for no emulation.
+      filename: Name of the file where the trace is saved.
+      log_filename: Name of the file where standard output and errors are logged
 
     Returns:
       True if the trace was generated successfully.
@@ -103,17 +106,23 @@ class ServerApp(object):
     command_line = ['python', analyze_path, 'log_requests', '--local_noisy',
         '--clear_cache', '--local', '--headless', '--local_binary',
         self._chrome_path, '--url', url, '--output', filename]
+    if len(emulate_device):
+      command_line += ['--emulate_device', emulate_device]
+    if len(emulate_network):
+      command_line += ['--emulate_network', emulate_network]
     with open(log_filename, 'w') as log_file:
       ret = subprocess.call(command_line , stderr = subprocess.STDOUT,
                             stdout = log_file)
     return ret == 0
 
-  def _ProcessTasks(self, repeat_count):
+  def _ProcessTasks(self, repeat_count, emulate_device, emulate_network):
     """Iterates over _tasks and runs analyze.py on each of them. Uploads the
     resulting traces to Google Cloud Storage.
 
     Args:
       repeat_count: The number of traces generated for each URL.
+      emulate_device: Name of the device to emulate. Empty for no emulation.
+      emulate_network: Type of network emulation. Empty for no emulation.
     """
     failures_dir = self._base_path_in_bucket + 'failures/'
     traces_dir = self._base_path_in_bucket + 'traces/'
@@ -128,7 +137,8 @@ class ServerApp(object):
       for repeat in range(repeat_count):
         print 'Generating trace for URL: %s' % url
         remote_filename = local_filename + '/' + str(repeat)
-        if self._GenerateTrace(url, local_filename, log_filename):
+        if self._GenerateTrace(
+            url, emulate_device, emulate_network, local_filename, log_filename):
           print 'Uploading: %s' % remote_filename
           self._UploadFile(local_filename, traces_dir + remote_filename)
         else:
@@ -159,18 +169,22 @@ class ServerApp(object):
       self._tasks = load_parameters['urls']
     except KeyError:
       return 'Error: invalid urls'
+    # Optional parameters.
     try:
-      repeat_count = int(load_parameters['repeat_count'])
-    except (KeyError, ValueError):
+      repeat_count = int(load_parameters.get('repeat_count', '1'))
+    except ValueError:
       return 'Error: invalid repeat_count'
+    emulate_device = load_parameters.get('emulate_device', '')
+    emulate_network = load_parameters.get('emulate_network', '')
 
     if len(self._tasks) == 0:
       return 'Error: Empty task list'
     elif self._thread is not None and self._thread.is_alive():
       return 'Error: Already running'
     else:
-      self._thread = threading.Thread(target = self._ProcessTasks,
-                                      args = (repeat_count,))
+      self._thread = threading.Thread(
+          target = self._ProcessTasks,
+          args = (repeat_count, emulate_device, emulate_network))
       self._thread.start()
       return 'Starting generation of ' + str(len(self._tasks)) + 'tasks'
 
