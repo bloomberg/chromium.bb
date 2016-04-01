@@ -133,17 +133,6 @@ public:
         return containsWrapper();
     }
 
-    void markAsDependentGroup(ScriptWrappable* groupRoot, v8::Isolate* isolate)
-    {
-        ASSERT(containsWrapper());
-        ASSERT(groupRoot && groupRoot->containsWrapper());
-
-        // FIXME: There has to be a better way.
-        v8::UniqueId groupId(*reinterpret_cast<intptr_t*>(&groupRoot->m_wrapper));
-        m_wrapper.MarkPartiallyDependent();
-        isolate->SetObjectGroupId(v8::Persistent<v8::Value>::Cast(m_wrapper), groupId);
-    }
-
     void setReference(const v8::Persistent<v8::Object>& parent, v8::Isolate* isolate)
     {
         isolate->SetReference(parent, m_wrapper);
