@@ -5,6 +5,8 @@
 #ifndef ASH_WM_DRAG_WINDOW_CONTROLLER_H_
 #define ASH_WM_DRAG_WINDOW_CONTROLLER_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -17,12 +19,7 @@ class Window;
 }
 
 namespace ui {
-class Layer;
 class LayerTreeOwner;
-}
-
-namespace views {
-class Widget;
 }
 
 namespace ash {
@@ -31,61 +28,35 @@ namespace ash {
 // while dragging a window across displays.
 class ASH_EXPORT DragWindowController {
  public:
+  // Computes the opacity for drag window based on how much of the area
+  // of the window is visible.
+  static float GetDragWindowOpacity(const gfx::Rect& window_bounds,
+                                    const gfx::Rect& visible_bounds);
+
   explicit DragWindowController(aura::Window* window);
   virtual ~DragWindowController();
 
-  // Sets the display where the window is placed after the window is dropped.
-  void SetDestinationDisplay(const gfx::Display& dst_display);
+  // This is used to update the bounds and opacity for the drag window
+  // immediately.
+  // This also creates/destorys the drag window when necessary.
+  void Update(const gfx::Rect& bounds_in_screen,
+              const gfx::Point& drag_location_in_screen);
 
-  // Shows the drag window at the specified location (coordinates of the
-  // parent). If |layer| is non-NULL, it is shown on top of the drag window.
-  // |layer| is owned by the caller.
-  // This does not immediately show the window.
-  void Show();
+  // Returns the currently active drag windows.
+  int GetDragWindowsCountForTest() const;
 
-  // Hides the drag window.
-  void Hide();
-
-  // This is used to set bounds for the drag window immediately. This should
-  // be called only when the drag window is already visible.
-  void SetBounds(const gfx::Rect& bounds);
-
-  // Sets the opacity of the drag window.
-  void SetOpacity(float opacity);
+  // Returns the drag window/layer owner for given index of the
+  // currently active drag windows list.
+  const aura::Window* GetDragWindowForTest(size_t index) const;
+  const ui::LayerTreeOwner* GetDragLayerOwnerForTest(size_t index) const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, DragWindowController);
-
-  // Creates and shows the |drag_widget_| at |bounds|.
-  // |layer| is shown on top of the drag window if it is non-NULL.
-  // |layer| is not owned by this object.
-  void CreateDragWidget(const gfx::Rect& bounds);
-
-  // Sets bounds of the drag window. The window is shown on |dst_display_|
-  // if its id() is valid. Otherwise, a display nearest to |bounds| is chosen.
-  void SetBoundsInternal(const gfx::Rect& bounds);
-
-  // Recreates a fresh layer for |window_| and all its child windows.
-  void RecreateWindowLayers();
+  class DragWindowDetails;
 
   // Window the drag window is placed beneath.
   aura::Window* window_;
 
-  // The display where the drag is placed. When dst_display_.id() is
-  // kInvalidDisplayID (i.e. the default), a display nearest to the current
-  // |bounds_| is automatically used.
-  gfx::Display dst_display_;
-
-  // Initially the bounds of |window_|. Each time Show() is invoked
-  // |start_bounds_| is then reset to the bounds of |drag_widget_| and
-  // |bounds_| is set to the value passed into Show(). The animation animates
-  // between these two values.
-  gfx::Rect bounds_;
-
-  views::Widget* drag_widget_;
-
-  // The copy of window_->layer() and its descendants.
-  scoped_ptr<ui::LayerTreeOwner> layer_owner_;
+  std::vector<scoped_ptr<DragWindowDetails>> drag_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowController);
 };

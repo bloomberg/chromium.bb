@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -36,16 +36,17 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, DragWindowController);
-
+  FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest,
+                           DragWindowControllerAcrossThreeDisplays);
   // Creates DragWindowResizer that adds the ability of dragging windows across
   // displays to |next_window_resizer|. This object takes the ownership of
   // |next_window_resizer|.
   explicit DragWindowResizer(WindowResizer* next_window_resizer,
                              wm::WindowState* window_state);
 
-  // Updates the bounds of the phantom window for window dragging. Set true on
-  // |in_original_root| if the pointer is still in |window()->GetRootWindow()|.
-  void UpdateDragWindow(const gfx::Rect& bounds, bool in_original_root);
+  // Updates the bounds of the drag window for window dragging.
+  void UpdateDragWindow(const gfx::Rect& bounds_in_parent,
+                        const gfx::Point& drag_location_in_screen);
 
   // Returns true if we should allow the mouse pointer to warp.
   bool ShouldAllowMouseWarp();
@@ -53,7 +54,7 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   scoped_ptr<WindowResizer> next_window_resizer_;
 
   // Shows a semi-transparent image of the window being dragged.
-  ScopedVector<DragWindowController> drag_window_controllers_;
+  scoped_ptr<DragWindowController> drag_window_controller_;
 
   gfx::Point last_mouse_location_;
 

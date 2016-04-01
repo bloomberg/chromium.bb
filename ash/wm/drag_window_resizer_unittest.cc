@@ -4,6 +4,8 @@
 
 #include "ash/wm/drag_window_resizer.h"
 
+#include "ash/display/display_layout_builder.h"
+#include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -346,45 +348,43 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   {
-    scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
-        window_.get(), gfx::Point(), HTCAPTION));
+    // Hold the center of the window so that the window doesn't stick to the
+    // edge when dragging around the edge of the display.
+    scoped_ptr<WindowResizer> resizer(
+        CreateDragWindowResizer(window_.get(), gfx::Point(25, 30), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
     ASSERT_TRUE(drag_resizer);
-    EXPECT_EQ(0u, drag_resizer->drag_window_controllers_.size());
+    EXPECT_FALSE(drag_resizer->drag_window_controller_.get());
 
     // The pointer is inside the primary root. The drag window controller
     // should be NULL.
     resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
-    EXPECT_EQ(0u, drag_resizer->drag_window_controllers_.size());
+    DragWindowController* controller =
+        drag_resizer->drag_window_controller_.get();
+    EXPECT_EQ(0, controller->GetDragWindowsCountForTest());
 
     // The window spans both root windows.
-    resizer->Drag(CalculateDragPoint(*resizer, 798, 10), 0);
-    EXPECT_EQ(1u, drag_resizer->drag_window_controllers_.size());
-    DragWindowController* controller =
-        drag_resizer->drag_window_controllers_[0];
-    ASSERT_TRUE(controller);
+    resizer->Drag(CalculateDragPoint(*resizer, 773, 10), 0);
+    EXPECT_EQ(1, controller->GetDragWindowsCountForTest());
+    const aura::Window* drag_window = controller->GetDragWindowForTest(0);
+    ASSERT_TRUE(drag_window);
 
-    ASSERT_TRUE(controller->drag_widget_);
-    ui::Layer* drag_layer =
-        controller->drag_widget_->GetNativeWindow()->layer();
+    const ui::Layer* drag_layer = drag_window->layer();
     ASSERT_TRUE(drag_layer);
     // Check if |resizer->layer_| is properly set to the drag widget.
     const std::vector<ui::Layer*>& layers = drag_layer->children();
     EXPECT_FALSE(layers.empty());
-    EXPECT_EQ(controller->layer_owner_->root(), layers.back());
+    EXPECT_EQ(controller->GetDragLayerOwnerForTest(0)->root(), layers.back());
 
     // |window_| should be opaque since the pointer is still on the primary
     // root window. The drag window should be semi-transparent.
     EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
-    ASSERT_TRUE(controller->drag_widget_);
     EXPECT_GT(1.0f, drag_layer->opacity());
 
     // Enter the pointer to the secondary display.
-    resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
-    EXPECT_EQ(1u, drag_resizer->drag_window_controllers_.size());
-    controller = drag_resizer->drag_window_controllers_[0];
-    ASSERT_TRUE(controller);
+    resizer->Drag(CalculateDragPoint(*resizer, 775, 10), 0);
+    EXPECT_EQ(1, controller->GetDragWindowsCountForTest());
     // |window_| should be transparent, and the drag window should be opaque.
     EXPECT_GT(1.0f, window_->layer()->opacity());
     EXPECT_FLOAT_EQ(1.0f, drag_layer->opacity());
@@ -404,14 +404,116 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
+    DragWindowController* controller =
+        drag_resizer->drag_window_controller_.get();
     ASSERT_TRUE(drag_resizer);
-    EXPECT_EQ(0u, drag_resizer->drag_window_controllers_.size());
+    EXPECT_FALSE(controller);
 
     resizer->Drag(CalculateDragPoint(*resizer, 0, 610), 0);
     resizer->RevertDrag();
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
     EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   }
+}
+
+TEST_F(DragWindowResizerTest, DragWindowControllerAcrossThreeDisplays) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("400x600,400x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+
+  // Layout so that all three displays touch each other.
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+  ASSERT_EQ(3u, list.size());
+  ASSERT_EQ(gfx::Screen::GetScreen()->GetPrimaryDisplay().id(), list[0]);
+  DisplayLayoutBuilder builder(list[0]);
+  builder.AddDisplayPlacement(list[1], list[0], DisplayPlacement::RIGHT, 0);
+  builder.AddDisplayPlacement(list[2], list[0], DisplayPlacement::BOTTOM, 0);
+  display_manager->SetLayoutForCurrentDisplays(builder.Build());
+  // Sanity check.
+  ASSERT_EQ(gfx::Rect(0, 000, 400, 600),
+            display_manager->GetDisplayForId(list[0]).bounds());
+  ASSERT_EQ(gfx::Rect(400, 0, 400, 600),
+            display_manager->GetDisplayForId(list[1]).bounds());
+  ASSERT_EQ(gfx::Rect(0, 600, 800, 600),
+            display_manager->GetDisplayForId(list[2]).bounds());
+
+  // Create a window on 2nd display.
+  window_->SetBoundsInScreen(gfx::Rect(400, 0, 100, 100),
+                             display_manager->GetDisplayForId(list[1]));
+  ASSERT_EQ(root_windows[1], window_->GetRootWindow());
+
+  // Hold the center of the window so that the window doesn't stick to the edge
+  // when dragging around the edge of the display.
+  scoped_ptr<WindowResizer> resizer(
+      CreateDragWindowResizer(window_.get(), gfx::Point(50, 50), HTCAPTION));
+  ASSERT_TRUE(resizer.get());
+  DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
+  ASSERT_TRUE(drag_resizer);
+  EXPECT_FALSE(drag_resizer->drag_window_controller_.get());
+  resizer->Drag(CalculateDragPoint(*resizer, -50, 0), 0);
+  DragWindowController* controller =
+      drag_resizer->drag_window_controller_.get();
+  ASSERT_TRUE(controller);
+  ASSERT_EQ(1, controller->GetDragWindowsCountForTest());
+  const aura::Window* drag_window0 = controller->GetDragWindowForTest(0);
+  ASSERT_TRUE(drag_window0);
+  const ui::Layer* drag_layer0 = drag_window0->layer();
+  EXPECT_EQ(root_windows[0], drag_window0->GetRootWindow());
+
+  // |window_| should be opaque since the pointer is still on the primary
+  // root window. The drag window should be semi-transparent.
+  EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+  EXPECT_GT(1.0f, drag_layer0->opacity());
+
+  // The window spans across 3 displays, dragging to 3rd display.
+  resizer->Drag(CalculateDragPoint(*resizer, -50, 549), 0);
+  ASSERT_EQ(2, controller->GetDragWindowsCountForTest());
+  drag_window0 = controller->GetDragWindowForTest(0);
+  const aura::Window* drag_window1 = controller->GetDragWindowForTest(1);
+  drag_layer0 = drag_window0->layer();
+  const ui::Layer* drag_layer1 = drag_window1->layer();
+  EXPECT_EQ(root_windows[0], drag_window0->GetRootWindow());
+  EXPECT_EQ(root_windows[2], drag_window1->GetRootWindow());
+
+  // |window_| should be opaque since the pointer is still on the 2nd
+  // root window. The drag window should be semi-transparent.
+  EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+  EXPECT_GT(1.0f, drag_layer0->opacity());
+  EXPECT_GT(1.0f, drag_layer1->opacity());
+
+  resizer->Drag(CalculateDragPoint(*resizer, -51, 549), 0);
+  ASSERT_EQ(2, controller->GetDragWindowsCountForTest());
+  drag_window0 = controller->GetDragWindowForTest(0);
+  drag_window1 = controller->GetDragWindowForTest(1);
+  drag_layer0 = drag_window0->layer();
+  drag_layer1 = drag_window1->layer();
+  EXPECT_EQ(root_windows[0], drag_window0->GetRootWindow());
+  EXPECT_EQ(root_windows[2], drag_window1->GetRootWindow());
+
+  // |window_| should be transparent since the pointer is still on the primary
+  // root window. The drag window should be semi-transparent.
+  EXPECT_GT(1.0f, window_->layer()->opacity());
+  EXPECT_FLOAT_EQ(1.0f, drag_layer0->opacity());
+  EXPECT_GT(1.0f, drag_layer1->opacity());
+
+  // Enter the pointer to the 3rd. Since it's bottom, the window snaps and
+  // no drag windwos are created.
+  resizer->Drag(CalculateDragPoint(*resizer, -51, 551), 0);
+  ASSERT_EQ(1, controller->GetDragWindowsCountForTest());
+  drag_window0 = controller->GetDragWindowForTest(0);
+  drag_layer0 = drag_window0->layer();
+  EXPECT_EQ(root_windows[2], drag_window0->GetRootWindow());
+
+  // |window_| should be transparent, and the drag window should be opaque.
+  EXPECT_FLOAT_EQ(0.0f, window_->layer()->opacity());
+  EXPECT_FLOAT_EQ(1.0f, drag_layer0->opacity());
+
+  resizer->CompleteDrag();
+  EXPECT_EQ(root_windows[2], window_->GetRootWindow());
+  EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
 }
 
 // Verifies if the resizer sets and resets
