@@ -95,6 +95,7 @@ WHITELISTED_LICENSES = [
     'Public domain BSD',
     'Public domain BSD-like',
     'Public domain LGPL (v2.1 or later)',
+    'Public domain University of Illinois/NCSA Open Source License (BSD like)',
     'Public domain',
     'SGI Free Software License B',
     'SunSoft (BSD like)',

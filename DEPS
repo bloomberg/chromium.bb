@@ -101,6 +101,10 @@ vars = {
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
   'catapult_revision': '87ef16864757739c019c49c2cc1a0a27e28fdc31',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libFuzzer
+  # and whatever else without interference from each other.
+  'libfuzzer_revision': '1d3e15006639ad8c1aadd2d7bac4dab9a6be7da6', # from svn revision 265174
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -430,6 +434,10 @@ deps_os = {
     # Wireless Display Software. Used on Chrome OS.
     'src/third_party/wds/src':
      Var('chromium_git') + '/external/github.com/01org/wds' + '@' + 'f187dda5fccaad08e168dc6657109325f42c648e',
+
+    # Used for building libFuzzers (only supports Linux).
+    'src/third_party/libFuzzer/src':
+     Var('chromium_git') + '/chromium/llvm-project/llvm/lib/Fuzzer.git' + '@' +  Var('libfuzzer_revision'),
   },
   'android': {
     'src/third_party/android_protobuf/src':

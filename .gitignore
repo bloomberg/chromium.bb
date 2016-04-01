@@ -354,6 +354,7 @@ vs-chromium-project.txt
 /third_party/libc++-static/libc++.a
 /third_party/libaddressinput/src
 /third_party/libexif/sources
+/third_party/libFuzzer/src
 /third_party/libjingle/source
 /third_party/libjpeg_turbo
 /third_party/liblouis/src

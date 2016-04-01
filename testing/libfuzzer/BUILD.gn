@@ -11,25 +11,10 @@ import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
 static_library("libfuzzer_main") {
-  # libfuzzer should be compiled without coverage (infinite loop in trace_cmp).
-  configs -= [ "//build/config/sanitizers:default_sanitizer_coverage_flags" ]
-
+  deps = []
   sources = []
   if (use_libfuzzer) {
-    sources += [
-      "../../third_party/llvm/lib/Fuzzer/FuzzerCrossOver.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerDriver.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerFlags.def",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerIO.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerInterface.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerLoop.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerMain.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerMutate.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerSHA1.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerTracePC.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerTraceState.cpp",
-      "../../third_party/llvm/lib/Fuzzer/FuzzerUtil.cpp",
-    ]
+    deps += [ "//third_party/libFuzzer:libfuzzer" ]
   } else if (use_drfuzz) {
     sources += [ "drfuzz_main.cc" ]
   } else {
