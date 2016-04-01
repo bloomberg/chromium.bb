@@ -21,6 +21,18 @@ from telemetry.web_perf.metrics import smoothness
 from telemetry.web_perf.metrics import memory_timeline
 
 
+def EnableIgnition(options):
+  existing_js_flags = []
+  for extra_arg in options.extra_browser_args:
+    if extra_arg.startswith('--js-flags='):
+      existing_js_flags.extend(shlex.split(extra_arg[len('--js-flags='):]))
+  options.AppendExtraBrowserArgs([
+      # This overrides any existing --js-flags, hence we have to include the
+      # previous flags as well.
+      '--js-flags=--ignition %s' % (' '.join(existing_js_flags))
+  ])
+
+
 @benchmark.Disabled('win')        # crbug.com/416502
 class V8Top25(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down the top 25 web pages.
@@ -153,15 +165,7 @@ class V8TodoMVCIgnition(perf_benchmark.PerfBenchmark):
   page_set = page_sets.TodoMVCPageSet
 
   def SetExtraBrowserOptions(self, options):
-    existing_js_flags = []
-    for extra_arg in options.extra_browser_args:
-      if extra_arg.startswith('--js-flags='):
-        existing_js_flags.extend(shlex.split(extra_arg[len('--js-flags='):]))
-    options.AppendExtraBrowserArgs([
-        # This overrides any existing --js-flags, hence we have to include the
-        # previous flags as well.
-        '--js-flags=--ignition %s' % (' '.join(existing_js_flags))
-    ])
+    EnableIgnition(options)
 
   def CreateTimelineBasedMeasurementOptions(self):
     category_filter = tracing_category_filter.CreateMinimalOverheadFilter()
@@ -178,6 +182,23 @@ class V8TodoMVCIgnition(perf_benchmark.PerfBenchmark):
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
     return True
+
+
+# Disabled on reference builds because they don't support the new
+# Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
+@benchmark.Disabled('reference')  # crbug.com/579546
+class V8InfiniteScrollIgnition(_InfiniteScrollBenchmark):
+  """Measures V8 GC metrics using Ignition."""
+
+  page_set = page_sets.InfiniteScrollPageSet
+
+  def SetExtraBrowserOptions(self, options):
+    _InfiniteScrollBenchmark.SetExtraBrowserOptions(self,options)
+    EnableIgnition(options)
+
+  @classmethod
+  def Name(cls):
+    return 'v8.infinite_scroll-ignition'
 
 
 # Disabled on reference builds because they don't support the new
