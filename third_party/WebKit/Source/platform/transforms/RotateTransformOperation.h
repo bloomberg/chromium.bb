@@ -25,6 +25,8 @@
 #ifndef RotateTransformOperation_h
 #define RotateTransformOperation_h
 
+#include "platform/geometry/FloatPoint3D.h"
+#include "platform/transforms/Rotation.h"
 #include "platform/transforms/TransformOperation.h"
 
 namespace blink {
@@ -33,59 +35,52 @@ class PLATFORM_EXPORT RotateTransformOperation final : public TransformOperation
 public:
     static PassRefPtr<RotateTransformOperation> create(double angle, OperationType type)
     {
-        return adoptRef(new RotateTransformOperation(0, 0, 1, angle, type));
+        return create(Rotation(FloatPoint3D(0, 0, 1), angle), type);
     }
 
     static PassRefPtr<RotateTransformOperation> create(double x, double y, double z, double angle, OperationType type)
     {
-        return adoptRef(new RotateTransformOperation(x, y, z, angle, type));
+        return create(Rotation(FloatPoint3D(x, y, z), angle), type);
     }
 
-    double x() const { return m_x; }
-    double y() const { return m_y; }
-    double z() const { return m_z; }
-    double angle() const { return m_angle; }
+    static PassRefPtr<RotateTransformOperation> create(const Rotation& rotation, OperationType type)
+    {
+        return adoptRef(new RotateTransformOperation(rotation, type));
+    }
 
-    FloatPoint3D axis() const;
-    static bool shareSameAxis(const RotateTransformOperation* fromRotation, const RotateTransformOperation* toRotation, FloatPoint3D* axis, double* fromAngle, double* toAngle);
+    double x() const { return m_rotation.axis.x(); }
+    double y() const { return m_rotation.axis.y(); }
+    double z() const { return m_rotation.axis.z(); }
+    double angle() const { return m_rotation.angle; }
+    const FloatPoint3D& axis() const { return m_rotation.axis; }
+
+    static bool getCommonAxis(const RotateTransformOperation*, const RotateTransformOperation*, FloatPoint3D& resultAxis, double& resultAngleA, double& resultAngleB);
 
     virtual bool canBlendWith(const TransformOperation& other) const;
     OperationType type() const override { return m_type; }
 
     void apply(TransformationMatrix& transform, const FloatSize& /*borderBoxSize*/) const override
     {
-        transform.rotate3d(m_x, m_y, m_z, m_angle);
+        transform.rotate3d(m_rotation);
     }
 
     static bool isMatchingOperationType(OperationType type) { return type == Rotate || type == RotateX || type == RotateY || type == RotateZ || type == Rotate3D; }
 
 private:
-    bool operator==(const TransformOperation& o) const override
-    {
-        if (!isSameType(o))
-            return false;
-        const RotateTransformOperation* r = static_cast<const RotateTransformOperation*>(&o);
-        return m_x == r->m_x && m_y == r->m_y && m_z == r->m_z && m_angle == r->m_angle;
-    }
+    bool operator==(const TransformOperation&) const override;
 
     PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) override;
     PassRefPtr<TransformOperation> zoom(double factor) final { return this; }
 
-    RotateTransformOperation(double x, double y, double z, double angle, OperationType type)
-        : m_x(x)
-        , m_y(y)
-        , m_z(z)
-        , m_angle(angle)
+    RotateTransformOperation(const Rotation& rotation, OperationType type)
+        : m_rotation(rotation)
         , m_type(type)
     {
         ASSERT(isMatchingOperationType(type));
     }
 
-    double m_x;
-    double m_y;
-    double m_z;
-    double m_angle;
-    OperationType m_type;
+    const Rotation m_rotation;
+    const OperationType m_type;
 };
 
 DEFINE_TRANSFORM_TYPE_CASTS(RotateTransformOperation);

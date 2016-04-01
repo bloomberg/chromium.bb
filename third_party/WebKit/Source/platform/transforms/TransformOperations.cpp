@@ -333,8 +333,8 @@ bool TransformOperations::blendedBoundsForBox(const FloatBox& box, const Transfo
                 double fromAngle;
                 double toAngle;
                 FloatPoint3D axis;
-                if (!RotateTransformOperation::shareSameAxis(fromRotation, toRotation, &axis, &fromAngle, &toAngle)) {
-                    return(false);
+                if (!RotateTransformOperation::getCommonAxis(fromRotation, toRotation, axis, fromAngle, toAngle)) {
+                    return false;
                 }
 
                 if (!fromRotation) {

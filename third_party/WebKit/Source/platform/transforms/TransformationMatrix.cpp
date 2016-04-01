@@ -33,6 +33,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/transforms/AffineTransform.h"
+#include "platform/transforms/Rotation.h"
 
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
@@ -848,6 +849,11 @@ TransformationMatrix& TransformationMatrix::scale3d(double sx, double sy, double
     m_matrix[2][2] *= sz;
     m_matrix[2][3] *= sz;
     return *this;
+}
+
+TransformationMatrix& TransformationMatrix::rotate3d(const Rotation& rotation)
+{
+    return rotate3d(rotation.axis.x(), rotation.axis.y(), rotation.axis.z(), rotation.angle);
 }
 
 TransformationMatrix& TransformationMatrix::rotate3d(double x, double y, double z, double angle)

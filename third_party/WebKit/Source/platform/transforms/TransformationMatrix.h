@@ -44,6 +44,7 @@ class LayoutRect;
 class FloatRect;
 class FloatQuad;
 class FloatBox;
+struct Rotation;
 #if CPU(X86_64)
 #define TRANSFORMATION_MATRIX_USE_X86_64_SSE2
 #endif
@@ -263,6 +264,7 @@ public:
 
     TransformationMatrix& rotate(double d) { return rotate3d(0, 0, d); }
     TransformationMatrix& rotate3d(double rx, double ry, double rz);
+    TransformationMatrix& rotate3d(const Rotation&);
 
     // The vector (x,y,z) is normalized if it's not already. A vector of
     // (0,0,0) uses a vector of (0,0,1).
