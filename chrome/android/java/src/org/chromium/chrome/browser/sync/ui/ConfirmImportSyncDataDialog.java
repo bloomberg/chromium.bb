@@ -18,12 +18,7 @@ import android.widget.TextView;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.BrowsingDataType;
-import org.chromium.chrome.browser.TimePeriod;
-import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge.OnClearBrowsingDataListener;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
 
@@ -35,17 +30,17 @@ import java.util.List;
  * option to merge the data of the two accounts or to keep them separate.
  */
 public class ConfirmImportSyncDataDialog extends DialogFragment
-        implements DialogInterface.OnClickListener, OnClearBrowsingDataListener {
+        implements DialogInterface.OnClickListener {
 
     /**
      * Callback for completion of the dialog.
      */
     public interface Listener {
         /**
-         * The user has completed the dialog using the positive button. If requested, the previous
-         * sync data has been cleared.
+         * The user has completed the dialog using the positive button.
+         * @param wipeData Whether the user requested that existing data should be wiped.
          */
-        public void onConfirm();
+        public void onConfirm(boolean wipeData);
     }
 
     /**
@@ -58,14 +53,6 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
     @VisibleForTesting
     public static final String CONFIRM_IMPORT_SYNC_DATA_DIALOG_TAG =
             "sync_account_switch_import_data_tag";
-
-    private static final int[] SYNC_DATA_TYPES = {
-            BrowsingDataType.HISTORY,
-            BrowsingDataType.CACHE,
-            BrowsingDataType.COOKIES,
-            BrowsingDataType.PASSWORDS,
-            BrowsingDataType.FORM_DATA
-    };
 
     private static final String KEY_OLD_ACCOUNT_NAME = "lastAccountName";
     private static final String KEY_NEW_ACCOUNT_NAME = "newAccountName";
@@ -190,30 +177,10 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
 
         assert mConfirmImportOption.isChecked() ^ mKeepSeparateOption.isChecked();
 
-        if (mConfirmImportOption.isChecked()) {
-            RecordUserAction.record("Signin_ImportDataPrompt_ImportData");
-            mListener.onConfirm();
-        } else {
-            RecordUserAction.record("Signin_ImportDataPrompt_DontImport");
-
-            final BookmarkModel model = new BookmarkModel();
-            model.runAfterBookmarkModelLoaded(new Runnable() {
-                @Override
-                public void run() {
-                    model.removeAllUserBookmarks();
-                    model.destroy();
-                    PrefServiceBridge.getInstance().clearBrowsingData(
-                            ConfirmImportSyncDataDialog.this,
-                            SYNC_DATA_TYPES, TimePeriod.EVERYTHING);
-                }
-            });
-        }
-    }
-
-    @Override
-    public void onBrowsingDataCleared() {
-        SigninManager.get(getActivity()).clearLastSignedInUser();
-        if (mListener != null) mListener.onConfirm();
+        RecordUserAction.record(mKeepSeparateOption.isChecked()
+                ? "Signin_ImportDataPrompt_DontImport"
+                : "Signin_ImportDataPrompt_ImportData");
+        mListener.onConfirm(mKeepSeparateOption.isChecked());
     }
 }
 

@@ -737,6 +737,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/sync/SyncController.java",
   "java/src/org/chromium/chrome/browser/sync/SyncNotificationController.java",
   "java/src/org/chromium/chrome/browser/sync/SyncSessionsMetrics.java",
+  "java/src/org/chromium/chrome/browser/sync/SyncUserDataWiper.java",
   "java/src/org/chromium/chrome/browser/sync/ui/ConfirmImportSyncDataDialog.java",
   "java/src/org/chromium/chrome/browser/sync/ui/PassphraseActivity.java",
   "java/src/org/chromium/chrome/browser/sync/ui/PassphraseCreationDialogFragment.java",

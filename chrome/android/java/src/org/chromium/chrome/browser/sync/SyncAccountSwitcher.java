@@ -63,7 +63,7 @@ public class SyncAccountSwitcher
     }
 
     @Override
-    public void onConfirm() {
+    public void onConfirm(final boolean wipeData) {
         assert mNewAccountName != null;
 
         final SigninManager.SignInCallback callback = this;
@@ -72,9 +72,22 @@ public class SyncAccountSwitcher
         SigninManager.get(mActivity).signOut(new Runnable() {
             @Override
             public void run() {
-                SigninManager.get(mActivity).signIn(mNewAccountName, mActivity, callback);
+                SigninManager.get(mActivity).clearLastSignedInUser();
+
+                if (wipeData) {
+                    SyncUserDataWiper.wipeSyncUserData(new Runnable() {
+                        @Override
+                        public void run() {
+                            SigninManager.get(mActivity)
+                                    .signIn(mNewAccountName, mActivity, callback);
+                        }
+                    });
+                } else {
+                    SigninManager.get(mActivity).signIn(mNewAccountName, mActivity, callback);
+                }
             }
         });
+
     }
 
     @Override

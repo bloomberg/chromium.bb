@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.firstrun.ProfileDataCache;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileDownloader;
 import org.chromium.chrome.browser.signin.AccountTrackerService.OnSystemAccountsSeededListener;
+import org.chromium.chrome.browser.sync.SyncUserDataWiper;
 import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog;
 import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog.ImportSyncType;
 import org.chromium.signin.InvestigatedScenario;
@@ -544,8 +545,17 @@ public class AccountSigninView extends FirstRunView
                     mDelegate.getFragmentManager(),
                     new ConfirmImportSyncDataDialog.Listener() {
                         @Override
-                        public void onConfirm() {
-                            showConfirmSigninPage();
+                        public void onConfirm(boolean wipeData) {
+                            if (wipeData) {
+                                SyncUserDataWiper.wipeSyncUserData(new Runnable(){
+                                    @Override
+                                    public void run() {
+                                        showConfirmSigninPage();
+                                    }
+                                });
+                            } else {
+                                showConfirmSigninPage();
+                            }
                         }
                     });
         } else {
