@@ -67,10 +67,11 @@ void WiFiDisplaySessionServiceImpl::Connect(int32_t sink_id,
   }
 
   const DisplaySourceSinkInfoList& sinks = delegate_->last_found_sinks();
-  auto found = std::find_if(
-      sinks.begin(), sinks.end(),
-      [sink_id](DisplaySourceSinkInfoPtr ptr) { return ptr->id == sink_id; });
-  if (found == sinks.end() || (*found)->state != SINK_STATE_DISCONNECTED) {
+  auto found = std::find_if(sinks.begin(), sinks.end(),
+                            [sink_id](const DisplaySourceSinkInfo& sink) {
+                              return sink.id == sink_id;
+                            });
+  if (found == sinks.end() || found->state != SINK_STATE_DISCONNECTED) {
     client_->OnConnectRequestHandled(false, kErrorSinkNotAvailable);
     return;
   }
@@ -84,7 +85,7 @@ void WiFiDisplaySessionServiceImpl::Connect(int32_t sink_id,
                              weak_factory_.GetWeakPtr(), sink_id);
   delegate_->Connect(sink_id, auth_info, on_error);
   sink_id_ = sink_id;
-  sink_state_ = (*found)->state;
+  sink_state_ = found->state;
   DCHECK(sink_state_ == SINK_STATE_CONNECTING);
   client_->OnConnectRequestHandled(true, "");
 }
@@ -97,12 +98,13 @@ void WiFiDisplaySessionServiceImpl::Disconnect() {
   }
 
   const DisplaySourceSinkInfoList& sinks = delegate_->last_found_sinks();
-  auto found = std::find_if(
-      sinks.begin(), sinks.end(),
-      [this](DisplaySourceSinkInfoPtr ptr) { return ptr->id == sink_id_; });
+  auto found = std::find_if(sinks.begin(), sinks.end(),
+                            [this](const DisplaySourceSinkInfo& sink) {
+                              return sink.id == sink_id_;
+                            });
   DCHECK(found != sinks.end());
-  DCHECK((*found)->state == SINK_STATE_CONNECTED ||
-         (*found)->state == SINK_STATE_CONNECTING);
+  DCHECK(found->state == SINK_STATE_CONNECTED ||
+         found->state == SINK_STATE_CONNECTING);
 
   auto on_error = base::Bind(&WiFiDisplaySessionServiceImpl::OnDisconnectFailed,
                              weak_factory_.GetWeakPtr(), sink_id_);
@@ -116,7 +118,7 @@ void WiFiDisplaySessionServiceImpl::SendMessage(const mojo::String& message) {
   }
   auto connection = delegate_->connection();
   DCHECK(connection);
-  DCHECK_EQ(sink_id_, connection->GetConnectedSink()->id);
+  DCHECK_EQ(sink_id_, connection->GetConnectedSink().id);
   connection->SendMessage(message);
 }
 
@@ -134,16 +136,17 @@ void WiFiDisplaySessionServiceImpl::OnSinksUpdated(
   // The initialized sink id means that the client should have
   // been initialized as well.
   DCHECK(client_);
-  auto found = std::find_if(
-      sinks.begin(), sinks.end(),
-      [this](DisplaySourceSinkInfoPtr ptr) { return ptr->id == sink_id_; });
+  auto found = std::find_if(sinks.begin(), sinks.end(),
+                            [this](const DisplaySourceSinkInfo& sink) {
+                              return sink.id == sink_id_;
+                            });
   if (found == sinks.end()) {
     client_->OnError(ERROR_TYPE_CONNECTION_ERROR, "The sink has disappeared");
     client_->OnTerminated();
     sink_id_ = DisplaySourceConnectionDelegate::kInvalidSinkId;
   }
 
-  SinkState actual_state = (*found)->state;
+  SinkState actual_state = found->state;
 
   if (actual_state == sink_state_)
     return;
