@@ -279,6 +279,11 @@ void HTMLSlotElement::clearDistribution()
     didUpdateDistribution();
 }
 
+short HTMLSlotElement::tabIndex() const
+{
+    return Element::tabIndex();
+}
+
 DEFINE_TRACE(HTMLSlotElement)
 {
 #if ENABLE(OILPAN)

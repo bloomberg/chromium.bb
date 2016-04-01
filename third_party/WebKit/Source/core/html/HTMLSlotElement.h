@@ -68,6 +68,8 @@ public:
 
     void attributeChanged(const QualifiedName&, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason = ModifiedDirectly) final;
 
+    short tabIndex() const override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

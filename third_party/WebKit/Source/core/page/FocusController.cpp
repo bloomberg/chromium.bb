@@ -337,7 +337,7 @@ inline bool isShadowHostDelegatesFocus(const Element& element)
 
 inline int adjustedTabIndex(Element& element)
 {
-    return isNonFocusableFocusScopeOwner(element) ? 0 : element.tabIndex();
+    return (isNonKeyboardFocusableShadowHost(element) || isShadowInsertionPointFocusScopeOwner(element)) ? 0 : element.tabIndex();
 }
 
 inline bool shouldVisit(Element& element)
