@@ -31,10 +31,6 @@
 // fixed.
 @property(nonatomic, assign) CGFloat topContentPadding;
 
-// A Boolean value indicating whether web content can programmatically display
-// the keyboard.
-@property(nonatomic, assign) BOOL keyboardDisplayRequiresUserAction;
-
 // Gives the embedder access to the web view's UIScrollView in a limited and
 // controlled manner.
 @property(nonatomic, readonly) CRWWebViewScrollViewProxy* scrollViewProxy;

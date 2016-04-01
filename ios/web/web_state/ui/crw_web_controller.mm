@@ -563,9 +563,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 @synthesize loadPhase = _loadPhase;
 @synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
 
-// Implemented by subclasses.
-@dynamic keyboardDisplayRequiresUserAction;
-
 + (instancetype)allocWithZone:(struct _NSZone*)zone {
   if (self == [CRWWebController class]) {
     // This is an abstract class which should not be instantiated directly.
@@ -983,19 +980,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return YES;
   UIScrollView* scrollView = self.webScrollView;
   return scrollView.contentOffset.y == -scrollView.contentInset.top;
-}
-
-- (BOOL)keyboardDisplayRequiresUserAction {
-  // TODO(stuartmorgan): Find out whether YES or NO is correct. See if we can
-  // get rid of this (it looks like it may only be fallback code for
-  // autocomplete that's necessarily used). If not, file a Radar since WKWebView
-  // doesn't appear to have this property.
-  NOTIMPLEMENTED();
-  return NO;
-}
-
-- (void)setKeyboardDisplayRequiresUserAction:(BOOL)requiresUserAction {
-  NOTIMPLEMENTED();
 }
 
 - (void)setShouldSuppressDialogs:(BOOL)shouldSuppressDialogs {

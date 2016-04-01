@@ -178,10 +178,6 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 // otherwise. [HACK]
 - (BOOL)executeFormAssistAction:(NSString*)actionName;
 
-// Runs |block| while allowing the keyboard to be displayed as a result of focus
-// changes caused by |block|.
-- (void)runBlockAllowingKeyboardDisplay:(ProceduralBlock)block;
-
 // Asynchronously retrieves an accessory view from |_providers|.
 - (void)retrieveAccessoryViewForForm:(const std::string&)formName
                                field:(const std::string&)fieldName
@@ -401,9 +397,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   if (!performedAction) {
     // We could not find the built-in form assist controls, so try to focus
     // the next or previous control using JavaScript.
-    [self runBlockAllowingKeyboardDisplay:^{
-      [_JSSuggestionManager closeKeyboard];
-    }];
+    [_JSSuggestionManager closeKeyboard];
   }
 }
 
@@ -434,16 +428,6 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   return YES;
 }
 
-- (void)runBlockAllowingKeyboardDisplay:(ProceduralBlock)block {
-  DCHECK([UIWebView
-      instancesRespondToSelector:@selector(keyboardDisplayRequiresUserAction)]);
-
-  BOOL originalValue = [self.webViewProxy keyboardDisplayRequiresUserAction];
-  [self.webViewProxy setKeyboardDisplayRequiresUserAction:NO];
-  block();
-  [self.webViewProxy setKeyboardDisplayRequiresUserAction:originalValue];
-}
-
 #pragma mark -
 #pragma mark FormInputAccessoryViewDelegate
 
@@ -460,9 +444,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   if (!performedAction) {
     // We could not find the built-in form assist controls, so try to focus
     // the next or previous control using JavaScript.
-    [self runBlockAllowingKeyboardDisplay:^{
-      [_JSSuggestionManager selectPreviousElement];
-    }];
+    [_JSSuggestionManager selectPreviousElement];
   }
 }
 
@@ -479,9 +461,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   if (!performedAction) {
     // We could not find the built-in form assist controls, so try to focus
     // the next or previous control using JavaScript.
-    [self runBlockAllowingKeyboardDisplay:^{
-      [_JSSuggestionManager selectNextElement];
-    }];
+    [_JSSuggestionManager selectNextElement];
   }
 }
 

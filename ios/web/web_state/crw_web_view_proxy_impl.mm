@@ -177,16 +177,6 @@ UIView* GetFirstResponderSubview(UIView* view) {
 }
 #endif
 
-- (BOOL)keyboardDisplayRequiresUserAction {
-  return [_webController keyboardDisplayRequiresUserAction];
-}
-
-- (void)setKeyboardDisplayRequiresUserAction:
-        (BOOL)keyboardDisplayRequiresUserAction {
-  [_webController
-      setKeyboardDisplayRequiresUserAction:keyboardDisplayRequiresUserAction];
-}
-
 - (BOOL)becomeFirstResponder {
   return [_contentView becomeFirstResponder];
 }
