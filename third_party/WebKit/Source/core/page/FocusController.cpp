@@ -88,13 +88,17 @@ public:
     static ScopedFocusNavigation ownedByShadowInsertionPoint(HTMLShadowElement&);
     static ScopedFocusNavigation ownedByHTMLSlotElement(const HTMLSlotElement&);
     static ScopedFocusNavigation ownedByIFrame(const HTMLFrameOwnerElement&);
+    static HTMLSlotElement* findFallbackScopeOwnerSlot(const Element&);
+    static bool isSlotFallbackScoped(const Element&);
+    static bool isSlotFallbackScopedForThisSlot(const HTMLSlotElement&, const Element&);
 
 private:
     ScopedFocusNavigation(TreeScope&, const Element*);
     ScopedFocusNavigation(HTMLSlotElement&, const Element*);
-    Member<ContainerNode> m_rootNode;
-    Member<HTMLSlotElement> m_rootSlot;
-    Member<Element> m_current;
+    RawPtrWillBeMember<ContainerNode> m_rootNode;
+    RawPtrWillBeMember<HTMLSlotElement> m_rootSlot;
+    RawPtrWillBeMember<Element> m_current;
+    bool m_slotFallbackTraversal;
 };
 
 ScopedFocusNavigation::ScopedFocusNavigation(TreeScope& treeScope, const Element* current)
@@ -108,6 +112,7 @@ ScopedFocusNavigation::ScopedFocusNavigation(HTMLSlotElement& slot, const Elemen
     : m_rootNode(nullptr)
     , m_rootSlot(&slot)
     , m_current(const_cast<Element*>(current))
+    , m_slotFallbackTraversal(slot.getAssignedNodes().isEmpty())
 {
 }
 
@@ -125,10 +130,16 @@ void ScopedFocusNavigation::moveToNext()
 {
     ASSERT(m_current);
     if (m_rootSlot) {
-        m_current = SlotScopedTraversal::next(*m_current);
+        if (m_slotFallbackTraversal) {
+            m_current = ElementTraversal::next(*m_current, m_rootSlot);
+            while (m_current && !ScopedFocusNavigation::isSlotFallbackScopedForThisSlot(*m_rootSlot, *m_current))
+                m_current = ElementTraversal::next(*m_current, m_rootSlot);
+        } else {
+            m_current = SlotScopedTraversal::next(*m_current);
+        }
     } else {
         m_current = ElementTraversal::next(*m_current);
-        while (m_current && SlotScopedTraversal::isSlotScoped(*m_current))
+        while (m_current && (SlotScopedTraversal::isSlotScoped(*m_current) || ScopedFocusNavigation::isSlotFallbackScoped(*m_current)))
             m_current = ElementTraversal::next(*m_current);
     }
 }
@@ -137,10 +148,18 @@ void ScopedFocusNavigation::moveToPrevious()
 {
     ASSERT(m_current);
     if (m_rootSlot) {
-        m_current = SlotScopedTraversal::previous(*m_current);
+        if (m_slotFallbackTraversal) {
+            m_current = ElementTraversal::previous(*m_current, m_rootSlot);
+            if (m_current == m_rootSlot)
+                m_current = nullptr;
+            while (m_current && !ScopedFocusNavigation::isSlotFallbackScopedForThisSlot(*m_rootSlot, *m_current))
+                m_current = ElementTraversal::previous(*m_current);
+        } else {
+            m_current = SlotScopedTraversal::previous(*m_current);
+        }
     } else {
         m_current = ElementTraversal::previous(*m_current);
-        while (m_current && SlotScopedTraversal::isSlotScoped(*m_current))
+        while (m_current && (SlotScopedTraversal::isSlotScoped(*m_current) || ScopedFocusNavigation::isSlotFallbackScoped(*m_current)))
             m_current = ElementTraversal::previous(*m_current);
     }
 }
@@ -148,8 +167,8 @@ void ScopedFocusNavigation::moveToPrevious()
 void ScopedFocusNavigation::moveToFirst()
 {
     if (m_rootSlot) {
-        if (!m_rootSlot->getAssignedNodes().isEmpty()) {
-            HeapVector<Member<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
+        if (!m_slotFallbackTraversal) {
+            WillBeHeapVector<RefPtrWillBeMember<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
             for (auto assignedNode : assignedNodes) {
                 if (assignedNode->isElementNode()) {
                     m_current = toElement(assignedNode);
@@ -157,21 +176,25 @@ void ScopedFocusNavigation::moveToFirst()
                 }
             }
         } else {
-            m_current = nullptr;
+            Element* first = ElementTraversal::firstChild(*m_rootSlot);
+            while (first && !ScopedFocusNavigation::isSlotFallbackScopedForThisSlot(*m_rootSlot, *first))
+                first = ElementTraversal::next(*first, m_rootSlot);
+            m_current = first;
         }
     } else {
         Element* first = m_rootNode->isElementNode() ? &toElement(*m_rootNode) : ElementTraversal::next(*m_rootNode);
-        while (first && SlotScopedTraversal::isSlotScoped(*first))
+        while (first && (SlotScopedTraversal::isSlotScoped(*first) || ScopedFocusNavigation::isSlotFallbackScoped(*first)))
             first = ElementTraversal::next(*first, m_rootNode);
         m_current = first;
     }
+
 }
 
 void ScopedFocusNavigation::moveToLast()
 {
     if (m_rootSlot) {
-        if (!m_rootSlot->getAssignedNodes().isEmpty()) {
-            HeapVector<Member<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
+        if (!m_slotFallbackTraversal) {
+            WillBeHeapVector<RefPtrWillBeMember<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
             for (auto assignedNode = assignedNodes.rbegin(); assignedNode != assignedNodes.rend(); ++assignedNode) {
                 if ((*assignedNode)->isElementNode()) {
                     m_current = ElementTraversal::lastWithinOrSelf(*toElement(*assignedNode));
@@ -179,11 +202,14 @@ void ScopedFocusNavigation::moveToLast()
                 }
             }
         } else {
-            m_current = nullptr;
+            Element* last = ElementTraversal::lastWithin(*m_rootSlot);
+            while (last && !ScopedFocusNavigation::isSlotFallbackScopedForThisSlot(*m_rootSlot, *last))
+                last = ElementTraversal::previous(*last, m_rootSlot);
+            m_current = last;
         }
     } else {
         Element* last = ElementTraversal::lastWithin(*m_rootNode);
-        while (last && SlotScopedTraversal::isSlotScoped(*last))
+        while (last && (SlotScopedTraversal::isSlotScoped(*last) || ScopedFocusNavigation::isSlotFallbackScoped(*last)))
             last = ElementTraversal::previous(*last, m_rootNode);
         m_current = last;
     }
@@ -193,6 +219,7 @@ Element* ScopedFocusNavigation::owner() const
 {
     if (m_rootSlot)
         return m_rootSlot;
+    ASSERT(m_rootNode);
     if (m_rootNode->isShadowRoot()) {
         ShadowRoot& shadowRoot = toShadowRoot(*m_rootNode);
         return shadowRoot.isYoungest() ? shadowRoot.host() : shadowRoot.shadowInsertionPointOfYoungerShadowRoot();
@@ -205,8 +232,10 @@ Element* ScopedFocusNavigation::owner() const
 
 ScopedFocusNavigation ScopedFocusNavigation::createFor(const Element& current)
 {
-    if (SlotScopedTraversal::isSlotScoped(current))
-        return ScopedFocusNavigation(*SlotScopedTraversal::findScopeOwnerSlot(current), &current);
+    if (HTMLSlotElement* slot = SlotScopedTraversal::findScopeOwnerSlot(current))
+        return ScopedFocusNavigation(*slot, &current);
+    if (HTMLSlotElement* slot = ScopedFocusNavigation::findFallbackScopeOwnerSlot(current))
+        return ScopedFocusNavigation(*slot, &current);
     return ScopedFocusNavigation(current.treeScope(), &current);
 }
 
@@ -248,6 +277,33 @@ ScopedFocusNavigation ScopedFocusNavigation::ownedByShadowInsertionPoint(HTMLSha
 ScopedFocusNavigation ScopedFocusNavigation::ownedByHTMLSlotElement(const HTMLSlotElement& element)
 {
     return ScopedFocusNavigation(const_cast<HTMLSlotElement&>(element), nullptr);
+}
+
+HTMLSlotElement* ScopedFocusNavigation::findFallbackScopeOwnerSlot(const Element& element)
+{
+    Element* parent = const_cast<Element*>(element.parentElement());
+    while (parent) {
+        if (isHTMLSlotElement(parent))
+            return toHTMLSlotElement(parent)->getAssignedNodes().isEmpty() ? toHTMLSlotElement(parent) : nullptr;
+        parent = parent->parentElement();
+    }
+    return nullptr;
+}
+
+bool ScopedFocusNavigation::isSlotFallbackScoped(const Element& element)
+{
+    return ScopedFocusNavigation::findFallbackScopeOwnerSlot(element);
+}
+
+bool ScopedFocusNavigation::isSlotFallbackScopedForThisSlot(const HTMLSlotElement& slot, const Element& current)
+{
+    Element* parent = current.parentElement();
+    while (parent) {
+        if (isHTMLSlotElement(parent) && toHTMLSlotElement(parent)->getAssignedNodes().isEmpty())
+            return !SlotScopedTraversal::isSlotScoped(current) && toHTMLSlotElement(parent) == slot;
+        parent = parent->parentElement();
+    }
+    return false;
 }
 
 inline void dispatchBlurEvent(const Document& document, Element& focusedElement)
@@ -867,8 +923,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
 
     document->updateLayoutIgnorePendingStylesheets();
     ScopedFocusNavigation scope = current ? ScopedFocusNavigation::createFor(*current) : ScopedFocusNavigation::createForDocument(*document);
-    RawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, scope);
-
+    RefPtrWillBeRawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, scope);
     if (!element) {
         // If there's a RemoteFrame on the ancestor chain, we need to continue
         // searching for focusable elements there.
