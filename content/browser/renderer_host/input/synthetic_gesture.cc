@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_pinch_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_pointer_action.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_drag_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
@@ -42,6 +43,9 @@ scoped_ptr<SyntheticGesture> SyntheticGesture::Create(
     case SyntheticGestureParams::TAP_GESTURE:
       return CreateGesture<SyntheticTapGesture,
                            SyntheticTapGestureParams>(gesture_params);
+    case SyntheticGestureParams::POINTER_ACTION:
+      return CreateGesture<SyntheticPointerAction,
+                           SyntheticPointerActionParams>(gesture_params);
   }
   NOTREACHED() << "Invalid synthetic gesture type";
   return scoped_ptr<SyntheticGesture>();

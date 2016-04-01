@@ -48,8 +48,10 @@ struct CONTENT_EXPORT SyntheticGestureParams {
     SMOOTH_DRAG_GESTURE,
     PINCH_GESTURE,
     TAP_GESTURE,
-    SYNTHETIC_GESTURE_TYPE_MAX = TAP_GESTURE
+    POINTER_ACTION,
+    SYNTHETIC_GESTURE_TYPE_MAX = POINTER_ACTION
   };
+
   virtual GestureType GetGestureType() const = 0;
 
   // Returns true if the specific gesture source type is supported on this

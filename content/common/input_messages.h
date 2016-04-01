@@ -20,6 +20,7 @@
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
+#include "content/common/input/synthetic_pointer_action_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
@@ -49,6 +50,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 IPC_ENUM_TRAITS_MAX_VALUE(
     content::SyntheticGestureParams::GestureType,
     content::SyntheticGestureParams::SYNTHETIC_GESTURE_TYPE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(
+    content::SyntheticPointerActionParams::PointerActionType,
+    content::SyntheticPointerActionParams::PointerActionType::
+        POINTER_ACTION_TYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventDispatchType,
                           content::InputEventDispatchType::DISPATCH_TYPE_MAX)
 IPC_ENUM_TRAITS_VALIDATE(content::TouchAction, (
@@ -106,6 +111,13 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticTapGestureParams)
   IPC_STRUCT_TRAITS_PARENT(content::SyntheticGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(position)
   IPC_STRUCT_TRAITS_MEMBER(duration_ms)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionParams)
+  IPC_STRUCT_TRAITS_PARENT(content::SyntheticGestureParams)
+  IPC_STRUCT_TRAITS_MEMBER(pointer_action_type_)
+  IPC_STRUCT_TRAITS_MEMBER(index_)
+  IPC_STRUCT_TRAITS_MEMBER(position_)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::InputEventAck)

@@ -11,26 +11,24 @@
 namespace content {
 
 SyntheticPointerAction::SyntheticPointerAction(
-    SyntheticGestureParams::GestureSourceType gesture_source_type,
-    PointerActionType pointer_action_type,
-    SyntheticPointer* synthetic_pointer,
-    gfx::PointF position,
-    int index)
-    : gesture_source_type_(gesture_source_type),
-      pointer_action_type_(pointer_action_type),
-      position_(position),
-      index_(index),
-      synthetic_pointer_(synthetic_pointer) {}
+    const SyntheticPointerActionParams& params)
+    : params_(params) {}
+
+SyntheticPointerAction::SyntheticPointerAction(
+    const SyntheticPointerActionParams& params,
+    SyntheticPointer* synthetic_pointer)
+    : params_(params), synthetic_pointer_(synthetic_pointer) {}
 
 SyntheticPointerAction::~SyntheticPointerAction() {}
 
 SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
-    gesture_source_type_ = target->GetDefaultSyntheticGestureSourceType();
+  if (params_.gesture_source_type == SyntheticGestureParams::DEFAULT_INPUT)
+    params_.gesture_source_type =
+        target->GetDefaultSyntheticGestureSourceType();
 
-  DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
+  DCHECK_NE(params_.gesture_source_type, SyntheticGestureParams::DEFAULT_INPUT);
 
   ForwardTouchOrMouseInputEvents(timestamp, target);
   return SyntheticGesture::GESTURE_FINISHED;
@@ -39,17 +37,20 @@ SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
 void SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  switch (pointer_action_type_) {
-    case SyntheticGesture::PRESS:
-      synthetic_pointer_->Press(position_.x(), position_.y(), target,
-                                timestamp);
+  switch (params_.pointer_action_type()) {
+    case SyntheticPointerActionParams::PointerActionType::PRESS:
+      synthetic_pointer_->Press(params_.position().x(), params_.position().y(),
+                                target, timestamp);
       break;
-    case SyntheticGesture::MOVE:
-      synthetic_pointer_->Move(index_, position_.x(), position_.y(), target,
-                               timestamp);
+    case SyntheticPointerActionParams::PointerActionType::MOVE:
+      synthetic_pointer_->Move(params_.index(), params_.position().x(),
+                               params_.position().y(), target, timestamp);
       break;
-    case SyntheticGesture::RELEASE:
-      synthetic_pointer_->Release(index_, target, timestamp);
+    case SyntheticPointerActionParams::PointerActionType::RELEASE:
+      synthetic_pointer_->Release(params_.index(), target, timestamp);
+      break;
+    default:
+      NOTREACHED();
       break;
   }
   synthetic_pointer_->DispatchEvent(target, timestamp);

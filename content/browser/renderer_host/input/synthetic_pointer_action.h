@@ -10,17 +10,15 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_pointer.h"
 #include "content/common/content_export.h"
+#include "content/common/input/synthetic_pointer_action_params.h"
 
 namespace content {
 
 class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
  public:
-  SyntheticPointerAction(
-      SyntheticGestureParams::GestureSourceType gesture_source_type,
-      PointerActionType pointer_action_type,
-      SyntheticPointer* synthetic_pointer,
-      gfx::PointF position,
-      int index = 0);
+  explicit SyntheticPointerAction(const SyntheticPointerActionParams& params);
+  SyntheticPointerAction(const SyntheticPointerActionParams& params,
+                         SyntheticPointer* synthetic_pointer);
   ~SyntheticPointerAction() override;
 
   SyntheticGesture::Result ForwardInputEvents(
@@ -31,10 +29,7 @@ class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
                                       SyntheticGestureTarget* target);
 
  private:
-  SyntheticGestureParams::GestureSourceType gesture_source_type_;
-  PointerActionType pointer_action_type_;
-  gfx::PointF position_;
-  int index_;
+  SyntheticPointerActionParams params_;
   SyntheticPointer* synthetic_pointer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticPointerAction);
