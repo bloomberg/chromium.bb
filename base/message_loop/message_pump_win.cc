@@ -236,9 +236,10 @@ void MessagePumpForUI::WaitForWork() {
     // The WaitMessage call below is a workaround to give the child window
     // some time to process its input messages.
     MSG msg = {0};
-    DWORD queue_status = GetQueueStatus(QS_MOUSE);
-    if (HIWORD(queue_status) & QS_MOUSE &&
-        !PeekMessage(&msg, NULL, WM_MOUSEFIRST, WM_MOUSELAST, PM_NOREMOVE)) {
+    bool has_pending_sent_message =
+        (HIWORD(GetQueueStatus(QS_SENDMESSAGE)) & QS_SENDMESSAGE) != 0;
+    if (!has_pending_sent_message &&
+        !PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
       WaitMessage();
     }
     return;
