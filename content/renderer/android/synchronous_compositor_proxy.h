@@ -109,6 +109,9 @@ class SynchronousCompositorProxy
   void DemandDrawSw(const SyncCompositorCommonBrowserParams& common_params,
                     const SyncCompositorDemandDrawSwParams& params,
                     IPC::Message* reply_message);
+  void SynchronousUpdateState(
+      const SyncCompositorCommonBrowserParams& common_params,
+      SyncCompositorCommonRendererParams* common_renderer_params);
 
   void SwapBuffersHw(uint32_t output_surface_id, cc::CompositorFrame* frame);
   void SendDemandDrawHwReply(cc::CompositorFrame* frame,

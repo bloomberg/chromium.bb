@@ -15,7 +15,6 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -771,13 +770,8 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         onScrollUpdateGestureConsumedHelper.waitForCallback(callCount);
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView"})
-    Disabled because zoomIn is no longer synchronous. Fix if it's a compatibility problem.
-    See crbug.com/545628.
-    */
-    @DisabledTest
     public void testPinchZoomUpdatesScrollRangeSynchronously() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final ScrollTestContainerView testContainerView =
@@ -833,7 +827,13 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
                 "Scroll range should increase after zoom (%d) > (%d)",
                 atomicNewScrollRange.get(), atomicOldScrollRange.get()),
                 atomicNewScrollRange.get() > atomicOldScrollRange.get());
-        assertEquals(atomicContentHeight.get(), atomicOldContentHeightApproximation.get());
-        assertEquals(atomicContentHeight.get(), atomicNewContentHeightApproximation.get());
+        assertTrue(String.format(Locale.ENGLISH, "Old content height should be close (%d) ~= (%d)",
+                           atomicContentHeight.get(), atomicOldContentHeightApproximation.get()),
+                Math.abs(atomicContentHeight.get() - atomicOldContentHeightApproximation.get())
+                        <= 1);
+        assertTrue(String.format(Locale.ENGLISH, "New content height should be close (%d) ~= (%d)",
+                           atomicContentHeight.get(), atomicNewContentHeightApproximation.get()),
+                Math.abs(atomicContentHeight.get() - atomicNewContentHeightApproximation.get())
+                        <= 1);
     }
 }

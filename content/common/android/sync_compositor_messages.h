@@ -139,6 +139,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyncCompositorCommonRendererParams)
 IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
+// Synchronous IPCs are allowed here to the renderer compositor thread. See
+// design doc https://goo.gl/Tn81FW and crbug.com/526842 for details.
 
 IPC_SYNC_MESSAGE_ROUTED2_2(SyncCompositorMsg_HandleInputEvent,
                            content::SyncCompositorCommonBrowserParams,
@@ -179,6 +181,13 @@ IPC_SYNC_MESSAGE_ROUTED2_3(SyncCompositorMsg_DemandDrawSw,
 
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_UpdateState,
                     content::SyncCompositorCommonBrowserParams)
+
+// The synchronous version is used to synchronize state from an earlier
+// asynchronous call only. This should be needed rarely so should prefer the
+// asynchronous version above in general.
+IPC_SYNC_MESSAGE_ROUTED1_1(SyncCompositorMsg_SynchronousUpdateState,
+                           content::SyncCompositorCommonBrowserParams,
+                           content::SyncCompositorCommonRendererParams)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

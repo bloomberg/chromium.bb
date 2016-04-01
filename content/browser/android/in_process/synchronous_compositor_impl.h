@@ -75,6 +75,7 @@ class SynchronousCompositorImpl
   void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
   void SetIsActive(bool is_active) override;
+  void SynchronizeWithRenderer() override;
   void OnComputeScroll(base::TimeTicks animation_time) override;
 
   // SynchronousCompositorBase overrides.

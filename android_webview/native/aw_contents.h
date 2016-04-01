@@ -164,6 +164,9 @@ class AwContents : public FindHelper::Listener,
   void SetBackgroundColor(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jint color);
+  void SynchronizeRendererScroll(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void OnComputeScroll(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        jlong animation_time_millis);

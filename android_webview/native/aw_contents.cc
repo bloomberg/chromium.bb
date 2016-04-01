@@ -1016,6 +1016,13 @@ void AwContents::SetBackgroundColor(JNIEnv* env,
   render_view_host_ext_->SetBackgroundColor(color);
 }
 
+void AwContents::SynchronizeRendererScroll(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  browser_view_renderer_.SynchronizeRendererScroll();
+}
+
 void AwContents::OnComputeScroll(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  jlong animation_time_millis) {

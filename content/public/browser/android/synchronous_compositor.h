@@ -94,6 +94,9 @@ class CONTENT_EXPORT SynchronousCompositor {
   // starts off as inactive and needs a SetActive(true) call to begin.
   virtual void SetIsActive(bool is_active) = 0;
 
+  // Synchronize all renderer state to UI thread. This blocks the UI thread.
+  virtual void SynchronizeWithRenderer() = 0;
+
   // Called by the embedder to notify that the OnComputeScroll step is happening
   // and if any input animation is active, it should tick now.
   virtual void OnComputeScroll(base::TimeTicks animation_time) = 0;

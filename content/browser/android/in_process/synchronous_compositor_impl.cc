@@ -253,6 +253,10 @@ void SynchronousCompositorImpl::SetIsActive(bool is_active) {
     begin_frame_source_->SetBeginFrameSourcePaused(!is_active_);
 }
 
+void SynchronousCompositorImpl::SynchronizeWithRenderer() {
+  // Intentional no-op. Nothing to synchronize.
+}
+
 void SynchronousCompositorImpl::OnComputeScroll(
     base::TimeTicks animation_time) {
   if (need_animate_input_) {

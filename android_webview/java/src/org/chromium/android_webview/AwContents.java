@@ -2105,6 +2105,7 @@ public class AwContents implements SmartClipProvider,
             throw new IllegalStateException("zoom delta value outside [0.01, 100] range.");
         }
         mContentViewCore.pinchByDelta(delta);
+        nativeSynchronizeRendererScroll(mNativeAwContents);
     }
 
     /**
@@ -3238,6 +3239,7 @@ public class AwContents implements SmartClipProvider,
             long nativeAwContents, String path, ValueCallback<String> callback);
 
     private native void nativeAddVisitedLinks(long nativeAwContents, String[] visitedLinks);
+    private native void nativeSynchronizeRendererScroll(long nativeAwContents);
     private native void nativeOnComputeScroll(
             long nativeAwContents, long currentAnimationTimeMillis);
     private native boolean nativeOnDraw(long nativeAwContents, Canvas canvas,

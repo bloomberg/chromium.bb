@@ -337,6 +337,17 @@ void SynchronousCompositorHost::SetIsActive(bool is_active) {
   SendAsyncCompositorStateIfNeeded();
 }
 
+void SynchronousCompositorHost::SynchronizeWithRenderer() {
+  SyncCompositorCommonBrowserParams common_browser_params;
+  PopulateCommonParams(&common_browser_params);
+  SyncCompositorCommonRendererParams common_renderer_params;
+  if (!sender_->Send(new SyncCompositorMsg_SynchronousUpdateState(
+          routing_id_, common_browser_params, &common_renderer_params))) {
+    return;
+  }
+  ProcessCommonParams(common_renderer_params);
+}
+
 void SynchronousCompositorHost::OnComputeScroll(
     base::TimeTicks animation_time) {
   if (!need_animate_scroll_)

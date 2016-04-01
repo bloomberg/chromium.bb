@@ -412,6 +412,12 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
   UpdateCompositorIsActive();
 }
 
+void BrowserViewRenderer::SynchronizeRendererScroll() {
+  if (!compositor_)
+    return;
+  compositor_->SynchronizeWithRenderer();
+}
+
 void BrowserViewRenderer::OnComputeScroll(base::TimeTicks animation_time) {
   if (!compositor_)
     return;

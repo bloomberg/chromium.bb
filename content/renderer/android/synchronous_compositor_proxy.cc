@@ -171,6 +171,8 @@ void SynchronousCompositorProxy::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncCompositorMsg_DemandDrawSw,
                                     DemandDrawSw)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_UpdateState, ProcessCommonParams)
+    IPC_MESSAGE_HANDLER(SyncCompositorMsg_SynchronousUpdateState,
+                        SynchronousUpdateState)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -394,6 +396,15 @@ void SynchronousCompositorProxy::OnComputeScroll(
     need_animate_scroll_ = false;
     input_handler_proxy_->SynchronouslyAnimate(animation_time);
   }
+}
+
+void SynchronousCompositorProxy::SynchronousUpdateState(
+    const SyncCompositorCommonBrowserParams& common_params,
+    SyncCompositorCommonRendererParams* common_renderer_params) {
+  DCHECK(!inside_receive_);
+  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
+  ProcessCommonParams(common_params);
+  PopulateCommonParams(common_renderer_params);
 }
 
 void SynchronousCompositorProxy::DidOverscroll(

@@ -39,6 +39,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
   void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) override {}
   void SetIsActive(bool is_active) override {}
+  void SynchronizeWithRenderer() override {}
   void OnComputeScroll(base::TimeTicks animate_time) override {}
 
   void SetHardwareFrame(uint32_t output_surface_id,
