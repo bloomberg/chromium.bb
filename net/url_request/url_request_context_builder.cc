@@ -209,6 +209,7 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       throttling_enabled_(false),
       backoff_enabled_(false),
       sdch_enabled_(false),
+      cookie_store_set_by_client_(false),
       net_log_(nullptr) {
 }
 
@@ -259,7 +260,9 @@ void URLRequestContextBuilder::SetInterceptors(
 void URLRequestContextBuilder::SetCookieAndChannelIdStores(
     scoped_ptr<CookieStore> cookie_store,
     scoped_ptr<ChannelIDService> channel_id_service) {
-  DCHECK(cookie_store);
+  cookie_store_set_by_client_ = true;
+  // If |cookie_store| is NULL, |channel_id_service| must be NULL too.
+  DCHECK(cookie_store || !channel_id_service);
   cookie_store_ = std::move(cookie_store);
   channel_id_service_ = std::move(channel_id_service);
 }
@@ -337,7 +340,7 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   storage->set_http_auth_handler_factory(std::move(http_auth_handler_factory_));
 
-  if (cookie_store_) {
+  if (cookie_store_set_by_client_) {
     storage->set_cookie_store(std::move(cookie_store_));
     storage->set_channel_id_service(std::move(channel_id_service_));
   } else {

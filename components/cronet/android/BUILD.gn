@@ -528,6 +528,8 @@ android_assets("cronet_test_apk_assets") {
     "test/assets/test/redirect.html.mock-http-headers",
     "test/assets/test/redirect_invalid_scheme.html",
     "test/assets/test/redirect_invalid_scheme.html.mock-http-headers",
+    "test/assets/test/set_cookie.html",
+    "test/assets/test/set_cookie.html.mock-http-headers",
     "test/assets/test/sdch/dict/LeQxM80O",
     "test/assets/test/sdch/dict/LeQxM80O.mock-http-headers",
     "test/assets/test/sdch/index",

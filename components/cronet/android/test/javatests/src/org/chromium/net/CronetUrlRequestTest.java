@@ -1724,6 +1724,26 @@ public class CronetUrlRequestTest extends CronetTestBase {
         checkSpecificErrorCode(-2, UrlRequestException.ERROR_OTHER, "FAILED", false);
     }
 
+    /*
+     * Verifies no cookies are saved or sent by default.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testCookiesArentSavedOrSent() throws Exception {
+        // Make a request to a url that sets the cookie
+        String url = NativeTestServer.getFileURL("/set_cookie.html");
+        TestUrlRequestCallback callback = startAndWaitForComplete(url);
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("A=B", callback.mResponseInfo.getAllHeaders().get("Set-Cookie").get(0));
+
+        // Make a request that check that cookie header isn't sent.
+        String headerName = "Cookie";
+        String url2 = NativeTestServer.getEchoHeaderURL(headerName);
+        TestUrlRequestCallback callback2 = startAndWaitForComplete(url2);
+        assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
+        assertEquals("Header not found. :(", callback2.mResponseAsString);
+    }
+
     private void checkSpecificErrorCode(int netError, int errorCode, String name,
             boolean immediatelyRetryable) throws Exception {
         TestUrlRequestCallback callback = startAndWaitForComplete(

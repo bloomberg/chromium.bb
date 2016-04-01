@@ -38,12 +38,14 @@
 #include "net/base/network_delegate_impl.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cookies/cookie_monster.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
 #include "net/sdch/sdch_owner.h"
+#include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -246,12 +248,14 @@ class BasicNetworkDelegate : public net::NetworkDelegateImpl {
 
   bool OnCanGetCookies(const net::URLRequest& request,
                        const net::CookieList& cookie_list) override {
+    // Disallow sending cookies by default.
     return false;
   }
 
   bool OnCanSetCookie(const net::URLRequest& request,
                       const std::string& cookie_line,
                       net::CookieOptions* options) override {
+    // Disallow saving cookies by default.
     return false;
   }
 
@@ -478,10 +482,11 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   // of HPKP by specifying transport_security_persister_path in the future.
   context_builder.set_transport_security_persister_path(base::FilePath());
 
+  // Disable net::CookieStore and net::ChannelIDService.
+  context_builder.SetCookieAndChannelIdStores(nullptr, nullptr);
+
   context_ = context_builder.Build();
 
-  default_load_flags_ = net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DO_NOT_SEND_COOKIES;
   if (config->load_disable_cache)
     default_load_flags_ |= net::LOAD_DISABLE_CACHE;
 

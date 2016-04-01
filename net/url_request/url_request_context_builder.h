@@ -297,8 +297,10 @@ class NET_EXPORT URLRequestContextBuilder {
       std::vector<scoped_ptr<URLRequestInterceptor>> url_request_interceptors);
 
   // Override the default in-memory cookie store and channel id service.
-  // |cookie_store| must not be NULL. |channel_id_service| may be NULL to
-  // disable channel id for this context.
+  // If both |cookie_store| and |channel_id_service| are NULL, CookieStore and
+  // ChannelIDService will be disabled for this context.
+  // If |cookie_store| is not NULL and |channel_id_service| is NULL,
+  // only ChannelIdService is disabled for this context.
   // Note that a persistent cookie store should not be used with an in-memory
   // channel id service, and one cookie store should not be shared between
   // multiple channel-id stores (or used both with and without a channel id
@@ -343,6 +345,7 @@ class NET_EXPORT URLRequestContextBuilder {
   bool throttling_enabled_;
   bool backoff_enabled_;
   bool sdch_enabled_;
+  bool cookie_store_set_by_client_;
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   HttpCacheParams http_cache_params_;
