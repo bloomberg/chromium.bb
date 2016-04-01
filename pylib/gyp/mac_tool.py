@@ -8,6 +8,7 @@
 These functions are executed via gyp-mac-tool when using the Makefile generator.
 """
 
+import errno
 import fcntl
 import fnmatch
 import glob
@@ -68,6 +69,8 @@ class MacTool(object):
       # Try to hard-link, but fallback to copy if the hard-link fails due
       # to cross device link error ([Errno 18] Cross-device link).
       try:
+        if os.path.isfile(dest):
+          os.unlink(dest)
         os.link(source, dest)
       except OSError, e:
         if e.errno == errno.EXDEV:
