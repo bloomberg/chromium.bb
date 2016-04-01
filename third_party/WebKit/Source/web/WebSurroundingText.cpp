@@ -58,7 +58,7 @@ WebString WebSurroundingText::textContent() const
 
 size_t WebSurroundingText::hitOffsetInTextContent() const
 {
-    ASSERT(m_private->startOffsetInContent() == m_private->endOffsetInContent());
+    DCHECK_EQ(m_private->startOffsetInContent(), m_private->endOffsetInContent());
     return m_private->startOffsetInContent();
 }
 

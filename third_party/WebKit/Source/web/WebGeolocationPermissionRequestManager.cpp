@@ -51,7 +51,7 @@ int WebGeolocationPermissionRequestManager::add(const WebGeolocationPermissionRe
 {
     Geolocation* geolocation = permissionRequest.geolocation();
     WebGeolocationPermissionRequestManagerPrivate* manager = ensureManager();
-    ASSERT(!manager->m_geolocationIdMap.contains(geolocation));
+    DCHECK(!manager->m_geolocationIdMap.contains(geolocation));
     static int lastId;
     int id = ++lastId;
     manager->m_geolocationIdMap.add(geolocation, id);

@@ -245,7 +245,7 @@ void WebViewHelper::reset()
         m_webViewWidget = nullptr;
     }
     if (m_webView) {
-        ASSERT(m_webView->mainFrame()->isWebRemoteFrame() || !testClientForFrame(m_webView->mainFrame())->isLoading());
+        DCHECK(m_webView->mainFrame()->isWebRemoteFrame() || !testClientForFrame(m_webView->mainFrame())->isLoading());
         m_webView->willCloseLayerTreeView();
         m_webView->close();
         m_webView = nullptr;
@@ -285,7 +285,7 @@ void TestWebFrameClient::didStartLoading(bool)
 
 void TestWebFrameClient::didStopLoading()
 {
-    ASSERT(m_loadsInProgress > 0);
+    DCHECK_GT(m_loadsInProgress, 0);
     --m_loadsInProgress;
 }
 

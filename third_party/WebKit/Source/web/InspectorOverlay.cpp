@@ -117,7 +117,7 @@ public:
         // Skip cache because the following paint may conflict with the view's real painting.
         DisplayItemCacheSkipper cacheSkipper(graphicsContext);
         FrameView* view = m_overlay->overlayMainFrame()->view();
-        ASSERT(!view->needsLayout());
+        DCHECK(!view->needsLayout());
         view->paint(graphicsContext, CullRect(IntRect(0, 0, view->width(), view->height())));
     }
 
@@ -193,7 +193,7 @@ InspectorOverlay::InspectorOverlay(WebViewImpl* webViewImpl)
 
 InspectorOverlay::~InspectorOverlay()
 {
-    ASSERT(!m_overlayPage);
+    DCHECK(!m_overlayPage);
 }
 
 DEFINE_TRACE(InspectorOverlay)
@@ -471,7 +471,7 @@ Page* InspectorOverlay::overlayPage()
     DEFINE_STATIC_LOCAL(Persistent<FrameLoaderClient>, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
-    ASSERT(!m_overlayChromeClient);
+    DCHECK(!m_overlayChromeClient);
     m_overlayChromeClient = InspectorOverlayChromeClient::create(m_webViewImpl->page()->chromeClient(), *this);
     pageClients.chromeClient = m_overlayChromeClient.get();
     m_overlayPage = Page::create(pageClients);
@@ -507,11 +507,11 @@ Page* InspectorOverlay::overlayPage()
     loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
     v8::Isolate* isolate = toIsolate(frame.get());
     ScriptState* scriptState = ScriptState::forMainWorld(frame.get());
-    ASSERT(scriptState);
+    DCHECK(scriptState);
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Object> global = scriptState->context()->Global();
     v8::Local<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), global, isolate);
-    ASSERT(!overlayHostObj.IsEmpty());
+    DCHECK(!overlayHostObj.IsEmpty());
     v8CallOrCrash(global->Set(scriptState->context(), v8AtomicString(isolate, "InspectorOverlayHost"), overlayHostObj));
 
 #if OS(WIN)
@@ -609,37 +609,37 @@ void InspectorOverlay::overlaySteppedOver()
 
 void InspectorOverlay::overlayStartedPropertyChange(const String& property)
 {
-    ASSERT(m_layoutEditor);
+    DCHECK(m_layoutEditor);
     m_layoutEditor->overlayStartedPropertyChange(property);
 }
 
 void InspectorOverlay::overlayPropertyChanged(float value)
 {
-    ASSERT(m_layoutEditor);
+    DCHECK(m_layoutEditor);
     m_layoutEditor->overlayPropertyChanged(value);
 }
 
 void InspectorOverlay::overlayEndedPropertyChange()
 {
-    ASSERT(m_layoutEditor);
+    DCHECK(m_layoutEditor);
     m_layoutEditor->overlayEndedPropertyChange();
 }
 
 void InspectorOverlay::overlayNextSelector()
 {
-    ASSERT(m_layoutEditor);
+    DCHECK(m_layoutEditor);
     m_layoutEditor->nextSelector();
 }
 
 void InspectorOverlay::overlayPreviousSelector()
 {
-    ASSERT(m_layoutEditor);
+    DCHECK(m_layoutEditor);
     m_layoutEditor->previousSelector();
 }
 
 void InspectorOverlay::overlayClearSelection(bool commitChanges)
 {
-    ASSERT(m_layoutEditor);
+    DCHECK(m_layoutEditor);
     m_hoveredNodeForInspectMode = m_layoutEditor->element();
 
     if (commitChanges)

@@ -356,8 +356,8 @@ void PlatformKeyboardEventBuilder::setKeyType(EventType type)
     // According to the behavior of Webkit in Windows platform,
     // we need to convert KeyDown to RawKeydown and Char events
     // See WebKit/WebKit/Win/WebView.cpp
-    ASSERT(m_type == KeyDown);
-    ASSERT(type == RawKeyDown || type == Char);
+    DCHECK(m_type == KeyDown);
+    DCHECK(type == RawKeyDown || type == Char);
     m_type = type;
 
     if (type == RawKeyDown) {

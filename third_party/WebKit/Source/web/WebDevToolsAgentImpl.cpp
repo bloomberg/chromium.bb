@@ -301,7 +301,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     : m_client(client)
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_attached(false)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     , m_hasBeenDisposed(false)
 #endif
     , m_instrumentingAgents(m_webLocalFrameImpl->frame()->instrumentingAgents())
@@ -319,13 +319,15 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_stateMuted(false)
     , m_layerTreeId(0)
 {
-    ASSERT(isMainThread());
-    ASSERT(m_webLocalFrameImpl->frame());
+    DCHECK(isMainThread());
+    DCHECK(m_webLocalFrameImpl->frame());
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
 {
-    ASSERT(m_hasBeenDisposed);
+#if DCHECK_IS_ON()
+    DCHECK(m_hasBeenDisposed);
+#endif
 }
 
 void WebDevToolsAgentImpl::dispose()
@@ -334,8 +336,8 @@ void WebDevToolsAgentImpl::dispose()
     // same behavior (and correctness) with and without Oilpan.
     if (m_attached)
         Platform::current()->currentThread()->removeTaskObserver(this);
-#if ENABLE(ASSERT)
-    ASSERT(!m_hasBeenDisposed);
+#if DCHECK_IS_ON()
+    DCHECK(!m_hasBeenDisposed);
     m_hasBeenDisposed = true;
 #endif
 }
@@ -369,8 +371,8 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
 
 void WebDevToolsAgentImpl::willBeDestroyed()
 {
-    ASSERT(m_webLocalFrameImpl->frame());
-    ASSERT(m_inspectedFrames->root()->view());
+    DCHECK(m_webLocalFrameImpl->frame());
+    DCHECK(m_inspectedFrames->root()->view());
 
     detach();
     m_resourceContentLoader->dispose();

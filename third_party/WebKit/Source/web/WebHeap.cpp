@@ -36,7 +36,7 @@ namespace blink {
 
 WebHeap::SafePointScope::SafePointScope()
 {
-    RELEASE_ASSERT(!ThreadState::current()->isAtSafePoint());
+    CHECK(!ThreadState::current()->isAtSafePoint());
     ThreadState::current()->enterSafePoint(BlinkGC::HeapPointersOnStack, this);
 }
 

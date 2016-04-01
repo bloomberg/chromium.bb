@@ -77,9 +77,9 @@ void SimCompositor::setDeferCommits(bool deferCommits)
 
 SimDisplayItemList SimCompositor::beginFrame()
 {
-    ASSERT(m_webViewImpl);
-    ASSERT(!m_deferCommits);
-    ASSERT(m_needsAnimate);
+    DCHECK(m_webViewImpl);
+    DCHECK(!m_deferCommits);
+    DCHECK(m_needsAnimate);
     m_needsAnimate = false;
 
     // Always advance the time as if the compositor was running at 60fps.

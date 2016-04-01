@@ -99,7 +99,7 @@ void PageOverlay::update()
 
 LayoutRect PageOverlay::visualRect() const
 {
-    ASSERT(m_layer.get());
+    DCHECK(m_layer.get());
     return LayoutRect(FloatPoint(), m_layer->size());
 }
 
@@ -110,7 +110,7 @@ IntRect PageOverlay::computeInterestRect(const GraphicsLayer* graphicsLayer, con
 
 void PageOverlay::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& gc, GraphicsLayerPaintingPhase phase, const IntRect& interestRect) const
 {
-    ASSERT(m_layer);
+    DCHECK(m_layer);
     m_delegate->paintPageOverlay(*this, gc, interestRect.size());
 }
 

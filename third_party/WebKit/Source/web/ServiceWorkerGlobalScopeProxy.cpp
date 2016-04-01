@@ -82,7 +82,7 @@ RawPtr<ServiceWorkerGlobalScopeProxy> ServiceWorkerGlobalScopeProxy::create(WebE
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 {
     // Verify that the proxy has been detached.
-    ASSERT(!m_embeddedWorker);
+    DCHECK(!m_embeddedWorker);
 }
 
 DEFINE_TRACE(ServiceWorkerGlobalScopeProxy)
@@ -105,7 +105,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 
 void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, const WebServiceWorkerClientInfo& client)
 {
-    ASSERT(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
+    DCHECK(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
 
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
     MessagePortArray* ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
@@ -125,7 +125,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
 
 void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray& webChannels, WebPassOwnPtr<WebServiceWorker::Handle> handle)
 {
-    ASSERT(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
+    DCHECK(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
 
     WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
     MessagePortArray* ports = MessagePort::toMessagePortArray(m_workerGlobalScope, webChannels);
@@ -241,7 +241,7 @@ void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(RawPtr<ConsoleMessage> 
 
 void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& message)
 {
-    ASSERT(m_embeddedWorker);
+    DCHECK(m_embeddedWorker);
     document().postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector, m_embeddedWorker, message));
 }
 
@@ -258,14 +258,14 @@ void ServiceWorkerGlobalScopeProxy::didInitializeWorkerContext()
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* workerGlobalScope)
 {
-    ASSERT(!m_workerGlobalScope);
+    DCHECK(!m_workerGlobalScope);
     m_workerGlobalScope = static_cast<ServiceWorkerGlobalScope*>(workerGlobalScope);
     client().workerContextStarted(this);
 }
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
 {
-    ASSERT(m_embeddedWorker);
+    DCHECK(m_embeddedWorker);
     document().postTask(BLINK_FROM_HERE, createCrossThreadTask(&WebEmbeddedWorkerImpl::terminateWorkerContext, m_embeddedWorker));
 }
 
@@ -299,19 +299,19 @@ void ServiceWorkerGlobalScopeProxy::detach()
 
 WebServiceWorkerContextClient& ServiceWorkerGlobalScopeProxy::client() const
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
     return *m_client;
 }
 
 Document& ServiceWorkerGlobalScopeProxy::document() const
 {
-    ASSERT(m_document);
+    DCHECK(m_document);
     return *m_document;
 }
 
 ServiceWorkerGlobalScope* ServiceWorkerGlobalScopeProxy::workerGlobalScope() const
 {
-    ASSERT(m_workerGlobalScope);
+    DCHECK(m_workerGlobalScope);
     return m_workerGlobalScope;
 }
 

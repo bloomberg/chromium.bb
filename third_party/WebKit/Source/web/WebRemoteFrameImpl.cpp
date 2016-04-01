@@ -591,7 +591,7 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(WebTreeScopeType scope, cons
     child->initializeCoreFrame(frame()->host(), owner.get(), name, uniqueName);
     // Partially related with the above FIXME--the init() call may trigger JS dispatch. However,
     // if the parent is remote, it should never be detached synchronously...
-    ASSERT(child->frame());
+    DCHECK(child->frame());
     return child;
 }
 
@@ -625,7 +625,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::fromFrame(RemoteFrame& frame)
 
 void WebRemoteFrameImpl::initializeFromFrame(WebLocalFrame* source) const
 {
-    ASSERT(source);
+    DCHECK(source);
     WebLocalFrameImpl* localFrameImpl = toWebLocalFrameImpl(source);
 
     client()->initializeChildFrame(
@@ -635,7 +635,7 @@ void WebRemoteFrameImpl::initializeFromFrame(WebLocalFrame* source) const
 
 void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) const
 {
-    ASSERT(frame());
+    DCHECK(frame());
     frame()->securityContext()->setReplicatedOrigin(origin);
 
     // If the origin of a remote frame changed, the accessibility object for the owner
@@ -655,33 +655,33 @@ void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) co
 
 void WebRemoteFrameImpl::setReplicatedSandboxFlags(WebSandboxFlags flags) const
 {
-    ASSERT(frame());
+    DCHECK(frame());
     frame()->securityContext()->enforceSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
 void WebRemoteFrameImpl::setReplicatedName(const WebString& name, const WebString& uniqueName) const
 {
-    ASSERT(frame());
+    DCHECK(frame());
     frame()->tree().setPrecalculatedName(name, uniqueName);
 }
 
 void WebRemoteFrameImpl::setReplicatedShouldEnforceStrictMixedContentChecking(bool shouldEnforce) const
 {
-    ASSERT(frame());
+    DCHECK(frame());
     frame()->securityContext()->setShouldEnforceStrictMixedContentChecking(shouldEnforce);
 }
 
 void WebRemoteFrameImpl::setReplicatedPotentiallyTrustworthyUniqueOrigin(bool isUniqueOriginPotentiallyTrustworthy) const
 {
-    ASSERT(frame());
+    DCHECK(frame());
     // If |isUniqueOriginPotentiallyTrustworthy| is true, then the origin must be unique.
-    ASSERT(!isUniqueOriginPotentiallyTrustworthy || frame()->securityContext()->getSecurityOrigin()->isUnique());
+    DCHECK(!isUniqueOriginPotentiallyTrustworthy || frame()->securityContext()->getSecurityOrigin()->isUnique());
     frame()->securityContext()->getSecurityOrigin()->setUniqueOriginIsPotentiallyTrustworthy(isUniqueOriginPotentiallyTrustworthy);
 }
 
 void WebRemoteFrameImpl::DispatchLoadEventForFrameOwner() const
 {
-    ASSERT(frame()->owner()->isLocal());
+    DCHECK(frame()->owner()->isLocal());
     frame()->owner()->dispatchLoad();
 }
 

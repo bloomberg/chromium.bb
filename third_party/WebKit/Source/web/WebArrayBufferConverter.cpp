@@ -38,7 +38,7 @@ v8::Local<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, 
 {
     // We no longer use |creationContext| because it's often misused and points
     // to a context faked by user script.
-    ASSERT(creationContext->CreationContext() == isolate->GetCurrentContext());
+    DCHECK(creationContext->CreationContext() == isolate->GetCurrentContext());
     if (!buffer)
         return v8::Local<v8::Value>();
     return toV8(PassRefPtr<DOMArrayBuffer>(*buffer), isolate->GetCurrentContext()->Global(), isolate);

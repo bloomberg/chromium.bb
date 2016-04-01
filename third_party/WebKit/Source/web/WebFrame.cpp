@@ -100,7 +100,7 @@ bool WebFrame::swap(WebFrame* frame)
         // In this case, the core LocalFrame is already initialized, so just
         // update a bit of state.
         LocalFrame& localFrame = *toWebLocalFrameImpl(frame)->frame();
-        ASSERT(owner == localFrame.owner());
+        DCHECK_EQ(owner, localFrame.owner());
         if (owner) {
             owner->setContentFrame(localFrame);
             if (owner->isLocal())
@@ -135,7 +135,7 @@ void WebFrame::setFrameOwnerSandboxFlags(WebSandboxFlags flags)
     // At the moment, this is only used to replicate sandbox flags
     // for frames with a remote owner.
     FrameOwner* owner = toImplBase()->frame()->owner();
-    ASSERT(owner);
+    DCHECK(owner);
     toRemoteFrameOwner(owner)->setSandboxFlags(static_cast<SandboxFlags>(flags));
 }
 
@@ -168,7 +168,7 @@ void WebFrame::insertAfter(WebFrame* newChild, WebFrame* previousSibling)
         next = m_firstChild;
         m_firstChild = newChild;
     } else {
-        ASSERT(previousSibling->m_parent == this);
+        DCHECK_EQ(previousSibling->m_parent, this);
         next = previousSibling->m_nextSibling;
         previousSibling->m_nextSibling = newChild;
         newChild->m_previousSibling = previousSibling;
@@ -344,7 +344,7 @@ ALWAYS_INLINE void WebFrame::traceFrameImpl(VisitorDispatcher visitor, WebFrame*
 template <typename VisitorDispatcher>
 ALWAYS_INLINE void WebFrame::traceFramesImpl(VisitorDispatcher visitor, WebFrame* frame)
 {
-    ASSERT(frame);
+    DCHECK(frame);
     traceFrame(visitor, frame->m_parent);
     for (WebFrame* child = frame->firstChild(); child; child = child->nextSibling())
         traceFrame(visitor, child);

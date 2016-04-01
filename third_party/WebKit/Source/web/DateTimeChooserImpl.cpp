@@ -52,8 +52,8 @@ DateTimeChooserImpl::DateTimeChooserImpl(ChromeClientImpl* chromeClient, DateTim
     , m_parameters(parameters)
     , m_locale(Locale::create(parameters.locale))
 {
-    ASSERT(m_chromeClient);
-    ASSERT(m_client);
+    DCHECK(m_chromeClient);
+    DCHECK(m_client);
     m_popup = m_chromeClient->openPagePopup(this);
 }
 
@@ -205,7 +205,7 @@ void DateTimeChooserImpl::closePopup()
 
 void DateTimeChooserImpl::didClosePopup()
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
     m_popup = nullptr;
     m_client->didEndChooser();
 }

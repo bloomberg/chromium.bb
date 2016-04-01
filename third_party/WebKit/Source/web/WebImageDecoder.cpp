@@ -64,37 +64,37 @@ void WebImageDecoder::init(Type type)
 
 void WebImageDecoder::setData(const WebData& data, bool allDataReceived)
 {
-    ASSERT(m_private);
+    DCHECK(m_private);
     m_private->setData(PassRefPtr<SharedBuffer>(data).get(), allDataReceived);
 }
 
 bool WebImageDecoder::isFailed() const
 {
-    ASSERT(m_private);
+    DCHECK(m_private);
     return m_private->failed();
 }
 
 bool WebImageDecoder::isSizeAvailable() const
 {
-    ASSERT(m_private);
+    DCHECK(m_private);
     return m_private->isSizeAvailable();
 }
 
 WebSize WebImageDecoder::size() const
 {
-    ASSERT(m_private);
+    DCHECK(m_private);
     return m_private->size();
 }
 
 size_t WebImageDecoder::frameCount() const
 {
-    ASSERT(m_private);
+    DCHECK(m_private);
     return m_private->frameCount();
 }
 
 bool WebImageDecoder::isFrameCompleteAtIndex(int index) const
 {
-    ASSERT(m_private);
+    DCHECK(m_private);
     ImageFrame* const frameBuffer = m_private->frameBufferAtIndex(index);
     if (!frameBuffer)
         return false;
@@ -103,7 +103,7 @@ bool WebImageDecoder::isFrameCompleteAtIndex(int index) const
 
 WebImage WebImageDecoder::getFrameAtIndex(int index = 0) const
 {
-    ASSERT(m_private);
+    DCHECK(m_private);
     ImageFrame* const frameBuffer = m_private->frameBufferAtIndex(index);
     if (!frameBuffer)
         return WebImage();

@@ -26,7 +26,8 @@ AudioOutputDeviceClientImpl::~AudioOutputDeviceClientImpl()
 
 void AudioOutputDeviceClientImpl::checkIfAudioSinkExistsAndIsAuthorized(ExecutionContext* context, const WebString& sinkId, PassOwnPtr<WebSetSinkIdCallbacks> callbacks)
 {
-    ASSERT(context && context->isDocument());
+    DCHECK(context);
+    DCHECK(context->isDocument());
     Document* document = toDocument(context);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
     webFrame->client()->checkIfAudioSinkExistsAndIsAuthorized(sinkId, WebSecurityOrigin(context->getSecurityOrigin()), callbacks.leakPtr());

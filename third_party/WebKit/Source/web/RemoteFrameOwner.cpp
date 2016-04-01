@@ -58,7 +58,7 @@ void RemoteFrameOwner::setContentFrame(Frame& frame)
 
 void RemoteFrameOwner::clearContentFrame()
 {
-    ASSERT(m_frame->owner() == this);
+    DCHECK_EQ(m_frame->owner(), this);
     m_frame = nullptr;
 #if !ENABLE(OILPAN)
     // Balance the ref() in setContentFrame().

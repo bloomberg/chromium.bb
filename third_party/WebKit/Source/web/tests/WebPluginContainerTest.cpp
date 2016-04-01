@@ -142,7 +142,7 @@ private:
 
 void TestPlugin::printPage(int pageNumber, WebCanvas* canvas)
 {
-    ASSERT(m_testClient);
+    DCHECK(m_testClient);
     m_testClient->onPrintPage();
 }
 
@@ -160,14 +160,14 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();
     runPendingTasks();
 
     WebPluginContainer* pluginContainerOne = getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin"));
-    ASSERT(pluginContainerOne);
+    DCHECK(pluginContainerOne);
     WebPoint point1 = pluginContainerOne->rootFrameToLocalPoint(WebPoint(10, 10));
     ASSERT_EQ(0, point1.x);
     ASSERT_EQ(0, point1.y);
@@ -176,7 +176,7 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
     ASSERT_EQ(90, point2.y);
 
     WebPluginContainer* pluginContainerTwo = getWebPluginContainer(webView, WebString::fromUTF8("rotated-plugin"));
-    ASSERT(pluginContainerTwo);
+    DCHECK(pluginContainerTwo);
     WebPoint point3 = pluginContainerTwo->rootFrameToLocalPoint(WebPoint(0, 10));
     ASSERT_EQ(10, point3.x);
     ASSERT_EQ(0, point3.y);
@@ -192,7 +192,7 @@ TEST_F(WebPluginContainerTest, PluginDocumentPluginIsFocused)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->updateAllLifecyclePhases();
 
     WebDocument document = webView->mainFrame()->document();
@@ -209,7 +209,7 @@ TEST_F(WebPluginContainerTest, IFramePluginDocumentNotFocused)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "iframe_pdf.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->updateAllLifecyclePhases();
 
     WebDocument document = webView->mainFrame()->document();
@@ -227,7 +227,7 @@ TEST_F(WebPluginContainerTest, PrintOnePage)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->updateAllLifecyclePhases();
     runPendingTasks();
     WebFrame* frame = webView->mainFrame();
@@ -240,7 +240,7 @@ TEST_F(WebPluginContainerTest, PrintOnePage)
     SkPictureRecorder recorder;
     frame->printPage(0, recorder.beginRecording(IntRect()));
     frame->printEnd();
-    ASSERT(pluginWebFrameClient.printedAtLeastOnePage());
+    DCHECK(pluginWebFrameClient.printedAtLeastOnePage());
 }
 
 TEST_F(WebPluginContainerTest, PrintAllPages)
@@ -250,7 +250,7 @@ TEST_F(WebPluginContainerTest, PrintAllPages)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->updateAllLifecyclePhases();
     runPendingTasks();
     WebFrame* frame = webView->mainFrame();
@@ -263,7 +263,7 @@ TEST_F(WebPluginContainerTest, PrintAllPages)
     SkPictureRecorder recorder;
     frame->printPagesWithBoundaries(recorder.beginRecording(IntRect()), WebSize());
     frame->printEnd();
-    ASSERT(pluginWebFrameClient.printedAtLeastOnePage());
+    DCHECK(pluginWebFrameClient.printedAtLeastOnePage());
 }
 
 TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
@@ -272,14 +272,14 @@ TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();
     runPendingTasks();
 
     WebPluginContainer* pluginContainerOne = getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin"));
-    ASSERT(pluginContainerOne);
+    DCHECK(pluginContainerOne);
     WebPoint point1 = pluginContainerOne->localToRootFramePoint(WebPoint(0, 0));
     ASSERT_EQ(10, point1.x);
     ASSERT_EQ(10, point1.y);
@@ -288,7 +288,7 @@ TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
     ASSERT_EQ(100, point2.y);
 
     WebPluginContainer* pluginContainerTwo = getWebPluginContainer(webView, WebString::fromUTF8("rotated-plugin"));
-    ASSERT(pluginContainerTwo);
+    DCHECK(pluginContainerTwo);
     WebPoint point3 = pluginContainerTwo->localToRootFramePoint(WebPoint(10, 0));
     ASSERT_EQ(0, point3.x);
     ASSERT_EQ(10, point3.y);
@@ -304,7 +304,7 @@ TEST_F(WebPluginContainerTest, Copy)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();
@@ -325,7 +325,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();
@@ -379,7 +379,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin)
     CustomPluginWebFrameClient<EventTestPlugin> pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();
@@ -421,7 +421,7 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();
@@ -457,7 +457,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_containing_page.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();
@@ -466,7 +466,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement)
     WebElement pluginElement = webView->mainFrame()->firstChild()->document().getElementById("translated-plugin");
     RawPtr<WebPluginContainerImpl> pluginContainerImpl = toWebPluginContainerImpl(pluginElement.pluginContainer());
 
-    ASSERT(pluginContainerImpl.get());
+    DCHECK(pluginContainerImpl.get());
     pluginContainerImpl->setFrameRect(IntRect(0, 0, 300, 300));
 
     IntRect windowRect, clipRect, unobscuredRect;
@@ -487,7 +487,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();
@@ -496,7 +496,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin)
     WebElement pluginElement = webView->mainFrame()->document().getElementById("subpixel-positioned-plugin");
     RawPtr<WebPluginContainerImpl> pluginContainerImpl = toWebPluginContainerImpl(pluginElement.pluginContainer());
 
-    ASSERT(pluginContainerImpl.get());
+    DCHECK(pluginContainerImpl.get());
 
     IntRect windowRect, clipRect, unobscuredRect;
     Vector<IntRect> cutOutRects;
@@ -539,7 +539,7 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest)
     CustomPluginWebFrameClient<TopmostPlugin> pluginWebFrameClient; // Must outlive webViewHelper.
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();
@@ -641,7 +641,7 @@ TEST_F(WebPluginContainerTest, NeedsWheelEvents)
     TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper
     FrameTestHelpers::WebViewHelper webViewHelper;
     WebViewImpl* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
-    ASSERT(webView);
+    DCHECK(webView);
     webView->settings()->setPluginsEnabled(true);
     webView->resize(WebSize(300, 300));
     webView->updateAllLifecyclePhases();

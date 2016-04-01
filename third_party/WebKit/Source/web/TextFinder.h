@@ -198,7 +198,7 @@ private:
 
     WebLocalFrameImpl& ownerFrame() const
     {
-        ASSERT(m_ownerFrame);
+        DCHECK(m_ownerFrame);
         return *m_ownerFrame;
     }
 

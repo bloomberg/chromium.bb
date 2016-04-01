@@ -94,7 +94,7 @@ bool hasDOMActivityLogger(int worldId, const WebString& extensionId)
 
 void setDOMActivityLogger(int worldId, const WebString& extensionId, WebDOMActivityLogger* logger)
 {
-    ASSERT(logger);
+    DCHECK(logger);
     V8DOMActivityLogger::setActivityLogger(worldId, extensionId, adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
 }
 

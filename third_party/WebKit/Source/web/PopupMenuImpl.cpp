@@ -169,7 +169,7 @@ public:
         , m_isInGroup(false)
         , m_buffer(buffer)
     {
-        ASSERT(m_buffer);
+        DCHECK(m_buffer);
 #if OS(LINUX)
         // On other platforms, the <option> background color is the same as the
         // <select> background color. On Linux, that makes the <option>
@@ -182,7 +182,7 @@ public:
 
     void serializeBaseStyle()
     {
-        ASSERT(!m_isInGroup);
+        DCHECK(!m_isInGroup);
         PagePopupClient::addString("baseStyle: {", m_buffer);
         addProperty("backgroundColor", m_backgroundColor.serialized(), m_buffer);
         addProperty("color", baseStyle().visitedDependentColor(CSSPropertyColor).serialized(), m_buffer);
@@ -208,7 +208,7 @@ public:
     const FontDescription& baseFont() { return m_isInGroup ? m_groupStyle->getFontDescription() : m_baseStyle.getFontDescription(); }
     void startGroupChildren(const ComputedStyle& groupStyle)
     {
-        ASSERT(!m_isInGroup);
+        DCHECK(!m_isInGroup);
         PagePopupClient::addString("children: [", m_buffer);
         m_isInGroup = true;
         m_groupStyle = &groupStyle;
@@ -248,7 +248,7 @@ PopupMenuImpl::PopupMenuImpl(ChromeClientImpl* chromeClient, HTMLSelectElement& 
 
 PopupMenuImpl::~PopupMenuImpl()
 {
-    ASSERT(!m_popup);
+    DCHECK(!m_popup);
 }
 
 DEFINE_TRACE(PopupMenuImpl)
@@ -304,7 +304,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
 void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& element)
 {
     const ComputedStyle* style = m_ownerElement->itemComputedStyle(element);
-    ASSERT(style);
+    DCHECK(style);
     SharedBuffer* data = context.m_buffer;
     // TODO(tkent): We generate unnecessary "style: {\n},\n" even if no
     // additional style.
@@ -404,12 +404,12 @@ void PopupMenuImpl::selectFontsFromOwnerDocument(Document& document)
 
 void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValue)
 {
-    ASSERT(m_popup);
-    ASSERT(m_ownerElement);
+    DCHECK(m_popup);
+    DCHECK(m_ownerElement);
     RawPtr<PopupMenuImpl> protector(this);
     bool success;
     int listIndex = stringValue.toInt(&success);
-    ASSERT(success);
+    DCHECK(success);
     {
         EventQueueScope scope;
         m_ownerElement->valueChanged(listIndex);
@@ -431,10 +431,10 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
 
 void PopupMenuImpl::setValue(const String& value)
 {
-    ASSERT(m_ownerElement);
+    DCHECK(m_ownerElement);
     bool success;
     int listIndex = value.toInt(&success);
-    ASSERT(success);
+    DCHECK(success);
     m_ownerElement->provisionalSelectionChanged(listIndex);
 }
 
@@ -473,7 +473,7 @@ void PopupMenuImpl::dispose()
 
 void PopupMenuImpl::show()
 {
-    ASSERT(!m_popup);
+    DCHECK(!m_popup);
     m_popup = m_chromeClient->openPagePopup(this);
 }
 

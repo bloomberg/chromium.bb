@@ -80,7 +80,7 @@ AXObject* ColorChooserUIController::rootAXObject()
 
 void ColorChooserUIController::didChooseColor(const WebColor& color)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
     m_client->didChooseColor(Color(static_cast<RGBA32>(color)));
 }
 
@@ -93,7 +93,7 @@ void ColorChooserUIController::didEndChooser()
 
 void ColorChooserUIController::openColorChooser()
 {
-    ASSERT(!m_chooser);
+    DCHECK(!m_chooser);
     WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(m_frame);
     WebFrameClient* webFrameClient = frame->client();
     if (!webFrameClient)

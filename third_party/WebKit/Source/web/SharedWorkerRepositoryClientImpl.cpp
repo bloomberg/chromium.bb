@@ -104,16 +104,16 @@ void SharedWorkerConnector::scriptLoadFailed()
 
 static WebSharedWorkerRepositoryClient::DocumentID getId(void* document)
 {
-    ASSERT(document);
+    DCHECK(document);
     return reinterpret_cast<WebSharedWorkerRepositoryClient::DocumentID>(document);
 }
 
 void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<WebMessagePortChannel> port, const KURL& url, const String& name, ExceptionState& exceptionState)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
 
     // No nested workers (for now) - connect() should only be called from document context.
-    ASSERT(worker->getExecutionContext()->isDocument());
+    DCHECK(worker->getExecutionContext()->isDocument());
     Document* document = toDocument(worker->getExecutionContext());
 
     // TODO(estark): this is broken, as it only uses the first header
@@ -155,7 +155,7 @@ void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<
 
 void SharedWorkerRepositoryClientImpl::documentDetached(Document* document)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
     m_client->documentDetached(getId(document));
 }
 

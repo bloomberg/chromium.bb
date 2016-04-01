@@ -88,7 +88,7 @@ void initialize(Platform* platform)
 
     // currentThread is null if we are running on a thread without a message loop.
     if (WebThread* currentThread = platform->currentThread()) {
-        ASSERT(!s_endOfTaskRunner);
+        DCHECK(!s_endOfTaskRunner);
         s_endOfTaskRunner = new EndOfTaskRunner;
         currentThread->addTaskObserver(s_endOfTaskRunner);
     }
@@ -168,7 +168,7 @@ void enableLogChannel(const char* name)
 
 void resetPluginCache(bool reloadPages)
 {
-    ASSERT(!reloadPages);
+    DCHECK(!reloadPages);
     Page::refreshPlugins();
 }
 

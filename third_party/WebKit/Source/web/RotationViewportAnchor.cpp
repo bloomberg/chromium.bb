@@ -122,10 +122,10 @@ void RotationViewportAnchor::setAnchor()
         return;
 
     // Inner rectangle should be within the outer one.
-    ASSERT(outerViewRect.contains(innerViewRect));
+    DCHECK(outerViewRect.contains(innerViewRect));
 
     // Outer rectangle is used as a scale, we need positive width and height.
-    ASSERT(!outerViewRect.isEmpty());
+    DCHECK(!outerViewRect.isEmpty());
 
     m_normalizedVisualViewportOffset = FloatSize(innerViewRect.location() - outerViewRect.location());
 

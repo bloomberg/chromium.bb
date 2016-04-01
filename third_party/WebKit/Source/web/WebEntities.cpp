@@ -38,7 +38,7 @@ namespace blink {
 
 WebEntities::WebEntities(bool xmlEntities)
 {
-    ASSERT(m_entitiesMap.isEmpty());
+    DCHECK(m_entitiesMap.isEmpty());
     m_entitiesMap.set(0x003c, "lt");
     m_entitiesMap.set(0x003e, "gt");
     m_entitiesMap.set(0x0026, "amp");

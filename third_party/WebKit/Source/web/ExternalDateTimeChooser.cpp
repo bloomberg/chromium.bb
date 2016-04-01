@@ -78,12 +78,12 @@ DEFINE_TRACE(ExternalDateTimeChooser)
 ExternalDateTimeChooser::ExternalDateTimeChooser(DateTimeChooserClient* client)
     : m_client(client)
 {
-    ASSERT(client);
+    DCHECK(client);
 }
 
 RawPtr<ExternalDateTimeChooser> ExternalDateTimeChooser::create(ChromeClientImpl* chromeClient, WebViewClient* webViewClient, DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
 {
-    ASSERT(chromeClient);
+    DCHECK(chromeClient);
     RawPtr<ExternalDateTimeChooser> chooser = new ExternalDateTimeChooser(client);
     if (!chooser->openDateTimeChooser(chromeClient, webViewClient, parameters))
         chooser.clear();

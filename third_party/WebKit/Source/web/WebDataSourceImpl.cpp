@@ -138,7 +138,7 @@ WebDataSourceImpl::WebDataSourceImpl(LocalFrame* frame, const ResourceRequest& r
 WebDataSourceImpl::~WebDataSourceImpl()
 {
     // Verify that detachFromFrame() has been called.
-    ASSERT(!m_extraData);
+    DCHECK(!m_extraData);
 }
 
 void WebDataSourceImpl::detachFromFrame()

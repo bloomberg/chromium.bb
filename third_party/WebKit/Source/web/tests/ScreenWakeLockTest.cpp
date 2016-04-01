@@ -80,21 +80,21 @@ protected:
 
     blink::LocalFrame* frame()
     {
-        ASSERT(m_webViewHelper.webViewImpl());
-        ASSERT(m_webViewHelper.webViewImpl()->mainFrameImpl());
+        DCHECK(m_webViewHelper.webViewImpl());
+        DCHECK(m_webViewHelper.webViewImpl()->mainFrameImpl());
         return m_webViewHelper.webViewImpl()->mainFrameImpl()->frame();
     }
 
     blink::Screen* screen()
     {
-        ASSERT(frame());
-        ASSERT(frame()->localDOMWindow());
+        DCHECK(frame());
+        DCHECK(frame()->localDOMWindow());
         return frame()->localDOMWindow()->screen();
     }
 
     bool screenKeepAwake()
     {
-        ASSERT(screen());
+        DCHECK(screen());
         return ScreenWakeLock::keepAwake(*screen());
     }
 
@@ -105,20 +105,20 @@ protected:
 
     void setKeepAwake(bool keepAwake)
     {
-        ASSERT(screen());
+        DCHECK(screen());
         ScreenWakeLock::setKeepAwake(*screen(), keepAwake);
     }
 
     void show()
     {
-        ASSERT(m_webViewHelper.webView());
+        DCHECK(m_webViewHelper.webView());
         m_webViewHelper.webView()->setVisibilityState(
             blink::WebPageVisibilityStateVisible, false);
     }
 
     void hide()
     {
-        ASSERT(m_webViewHelper.webView());
+        DCHECK(m_webViewHelper.webView());
         m_webViewHelper.webView()->setVisibilityState(
             blink::WebPageVisibilityStateHidden, false);
     }

@@ -104,7 +104,7 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* l
     , m_selfKeepAlive(this)
 #endif
 {
-    ASSERT(m_localRoot->frame()->isLocalRoot());
+    DCHECK(m_localRoot->frame()->isLocalRoot());
     initializeLayerTreeView();
     m_localRoot->setFrameWidget(this);
     allInstances().add(this);
@@ -128,7 +128,7 @@ DEFINE_TRACE(WebFrameWidgetImpl)
 void WebFrameWidgetImpl::close()
 {
     WebDevToolsAgentImpl::webFrameWidgetImplClosed(this);
-    ASSERT(allInstances().contains(this));
+    DCHECK(allInstances().contains(this));
     allInstances().remove(this);
 
     m_localRoot->setFrameWidget(nullptr);
@@ -222,7 +222,7 @@ void WebFrameWidgetImpl::updateMainFrameLayoutSize()
 
 void WebFrameWidgetImpl::setIgnoreInputEvents(bool newValue)
 {
-    ASSERT(m_ignoreInputEvents != newValue);
+    DCHECK_NE(m_ignoreInputEvents, newValue);
     m_ignoreInputEvents = newValue;
 }
 
@@ -239,7 +239,7 @@ void WebFrameWidgetImpl::didExitFullScreen()
 void WebFrameWidgetImpl::beginFrame(double lastFrameTimeMonotonic)
 {
     TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime", lastFrameTimeMonotonic);
-    ASSERT(lastFrameTimeMonotonic);
+    DCHECK(lastFrameTimeMonotonic);
     PageWidgetDelegate::animate(*page(), lastFrameTimeMonotonic);
 }
 
@@ -279,8 +279,8 @@ void WebFrameWidgetImpl::updateLayerTreeBackgroundColor()
 
 void WebFrameWidgetImpl::updateLayerTreeDeviceScaleFactor()
 {
-    ASSERT(page());
-    ASSERT(m_layerTreeView);
+    DCHECK(page());
+    DCHECK(m_layerTreeView);
 
     float deviceScaleFactor = page()->deviceScaleFactor();
     m_layerTreeView->setDeviceScaleFactor(deviceScaleFactor);
@@ -760,7 +760,7 @@ WebInputEventResult WebFrameWidgetImpl::handleGestureEvent(const WebGestureEvent
 
 WebInputEventResult WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& event)
 {
-    ASSERT((event.type == WebInputEvent::RawKeyDown)
+    DCHECK((event.type == WebInputEvent::RawKeyDown)
         || (event.type == WebInputEvent::KeyDown)
         || (event.type == WebInputEvent::KeyUp));
 
@@ -819,7 +819,7 @@ WebInputEventResult WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& e
 
 WebInputEventResult WebFrameWidgetImpl::handleCharEvent(const WebKeyboardEvent& event)
 {
-    ASSERT(event.type == WebInputEvent::Char);
+    DCHECK_EQ(event.type, WebInputEvent::Char);
 
     // Please refer to the comments explaining the m_suppressNextKeypressEvent
     // member.  The m_suppressNextKeypressEvent is set if the KeyDown is
@@ -1008,7 +1008,7 @@ void WebFrameWidgetImpl::initializeLayerTreeView()
 
     // FIXME: only unittests, click to play, Android priting, and printing (for headers and footers)
     // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.
-    ASSERT(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
+    DCHECK(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
 }
 
 void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active)
@@ -1019,7 +1019,7 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active)
     if (m_layerTreeViewClosed)
         return;
 
-    ASSERT(!active || m_layerTreeView);
+    DCHECK(!active || m_layerTreeView);
 
     if (m_isAcceleratedCompositingActive == active)
         return;

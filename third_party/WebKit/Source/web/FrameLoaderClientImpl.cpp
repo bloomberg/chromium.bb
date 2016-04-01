@@ -659,7 +659,7 @@ void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, Na
 {
     if (!m_webFrame->client())
         return;
-    ASSERT(m_webFrame->frame()->document());
+    DCHECK(m_webFrame->frame()->document());
     Fullscreen::fullyExitFullscreen(*m_webFrame->frame()->document());
     m_webFrame->client()->loadURLExternally(
         WrappedResourceRequest(request), static_cast<WebNavigationPolicy>(policy), suggestedName, shouldReplaceCurrentEntry);
@@ -671,7 +671,7 @@ bool FrameLoaderClientImpl::navigateBackForward(int offset) const
     if (!webview->client())
         return false;
 
-    ASSERT(offset);
+    DCHECK(offset);
     if (offset > webview->client()->historyForwardListCount())
         return false;
     if (offset < -webview->client()->historyBackListCount())
@@ -932,7 +932,7 @@ void FrameLoaderClientImpl::didUpdateToUniqueOrigin()
 {
     if (!m_webFrame->client())
         return;
-    ASSERT(m_webFrame->getSecurityOrigin().isUnique());
+    DCHECK(m_webFrame->getSecurityOrigin().isUnique());
     m_webFrame->client()->didUpdateToUniqueOrigin(m_webFrame->getSecurityOrigin().isPotentiallyTrustworthy());
 }
 

@@ -81,7 +81,7 @@ private:
     explicit PagePopupChromeClient(WebPagePopupImpl* popup)
         : m_popup(popup)
     {
-        ASSERT(m_popup->widgetClient());
+        DCHECK(m_popup->widgetClient());
     }
 
     void closeWindowSoon() override
@@ -123,7 +123,7 @@ private:
             m_popup->m_webView->scheduleAnimation();
 
         if (m_popup->isAcceleratedCompositingActive()) {
-            ASSERT(m_popup->m_layerTreeView);
+            DCHECK(m_popup->m_layerTreeView);
             m_popup->m_layerTreeView->setNeedsBeginFrame();
             return;
         }
@@ -238,18 +238,18 @@ WebPagePopupImpl::WebPagePopupImpl(WebWidgetClient* client)
     , m_rootGraphicsLayer(0)
     , m_isAcceleratedCompositingActive(false)
 {
-    ASSERT(client);
+    DCHECK(client);
 }
 
 WebPagePopupImpl::~WebPagePopupImpl()
 {
-    ASSERT(!m_page);
+    DCHECK(!m_page);
 }
 
 bool WebPagePopupImpl::initialize(WebViewImpl* webView, PagePopupClient* popupClient)
 {
-    ASSERT(webView);
-    ASSERT(popupClient);
+    DCHECK(webView);
+    DCHECK(popupClient);
     m_webView = webView;
     m_popupClient = popupClient;
 
@@ -288,9 +288,9 @@ bool WebPagePopupImpl::initializePage()
     if (AXObjectCache* cache = m_popupClient->ownerElement().document().existingAXObjectCache())
         cache->childrenChanged(&m_popupClient->ownerElement());
 
-    ASSERT(frame->localDOMWindow());
+    DCHECK(frame->localDOMWindow());
     PagePopupSupplement::install(*frame, *this, m_popupClient);
-    ASSERT(m_popupClient->ownerElement().document().existingAXObjectCache() == frame->document()->existingAXObjectCache());
+    DCHECK_EQ(m_popupClient->ownerElement().document().existingAXObjectCache(), frame->document()->existingAXObjectCache());
 
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     m_popupClient->writeDocument(data.get());
@@ -325,7 +325,7 @@ AXObject* WebPagePopupImpl::rootAXObject()
     if (!document)
         return 0;
     AXObjectCache* cache = document->axObjectCache();
-    ASSERT(cache);
+    DCHECK(cache);
     return toAXObjectCacheImpl(cache)->getOrCreate(document->layoutView());
 }
 
@@ -535,7 +535,7 @@ void WebPagePopupImpl::layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback* callb
 
 void WebPagePopupImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)
 {
-    ASSERT(isAcceleratedCompositingActive());
+    DCHECK(isAcceleratedCompositingActive());
     m_layerTreeView->compositeAndReadbackAsync(callback);
 }
 

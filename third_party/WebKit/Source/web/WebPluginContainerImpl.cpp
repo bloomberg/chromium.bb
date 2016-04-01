@@ -140,7 +140,7 @@ void WebPluginContainerImpl::paint(GraphicsContext& context, const CullRect& cul
     LayoutObjectDrawingRecorder drawingRecorder(context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, cullRect.m_rect);
     context.save();
 
-    ASSERT(parent()->isFrameView());
+    DCHECK(parent()->isFrameView());
     FrameView* view =  toFrameView(parent());
 
     // The plugin is positioned in the root frame's coordinates, so it needs to
@@ -459,7 +459,7 @@ v8::Local<v8::Object> WebPluginContainerImpl::v8ObjectForElement()
     v8::Local<v8::Value> v8value = toV8(m_element.get(), scriptState->context()->Global(), scriptState->isolate());
     if (v8value.IsEmpty())
         return v8::Local<v8::Object>();
-    ASSERT(v8value->IsObject());
+    DCHECK(v8value->IsObject());
 
     return v8::Local<v8::Object>::Cast(v8value);
 }
@@ -474,7 +474,7 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
         return WebString();
 
     const KURL& kurl = url;
-    ASSERT(kurl.protocolIs("javascript"));
+    DCHECK(kurl.protocolIs("javascript"));
 
     String script = decodeURLEscapeSequences(
         kurl.getString().substring(strlen("javascript:")));
@@ -680,7 +680,7 @@ WebPluginContainerImpl::~WebPluginContainerImpl()
 {
 #if ENABLE(OILPAN)
     // The plugin container must have been disposed of by now.
-    ASSERT(!m_webPlugin);
+    DCHECK(!m_webPlugin);
 #else
     dispose();
 #endif
@@ -694,7 +694,7 @@ void WebPluginContainerImpl::dispose()
     setWantsWheelEvents(false);
 
     if (m_webPlugin) {
-        RELEASE_ASSERT(!m_webPlugin->container() || m_webPlugin->container() == this);
+        CHECK(!m_webPlugin->container() || m_webPlugin->container() == this);
         m_webPlugin->destroy();
         m_webPlugin = nullptr;
     }
@@ -714,7 +714,7 @@ DEFINE_TRACE(WebPluginContainerImpl)
 
 void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
 {
-    ASSERT(parent()->isFrameView());
+    DCHECK(parent()->isFrameView());
 
     // We cache the parent FrameView here as the plugin widget could be deleted
     // in the call to HandleEvent. See http://b/issue?id=1362948
@@ -742,7 +742,7 @@ void WebPluginContainerImpl::handleMouseEvent(MouseEvent* event)
 
 void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)
 {
-    ASSERT(event->isDragEvent());
+    DCHECK(event->isDragEvent());
 
     WebDragStatus dragStatus = WebDragStatusUnknown;
     if (event->type() == EventTypeNames::dragenter)
@@ -897,7 +897,7 @@ void WebPluginContainerImpl::issuePaintInvalidations()
 void WebPluginContainerImpl::computeClipRectsForPlugin(
     const HTMLFrameOwnerElement* ownerElement, IntRect& windowRect, IntRect& clippedLocalRect, IntRect& unclippedIntLocalRect) const
 {
-    ASSERT(ownerElement);
+    DCHECK(ownerElement);
 
     if (!ownerElement->layoutObject()) {
         clippedLocalRect = IntRect();

@@ -69,7 +69,7 @@ const char* WorkerContentSettingsClient::supplementName()
 WorkerContentSettingsClient* WorkerContentSettingsClient::from(ExecutionContext& context)
 {
     WorkerClients* clients = toWorkerGlobalScope(context).clients();
-    ASSERT(clients);
+    DCHECK(clients);
     return static_cast<WorkerContentSettingsClient*>(HeapSupplement<WorkerClients>::from(*clients, supplementName()));
 }
 
@@ -81,7 +81,7 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(PassOwnPtr<WebWorkerCon
 
 void provideContentSettingsClientToWorker(WorkerClients* clients, PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)
 {
-    ASSERT(clients);
+    DCHECK(clients);
     WorkerContentSettingsClient::provideTo(*clients, WorkerContentSettingsClient::supplementName(), WorkerContentSettingsClient::create(proxy));
 }
 

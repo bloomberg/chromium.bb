@@ -212,7 +212,7 @@ WebElement WebDocument::focusedElement() const
 void WebDocument::insertStyleSheet(const WebString& sourceCode)
 {
     RawPtr<Document> document = unwrap<Document>();
-    ASSERT(document);
+    DCHECK(document);
     RawPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(CSSParserContext(*document, 0));
     parsedSheet->parseString(sourceCode);
     document->styleEngine().injectAuthorSheet(parsedSheet);

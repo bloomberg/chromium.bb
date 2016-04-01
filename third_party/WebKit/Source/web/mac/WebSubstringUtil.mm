@@ -72,7 +72,7 @@ static NSAttributedString* attributedSubstringFromRange(const EphemeralRange& ra
 
         Node* container = it.currentContainer();
         LayoutObject* layoutObject = container->layoutObject();
-        ASSERT(layoutObject);
+        DCHECK(layoutObject);
         if (!layoutObject)
             continue;
 

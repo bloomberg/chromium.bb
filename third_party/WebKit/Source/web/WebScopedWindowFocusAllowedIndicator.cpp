@@ -39,7 +39,7 @@ namespace blink {
 void WebScopedWindowFocusAllowedIndicator::initialize(WebDocument* webDocument)
 {
     Document* document = webDocument->unwrap<Document>();
-    ASSERT(document);
+    DCHECK(document);
     m_private.reset(new ScopedWindowFocusAllowedIndicator(document));
 }
 

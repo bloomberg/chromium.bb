@@ -59,10 +59,11 @@ NotificationPermissionClientImpl::~NotificationPermissionClientImpl()
 
 ScriptPromise NotificationPermissionClientImpl::requestPermission(ScriptState* scriptState, NotificationPermissionCallback* deprecatedCallback)
 {
-    ASSERT(scriptState);
+    DCHECK(scriptState);
 
     ExecutionContext* context = scriptState->getExecutionContext();
-    ASSERT(context && context->isDocument());
+    DCHECK(context);
+    DCHECK(context->isDocument());
 
     Document* document = toDocument(context);
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());

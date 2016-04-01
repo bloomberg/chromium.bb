@@ -56,7 +56,7 @@ public:
 
         bool isEnabled() const
         {
-            ASSERT(m_value != NeedsRefresh);
+            DCHECK_NE(m_value, NeedsRefresh);
             return m_value == IsEnabled;
         }
 
@@ -126,7 +126,7 @@ void ContextFeaturesCache::validateAgainst(Document* document)
 
 bool ContextFeaturesClientImpl::isEnabled(Document* document, ContextFeatures::FeatureType type, bool defaultValue)
 {
-    ASSERT(document);
+    DCHECK(document);
     ContextFeaturesCache::Entry& cache = ContextFeaturesCache::from(*document).entryFor(type);
     if (cache.needsRefresh(defaultValue))
         cache.set(askIfIsEnabled(document, type, defaultValue), defaultValue);
@@ -135,7 +135,7 @@ bool ContextFeaturesClientImpl::isEnabled(Document* document, ContextFeatures::F
 
 void ContextFeaturesClientImpl::urlDidChange(Document* document)
 {
-    ASSERT(document);
+    DCHECK(document);
     ContextFeaturesCache::from(*document).validateAgainst(document);
 }
 

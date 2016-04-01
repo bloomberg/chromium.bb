@@ -51,7 +51,7 @@ void SuspendableScriptExecutor::fired()
 void SuspendableScriptExecutor::run()
 {
     ExecutionContext* context = getExecutionContext();
-    ASSERT(context);
+    DCHECK(context);
     if (!context->activeDOMObjectsAreSuspended()) {
         suspendIfNeeded();
         executeAndDestroySelf();

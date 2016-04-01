@@ -56,8 +56,8 @@ public:
     WebLayer* getRootScrollLayer()
     {
         PaintLayerCompositor* compositor = frame()->contentLayoutObject()->compositor();
-        ASSERT(compositor);
-        ASSERT(compositor->scrollLayer());
+        DCHECK(compositor);
+        DCHECK(compositor->scrollLayer());
 
         WebLayer* webScrollLayer = compositor->scrollLayer()->platformLayer();
         return webScrollLayer;

@@ -137,7 +137,8 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
         ownerFrame().frame()->selection().clear();
     }
 
-    ASSERT(ownerFrame().frame() && ownerFrame().frame()->view());
+    DCHECK(ownerFrame().frame());
+    DCHECK(ownerFrame().frame()->view());
     const FindOptions findOptions = (options.forward ? 0 : Backwards)
         | (options.matchCase ? 0 : CaseInsensitive)
         | (wrapWithinFrame ? WrapAround : 0)
@@ -283,12 +284,12 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
     WebLocalFrameImpl* mainFrameImpl = ownerFrame().viewImpl()->mainFrameImpl();
     PositionInFlatTree searchStart = PositionInFlatTree::firstPositionInNode(ownerFrame().frame()->document());
     PositionInFlatTree searchEnd = PositionInFlatTree::lastPositionInNode(ownerFrame().frame()->document());
-    ASSERT(searchStart.document() == searchEnd.document());
+    DCHECK_EQ(searchStart.document(), searchEnd.document());
 
     if (m_resumeScopingFromRange) {
         // This is a continuation of a scoping operation that timed out and didn't
         // complete last time around, so we should start from where we left off.
-        ASSERT(m_resumeScopingFromRange->collapsed());
+        DCHECK(m_resumeScopingFromRange->collapsed());
         searchStart = fromPositionInDOMTree<EditingInFlatTreeStrategy>(m_resumeScopingFromRange->endPosition());
         if (searchStart.document() != searchEnd.document())
             return;
@@ -551,7 +552,7 @@ void TextFinder::appendFindMatchRects(Vector<WebFloatRect>& frameRects)
     updateFindMatchRects();
     frameRects.reserveCapacity(frameRects.size() + m_findMatchesCache.size());
     for (const FindMatch& match : m_findMatchesCache) {
-        ASSERT(!match.m_rect.isEmpty());
+        DCHECK(!match.m_rect.isEmpty());
         frameRects.append(match.m_rect);
     }
 }
@@ -586,7 +587,7 @@ int TextFinder::nearestFindMatch(const FloatPoint& point, float& distanceSquared
     int nearest = -1;
     distanceSquared = FLT_MAX;
     for (size_t i = 0; i < m_findMatchesCache.size(); ++i) {
-        ASSERT(!m_findMatchesCache[i].m_rect.isEmpty());
+        DCHECK(!m_findMatchesCache[i].m_rect.isEmpty());
         FloatSize offset = point - m_findMatchesCache[i].m_rect.center();
         float width = offset.width();
         float height = offset.height();
@@ -726,7 +727,8 @@ bool TextFinder::shouldScopeMatches(const String& searchText)
     if (!frame || !frame->view() || !frame->page() || !ownerFrame().hasVisibleContent())
         return false;
 
-    ASSERT(frame->document() && frame->view());
+    DCHECK(frame->document());
+    DCHECK(frame->view());
 
     // If the frame completed the scoping operation and found 0 matches the last
     // time it was searched, then we don't have to search it again if the user is

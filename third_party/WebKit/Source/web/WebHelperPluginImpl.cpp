@@ -60,7 +60,7 @@ WebHelperPluginImpl::~WebHelperPluginImpl()
     // FIXME: Oilpan: it is potentially problematic to support plugin
     // disposal during an Oilpan GC. If it happens, we need to know
     // and evaluate possible ways to handle it.
-    ASSERT(!ThreadState::current()->sweepForbidden());
+    DCHECK(!ThreadState::current()->sweepForbidden());
     if (m_pluginContainer)
         m_pluginContainer->dispose();
 #endif
@@ -68,14 +68,14 @@ WebHelperPluginImpl::~WebHelperPluginImpl()
 
 bool WebHelperPluginImpl::initialize(const String& pluginType, WebLocalFrameImpl* frame)
 {
-    ASSERT(!m_objectElement && !m_pluginContainer);
+    DCHECK(!m_objectElement && !m_pluginContainer);
     if (!frame->frame()->loader().client())
         return false;
 
     m_objectElement = HTMLObjectElement::create(*frame->frame()->document(), 0, false);
     Vector<String> attributeNames;
     Vector<String> attributeValues;
-    ASSERT(frame->frame()->document()->url().isValid());
+    DCHECK(frame->frame()->document()->url().isValid());
     m_pluginContainer = toWebPluginContainerImpl(frame->frame()->loader().client()->createPlugin(
         m_objectElement.get(),
         frame->frame()->document()->url(),
@@ -109,8 +109,8 @@ void WebHelperPluginImpl::destroy()
 
 WebPlugin* WebHelperPluginImpl::getPlugin()
 {
-    ASSERT(m_pluginContainer);
-    ASSERT(m_pluginContainer->plugin());
+    DCHECK(m_pluginContainer);
+    DCHECK(m_pluginContainer->plugin());
     return m_pluginContainer->plugin();
 }
 

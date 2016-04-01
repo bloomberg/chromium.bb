@@ -79,7 +79,7 @@ void FullscreenController::didEnterFullScreen()
     }
 
     Fullscreen::from(document).didEnterFullScreenForElement(element.get());
-    ASSERT(Fullscreen::currentFullScreenElementFrom(document) == element);
+    DCHECK_EQ(Fullscreen::currentFullScreenElementFrom(document), element);
 
     if (isHTMLVideoElement(element)) {
         HTMLVideoElement* videoElement = toHTMLVideoElement(element);
@@ -157,7 +157,7 @@ void FullscreenController::enterFullScreenForElement(Element* element)
 
 void FullscreenController::exitFullScreenForElement(Element* element)
 {
-    ASSERT(element);
+    DCHECK(element);
 
     // The client is exiting full screen, so don't send a notification.
     if (m_isCancelingFullScreen)

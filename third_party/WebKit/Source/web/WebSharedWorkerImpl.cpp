@@ -92,7 +92,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
 
 WebSharedWorkerImpl::~WebSharedWorkerImpl()
 {
-    ASSERT(m_webView);
+    DCHECK(m_webView);
     // Detach the client before closing the view to avoid getting called back.
     m_mainFrame->setClient(0);
 
@@ -124,7 +124,7 @@ void WebSharedWorkerImpl::initializeLoader()
     // Create 'shadow page'. This page is never displayed, it is used to proxy the
     // loading requests from the worker context to the rest of WebKit and Chromium
     // infrastructure.
-    ASSERT(!m_webView);
+    DCHECK(!m_webView);
     m_webView = WebView::create(0);
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.
@@ -168,8 +168,8 @@ void WebSharedWorkerImpl::willSendRequest(
 
 void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
 {
-    ASSERT(!m_loadingDocument);
-    ASSERT(!m_mainScriptLoader);
+    DCHECK(!m_loadingDocument);
+    DCHECK(!m_mainScriptLoader);
     m_networkProvider = adoptPtr(m_client->createServiceWorkerNetworkProvider(frame->dataSource()));
     m_mainScriptLoader = WorkerScriptLoader::create();
     m_mainScriptLoader->setRequestContext(WebURLRequest::RequestContextSharedWorker);
@@ -305,8 +305,8 @@ void WebSharedWorkerImpl::didReceiveScriptLoaderResponse()
 
 void WebSharedWorkerImpl::onScriptLoaderFinished()
 {
-    ASSERT(m_loadingDocument);
-    ASSERT(m_mainScriptLoader);
+    DCHECK(m_loadingDocument);
+    DCHECK(m_mainScriptLoader);
     if (m_askedToTerminate)
         return;
     if (m_mainScriptLoader->failed()) {

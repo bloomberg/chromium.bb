@@ -1442,7 +1442,7 @@ bool WebViewTest::tapElement(WebInputEvent::Type type, const RawPtr<Element>& el
     if (!element || !element->layoutObject())
         return false;
 
-    ASSERT(m_webViewHelper.webView());
+    DCHECK(m_webViewHelper.webView());
     element->scrollIntoViewIfNeeded();
 
     // TODO(bokan): Technically incorrect, event positions should be in viewport space. crbug.com/371902.
@@ -1462,7 +1462,7 @@ bool WebViewTest::tapElement(WebInputEvent::Type type, const RawPtr<Element>& el
 
 bool WebViewTest::tapElementById(WebInputEvent::Type type, const WebString& id)
 {
-    ASSERT(m_webViewHelper.webView());
+    DCHECK(m_webViewHelper.webView());
     RawPtr<Element> element = static_cast<RawPtr<Element>>(m_webViewHelper.webView()->mainFrame()->document().getElementById(id));
     return tapElement(type, element);
 }
@@ -2345,7 +2345,7 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
 
     // Adding a handler on a div results in a has-handlers call.
     Element* parentDiv = document->getElementById("parentdiv");
-    ASSERT(parentDiv);
+    DCHECK(parentDiv);
     registry->didAddEventHandler(*parentDiv, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
@@ -2378,10 +2378,10 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
 
     // Adding a handler inside of a child iframe results in a has-handlers call.
     Element* childFrame = document->getElementById("childframe");
-    ASSERT(childFrame);
+    DCHECK(childFrame);
     Document* childDocument = toHTMLIFrameElement(childFrame)->contentDocument();
     Element* childDiv = childDocument->getElementById("childdiv");
-    ASSERT(childDiv);
+    DCHECK(childDiv);
     registry->didAddEventHandler(*childDiv, touchEvent);
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
@@ -2719,7 +2719,7 @@ TEST_F(WebViewTest, AutoResizeSubtreeLayout)
 
     FrameView* frameView = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
 
-    // Auto-resizing used to ASSERT(needsLayout()) in LayoutBlockFlow::layout. This EXPECT is
+    // Auto-resizing used to DCHECK(needsLayout()) in LayoutBlockFlow::layout. This EXPECT is
     // merely a dummy. The real test is that we don't trigger asserts in debug builds.
     EXPECT_FALSE(frameView->needsLayout());
 };

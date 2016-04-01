@@ -79,7 +79,7 @@ void WebElementTest::insertHTML(String html)
 WebElement WebElementTest::testElement()
 {
     Element* element = document().getElementById("testElement");
-    ASSERT(element);
+    DCHECK(element);
     return WebElement(element);
 }
 

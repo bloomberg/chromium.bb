@@ -65,13 +65,13 @@ public:
 
     void setExtraDataForNextPrerender(WebPrerender::ExtraData* extraData)
     {
-        ASSERT(!m_extraData);
+        DCHECK(!m_extraData);
         m_extraData = adoptPtr(extraData);
     }
 
     WebPrerender releaseWebPrerender()
     {
-        ASSERT(!m_webPrerenders.empty());
+        DCHECK(!m_webPrerenders.empty());
         WebPrerender retval(m_webPrerenders.front());
         m_webPrerenders.pop_front();
         return retval;
@@ -93,7 +93,7 @@ private:
     {
         prerender->setExtraData(m_extraData.leakPtr());
 
-        ASSERT(!prerender->isNull());
+        DCHECK(!prerender->isNull());
         m_webPrerenders.push_back(*prerender);
     }
 
@@ -199,7 +199,7 @@ public:
     {
         Document* document = m_webViewHelper.webViewImpl()->mainFrameImpl()->frame()->document();
         Element* console = document->getElementById("console");
-        ASSERT(isHTMLUListElement(console));
+        DCHECK(isHTMLUListElement(console));
         return *console;
     }
 
@@ -210,13 +210,13 @@ public:
 
     WebString consoleAt(unsigned i)
     {
-        ASSERT(consoleLength() > i);
+        DCHECK_GT(consoleLength(), i);
 
         Node* item = NodeTraversal::childAt(console(), 1 + i);
 
-        ASSERT(item);
-        ASSERT(isHTMLLIElement(item));
-        ASSERT(item->hasChildren());
+        DCHECK(item);
+        DCHECK(isHTMLLIElement(item));
+        DCHECK(item->hasChildren());
 
         return item->textContent();
     }

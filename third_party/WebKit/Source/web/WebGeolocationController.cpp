@@ -46,8 +46,8 @@ public:
 
     static GeolocationController& controller(const WebPrivatePtr<GeolocationControllerPrivate>& controller)
     {
-        ASSERT(!controller.isNull());
-        ASSERT(controller->m_controller);
+        DCHECK(!controller.isNull());
+        DCHECK(controller->m_controller);
         return *controller->m_controller;
     }
 

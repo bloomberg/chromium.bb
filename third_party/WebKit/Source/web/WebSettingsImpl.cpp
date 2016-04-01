@@ -53,7 +53,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, DevToolsEmulator* devToolsE
     , m_viewportMetaNonUserScalableQuirk(false)
     , m_clobberUserAgentInitialScaleQuirk(false)
 {
-    ASSERT(settings);
+    DCHECK(settings);
 }
 
 void WebSettingsImpl::setFromStrings(const WebString& name, const WebString& value)

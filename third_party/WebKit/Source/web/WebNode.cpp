@@ -248,7 +248,7 @@ WebElement WebNode::querySelector(const WebString& selector) const
 {
     WebExceptionCode ec = 0;
     WebElement element = querySelector(selector, ec);
-    ASSERT(!ec);
+    DCHECK(!ec);
     return element;
 }
 
@@ -272,7 +272,7 @@ void WebNode::querySelectorAll(const WebString& selector, WebVector<WebElement>&
 {
     WebExceptionCode ec = 0;
     querySelectorAll(selector, results, ec);
-    ASSERT(!ec);
+    DCHECK(!ec);
 }
 
 bool WebNode::focused() const

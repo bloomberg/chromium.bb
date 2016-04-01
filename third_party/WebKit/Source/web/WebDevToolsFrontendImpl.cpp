@@ -71,7 +71,7 @@ void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame)
     if (m_webFrame == frame) {
         v8::Isolate* isolate = v8::Isolate::GetCurrent();
         ScriptState* scriptState = ScriptState::forMainWorld(m_webFrame->frame());
-        ASSERT(scriptState);
+        DCHECK(scriptState);
         ScriptState::Scope scope(scriptState);
 
         if (m_devtoolsHost)
@@ -79,7 +79,7 @@ void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame)
         m_devtoolsHost = DevToolsHost::create(this, m_webFrame->frame());
         v8::Local<v8::Object> global = scriptState->context()->Global();
         v8::Local<v8::Value> devtoolsHostObj = toV8(m_devtoolsHost.get(), global, scriptState->isolate());
-        ASSERT(!devtoolsHostObj.IsEmpty());
+        DCHECK(!devtoolsHostObj.IsEmpty());
         global->Set(v8AtomicString(isolate, "DevToolsHost"), devtoolsHostObj);
     }
 

@@ -343,7 +343,7 @@ Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& 
         return nullptr;
 
     WebNavigationPolicy policy = effectiveNavigationPolicy(navigationPolicy, features);
-    ASSERT(frame->document());
+    DCHECK(frame->document());
     Fullscreen::fullyExitFullscreen(*frame->document());
 
     WebViewImpl* newView = toWebViewImpl(
@@ -527,7 +527,7 @@ void ChromeClientImpl::invalidateRect(const IntRect& updateRect)
 
 void ChromeClientImpl::scheduleAnimation(Widget* widget)
 {
-    ASSERT(widget->isFrameView());
+    DCHECK(widget->isFrameView());
     FrameView* view = toFrameView(widget);
     LocalFrame* frame = view->frame().localFrameRoot();
 
@@ -549,7 +549,7 @@ IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport, const 
 {
     WebRect screenRect(rectInViewport);
 
-    ASSERT(widget->isFrameView());
+    DCHECK(widget->isFrameView());
     const FrameView* view = toFrameView(widget);
     LocalFrame* frame = view->frame().localFrameRoot();
     WebWidgetClient* client = nullptr;
@@ -712,8 +712,8 @@ void ChromeClientImpl::enumerateChosenDirectory(FileChooser* fileChooser)
 
     WebFileChooserCompletionImpl* chooserCompletion = new WebFileChooserCompletionImpl(fileChooser);
 
-    ASSERT(fileChooser);
-    ASSERT(fileChooser->settings().selectedFiles.size());
+    DCHECK(fileChooser);
+    DCHECK(fileChooser->settings().selectedFiles.size());
 
     // If the enumeration can't happen, call the callback with an empty list.
     if (!client->enumerateChosenDirectory(fileChooser->settings().selectedFiles[0], chooserCompletion))
@@ -751,8 +751,8 @@ void ChromeClientImpl::setCursor(const WebCursorInfo& cursor, LocalFrame* localR
         m_webView->client()->didChangeCursor(cursor);
     } else {
         WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localRoot);
-        ASSERT(webFrame);
-        ASSERT(webFrame->frameWidget());
+        DCHECK(webFrame);
+        DCHECK(webFrame->frameWidget());
         if (toWebFrameWidgetImpl(webFrame->frameWidget())->client())
             toWebFrameWidgetImpl(webFrame->frameWidget())->client()->didChangeCursor(cursor);
     }
@@ -798,8 +798,8 @@ void ChromeClientImpl::attachRootGraphicsLayer(GraphicsLayer* rootLayer, LocalFr
             m_webView->setRootGraphicsLayer(rootLayer);
             return;
         }
-        ASSERT(webFrame);
-        ASSERT(webFrame->frameWidget());
+        DCHECK(webFrame);
+        DCHECK(webFrame->frameWidget());
         toWebFrameWidgetImpl(webFrame->frameWidget())->setRootGraphicsLayer(rootLayer);
     }
 }
@@ -825,8 +825,8 @@ void ChromeClientImpl::attachCompositorAnimationTimeline(CompositorAnimationTime
             m_webView->attachCompositorAnimationTimeline(compositorTimeline);
             return;
         }
-        ASSERT(webFrame);
-        ASSERT(webFrame->frameWidget());
+        DCHECK(webFrame);
+        DCHECK(webFrame->frameWidget());
         toWebFrameWidgetImpl(webFrame->frameWidget())->attachCompositorAnimationTimeline(compositorTimeline);
     }
 }
@@ -845,8 +845,8 @@ void ChromeClientImpl::detachCompositorAnimationTimeline(CompositorAnimationTime
             m_webView->detachCompositorAnimationTimeline(compositorTimeline);
             return;
         }
-        ASSERT(webFrame);
-        ASSERT(webFrame->frameWidget());
+        DCHECK(webFrame);
+        DCHECK(webFrame->frameWidget());
         toWebFrameWidgetImpl(webFrame->frameWidget())->detachCompositorAnimationTimeline(compositorTimeline);
     }
 }
@@ -882,7 +882,7 @@ RawPtr<PopupMenu> ChromeClientImpl::openPopupMenu(LocalFrame& frame, HTMLSelectE
     if (WebViewImpl::useExternalPopupMenus())
         return new ExternalPopupMenu(frame, select, *m_webView);
 
-    ASSERT(RuntimeEnabledFeatures::pagePopupEnabled());
+    DCHECK(RuntimeEnabledFeatures::pagePopupEnabled());
     return PopupMenuImpl::create(this, select);
 }
 
@@ -1061,14 +1061,14 @@ void ChromeClientImpl::didUpdateTopControls() const
 
 void ChromeClientImpl::registerPopupOpeningObserver(PopupOpeningObserver* observer)
 {
-    ASSERT(observer);
+    DCHECK(observer);
     m_popupOpeningObservers.append(observer);
 }
 
 void ChromeClientImpl::unregisterPopupOpeningObserver(PopupOpeningObserver* observer)
 {
     size_t index = m_popupOpeningObservers.find(observer);
-    ASSERT(index != kNotFound);
+    DCHECK_NE(index, kNotFound);
     m_popupOpeningObservers.remove(index);
 }
 

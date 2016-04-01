@@ -59,7 +59,7 @@ StorageQuotaClientImpl::~StorageQuotaClientImpl()
 
 void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext, WebStorageQuotaType storageType, unsigned long long newQuotaInBytes, StorageQuotaCallback* successCallback, StorageErrorCallback* errorCallback)
 {
-    ASSERT(executionContext);
+    DCHECK(executionContext);
 
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);

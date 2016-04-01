@@ -20,7 +20,7 @@ SimNetwork::SimNetwork()
     : m_currentRequest(nullptr)
 {
     Platform::current()->unitTestSupport()->setLoaderDelegate(this);
-    ASSERT(!s_network);
+    DCHECK(!s_network);
     s_network = this;
 }
 
@@ -33,7 +33,7 @@ SimNetwork::~SimNetwork()
 
 SimNetwork& SimNetwork::current()
 {
-    ASSERT(s_network);
+    DCHECK(s_network);
     return *s_network;
 }
 
@@ -49,7 +49,7 @@ void SimNetwork::didReceiveResponse(WebURLLoaderClient* client, WebURLLoader* lo
         client->didReceiveResponse(loader, response);
         return;
     }
-    ASSERT(it->value);
+    DCHECK(it->value);
     m_currentRequest = it->value;
     m_currentRequest->didReceiveResponse(client, loader, response);
 }

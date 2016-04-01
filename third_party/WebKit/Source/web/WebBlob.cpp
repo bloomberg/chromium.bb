@@ -56,7 +56,7 @@ WebBlob WebBlob::fromV8Value(v8::Local<v8::Value> value)
     if (V8Blob::hasInstance(value, v8::Isolate::GetCurrent())) {
         v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
         Blob* blob = V8Blob::toImpl(object);
-        ASSERT(blob);
+        DCHECK(blob);
         return blob;
     }
     return WebBlob();
@@ -83,7 +83,7 @@ v8::Local<v8::Value> WebBlob::toV8Value(v8::Local<v8::Object> creationContext, v
 {
     // We no longer use |creationContext| because it's often misused and points
     // to a context faked by user script.
-    ASSERT(creationContext->CreationContext() == isolate->GetCurrentContext());
+    DCHECK(creationContext->CreationContext() == isolate->GetCurrentContext());
     if (!m_private.get())
         return v8::Local<v8::Value>();
     return toV8(m_private.get(), isolate->GetCurrentContext()->Global(), isolate);

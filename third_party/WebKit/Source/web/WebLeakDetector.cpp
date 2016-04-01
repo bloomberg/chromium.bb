@@ -59,7 +59,7 @@ public:
         , m_delayedReportTimer(this, &WebLeakDetectorImpl::delayedReport)
         , m_numberOfGCNeeded(0)
     {
-        ASSERT(m_client);
+        DCHECK(m_client);
     }
 
     ~WebLeakDetectorImpl() override {}
@@ -139,7 +139,7 @@ void WebLeakDetectorImpl::delayedGCAndReport(Timer<WebLeakDetectorImpl>*)
 
 void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
 
     WebLeakDetectorClient::Result result;
     result.numberOfLiveAudioNodes = InstanceCounters::counterValue(InstanceCounters::AudioHandlerCounter);

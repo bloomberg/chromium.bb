@@ -151,8 +151,8 @@ public:
     WebLayer* getRootScrollLayer()
     {
         PaintLayerCompositor* compositor = frame()->contentLayoutObject()->compositor();
-        ASSERT(compositor);
-        ASSERT(compositor->scrollLayer());
+        DCHECK(compositor);
+        DCHECK(compositor->scrollLayer());
 
         WebLayer* webScrollLayer = compositor->scrollLayer()->platformLayer();
         return webScrollLayer;
@@ -1701,7 +1701,7 @@ TEST_P(ParameterizedVisualViewportTest, WindowDimensionsOnLoad)
     navigateTo(m_baseURL + "window_dimensions.html");
 
     Element* output = frame()->document()->getElementById("output");
-    ASSERT(output);
+    DCHECK(output);
     EXPECT_EQ(std::string("1600x1200"), std::string(output->innerHTML().ascii().data()));
 }
 
@@ -1717,7 +1717,7 @@ TEST_P(ParameterizedVisualViewportTest, WindowDimensionsOnLoadWideContent)
     navigateTo(m_baseURL + "window_dimensions_wide_div.html");
 
     Element* output = frame()->document()->getElementById("output");
-    ASSERT(output);
+    DCHECK(output);
     EXPECT_EQ(std::string("2000x1500"), std::string(output->innerHTML().ascii().data()));
 }
 

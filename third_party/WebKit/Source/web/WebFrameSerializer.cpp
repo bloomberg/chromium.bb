@@ -111,7 +111,7 @@ bool MHTMLFrameSerializerDelegate::rewriteLink(
         return false;
 
     KURL cidURI = MHTMLParser::convertContentIDToURI(contentID);
-    ASSERT(cidURI.isValid());
+    DCHECK(cidURI.isValid());
 
     if (isHTMLFrameElementBase(&element)) {
         rewrittenLink = cidURI.getString();
@@ -154,8 +154,8 @@ WebData WebFrameSerializer::generateMHTMLParts(
     const WebString& boundary, WebLocalFrame* webFrame, bool useBinaryEncoding,
     MHTMLPartsGenerationDelegate* webDelegate)
 {
-    ASSERT(webFrame);
-    ASSERT(webDelegate);
+    DCHECK(webFrame);
+    DCHECK(webDelegate);
 
     // Translate arguments from public to internal blink APIs.
     LocalFrame* frame = toWebLocalFrameImpl(webFrame)->frame();

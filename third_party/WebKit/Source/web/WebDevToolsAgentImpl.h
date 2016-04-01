@@ -143,7 +143,7 @@ private:
     WebDevToolsAgentClient* m_client;
     Member<WebLocalFrameImpl> m_webLocalFrameImpl;
     bool m_attached;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool m_hasBeenDisposed;
 #endif
 

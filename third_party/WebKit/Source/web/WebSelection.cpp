@@ -11,9 +11,9 @@ namespace blink {
 
 static WebSelectionBound getWebSelectionBound(const CompositedSelection& selection, bool isStart)
 {
-    ASSERT(selection.type != NoSelection);
+    DCHECK_NE(selection.type, NoSelection);
     const CompositedSelectionBound& bound = isStart ? selection.start : selection.end;
-    ASSERT(bound.layer);
+    DCHECK(bound.layer);
 
     WebSelectionBound::Type type = WebSelectionBound::Caret;
     if (selection.type == RangeSelection) {

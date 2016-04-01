@@ -171,8 +171,8 @@ AssociatedURLLoader::ClientAdapter::ClientAdapter(AssociatedURLLoader* loader, W
     , m_enableErrorNotifications(false)
     , m_didFail(false)
 {
-    ASSERT(m_loader);
-    ASSERT(m_client);
+    DCHECK(m_loader);
+    DCHECK(m_client);
 }
 
 void AssociatedURLLoader::ClientAdapter::willFollowRedirect(ResourceRequest& newRequest, const ResourceResponse& redirectResponse)
@@ -229,7 +229,7 @@ void AssociatedURLLoader::ClientAdapter::didReceiveData(const char* data, unsign
     if (!m_client)
         return;
 
-    RELEASE_ASSERT(dataLength <= static_cast<unsigned>(std::numeric_limits<int>::max()));
+    CHECK_LE(dataLength, static_cast<unsigned>(std::numeric_limits<int>::max()));
 
     m_client->didReceiveData(m_loader, data, dataLength, -1);
 }
@@ -292,7 +292,7 @@ AssociatedURLLoader::AssociatedURLLoader(RawPtr<WebLocalFrameImpl> frameImpl, co
     , m_options(options)
     , m_client(0)
 {
-    ASSERT(m_frameImpl);
+    DCHECK(m_frameImpl);
 }
 
 AssociatedURLLoader::~AssociatedURLLoader()
@@ -314,16 +314,16 @@ STATIC_ASSERT_ENUM(WebURLLoaderOptions::PreventPreflight, PreventPreflight);
 
 void AssociatedURLLoader::loadSynchronously(const WebURLRequest& request, WebURLResponse& response, WebURLError& error, WebData& data)
 {
-    ASSERT(0); // Synchronous loading is not supported.
+    DCHECK(0); // Synchronous loading is not supported.
 }
 
 void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebURLLoaderClient* client)
 {
-    ASSERT(!m_loader);
-    ASSERT(!m_client);
+    DCHECK(!m_loader);
+    DCHECK(!m_client);
 
     m_client = client;
-    ASSERT(m_client);
+    DCHECK(m_client);
 
     bool allowLoad = true;
     WebURLRequest newRequest(request);
@@ -358,7 +358,7 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request, WebUR
         }
 
         Document* webcoreDocument = m_frameImpl->frame()->document();
-        ASSERT(webcoreDocument);
+        DCHECK(webcoreDocument);
         m_loader = DocumentThreadableLoader::create(*webcoreDocument, m_clientAdapter.get(), options, resourceLoaderOptions);
         m_loader->start(webcoreRequest);
     }

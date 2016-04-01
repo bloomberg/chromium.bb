@@ -48,7 +48,7 @@ namespace blink {
 
 static const LayoutBlock* enclosingScrollableAncestor(const LayoutObject* layoutObject)
 {
-    ASSERT(!layoutObject->isLayoutView());
+    DCHECK(!layoutObject->isLayoutView());
 
     // Trace up the containingBlocks until we reach either the layoutObject view or a scrollable object.
     const LayoutBlock* container = layoutObject->containingBlock();
@@ -59,9 +59,9 @@ static const LayoutBlock* enclosingScrollableAncestor(const LayoutObject* layout
 
 static FloatRect toNormalizedRect(const FloatRect& absoluteRect, const LayoutObject* layoutObject, const LayoutBlock* container)
 {
-    ASSERT(layoutObject);
+    DCHECK(layoutObject);
 
-    ASSERT(container || layoutObject->isLayoutView());
+    DCHECK(container || layoutObject->isLayoutView());
     if (!container)
         return FloatRect();
 
@@ -117,7 +117,7 @@ FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect, const Layou
             layoutObject = container;
         }
 
-        ASSERT(layoutObject->isLayoutView());
+        DCHECK(layoutObject->isLayoutView());
 
         // Jump to the layoutObject owning the frame, if any.
         layoutObject = layoutObject->frame() ? layoutObject->frame()->ownerLayoutObject() : 0;

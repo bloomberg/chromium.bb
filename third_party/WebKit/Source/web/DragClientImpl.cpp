@@ -72,7 +72,7 @@ void DragClientImpl::startDrag(DragImage* dragImage, const IntPoint& dragImageOr
         float deviceScaleFactor =
             m_webView->client()->screenInfo().deviceScaleFactor;
         if (deviceScaleFactor != resolutionScale) {
-            ASSERT(resolutionScale > 0);
+            DCHECK_GT(resolutionScale, 0);
             float scale = deviceScaleFactor / resolutionScale;
             dragImage->scale(scale, scale);
         }

@@ -76,7 +76,7 @@ TEST_F(WebDocumentTest, InsertStyleSheet)
     ASSERT_EQ(0U, elementCount);
 
     HTMLElement* bodyElement = coreDoc->body();
-    ASSERT(bodyElement);
+    DCHECK(bodyElement);
 
     const ComputedStyle& styleBeforeInsertion = bodyElement->computedStyleRef();
 

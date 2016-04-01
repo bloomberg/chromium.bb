@@ -125,8 +125,8 @@ Locale& ColorChooserPopupUIController::locale()
 
 void ColorChooserPopupUIController::setValueAndClosePopup(int numValue, const String& stringValue)
 {
-    ASSERT(m_popup);
-    ASSERT(m_client);
+    DCHECK(m_popup);
+    DCHECK(m_client);
     if (numValue == ColorPickerPopupActionSetValue)
         setValue(stringValue);
     if (numValue == ColorPickerPopupActionChooseOtherColor)
@@ -136,7 +136,7 @@ void ColorChooserPopupUIController::setValueAndClosePopup(int numValue, const St
 
 void ColorChooserPopupUIController::setValue(const String& value)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
     Color color;
     bool success = color.setFromString(value);
     ASSERT_UNUSED(success, success);
@@ -158,7 +158,7 @@ Element& ColorChooserPopupUIController::ownerElement()
 
 void ColorChooserPopupUIController::openPopup()
 {
-    ASSERT(!m_popup);
+    DCHECK(!m_popup);
     m_popup = m_chromeClient->openPagePopup(this);
 }
 

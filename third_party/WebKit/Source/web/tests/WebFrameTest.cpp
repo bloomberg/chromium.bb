@@ -257,7 +257,7 @@ protected:
         webViewHelper->initializeAndLoad(m_baseURL + "nodeimage.html");
         webViewHelper->resize(WebSize(640, 480));
         RawPtr<LocalFrame> frame = toLocalFrame(webViewHelper->webViewImpl()->page()->mainFrame());
-        ASSERT(frame);
+        DCHECK(frame);
         Element* element = frame->document()->getElementById(testcase.c_str());
         return frame->nodeImage(*element);
     }
@@ -265,7 +265,7 @@ protected:
     void removeElementById(WebLocalFrameImpl* frame, const AtomicString& id)
     {
         Element* element = frame->frame()->document()->getElementById(id);
-        ASSERT(element);
+        DCHECK(element);
         element->remove();
     }
 
@@ -5972,7 +5972,7 @@ public:
 
     virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString&, const WebString&, WebSandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
     {
-        ASSERT(m_childClient);
+        DCHECK(m_childClient);
         m_childFrameCreationCount++;
         WebFrame* frame = WebLocalFrame::create(scope, m_childClient);
         parent->appendChild(frame);

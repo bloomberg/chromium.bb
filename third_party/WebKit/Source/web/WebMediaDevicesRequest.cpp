@@ -49,19 +49,20 @@ void WebMediaDevicesRequest::reset()
 
 WebSecurityOrigin WebMediaDevicesRequest::getSecurityOrigin() const
 {
-    ASSERT(!isNull() && m_private->getExecutionContext());
+    DCHECK(!isNull());
+    DCHECK(m_private->getExecutionContext());
     return WebSecurityOrigin(m_private->getExecutionContext()->getSecurityOrigin());
 }
 
 WebDocument WebMediaDevicesRequest::ownerDocument() const
 {
-    ASSERT(!isNull());
+    DCHECK(!isNull());
     return WebDocument(m_private->ownerDocument());
 }
 
 void WebMediaDevicesRequest::requestSucceeded(WebVector<WebMediaDeviceInfo> webDevices)
 {
-    ASSERT(!isNull());
+    DCHECK(!isNull());
 
     MediaDeviceInfoVector devices(webDevices.size());
     for (size_t i = 0; i < webDevices.size(); ++i)

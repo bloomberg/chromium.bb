@@ -62,7 +62,7 @@
 
 namespace blink {
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 // It's not safe to call some WebAXObject APIs if a layout is pending.
 // Clients should call updateLayoutAndCheckValidity first.
 static bool isLayoutClean(Document* document)
@@ -632,7 +632,9 @@ WebRect WebAXObject::boundingBoxRect() const
     if (isDetached())
         return WebRect();
 
-    ASSERT(isLayoutClean(m_private->getDocument()));
+#if DCHECK_IS_ON()
+    DCHECK(isLayoutClean(m_private->getDocument()));
+#endif
 
     return pixelSnappedIntRect(m_private->elementRect());
 }
@@ -1440,7 +1442,7 @@ void WebAXObject::wordBoundaries(WebVector<int>& starts, WebVector<int>& ends) c
     WebVector<int> wordStartOffsets(wordBoundaries.size());
     WebVector<int> wordEndOffsets(wordBoundaries.size());
     for (size_t i = 0; i < wordBoundaries.size(); ++i) {
-        ASSERT(wordBoundaries[i].isSimple());
+        DCHECK(wordBoundaries[i].isSimple());
         wordStartOffsets[i] = wordBoundaries[i].anchorOffset;
         wordEndOffsets[i] = wordBoundaries[i].focusOffset;
     }

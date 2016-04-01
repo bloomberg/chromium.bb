@@ -130,7 +130,7 @@ String WebFrameSerializerImpl::preActionBeforeSerializeOpenTag(
         // Skip the open tag of original META tag which declare charset since we
         // have overrided the META which have correct charset declaration after
         // serializing open tag of HEAD element.
-        ASSERT(element);
+        DCHECK(element);
         if (isHTMLMetaElement(element) && toHTMLMetaElement(element)->computeEncoding().isValid()) {
             // Found META tag declared charset, we need to skip it when
             // serializing DOM.
@@ -449,13 +449,13 @@ WebFrameSerializerImpl::WebFrameSerializerImpl(
     , m_xmlEntities(true)
 {
     // Must specify available webframe.
-    ASSERT(frame);
+    DCHECK(frame);
     m_specifiedWebLocalFrameImpl = toWebLocalFrameImpl(frame);
     // Make sure we have non null client and delegate.
-    ASSERT(client);
-    ASSERT(delegate);
+    DCHECK(client);
+    DCHECK(delegate);
 
-    ASSERT(m_dataBuffer.isEmpty());
+    DCHECK(m_dataBuffer.isEmpty());
 }
 
 bool WebFrameSerializerImpl::serialize()
@@ -487,7 +487,7 @@ bool WebFrameSerializerImpl::serialize()
             WebCString(), WebFrameSerializerClient::CurrentFrameIsFinished);
     }
 
-    ASSERT(m_dataBuffer.isEmpty());
+    DCHECK(m_dataBuffer.isEmpty());
     return didSerialization;
 }
 

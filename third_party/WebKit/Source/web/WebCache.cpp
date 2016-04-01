@@ -64,7 +64,7 @@ void WebCache::clear()
 
 void WebCache::getUsageStats(UsageStats* result)
 {
-    ASSERT(result);
+    DCHECK(result);
 
     MemoryCache* cache = memoryCache();
     if (cache) {

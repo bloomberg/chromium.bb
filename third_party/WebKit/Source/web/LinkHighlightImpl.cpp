@@ -75,17 +75,17 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
     , m_isAnimating(false)
     , m_startTime(monotonicallyIncreasingTime())
 {
-    ASSERT(m_node);
-    ASSERT(owningWebViewImpl);
+    DCHECK(m_node);
+    DCHECK(owningWebViewImpl);
     WebCompositorSupport* compositorSupport = Platform::current()->compositorSupport();
-    ASSERT(compositorSupport);
+    DCHECK(compositorSupport);
     m_contentLayer = adoptPtr(compositorSupport->createContentLayer(this));
     m_clipLayer = adoptPtr(compositorSupport->createLayer());
     m_clipLayer->setTransformOrigin(WebFloatPoint3D());
     m_clipLayer->addChild(m_contentLayer->layer());
 
     m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
-    ASSERT(m_compositorPlayer);
+    DCHECK(m_compositorPlayer);
     m_compositorPlayer->setAnimationDelegate(this);
     if (m_owningWebViewImpl->linkHighlightsTimeline())
         m_owningWebViewImpl->linkHighlightsTimeline()->playerAttached(*this);
@@ -146,7 +146,7 @@ void LinkHighlightImpl::attachLinkHighlightToCompositingLayer(const LayoutBoxMod
 
 static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpaceQuad, LayoutObject* targetLayoutObject, const LayoutBoxModelObject& paintInvalidationContainer, FloatQuad& compositedSpaceQuad)
 {
-    ASSERT(targetLayoutObject);
+    DCHECK(targetLayoutObject);
     for (unsigned i = 0; i < 4; ++i) {
         IntPoint point;
         switch (i) {
@@ -216,7 +216,7 @@ bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(const LayoutBoxMode
     // Get quads for node in absolute coordinates.
     Vector<FloatQuad> quads;
     computeQuads(*m_node, quads);
-    ASSERT(quads.size());
+    DCHECK(quads.size());
     Path newPath;
 
     for (size_t quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
