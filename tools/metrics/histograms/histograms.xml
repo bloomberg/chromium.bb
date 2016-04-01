@@ -207,6 +207,40 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.Mac.DifferentiateWithoutColor"
+    enum="BooleanEnabled">
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    Whether the &quot;differentiate without color&quot; Mac system setting is
+    enabled. This is checked once, 45 seconds after startup.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.Mac.FullKeyboardAccessEnabled"
+    enum="BooleanEnabled">
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    Whether the &quot;full keyboard access&quot; Mac system setting is enabled.
+    This is checked once, 45 seconds after startup.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.Mac.IncreaseContrast" enum="BooleanEnabled">
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    Whether the &quot;increase contrast&quot; Mac system setting is enabled.
+    This is checked once, 45 seconds after startup.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.Mac.ReduceTransparency" enum="BooleanEnabled">
+  <owner>ellyjones@chromium.org</owner>
+  <summary>
+    Whether the &quot;reduce transparency&quot; Mac system setting is enabled.
+    This is checked once, 45 seconds after startup.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.ManuallyEnabled" enum="BooleanEnabled">
   <owner>dmazzoni@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>

@@ -122,7 +122,7 @@ void BrowserAccessibilityStateImpl::UpdateHistograms() {
                             switches::kForceRendererAccessibility));
 }
 
-#if !defined(OS_WIN)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
 void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
 }
 #endif
