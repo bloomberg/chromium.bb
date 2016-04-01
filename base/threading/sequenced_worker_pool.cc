@@ -809,7 +809,6 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
             TRACE_EVENT_FLAG_FLOW_IN,
             "src_file", task.posted_from.file_name(),
             "src_func", task.posted_from.function_name());
-        TRACE_TASK_EXECUTION("SequencedWorkerPool::Inner::ThreadLoop", task);
         int new_thread_id = WillRunWorkerTask(task);
         {
           AutoUnlock unlock(lock_);

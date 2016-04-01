@@ -21,7 +21,9 @@ base::LazyInstance<ThreadLocalBoolean>::Leaky
 
 DWORD CALLBACK WorkItemCallback(void* param) {
   PendingTask* pending_task = static_cast<PendingTask*>(param);
-  TRACE_TASK_EXECUTION("WorkerThread::ThreadMain::Run", *pending_task);
+  TRACE_EVENT2("toplevel", "WorkItemCallback::Run",
+               "src_file", pending_task->posted_from.file_name(),
+               "src_func", pending_task->posted_from.function_name());
 
   g_worker_pool_running_on_this_thread.Get().Set(true);
 

@@ -86,7 +86,9 @@ void WorkerThread::ThreadMain() {
     PendingTask pending_task = pool_->WaitForTask();
     if (pending_task.task.is_null())
       break;
-    TRACE_TASK_EXECUTION("WorkerThread::ThreadMain::Run", pending_task);
+    TRACE_EVENT2("toplevel", "WorkerThread::ThreadMain::Run",
+        "src_file", pending_task.posted_from.file_name(),
+        "src_func", pending_task.posted_from.function_name());
 
     tracked_objects::TaskStopwatch stopwatch;
     stopwatch.Start();

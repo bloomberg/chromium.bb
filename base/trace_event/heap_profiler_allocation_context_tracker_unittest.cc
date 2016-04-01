@@ -7,7 +7,6 @@
 #include <iterator>
 
 #include "base/memory/ref_counted.h"
-#include "base/pending_task.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/trace_event.h"
@@ -250,32 +249,6 @@ TEST_F(AllocationContextTrackerTest, SetCurrentThreadName) {
           ->GetContextSnapshot();
   ASSERT_EQ(kThread2, ctx2.backtrace.frames[0]);
   ASSERT_EQ(kCupcake, ctx2.backtrace.frames[1]);
-}
-
-TEST_F(AllocationContextTrackerTest, TrackTaskContext) {
-  const char kContext1[] = "context1";
-  const char kContext2[] = "context2";
-  {
-    // The context from the scoped task event should be used as type name.
-    TRACE_EVENT_API_SCOPED_TASK_EXECUTION_EVENT event1(kContext1);
-    AllocationContext ctx1 =
-        AllocationContextTracker::GetInstanceForCurrentThread()
-            ->GetContextSnapshot();
-    ASSERT_EQ(kContext1, ctx1.type_name);
-
-    // In case of nested events, the last event's context should be used.
-    TRACE_EVENT_API_SCOPED_TASK_EXECUTION_EVENT event2(kContext2);
-    AllocationContext ctx2 =
-        AllocationContextTracker::GetInstanceForCurrentThread()
-            ->GetContextSnapshot();
-    ASSERT_EQ(kContext2, ctx2.type_name);
-  }
-
-  // Type should be nullptr without task event.
-  AllocationContext ctx =
-      AllocationContextTracker::GetInstanceForCurrentThread()
-          ->GetContextSnapshot();
-  ASSERT_FALSE(ctx.type_name);
 }
 
 }  // namespace trace_event
