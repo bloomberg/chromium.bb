@@ -28,10 +28,6 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "net.gypi" ])
 
-# Disable Kerberos on ChromeOS, iOS, Chromecast and headless, at least for now.
-# It needs configuration (krb5.conf and so on).
-use_kerberos = !is_chromeos && !is_ios && !is_chromecast && !is_headless
-
 # The way the cache uses mmap() is inefficient on some Android devices. If
 # this flag is set, we hackily avoid using mmap() in the disk cache. We are
 # pretty confident that mmap-ing the index would not hurt any existing x86
@@ -50,6 +46,11 @@ declare_args() {
   # cronet.
   enable_websockets = !is_ios
   disable_ftp_support = is_ios
+
+  # Enable Kerberos authentication. It is disabled by default on ChromeOS, iOS,
+  # Chromecast, at least for now. This feature needs configuration (krb5.conf
+  # and so on).
+  use_kerberos = !is_chromeos && !is_ios && !is_chromecast
 }
 
 config("net_config") {
