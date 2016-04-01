@@ -4940,7 +4940,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 //
 // The test then presses <tab> six times to cycle through focused elements 1-6.
 // The test then repeats this with <shift-tab> to cycle in reverse order.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SequentialFocusNavigation) {
+
+// Freqently times out. https://crbug.com/599730.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DISABLED_SequentialFocusNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5283,7 +5286,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
 // Android.
 #define MAYBE_NestedPopupMenuTest DISABLED_NestedPopupMenuTest
 #else
-#define MAYBE_NestedPopupMenuTest NestedPopupMenuTest
+// Times out frequently. https://crbug.com/599730.
+#define MAYBE_NestedPopupMenuTest DISABLED_NestedPopupMenuTest
 #endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
   GURL main_url(embedded_test_server()->GetURL(
