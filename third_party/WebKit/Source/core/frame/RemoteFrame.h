@@ -24,7 +24,7 @@ struct FrameLoadRequest;
 
 class CORE_EXPORT RemoteFrame: public Frame {
 public:
-    static PassRefPtrWillBeRawPtr<RemoteFrame> create(RemoteFrameClient*, FrameHost*, FrameOwner*);
+    static RawPtr<RemoteFrame> create(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
     ~RemoteFrame() override;
 
@@ -55,7 +55,7 @@ public:
 
     void advanceFocus(WebFocusType, LocalFrame* source);
 
-    void setView(PassRefPtrWillBeRawPtr<RemoteFrameView>);
+    void setView(RawPtr<RemoteFrameView>);
     void createView();
 
     RemoteFrameView* view() const;
@@ -68,10 +68,10 @@ private:
 
     RemoteFrameClient* remoteFrameClient() const;
 
-    RefPtrWillBeMember<RemoteFrameView> m_view;
-    RefPtrWillBeMember<RemoteSecurityContext> m_securityContext;
-    RefPtrWillBeMember<RemoteDOMWindow> m_domWindow;
-    OwnPtrWillBeMember<WindowProxyManager> m_windowProxyManager;
+    Member<RemoteFrameView> m_view;
+    Member<RemoteSecurityContext> m_securityContext;
+    Member<RemoteDOMWindow> m_domWindow;
+    Member<WindowProxyManager> m_windowProxyManager;
     WebLayer* m_remotePlatformLayer;
 };
 

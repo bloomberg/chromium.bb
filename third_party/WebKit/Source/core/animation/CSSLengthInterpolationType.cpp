@@ -286,13 +286,13 @@ static CSSPrimitiveValue::UnitType toUnitType(int lengthUnitType)
     return static_cast<CSSPrimitiveValue::UnitType>(CSSPrimitiveValue::lengthUnitTypeToUnitType(static_cast<CSSPrimitiveValue::LengthUnitType>(lengthUnitType)));
 }
 
-static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createCalcExpression(const InterpolableList& values, bool hasPercentage)
+static RawPtr<CSSCalcExpressionNode> createCalcExpression(const InterpolableList& values, bool hasPercentage)
 {
-    RefPtrWillBeRawPtr<CSSCalcExpressionNode> result = nullptr;
+    RawPtr<CSSCalcExpressionNode> result = nullptr;
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
         double value = toInterpolableNumber(values.get(i))->value();
         if (value || (i == CSSPrimitiveValue::UnitTypePercentage && hasPercentage)) {
-            RefPtrWillBeRawPtr<CSSCalcExpressionNode> node = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, toUnitType(i)));
+            RawPtr<CSSCalcExpressionNode> node = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, toUnitType(i)));
             result = result ? CSSCalcValue::createExpressionNode(result.release(), node.release(), CalcAdd) : node.release();
         }
     }
@@ -300,9 +300,9 @@ static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createCalcExpression(const 
     return result.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> createCSSValue(const InterpolableList& values, bool hasPercentage, ValueRange range)
+static RawPtr<CSSValue> createCSSValue(const InterpolableList& values, bool hasPercentage, ValueRange range)
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> result;
+    RawPtr<CSSPrimitiveValue> result;
     size_t firstUnitIndex = CSSPrimitiveValue::LengthUnitTypeCount;
     size_t unitTypeCount = 0;
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {

@@ -62,7 +62,7 @@ protected:
     MockChromeClient& chromeClient() { return *m_chromeClient; }
 
 private:
-    OwnPtrWillBePersistent<MockChromeClient> m_chromeClient;
+    Persistent<MockChromeClient> m_chromeClient;
     OwnPtr<DummyPageHolder> m_pageHolder;
 };
 

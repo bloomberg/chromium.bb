@@ -84,15 +84,15 @@ struct CompositedSelection;
 typedef unsigned long long DOMTimeStamp;
 
 class CORE_EXPORT FrameView final : public Widget, public PaintInvalidationCapableScrollableArea {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FrameView);
+    USING_GARBAGE_COLLECTED_MIXIN(FrameView);
 
     friend class PaintControllerPaintTestBase;
     friend class Internals;
     friend class LayoutPart; // for invalidateTreeIfNeeded
 
 public:
-    static PassRefPtrWillBeRawPtr<FrameView> create(LocalFrame*);
-    static PassRefPtrWillBeRawPtr<FrameView> create(LocalFrame*, const IntSize& initialSize);
+    static RawPtr<FrameView> create(LocalFrame*);
+    static RawPtr<FrameView> create(LocalFrame*, const IntSize& initialSize);
 
     ~FrameView() override;
 
@@ -111,7 +111,7 @@ public:
 
     void setCanHaveScrollbars(bool);
 
-    PassRefPtrWillBeRawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
+    RawPtr<Scrollbar> createScrollbar(ScrollbarOrientation);
 
     void setContentsSize(const IntSize&);
 
@@ -312,7 +312,7 @@ public:
     bool isTrackingPaintInvalidations() const { return m_isTrackingPaintInvalidations; }
     void resetTrackedPaintInvalidations();
 
-    using ScrollableAreaSet = WillBeHeapHashSet<RawPtrWillBeMember<ScrollableArea>>;
+    using ScrollableAreaSet = HeapHashSet<Member<ScrollableArea>>;
     void addScrollableArea(ScrollableArea*);
     void removeScrollableArea(ScrollableArea*);
     const ScrollableAreaSet* scrollableAreas() const { return m_scrollableAreas.get(); }
@@ -391,12 +391,12 @@ public:
     // Returns a clip rect in host window coordinates. Used to clip the blit on a scroll.
     IntRect windowClipRect(IncludeScrollbarsInRect = ExcludeScrollbars) const;
 
-    typedef WillBeHeapHashSet<RefPtrWillBeMember<Widget>> ChildrenWidgetSet;
+    typedef HeapHashSet<Member<Widget>> ChildrenWidgetSet;
 
     // Functions for child manipulation and inspection.
     void setParent(Widget*) override;
     void removeChild(Widget*);
-    void addChild(PassRefPtrWillBeRawPtr<Widget>);
+    void addChild(RawPtr<Widget>);
     const ChildrenWidgetSet* children() const { return &m_children; }
 
     // If the scroll view does not use a native widget, then it will have cross-platform Scrollbars. These functions
@@ -767,7 +767,7 @@ private:
     typedef HashSet<RefPtr<LayoutEmbeddedObject>> EmbeddedObjectSet;
     EmbeddedObjectSet m_partUpdateSet;
 
-    // FIXME: These are just "children" of the FrameView and should be RefPtrWillBeMember<Widget> instead.
+    // FIXME: These are just "children" of the FrameView and should be Member<Widget> instead.
     HashSet<RefPtr<LayoutPart>> m_parts;
 
     // The RefPtr cycle between LocalFrame and FrameView is broken
@@ -777,7 +777,7 @@ private:
     // For Oilpan, Member reference cycles pose no problem, but
     // LocalFrame's FrameView is also cleared by that setView(), so as to
     // keep the observable lifespan of LocalFrame::view() identical.
-    RefPtrWillBeMember<LocalFrame> m_frame;
+    Member<LocalFrame> m_frame;
 
     WebDisplayMode m_displayMode;
 
@@ -817,17 +817,17 @@ private:
     unsigned m_visuallyNonEmptyPixelCount;
     bool m_isVisuallyNonEmpty;
 
-    RefPtrWillBeMember<Node> m_fragmentAnchor;
+    Member<Node> m_fragmentAnchor;
 
     // layoutObject to hold our custom scroll corner.
     LayoutScrollbarPart* m_scrollCorner;
 
-    OwnPtrWillBeMember<ScrollableAreaSet> m_scrollableAreas;
-    OwnPtrWillBeMember<ScrollableAreaSet> m_animatingScrollableAreas;
+    Member<ScrollableAreaSet> m_scrollableAreas;
+    Member<ScrollableAreaSet> m_animatingScrollableAreas;
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
     ViewportConstrainedObjectSet m_backgroundAttachmentFixedObjects;
-    OwnPtrWillBeMember<FrameViewAutoSizeInfo> m_autoSizeInfo;
+    Member<FrameViewAutoSizeInfo> m_autoSizeInfo;
 
     IntSize m_inputEventsOffsetForEmulation;
     float m_inputEventsScaleFactorForEmulation;
@@ -850,8 +850,8 @@ private:
     bool m_hasBeenDisposed;
 #endif
 
-    RefPtrWillBeMember<Scrollbar> m_horizontalScrollbar;
-    RefPtrWillBeMember<Scrollbar> m_verticalScrollbar;
+    Member<Scrollbar> m_horizontalScrollbar;
+    Member<Scrollbar> m_verticalScrollbar;
     ScrollbarMode m_horizontalScrollbarMode;
     ScrollbarMode m_verticalScrollbarMode;
 
@@ -878,7 +878,7 @@ private:
     // Exists only on root frame.
     // TODO(bokan): crbug.com/484188. We should specialize FrameView for the
     // main frame.
-    OwnPtrWillBeMember<ScrollableArea> m_viewportScrollableArea;
+    Member<ScrollableArea> m_viewportScrollableArea;
 
     // This frame's bounds in the root frame's content coordinates, clipped
     // recursively through every ancestor view.

@@ -41,13 +41,13 @@ class StyleMedia;
 
 typedef HeapVector<Member<MessagePort>, 1> MessagePortArray;
 
-class CORE_EXPORT DOMWindow : public EventTargetWithInlineData, public RefCountedWillBeNoBase<DOMWindow>, public DOMWindowBase64 {
+class CORE_EXPORT DOMWindow : public EventTargetWithInlineData, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(DOMWindow);
 public:
     ~DOMWindow() override;
 
-    // RefCountedWillBeGarbageCollectedFinalized overrides:
+    // GarbageCollectedFinalized overrides:
     DECLARE_VIRTUAL_TRACE();
 
     virtual bool isLocalDOMWindow() const { return false; }
@@ -157,13 +157,13 @@ public:
     virtual void resizeBy(int x, int y) const = 0;
     virtual void resizeTo(int width, int height) const = 0;
 
-    virtual PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&) = 0;
+    virtual RawPtr<MediaQueryList> matchMedia(const String&) = 0;
 
     // DOM Level 2 Style Interface
-    virtual PassRefPtrWillBeRawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const = 0;
+    virtual RawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const = 0;
 
     // WebKit extensions
-    virtual PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const = 0;
+    virtual RawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const = 0;
 
     // WebKit animation extensions
     virtual int requestAnimationFrame(FrameRequestCallback*) = 0;
@@ -224,7 +224,7 @@ protected:
     bool m_windowIsClosing;
 
 private:
-    mutable RefPtrWillBeMember<Location> m_location;
+    mutable Member<Location> m_location;
 };
 
 } // namespace blink

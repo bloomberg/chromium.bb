@@ -21,7 +21,7 @@ protected:
 
     virtual InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const;
     virtual InterpolationValue maybeConvertSVGValue(const SVGPropertyBase&) const = 0;
-    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const = 0;
+    virtual RawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const = 0;
 
     InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const override;
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const override;

@@ -177,7 +177,7 @@ inline static PassRefPtr<AnimatableValue> createFromLengthSize(const LengthSize&
 inline static PassRefPtr<AnimatableValue> createFromStyleImage(StyleImage* image)
 {
     if (image) {
-        if (RefPtrWillBeRawPtr<CSSValue> cssValue = image->cssValue())
+        if (RawPtr<CSSValue> cssValue = image->cssValue())
             return AnimatableImage::create(cssValue.release());
     }
     return AnimatableUnknown::create(CSSValueNone);

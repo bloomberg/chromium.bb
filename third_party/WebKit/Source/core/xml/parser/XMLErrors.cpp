@@ -88,19 +88,19 @@ void XMLErrors::appendErrorMessage(const String& typeString, TextPosition positi
     m_errorMessages.append(message);
 }
 
-static inline PassRefPtrWillBeRawPtr<Element> createXHTMLParserErrorHeader(Document* doc, const String& errorMessages)
+static inline RawPtr<Element> createXHTMLParserErrorHeader(Document* doc, const String& errorMessages)
 {
-    RefPtrWillBeRawPtr<Element> reportElement = doc->createElement(QualifiedName(nullAtom, "parsererror", xhtmlNamespaceURI), true);
+    RawPtr<Element> reportElement = doc->createElement(QualifiedName(nullAtom, "parsererror", xhtmlNamespaceURI), true);
 
     Vector<Attribute> reportAttributes;
     reportAttributes.append(Attribute(styleAttr, "display: block; white-space: pre; border: 2px solid #c77; padding: 0 1em 0 1em; margin: 1em; background-color: #fdd; color: black"));
     reportElement->parserSetAttributes(reportAttributes);
 
-    RefPtrWillBeRawPtr<Element> h3 = doc->createElement(h3Tag, true);
+    RawPtr<Element> h3 = doc->createElement(h3Tag, true);
     reportElement->parserAppendChild(h3.get());
     h3->parserAppendChild(doc->createTextNode("This page contains the following errors:"));
 
-    RefPtrWillBeRawPtr<Element> fixed = doc->createElement(divTag, true);
+    RawPtr<Element> fixed = doc->createElement(divTag, true);
     Vector<Attribute> fixedAttributes;
     fixedAttributes.append(Attribute(styleAttr, "font-family:monospace;font-size:12px"));
     fixed->parserSetAttributes(fixedAttributes);
@@ -122,22 +122,22 @@ void XMLErrors::insertErrorMessageBlock()
     // where the errors are located)
 
     // Create elements for display
-    RefPtrWillBeRawPtr<Element> documentElement = m_document->documentElement();
+    RawPtr<Element> documentElement = m_document->documentElement();
     if (!documentElement) {
-        RefPtrWillBeRawPtr<Element> rootElement = m_document->createElement(htmlTag, true);
-        RefPtrWillBeRawPtr<Element> body = m_document->createElement(bodyTag, true);
+        RawPtr<Element> rootElement = m_document->createElement(htmlTag, true);
+        RawPtr<Element> body = m_document->createElement(bodyTag, true);
         rootElement->parserAppendChild(body);
         m_document->parserAppendChild(rootElement);
         documentElement = body.get();
     } else if (documentElement->namespaceURI() == SVGNames::svgNamespaceURI) {
-        RefPtrWillBeRawPtr<Element> rootElement = m_document->createElement(htmlTag, true);
-        RefPtrWillBeRawPtr<Element> head = m_document->createElement(headTag, true);
-        RefPtrWillBeRawPtr<Element> style = m_document->createElement(styleTag, true);
+        RawPtr<Element> rootElement = m_document->createElement(htmlTag, true);
+        RawPtr<Element> head = m_document->createElement(headTag, true);
+        RawPtr<Element> style = m_document->createElement(styleTag, true);
         head->parserAppendChild(style);
         style->parserAppendChild(m_document->createTextNode("html, body { height: 100% } parsererror + svg { width: 100%; height: 100% }"));
         style->finishParsingChildren();
         rootElement->parserAppendChild(head);
-        RefPtrWillBeRawPtr<Element> body = m_document->createElement(bodyTag, true);
+        RawPtr<Element> body = m_document->createElement(bodyTag, true);
         rootElement->parserAppendChild(body);
 
         m_document->parserRemoveChild(*documentElement);
@@ -149,12 +149,12 @@ void XMLErrors::insertErrorMessageBlock()
     }
 
     String errorMessages = m_errorMessages.toString();
-    RefPtrWillBeRawPtr<Element> reportElement = createXHTMLParserErrorHeader(m_document, errorMessages);
+    RawPtr<Element> reportElement = createXHTMLParserErrorHeader(m_document, errorMessages);
 
     if (DocumentXSLT::hasTransformSourceDocument(*m_document)) {
         Vector<Attribute> attributes;
         attributes.append(Attribute(styleAttr, "white-space: normal"));
-        RefPtrWillBeRawPtr<Element> paragraph = m_document->createElement(pTag, true);
+        RawPtr<Element> paragraph = m_document->createElement(pTag, true);
         paragraph->parserSetAttributes(attributes);
         paragraph->parserAppendChild(m_document->createTextNode("This document was created as the result of an XSL transformation. The line and column numbers given are from the transformed result."));
         reportElement->parserAppendChild(paragraph.release());

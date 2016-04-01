@@ -17,7 +17,7 @@ class Frame;
 // Oilpan: all FrameOwner instances are GCed objects. FrameOwner additionally
 // derives from GarbageCollectedMixin so that Member<FrameOwner> references can
 // be kept (e.g., Frame::m_owner.)
-class CORE_EXPORT FrameOwner : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 public:
     virtual ~FrameOwner() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
@@ -40,10 +40,10 @@ public:
     virtual int marginHeight() const = 0;
 };
 
-class CORE_EXPORT DummyFrameOwner : public NoBaseWillBeGarbageCollectedFinalized<DummyFrameOwner>, public FrameOwner {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DummyFrameOwner);
+class CORE_EXPORT DummyFrameOwner : public GarbageCollectedFinalized<DummyFrameOwner>, public FrameOwner {
+    USING_GARBAGE_COLLECTED_MIXIN(DummyFrameOwner);
 public:
-    static PassOwnPtrWillBeRawPtr<DummyFrameOwner> create()
+    static RawPtr<DummyFrameOwner> create()
     {
         return adoptPtrWillBeNoop(new DummyFrameOwner);
     }

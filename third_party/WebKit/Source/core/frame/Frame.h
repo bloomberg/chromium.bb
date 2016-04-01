@@ -63,7 +63,7 @@ enum class UserGestureStatus { Active, None };
 // Frame is the base class of LocalFrame and RemoteFrame and should only contain
 // functionality shared between both. In particular, any method related to
 // input, layout, or painting probably belongs on LocalFrame.
-class CORE_EXPORT Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
+class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 public:
     virtual ~Frame();
 
@@ -138,11 +138,11 @@ protected:
 
     mutable FrameTree m_treeNode;
 
-    RawPtrWillBeMember<FrameHost> m_host;
-    RawPtrWillBeMember<FrameOwner> m_owner;
+    Member<FrameHost> m_host;
+    Member<FrameOwner> m_owner;
 
 private:
-    RawPtrWillBeMember<FrameClient> m_client;
+    Member<FrameClient> m_client;
     // Needed to identify Frame Timing requests.
     int64_t m_frameID;
     bool m_isLoading;

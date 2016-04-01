@@ -14,10 +14,9 @@ namespace blink {
 class Document;
 class ProcessingInstruction;
 
-class DocumentXSLT final : public NoBaseWillBeGarbageCollected<DocumentXSLT>, public WillBeHeapSupplement<Document> {
+class DocumentXSLT final : public GarbageCollected<DocumentXSLT>, public HeapSupplement<Document> {
     WTF_MAKE_NONCOPYABLE(DocumentXSLT);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DocumentXSLT);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentXSLT);
+    USING_GARBAGE_COLLECTED_MIXIN(DocumentXSLT);
 public:
     Document* transformSourceDocument()
     {
@@ -30,7 +29,7 @@ public:
         m_transformSourceDocument = document;
     }
 
-    static DocumentXSLT& from(WillBeHeapSupplementable<Document>&);
+    static DocumentXSLT& from(HeapSupplementable<Document>&);
     static const char* supplementName();
 
     // The following static methods don't use any instance of DocumentXSLT.
@@ -47,7 +46,7 @@ public:
 private:
     DocumentXSLT();
 
-    RefPtrWillBeMember<Document> m_transformSourceDocument;
+    Member<Document> m_transformSourceDocument;
 };
 
 } // namespace blink

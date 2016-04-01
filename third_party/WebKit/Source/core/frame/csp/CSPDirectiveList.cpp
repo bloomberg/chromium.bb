@@ -57,9 +57,9 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     m_reportOnly = type == ContentSecurityPolicyHeaderTypeReport;
 }
 
-PassOwnPtrWillBeRawPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
+RawPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
-    OwnPtrWillBeRawPtr<CSPDirectiveList> directives = adoptPtrWillBeNoop(new CSPDirectiveList(policy, type, source));
+    RawPtr<CSPDirectiveList> directives = new CSPDirectiveList(policy, type, source);
     directives->parse(begin, end);
 
     if (!directives->checkEval(directives->operativeDirective(directives->m_scriptSrc.get()))) {
@@ -102,7 +102,7 @@ void CSPDirectiveList::reportViolationWithState(const String& directiveText, con
     // never get thrown in report-only mode because the caller won't see
     // a violation.)
     if (m_reportOnly || exceptionStatus == ContentSecurityPolicy::WillNotThrowException) {
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, reportMessage);
+        RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, reportMessage);
         consoleMessage->setScriptState(scriptState);
         m_policy->logToConsole(consoleMessage.release());
     }
@@ -562,13 +562,13 @@ void CSPDirectiveList::parseReportURI(const String& name, const String& value)
 
 
 template<class CSPDirectiveType>
-void CSPDirectiveList::setCSPDirective(const String& name, const String& value, OwnPtrWillBeMember<CSPDirectiveType>& directive)
+void CSPDirectiveList::setCSPDirective(const String& name, const String& value, Member<CSPDirectiveType>& directive)
 {
     if (directive) {
         m_policy->reportDuplicateDirective(name);
         return;
     }
-    directive = adoptPtrWillBeNoop(new CSPDirectiveType(name, value, m_policy));
+    directive = new CSPDirectiveType(name, value, m_policy);
 }
 
 void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sandboxPolicy)

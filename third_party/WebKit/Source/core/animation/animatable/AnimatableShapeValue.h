@@ -59,7 +59,7 @@ private:
     AnimatableType type() const override { return TypeShapeValue; }
     bool equalTo(const AnimatableValue*) const override;
 
-    RefPtrWillBePersistent<ShapeValue> m_shape;
+    Persistent<ShapeValue> m_shape;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShapeValue, isShapeValue());

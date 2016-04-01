@@ -45,7 +45,7 @@ public:
     static Document* currentDocument;
 
 private:
-    RawPtrWillBeMember<Document> m_oldDocument;
+    Member<Document> m_oldDocument;
 
     xmlGenericErrorFunc m_oldGenericErrorFunc;
     xmlStructuredErrorFunc m_oldStructuredErrorFunc;

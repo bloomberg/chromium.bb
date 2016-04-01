@@ -11,7 +11,7 @@
 
 namespace blink {
 
-using StyleImageList = WillBePersistentHeapVector<RefPtrWillBeMember<StyleImage>, 1>;
+using StyleImageList = PersistentHeapVector<Member<StyleImage>, 1>;
 
 class ImageListPropertyFunctions {
 public:

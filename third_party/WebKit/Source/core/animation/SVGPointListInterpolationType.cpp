@@ -61,9 +61,9 @@ void SVGPointListInterpolationType::composite(UnderlyingValueOwner& underlyingVa
         underlyingValueOwner.set(*this, value);
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGPointListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+RawPtr<SVGPropertyBase> SVGPointListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
-    RefPtrWillBeRawPtr<SVGPointList> result = SVGPointList::create();
+    RawPtr<SVGPointList> result = SVGPointList::create();
 
     const InterpolableList& list = toInterpolableList(interpolableValue);
     ASSERT(list.length() % 2 == 0);

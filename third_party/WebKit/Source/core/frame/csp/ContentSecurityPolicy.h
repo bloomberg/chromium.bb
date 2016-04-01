@@ -62,12 +62,11 @@ class ResourceRequest;
 class SecurityOrigin;
 
 typedef int SandboxFlags;
-typedef WillBeHeapVector<OwnPtrWillBeMember<CSPDirectiveList>> CSPDirectiveListVector;
-typedef WillBeHeapVector<RefPtrWillBeMember<ConsoleMessage>> ConsoleMessageVector;
+typedef HeapVector<Member<CSPDirectiveList>> CSPDirectiveListVector;
+typedef HeapVector<Member<ConsoleMessage>> ConsoleMessageVector;
 typedef std::pair<String, ContentSecurityPolicyHeaderType> CSPHeaderAndType;
 
-class CORE_EXPORT ContentSecurityPolicy : public RefCountedWillBeGarbageCollectedFinalized<ContentSecurityPolicy> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ContentSecurityPolicy);
+class CORE_EXPORT ContentSecurityPolicy : public GarbageCollectedFinalized<ContentSecurityPolicy> {
 public:
     // CSP Level 1 Directives
     static const char ConnectSrc[];
@@ -132,9 +131,9 @@ public:
         URLViolation
     };
 
-    static PassRefPtrWillBeRawPtr<ContentSecurityPolicy> create()
+    static RawPtr<ContentSecurityPolicy> create()
     {
-        return adoptRefWillBeNoop(new ContentSecurityPolicy());
+        return new ContentSecurityPolicy();
     }
     ~ContentSecurityPolicy();
     DECLARE_TRACE();
@@ -215,7 +214,7 @@ public:
 
     // If a frame is passed in, the message will be logged to its active document's console.
     // Otherwise, the message will be logged to this object's |m_executionContext|.
-    void logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>, LocalFrame* = nullptr);
+    void logToConsole(RawPtr<ConsoleMessage>, LocalFrame* = nullptr);
 
     void reportDirectiveAsSourceExpression(const String& directiveName, const String& sourceExpression);
     void reportDuplicateDirective(const String&);
@@ -286,7 +285,7 @@ private:
     bool shouldSendViolationReport(const String&) const;
     void didSendViolationReport(const String&);
 
-    RawPtrWillBeMember<ExecutionContext> m_executionContext;
+    Member<ExecutionContext> m_executionContext;
     bool m_overrideInlineStyleAllowed;
     CSPDirectiveListVector m_policies;
     ConsoleMessageVector m_consoleMessages;
@@ -307,7 +306,7 @@ private:
     String m_disableEvalErrorMessage;
     SecurityContext::InsecureRequestsPolicy m_insecureRequestsPolicy;
 
-    OwnPtrWillBeMember<CSPSource> m_selfSource;
+    Member<CSPSource> m_selfSource;
     String m_selfProtocol;
 };
 

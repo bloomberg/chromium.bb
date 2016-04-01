@@ -15,13 +15,13 @@ namespace blink {
 
 class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ResolvedVariableChecker> create(CSSPropertyID property, PassRefPtrWillBeRawPtr<CSSVariableReferenceValue> variableReference, PassRefPtrWillBeRawPtr<CSSValue> resolvedValue)
+    static PassOwnPtr<ResolvedVariableChecker> create(CSSPropertyID property, RawPtr<CSSVariableReferenceValue> variableReference, RawPtr<CSSValue> resolvedValue)
     {
         return adoptPtr(new ResolvedVariableChecker(property, variableReference, resolvedValue));
     }
 
 private:
-    ResolvedVariableChecker(CSSPropertyID property, PassRefPtrWillBeRawPtr<CSSVariableReferenceValue> variableReference, PassRefPtrWillBeRawPtr<CSSValue> resolvedValue)
+    ResolvedVariableChecker(CSSPropertyID property, RawPtr<CSSVariableReferenceValue> variableReference, RawPtr<CSSValue> resolvedValue)
         : m_property(property)
         , m_variableReference(variableReference)
         , m_resolvedValue(resolvedValue)
@@ -30,18 +30,18 @@ private:
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
         // TODO(alancutter): Just check the variables referenced instead of doing a full CSSValue resolve.
-        RefPtrWillBeRawPtr<CSSValue> resolvedValue = CSSVariableResolver::resolveVariableReferences(environment.state().style()->variables(), m_property, *m_variableReference);
+        RawPtr<CSSValue> resolvedValue = CSSVariableResolver::resolveVariableReferences(environment.state().style()->variables(), m_property, *m_variableReference);
         return m_resolvedValue->equals(*resolvedValue);
     }
 
     CSSPropertyID m_property;
-    RefPtrWillBePersistent<CSSVariableReferenceValue> m_variableReference;
-    RefPtrWillBePersistent<CSSValue> m_resolvedValue;
+    Persistent<CSSVariableReferenceValue> m_variableReference;
+    Persistent<CSSValue> m_resolvedValue;
 };
 
 InterpolationValue CSSInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
-    RefPtrWillBeRawPtr<CSSValue> resolvedCSSValueOwner;
+    RawPtr<CSSValue> resolvedCSSValueOwner;
     const CSSValue* value = toCSSPropertySpecificKeyframe(keyframe).value();
 
     if (!value)

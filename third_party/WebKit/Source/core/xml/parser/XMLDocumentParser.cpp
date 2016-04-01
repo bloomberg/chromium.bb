@@ -375,7 +375,7 @@ void XMLDocumentParser::append(const String& inputSource)
 
     // JavaScript can detach the parser. Make sure this is not released
     // before the end of this method.
-    RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
+    RawPtr<XMLDocumentParser> protect(this);
 
     doWrite(source.toString());
 }
@@ -462,7 +462,7 @@ void XMLDocumentParser::finish()
     // However, FrameLoader::stop calls DocumentParser::finish unconditionally.
 
     // flush may ending up executing arbitrary script, and possibly detach the parser.
-    RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
+    RawPtr<XMLDocumentParser> protect(this);
     flush();
     if (isDetached())
         return;
@@ -489,7 +489,7 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
     m_pendingScript->removeClient(this);
     m_pendingScript = nullptr;
 
-    RefPtrWillBeRawPtr<Element> e = m_scriptElement;
+    RawPtr<Element> e = m_scriptElement;
     m_scriptElement = nullptr;
 
     ScriptLoader* scriptLoader = toScriptLoaderIfPossible(e.get());
@@ -497,7 +497,7 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
 
     // JavaScript can detach this parser, make sure it's kept alive even if
     // detached.
-    RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
+    RawPtr<XMLDocumentParser> protect(this);
 
     if (errorOccurred) {
         scriptLoader->dispatchErrorEvent();
@@ -538,7 +538,7 @@ bool XMLDocumentParser::parseDocumentFragment(const String& chunk, DocumentFragm
         return true;
     }
 
-    RefPtrWillBeRawPtr<XMLDocumentParser> parser = XMLDocumentParser::create(fragment, contextElement, parserContentPolicy);
+    RawPtr<XMLDocumentParser> parser = XMLDocumentParser::create(fragment, contextElement, parserContentPolicy);
     bool wellFormed = parser->appendFragmentSource(chunk);
 
     // Do not call finish(). Current finish() and doEnd() implementations touch
@@ -674,7 +674,7 @@ static void* openFunc(const char* uri)
         XMLDocumentParserScope scope(0);
         // FIXME: We should restore the original global error handler as well.
         FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, ResourceFetcher::defaultResourceOptions());
-        RefPtrWillBeRawPtr<Resource> resource = RawResource::fetchSynchronously(request, document->fetcher());
+        RawPtr<Resource> resource = RawResource::fetchSynchronously(request, document->fetcher());
         if (resource && !resource->errorOccurred()) {
             data = resource->resourceBuffer();
             finalURL = resource->response().url();
@@ -834,7 +834,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
 #endif
 
     // Add namespaces based on the parent node
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elemStack;
+    HeapVector<Member<Element>> elemStack;
     while (parentElement) {
         elemStack.append(parentElement);
 
@@ -908,7 +908,7 @@ void XMLDocumentParser::doWrite(const String& parseString)
     if (parseString.length()) {
         // JavaScript may cause the parser to detach during parseChunk
         // keep this alive until this function is done.
-        RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
+        RawPtr<XMLDocumentParser> protect(this);
 
         XMLDocumentParserScope scope(document());
         TemporaryChange<bool> encodingScope(m_isCurrentlyParsing8BitChunk, parseString.is8Bit());
@@ -1022,7 +1022,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     m_sawFirstElement = true;
 
     QualifiedName qName(prefix, localName, adjustedURI);
-    RefPtrWillBeRawPtr<Element> newElement = m_currentNode->document().createElement(qName, true);
+    RawPtr<Element> newElement = m_currentNode->document().createElement(qName, true);
     if (!newElement) {
         stopParsing();
         return;
@@ -1086,12 +1086,12 @@ void XMLDocumentParser::endElementNs()
 
     // JavaScript can detach the parser. Make sure this is not released before
     // the end of this method.
-    RefPtrWillBeRawPtr<XMLDocumentParser> protect(this);
+    RawPtr<XMLDocumentParser> protect(this);
 
     if (!updateLeafTextNode())
         return;
 
-    RefPtrWillBeRawPtr<ContainerNode> n = m_currentNode;
+    RawPtr<ContainerNode> n = m_currentNode;
     if (m_currentNode->isElementNode())
         toElement(n.get())->finishParsingChildren();
 
@@ -1205,7 +1205,7 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
 
     // ### handle exceptions
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<ProcessingInstruction> pi = m_currentNode->document().createProcessingInstruction(target, data, exceptionState);
+    RawPtr<ProcessingInstruction> pi = m_currentNode->document().createProcessingInstruction(target, data, exceptionState);
     if (exceptionState.hadException())
         return;
 

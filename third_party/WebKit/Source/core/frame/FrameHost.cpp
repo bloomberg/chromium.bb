@@ -40,9 +40,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<FrameHost> FrameHost::create(Page& page)
+RawPtr<FrameHost> FrameHost::create(Page& page)
 {
-    return adoptPtrWillBeNoop(new FrameHost(page));
+    return new FrameHost(page);
 }
 
 FrameHost::FrameHost(Page& page)
@@ -50,7 +50,7 @@ FrameHost::FrameHost(Page& page)
     , m_topControls(TopControls::create(*this))
     , m_pageScaleConstraintsSet(PageScaleConstraintsSet::create())
     , m_visualViewport(VisualViewport::create(*this))
-    , m_eventHandlerRegistry(adoptPtrWillBeNoop(new EventHandlerRegistry(*this)))
+    , m_eventHandlerRegistry(new EventHandlerRegistry(*this))
     , m_consoleMessageStorage(ConsoleMessageStorage::create())
     , m_subframeCount(0)
 {

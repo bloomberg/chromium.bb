@@ -70,7 +70,7 @@ private:
 class CORE_EXPORT SmartClip {
     STACK_ALLOCATED();
 public:
-    explicit SmartClip(PassRefPtrWillBeRawPtr<LocalFrame>);
+    explicit SmartClip(RawPtr<LocalFrame>);
 
     SmartClipData dataForRect(const IntRect&);
 
@@ -80,10 +80,10 @@ private:
     Node* minNodeContainsNodes(Node* minNode, Node* newNode);
     Node* findBestOverlappingNode(Node*, const IntRect& cropRectInViewport);
     bool shouldSkipBackgroundImage(Node*);
-    void collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRectInViewport, WillBeHeapVector<RawPtrWillBeMember<Node>>& overlappingNodeInfoTable);
+    void collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRectInViewport, HeapVector<Member<Node>>& overlappingNodeInfoTable);
     String extractTextFromNode(Node*);
 
-    RefPtrWillBeMember<LocalFrame> m_frame;
+    Member<LocalFrame> m_frame;
 };
 
 } // namespace blink

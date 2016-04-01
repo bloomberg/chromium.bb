@@ -110,7 +110,7 @@ protected:
 private:
     KeyframeEffect(Element*, EffectModel*, const Timing&, Priority, EventDelegate*);
 
-    RawPtrWillBeMember<Element> m_target;
+    Member<Element> m_target;
     Member<EffectModel> m_model;
     Member<SampledEffect> m_sampledEffect;
 

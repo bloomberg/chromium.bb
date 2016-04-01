@@ -42,7 +42,7 @@ struct EvaluationContext {
 public:
     explicit EvaluationContext(Node&);
 
-    RefPtrWillBeMember<Node> node;
+    Member<Node> node;
     unsigned long size;
     unsigned long position;
     HashMap<String, String> variableBindings;

@@ -47,9 +47,9 @@ protected:
         otherAnimatableUnknown = AnimatableUnknown::create(otherCSSValue);
     }
 
-    RefPtrWillBePersistent<CSSValue> cssValue;
+    Persistent<CSSValue> cssValue;
     RefPtr<AnimatableValue> animatableUnknown;
-    RefPtrWillBePersistent<CSSValue> otherCSSValue;
+    Persistent<CSSValue> otherCSSValue;
     RefPtr<AnimatableValue> otherAnimatableUnknown;
 };
 

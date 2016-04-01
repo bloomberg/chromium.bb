@@ -47,18 +47,18 @@ class ScriptArguments;
 class CORE_EXPORT ConsoleBase : public GarbageCollectedFinalized<ConsoleBase>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    void debug(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void error(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void info(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void log(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void clear(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void warn(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void dir(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void dirxml(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void table(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void trace(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void assertCondition(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, bool condition);
-    void count(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
+    void debug(ScriptState*, RawPtr<ScriptArguments>);
+    void error(ScriptState*, RawPtr<ScriptArguments>);
+    void info(ScriptState*, RawPtr<ScriptArguments>);
+    void log(ScriptState*, RawPtr<ScriptArguments>);
+    void clear(ScriptState*, RawPtr<ScriptArguments>);
+    void warn(ScriptState*, RawPtr<ScriptArguments>);
+    void dir(ScriptState*, RawPtr<ScriptArguments>);
+    void dirxml(ScriptState*, RawPtr<ScriptArguments>);
+    void table(ScriptState*, RawPtr<ScriptArguments>);
+    void trace(ScriptState*, RawPtr<ScriptArguments>);
+    void assertCondition(ScriptState*, RawPtr<ScriptArguments>, bool condition);
+    void count(ScriptState*, RawPtr<ScriptArguments>);
     void markTimeline(const String&);
     void profile(const String&);
     void profileEnd(const String&);
@@ -67,8 +67,8 @@ public:
     void timeStamp(const String&);
     void timeline(ScriptState*, const String&);
     void timelineEnd(ScriptState*, const String&);
-    void group(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
-    void groupCollapsed(ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>);
+    void group(ScriptState*, RawPtr<ScriptArguments>);
+    void groupCollapsed(ScriptState*, RawPtr<ScriptArguments>);
     void groupEnd();
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
@@ -77,10 +77,10 @@ public:
 
 protected:
     virtual ExecutionContext* context() = 0;
-    virtual void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) = 0;
+    virtual void reportMessageToConsole(RawPtr<ConsoleMessage>) = 0;
 
 private:
-    void internalAddMessage(MessageType, MessageLevel, ScriptState*, PassRefPtrWillBeRawPtr<ScriptArguments>, bool acceptNoArguments = false);
+    void internalAddMessage(MessageType, MessageLevel, ScriptState*, RawPtr<ScriptArguments>, bool acceptNoArguments = false);
 
     HashCountedSet<String> m_counts;
     HashMap<String, double> m_times;

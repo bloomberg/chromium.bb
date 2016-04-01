@@ -344,45 +344,45 @@ ImageBitmap::~ImageBitmap()
 {
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
+RawPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect, document, options));
+    return new ImageBitmap(image, normalizedCropRect, document, options);
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
+RawPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(video, normalizedCropRect, document, options));
+    return new ImageBitmap(video, normalizedCropRect, document, options);
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
+RawPtr<ImageBitmap> ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(canvas, normalizedCropRect, options));
+    return new ImageBitmap(canvas, normalizedCropRect, options);
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
+RawPtr<ImageBitmap> ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(data, normalizedCropRect, options));
+    return new ImageBitmap(data, normalizedCropRect, options);
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
+RawPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(bitmap, normalizedCropRect, options));
+    return new ImageBitmap(bitmap, normalizedCropRect, options);
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
+RawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect, options));
+    return new ImageBitmap(image, normalizedCropRect, options);
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
+RawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
 {
-    return adoptRefWillBeNoop(new ImageBitmap(image));
+    return new ImageBitmap(image);
 }
 
 void ImageBitmap::close()

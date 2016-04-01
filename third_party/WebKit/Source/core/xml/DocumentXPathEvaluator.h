@@ -36,16 +36,15 @@ class ExceptionState;
 class XPathExpression;
 class XPathResult;
 
-class DocumentXPathEvaluator final : public NoBaseWillBeGarbageCollected<DocumentXPathEvaluator>, public WillBeHeapSupplement<Document> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentXPathEvaluator);
+class DocumentXPathEvaluator final : public GarbageCollected<DocumentXPathEvaluator>, public HeapSupplement<Document> {
+    USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
 public:
-    static DocumentXPathEvaluator& from(WillBeHeapSupplementable<Document>&);
+    static DocumentXPathEvaluator& from(HeapSupplementable<Document>&);
 
-    static XPathExpression* createExpression(WillBeHeapSupplementable<Document>&,
+    static XPathExpression* createExpression(HeapSupplementable<Document>&,
         const String& expression, XPathNSResolver*, ExceptionState&);
-    static XPathNSResolver* createNSResolver(WillBeHeapSupplementable<Document>&, Node* nodeResolver);
-    static XPathResult* evaluate(WillBeHeapSupplementable<Document>&,
+    static XPathNSResolver* createNSResolver(HeapSupplementable<Document>&, Node* nodeResolver);
+    static XPathResult* evaluate(HeapSupplementable<Document>&,
         const String& expression, Node* contextNode, XPathNSResolver*,
         unsigned short type, const ScriptValue&, ExceptionState&);
 
@@ -56,7 +55,7 @@ private:
 
     static const char* supplementName() { return "DocumentXPathEvaluator"; }
 
-    PersistentWillBeMember<XPathEvaluator> m_xpathEvaluator;
+    Member<XPathEvaluator> m_xpathEvaluator;
 };
 
 } // namespace blink

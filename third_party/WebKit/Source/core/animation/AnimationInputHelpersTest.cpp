@@ -34,7 +34,7 @@ protected:
     }
 
     OwnPtr<DummyPageHolder> pageHolder;
-    RefPtrWillBePersistent<Document> document;
+    Persistent<Document> document;
 };
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes)

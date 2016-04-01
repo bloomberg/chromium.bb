@@ -117,9 +117,9 @@ String Location::origin() const
     return DOMURLUtilsReadOnly::origin(url());
 }
 
-PassRefPtrWillBeRawPtr<DOMStringList> Location::ancestorOrigins() const
+RawPtr<DOMStringList> Location::ancestorOrigins() const
 {
-    RefPtrWillBeRawPtr<DOMStringList> origins = DOMStringList::create(DOMStringList::Location);
+    RawPtr<DOMStringList> origins = DOMStringList::create(DOMStringList::Location);
     if (!m_frame)
         return origins.release();
     for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent())

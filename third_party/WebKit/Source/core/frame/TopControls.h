@@ -19,12 +19,11 @@ class FloatSize;
 // duplicating cc::TopControlsManager behaviour.  Top controls' self-animation
 // to completion is still handled by compositor and kicks in when scrolling is
 // complete (i.e, upon ScrollEnd or FlingEnd).
-class CORE_EXPORT TopControls final : public NoBaseWillBeGarbageCollectedFinalized<TopControls> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(TopControls);
+class CORE_EXPORT TopControls final : public GarbageCollectedFinalized<TopControls> {
 public:
-    static PassOwnPtrWillBeRawPtr<TopControls> create(const FrameHost& host)
+    static RawPtr<TopControls> create(const FrameHost& host)
     {
-        return adoptPtrWillBeNoop(new TopControls(host));
+        return new TopControls(host);
     }
 
     ~TopControls();
@@ -55,7 +54,7 @@ private:
     explicit TopControls(const FrameHost&);
     void resetBaseline();
 
-    RawPtrWillBeMember<const FrameHost> m_frameHost;
+    Member<const FrameHost> m_frameHost;
 
     // The top controls height regardless of whether it is visible or not.
     float m_height;

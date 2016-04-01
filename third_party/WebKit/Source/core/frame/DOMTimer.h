@@ -40,11 +40,11 @@ namespace blink {
 
 class ExecutionContext;
 
-class CORE_EXPORT DOMTimer final : public RefCountedWillBeGarbageCollectedFinalized<DOMTimer>, public SuspendableTimer {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
+class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>, public SuspendableTimer {
+    USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
 public:
     // Creates a new timer owned by the ExecutionContext, starts it and returns its ID.
-    static int install(ExecutionContext*, PassOwnPtrWillBeRawPtr<ScheduledAction>, int timeout, bool singleShot);
+    static int install(ExecutionContext*, RawPtr<ScheduledAction>, int timeout, bool singleShot);
     static void removeByID(ExecutionContext*, int timeoutID);
 
     ~DOMTimer() override;
@@ -64,19 +64,19 @@ public:
 private:
     friend class DOMTimerCoordinator; // For create().
 
-    static PassRefPtrWillBeRawPtr<DOMTimer> create(ExecutionContext* context, PassOwnPtrWillBeRawPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
+    static RawPtr<DOMTimer> create(ExecutionContext* context, RawPtr<ScheduledAction> action, int timeout, bool singleShot, int timeoutID)
     {
-        return adoptRefWillBeNoop(new DOMTimer(context, action, timeout, singleShot, timeoutID));
+        return new DOMTimer(context, action, timeout, singleShot, timeoutID);
     }
 
-    DOMTimer(ExecutionContext*, PassOwnPtrWillBeRawPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
+    DOMTimer(ExecutionContext*, RawPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
     void fired() override;
 
     WebTaskRunner* timerTaskRunner() const override;
 
     int m_timeoutID;
     int m_nestingLevel;
-    OwnPtrWillBeMember<ScheduledAction> m_action;
+    Member<ScheduledAction> m_action;
     RefPtr<UserGestureToken> m_userGestureToken;
 };
 

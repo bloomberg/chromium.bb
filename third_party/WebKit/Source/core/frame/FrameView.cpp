@@ -163,16 +163,16 @@ FrameView::FrameView(LocalFrame* frame)
     init();
 }
 
-PassRefPtrWillBeRawPtr<FrameView> FrameView::create(LocalFrame* frame)
+RawPtr<FrameView> FrameView::create(LocalFrame* frame)
 {
-    RefPtrWillBeRawPtr<FrameView> view = adoptRefWillBeNoop(new FrameView(frame));
+    RawPtr<FrameView> view = new FrameView(frame);
     view->show();
     return view.release();
 }
 
-PassRefPtrWillBeRawPtr<FrameView> FrameView::create(LocalFrame* frame, const IntSize& initialSize)
+RawPtr<FrameView> FrameView::create(LocalFrame* frame, const IntSize& initialSize)
 {
-    RefPtrWillBeRawPtr<FrameView> view = adoptRefWillBeNoop(new FrameView(frame));
+    RawPtr<FrameView> view = new FrameView(frame);
     view->Widget::setFrameRect(IntRect(view->location(), initialSize));
     view->setLayoutSizeInternal(initialSize);
 
@@ -347,7 +347,7 @@ void FrameView::invalidateAllCustomScrollbarsOnActiveChanged()
     bool usesWindowInactiveSelector = m_frame->document()->styleEngine().usesWindowInactiveSelector();
 
     const ChildrenWidgetSet* viewChildren = children();
-    for (const RefPtrWillBeMember<Widget>& child : *viewChildren) {
+    for (const Member<Widget>& child : *viewChildren) {
         Widget* widget = child.get();
         if (widget->isFrameView())
             toFrameView(widget)->invalidateAllCustomScrollbarsOnActiveChanged();
@@ -496,7 +496,7 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Loca
     return false;
 }
 
-PassRefPtrWillBeRawPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
+RawPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
 {
     Element* customScrollbarElement = nullptr;
     LocalFrame* customScrollbarFrame = nullptr;
@@ -757,7 +757,7 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     // FrameView for a layout. After that the LayoutEmbeddedObject (ownerLayoutObject) carries the
     // correct size, which LayoutSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
     // out for the first time, or when the LayoutSVGRoot size has changed dynamically (eg. via <script>).
-    RefPtrWillBeRawPtr<FrameView> frameView = ownerLayoutObject->frame()->view();
+    RawPtr<FrameView> frameView = ownerLayoutObject->frame()->view();
 
     // Mark the owner layoutObject as needing layout.
     ownerLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
@@ -927,7 +927,7 @@ void FrameView::layout()
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "Layout");
 
     // Protect the view from being deleted during layout (in recalcStyle)
-    RefPtrWillBeRawPtr<FrameView> protector(this);
+    RawPtr<FrameView> protector(this);
 
     if (m_autoSizeInfo)
         m_autoSizeInfo->autoSizeIfNeeded();
@@ -1611,7 +1611,7 @@ void FrameView::updateLayersAndCompositingAfterScrollIfNeeded()
     if (!hasViewportConstrainedObjects())
         return;
 
-    RefPtrWillBeRawPtr<FrameView> protect(this);
+    RawPtr<FrameView> protect(this);
 
     // If there fixed position elements, scrolling may cause compositing layers to change.
     // Update widget and layer positions after scrolling, but only if we're not inside of
@@ -1907,7 +1907,7 @@ void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool t
 
 void FrameView::scrollToFragmentAnchor()
 {
-    RefPtrWillBeRawPtr<Node> anchorNode = m_fragmentAnchor;
+    RawPtr<Node> anchorNode = m_fragmentAnchor;
     if (!anchorNode)
         return;
 
@@ -1925,7 +1925,7 @@ void FrameView::scrollToFragmentAnchor()
                 rect = documentElement->boundingBox();
         }
 
-        RefPtrWillBeRawPtr<Frame> boundaryFrame = m_frame->findUnsafeParentScrollPropagationBoundary();
+        RawPtr<Frame> boundaryFrame = m_frame->findUnsafeParentScrollPropagationBoundary();
 
         // FIXME: Handle RemoteFrames
         if (boundaryFrame && boundaryFrame->isLocalFrame())
@@ -1989,7 +1989,7 @@ bool FrameView::updateWidgets()
 void FrameView::updateWidgetsTimerFired(Timer<FrameView>*)
 {
     ASSERT(!isInPerformLayout());
-    RefPtrWillBeRawPtr<FrameView> protect(this);
+    RawPtr<FrameView> protect(this);
     m_updateWidgetsTimer.stop();
     for (unsigned i = 0; i < maxUpdateWidgetsIterations; ++i) {
         if (updateWidgets())
@@ -2022,7 +2022,7 @@ void FrameView::performPostLayoutTasks()
     // We should ASSERT(isActive()); or at least return early if we can!
     ASSERT(!isInPerformLayout()); // Always before or after performLayout(), part of the highest-level layout() call.
     TRACE_EVENT0("blink,benchmark", "FrameView::performPostLayoutTasks");
-    RefPtrWillBeRawPtr<FrameView> protect(this);
+    RawPtr<FrameView> protect(this);
 
     m_postLayoutTasksTimer.stop();
 
@@ -2415,7 +2415,7 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
     ASSERT(m_frame->isLocalRoot());
 
     // Updating layout can run script, which can tear down the FrameView.
-    RefPtrWillBeRawPtr<FrameView> protector(this);
+    RawPtr<FrameView> protector(this);
 
     if (shouldThrottleRendering()) {
         updateViewportIntersectionsForSubtree(std::min(phases, OnlyUpToCompositingCleanPlusScrolling));
@@ -2599,7 +2599,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
     // should have a way to only run these other Documents to the same lifecycle stage
     // as this frame.
     const ChildrenWidgetSet* viewChildren = children();
-    for (const RefPtrWillBeMember<Widget>& child : *viewChildren) {
+    for (const Member<Widget>& child : *viewChildren) {
         if ((*child).isPluginContainer())
             toPluginView(child.get())->updateAllLifecyclePhases();
     }
@@ -2608,7 +2608,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
 
     // FIXME: Calling layout() shouldn't trigger script execution or have any
     // observable effects on the frame tree but we're not quite there yet.
-    WillBeHeapVector<RefPtrWillBeMember<FrameView>> frameViews;
+    HeapVector<Member<FrameView>> frameViews;
     for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;
@@ -3053,7 +3053,7 @@ IntPoint FrameView::maximumScrollPosition() const
     return maximumPosition.expandedTo(minimumScrollPosition());
 }
 
-void FrameView::addChild(PassRefPtrWillBeRawPtr<Widget> prpChild)
+void FrameView::addChild(RawPtr<Widget> prpChild)
 {
     Widget* child = prpChild.get();
     ASSERT(child != this && !child->parent());

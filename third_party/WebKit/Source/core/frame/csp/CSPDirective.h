@@ -12,8 +12,7 @@ namespace blink {
 
 class ContentSecurityPolicy;
 
-class CSPDirective : public NoBaseWillBeGarbageCollectedFinalized<CSPDirective> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CSPDirective);
+class CSPDirective : public GarbageCollectedFinalized<CSPDirective> {
     WTF_MAKE_NONCOPYABLE(CSPDirective);
 public:
     CSPDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
@@ -33,7 +32,7 @@ protected:
 private:
     String m_name;
     String m_text;
-    RawPtrWillBeMember<ContentSecurityPolicy> m_policy;
+    Member<ContentSecurityPolicy> m_policy;
 };
 
 } // namespace blink

@@ -22,11 +22,10 @@ namespace blink {
 
 class ContentSecurityPolicy;
 
-class CSPDirectiveList : public NoBaseWillBeGarbageCollectedFinalized<CSPDirectiveList> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CSPDirectiveList);
+class CSPDirectiveList : public GarbageCollectedFinalized<CSPDirectiveList> {
     WTF_MAKE_NONCOPYABLE(CSPDirectiveList);
 public:
-    static PassOwnPtrWillBeRawPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
+    static RawPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     void parse(const UChar* begin, const UChar* end);
 
@@ -98,7 +97,7 @@ private:
     void treatAsPublicAddress(const String& name, const String& value);
 
     template <class CSPDirectiveType>
-    void setCSPDirective(const String& name, const String& value, OwnPtrWillBeMember<CSPDirectiveType>&);
+    void setCSPDirective(const String& name, const String& value, Member<CSPDirectiveType>&);
 
     SourceListDirective* operativeDirective(SourceListDirective*) const;
     SourceListDirective* operativeDirective(SourceListDirective*, SourceListDirective* override) const;
@@ -127,7 +126,7 @@ private:
 
     bool denyIfEnforcingPolicy() const { return m_reportOnly; }
 
-    RawPtrWillBeMember<ContentSecurityPolicy> m_policy;
+    Member<ContentSecurityPolicy> m_policy;
 
     String m_header;
     ContentSecurityPolicyHeaderType m_headerType;
@@ -145,21 +144,21 @@ private:
     bool m_upgradeInsecureRequests;
     bool m_treatAsPublicAddress;
 
-    OwnPtrWillBeMember<MediaListDirective> m_pluginTypes;
-    OwnPtrWillBeMember<SourceListDirective> m_baseURI;
-    OwnPtrWillBeMember<SourceListDirective> m_childSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_connectSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_defaultSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_fontSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_formAction;
-    OwnPtrWillBeMember<SourceListDirective> m_frameAncestors;
-    OwnPtrWillBeMember<SourceListDirective> m_frameSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_imgSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_mediaSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_manifestSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_objectSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_scriptSrc;
-    OwnPtrWillBeMember<SourceListDirective> m_styleSrc;
+    Member<MediaListDirective> m_pluginTypes;
+    Member<SourceListDirective> m_baseURI;
+    Member<SourceListDirective> m_childSrc;
+    Member<SourceListDirective> m_connectSrc;
+    Member<SourceListDirective> m_defaultSrc;
+    Member<SourceListDirective> m_fontSrc;
+    Member<SourceListDirective> m_formAction;
+    Member<SourceListDirective> m_frameAncestors;
+    Member<SourceListDirective> m_frameSrc;
+    Member<SourceListDirective> m_imgSrc;
+    Member<SourceListDirective> m_mediaSrc;
+    Member<SourceListDirective> m_manifestSrc;
+    Member<SourceListDirective> m_objectSrc;
+    Member<SourceListDirective> m_scriptSrc;
+    Member<SourceListDirective> m_styleSrc;
 
     Vector<String> m_reportEndpoints;
 

@@ -62,10 +62,10 @@ class Visitor;
 // browser-level concept and Blink core/ only knows about its LocalFrame (and FrameHost).
 // Separating Page from the rest of core/ through this indirection
 // allows us to slowly refactor Page without breaking the rest of core.
-class CORE_EXPORT FrameHost final : public NoBaseWillBeGarbageCollectedFinalized<FrameHost> {
-    WTF_MAKE_NONCOPYABLE(FrameHost); USING_FAST_MALLOC_WILL_BE_REMOVED(FrameHost);
+class CORE_EXPORT FrameHost final : public GarbageCollectedFinalized<FrameHost> {
+    WTF_MAKE_NONCOPYABLE(FrameHost);
 public:
-    static PassOwnPtrWillBeRawPtr<FrameHost> create(Page&);
+    static RawPtr<FrameHost> create(Page&);
     ~FrameHost();
 
     // Careful: This function will eventually be removed.
@@ -107,12 +107,12 @@ public:
 private:
     explicit FrameHost(Page&);
 
-    RawPtrWillBeMember<Page> m_page;
-    const OwnPtrWillBeMember<TopControls> m_topControls;
+    Member<Page> m_page;
+    const Member<TopControls> m_topControls;
     const OwnPtr<PageScaleConstraintsSet> m_pageScaleConstraintsSet;
-    const OwnPtrWillBeMember<VisualViewport> m_visualViewport;
-    const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
-    const OwnPtrWillBeMember<ConsoleMessageStorage> m_consoleMessageStorage;
+    const Member<VisualViewport> m_visualViewport;
+    const Member<EventHandlerRegistry> m_eventHandlerRegistry;
+    const Member<ConsoleMessageStorage> m_consoleMessageStorage;
 
     AtomicString m_overrideEncoding;
     int m_subframeCount;

@@ -103,7 +103,7 @@ static xmlDocPtr docLoaderFunc(
         ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
         FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, fetchOptions);
         request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
-        RefPtrWillBeRawPtr<Resource> resource = RawResource::fetchSynchronously(request, globalResourceFetcher);
+        RawPtr<Resource> resource = RawResource::fetchSynchronously(request, globalResourceFetcher);
         if (!resource || !globalProcessor)
             return nullptr;
 
@@ -226,7 +226,7 @@ static void freeXsltParamArray(const char** params)
     WTF::Partitions::fastFree(params);
 }
 
-static xsltStylesheetPtr xsltStylesheetPointer(Document* document, RefPtrWillBeMember<XSLStyleSheet>& cachedStylesheet, Node* stylesheetRootNode)
+static xsltStylesheetPtr xsltStylesheetPointer(Document* document, Member<XSLStyleSheet>& cachedStylesheet, Node* stylesheetRootNode)
 {
     if (!cachedStylesheet && stylesheetRootNode) {
         // When using importStylesheet, we will use the given document as the imported stylesheet's owner.
@@ -250,7 +250,7 @@ static xsltStylesheetPtr xsltStylesheetPointer(Document* document, RefPtrWillBeM
 
 static inline xmlDocPtr xmlDocPtrFromNode(Node* sourceNode, bool& shouldDelete)
 {
-    RefPtrWillBeRawPtr<Document> ownerDocument(sourceNode->document());
+    RawPtr<Document> ownerDocument(sourceNode->document());
     bool sourceIsDocument = (sourceNode == ownerDocument.get());
 
     xmlDocPtr sourceDoc = nullptr;
@@ -285,7 +285,7 @@ static inline String resultMIMEType(xmlDocPtr resultDoc, xsltStylesheetPtr sheet
 
 bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String& resultString, String& resultEncoding)
 {
-    RefPtrWillBeRawPtr<Document> ownerDocument(sourceNode->document());
+    RawPtr<Document> ownerDocument(sourceNode->document());
 
     setXSLTLoadCallBack(docLoaderFunc, this, ownerDocument->fetcher());
     xsltStylesheetPtr sheet = xsltStylesheetPointer(m_document.get(), m_stylesheet, m_stylesheetRootNode.get());

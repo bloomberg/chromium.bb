@@ -53,7 +53,7 @@ public:
 private:
     void appendErrorMessage(const String& typeString, TextPosition, const char* message);
 
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 
     int m_errorCount;
     TextPosition m_lastErrorPosition;

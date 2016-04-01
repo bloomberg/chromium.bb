@@ -30,7 +30,7 @@ protected:
 private:
     void purgeControllers();
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<PlatformEventController>> m_controllers;
+    HeapHashSet<WeakMember<PlatformEventController>> m_controllers;
     bool m_isDispatching;
     bool m_isListening;
 };

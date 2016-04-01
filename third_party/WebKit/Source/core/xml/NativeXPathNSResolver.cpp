@@ -31,7 +31,7 @@
 
 namespace blink {
 
-NativeXPathNSResolver::NativeXPathNSResolver(PassRefPtrWillBeRawPtr<Node> node)
+NativeXPathNSResolver::NativeXPathNSResolver(RawPtr<Node> node)
     : m_node(node)
 {
 }

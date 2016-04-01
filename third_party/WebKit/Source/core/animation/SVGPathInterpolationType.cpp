@@ -33,7 +33,7 @@ void SVGPathInterpolationType::composite(UnderlyingValueOwner& underlyingValueOw
     PathInterpolationFunctions::composite(underlyingValueOwner, underlyingFraction, *this, value);
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGPathInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue) const
+RawPtr<SVGPropertyBase> SVGPathInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue) const
 {
     return SVGPath::create(CSSPathValue::create(PathInterpolationFunctions::appliedValue(interpolableValue, nonInterpolableValue)));
 }

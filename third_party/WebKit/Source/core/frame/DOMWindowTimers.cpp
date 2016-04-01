@@ -75,7 +75,7 @@ int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const ScriptV
         // be done using the scheduler instead.
         V8GCForContextDispose::instance().notifyIdle();
     }
-    OwnPtrWillBeRawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler, arguments);
+    RawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler, arguments);
     return DOMTimer::install(executionContext, action.release(), timeout, true);
 }
 
@@ -93,7 +93,7 @@ int setTimeout(ScriptState* scriptState, EventTarget& eventTarget, const String&
         // be done using the scheduler instead.
         V8GCForContextDispose::instance().notifyIdle();
     }
-    OwnPtrWillBeRawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler);
+    RawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler);
     return DOMTimer::install(executionContext, action.release(), timeout, true);
 }
 
@@ -102,7 +102,7 @@ int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const Script
     ExecutionContext* executionContext = eventTarget.getExecutionContext();
     if (!isAllowed(scriptState, executionContext, false))
         return 0;
-    OwnPtrWillBeRawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler, arguments);
+    RawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler, arguments);
     return DOMTimer::install(executionContext, action.release(), timeout, false);
 }
 
@@ -115,7 +115,7 @@ int setInterval(ScriptState* scriptState, EventTarget& eventTarget, const String
     // perfomance issue.
     if (handler.isEmpty())
         return 0;
-    OwnPtrWillBeRawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler);
+    RawPtr<ScheduledAction> action = ScheduledAction::create(scriptState, handler);
     return DOMTimer::install(executionContext, action.release(), timeout, false);
 }
 

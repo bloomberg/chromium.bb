@@ -20,7 +20,7 @@ public:
     }
 
 protected:
-    RefPtrWillBePersistent<ContentSecurityPolicy> csp;
+    Persistent<ContentSecurityPolicy> csp;
 };
 
 TEST_F(CSPSourceTest, BasicMatching)

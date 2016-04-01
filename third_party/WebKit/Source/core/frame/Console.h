@@ -55,7 +55,7 @@ public:
 
 protected:
     ExecutionContext* context() override;
-    void reportMessageToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>) override;
+    void reportMessageToConsole(RawPtr<ConsoleMessage>) override;
 
 private:
     explicit Console(LocalFrame*);

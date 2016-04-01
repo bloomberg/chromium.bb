@@ -61,12 +61,12 @@ class LocalFrame;
 // offset is set through the GraphicsLayer <-> CC sync mechanisms. Its contents is the page's
 // main FrameView, which corresponds to the outer viewport. The inner viewport is always contained
 // in the outer viewport and can pan within it.
-class CORE_EXPORT VisualViewport final : public NoBaseWillBeGarbageCollectedFinalized<VisualViewport>, public GraphicsLayerClient, public ScrollableArea {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
+class CORE_EXPORT VisualViewport final : public GarbageCollectedFinalized<VisualViewport>, public GraphicsLayerClient, public ScrollableArea {
+    USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
 public:
-    static PassOwnPtrWillBeRawPtr<VisualViewport> create(FrameHost& host)
+    static RawPtr<VisualViewport> create(FrameHost& host)
     {
-        return adoptPtrWillBeNoop(new VisualViewport(host));
+        return new VisualViewport(host);
     }
     ~VisualViewport() override;
 
@@ -228,7 +228,7 @@ private:
         return *m_frameHost;
     }
 
-    RawPtrWillBeMember<FrameHost> m_frameHost;
+    Member<FrameHost> m_frameHost;
     OwnPtr<GraphicsLayer> m_rootTransformLayer;
     OwnPtr<GraphicsLayer> m_innerViewportContainerLayer;
     OwnPtr<GraphicsLayer> m_overscrollElasticityLayer;

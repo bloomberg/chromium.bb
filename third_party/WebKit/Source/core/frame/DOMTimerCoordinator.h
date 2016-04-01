@@ -28,7 +28,7 @@ public:
     explicit DOMTimerCoordinator(PassOwnPtr<WebTaskRunner>);
 
     // Creates and installs a new timer. Returns the assigned ID.
-    int installNewTimeout(ExecutionContext*, PassOwnPtrWillBeRawPtr<ScheduledAction>, int timeout, bool singleShot);
+    int installNewTimeout(ExecutionContext*, RawPtr<ScheduledAction>, int timeout, bool singleShot);
 
     // Removes and disposes the timer with the specified ID, if any. This may
     // destroy the timer.
@@ -54,7 +54,7 @@ public:
 private:
     int nextID();
 
-    using TimeoutMap = WillBeHeapHashMap<int, RefPtrWillBeMember<DOMTimer>>;
+    using TimeoutMap = HeapHashMap<int, Member<DOMTimer>>;
     TimeoutMap m_timers;
 
     int m_circularSequentialID;

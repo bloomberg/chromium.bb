@@ -44,7 +44,6 @@ struct EvaluationContext;
 
 // TODO(Oilpan): remove Finalized when transition type for m_document is.
 class XPathResult final : public GarbageCollectedFinalized<XPathResult>, public ScriptWrappable {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(XPathResult);
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum XPathResultType {
@@ -91,7 +90,7 @@ private:
     unsigned m_nodeSetPosition;
     Member<XPath::NodeSet> m_nodeSet; // FIXME: why duplicate the node set stored in m_value?
     unsigned short m_resultType;
-    RefPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
     uint64_t m_domTreeVersion;
 };
 

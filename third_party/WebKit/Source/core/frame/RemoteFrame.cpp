@@ -33,9 +33,9 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client, FrameHost* host, Fram
 {
 }
 
-PassRefPtrWillBeRawPtr<RemoteFrame> RemoteFrame::create(RemoteFrameClient* client, FrameHost* host, FrameOwner* owner)
+RawPtr<RemoteFrame> RemoteFrame::create(RemoteFrameClient* client, FrameHost* host, FrameOwner* owner)
 {
-    return adoptRefWillBeNoop(new RemoteFrame(client, host, owner));
+    return new RemoteFrame(client, host, owner);
 }
 
 RemoteFrame::~RemoteFrame()
@@ -92,7 +92,7 @@ void RemoteFrame::detach(FrameDetachType type)
     // Frame::detach() requires the caller to keep a reference to this, since
     // otherwise it may clear the last reference to this, causing it to be
     // deleted, which can cause a use-after-free.
-    RefPtrWillBeRawPtr<RemoteFrame> protect(this);
+    RawPtr<RemoteFrame> protect(this);
     detachChildren();
     if (!client())
         return;
@@ -143,7 +143,7 @@ void RemoteFrame::visibilityChanged(bool visible)
         remoteFrameClient()->visibilityChanged(visible);
 }
 
-void RemoteFrame::setView(PassRefPtrWillBeRawPtr<RemoteFrameView> view)
+void RemoteFrame::setView(RawPtr<RemoteFrameView> view)
 {
     // Oilpan: as RemoteFrameView performs no finalization actions,
     // no explicit dispose() of it needed here. (cf. FrameView::dispose().)

@@ -21,13 +21,12 @@ class LayoutRect;
 // APIs that don't make sense on the combined viewport, the call is delegated to
 // the layout viewport. Thus, we could say this class is a decorator on the
 // FrameView scrollable area that adds pinch-zoom semantics to scrolling.
-class CORE_EXPORT RootFrameViewport final : public NoBaseWillBeGarbageCollectedFinalized<RootFrameViewport>, public ScrollableArea {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(RootFrameViewport);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RootFrameViewport);
+class CORE_EXPORT RootFrameViewport final : public GarbageCollectedFinalized<RootFrameViewport>, public ScrollableArea {
+    USING_GARBAGE_COLLECTED_MIXIN(RootFrameViewport);
 public:
-    static PassOwnPtrWillBeRawPtr<RootFrameViewport> create(ScrollableArea& visualViewport, ScrollableArea& layoutViewport)
+    static RawPtr<RootFrameViewport> create(ScrollableArea& visualViewport, ScrollableArea& layoutViewport)
     {
-        return adoptPtrWillBeNoop(new RootFrameViewport(visualViewport, layoutViewport));
+        return new RootFrameViewport(visualViewport, layoutViewport);
     }
 
     DECLARE_VIRTUAL_TRACE();
@@ -88,8 +87,8 @@ private:
     ScrollableArea& visualViewport() const { ASSERT(m_visualViewport); return *m_visualViewport; }
     ScrollableArea& layoutViewport() const { ASSERT(m_layoutViewport); return *m_layoutViewport; }
 
-    RawPtrWillBeMember<ScrollableArea> m_visualViewport;
-    RawPtrWillBeMember<ScrollableArea> m_layoutViewport;
+    Member<ScrollableArea> m_visualViewport;
+    Member<ScrollableArea> m_layoutViewport;
 };
 
 } // namespace blink

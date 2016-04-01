@@ -89,8 +89,8 @@ protected:
     }
 
     OwnPtr<DummyPageHolder> pageHolder;
-    RefPtrWillBePersistent<Document> document;
-    RefPtrWillBePersistent<Element> element;
+    Persistent<Document> document;
+    Persistent<Element> element;
     Persistent<AnimationTimeline> timeline;
     Timing timing;
     Persistent<MockPlatformTiming> platformTiming;

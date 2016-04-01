@@ -140,8 +140,8 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<const LocalFrame> m_localFrame;
-    RawPtrWillBeMember<Node> m_draggedNode;
+    Member<const LocalFrame> m_localFrame;
+    Member<Node> m_draggedNode;
     FloatRect m_bounds;
     float m_opacity;
     OwnPtr<SkPictureBuilder> m_pictureBuilder;
@@ -165,14 +165,14 @@ inline float parentTextZoomFactor(LocalFrame* frame)
 
 } // namespace
 
-PassRefPtrWillBeRawPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
+RawPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner)
 {
-    RefPtrWillBeRawPtr<LocalFrame> frame = adoptRefWillBeNoop(new LocalFrame(client, host, owner));
+    RawPtr<LocalFrame> frame = new LocalFrame(client, host, owner);
     InspectorInstrumentation::frameAttachedToParent(frame.get());
     return frame.release();
 }
 
-void LocalFrame::setView(PassRefPtrWillBeRawPtr<FrameView> view)
+void LocalFrame::setView(RawPtr<FrameView> view)
 {
     ASSERT(!m_view || m_view != view);
     ASSERT(!document() || !document()->isActive());
@@ -196,7 +196,7 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
 
     setView(nullptr);
 
-    RefPtrWillBeRawPtr<FrameView> frameView = nullptr;
+    RawPtr<FrameView> frameView = nullptr;
     if (isLocalRoot) {
         frameView = FrameView::create(this, viewportSize);
 
@@ -320,7 +320,7 @@ void LocalFrame::detach(FrameDetachType type)
     PluginScriptForbiddenScope forbidPluginDestructorScripting;
     // A lot of the following steps can result in the current frame being
     // detached, so protect a reference to it.
-    RefPtrWillBeRawPtr<LocalFrame> protect(this);
+    RawPtr<LocalFrame> protect(this);
     m_loader.stopAllLoaders();
     // Don't allow any new child frames to load in this frame: attaching a new
     // child frame during or after detaching children results in an attached
@@ -410,7 +410,7 @@ void LocalFrame::willDetachFrameHost()
         page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
 }
 
-void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow> domWindow)
+void LocalFrame::setDOMWindow(RawPtr<LocalDOMWindow> domWindow)
 {
     // Oilpan: setDOMWindow() cannot be used when finalizing. Which
     // is acceptable as its actions are either not needed or handled
@@ -461,7 +461,7 @@ void LocalFrame::didChangeVisibilityState()
     if (document())
         document()->didChangeVisibilityState();
 
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> childFrames;
+    HeapVector<Member<LocalFrame>> childFrames;
     for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             childFrames.append(toLocalFrame(child));
@@ -523,7 +523,7 @@ void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const Flo
     }
 
     // Subframes of the one we're printing don't lay out to the page size.
-    for (RefPtrWillBeRawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (RawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             toLocalFrame(child.get())->setPrinting(printing, FloatSize(), FloatSize(), 0);
     }
@@ -600,7 +600,7 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
     m_pageZoomFactor = pageZoomFactor;
     m_textZoomFactor = textZoomFactor;
 
-    for (RefPtrWillBeRawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (RawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             toLocalFrame(child.get())->setPageAndTextZoomFactors(m_pageZoomFactor, m_textZoomFactor);
     }
@@ -612,7 +612,7 @@ void LocalFrame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomF
 void LocalFrame::deviceScaleFactorChanged()
 {
     document()->mediaQueryAffectingValueChanged();
-    for (RefPtrWillBeRawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (RawPtr<Frame> child = tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->isLocalFrame())
             toLocalFrame(child.get())->deviceScaleFactorChanged();
     }
@@ -831,7 +831,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_editor(Editor::create(*this))
     , m_spellChecker(SpellChecker::create(*this))
     , m_selection(FrameSelection::create(this))
-    , m_eventHandler(adoptPtrWillBeNoop(new EventHandler(this)))
+    , m_eventHandler(new EventHandler(this))
     , m_console(FrameConsole::create(*this))
     , m_inputMethodController(InputMethodController::create(*this))
     , m_navigationDisableCount(0)

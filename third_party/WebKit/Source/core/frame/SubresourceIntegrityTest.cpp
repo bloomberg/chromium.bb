@@ -159,7 +159,7 @@ protected:
         EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(*scriptElement, script, size, url, *createTestResource(url, requestorUrl, corsStatus).get()));
     }
 
-    PassRefPtrWillBeRawPtr<Resource> createTestResource(const KURL& url, const KURL& allowOriginUrl, CorsStatus corsStatus)
+    RawPtr<Resource> createTestResource(const KURL& url, const KURL& allowOriginUrl, CorsStatus corsStatus)
     {
         ResourceResponse response;
         response.setURL(url);
@@ -168,7 +168,7 @@ protected:
             response.setHTTPHeaderField("access-control-allow-origin", SecurityOrigin::create(allowOriginUrl)->toAtomicString());
             response.setHTTPHeaderField("access-control-allow-credentials", "true");
         }
-        RefPtrWillBeRawPtr<Resource> resource = Resource::create(ResourceRequest(response.url()), Resource::Raw);
+        RawPtr<Resource> resource = Resource::create(ResourceRequest(response.url()), Resource::Raw);
         resource->setResponse(response);
         return resource;
     }
@@ -178,8 +178,8 @@ protected:
     RefPtr<SecurityOrigin> secureOrigin;
     RefPtr<SecurityOrigin> insecureOrigin;
 
-    RefPtrWillBePersistent<Document> document;
-    RefPtrWillBePersistent<HTMLScriptElement> scriptElement;
+    Persistent<Document> document;
+    Persistent<HTMLScriptElement> scriptElement;
 };
 
 TEST_F(SubresourceIntegrityTest, Prioritization)

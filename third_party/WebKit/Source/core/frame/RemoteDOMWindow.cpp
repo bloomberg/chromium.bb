@@ -287,19 +287,19 @@ void RemoteDOMWindow::resizeTo(int width, int height) const
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtrWillBeRawPtr<MediaQueryList> RemoteDOMWindow::matchMedia(const String&)
+RawPtr<MediaQueryList> RemoteDOMWindow::matchMedia(const String&)
 {
     ASSERT_NOT_REACHED();
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleDeclaration> RemoteDOMWindow::getComputedStyle(Element*, const String& pseudoElt) const
+RawPtr<CSSStyleDeclaration> RemoteDOMWindow::getComputedStyle(Element*, const String& pseudoElt) const
 {
     ASSERT_NOT_REACHED();
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<CSSRuleList> RemoteDOMWindow::getMatchedCSSRules(Element*, const String& pseudoElt) const
+RawPtr<CSSRuleList> RemoteDOMWindow::getMatchedCSSRules(Element*, const String& pseudoElt) const
 {
     ASSERT_NOT_REACHED();
     return nullptr;

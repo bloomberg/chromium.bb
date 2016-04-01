@@ -49,17 +49,17 @@ public:
     }
     ~XSLTProcessor();
 
-    void setXSLStyleSheet(PassRefPtrWillBeRawPtr<XSLStyleSheet> styleSheet) { m_stylesheet = styleSheet; }
+    void setXSLStyleSheet(RawPtr<XSLStyleSheet> styleSheet) { m_stylesheet = styleSheet; }
     bool transformToString(Node* source, String& resultMIMEType, String& resultString, String& resultEncoding);
-    PassRefPtrWillBeRawPtr<Document> createDocumentFromSource(const String& source, const String& sourceEncoding, const String& sourceMIMEType, Node* sourceNode, LocalFrame*);
+    RawPtr<Document> createDocumentFromSource(const String& source, const String& sourceEncoding, const String& sourceMIMEType, Node* sourceNode, LocalFrame*);
 
     // DOM methods
-    void importStylesheet(PassRefPtrWillBeRawPtr<Node> style)
+    void importStylesheet(RawPtr<Node> style)
     {
         m_stylesheetRootNode = style;
     }
-    PassRefPtrWillBeRawPtr<DocumentFragment> transformToFragment(Node* source, Document* ouputDoc);
-    PassRefPtrWillBeRawPtr<Document> transformToDocument(Node* source);
+    RawPtr<DocumentFragment> transformToFragment(Node* source, Document* ouputDoc);
+    RawPtr<Document> transformToDocument(Node* source);
 
     void setParameter(const String& namespaceURI, const String& localName, const String& value);
     String getParameter(const String& namespaceURI, const String& localName) const;
@@ -83,9 +83,9 @@ private:
         : m_document(&document)
     { }
 
-    RefPtrWillBeMember<XSLStyleSheet> m_stylesheet;
-    RefPtrWillBeMember<Node> m_stylesheetRootNode;
-    RefPtrWillBeMember<Document> m_document;
+    Member<XSLStyleSheet> m_stylesheet;
+    Member<Node> m_stylesheetRootNode;
+    Member<Document> m_document;
     ParameterMap m_parameters;
 };
 

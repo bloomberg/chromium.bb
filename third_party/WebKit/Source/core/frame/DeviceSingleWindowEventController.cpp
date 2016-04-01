@@ -28,12 +28,12 @@ void DeviceSingleWindowEventController::didUpdateData()
     dispatchDeviceEvent(lastEvent());
 }
 
-void DeviceSingleWindowEventController::dispatchDeviceEvent(PassRefPtrWillBeRawPtr<Event> prpEvent)
+void DeviceSingleWindowEventController::dispatchDeviceEvent(RawPtr<Event> prpEvent)
 {
     if (!document().domWindow() || document().activeDOMObjectsAreSuspended() || document().activeDOMObjectsAreStopped())
         return;
 
-    RefPtrWillBeRawPtr<Event> event = prpEvent;
+    RawPtr<Event> event = prpEvent;
     document().domWindow()->dispatchEvent(event);
 
     if (m_needsCheckingNullEvents) {

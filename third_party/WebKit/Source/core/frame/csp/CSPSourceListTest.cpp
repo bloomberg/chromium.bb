@@ -31,8 +31,8 @@ protected:
         csp->bindToExecutionContext(document.get());
     }
 
-    RefPtrWillBePersistent<ContentSecurityPolicy> csp;
-    RefPtrWillBePersistent<Document> document;
+    Persistent<ContentSecurityPolicy> csp;
+    Persistent<Document> document;
 };
 
 static void parseSourceList(CSPSourceList& sourceList, String& sources)

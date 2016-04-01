@@ -61,7 +61,7 @@ class CORE_EXPORT Animation final
     , public CompositorAnimationPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Animation);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Animation);
+    USING_GARBAGE_COLLECTED_MIXIN(Animation);
 public:
     enum AnimationPlayState {
         Unset,
@@ -181,8 +181,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    DispatchEventResult dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
+    DispatchEventResult dispatchEventInternal(RawPtr<Event>) override;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     Animation(ExecutionContext*, AnimationTimeline&, AnimationEffect*);
@@ -243,9 +243,9 @@ private:
     // Holds a 'finished' event queued for asynchronous dispatch via the
     // ScriptedAnimationController. This object remains active until the
     // event is actually dispatched.
-    RefPtrWillBeMember<Event> m_pendingFinishedEvent;
+    Member<Event> m_pendingFinishedEvent;
 
-    RefPtrWillBeMember<Event> m_pendingCancelledEvent;
+    Member<Event> m_pendingCancelledEvent;
 
     enum CompositorAction {
         None,

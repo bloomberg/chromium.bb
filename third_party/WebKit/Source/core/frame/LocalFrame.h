@@ -77,13 +77,13 @@ class WebFrameHostScheduler;
 class WebFrameScheduler;
 template <typename Strategy> class PositionWithAffinityTemplate;
 
-class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public WillBeHeapSupplementable<LocalFrame>, public DisplayItemClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
+class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public HeapSupplementable<LocalFrame>, public DisplayItemClient {
+    USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:
-    static PassRefPtrWillBeRawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
+    static RawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
     void init();
-    void setView(PassRefPtrWillBeRawPtr<FrameView>);
+    void setView(RawPtr<FrameView>);
     void createView(const IntSize&, const Color&, bool,
         ScrollbarMode = ScrollbarAuto, bool horizontalLock = false,
         ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
@@ -106,7 +106,7 @@ public:
     void willDetachFrameHost();
 
     LocalDOMWindow* localDOMWindow() const;
-    void setDOMWindow(PassRefPtrWillBeRawPtr<LocalDOMWindow>);
+    void setDOMWindow(RawPtr<LocalDOMWindow>);
     FrameView* view() const;
     Document* document() const;
     void setPagePopupOwner(Element&);
@@ -205,20 +205,20 @@ private:
     void disableNavigation() { ++m_navigationDisableCount; }
 
     mutable FrameLoader m_loader;
-    OwnPtrWillBeMember<NavigationScheduler> m_navigationScheduler;
+    Member<NavigationScheduler> m_navigationScheduler;
 
-    RefPtrWillBeMember<FrameView> m_view;
-    RefPtrWillBeMember<LocalDOMWindow> m_domWindow;
+    Member<FrameView> m_view;
+    Member<LocalDOMWindow> m_domWindow;
     // Usually 0. Non-null if this is the top frame of PagePopup.
-    RefPtrWillBeMember<Element> m_pagePopupOwner;
+    Member<Element> m_pagePopupOwner;
 
-    const OwnPtrWillBeMember<ScriptController> m_script;
-    const OwnPtrWillBeMember<Editor> m_editor;
-    const OwnPtrWillBeMember<SpellChecker> m_spellChecker;
-    const OwnPtrWillBeMember<FrameSelection> m_selection;
-    const OwnPtrWillBeMember<EventHandler> m_eventHandler;
-    const OwnPtrWillBeMember<FrameConsole> m_console;
-    const OwnPtrWillBeMember<InputMethodController> m_inputMethodController;
+    const Member<ScriptController> m_script;
+    const Member<Editor> m_editor;
+    const Member<SpellChecker> m_spellChecker;
+    const Member<FrameSelection> m_selection;
+    const Member<EventHandler> m_eventHandler;
+    const Member<FrameConsole> m_console;
+    const Member<InputMethodController> m_inputMethodController;
     OwnPtr<WebFrameScheduler> m_frameScheduler;
 
     int m_navigationDisableCount;
@@ -228,7 +228,7 @@ private:
 
     bool m_inViewSourceMode;
 
-    RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
+    Member<InstrumentingAgents> m_instrumentingAgents;
 };
 
 inline void LocalFrame::init()
@@ -315,7 +315,7 @@ public:
     ~FrameNavigationDisabler();
 
 private:
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    Member<LocalFrame> m_frame;
 };
 
 } // namespace blink

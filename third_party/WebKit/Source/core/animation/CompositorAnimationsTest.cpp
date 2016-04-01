@@ -79,8 +79,8 @@ protected:
     OwnPtr<AnimatableValueKeyframeVector> m_keyframeVector5;
     Persistent<AnimatableValueKeyframeEffectModel> m_keyframeAnimationEffect5;
 
-    RefPtrWillBePersistent<Document> m_document;
-    RefPtrWillBePersistent<Element> m_element;
+    Persistent<Document> m_document;
+    Persistent<Element> m_element;
     Persistent<AnimationTimeline> m_timeline;
     OwnPtr<DummyPageHolder> m_pageHolder;
     CompositorFactoryMock* m_mockCompositorFactory;
@@ -1182,7 +1182,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
 
 TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations)
 {
-    RefPtrWillBePersistent<Element> element = m_document->createElement("shared", ASSERT_NO_EXCEPTION);
+    Persistent<Element> element = m_document->createElement("shared", ASSERT_NO_EXCEPTION);
 
     LayoutObjectProxy* layoutObject = LayoutObjectProxy::create(element.get());
     element->setLayoutObject(layoutObject);

@@ -81,20 +81,20 @@ protected:
 TEST_F(ImageBitmapTest, ImageResourceConsistency)
 {
     const ImageBitmapOptions defaultOptions;
-    RefPtrWillBeRawPtr<HTMLImageElement> imageElement = HTMLImageElement::create(*Document::create().get());
-    RefPtrWillBeRawPtr<ImageResource> image = ImageResource::create(StaticBitmapImage::create(m_image).get());
+    RawPtr<HTMLImageElement> imageElement = HTMLImageElement::create(*Document::create().get());
+    RawPtr<ImageResource> image = ImageResource::create(StaticBitmapImage::create(m_image).get());
     imageElement->setImageResource(image.get());
 
-    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(),
+    RawPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(),
         IntRect(0, 0, m_image->width(), m_image->height()),
         &(imageElement->document()), defaultOptions);
-    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageElement.get(),
+    RawPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageElement.get(),
         IntRect(m_image->width() / 2, m_image->height() / 2, m_image->width() / 2, m_image->height() / 2),
         &(imageElement->document()), defaultOptions);
-    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageElement.get(),
+    RawPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageElement.get(),
         IntRect(-m_image->width() / 2, -m_image->height() / 2, m_image->width(), m_image->height()),
         &(imageElement->document()), defaultOptions);
-    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageElement.get(),
+    RawPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageElement.get(),
         IntRect(-m_image->width(), -m_image->height(), m_image->width(), m_image->height()),
         &(imageElement->document()), defaultOptions);
 
@@ -109,18 +109,18 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
 {
-    RefPtrWillBeRawPtr<HTMLImageElement> image = HTMLImageElement::create(*Document::create().get());
-    RefPtrWillBeRawPtr<ImageResource> originalImageResource = ImageResource::create(
+    RawPtr<HTMLImageElement> image = HTMLImageElement::create(*Document::create().get());
+    RawPtr<ImageResource> originalImageResource = ImageResource::create(
         StaticBitmapImage::create(m_image).get());
     image->setImageResource(originalImageResource.get());
 
     const ImageBitmapOptions defaultOptions;
-    RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(),
+    RawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(),
         IntRect(0, 0, m_image->width(), m_image->height()),
         &(image->document()), defaultOptions);
     ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->getImage()->imageForCurrentFrame());
 
-    RefPtrWillBeRawPtr<ImageResource> newImageResource = ImageResource::create(
+    RawPtr<ImageResource> newImageResource = ImageResource::create(
         StaticBitmapImage::create(m_image2).get());
     image->setImageResource(newImageResource.get());
 

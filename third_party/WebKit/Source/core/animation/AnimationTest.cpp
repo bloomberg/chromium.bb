@@ -84,7 +84,7 @@ protected:
         return animation->update(TimingUpdateForAnimationFrame);
     }
 
-    RefPtrWillBePersistent<Document> document;
+    Persistent<Document> document;
     Persistent<AnimationTimeline> timeline;
     Persistent<Animation> animation;
     TrackExceptionState exceptionState;
@@ -727,7 +727,7 @@ TEST_F(AnimationAnimationTest, TimeToNextEffectSimpleCancelledBeforeStart)
 
 TEST_F(AnimationAnimationTest, AttachedAnimations)
 {
-    RefPtrWillBePersistent<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
+    Persistent<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
 
     Timing timing;
     KeyframeEffect* keyframeEffect = KeyframeEffect::create(element.get(), nullptr, timing);

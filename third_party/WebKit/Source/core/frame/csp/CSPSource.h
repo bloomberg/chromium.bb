@@ -16,8 +16,7 @@ namespace blink {
 class ContentSecurityPolicy;
 class KURL;
 
-class CORE_EXPORT CSPSource : public NoBaseWillBeGarbageCollectedFinalized<CSPSource> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CSPSource);
+class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
 public:
     enum WildcardDisposition {
         HasWildcard,
@@ -36,7 +35,7 @@ private:
     bool portMatches(const KURL&) const;
     bool isSchemeOnly() const;
 
-    RawPtrWillBeMember<ContentSecurityPolicy> m_policy;
+    Member<ContentSecurityPolicy> m_policy;
     String m_scheme;
     String m_host;
     int m_port;

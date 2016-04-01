@@ -63,21 +63,21 @@ enum PageshowEventPersistence {
 
 // Note: if you're thinking of returning something DOM-related by reference,
 // please ping dcheng@chromium.org first. You probably don't want to do that.
-class CORE_EXPORT LocalDOMWindow final : public DOMWindow, public WillBeHeapSupplementable<LocalDOMWindow>, public DOMWindowLifecycleNotifier {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
-    WILL_BE_USING_PRE_FINALIZER(LocalDOMWindow, dispose);
+class CORE_EXPORT LocalDOMWindow final : public DOMWindow, public HeapSupplementable<LocalDOMWindow>, public DOMWindowLifecycleNotifier {
+    USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
+    USING_PRE_FINALIZER(LocalDOMWindow, dispose);
 public:
-    static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
-    static PassRefPtrWillBeRawPtr<LocalDOMWindow> create(LocalFrame& frame)
+    static RawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
+    static RawPtr<LocalDOMWindow> create(LocalFrame& frame)
     {
-        return adoptRefWillBeNoop(new LocalDOMWindow(frame));
+        return new LocalDOMWindow(frame);
     }
 
     ~LocalDOMWindow() override;
 
     DECLARE_VIRTUAL_TRACE();
 
-    PassRefPtrWillBeRawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
+    RawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
     // EventTarget overrides:
     ExecutionContext* getExecutionContext() const override;
@@ -137,15 +137,15 @@ public:
     void moveTo(int x, int y) const override;
     void resizeBy(int x, int y) const override;
     void resizeTo(int width, int height) const override;
-    PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&) override;
-    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const override;
-    PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const override;
+    RawPtr<MediaQueryList> matchMedia(const String&) override;
+    RawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const override;
+    RawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const override;
     int requestAnimationFrame(FrameRequestCallback*) override;
     int webkitRequestAnimationFrame(FrameRequestCallback*) override;
     void cancelAnimationFrame(int id) override;
     int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) override;
     void cancelIdleCallback(int id) override;
-    void schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent>, SecurityOrigin* target, PassRefPtr<ScriptCallStack>);
+    void schedulePostMessage(RawPtr<MessageEvent>, SecurityOrigin* target, PassRefPtr<ScriptCallStack>);
 
     void registerProperty(DOMWindowProperty*);
     void unregisterProperty(DOMWindowProperty*);
@@ -159,7 +159,7 @@ public:
 
     Element* frameElement() const;
 
-    PassRefPtrWillBeRawPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
+    RawPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
         LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow);
 
     FrameConsole* frameConsole() const;
@@ -168,14 +168,14 @@ public:
 
     void postMessageTimerFired(PostMessageTimer*);
     void removePostMessageTimer(PostMessageTimer*);
-    void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtr<ScriptCallStack>);
+    void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, RawPtr<Event>, PassRefPtr<ScriptCallStack>);
 
     // Events
     // EventTarget API
     void removeAllEventListeners() override;
 
     using EventTarget::dispatchEvent;
-    DispatchEventResult dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtrWillBeRawPtr<EventTarget> prpTarget);
+    DispatchEventResult dispatchEvent(RawPtr<Event> prpEvent, RawPtr<EventTarget> prpTarget);
 
     void finishedLoading();
 
@@ -186,8 +186,8 @@ public:
     void willDetachDocumentFromFrame();
 
     EventQueue* getEventQueue() const;
-    void enqueueWindowEvent(PassRefPtrWillBeRawPtr<Event>);
-    void enqueueDocumentEvent(PassRefPtrWillBeRawPtr<Event>);
+    void enqueueWindowEvent(RawPtr<Event>);
+    void enqueueDocumentEvent(RawPtr<Event>);
     void enqueuePageshowEvent(PageshowEventPersistence);
     void enqueueHashchangeEvent(const String& oldURL, const String& newURL);
     void enqueuePopstateEvent(PassRefPtr<SerializedScriptValue>);
@@ -202,8 +202,8 @@ public:
 
 protected:
     // EventTarget overrides.
-    bool addEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
-    bool removeEventListenerInternal(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, const EventListenerOptions&) override;
+    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
+    bool removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
 
 private:
     // Rather than simply inheriting LocalFrameLifecycleObserver like most other
@@ -212,12 +212,10 @@ private:
     // has a frame() accessor that returns Frame* for bindings code, and
     // LocalFrameLifecycleObserver, which has a frame() accessor that returns a
     // LocalFrame*.
-    class WindowFrameObserver final : public NoBaseWillBeGarbageCollected<WindowFrameObserver>, public LocalFrameLifecycleObserver {
-        USING_FAST_MALLOC_WILL_BE_REMOVED(WindowFrameObserver);
-        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WindowFrameObserver);
-        DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(WindowFrameObserver);
+    class WindowFrameObserver final : public GarbageCollected<WindowFrameObserver>, public LocalFrameLifecycleObserver {
+        USING_GARBAGE_COLLECTED_MIXIN(WindowFrameObserver);
     public:
-        static PassOwnPtrWillBeRawPtr<WindowFrameObserver> create(LocalDOMWindow*, LocalFrame&);
+        static RawPtr<WindowFrameObserver> create(LocalDOMWindow*, LocalFrame&);
 
         DECLARE_VIRTUAL_TRACE();
 
@@ -228,7 +226,7 @@ private:
     private:
         WindowFrameObserver(LocalDOMWindow*, LocalFrame&);
 
-        RawPtrWillBeMember<LocalDOMWindow> m_window;
+        Member<LocalDOMWindow> m_window;
     };
     friend WTF::OwnedPtrDeleter<WindowFrameObserver>;
 
@@ -242,37 +240,37 @@ private:
     void willDetachFrameHost();
     void frameDestroyed();
 
-    OwnPtrWillBeMember<WindowFrameObserver> m_frameObserver;
-    RefPtrWillBeMember<Document> m_document;
+    Member<WindowFrameObserver> m_frameObserver;
+    Member<Document> m_document;
 
     bool m_shouldPrintWhenFinishedLoading;
 #if ENABLE(ASSERT)
     bool m_hasBeenReset;
 #endif
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<DOMWindowProperty>> m_properties;
+    HeapHashSet<WeakMember<DOMWindowProperty>> m_properties;
 
-    mutable PersistentWillBeMember<Screen> m_screen;
-    mutable PersistentWillBeMember<History> m_history;
-    mutable RefPtrWillBeMember<BarProp> m_locationbar;
-    mutable RefPtrWillBeMember<BarProp> m_menubar;
-    mutable RefPtrWillBeMember<BarProp> m_personalbar;
-    mutable RefPtrWillBeMember<BarProp> m_scrollbars;
-    mutable RefPtrWillBeMember<BarProp> m_statusbar;
-    mutable RefPtrWillBeMember<BarProp> m_toolbar;
-    mutable PersistentWillBeMember<Console> m_console;
-    mutable PersistentWillBeMember<Navigator> m_navigator;
-    mutable RefPtrWillBeMember<StyleMedia> m_media;
+    mutable Member<Screen> m_screen;
+    mutable Member<History> m_history;
+    mutable Member<BarProp> m_locationbar;
+    mutable Member<BarProp> m_menubar;
+    mutable Member<BarProp> m_personalbar;
+    mutable Member<BarProp> m_scrollbars;
+    mutable Member<BarProp> m_statusbar;
+    mutable Member<BarProp> m_toolbar;
+    mutable Member<Console> m_console;
+    mutable Member<Navigator> m_navigator;
+    mutable Member<StyleMedia> m_media;
 
     String m_status;
     String m_defaultStatus;
 
-    mutable PersistentWillBeMember<ApplicationCache> m_applicationCache;
+    mutable Member<ApplicationCache> m_applicationCache;
 
-    RefPtrWillBeMember<DOMWindowEventQueue> m_eventQueue;
+    Member<DOMWindowEventQueue> m_eventQueue;
     RefPtr<SerializedScriptValue> m_pendingStateObject;
 
-    WillBeHeapHashSet<OwnPtrWillBeMember<PostMessageTimer>> m_postMessageTimers;
+    HeapHashSet<Member<PostMessageTimer>> m_postMessageTimers;
 };
 
 DEFINE_TYPE_CASTS(LocalDOMWindow, DOMWindow, x, x->isLocalDOMWindow(), x.isLocalDOMWindow());

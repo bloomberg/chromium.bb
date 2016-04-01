@@ -29,7 +29,7 @@ protected:
     }
 
     OwnPtr<DummyPageHolder> pageHolder;
-    RefPtrWillBePersistent<Element> element;
+    Persistent<Element> element;
     TrackExceptionState exceptionState;
     v8::Isolate* m_isolate;
 

@@ -79,9 +79,9 @@ protected:
     }
 
     OwnPtr<DummyPageHolder> pageHolder;
-    RefPtrWillBePersistent<Document> document;
+    Persistent<Document> document;
     Persistent<AnimationTimeline> timeline;
-    RefPtrWillBePersistent<Element> element;
+    Persistent<Element> element;
 };
 
 TEST_F(AnimationAnimationStackTest, ElementAnimationsSorted)

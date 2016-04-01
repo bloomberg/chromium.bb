@@ -51,7 +51,7 @@ static inline bool shouldForwardUserGesture(int interval, int nestingLevel)
         && nestingLevel == 1; // Gestures should not be forwarded to nested timers.
 }
 
-int DOMTimer::install(ExecutionContext* context, PassOwnPtrWillBeRawPtr<ScheduledAction> action, int timeout, bool singleShot)
+int DOMTimer::install(ExecutionContext* context, RawPtr<ScheduledAction> action, int timeout, bool singleShot)
 {
     int timeoutID = context->timers()->installNewTimeout(context, action, timeout, singleShot);
     TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimerInstallEvent::data(context, timeoutID, timeout, singleShot));
@@ -66,7 +66,7 @@ void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
     InspectorInstrumentation::didRemoveTimer(context, timeoutID);
 }
 
-DOMTimer::DOMTimer(ExecutionContext* context, PassOwnPtrWillBeRawPtr<ScheduledAction> action, int interval, bool singleShot, int timeoutID)
+DOMTimer::DOMTimer(ExecutionContext* context, RawPtr<ScheduledAction> action, int interval, bool singleShot, int timeoutID)
     : SuspendableTimer(context)
     , m_timeoutID(timeoutID)
     , m_nestingLevel(context->timers()->timerNestingLevel() + 1)
@@ -124,11 +124,11 @@ void DOMTimer::fired()
         return;
     }
 
-    RefPtrWillBeRawPtr<DOMTimer> protect(this);
+    RawPtr<DOMTimer> protect(this);
 
     // Unregister the timer from ExecutionContext before executing the action
     // for one-shot timers.
-    OwnPtrWillBeRawPtr<ScheduledAction> action = m_action.release();
+    RawPtr<ScheduledAction> action = m_action.release();
     context->timers()->removeTimeoutByID(m_timeoutID);
 
     action->execute(context);

@@ -163,7 +163,7 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
     ASSERT(getSecurityOrigin());
     // Ensure that 'self' processes correctly.
     m_selfProtocol = getSecurityOrigin()->protocol();
-    m_selfSource = adoptPtrWillBeNoop(new CSPSource(this, m_selfProtocol, getSecurityOrigin()->host(), getSecurityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
+    m_selfSource = new CSPSource(this, m_selfProtocol, getSecurityOrigin()->host(), getSecurityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard);
 
     if (didSetReferrerPolicy())
         m_executionContext->setReferrerPolicy(m_referrerPolicy);
@@ -278,7 +278,7 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Conte
 
         // header1,header2 OR header1
         //        ^                  ^
-        OwnPtrWillBeMember<CSPDirectiveList> policy = CSPDirectiveList::create(this, begin, position, type, source);
+        Member<CSPDirectiveList> policy = CSPDirectiveList::create(this, begin, position, type, source);
 
         // When a referrer policy has already been set, the most recent
         // one takes precedence.
@@ -309,7 +309,7 @@ void ContentSecurityPolicy::setOverrideURLForSelf(const KURL& url)
     // be overwritten when we bind this object to an execution context.
     RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
     m_selfProtocol = origin->protocol();
-    m_selfSource = adoptPtrWillBeNoop(new CSPSource(this, m_selfProtocol, origin->host(), origin->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
+    m_selfSource = new CSPSource(this, m_selfProtocol, origin->host(), origin->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard);
 }
 
 const PassOwnPtr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers() const
@@ -995,7 +995,7 @@ void ContentSecurityPolicy::logToConsole(const String& message, MessageLevel lev
     logToConsole(ConsoleMessage::create(SecurityMessageSource, level, message));
 }
 
-void ContentSecurityPolicy::logToConsole(PassRefPtrWillBeRawPtr<ConsoleMessage> consoleMessage, LocalFrame* frame)
+void ContentSecurityPolicy::logToConsole(RawPtr<ConsoleMessage> consoleMessage, LocalFrame* frame)
 {
     if (frame)
         frame->document()->addConsoleMessage(consoleMessage);

@@ -14,21 +14,21 @@ class SVGValueNonInterpolableValue : public NonInterpolableValue {
 public:
     virtual ~SVGValueNonInterpolableValue() {}
 
-    static PassRefPtr<SVGValueNonInterpolableValue> create(PassRefPtrWillBeRawPtr<SVGPropertyBase> svgValue)
+    static PassRefPtr<SVGValueNonInterpolableValue> create(RawPtr<SVGPropertyBase> svgValue)
     {
         return adoptRef(new SVGValueNonInterpolableValue(svgValue));
     }
 
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> svgValue() const { return m_svgValue; }
+    RawPtr<SVGPropertyBase> svgValue() const { return m_svgValue; }
 
     DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
 private:
-    SVGValueNonInterpolableValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> svgValue)
+    SVGValueNonInterpolableValue(RawPtr<SVGPropertyBase> svgValue)
         : m_svgValue(svgValue)
     {}
 
-    RefPtrWillBePersistent<SVGPropertyBase> m_svgValue;
+    Persistent<SVGPropertyBase> m_svgValue;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(SVGValueNonInterpolableValue);
@@ -36,11 +36,11 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(SVGValueNonInterpolableValue);
 
 InterpolationValue SVGValueInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& value) const
 {
-    RefPtrWillBeRawPtr<SVGPropertyBase> referencedValue = const_cast<SVGPropertyBase*>(&value); // Take ref.
+    RawPtr<SVGPropertyBase> referencedValue = const_cast<SVGPropertyBase*>(&value); // Take ref.
     return InterpolationValue(InterpolableList::create(0), SVGValueNonInterpolableValue::create(referencedValue.release()));
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGValueInterpolationType::appliedSVGValue(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue) const
+RawPtr<SVGPropertyBase> SVGValueInterpolationType::appliedSVGValue(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue) const
 {
     return toSVGValueNonInterpolableValue(*nonInterpolableValue).svgValue();
 }

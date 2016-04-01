@@ -29,7 +29,7 @@ InterpolationValue SVGNumberOptionalNumberInterpolationType::maybeConvertSVGValu
     return InterpolationValue(result.release());
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGNumberOptionalNumberInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+RawPtr<SVGPropertyBase> SVGNumberOptionalNumberInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
     const InterpolableList& list = toInterpolableList(interpolableValue);
     return SVGNumberOptionalNumber::create(

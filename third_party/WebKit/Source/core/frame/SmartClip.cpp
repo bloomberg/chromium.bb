@@ -69,7 +69,7 @@ const String& SmartClipData::clipData() const
     return m_string;
 }
 
-SmartClip::SmartClip(PassRefPtrWillBeRawPtr<LocalFrame> frame)
+SmartClip::SmartClip(RawPtr<LocalFrame> frame)
     : m_frame(frame)
 {
 }
@@ -86,7 +86,7 @@ SmartClipData SmartClip::dataForRect(const IntRect& cropRectInViewport)
             bestNode = bestNodeInFrame;
     }
 
-    WillBeHeapVector<RawPtrWillBeMember<Node>> hitNodes;
+    HeapVector<Member<Node>> hitNodes;
     collectOverlappingChildNodes(bestNode, cropRectInViewport, hitNodes);
 
     if (hitNodes.isEmpty() || hitNodes.size() == bestNode->countChildren()) {
@@ -214,7 +214,7 @@ bool SmartClip::shouldSkipBackgroundImage(Node* node)
     return false;
 }
 
-void SmartClip::collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRectInViewport, WillBeHeapVector<RawPtrWillBeMember<Node>>& hitNodes)
+void SmartClip::collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRectInViewport, HeapVector<Member<Node>>& hitNodes)
 {
     if (!parentNode)
         return;

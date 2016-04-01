@@ -54,9 +54,9 @@ private:
 
     void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet);
 
-    RawPtrWillBeMember<XSLStyleSheet> m_parentStyleSheet;
+    Member<XSLStyleSheet> m_parentStyleSheet;
     String m_strHref;
-    RefPtrWillBeMember<XSLStyleSheet> m_styleSheet;
+    Member<XSLStyleSheet> m_styleSheet;
     bool m_loading;
 };
 

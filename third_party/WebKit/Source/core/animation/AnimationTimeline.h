@@ -109,7 +109,7 @@ protected:
     AnimationTimeline(Document*, PlatformTiming*);
 
 private:
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
     double m_zeroTime;
     bool m_zeroTimeInitialized;
     unsigned m_outdatedAnimationCount;

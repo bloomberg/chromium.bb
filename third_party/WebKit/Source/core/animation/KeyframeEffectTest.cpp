@@ -37,7 +37,7 @@ protected:
     Document& document() const { return pageHolder->document(); }
 
     OwnPtr<DummyPageHolder> pageHolder;
-    RefPtrWillBePersistent<Element> element;
+    Persistent<Element> element;
     TrackExceptionState exceptionState;
 };
 

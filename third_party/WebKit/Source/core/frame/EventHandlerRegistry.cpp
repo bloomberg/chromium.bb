@@ -248,7 +248,7 @@ DEFINE_TRACE(EventHandlerRegistry)
 
 void EventHandlerRegistry::clearWeakMembers(Visitor* visitor)
 {
-    Vector<RawPtrWillBeUntracedMember<EventTarget>> deadTargets;
+    Vector<UntracedMember<EventTarget>> deadTargets;
     for (size_t i = 0; i < EventHandlerClassCount; ++i) {
         EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
         const EventTargetSet* targets = &m_targets[handlerClass];
@@ -271,7 +271,7 @@ void EventHandlerRegistry::documentDetached(Document& document)
     // Remove all event targets under the detached document.
     for (size_t handlerClassIndex = 0; handlerClassIndex < EventHandlerClassCount; ++handlerClassIndex) {
         EventHandlerClass handlerClass = static_cast<EventHandlerClass>(handlerClassIndex);
-        Vector<RawPtrWillBeUntracedMember<EventTarget>> targetsToRemove;
+        Vector<UntracedMember<EventTarget>> targetsToRemove;
         const EventTargetSet* targets = &m_targets[handlerClass];
         for (const auto& eventTarget : *targets) {
             if (Node* node = eventTarget.key->toNode()) {

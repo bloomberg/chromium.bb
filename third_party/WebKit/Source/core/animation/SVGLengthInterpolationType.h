@@ -23,12 +23,12 @@ public:
 
     static PassOwnPtr<InterpolableValue> neutralInterpolableValue();
     static InterpolationValue convertSVGLength(const SVGLength&);
-    static PassRefPtrWillBeRawPtr<SVGLength> resolveInterpolableSVGLength(const InterpolableValue&, const SVGLengthContext&, SVGLengthMode, bool negativeValuesForbidden);
+    static RawPtr<SVGLength> resolveInterpolableSVGLength(const InterpolableValue&, const SVGLengthContext&, SVGLengthMode, bool negativeValuesForbidden);
 
 private:
     InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
     InterpolationValue maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
-    PassRefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
+    RawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
     const SVGLengthMode m_unitMode;

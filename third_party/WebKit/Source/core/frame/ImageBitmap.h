@@ -31,16 +31,16 @@ enum AlphaDisposition {
     DontPremultiplyAlpha,
 };
 
-class CORE_EXPORT ImageBitmap final : public RefCountedWillBeGarbageCollectedFinalized<ImageBitmap>, public ScriptWrappable, public CanvasImageSource, public ImageBitmapSource {
+class CORE_EXPORT ImageBitmap final : public GarbageCollectedFinalized<ImageBitmap>, public ScriptWrappable, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLVideoElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLCanvasElement*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageData*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageBitmap*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>);
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
+    static RawPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
+    static RawPtr<ImageBitmap> create(HTMLVideoElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
+    static RawPtr<ImageBitmap> create(HTMLCanvasElement*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
+    static RawPtr<ImageBitmap> create(ImageData*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
+    static RawPtr<ImageBitmap> create(ImageBitmap*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
+    static RawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>);
+    static RawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static PassRefPtr<SkImage> getSkImageFromDecoder(PassOwnPtr<ImageDecoder>);
 
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }

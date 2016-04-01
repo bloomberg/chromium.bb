@@ -99,7 +99,7 @@ InterpolationValue SVGLengthInterpolationType::convertSVGLength(const SVGLength&
     return InterpolationValue(listOfValues.release());
 }
 
-PassRefPtrWillBeRawPtr<SVGLength> SVGLengthInterpolationType::resolveInterpolableSVGLength(const InterpolableValue& interpolableValue, const SVGLengthContext& lengthContext, SVGLengthMode unitMode, bool negativeValuesForbidden)
+RawPtr<SVGLength> SVGLengthInterpolationType::resolveInterpolableSVGLength(const InterpolableValue& interpolableValue, const SVGLengthContext& lengthContext, SVGLengthMode unitMode, bool negativeValuesForbidden)
 {
     const InterpolableList& listOfValues = toInterpolableList(interpolableValue);
 
@@ -134,7 +134,7 @@ PassRefPtrWillBeRawPtr<SVGLength> SVGLengthInterpolationType::resolveInterpolabl
     if (negativeValuesForbidden && value < 0)
         value = 0;
 
-    RefPtrWillBeRawPtr<SVGLength> result = SVGLength::create(unitMode); // defaults to the length 0
+    RawPtr<SVGLength> result = SVGLength::create(unitMode); // defaults to the length 0
     result->newValueSpecifiedUnits(unitType, value);
     return result.release();
 }
@@ -152,7 +152,7 @@ InterpolationValue SVGLengthInterpolationType::maybeConvertSVGValue(const SVGPro
     return convertSVGLength(toSVGLength(svgValue));
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLengthInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+RawPtr<SVGPropertyBase> SVGLengthInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
     ASSERT_NOT_REACHED();
     // This function is no longer called, because apply has been overridden.

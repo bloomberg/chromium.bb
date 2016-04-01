@@ -78,9 +78,9 @@ void SVGNumberListInterpolationType::composite(UnderlyingValueOwner& underlyingV
         underlyingList.getMutable(i)->scale(underlyingFraction);
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGNumberListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+RawPtr<SVGPropertyBase> SVGNumberListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
-    RefPtrWillBeRawPtr<SVGNumberList> result = SVGNumberList::create();
+    RawPtr<SVGNumberList> result = SVGNumberList::create();
     const InterpolableList& list = toInterpolableList(interpolableValue);
     for (size_t i = 0; i < list.length(); i++)
         result->append(SVGNumber::create(toInterpolableNumber(list.get(i))->value()));

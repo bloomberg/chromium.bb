@@ -23,12 +23,12 @@
 
 namespace blink {
 
-class ScrollableAreaStub : public NoBaseWillBeGarbageCollectedFinalized<ScrollableAreaStub>, public ScrollableArea {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScrollableAreaStub);
+class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>, public ScrollableArea {
+    USING_GARBAGE_COLLECTED_MIXIN(ScrollableAreaStub);
 public:
-    static PassOwnPtrWillBeRawPtr<ScrollableAreaStub> create(const IntSize& viewportSize, const IntSize& contentsSize)
+    static RawPtr<ScrollableAreaStub> create(const IntSize& viewportSize, const IntSize& contentsSize)
     {
-        return adoptPtrWillBeNoop(new ScrollableAreaStub(viewportSize, contentsSize));
+        return new ScrollableAreaStub(viewportSize, contentsSize);
     }
 
     void setViewportSize(const IntSize& viewportSize)
@@ -113,9 +113,9 @@ protected:
 
 class RootFrameViewStub : public ScrollableAreaStub {
 public:
-    static PassOwnPtrWillBeRawPtr<RootFrameViewStub> create(const IntSize& viewportSize, const IntSize& contentsSize)
+    static RawPtr<RootFrameViewStub> create(const IntSize& viewportSize, const IntSize& contentsSize)
     {
-        return adoptPtrWillBeNoop(new RootFrameViewStub(viewportSize, contentsSize));
+        return new RootFrameViewStub(viewportSize, contentsSize);
     }
 
     DoublePoint maximumScrollPositionDouble() const override
@@ -135,9 +135,9 @@ private:
 
 class VisualViewportStub : public ScrollableAreaStub {
 public:
-    static PassOwnPtrWillBeRawPtr<VisualViewportStub> create(const IntSize& viewportSize, const IntSize& contentsSize)
+    static RawPtr<VisualViewportStub> create(const IntSize& viewportSize, const IntSize& contentsSize)
     {
-        return adoptPtrWillBeNoop(new VisualViewportStub(viewportSize, contentsSize));
+        return new VisualViewportStub(viewportSize, contentsSize);
     }
 
     DoublePoint maximumScrollPositionDouble() const override
@@ -189,10 +189,10 @@ protected:
 TEST_F(RootFrameViewportTest, UserInputScrollable)
 {
     IntSize viewportSize(100, 150);
-    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
-    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
+    RawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    RawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
+    RawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
     visualViewport->setScale(2);
 
@@ -250,10 +250,10 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
 {
     IntSize viewportSize(100, 150);
-    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
-    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
+    RawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    RawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
+    RawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
     visualViewport->setScale(2);
 
@@ -289,10 +289,10 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
 TEST_F(RootFrameViewportTest, ScrollIntoView)
 {
     IntSize viewportSize(100, 150);
-    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
-    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
+    RawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    RawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
+    RawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
     // Test that the visual viewport is scrolled if the viewport has been
     // resized (as is the case when the ChromeOS keyboard comes up) but not
@@ -364,10 +364,10 @@ TEST_F(RootFrameViewportTest, ScrollIntoView)
 TEST_F(RootFrameViewportTest, SetScrollPosition)
 {
     IntSize viewportSize(500, 500);
-    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(1000, 2000));
-    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
+    RawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(1000, 2000));
+    RawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
+    RawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
     visualViewport->setScale(2);
 
@@ -399,10 +399,10 @@ TEST_F(RootFrameViewportTest, SetScrollPosition)
 TEST_F(RootFrameViewportTest, VisibleContentRect)
 {
     IntSize viewportSize(500, 401);
-    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(1000, 2000));
-    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
+    RawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(1000, 2000));
+    RawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
+    RawPtr<ScrollableArea> rootFrameViewport = RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
     rootFrameViewport->setScrollPosition(DoublePoint(100, 75), ProgrammaticScroll);
 
@@ -424,10 +424,10 @@ TEST_F(RootFrameViewportTest, VisibleContentRect)
 TEST_F(RootFrameViewportTest, ViewportScrollOrder)
 {
     IntSize viewportSize(100, 100);
-    OwnPtrWillBeRawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
-    OwnPtrWillBeRawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
+    RawPtr<RootFrameViewStub> layoutViewport = RootFrameViewStub::create(viewportSize, IntSize(200, 300));
+    RawPtr<VisualViewportStub> visualViewport = VisualViewportStub::create(viewportSize, viewportSize);
 
-    OwnPtrWillBeRawPtr<ScrollableArea> rootFrameViewport =
+    RawPtr<ScrollableArea> rootFrameViewport =
         RootFrameViewport::create(*visualViewport.get(), *layoutViewport.get());
 
     visualViewport->setScale(2);

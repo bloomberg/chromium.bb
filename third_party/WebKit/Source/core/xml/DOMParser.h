@@ -35,14 +35,14 @@ public:
         return new DOMParser(document);
     }
 
-    PassRefPtrWillBeRawPtr<Document> parseFromString(const String&, const String& type);
+    RawPtr<Document> parseFromString(const String&, const String& type);
 
     DECLARE_TRACE();
 
 private:
     explicit DOMParser(Document&);
 
-    WeakPtrWillBeWeakMember<Document> m_contextDocument;
+    WeakMember<Document> m_contextDocument;
 };
 
 } // namespace blink

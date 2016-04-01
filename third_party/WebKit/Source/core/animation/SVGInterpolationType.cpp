@@ -23,7 +23,7 @@ InterpolationValue SVGInterpolationType::maybeConvertSingle(const PropertySpecif
     if (keyframe.isNeutral())
         return maybeConvertNeutral(underlying, conversionCheckers);
 
-    RefPtrWillBeRawPtr<SVGPropertyBase> svgValue = environment.svgBaseValue().cloneForAnimation(toSVGPropertySpecificKeyframe(keyframe).value());
+    RawPtr<SVGPropertyBase> svgValue = environment.svgBaseValue().cloneForAnimation(toSVGPropertySpecificKeyframe(keyframe).value());
     return maybeConvertSVGValue(*svgValue);
 }
 

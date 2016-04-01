@@ -15,7 +15,7 @@ class RemoteFrame;
 
 class RemoteFrameView final : public Widget {
 public:
-    static PassRefPtrWillBeRawPtr<RemoteFrameView> create(RemoteFrame*);
+    static RawPtr<RemoteFrameView> create(RemoteFrame*);
 
     ~RemoteFrameView() override;
 
@@ -49,7 +49,7 @@ private:
     // and its RemoteFrameView corresponds to that between LocalFrame
     // and FrameView. Please see the FrameView::m_frame comment for
     // details.
-    RefPtrWillBeMember<RemoteFrame> m_remoteFrame;
+    Member<RemoteFrame> m_remoteFrame;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameView, Widget, widget, widget->isRemoteFrameView(), widget.isRemoteFrameView());

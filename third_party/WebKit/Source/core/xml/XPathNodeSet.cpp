@@ -38,7 +38,7 @@ namespace XPath {
 // even traverse in reasonable time).
 const unsigned traversalSortCutoff = 10000;
 
-typedef WillBeHeapVector<RawPtrWillBeMember<Node>> NodeSetVector;
+typedef HeapVector<Member<Node>> NodeSetVector;
 
 NodeSet* NodeSet::create(const NodeSet& other)
 {
@@ -55,7 +55,7 @@ static inline Node* parentWithDepth(unsigned depth, const NodeSetVector& parents
     return parents[parents.size() - 1 - depth];
 }
 
-static void sortBlock(unsigned from, unsigned to, WillBeHeapVector<NodeSetVector>& parentMatrix, bool mayContainAttributeNodes)
+static void sortBlock(unsigned from, unsigned to, HeapVector<NodeSetVector>& parentMatrix, bool mayContainAttributeNodes)
 {
     // Should not call this function with less that two nodes to sort.
     ASSERT(from + 1 < to);
@@ -123,7 +123,7 @@ static void sortBlock(unsigned from, unsigned to, WillBeHeapVector<NodeSetVector
     // Children nodes of the common ancestor induce a subdivision of our
     // node-set. Sort it according to this subdivision, and recursively sort
     // each group.
-    WillBeHeapHashSet<RawPtrWillBeMember<Node>> parentNodes;
+    HeapHashSet<Member<Node>> parentNodes;
     for (unsigned i = from; i < to; ++i)
         parentNodes.add(parentWithDepth(commonAncestorDepth + 1, parentMatrix[i]));
 
@@ -170,7 +170,7 @@ void NodeSet::sort() const
 
     bool containsAttributeNodes = false;
 
-    WillBeHeapVector<NodeSetVector> parentMatrix(nodeCount);
+    HeapVector<NodeSetVector> parentMatrix(nodeCount);
     for (unsigned i = 0; i < nodeCount; ++i) {
         NodeSetVector& parentsVector = parentMatrix[i];
         Node* n = m_nodes[i].get();
@@ -187,12 +187,12 @@ void NodeSet::sort() const
 
     // It is not possible to just assign the result to m_nodes, because some
     // nodes may get dereferenced and destroyed.
-    WillBeHeapVector<RefPtrWillBeMember<Node>> sortedNodes;
+    HeapVector<Member<Node>> sortedNodes;
     sortedNodes.reserveInitialCapacity(nodeCount);
     for (unsigned i = 0; i < nodeCount; ++i)
         sortedNodes.append(parentMatrix[i][0]);
 
-    const_cast<WillBeHeapVector<RefPtrWillBeMember<Node>>&>(m_nodes).swap(sortedNodes);
+    const_cast<HeapVector<Member<Node>>&>(m_nodes).swap(sortedNodes);
 }
 
 static Node* findRootNode(Node* node)
@@ -210,7 +210,7 @@ static Node* findRootNode(Node* node)
 
 void NodeSet::traversalSort() const
 {
-    WillBeHeapHashSet<RawPtrWillBeMember<Node>> nodes;
+    HeapHashSet<Member<Node>> nodes;
     bool containsAttributeNodes = false;
 
     unsigned nodeCount = m_nodes.size();
@@ -222,7 +222,7 @@ void NodeSet::traversalSort() const
             containsAttributeNodes = true;
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<Node>> sortedNodes;
+    HeapVector<Member<Node>> sortedNodes;
     sortedNodes.reserveInitialCapacity(nodeCount);
 
     for (Node& n : NodeTraversal::startsAt(findRootNode(m_nodes.first().get()))) {
@@ -235,14 +235,14 @@ void NodeSet::traversalSort() const
         Element* element = toElement(&n);
         AttributeCollection attributes = element->attributes();
         for (auto& attribute : attributes) {
-            RefPtrWillBeRawPtr<Attr> attr = element->attrIfExists(attribute.name());
+            RawPtr<Attr> attr = element->attrIfExists(attribute.name());
             if (attr && nodes.contains(attr.get()))
                 sortedNodes.append(attr);
         }
     }
 
     ASSERT(sortedNodes.size() == nodeCount);
-    const_cast<WillBeHeapVector<RefPtrWillBeMember<Node>>&>(m_nodes).swap(sortedNodes);
+    const_cast<HeapVector<Member<Node>>&>(m_nodes).swap(sortedNodes);
 }
 
 void NodeSet::reverse()

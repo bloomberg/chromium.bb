@@ -51,7 +51,7 @@ void PlatformEventDispatcher::notifyControllers()
         TemporaryChange<bool> changeIsDispatching(m_isDispatching, true);
         // HashSet m_controllers can be updated during an iteration, and it stops the iteration.
         // Thus we store it into a Vector to access all elements.
-        WillBeHeapVector<RawPtrWillBeMember<PlatformEventController>> snapshotVector;
+        HeapVector<Member<PlatformEventController>> snapshotVector;
         copyToVector(m_controllers, snapshotVector);
         for (PlatformEventController* controller : snapshotVector) {
             if (m_controllers.contains(controller))

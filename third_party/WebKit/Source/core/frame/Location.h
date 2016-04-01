@@ -49,12 +49,12 @@ class KURL;
 // in a RemoteFrame. Rather than making DOMWindowProperty support RemoteFrames and generating a lot
 // code churn, Location is implemented as a one-off with some custom lifetime management code. Namely,
 // it needs a manual call to reset() from DOMWindow::reset() to ensure it doesn't retain a stale Frame pointer.
-class CORE_EXPORT Location final : public RefCountedWillBeGarbageCollected<Location>, public ScriptWrappable {
+class CORE_EXPORT Location final : public GarbageCollected<Location>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Location> create(Frame* frame)
+    static RawPtr<Location> create(Frame* frame)
     {
-        return adoptRefWillBeNoop(new Location(frame));
+        return new Location(frame);
     }
 
     Frame* frame() const { return m_frame.get(); }
@@ -83,7 +83,7 @@ public:
     String hash() const;
     String origin() const;
 
-    PassRefPtrWillBeRawPtr<DOMStringList> ancestorOrigins() const;
+    RawPtr<DOMStringList> ancestorOrigins() const;
 
     // Just return the |this| object the way the normal valueOf function on the Object prototype would.
     // The valueOf function is only added to make sure that it cannot be overwritten on location
@@ -100,7 +100,7 @@ private:
 
     const KURL& url() const;
 
-    RawPtrWillBeMember<Frame> m_frame;
+    Member<Frame> m_frame;
 };
 
 } // namespace blink

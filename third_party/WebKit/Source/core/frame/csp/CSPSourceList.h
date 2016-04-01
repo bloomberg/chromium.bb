@@ -56,8 +56,8 @@ private:
 
     bool hasSourceMatchInList(const KURL&, ContentSecurityPolicy::RedirectStatus) const;
 
-    RawPtrWillBeMember<ContentSecurityPolicy> m_policy;
-    WillBeHeapVector<OwnPtrWillBeMember<CSPSource>> m_list;
+    Member<ContentSecurityPolicy> m_policy;
+    HeapVector<Member<CSPSource>> m_list;
     String m_directiveName;
     bool m_allowSelf;
     bool m_allowStar;

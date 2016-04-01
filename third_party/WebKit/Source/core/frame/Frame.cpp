@@ -102,7 +102,7 @@ void Frame::detach(FrameDetachType type)
 
 void Frame::detachChildren()
 {
-    typedef WillBeHeapVector<RefPtrWillBeMember<Frame>> FrameVector;
+    typedef HeapVector<Member<Frame>> FrameVector;
     FrameVector childrenToDetach;
     childrenToDetach.reserveCapacity(tree().childCount());
     for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
@@ -154,7 +154,7 @@ HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const
 
 static ChromeClient& emptyChromeClient()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<EmptyChromeClient>, client, (EmptyChromeClient::create()));
+    DEFINE_STATIC_LOCAL(Persistent<EmptyChromeClient>, client, (EmptyChromeClient::create()));
     return *client;
 }
 

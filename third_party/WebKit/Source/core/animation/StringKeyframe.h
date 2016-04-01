@@ -23,7 +23,7 @@ public:
     }
 
     void setCSSPropertyValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
-    void setCSSPropertyValue(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>);
+    void setCSSPropertyValue(CSSPropertyID, RawPtr<CSSValue>);
     void setPresentationAttributeValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
     void setSVGAttributeValue(const QualifiedName&, const String& value);
 
@@ -79,7 +79,7 @@ public:
 
         void populateAnimatableValueCaches(CSSPropertyID, Keyframe::PropertySpecificKeyframe&, Element*, CSSValue& fromCSSValue, CSSValue& toCSSValue) const;
 
-        RefPtrWillBePersistent<CSSValue> m_value;
+        Persistent<CSSValue> m_value;
         mutable RefPtr<AnimatableValue> m_animatableValueCache;
     };
 
@@ -124,8 +124,8 @@ private:
 
     bool isStringKeyframe() const override { return true; }
 
-    RefPtrWillBePersistent<MutableStylePropertySet> m_cssPropertyMap;
-    RefPtrWillBePersistent<MutableStylePropertySet> m_presentationAttributeMap;
+    Persistent<MutableStylePropertySet> m_cssPropertyMap;
+    Persistent<MutableStylePropertySet> m_presentationAttributeMap;
     HashMap<const QualifiedName*, String> m_svgAttributeMap;
 };
 

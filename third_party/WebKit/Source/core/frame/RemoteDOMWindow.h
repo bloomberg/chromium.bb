@@ -12,9 +12,9 @@ namespace blink {
 
 class RemoteDOMWindow final : public DOMWindow {
 public:
-    static PassRefPtrWillBeRawPtr<RemoteDOMWindow> create(RemoteFrame& frame)
+    static RawPtr<RemoteDOMWindow> create(RemoteFrame& frame)
     {
-        return adoptRefWillBeNoop(new RemoteDOMWindow(frame));
+        return new RemoteDOMWindow(frame);
     }
 
     // EventTarget overrides:
@@ -70,9 +70,9 @@ public:
     void moveTo(int x, int y) const override;
     void resizeBy(int x, int y) const override;
     void resizeTo(int width, int height) const override;
-    PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&) override;
-    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const override;
-    PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const override;
+    RawPtr<MediaQueryList> matchMedia(const String&) override;
+    RawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const override;
+    RawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const override;
     int requestAnimationFrame(FrameRequestCallback*) override;
     int webkitRequestAnimationFrame(FrameRequestCallback*) override;
     void cancelAnimationFrame(int id) override;
@@ -84,7 +84,7 @@ public:
 private:
     explicit RemoteDOMWindow(RemoteFrame&);
 
-    RawPtrWillBeMember<RemoteFrame> m_frame;
+    Member<RemoteFrame> m_frame;
 };
 
 } // namespace blink

@@ -29,12 +29,12 @@ InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertSVGVa
     return InterpolationValue(result.release());
 }
 
-static PassRefPtrWillBeRawPtr<SVGInteger> toPositiveInteger(const InterpolableValue* number)
+static RawPtr<SVGInteger> toPositiveInteger(const InterpolableValue* number)
 {
     return SVGInteger::create(clampTo<int>(roundf(toInterpolableNumber(number)->value()), 1));
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGIntegerOptionalIntegerInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+RawPtr<SVGPropertyBase> SVGIntegerOptionalIntegerInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
     const InterpolableList& list = toInterpolableList(interpolableValue);
     return SVGIntegerOptionalInteger::create(

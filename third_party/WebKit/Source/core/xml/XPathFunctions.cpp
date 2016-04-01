@@ -331,7 +331,7 @@ Value FunId::evaluate(EvaluationContext& context) const
 
     TreeScope& contextScope = context.node->treeScope();
     NodeSet* result(NodeSet::create());
-    WillBeHeapHashSet<RawPtrWillBeMember<Node>> resultSet;
+    HeapHashSet<Member<Node>> resultSet;
 
     unsigned startPos = 0;
     unsigned length = idList.length();

@@ -39,8 +39,8 @@ public:
 
 private:
     StyleResolverState* m_state;
-    RawPtrWillBeMember<SVGElement> m_svgElement;
-    RawPtrWillBeMember<const SVGPropertyBase> m_svgBaseValue;
+    Member<SVGElement> m_svgElement;
+    Member<const SVGPropertyBase> m_svgBaseValue;
 };
 
 } // namespace blink
