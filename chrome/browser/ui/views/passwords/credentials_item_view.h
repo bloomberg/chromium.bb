@@ -48,6 +48,8 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   void SetLowerLabelColor(SkColor color);
   void SetHoverColor(SkColor color);
 
+  int GetPreferredHeight() const;
+
  private:
   // views::LabelButton:
   gfx::Size GetPreferredSize() const override;

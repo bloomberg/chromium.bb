@@ -123,6 +123,10 @@ void CredentialsItemView::SetHoverColor(SkColor color) {
   hover_color_ = color;
 }
 
+int CredentialsItemView::GetPreferredHeight() const {
+  return GetPreferredSize().height();
+}
+
 gfx::Size CredentialsItemView::GetPreferredSize() const {
   gfx::Size labels_size = GetTextLabelsSize(upper_label_, lower_label_);
   gfx::Size size = gfx::Size(kAvatarImageSize + labels_size.width(),
