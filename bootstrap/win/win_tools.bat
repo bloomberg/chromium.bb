@@ -114,7 +114,11 @@ if exist "%GIT_INST_DIR%\." rd /q /s "%GIT_INST_DIR%"
 :: -sd1 : Self delete SFX archive
 :: -InstallPath : Where to put the files
 :: -Directory : Run the post-extract program with this current-working-directory
-call "%GIT_DOWNLOAD_PATH%" -y -sd1 -InstallPath="%GIT_INST_DIR%" -Directory="%GIT_INST_DIR%"
+::
+:: Path slashes must be escaped or the 7zip sfx treats e.g. path\to\dir as
+::   path[tab]o\dir.
+set GIT_INST_DIR_ESC=%GIT_INST_DIR:\=\\%
+call "%GIT_DOWNLOAD_PATH%" -y -sd1 -InstallPath="%GIT_INST_DIR_ESC%" -Directory="%GIT_INST_DIR_ESC%"
 if errorlevel 1 goto :GIT_FAIL
 
 del "%GIT_DOWNLOAD_PATH%"
