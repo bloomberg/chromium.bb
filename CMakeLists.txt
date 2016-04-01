@@ -40,6 +40,7 @@ else ()
 endif ()
 
 set(CMAKE_CXX_FLAGS "-D__STDC_CONSTANT_MACROS ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS "-D__STDC_LIMIT_MACROS ${CMAKE_CXX_FLAGS}")
 
 # mkvmuxer section.
@@ -112,6 +113,16 @@ add_executable(vttdemux
                "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.cc"
                "${LIBWEBM_SRC_DIR}/webvtt/webvttparser.h")
 target_link_libraries(vttdemux LINK_PUBLIC webm)
+
+# Webm_info section.
+add_executable(webm_info
+               "${LIBWEBM_SRC_DIR}/common/indent.cc"
+               "${LIBWEBM_SRC_DIR}/common/indent.h"
+               "${LIBWEBM_SRC_DIR}/common/webm_constants.h"
+               "${LIBWEBM_SRC_DIR}/common/webm_endian.cc"
+               "${LIBWEBM_SRC_DIR}/common/webm_endian.h"
+               "${LIBWEBM_SRC_DIR}/webm_info.cc")
+target_link_libraries(webm_info LINK_PUBLIC webm)
 
 if (ENABLE_WEBMTS)
   # webmts (PES/TS support) library section.
