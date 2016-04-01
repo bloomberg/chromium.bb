@@ -438,6 +438,10 @@ EffectNodeData::EffectNodeData()
       has_render_surface(false),
       has_copy_request(false),
       has_background_filters(false),
+      node_or_ancestor_has_background_filters(false),
+      to_screen_opacity_is_animated(false),
+      hidden_by_backface_visibility(false),
+      double_sided(false),
       is_drawn(true),
       has_animated_opacity(false),
       effect_changed(false),
@@ -454,7 +458,11 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
          has_render_surface == other.has_render_surface &&
          has_copy_request == other.has_copy_request &&
          has_background_filters == other.has_background_filters &&
-         is_drawn == other.is_drawn &&
+         node_or_ancestor_has_background_filters ==
+             other.node_or_ancestor_has_background_filters &&
+         to_screen_opacity_is_animated == other.to_screen_opacity_is_animated &&
+         hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
+         double_sided == other.double_sided && is_drawn == other.is_drawn &&
          has_animated_opacity == other.has_animated_opacity &&
          effect_changed == other.effect_changed &&
          num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
@@ -470,6 +478,11 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_has_render_surface(has_render_surface);
   data->set_has_copy_request(has_copy_request);
   data->set_has_background_filters(has_background_filters);
+  data->set_node_or_ancestor_has_background_filters(
+      node_or_ancestor_has_background_filters);
+  data->set_to_screen_opacity_is_animated(to_screen_opacity_is_animated);
+  data->set_hidden_by_backface_visibility(hidden_by_backface_visibility);
+  data->set_double_sided(double_sided);
   data->set_is_drawn(is_drawn);
   data->set_has_animated_opacity(has_animated_opacity);
   data->set_effect_changed(effect_changed);
@@ -488,6 +501,11 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   has_render_surface = data.has_render_surface();
   has_copy_request = data.has_copy_request();
   has_background_filters = data.has_background_filters();
+  node_or_ancestor_has_background_filters =
+      data.node_or_ancestor_has_background_filters();
+  to_screen_opacity_is_animated = data.to_screen_opacity_is_animated();
+  hidden_by_backface_visibility = data.hidden_by_backface_visibility();
+  double_sided = data.double_sided();
   is_drawn = data.is_drawn();
   has_animated_opacity = data.has_animated_opacity();
   effect_changed = data.effect_changed();
@@ -1209,6 +1227,46 @@ void EffectTree::UpdateEffectChanged(EffectNode* node,
   }
 }
 
+void EffectTree::UpdateBackfaceVisibility(EffectNode* node,
+                                          EffectNode* parent_node) {
+  if (!parent_node) {
+    node->data.hidden_by_backface_visibility = false;
+    return;
+  }
+  if (parent_node->data.hidden_by_backface_visibility) {
+    node->data.hidden_by_backface_visibility = true;
+    return;
+  }
+
+  TransformTree& transform_tree = property_trees()->transform_tree;
+  if (node->data.has_render_surface && !node->data.double_sided) {
+    TransformNode* transform_node =
+        transform_tree.Node(node->data.transform_id);
+    if (transform_node->data.is_invertible &&
+        transform_node->data.ancestors_are_invertible) {
+      if (transform_node->data.sorting_context_id) {
+        const TransformNode* parent_transform_node =
+            transform_tree.parent(transform_node);
+        if (parent_transform_node &&
+            parent_transform_node->data.sorting_context_id ==
+                transform_node->data.sorting_context_id) {
+          gfx::Transform surface_draw_transform;
+          transform_tree.ComputeTransform(transform_node->id,
+                                          transform_node->data.target_id,
+                                          &surface_draw_transform);
+          node->data.hidden_by_backface_visibility =
+              surface_draw_transform.IsBackFaceVisible();
+        } else {
+          node->data.hidden_by_backface_visibility =
+              transform_node->data.local.IsBackFaceVisible();
+        }
+        return;
+      }
+    }
+  }
+  node->data.hidden_by_backface_visibility = false;
+}
+
 void EffectTree::UpdateEffects(int id) {
   EffectNode* node = Node(id);
   EffectNode* parent_node = parent(node);
@@ -1216,6 +1274,7 @@ void EffectTree::UpdateEffects(int id) {
   UpdateOpacities(node, parent_node);
   UpdateIsDrawn(node, parent_node);
   UpdateEffectChanged(node, parent_node);
+  UpdateBackfaceVisibility(node, parent_node);
 }
 
 void EffectTree::ClearCopyRequests() {

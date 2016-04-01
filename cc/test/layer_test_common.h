@@ -61,8 +61,7 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
       T* ptr = layer.get();
-      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
-      root_layer_impl->AddChild(std::move(layer));
+      root_layer()->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -89,8 +88,7 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a);
       T* ptr = layer.get();
-      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
-      root_layer_impl->AddChild(std::move(layer));
+      root_layer()->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -99,8 +97,7 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a, b);
       T* ptr = layer.get();
-      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
-      root_layer_impl->AddChild(std::move(layer));
+      root_layer()->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -109,8 +106,7 @@ class LayerTestCommon {
       scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
                                       layer_impl_id_++, a, b, c, d);
       T* ptr = layer.get();
-      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
-      root_layer_impl->AddChild(std::move(layer));
+      root_layer()->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -128,8 +124,7 @@ class LayerTestCommon {
       scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
                                       layer_impl_id_++, a, b, c, d, e);
       T* ptr = layer.get();
-      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
-      root_layer_impl->AddChild(std::move(layer));
+      root_layer()->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -155,7 +150,7 @@ class LayerTestCommon {
       return host_->host_impl()->resource_provider();
     }
     LayerImpl* root_layer() const {
-      return host_->host_impl()->active_tree()->root_layer();
+      return host_impl()->active_tree()->root_layer();
     }
     FakeLayerTreeHost* host() { return host_.get(); }
     FakeLayerTreeHostImpl* host_impl() const { return host_->host_impl(); }

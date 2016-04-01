@@ -258,13 +258,6 @@ static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
          (layer->parent()->sorting_context_id() == layer->sorting_context_id());
 }
 
-static bool IsRootLayerOfNewRenderingContext(LayerImpl* layer) {
-  if (layer->parent())
-    return !layer->parent()->Is3dSorted() && layer->Is3dSorted();
-
-  return layer->Is3dSorted();
-}
-
 static bool IsLayerBackFaceVisible(LayerImpl* layer,
                                    const TransformTree& transform_tree) {
   // The current W3C spec on CSS transforms says that backface visibility should
@@ -284,16 +277,10 @@ static bool IsLayerBackFaceVisible(LayerImpl* layer,
 
 static bool IsSurfaceBackFaceVisible(LayerImpl* layer,
                                      const gfx::Transform& draw_transform) {
-  if (LayerIsInExisting3DRenderingContext(layer))
-    return draw_transform.IsBackFaceVisible();
-
-  if (IsRootLayerOfNewRenderingContext(layer))
-    return layer->transform().IsBackFaceVisible();
-
-  // If the render_surface is not part of a new or existing rendering context,
-  // then the layers that contribute to this surface will decide back-face
-  // visibility for themselves.
-  return false;
+  return layer->layer_tree_impl()
+      ->property_trees()
+      ->effect_tree.Node(layer->effect_tree_index())
+      ->data.hidden_by_backface_visibility;
 }
 
 static bool LayerShouldBeSkipped(LayerImpl* layer,
@@ -350,7 +337,13 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   // TODO(ajuma): Correctly process subtrees with singular transform for the
   // case where we may animate to a non-singular transform and wish to
   // pre-raster.
-  if (!HasInvertibleOrAnimatedTransform(layer))
+  TransformNode* node =
+      layer->layer_tree_impl()->property_trees()->transform_tree.Node(
+          layer->transform_tree_index());
+  bool has_invertible_transform =
+      node->data.is_invertible && node->data.ancestors_are_invertible;
+  if (!(has_invertible_transform ||
+        layer->HasPotentiallyRunningTransformAnimation()))
     return true;
 
   // When we need to do a readback/copy of a layer's output, we can not skip

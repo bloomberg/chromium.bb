@@ -263,6 +263,10 @@ struct CC_EXPORT EffectNodeData {
   bool has_render_surface;
   bool has_copy_request;
   bool has_background_filters;
+  bool node_or_ancestor_has_background_filters;
+  bool to_screen_opacity_is_animated;
+  bool hidden_by_backface_visibility;
+  bool double_sided;
   bool is_drawn;
   bool has_animated_opacity;
   // We need to track changes to effects on the compositor to compute damage
@@ -553,6 +557,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
   void UpdateIsDrawn(EffectNode* node, EffectNode* parent_node);
+  void UpdateBackfaceVisibility(EffectNode* node, EffectNode* parent_node);
 };
 
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
