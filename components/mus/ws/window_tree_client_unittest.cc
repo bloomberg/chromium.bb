@@ -596,6 +596,16 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
     changes1()->clear();
   }
 
+  void TearDown() override {
+    // Destroy these before the message loop is destroyed (happens in
+    // WindowServerShellTestBase::TearDown).
+    wt_client1_.reset();
+    wt_client2_.reset();
+    wt_client3_.reset();
+    client_factory_.reset();
+    WindowServerShellTestBase::TearDown();
+  }
+
   scoped_ptr<TestWindowTreeClientImpl> wt_client1_;
   scoped_ptr<TestWindowTreeClientImpl> wt_client2_;
   scoped_ptr<TestWindowTreeClientImpl> wt_client3_;
@@ -619,15 +629,8 @@ TEST_F(WindowTreeClientTest, TwoClientsGetDifferentConnectionIds) {
   ASSERT_NE(connection_id_1(), connection_id_2());
 }
 
-// Disabled due to flakes on win8_chromium_ng; see https://crbug.com/598925.
-#if defined(OS_WIN)
-#define MAYBE_WindowsRemovedWhenEmbedding \
-    DISABLED_WindowsRemovedWhenEmbedding
-#else
-#define MAYBE_WindowsRemovedWhenEmbedding WindowsRemovedWhenEmbedding
-#endif
 // Verifies when Embed() is invoked any child windows are removed.
-TEST_F(WindowTreeClientTest, MAYBE_WindowsRemovedWhenEmbedding) {
+TEST_F(WindowTreeClientTest, WindowsRemovedWhenEmbedding) {
   // Two windows 1 and 2. 2 is parented to 1.
   Id window_1_1 = wt_client1()->NewWindow(1);
   ASSERT_TRUE(window_1_1);
