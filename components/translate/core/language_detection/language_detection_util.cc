@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -136,6 +137,12 @@ std::string DetermineTextLanguage(const base::string16& text,
 
   // Choose top language.
   cld_language = language3[0];
+  UMA_HISTOGRAM_ENUMERATION("Translate.CLD2.LanguageDetected",
+                            cld_language, CLD2::NUM_LANGUAGES);
+  if (is_valid_language)
+    UMA_HISTOGRAM_PERCENTAGE("Translate.CLD2.LanguageAccuracy", percent3[0]);
+
+
 #else
 # error "CLD_VERSION must be 1 or 2"
 #endif
@@ -152,7 +159,7 @@ std::string DetermineTextLanguage(const base::string16& text,
   if (is_reliable && num_bytes_evaluated >= 100 && is_valid_language) {
     // We should not use LanguageCode_ISO_639_1 because it does not cover all
     // the languages CLD can detect. As a result, it'll return the invalid
-    // language code for tradtional Chinese among others.
+    // language code for traditional Chinese among others.
     // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
     // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
     // for Simplified Chinese.
