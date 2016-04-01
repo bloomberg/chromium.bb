@@ -431,6 +431,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
                                       IncognitoModePrefs::FORCED);
   // Run without an explicit "incognito" param.
   scoped_refptr<WindowsCreateFunction> function(new WindowsCreateFunction());
+  function->SetRenderFrameHost(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   scoped_refptr<Extension> extension(test_util::CreateEmptyExtension());
   function->set_extension(extension.get());
   scoped_ptr<base::DictionaryValue> result(utils::ToDictionary(
@@ -450,6 +452,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   Browser* incognito_browser = CreateIncognitoBrowser();
   // Run without an explicit "incognito" param.
   function = new WindowsCreateFunction();
+  function->SetRenderFrameHost(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   function->set_extension(extension.get());
   result.reset(utils::ToDictionary(
       utils::RunFunctionAndReturnSingleResult(

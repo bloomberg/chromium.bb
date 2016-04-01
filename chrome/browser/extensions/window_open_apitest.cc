@@ -231,13 +231,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowArgumentsOverflow) {
 class WindowOpenPanelDisabledTest : public ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    // TODO(jennb): Re-enable when panels are enabled by default.
-    // command_line->AppendSwitch(switches::kDisablePanels);
+    command_line->AppendSwitch(switches::kDisablePanels);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest,
-                       DISABLED_WindowOpenPanelNotEnabled) {
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest, WindowOpenPanelNotEnabled) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel_not_enabled")) << message_;
 }
 
@@ -281,7 +279,18 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, BrowsingInstanceTest) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartEmbeddedTestServer());
 
-  ASSERT_TRUE(RunExtensionTest("window_open/panel_browsing_instance"))
+  ASSERT_TRUE(
+      RunExtensionTestWithArg("window_open/panel_browsing_instance", "panel"))
+      << message_;
+}
+
+// Similar to the previous test, but for when panels are disabled.
+IN_PROC_BROWSER_TEST_F(WindowOpenPanelDisabledTest, BrowsingInstanceTest) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  ASSERT_TRUE(
+      RunExtensionTestWithArg("window_open/panel_browsing_instance", "popup"))
       << message_;
 }
 

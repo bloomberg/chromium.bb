@@ -338,7 +338,9 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
                                            const GURL& url) {
   WebContents::CreateParams create_params(
       params.browser->profile(),
-      tab_util::GetSiteInstanceForNewTab(params.browser->profile(), url));
+      params.source_site_instance
+          ? params.source_site_instance
+          : tab_util::GetSiteInstanceForNewTab(params.browser->profile(), url));
   if (params.source_contents) {
     create_params.initial_size =
         params.source_contents->GetContainerBounds().size();

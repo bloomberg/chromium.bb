@@ -72,6 +72,11 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // |extension_name| is a directory in "test/data/extensions/api_test".
   bool RunExtensionTest(const std::string& extension_name);
 
+  // Similar to RunExtensionTest, except sets an additional string argument
+  // |customArg| to the test config object.
+  bool RunExtensionTestWithArg(const std::string& extension_name,
+                               const char* custom_arg);
+
   // Same as RunExtensionTest, but enables the extension for incognito mode.
   bool RunExtensionTestIncognito(const std::string& extension_name);
 

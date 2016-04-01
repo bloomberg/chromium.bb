@@ -175,6 +175,13 @@ bool ExtensionApiTest::RunExtensionTest(const std::string& extension_name) {
       extension_name, std::string(), NULL, kFlagEnableFileAccess);
 }
 
+bool ExtensionApiTest::RunExtensionTestWithArg(
+    const std::string& extension_name,
+    const char* custom_arg) {
+  return RunExtensionTestImpl(extension_name, std::string(), custom_arg,
+                              kFlagEnableFileAccess);
+}
+
 bool ExtensionApiTest::RunExtensionTestIncognito(
     const std::string& extension_name) {
   return RunExtensionTestImpl(extension_name,

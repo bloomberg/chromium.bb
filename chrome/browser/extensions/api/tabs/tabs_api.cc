@@ -42,7 +42,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -641,11 +641,16 @@ bool WindowsCreateFunction::RunSync() {
 
   Browser* new_window = new Browser(create_params);
 
-  for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
-    WebContents* tab = chrome::AddSelectedTabWithURL(
-        new_window, *i, ui::PAGE_TRANSITION_LINK);
+  for (const GURL& url : urls) {
+    chrome::NavigateParams navigate_params(new_window, url,
+                                           ui::PAGE_TRANSITION_LINK);
+    navigate_params.disposition = NEW_FOREGROUND_TAB;
+    navigate_params.source_site_instance =
+        render_frame_host()->GetSiteInstance();
+    chrome::Navigate(&navigate_params);
     if (create_panel) {
-      TabHelper::FromWebContents(tab)->SetExtensionAppIconById(extension_id);
+      TabHelper::FromWebContents(navigate_params.target_contents)
+          ->SetExtensionAppIconById(extension_id);
     }
   }
 

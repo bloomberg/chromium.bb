@@ -7,6 +7,7 @@
 chrome.test.log('executing background.js ...');
 
 var oldNumberOfTabs;
+var expectedWindowType;
 chrome.test.runTests([
   function testPanelBrowsingInstance() {
     chrome.test.log('counting all the tabs (before window.open) ...');
@@ -23,6 +24,8 @@ chrome.test.runTests([
       //   attempting navigation is neither same-origin with the target, nor is
       //   it the target's parent or opener.
       chrome.test.getConfig(function(config) {
+        expectedWindowType = config.customArg;
+
         var baseUri = 'http://foo.com:' + config.testServer.port +
             '/extensions/api_test/window_open/panel_browsing_instance/';
 
@@ -47,7 +50,7 @@ chrome.runtime.onMessageExternal.addListener(
       chrome.windows.create(
           { 'url': chrome.extension.getURL('panel.html'), 'type': 'panel' },
           function(win) {
-            chrome.test.assertEq('panel', win.type);
+            chrome.test.assertEq(expectedWindowType, win.type);
           });
 
       // panel.js will navigate panel-subframe and then panel-subframe.js will
@@ -60,7 +63,17 @@ chrome.runtime.onMessageExternal.addListener(
         var newNumberOfTabs = tabs.length;
         chrome.test.log('newNumberOfTabs = ' + newNumberOfTabs);
 
-        chrome.test.assertEq(newNumberOfTabs, oldNumberOfTabs);
+        switch (expectedWindowType) {
+          case 'panel':
+            chrome.test.assertEq(newNumberOfTabs, oldNumberOfTabs);
+            break;
+          case 'popup':
+            chrome.test.assertEq(newNumberOfTabs, oldNumberOfTabs + 1);
+            break;
+          default:
+            // Unexpected expected window type.
+            chrome.test.fail();
+        }
         chrome.test.notifyPass();
       });
     }
