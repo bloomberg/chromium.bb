@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/socket/server_socket.h"
 #include "net/socket/stream_socket.h"
@@ -17,8 +18,6 @@ namespace devtools {
 namespace tethering {
 
 namespace {
-
-const char kLocalhost[] = "127.0.0.1";
 
 const int kListenBacklog = 5;
 const int kBufferSize = 16 * 1024;
@@ -171,11 +170,7 @@ class BoundSocket {
 
   bool Listen(uint16_t port) {
     port_ = port;
-    net::IPAddressNumber ip_number;
-    if (!net::ParseIPLiteralToNumber(kLocalhost, &ip_number))
-      return false;
-
-    net::IPEndPoint end_point(ip_number, port);
+    net::IPEndPoint end_point(net::IPAddress::IPv4Localhost(), port);
     int result = socket_->Listen(end_point, kListenBacklog);
     if (result < 0)
       return false;
