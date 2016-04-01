@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/callback_list.h"
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "content/browser/media/session/media_session_uma_helper.h"
@@ -21,6 +22,8 @@ namespace content {
 
 class MediaSessionDelegate;
 class MediaSessionObserver;
+class MediaSessionStateObserver;
+class MediaSessionVisibilityBrowserTest;
 
 // MediaSession manages the media session and audio focus for a given
 // WebContents. It is requesting the audio focus, pausing when requested by the
@@ -123,6 +126,8 @@ class MediaSession : public WebContentsObserver,
  private:
   friend class content::WebContentsUserData<MediaSession>;
   friend class ::MediaSessionBrowserTest;
+  friend class content::MediaSessionVisibilityBrowserTest;
+  friend class content::MediaSessionStateObserver;
 
   CONTENT_EXPORT void SetDelegateForTests(
       scoped_ptr<MediaSessionDelegate> delegate);
@@ -154,6 +159,7 @@ class MediaSession : public WebContentsObserver,
     int player_id;
   };
   using PlayersMap = base::hash_set<PlayerIdentifier, PlayerIdentifier::Hash>;
+  using StateChangedCallback = base::Callback<void(State)>;
 
   CONTENT_EXPORT explicit MediaSession(WebContents* web_contents);
 
@@ -177,6 +183,11 @@ class MediaSession : public WebContentsObserver,
   // It sets audio_focus_state_ and notifies observers about the state change.
   void SetAudioFocusState(State audio_focus_state);
 
+  // Registers a MediaSession state change callback.
+  CONTENT_EXPORT scoped_ptr<base::CallbackList<void(State)>::Subscription>
+  RegisterMediaSessionStateChangedCallbackForTest(
+      const StateChangedCallback& cb);
+
   scoped_ptr<MediaSessionDelegate> delegate_;
   PlayersMap players_;
 
@@ -191,6 +202,7 @@ class MediaSession : public WebContentsObserver,
   double volume_multiplier_;
 
   MediaMetadata metadata_;
+  base::CallbackList<void(State)> media_session_state_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSession);
 };

@@ -244,6 +244,7 @@
       'browser/media/media_source_browsertest.cc',
       'browser/media/session/media_session_browsertest.cc',
       'browser/media/session/media_session_delegate_default_browsertest.cc',
+      'browser/media/session/media_session_visibility_browsertest.cc',
       'browser/media/session/mock_media_session_observer.cc',
       'browser/media/session/mock_media_session_observer.h',
       'browser/memory/memory_pressure_controller_impl_browsertest.cc',

@@ -209,6 +209,12 @@ bool MediaSession::IsControllable() const {
          audio_focus_type_ == Type::Content;
 }
 
+scoped_ptr<base::CallbackList<void(MediaSession::State)>::Subscription>
+MediaSession::RegisterMediaSessionStateChangedCallbackForTest(
+    const StateChangedCallback& cb) {
+  return media_session_state_listeners_.Add(cb);
+}
+
 void MediaSession::SetDelegateForTests(
     scoped_ptr<MediaSessionDelegate> delegate) {
   delegate_ = std::move(delegate);
@@ -317,6 +323,7 @@ void MediaSession::AbandonSystemAudioFocusIfNeeded() {
 }
 
 void MediaSession::UpdateWebContents() {
+  media_session_state_listeners_.Notify(audio_focus_state_);
   static_cast<WebContentsImpl*>(web_contents())->OnMediaSessionStateChanged();
 }
 
