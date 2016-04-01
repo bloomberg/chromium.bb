@@ -54,9 +54,9 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
   switch (reload_type) {
     case NavigationControllerImpl::RELOAD:
       return FrameMsg_Navigate_Type::RELOAD;
-    case NavigationControllerImpl::RELOAD_IGNORING_CACHE:
+    case NavigationControllerImpl::RELOAD_BYPASSING_CACHE:
     case NavigationControllerImpl::RELOAD_DISABLE_LOFI_MODE:
-      return FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
+      return FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE;
     case NavigationControllerImpl::RELOAD_ORIGINAL_REQUEST_URL:
       return FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
     case NavigationControllerImpl::NO_RELOAD:

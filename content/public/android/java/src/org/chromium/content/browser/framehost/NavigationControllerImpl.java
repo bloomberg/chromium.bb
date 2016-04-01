@@ -121,9 +121,9 @@ import org.chromium.content_public.browser.NavigationHistory;
     }
 
     @Override
-    public void reloadIgnoringCache(boolean checkForRepost) {
+    public void reloadBypassingCache(boolean checkForRepost) {
         if (mNativeNavigationControllerAndroid != 0) {
-            nativeReloadIgnoringCache(mNativeNavigationControllerAndroid, checkForRepost);
+            nativeReloadBypassingCache(mNativeNavigationControllerAndroid, checkForRepost);
         }
     }
 
@@ -312,7 +312,7 @@ import org.chromium.content_public.browser.NavigationHistory;
             boolean checkForRepost);
     private native void nativeReloadToRefreshContent(long nativeNavigationControllerAndroid,
             boolean checkForRepost);
-    private native void nativeReloadIgnoringCache(long nativeNavigationControllerAndroid,
+    private native void nativeReloadBypassingCache(long nativeNavigationControllerAndroid,
             boolean checkForRepost);
     private native void nativeReloadDisableLoFi(long nativeNavigationControllerAndroid,
             boolean checkForRepost);

@@ -18,18 +18,18 @@ bool IsCommandAllowedInAppMode(int command_id) {
   DCHECK(IsRunningInForcedAppMode());
 
   const int kAllowed[] = {
-    IDC_BACK,
-    IDC_FORWARD,
-    IDC_RELOAD,
-    IDC_STOP,
-    IDC_RELOAD_IGNORING_CACHE,
-    IDC_RELOAD_CLEARING_CACHE,
-    IDC_CUT,
-    IDC_COPY,
-    IDC_PASTE,
-    IDC_ZOOM_PLUS,
-    IDC_ZOOM_NORMAL,
-    IDC_ZOOM_MINUS,
+      IDC_BACK,
+      IDC_FORWARD,
+      IDC_RELOAD,
+      IDC_STOP,
+      IDC_RELOAD_BYPASSING_CACHE,
+      IDC_RELOAD_CLEARING_CACHE,
+      IDC_CUT,
+      IDC_COPY,
+      IDC_PASTE,
+      IDC_ZOOM_PLUS,
+      IDC_ZOOM_NORMAL,
+      IDC_ZOOM_MINUS,
   };
 
   for (size_t i = 0; i < arraysize(kAllowed); ++i) {

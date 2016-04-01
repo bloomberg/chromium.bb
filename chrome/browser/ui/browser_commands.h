@@ -63,7 +63,7 @@ bool NavigateToIndexWithDisposition(Browser* browser,
                                     int index,
                                     WindowOpenDisposition disposition);
 void Reload(Browser* browser, WindowOpenDisposition disposition);
-void ReloadIgnoringCache(Browser* browser, WindowOpenDisposition disposition);
+void ReloadBypassingCache(Browser* browser, WindowOpenDisposition disposition);
 bool CanReload(const Browser* browser);
 void Home(Browser* browser, WindowOpenDisposition disposition);
 void OpenCurrentURL(Browser* browser);

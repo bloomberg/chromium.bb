@@ -57,9 +57,9 @@ class CONTENT_EXPORT NavigationControllerAndroid {
   void ReloadToRefreshContent(JNIEnv* env,
                               jobject obj,
                               jboolean check_for_repost);
-  void ReloadIgnoringCache(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
-                           jboolean check_for_repost);
+  void ReloadBypassingCache(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj,
+                            jboolean check_for_repost);
   void ReloadDisableLoFi(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          jboolean check_for_repost);

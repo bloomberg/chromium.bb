@@ -48,7 +48,7 @@ class NavigationController {
   enum ReloadType {
     NO_RELOAD,                   // Normal load, restore, or history navigation.
     RELOAD,                      // Normal (cache-validating) reload.
-    RELOAD_IGNORING_CACHE,       // Reload bypassing the cache (shift-reload).
+    RELOAD_BYPASSING_CACHE,      // Reload bypassing the cache (shift-reload).
     RELOAD_ORIGINAL_REQUEST_URL, // Reload using the original request URL.
     RELOAD_DISABLE_LOFI_MODE     // Reload with Lo-Fi mode disabled.
   };
@@ -379,7 +379,7 @@ class NavigationController {
   virtual void ReloadToRefreshContent(bool check_for_repost) = 0;
 
   // Like Reload(), but don't use caches (aka "shift-reload").
-  virtual void ReloadIgnoringCache(bool check_for_repost) = 0;
+  virtual void ReloadBypassingCache(bool check_for_repost) = 0;
 
   // Reloads the current entry using the original URL used to create it.  This
   // is used for cases where the user wants to refresh a page using a different

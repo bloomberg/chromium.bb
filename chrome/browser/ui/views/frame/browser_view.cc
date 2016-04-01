@@ -2464,7 +2464,7 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
         content::RecordAction(UserMetricsAction("Accel_Forward_Right"));
       break;
     case IDC_RELOAD:
-    case IDC_RELOAD_IGNORING_CACHE:
+    case IDC_RELOAD_BYPASSING_CACHE:
       if (key_code == ui::VKEY_R)
         content::RecordAction(UserMetricsAction("Accel_Reload_R"));
       else if (key_code == ui::VKEY_BROWSER_REFRESH)

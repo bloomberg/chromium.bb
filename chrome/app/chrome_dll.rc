@@ -74,10 +74,10 @@ BEGIN
     "O",            IDC_OPEN_FILE,              VIRTKEY, CONTROL
     "P",            IDC_PRINT,                  VIRTKEY, CONTROL
     "R",            IDC_RELOAD,                 VIRTKEY, CONTROL
-    "R",            IDC_RELOAD_IGNORING_CACHE,  VIRTKEY, CONTROL, SHIFT
+    "R",            IDC_RELOAD_BYPASSING_CACHE, VIRTKEY, CONTROL, SHIFT
     VK_F5,          IDC_RELOAD,                 VIRTKEY
-    VK_F5,          IDC_RELOAD_IGNORING_CACHE,  VIRTKEY, CONTROL
-    VK_F5,          IDC_RELOAD_IGNORING_CACHE,  VIRTKEY, SHIFT
+    VK_F5,          IDC_RELOAD_BYPASSING_CACHE, VIRTKEY, CONTROL
+    VK_F5,          IDC_RELOAD_BYPASSING_CACHE, VIRTKEY, SHIFT
     VK_HOME,        IDC_HOME,                   VIRTKEY, ALT
     "T",            IDC_RESTORE_TAB,            VIRTKEY, CONTROL, SHIFT
     "S",            IDC_SAVE_PAGE,              VIRTKEY, CONTROL

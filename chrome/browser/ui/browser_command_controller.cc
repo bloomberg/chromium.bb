@@ -327,8 +327,8 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_RELOAD_CLEARING_CACHE:
       ClearCache(browser_);
       // FALL THROUGH
-    case IDC_RELOAD_IGNORING_CACHE:
-      ReloadIgnoringCache(browser_, disposition);
+    case IDC_RELOAD_BYPASSING_CACHE:
+      ReloadBypassingCache(browser_, disposition);
       break;
     case IDC_HOME:
       Home(browser_, disposition);
@@ -788,7 +788,7 @@ void BrowserCommandController::InitCommandState() {
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_RELOAD, true);
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE, true);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_BYPASSING_CACHE, true);
   command_updater_.UpdateCommandEnabled(IDC_RELOAD_CLEARING_CACHE, true);
 
   // Window management commands
@@ -984,7 +984,7 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_BACK, CanGoBack(browser_));
   command_updater_.UpdateCommandEnabled(IDC_FORWARD, CanGoForward(browser_));
   command_updater_.UpdateCommandEnabled(IDC_RELOAD, CanReload(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE,
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_BYPASSING_CACHE,
                                         CanReload(browser_));
   command_updater_.UpdateCommandEnabled(IDC_RELOAD_CLEARING_CACHE,
                                         CanReload(browser_));

@@ -205,7 +205,7 @@ class ContentFaviconDriverTest : public InProcessBrowserTest,
 // Test that when a user reloads a page ignoring the cache that the favicon is
 // is redownloaded and (not returned from either the favicon cache or the HTTP
 // cache).
-IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadIgnoringCache) {
+IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadBypassingCache) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/favicon/page_with_favicon.html");
   GURL icon_url = embedded_test_server()->GetURL("/favicon/icon.png");
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, ReloadIgnoringCache) {
   // A reload ignoring the cache should refetch the favicon from the website.
   {
     PendingTaskWaiter waiter(web_contents(), this);
-    chrome::ExecuteCommand(browser(), IDC_RELOAD_IGNORING_CACHE);
+    chrome::ExecuteCommand(browser(), IDC_RELOAD_BYPASSING_CACHE);
     waiter.Wait();
   }
   ASSERT_TRUE(delegate->was_requested());

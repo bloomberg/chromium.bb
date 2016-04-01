@@ -236,9 +236,9 @@ void PanelHost::Reload() {
   web_contents_->GetController().Reload(true);
 }
 
-void PanelHost::ReloadIgnoringCache() {
-  content::RecordAction(UserMetricsAction("ReloadIgnoringCache"));
-  web_contents_->GetController().ReloadIgnoringCache(true);
+void PanelHost::ReloadBypassingCache() {
+  content::RecordAction(UserMetricsAction("ReloadBypassingCache"));
+  web_contents_->GetController().ReloadBypassingCache(true);
 }
 
 void PanelHost::StopLoading() {

@@ -10,11 +10,11 @@
 struct FrameMsg_Navigate_Type {
  public:
   enum Value {
-    // Reload the page.
+    // Reload the page, validating cache entries.
     RELOAD,
 
-    // Reload the page, ignoring any cache entries.
-    RELOAD_IGNORING_CACHE,
+    // Reload the page, bypassing any cache entries.
+    RELOAD_BYPASSING_CACHE,
 
     // Reload the page using the original request URL.
     RELOAD_ORIGINAL_REQUEST_URL,

@@ -15882,7 +15882,7 @@ var keyboardOverlayData = {
     'power': 'keyboardOverlayLockScreenOrPowerOff',
     'q<>CTRL<>SHIFT': 'keyboardOverlaySignOut',
     'r<>CTRL': 'keyboardOverlayReloadCurrentPage',
-    'r<>CTRL<>SHIFT': 'keyboardOverlayReloadIgnoringCache',
+    'r<>CTRL<>SHIFT': 'keyboardOverlayReloadBypassingCache',
     'reload<>CTRL<>SHIFT': 'keyboardOverlayRotateScreen',
     'reload<>SEARCH': 'keyboardOverlayF3',
     'right<>ALT': 'keyboardOverlayGoForward',

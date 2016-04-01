@@ -84,7 +84,7 @@ class PanelHost : public content::WebContentsDelegate,
 
   // Actions on web contents.
   void Reload();
-  void ReloadIgnoringCache();
+  void ReloadBypassingCache();
   void StopLoading();
   void Zoom(content::PageZoom zoom);
 

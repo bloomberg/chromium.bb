@@ -890,7 +890,7 @@ void WebContentsImpl::SetUserAgentOverride(const std::string& override) {
   // different parts of the page loaded using different user agents.
   NavigationEntry* entry = controller_.GetVisibleEntry();
   if (IsLoading() && entry != NULL && entry->GetIsOverridingUserAgent())
-    controller_.ReloadIgnoringCache(true);
+    controller_.ReloadBypassingCache(true);
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     UserAgentOverrideSet(override));

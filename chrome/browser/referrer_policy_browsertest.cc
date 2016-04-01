@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
   AddAllPossibleTitles(start_url, title_watcher.get());
 
   // Shift-reload to B.
-  chrome::ReloadIgnoringCache(browser(), CURRENT_TAB);
+  chrome::ReloadBypassingCache(browser(), CURRENT_TAB);
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 }
 

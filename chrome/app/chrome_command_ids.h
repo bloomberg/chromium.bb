@@ -30,7 +30,7 @@
 #define IDC_HOME                        33003
 #define IDC_OPEN_CURRENT_URL            33004
 #define IDC_STOP                        33006
-#define IDC_RELOAD_IGNORING_CACHE       33007
+#define IDC_RELOAD_BYPASSING_CACHE      33007
 #define IDC_LOAD_NEW_TAB_PAGE           33008
 #define IDC_RELOAD_CLEARING_CACHE       33009
 

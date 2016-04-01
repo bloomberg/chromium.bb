@@ -848,11 +848,11 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
   // Now do a shift+reload.
-  controller().ReloadIgnoringCache(false);
+  controller().ReloadBypassingCache(false);
   // A NavigationRequest should have been generated.
   main_request = node->navigation_request();
   ASSERT_TRUE(main_request != NULL);
-  EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE,
+  EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE,
             main_request->common_params().navigation_type);
   main_test_rfh()->PrepareForCommit();
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));

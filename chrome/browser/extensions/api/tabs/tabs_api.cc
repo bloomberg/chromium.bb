@@ -1592,7 +1592,7 @@ bool TabsReloadFunction::RunSync() {
                          ui::PAGE_TRANSITION_RELOAD, false);
     GetCurrentBrowser()->OpenURL(params);
   } else if (bypass_cache) {
-    web_contents->GetController().ReloadIgnoringCache(true);
+    web_contents->GetController().ReloadBypassingCache(true);
   } else {
     web_contents->GetController().Reload(true);
   }

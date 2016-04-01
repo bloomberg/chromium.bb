@@ -11780,7 +11780,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_RELOAD_MENU_MAC" desc="The Mac menu item to reload the current page in the view menu.">
           Reload This Page
         </message>
-        <message name="IDS_RELOAD_IGNORING_CACHE_MENU_MAC" desc="The Mac menu item to force reload the current page (ignoring cache) in the view menu.">
+        <message name="IDS_RELOAD_BYPASSING_CACHE_MENU_MAC" desc="The Mac menu item to force reload the current page (ignoring cache) in the view menu.">
           Force Reload This Page
         </message>
         <message name="IDS_ENTER_FULLSCREEN_MAC" desc="The Mac menu item to go into fullscreen mode in the view menu and also in the app menu.">

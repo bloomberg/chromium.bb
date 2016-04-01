@@ -614,7 +614,7 @@ media::Context3D GetSharedMainThreadContext3D() {
 
 bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
   return navigation_type == FrameMsg_Navigate_Type::RELOAD ||
-         navigation_type == FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE ||
+         navigation_type == FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE ||
          navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
 }
 
@@ -5306,7 +5306,7 @@ void RenderFrameImpl::NavigateInternal(
   // depending on the navigation type.
   if (is_reload) {
     bool ignore_cache = (common_params.navigation_type ==
-                         FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
+                         FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE);
     load_type = ignore_cache ? blink::WebFrameLoadType::ReloadBypassingCache
                              : blink::WebFrameLoadType::Reload;
 

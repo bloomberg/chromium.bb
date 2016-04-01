@@ -171,7 +171,8 @@ void ContentFaviconDriver::DidStartNavigationToPendingEntry(
 
   bypass_cache_page_url_ = url;
   SetFaviconOutOfDateForPage(
-      url, reload_type == content::NavigationController::RELOAD_IGNORING_CACHE);
+      url,
+      reload_type == content::NavigationController::RELOAD_BYPASSING_CACHE);
 }
 
 void ContentFaviconDriver::DidNavigateMainFrame(

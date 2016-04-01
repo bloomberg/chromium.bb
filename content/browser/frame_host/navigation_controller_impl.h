@@ -87,7 +87,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   bool IsInitialBlankNavigation() const override;
   void Reload(bool check_for_repost) override;
   void ReloadToRefreshContent(bool check_for_repost) override;
-  void ReloadIgnoringCache(bool check_for_repost) override;
+  void ReloadBypassingCache(bool check_for_repost) override;
   void ReloadOriginalRequestURL(bool check_for_repost) override;
   void ReloadDisableLoFi(bool check_for_repost) override;
   void NotifyEntryChanged(const NavigationEntry* entry) override;
@@ -299,7 +299,8 @@ class CONTENT_EXPORT NavigationControllerImpl
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
-  // Helper function for code shared between Reload() and ReloadIgnoringCache().
+  // Helper function for code shared between Reload() and
+  // ReloadBypassingCache().
   void ReloadInternal(bool check_for_repost, ReloadType reload_type);
 
   // Actually issues the navigation held in pending_entry.
@@ -433,7 +434,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   // The maximum number of entries that a navigation controller can store.
   static size_t max_entry_count_for_testing_;
 
-  // If a repost is pending, its type (RELOAD or RELOAD_IGNORING_CACHE),
+  // If a repost is pending, its type (RELOAD or RELOAD_BYPASSING_CACHE),
   // NO_RELOAD otherwise.
   ReloadType pending_reload_;
 

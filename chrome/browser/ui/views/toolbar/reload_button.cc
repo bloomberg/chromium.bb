@@ -149,7 +149,7 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
     int command;
     int flags = event.flags();
     if (event.IsShiftDown() || event.IsControlDown()) {
-      command = IDC_RELOAD_IGNORING_CACHE;
+      command = IDC_RELOAD_BYPASSING_CACHE;
       // Mask off Shift and Control so they don't affect the disposition below.
       flags &= ~(ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
     } else {
@@ -188,7 +188,7 @@ bool ReloadButton::GetAcceleratorForCommandId(int command_id,
       GetWidget()->GetAccelerator(IDC_RELOAD, accelerator);
       return true;
     case IDS_RELOAD_MENU_HARD_RELOAD_ITEM:
-      GetWidget()->GetAccelerator(IDC_RELOAD_IGNORING_CACHE, accelerator);
+      GetWidget()->GetAccelerator(IDC_RELOAD_BYPASSING_CACHE, accelerator);
       return true;
   }
   return GetWidget()->GetAccelerator(command_id, accelerator);
@@ -201,7 +201,7 @@ void ReloadButton::ExecuteCommand(int command_id, int event_flags) {
       browser_command = IDC_RELOAD;
       break;
     case IDS_RELOAD_MENU_HARD_RELOAD_ITEM:
-      browser_command = IDC_RELOAD_IGNORING_CACHE;
+      browser_command = IDC_RELOAD_BYPASSING_CACHE;
       break;
     case IDS_RELOAD_MENU_EMPTY_AND_HARD_RELOAD_ITEM:
       browser_command = IDC_RELOAD_CLEARING_CACHE;

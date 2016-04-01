@@ -11758,9 +11758,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ReloadBypassingCache">
+  <owner>toyoshim@chromium.org</owner>
+  <description>The user triggers Shift-reload operation.</description>
+</action>
+
 <action name="ReloadIgnoringCache">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>toyoshim@chromium.org</owner>
+  <description>The user triggers Shift-reload operation.</description>
+  <obsolete>This is replaced with ReloadBypassingCache.</obsolete>
 </action>
 
 <action name="RemoveFormat">

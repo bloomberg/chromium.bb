@@ -34,7 +34,7 @@ const int kReloadMenuItems[]  = {
 // Note: must have the same size as |kReloadMenuItems|.
 const int kReloadMenuCommands[]  = {
   IDC_RELOAD,
-  IDC_RELOAD_IGNORING_CACHE,
+  IDC_RELOAD_BYPASSING_CACHE,
   IDC_RELOAD_CLEARING_CACHE,
 };
 

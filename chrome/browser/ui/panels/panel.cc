@@ -379,8 +379,8 @@ void Panel::ExecuteCommandWithDisposition(int id,
     case IDC_RELOAD:
       panel_host_->Reload();
       break;
-    case IDC_RELOAD_IGNORING_CACHE:
-      panel_host_->ReloadIgnoringCache();
+    case IDC_RELOAD_BYPASSING_CACHE:
+      panel_host_->ReloadBypassingCache();
       break;
     case IDC_STOP:
       panel_host_->StopLoading();
@@ -847,7 +847,7 @@ void Panel::InitCommandState() {
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_RELOAD, true);
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE, true);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_BYPASSING_CACHE, true);
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);

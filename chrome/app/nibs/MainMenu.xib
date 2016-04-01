@@ -335,7 +335,7 @@ CA
                                     <action selector="commandDispatch:" target="-1" id="543"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="^IDS_RELOAD_IGNORING_CACHE_MENU_MAC" tag="33007" alternate="YES" keyEquivalent="R" id="676">
+                            <menuItem title="^IDS_RELOAD_BYPASSING_CACHE_MENU_MAC" tag="33007" alternate="YES" keyEquivalent="R" id="676">
                                 <connections>
                                     <action selector="commandDispatch:" target="-1" id="677"/>
                                 </connections>

@@ -965,7 +965,7 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public void reloadIgnoringCache() {
         if (getWebContents() != null) {
-            getWebContents().getNavigationController().reloadIgnoringCache(true);
+            getWebContents().getNavigationController().reloadBypassingCache(true);
         }
     }
 

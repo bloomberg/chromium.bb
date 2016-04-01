@@ -4727,8 +4727,8 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_RELOAD_CURRENT_PAGE" desc="The text in the keyboard overlay to explain the shortcut.">
     Reload
   </message>
-  <message name="IDS_KEYBOARD_OVERLAY_RELOAD_IGNORING_CACHE" desc="The text in the keyboard overlay to explain the shortcut.">
-    Reload ignoring cache
+  <message name="IDS_KEYBOARD_OVERLAY_RELOAD_BYPASSING_CACHE" desc="The text in the keyboard overlay to explain the shortcut.">
+    Reload bypassing cache
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_REOPEN_LAST_CLOSED_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
     Reopen last-closed tab

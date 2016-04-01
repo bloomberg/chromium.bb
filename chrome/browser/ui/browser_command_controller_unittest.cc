@@ -51,13 +51,13 @@ TEST_F(BrowserCommandControllerTest, IsReservedCommandOrKey) {
 
   // When there are modifier keys pressed, don't reserve.
   EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_RELOAD_IGNORING_CACHE, content::NativeWebKeyboardEvent(ui::KeyEvent(
-                                     ui::ET_KEY_PRESSED, ui::VKEY_F3,
-                                     ui::DomCode::F3, ui::EF_SHIFT_DOWN))));
+      IDC_RELOAD_BYPASSING_CACHE, content::NativeWebKeyboardEvent(ui::KeyEvent(
+                                      ui::ET_KEY_PRESSED, ui::VKEY_F3,
+                                      ui::DomCode::F3, ui::EF_SHIFT_DOWN))));
   EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
-      IDC_RELOAD_IGNORING_CACHE, content::NativeWebKeyboardEvent(ui::KeyEvent(
-                                     ui::ET_KEY_PRESSED, ui::VKEY_F3,
-                                     ui::DomCode::F3, ui::EF_CONTROL_DOWN))));
+      IDC_RELOAD_BYPASSING_CACHE, content::NativeWebKeyboardEvent(ui::KeyEvent(
+                                      ui::ET_KEY_PRESSED, ui::VKEY_F3,
+                                      ui::DomCode::F3, ui::EF_CONTROL_DOWN))));
   EXPECT_FALSE(browser()->command_controller()->IsReservedCommandOrKey(
       IDC_FULLSCREEN, content::NativeWebKeyboardEvent(
                           ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_F4,

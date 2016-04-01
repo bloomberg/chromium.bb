@@ -230,7 +230,7 @@ void ReloadInternal(Browser* browser,
     return;
 
   if (ignore_cache)
-    new_tab->GetController().ReloadIgnoringCache(true);
+    new_tab->GetController().ReloadBypassingCache(true);
   else
     new_tab->GetController().Reload(true);
 }
@@ -426,8 +426,8 @@ void Reload(Browser* browser, WindowOpenDisposition disposition) {
   ReloadInternal(browser, disposition, false);
 }
 
-void ReloadIgnoringCache(Browser* browser, WindowOpenDisposition disposition) {
-  content::RecordAction(UserMetricsAction("ReloadIgnoringCache"));
+void ReloadBypassingCache(Browser* browser, WindowOpenDisposition disposition) {
+  content::RecordAction(UserMetricsAction("ReloadBypassingCache"));
   ReloadInternal(browser, disposition, true);
 }
 
