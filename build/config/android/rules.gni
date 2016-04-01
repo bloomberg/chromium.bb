@@ -906,7 +906,7 @@ template("java_strings_grd_prebuilt") {
 #   enable_errorprone: If true, enables the errorprone compiler.
 #   enable_incremental_javac: Overrides the global enable_incremental_javac.
 #   main_class: When specified, a wrapper script is created within
-#     $target_out_dir/bin to launch the binary with the given class as the
+#     $root_build_dir/bin to launch the binary with the given class as the
 #     entrypoint.
 #   wrapper_script_args: List of additional arguments for the wrapper script.
 #
