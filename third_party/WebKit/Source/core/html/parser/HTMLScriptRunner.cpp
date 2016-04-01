@@ -28,6 +28,7 @@
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "core/dom/DocumentParserTiming.h"
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
@@ -203,6 +204,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
     }
 
     TextPosition scriptStartPosition = pendingScript->startingPosition();
+    double scriptParserBlockingTime = pendingScript->parserBlockingLoadStartTime();
     // Clear the pending script before possible re-entrancy from executeScript()
     RawPtr<Element> element = pendingScript->releaseElementAndClear();
     if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element.get())) {
@@ -214,6 +216,9 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
             scriptLoader->dispatchErrorEvent();
         } else {
             ASSERT(isExecutingScript());
+            if (scriptParserBlockingTime > 0.0) {
+                DocumentParserTiming::from(*m_document).recordParserBlockedOnScriptLoadDuration(monotonicallyIncreasingTime() - scriptParserBlockingTime);
+            }
             if (!doExecuteScript(element.get(), sourceCode, scriptStartPosition)) {
                 scriptLoader->dispatchErrorEvent();
             } else {
@@ -276,6 +281,7 @@ void HTMLScriptRunner::execute(RawPtr<Element> scriptElement, const TextPosition
             return; // Unwind to the outermost HTMLScriptRunner::execute before continuing parsing.
 
         traceParserBlockingScript(m_parserBlockingScript.get(), !m_document->isScriptExecutionReady());
+        m_parserBlockingScript->markParserBlockingLoadStartTime();
 
         // If preload scanner got created, it is missing the source after the current insertion point. Append it and scan.
         if (!hadPreloadScanner && m_host->hasPreloadScanner())
@@ -327,6 +333,7 @@ bool HTMLScriptRunner::executeScriptsWaitingForParsing()
         if (!m_scriptsToExecuteAfterParsing.first()->isReady()) {
             m_scriptsToExecuteAfterParsing.first()->watchForLoad(this);
             traceParserBlockingScript(m_scriptsToExecuteAfterParsing.first().get(), !m_document->isScriptExecutionReady());
+            m_scriptsToExecuteAfterParsing.first()->markParserBlockingLoadStartTime();
             return false;
         }
         RawPtr<PendingScript> first = m_scriptsToExecuteAfterParsing.takeFirst();

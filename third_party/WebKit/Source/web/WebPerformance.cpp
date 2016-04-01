@@ -190,6 +190,21 @@ double WebPerformance::firstContentfulPaint() const
     return millisecondsToSeconds(m_private->timing()->firstContentfulPaint());
 }
 
+double WebPerformance::parseStart() const
+{
+    return millisecondsToSeconds(m_private->timing()->parseStart());
+}
+
+double WebPerformance::parseStop() const
+{
+    return millisecondsToSeconds(m_private->timing()->parseStop());
+}
+
+double WebPerformance::parseBlockedOnScriptLoadDuration() const
+{
+    return millisecondsToSeconds(m_private->timing()->parseBlockedOnScriptLoadDuration());
+}
+
 WebPerformance::WebPerformance(const RawPtr<Performance>& performance)
     : m_private(performance)
 {

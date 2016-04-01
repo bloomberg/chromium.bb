@@ -56,6 +56,11 @@ public:
 
     TextPosition startingPosition() const { return m_startingPosition; }
     void setStartingPosition(const TextPosition& position) { m_startingPosition = position; }
+    void markParserBlockingLoadStartTime();
+    // Returns the time the load of this script started blocking the parser, or
+    // zero if this script hasn't yet blocked the parser, in
+    // monotonicallyIncreasingTime.
+    double parserBlockingLoadStartTime() const { return m_parserBlockingLoadStartTime; }
 
     void watchForLoad(ScriptResourceClient*);
     void stopWatchingForLoad();
@@ -89,6 +94,7 @@ private:
     Member<Element> m_element;
     TextPosition m_startingPosition; // Only used for inline script tags.
     bool m_integrityFailure;
+    double m_parserBlockingLoadStartTime;
 
     Member<ScriptStreamer> m_streamer;
     ScriptResourceClient* m_client;

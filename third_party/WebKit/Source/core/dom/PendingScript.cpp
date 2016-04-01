@@ -30,6 +30,7 @@
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/SubresourceIntegrity.h"
 #include "platform/SharedBuffer.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 
@@ -42,6 +43,7 @@ PendingScript::PendingScript(Element* element, ScriptResource* resource)
     : m_watchingForLoad(false)
     , m_element(element)
     , m_integrityFailure(false)
+    , m_parserBlockingLoadStartTime(0)
     , m_client(nullptr)
 {
     setScriptResource(resource);
@@ -119,6 +121,7 @@ RawPtr<Element> PendingScript::releaseElementAndClear()
     m_watchingForLoad = false;
     m_startingPosition = TextPosition::belowRangePosition();
     m_integrityFailure = false;
+    m_parserBlockingLoadStartTime = 0;
     if (m_streamer)
         m_streamer->cancel();
     m_streamer.release();
@@ -128,6 +131,12 @@ RawPtr<Element> PendingScript::releaseElementAndClear()
 void PendingScript::setScriptResource(ScriptResource* resource)
 {
     setResource(resource);
+}
+
+void PendingScript::markParserBlockingLoadStartTime()
+{
+    ASSERT(m_parserBlockingLoadStartTime == 0.0);
+    m_parserBlockingLoadStartTime = monotonicallyIncreasingTime();
 }
 
 void PendingScript::notifyFinished(Resource* resource)

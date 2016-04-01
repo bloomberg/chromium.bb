@@ -69,6 +69,7 @@
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentLifecycleObserver.h"
+#include "core/dom/DocumentParserTiming.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementDataCache.h"
@@ -2495,6 +2496,7 @@ void Document::detachParser()
         return;
     m_parser->detach();
     m_parser.clear();
+    DocumentParserTiming::from(*this).markParserDetached();
 }
 
 void Document::cancelParsing()
@@ -2518,6 +2520,7 @@ RawPtr<DocumentParser> Document::implicitOpen(ParserSynchronizationPolicy parser
 
     m_parserSyncPolicy = parserSyncPolicy;
     m_parser = createParser();
+    DocumentParserTiming::from(*this).markParserStart();
     setParsingState(Parsing);
     setReadyState(Loading);
 
@@ -4803,6 +4806,7 @@ void Document::finishedParsing()
     ASSERT(!scriptableDocumentParser() || !m_parser->isParsing());
     ASSERT(!scriptableDocumentParser() || m_readyState != Loading);
     setParsingState(InDOMContentLoaded);
+    DocumentParserTiming::from(*this).markParserStop();
 
     // FIXME: DOMContentLoaded is dispatched synchronously, but this should be dispatched in a queued task,
     // See https://crbug.com/425790
