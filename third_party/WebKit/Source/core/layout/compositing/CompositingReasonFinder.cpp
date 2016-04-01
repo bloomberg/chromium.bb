@@ -103,12 +103,12 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
         reasons |= CompositingReasonCompositorProxy;
 
     // If the implementation of createsGroup changes, we need to be aware of that in this part of code.
-    ASSERT((layoutObject->isTransparent() || layoutObject->hasMask() || layoutObject->hasFilter() || style.hasBlendMode()) == layoutObject->createsGroup());
+    ASSERT((layoutObject->isTransparent() || layoutObject->hasMask() || layoutObject->hasFilterInducingProperty() || style.hasBlendMode()) == layoutObject->createsGroup());
 
     if (style.hasMask())
         reasons |= CompositingReasonMaskWithCompositedDescendants;
 
-    if (style.hasFilter())
+    if (style.hasFilterInducingProperty())
         reasons |= CompositingReasonFilterWithCompositedDescendants;
 
     if (style.hasBackdropFilter())

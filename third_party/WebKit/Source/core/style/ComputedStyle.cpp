@@ -786,6 +786,9 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
 
         if (rareNonInheritedData->m_backdropFilter != other.rareNonInheritedData->m_backdropFilter)
             diff.setBackdropFilterChanged();
+
+        if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && rareNonInheritedData->m_boxReflect != other.rareNonInheritedData->m_boxReflect)
+            diff.setFilterChanged();
     }
 
     if (!diff.needsPaintInvalidation()) {

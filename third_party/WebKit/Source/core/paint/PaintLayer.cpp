@@ -251,7 +251,7 @@ void PaintLayer::contentChanged(ContentChangeType changeType)
 
 bool PaintLayer::paintsWithFilters() const
 {
-    if (!layoutObject()->hasFilter())
+    if (!layoutObject()->hasFilterInducingProperty())
         return false;
 
     // https://code.google.com/p/chromium/issues/detail?id=343759
@@ -1063,8 +1063,7 @@ void PaintLayer::setShouldIsolateCompositedDescendants(bool shouldIsolateComposi
 bool PaintLayer::hasAncestorWithFilterOutsets() const
 {
     for (const PaintLayer* curr = this; curr; curr = curr->parent()) {
-        LayoutBoxModelObject* layoutObject = curr->layoutObject();
-        if (layoutObject->style()->hasFilterOutsets())
+        if (curr->hasFilterOutsets())
             return true;
     }
     return false;
@@ -2131,9 +2130,19 @@ LayoutRect PaintLayer::boundingBoxForCompositingOverlapTest() const
     return overlapBoundsIncludeChildren() ? boundingBoxForCompositing(this, NeverIncludeTransformForAncestorLayer) : fragmentsBoundingBox(this);
 }
 
+bool PaintLayer::overlapBoundsIncludeChildren() const
+{
+    const auto* style = layoutObject()->style();
+    if (style && style->filter().hasFilterThatMovesPixels())
+        return true;
+    if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && layoutObject()->hasReflection())
+        return true;
+    return false;
+}
+
 static void expandRectForReflectionAndStackingChildren(const PaintLayer* ancestorLayer, LayoutRect& result)
 {
-    if (ancestorLayer->reflectionInfo() && !ancestorLayer->reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping())
+    if (ancestorLayer->reflectionInfo() && !ancestorLayer->reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping() && !RuntimeEnabledFeatures::cssBoxReflectFilterEnabled())
         result.unite(ancestorLayer->reflectionInfo()->reflectionLayer()->boundingBoxForCompositing(ancestorLayer));
 
     ASSERT(ancestorLayer->stackingNode()->isStackingContext() || !ancestorLayer->stackingNode()->hasPositiveZOrderList());
@@ -2470,7 +2479,7 @@ bool PaintLayer::hasVisibleBoxDecorations() const
 
 void PaintLayer::updateFilters(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
 {
-    if (!newStyle.hasFilter() && (!oldStyle || !oldStyle->hasFilter()))
+    if (!newStyle.hasFilterInducingProperty() && (!oldStyle || !oldStyle->hasFilterInducingProperty()))
         return;
 
     updateOrRemoveFilterClients();
@@ -2603,7 +2612,43 @@ FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOpera
 
 FilterOperations PaintLayer::computeFilterOperations(const ComputedStyle& style) const
 {
-    return computeFilterOperationsHandleReferenceFilters(style.filter(), style.effectiveZoom(), enclosingNode());
+    FilterOperations filterOperations = style.filter();
+    if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && layoutObject()->hasReflection() && layoutObject()->isBox()) {
+        // TODO(jbroman): Incorporate the mask image.
+        const auto* reflectStyle = style.boxReflect();
+        FloatRect frameRect(toLayoutBox(layoutObject())->frameRect());
+        ReflectionDirection direction = VerticalReflection;
+        float offset = 0;
+        switch (reflectStyle->direction()) {
+        case ReflectionAbove:
+            direction = VerticalReflection;
+            offset = -floatValueForLength(reflectStyle->offset(), frameRect.height());
+            break;
+        case ReflectionBelow:
+            direction = VerticalReflection;
+            offset = 2 * frameRect.height() + floatValueForLength(reflectStyle->offset(), frameRect.height());
+            break;
+        case ReflectionLeft:
+            direction = HorizontalReflection;
+            offset = -floatValueForLength(reflectStyle->offset(), frameRect.width());
+            break;
+        case ReflectionRight:
+            direction = HorizontalReflection;
+            offset = 2 * frameRect.width() + floatValueForLength(reflectStyle->offset(), frameRect.width());
+            break;
+        }
+
+        // Since the filter origin is the corner of the input bounds, which may
+        // include visual overflow (e.g. due to box-shadow), we must adjust the
+        // offset to also account for this offset (this is equivalent to using
+        // SkLocalMatrixImageFilter, but simpler).
+        // The rect used here should match the one used in FilterPainter.
+        LayoutRect filterInputBounds = physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint());
+        offset -= 2 * (direction == VerticalReflection ? filterInputBounds.y() : filterInputBounds.x()).toFloat();
+
+        filterOperations.operations().append(BoxReflectFilterOperation::create(direction, offset));
+    }
+    return computeFilterOperationsHandleReferenceFilters(filterOperations, style.effectiveZoom(), enclosingNode());
 }
 
 FilterOperations PaintLayer::computeBackdropFilterOperations(const ComputedStyle& style) const
@@ -2621,10 +2666,11 @@ PaintLayerFilterInfo& PaintLayer::ensureFilterInfo()
 
 void PaintLayer::updateOrRemoveFilterClients()
 {
-    if (!hasFilter() && m_rareData) {
+    const auto& filter = layoutObject()->style()->filter();
+    if (filter.isEmpty() && m_rareData) {
         m_rareData->filterInfo = nullptr;
-    } else if (layoutObject()->style()->filter().hasReferenceFilter()) {
-        ensureFilterInfo().updateReferenceFilterClients(layoutObject()->style()->filter());
+    } else if (filter.hasReferenceFilter()) {
+        ensureFilterInfo().updateReferenceFilterClients(filter);
     } else if (filterInfo()) {
         filterInfo()->clearFilterReferences();
     }
@@ -2662,13 +2708,26 @@ FilterEffect* PaintLayer::lastFilterEffect() const
     return builder->lastEffect().get();
 }
 
+bool PaintLayer::hasFilterOutsets() const
+{
+    if (!layoutObject()->hasFilterInducingProperty())
+        return false;
+    const ComputedStyle& style = layoutObject()->styleRef();
+    if (style.hasFilter() && style.filter().hasOutsets())
+        return true;
+    if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && style.hasBoxReflect())
+        return true;
+    return false;
+}
+
 FilterOutsets PaintLayer::filterOutsets() const
 {
-    if (!layoutObject()->hasFilter())
+    if (!layoutObject()->hasFilterInducingProperty())
         return FilterOutsets();
 
     // Ensure the filter-chain is refreshed wrt reference filters.
     updateFilterEffectBuilder();
+
     return layoutObject()->style()->filter().outsets();
 }
 

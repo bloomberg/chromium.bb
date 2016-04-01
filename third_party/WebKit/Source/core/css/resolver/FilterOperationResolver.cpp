@@ -78,6 +78,7 @@ static void countFilterUse(FilterOperation::OperationType operationType, const D
     UseCounter::Feature feature = UseCounter::NumberOfFeatures;
     switch (operationType) {
     case FilterOperation::NONE:
+    case FilterOperation::BOX_REFLECT:
         ASSERT_NOT_REACHED();
         return;
     case FilterOperation::REFERENCE:

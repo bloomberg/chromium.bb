@@ -172,7 +172,7 @@ SquashingDisallowedReasons CompositingLayerAssigner::getReasonsPreventingSquashi
     if (layer->renderingContextRoot() != squashingLayer.renderingContextRoot())
         return SquashingDisallowedReasonRenderingContextMismatch;
 
-    if (layer->hasFilter() || layer->filterAncestor() != squashingLayer.filterAncestor())
+    if (layer->hasFilterInducingProperty() || layer->filterAncestor() != squashingLayer.filterAncestor())
         return SquashingDisallowedReasonFilterMismatch;
 
     if (layer->nearestFixedPositionLayer() != squashingLayer.nearestFixedPositionLayer())

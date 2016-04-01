@@ -108,7 +108,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContentsAndReflectio
     PaintResult result = FullyPainted;
 
     // Paint the reflection first if we have one.
-    if (m_paintLayer.reflectionInfo()) {
+    if (m_paintLayer.reflectionInfo() && !RuntimeEnabledFeatures::cssBoxReflectFilterEnabled()) {
         ScopeRecorder scopeRecorder(context);
         if (m_paintLayer.reflectionInfo()->paint(context, paintingInfo, localPaintFlags) == MayBeClippedByPaintDirtyRect)
             result = MayBeClippedByPaintDirtyRect;

@@ -509,7 +509,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         scrollingLayer()->setMaskLayer(layerToApplyChildClippingMask == scrollingLayer() ? m_childClippingMaskLayer.get() : nullptr);
     m_graphicsLayer->setContentsClippingMaskLayer(shouldApplyChildClippingMaskOnContents ? m_childClippingMaskLayer.get() : nullptr);
 
-    if (m_owningLayer.reflectionInfo()) {
+    if (m_owningLayer.reflectionInfo() && !RuntimeEnabledFeatures::cssBoxReflectFilterEnabled()) {
         if (m_owningLayer.reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping()) {
             GraphicsLayer* reflectionLayer = m_owningLayer.reflectionInfo()->reflectionLayer()->compositedLayerMapping()->mainGraphicsLayer();
             m_graphicsLayer->setReplicatedByLayer(reflectionLayer);

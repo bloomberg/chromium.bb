@@ -717,9 +717,14 @@ public:
     bool hasMask() const { return style() && style()->hasMask(); }
     bool hasClipPath() const { return style() && style()->clipPath(); }
     bool hasHiddenBackface() const { return style() && style()->backfaceVisibility() == BackfaceVisibilityHidden; }
-
-    bool hasFilter() const { return style() && style()->hasFilter(); }
     bool hasBackdropFilter() const { return style() && style()->hasBackdropFilter(); }
+
+    // Returns |true| if any property that renders using filter operations is
+    // used (including, but not limited to, 'filter').
+    bool hasFilterInducingProperty() const
+    {
+        return (style() && style()->hasFilter()) || (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasReflection());
+    }
 
     bool hasShapeOutside() const { return style() && style()->shapeOutside(); }
 
@@ -1267,7 +1272,7 @@ public:
     bool shouldUseTransformFromContainer(const LayoutObject* container) const;
     void getTransformFromContainer(const LayoutObject* container, const LayoutSize& offsetInContainer, TransformationMatrix&) const;
 
-    bool createsGroup() const { return isTransparent() || hasMask() || hasFilter() || style()->hasBlendMode(); }
+    bool createsGroup() const { return isTransparent() || hasMask() || hasFilterInducingProperty() || style()->hasBlendMode(); }
 
     // Collects rectangles that the outline of this object would be drawing along the outside of,
     // even if the object isn't styled with a outline for now. The rects also cover continuations.

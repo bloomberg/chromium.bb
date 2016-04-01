@@ -196,7 +196,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
         || style.hasMask()
         || style.clipPath()
         || style.boxReflect()
-        || style.hasFilter()
+        || style.hasFilterInducingProperty()
         || style.hasBlendMode()
         || style.hasIsolation()
         || style.position() == FixedPosition
@@ -228,7 +228,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
     // FIXME: when dropping the -webkit prefix on transform-style, we should also have opacity < 1 cause flattening.
     if (style.preserves3D() && (style.overflowX() != OverflowVisible
         || style.overflowY() != OverflowVisible
-        || style.hasFilter()))
+        || style.hasFilterInducingProperty()))
         style.setTransformStyle3D(TransformStyle3DFlat);
 
     adjustStyleForEditing(style);

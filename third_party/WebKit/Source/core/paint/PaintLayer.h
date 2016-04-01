@@ -364,7 +364,7 @@ public:
 
     // If true, this layer's children are included in its bounds for overlap testing.
     // We can't rely on the children's positions if this layer has a filter that could have moved the children's pixels around.
-    bool overlapBoundsIncludeChildren() const { return hasFilter() && layoutObject()->style()->filter().hasFilterThatMovesPixels(); }
+    bool overlapBoundsIncludeChildren() const;
 
     // MaybeIncludeTransformForAncestorLayer means that a transform on |ancestorLayer| may be applied to the bounding box,
     // in particular if paintsWithTransform() is true.
@@ -405,7 +405,10 @@ public:
     bool shouldPreserve3D() const { return !layoutObject()->hasReflection() && layoutObject()->style()->transformStyle3D() == TransformStyle3DPreserve3D; }
 
     void filterNeedsPaintInvalidation();
-    bool hasFilter() const { return layoutObject()->hasFilter(); }
+
+    // Returns |true| if any property that renders using filter operations is
+    // used (including, but not limited to, 'filter').
+    bool hasFilterInducingProperty() const { return layoutObject()->hasFilterInducingProperty(); }
 
     void* operator new(size_t);
     // Only safe to call from LayoutBoxModelObject::destroyLayer()
@@ -466,6 +469,7 @@ public:
     bool paintsWithFilters() const;
     bool paintsWithBackdropFilters() const;
     FilterEffect* lastFilterEffect() const;
+    bool hasFilterOutsets() const;
     FilterOutsets filterOutsets() const;
 
     PaintLayerFilterInfo* filterInfo() const { return m_rareData ? m_rareData->filterInfo.get() : nullptr; }

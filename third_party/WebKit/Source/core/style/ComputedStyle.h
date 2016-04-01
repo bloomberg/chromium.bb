@@ -460,7 +460,10 @@ public:
         return imageOutsets(borderImage());
     }
 
-    bool hasFilterOutsets() const { return hasFilter() && filter().hasOutsets(); }
+    // Returns |true| if any property that renders using filter operations is
+    // used (including, but not limited to, 'filter').
+    bool hasFilterInducingProperty() const { return hasFilter() || (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasBoxReflect()); }
+
     Order rtlOrdering() const { return static_cast<Order>(inherited_flags.m_rtlOrdering); }
     void setRTLOrdering(Order o) { inherited_flags.m_rtlOrdering = o; }
 
@@ -847,6 +850,7 @@ public:
 
     EBoxDecorationBreak boxDecorationBreak() const { return m_box->boxDecorationBreak(); }
     StyleReflection* boxReflect() const { return rareNonInheritedData->m_boxReflect.get(); }
+    bool hasBoxReflect() const { return boxReflect(); }
     bool reflectionDataEquivalent(const ComputedStyle* otherStyle) const { return rareNonInheritedData->reflectionDataEquivalent(*otherStyle->rareNonInheritedData); }
 
     // FIXME: reflections should belong to this helper function but they are currently handled
@@ -1641,7 +1645,17 @@ public:
     bool hasChildDependentFlags() const { return emptyState() || hasExplicitlyInheritedProperties(); }
     void copyChildDependentFlagsFrom(const ComputedStyle&);
 
-    bool hasBoxDecorations() const { return hasBorderDecoration() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter() || hasBackdropFilter() || resize() != RESIZE_NONE; }
+    bool hasBoxDecorations() const
+    {
+        return hasBorderDecoration()
+            || hasBorderRadius()
+            || hasOutline()
+            || hasAppearance()
+            || boxShadow()
+            || hasFilterInducingProperty()
+            || hasBackdropFilter()
+            || resize() != RESIZE_NONE;
+    }
 
     bool borderObscuresBackground() const;
     void getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;

@@ -34,6 +34,8 @@
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/effects/SkXfermodeImageFilter.h"
 
 namespace blink {
 
@@ -160,6 +162,15 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
             filters->appendDropShadowFilter(drop.location(), drop.stdDeviation(), drop.getColor());
             break;
         }
+        case FilterOperation::BOX_REFLECT: {
+            // TODO(jbroman): Consider explaining box reflect to the compositor,
+            // instead of calling this a "reference filter".
+            const auto& reflectOperation = toBoxReflectFilterOperation(op);
+            RefPtr<SkImageFilter> imageFilter = buildBoxReflectFilter(
+                reflectOperation.direction(), reflectOperation.offset(), nullptr, nullFilter);
+            filters->appendReferenceFilter(imageFilter.get());
+            break;
+        }
         case FilterOperation::NONE:
             break;
         }
@@ -174,6 +185,42 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
 PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::buildTransform(const AffineTransform& transform, SkImageFilter* input)
 {
     return adoptRef(SkImageFilter::CreateMatrixFilter(affineTransformToSkMatrix(transform), kHigh_SkFilterQuality, input));
+}
+
+SkMatrix SkiaImageFilterBuilder::matrixForBoxReflectFilter(ReflectionDirection direction, float offset)
+{
+    SkMatrix flipMatrix;
+    switch (direction) {
+    case VerticalReflection:
+        flipMatrix.setScale(1, -1);
+        flipMatrix.postTranslate(0, offset);
+        break;
+    case HorizontalReflection:
+        flipMatrix.setScale(-1, 1);
+        flipMatrix.postTranslate(offset, 0);
+        break;
+    default:
+        // MSVC requires that SkMatrix be initialized in this unreachable case.
+        NOTREACHED();
+        flipMatrix.reset();
+        break;
+    }
+    return flipMatrix;
+}
+
+PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::buildBoxReflectFilter(ReflectionDirection direction, float offset, Image* maskImage, SkImageFilter* input)
+{
+    RefPtr<SkImageFilter> maskedInput = input;
+    // TODO(jbroman): If a mask image is provided, mask!
+
+    SkMatrix flipMatrix = matrixForBoxReflectFilter(direction, offset);
+    RefPtr<SkImageFilter> flipImageFilter = adoptRef(SkImageFilter::CreateMatrixFilter(
+        flipMatrix, kNone_SkFilterQuality, maskedInput.get()));
+
+    RefPtr<SkImageFilter> combineImageFilter = adoptRef(SkXfermodeImageFilter::Create(
+        nullptr, flipImageFilter.get(), input));
+
+    return combineImageFilter.release();
 }
 
 } // namespace blink

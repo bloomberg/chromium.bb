@@ -146,5 +146,19 @@ RawPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* 
         blink::blend(fromOp->getColor(), m_color, progress));
 }
 
+PassRefPtrWillBeRawPtr<FilterOperation> BoxReflectFilterOperation::blend(const FilterOperation* from, double progress) const
+{
+    ASSERT_NOT_REACHED();
+    return nullptr;
+}
+
+bool BoxReflectFilterOperation::operator==(const FilterOperation& o) const
+{
+    if (!isSameType(o))
+        return false;
+    const auto& other = static_cast<const BoxReflectFilterOperation&>(o);
+    return m_direction == other.m_direction && m_offset == other.m_offset;
+}
+
 } // namespace blink
 

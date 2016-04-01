@@ -29,6 +29,7 @@
 #include "platform/Length.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
@@ -56,6 +57,7 @@ public:
         CONTRAST,
         BLUR,
         DROP_SHADOW,
+        BOX_REFLECT,
         NONE
     };
 
@@ -74,6 +76,7 @@ public:
         case DROP_SHADOW:
             return true;
         case REFERENCE:
+        case BOX_REFLECT:
             return false;
         case NONE:
             break;
@@ -314,7 +317,35 @@ private:
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
 
-} // namespace blink
+class PLATFORM_EXPORT BoxReflectFilterOperation : public FilterOperation {
+public:
+    static PassRefPtrWillBeRawPtr<BoxReflectFilterOperation> create(ReflectionDirection direction, float offset)
+    {
+        return adoptRefWillBeNoop(new BoxReflectFilterOperation(direction, offset));
+    }
 
+    ReflectionDirection direction() const { return m_direction; }
+    float offset() const { return m_offset; }
+
+    bool affectsOpacity() const override { return true; }
+    bool movesPixels() const override { return true; }
+
+private:
+    PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
+    bool operator==(const FilterOperation&) const override;
+
+    BoxReflectFilterOperation(ReflectionDirection direction, float offset)
+        : FilterOperation(BOX_REFLECT)
+        , m_direction(direction)
+        , m_offset(offset)
+    {
+    }
+
+    ReflectionDirection m_direction;
+    float m_offset;
+};
+DEFINE_FILTER_OPERATION_TYPE_CASTS(BoxReflectFilterOperation, BOX_REFLECT);
+
+} // namespace blink
 
 #endif // FilterOperation_h

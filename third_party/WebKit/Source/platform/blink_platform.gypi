@@ -668,6 +668,8 @@
       'graphics/filters/DistantLightSource.h',
       'graphics/filters/FEBlend.cpp',
       'graphics/filters/FEBlend.h',
+      'graphics/filters/FEBoxReflect.cpp',
+      'graphics/filters/FEBoxReflect.h',
       'graphics/filters/FEColorMatrix.cpp',
       'graphics/filters/FEColorMatrix.h',
       'graphics/filters/FEComponentTransfer.cpp',

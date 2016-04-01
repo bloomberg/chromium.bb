@@ -72,7 +72,7 @@ static bool supportsCachedOffsets(const LayoutObject& object)
     // TODO(wangxianzhu): Move some conditions to fast path if possible.
     return !object.hasTransformRelatedProperty()
         && !object.hasReflection()
-        && !object.hasFilter()
+        && !object.hasFilterInducingProperty()
         && !object.isLayoutFlowThread()
         && !object.isLayoutMultiColumnSpannerPlaceholder()
         && object.styleRef().position() != FixedPosition

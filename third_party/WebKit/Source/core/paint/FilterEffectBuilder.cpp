@@ -31,6 +31,7 @@
 #include "platform/FloatConversion.h"
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/filters/FEBoxReflect.h"
 #include "platform/graphics/filters/FEColorMatrix.h"
 #include "platform/graphics/filters/FEComponentTransfer.h"
 #include "platform/graphics/filters/FEDropShadow.h"
@@ -226,6 +227,11 @@ bool FilterEffectBuilder::build(Element* element, const FilterOperations& operat
             float x = dropShadowOperation->x();
             float y = dropShadowOperation->y();
             effect = FEDropShadow::create(parentFilter.get(), stdDeviation, stdDeviation, x, y, dropShadowOperation->getColor(), 1);
+            break;
+        }
+        case FilterOperation::BOX_REFLECT: {
+            BoxReflectFilterOperation* boxReflectOperation = toBoxReflectFilterOperation(filterOperation);
+            effect = FEBoxReflect::create(parentFilter.get(), boxReflectOperation->direction(), boxReflectOperation->offset());
             break;
         }
         default:

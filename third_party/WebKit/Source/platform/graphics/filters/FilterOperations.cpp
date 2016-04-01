@@ -105,7 +105,10 @@ bool FilterOperations::hasOutsets() const
 {
     for (size_t i = 0; i < m_operations.size(); ++i) {
         FilterOperation::OperationType operationType = m_operations.at(i)->type();
-        if (operationType == FilterOperation::BLUR || operationType == FilterOperation::DROP_SHADOW || operationType == FilterOperation::REFERENCE)
+        if (operationType == FilterOperation::BLUR
+            || operationType == FilterOperation::DROP_SHADOW
+            || operationType == FilterOperation::REFERENCE
+            || operationType == FilterOperation::BOX_REFLECT)
             return true;
     }
     return false;
@@ -152,6 +155,10 @@ FilterOutsets FilterOperations::outsets() const
             }
             break;
         }
+        case FilterOperation::BOX_REFLECT: {
+            // Already accounted for at all call sites.
+            break;
+        }
         default:
             break;
         }
@@ -176,4 +183,3 @@ bool FilterOperations::hasFilterThatMovesPixels() const
 }
 
 } // namespace blink
-

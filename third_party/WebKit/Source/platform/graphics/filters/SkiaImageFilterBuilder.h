@@ -30,14 +30,18 @@
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/ColorSpace.h"
 #include "platform/graphics/CompositorFilterOperations.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "platform/heap/Handle.h"
 
 class SkImageFilter;
+class SkMatrix;
 
 namespace blink {
+
 class AffineTransform;
 class FilterEffect;
 class FilterOperations;
+class Image;
 
 class PLATFORM_EXPORT SkiaImageFilterBuilder {
     STACK_ALLOCATED();
@@ -50,6 +54,10 @@ public:
 
     PassRefPtr<SkImageFilter> transformColorSpace(
         SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
+
+    SkMatrix matrixForBoxReflectFilter(ReflectionDirection, float offset);
+    PassRefPtr<SkImageFilter> buildBoxReflectFilter(
+        ReflectionDirection, float offset, Image* maskImage, SkImageFilter* input);
 };
 
 } // namespace blink

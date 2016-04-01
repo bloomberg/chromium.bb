@@ -1347,7 +1347,7 @@ static bool isCandidateForOpaquenessTest(const LayoutBox& childBox)
         // FIXME: Deal with z-index.
         if (!childStyle.hasAutoZIndex())
             return false;
-        if (childLayer->hasTransformRelatedProperty() || childLayer->isTransparent() || childLayer->hasFilter())
+        if (childLayer->hasTransformRelatedProperty() || childLayer->isTransparent() || childLayer->hasFilterInducingProperty())
             return false;
         if (childBox.hasOverflowClip() && childStyle.hasBorderRadius())
             return false;
@@ -2017,10 +2017,10 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
 
 void LayoutBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const
 {
-    if (hasReflection())
+    if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasReflection())
         paintInvalidationRect.unite(reflectedRect(paintInvalidationRect));
 
-    if (layer() && layer()->hasFilter())
+    if (layer() && layer()->hasFilterInducingProperty())
         paintInvalidationRect.expand(layer()->filterOutsets());
 }
 
@@ -3868,7 +3868,7 @@ PaintInvalidationReason LayoutBox::getPaintInvalidationReason(const LayoutBoxMod
     if (hasNonCompositedScrollbars())
         return PaintInvalidationBorderBoxChange;
 
-    if (style()->hasVisualOverflowingEffect() || style()->hasAppearance() || style()->hasFilter() || style()->resize() != RESIZE_NONE)
+    if (style()->hasVisualOverflowingEffect() || style()->hasAppearance() || style()->hasFilterInducingProperty() || style()->resize() != RESIZE_NONE)
         return PaintInvalidationBorderBoxChange;
 
     if (style()->hasBorderRadius()) {
