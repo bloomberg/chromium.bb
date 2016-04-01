@@ -13,6 +13,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -22,7 +23,7 @@ class LocalFrame;
 class WorkerOrWorkletScriptController;
 class WorkletConsole;
 
-class WorkletGlobalScope : public GarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public MainThreadWorkletGlobalScope, public ScriptWrappable {
+class MODULES_EXPORT WorkletGlobalScope : public GarbageCollectedFinalized<WorkletGlobalScope>, public SecurityContext, public MainThreadWorkletGlobalScope, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
 public:
@@ -32,6 +33,7 @@ public:
 #endif
 
     ~WorkletGlobalScope() override;
+    virtual void dispose();
 
     bool isWorkletGlobalScope() const final { return true; }
 

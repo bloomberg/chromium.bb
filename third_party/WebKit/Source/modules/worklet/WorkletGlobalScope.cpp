@@ -25,6 +25,16 @@ WorkletGlobalScope::~WorkletGlobalScope()
 {
 }
 
+void WorkletGlobalScope::dispose()
+{
+    stopActiveDOMObjects();
+
+    ASSERT(m_scriptController);
+    m_scriptController->willScheduleExecutionTermination();
+    m_scriptController->dispose();
+    m_scriptController.clear();
+}
+
 WorkletConsole* WorkletGlobalScope::console()
 {
     if (!m_console)

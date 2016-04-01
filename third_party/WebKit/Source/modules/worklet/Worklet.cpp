@@ -79,7 +79,7 @@ void Worklet::onFinished(WorkerScriptLoader* scriptLoader, ScriptPromiseResolver
 
 void Worklet::stop()
 {
-    workletGlobalScope()->scriptController()->willScheduleExecutionTermination();
+    workletGlobalScope()->dispose();
 
     for (auto scriptLoader : m_scriptLoaders) {
         scriptLoader->cancel();

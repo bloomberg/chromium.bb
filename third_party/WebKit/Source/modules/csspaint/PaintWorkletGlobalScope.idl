@@ -10,5 +10,5 @@
     RuntimeEnabled=CSSPaintAPI,
     GarbageCollected,
 ] interface PaintWorkletGlobalScope : WorkletGlobalScope {
-    void registerPaint(DOMString name, Function paintCtor);
+    [RaisesException] void registerPaint(DOMString name, Function paintCtor);
 };

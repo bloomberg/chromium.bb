@@ -26,7 +26,7 @@ WindowPaintWorklet& WindowPaintWorklet::from(LocalDOMWindow& window)
     WindowPaintWorklet* supplement = static_cast<WindowPaintWorklet*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new WindowPaintWorklet(window);
-        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(window, supplementName(), supplement);
     }
     return *supplement;
 }

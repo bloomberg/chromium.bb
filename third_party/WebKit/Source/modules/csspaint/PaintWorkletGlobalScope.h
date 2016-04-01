@@ -7,21 +7,33 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/ModulesExport.h"
 #include "modules/worklet/WorkletGlobalScope.h"
 
 namespace blink {
 
-class PaintWorkletGlobalScope : public WorkletGlobalScope {
+class CSSPaintDefinition;
+class ExceptionState;
+
+class MODULES_EXPORT PaintWorkletGlobalScope : public WorkletGlobalScope {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static RawPtr<PaintWorkletGlobalScope> create(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
     ~PaintWorkletGlobalScope() override;
+    void dispose() override;
 
     bool isPaintWorkletGlobalScope() const final { return true; }
-    void registerPaint(const String&, ScriptValue) { }
+    void registerPaint(const String& name, const ScriptValue& ctor, ExceptionState&);
+
+    CSSPaintDefinition* findDefinition(const String& name);
+
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     PaintWorkletGlobalScope(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
+
+    typedef HeapHashMap<String, Member<CSSPaintDefinition>> DefinitionMap;
+    DefinitionMap m_paintDefinitions;
 };
 
 DEFINE_TYPE_CASTS(PaintWorkletGlobalScope, ExecutionContext, context, context->isPaintWorkletGlobalScope(), context.isPaintWorkletGlobalScope());
