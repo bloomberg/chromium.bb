@@ -73,7 +73,7 @@ if not exist "%WIN_TOOLS_ROOT_DIR%\.git_bleeding_edge" (
 )
 set GIT_VERSION=%GIT_VERSION%-%OS_BITS%
 
-set GIT_FETCH_URL=https://commondatastorage.googleapis.com/chrome-infra/PortableGit-%GIT_VERSION%-bit.7z.exe
+set GIT_FETCH_URL=https://storage.googleapis.com/chrome-infra/PortableGit-%GIT_VERSION%-bit.7z.exe
 set GIT_DOWNLOAD_PATH=%ZIP_DIR%\git.7z.exe
 set GIT_BIN_DIR=git-%GIT_VERSION%_bin
 set GIT_INST_DIR=%WIN_TOOLS_ROOT_DIR%\%GIT_BIN_DIR%
