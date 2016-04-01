@@ -512,9 +512,6 @@ TEST_F(SearchTest, InstantSearchEnabledCGI) {
 }
 
 TEST_F(SearchTest, CommandLineOverrides) {
-  GURL local_instant_url(GetLocalInstantURL(profile()));
-  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), local_instant_url);
-
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile());
   TemplateURLData data;
@@ -542,12 +539,6 @@ TEST_F(SearchTest, CommandLineOverrides) {
   instant_url = GetInstantURL(profile(), false);
   ASSERT_TRUE(instant_url.is_valid());
   EXPECT_EQ("http://www.bar.com/webhp?strk", instant_url.spec());
-
-  // Similarly, setting a Google base URL on the command line should allow you
-  // to get the Google version of the local NTP, even though search provider's
-  // URL doesn't contain "google".
-  local_instant_url = GetLocalInstantURL(profile());
-  EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), local_instant_url);
 
   // If we specify extra search query params, they should be inserted into the
   // query portion of the instant URL.
@@ -624,7 +615,7 @@ TEST_F(SearchTest, ShouldShowGoogleLocalNTP_DisabledViaFinch) {
 TEST_F(SearchTest, IsNTPURL) {
   GURL invalid_url;
   GURL ntp_url(chrome::kChromeUINewTabURL);
-  GURL local_ntp_url(GetLocalInstantURL(profile()));
+  GURL local_ntp_url(chrome::kChromeSearchLocalNtpUrl);
 
   EXPECT_FALSE(IsNTPURL(invalid_url, profile()));
   // No margin.

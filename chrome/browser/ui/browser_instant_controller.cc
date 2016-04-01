@@ -206,9 +206,9 @@ void BrowserInstantController::DefaultSearchProviderChanged(
 
     SearchModel* model = SearchTabHelper::FromWebContents(contents)->model();
     if (google_base_url_domain_changed && model->mode().is_origin_ntp()) {
+      GURL local_ntp_url(chrome::kChromeSearchLocalNtpUrl);
       // Replace the server NTP with the local NTP.
-      content::NavigationController::LoadURLParams params(
-          search::GetLocalInstantURL(profile()));
+      content::NavigationController::LoadURLParams params(local_ntp_url);
       params.should_replace_current_entry = true;
       params.referrer = content::Referrer();
       params.transition_type = ui::PAGE_TRANSITION_RELOAD;

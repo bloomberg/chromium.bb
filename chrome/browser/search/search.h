@@ -127,10 +127,6 @@ GURL GetSearchResultPrefetchBaseURL(Profile* profile);
 // focused.
 bool ShouldPrerenderInstantUrlOnOmniboxFocus();
 
-// Returns the Local Instant URL of the New Tab Page.
-// TODO(kmadhusu): Remove this function and update the call sites.
-GURL GetLocalInstantURL(Profile* profile);
-
 // Returns true if the local new tab page should show a Google logo and search
 // box for users whose default search provider is Google, or false if not.
 bool ShouldShowGoogleLocalNTP();

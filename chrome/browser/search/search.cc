@@ -390,7 +390,7 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
   if (!IsRenderedInInstantProcess(contents, profile))
     return false;
 
-  if (entry->GetURL() == GetLocalInstantURL(profile))
+  if (entry->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl))
     return true;
 
   GURL new_tab_url(GetNewTabPageURL(profile));
@@ -473,10 +473,6 @@ bool ShouldPrerenderInstantUrlOnOmniboxFocus() {
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kPrerenderInstantUrlOnOmniboxFocus, false, flags);
-}
-
-GURL GetLocalInstantURL(Profile* profile) {
-  return GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
 bool ShouldShowGoogleLocalNTP() {
