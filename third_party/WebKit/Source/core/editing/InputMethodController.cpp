@@ -40,6 +40,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/ChromeClient.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 
@@ -135,12 +136,14 @@ static void dispatchCompositionEndEvent(LocalFrame& frame, const String& text)
     target->dispatchEvent(event);
 }
 
-bool InputMethodController::confirmComposition(const String& text)
+bool InputMethodController::confirmComposition(const String& text, ConfirmCompositionBehavior confirmBehavior)
 {
     if (!hasComposition())
         return false;
 
-    Editor::RevealSelectionScope revealSelectionScope(&editor());
+    Optional<Editor::RevealSelectionScope> revealSelectionScope;
+    if (confirmBehavior == KeepSelection)
+        revealSelectionScope.emplace(&editor());
 
     // If the composition was set from existing text and didn't change, then
     // there's nothing to do here (and we should avoid doing anything as that
@@ -188,8 +191,8 @@ bool InputMethodController::confirmCompositionOrInsertText(const String& text, C
         return true;
     }
 
-    if (confirmBehavior != KeepSelection)
-        return confirmComposition();
+    if (confirmBehavior == DoNotKeepSelection)
+        return confirmComposition(composingText(), DoNotKeepSelection);
 
     SelectionOffsetsScope selectionOffsetsScope(this);
     return confirmComposition();

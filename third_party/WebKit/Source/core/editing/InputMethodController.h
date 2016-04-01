@@ -62,7 +62,7 @@ public:
     bool confirmComposition();
     // Inserts the given text string in the place of the existing composition
     // and returns true.
-    bool confirmComposition(const String& text);
+    bool confirmComposition(const String& text, ConfirmCompositionBehavior confirmBehavior = KeepSelection);
     // Inserts the text that is being composed or specified non-empty text and
     // returns true.
     bool confirmCompositionOrInsertText(const String& text, ConfirmCompositionBehavior);

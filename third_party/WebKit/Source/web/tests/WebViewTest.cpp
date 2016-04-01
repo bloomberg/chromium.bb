@@ -34,6 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/InputMethodController.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
@@ -966,6 +967,35 @@ TEST_F(WebViewTest, ConfirmCompositionCursorPositionChange)
     EXPECT_EQ(8, info.selectionEnd);
     EXPECT_EQ(-1, info.compositionStart);
     EXPECT_EQ(-1, info.compositionEnd);
+}
+
+TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("form_with_input.html"));
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "form_with_input.html");
+    webView->setInitialFocus(false);
+    EXPECT_EQ(0, webView->mainFrame()->scrollOffset().width);
+    EXPECT_EQ(0, webView->mainFrame()->scrollOffset().height);
+
+    // Set up a composition from existing text that needs to be committed.
+    Vector<CompositionUnderline> emptyUnderlines;
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
+    frame->frame()->inputMethodController().setCompositionFromExistingText(emptyUnderlines, 3, 3);
+
+    // Scroll the input field out of the viewport.
+    RawPtr<Element> element = static_cast<RawPtr<Element>>(webView->mainFrame()->document().getElementById("btn"));
+    element->scrollIntoView();
+    float offsetHeight = webView->mainFrame()->scrollOffset().height;
+    EXPECT_EQ(0, webView->mainFrame()->scrollOffset().width);
+    EXPECT_LT(0, offsetHeight);
+
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("hello", std::string(info.value.utf8().data()));
+
+    // Verify that the input field is not scrolled back into the viewport.
+    webView->confirmComposition(WebWidget::DoNotKeepSelection);
+    EXPECT_EQ(0, webView->mainFrame()->scrollOffset().width);
+    EXPECT_EQ(offsetHeight, webView->mainFrame()->scrollOffset().height);
 }
 
 TEST_F(WebViewTest, InsertNewLinePlacementAfterConfirmComposition)

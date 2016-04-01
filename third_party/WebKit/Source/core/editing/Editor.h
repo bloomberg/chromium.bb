@@ -232,10 +232,12 @@ public:
 
     class RevealSelectionScope {
         WTF_MAKE_NONCOPYABLE(RevealSelectionScope);
-        STACK_ALLOCATED();
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         explicit RevealSelectionScope(Editor*);
         ~RevealSelectionScope();
+
+        DECLARE_TRACE();
     private:
         Member<Editor> m_editor;
     };
