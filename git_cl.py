@@ -3704,7 +3704,7 @@ def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
           '\'Download raw patch set\'')
     issue = int(match.group(2))
     cl = Changelist(issue=issue, codereview='rietveld',
-                    rietvled_server=match.group(1), auth_config=auth_config)
+                    rietveld_server=match.group(1), auth_config=auth_config)
     patchset = int(match.group(3))
     patch_data = urllib2.urlopen(issue_arg).read()
 
