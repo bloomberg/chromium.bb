@@ -170,7 +170,7 @@ public:
     bool isGrantedUniversalAccess() const { return m_universalAccess; }
 
     bool canAccessDatabase() const { return !isUnique(); }
-    bool canAccessLocalStorage() const { return !isUnique(); }
+    bool canAccessLocalStorage() const { return !isUnique() && !hasSuborigin(); }
     bool canAccessSharedWorkers() const { return !isUnique(); }
     bool canAccessServiceWorkers() const { return !isUnique() && !hasSuborigin(); }
     bool canAccessCookies() const { return !isUnique(); }
