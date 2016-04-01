@@ -413,7 +413,7 @@ bool ContentsView::Back() {
 }
 
 gfx::Size ContentsView::GetDefaultContentsSize() const {
-  return apps_container_view_->apps_grid_view()->GetPreferredSize();
+  return apps_container_view_->GetPreferredSize();
 }
 
 gfx::Size ContentsView::GetPreferredSize() const {

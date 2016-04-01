@@ -887,7 +887,9 @@ bool AppsGridView::IsAnimatingView(AppListItemView* view) {
 
 gfx::Size AppsGridView::GetPreferredSize() const {
   const gfx::Insets insets(GetInsets());
-  int page_switcher_height = page_switcher_view_->GetPreferredSize().height();
+  // If we are in a folder, ignore the page switcher for height calculations.
+  int page_switcher_height =
+      folder_delegate_ ? 0 : page_switcher_view_->GetPreferredSize().height();
   gfx::Size size = GetTileGridSize();
   size.Enlarge(insets.width(), insets.height() + page_switcher_height);
   return size;
