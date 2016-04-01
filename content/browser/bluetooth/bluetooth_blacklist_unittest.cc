@@ -84,7 +84,7 @@ TEST_F(BluetoothBlacklistTest, AbreviatedUUIDs) {
 
 // Tests permutations of previous values and then Add() with a new value,
 // requiring result to be strictest result of the combination.
-TEST_F(BluetoothBlacklistTest, AddMergingExcludeValues) {
+TEST_F(BluetoothBlacklistTest, Add_MergingExcludeValues) {
   list_.Add(BluetoothUUID("ee01"), BluetoothBlacklist::Value::EXCLUDE);
   list_.Add(BluetoothUUID("ee01"), BluetoothBlacklist::Value::EXCLUDE);
   EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("ee01")));
@@ -122,6 +122,95 @@ TEST_F(BluetoothBlacklistTest, AddMergingExcludeValues) {
   list_.Add(BluetoothUUID("ee09"), BluetoothBlacklist::Value::EXCLUDE_WRITES);
   EXPECT_FALSE(list_.IsExcluded(BluetoothUUID("ee09")));
   EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("ee09")));
+}
+
+// Tests Add() with string that contains many UUID:exclusion value pairs,
+// checking that the correct blacklist entries are created for them.
+TEST_F(BluetoothBlacklistTest, Add_StringWithValidEntries) {
+  list_.Add(
+      "0001:e,0002:r,0003:w, "  // Single items.
+      "0004:r,0004:r, "         // Duplicate items.
+      "0005:r,0005:w, "         // Items that merge.
+      "00000006:e, "            // 8 char UUID.
+      "00000007-0000-1000-8000-00805f9b34fb:e");
+
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0001")));
+
+  EXPECT_FALSE(list_.IsExcluded(BluetoothUUID("0002")));
+  EXPECT_TRUE(list_.IsExcludedFromReads(BluetoothUUID("0002")));
+
+  EXPECT_FALSE(list_.IsExcluded(BluetoothUUID("0003")));
+  EXPECT_TRUE(list_.IsExcludedFromWrites(BluetoothUUID("0003")));
+
+  EXPECT_FALSE(list_.IsExcluded(BluetoothUUID("0004")));
+  EXPECT_TRUE(list_.IsExcludedFromReads(BluetoothUUID("0004")));
+
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0005")));
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0006")));
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0007")));
+}
+
+// Tests Add() with strings that contain no valid UUID:exclusion value.
+TEST_F(BluetoothBlacklistTest, Add_StringsWithNoValidEntries) {
+  size_t previous_list_size = list_.size();
+  list_.Add("");
+  list_.Add("~!@#$%^&*()-_=+[]{}/*-");
+  list_.Add(":");
+  list_.Add(",");
+  list_.Add(",,");
+  list_.Add(",:,");
+  list_.Add("1234:");
+  list_.Add("1234:q");
+  list_.Add("1234:E");
+  list_.Add("1234:R");
+  list_.Add("1234:W");
+  list_.Add("1234:ee");
+  list_.Add("1234 :e");
+  list_.Add("1234: e");
+  list_.Add("1:e");
+  list_.Add("1:r");
+  list_.Add("1:w");
+  list_.Add("00001800-0000-1000-8000-00805f9b34fb:ee");
+  list_.Add("z0001800-0000-1000-8000-00805f9b34fb:e");
+  list_.Add("☯");
+  EXPECT_EQ(previous_list_size, list_.size());
+}
+
+// Tests Add() with strings that contain exactly one valid UUID:exclusion value
+// pair, and optionally other issues in the string that are ignored.
+TEST_F(BluetoothBlacklistTest, Add_StringsWithOneValidEntry) {
+  size_t previous_list_size = list_.size();
+  list_.Add("0001:e");
+  EXPECT_EQ(++previous_list_size, list_.size());
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0001")));
+
+  list_.Add("00000002:e");
+  EXPECT_EQ(++previous_list_size, list_.size());
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0002")));
+
+  list_.Add("00000003-0000-1000-8000-00805f9b34fb:e");
+  EXPECT_EQ(++previous_list_size, list_.size());
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0003")));
+
+  list_.Add(" 0004:e ");
+  EXPECT_EQ(++previous_list_size, list_.size());
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0004")));
+
+  list_.Add(", 0005:e ,");
+  EXPECT_EQ(++previous_list_size, list_.size());
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0005")));
+
+  list_.Add(":, 0006:e ,,no");
+  EXPECT_EQ(++previous_list_size, list_.size());
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0006")));
+
+  list_.Add("0007:, 0008:e");
+  EXPECT_EQ(++previous_list_size, list_.size());
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0008")));
+
+  list_.Add("\r\n0009:e\n\r");
+  EXPECT_EQ(++previous_list_size, list_.size());
+  EXPECT_TRUE(list_.IsExcluded(BluetoothUUID("0009")));
 }
 
 TEST_F(BluetoothBlacklistTest, IsExcluded_BluetoothScanFilter_ReturnsFalse) {

@@ -10,6 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -46,7 +47,26 @@ class CONTENT_EXPORT BluetoothBlacklist final {
   //   Add(uuid, EXCLUDE_READS);
   //   Add(uuid, EXCLUDE_WRITES);
   //   IsExcluded(uuid);  // true.
+  // Requires UUID to be valid.
   void Add(const device::BluetoothUUID&, Value);
+
+  // Adds UUIDs to the blacklist by parsing a blacklist string and calling
+  // Add(uuid, value).
+  //
+  // The blacklist string must be a comma-separated list of UUID:exclusion
+  // pairs. The pairs may be separated by whitespace. Pair components are
+  // colon-separated and must not have whitespace around the colon.
+  //
+  // UUIDs are a string that BluetoothUUID can parse (See BluetoothUUID
+  // constructor comment). Exclusion values are a single lower case character
+  // string "e", "r", or "w" for EXCLUDE, EXCLUDE_READS, or EXCLUDE_WRITES.
+  //
+  // Malformed pairs in the string are ignored, including invalid UUID or
+  // exclusion values. Duplicate UUIDs follow Add()'s merging rule.
+  //
+  // Example:
+  // "1812:e, 00001800-0000-1000-8000-00805f9b34fb:w, ignored:1, alsoignored."
+  void Add(base::StringPiece blacklist_string);
 
   // Returns if a UUID is excluded from all operations. UUID must be valid.
   bool IsExcluded(const device::BluetoothUUID&) const;

@@ -3586,6 +3586,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.Web.Blacklist.ParsedNonEmptyString"
+    enum="BooleanSuccess">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the result of BluetoothBlacklist::Add parsing a non-empty string.
+    These strings will be updated dynamically by a server, and this histogram
+    provides feedback that parsing is functioning correctly on clients.
+
+    False values are BAD, a blacklist is failing to be applied correctly.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.Web.Characteristic.ReadValue.Outcome"
     enum="WebBluetoothGATTOperationOutcome">
   <owner>jyasskin@chromium.org</owner>
