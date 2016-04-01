@@ -178,7 +178,7 @@ gfx::Size CalculateDefaultTileSize(float initial_device_scale_factor) {
     if (numTiles >= 40)
       default_tile_size = 512;
   }
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || defined(OS_MACOSX)
   // Use 512 for high DPI (dsf=2.0f) devices.
   if (initial_device_scale_factor >= 2.0f)
     default_tile_size = 512;
