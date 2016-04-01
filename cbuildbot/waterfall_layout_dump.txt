@@ -45,10 +45,11 @@ falco-full-compile-paladin
 falco-paladin
 gale-release
 gizmo-release
+[glados-b-release-group]
+  cave-release
 glados-cheets-android-pfq
 glados-paladin
 [glados-release-group]
-  cave-release
   chell-release
   glados-cheets-release
   glados-release

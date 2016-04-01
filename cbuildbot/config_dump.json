@@ -7748,6 +7748,49 @@
         ],
         "vm_tests": []
     },
+    "glados-b-full-group": {
+        "_template": "full",
+        "boards": [
+            "cave"
+        ],
+        "child_configs": [
+            {
+                "_template": "full",
+                "boards": [
+                    "cave"
+                ],
+                "grouped": true,
+                "name": "cave-full",
+                "prebuilts": "public",
+                "useflags": [
+                    "-chrome_internal"
+                ]
+            }
+        ],
+        "description": "Full Builds; Group config (boards: cave)",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "glados-b-release-group": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "cave"
+        ],
+        "child_configs": [
+            {
+                "_template": "release",
+                "boards": [
+                    "cave"
+                ],
+                "grouped": true,
+                "name": "cave-release"
+            }
+        ],
+        "description": "Release Builds (canary) (internal); Group config (boards: cave)"
+    },
     "glados-cheets-android-pfq": {
         "_template": "android-pfq",
         "active_waterfall": "chromeos",
@@ -8021,22 +8064,6 @@
             {
                 "_template": "full",
                 "boards": [
-                    "cave"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "cave-full",
-                "prebuilts": "public",
-                "unittests": null,
-                "useflags": [
-                    "-chrome_internal"
-                ],
-                "vm_tests": []
-            },
-            {
-                "_template": "full",
-                "boards": [
                     "chell"
                 ],
                 "build_packages_in_background": true,
@@ -8067,7 +8094,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Full Builds; Group config (boards: glados, cave, chell, glados-cheets)",
+        "description": "Full Builds; Group config (boards: glados, chell, glados-cheets)",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -8182,18 +8209,6 @@
             {
                 "_template": "release",
                 "boards": [
-                    "cave"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "name": "cave-release",
-                "unittests": null,
-                "vm_tests": []
-            },
-            {
-                "_template": "release",
-                "boards": [
                     "chell"
                 ],
                 "build_packages_in_background": true,
@@ -8216,7 +8231,7 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: glados, cave, chell, glados-cheets)"
+        "description": "Release Builds (canary) (internal); Group config (boards: glados, chell, glados-cheets)"
     },
     "glados-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",

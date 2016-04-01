@@ -654,6 +654,7 @@ _waterfall_config_map = {
 
         # Experimental Canaries (Group)
         'glados-release-group',
+        'glados-b-release-group',
         'oak-release-group',
         'storm-release-group',
         'strago-c-release-group',
@@ -2891,10 +2892,14 @@ def GetConfig():
   # glados-based boards
   _AddGroupConfig(
       'glados', 'glados', (
-          'cave',
           'chell',
           'glados-cheets',
       ),
+      important=False,
+  )
+
+  _AddGroupConfig(
+      'glados-b', 'cave',
       important=False,
   )
 
