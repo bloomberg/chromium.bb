@@ -67,9 +67,6 @@ class CC_EXPORT PictureLayer : public Layer {
   devtools_instrumentation::
       ScopedLayerObjectTracker instrumentation_object_tracker_;
 
-  // These store the last visible layer and invalidation computed via a call
-  // to Update().
-  gfx::Rect last_updated_visible_layer_rect_;
   Region last_updated_invalidation_;
 
   int update_source_frame_number_;

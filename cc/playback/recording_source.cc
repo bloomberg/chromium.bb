@@ -131,7 +131,6 @@ bool RecordingSource::UpdateAndExpandInvalidation(
     ContentLayerClient* painter,
     Region* invalidation,
     const gfx::Size& layer_size,
-    const gfx::Rect& visible_layer_rect,
     int frame_number,
     RecordingMode recording_mode) {
   ScopedRecordingSourceUpdateTimer timer;

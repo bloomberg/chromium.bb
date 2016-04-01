@@ -114,7 +114,7 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   if (!layer->DrawsContent())
     return;
 
-  gfx::Rect visible_layer_rect = layer->visible_layer_rect();
+  gfx::Rect visible_layer_rect = layer->visible_layer_rect_for_testing();
   if (visible_layer_rect.IsEmpty())
     return;
 

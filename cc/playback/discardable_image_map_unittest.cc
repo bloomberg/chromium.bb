@@ -88,8 +88,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
-      &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
-      1, RecordingSource::RECORD_NORMALLY);
+      &content_layer_client, &invalidation, visible_rect.size(), 1,
+      RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;
@@ -165,7 +165,7 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
-      &content_layer_client, &invalidation, layer_size, visible_rect, 1,
+      &content_layer_client, &invalidation, layer_size, 1,
       RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
@@ -265,8 +265,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
-      &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
-      1, RecordingSource::RECORD_NORMALLY);
+      &content_layer_client, &invalidation, visible_rect.size(), 1,
+      RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;
@@ -308,8 +308,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
-      &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
-      1, RecordingSource::RECORD_NORMALLY);
+      &content_layer_client, &invalidation, visible_rect.size(), 1,
+      RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
   DiscardableImageMap image_map;

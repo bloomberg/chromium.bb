@@ -47,10 +47,6 @@ class TestSerializationPictureLayer : public PictureLayer {
     last_updated_invalidation_ = invalidation;
   }
 
-  void set_last_updated_visible_layer_rect(const gfx::Rect& rect) {
-    last_updated_visible_layer_rect_ = rect;
-  }
-
   void set_update_source_frame_number(int number) {
     update_source_frame_number_ = number;
   }
@@ -82,8 +78,6 @@ class TestSerializationPictureLayer : public PictureLayer {
 
     // Validate that the PictureLayer specific fields are properly set.
     EXPECT_TRUE(recording_source()->EqualsTo(*layer->recording_source()));
-    EXPECT_EQ(last_updated_visible_layer_rect_,
-              layer->last_updated_visible_layer_rect_);
     EXPECT_EQ(update_source_frame_number_, layer->update_source_frame_number_);
     EXPECT_EQ(is_mask_, layer->is_mask_);
     EXPECT_EQ(nearest_neighbor_, layer->nearest_neighbor_);
@@ -123,7 +117,6 @@ TEST(PictureLayerTest, TestSetAllPropsSerializationDeserialization) {
 
   Region region(gfx::Rect(14, 15, 16, 17));
   layer->set_invalidation(region);
-  layer->set_last_updated_visible_layer_rect(gfx::Rect(5, 6, 7, 8));
   layer->set_is_mask(true);
   layer->set_nearest_neighbor(true);
 
@@ -402,8 +395,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   gfx::Rect layer_rect(layer_bounds);
   Region invalidation(layer_rect);
   recording_source->UpdateAndExpandInvalidation(
-      client, &invalidation, layer_bounds, layer_rect, 1,
-      RecordingSource::RECORD_NORMALLY);
+      client, &invalidation, layer_bounds, 1, RecordingSource::RECORD_NORMALLY);
 
   // Layer is suitable for gpu rasterization by default.
   EXPECT_TRUE(recording_source->IsSuitableForGpuRasterization());

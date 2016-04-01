@@ -91,7 +91,6 @@ bool PictureLayer::Update() {
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
   bool updated = Layer::Update();
 
-  gfx::Rect update_rect = visible_layer_rect();
   gfx::Size layer_size = paint_properties().bounds;
 
   recording_source_->SetBackgroundColor(SafeOpaqueBackgroundColor());
@@ -110,9 +109,8 @@ bool PictureLayer::Update() {
   // for them.
   DCHECK(client_);
   updated |= recording_source_->UpdateAndExpandInvalidation(
-      client_, &last_updated_invalidation_, layer_size, update_rect,
+      client_, &last_updated_invalidation_, layer_size,
       update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
-  last_updated_visible_layer_rect_ = visible_layer_rect();
 
   if (updated) {
     SetNeedsPushProperties();
@@ -140,8 +138,8 @@ sk_sp<SkPicture> PictureLayer::GetPicture() const {
   scoped_ptr<RecordingSource> recording_source(new RecordingSource);
   Region recording_invalidation;
   recording_source->UpdateAndExpandInvalidation(
-      client_, &recording_invalidation, layer_size, gfx::Rect(layer_size),
-      update_source_frame_number_, RecordingSource::RECORD_NORMALLY);
+      client_, &recording_invalidation, layer_size, update_source_frame_number_,
+      RecordingSource::RECORD_NORMALLY);
 
   scoped_refptr<RasterSource> raster_source =
       recording_source->CreateRasterSource(false);
@@ -184,8 +182,6 @@ void PictureLayer::LayerSpecificPropertiesToProto(
       picture->mutable_recording_source(),
       layer_tree_host()->image_serialization_processor());
   RegionToProto(last_updated_invalidation_, picture->mutable_invalidation());
-  RectToProto(last_updated_visible_layer_rect_,
-              picture->mutable_last_updated_visible_layer_rect());
   picture->set_is_mask(is_mask_);
   picture->set_nearest_neighbor(nearest_neighbor_);
 
@@ -210,8 +206,6 @@ void PictureLayer::FromLayerSpecificPropertiesProto(
 
   Region new_invalidation = RegionFromProto(picture.invalidation());
   last_updated_invalidation_.Swap(&new_invalidation);
-  last_updated_visible_layer_rect_ =
-      ProtoToRect(picture.last_updated_visible_layer_rect());
   is_mask_ = picture.is_mask();
   nearest_neighbor_ = picture.nearest_neighbor();
 

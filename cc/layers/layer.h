@@ -469,7 +469,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return should_flatten_transform_from_property_tree_;
   }
 
-  const gfx::Rect& visible_layer_rect() const { return visible_layer_rect_; }
+  const gfx::Rect& visible_layer_rect_for_testing() const {
+    return visible_layer_rect_;
+  }
   void set_visible_layer_rect(const gfx::Rect& rect) {
     visible_layer_rect_ = rect;
   }

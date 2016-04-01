@@ -68,8 +68,8 @@ class FakeRecordingSource : public RecordingSource {
   void Rerecord() {
     SetNeedsDisplayRect(recorded_viewport_);
     Region invalidation;
-    UpdateAndExpandInvalidation(&client_, &invalidation, size_,
-                                recorded_viewport_, 0, RECORD_NORMALLY);
+    UpdateAndExpandInvalidation(&client_, &invalidation, size_, 0,
+                                RECORD_NORMALLY);
   }
 
   void add_draw_rect(const gfx::Rect& rect) {
