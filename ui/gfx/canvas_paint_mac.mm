@@ -8,25 +8,25 @@
 namespace gfx {
 
 CanvasSkiaPaint::CanvasSkiaPaint(NSRect dirtyRect)
-    : context_(NULL),
-      rectangle_(dirtyRect),
+    : rectangle_(dirtyRect),
       composite_alpha_(false) {
   Init(true);
 }
 
 CanvasSkiaPaint::CanvasSkiaPaint(NSRect dirtyRect, bool opaque)
-    : context_(NULL),
-      rectangle_(dirtyRect),
+    : rectangle_(dirtyRect),
       composite_alpha_(false) {
   Init(opaque);
 }
 
 CanvasSkiaPaint::~CanvasSkiaPaint() {
   if (!is_empty()) {
-    sk_canvas()->restoreToCount(1);
+    SkCanvas* canvas = sk_canvas();
+    canvas->restoreToCount(1);
 
     // Blit the dirty rect to the current context.
-    CGImageRef image = CGBitmapContextCreateImage(context_);
+    CGImageRef image =
+        CGBitmapContextCreateImage(skia::GetBitmapContext(*canvas));
     CGRect dest_rect = NSRectToCGRect(rectangle_);
 
     CGContextRef destination_context =
@@ -67,8 +67,6 @@ void CanvasSkiaPaint::Init(bool opaque) {
     // surface.
   canvas->translate(-SkDoubleToScalar(NSMinX(rectangle_)),
                     -SkDoubleToScalar(NSMinY(rectangle_)));
-
-  context_ = skia::GetBitmapContext(*canvas);
 }
 
 }  // namespace skia

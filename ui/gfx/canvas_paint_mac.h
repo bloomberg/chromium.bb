@@ -43,7 +43,6 @@ class GFX_EXPORT CanvasSkiaPaint : public Canvas {
  private:
   void Init(bool opaque);
 
-  CGContext* context_;
   NSRect rectangle_;
   // See description above setter.
   bool composite_alpha_;
