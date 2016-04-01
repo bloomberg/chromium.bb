@@ -129,21 +129,28 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
                             MediaNotificationManager.show(context, mNotificationBuilder.build());
                         }
                     });
+            mMediaPlayer.setOnMetadataUpdatedListener(
+                    new RemoteMediaPlayer.OnMetadataUpdatedListener() {
+                        @Override
+                        public void onMetadataUpdated() {
+                            setNotificationMetadata(mNotificationBuilder);
+                            MediaNotificationManager.show(context, mNotificationBuilder.build());
+                        }
+                    });
         }
 
         mNotificationBuilder = new MediaNotificationInfo.Builder()
-                .setMetadata(new MediaMetadata(mCastDevice.getFriendlyName(), "", ""))
                 .setPaused(false)
                 .setOrigin(origin)
                 // TODO(avayvod): the same session might have more than one tab id. Should we track
                 // the last foreground alive tab and update the notification with it?
                 .setTabId(tabId)
                 .setPrivate(isIncognito)
-                .setIcon(R.drawable.ic_notification_media_route)
                 .setActions(MediaNotificationInfo.ACTION_STOP)
                 .setContentIntent(Tab.createBringTabToFrontIntent(tabId))
                 .setId(R.id.presentation_notification)
                 .setListener(this);
+        setNotificationMetadata(mNotificationBuilder);
         MediaNotificationManager.show(context, mNotificationBuilder.build());
     }
 
@@ -466,4 +473,32 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
         if (mMediaPlayer != null && !isApiClientInvalid()) mMediaPlayer.requestStatus(mApiClient);
     }
 
+    private void setNotificationMetadata(MediaNotificationInfo.Builder builder) {
+        MediaMetadata notificationMetadata = new MediaMetadata("", "", "");
+        builder.setMetadata(notificationMetadata);
+        builder.setIcon(R.drawable.ic_notification_media_route);
+
+        if (mCastDevice != null) notificationMetadata.setTitle(mCastDevice.getFriendlyName());
+
+        if (mMediaPlayer == null) return;
+
+        com.google.android.gms.cast.MediaInfo info = mMediaPlayer.getMediaInfo();
+        if (info == null) return;
+
+        com.google.android.gms.cast.MediaMetadata metadata = info.getMetadata();
+        if (metadata == null) return;
+
+        String title = metadata.getString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE);
+        if (title != null) notificationMetadata.setTitle(title);
+
+        String artist = metadata.getString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST);
+        if (artist == null) {
+            artist = metadata.getString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_ARTIST);
+        }
+        if (artist != null) notificationMetadata.setArtist(artist);
+
+        String album = metadata.getString(
+                com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE);
+        if (album != null) notificationMetadata.setAlbum(album);
+    }
 }
