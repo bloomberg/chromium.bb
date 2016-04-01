@@ -190,6 +190,9 @@ class MetaBuildWrapper(object):
                               '{master}/json/builders',
                       help='URL scheme for JSON APIs to buildbot '
                            '(default: %(default)s) ')
+    subp.add_argument('-c', '--check-compile', action='store_true',
+                      help='check whether tbd and master-only bots actually'
+                           ' do compiles')
     subp.set_defaults(func=self.CmdAudit)
 
     subp = subps.add_parser('help',
@@ -390,13 +393,13 @@ class MetaBuildWrapper(object):
     stats[STAT_GYP] = 0
     stats[STAT_DONE] = 0
 
-    def PrintBuilders(heading, builders):
+    def PrintBuilders(heading, builders, notes):
       stats.setdefault(heading, 0)
       stats[heading] += len(builders)
       if builders:
         self.Print('  %s:' % heading)
         for builder in sorted(builders):
-          self.Print('    %s' % builder)
+          self.Print('    %s%s' % (builder, notes[builder]))
 
     self.ReadConfigFile()
 
@@ -442,6 +445,7 @@ class MetaBuildWrapper(object):
       tbd = set()
       gyp = set()
       done = set()
+      notes = {builder: '' for builder in config_builders | master_builders}
 
       for builder in both:
         config = self.masters[master][builder]
@@ -455,11 +459,16 @@ class MetaBuildWrapper(object):
           else:
             done.add(builder)
 
+      if self.args.check_compile and (tbd or master_only):
+        either = tbd | master_only
+        for builder in either:
+          notes[builder] = ' (' + self.CheckCompile(master, builder) +')'
+
       if master_only or config_only or tbd or gyp:
-        PrintBuilders(STAT_MASTER_ONLY, master_only)
-        PrintBuilders(STAT_CONFIG_ONLY, config_only)
-        PrintBuilders(STAT_TBD, tbd)
-        PrintBuilders(STAT_GYP, gyp)
+        PrintBuilders(STAT_MASTER_ONLY, master_only, notes)
+        PrintBuilders(STAT_CONFIG_ONLY, config_only, notes)
+        PrintBuilders(STAT_TBD, tbd, notes)
+        PrintBuilders(STAT_GYP, gyp, notes)
       else:
         self.Print('  ... done')
 
@@ -1159,6 +1168,27 @@ class MetaBuildWrapper(object):
       raise MBErr('Error %s writing to the output path "%s"' %
                  (e, path))
 
+  def CheckCompile(self, master, builder):
+    url_template = self.args.url_template + '/{builder}/builds/_all?as_text=1'
+    url = urllib2.quote(url_template.format(master=master, builder=builder),
+                        safe=':/()?=')
+    try:
+      builds = json.loads(self.Fetch(url))
+    except Exception as e:
+      return str(e)
+    successes = sorted(
+        [int(x) for x in builds.keys() if "text" in builds[x] and
+          cmp(builds[x]["text"][:2], ["build", "successful"]) == 0],
+        reverse=True)
+    if not successes:
+      return "no successful builds"
+    build = builds[str(successes[0])]
+    step_names = set([step["name"] for step in build["steps"]])
+    compile_indicators = set(["compile", "compile (with patch)", "analyze"])
+    if compile_indicators & step_names:
+      return "compiles"
+    return "does not compile"
+
   def PrintCmd(self, cmd, env):
     if self.platform == 'win32':
       env_prefix = 'set '
@@ -1254,6 +1284,8 @@ class MetaBuildWrapper(object):
   def Print(self, *args, **kwargs):
     # This function largely exists so it can be overridden for testing.
     print(*args, **kwargs)
+    if kwargs.get('stream', sys.stdout) == sys.stdout:
+      sys.stdout.flush()
 
   def ReadFile(self, path):
     # This function largely exists so it can be overriden for testing.
