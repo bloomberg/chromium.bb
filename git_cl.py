@@ -834,43 +834,6 @@ def GetCurrentBranch():
   return None
 
 
-class _ParsedIssueNumberArgument(object):
-  def __init__(self, issue=None, patchset=None, hostname=None):
-    self.issue = issue
-    self.patchset = patchset
-    self.hostname = hostname
-
-  @property
-  def valid(self):
-    return self.issue is not None
-
-
-class _RietveldParsedIssueNumberArgument(_ParsedIssueNumberArgument):
-  def __init__(self, *args, **kwargs):
-    self.patch_url = kwargs.pop('patch_url', None)
-    super(_RietveldParsedIssueNumberArgument, self).__init__(*args, **kwargs)
-
-
-def ParseIssueNumberArgument(arg):
-  """Parses the issue argument and returns _ParsedIssueNumberArgument."""
-  fail_result = _ParsedIssueNumberArgument()
-
-  if arg.isdigit():
-    return _ParsedIssueNumberArgument(issue=int(arg))
-  if not arg.startswith('http'):
-    return fail_result
-  url = gclient_utils.UpgradeToHttps(arg)
-  try:
-    parsed_url = urlparse.urlparse(url)
-  except ValueError:
-    return fail_result
-  for cls in _CODEREVIEW_IMPLEMENTATIONS.itervalues():
-    tmp = cls.ParseIssueURL(parsed_url)
-    if tmp is not None:
-      return tmp
-  return fail_result
-
-
 class Changelist(object):
   """Changelist works with one changelist in local branch.
 
@@ -1294,20 +1257,6 @@ class Changelist(object):
           ('%s\nMaybe your depot_tools is out of date?\n'
            'If all fails, contact maruel@') % e)
 
-  def CMDPatchIssue(self, issue_arg, reject, nocommit, directory):
-    """Fetches and applies the issue patch from codereview to local branch."""
-    if issue_arg.isdigit():
-      parsed_issue_arg = _RietveldParsedIssueNumberArgument(int(issue_arg))
-    else:
-      # Assume url.
-      parsed_issue_arg = self._codereview_impl.ParseIssueURL(
-          urlparse.urlparse(issue_arg))
-    if not parsed_issue_arg or not parsed_issue_arg.valid:
-      DieWithError('Failed to parse issue argument "%s". '
-                   'Must be an issue number or a valid URL.' % issue_arg)
-    return self._codereview_impl.CMDPatchWithParsedIssue(
-        parsed_issue_arg, reject, nocommit, directory)
-
   # Forward methods to codereview specific implementation.
 
   def CloseIssue(self):
@@ -1395,26 +1344,6 @@ class _ChangelistCodereviewBase(object):
 
   def GetMostRecentPatchset(self):
     """Returns the most recent patchset number from the codereview site."""
-    raise NotImplementedError()
-
-  def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
-                              directory):
-    """Fetches and applies the issue.
-
-    Arguments:
-      parsed_issue_arg: instance of _ParsedIssueNumberArgument.
-      reject: if True, reject the failed patch instead of switching to 3-way
-        merge. Rietveld only.
-      nocommit: do not commit the patch, thus leave the tree dirty. Rietveld
-        only.
-      directory: switch to directory before applying the patch. Rietveld only.
-    """
-    raise NotImplementedError()
-
-  @staticmethod
-  def ParseIssueURL(parsed_url):
-    """Parses url and returns instance of _ParsedIssueNumberArgument or None if
-    failed."""
     raise NotImplementedError()
 
 
@@ -1588,94 +1517,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
   def GetRieveldObjForPresubmit(self):
     return self.RpcServer()
-
-  def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
-                              directory):
-    # TODO(maruel): Use apply_issue.py
-
-    # PatchIssue should never be called with a dirty tree.  It is up to the
-    # caller to check this, but just in case we assert here since the
-    # consequences of the caller not checking this could be dire.
-    assert(not git_common.is_dirty_git_tree('apply'))
-    assert(parsed_issue_arg.valid)
-    self._changelist.issue = parsed_issue_arg.issue
-    if parsed_issue_arg.hostname:
-      self._rietveld_server = 'https://%s' % parsed_issue_arg.hostname
-
-    if parsed_issue_arg.patch_url:
-      assert parsed_issue_arg.patchset
-      patchset = parsed_issue_arg.patchset
-      patch_data = urllib2.urlopen(parsed_issue_arg.patch_url).read()
-    else:
-      patchset = parsed_issue_arg.patchset or self.GetMostRecentPatchset()
-      patch_data = self.GetPatchSetDiff(self.GetIssue(), patchset)
-
-    # Switch up to the top-level directory, if necessary, in preparation for
-    # applying the patch.
-    top = settings.GetRelativeRoot()
-    if top:
-      os.chdir(top)
-
-    # Git patches have a/ at the beginning of source paths.  We strip that out
-    # with a sed script rather than the -p flag to patch so we can feed either
-    # Git or svn-style patches into the same apply command.
-    # re.sub() should be used but flags=re.MULTILINE is only in python 2.7.
-    try:
-      patch_data = subprocess2.check_output(
-          ['sed', '-e', 's|^--- a/|--- |; s|^+++ b/|+++ |'], stdin=patch_data)
-    except subprocess2.CalledProcessError:
-      DieWithError('Git patch mungling failed.')
-    logging.info(patch_data)
-
-    # We use "git apply" to apply the patch instead of "patch" so that we can
-    # pick up file adds.
-    # The --index flag means: also insert into the index (so we catch adds).
-    cmd = ['git', 'apply', '--index', '-p0']
-    if directory:
-      cmd.extend(('--directory', directory))
-    if reject:
-      cmd.append('--reject')
-    elif IsGitVersionAtLeast('1.7.12'):
-      cmd.append('--3way')
-    try:
-      subprocess2.check_call(cmd, env=GetNoGitPagerEnv(),
-                             stdin=patch_data, stdout=subprocess2.VOID)
-    except subprocess2.CalledProcessError:
-      print 'Failed to apply the patch'
-      return 1
-
-    # If we had an issue, commit the current state and register the issue.
-    if not nocommit:
-      RunGit(['commit', '-m', (self.GetDescription() + '\n\n' +
-                               'patch from issue %(i)s at patchset '
-                               '%(p)s (http://crrev.com/%(i)s#ps%(p)s)'
-                               % {'i': self.GetIssue(), 'p': patchset})])
-      self.SetIssue(self.GetIssue())
-      self.SetPatchset(patchset)
-      print "Committed patch locally."
-    else:
-      print "Patch applied to index."
-    return 0
-
-  @staticmethod
-  def ParseIssueURL(parsed_url):
-    if not parsed_url.scheme or not parsed_url.scheme.startswith('http'):
-      return None
-    # Typical url: https://domain/<issue_number>[/[other]]
-    match = re.match('/(\d+)(/.*)?$', parsed_url.path)
-    if match:
-      return _RietveldParsedIssueNumberArgument(
-          issue=int(match.group(1)),
-          hostname=parsed_url.netloc)
-    # Rietveld patch: https://domain/download/issue<number>_<patchset>.diff
-    match = re.match(r'/download/issue(\d+)_(\d+).diff$', parsed_url.path)
-    if match:
-      return _RietveldParsedIssueNumberArgument(
-          issue=int(match.group(1)),
-          patchset=int(match.group(2)),
-          hostname=parsed_url.netloc,
-          patch_url=gclient_utils.UpgradeToHttps(parsed_url.geturl()))
-    return None
 
 
 class _GerritChangelistImpl(_ChangelistCodereviewBase):
@@ -1854,63 +1695,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     self.SubmitIssue(wait_for_merge=True)
     print('Issue %s has been submitted.' % self.GetIssueURL())
     return 0
-
-  def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
-                              directory):
-    assert not reject
-    assert not nocommit
-    assert not directory
-    assert parsed_issue_arg.valid
-
-    self._changelist.issue = parsed_issue_arg.issue
-
-    if parsed_issue_arg.hostname:
-      self._gerrit_host = parsed_issue_arg.hostname
-      self._gerrit_server = 'https://%s' % self._gerrit_host
-
-    detail = self._GetChangeDetail(['ALL_REVISIONS'])
-
-    if not parsed_issue_arg.patchset:
-      # Use current revision by default.
-      revision_info = detail['revisions'][detail['current_revision']]
-      patchset = int(revision_info['_number'])
-    else:
-      patchset = parsed_issue_arg.patchset
-      for revision_info in detail['revisions'].itervalues():
-        if int(revision_info['_number']) == parsed_issue_arg.patchset:
-          break
-      else:
-        DieWithError('Couldn\'t find patchset %i in issue %i' %
-                     (parsed_issue_arg.patchset, self.GetIssue()))
-
-    fetch_info = revision_info['fetch']['http']
-    RunGit(['fetch', fetch_info['url'], fetch_info['ref']])
-    RunGit(['cherry-pick', 'FETCH_HEAD'])
-    self.SetIssue(self.GetIssue())
-    self.SetPatchset(patchset)
-    print('Committed patch for issue %i pathset %i locally' %
-          (self.GetIssue(), self.GetPatchset()))
-    return 0
-
-  @staticmethod
-  def ParseIssueURL(parsed_url):
-    if not parsed_url.scheme or not parsed_url.scheme.startswith('http'):
-      return None
-    # Gerrit's new UI is https://domain/c/<issue_number>[/[patchset]]
-    # But current GWT UI is https://domain/#/c/<issue_number>[/[patchset]]
-    # Short urls like https://domain/<issue_number> can be used, but don't allow
-    # specifying the patchset (you'd 404), but we allow that here.
-    if parsed_url.path == '/':
-      part = parsed_url.fragment
-    else:
-      part = parsed_url.path
-    match = re.match('(/c)?/(\d+)(/(\d+)?/?)?$', part)
-    if match:
-      return _ParsedIssueNumberArgument(
-          issue=int(match.group(2)),
-          patchset=int(match.group(4)) if match.group(4) else None,
-          hostname=parsed_url.netloc)
-    return None
 
 
 _CODEREVIEW_IMPLEMENTATIONS = {
@@ -3809,6 +3593,15 @@ def CMDland(parser, args):
   return SendUpstream(parser, args, 'land')
 
 
+def ParseIssueNum(arg):
+  """Parses the issue number from args if present otherwise returns None."""
+  if re.match(r'\d+', arg):
+    return arg
+  if arg.startswith('http'):
+    return re.sub(r'.*/(\d+)/?', r'\1', arg)
+  return None
+
+
 @subcommand.usage('<patch url or issue id or issue url>')
 def CMDpatch(parser, args):
   """Patches in a code review."""
@@ -3818,68 +3611,63 @@ def CMDpatch(parser, args):
                     help='with -b, clobber any existing branch')
   parser.add_option('-d', '--directory', action='store', metavar='DIR',
                     help='Change to the directory DIR immediately, '
-                         'before doing anything else. Rietveld only.')
+                         'before doing anything else.')
   parser.add_option('--reject', action='store_true',
                     help='failed patches spew .rej files rather than '
-                        'attempting a 3-way merge. Rietveld only.')
+                        'attempting a 3-way merge')
   parser.add_option('-n', '--no-commit', action='store_true', dest='nocommit',
-                    help='don\'t commit after patch applies. Rietveld only.')
+                    help="don't commit after patch applies")
 
-
-  group = optparse.OptionGroup(
-      parser,
-      'Options for continuing work on the current issue uploaded from a '
-      'different clone (e.g. different machine). Must be used independently '
-      'from the other options. No issue number should be specified, and the '
-      'branch must have an issue number associated with it')
-  group.add_option('--reapply', action='store_true', dest='reapply',
-                   help='Reset the branch and reapply the issue.\n'
-                        'CAUTION: This will undo any local changes in this '
-                        'branch')
+  group = optparse.OptionGroup(parser,
+                    """Options for continuing work on the current issue uploaded
+from a different clone (e.g. different machine). Must be used independently from
+the other options. No issue number should be specified, and the branch must have
+an issue number associated with it""")
+  group.add_option('--reapply', action='store_true',
+                    dest='reapply',
+                    help="""Reset the branch and reapply the issue.
+CAUTION: This will undo any local changes in this branch""")
 
   group.add_option('--pull', action='store_true', dest='pull',
-                    help='Performs a pull before reapplying.')
+                    help="Performs a pull before reapplying.")
   parser.add_option_group(group)
 
   auth.add_auth_options(parser)
   (options, args) = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
 
-  cl = Changelist(auth_config=auth_config)
-
   issue_arg = None
   if options.reapply :
     if len(args) > 0:
-      parser.error('--reapply implies no additional arguments.')
+      parser.error("--reapply implies no additional arguments.")
 
+    cl = Changelist()
     issue_arg = cl.GetIssue()
     upstream = cl.GetUpstreamBranch()
     if upstream == None:
-      parser.error('No upstream branch specified. Cannot reset branch')
+      parser.error("No upstream branch specified. Cannot reset branch")
 
     RunGit(['reset', '--hard', upstream])
     if options.pull:
       RunGit(['pull'])
   else:
     if len(args) != 1:
-      parser.error('Must specify issue number or url')
-    issue_arg = args[0]
+      parser.error("Must specify issue number")
 
-  if not issue_arg:
+    issue_arg = ParseIssueNum(args[0])
+
+  # The patch URL works because ParseIssueNum won't do any substitution
+  # as the re.sub pattern fails to match and just returns it.
+  if issue_arg == None:
     parser.print_help()
     return 1
-
-  if cl.IsGerrit():
-    if options.reject:
-      parser.error('--reject is not supported with Gerrit codereview.')
-    if options.nocommit:
-      parser.error('--nocommit is not supported with Gerrit codereview.')
-    if options.directory:
-      parser.error('--directory is not supported with Gerrit codereview.')
 
   # We don't want uncommitted changes mixed up with the patch.
   if git_common.is_dirty_git_tree('patch'):
     return 1
+
+  # TODO(maruel): Use apply_issue.py
+  # TODO(ukai): use gerrit-cherry-pick for gerrit repository?
 
   if options.newbranch:
     if options.reapply:
@@ -3890,8 +3678,84 @@ def CMDpatch(parser, args):
     RunGit(['checkout', '-b', options.newbranch,
             Changelist().GetUpstreamBranch()])
 
-  return cl.CMDPatchIssue(issue_arg, options.reject, options.nocommit,
-                          options.directory)
+  return PatchIssue(issue_arg, options.reject, options.nocommit,
+                    options.directory, auth_config)
+
+
+def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
+  # PatchIssue should never be called with a dirty tree.  It is up to the
+  # caller to check this, but just in case we assert here since the
+  # consequences of the caller not checking this could be dire.
+  assert(not git_common.is_dirty_git_tree('apply'))
+
+  # TODO(tandrii): implement for Gerrit.
+  if type(issue_arg) is int or issue_arg.isdigit():
+    # Input is an issue id.  Figure out the URL.
+    issue = int(issue_arg)
+    cl = Changelist(issue=issue, codereview='rietveld', auth_config=auth_config)
+    patchset = cl.GetMostRecentPatchset()
+    patch_data = cl._codereview_impl.GetPatchSetDiff(issue, patchset)
+  else:
+    # Assume it's a URL to the patch. Default to https.
+    issue_url = gclient_utils.UpgradeToHttps(issue_arg)
+    match = re.match(r'(.*?)/download/issue(\d+)_(\d+).diff', issue_url)
+    if not match:
+      DieWithError('Must pass an issue ID or full URL for '
+          '\'Download raw patch set\'')
+    issue = int(match.group(2))
+    cl = Changelist(issue=issue, codereview='rietveld',
+                    rietveld_server=match.group(1), auth_config=auth_config)
+    patchset = int(match.group(3))
+    patch_data = urllib2.urlopen(issue_arg).read()
+
+  # Switch up to the top-level directory, if necessary, in preparation for
+  # applying the patch.
+  top = settings.GetRelativeRoot()
+  if top:
+    os.chdir(top)
+
+  # Git patches have a/ at the beginning of source paths.  We strip that out
+  # with a sed script rather than the -p flag to patch so we can feed either
+  # Git or svn-style patches into the same apply command.
+  # re.sub() should be used but flags=re.MULTILINE is only in python 2.7.
+  try:
+    patch_data = subprocess2.check_output(
+        ['sed', '-e', 's|^--- a/|--- |; s|^+++ b/|+++ |'], stdin=patch_data)
+  except subprocess2.CalledProcessError:
+    DieWithError('Git patch mungling failed.')
+  logging.info(patch_data)
+
+  # We use "git apply" to apply the patch instead of "patch" so that we can
+  # pick up file adds.
+  # The --index flag means: also insert into the index (so we catch adds).
+  cmd = ['git', 'apply', '--index', '-p0']
+  if directory:
+    cmd.extend(('--directory', directory))
+  if reject:
+    cmd.append('--reject')
+  elif IsGitVersionAtLeast('1.7.12'):
+    cmd.append('--3way')
+  try:
+    subprocess2.check_call(cmd, env=GetNoGitPagerEnv(),
+                           stdin=patch_data, stdout=subprocess2.VOID)
+  except subprocess2.CalledProcessError:
+    print 'Failed to apply the patch'
+    return 1
+
+  # If we had an issue, commit the current state and register the issue.
+  if not nocommit:
+    RunGit(['commit', '-m', (cl.GetDescription() + '\n\n' +
+                             'patch from issue %(i)s at patchset '
+                             '%(p)s (http://crrev.com/%(i)s#ps%(p)s)'
+                             % {'i': issue, 'p': patchset})])
+    cl = Changelist(codereview='rietveld', auth_config=auth_config,
+                    rietveld_server=cl.GetCodereviewServer())
+    cl.SetIssue(issue)
+    cl.SetPatchset(patchset)
+    print "Committed patch locally."
+  else:
+    print "Patch applied to index."
+  return 0
 
 
 def CMDrebase(parser, args):
@@ -4293,7 +4157,7 @@ def CMDdiff(parser, args):
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
   # Uncommitted (staged and unstaged) changes will be destroyed by
-  # "git reset --hard" if there are merging conflicts in CMDPatchIssue().
+  # "git reset --hard" if there are merging conflicts in PatchIssue().
   # Staged changes would be committed along with the patch from last
   # upload, hence counted toward the "last upload" side in the final
   # diff output, and this is not what we want.
@@ -4311,7 +4175,8 @@ def CMDdiff(parser, args):
   # Create a new branch based on the merge-base
   RunGit(['checkout', '-q', '-b', TMP_BRANCH, base_branch])
   try:
-    rtn = cl.CMDPatchIssue(issue, reject=False, nocommit=False, directory=None)
+    # Patch in the latest changes from rietveld.
+    rtn = PatchIssue(issue, False, False, None, auth_config)
     if rtn != 0:
       RunGit(['reset', '--hard'])
       return rtn
@@ -4519,18 +4384,16 @@ def CMDformat(parser, args):
 @subcommand.usage('<codereview url or issue id>')
 def CMDcheckout(parser, args):
   """Checks out a branch associated with a given Rietveld issue."""
-  # TODO(tandrii): consider adding this for Gerrit?
   _, args = parser.parse_args(args)
 
   if len(args) != 1:
     parser.print_help()
     return 1
 
-  issue_arg = ParseIssueNumberArgument(args[0])
-  if issue_arg.valid:
+  target_issue = ParseIssueNum(args[0])
+  if target_issue == None:
     parser.print_help()
     return 1
-  target_issue = issue_arg.issue
 
   key_and_issues = [x.split() for x in RunGit(
       ['config', '--local', '--get-regexp', r'branch\..*\.rietveldissue'])
