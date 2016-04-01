@@ -1974,6 +1974,7 @@
       'canvas2d/CanvasRenderingContext2DAPITest.cpp',
       'canvas2d/CanvasRenderingContext2DTest.cpp',
       'compositorworker/CompositorWorkerThreadTest.cpp',
+      'credentialmanager/PasswordCredentialTest.cpp',
       'csspaint/PaintRenderingContext2DTest.cpp',
       'fetch/BodyStreamBufferTest.cpp',
       'fetch/CompositeDataConsumerHandleTest.cpp',

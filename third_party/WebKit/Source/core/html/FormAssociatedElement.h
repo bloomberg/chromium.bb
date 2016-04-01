@@ -137,10 +137,10 @@ private:
     bool m_formWasSetByParser;
 };
 
-HTMLElement* toHTMLElement(FormAssociatedElement*);
-HTMLElement& toHTMLElement(FormAssociatedElement&);
-const HTMLElement* toHTMLElement(const FormAssociatedElement*);
-const HTMLElement& toHTMLElement(const FormAssociatedElement&);
+CORE_EXPORT HTMLElement* toHTMLElement(FormAssociatedElement*);
+CORE_EXPORT HTMLElement& toHTMLElement(FormAssociatedElement&);
+CORE_EXPORT const HTMLElement* toHTMLElement(const FormAssociatedElement*);
+CORE_EXPORT const HTMLElement& toHTMLElement(const FormAssociatedElement&);
 
 } // namespace blink
 

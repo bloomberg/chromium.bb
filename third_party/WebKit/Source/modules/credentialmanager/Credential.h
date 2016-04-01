@@ -6,6 +6,7 @@
 #define Credential_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "modules/ModulesExport.h"
 #include "platform/credentialmanager/PlatformCredential.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -14,7 +15,7 @@ namespace blink {
 
 class ExceptionState;
 
-class Credential : public GarbageCollectedFinalized<Credential>, public ScriptWrappable {
+class MODULES_EXPORT Credential : public GarbageCollectedFinalized<Credential>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Credential();
