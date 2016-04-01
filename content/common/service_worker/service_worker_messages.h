@@ -14,7 +14,6 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/message_port_types.h"
-#include "content/public/common/navigator_connect_client.h"
 #include "content/public/common/platform_notification_data.h"
 #include "content/public/common/push_event_payload.h"
 #include "ipc/ipc_message_macros.h"
@@ -148,12 +147,6 @@ IPC_STRUCT_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGeofencingEventType,
                           blink::WebGeofencingEventTypeLast)
-
-IPC_STRUCT_TRAITS_BEGIN(content::NavigatorConnectClient)
-  IPC_STRUCT_TRAITS_MEMBER(target_url)
-  IPC_STRUCT_TRAITS_MEMBER(origin)
-  IPC_STRUCT_TRAITS_MEMBER(message_port_id)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
   IPC_STRUCT_TRAITS_MEMBER(data)
@@ -517,12 +510,6 @@ IPC_MESSAGE_CONTROL3(
     std::vector<content::TransferredMessagePort> /* sent_message_ports */,
     std::vector<int> /* new_routing_ids */)
 
-IPC_MESSAGE_CONTROL4(
-    ServiceWorkerMsg_CrossOriginMessageToWorker,
-    content::NavigatorConnectClient /* client */,
-    base::string16 /* message */,
-    std::vector<content::TransferredMessagePort> /* sent_message_ports */,
-    std::vector<int> /* new_routing_ids */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidClaimClients,

@@ -110,8 +110,6 @@ class ExternalVideoSurfaceContainer;
 class LocationProvider;
 class MediaObserver;
 class NavigationHandle;
-class NavigatorConnectContext;
-class NavigatorConnectServiceFactory;
 class PlatformNotificationService;
 class PresentationServiceDelegate;
 class QuotaPermissionContext;
@@ -689,11 +687,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // use this method when that approach does not work.
   virtual void RegisterUnsandboxedOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) {}
-
-  // Registers additional navigator.connect service factories available in a
-  // particular NavigatorConnectContext.
-  virtual void GetAdditionalNavigatorConnectServices(
-      const scoped_refptr<NavigatorConnectContext>& context) {}
 
   // Allows to override the visibility state of a RenderFrameHost.
   // |visibility_state| should not be null. It will only be set if needed.

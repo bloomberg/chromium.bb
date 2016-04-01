@@ -62,8 +62,6 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Push";
     case EventType::GEOFENCING:
       return "Geofencing";
-    case EventType::SERVICE_PORT_CONNECT:
-      return "Service Port Connect";
     case EventType::MESSAGE:
       return "Message";
     case EventType::FETCH_MAIN_FRAME:
@@ -297,7 +295,6 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
 
     // For now event duration for these events is not recorded.
     case EventType::GEOFENCING:
-    case EventType::SERVICE_PORT_CONNECT:
       break;
 
     case EventType::DEPRECATED_FETCH:

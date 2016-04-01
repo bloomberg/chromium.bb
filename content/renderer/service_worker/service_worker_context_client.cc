@@ -14,7 +14,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
-#include "content/child/navigator_connect/service_port_dispatcher_impl.h"
 #include "content/child/notifications/notification_data_conversions.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
@@ -45,7 +44,6 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
-#include "third_party/WebKit/public/platform/WebCrossOriginServiceWorkerClient.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -114,16 +112,6 @@ void SendPostMessageToClientOnMainThread(
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
   sender->Send(new ServiceWorkerHostMsg_PostMessageToClient(
       routing_id, uuid, message,
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
-}
-
-void SendCrossOriginMessageToClientOnMainThread(
-    ThreadSafeSender* sender,
-    int message_port_id,
-    const base::string16& message,
-    scoped_ptr<blink::WebMessagePortChannelArray> channels) {
-  sender->Send(new MessagePortHostMsg_PostMessage(
-      message_port_id, MessagePortMessage(message),
       WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
 }
 
@@ -266,8 +254,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GeofencingEvent, OnGeofencingEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CrossOriginMessageToWorker,
-                        OnCrossOriginMessageToWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClient, OnDidGetClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients, OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
@@ -389,9 +375,6 @@ void ServiceWorkerContextClient::workerContextStarted(
             kInvalidServiceWorkerRegistrationId);
 
   // Register Mojo services.
-  context_->service_registry.ServiceRegistry::AddService(
-      base::Bind(&ServicePortDispatcherImpl::Create,
-                 context_->proxy_weak_factory.GetWeakPtr()));
   context_->service_registry.ServiceRegistry::AddService(
       base::Bind(&BackgroundSyncClientImpl::Create));
 
@@ -626,22 +609,6 @@ void ServiceWorkerContextClient::postMessageToClient(
       FROM_HERE, base::Bind(&SendPostMessageToClientOnMainThread,
                             base::RetainedRef(sender_), GetRoutingID(),
                             base::UTF16ToUTF8(base::StringPiece16(uuid)),
-                            static_cast<base::string16>(message),
-                            base::Passed(&channel_array)));
-}
-
-void ServiceWorkerContextClient::postMessageToCrossOriginClient(
-    const blink::WebCrossOriginServiceWorkerClient& client,
-    const blink::WebString& message,
-    blink::WebMessagePortChannelArray* channels) {
-  // This may send channels for MessagePorts, and all internal book-keeping
-  // messages for MessagePort (e.g. QueueMessages) are sent from main thread
-  // (with thread hopping), so we need to do the same thread hopping here not
-  // to overtake those messages.
-  scoped_ptr<blink::WebMessagePortChannelArray> channel_array(channels);
-  main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SendCrossOriginMessageToClientOnMainThread,
-                            base::RetainedRef(sender_), client.clientID,
                             static_cast<base::string16>(message),
                             base::Passed(&channel_array)));
 }
@@ -881,25 +848,6 @@ void ServiceWorkerContextClient::OnPostMessage(
   UMA_HISTOGRAM_MEDIUM_TIMES(
       "ServiceWorker.MessageEvent.Time",
       base::TimeTicks::Now() - before);
-}
-
-void ServiceWorkerContextClient::OnCrossOriginMessageToWorker(
-    const NavigatorConnectClient& client,
-    const base::string16& message,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
-    const std::vector<int>& new_routing_ids) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerContextClient::OnCrossOriginMessageToWorker");
-  blink::WebMessagePortChannelArray ports =
-      WebMessagePortChannelImpl::CreatePorts(
-          sent_message_ports, new_routing_ids,
-          main_thread_task_runner_);
-
-  blink::WebCrossOriginServiceWorkerClient web_client;
-  web_client.origin = client.origin;
-  web_client.targetURL = client.target_url;
-  web_client.clientID = client.message_port_id;
-  proxy_->dispatchCrossOriginMessageEvent(web_client, message, ports);
 }
 
 void ServiceWorkerContextClient::OnDidGetClient(

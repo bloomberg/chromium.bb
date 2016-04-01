@@ -50,11 +50,6 @@ interface CloseEvent : Event
 interface CountQueuingStrategy
     method constructor
     method size
-interface CrossOriginServiceWorkerClient : EventTarget
-    getter origin
-    getter targetUrl
-    method constructor
-    method postMessage
 interface Crypto
     getter subtle
     method constructor
@@ -611,29 +606,6 @@ interface Response
     method constructor
     method json
     method text
-interface ServicePort
-    getter data
-    getter name
-    getter targetURL
-    method close
-    method constructor
-    method postMessage
-interface ServicePortCollection : EventTarget
-    getter onclose
-    getter onconnect
-    getter onmessage
-    method connect
-    method constructor
-    method match
-    method matchAll
-    setter onclose
-    setter onconnect
-    setter onmessage
-interface ServicePortConnectEvent : ExtendableEvent
-    getter origin
-    getter targetURL
-    method constructor
-    method respondWith
 interface ServiceWorkerGlobalScope : WorkerGlobalScope
     method constructor
 interface ServiceWorkerRegistration : EventTarget
@@ -802,7 +774,6 @@ interface WorkerNavigator
     getter permissions
     getter platform
     getter product
-    getter services
     getter storage
     getter userAgent
     getter webkitPersistentStorage
@@ -916,7 +887,6 @@ global object
     getter caches
     getter clients
     getter onactivate
-    getter oncrossoriginmessage
     getter onfetch
     getter onforeignfetch
     getter ongeofenceenter
@@ -933,7 +903,6 @@ global object
     method gc
     method skipWaiting
     setter onactivate
-    setter oncrossoriginmessage
     setter onfetch
     setter onforeignfetch
     setter ongeofenceenter

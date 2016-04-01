@@ -611,24 +611,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     method json
 [Worker]     method text
-[Worker] interface ServicePort
-[Worker]     attribute @@toStringTag
-[Worker]     getter data
-[Worker]     getter name
-[Worker]     getter targetURL
-[Worker]     method close
-[Worker]     method constructor
-[Worker]     method postMessage
-[Worker] interface ServicePortCollection : EventTarget
-[Worker]     attribute @@toStringTag
-[Worker]     getter onclose
-[Worker]     getter onmessage
-[Worker]     method connect
-[Worker]     method constructor
-[Worker]     method match
-[Worker]     method matchAll
-[Worker]     setter onclose
-[Worker]     setter onmessage
 [Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter geofencing
@@ -798,7 +780,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter permissions
 [Worker]     getter platform
 [Worker]     getter product
-[Worker]     getter services
 [Worker]     getter storage
 [Worker]     getter userAgent
 [Worker]     getter webkitPersistentStorage

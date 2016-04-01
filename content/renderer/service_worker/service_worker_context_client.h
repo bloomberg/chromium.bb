@@ -39,7 +39,6 @@ class TaskRunner;
 
 namespace blink {
 struct WebCircularGeofencingRegion;
-struct WebCrossOriginServiceWorkerClient;
 class WebDataSource;
 struct WebServiceWorkerClientQueryOptions;
 class WebServiceWorkerContextProxy;
@@ -53,7 +52,6 @@ class Message;
 
 namespace content {
 
-struct NavigatorConnectClient;
 struct PlatformNotificationData;
 struct PushEventPayload;
 struct ServiceWorkerClientInfo;
@@ -161,10 +159,6 @@ class ServiceWorkerContextClient
       const blink::WebString& uuid,
       const blink::WebString& message,
       blink::WebMessagePortChannelArray* channels) override;
-  void postMessageToCrossOriginClient(
-      const blink::WebCrossOriginServiceWorkerClient& client,
-      const blink::WebString& message,
-      blink::WebMessagePortChannelArray* channels) override;
   void focus(const blink::WebString& uuid,
              blink::WebServiceWorkerClientCallbacks*) override;
   void navigate(const blink::WebString& uuid,
@@ -223,11 +217,6 @@ class ServiceWorkerContextClient
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const std::vector<int>& new_routing_ids);
 
-  void OnCrossOriginMessageToWorker(
-      const NavigatorConnectClient& client,
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const std::vector<int>& new_routing_ids);
   void OnDidGetClient(int request_id, const ServiceWorkerClientInfo& client);
   void OnDidGetClients(
       int request_id, const std::vector<ServiceWorkerClientInfo>& clients);

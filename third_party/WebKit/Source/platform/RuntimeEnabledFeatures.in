@@ -125,7 +125,6 @@ MediaStreamSpeech status=experimental
 MemoryInfoInWorkers status=experimental
 MobileLayoutTheme
 ModuleScripts status=test
-NavigatorConnect status=experimental
 NavigatorContentUtils
 WebNFC status=experimental
 NetworkInformation status=stable

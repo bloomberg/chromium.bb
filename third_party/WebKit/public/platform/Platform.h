@@ -92,7 +92,6 @@ class WebMediaStreamTrack;
 class WebMemoryDumpProvider;
 class WebMessagePortChannel;
 class WebMimeRegistry;
-class WebNavigatorConnectProvider;
 class WebNotificationManager;
 class WebPermissionClient;
 class WebPluginListBuilder;
@@ -106,8 +105,6 @@ class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
 class WebScrollbarBehavior;
 class WebSecurityOrigin;
-class WebServicePortProvider;
-class WebServicePortProviderClient;
 class WebServiceWorkerCacheStorage;
 class WebSocketHandle;
 class WebSpeechSynthesizer;
@@ -611,15 +608,6 @@ public:
 
     virtual WebPushProvider* pushProvider() { return nullptr; }
 
-
-    // navigator.connect --------------------------------------------------
-
-    virtual WebNavigatorConnectProvider* navigatorConnectProvider() { return nullptr; }
-
-    // Returns pointer to a new blink owned WebServicePortProvider instance,
-    // associated with a particular ServicePortCollection (identified by the
-    // WebServicePortProviderClient passed in).
-    virtual WebServicePortProvider* createServicePortProvider(WebServicePortProviderClient*) { return nullptr; }
 
     // Permissions --------------------------------------------------------
 

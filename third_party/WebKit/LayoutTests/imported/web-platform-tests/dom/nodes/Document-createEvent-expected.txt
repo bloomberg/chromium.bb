@@ -235,8 +235,7 @@ FAIL Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "S
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SecurityPolicyViolationEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SecurityPolicyViolationEvent" 
-FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ServicePortConnectEvent" assert_throws: function "function () {
-      var evt = document.createEvent(eventI..." did not throw
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ServicePortConnectEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ServicePortConnectEvent" 
 FAIL Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ServiceWorkerMessageEvent" assert_throws: function "function () {
       var evt = document.createEvent(eventI..." did not throw

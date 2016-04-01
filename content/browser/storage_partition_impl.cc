@@ -18,7 +18,6 @@
 #include "content/browser/geofencing/geofencing_manager.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/navigator_connect/navigator_connect_context_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
@@ -349,7 +348,6 @@ StoragePartitionImpl::StoragePartitionImpl(
     storage::SpecialStoragePolicy* special_storage_policy,
     GeofencingManager* geofencing_manager,
     HostZoomLevelContext* host_zoom_level_context,
-    NavigatorConnectContextImpl* navigator_connect_context,
     PlatformNotificationContextImpl* platform_notification_context,
     BackgroundSyncContextImpl* background_sync_context)
     : partition_path_(partition_path),
@@ -365,7 +363,6 @@ StoragePartitionImpl::StoragePartitionImpl(
       special_storage_policy_(special_storage_policy),
       geofencing_manager_(geofencing_manager),
       host_zoom_level_context_(host_zoom_level_context),
-      navigator_connect_context_(navigator_connect_context),
       platform_notification_context_(platform_notification_context),
       background_sync_context_(background_sync_context),
       browser_context_(browser_context) {
@@ -491,9 +488,6 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       new HostZoomLevelContext(
           context->CreateZoomLevelDelegate(partition_path)));
 
-  scoped_refptr<NavigatorConnectContextImpl> navigator_connect_context =
-      new NavigatorConnectContextImpl(service_worker_context);
-
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context =
       new PlatformNotificationContextImpl(path, context,
                                           service_worker_context);
@@ -510,8 +504,7 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       cache_storage_context.get(), service_worker_context.get(),
       webrtc_identity_store.get(), special_storage_policy.get(),
       geofencing_manager.get(), host_zoom_level_context.get(),
-      navigator_connect_context.get(), platform_notification_context.get(),
-      background_sync_context.get());
+      platform_notification_context.get(), background_sync_context.get());
 
   service_worker_context->set_storage_partition(storage_partition);
 
@@ -579,11 +572,6 @@ HostZoomLevelContext* StoragePartitionImpl::GetHostZoomLevelContext() {
 ZoomLevelDelegate* StoragePartitionImpl::GetZoomLevelDelegate() {
   DCHECK(host_zoom_level_context_.get());
   return host_zoom_level_context_->GetZoomLevelDelegate();
-}
-
-NavigatorConnectContextImpl*
-StoragePartitionImpl::GetNavigatorConnectContext() {
-  return navigator_connect_context_.get();
 }
 
 PlatformNotificationContextImpl*

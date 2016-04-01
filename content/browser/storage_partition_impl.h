@@ -19,7 +19,6 @@
 #include "content/browser/host_zoom_level_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/media/webrtc/webrtc_identity_store.h"
-#include "content/browser/navigator_connect/navigator_connect_context_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
@@ -60,7 +59,6 @@ class StoragePartitionImpl : public StoragePartition,
   HostZoomMap* GetHostZoomMap() override;
   HostZoomLevelContext* GetHostZoomLevelContext() override;
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
-  NavigatorConnectContextImpl* GetNavigatorConnectContext() override;
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
   BackgroundSyncContextImpl* GetBackgroundSyncContext() override;
 
@@ -157,7 +155,6 @@ class StoragePartitionImpl : public StoragePartition,
       storage::SpecialStoragePolicy* special_storage_policy,
       GeofencingManager* geofencing_manager,
       HostZoomLevelContext* host_zoom_level_context,
-      NavigatorConnectContextImpl* navigator_connect_context,
       PlatformNotificationContextImpl* platform_notification_context,
       BackgroundSyncContextImpl* background_sync_context);
 
@@ -202,7 +199,6 @@ class StoragePartitionImpl : public StoragePartition,
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<GeofencingManager> geofencing_manager_;
   scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
-  scoped_refptr<NavigatorConnectContextImpl> navigator_connect_context_;
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
 

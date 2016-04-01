@@ -82,7 +82,6 @@
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/mojo/mojo_child_connection.h"
-#include "content/browser/navigator_connect/service_port_service_impl.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
@@ -133,7 +132,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/navigator_connect_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host_factory.h"
@@ -1082,11 +1080,6 @@ void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(base::Bind(
       &BackgroundSyncContextImpl::CreateService,
       base::Unretained(storage_partition_impl_->GetBackgroundSyncContext())));
-
-  mojo_application_host_->service_registry()->AddService(base::Bind(
-      &content::ServicePortServiceImpl::Create,
-      make_scoped_refptr(storage_partition_impl_->GetNavigatorConnectContext()),
-      message_port_message_filter_));
 
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&RenderProcessHostImpl::CreateStoragePartitionService,

@@ -48,7 +48,6 @@ class GeofencingManager;
 class HostZoomLevelContext;
 class HostZoomMap;
 class IndexedDBContext;
-class NavigatorConnectContext;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class ZoomLevelDelegate;
@@ -76,7 +75,6 @@ class CONTENT_EXPORT StoragePartition {
   virtual HostZoomMap* GetHostZoomMap() = 0;
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;
-  virtual NavigatorConnectContext* GetNavigatorConnectContext() = 0;
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
   virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
 

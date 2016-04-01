@@ -42,7 +42,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/geofencing/web_geofencing_provider_impl.h"
-#include "content/child/navigator_connect/service_port_provider.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_manager.h"
 #include "content/child/permissions/permission_dispatcher.h"
@@ -890,11 +889,6 @@ blink::WebPushProvider* BlinkPlatformImpl::pushProvider() {
 
   return PushProvider::ThreadSpecificInstance(thread_safe_sender_.get(),
                                               push_dispatcher_.get());
-}
-
-blink::WebServicePortProvider* BlinkPlatformImpl::createServicePortProvider(
-    blink::WebServicePortProviderClient* client) {
-  return new ServicePortProvider(client, main_thread_task_runner_);
 }
 
 blink::WebPermissionClient* BlinkPlatformImpl::permissionClient() {

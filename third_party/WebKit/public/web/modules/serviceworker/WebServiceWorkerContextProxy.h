@@ -34,7 +34,6 @@
 #include "public/platform/WebGeofencingEventType.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebPassOwnPtr.h"
-#include "public/platform/modules/navigator_services/WebServicePortCallbacks.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
@@ -43,7 +42,6 @@ namespace blink {
 class WebServiceWorkerRequest;
 class WebString;
 struct WebCircularGeofencingRegion;
-struct WebCrossOriginServiceWorkerClient;
 struct WebNotificationData;
 struct WebServiceWorkerClientInfo;
 
@@ -70,10 +68,6 @@ public:
     virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&, int actionIndex) = 0;
     virtual void dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData&) = 0;
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
-    virtual void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) = 0;
-
-    // Passes ownership of the callbacks.
-    virtual void dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks*, const WebURL& targetURL, const WebString& origin, WebServicePortID) = 0;
 
     enum LastChanceOption {
         IsNotLastChance,

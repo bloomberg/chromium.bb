@@ -3826,7 +3826,6 @@ interface Navigator
     getter product
     getter productSub
     getter serviceWorker
-    getter services
     getter storage
     getter storageQuota
     getter usb
@@ -5663,24 +5662,6 @@ interface Selection
     method setBaseAndExtent
     method setPosition
     method toString
-interface ServicePort
-    attribute @@toStringTag
-    getter data
-    getter name
-    getter targetURL
-    method close
-    method constructor
-    method postMessage
-interface ServicePortCollection : EventTarget
-    attribute @@toStringTag
-    getter onclose
-    getter onmessage
-    method connect
-    method constructor
-    method match
-    method matchAll
-    setter onclose
-    setter onmessage
 interface ServiceWorker : EventTarget
     attribute @@toStringTag
     getter onerror

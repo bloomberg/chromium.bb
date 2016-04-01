@@ -43,10 +43,6 @@
 #include "modules/fetch/Headers.h"
 #include "modules/geofencing/CircularGeofencingRegion.h"
 #include "modules/geofencing/GeofencingEvent.h"
-#include "modules/navigatorconnect/AcceptConnectionObserver.h"
-#include "modules/navigatorconnect/CrossOriginServiceWorkerClient.h"
-#include "modules/navigatorconnect/ServicePortCollection.h"
-#include "modules/navigatorconnect/WorkerNavigatorServices.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationEvent.h"
 #include "modules/notifications/NotificationEventInit.h"
@@ -61,7 +57,6 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/platform/WebCrossOriginServiceWorkerClient.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
@@ -201,13 +196,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebStri
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 
-void ServiceWorkerGlobalScopeProxy::dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks* rawCallbacks, const WebURL& targetURL, const WebString& origin, WebServicePortID portID)
-{
-    OwnPtr<WebServicePortConnectEventCallbacks> callbacks = adoptPtr(rawCallbacks);
-    ServicePortCollection* collection = WorkerNavigatorServices::services(workerGlobalScope(), *workerGlobalScope()->navigator());
-    collection->dispatchConnectEvent(callbacks.release(), targetURL, origin, portID);
-}
-
 void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebString& tag, LastChanceOption lastChance)
 {
     if (!RuntimeEnabledFeatures::backgroundSyncEnabled()) {
@@ -217,16 +205,6 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebStri
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Sync, eventID);
     RawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, tag, lastChance == IsLastChance, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
-}
-
-void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient& webClient, const WebString& message, const WebMessagePortChannelArray& webChannels)
-{
-    MessagePortArray* ports = MessagePort::toMessagePortArray(workerGlobalScope(), webChannels);
-    WebSerializedScriptValue value = WebSerializedScriptValue::fromString(message);
-    // FIXME: Have proper source for this MessageEvent.
-    RawPtr<MessageEvent> event = MessageEvent::create(ports, value, webClient.origin.string());
-    event->setType(EventTypeNames::crossoriginmessage);
-    workerGlobalScope()->dispatchEvent(event);
 }
 
 void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int)

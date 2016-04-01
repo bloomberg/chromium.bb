@@ -195,9 +195,6 @@ class TestStoragePartition : public StoragePartition {
   content::GeofencingManager* GetGeofencingManager() override {
     return nullptr;
   }
-  content::NavigatorConnectContext* GetNavigatorConnectContext() override {
-    return nullptr;
-  }
   content::PlatformNotificationContext* GetPlatformNotificationContext()
       override {
     return nullptr;

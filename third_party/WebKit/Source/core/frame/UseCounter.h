@@ -1022,7 +1022,6 @@ public:
         DocumentCreateEventRTCDTMFToneChangeEvent = 1205,
         DocumentCreateEventRTCDataChannelEvent = 1206,
         DocumentCreateEventRTCIceCandidateEvent = 1207,
-        DocumentCreateEventServicePortConnectEvent = 1208,
         DocumentCreateEventNotificationEvent = 1209,
         DocumentCreateEventPresentationConnectionAvailableEvent = 1210,
         DocumentCreateEventPresentationConnectionCloseEvent = 1211,

@@ -81,7 +81,7 @@ class ServiceWorkerMetrics {
     NOTIFICATION_CLICK = 4,
     PUSH = 5,
     GEOFENCING = 6,
-    SERVICE_PORT_CONNECT = 7,
+    // SERVICE_PORT_CONNECT = 7,
     MESSAGE = 8,
     NOTIFICATION_CLOSE = 9,
     FETCH_MAIN_FRAME = 10,

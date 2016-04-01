@@ -22,7 +22,6 @@
           'common/presentation/presentation_service.mojom',
           'common/process_control.mojom',
           'common/render_frame_setup.mojom',
-          'common/service_port_service.mojom',
           'common/service_worker/embedded_worker_setup.mojom',
           'common/storage_partition_service.mojom',
           'common/vr_service.mojom',

@@ -133,8 +133,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   blink::WebGeofencingProvider* geofencingProvider() override;
   blink::WebNotificationManager* notificationManager() override;
   blink::WebPushProvider* pushProvider() override;
-  blink::WebServicePortProvider* createServicePortProvider(
-      blink::WebServicePortProviderClient*) override;
   blink::WebPermissionClient* permissionClient() override;
   blink::WebSyncProvider* backgroundSyncProvider() override;
 

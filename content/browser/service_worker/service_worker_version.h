@@ -52,7 +52,6 @@ class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerURLRequestJob;
-struct NavigatorConnectClient;
 struct ServiceWorkerClientInfo;
 struct ServiceWorkerVersionInfo;
 struct TransferredMessagePort;
@@ -250,20 +249,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
   // default (crbug.com/543198).
   void DispatchMessageEvent(
-      const base::string16& message,
-      const std::vector<TransferredMessagePort>& sent_message_ports,
-      const StatusCallback& callback);
-
-  // Sends a cross origin message event to the associated embedded worker and
-  // asynchronously calls |callback| when the message was sent (or failed to
-  // sent).
-  // It is the responsibility of the code calling this method to make sure that
-  // any transferred message ports are put on hold while potentially a process
-  // for the service worker is spun up.
-  //
-  // This must be called when the status() is ACTIVATED.
-  void DispatchCrossOriginMessageEvent(
-      const NavigatorConnectClient& client,
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const StatusCallback& callback);

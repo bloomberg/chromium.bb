@@ -72,7 +72,6 @@ public:
     // WebServiceWorkerContextProxy overrides:
     void setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle>) override;
     void dispatchActivateEvent(int) override;
-    void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) override;
     void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray&, const WebServiceWorkerClientInfo&) override;
     void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebSecurityOrigin& sourceOrigin, const WebMessagePortChannelArray&, WebPassOwnPtr<WebServiceWorker::Handle>) override;
     void dispatchFetchEvent(int, const WebServiceWorkerRequest&) override;
@@ -83,7 +82,6 @@ public:
     void dispatchNotificationClickEvent(int, int64_t notificationID, const WebNotificationData&, int actionIndex) override;
     void dispatchNotificationCloseEvent(int, int64_t notificationID, const WebNotificationData&) override;
     void dispatchPushEvent(int, const WebString& data) override;
-    void dispatchServicePortConnectEvent(WebServicePortConnectEventCallbacks*, const WebURL& targetURL, const WebString& origin, WebServicePortID) override;
     void dispatchSyncEvent(int, const WebString& tag, LastChanceOption) override;
 
     // WorkerReportingProxy overrides:

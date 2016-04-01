@@ -39,8 +39,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/navigator_connect_context.h"
-#include "content/public/browser/navigator_connect_service_factory.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -475,9 +473,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
       browser_context_->GetMediaRequestContext() :
       browser_context_->GetMediaRequestContextForStoragePartition(
           partition->GetPath(), in_memory));
-
-  GetContentClient()->browser()->GetAdditionalNavigatorConnectServices(
-      partition->GetNavigatorConnectContext());
 
   PostCreateInitialization(partition, in_memory);
 

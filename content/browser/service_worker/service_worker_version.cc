@@ -597,38 +597,6 @@ void ServiceWorkerVersion::DispatchMessageEventInternal(
   RunSoon(base::Bind(callback, status));
 }
 
-void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
-    const NavigatorConnectClient& client,
-    const base::string16& message,
-    const std::vector<TransferredMessagePort>& sent_message_ports,
-    const StatusCallback& callback) {
-  OnBeginEvent();
-  // Unlike in the case of DispatchMessageEvent, here the caller is assumed to
-  // have already put all the sent message ports on hold. So no need to do that
-  // here again.
-
-  if (running_status() != RUNNING) {
-    // Schedule calling this method after starting the worker.
-    StartWorker(ServiceWorkerMetrics::EventType::MESSAGE,
-                base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
-                           base::Bind(&RunErrorMessageCallback,
-                                      sent_message_ports, callback),
-                           base::Bind(&self::DispatchCrossOriginMessageEvent,
-                                      weak_factory_.GetWeakPtr(), client,
-                                      message, sent_message_ports, callback)));
-    return;
-  }
-
-  MessagePortMessageFilter* filter =
-      embedded_worker_->message_port_message_filter();
-  std::vector<int> new_routing_ids;
-  filter->UpdateMessagePortsWithNewRoutes(sent_message_ports, &new_routing_ids);
-  ServiceWorkerStatusCode status =
-      embedded_worker_->SendMessage(ServiceWorkerMsg_CrossOriginMessageToWorker(
-          client, message, sent_message_ports, new_routing_ids));
-  RunSoon(base::Bind(callback, status));
-}
-
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
   const std::string& uuid = provider_host->client_uuid();
