@@ -28,8 +28,7 @@ def get_free_disk_space(failures):
     # Stat the current path for info on the current disk.
     stat_result = os.statvfs('.')
     # Multiply block size by number of free blocks, express in GiB.
-    return stat_result.f_frsize * stat_result.f_bavail / (
-        1024.0 / 1024.0 / 1024.0)
+    return stat_result.f_frsize * stat_result.f_bavail / (1024.0 ** 3)
 
   failures.append('get_free_disk_space: OS %s not supported.' % os.name)
   return 0
