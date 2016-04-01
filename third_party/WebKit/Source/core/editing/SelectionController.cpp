@@ -40,6 +40,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -457,13 +458,13 @@ void SelectionController::updateSelectionForMouseDrag(Node* mousePressNode, cons
     FrameView* view = m_frame->view();
     if (!view)
         return;
-    LayoutView* layoutObject = m_frame->contentLayoutObject();
-    if (!layoutObject)
+    LayoutViewItem layoutItem = m_frame->contentLayoutItem();
+    if (layoutItem.isNull())
         return;
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::Move);
     HitTestResult result(request, view->rootFrameToContents(lastKnownMousePosition));
-    layoutObject->hitTest(result);
+    layoutItem.hitTest(result);
     updateSelectionForMouseDrag(result, mousePressNode, dragStartPos, lastKnownMousePosition);
 }
 

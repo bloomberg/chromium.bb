@@ -70,6 +70,11 @@ public:
         return toView()->clearSelection();
     }
 
+    bool hitTest(HitTestResult& result)
+    {
+        return toView()->hitTest(result);
+    }
+
 private:
     LayoutView* toView() { return toLayoutView(layoutObject()); }
     const LayoutView* toView() const { return toLayoutView(layoutObject()); }
