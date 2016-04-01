@@ -116,20 +116,10 @@ gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
 }
 
 void CrossProcessFrameConnector::GetScreenInfo(blink::WebScreenInfo* results) {
-  // Inner WebContents's root FrameTreeNode does not have a parent(), so
-  // GetRenderWidgetHostView() call below will fail.
-  // TODO(lazyboy): Fix this.
-  if (frame_proxy_in_parent_renderer_->frame_tree_node()
-          ->render_manager()
-          ->ForInnerDelegate()) {
-    DCHECK(frame_proxy_in_parent_renderer_->frame_tree_node()->IsMainFrame());
-    return;
+  auto parent_view = GetParentRenderWidgetHostView();
+  if (parent_view) {
+    parent_view->GetScreenInfo(results);
   }
-
-  RenderWidgetHostView* rwhv =
-      frame_proxy_in_parent_renderer_->GetRenderWidgetHostView();
-  if (rwhv)
-    static_cast<RenderWidgetHostViewBase*>(rwhv)->GetScreenInfo(results);
 }
 
 void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {
