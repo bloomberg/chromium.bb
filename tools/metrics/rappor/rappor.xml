@@ -573,6 +573,14 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Media.OriginUrl.MS" type="ETLD_PLUS_ONE">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that loads an HTML5 media player using
+    MediaStream.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Media.OriginUrl.MSE" type="ETLD_PLUS_ONE">
   <owner>xhwang@chromium.org</owner>
   <summary>

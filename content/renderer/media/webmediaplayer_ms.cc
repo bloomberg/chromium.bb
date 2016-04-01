@@ -24,6 +24,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
+#include "media/blink/webmediaplayer_util.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -127,6 +128,9 @@ void WebMediaPlayerMS::load(LoadType load_type,
   RenderFrame* const frame = RenderFrame::FromWebFrame(frame_);
 
   if (frame) {
+    // Report UMA and RAPPOR metrics.
+    media::ReportMetrics(load_type, GURL(url), frame_->getSecurityOrigin());
+
     audio_renderer_ = renderer_factory_->GetAudioRenderer(
         url, frame->GetRoutingID(), initial_audio_output_device_id_,
         initial_security_origin_);

@@ -56,7 +56,6 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -296,7 +295,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   GURL gurl(url);
-  ReportMetrics(load_type, gurl, frame_->document().getSecurityOrigin());
+  ReportMetrics(load_type, gurl, frame_->getSecurityOrigin());
 
   // Set subresource URL for crash reporting.
   base::debug::SetCrashKeyValue("subresource_url", gurl.spec());

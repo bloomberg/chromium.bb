@@ -107,8 +107,6 @@ std::string LoadTypeToString(blink::WebMediaPlayer::LoadType load_type) {
 
 }  // namespace
 
-// TODO(xhwang): Call this from WebMediaPlayerMS to report metrics for
-// MediaStream as well.
 void ReportMetrics(blink::WebMediaPlayer::LoadType load_type,
                    const GURL& url,
                    const blink::WebSecurityOrigin& security_origin) {

@@ -314,8 +314,7 @@ void WebMediaPlayerAndroid::DoLoad(LoadType load_type,
                                    CORSMode cors_mode) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  media::ReportMetrics(load_type, GURL(url),
-                       frame_->document().getSecurityOrigin());
+  media::ReportMetrics(load_type, GURL(url), frame_->getSecurityOrigin());
 
   switch (load_type) {
     case LoadTypeURL:
@@ -1662,8 +1661,8 @@ void WebMediaPlayerAndroid::ReportHLSMetrics() const {
   bool is_hls = IsHLSStream();
   UMA_HISTOGRAM_BOOLEAN("Media.Android.IsHttpLiveStreamingMedia", is_hls);
   if (is_hls) {
-    media::RecordOriginOfHLSPlayback(blink::WebStringToGURL(
-        frame_->document().getSecurityOrigin().toString()));
+    media::RecordOriginOfHLSPlayback(
+        blink::WebStringToGURL(frame_->getSecurityOrigin().toString()));
   }
 
   // Assuming that |is_hls| is the ground truth, test predictions.
