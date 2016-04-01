@@ -46,6 +46,10 @@ private:
     void setPhaseY(LayoutUnit y) { m_phase.setY(y); }
     void setNoRepeatX(LayoutUnit xOffset);
     void setNoRepeatY(LayoutUnit yOffset);
+    void setRepeatX(const FillLayer&, LayoutUnit, LayoutUnit, LayoutUnit, LayoutUnit);
+    void setRepeatY(const FillLayer&, LayoutUnit, LayoutUnit, LayoutUnit, LayoutUnit);
+    void setSpaceX(LayoutUnit, LayoutUnit, LayoutUnit);
+    void setSpaceY(LayoutUnit, LayoutUnit, LayoutUnit);
 
     void useFixedAttachment(const LayoutPoint& attachmentPoint);
     void setHasNonLocalGeometry() { m_hasNonLocalGeometry = true; }
