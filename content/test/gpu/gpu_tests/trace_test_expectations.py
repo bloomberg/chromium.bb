@@ -11,9 +11,7 @@ class TraceTestExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('TraceTest.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-
-    # Multiple tests recently started asserting in trace_event_impl.cc.
-    self.Flaky('*', ['win'], bug=599794)
+    pass
 
 
 class DeviceTraceTestExpectations(GpuTestExpectations):
