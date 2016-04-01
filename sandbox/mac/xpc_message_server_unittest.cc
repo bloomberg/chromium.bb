@@ -26,7 +26,6 @@ class XPCMessageServerTest : public testing::Test {
   void SetUp() override {
     if (!RunXPCTest())
       return;
-    ASSERT_TRUE(InitializeXPC());
   }
 
   bool RunXPCTest() {
@@ -180,8 +179,6 @@ XPC_TEST_F(GetSenderPID)  // {
 }
 
 MULTIPROCESS_TEST_MAIN(GetSenderPID) {
-  CHECK(sandbox::InitializeXPC());
-
   mach_port_t port = MACH_PORT_NULL;
   CHECK_EQ(KERN_SUCCESS, bootstrap_look_up(bootstrap_port, kGetSenderPID,
       &port));

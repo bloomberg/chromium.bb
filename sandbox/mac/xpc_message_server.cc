@@ -18,9 +18,7 @@ XPCMessageServer::XPCMessageServer(MessageDemuxer* demuxer,
                                    mach_port_t server_receive_right)
     : demuxer_(demuxer),
       server_port_(server_receive_right),
-      reply_message_(NULL) {
-  CHECK(InitializeXPC());
-}
+      reply_message_(NULL) {}
 
 XPCMessageServer::~XPCMessageServer() {
 }

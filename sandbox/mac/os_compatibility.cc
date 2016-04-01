@@ -19,15 +19,8 @@ namespace {
 
 #pragma pack(push, 4)
 // Verified from launchd-329.3.3 (10.6.8).
-struct look_up2_request_10_6 {
-  mach_msg_header_t Head;
-  NDR_record_t NDR;
-  name_t servicename;
-  pid_t targetpid;
-  uint64_t flags;
-};
-
-struct look_up2_reply_10_6 {
+// look_up2_reply_10_7 is the same as the 10_6 version.
+struct look_up2_reply_10_7 {
   mach_msg_header_t Head;
   mach_msg_body_t msgh_body;
   mach_msg_port_descriptor_t service_port;
@@ -46,15 +39,13 @@ struct look_up2_request_10_7 {
   uint64_t flags;
 };
 
-// look_up2_reply_10_7 is the same as the 10_6 version.
-
 // Verified from:
 //   launchd-329.3.3 (10.6.8)
 //   launchd-392.39 (10.7.5)
 //   launchd-442.26.2 (10.8.5)
 //   launchd-842.1.4 (10.9.0)
 typedef int vproc_gsk_t;  // Defined as an enum in liblaunch/vproc_priv.h.
-struct swap_integer_request_10_6 {
+struct swap_integer_request_10_7 {
   mach_msg_header_t Head;
   NDR_record_t NDR;
   vproc_gsk_t inkey;
@@ -73,10 +64,10 @@ size_t strnlen(const char* str, size_t maxlen) {
   return len;
 }
 
-class OSCompatibility_10_6 : public OSCompatibility {
+class OSCompatibility_10_7 : public OSCompatibility {
  public:
-  OSCompatibility_10_6() {}
-  ~OSCompatibility_10_6() override {}
+  OSCompatibility_10_7() {}
+  ~OSCompatibility_10_7() override {}
 
   uint64_t GetMessageSubsystem(const IPCMessage message) override {
     return (message.mach->msgh_id / 100) * 100;
@@ -99,12 +90,12 @@ class OSCompatibility_10_6 : public OSCompatibility {
   }
 
   std::string GetServiceLookupName(const IPCMessage message) override {
-    return GetRequestName<look_up2_request_10_6>(message);
+    return GetRequestName<look_up2_request_10_7>(message);
   }
 
   void WriteServiceLookUpReply(IPCMessage message,
                                mach_port_t service_port) override {
-    auto reply = reinterpret_cast<look_up2_reply_10_6*>(message.mach);
+    auto reply = reinterpret_cast<look_up2_reply_10_7*>(message.mach);
     reply->Head.msgh_size = sizeof(*reply);
     reply->Head.msgh_bits =
         MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_MOVE_SEND_ONCE) |
@@ -117,7 +108,7 @@ class OSCompatibility_10_6 : public OSCompatibility {
 
   bool IsSwapIntegerReadOnly(const IPCMessage message) override {
     auto request =
-        reinterpret_cast<const swap_integer_request_10_6*>(message.mach);
+        reinterpret_cast<const swap_integer_request_10_7*>(message.mach);
     return request->inkey == 0 && request->inval == 0 && request->outkey != 0;
   }
 
@@ -134,16 +125,6 @@ class OSCompatibility_10_6 : public OSCompatibility {
         strnlen(request->servicename, BOOTSTRAP_MAX_NAME_LEN);
     std::string name = std::string(request->servicename, name_length);
     return name;
-  }
-};
-
-class OSCompatibility_10_7 : public OSCompatibility_10_6 {
- public:
-  OSCompatibility_10_7() {}
-  ~OSCompatibility_10_7() override {}
-
-  std::string GetServiceLookupName(const IPCMessage message) override {
-    return GetRequestName<look_up2_request_10_7>(message);
   }
 };
 
@@ -199,9 +180,7 @@ class OSCompatibility_10_10 : public OSCompatibility {
 
 // static
 scoped_ptr<OSCompatibility> OSCompatibility::CreateForPlatform() {
-  if (base::mac::IsOSSnowLeopard())
-    return make_scoped_ptr(new OSCompatibility_10_6());
-  else if (base::mac::IsOSLionOrLater() && base::mac::IsOSMavericksOrEarlier())
+  if (base::mac::IsOSLionOrLater() && base::mac::IsOSMavericksOrEarlier())
     return make_scoped_ptr(new OSCompatibility_10_7());
   else
     return make_scoped_ptr(new OSCompatibility_10_10());
