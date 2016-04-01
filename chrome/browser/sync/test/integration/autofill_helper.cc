@@ -315,8 +315,7 @@ void SetCreditCards(int profile, std::vector<CreditCard>* credit_cards) {
 }
 
 void AddProfile(int profile, const AutofillProfile& autofill_profile) {
-  const std::vector<AutofillProfile*>& all_profiles =
-      GetAllAutoFillProfiles(profile);
+  const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i)
     autofill_profiles.push_back(*all_profiles[i]);
@@ -325,8 +324,7 @@ void AddProfile(int profile, const AutofillProfile& autofill_profile) {
 }
 
 void RemoveProfile(int profile, const std::string& guid) {
-  const std::vector<AutofillProfile*>& all_profiles =
-      GetAllAutoFillProfiles(profile);
+  const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     if (all_profiles[i]->guid() != guid)
@@ -339,8 +337,7 @@ void UpdateProfile(int profile,
                    const std::string& guid,
                    const AutofillType& type,
                    const base::string16& value) {
-  const std::vector<AutofillProfile*>& all_profiles =
-      GetAllAutoFillProfiles(profile);
+  const std::vector<AutofillProfile*>& all_profiles = GetAllProfiles(profile);
   std::vector<AutofillProfile> profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     profiles.push_back(*all_profiles[i]);
@@ -350,7 +347,7 @@ void UpdateProfile(int profile,
   autofill_helper::SetProfiles(profile, &profiles);
 }
 
-const std::vector<AutofillProfile*>& GetAllAutoFillProfiles(
+const std::vector<AutofillProfile*>& GetAllProfiles(
     int profile) {
   MockPersonalDataManagerObserver observer;
   EXPECT_CALL(observer, OnPersonalDataChanged()).
@@ -364,7 +361,7 @@ const std::vector<AutofillProfile*>& GetAllAutoFillProfiles(
 }
 
 int GetProfileCount(int profile) {
-  return GetAllAutoFillProfiles(profile).size();
+  return GetAllProfiles(profile).size();
 }
 
 int GetKeyCount(int profile) {
@@ -412,9 +409,9 @@ bool ProfilesMatchImpl(
 
 bool ProfilesMatch(int profile_a, int profile_b) {
   const std::vector<AutofillProfile*>& autofill_profiles_a =
-      GetAllAutoFillProfiles(profile_a);
+      GetAllProfiles(profile_a);
   const std::vector<AutofillProfile*>& autofill_profiles_b =
-      GetAllAutoFillProfiles(profile_b);
+      GetAllProfiles(profile_b);
   return ProfilesMatchImpl(
       profile_a, autofill_profiles_a, profile_b, autofill_profiles_b);
 }

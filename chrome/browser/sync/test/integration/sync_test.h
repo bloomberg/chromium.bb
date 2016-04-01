@@ -130,10 +130,6 @@ class SyncTest : public InProcessBrowserTest {
   // and manages its lifetime.
   Profile* GetProfile(int index) WARN_UNUSED_RESULT;
 
-  // Returns a list of all profiles including the verifier if available. Callee
-  // owns the objects and manages its lifetime.
-  std::vector<Profile*> GetAllProfiles();
-
   // Returns a pointer to a particular browser. Callee owns the object
   // and manages its lifetime.
   Browser* GetBrowser(int index) WARN_UNUSED_RESULT;
