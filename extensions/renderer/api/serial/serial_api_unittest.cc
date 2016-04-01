@@ -488,7 +488,13 @@ TEST_F(SerialApiTest, GetConnections) {
   RunTest("serial_unittest.js", "testGetConnections");
 }
 
-TEST_F(SerialApiTest, GetControlSignals) {
+// https://crbug.com/599898
+#if defined(LEAK_SANITIZER)
+#define MAYBE_GetControlSignals DISABLED_GetControlSignals
+#else
+#define MAYBE_GetControlSignals GetControlSignals
+#endif
+TEST_F(SerialApiTest, MAYBE_GetControlSignals) {
   io_handler_ = new GetControlSignalsTestIoHandler;
   RunTest("serial_unittest.js", "testGetControlSignals");
   EXPECT_EQ(16u, io_handler_->num_calls());
@@ -500,13 +506,25 @@ TEST_F(SerialApiTest, SetControlSignals) {
   EXPECT_EQ(9u, io_handler_->num_calls());
 }
 
-TEST_F(SerialApiTest, Update) {
+// https://crbug.com/599898
+#if defined(LEAK_SANITIZER)
+#define MAYBE_Update DISABLED_Update
+#else
+#define MAYBE_Update Update
+#endif
+TEST_F(SerialApiTest, MAYBE_Update) {
   io_handler_ = new ConfigurePortTestIoHandler;
   RunTest("serial_unittest.js", "testUpdate");
   EXPECT_EQ(11u, io_handler_->num_calls());
 }
 
-TEST_F(SerialApiTest, UpdateAcrossSerialization) {
+// https://crbug.com/599898
+#if defined(LEAK_SANITIZER)
+#define MAYBE_UpdateAcrossSerialization DISABLED_UpdateAcrossSerialization
+#else
+#define MAYBE_UpdateAcrossSerialization UpdateAcrossSerialization
+#endif
+TEST_F(SerialApiTest, MAYBE_UpdateAcrossSerialization) {
   io_handler_ = new ConfigurePortTestIoHandler;
   RunTest("serial_unittest.js", "testUpdateAcrossSerialization");
   EXPECT_EQ(11u, io_handler_->num_calls());
@@ -701,7 +719,13 @@ TEST_F(SerialApiTest, DISABLED_StashAndRestoreDuringEchoError) {
   new_api_test_env.RunTest("serial_unittest.js", "testRestoreAndReceiveError");
 }
 
-TEST_F(SerialApiTest, StashAndRestoreNoConnections) {
+// https://crbug.com/599898
+#if defined(LEAK_SANITIZER)
+#define MAYBE_StashAndRestoreNoConnections DISABLED_StashAndRestoreNoConnections
+#else
+#define MAYBE_StashAndRestoreNoConnections StashAndRestoreNoConnections
+#endif
+TEST_F(SerialApiTest, MAYBE_StashAndRestoreNoConnections) {
   ASSERT_NO_FATAL_FAILURE(
       RunTest("serial_unittest.js", "testStashNoConnections"));
   io_handler_ = nullptr;

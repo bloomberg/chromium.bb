@@ -95,7 +95,13 @@ TEST_F(DataSenderTest, Send) {
   RunTest("data_sender_unittest.js", "testSend");
 }
 
-TEST_F(DataSenderTest, LargeSend) {
+// https://crbug.com/599898
+#if defined(LEAK_SANITIZER)
+#define MAYBE_LargeSend DISABLED_LargeSend
+#else
+#define MAYBE_LargeSend LargeSend
+#endif
+TEST_F(DataSenderTest, MAYBE_LargeSend) {
   std::string pattern = "123";
   std::string expected_data;
   for (int i = 0; i < 11; i++)
@@ -146,7 +152,13 @@ TEST_F(DataSenderTest, SendErrorBeforeLargeSend) {
   RunTest("data_sender_unittest.js", "testSendErrorBeforeLargeSend");
 }
 
-TEST_F(DataSenderTest, CancelWithoutSend) {
+// https://crbug.com/599898
+#if defined(LEAK_SANITIZER)
+#define MAYBE_CancelWithoutSend DISABLED_CancelWithoutSend
+#else
+#define MAYBE_CancelWithoutSend CancelWithoutSend
+#endif
+TEST_F(DataSenderTest, MAYBE_CancelWithoutSend) {
   RunTest("data_sender_unittest.js", "testCancelWithoutSend");
 }
 
@@ -154,7 +166,13 @@ TEST_F(DataSenderTest, Cancel) {
   RunTest("data_sender_unittest.js", "testCancel");
 }
 
-TEST_F(DataSenderTest, Close) {
+// https://crbug.com/599898
+#if defined(LEAK_SANITIZER)
+#define MAYBE_Close DISABLED_Close
+#else
+#define MAYBE_Close Close
+#endif
+TEST_F(DataSenderTest, MAYBE_Close) {
   RunTest("data_sender_unittest.js", "testClose");
 }
 
@@ -182,7 +200,13 @@ TEST_F(DataSenderTest, SerializeWaitsForCancel) {
   RunTest("data_sender_unittest.js", "testSerializeWaitsForCancel");
 }
 
-TEST_F(DataSenderTest, SerializeAfterClose) {
+// https://crbug.com/599898
+#if defined(LEAK_SANITIZER)
+#define MAYBE_SerializeAfterClose DISABLED_SerializeAfterClose
+#else
+#define MAYBE_SerializeAfterClose SerializeAfterClose
+#endif
+TEST_F(DataSenderTest, MAYBE_SerializeAfterClose) {
   RunTest("data_sender_unittest.js", "testSerializeAfterClose");
 }
 
