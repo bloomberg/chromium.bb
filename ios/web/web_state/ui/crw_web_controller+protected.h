@@ -10,6 +10,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/mac/scoped_nsobject.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/web_state/page_display_state.h"
 #import "ios/web/web_state/crw_pass_kit_downloader.h"
@@ -32,6 +33,19 @@ enum WebViewDocumentType {
   WEB_VIEW_DOCUMENT_TYPE_COUNT,
 };
 }  // namespace web
+
+using web::NavigationManager;
+namespace {
+// Constants for storing the source of NSErrors received by WKWebViews:
+// - Errors received by |-webView:didFailProvisionalNavigation:withError:| are
+//   recorded using WKWebViewErrorSource::PROVISIONAL_LOAD.  These should be
+//   cancelled.
+// - Errors received by |-webView:didFailNavigation:withError:| are recorded
+//   using WKWebViewsource::NAVIGATION.  These errors should not be cancelled,
+//   as the WKWebView will automatically retry the load.
+static NSString* const kWKWebViewErrorSourceKey = @"ErrorSource";
+typedef enum { NONE = 0, PROVISIONAL_LOAD, NAVIGATION } WKWebViewErrorSource;
+}  // namespace
 
 // URL scheme for messages sent from javascript for asynchronous processing.
 static NSString* const kScriptMessageName = @"crwebinvoke";
@@ -102,9 +116,6 @@ static NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 // Sets zoom scale value for webview scroll view from |zoomState|.
 - (void)applyWebViewScrollZoomScaleFromZoomState:
     (const web::PageZoomState&)zoomState;
-
-// Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).
-- (void)handleCancelledError:(NSError*)error;
 
 // Creates a web view with given |config|. No-op if web view is already created.
 - (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config;

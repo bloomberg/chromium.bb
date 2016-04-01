@@ -164,6 +164,13 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
     gesture_recognizer.enabled = YES;
   }
 }
+
+// Utility function for getting the source of NSErrors received by WKWebViews.
+WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
+  DCHECK(error);
+  return static_cast<WKWebViewErrorSource>(
+      [error.userInfo[kWKWebViewErrorSourceKey] integerValue]);
+}
 }  // namespace
 
 @interface CRWWebController () <CRWNativeContentDelegate,
@@ -504,6 +511,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Handles 'window.history.go' message.
 - (BOOL)handleWindowHistoryGoMessage:(base::DictionaryValue*)message
                              context:(NSDictionary*)context;
+
+// Handles cancelled load in WKWebView (error with NSURLErrorCancelled code).
+- (void)handleCancelledError:(NSError*)error;
+
+// Used to decide whether a load that generates errors with the
+// NSURLErrorCancelled code should be cancelled.
+- (BOOL)shouldCancelLoadForCancelledError:(NSError*)error;
 @end
 
 namespace {
@@ -2979,9 +2993,25 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self loadErrorInNativeView:error];
 }
 
-- (void)handleCancelledError:(NSError*)cancelledError {
-  // Subclasses must implement this method.
-  NOTREACHED();
+- (void)handleCancelledError:(NSError*)error {
+  if ([self shouldCancelLoadForCancelledError:error]) {
+    [self loadCancelled];
+    [[self sessionController] discardNonCommittedEntries];
+  }
+}
+
+- (BOOL)shouldCancelLoadForCancelledError:(NSError*)error {
+  DCHECK_EQ(error.code, NSURLErrorCancelled);
+  // Do not cancel the load if it is for an app specific URL, as such errors
+  // are produced during the app specific URL load process.
+  const GURL errorURL =
+      net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
+  if (web::GetWebClient()->IsAppSpecificURL(errorURL))
+    return NO;
+  // Don't cancel NSURLErrorCancelled errors originating from navigation
+  // as the WKWebView will automatically retry these loads.
+  WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
+  return source != NAVIGATION;
 }
 
 #pragma mark -

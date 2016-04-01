@@ -86,15 +86,6 @@ NSString* GetRefererFromNavigationAction(WKNavigationAction* action) {
   return [action.request valueForHTTPHeaderField:@"Referer"];
 }
 
-// Utility functions for storing the source of NSErrors received by WKWebViews:
-// - Errors received by |-webView:didFailProvisionalNavigation:withError:| are
-//   recorded using WKWebViewErrorSource::PROVISIONAL_LOAD.  These should be
-//   aborted.
-// - Errors received by |-webView:didFailNavigation:withError:| are recorded
-//   using WKWebViewsource::NAVIGATION.  These errors should not be aborted, as
-//   the WKWebView will automatically retry the load.
-NSString* const kWKWebViewErrorSourceKey = @"ErrorSource";
-typedef enum { NONE = 0, PROVISIONAL_LOAD, NAVIGATION } WKWebViewErrorSource;
 NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   DCHECK(error);
   base::scoped_nsobject<NSMutableDictionary> userInfo(
@@ -104,12 +95,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
                              code:error.code
                          userInfo:userInfo];
 }
-WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
-  DCHECK(error);
-  return static_cast<WKWebViewErrorSource>(
-      [error.userInfo[kWKWebViewErrorSourceKey] integerValue]);
-}
-
 }  // namespace
 
 #pragma mark -
@@ -344,10 +329,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // Returns YES if there is currently a requested but uncommitted load for
 // |targetURL|.
 - (BOOL)isLoadRequestPendingForURL:(const GURL&)targetURL;
-
-// Used to decide whether a load that generates errors with the
-// NSURLErrorCancelled code should be cancelled.
-- (BOOL)shouldAbortLoadForCancelledError:(NSError*)error;
 
 // Called when WKWebView estimatedProgress has been changed.
 - (void)webViewEstimatedProgressDidChange;
@@ -608,15 +589,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   if (zoomScale > self.webScrollView.maximumZoomScale)
     zoomScale = self.webScrollView.maximumZoomScale;
   self.webScrollView.zoomScale = zoomScale;
-}
-
-- (void)handleCancelledError:(NSError*)error {
-  if ([self shouldAbortLoadForCancelledError:error]) {
-    // Do not abort the load for WKWebView, because calling stopLoading may
-    // stop the subsequent provisional load as well.
-    [self loadCancelled];
-    [[self sessionController] discardNonCommittedEntries];
-  }
 }
 
 // Override |handleLoadError| to check for PassKit case.
@@ -1164,20 +1136,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   web::NavigationItem* pendingItem =
       self.webState->GetNavigationManager()->GetPendingItem();
   return pendingItem && pendingItem->GetURL() == targetURL;
-}
-
-- (BOOL)shouldAbortLoadForCancelledError:(NSError*)error {
-  DCHECK_EQ(error.code, NSURLErrorCancelled);
-  // Do not abort the load if it is for an app specific URL, as such errors
-  // are produced during the app specific URL load process.
-  const GURL errorURL =
-      net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);
-  if (web::GetWebClient()->IsAppSpecificURL(errorURL))
-    return NO;
-  // Don't abort NSURLErrorCancelled errors originating from navigation
-  // as the WKWebView will automatically retry these loads.
-  WKWebViewErrorSource source = WKWebViewErrorSourceFromError(error);
-  return source != NAVIGATION;
 }
 
 #pragma mark -
