@@ -22,7 +22,7 @@ tree {
 }
 
 .expand-icon {
-  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
   -webkit-transition: all 150ms;
   background: url(../images/tree_triangle.svg) no-repeat center center;
   background-size: 8px 5px;
@@ -36,11 +36,11 @@ tree {
 }
 
 html[dir=rtl] .expand-icon {
-  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .tree-item[expanded] > .tree-row > .expand-icon {
-  -webkit-transform: rotate(0);
+  transform: rotate(0);
   background-image: url(../images/tree_triangle.svg);
   opacity: .5;
 }

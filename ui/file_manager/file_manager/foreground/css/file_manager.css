@@ -654,7 +654,7 @@ html[dir='rtl'] #cloud-import-details {
 }
 
 #cloud-import-details.hidden {
-  -webkit-transform: translateY(-10px);
+  transform: translateY(-10px);
   opacity: 0;
 }
 
@@ -1126,7 +1126,7 @@ body.check-select .breadcrumbs {
 }
 
 html[dir='rtl'] .breadcrumbs .separator {
-  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
 }
 
 .filelist-panel {

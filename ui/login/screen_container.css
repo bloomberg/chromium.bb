@@ -88,11 +88,11 @@
 
 /* Only play this animation when 'down' class is removed. */
 .oobe-display #inner-container:not(.down) {
-  -webkit-transition: -webkit-transform 200ms ease-in-out;
+  -webkit-transition: transform 200ms ease-in-out;
 }
 
 .oobe-display #inner-container.down {
-  -webkit-transform: translateY(50px) rotateX(-2.5deg);
+  transform: translateY(50px) rotateX(-2.5deg);
 }
 
 #step-logo {

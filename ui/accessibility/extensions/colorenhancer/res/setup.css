@@ -68,7 +68,7 @@ table input[type="button"] {
 }
 
 .swatch span {
-  -webkit-transform: translate(-5px, -22px);
+  transform: translate(-5px, -22px);
   font: 60pt sans;
   display: flex;
   height: 40px;

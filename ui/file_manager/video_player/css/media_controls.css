@@ -240,26 +240,26 @@ paper-slider.volume {
     opacity: 1;
   }
   to {
-    -webkit-transform: scale(3);
+    transform: scale(3);
     opacity: 0;
   }
 }
 
 @-webkit-keyframes text-banner-blowup {
   from {
-    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
     opacity: 0;
   }
   20% {
-    -webkit-transform: scale(1);
+    transform: scale(1);
     opacity: 0.75;
   }
   80% {
-    -webkit-transform: scale(1);
+    transform: scale(1);
     opacity: 0.75;
   }
   to {
-    -webkit-transform: scale(3);
+    transform: scale(3);
     opacity: 0;
   }
 }

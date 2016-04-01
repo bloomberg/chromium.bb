@@ -44,7 +44,7 @@ button:focus {
 }
 
 .bubble .pointer.bottom {
-  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
   bottom: -11px;
 }
 

@@ -229,16 +229,16 @@ html[dir='rtl'] .entry-name {
 
 @-webkit-keyframes pulse {
  0% {
-   -webkit-transform: scale(1);
+   transform: scale(1);
  }
  40% {
-   -webkit-transform: scale(1.02);
+   transform: scale(1.02);
   }
  60% {
-   -webkit-transform: scale(1.02);
+   transform: scale(1.02);
   }
  100% {
-   -webkit-transform: scale(1);
+   transform: scale(1);
  }
 }
 

@@ -42,8 +42,8 @@
 
       /* Rotating the whole thing */
       @-webkit-keyframes rotate {
-        from {-webkit-transform: rotate(0deg);}
-        to {-webkit-transform: rotate(360deg);}
+        from {transform: rotate(0deg);}
+        to {transform: rotate(360deg);}
       }
       .qp-circular-loader {
         -webkit-animation-name: rotate;
@@ -68,10 +68,10 @@
       }
       @-webkit-keyframes rot {
         from {
-          -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
         }
         to {
-          -webkit-transform: rotate(-360deg);
+          transform: rotate(-360deg);
         }
       }
       @-webkit-keyframes colors {

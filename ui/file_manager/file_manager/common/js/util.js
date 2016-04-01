@@ -259,7 +259,7 @@ util.Transform;
  *                           contains scaleX, scaleY and rotate90 properties.
  */
 util.applyTransform = function(element, transform) {
-  element.style.webkitTransform =
+  element.style.transform =
       transform ? 'scaleX(' + transform.scaleX + ') ' +
                   'scaleY(' + transform.scaleY + ') ' +
                   'rotate(' + transform.rotate90 * 90 + 'deg)' :

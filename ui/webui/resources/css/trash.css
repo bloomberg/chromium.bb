@@ -29,7 +29,7 @@
 
 .trash > .lid {
   -webkit-transform-origin: -7% 100%;
-  -webkit-transition: -webkit-transform 150ms;
+  -webkit-transition: transform 150ms;
   height: 6px;
   width: 14px;
 }
@@ -39,12 +39,12 @@ html[dir='rtl'] .trash > .lid {
 }
 
 .trash:-webkit-any(:focus, :hover, .open) > .lid {
-  -webkit-transform: rotate(-45deg);
-  -webkit-transition: -webkit-transform 250ms;
+  transform: rotate(-45deg);
+  -webkit-transition: transform 250ms;
 }
 
 html[dir='rtl'] .trash:-webkit-any(:focus, :hover, .open) > .lid {
-  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
 }
 
 .trash > .can {

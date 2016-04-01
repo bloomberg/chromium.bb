@@ -502,7 +502,7 @@ html[dir=rtl] .user-type-icon-area {
 }
 
 .action-box-area.menu-moved-up {
-  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 html[dir=rtl] .action-box-area.active ~ .action-box-menu {

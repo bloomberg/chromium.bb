@@ -29,19 +29,19 @@ body[show-alt] img:not([aria-hidden=true]):not([role=presentation]):not([alt='']
 
 @-webkit-keyframes slideDown {
     from {
-      -webkit-transform: translateY(-150%);
+      transform: translateY(-150%);
     }
     to {
-      -webkit-transform: translateY(0px);
+      transform: translateY(0px);
     }
 }
 
 @-webkit-keyframes slideUp {
     from {
-      -webkit-transform: translateY(0%);
+      transform: translateY(0%);
     }
     to {
-      -webkit-transform: translateY(-150%);
+      transform: translateY(-150%);
     }
 }
 
@@ -52,7 +52,7 @@ body[show-alt] .show-alt-infobar {
     -webkit-animation-iteration-count: 1;
     -webkit-animation-timing-function: ease;
     -webkit-animation-direction: forwards;
-    -webkit-transform: translateY(0%);
+    transform: translateY(0%);
 }
 
 body:not([show-alt]) .show-alt-infobar {
@@ -62,7 +62,7 @@ body:not([show-alt]) .show-alt-infobar {
     -webkit-animation-iteration-count: 1;
     -webkit-animation-timing-function: ease;
     -webkit-animation-direction: forwards;
-    -webkit-transform: translateY(-150%);
+    transform: translateY(-150%);
 }
 
 .show-alt-infobar {

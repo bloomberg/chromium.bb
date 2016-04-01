@@ -38,16 +38,16 @@
 
 @-webkit-keyframes pulse {
  0% {
-   -webkit-transform: scale(1);
+   transform: scale(1);
  }
  40% {
-   -webkit-transform: scale(1.02);
+   transform: scale(1.02);
   }
  60% {
-   -webkit-transform: scale(1.02);
+   transform: scale(1.02);
   }
  100% {
-   -webkit-transform: scale(1);
+   transform: scale(1);
  }
 }
 
@@ -59,13 +59,13 @@
 }
 
 .shown > .cr-dialog-frame {
-  -webkit-transform: perspective(500px) scale(1)
+  transform: perspective(500px) scale(1)
                      translateY(0) rotateX(0);
   opacity: 1;
 }
 
 .cr-dialog-frame {
-  -webkit-transform: perspective(500px) scale(0.99)
+  transform: perspective(500px) scale(0.99)
                      translateY(-20px) rotateX(5deg);
   -webkit-transition: all 180ms;
   -webkit-transition-duration: 250ms;

@@ -328,7 +328,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Handles the ends of -webkit-transitions on -webkit-transform (animated
+     * Handles the ends of -webkit-transitions on transform (animated
      * card switches).
      * @param {Event} e The webkitTransitionEnd event.
      * @private
@@ -459,7 +459,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * This re-syncs the -webkit-transform that's used to position the frame in
+     * This re-syncs the transform that's used to position the frame in
      * the likely event it needs to be updated by a card being inserted or
      * removed in the flow.
      */
@@ -566,7 +566,7 @@ cr.define('cr.ui', function() {
       // enough to change cards.
       var transition = '';
       if (opt_animate) {
-        transition = '-webkit-transform ' + CardSlider.TRANSITION_TIME_ +
+        transition = 'transform ' + CardSlider.TRANSITION_TIME_ +
                      'ms ease-in-out';
       }
       this.container_.style.WebkitTransition = transition;
@@ -581,12 +581,12 @@ cr.define('cr.ui', function() {
      * @private
      */
     translateTo_: function(x) {
-      // We use a webkitTransform to slide because this is GPU accelerated on
+      // We use a transform to slide because this is GPU accelerated on
       // Chrome and iOS.  Once Chrome does GPU acceleration on the position
       // fixed-layout elements we could simply set the element's position to
       // fixed and modify 'left' instead.
       this.deltaX_ = x - this.currentLeft_;
-      this.container_.style.WebkitTransform = 'translate3d(' + x + 'px, 0, 0)';
+      this.container_.style.transform = 'translate3d(' + x + 'px, 0, 0)';
     },
 
     /* Touch ******************************************************************/

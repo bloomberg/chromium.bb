@@ -18,7 +18,7 @@ tree {
 }
 
 .tree-row > .expand-icon {
-  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
   -webkit-transition: all 150ms;
   background-image: -webkit-image-set(
       url(../images/files/ui/expand_more.png) 1x,
@@ -37,11 +37,11 @@ tree {
 }
 
 html[dir=rtl] .tree-row > .expand-icon {
-  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .tree-item[expanded] > .tree-row > .expand-icon {
-  -webkit-transform: rotate(0);
+  transform: rotate(0);
 }
 
 .tree-row > .expand-icon {
