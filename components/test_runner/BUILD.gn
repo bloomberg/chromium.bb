@@ -111,8 +111,6 @@ component("test_runner") {
     "//ui/gfx/geometry",
     "//url",
     "//v8",
-
-    #'copy_test_netscape_plugin',  TODO(GYP)
   ]
 }
 

@@ -3301,7 +3301,6 @@
           'target_name': 'browser_tests_run',
           'type': 'none',
           'dependencies': [
-            '../content/content_shell_and_tests.gyp:copy_test_netscape_plugin',
             'browser_tests',
             'chrome',
           ],

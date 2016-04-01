@@ -415,16 +415,9 @@ test("content_browsertests") {
       ]
 
       if (is_mac) {
-        data += [
-          "$root_out_dir/Content Shell.app/",
-          "$root_out_dir/plugins/test_netscape_plugin.plugin/",
-        ]
+        data += [ "$root_out_dir/Content Shell.app/" ]
       }
       if (is_win) {
-        # TODO(GYP): Add this once //content/shell:copy_test_netscape_plugin
-        # exists.
-        #data += [ "$root_out_dir/plugins/np_test_netscape_plugin.dll" ]
-
         if (symbol_level != 0) {
           data += [ "$root_out_dir/content_browsertests.exe.pdb" ]
         }

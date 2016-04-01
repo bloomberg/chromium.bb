@@ -252,8 +252,6 @@ static_library("content_shell_lib") {
     "//ui/gl",
     "//url",
     "//v8",
-
-    #'copy_test_netscape_plugin',  TODO(GYP)
   ]
   if (enable_plugins) {
     deps += [
@@ -294,7 +292,6 @@ static_library("content_shell_lib") {
 
   if (is_android) {
     deps += [ "//content/shell/android:content_shell_jni_headers" ]
-    #deps -= [ "copy_test_netscape_plugin" ]  TODO(GYP)
   }
 
   if (is_posix && !is_mac) {
@@ -330,11 +327,6 @@ static_library("content_shell_lib") {
       "browser/shell_platform_data_aura.cc",
       "browser/shell_platform_data_aura.h",
     ]
-  }
-
-  # The test plugin relies on X11.
-  if (is_linux && !use_x11) {
-    #deps -= [ 'copy_test_netscape_plugin' ]  TODO(GYP)
   }
 
   if (is_chromeos) {
