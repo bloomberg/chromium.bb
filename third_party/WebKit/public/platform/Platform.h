@@ -466,7 +466,6 @@ public:
         unsigned processCrashCount = 0;
         unsigned resetNotificationStrategy = 0;
         bool sandboxed = false;
-        bool testFailContext = false;
         bool amdSwitchable = false;
         bool optimus = false;
         WebString vendorInfo;

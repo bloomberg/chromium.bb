@@ -564,7 +564,6 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGra
 
     WebGraphicsContext3D::Attributes wgc3dAttributes = toWebGraphicsContext3DAttributes(attributes, document.topDocument().url().getString(), settings, webGLVersion);
     Platform::GraphicsInfo glInfo;
-    glInfo.testFailContext = shouldFailContextCreationForTesting;
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(wgc3dAttributes, 0, &glInfo));
     if (!contextProvider || shouldFailContextCreationForTesting) {
         shouldFailContextCreationForTesting = false;
