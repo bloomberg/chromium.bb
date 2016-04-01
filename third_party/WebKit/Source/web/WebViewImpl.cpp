@@ -69,6 +69,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -3425,10 +3426,10 @@ IntSize WebViewImpl::contentsSize() const
 {
     if (!page()->mainFrame()->isLocalFrame())
         return IntSize();
-    LayoutView* root = page()->deprecatedLocalMainFrame()->contentLayoutObject();
-    if (!root)
+    LayoutViewItem root = page()->deprecatedLocalMainFrame()->contentLayoutItem();
+    if (root.isNull())
         return IntSize();
-    return root->documentRect().size();
+    return root.documentRect().size();
 }
 
 WebSize WebViewImpl::contentsPreferredMinimumSize()
