@@ -511,7 +511,7 @@ unsigned AudioHandler::numberOfOutputChannels() const
     // This should only be called for ScriptProcessorNodes which are the only nodes where you can
     // have an output with 0 channels.  All other nodes have have at least one output channel, so
     // there's no reason other nodes should ever call this function.
-    DCHECK(1) << "numberOfOutputChannels() not valid for node type " << getNodeType();
+    DCHECK(0) << "numberOfOutputChannels() not valid for node type " << getNodeType();
     return 1;
 }
 // ----------------------------------------------------------------
