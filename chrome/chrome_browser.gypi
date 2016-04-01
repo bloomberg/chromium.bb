@@ -1134,8 +1134,6 @@
       'browser/shell_integration_linux.cc',
       'browser/shell_integration_linux.h',
       'browser/speech/tts_linux.cc',
-      'browser/sxs_linux.cc',
-      'browser/sxs_linux.h',
       'browser/themes/theme_service_aurax11.cc',
       'browser/themes/theme_service_aurax11.h',
       'browser/web_applications/web_app_linux.cc',

@@ -329,10 +329,6 @@ extern const char kHelpShort[];
 extern const char kPasswordStore[];
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-extern const char kMigrateDataDirForSxS[];
-#endif
-
 #if defined(OS_MACOSX)
 extern const char kAppsKeepChromeAliveInTests[];
 extern const char kHostedAppQuitNotification[];

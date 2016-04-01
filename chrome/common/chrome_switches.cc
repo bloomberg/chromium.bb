@@ -1135,14 +1135,6 @@ const char kHelpShort[]                     = "h";
 const char kPasswordStore[]                 = "password-store";
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Triggers migration of user data directory to another directory
-// specified as a parameter. The migration is done under singleton lock,
-// and sanity checks are made to avoid corrupting the profile.
-// The browser exits after migration is complete.
-const char kMigrateDataDirForSxS[]          = "migrate-data-dir-for-sxs";
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
 #if defined(OS_MACOSX)
 // Prevents Chrome from quitting when Chrome Apps are open.
 const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";

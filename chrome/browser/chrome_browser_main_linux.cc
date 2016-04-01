@@ -18,7 +18,6 @@
 
 #if !defined(OS_CHROMEOS)
 #include "base/linux_util.h"
-#include "chrome/browser/sxs_linux.h"
 #include "content/public/browser/browser_thread.h"
 #endif
 
@@ -47,10 +46,6 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   content::BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&base::GetLinuxDistro)));
-
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(&sxs_linux::AddChannelMarkToUserDataDir));
 #endif
 
   media::AudioManager::SetGlobalAppName(
