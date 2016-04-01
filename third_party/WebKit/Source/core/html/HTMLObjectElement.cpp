@@ -421,19 +421,6 @@ void HTMLObjectElement::didMoveToNewDocument(Document& oldDocument)
     HTMLPlugInElement::didMoveToNewDocument(oldDocument);
 }
 
-void HTMLObjectElement::appendToFormData(FormData& formData)
-{
-    if (name().isEmpty())
-        return;
-
-    Widget* widget = pluginWidget();
-    if (!widget || !widget->isPluginView())
-        return;
-    String value;
-    if (toPluginView(widget)->getFormValue(value))
-        formData.append(name(), value);
-}
-
 HTMLFormElement* HTMLObjectElement::formOwner() const
 {
     return FormAssociatedElement::form();

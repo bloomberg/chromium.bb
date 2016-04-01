@@ -72,7 +72,6 @@ class WebPluginImpl : public WebPlugin,
   // blink::WebPlugin methods:
   bool initialize(blink::WebPluginContainer* container) override;
   void destroy() override;
-  bool getFormValue(blink::WebString& value) override;
   void updateAllLifecyclePhases() override;
   void paint(blink::WebCanvas* canvas,
              const blink::WebRect& paint_rect) override;

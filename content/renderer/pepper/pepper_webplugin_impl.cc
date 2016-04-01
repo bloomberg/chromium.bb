@@ -190,8 +190,6 @@ v8::Local<v8::Object> PepperWebPluginImpl::v8ScriptableObject(
   return result;
 }
 
-bool PepperWebPluginImpl::getFormValue(WebString& value) { return false; }
-
 void PepperWebPluginImpl::paint(WebCanvas* canvas, const WebRect& rect) {
   if (!instance_->FlashIsFullscreenOrPending())
     instance_->Paint(canvas, plugin_rect_, rect);

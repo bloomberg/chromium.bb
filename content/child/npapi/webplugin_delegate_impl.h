@@ -88,7 +88,6 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   void SetFocus(bool focused) override;
   bool HandleInputEvent(const blink::WebInputEvent& event,
                         WebCursor::CursorInfo* cursor_info) override;
-  bool GetFormValue(base::string16* value) override;
   int GetProcessId() override;
   // End of WebPluginDelegate implementation.
 

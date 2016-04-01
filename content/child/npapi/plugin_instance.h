@@ -115,9 +115,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // seekable.
   WebPluginResourceClient* GetRangeRequest(int id);
 
-  // Returns the form value of this instance.
-  bool GetFormValue(base::string16* value);
-
   // If true, send the Mozilla user agent instead of Chrome's to the plugin.
   bool use_mozilla_user_agent() { return use_mozilla_user_agent_; }
   void set_use_mozilla_user_agent() { use_mozilla_user_agent_ = true; }

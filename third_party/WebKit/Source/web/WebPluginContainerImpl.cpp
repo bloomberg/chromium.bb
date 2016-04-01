@@ -640,16 +640,6 @@ v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isol
     return object;
 }
 
-bool WebPluginContainerImpl::getFormValue(String& value)
-{
-    WebString webValue;
-    if (m_webPlugin->getFormValue(webValue)) {
-        value = webValue;
-        return true;
-    }
-    return false;
-}
-
 bool WebPluginContainerImpl::supportsKeyboardFocus() const
 {
     return m_webPlugin->supportsKeyboardFocus();

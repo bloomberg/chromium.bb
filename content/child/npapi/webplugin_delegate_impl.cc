@@ -161,10 +161,6 @@ void WebPluginDelegateImpl::SetContentAreaHasFocus(bool has_focus) {
 #endif
 }
 
-bool WebPluginDelegateImpl::GetFormValue(base::string16* value) {
-  return instance_->GetFormValue(value);
-}
-
 int WebPluginDelegateImpl::GetProcessId() {
   // We are in process, so the plugin pid is this current process pid.
   return base::GetCurrentProcId();

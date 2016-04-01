@@ -68,7 +68,6 @@ class WebPluginDelegateProxy
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect) override;
   void Paint(SkCanvas* canvas, const gfx::Rect& rect) override;
-  bool GetFormValue(base::string16* value) override;
   void SetFocus(bool focused) override;
   bool HandleInputEvent(const blink::WebInputEvent& event,
                         WebCursor::CursorInfo* cursor) override;

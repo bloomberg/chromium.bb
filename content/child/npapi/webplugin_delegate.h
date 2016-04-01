@@ -77,10 +77,6 @@ class WebPluginDelegate {
   virtual bool HandleInputEvent(const blink::WebInputEvent& event,
                                 WebCursor::CursorInfo* cursor) = 0;
 
-  // Gets the form value associated with the plugin instance.
-  // Returns false if the value is not available.
-  virtual bool GetFormValue(base::string16* value) = 0;
-
   // Returns the process id of the process that is running the plugin.
   virtual int GetProcessId() = 0;
 };

@@ -66,7 +66,6 @@ class WebPluginDelegateStub : public IPC::Listener,
   void OnPaint(const gfx::Rect& damaged_rect);
   void OnDidPaint();
   void OnUpdateGeometry(const PluginMsg_UpdateGeometry_Param& param);
-  void OnGetFormValue(base::string16* value, bool* success);
 
   void OnSetContentAreaFocus(bool has_focus);
 #if defined(OS_MACOSX)

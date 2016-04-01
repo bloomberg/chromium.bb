@@ -143,16 +143,6 @@ void WebPluginImpl::destroy() {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-bool WebPluginImpl::getFormValue(blink::WebString& value) {
-  if (!delegate_)
-    return false;
-  base::string16 form_value;
-  if (!delegate_->GetFormValue(&form_value))
-    return false;
-  value = form_value;
-  return true;
-}
-
 void WebPluginImpl::updateAllLifecyclePhases() {
   if (!container_)
     return;

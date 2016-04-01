@@ -523,12 +523,6 @@ void WebPluginDelegateProxy::Paint(SkCanvas* canvas,
   }
 }
 
-bool WebPluginDelegateProxy::GetFormValue(base::string16* value) {
-  bool success = false;
-  Send(new PluginMsg_GetFormValue(instance_id_, value, &success));
-  return success;
-}
-
 void WebPluginDelegateProxy::SetFocus(bool focused) {
   Send(new PluginMsg_SetFocus(instance_id_, focused));
 }

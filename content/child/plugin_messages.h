@@ -78,11 +78,6 @@ IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_Paint,
 // plugin knows it can send more invalidates.
 IPC_MESSAGE_ROUTED0(PluginMsg_DidPaint)
 
-// Gets the form value of the plugin instance synchronously.
-IPC_SYNC_MESSAGE_ROUTED0_2(PluginMsg_GetFormValue,
-                           base::string16 /* value */,
-                           bool /* success */)
-
 // Updates the plugin location.
 IPC_MESSAGE_ROUTED1(PluginMsg_UpdateGeometry,
                     PluginMsg_UpdateGeometry_Param)

@@ -73,7 +73,6 @@ public:
     // PluginView methods
     WebLayer* platformLayer() const override;
     v8::Local<v8::Object> scriptableObject(v8::Isolate*) override;
-    bool getFormValue(String&) override;
     bool supportsKeyboardFocus() const override;
     bool supportsInputMethod() const override;
     bool canProcessDrag() const override;

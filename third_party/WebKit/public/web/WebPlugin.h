@@ -85,10 +85,6 @@ public:
 
     virtual v8::Local<v8::Object> v8ScriptableObject(v8::Isolate*) { return v8::Local<v8::Object>(); }
 
-    // Returns true if the form submission value is successfully obtained
-    // from the plugin. The value would be associated with the name attribute
-    // of the corresponding object element.
-    virtual bool getFormValue(WebString&) { return false; }
     virtual bool supportsKeyboardFocus() const { return false; }
     virtual bool supportsEditCommands() const { return false; }
     // Returns true if this plugin supports input method, which implements

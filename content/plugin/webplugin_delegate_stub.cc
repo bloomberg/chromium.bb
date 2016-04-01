@@ -83,7 +83,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_HandleInputEvent, OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(PluginMsg_Paint, OnPaint)
     IPC_MESSAGE_HANDLER(PluginMsg_DidPaint, OnDidPaint)
-    IPC_MESSAGE_HANDLER(PluginMsg_GetFormValue, OnGetFormValue)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometry, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometrySync, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_SetContentAreaFocus, OnSetContentAreaFocus)
@@ -177,14 +176,6 @@ void WebPluginDelegateStub::OnUpdateGeometry(
       param.window_rect, param.clip_rect,
       param.windowless_buffer0, param.windowless_buffer1,
       param.windowless_buffer_index);
-}
-
-void WebPluginDelegateStub::OnGetFormValue(base::string16* value,
-                                           bool* success) {
-  *success = false;
-  if (!delegate_)
-    return;
-  *success = delegate_->GetFormValue(value);
 }
 
 void WebPluginDelegateStub::OnSetContentAreaFocus(bool has_focus) {
