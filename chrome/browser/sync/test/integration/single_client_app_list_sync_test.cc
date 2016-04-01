@@ -21,9 +21,8 @@ namespace {
 
 const size_t kNumDefaultApps = 2;
 
-bool AllProfilesHaveSameAppListAsVerifier() {
-  return SyncAppListHelper::GetInstance()->
-      AllProfilesHaveSameAppListAsVerifier();
+bool AllProfilesHaveSameAppList() {
+  return SyncAppListHelper::GetInstance()->AllProfilesHaveSameAppList();
 }
 
 }  // namespace
@@ -57,7 +56,7 @@ class SingleClientAppListSyncTest : public SyncTest {
 IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListEmpty) {
   ASSERT_TRUE(SetupSync());
 
-  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+  ASSERT_TRUE(AllProfilesHaveSameAppList());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListSomeApps) {
@@ -74,6 +73,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListSomeApps) {
   ASSERT_EQ(kNumApps + kNumDefaultApps, service->GetNumSyncItemsForTest());
 
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
-  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+  ASSERT_TRUE(AllProfilesHaveSameAppList());
 
 }

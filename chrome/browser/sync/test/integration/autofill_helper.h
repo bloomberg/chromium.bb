@@ -88,7 +88,7 @@ void UpdateProfile(int profile,
 
 // Gets all the Autofill profiles in the PersonalDataManager of sync profile
 // |profile|.
-const std::vector<autofill::AutofillProfile*>& GetAllProfiles(
+const std::vector<autofill::AutofillProfile*>& GetAllAutoFillProfiles(
     int profile) WARN_UNUSED_RESULT;
 
 // Returns the number of autofill profiles contained by sync profile

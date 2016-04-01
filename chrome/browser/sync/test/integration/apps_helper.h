@@ -13,13 +13,13 @@ class Profile;
 
 namespace apps_helper {
 
-// Returns true iff the profile with index |index| has the same apps (hosted,
-// legacy packaged and platform) as the verifier.
-bool HasSameAppsAsVerifier(int index) WARN_UNUSED_RESULT;
+// Returns true iff |profile1| has same apps (hosted, legacy packaged and
+// platform) as |profile2|.
+bool HasSameApps(Profile* profile1, Profile* profile2);
 
 // Returns true iff all existing profiles have the same apps (hosted,
-// legacy packaged and platform) as the verifier.
-bool AllProfilesHaveSameAppsAsVerifier() WARN_UNUSED_RESULT;
+// legacy packaged and platform).
+bool AllProfilesHaveSameApps() WARN_UNUSED_RESULT;
 
 // Installs the app for the given index to |profile|, and returns the extension
 // ID of the new app.
@@ -47,11 +47,18 @@ void EnableApp(Profile* profile, int index);
 // Disables the app for the given index on |profile|.
 void DisableApp(Profile* profile, int index);
 
+// Returns true if the app with index |index| is enabled on |profile|.
+bool IsAppEnabled(Profile* profile, int index);
+
 // Enables the app for the given index in incognito mode on |profile|.
 void IncognitoEnableApp(Profile* profile, int index);
 
 // Disables the app for the given index in incognito mode on |profile|.
 void IncognitoDisableApp(Profile* profile, int index);
+
+// Returns true if the app with index |index| is enabled in incognito mode on
+// |profile|.
+bool IsIncognitoEnabled(Profile* profile, int index);
 
 // Gets the page ordinal value for the application at the given index on
 // |profile|.
