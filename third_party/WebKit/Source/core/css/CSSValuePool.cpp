@@ -28,6 +28,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/style/ComputedStyle.h"
+#include "wtf/Threading.h"
 
 namespace blink {
 
@@ -78,6 +79,14 @@ PassRefPtrWillBeRawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbV
     if (rgbValue == Color::black)
         return m_colorBlack;
 
+    if (!isMainThread()) {
+        // TODO (crbug.com/599659): Make CSS color parsing work properly in a
+        // worker thread.
+        // Currently, ColorValueCache is not thread-safe; so we avoid interacting
+        // with it on a non-main thread.
+        return CSSColorValue::create(rgbValue);
+    }
+
     // Just wipe out the cache and start rebuilding if it gets too big.
     const unsigned maximumColorCacheSize = 512;
     if (m_colorValueCache.size() > maximumColorCacheSize)
@@ -87,6 +96,7 @@ PassRefPtrWillBeRawPtr<CSSColorValue> CSSValuePool::createColorValue(RGBA32 rgbV
     ColorValueCache::AddResult entry = m_colorValueCache.add(rgbValue, dummyValue);
     if (entry.isNewEntry)
         entry.storedValue->value = CSSColorValue::create(rgbValue);
+
     return entry.storedValue->value;
 }
 
