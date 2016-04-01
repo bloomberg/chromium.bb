@@ -45,14 +45,26 @@ class TCPServerSocketFactory
         last_tethering_port_(kMinTetheringPort) {}
 
  private:
+  scoped_ptr<net::ServerSocket> CreateLocalHostServerSocket(int port) {
+    scoped_ptr<net::ServerSocket> socket(
+        new net::TCPServerSocket(nullptr, net::NetLog::Source()));
+    if (socket->ListenWithAddressAndPort(
+            "127.0.0.1", port, kBackLog) == net::OK)
+      return socket;
+    if (socket->ListenWithAddressAndPort("::1", port, kBackLog) == net::OK)
+      return socket;
+    return scoped_ptr<net::ServerSocket>();
+  }
+
   // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
     scoped_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
-    if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) != net::OK)
-      return scoped_ptr<net::ServerSocket>();
-
-    return socket;
+    if (address_.empty())
+      return CreateLocalHostServerSocket(port_);
+    if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) == net::OK)
+      return socket;
+    return scoped_ptr<net::ServerSocket>();
   }
 
   scoped_ptr<net::ServerSocket> CreateForTethering(std::string* name) override {
@@ -63,13 +75,7 @@ class TCPServerSocketFactory
       last_tethering_port_ = kMinTetheringPort;
     uint16_t port = ++last_tethering_port_;
     *name = base::UintToString(port);
-    scoped_ptr<net::TCPServerSocket> socket(
-        new net::TCPServerSocket(nullptr, net::NetLog::Source()));
-    if (socket->ListenWithAddressAndPort("127.0.0.1", port, kBackLog) !=
-        net::OK) {
-      return scoped_ptr<net::ServerSocket>();
-    }
-    return std::move(socket);
+    return CreateLocalHostServerSocket(port);
   }
 
   std::string address_;
