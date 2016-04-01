@@ -41,10 +41,15 @@ if [[ "$DEPOT_TOOLS" = "$0" ]]; then
 else
   BASENAME="${0##*\\}"
 fi
+
 SCRIPT="${SCRIPT-${BASENAME//-/_}.py}"
 
-if [[ -e "$DEPOT_TOOLS/python.bat" && $OSTYPE = msys ]]; then
-  cmd.exe //c "$DEPOT_TOOLS\\python.bat" "$DEPOT_TOOLS\\$SCRIPT" "$@"
+if [[ $PYTHON_DIRECT = 1 ]]; then
+  python.exe "$DEPOT_TOOLS\\$SCRIPT" "$@"
 else
-  exec "$DEPOT_TOOLS/$SCRIPT" "$@"
+  if [[ -e "$DEPOT_TOOLS/python.bat" && $OSTYPE = msys ]]; then
+    cmd.exe //c "$DEPOT_TOOLS\\python.bat" "$DEPOT_TOOLS\\$SCRIPT" "$@"
+  else
+    exec "$DEPOT_TOOLS/$SCRIPT" "$@"
+  fi
 fi

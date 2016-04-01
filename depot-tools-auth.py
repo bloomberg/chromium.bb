@@ -14,6 +14,7 @@ Usage:
 import logging
 import optparse
 import sys
+import os
 
 from third_party import colorama
 
@@ -94,7 +95,7 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  colorama.init()
+  colorama.init(wrap="TERM" not in os.environ)
   try:
     sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
