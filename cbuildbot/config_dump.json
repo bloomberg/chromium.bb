@@ -10297,7 +10297,8 @@
                 "vm_tests": []
             }
         ],
-        "description": "Release Builds (canary) (internal); Group config (boards: kunimitsu, lars, sentry)"
+        "description": "Release Builds (canary) (internal); Group config (boards: kunimitsu, lars, sentry)",
+        "important": true
     },
     "kunimitsu-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",

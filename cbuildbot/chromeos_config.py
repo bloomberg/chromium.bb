@@ -664,7 +664,6 @@ _waterfall_config_map = {
         'amd64-generic-goofy-release',
         'gale-release',
         'gru-release',
-        'kunimitsu-release-group',
         'lakitu_next-release',
         'nyan_freon-release',
         'smaug-release',
@@ -2918,7 +2917,6 @@ def GetConfig():
           'lars',
           'sentry',
       ),
-      important=False,
   )
 
   # gru-based boards
