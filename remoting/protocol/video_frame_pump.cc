@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
+#include "remoting/base/constants.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/video_stub.h"
@@ -122,12 +123,16 @@ void VideoFramePump::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
 
   captured_frame_timestamps_->capture_ended_time = base::TimeTicks::Now();
 
-  if (frame && (!frame_size_.equals(frame->size()) ||
-                !frame_dpi_.equals(frame->dpi()))) {
-    frame_size_ = frame->size();
-    frame_dpi_ = frame->dpi();
-    if (!size_callback_.is_null())
-      size_callback_.Run(frame_size_, frame_dpi_);
+  if (frame) {
+    webrtc::DesktopVector dpi =
+        frame->dpi().is_zero() ? webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)
+                               : frame->dpi();
+    if (!frame_size_.equals(frame->size()) || !frame_dpi_.equals(dpi)) {
+      frame_size_ = frame->size();
+      frame_dpi_ = dpi;
+      if (!size_callback_.is_null())
+        size_callback_.Run(frame_size_, frame_dpi_);
+    }
   }
 
   // Even when |frame| is nullptr we still need to post it to the encode thread

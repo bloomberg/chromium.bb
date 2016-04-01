@@ -22,7 +22,7 @@ namespace protocol {
 class VideoStream {
  public:
   // Callback used to notify about screen size changes. The size must be
-  // specified in DIPs.
+  // specified in physical pixels.
   typedef base::Callback<void(const webrtc::DesktopSize& size,
                               const webrtc::DesktopVector& dpi)>
       SizeCallback;

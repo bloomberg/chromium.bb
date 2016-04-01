@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "remoting/base/constants.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/webrtc/media/engine/webrtcvideoframe.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -164,17 +165,24 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
   // WebRTC needs to have some mechanism to notify when the bandwidth is
   // exceeded, so the capturer can adapt frame rate.
 
-  int width = frame->size().width();
-  int height = frame->size().height();
-  if (!yuv_frame_ || yuv_frame_->width() != width ||
-      yuv_frame_->height() != height) {
+  webrtc::DesktopVector dpi =
+      frame->dpi().is_zero() ? webrtc::DesktopVector(kDefaultDpi, kDefaultDpi)
+                             : frame->dpi();
+  if (!frame_size_.equals(frame->size()) || !frame_dpi_.equals(dpi)) {
+    frame_size_ = frame->size();
+    frame_dpi_ = dpi;
     if (!size_callback_.is_null())
-      size_callback_.Run(frame->size(), frame->dpi());
+      size_callback_.Run(frame_size_, frame_dpi_);
+  }
 
-    yuv_frame_ = new rtc::RefCountedObject<webrtc::I420Buffer>(width, height);
+  if (!yuv_frame_ ||
+      !frame_size_.equals(
+          webrtc::DesktopSize(yuv_frame_->width(), yuv_frame_->height()))) {
+    yuv_frame_ = new rtc::RefCountedObject<webrtc::I420Buffer>(
+        frame_size_.width(), frame_size_.height());
     // Set updated_region so the whole frame is converted to YUV below.
     frame->mutable_updated_region()->SetRect(
-        webrtc::DesktopRect::MakeWH(width, height));
+        webrtc::DesktopRect::MakeSize(frame_size_));
   }
 
   if (!yuv_frame_->HasOneRef()) {

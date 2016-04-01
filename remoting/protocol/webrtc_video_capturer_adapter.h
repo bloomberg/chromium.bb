@@ -18,6 +18,7 @@
 #include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/media/base/videocapturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -79,6 +80,9 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
 
   // Timer to call CaptureNextFrame().
   scoped_ptr<base::RepeatingTimer> capture_timer_;
+
+  webrtc::DesktopSize frame_size_;
+  webrtc::DesktopVector frame_dpi_;
 
   // Video frame is kept between captures to avoid YUV conversion for static
   // parts of the screen.
