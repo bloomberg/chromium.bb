@@ -237,26 +237,6 @@
             "group_name": "Enabled"
         }
     ],
-    "PreconnectMore": [
-        {
-            "enable_features": [
-                "PreconnectMore"
-            ],
-            "group_name": "PreconnectMoreAllFrames",
-            "params": {
-                "preconnect_subframes": "true"
-            }
-        },
-        {
-            "enable_features": [
-                "PreconnectMore"
-            ],
-            "group_name": "PreconnectMoreMainFrameOnly",
-            "params": {
-                "preconnect_subframes": "false"
-            }
-        }
-    ],
     "ProgressBarAnimationAndroid": [
         {
             "group_name": "SmoothAnimation",
