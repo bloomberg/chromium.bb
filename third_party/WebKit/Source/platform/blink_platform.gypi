@@ -1243,6 +1243,7 @@
       'testing/CompositorTest.cpp',
       'testing/CompositorTest.h',
       'testing/FakeDisplayItemClient.h',
+      'testing/FakeGraphicsLayer.h',
       'testing/FontTestHelpers.cpp',
       'testing/FontTestHelpers.h',
       'testing/GeometryPrinters.cpp',

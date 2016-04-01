@@ -8,6 +8,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
+#include "platform/testing/FakeGraphicsLayer.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -156,17 +157,12 @@ public:
     bool isTrackingPaintInvalidations() const override { return true; }
 };
 
-class MockGraphicsLayer : public GraphicsLayer {
-public:
-    explicit MockGraphicsLayer(GraphicsLayerClient* client) : GraphicsLayer(client) { }
-};
-
 TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation)
 {
     ScrollbarTheme::setMockScrollbarsEnabled(true);
     RawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(IntPoint(0, 100));
     MockGraphicsLayerClient graphicsLayerClient;
-    MockGraphicsLayer graphicsLayer(&graphicsLayerClient);
+    FakeGraphicsLayer graphicsLayer(&graphicsLayerClient);
     graphicsLayer.setDrawsContent(true);
     graphicsLayer.setSize(FloatSize(111, 222));
 
@@ -229,10 +225,10 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint)
     // Composited scrollbars only need repainting when parts become invalid
     // (e.g. if the track changes appearance when the thumb reaches the end).
     MockGraphicsLayerClient graphicsLayerClient;
-    MockGraphicsLayer layerForHorizontalScrollbar(&graphicsLayerClient);
+    FakeGraphicsLayer layerForHorizontalScrollbar(&graphicsLayerClient);
     layerForHorizontalScrollbar.setDrawsContent(true);
     layerForHorizontalScrollbar.setSize(FloatSize(10, 10));
-    MockGraphicsLayer layerForVerticalScrollbar(&graphicsLayerClient);
+    FakeGraphicsLayer layerForVerticalScrollbar(&graphicsLayerClient);
     layerForVerticalScrollbar.setDrawsContent(true);
     layerForVerticalScrollbar.setSize(FloatSize(10, 10));
     EXPECT_CALL(*scrollableArea, layerForHorizontalScrollbar()).WillRepeatedly(Return(&layerForHorizontalScrollbar));

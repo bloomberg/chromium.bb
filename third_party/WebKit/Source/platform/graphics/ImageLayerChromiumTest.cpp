@@ -25,6 +25,7 @@
 #include "platform/graphics/Image.h"
 
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/testing/FakeGraphicsLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -96,20 +97,12 @@ private:
     RefPtr<SkImage> m_image;
 };
 
-class GraphicsLayerForTesting : public GraphicsLayer {
-public:
-    explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
-        : GraphicsLayer(client)
-    {
-    }
-};
-
 } // anonymous namespace
 
 TEST(ImageLayerChromiumTest, imageLayerContentReset)
 {
     MockGraphicsLayerClient client;
-    OwnPtr<GraphicsLayerForTesting> graphicsLayer = adoptPtr(new GraphicsLayerForTesting(&client));
+    OwnPtr<FakeGraphicsLayer> graphicsLayer = adoptPtr(new FakeGraphicsLayer(&client));
     ASSERT_TRUE(graphicsLayer.get());
 
     ASSERT_FALSE(graphicsLayer->hasContentsLayer());
@@ -131,7 +124,7 @@ TEST(ImageLayerChromiumTest, imageLayerContentReset)
 TEST(ImageLayerChromiumTest, opaqueImages)
 {
     MockGraphicsLayerClient client;
-    OwnPtr<GraphicsLayerForTesting> graphicsLayer = adoptPtr(new GraphicsLayerForTesting(&client));
+    OwnPtr<FakeGraphicsLayer> graphicsLayer = adoptPtr(new FakeGraphicsLayer(&client));
     ASSERT_TRUE(graphicsLayer.get());
 
     bool opaque = true;

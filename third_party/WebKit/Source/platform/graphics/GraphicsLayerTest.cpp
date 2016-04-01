@@ -31,6 +31,7 @@
 #include "platform/animation/CompositorFloatAnimationCurve.h"
 #include "platform/graphics/CompositorFactory.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "platform/testing/FakeGraphicsLayer.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
@@ -56,21 +57,15 @@ public:
     String debugName(const GraphicsLayer*) const override { return String(); }
 };
 
-class GraphicsLayerForTesting : public GraphicsLayer {
-public:
-    explicit GraphicsLayerForTesting(GraphicsLayerClient* client)
-        : GraphicsLayer(client) { }
-};
-
 } // anonymous namespace
 
 class GraphicsLayerTest : public testing::Test {
 public:
     GraphicsLayerTest()
     {
-        m_clipLayer = adoptPtr(new GraphicsLayerForTesting(&m_client));
-        m_scrollElasticityLayer = adoptPtr(new GraphicsLayerForTesting(&m_client));
-        m_graphicsLayer = adoptPtr(new GraphicsLayerForTesting(&m_client));
+        m_clipLayer = adoptPtr(new FakeGraphicsLayer(&m_client));
+        m_scrollElasticityLayer = adoptPtr(new FakeGraphicsLayer(&m_client));
+        m_graphicsLayer = adoptPtr(new FakeGraphicsLayer(&m_client));
         m_clipLayer->addChild(m_scrollElasticityLayer.get());
         m_scrollElasticityLayer->addChild(m_graphicsLayer.get());
         m_graphicsLayer->platformLayer()->setScrollClipLayer(
@@ -94,9 +89,9 @@ public:
 
 protected:
     WebLayer* m_platformLayer;
-    OwnPtr<GraphicsLayerForTesting> m_graphicsLayer;
-    OwnPtr<GraphicsLayerForTesting> m_scrollElasticityLayer;
-    OwnPtr<GraphicsLayerForTesting> m_clipLayer;
+    OwnPtr<FakeGraphicsLayer> m_graphicsLayer;
+    OwnPtr<FakeGraphicsLayer> m_scrollElasticityLayer;
+    OwnPtr<FakeGraphicsLayer> m_clipLayer;
 
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;
