@@ -11,10 +11,6 @@
 #include "wtf/Alignment.h"
 #include "wtf/Assertions.h"
 
-#ifndef NDEBUG
-#include "wtf/text/WTFString.h"
-#endif
-
 namespace blink {
 
 struct PaintChunk;
@@ -45,24 +41,7 @@ public:
         return *this;
     }
 
-    DisplayItem& appendByMoving(DisplayItem& item, const IntRect& visualRect)
-    {
-#ifndef NDEBUG
-        WTF::String originalDebugString = item.asDebugString();
-#endif
-        ASSERT(item.hasValidClient());
-        DisplayItem& result = ContiguousContainer::appendByMoving(item, item.derivedSize());
-        // ContiguousContainer::appendByMoving() calls an in-place constructor
-        // on item which replaces it with a tombstone/"dead display item" that
-        // can be safely destructed but should never be used.
-        ASSERT(!item.hasValidClient());
-#ifndef NDEBUG
-        // Save original debug string in the old item to help debugging.
-        item.setClientDebugString(originalDebugString);
-#endif
-        appendVisualRect(visualRect);
-        return result;
-    }
+    DisplayItem& appendByMoving(DisplayItem&, const IntRect& visualRect);
 
     IntRect visualRect(unsigned index) const
     {
@@ -73,16 +52,7 @@ public:
     void appendVisualRect(const IntRect& visualRect);
 
 #if ENABLE(ASSERT)
-    void assertDisplayItemClientsAreAlive() const
-    {
-        for (auto& item : *this) {
-#ifdef NDEBUG
-            DCHECK(DisplayItemClient::isAlive(item.client())) << "Short-lived DisplayItemClient. See crbug.com/570030.";
-#else
-            DCHECK(DisplayItemClient::isAlive(item.client())) << "Short-lived DisplayItemClient: " << item.clientDebugString() << ". See crbug.com/570030.";
-#endif
-        }
-    }
+    void assertDisplayItemClientsAreAlive() const;
 #endif
 
     // Useful for iterating with a range-based for loop.

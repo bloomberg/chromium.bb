@@ -6,7 +6,43 @@
 
 #include "platform/graphics/paint/PaintChunk.h"
 
+#ifndef NDEBUG
+#include "wtf/text/WTFString.h"
+#endif
+
 namespace blink {
+
+DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item, const IntRect& visualRect)
+{
+#ifndef NDEBUG
+    String originalDebugString = item.asDebugString();
+#endif
+    ASSERT(item.hasValidClient());
+    DisplayItem& result = ContiguousContainer::appendByMoving(item, item.derivedSize());
+    // ContiguousContainer::appendByMoving() calls an in-place constructor
+    // on item which replaces it with a tombstone/"dead display item" that
+    // can be safely destructed but should never be used.
+    ASSERT(!item.hasValidClient());
+#ifndef NDEBUG
+    // Save original debug string in the old item to help debugging.
+    item.setClientDebugString(originalDebugString);
+#endif
+    appendVisualRect(visualRect);
+    return result;
+}
+
+#if ENABLE(ASSERT)
+void DisplayItemList::assertDisplayItemClientsAreAlive() const
+{
+    for (auto& item : *this) {
+#ifdef NDEBUG
+        DCHECK(DisplayItemClient::isAlive(item.client())) << "Short-lived DisplayItemClient. See crbug.com/570030.";
+#else
+        DCHECK(DisplayItemClient::isAlive(item.client())) << "Short-lived DisplayItemClient: " << item.clientDebugString() << ". See crbug.com/570030.";
+#endif
+    }
+}
+#endif
 
 void DisplayItemList::appendVisualRect(const IntRect& visualRect)
 {
