@@ -20,12 +20,10 @@
 #ifndef SVGTextLayoutAttributes_h
 #define SVGTextLayoutAttributes_h
 
-#include "core/layout/svg/SVGTextMetrics.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -59,13 +57,9 @@ public:
     SVGCharacterDataMap& characterDataMap() { return m_characterDataMap; }
     const SVGCharacterDataMap& characterDataMap() const { return m_characterDataMap; }
 
-    Vector<SVGTextMetrics>& textMetricsValues() { return m_textMetricsValues; }
-    const Vector<SVGTextMetrics>& textMetricsValues() const { return m_textMetricsValues; }
-
 private:
     LayoutSVGInlineText* m_context;
     SVGCharacterDataMap m_characterDataMap;
-    Vector<SVGTextMetrics> m_textMetricsValues;
 };
 
 inline SVGCharacterData::SVGCharacterData()

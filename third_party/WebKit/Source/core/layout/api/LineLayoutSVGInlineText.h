@@ -27,9 +27,9 @@ public:
 
     LineLayoutSVGInlineText() { }
 
-    SVGTextLayoutAttributes* layoutAttributes() const
+    const Vector<SVGTextMetrics>& metricsList() const
     {
-        return const_cast<SVGTextLayoutAttributes*>(toSVGInlineText()->layoutAttributes());
+        return toSVGInlineText()->metricsList();
     }
 
     bool characterStartsNewTextChunk(int position) const
@@ -46,7 +46,6 @@ public:
     {
         return toSVGInlineText()->scaledFont();
     }
-
 
 private:
     LayoutSVGInlineText* toSVGInlineText()
@@ -98,7 +97,7 @@ public:
         ASSERT(m_textLineLayout && m_metricsListOffset < metricsList().size());
         return metricsList()[m_metricsListOffset];
     }
-    const Vector<SVGTextMetrics>& metricsList() const { return m_textLineLayout.layoutAttributes()->textMetricsValues(); }
+    const Vector<SVGTextMetrics>& metricsList() const { return m_textLineLayout.metricsList(); }
     unsigned metricsListOffset() const { return m_metricsListOffset; }
     unsigned characterOffset() const { return m_characterOffset; }
     bool isAtEnd() const { return m_metricsListOffset == metricsList().size(); }

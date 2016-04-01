@@ -247,21 +247,25 @@ struct TreeWalkTextState {
 // TreeWalkTextState should be used to maintain the value list position which
 // indexes into the SVGCharacterDataMap of all characters.
 struct UpdateAttributes {
-    UpdateAttributes(SVGTextLayoutAttributes& textAttributes, const SVGCharacterDataMap* allCharacters)
-        : attributes(textAttributes)
+    UpdateAttributes(
+        SVGTextLayoutAttributes& textAttributes,
+        Vector<SVGTextMetrics>& metricsList,
+        const SVGCharacterDataMap* allCharacters)
+        : metricsList(metricsList)
+        , attributes(textAttributes)
         , allCharactersMap(allCharacters) { }
 
     void clearExistingAttributes()
     {
+        metricsList.clear();
+
         if (allCharactersMap)
             attributes.clear();
-        else
-            attributes.textMetricsValues().clear();
     }
 
     void addMetrics(SVGTextMetrics metrics)
     {
-        attributes.textMetricsValues().append(metrics);
+        metricsList.append(metrics);
     }
 
     void updateCharacterDataMap(unsigned valueListPosition, unsigned currentTextPosition)
@@ -273,6 +277,7 @@ struct UpdateAttributes {
             attributes.characterDataMap().set(currentTextPosition, it->value);
     }
 
+    Vector<SVGTextMetrics>& metricsList;
     SVGTextLayoutAttributes& attributes;
     const SVGCharacterDataMap* allCharactersMap;
 };
@@ -325,7 +330,7 @@ void walkTree(LayoutSVGText* start, LayoutSVGInlineText* stopAtText, SVGCharacte
             LayoutSVGInlineText* text = toLayoutSVGInlineText(child);
             OwnPtr<UpdateAttributes> attributesToUpdate = nullptr;
             if (!stopAtText || stopAtText == text)
-                attributesToUpdate = adoptPtr(new UpdateAttributes(*text->layoutAttributes(), allCharactersMap));
+                attributesToUpdate = adoptPtr(new UpdateAttributes(*text->layoutAttributes(), text->metricsList(), allCharactersMap));
             walkInlineText(text, textState, attributesToUpdate.get());
             if (stopAtText == text)
                 return;

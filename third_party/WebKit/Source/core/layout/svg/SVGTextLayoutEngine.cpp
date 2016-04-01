@@ -296,21 +296,21 @@ bool SVGTextLayoutEngine::currentLogicalCharacterAttributes(SVGTextLayoutAttribu
 
 bool SVGTextLayoutEngine::currentLogicalCharacterMetrics(SVGTextLayoutAttributes*& logicalAttributes, SVGTextMetrics& logicalMetrics)
 {
-    const Vector<SVGTextMetrics>* textMetricsValues = &logicalAttributes->textMetricsValues();
-    unsigned textMetricsSize = textMetricsValues->size();
+    const Vector<SVGTextMetrics>* metricsList = &logicalAttributes->context()->metricsList();
+    unsigned metricsListSize = metricsList->size();
     while (true) {
-        if (m_logicalMetricsListOffset == textMetricsSize) {
+        if (m_logicalMetricsListOffset == metricsListSize) {
             if (!currentLogicalCharacterAttributes(logicalAttributes))
                 return false;
 
-            textMetricsValues = &logicalAttributes->textMetricsValues();
-            textMetricsSize = textMetricsValues->size();
+            metricsList = &logicalAttributes->context()->metricsList();
+            metricsListSize = metricsList->size();
             continue;
         }
 
-        ASSERT(textMetricsSize);
-        ASSERT(m_logicalMetricsListOffset < textMetricsSize);
-        logicalMetrics = textMetricsValues->at(m_logicalMetricsListOffset);
+        ASSERT(metricsListSize);
+        ASSERT(m_logicalMetricsListOffset < metricsListSize);
+        logicalMetrics = metricsList->at(m_logicalMetricsListOffset);
         if (logicalMetrics.isEmpty() || (!logicalMetrics.width() && !logicalMetrics.height())) {
             advanceToNextLogicalCharacter(logicalMetrics);
             continue;

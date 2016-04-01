@@ -238,7 +238,7 @@ MetricsList::const_iterator findMetricsForCharacter(const MetricsList& metricsLi
 
 static float calculateGlyphRange(const QueryData* queryData, const SVGTextFragment& fragment, unsigned start, unsigned end)
 {
-    const MetricsList& metricsList = queryData->textLineLayout.layoutAttributes()->textMetricsValues();
+    const MetricsList& metricsList = queryData->textLineLayout.metricsList();
     auto metrics = findMetricsForCharacter(metricsList, fragment, start);
     auto endMetrics = findMetricsForCharacter(metricsList, fragment, end);
     float glyphRange = 0;
@@ -450,7 +450,7 @@ static inline FloatRect calculateGlyphBoundaries(const QueryData* queryData, con
     glyphPosition.move(0, -baseline);
 
     // Use the SVGTextMetrics computed by SVGTextMetricsBuilder.
-    const MetricsList& metricsList = queryData->textLineLayout.layoutAttributes()->textMetricsValues();
+    const MetricsList& metricsList = queryData->textLineLayout.metricsList();
     auto metrics = findMetricsForCharacter(metricsList, fragment, startPosition);
 
     FloatRect extent = physicalGlyphExtents(queryData, *metrics, glyphPosition);
@@ -551,7 +551,7 @@ static bool characterNumberAtPositionCallback(QueryData* queryData, const SVGTex
     // Iterate through the glyphs in this fragment, and check if their extents
     // contain the query point.
     MetricsList::const_iterator metrics =
-        data->textLineLayout.layoutAttributes()->textMetricsValues().begin() + fragment.metricsListOffset;
+        data->textLineLayout.metricsList().begin() + fragment.metricsListOffset;
     unsigned fragmentOffset = 0;
     float glyphOffset = 0;
     while (fragmentOffset < fragment.length) {

@@ -29,7 +29,6 @@ SVGTextLayoutAttributes::SVGTextLayoutAttributes(LayoutSVGInlineText* context)
 void SVGTextLayoutAttributes::clear()
 {
     m_characterDataMap.clear();
-    m_textMetricsValues.clear();
 }
 
 } // namespace blink
