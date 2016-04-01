@@ -6442,11 +6442,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SUPERVISED_USER_SAFESITES_ONLINE_CHECK_ONLY" desc="Description for the choice to enable only the online check in the supervised user SafeSites filtering feature.">
         Online check only
       </message>
-      <message name="IDS_FLAGS_ENABLE_UNIFIED_MEDIA_PIPELINE_NAME" desc="Title for the flag to enable the unified media pipeline on Android.">
-        Enables the unified media pipeline on Android.
+      <message name="IDS_FLAGS_DISABLE_UNIFIED_MEDIA_PIPELINE_NAME" desc="Title for the flag to disable the unified media pipeline on Android.">
+        Disables the unified media pipeline on Android.
       </message>
-      <message name="IDS_FLAGS_ENABLE_UNIFIED_MEDIA_PIPELINE_DESCRIPTION" desc="Description for the flag to enable the unified media pipeline on Android.">
-        Enables the unified (Android and desktop) media pipeline on Android.
+      <message name="IDS_FLAGS_DISABLE_UNIFIED_MEDIA_PIPELINE_DESCRIPTION" desc="Description for the flag to disable the unified media pipeline on Android.">
+        Disables the unified (Android and desktop) media pipeline on Android.
       </message>
       <message name="IDS_FLAGS_TRY_SUPPORTED_CHANNEL_LAYOUTS_NAME" desc="Title for the flag to enable support for trying supported channel layouts.">
         Causes audio output streams to check if channel layouts other than the default hardware layout are available.

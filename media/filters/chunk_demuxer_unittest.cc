@@ -18,6 +18,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/media.h"
 #include "media/base/media_tracks.h"
 #include "media/base/mock_demuxer_host.h"
 #include "media/base/mock_media_log.h"
@@ -3086,7 +3087,12 @@ TEST_F(ChunkDemuxerTest, CodecPrefixMatching) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
 #if defined(USE_PROPRIETARY_CODECS)
+#if defined(OS_ANDROID)
+  if (HasPlatformDecoderSupport())
+    expected = ChunkDemuxer::kOk;
+#else
   expected = ChunkDemuxer::kOk;
+#endif
 #endif
 
   std::vector<std::string> codecs;

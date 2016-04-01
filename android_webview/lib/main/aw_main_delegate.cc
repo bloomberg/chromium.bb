@@ -140,6 +140,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     cl->AppendSwitch(switches::kDisableRendererBackgrounding);
   }
 
+  // TODO(liberato, watk): Reenable after resolving fullscreen test failures.
+  // See http://crbug.com/597495
+  cl->AppendSwitch(switches::kDisableUnifiedMediaPipeline);
+
   return false;
 }
 

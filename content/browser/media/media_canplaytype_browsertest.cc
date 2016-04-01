@@ -32,16 +32,12 @@ const char* kPropMaybe = kNot;
 const char* kOggVideoProbably = kProbably;
 const char* kOggVideoMaybe = kMaybe;
 const char* kTheoraProbably = kProbably;
-const char* kOggOpusProbably = kProbably;
-const char* kMpeg2AacProbably = kPropProbably;
 const char* kHlsProbably = kNot;
 const char* kHlsMaybe = kNot;
 #else
 const char* kOggVideoProbably = kNot;
 const char* kOggVideoMaybe = kNot;
 const char* kTheoraProbably = kNot;
-const char* kOggOpusProbably = kNot;
-const char* kMpeg2AacProbably = kNot;  // https://crbug.com/544268.
 const char* kHlsProbably = kPropProbably;
 const char* kHlsMaybe = kPropMaybe;
 #endif  // !OS_ANDROID
@@ -504,45 +500,31 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_wav) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_webm) {
-  // On Android, VP9 is supported only on KitKat and above (API level 19) and
-  // Opus is supported only on Lollipop and above (API level 21).
-  std::string VP9Probably = "probably";
-  std::string VP9AndOpusProbably = "probably";
-  std::string OpusProbably = "probably";
-#if defined(OS_ANDROID)
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 19)
-    VP9Probably = "";
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 21) {
-    OpusProbably = "";
-    VP9AndOpusProbably = "";
-  }
-#endif
   EXPECT_EQ(kMaybe, CanPlay("'video/webm'"));
 
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8\"'"));
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8.0\"'"));
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8, vorbis\"'"));
   EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8.0, vorbis\"'"));
-  EXPECT_EQ(OpusProbably, CanPlay("'video/webm; codecs=\"vp8, opus\"'"));
-  EXPECT_EQ(OpusProbably, CanPlay("'video/webm; codecs=\"vp8.0, opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8, opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8.0, opus\"'"));
 
-  EXPECT_EQ(VP9Probably, CanPlay("'video/webm; codecs=\"vp9\"'"));
-  EXPECT_EQ(VP9Probably, CanPlay("'video/webm; codecs=\"vp9.0\"'"));
-  EXPECT_EQ(VP9Probably, CanPlay("'video/webm; codecs=\"vp9, vorbis\"'"));
-  EXPECT_EQ(VP9Probably, CanPlay("'video/webm; codecs=\"vp9.0, vorbis\"'"));
-  EXPECT_EQ(VP9AndOpusProbably, CanPlay("'video/webm; codecs=\"vp9, opus\"'"));
-  EXPECT_EQ(VP9AndOpusProbably,
-            CanPlay("'video/webm; codecs=\"vp9.0, opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp9\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp9.0\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp9, vorbis\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp9.0, vorbis\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp9, opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp9.0, opus\"'"));
 
-  EXPECT_EQ(VP9Probably, CanPlay("'video/webm; codecs=\"vp8, vp9\"'"));
-  EXPECT_EQ(VP9Probably, CanPlay("'video/webm; codecs=\"vp8.0, vp9.0\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8, vp9\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'video/webm; codecs=\"vp8.0, vp9.0\"'"));
 
   TestWEBMUnacceptableCombinations("video/webm");
 
   EXPECT_EQ(kMaybe, CanPlay("'audio/webm'"));
   EXPECT_EQ(kProbably, CanPlay("'audio/webm; codecs=\"vorbis\"'"));
-  EXPECT_EQ(OpusProbably, CanPlay("'audio/webm; codecs=\"opus\"'"));
-  EXPECT_EQ(OpusProbably, CanPlay("'audio/webm; codecs=\"opus, vorbis\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'audio/webm; codecs=\"opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'audio/webm; codecs=\"opus, vorbis\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/webm; codecs=\"vp8\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/webm; codecs=\"vp8.0\"'"));
@@ -575,8 +557,8 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_ogg) {
 
   EXPECT_EQ(kMaybe, CanPlay("'audio/ogg'"));
   EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"vorbis\"'"));
-  EXPECT_EQ(kOggOpusProbably, CanPlay("'audio/ogg; codecs=\"opus\"'"));
-  EXPECT_EQ(kOggOpusProbably, CanPlay("'audio/ogg; codecs=\"vorbis, opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'audio/ogg; codecs=\"vorbis, opus\"'"));
 
   EXPECT_EQ(kNot, CanPlay("'audio/ogg; codecs=\"theora\"'"));
   EXPECT_EQ(kNot, CanPlay("'audio/ogg; codecs=\"theora, opus\"'"));
@@ -587,13 +569,12 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_ogg) {
   EXPECT_EQ(kMaybe, CanPlay("'application/ogg'"));
   EXPECT_EQ(kProbably, CanPlay("'application/ogg; codecs=\"vorbis\"'"));
   EXPECT_EQ(kTheoraProbably, CanPlay("'application/ogg; codecs=\"theora\"'"));
-  EXPECT_EQ(kOggOpusProbably, CanPlay("'application/ogg; codecs=\"opus\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'application/ogg; codecs=\"opus\"'"));
   EXPECT_EQ(kTheoraProbably,
             CanPlay("'application/ogg; codecs=\"theora, vorbis\"'"));
   EXPECT_EQ(kTheoraProbably,
             CanPlay("'application/ogg; codecs=\"theora, opus\"'"));
-  EXPECT_EQ(kOggOpusProbably,
-            CanPlay("'application/ogg; codecs=\"opus, vorbis\"'"));
+  EXPECT_EQ(kProbably, CanPlay("'application/ogg; codecs=\"opus, vorbis\"'"));
 
   TestOGGUnacceptableCombinations("application/ogg");
 }
@@ -687,9 +668,9 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42801E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42C01E\"'"));
 
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'video/mp4; codecs=\"mp4a.66\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'video/mp4; codecs=\"mp4a.67\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'video/mp4; codecs=\"mp4a.68\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"mp4a.66\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"mp4a.67\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"mp4a.68\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"mp4a.69\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"mp4a.6B\"'"));
 
@@ -771,9 +752,9 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc3.42801E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"avc3.42C01E\"'"));
 
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'video/x-m4v; codecs=\"mp4a.66\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'video/x-m4v; codecs=\"mp4a.67\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'video/x-m4v; codecs=\"mp4a.68\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"mp4a.66\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"mp4a.67\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"mp4a.68\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"mp4a.69\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"mp4a.6B\"'"));
 
@@ -832,9 +813,9 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kPropProbably, CanPlay("'video/x-m4v; codecs=\"mp3\"'"));
 
   EXPECT_EQ(kPropMaybe, CanPlay("'audio/mp4'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'audio/mp4; codecs=\"mp4a.66\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'audio/mp4; codecs=\"mp4a.67\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'audio/mp4; codecs=\"mp4a.68\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.66\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.67\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.68\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.69\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.6B\"'"));
 
@@ -871,9 +852,9 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
 
   EXPECT_EQ(kPropMaybe, CanPlay("'audio/x-m4a'"));
 
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'audio/x-m4a; codecs=\"mp4a.66\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'audio/x-m4a; codecs=\"mp4a.67\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'audio/x-m4a; codecs=\"mp4a.68\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-m4a; codecs=\"mp4a.66\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-m4a; codecs=\"mp4a.67\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/x-m4a; codecs=\"mp4a.68\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'audio/x-m4a; codecs=\"mp4a.69\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'audio/x-m4a; codecs=\"mp4a.6B\"'"));
 
@@ -1189,10 +1170,10 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mp4aVariants) {
   EXPECT_EQ(kNot,          CanPlay("'audio/mp4; codecs=\"mp4a.63\"'"));
   EXPECT_EQ(kNot,          CanPlay("'audio/mp4; codecs=\"mp4a.65\"'"));
   EXPECT_EQ(kNot,          CanPlay("'audio/mp4; codecs=\"mp4a.65\"'"));
-  // MPEG2 AAC Main, LC, and SSR are supported except on Android.
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'audio/mp4; codecs=\"mp4a.66\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'audio/mp4; codecs=\"mp4a.67\"'"));
-  EXPECT_EQ(kMpeg2AacProbably, CanPlay("'audio/mp4; codecs=\"mp4a.68\"'"));
+  // MPEG2 AAC Main, LC, and SSR are supported.
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.66\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.67\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.68\"'"));
   // MP3.
   EXPECT_EQ(kPropProbably, CanPlay("'audio/mp4; codecs=\"mp4a.69\"'"));
   EXPECT_EQ(kNot,          CanPlay("'audio/mp4; codecs=\"mp4a.6A\"'"));

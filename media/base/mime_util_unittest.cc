@@ -399,5 +399,20 @@ TEST(IsCodecSupportedOnPlatformTest, OpusOggSupport) {
       });
 }
 
+TEST(IsCodecSupportedOnPlatformTest, HLSDoesNotSupportMPEG2AAC) {
+  // Vary all parameters; thus use default initial state.
+  MimeUtil::PlatformInfo states_to_vary = VaryAllFields();
+  MimeUtil::PlatformInfo test_states;
+
+  RunCodecSupportTest(
+      states_to_vary, test_states,
+      [](const MimeUtil::PlatformInfo& info, MimeUtil::Codec codec) {
+        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnPlatform(
+            MimeUtil::MPEG2_AAC, "application/x-mpegurl", false, info));
+        EXPECT_FALSE(MimeUtil::IsCodecSupportedOnPlatform(
+            MimeUtil::MPEG2_AAC, "application/vnd.apple.mpegurl", false, info));
+      });
+}
+
 }  // namespace internal
 }  // namespace media

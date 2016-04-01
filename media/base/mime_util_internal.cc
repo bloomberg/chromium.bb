@@ -455,8 +455,12 @@ bool MimeUtil::IsCodecSupportedOnPlatform(
 
     case MPEG2_AAC:
       // MPEG-2 variants of AAC are not supported on Android unless the unified
-      // media pipeline can be used. These codecs will be decoded in software.
-      // See https:crbug.com/544268 for details.
+      // media pipeline can be used and the container is not HLS. These codecs
+      // will be decoded in software. See https:crbug.com/544268 for details.
+      if (mime_type_lower_case == "application/x-mpegurl" ||
+          mime_type_lower_case == "application/vnd.apple.mpegurl") {
+        return false;
+      }
       return !is_encrypted && platform_info.is_unified_media_pipeline_enabled;
 
     case OPUS:
