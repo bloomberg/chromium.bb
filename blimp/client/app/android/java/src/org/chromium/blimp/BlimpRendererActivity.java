@@ -7,6 +7,7 @@ package org.chromium.blimp;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import org.chromium.base.Log;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -144,7 +145,41 @@ public class BlimpRendererActivity extends Activity
         mWebInputBox.initialize(mBlimpClientSession);
 
         mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpView);
-        mToolbar.loadUrl("http://www.google.com/");
+
+        handleUrl(getUrlFromIntent(getIntent()));
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleUrl(getUrlFromIntent(intent));
+    }
+
+    /**
+     * Retrieve the URL from the Intent.
+     * @param intent Intent to examine.
+     * @return URL from the Intent, or null if a valid URL couldn't be found.
+     */
+    private String getUrlFromIntent(Intent intent) {
+        if (intent == null) return null;
+
+        String url = intent.getDataString();
+        if (url == null) return null;
+
+        url = url.trim();
+        return TextUtils.isEmpty(url) ? null : url;
+    }
+
+    /**
+     * Loads the url in the browser.
+     * @param url URL to load. If null, browser loads a default page.
+     */
+    private void handleUrl(String url) {
+        if (url == null) {
+            mToolbar.loadUrl("http://www.google.com/");
+        } else {
+            mToolbar.loadUrl(url);
+        }
     }
 
     // TokenSource.Callback implementation.
