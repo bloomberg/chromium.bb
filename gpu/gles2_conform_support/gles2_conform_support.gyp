@@ -96,7 +96,6 @@
       'type': 'executable',
       'dependencies': [
         'egl_native',
-        '../../base/allocator/allocator.gyp:allocator',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../gpu/gpu.gyp:gles2_c_lib_nocheck',
         '../../third_party/expat/expat.gyp:expat',
