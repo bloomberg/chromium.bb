@@ -33,4 +33,5 @@ for case_name, defines in sorted(defines_map.iteritems()):
     prog = env_test.ComponentProgram(full_name, obj, EXTRA_LIBS=libs)
     node = env_test.CommandSelLdrTestNacl(full_name + '.out', prog,
                                           size='small')
-    env_test.AddNodeToTestSuite(node, ['small_tests'], 'run_' + full_name)
+    env_test.AddNodeToTestSuite(node, ['small_tests', 'toolchain_tests'],
+                                'run_' + full_name)

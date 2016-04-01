@@ -12,18 +12,6 @@ if env.Bit('nacl_clang'):
   # Use the integrated assembler; this code can end up in the Chrome IRT, so we
   # want it to avoid revealing the sandbox base address.
   env.Append(CCFLAGS=['-integrated-as'])
-if env.Bit('nonsfi_nacl'):
-  # Specifying the target arch is necessary for using inline assembly
-  # in non-SFI code.
-  if env.Bit('build_x86_32'):
-    env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
-  elif env.Bit('build_arm'):
-    env.Append(CCFLAGS=['--target=armv7-unknown-nacl-gnueabihf',
-                        '-mfloat-abi=hard'])
-  else:
-    raise Exception('Unsupported architecture')
-  # Enable the use of inline assembly.
-  env.Append(CCFLAGS=['-fgnu-inline-asm'])
 
 valgrind = env.ComponentObject(
     'valgrind_annotations.o',
@@ -45,8 +33,20 @@ libpthread = env.ComponentLibrary('libpthread', nc_objs + ['nc_init_irt.c'])
 env.AddLibraryToSdk(libpthread)
 
 if env.Bit('nonsfi_nacl'):
+  # Specifying the target arch is necessary for using inline assembly
+  # for calling Linux syscalls in libpthread_private.
+  syscall_env = env.Clone()
+  if env.Bit('build_x86_32'):
+    syscall_env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
+  elif env.Bit('build_arm'):
+    syscall_env.Append(CCFLAGS=['--target=armv7-unknown-nacl-gnueabihf',
+                                '-mfloat-abi=hard'])
+  else:
+    raise Exception('Unsupported architecture')
+  # Enable the use of inline assembly.
+  syscall_env.Append(CCFLAGS=['-fgnu-inline-asm'])
   nc_private_objs = nc_objs + [
-      env.ComponentObject(
+      syscall_env.ComponentObject(
           interface, '${MAIN_DIR}/src/nonsfi/linux/%s.c' % interface)
       for interface in ['linux_futex', 'linux_pthread_private']
       ]

@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "native_client/src/include/nacl_assert.h"
+
 __thread int tdata1 = 1;
 __thread int tdata2 __attribute__((aligned(0x10))) = 2;
 /* We need to test the case when TLS size is not aligned to 16 bytes. */
@@ -67,12 +69,18 @@ int main(int argc, char *argv[]) {
 
 #ifdef WITH_TBSS
   errors += AlignCheck(&tbss2, 0x10);
+  ASSERT_EQ(tbss1, 0);
+  ASSERT_EQ(tbss2, 0);
   tbss1 = 1;
   tbss2 = 2;
   if (tbss1 != 1 || tbss2 != 2) {
     errors++;
   }
+# ifdef MORE_TBSS
+  ASSERT_EQ(tbss_more, 0);
+# endif
 # ifdef TBSS_LARGE_ALIGN
+  ASSERT_EQ(tbss3, 0);
   errors += AlignCheck(&tbss3, 0x1000);
 # endif
 #endif
