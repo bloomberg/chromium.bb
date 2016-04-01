@@ -37,7 +37,7 @@ namespace blink {
 
 class HiddenInputType final : public InputType {
 public:
-    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    static RawPtr<InputType> create(HTMLInputElement&);
 
 private:
     HiddenInputType(HTMLInputElement& element) : InputType(element) { }

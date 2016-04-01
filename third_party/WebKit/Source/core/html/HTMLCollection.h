@@ -32,16 +32,16 @@
 
 namespace blink {
 
-class CORE_EXPORT HTMLCollection : public RefCountedWillBeGarbageCollectedFinalized<HTMLCollection>, public ScriptWrappable, public LiveNodeListBase {
+class CORE_EXPORT HTMLCollection : public GarbageCollectedFinalized<HTMLCollection>, public ScriptWrappable, public LiveNodeListBase {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCollection);
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLCollection);
 public:
     enum ItemAfterOverrideType {
         OverridesItemAfter,
         DoesNotOverrideItemAfter,
     };
 
-    static PassRefPtrWillBeRawPtr<HTMLCollection> create(ContainerNode& base, CollectionType);
+    static RawPtr<HTMLCollection> create(ContainerNode& base, CollectionType);
     virtual ~HTMLCollection();
     void invalidateCache(Document* oldDocument = 0) const override;
     void invalidateCacheForAttribute(const QualifiedName*) const;
@@ -54,7 +54,7 @@ public:
     void namedPropertyEnumerator(Vector<String>& names, ExceptionState&);
 
     // Non-DOM API
-    void namedItems(const AtomicString& name, WillBeHeapVector<RefPtrWillBeMember<Element>>&) const;
+    void namedItems(const AtomicString& name, HeapVector<Member<Element>>&) const;
     bool isEmpty() const { return m_collectionItemsCache.isEmpty(*this); }
     bool hasExactlyOneItem() const { return m_collectionItemsCache.hasExactlyOneNode(*this); }
     bool elementMatches(const Element&) const;
@@ -71,15 +71,15 @@ public:
 protected:
     HTMLCollection(ContainerNode& base, CollectionType, ItemAfterOverrideType);
 
-    class NamedItemCache final : public NoBaseWillBeGarbageCollected<NamedItemCache> {
+    class NamedItemCache final : public GarbageCollected<NamedItemCache> {
     public:
-        static PassOwnPtrWillBeRawPtr<NamedItemCache> create()
+        static RawPtr<NamedItemCache> create()
         {
             return adoptPtrWillBeNoop(new NamedItemCache);
         }
 
-        WillBeHeapVector<RawPtrWillBeMember<Element>>* getElementsById(const AtomicString& id) const { return m_idCache.get(id.impl()); }
-        WillBeHeapVector<RawPtrWillBeMember<Element>>* getElementsByName(const AtomicString& name) const { return m_nameCache.get(name.impl()); }
+        HeapVector<Member<Element>>* getElementsById(const AtomicString& id) const { return m_idCache.get(id.impl()); }
+        HeapVector<Member<Element>>* getElementsByName(const AtomicString& name) const { return m_nameCache.get(name.impl()); }
         void addElementWithId(const AtomicString& id, Element* element) { addElementToMap(m_idCache, id, element); }
         void addElementWithName(const AtomicString& name, Element* element) { addElementToMap(m_nameCache, name, element); }
 
@@ -93,12 +93,12 @@ protected:
 
     private:
         NamedItemCache();
-        typedef WillBeHeapHashMap<StringImpl*, OwnPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Element>>>> StringToElementsMap;
+        typedef HeapHashMap<StringImpl*, Member<HeapVector<Member<Element>>>> StringToElementsMap;
         static void addElementToMap(StringToElementsMap& map, const AtomicString& key, Element* element)
         {
-            OwnPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Element>>>& vector = map.add(key.impl(), nullptr).storedValue->value;
+            Member<HeapVector<Member<Element>>>& vector = map.add(key.impl(), nullptr).storedValue->value;
             if (!vector)
-                vector = adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<Element>>);
+                vector = adoptPtrWillBeNoop(new HeapVector<Member<Element>>);
             vector->append(element);
         }
 
@@ -114,7 +114,7 @@ protected:
     virtual void updateIdNameCache() const;
     bool hasValidIdNameCache() const { return m_namedItemCache; }
 
-    void setNamedItemCache(PassOwnPtrWillBeRawPtr<NamedItemCache> cache) const
+    void setNamedItemCache(RawPtr<NamedItemCache> cache) const
     {
         ASSERT(!m_namedItemCache);
         // Do not repeat registration for the same invalidation type.
@@ -153,7 +153,7 @@ private:
 
     const unsigned m_overridesItemAfter : 1;
     const unsigned m_shouldOnlyIncludeDirectChildren : 1;
-    mutable OwnPtrWillBeMember<NamedItemCache> m_namedItemCache;
+    mutable Member<NamedItemCache> m_namedItemCache;
     mutable CollectionItemsCache<HTMLCollection, Element> m_collectionItemsCache;
 };
 

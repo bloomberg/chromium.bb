@@ -40,7 +40,7 @@ class RadioNodeListOrElement;
 class HTMLFormControlsCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> create(ContainerNode&, CollectionType);
+    static RawPtr<HTMLFormControlsCollection> create(ContainerNode&, CollectionType);
 
     ~HTMLFormControlsCollection() override;
 
@@ -58,11 +58,11 @@ private:
     void supportedPropertyNames(Vector<String>& names) override;
 
     const FormAssociatedElement::List& formControlElements() const;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& formImageElements() const;
+    const HeapVector<Member<HTMLImageElement>>& formImageElements() const;
     HTMLElement* virtualItemAfter(Element*) const override;
     void invalidateCache(Document* oldDocument = 0) const override;
 
-    mutable RawPtrWillBeMember<HTMLElement> m_cachedElement;
+    mutable Member<HTMLElement> m_cachedElement;
     mutable unsigned m_cachedElementOffsetInArray;
 };
 DEFINE_TYPE_CASTS(HTMLFormControlsCollection, LiveNodeListBase, collection, collection->type() == FormControls, collection.type() == FormControls);

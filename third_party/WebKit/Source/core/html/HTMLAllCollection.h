@@ -35,7 +35,7 @@ class NodeListOrElement;
 class HTMLAllCollection final : public HTMLCollection {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLAllCollection> create(ContainerNode&, CollectionType);
+    static RawPtr<HTMLAllCollection> create(ContainerNode&, CollectionType);
     ~HTMLAllCollection() override;
 
     Element* namedItemWithIndex(const AtomicString& name, unsigned index) const;

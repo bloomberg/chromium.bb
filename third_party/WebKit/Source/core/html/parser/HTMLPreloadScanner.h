@@ -144,7 +144,7 @@ private:
     PictureData m_pictureData;
     size_t m_templateCount;
     OwnPtr<CachedDocumentParameters> m_documentParameters;
-    RefPtrWillBePersistent<MediaValuesCached> m_mediaValues;
+    Persistent<MediaValuesCached> m_mediaValues;
     ClientHintsPreferences m_clientHintsPreferences;
 
     bool m_didRewind = false;

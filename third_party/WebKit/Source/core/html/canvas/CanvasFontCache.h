@@ -50,13 +50,13 @@ public:
 private:
     explicit CanvasFontCache(Document&);
     void schedulePruningIfNeeded();
-    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> MutableStylePropertyMap;
+    typedef HeapHashMap<String, Member<MutableStylePropertySet>> MutableStylePropertyMap;
 
     HashMap<String, Font> m_fontsResolvedUsingDefaultStyle;
     MutableStylePropertyMap m_fetchedFonts;
     ListHashSet<String> m_fontLRUList;
     OwnPtr<FontCachePurgePreventer> m_mainCachePurgePreventer;
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
     RefPtr<ComputedStyle> m_defaultFontStyle;
     bool m_pruningScheduled;
 };

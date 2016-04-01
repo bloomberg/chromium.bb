@@ -31,10 +31,10 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<HTMLAllCollection> HTMLAllCollection::create(ContainerNode& node, CollectionType type)
+RawPtr<HTMLAllCollection> HTMLAllCollection::create(ContainerNode& node, CollectionType type)
 {
     ASSERT_UNUSED(type, type == DocAll);
-    return adoptRefWillBeNoop(new HTMLAllCollection(node));
+    return new HTMLAllCollection(node);
 }
 
 HTMLAllCollection::HTMLAllCollection(ContainerNode& node)
@@ -51,13 +51,13 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
     updateIdNameCache();
 
     const NamedItemCache& cache = namedItemCache();
-    if (WillBeHeapVector<RawPtrWillBeMember<Element>>* elements = cache.getElementsById(name)) {
+    if (HeapVector<Member<Element>>* elements = cache.getElementsById(name)) {
         if (index < elements->size())
             return elements->at(index);
         index -= elements->size();
     }
 
-    if (WillBeHeapVector<RawPtrWillBeMember<Element>>* elements = cache.getElementsByName(name)) {
+    if (HeapVector<Member<Element>>* elements = cache.getElementsByName(name)) {
         if (index < elements->size())
             return elements->at(index);
     }
@@ -67,7 +67,7 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
 
 void HTMLAllCollection::namedGetter(const AtomicString& name, NodeListOrElement& returnValue)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Element>> namedItems;
+    HeapVector<Member<Element>> namedItems;
     this->namedItems(name, namedItems);
 
     if (!namedItems.size())

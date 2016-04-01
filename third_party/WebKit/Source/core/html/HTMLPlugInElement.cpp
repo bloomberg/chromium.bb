@@ -159,7 +159,7 @@ void HTMLPlugInElement::attach(const AttachContext& context)
 
 void HTMLPlugInElement::updateWidget()
 {
-    RefPtrWillBeRawPtr<HTMLPlugInElement> protector(this);
+    RawPtr<HTMLPlugInElement> protector(this);
     updateWidgetInternal();
     if (m_isDelayingLoadEvent) {
         m_isDelayingLoadEvent = false;
@@ -353,7 +353,7 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
         if (LayoutEmbeddedItem(toLayoutEmbeddedObject(r)).showsUnavailablePluginIndicator())
             return;
     }
-    RefPtrWillBeRawPtr<Widget> widget = toLayoutPart(r)->widget();
+    RawPtr<Widget> widget = toLayoutPart(r)->widget();
     if (!widget)
         return;
     widget->handleEvent(event);
@@ -489,7 +489,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     } else {
         bool loadManually = document().isPluginDocument() && !document().containsPlugins();
         FrameLoaderClient::DetachedPluginPolicy policy = requireLayoutObject ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
-        RefPtrWillBeRawPtr<Widget> widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
+        RawPtr<Widget> widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
         if (!widget) {
             if (!layoutItem.isNull() && !layoutItem.showsUnavailablePluginIndicator())
                 layoutItem.setPluginUnavailabilityReason(LayoutEmbeddedObject::PluginMissing);

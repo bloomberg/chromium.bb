@@ -34,7 +34,7 @@ class HTMLInputStream;
 class Resource;
 class Visitor;
 
-class HTMLScriptRunnerHost : public WillBeGarbageCollectedMixin {
+class HTMLScriptRunnerHost : public GarbageCollectedMixin {
 public:
     virtual ~HTMLScriptRunnerHost() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }

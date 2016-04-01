@@ -106,8 +106,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-using WeakMediaElementSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<HTMLMediaElement>>;
-using DocumentElementSetMap = WillBeHeapHashMap<RawPtrWillBeWeakMember<Document>, WeakMediaElementSet>;
+using WeakMediaElementSet = HeapHashSet<WeakMember<HTMLMediaElement>>;
+using DocumentElementSetMap = HeapHashMap<WeakMember<Document>, WeakMediaElementSet>;
 
 namespace {
 
@@ -140,7 +140,7 @@ const char* boolString(bool val)
 
 DocumentElementSetMap& documentToElementSetMap()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<DocumentElementSetMap>, map, (adoptPtrWillBeNoop(new DocumentElementSetMap())));
+    DEFINE_STATIC_LOCAL(Persistent<DocumentElementSetMap>, map, (new DocumentElementSetMap()));
     return *map;
 }
 
@@ -275,9 +275,9 @@ class HTMLMediaElement::AutoplayHelperClientImpl :
     public AutoplayExperimentHelper::Client {
 
 public:
-    static PassOwnPtrWillBeRawPtr<AutoplayHelperClientImpl> create(HTMLMediaElement* element)
+    static RawPtr<AutoplayHelperClientImpl> create(HTMLMediaElement* element)
     {
-        return adoptPtrWillBeNoop(new AutoplayHelperClientImpl(element));
+        return new AutoplayHelperClientImpl(element);
     }
 
     virtual ~AutoplayHelperClientImpl();
@@ -318,7 +318,7 @@ public:
 private:
     AutoplayHelperClientImpl(HTMLMediaElement* element) : m_element(element) {}
 
-    RawPtrWillBeMember<HTMLMediaElement> m_element;
+    Member<HTMLMediaElement> m_element;
 };
 
 
@@ -685,7 +685,7 @@ void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
     scheduleEvent(Event::createCancelable(eventName));
 }
 
-void HTMLMediaElement::scheduleEvent(PassRefPtrWillBeRawPtr<Event> event)
+void HTMLMediaElement::scheduleEvent(RawPtr<Event> event)
 {
 #if LOG_MEDIA_EVENTS
     WTF_LOG(Media, "HTMLMediaElement::scheduleEvent(%p) - scheduling '%s'", this, event->type().ascii().data());
@@ -2619,8 +2619,8 @@ bool HTMLMediaElement::havePotentialSourceChild()
 {
     // Stash the current <source> node and next nodes so we can restore them after checking
     // to see there is another potential.
-    RefPtrWillBeRawPtr<HTMLSourceElement> currentSourceNode = m_currentSourceNode;
-    RefPtrWillBeRawPtr<Node> nextNode = m_nextChildNodeToConsider;
+    RawPtr<HTMLSourceElement> currentSourceNode = m_currentSourceNode;
+    RawPtr<Node> nextNode = m_nextChildNodeToConsider;
 
     KURL nextURL = selectNextSourceChild(0, DoNothing);
 
@@ -3305,7 +3305,7 @@ TextTrackContainer& HTMLMediaElement::ensureTextTrackContainer()
     if (firstChild && firstChild->isTextTrackContainer())
         return toTextTrackContainer(*firstChild);
 
-    RefPtrWillBeRawPtr<TextTrackContainer> textTrackContainer = TextTrackContainer::create(document());
+    RawPtr<TextTrackContainer> textTrackContainer = TextTrackContainer::create(document());
 
     // The text track container should be inserted before the media controls,
     // so that they are rendered behind them.
@@ -3447,7 +3447,7 @@ void HTMLMediaElement::ensureMediaControls()
     if (mediaControls())
         return;
 
-    RefPtrWillBeRawPtr<MediaControls> mediaControls = MediaControls::create(*this);
+    RawPtr<MediaControls> mediaControls = MediaControls::create(*this);
 
     mediaControls->reset();
     if (isFullscreen())
@@ -3486,7 +3486,7 @@ void HTMLMediaElement::configureMediaControls()
 CueTimeline& HTMLMediaElement::cueTimeline()
 {
     if (!m_cueTimeline)
-        m_cueTimeline = adoptPtrWillBeNoop(new CueTimeline(*this));
+        m_cueTimeline = new CueTimeline(*this);
     return *m_cueTimeline;
 }
 

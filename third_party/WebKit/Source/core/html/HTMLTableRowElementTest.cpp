@@ -18,8 +18,8 @@ using namespace blink;
 
 TEST(HTMLTableRowElementTest, rowIndex_notInTable)
 {
-    RefPtrWillBeRawPtr<Document> document = Document::create();
-    RefPtrWillBeRawPtr<HTMLTableRowElement> row =
+    RawPtr<Document> document = Document::create();
+    RawPtr<HTMLTableRowElement> row =
         HTMLTableRowElement::create(*document);
     EXPECT_EQ(-1, row->rowIndex())
         << "rows not in tables should have row index -1";
@@ -27,10 +27,10 @@ TEST(HTMLTableRowElementTest, rowIndex_notInTable)
 
 TEST(HTMLTableRowElementTest, rowIndex_directChildOfTable)
 {
-    RefPtrWillBeRawPtr<Document> document = Document::create();
-    RefPtrWillBeRawPtr<HTMLTableElement> table =
+    RawPtr<Document> document = Document::create();
+    RawPtr<HTMLTableElement> table =
         HTMLTableElement::create(*document);
-    RefPtrWillBeRawPtr<HTMLTableRowElement> row =
+    RawPtr<HTMLTableRowElement> row =
         HTMLTableRowElement::create(*document);
     table->appendChild(row);
     EXPECT_EQ(0, row->rowIndex())
@@ -39,14 +39,14 @@ TEST(HTMLTableRowElementTest, rowIndex_directChildOfTable)
 
 TEST(HTMLTableRowElementTest, rowIndex_inUnrelatedElementInTable)
 {
-    RefPtrWillBeRawPtr<Document> document = Document::create();
-    RefPtrWillBeRawPtr<HTMLTableElement> table =
+    RawPtr<Document> document = Document::create();
+    RawPtr<HTMLTableElement> table =
         HTMLTableElement::create(*document);
     // Almost any element will do; what's pertinent is that this is not
     // THEAD, TBODY or TFOOT.
-    RefPtrWillBeRawPtr<HTMLParagraphElement> paragraph =
+    RawPtr<HTMLParagraphElement> paragraph =
         HTMLParagraphElement::create(*document);
-    RefPtrWillBeRawPtr<HTMLTableRowElement> row =
+    RawPtr<HTMLTableRowElement> row =
         HTMLTableRowElement::create(*document);
     table->appendChild(paragraph);
     paragraph->appendChild(row);

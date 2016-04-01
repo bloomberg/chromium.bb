@@ -46,10 +46,10 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     ASSERT(isHTMLFormElement(ownerNode) || isHTMLFieldSetElement(ownerNode));
 }
 
-PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType type)
+RawPtr<HTMLFormControlsCollection> HTMLFormControlsCollection::create(ContainerNode& ownerNode, CollectionType type)
 {
     ASSERT_UNUSED(type, type == FormControls);
-    return adoptRefWillBeNoop(new HTMLFormControlsCollection(ownerNode));
+    return new HTMLFormControlsCollection(ownerNode);
 }
 
 HTMLFormControlsCollection::~HTMLFormControlsCollection()
@@ -64,7 +64,7 @@ const FormAssociatedElement::List& HTMLFormControlsCollection::formControlElemen
     return toHTMLFieldSetElement(ownerNode()).associatedElements();
 }
 
-const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& HTMLFormControlsCollection::formImageElements() const
+const HeapVector<Member<HTMLImageElement>>& HTMLFormControlsCollection::formImageElements() const
 {
     return toHTMLFormElement(ownerNode()).imageElements();
 }
@@ -138,7 +138,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     if (hasValidIdNameCache())
         return;
 
-    OwnPtrWillBeRawPtr<NamedItemCache> cache = NamedItemCache::create();
+    RawPtr<NamedItemCache> cache = NamedItemCache::create();
     HashSet<StringImpl*> foundInputElements;
 
     const FormAssociatedElement::List& elementsArray = formControlElements();
@@ -164,7 +164,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
         // HTMLFormControlsCollection doesn't support named getter for IMG
         // elements. However we still need to handle IMG elements here because
         // HTMLFormElement named getter relies on this.
-        const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& imageElementsArray = formImageElements();
+        const HeapVector<Member<HTMLImageElement>>& imageElementsArray = formImageElements();
         for (unsigned i = 0; i < imageElementsArray.size(); ++i) {
             HTMLImageElement* element = imageElementsArray[i];
             const AtomicString& idAttrVal = element->getIdAttribute();
@@ -182,7 +182,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
 
 void HTMLFormControlsCollection::namedGetter(const AtomicString& name, RadioNodeListOrElement& returnValue)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Element>> namedItems;
+    HeapVector<Member<Element>> namedItems;
     this->namedItems(name, namedItems);
 
     if (namedItems.isEmpty())

@@ -158,7 +158,7 @@ void HTMLScriptRunner::detach()
     m_parserBlockingScript->releaseElementAndClear();
 
     while (!m_scriptsToExecuteAfterParsing.isEmpty()) {
-        OwnPtrWillBeRawPtr<PendingScript> pendingScript = m_scriptsToExecuteAfterParsing.takeFirst();
+        RawPtr<PendingScript> pendingScript = m_scriptsToExecuteAfterParsing.takeFirst();
         pendingScript->stopWatchingForLoad();
         pendingScript->releaseElementAndClear();
     }
@@ -204,7 +204,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
 
     TextPosition scriptStartPosition = pendingScript->startingPosition();
     // Clear the pending script before possible re-entrancy from executeScript()
-    RefPtrWillBeRawPtr<Element> element = pendingScript->releaseElementAndClear();
+    RawPtr<Element> element = pendingScript->releaseElementAndClear();
     if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element.get())) {
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
         IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(m_document);
@@ -259,7 +259,7 @@ void HTMLScriptRunner::notifyFinished(Resource* cachedResource)
 // Implements the steps for 'An end tag whose tag name is "script"'
 // http://whatwg.org/html#scriptEndTag
 // Script handling lives outside the tree builder to keep each class simple.
-void HTMLScriptRunner::execute(PassRefPtrWillBeRawPtr<Element> scriptElement, const TextPosition& scriptStartPosition)
+void HTMLScriptRunner::execute(RawPtr<Element> scriptElement, const TextPosition& scriptStartPosition)
 {
     ASSERT(scriptElement);
     TRACE_EVENT1("blink", "HTMLScriptRunner::execute",
@@ -329,7 +329,7 @@ bool HTMLScriptRunner::executeScriptsWaitingForParsing()
             traceParserBlockingScript(m_scriptsToExecuteAfterParsing.first().get(), !m_document->isScriptExecutionReady());
             return false;
         }
-        OwnPtrWillBeRawPtr<PendingScript> first = m_scriptsToExecuteAfterParsing.takeFirst();
+        RawPtr<PendingScript> first = m_scriptsToExecuteAfterParsing.takeFirst();
         executePendingScriptAndDispatchEvent(first.get(), ScriptStreamer::Deferred);
         // FIXME: What is this m_document check for?
         if (!m_document)
@@ -361,7 +361,7 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
 
 void HTMLScriptRunner::requestDeferredScript(Element* element)
 {
-    OwnPtrWillBeRawPtr<PendingScript> pendingScript = PendingScript::create(nullptr, nullptr);
+    RawPtr<PendingScript> pendingScript = PendingScript::create(nullptr, nullptr);
     if (!requestPendingScript(pendingScript.get(), element))
         return;
 

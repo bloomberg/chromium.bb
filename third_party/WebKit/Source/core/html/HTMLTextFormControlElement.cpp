@@ -409,7 +409,7 @@ int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& p
     if (enclosingTextFormControl(indexPosition) != this)
         return 0;
     ASSERT(indexPosition.document());
-    RefPtrWillBeRawPtr<Range> range = Range::create(*indexPosition.document());
+    RawPtr<Range> range = Range::create(*indexPosition.document());
     range->setStart(innerEditorElement(), 0, ASSERT_NO_EXCEPTION);
     range->setEnd(indexPosition.computeContainerNode(), indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION);
     return TextIterator::rangeLength(range->startPosition(), range->endPosition());
@@ -505,7 +505,7 @@ static inline void setContainerAndOffsetForRange(Node* node, int offset, Node*& 
     }
 }
 
-PassRefPtrWillBeRawPtr<Range> HTMLTextFormControlElement::selection() const
+RawPtr<Range> HTMLTextFormControlElement::selection() const
 {
     if (!layoutObject() || !isTextFormControl())
         return nullptr;
@@ -594,7 +594,7 @@ void HTMLTextFormControlElement::selectionChanged(bool userTriggered)
 
 void HTMLTextFormControlElement::scheduleSelectEvent()
 {
-    RefPtrWillBeRawPtr<Event> event = Event::createBubble(EventTypeNames::select);
+    RawPtr<Event> event = Event::createBubble(EventTypeNames::select);
     event->setTarget(this);
     document().enqueueUniqueAnimationFrameEvent(event.release());
 }
@@ -620,7 +620,7 @@ bool HTMLTextFormControlElement::lastChangeWasUserEdit() const
     return m_lastChangeWasUserEdit;
 }
 
-PassRefPtrWillBeRawPtr<Node> HTMLTextFormControlElement::createPlaceholderBreakElement() const
+RawPtr<Node> HTMLTextFormControlElement::createPlaceholderBreakElement() const
 {
     return HTMLBRElement::create(document());
 }
@@ -799,7 +799,7 @@ static Position innerNodePosition(const Position& innerPosition)
     ASSERT(!innerPosition.isAfterAnchor());
     HTMLElement* element = toHTMLElement(innerPosition.anchorNode());
     ASSERT(element);
-    RefPtrWillBeRawPtr<NodeList> childNodes = element->childNodes();
+    RawPtr<NodeList> childNodes = element->childNodes();
     if (!childNodes->length())
         return Position(element, 0);
 
@@ -829,7 +829,7 @@ static Position findWordBoundary(const HTMLElement* innerEditor, const Position&
 {
     StringBuilder concatTexts;
     Vector<unsigned> lengthList;
-    WillBeHeapVector<RawPtrWillBeMember<Text>> textList;
+    HeapVector<Member<Text>> textList;
 
     if (startPosition.anchorNode()->isTextNode())
         ASSERT(startPosition.isOffsetInAnchor());

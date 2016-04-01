@@ -99,7 +99,7 @@ public:
 
     void scheduleChangeEvent()
     {
-        RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::change);
+        RawPtr<Event> event = Event::create(EventTypeNames::change);
         event->setTarget(this);
         m_mediaElement->scheduleEvent(event);
     }
@@ -116,13 +116,13 @@ public:
 private:
     void scheduleTrackEvent(const AtomicString& eventName, T* track)
     {
-        RefPtrWillBeRawPtr<Event> event = TrackEvent::create(eventName, track);
+        RawPtr<Event> event = TrackEvent::create(eventName, track);
         event->setTarget(this);
         m_mediaElement->scheduleEvent(event);
     }
 
     HeapVector<Member<T>> m_tracks;
-    RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
+    Member<HTMLMediaElement> m_mediaElement;
 };
 
 } // namespace blink

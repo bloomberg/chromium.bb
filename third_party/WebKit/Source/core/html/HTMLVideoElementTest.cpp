@@ -58,7 +58,7 @@ public:
 
 class StubFrameLoaderClient : public EmptyFrameLoaderClient {
 public:
-    static PassOwnPtrWillBeRawPtr<StubFrameLoaderClient> create()
+    static RawPtr<StubFrameLoaderClient> create()
     {
         return adoptPtrWillBeNoop(new StubFrameLoaderClient);
     }
@@ -93,7 +93,7 @@ protected:
     }
 
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    RefPtrWillBePersistent<HTMLVideoElement> m_video;
+    Persistent<HTMLVideoElement> m_video;
 };
 
 TEST_F(HTMLVideoElementTest, setBufferingStrategy_NonUserPause)

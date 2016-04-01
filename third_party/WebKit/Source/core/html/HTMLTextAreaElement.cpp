@@ -88,9 +88,9 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document, HTMLFormElement* fo
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(Document& document, HTMLFormElement* form)
+RawPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(Document& document, HTMLFormElement* form)
 {
-    RefPtrWillBeRawPtr<HTMLTextAreaElement> textArea = adoptRefWillBeNoop(new HTMLTextAreaElement(document, form));
+    RawPtr<HTMLTextAreaElement> textArea = new HTMLTextAreaElement(document, form);
     textArea->ensureUserAgentShadowRoot();
     return textArea.release();
 }
@@ -369,7 +369,7 @@ String HTMLTextAreaElement::value() const
 
 void HTMLTextAreaElement::setValue(const String& value, TextFieldEventBehavior eventBehavior)
 {
-    RefPtrWillBeRawPtr<HTMLTextAreaElement> protector(this);
+    RawPtr<HTMLTextAreaElement> protector(this);
     setValueCommon(value, eventBehavior);
     m_isDirty = true;
     if (document().focusedElement() == this)
@@ -451,10 +451,10 @@ String HTMLTextAreaElement::defaultValue() const
 
 void HTMLTextAreaElement::setDefaultValue(const String& defaultValue)
 {
-    RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
+    RawPtr<Node> protectFromMutationEvents(this);
 
     // To preserve comments, remove only the text nodes, then add a single text node.
-    WillBeHeapVector<RefPtrWillBeMember<Node>> textNodes;
+    HeapVector<Member<Node>> textNodes;
     for (Node* n = firstChild(); n; n = n->nextSibling()) {
         if (n->isTextNode())
             textNodes.append(n);
@@ -645,7 +645,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
         return;
     }
     if (!placeholder) {
-        RefPtrWillBeRawPtr<HTMLDivElement> newElement = HTMLDivElement::create(document());
+        RawPtr<HTMLDivElement> newElement = HTMLDivElement::create(document());
         placeholder = newElement.get();
         placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder"));
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());

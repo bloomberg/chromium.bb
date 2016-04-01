@@ -72,7 +72,7 @@ private:
 
     DateTimeEditElement& editElement() const;
 
-    RawPtrWillBeMember<DateTimeEditElement> m_editElement;
+    Member<DateTimeEditElement> m_editElement;
     const DateComponents m_dateValue;
     const DateTimeEditElement::LayoutParameters& m_parameters;
     DateTimeNumericFieldElement::Range m_dayRange;
@@ -148,7 +148,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     switch (fieldType) {
     case DateTimeFormat::FieldTypeDayOfMonth: {
-        RefPtrWillBeRawPtr<DateTimeFieldElement> field = DateTimeDayFieldElement::create(document, editElement(), m_parameters.placeholderForDay, m_dayRange);
+        RawPtr<DateTimeFieldElement> field = DateTimeDayFieldElement::create(document, editElement(), m_parameters.placeholderForDay, m_dayRange);
         editElement().addField(field);
         if (shouldDayOfMonthFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -159,7 +159,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     case DateTimeFormat::FieldTypeHour11: {
         DateTimeNumericFieldElement::Step step = createStep(msPerHour, msPerHour * 12);
-        RefPtrWillBeRawPtr<DateTimeFieldElement> field = DateTimeHour11FieldElement::create(document, editElement(), m_hour23Range, step);
+        RawPtr<DateTimeFieldElement> field = DateTimeHour11FieldElement::create(document, editElement(), m_hour23Range, step);
         editElement().addField(field);
         if (shouldHourFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -170,7 +170,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     case DateTimeFormat::FieldTypeHour12: {
         DateTimeNumericFieldElement::Step step = createStep(msPerHour, msPerHour * 12);
-        RefPtrWillBeRawPtr<DateTimeFieldElement> field = DateTimeHour12FieldElement::create(document, editElement(), m_hour23Range, step);
+        RawPtr<DateTimeFieldElement> field = DateTimeHour12FieldElement::create(document, editElement(), m_hour23Range, step);
         editElement().addField(field);
         if (shouldHourFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -181,7 +181,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     case DateTimeFormat::FieldTypeHour23: {
         DateTimeNumericFieldElement::Step step = createStep(msPerHour, msPerDay);
-        RefPtrWillBeRawPtr<DateTimeFieldElement> field = DateTimeHour23FieldElement::create(document, editElement(), m_hour23Range, step);
+        RawPtr<DateTimeFieldElement> field = DateTimeHour23FieldElement::create(document, editElement(), m_hour23Range, step);
         editElement().addField(field);
         if (shouldHourFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -192,7 +192,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     case DateTimeFormat::FieldTypeHour24: {
         DateTimeNumericFieldElement::Step step = createStep(msPerHour, msPerDay);
-        RefPtrWillBeRawPtr<DateTimeFieldElement> field = DateTimeHour24FieldElement::create(document, editElement(), m_hour23Range, step);
+        RawPtr<DateTimeFieldElement> field = DateTimeHour24FieldElement::create(document, editElement(), m_hour23Range, step);
         editElement().addField(field);
         if (shouldHourFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -203,7 +203,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     case DateTimeFormat::FieldTypeMinute: {
         DateTimeNumericFieldElement::Step step = createStep(msPerMinute, msPerHour);
-        RefPtrWillBeRawPtr<DateTimeNumericFieldElement> field = DateTimeMinuteFieldElement::create(document, editElement(), m_minuteRange, step);
+        RawPtr<DateTimeNumericFieldElement> field = DateTimeMinuteFieldElement::create(document, editElement(), m_minuteRange, step);
         editElement().addField(field);
         if (shouldMinuteFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -222,7 +222,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
             minMonth = m_parameters.minimum.month();
             maxMonth = m_parameters.maximum.month();
         }
-        RefPtrWillBeRawPtr<DateTimeFieldElement> field;
+        RawPtr<DateTimeFieldElement> field;
         switch (count) {
         case countForNarrowMonth: // Fallthrough.
         case countForAbbreviatedMonth:
@@ -244,7 +244,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
     }
 
     case DateTimeFormat::FieldTypePeriod: {
-        RefPtrWillBeRawPtr<DateTimeFieldElement> field = DateTimeAMPMFieldElement::create(document, editElement(), m_parameters.locale.timeAMPMLabels());
+        RawPtr<DateTimeFieldElement> field = DateTimeAMPMFieldElement::create(document, editElement(), m_parameters.locale.timeAMPMLabels());
         editElement().addField(field);
         if (shouldAMPMFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -255,7 +255,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     case DateTimeFormat::FieldTypeSecond: {
         DateTimeNumericFieldElement::Step step = createStep(msPerSecond, msPerMinute);
-        RefPtrWillBeRawPtr<DateTimeNumericFieldElement> field = DateTimeSecondFieldElement::create(document, editElement(), m_secondRange, step);
+        RawPtr<DateTimeNumericFieldElement> field = DateTimeSecondFieldElement::create(document, editElement(), m_secondRange, step);
         editElement().addField(field);
         if (shouldSecondFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -271,7 +271,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
 
     case DateTimeFormat::FieldTypeFractionalSecond: {
         DateTimeNumericFieldElement::Step step = createStep(1, msPerSecond);
-        RefPtrWillBeRawPtr<DateTimeNumericFieldElement> field = DateTimeMillisecondFieldElement::create(document, editElement(), m_millisecondRange, step);
+        RawPtr<DateTimeNumericFieldElement> field = DateTimeMillisecondFieldElement::create(document, editElement(), m_millisecondRange, step);
         editElement().addField(field);
         if (shouldMillisecondFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -314,7 +314,7 @@ void DateTimeEditBuilder::visitField(DateTimeFormat::FieldType fieldType, int co
             std::swap(yearParams.minIsSpecified, yearParams.maxIsSpecified);
         }
         yearParams.placeholder = m_parameters.placeholderForYear;
-        RefPtrWillBeRawPtr<DateTimeFieldElement> field = DateTimeYearFieldElement::create(document, editElement(), yearParams);
+        RawPtr<DateTimeFieldElement> field = DateTimeYearFieldElement::create(document, editElement(), yearParams);
         editElement().addField(field);
         if (shouldYearFieldDisabled()) {
             field->setValueAsDate(m_dateValue);
@@ -402,7 +402,7 @@ void DateTimeEditBuilder::visitLiteral(const String& text)
 {
     DEFINE_STATIC_LOCAL(AtomicString, textPseudoId, ("-webkit-datetime-edit-text"));
     ASSERT(text.length());
-    RefPtrWillBeRawPtr<HTMLDivElement> element = HTMLDivElement::create(editElement().document());
+    RawPtr<HTMLDivElement> element = HTMLDivElement::create(editElement().document());
     element->setShadowPseudoId(textPseudoId);
     if (m_parameters.locale.isRTL() && text.length()) {
         CharDirection dir = direction(text[0]);
@@ -475,7 +475,7 @@ inline Element* DateTimeEditElement::fieldsWrapperElement() const
     return toElement(firstChild());
 }
 
-void DateTimeEditElement::addField(PassRefPtrWillBeRawPtr<DateTimeFieldElement> field)
+void DateTimeEditElement::addField(RawPtr<DateTimeFieldElement> field)
 {
     if (m_fields.size() >= maximumNumberOfFields)
         return;
@@ -498,9 +498,9 @@ void DateTimeEditElement::blurByOwner()
         field->blur();
 }
 
-PassRefPtrWillBeRawPtr<DateTimeEditElement> DateTimeEditElement::create(Document& document, EditControlOwner& editControlOwner)
+RawPtr<DateTimeEditElement> DateTimeEditElement::create(Document& document, EditControlOwner& editControlOwner)
 {
-    RefPtrWillBeRawPtr<DateTimeEditElement> container = adoptRefWillBeNoop(new DateTimeEditElement(document, editControlOwner));
+    RawPtr<DateTimeEditElement> container = new DateTimeEditElement(document, editControlOwner);
     container->setShadowPseudoId(AtomicString("-webkit-datetime-edit"));
     container->setAttribute(idAttr, ShadowElementNames::dateTimeEdit());
     return container.release();
@@ -670,7 +670,7 @@ void DateTimeEditElement::layout(const LayoutParameters& layoutParameters, const
 {
     DEFINE_STATIC_LOCAL(AtomicString, fieldsWrapperPseudoId, ("-webkit-datetime-edit-fields-wrapper"));
     if (!hasChildren()) {
-        RefPtrWillBeRawPtr<HTMLDivElement> element = HTMLDivElement::create(document());
+        RawPtr<HTMLDivElement> element = HTMLDivElement::create(document());
         element->setShadowPseudoId(fieldsWrapperPseudoId);
         appendChild(element.get());
     }

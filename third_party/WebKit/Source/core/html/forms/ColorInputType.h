@@ -39,9 +39,9 @@ namespace blink {
 class ColorChooser;
 
 class ColorInputType final : public BaseClickableWithKeyInputType, public ColorChooserClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ColorInputType);
+    USING_GARBAGE_COLLECTED_MIXIN(ColorInputType);
 public:
-    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    static RawPtr<InputType> create(HTMLInputElement&);
     ~ColorInputType() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -77,7 +77,7 @@ private:
     void endColorChooser();
     HTMLElement* shadowColorSwatch() const;
 
-    OwnPtrWillBeMember<ColorChooser> m_chooser;
+    Member<ColorChooser> m_chooser;
 };
 
 } // namespace blink

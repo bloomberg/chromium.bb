@@ -38,7 +38,7 @@ namespace blink {
 
 class SearchInputType final : public BaseTextInputType {
 public:
-    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    static RawPtr<InputType> create(HTMLInputElement&);
 
 private:
     SearchInputType(HTMLInputElement&);

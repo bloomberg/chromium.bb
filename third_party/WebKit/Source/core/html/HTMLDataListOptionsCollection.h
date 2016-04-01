@@ -12,10 +12,10 @@ namespace blink {
 
 class HTMLDataListOptionsCollection : public HTMLCollection {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLDataListOptionsCollection> create(ContainerNode& ownerNode, CollectionType type)
+    static RawPtr<HTMLDataListOptionsCollection> create(ContainerNode& ownerNode, CollectionType type)
     {
         ASSERT_UNUSED(type, type == DataListOptions);
-        return adoptRefWillBeNoop(new HTMLDataListOptionsCollection(ownerNode));
+        return new HTMLDataListOptionsCollection(ownerNode);
     }
 
     HTMLOptionElement* item(unsigned offset) const { return toHTMLOptionElement(HTMLCollection::item(offset)); }

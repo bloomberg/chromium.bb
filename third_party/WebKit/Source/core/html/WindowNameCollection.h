@@ -11,10 +11,10 @@ namespace blink {
 
 class WindowNameCollection final : public HTMLNameCollection {
 public:
-    static PassRefPtrWillBeRawPtr<WindowNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
+    static RawPtr<WindowNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
     {
         ASSERT_UNUSED(type, type == WindowNamedItems);
-        return adoptRefWillBeNoop(new WindowNameCollection(document, name));
+        return new WindowNameCollection(document, name);
     }
 
     bool elementMatches(const Element&) const;

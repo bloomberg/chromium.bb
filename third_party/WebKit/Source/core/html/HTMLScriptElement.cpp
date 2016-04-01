@@ -43,9 +43,9 @@ inline HTMLScriptElement::HTMLScriptElement(Document& document, bool wasInserted
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLScriptElement> HTMLScriptElement::create(Document& document, bool wasInsertedByParser, bool alreadyStarted)
+RawPtr<HTMLScriptElement> HTMLScriptElement::create(Document& document, bool wasInsertedByParser, bool alreadyStarted)
 {
-    return adoptRefWillBeNoop(new HTMLScriptElement(document, wasInsertedByParser, alreadyStarted));
+    return new HTMLScriptElement(document, wasInsertedByParser, alreadyStarted);
 }
 
 bool HTMLScriptElement::isURLAttribute(const Attribute& attribute) const
@@ -174,9 +174,9 @@ void HTMLScriptElement::dispatchLoadEvent()
     dispatchEvent(Event::create(EventTypeNames::load));
 }
 
-PassRefPtrWillBeRawPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
+RawPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRefWillBeNoop(new HTMLScriptElement(document(), false, m_loader->alreadyStarted()));
+    return new HTMLScriptElement(document(), false, m_loader->alreadyStarted());
 }
 
 DEFINE_TRACE(HTMLScriptElement)

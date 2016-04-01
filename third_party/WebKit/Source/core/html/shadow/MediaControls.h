@@ -37,7 +37,7 @@ class TextTrackContainer;
 
 class CORE_EXPORT MediaControls final : public HTMLDivElement {
 public:
-    static PassRefPtrWillBeRawPtr<MediaControls> create(HTMLMediaElement&);
+    static RawPtr<MediaControls> create(HTMLMediaElement&);
 
     HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
 
@@ -126,23 +126,23 @@ private:
     void defaultEventHandler(Event*) override;
     bool containsRelatedTarget(Event*);
 
-    RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
+    Member<HTMLMediaElement> m_mediaElement;
 
     // Media control elements.
-    RawPtrWillBeMember<MediaControlOverlayEnclosureElement> m_overlayEnclosure;
-    RawPtrWillBeMember<MediaControlOverlayPlayButtonElement> m_overlayPlayButton;
-    RawPtrWillBeMember<MediaControlCastButtonElement> m_overlayCastButton;
-    RawPtrWillBeMember<MediaControlPanelEnclosureElement> m_enclosure;
-    RawPtrWillBeMember<MediaControlPanelElement> m_panel;
-    RawPtrWillBeMember<MediaControlPlayButtonElement> m_playButton;
-    RawPtrWillBeMember<MediaControlTimelineElement> m_timeline;
-    RawPtrWillBeMember<MediaControlCurrentTimeDisplayElement> m_currentTimeDisplay;
-    RawPtrWillBeMember<MediaControlTimeRemainingDisplayElement> m_durationDisplay;
-    RawPtrWillBeMember<MediaControlMuteButtonElement> m_muteButton;
-    RawPtrWillBeMember<MediaControlVolumeSliderElement> m_volumeSlider;
-    RawPtrWillBeMember<MediaControlToggleClosedCaptionsButtonElement> m_toggleClosedCaptionsButton;
-    RawPtrWillBeMember<MediaControlCastButtonElement> m_castButton;
-    RawPtrWillBeMember<MediaControlFullscreenButtonElement> m_fullScreenButton;
+    Member<MediaControlOverlayEnclosureElement> m_overlayEnclosure;
+    Member<MediaControlOverlayPlayButtonElement> m_overlayPlayButton;
+    Member<MediaControlCastButtonElement> m_overlayCastButton;
+    Member<MediaControlPanelEnclosureElement> m_enclosure;
+    Member<MediaControlPanelElement> m_panel;
+    Member<MediaControlPlayButtonElement> m_playButton;
+    Member<MediaControlTimelineElement> m_timeline;
+    Member<MediaControlCurrentTimeDisplayElement> m_currentTimeDisplay;
+    Member<MediaControlTimeRemainingDisplayElement> m_durationDisplay;
+    Member<MediaControlMuteButtonElement> m_muteButton;
+    Member<MediaControlVolumeSliderElement> m_volumeSlider;
+    Member<MediaControlToggleClosedCaptionsButtonElement> m_toggleClosedCaptionsButton;
+    Member<MediaControlCastButtonElement> m_castButton;
+    Member<MediaControlFullscreenButtonElement> m_fullScreenButton;
 
     Timer<MediaControls> m_hideMediaControlsTimer;
     unsigned m_hideTimerBehaviorFlags;

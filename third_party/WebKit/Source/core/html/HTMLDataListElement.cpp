@@ -44,13 +44,13 @@ inline HTMLDataListElement::HTMLDataListElement(Document& document)
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLDataListElement> HTMLDataListElement::create(Document& document)
+RawPtr<HTMLDataListElement> HTMLDataListElement::create(Document& document)
 {
     UseCounter::count(document, UseCounter::DataListElement);
-    return adoptRefWillBeNoop(new HTMLDataListElement(document));
+    return new HTMLDataListElement(document);
 }
 
-PassRefPtrWillBeRawPtr<HTMLDataListOptionsCollection> HTMLDataListElement::options()
+RawPtr<HTMLDataListOptionsCollection> HTMLDataListElement::options()
 {
     return ensureCachedCollection<HTMLDataListOptionsCollection>(DataListOptions);
 }

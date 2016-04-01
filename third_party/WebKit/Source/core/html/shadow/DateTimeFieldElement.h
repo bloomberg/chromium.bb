@@ -49,7 +49,7 @@ public:
 
     // FieldOwner implementer must call removeEventHandler when
     // it doesn't handle event, e.g. at destruction.
-    class FieldOwner : public WillBeGarbageCollectedMixin {
+    class FieldOwner : public GarbageCollectedMixin {
     public:
         virtual ~FieldOwner();
         virtual void didBlurFromField() = 0;
@@ -103,7 +103,7 @@ private:
     bool isFieldOwnerReadOnly() const;
     bool supportsFocus() const final;
 
-    RawPtrWillBeMember<FieldOwner> m_fieldOwner;
+    Member<FieldOwner> m_fieldOwner;
 };
 
 } // namespace blink

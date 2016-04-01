@@ -44,7 +44,7 @@ using BaseMonthInputType = BaseChooserOnlyDateAndTimeInputType;
 
 class MonthInputType final : public BaseMonthInputType {
 public:
-    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    static RawPtr<InputType> create(HTMLInputElement&);
 
 private:
     explicit MonthInputType(HTMLInputElement& element) : BaseMonthInputType(element) { }

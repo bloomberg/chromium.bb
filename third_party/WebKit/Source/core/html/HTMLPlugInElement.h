@@ -95,7 +95,7 @@ protected:
     String m_serviceType;
     String m_url;
     KURL m_loadedUrl;
-    OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
+    Member<HTMLImageLoader> m_imageLoader;
     bool m_isDelayingLoadEvent;
 
 private:
@@ -146,7 +146,7 @@ private:
     // prevent confusing code which may assume that widget() != null
     // means the frame is active, we save off m_widget here while
     // the plugin is persisting but not being displayed.
-    RefPtrWillBeMember<Widget> m_persistedPluginWidget;
+    Member<Widget> m_persistedPluginWidget;
 };
 
 inline bool isHTMLPlugInElement(const HTMLElement& element)

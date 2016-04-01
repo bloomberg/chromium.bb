@@ -40,7 +40,7 @@ class HTMLFormElement;
 class Node;
 class ValidityState;
 
-class CORE_EXPORT FormAssociatedElement : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT FormAssociatedElement : public GarbageCollectedMixin {
 public:
     virtual ~FormAssociatedElement();
 
@@ -92,7 +92,7 @@ public:
 
     void formAttributeTargetChanged();
 
-    typedef WillBeHeapVector<RawPtrWillBeMember<FormAssociatedElement>> List;
+    typedef HeapVector<Member<FormAssociatedElement>> List;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -123,12 +123,12 @@ private:
     virtual void derefFormAssociatedElement() = 0;
 #endif
 
-    void setFormAttributeTargetObserver(PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver>);
+    void setFormAttributeTargetObserver(RawPtr<FormAttributeTargetObserver>);
     void resetFormAttributeTargetObserver();
 
-    OwnPtrWillBeMember<FormAttributeTargetObserver> m_formAttributeTargetObserver;
-    WeakPtrWillBeMember<HTMLFormElement> m_form;
-    OwnPtrWillBeMember<ValidityState> m_validityState;
+    Member<FormAttributeTargetObserver> m_formAttributeTargetObserver;
+    Member<HTMLFormElement> m_form;
+    Member<ValidityState> m_validityState;
     String m_customValidationMessage;
     // Non-Oilpan: Even if m_formWasSetByParser is true, m_form can be null
     // because parentNode is not a strong reference and |this| and m_form don't

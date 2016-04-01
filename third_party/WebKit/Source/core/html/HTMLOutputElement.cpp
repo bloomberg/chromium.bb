@@ -50,9 +50,9 @@ HTMLOutputElement::~HTMLOutputElement()
 #endif
 }
 
-PassRefPtrWillBeRawPtr<HTMLOutputElement> HTMLOutputElement::create(Document& document, HTMLFormElement* form)
+RawPtr<HTMLOutputElement> HTMLOutputElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRefWillBeNoop(new HTMLOutputElement(document, form));
+    return new HTMLOutputElement(document, form);
 }
 
 const AtomicString& HTMLOutputElement::formControlType() const

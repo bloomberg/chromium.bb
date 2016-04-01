@@ -37,10 +37,10 @@ class HTMLTableSectionElement final : public HTMLTablePartElement {
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement);
 
-    PassRefPtrWillBeRawPtr<HTMLElement> insertRow(int index, ExceptionState&);
+    RawPtr<HTMLElement> insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<HTMLCollection> rows();
+    RawPtr<HTMLCollection> rows();
 
 private:
     HTMLTableSectionElement(const QualifiedName& tagName, Document&);

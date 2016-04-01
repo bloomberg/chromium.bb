@@ -31,15 +31,15 @@ namespace blink {
 
 class TextDocument final : public HTMLDocument {
 public:
-    static PassRefPtrWillBeRawPtr<TextDocument> create(const DocumentInit& initializer = DocumentInit())
+    static RawPtr<TextDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeNoop(new TextDocument(initializer));
+        return new TextDocument(initializer);
     }
 
 private:
     TextDocument(const DocumentInit&);
 
-    PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
+    RawPtr<DocumentParser> createParser() override;
 };
 
 } // namespace blink

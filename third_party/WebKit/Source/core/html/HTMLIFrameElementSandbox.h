@@ -11,9 +11,9 @@ namespace blink {
 
 class HTMLIFrameElementSandbox final : public DOMTokenList {
 public:
-    static PassRefPtrWillBeRawPtr<HTMLIFrameElementSandbox> create(DOMTokenListObserver* observer = nullptr)
+    static RawPtr<HTMLIFrameElementSandbox> create(DOMTokenListObserver* observer = nullptr)
     {
-        return adoptRefWillBeNoop(new HTMLIFrameElementSandbox(observer));
+        return new HTMLIFrameElementSandbox(observer);
     }
 
     ~HTMLIFrameElementSandbox() override;

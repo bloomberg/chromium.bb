@@ -48,12 +48,12 @@ public:
     DocumentFragment* content() const;
 
 private:
-    PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) override;
+    RawPtr<Node> cloneNode(bool deep) override;
     void didMoveToNewDocument(Document& oldDocument) override;
 
     explicit HTMLTemplateElement(Document&);
 
-    mutable RefPtrWillBeMember<TemplateContentDocumentFragment> m_content;
+    mutable Member<TemplateContentDocumentFragment> m_content;
 };
 
 } // namespace blink

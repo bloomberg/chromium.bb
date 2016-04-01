@@ -32,9 +32,9 @@ namespace blink {
 
 class TextDocumentParser final : public HTMLDocumentParser {
 public:
-    static PassRefPtrWillBeRawPtr<TextDocumentParser> create(HTMLDocument& document, ParserSynchronizationPolicy syncPolicy)
+    static RawPtr<TextDocumentParser> create(HTMLDocument& document, ParserSynchronizationPolicy syncPolicy)
     {
-        return adoptRefWillBeNoop(new TextDocumentParser(document, syncPolicy));
+        return new TextDocumentParser(document, syncPolicy);
     }
     ~TextDocumentParser() override;
 

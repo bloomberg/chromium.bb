@@ -31,7 +31,7 @@ namespace blink {
 
 class HTMLIFrameElement final : public HTMLFrameElementBase, public DOMTokenListObserver {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElement);
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElement);
 public:
     DECLARE_NODE_FACTORY(HTMLIFrameElement);
     DECLARE_VIRTUAL_TRACE();
@@ -61,7 +61,7 @@ private:
 
     AtomicString m_name;
     bool m_didLoadNonEmptyDocument;
-    RefPtrWillBeMember<HTMLIFrameElementSandbox> m_sandbox;
+    Member<HTMLIFrameElementSandbox> m_sandbox;
 
     ReferrerPolicy m_referrerPolicy;
 };

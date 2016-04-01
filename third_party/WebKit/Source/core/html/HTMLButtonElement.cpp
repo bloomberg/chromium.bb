@@ -44,9 +44,9 @@ inline HTMLButtonElement::HTMLButtonElement(Document& document, HTMLFormElement*
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLButtonElement> HTMLButtonElement::create(Document& document, HTMLFormElement* form)
+RawPtr<HTMLButtonElement> HTMLButtonElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRefWillBeNoop(new HTMLButtonElement(document, form));
+    return new HTMLButtonElement(document, form);
 }
 
 void HTMLButtonElement::setType(const AtomicString& type)

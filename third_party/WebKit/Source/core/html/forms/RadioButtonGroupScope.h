@@ -47,8 +47,8 @@ public:
     unsigned groupSizeFor(const HTMLInputElement*) const;
 
 private:
-    using NameToGroupMap = WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<RadioButtonGroup>, CaseFoldingHash>;
-    OwnPtrWillBeMember<NameToGroupMap> m_nameToGroupMap;
+    using NameToGroupMap = HeapHashMap<AtomicString, Member<RadioButtonGroup>, CaseFoldingHash>;
+    Member<NameToGroupMap> m_nameToGroupMap;
 };
 
 } // namespace blink

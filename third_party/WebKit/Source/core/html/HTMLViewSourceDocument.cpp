@@ -60,27 +60,27 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer, 
     lockCompatibilityMode();
 }
 
-PassRefPtrWillBeRawPtr<DocumentParser> HTMLViewSourceDocument::createParser()
+RawPtr<DocumentParser> HTMLViewSourceDocument::createParser()
 {
     return HTMLViewSourceParser::create(*this, m_type);
 }
 
 void HTMLViewSourceDocument::createContainingTable()
 {
-    RefPtrWillBeRawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*this);
+    RawPtr<HTMLHtmlElement> html = HTMLHtmlElement::create(*this);
     parserAppendChild(html);
-    RefPtrWillBeRawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
+    RawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
     html->parserAppendChild(head);
-    RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
+    RawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
     html->parserAppendChild(body);
 
     // Create a line gutter div that can be used to make sure the gutter extends down the height of the whole
     // document.
-    RefPtrWillBeRawPtr<HTMLDivElement> div = HTMLDivElement::create(*this);
+    RawPtr<HTMLDivElement> div = HTMLDivElement::create(*this);
     div->setAttribute(classAttr, "line-gutter-backdrop");
     body->parserAppendChild(div);
 
-    RefPtrWillBeRawPtr<HTMLTableElement> table = HTMLTableElement::create(*this);
+    RawPtr<HTMLTableElement> table = HTMLTableElement::create(*this);
     body->parserAppendChild(table);
     m_tbody = HTMLTableSectionElement::create(tbodyTag, *this);
     table->parserAppendChild(m_tbody);
@@ -178,14 +178,14 @@ void HTMLViewSourceDocument::processCharacterToken(const String& source, HTMLTok
     addText(source, "", annotation);
 }
 
-PassRefPtrWillBeRawPtr<Element> HTMLViewSourceDocument::addSpanWithClassName(const AtomicString& className)
+RawPtr<Element> HTMLViewSourceDocument::addSpanWithClassName(const AtomicString& className)
 {
     if (m_current == m_tbody) {
         addLine(className);
         return m_current;
     }
 
-    RefPtrWillBeRawPtr<HTMLSpanElement> span = HTMLSpanElement::create(*this);
+    RawPtr<HTMLSpanElement> span = HTMLSpanElement::create(*this);
     span->setAttribute(classAttr, className);
     m_current->parserAppendChild(span);
     return span.release();
@@ -194,11 +194,11 @@ PassRefPtrWillBeRawPtr<Element> HTMLViewSourceDocument::addSpanWithClassName(con
 void HTMLViewSourceDocument::addLine(const AtomicString& className)
 {
     // Create a table row.
-    RefPtrWillBeRawPtr<HTMLTableRowElement> trow = HTMLTableRowElement::create(*this);
+    RawPtr<HTMLTableRowElement> trow = HTMLTableRowElement::create(*this);
     m_tbody->parserAppendChild(trow);
 
     // Create a cell that will hold the line number (it is generated in the stylesheet using counters).
-    RefPtrWillBeRawPtr<HTMLTableCellElement> td = HTMLTableCellElement::create(tdTag, *this);
+    RawPtr<HTMLTableCellElement> td = HTMLTableCellElement::create(tdTag, *this);
     td->setAttribute(classAttr, "line-number");
     td->setIntegralAttribute(valueAttr, ++m_lineNumber);
     trow->parserAppendChild(td);
@@ -220,7 +220,7 @@ void HTMLViewSourceDocument::addLine(const AtomicString& className)
 void HTMLViewSourceDocument::finishLine()
 {
     if (!m_current->hasChildren()) {
-        RefPtrWillBeRawPtr<HTMLBRElement> br = HTMLBRElement::create(*this);
+        RawPtr<HTMLBRElement> br = HTMLBRElement::create(*this);
         m_current->parserAppendChild(br);
     }
     m_current = m_tbody;
@@ -245,7 +245,7 @@ void HTMLViewSourceDocument::addText(const String& text, const AtomicString& cla
             finishLine();
             continue;
         }
-        RefPtrWillBeRawPtr<Element> oldElement = m_current;
+        RawPtr<Element> oldElement = m_current;
         maybeAddSpanForAnnotation(annotation);
         m_current->parserAppendChild(Text::create(*this, substring));
         m_current = oldElement;
@@ -273,21 +273,21 @@ int HTMLViewSourceDocument::addRange(const String& source, int start, int end, c
     return end;
 }
 
-PassRefPtrWillBeRawPtr<Element> HTMLViewSourceDocument::addBase(const AtomicString& href)
+RawPtr<Element> HTMLViewSourceDocument::addBase(const AtomicString& href)
 {
-    RefPtrWillBeRawPtr<HTMLBaseElement> base = HTMLBaseElement::create(*this);
+    RawPtr<HTMLBaseElement> base = HTMLBaseElement::create(*this);
     base->setAttribute(hrefAttr, href);
     m_current->parserAppendChild(base);
     return base.release();
 }
 
-PassRefPtrWillBeRawPtr<Element> HTMLViewSourceDocument::addLink(const AtomicString& url, bool isAnchor)
+RawPtr<Element> HTMLViewSourceDocument::addLink(const AtomicString& url, bool isAnchor)
 {
     if (m_current == m_tbody)
         addLine("html-tag");
 
     // Now create a link for the attribute value instead of a span.
-    RefPtrWillBeRawPtr<HTMLAnchorElement> anchor = HTMLAnchorElement::create(*this);
+    RawPtr<HTMLAnchorElement> anchor = HTMLAnchorElement::create(*this);
     const char* classValue;
     if (isAnchor)
         classValue = "html-attribute-value html-external-link";

@@ -42,9 +42,9 @@ namespace blink {
 
 using namespace HTMLNames;
 
-PassRefPtrWillBeRawPtr<InputType> HiddenInputType::create(HTMLInputElement& element)
+RawPtr<InputType> HiddenInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new HiddenInputType(element));
+    return new HiddenInputType(element);
 }
 
 const AtomicString& HiddenInputType::formControlType() const

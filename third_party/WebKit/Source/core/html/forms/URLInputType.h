@@ -37,7 +37,7 @@ namespace blink {
 
 class URLInputType final : public BaseTextInputType {
 public:
-    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    static RawPtr<InputType> create(HTMLInputElement&);
 
 private:
     URLInputType(HTMLInputElement& element) : BaseTextInputType(element) { }

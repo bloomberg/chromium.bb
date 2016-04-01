@@ -42,9 +42,8 @@ class CanvasImageSource;
 class HTMLCanvasElement;
 class ImageData;
 
-class CORE_EXPORT CanvasRenderingContext : public NoBaseWillBeGarbageCollectedFinalized<CanvasRenderingContext>, public ScriptWrappable {
+class CORE_EXPORT CanvasRenderingContext : public GarbageCollectedFinalized<CanvasRenderingContext>, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(CanvasRenderingContext);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(CanvasRenderingContext);
 public:
     virtual ~CanvasRenderingContext() { }
 
@@ -130,7 +129,7 @@ protected:
     virtual void stop() = 0;
 
 private:
-    RawPtrWillBeMember<HTMLCanvasElement> m_canvas;
+    Member<HTMLCanvasElement> m_canvas;
     HashSet<String> m_cleanURLs;
     HashSet<String> m_dirtyURLs;
 };

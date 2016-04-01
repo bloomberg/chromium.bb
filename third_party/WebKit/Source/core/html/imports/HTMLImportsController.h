@@ -46,9 +46,8 @@ class HTMLImportLoader;
 class HTMLImportTreeRoot;
 class KURL;
 
-class HTMLImportsController final : public NoBaseWillBeGarbageCollectedFinalized<HTMLImportsController>, public WillBeHeapSupplement<Document> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLImportsController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLImportsController);
+class HTMLImportsController final : public GarbageCollectedFinalized<HTMLImportsController>, public HeapSupplement<Document> {
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLImportsController);
 public:
     static const char* supplementName();
     static void provideTo(Document&);
@@ -78,8 +77,8 @@ private:
 
     void dispose();
 
-    OwnPtrWillBeMember<HTMLImportTreeRoot> m_root;
-    using LoaderList = WillBeHeapVector<OwnPtrWillBeMember<HTMLImportLoader>>;
+    Member<HTMLImportTreeRoot> m_root;
+    using LoaderList = HeapVector<Member<HTMLImportLoader>>;
     LoaderList m_loaders;
 };
 

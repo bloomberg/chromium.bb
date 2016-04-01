@@ -26,10 +26,9 @@
 
 namespace blink {
 
-class RadioButtonGroup : public NoBaseWillBeGarbageCollected<RadioButtonGroup> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(RadioButtonGroup);
+class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
 public:
-    static PassOwnPtrWillBeRawPtr<RadioButtonGroup> create();
+    static RawPtr<RadioButtonGroup> create();
     bool isEmpty() const { return m_members.isEmpty(); }
     bool isRequired() const { return m_requiredCount; }
     HTMLInputElement* checkedButton() const { return m_checkedButton; }
@@ -49,7 +48,7 @@ private:
     void setCheckedButton(HTMLInputElement*);
 
     // The map records the 'required' state of each (button) element.
-    using Members = WillBeHeapHashMap<RawPtrWillBeMember<HTMLInputElement>, bool>;
+    using Members = HeapHashMap<Member<HTMLInputElement>, bool>;
 
 #if ENABLE(OILPAN)
     using MemberKeyValue = WTF::KeyValuePair<Member<HTMLInputElement>, bool>;
@@ -60,7 +59,7 @@ private:
     void updateRequiredButton(MemberKeyValue&, bool isRequired);
 
     Members m_members;
-    RawPtrWillBeMember<HTMLInputElement> m_checkedButton;
+    Member<HTMLInputElement> m_checkedButton;
     size_t m_requiredCount;
 };
 
@@ -70,7 +69,7 @@ RadioButtonGroup::RadioButtonGroup()
 {
 }
 
-PassOwnPtrWillBeRawPtr<RadioButtonGroup> RadioButtonGroup::create()
+RawPtr<RadioButtonGroup> RadioButtonGroup::create()
 {
     return adoptPtrWillBeNoop(new RadioButtonGroup);
 }
@@ -239,7 +238,7 @@ void RadioButtonGroupScope::addButton(HTMLInputElement* element)
     if (!m_nameToGroupMap)
         m_nameToGroupMap = adoptPtrWillBeNoop(new NameToGroupMap);
 
-    OwnPtrWillBeMember<RadioButtonGroup>& group = m_nameToGroupMap->add(element->name(), nullptr).storedValue->value;
+    Member<RadioButtonGroup>& group = m_nameToGroupMap->add(element->name(), nullptr).storedValue->value;
     if (!group)
         group = RadioButtonGroup::create();
     group->add(element);

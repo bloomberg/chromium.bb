@@ -287,12 +287,10 @@ Vector<String> SavedFormState::getReferencedFilePaths() const
 
 // ----------------------------------------------------------------------------
 
-class FormKeyGenerator final : public NoBaseWillBeGarbageCollectedFinalized<FormKeyGenerator> {
+class FormKeyGenerator final : public GarbageCollectedFinalized<FormKeyGenerator> {
     WTF_MAKE_NONCOPYABLE(FormKeyGenerator);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(FormKeyGenerator);
-
 public:
-    static PassOwnPtrWillBeRawPtr<FormKeyGenerator> create() { return adoptPtrWillBeNoop(new FormKeyGenerator); }
+    static RawPtr<FormKeyGenerator> create() { return adoptPtrWillBeNoop(new FormKeyGenerator); }
     DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
@@ -305,7 +303,7 @@ public:
 private:
     FormKeyGenerator() { }
 
-    using FormToKeyMap = WillBeHeapHashMap<RawPtrWillBeMember<HTMLFormElement>, AtomicString>;
+    using FormToKeyMap = HeapHashMap<Member<HTMLFormElement>, AtomicString>;
     using FormSignatureToNextIndexMap = HashMap<String, unsigned>;
     FormToKeyMap m_formToKeyMap;
     FormSignatureToNextIndexMap m_formSignatureToNextIndexMap;
@@ -381,12 +379,10 @@ void FormKeyGenerator::willDeleteForm(HTMLFormElement* form)
 
 // ----------------------------------------------------------------------------
 
-PassRefPtrWillBeRawPtr<DocumentState> DocumentState::create()
+RawPtr<DocumentState> DocumentState::create()
 {
     return adoptRefWillBeNoop(new DocumentState);
 }
-
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentState)
 
 DEFINE_TRACE(DocumentState)
 {
@@ -418,7 +414,7 @@ static String formStateSignature()
 
 Vector<String> DocumentState::toStateVector()
 {
-    OwnPtrWillBeRawPtr<FormKeyGenerator> keyGenerator = FormKeyGenerator::create();
+    RawPtr<FormKeyGenerator> keyGenerator = FormKeyGenerator::create();
     OwnPtr<SavedFormStateMap> stateMap = adoptPtr(new SavedFormStateMap);
     for (const auto& formControl : m_formControls) {
         HTMLFormControlElementWithState* control = formControl.get();

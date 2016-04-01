@@ -118,7 +118,7 @@ inline bool isSelectScopeMarker(HTMLStackItem* item)
 
 } // namespace
 
-HTMLElementStack::ElementRecord::ElementRecord(PassRefPtrWillBeRawPtr<HTMLStackItem> item, PassOwnPtrWillBeRawPtr<ElementRecord> next)
+HTMLElementStack::ElementRecord::ElementRecord(RawPtr<HTMLStackItem> item, RawPtr<ElementRecord> next)
     : m_item(item)
     , m_next(next)
 {
@@ -131,7 +131,7 @@ HTMLElementStack::ElementRecord::~ElementRecord()
 }
 #endif
 
-void HTMLElementStack::ElementRecord::replaceElement(PassRefPtrWillBeRawPtr<HTMLStackItem> item)
+void HTMLElementStack::ElementRecord::replaceElement(RawPtr<HTMLStackItem> item)
 {
     ASSERT(item);
     ASSERT(!m_item || m_item->isElementNode());
@@ -310,19 +310,19 @@ void HTMLElementStack::popUntilForeignContentScopeMarker()
         pop();
 }
 
-void HTMLElementStack::pushRootNode(PassRefPtrWillBeRawPtr<HTMLStackItem> rootItem)
+void HTMLElementStack::pushRootNode(RawPtr<HTMLStackItem> rootItem)
 {
     ASSERT(rootItem->isDocumentFragmentNode());
     pushRootNodeCommon(rootItem);
 }
 
-void HTMLElementStack::pushHTMLHtmlElement(PassRefPtrWillBeRawPtr<HTMLStackItem> item)
+void HTMLElementStack::pushHTMLHtmlElement(RawPtr<HTMLStackItem> item)
 {
     ASSERT(item->hasTagName(htmlTag));
     pushRootNodeCommon(item);
 }
 
-void HTMLElementStack::pushRootNodeCommon(PassRefPtrWillBeRawPtr<HTMLStackItem> rootItem)
+void HTMLElementStack::pushRootNodeCommon(RawPtr<HTMLStackItem> rootItem)
 {
     ASSERT(!m_top);
     ASSERT(!m_rootNode);
@@ -330,7 +330,7 @@ void HTMLElementStack::pushRootNodeCommon(PassRefPtrWillBeRawPtr<HTMLStackItem> 
     pushCommon(rootItem);
 }
 
-void HTMLElementStack::pushHTMLHeadElement(PassRefPtrWillBeRawPtr<HTMLStackItem> item)
+void HTMLElementStack::pushHTMLHeadElement(RawPtr<HTMLStackItem> item)
 {
     ASSERT(item->hasTagName(HTMLNames::headTag));
     ASSERT(!m_headElement);
@@ -338,7 +338,7 @@ void HTMLElementStack::pushHTMLHeadElement(PassRefPtrWillBeRawPtr<HTMLStackItem>
     pushCommon(item);
 }
 
-void HTMLElementStack::pushHTMLBodyElement(PassRefPtrWillBeRawPtr<HTMLStackItem> item)
+void HTMLElementStack::pushHTMLBodyElement(RawPtr<HTMLStackItem> item)
 {
     ASSERT(item->hasTagName(HTMLNames::bodyTag));
     ASSERT(!m_bodyElement);
@@ -346,7 +346,7 @@ void HTMLElementStack::pushHTMLBodyElement(PassRefPtrWillBeRawPtr<HTMLStackItem>
     pushCommon(item);
 }
 
-void HTMLElementStack::push(PassRefPtrWillBeRawPtr<HTMLStackItem> item)
+void HTMLElementStack::push(RawPtr<HTMLStackItem> item)
 {
     ASSERT(!item->hasTagName(htmlTag));
     ASSERT(!item->hasTagName(headTag));
@@ -355,7 +355,7 @@ void HTMLElementStack::push(PassRefPtrWillBeRawPtr<HTMLStackItem> item)
     pushCommon(item);
 }
 
-void HTMLElementStack::insertAbove(PassRefPtrWillBeRawPtr<HTMLStackItem> item, ElementRecord* recordBelow)
+void HTMLElementStack::insertAbove(RawPtr<HTMLStackItem> item, ElementRecord* recordBelow)
 {
     ASSERT(item);
     ASSERT(recordBelow);
@@ -374,7 +374,7 @@ void HTMLElementStack::insertAbove(PassRefPtrWillBeRawPtr<HTMLStackItem> item, E
             continue;
 
         m_stackDepth++;
-        recordAbove->setNext(adoptPtrWillBeNoop(new ElementRecord(item, recordAbove->releaseNext())));
+        recordAbove->setNext(new ElementRecord(item, recordAbove->releaseNext()));
         recordAbove->next()->element()->beginParsingChildren();
         return;
     }
@@ -565,12 +565,12 @@ ContainerNode* HTMLElementStack::rootNode() const
     return m_rootNode;
 }
 
-void HTMLElementStack::pushCommon(PassRefPtrWillBeRawPtr<HTMLStackItem> item)
+void HTMLElementStack::pushCommon(RawPtr<HTMLStackItem> item)
 {
     ASSERT(m_rootNode);
 
     m_stackDepth++;
-    m_top = adoptPtrWillBeNoop(new ElementRecord(item, m_top.release()));
+    m_top = new ElementRecord(item, m_top.release());
 }
 
 void HTMLElementStack::popCommon()

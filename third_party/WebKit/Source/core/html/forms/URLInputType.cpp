@@ -38,9 +38,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InputType> URLInputType::create(HTMLInputElement& element)
+RawPtr<InputType> URLInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new URLInputType(element));
+    return new URLInputType(element);
 }
 
 void URLInputType::countUsage()

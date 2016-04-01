@@ -63,9 +63,9 @@ void HTMLOptionsCollection::supportedPropertyNames(Vector<String>& names)
     }
 }
 
-PassRefPtrWillBeRawPtr<HTMLOptionsCollection> HTMLOptionsCollection::create(ContainerNode& select, CollectionType)
+RawPtr<HTMLOptionsCollection> HTMLOptionsCollection::create(ContainerNode& select, CollectionType)
 {
-    return adoptRefWillBeNoop(new HTMLOptionsCollection(select));
+    return new HTMLOptionsCollection(select);
 }
 
 void HTMLOptionsCollection::add(const HTMLOptionElementOrHTMLOptGroupElement& element, const HTMLElementOrLong& before, ExceptionState& exceptionState)
@@ -95,7 +95,7 @@ void HTMLOptionsCollection::setLength(unsigned length, ExceptionState& exception
 
 void HTMLOptionsCollection::namedGetter(const AtomicString& name, NodeListOrElement& returnValue)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Element>> namedItems;
+    HeapVector<Member<Element>> namedItems;
     this->namedItems(name, namedItems);
 
     if (!namedItems.size())
@@ -110,7 +110,7 @@ void HTMLOptionsCollection::namedGetter(const AtomicString& name, NodeListOrElem
     returnValue.setNodeList(StaticElementList::adopt(namedItems));
 }
 
-bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtrWillBeRawPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
+bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, RawPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
 {
     HTMLSelectElement& base = toHTMLSelectElement(ownerNode());
     if (!value) { // undefined or null

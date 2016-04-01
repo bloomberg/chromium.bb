@@ -44,11 +44,11 @@ enum VTTNodeType {
 
 class VTTElement final : public Element {
 public:
-    static PassRefPtrWillBeRawPtr<VTTElement> create(const VTTNodeType, Document*);
-    static PassRefPtrWillBeRawPtr<VTTElement> create(const QualifiedName&, Document*);
-    PassRefPtrWillBeRawPtr<HTMLElement> createEquivalentHTMLElement(Document&);
+    static RawPtr<VTTElement> create(const VTTNodeType, Document*);
+    static RawPtr<VTTElement> create(const QualifiedName&, Document*);
+    RawPtr<HTMLElement> createEquivalentHTMLElement(Document&);
 
-    PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    RawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
 
     void setVTTNodeType(VTTNodeType type) { m_webVTTNodeType = static_cast<unsigned>(type); }
     VTTNodeType webVTTNodeType() const { return static_cast<VTTNodeType>(m_webVTTNodeType); }

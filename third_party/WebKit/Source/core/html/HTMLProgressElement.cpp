@@ -50,9 +50,9 @@ HTMLProgressElement::~HTMLProgressElement()
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLProgressElement> HTMLProgressElement::create(Document& document)
+RawPtr<HTMLProgressElement> HTMLProgressElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLProgressElement> progress = adoptRefWillBeNoop(new HTMLProgressElement(document));
+    RawPtr<HTMLProgressElement> progress = new HTMLProgressElement(document);
     progress->ensureUserAgentShadowRoot();
     return progress.release();
 }
@@ -149,13 +149,13 @@ void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
-    RefPtrWillBeRawPtr<ProgressInnerElement> inner = ProgressInnerElement::create(document());
+    RawPtr<ProgressInnerElement> inner = ProgressInnerElement::create(document());
     inner->setShadowPseudoId(AtomicString("-webkit-progress-inner-element"));
     root.appendChild(inner);
 
-    RefPtrWillBeRawPtr<ProgressBarElement> bar = ProgressBarElement::create(document());
+    RawPtr<ProgressBarElement> bar = ProgressBarElement::create(document());
     bar->setShadowPseudoId(AtomicString("-webkit-progress-bar"));
-    RefPtrWillBeRawPtr<ProgressValueElement> value = ProgressValueElement::create(document());
+    RawPtr<ProgressValueElement> value = ProgressValueElement::create(document());
     m_value = value.get();
     m_value->setShadowPseudoId(AtomicString("-webkit-progress-value"));
     m_value->setWidthPercentage(HTMLProgressElement::IndeterminatePosition * 100);

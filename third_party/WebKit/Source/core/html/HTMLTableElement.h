@@ -43,26 +43,26 @@ public:
     DECLARE_NODE_FACTORY(HTMLTableElement);
 
     HTMLTableCaptionElement* caption() const;
-    void setCaption(PassRefPtrWillBeRawPtr<HTMLTableCaptionElement>, ExceptionState&);
+    void setCaption(RawPtr<HTMLTableCaptionElement>, ExceptionState&);
 
     HTMLTableSectionElement* tHead() const;
-    void setTHead(PassRefPtrWillBeRawPtr<HTMLTableSectionElement>, ExceptionState&);
+    void setTHead(RawPtr<HTMLTableSectionElement>, ExceptionState&);
 
     HTMLTableSectionElement* tFoot() const;
-    void setTFoot(PassRefPtrWillBeRawPtr<HTMLTableSectionElement>, ExceptionState&);
+    void setTFoot(RawPtr<HTMLTableSectionElement>, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<HTMLTableSectionElement> createTHead();
+    RawPtr<HTMLTableSectionElement> createTHead();
     void deleteTHead();
-    PassRefPtrWillBeRawPtr<HTMLTableSectionElement> createTFoot();
+    RawPtr<HTMLTableSectionElement> createTFoot();
     void deleteTFoot();
-    PassRefPtrWillBeRawPtr<HTMLTableSectionElement> createTBody();
-    PassRefPtrWillBeRawPtr<HTMLTableCaptionElement> createCaption();
+    RawPtr<HTMLTableSectionElement> createTBody();
+    RawPtr<HTMLTableCaptionElement> createCaption();
     void deleteCaption();
-    PassRefPtrWillBeRawPtr<HTMLTableRowElement> insertRow(int index, ExceptionState&);
+    RawPtr<HTMLTableRowElement> insertRow(int index, ExceptionState&);
     void deleteRow(int index, ExceptionState&);
 
-    PassRefPtrWillBeRawPtr<HTMLTableRowsCollection> rows();
-    PassRefPtrWillBeRawPtr<HTMLCollection> tBodies();
+    RawPtr<HTMLTableRowsCollection> rows();
+    RawPtr<HTMLCollection> tBodies();
 
     const AtomicString& rules() const;
     const AtomicString& summary() const;
@@ -91,7 +91,7 @@ private:
 
     CellBorders getCellBorders() const;
 
-    PassRefPtrWillBeRawPtr<StylePropertySet> createSharedCellStyle();
+    RawPtr<StylePropertySet> createSharedCellStyle();
 
     HTMLTableSectionElement* lastBody() const;
 
@@ -104,7 +104,7 @@ private:
                                 // are present, to none otherwise).
 
     unsigned short m_padding;
-    RefPtrWillBeMember<StylePropertySet> m_sharedCellStyle;
+    Member<StylePropertySet> m_sharedCellStyle;
 };
 
 } // namespace blink

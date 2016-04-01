@@ -75,7 +75,7 @@ private:
     AtomicString m_label;
     AtomicString m_language;
     String m_id;
-    RawPtrWillBeMember<HTMLMediaElement> m_mediaElement;
+    Member<HTMLMediaElement> m_mediaElement;
 };
 
 #define DEFINE_TRACK_TYPE_CASTS(thisType, predicate) \

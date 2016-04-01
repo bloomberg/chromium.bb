@@ -77,7 +77,7 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_pageHolder;
-    RawPtrWillBePersistent<MediaControls> m_mediaControls;
+    Persistent<MediaControls> m_mediaControls;
 };
 
 TEST_F(MediaControlsTest, HideAndShow)

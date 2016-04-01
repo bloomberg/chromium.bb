@@ -45,9 +45,9 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtrWillBeRawPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(Document& document)
+RawPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLOptGroupElement> optGroupElement = adoptRefWillBeNoop(new HTMLOptGroupElement(document));
+    RawPtr<HTMLOptGroupElement> optGroupElement = new HTMLOptGroupElement(document);
     optGroupElement->ensureUserAgentShadowRoot();
     return optGroupElement.release();
 }
@@ -100,7 +100,7 @@ void HTMLOptGroupElement::detach(const AttachContext& context)
 
 bool HTMLOptGroupElement::supportsFocus() const
 {
-    RefPtrWillBeRawPtr<HTMLSelectElement> select = ownerSelectElement();
+    RawPtr<HTMLSelectElement> select = ownerSelectElement();
     if (select && select->usesMenuList())
         return false;
     return HTMLElement::supportsFocus();
@@ -163,7 +163,7 @@ void HTMLOptGroupElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     DEFINE_STATIC_LOCAL(AtomicString, labelPadding, ("0 2px 1px 2px"));
     DEFINE_STATIC_LOCAL(AtomicString, labelMinHeight, ("1.2em"));
-    RefPtrWillBeRawPtr<HTMLDivElement> label = HTMLDivElement::create(document());
+    RawPtr<HTMLDivElement> label = HTMLDivElement::create(document());
     label->setAttribute(roleAttr, AtomicString("group"));
     label->setAttribute(aria_labelAttr, AtomicString());
     label->setInlineStyleProperty(CSSPropertyPadding, labelPadding);
@@ -171,7 +171,7 @@ void HTMLOptGroupElement::didAddUserAgentShadowRoot(ShadowRoot& root)
     label->setIdAttribute(ShadowElementNames::optGroupLabel());
     root.appendChild(label);
 
-    RefPtrWillBeRawPtr<HTMLContentElement> content = HTMLContentElement::create(document());
+    RawPtr<HTMLContentElement> content = HTMLContentElement::create(document());
     content->setAttribute(selectAttr, "option,hr");
     root.appendChild(content);
 }

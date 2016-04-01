@@ -39,20 +39,20 @@ class CORE_EXPORT TrackEvent final : public Event {
 public:
     ~TrackEvent() override;
 
-    static PassRefPtrWillBeRawPtr<TrackEvent> create()
+    static RawPtr<TrackEvent> create()
     {
         return adoptRefWillBeNoop(new TrackEvent);
     }
 
-    static PassRefPtrWillBeRawPtr<TrackEvent> create(const AtomicString& type, const TrackEventInit& initializer)
+    static RawPtr<TrackEvent> create(const AtomicString& type, const TrackEventInit& initializer)
     {
-        return adoptRefWillBeNoop(new TrackEvent(type, initializer));
+        return new TrackEvent(type, initializer);
     }
 
     template <typename T>
-    static PassRefPtrWillBeRawPtr<TrackEvent> create(const AtomicString& type, T* track)
+    static RawPtr<TrackEvent> create(const AtomicString& type, T* track)
     {
-        return adoptRefWillBeNoop(new TrackEvent(type, track));
+        return new TrackEvent(type, track);
     }
 
     const AtomicString& interfaceName() const override;
@@ -71,7 +71,7 @@ private:
     {
     }
 
-    PersistentWillBeMember<TrackBase> m_track;
+    Member<TrackBase> m_track;
 };
 
 } // namespace blink

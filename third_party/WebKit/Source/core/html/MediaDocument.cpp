@@ -49,9 +49,9 @@ using namespace HTMLNames;
 // FIXME: Share more code with PluginDocumentParser.
 class MediaDocumentParser : public RawDataDocumentParser {
 public:
-    static PassRefPtrWillBeRawPtr<MediaDocumentParser> create(MediaDocument* document)
+    static RawPtr<MediaDocumentParser> create(MediaDocument* document)
     {
-        return adoptRefWillBeNoop(new MediaDocumentParser(document));
+        return new MediaDocumentParser(document);
     }
 
 private:
@@ -71,7 +71,7 @@ private:
 void MediaDocumentParser::createDocumentStructure()
 {
     ASSERT(document());
-    RefPtrWillBeRawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
+    RawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
     rootElement->insertedByParser();
     document()->appendChild(rootElement);
 
@@ -80,18 +80,18 @@ void MediaDocumentParser::createDocumentStructure()
     if (isDetached())
         return; // runScriptsAtDocumentElementAvailable can detach the frame.
 
-    RefPtrWillBeRawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*document());
-    RefPtrWillBeRawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*document());
+    RawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*document());
+    RawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*document());
     meta->setAttribute(nameAttr, "viewport");
     meta->setAttribute(contentAttr, "width=device-width");
     head->appendChild(meta.release());
 
-    RefPtrWillBeRawPtr<HTMLVideoElement> media = HTMLVideoElement::create(*document());
+    RawPtr<HTMLVideoElement> media = HTMLVideoElement::create(*document());
     media->setAttribute(controlsAttr, "");
     media->setAttribute(autoplayAttr, "");
     media->setAttribute(nameAttr, "media");
 
-    RefPtrWillBeRawPtr<HTMLSourceElement> source = HTMLSourceElement::create(*document());
+    RawPtr<HTMLSourceElement> source = HTMLSourceElement::create(*document());
     source->setSrc(document()->url());
 
     if (DocumentLoader* loader = document()->loader())
@@ -99,7 +99,7 @@ void MediaDocumentParser::createDocumentStructure()
 
     media->appendChild(source.release());
 
-    RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
+    RawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
     body->appendChild(media.release());
 
     rootElement->appendChild(head.release());
@@ -128,7 +128,7 @@ MediaDocument::MediaDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-PassRefPtrWillBeRawPtr<DocumentParser> MediaDocument::createParser()
+RawPtr<DocumentParser> MediaDocument::createParser()
 {
     return MediaDocumentParser::create(this);
 }

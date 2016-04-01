@@ -74,7 +74,7 @@ CORE_EXPORT MediaControlElementType mediaControlElementType(const Node*);
 
 // ----------------------------
 
-class MediaControlElement : public WillBeGarbageCollectedMixin {
+class MediaControlElement : public GarbageCollectedMixin {
 public:
     // These hold the state about whether this control should be shown if
     // space permits.  These will also show / hide as needed.
@@ -106,9 +106,9 @@ private:
     // if and only if we're wanted and we fit.
     void updateShownState();
 
-    RawPtrWillBeMember<MediaControls> m_mediaControls;
+    Member<MediaControls> m_mediaControls;
     MediaControlElementType m_displayType;
-    RawPtrWillBeMember<HTMLElement> m_element;
+    Member<HTMLElement> m_element;
     bool m_isWanted : 1;
     bool m_doesFit : 1;
 };
@@ -116,7 +116,7 @@ private:
 // ----------------------------
 
 class MediaControlDivElement : public HTMLDivElement, public MediaControlElement {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
+    USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
 public:
     DECLARE_VIRTUAL_TRACE();
 
@@ -130,7 +130,7 @@ private:
 // ----------------------------
 
 class MediaControlInputElement : public HTMLInputElement, public MediaControlElement {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
+    USING_GARBAGE_COLLECTED_MIXIN(MediaControlInputElement);
 public:
     DECLARE_VIRTUAL_TRACE();
 

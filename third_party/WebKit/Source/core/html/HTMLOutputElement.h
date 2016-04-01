@@ -38,9 +38,9 @@ namespace blink {
 
 class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement, private DOMTokenListObserver {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLOutputElement);
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLOutputElement);
 public:
-    static PassRefPtrWillBeRawPtr<HTMLOutputElement> create(Document&, HTMLFormElement*);
+    static RawPtr<HTMLOutputElement> create(Document&, HTMLFormElement*);
     ~HTMLOutputElement() override;
 
     bool willValidate() const override { return false; }
@@ -72,7 +72,7 @@ private:
 
     bool m_isDefaultValueMode;
     String m_defaultValue;
-    RefPtrWillBeMember<DOMTokenList> m_tokens;
+    Member<DOMTokenList> m_tokens;
 };
 
 } // namespace blink

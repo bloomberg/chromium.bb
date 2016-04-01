@@ -38,7 +38,7 @@ namespace blink {
 
 class RadioInputType final : public BaseCheckableInputType {
 public:
-    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    static RawPtr<InputType> create(HTMLInputElement&);
     CORE_EXPORT static HTMLInputElement* nextRadioButtonInGroup(HTMLInputElement* , bool forward);
 
 private:
@@ -51,7 +51,7 @@ private:
     void handleKeyupEvent(KeyboardEvent*) override;
     bool isKeyboardFocusable() const override;
     bool shouldSendChangeEventAfterCheckedChanged() override;
-    PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick() override;
+    RawPtr<ClickHandlingState> willDispatchClick() override;
     void didDispatchClick(Event*, const ClickHandlingState&) override;
     bool shouldAppearIndeterminate() const override;
 

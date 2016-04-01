@@ -31,8 +31,8 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    RefPtrWillBePersistent<HTMLDocument> m_document;
-    RefPtrWillBePersistent<HTMLCanvasElement> m_canvasElement;
+    Persistent<HTMLDocument> m_document;
+    Persistent<HTMLCanvasElement> m_canvasElement;
 };
 
 CanvasFontCacheTest::CanvasFontCacheTest()

@@ -37,7 +37,7 @@ using namespace HTMLNames;
 
 static StyleEventSender& styleLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<StyleEventSender>, sharedLoadEventSender, (StyleEventSender::create(EventTypeNames::load)));
+    DEFINE_STATIC_LOCAL(Persistent<StyleEventSender>, sharedLoadEventSender, (StyleEventSender::create(EventTypeNames::load)));
     return *sharedLoadEventSender;
 }
 
@@ -58,9 +58,9 @@ HTMLStyleElement::~HTMLStyleElement()
 #endif
 }
 
-PassRefPtrWillBeRawPtr<HTMLStyleElement> HTMLStyleElement::create(Document& document, bool createdByParser)
+RawPtr<HTMLStyleElement> HTMLStyleElement::create(Document& document, bool createdByParser)
 {
-    return adoptRefWillBeNoop(new HTMLStyleElement(document, createdByParser));
+    return new HTMLStyleElement(document, createdByParser);
 }
 
 void HTMLStyleElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)

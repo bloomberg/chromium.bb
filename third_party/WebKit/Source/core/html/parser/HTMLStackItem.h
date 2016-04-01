@@ -40,7 +40,7 @@ namespace blink {
 
 class ContainerNode;
 
-class HTMLStackItem : public RefCountedWillBeGarbageCollectedFinalized<HTMLStackItem> {
+class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
 public:
     enum ItemType {
         ItemForContextElement,
@@ -48,15 +48,15 @@ public:
     };
 
     // Used by document fragment node and context element.
-    static PassRefPtrWillBeRawPtr<HTMLStackItem> create(PassRefPtrWillBeRawPtr<ContainerNode> node, ItemType type)
+    static RawPtr<HTMLStackItem> create(RawPtr<ContainerNode> node, ItemType type)
     {
-        return adoptRefWillBeNoop(new HTMLStackItem(node, type));
+        return new HTMLStackItem(node, type);
     }
 
     // Used by HTMLElementStack and HTMLFormattingElementList.
-    static PassRefPtrWillBeRawPtr<HTMLStackItem> create(PassRefPtrWillBeRawPtr<ContainerNode> node, AtomicHTMLToken* token, const AtomicString& namespaceURI = HTMLNames::xhtmlNamespaceURI)
+    static RawPtr<HTMLStackItem> create(RawPtr<ContainerNode> node, AtomicHTMLToken* token, const AtomicString& namespaceURI = HTMLNames::xhtmlNamespaceURI)
     {
-        return adoptRefWillBeNoop(new HTMLStackItem(node, token, namespaceURI));
+        return new HTMLStackItem(node, token, namespaceURI);
     }
 
     Element* element() const { return toElement(m_node.get()); }
@@ -212,7 +212,7 @@ public:
     DEFINE_INLINE_TRACE() { visitor->trace(m_node); }
 
 private:
-    HTMLStackItem(PassRefPtrWillBeRawPtr<ContainerNode> node, ItemType type)
+    HTMLStackItem(RawPtr<ContainerNode> node, ItemType type)
         : m_node(node)
     {
         switch (type) {
@@ -227,7 +227,7 @@ private:
         }
     }
 
-    HTMLStackItem(PassRefPtrWillBeRawPtr<ContainerNode> node, AtomicHTMLToken* token, const AtomicString& namespaceURI = HTMLNames::xhtmlNamespaceURI)
+    HTMLStackItem(RawPtr<ContainerNode> node, AtomicHTMLToken* token, const AtomicString& namespaceURI = HTMLNames::xhtmlNamespaceURI)
         : m_node(node)
         , m_tokenLocalName(token->name())
         , m_tokenAttributes(token->attributes())
@@ -236,7 +236,7 @@ private:
     {
     }
 
-    RefPtrWillBeMember<ContainerNode> m_node;
+    Member<ContainerNode> m_node;
 
     AtomicString m_tokenLocalName;
     Vector<Attribute> m_tokenAttributes;

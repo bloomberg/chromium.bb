@@ -69,8 +69,8 @@ private:
     void notifyMediaQueryChanged();
     void createMediaQueryList(const AtomicString& media);
 
-    RefPtrWillBeMember<MediaQueryList> m_mediaQueryList;
-    RefPtrWillBeMember<Listener> m_listener;
+    Member<MediaQueryList> m_mediaQueryList;
+    Member<Listener> m_listener;
 };
 
 } // namespace blink

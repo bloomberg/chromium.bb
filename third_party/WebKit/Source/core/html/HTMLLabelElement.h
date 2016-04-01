@@ -33,9 +33,9 @@ namespace blink {
 
 class CORE_EXPORT HTMLLabelElement final : public HTMLElement, public FormAssociatedElement {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLLabelElement);
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLLabelElement);
 public:
-    static PassRefPtrWillBeRawPtr<HTMLLabelElement> create(Document&, HTMLFormElement*);
+    static RawPtr<HTMLLabelElement> create(Document&, HTMLFormElement*);
     LabelableElement* control() const;
 
     bool willRespondToMouseClickEvents() override;

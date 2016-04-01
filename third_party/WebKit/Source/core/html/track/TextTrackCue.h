@@ -109,7 +109,7 @@ protected:
 
     void cueWillChange();
     virtual void cueDidChange();
-    DispatchEventResult dispatchEventInternal(PassRefPtrWillBeRawPtr<Event>) override;
+    DispatchEventResult dispatchEventInternal(RawPtr<Event>) override;
 
 private:
     AtomicString m_id;

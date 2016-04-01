@@ -44,7 +44,7 @@ using BaseDateInputType = BaseChooserOnlyDateAndTimeInputType;
 
 class DateInputType final : public BaseDateInputType {
 public:
-    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    static RawPtr<InputType> create(HTMLInputElement&);
 
 private:
     explicit DateInputType(HTMLInputElement&);

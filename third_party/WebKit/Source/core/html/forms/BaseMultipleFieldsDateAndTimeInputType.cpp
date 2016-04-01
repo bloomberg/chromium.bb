@@ -160,7 +160,7 @@ void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
     if (containsFocusedShadowElement())
         return;
     EventQueueScope scope;
-    RefPtrWillBeRawPtr<HTMLInputElement> protector(element());
+    RawPtr<HTMLInputElement> protector(element());
     // Remove focus ring by CSS "focus" pseudo class.
     element().setFocus(false);
     if (SpinButtonElement *spinButton = spinButtonElement())
@@ -181,7 +181,7 @@ void BaseMultipleFieldsDateAndTimeInputType::didFocusOnControl()
 
 void BaseMultipleFieldsDateAndTimeInputType::editControlValueChanged()
 {
-    RefPtrWillBeRawPtr<HTMLInputElement> input(element());
+    RawPtr<HTMLInputElement> input(element());
     String oldValue = input->value();
     String newValue = sanitizeValue(dateTimeEditElement()->value());
     // Even if oldValue is null and newValue is "", we should assume they are same.
@@ -600,7 +600,7 @@ bool BaseMultipleFieldsDateAndTimeInputType::shouldClearButtonRespondToMouseEven
 
 void BaseMultipleFieldsDateAndTimeInputType::clearValue()
 {
-    RefPtrWillBeRawPtr<HTMLInputElement> input(element());
+    RawPtr<HTMLInputElement> input(element());
     input->setValue("", DispatchInputAndChangeEvent);
     input->updateClearButtonVisibility();
 }

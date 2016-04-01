@@ -105,7 +105,7 @@ static String initiatorFor(const StringImpl* tagImpl)
 
 static bool mediaAttributeMatches(const MediaValuesCached& mediaValues, const String& attributeValue)
 {
-    RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::createOffMainThread(attributeValue);
+    RawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::createOffMainThread(attributeValue);
     MediaQueryEvaluator mediaQueryEvaluator(mediaValues);
     return mediaQueryEvaluator.eval(mediaQueries.get());
 }
@@ -113,7 +113,7 @@ static bool mediaAttributeMatches(const MediaValuesCached& mediaValues, const St
 class TokenPreloadScanner::StartTagScanner {
     STACK_ALLOCATED();
 public:
-    StartTagScanner(const StringImpl* tagImpl, PassRefPtrWillBeRawPtr<MediaValuesCached> mediaValues)
+    StartTagScanner(const StringImpl* tagImpl, RawPtr<MediaValuesCached> mediaValues)
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
         , m_linkTypeIsMissingOrSupportedStyleSheet(true)
@@ -441,7 +441,7 @@ private:
     bool m_sourceSizeSet;
     FetchRequest::DeferOption m_defer;
     CrossOriginAttributeValue m_crossOrigin;
-    RefPtrWillBeMember<MediaValuesCached> m_mediaValues;
+    Member<MediaValuesCached> m_mediaValues;
     bool m_referrerPolicySet;
     ReferrerPolicy m_referrerPolicy;
     IntegrityMetadataSet m_integrityMetadata;

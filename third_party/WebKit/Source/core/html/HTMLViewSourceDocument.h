@@ -40,9 +40,9 @@ public:
         AnnotateSourceAsXSS
     };
 
-    static PassRefPtrWillBeRawPtr<HTMLViewSourceDocument> create(const DocumentInit& initializer, const String& mimeType)
+    static RawPtr<HTMLViewSourceDocument> create(const DocumentInit& initializer, const String& mimeType)
     {
-        return adoptRefWillBeNoop(new HTMLViewSourceDocument(initializer, mimeType));
+        return new HTMLViewSourceDocument(initializer, mimeType);
     }
 
     void addSource(const String&, HTMLToken&, SourceAnnotation);
@@ -56,7 +56,7 @@ public:
 private:
     HTMLViewSourceDocument(const DocumentInit&, const String& mimeType);
 
-    PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
+    RawPtr<DocumentParser> createParser() override;
 
     void processDoctypeToken(const String& source, HTMLToken&);
     void processEndOfFileToken(const String& source, HTMLToken&);
@@ -65,20 +65,20 @@ private:
     void processCharacterToken(const String& source, HTMLToken&, SourceAnnotation);
 
     void createContainingTable();
-    PassRefPtrWillBeRawPtr<Element> addSpanWithClassName(const AtomicString&);
+    RawPtr<Element> addSpanWithClassName(const AtomicString&);
     void addLine(const AtomicString& className);
     void finishLine();
     void addText(const String& text, const AtomicString& className, SourceAnnotation = AnnotateSourceAsSafe);
     int addRange(const String& source, int start, int end, const AtomicString& className, bool isLink = false, bool isAnchor = false, const AtomicString& link = nullAtom);
     void maybeAddSpanForAnnotation(SourceAnnotation);
 
-    PassRefPtrWillBeRawPtr<Element> addLink(const AtomicString& url, bool isAnchor);
-    PassRefPtrWillBeRawPtr<Element> addBase(const AtomicString& href);
+    RawPtr<Element> addLink(const AtomicString& url, bool isAnchor);
+    RawPtr<Element> addBase(const AtomicString& href);
 
     String m_type;
-    RefPtrWillBeMember<Element> m_current;
-    RefPtrWillBeMember<HTMLTableSectionElement> m_tbody;
-    RefPtrWillBeMember<HTMLTableCellElement> m_td;
+    Member<Element> m_current;
+    Member<HTMLTableSectionElement> m_tbody;
+    Member<HTMLTableCellElement> m_td;
     int m_lineNumber;
 };
 

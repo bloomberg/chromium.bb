@@ -41,20 +41,20 @@ class Document;
 class Element;
 class HTMLScriptRunnerHost;
 
-class HTMLScriptRunner final : public NoBaseWillBeGarbageCollectedFinalized<HTMLScriptRunner>, private ScriptResourceClient {
-    WTF_MAKE_NONCOPYABLE(HTMLScriptRunner); USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLScriptRunner);
-    WILL_BE_USING_PRE_FINALIZER(HTMLScriptRunner, detach);
+class HTMLScriptRunner final : public GarbageCollectedFinalized<HTMLScriptRunner>, private ScriptResourceClient {
+    WTF_MAKE_NONCOPYABLE(HTMLScriptRunner);
+    USING_PRE_FINALIZER(HTMLScriptRunner, detach);
 public:
-    static PassOwnPtrWillBeRawPtr<HTMLScriptRunner> create(Document* document, HTMLScriptRunnerHost* host)
+    static RawPtr<HTMLScriptRunner> create(Document* document, HTMLScriptRunnerHost* host)
     {
-        return adoptPtrWillBeNoop(new HTMLScriptRunner(document, host));
+        return new HTMLScriptRunner(document, host);
     }
     ~HTMLScriptRunner();
 
     void detach();
 
     // Processes the passed in script and any pending scripts if possible.
-    void execute(PassRefPtrWillBeRawPtr<Element> scriptToProcess, const TextPosition& scriptStartPosition);
+    void execute(RawPtr<Element> scriptToProcess, const TextPosition& scriptStartPosition);
 
     void executeScriptsWaitingForLoad(Resource*);
     bool hasScriptsWaitingForResources() const { return m_hasScriptsWaitingForResources; }
@@ -87,11 +87,11 @@ private:
 
     void stopWatchingResourceForLoad(Resource*);
 
-    RawPtrWillBeMember<Document> m_document;
-    RawPtrWillBeMember<HTMLScriptRunnerHost> m_host;
-    OwnPtrWillBeMember<PendingScript> m_parserBlockingScript;
+    Member<Document> m_document;
+    Member<HTMLScriptRunnerHost> m_host;
+    Member<PendingScript> m_parserBlockingScript;
     // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
-    WillBeHeapDeque<OwnPtrWillBeMember<PendingScript>> m_scriptsToExecuteAfterParsing;
+    HeapDeque<Member<PendingScript>> m_scriptsToExecuteAfterParsing;
     unsigned m_scriptNestingLevel;
 
     // We only want stylesheet loads to trigger script execution if script

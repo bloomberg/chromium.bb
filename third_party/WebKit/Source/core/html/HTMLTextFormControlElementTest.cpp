@@ -41,9 +41,9 @@ private:
     OwnPtr<SpellCheckerClient> m_spellCheckerClient;
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
 
-    RefPtrWillBePersistent<HTMLDocument> m_document;
-    RefPtrWillBePersistent<HTMLTextFormControlElement> m_textControl;
-    RefPtrWillBePersistent<HTMLInputElement> m_input;
+    Persistent<HTMLDocument> m_document;
+    Persistent<HTMLTextFormControlElement> m_textControl;
+    Persistent<HTMLInputElement> m_input;
 };
 
 class DummySpellCheckerClient : public EmptySpellCheckerClient {
@@ -207,7 +207,7 @@ TEST_F(HTMLTextFormControlElementTest, SpellCheckDoesNotCauseUpdateLayout)
     document().frame()->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotUpdateAppearance);
     ASSERT_EQ(3, input->selectionStart());
 
-    OwnPtrWillBePersistent<SpellChecker> spellChecker(SpellChecker::create(page().frame()));
+    Persistent<SpellChecker> spellChecker(SpellChecker::create(page().frame()));
     forceLayoutFlag();
     int startCount = layoutCount();
     spellChecker->respondToChangedSelection(oldSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);

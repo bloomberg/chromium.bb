@@ -55,7 +55,7 @@ typedef int GC3Dint;
 class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement, public CanvasImageSource, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLVideoElement> create(Document&);
+    static RawPtr<HTMLVideoElement> create(Document&);
     DECLARE_VIRTUAL_TRACE();
 
     unsigned videoWidth() const;
@@ -114,7 +114,7 @@ private:
     void didMoveToNewDocument(Document& oldDocument) override;
     void setDisplayMode(DisplayMode) override;
 
-    OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
+    Member<HTMLImageLoader> m_imageLoader;
 
     AtomicString m_defaultPosterURL;
 };

@@ -46,8 +46,8 @@ class PopupMenu;
 class CORE_EXPORT HTMLSelectElement final : public HTMLFormControlElementWithState, private TypeAheadDataSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLSelectElement> create(Document&);
-    static PassRefPtrWillBeRawPtr<HTMLSelectElement> create(Document&, HTMLFormElement*);
+    static RawPtr<HTMLSelectElement> create(Document&);
+    static RawPtr<HTMLSelectElement> create(Document&, HTMLFormElement*);
     ~HTMLSelectElement() override;
 
     int selectedIndex() const;
@@ -83,15 +83,15 @@ public:
     String suggestedValue() const;
     void setSuggestedValue(const String&);
 
-    PassRefPtrWillBeRawPtr<HTMLOptionsCollection> options();
-    PassRefPtrWillBeRawPtr<HTMLCollection> selectedOptions();
+    RawPtr<HTMLOptionsCollection> options();
+    RawPtr<HTMLCollection> selectedOptions();
 
     void optionElementChildrenChanged();
 
     void setRecalcListItems();
     void invalidateSelectedItems();
 
-    using ListItems = WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>;
+    using ListItems = HeapVector<Member<HTMLElement>>;
     const ListItems& listItems() const;
 
     void accessKeyAction(bool sendMouseEvents) override;
@@ -121,7 +121,7 @@ public:
     void optionSelectionStateChanged(HTMLOptionElement*, bool optionIsSelected);
     void optionInserted(HTMLOptionElement&, bool optionIsSelected);
     void optionRemoved(const HTMLOptionElement&);
-    bool anonymousIndexedSetter(unsigned, PassRefPtrWillBeRawPtr<HTMLOptionElement>, ExceptionState&);
+    bool anonymousIndexedSetter(unsigned, RawPtr<HTMLOptionElement>, ExceptionState&);
 
     void updateListOnLayoutObject();
 
@@ -256,17 +256,17 @@ private:
     Vector<bool> m_cachedStateForActiveSelection;
     TypeAhead m_typeAhead;
     unsigned m_size;
-    RefPtrWillBeMember<HTMLOptionElement> m_lastOnChangeOption;
-    RefPtrWillBeMember<HTMLOptionElement> m_activeSelectionAnchor;
-    RefPtrWillBeMember<HTMLOptionElement> m_activeSelectionEnd;
-    RefPtrWillBeMember<HTMLOptionElement> m_optionToScrollTo;
+    Member<HTMLOptionElement> m_lastOnChangeOption;
+    Member<HTMLOptionElement> m_activeSelectionAnchor;
+    Member<HTMLOptionElement> m_activeSelectionEnd;
+    Member<HTMLOptionElement> m_optionToScrollTo;
     bool m_multiple;
     bool m_activeSelectionState;
     mutable bool m_shouldRecalcListItems;
     int m_suggestedIndex;
     bool m_isAutofilledByPreview;
 
-    RefPtrWillBeMember<PopupMenu> m_popup;
+    Member<PopupMenu> m_popup;
     int m_indexToSelectOnCancel;
     bool m_popupIsVisible;
 

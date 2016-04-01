@@ -70,10 +70,10 @@ class WebInbandTextTrack;
 class WebLayer;
 class WebRemotePlaybackClient;
 
-class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public ActiveScriptWrappable, public ActiveDOMObject, private WebMediaPlayerClient {
+class CORE_EXPORT HTMLMediaElement : public HTMLElement, public HeapSupplementable<HTMLMediaElement>, public ActiveScriptWrappable, public ActiveDOMObject, private WebMediaPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
-    WILL_BE_USING_PRE_FINALIZER(HTMLMediaElement, dispose);
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
+    USING_PRE_FINALIZER(HTMLMediaElement, dispose);
 public:
     static WebMimeRegistry::SupportsType supportsType(const ContentType&);
 
@@ -252,7 +252,7 @@ public:
     // specified origin.
     bool isMediaDataCORSSameOrigin(SecurityOrigin*) const;
 
-    void scheduleEvent(PassRefPtrWillBeRawPtr<Event>);
+    void scheduleEvent(RawPtr<Event>);
     void scheduleTimeupdateEvent(bool periodicEvent);
 
     // Returns the "effective media volume" value as specified in the HTML5 spec.
@@ -478,8 +478,8 @@ private:
     UnthrottledTimer<HTMLMediaElement> m_progressEventTimer;
     UnthrottledTimer<HTMLMediaElement> m_playbackProgressTimer;
     UnthrottledTimer<HTMLMediaElement> m_audioTracksTimer;
-    PersistentWillBeMember<TimeRanges> m_playedTimeRanges;
-    OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
+    Member<TimeRanges> m_playedTimeRanges;
+    Member<GenericEventQueue> m_asyncEventQueue;
 
     double m_playbackRate;
     double m_defaultPlaybackRate;
@@ -488,7 +488,7 @@ private:
     ReadyState m_readyStateMaximum;
     KURL m_currentSrc;
 
-    PersistentWillBeMember<MediaError> m_error;
+    Member<MediaError> m_error;
 
     double m_volume;
     double m_lastSeekTime;
@@ -510,8 +510,8 @@ private:
     // Loading state.
     enum LoadState { WaitingForSource, LoadingFromSrcAttr, LoadingFromSourceElement };
     LoadState m_loadState;
-    RefPtrWillBeMember<HTMLSourceElement> m_currentSourceNode;
-    RefPtrWillBeMember<Node> m_nextChildNodeToConsider;
+    Member<HTMLSourceElement> m_currentSourceNode;
+    Member<Node> m_nextChildNodeToConsider;
 
     // "Deferred loading" state (for preload=none).
     enum DeferredLoadState {
@@ -534,7 +534,7 @@ private:
 
     DisplayMode m_displayMode;
 
-    RefPtrWillBeMember<HTMLMediaSource> m_mediaSource;
+    Member<HTMLMediaSource> m_mediaSource;
 
     // Cached time value. Only valid when ready state is HAVE_METADATA or
     // higher, otherwise the current time is assumed to be zero.
@@ -572,14 +572,14 @@ private:
     // Whether this element is in overlay fullscreen mode.
     bool m_inOverlayFullscreenVideo : 1;
 
-    PersistentWillBeMember<AudioTrackList> m_audioTracks;
-    PersistentWillBeMember<VideoTrackList> m_videoTracks;
-    PersistentWillBeMember<TextTrackList> m_textTracks;
-    PersistentHeapVectorWillBeHeapVector<Member<TextTrack>> m_textTracksWhenResourceSelectionBegan;
+    Member<AudioTrackList> m_audioTracks;
+    Member<VideoTrackList> m_videoTracks;
+    Member<TextTrackList> m_textTracks;
+    HeapVector<Member<TextTrack>> m_textTracksWhenResourceSelectionBegan;
 
-    OwnPtrWillBeMember<CueTimeline> m_cueTimeline;
+    Member<CueTimeline> m_cueTimeline;
 
-    PersistentHeapVectorWillBeHeapVector<Member<ScriptPromiseResolver>> m_playResolvers;
+    HeapVector<Member<ScriptPromiseResolver>> m_playResolvers;
     OwnPtr<CancellableTaskFactory> m_playPromiseResolveTask;
     OwnPtr<CancellableTaskFactory> m_playPromiseRejectTask;
     ExceptionCode m_playPromiseErrorCode;
@@ -587,7 +587,7 @@ private:
     // This is a weak reference, since m_audioSourceNode holds a reference to us.
     // FIXME: Oilpan: Consider making this a strongly traced pointer with oilpan where strong cycles are not a problem.
     GC_PLUGIN_IGNORE("http://crbug.com/404577")
-    RawPtrWillBeWeakMember<AudioSourceProviderClient> m_audioSourceNode;
+    WeakMember<AudioSourceProviderClient> m_audioSourceNode;
 
     // AudioClientImpl wraps an AudioSourceProviderClient.
     // When the audio format is known, Chromium calls setFormat().
@@ -632,7 +632,7 @@ private:
 
     private:
         WebAudioSourceProvider* m_webAudioSourceProvider;
-        PersistentWillBeMember<AudioClientImpl> m_client;
+        Member<AudioClientImpl> m_client;
         Mutex provideInputLock;
     };
 
@@ -645,8 +645,8 @@ private:
     friend class AutoplayExperimentHelper;
     friend class MediaControlsTest;
 
-    OwnPtrWillBeMember<AutoplayExperimentHelper::Client> m_autoplayHelperClient;
-    OwnPtrWillBeMember<AutoplayExperimentHelper> m_autoplayHelper;
+    Member<AutoplayExperimentHelper::Client> m_autoplayHelperClient;
+    Member<AutoplayExperimentHelper> m_autoplayHelper;
 
     WebRemotePlaybackClient* m_remotePlaybackClient;
 

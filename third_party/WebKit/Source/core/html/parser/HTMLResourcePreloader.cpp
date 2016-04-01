@@ -39,9 +39,9 @@ inline HTMLResourcePreloader::HTMLResourcePreloader(Document& document)
 {
 }
 
-PassOwnPtrWillBeRawPtr<HTMLResourcePreloader> HTMLResourcePreloader::create(Document& document)
+RawPtr<HTMLResourcePreloader> HTMLResourcePreloader::create(Document& document)
 {
-    return adoptPtrWillBeNoop(new HTMLResourcePreloader(document));
+    return new HTMLResourcePreloader(document);
 }
 
 DEFINE_TRACE(HTMLResourcePreloader)

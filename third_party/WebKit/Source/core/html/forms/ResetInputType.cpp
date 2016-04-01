@@ -40,9 +40,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InputType> ResetInputType::create(HTMLInputElement& element)
+RawPtr<InputType> ResetInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new ResetInputType(element));
+    return new ResetInputType(element);
 }
 
 const AtomicString& ResetInputType::formControlType() const

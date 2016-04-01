@@ -39,9 +39,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InputType> CheckboxInputType::create(HTMLInputElement& element)
+RawPtr<InputType> CheckboxInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new CheckboxInputType(element));
+    return new CheckboxInputType(element);
 }
 
 const AtomicString& CheckboxInputType::formControlType() const
@@ -67,12 +67,12 @@ void CheckboxInputType::handleKeyupEvent(KeyboardEvent* event)
     dispatchSimulatedClickIfActive(event);
 }
 
-PassOwnPtrWillBeRawPtr<ClickHandlingState> CheckboxInputType::willDispatchClick()
+RawPtr<ClickHandlingState> CheckboxInputType::willDispatchClick()
 {
     // An event handler can use preventDefault or "return false" to reverse the checking we do here.
     // The ClickHandlingState object contains what we need to undo what we did here in didDispatchClick.
 
-    OwnPtrWillBeRawPtr<ClickHandlingState> state = adoptPtrWillBeNoop(new ClickHandlingState);
+    RawPtr<ClickHandlingState> state = adoptPtrWillBeNoop(new ClickHandlingState);
 
     state->checked = element().checked();
     state->indeterminate = element().indeterminate();

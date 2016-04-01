@@ -89,7 +89,7 @@ private:
     NodeType* nodeBeforeCachedNode(const Collection&, unsigned index);
     NodeType* nodeAfterCachedNode(const Collection&, unsigned index);
 
-    RawPtrWillBeMember<NodeType> m_currentNode;
+    Member<NodeType> m_currentNode;
     unsigned m_cachedNodeCount;
     unsigned m_cachedNodeIndex : 31;
     unsigned m_isLengthCacheValid : 1;

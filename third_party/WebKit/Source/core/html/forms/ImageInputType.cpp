@@ -48,9 +48,9 @@ inline ImageInputType::ImageInputType(HTMLInputElement& element)
 {
 }
 
-PassRefPtrWillBeRawPtr<InputType> ImageInputType::create(HTMLInputElement& element)
+RawPtr<InputType> ImageInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new ImageInputType(element));
+    return new ImageInputType(element);
 }
 
 const AtomicString& ImageInputType::formControlType() const
@@ -109,7 +109,7 @@ static IntPoint extractClickLocation(Event* event)
 
 void ImageInputType::handleDOMActivateEvent(Event* event)
 {
-    RefPtrWillBeRawPtr<HTMLInputElement> element(this->element());
+    RawPtr<HTMLInputElement> element(this->element());
     if (element->isDisabledFormControl() || !element->form())
         return;
     element->setActivatedSubmit(true);
@@ -189,7 +189,7 @@ bool ImageInputType::shouldRespectHeightAndWidthAttributes()
 
 unsigned ImageInputType::height() const
 {
-    RefPtrWillBeRawPtr<HTMLInputElement> element(this->element());
+    RawPtr<HTMLInputElement> element(this->element());
 
     if (!element->layoutObject()) {
         // Check the attribute first for an explicit pixel value.
@@ -211,7 +211,7 @@ unsigned ImageInputType::height() const
 
 unsigned ImageInputType::width() const
 {
-    RefPtrWillBeRawPtr<HTMLInputElement> element(this->element());
+    RawPtr<HTMLInputElement> element(this->element());
 
     if (!element->layoutObject()) {
         // Check the attribute first for an explicit pixel value.

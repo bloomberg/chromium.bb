@@ -91,7 +91,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<MediaControls> m_controls;
+    Member<MediaControls> m_controls;
     static int s_batchDepth;
 };
 
@@ -125,9 +125,9 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
 {
 }
 
-PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& mediaElement)
+RawPtr<MediaControls> MediaControls::create(HTMLMediaElement& mediaElement)
 {
-    RefPtrWillBeRawPtr<MediaControls> controls = adoptRefWillBeNoop(new MediaControls(mediaElement));
+    RawPtr<MediaControls> controls = new MediaControls(mediaElement);
     controls->setShadowPseudoId(AtomicString("-webkit-media-controls"));
     controls->initializeControls();
     return controls.release();
@@ -157,15 +157,15 @@ PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& me
 void MediaControls::initializeControls()
 {
     const bool useNewUi = RuntimeEnabledFeatures::newMediaPlaybackUiEnabled();
-    RefPtrWillBeRawPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(*this);
+    RawPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(*this);
 
     if (document().settings() && document().settings()->mediaControlsOverlayPlayButtonEnabled()) {
-        RefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> overlayPlayButton = MediaControlOverlayPlayButtonElement::create(*this);
+        RawPtr<MediaControlOverlayPlayButtonElement> overlayPlayButton = MediaControlOverlayPlayButtonElement::create(*this);
         m_overlayPlayButton = overlayPlayButton.get();
         overlayEnclosure->appendChild(overlayPlayButton.release());
     }
 
-    RefPtrWillBeRawPtr<MediaControlCastButtonElement> overlayCastButton = MediaControlCastButtonElement::create(*this, true);
+    RawPtr<MediaControlCastButtonElement> overlayCastButton = MediaControlCastButtonElement::create(*this, true);
     m_overlayCastButton = overlayCastButton.get();
     overlayEnclosure->appendChild(overlayCastButton.release());
 
@@ -173,27 +173,27 @@ void MediaControls::initializeControls()
     appendChild(overlayEnclosure.release());
 
     // Create an enclosing element for the panel so we can visually offset the controls correctly.
-    RefPtrWillBeRawPtr<MediaControlPanelEnclosureElement> enclosure = MediaControlPanelEnclosureElement::create(*this);
+    RawPtr<MediaControlPanelEnclosureElement> enclosure = MediaControlPanelEnclosureElement::create(*this);
 
-    RefPtrWillBeRawPtr<MediaControlPanelElement> panel = MediaControlPanelElement::create(*this);
+    RawPtr<MediaControlPanelElement> panel = MediaControlPanelElement::create(*this);
 
-    RefPtrWillBeRawPtr<MediaControlPlayButtonElement> playButton = MediaControlPlayButtonElement::create(*this);
+    RawPtr<MediaControlPlayButtonElement> playButton = MediaControlPlayButtonElement::create(*this);
     m_playButton = playButton.get();
     panel->appendChild(playButton.release());
 
-    RefPtrWillBeRawPtr<MediaControlTimelineElement> timeline = MediaControlTimelineElement::create(*this);
+    RawPtr<MediaControlTimelineElement> timeline = MediaControlTimelineElement::create(*this);
     m_timeline = timeline.get();
     // In old UX, timeline is before the time / duration text.
     if (!useNewUi)
         panel->appendChild(timeline.release());
     // else we will attach it later.
 
-    RefPtrWillBeRawPtr<MediaControlCurrentTimeDisplayElement> currentTimeDisplay = MediaControlCurrentTimeDisplayElement::create(*this);
+    RawPtr<MediaControlCurrentTimeDisplayElement> currentTimeDisplay = MediaControlCurrentTimeDisplayElement::create(*this);
     m_currentTimeDisplay = currentTimeDisplay.get();
     m_currentTimeDisplay->setIsWanted(useNewUi);
     panel->appendChild(currentTimeDisplay.release());
 
-    RefPtrWillBeRawPtr<MediaControlTimeRemainingDisplayElement> durationDisplay = MediaControlTimeRemainingDisplayElement::create(*this);
+    RawPtr<MediaControlTimeRemainingDisplayElement> durationDisplay = MediaControlTimeRemainingDisplayElement::create(*this);
     m_durationDisplay = durationDisplay.get();
     panel->appendChild(durationDisplay.release());
 
@@ -201,25 +201,25 @@ void MediaControls::initializeControls()
     if (useNewUi)
         panel->appendChild(timeline.release());
 
-    RefPtrWillBeRawPtr<MediaControlMuteButtonElement> muteButton = MediaControlMuteButtonElement::create(*this);
+    RawPtr<MediaControlMuteButtonElement> muteButton = MediaControlMuteButtonElement::create(*this);
     m_muteButton = muteButton.get();
     panel->appendChild(muteButton.release());
 
-    RefPtrWillBeRawPtr<MediaControlVolumeSliderElement> slider = MediaControlVolumeSliderElement::create(*this);
+    RawPtr<MediaControlVolumeSliderElement> slider = MediaControlVolumeSliderElement::create(*this);
     m_volumeSlider = slider.get();
     panel->appendChild(slider.release());
     if (m_allowHiddenVolumeControls && preferHiddenVolumeControls(document()))
         m_volumeSlider->setIsWanted(false);
 
-    RefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(*this);
+    RawPtr<MediaControlToggleClosedCaptionsButtonElement> toggleClosedCaptionsButton = MediaControlToggleClosedCaptionsButtonElement::create(*this);
     m_toggleClosedCaptionsButton = toggleClosedCaptionsButton.get();
     panel->appendChild(toggleClosedCaptionsButton.release());
 
-    RefPtrWillBeRawPtr<MediaControlCastButtonElement> castButton = MediaControlCastButtonElement::create(*this, false);
+    RawPtr<MediaControlCastButtonElement> castButton = MediaControlCastButtonElement::create(*this, false);
     m_castButton = castButton.get();
     panel->appendChild(castButton.release());
 
-    RefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> fullscreenButton = MediaControlFullscreenButtonElement::create(*this);
+    RawPtr<MediaControlFullscreenButtonElement> fullscreenButton = MediaControlFullscreenButtonElement::create(*this);
     m_fullScreenButton = fullscreenButton.get();
     panel->appendChild(fullscreenButton.release());
 

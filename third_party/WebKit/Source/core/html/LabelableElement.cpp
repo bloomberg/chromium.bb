@@ -38,7 +38,7 @@ LabelableElement::~LabelableElement()
 {
 }
 
-PassRefPtrWillBeRawPtr<LabelsNodeList> LabelableElement::labels()
+RawPtr<LabelsNodeList> LabelableElement::labels()
 {
     if (!supportLabels())
         return nullptr;

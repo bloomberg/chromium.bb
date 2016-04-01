@@ -46,9 +46,9 @@ HTMLMeterElement::~HTMLMeterElement()
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& document)
+RawPtr<HTMLMeterElement> HTMLMeterElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLMeterElement> meter = adoptRefWillBeNoop(new HTMLMeterElement(document));
+    RawPtr<HTMLMeterElement> meter = new HTMLMeterElement(document);
     meter->ensureUserAgentShadowRoot();
     return meter.release();
 }
@@ -193,11 +193,11 @@ void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
-    RefPtrWillBeRawPtr<HTMLDivElement> inner = HTMLDivElement::create(document());
+    RawPtr<HTMLDivElement> inner = HTMLDivElement::create(document());
     inner->setShadowPseudoId(AtomicString("-webkit-meter-inner-element"));
     root.appendChild(inner);
 
-    RefPtrWillBeRawPtr<HTMLDivElement> bar = HTMLDivElement::create(document());
+    RawPtr<HTMLDivElement> bar = HTMLDivElement::create(document());
     bar->setShadowPseudoId(AtomicString("-webkit-meter-bar"));
 
     m_value = HTMLDivElement::create(document());

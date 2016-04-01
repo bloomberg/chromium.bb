@@ -321,25 +321,25 @@ public:
     explicit VTTTreeBuilder(Document& document)
         : m_document(&document) { }
 
-    PassRefPtrWillBeRawPtr<DocumentFragment> buildFromString(const String& cueText);
+    RawPtr<DocumentFragment> buildFromString(const String& cueText);
 
 private:
     void constructTreeFromToken(Document&);
     Document& document() const { return *m_document; }
 
     VTTToken m_token;
-    RefPtrWillBeMember<ContainerNode> m_currentNode;
+    Member<ContainerNode> m_currentNode;
     Vector<AtomicString> m_languageStack;
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 };
 
-PassRefPtrWillBeRawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueText)
+RawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const String& cueText)
 {
     // Cue text processing based on
     // 5.4 WebVTT cue text parsing rules, and
     // 5.5 WebVTT cue text DOM construction rules
 
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
+    RawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
 
     if (cueText.isEmpty()) {
         fragment->parserAppendChild(Text::create(document(), ""));
@@ -357,7 +357,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> VTTTreeBuilder::buildFromString(const S
     return fragment.release();
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> VTTParser::createDocumentFragmentFromCueText(Document& document, const String& cueText)
+RawPtr<DocumentFragment> VTTParser::createDocumentFragmentFromCueText(Document& document, const String& cueText)
 {
     VTTTreeBuilder treeBuilder(document);
     return treeBuilder.buildFromString(cueText);
@@ -503,7 +503,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
         if (nodeType == VTTNodeTypeRubyText && currentType != VTTNodeTypeRuby)
             break;
 
-        RefPtrWillBeRawPtr<VTTElement> child = VTTElement::create(nodeType, &document);
+        RawPtr<VTTElement> child = VTTElement::create(nodeType, &document);
         if (!m_token.classes().isEmpty())
             child->setAttribute(classAttr, m_token.classes());
 

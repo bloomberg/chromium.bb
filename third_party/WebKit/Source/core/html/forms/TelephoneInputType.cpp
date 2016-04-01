@@ -35,9 +35,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InputType> TelephoneInputType::create(HTMLInputElement& element)
+RawPtr<InputType> TelephoneInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new TelephoneInputType(element));
+    return new TelephoneInputType(element);
 }
 
 void TelephoneInputType::countUsage()

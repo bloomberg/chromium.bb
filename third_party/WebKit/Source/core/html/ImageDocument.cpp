@@ -57,9 +57,9 @@ using namespace HTMLNames;
 
 class ImageEventListener : public EventListener {
 public:
-    static PassRefPtrWillBeRawPtr<ImageEventListener> create(ImageDocument* document)
+    static RawPtr<ImageEventListener> create(ImageDocument* document)
     {
-        return adoptRefWillBeNoop(new ImageEventListener(document));
+        return new ImageEventListener(document);
     }
     static const ImageEventListener* cast(const EventListener* listener)
     {
@@ -85,14 +85,14 @@ private:
 
     virtual void handleEvent(ExecutionContext*, Event*);
 
-    RawPtrWillBeMember<ImageDocument> m_doc;
+    Member<ImageDocument> m_doc;
 };
 
 class ImageDocumentParser : public RawDataDocumentParser {
 public:
-    static PassRefPtrWillBeRawPtr<ImageDocumentParser> create(ImageDocument* document)
+    static RawPtr<ImageDocumentParser> create(ImageDocument* document)
     {
-        return adoptRefWillBeNoop(new ImageDocumentParser(document));
+        return new ImageDocumentParser(document);
     }
 
     ImageDocument* document() const
@@ -196,14 +196,14 @@ ImageDocument::ImageDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-PassRefPtrWillBeRawPtr<DocumentParser> ImageDocument::createParser()
+RawPtr<DocumentParser> ImageDocument::createParser()
 {
     return ImageDocumentParser::create(this);
 }
 
 void ImageDocument::createDocumentStructure()
 {
-    RefPtrWillBeRawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*this);
+    RawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*this);
     appendChild(rootElement);
     rootElement->insertedByParser();
 
@@ -212,13 +212,13 @@ void ImageDocument::createDocumentStructure()
     if (isStopped())
         return; // runScriptsAtDocumentElementAvailable can detach the frame.
 
-    RefPtrWillBeRawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
-    RefPtrWillBeRawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*this);
+    RawPtr<HTMLHeadElement> head = HTMLHeadElement::create(*this);
+    RawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(*this);
     meta->setAttribute(nameAttr, "viewport");
     meta->setAttribute(contentAttr, "width=device-width, minimum-scale=0.1");
     head->appendChild(meta);
 
-    RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
+    RawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*this);
     body->setAttribute(styleAttr, "margin: 0px;");
 
     frame()->loader().client()->dispatchWillInsertBody();
@@ -233,7 +233,7 @@ void ImageDocument::createDocumentStructure()
 
     if (shouldShrinkToFit()) {
         // Add event listeners
-        RefPtrWillBeRawPtr<EventListener> listener = ImageEventListener::create(this);
+        RawPtr<EventListener> listener = ImageEventListener::create(this);
         if (LocalDOMWindow* domWindow = this->domWindow())
             domWindow->addEventListener("resize", listener, false);
         if (m_shrinkToFitMode == Desktop)

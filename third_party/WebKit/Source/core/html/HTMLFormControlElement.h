@@ -39,7 +39,7 @@ enum CheckValidityEventBehavior { CheckValidityDispatchNoEvent, CheckValidityDis
 // and form-associated element implementations should use HTMLFormControlElement
 // unless there is a special reason.
 class CORE_EXPORT HTMLFormControlElement : public LabelableElement, public FormAssociatedElement {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
 
 public:
     ~HTMLFormControlElement() override;
@@ -96,7 +96,7 @@ public:
 
     void updateVisibleValidationMessage();
     void hideVisibleValidationMessage();
-    bool checkValidity(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>* unhandledInvalidControls = 0, CheckValidityEventBehavior = CheckValidityDispatchInvalidEvent);
+    bool checkValidity(HeapVector<Member<HTMLFormControlElement>>* unhandledInvalidControls = 0, CheckValidityEventBehavior = CheckValidityDispatchInvalidEvent);
     bool reportValidity();
     // This must be called only after the caller check the element is focusable.
     void showValidationMessage();

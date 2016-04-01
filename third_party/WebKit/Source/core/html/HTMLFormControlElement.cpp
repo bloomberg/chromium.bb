@@ -534,15 +534,15 @@ ValidationMessageClient* HTMLFormControlElement::validationMessageClient() const
     return &page->validationMessageClient();
 }
 
-bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
+bool HTMLFormControlElement::checkValidity(HeapVector<Member<HTMLFormControlElement>>* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
 {
     if (isValidElement())
         return true;
     if (eventBehavior != CheckValidityDispatchInvalidEvent)
         return false;
     // An event handler can deref this object.
-    RefPtrWillBeRawPtr<HTMLFormControlElement> protector(this);
-    RefPtrWillBeRawPtr<Document> originalDocument(document());
+    RawPtr<HTMLFormControlElement> protector(this);
+    RawPtr<Document> originalDocument(document());
     DispatchEventResult dispatchResult = dispatchEvent(Event::createCancelable(EventTypeNames::invalid));
     if (dispatchResult == DispatchEventResult::NotCanceled && unhandledInvalidControls && inDocument() && originalDocument == document())
         unhandledInvalidControls->append(this);
@@ -552,14 +552,14 @@ bool HTMLFormControlElement::checkValidity(WillBeHeapVector<RefPtrWillBeMember<H
 void HTMLFormControlElement::showValidationMessage()
 {
     scrollIntoViewIfNeeded(false);
-    RefPtrWillBeRawPtr<HTMLFormControlElement> protector(this);
+    RawPtr<HTMLFormControlElement> protector(this);
     focus();
     updateVisibleValidationMessage();
 }
 
 bool HTMLFormControlElement::reportValidity()
 {
-    WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>> unhandledInvalidControls;
+    HeapVector<Member<HTMLFormControlElement>> unhandledInvalidControls;
     bool isValid = checkValidity(&unhandledInvalidControls, CheckValidityDispatchInvalidEvent);
     if (isValid || unhandledInvalidControls.isEmpty())
         return isValid;

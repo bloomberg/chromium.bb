@@ -45,12 +45,12 @@ class RadioNodeListOrElement;
 class CORE_EXPORT HTMLFormElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLFormElement> create(Document&);
+    static RawPtr<HTMLFormElement> create(Document&);
     ~HTMLFormElement() override;
     DECLARE_VIRTUAL_TRACE();
 
-    PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> elements();
-    void getNamedElements(const AtomicString&, WillBeHeapVector<RefPtrWillBeMember<Element>>&);
+    RawPtr<HTMLFormControlsCollection> elements();
+    void getNamedElements(const AtomicString&, HeapVector<Member<Element>>&);
 
     unsigned length() const;
     HTMLElement* item(unsigned index);
@@ -114,7 +114,7 @@ public:
     RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
 
     const FormAssociatedElement::List& associatedElements() const;
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>& imageElements();
+    const HeapVector<Member<HTMLImageElement>>& imageElements();
 
     void anonymousNamedGetter(const AtomicString& name, RadioNodeListOrElement&);
     void invalidateDefaultButtonStyle() const;
@@ -137,13 +137,13 @@ private:
 
     void copyNonAttributePropertiesFromElement(const Element&) override;
 
-    void submitDialog(PassRefPtrWillBeRawPtr<FormSubmission>);
+    void submitDialog(RawPtr<FormSubmission>);
     void submit(Event*, bool activateSubmitButton);
 
-    void scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission>);
+    void scheduleFormSubmission(RawPtr<FormSubmission>);
 
     void collectAssociatedElements(Node& root, FormAssociatedElement::List&) const;
-    void collectImageElements(Node& root, WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>>&);
+    void collectImageElements(Node& root, HeapVector<Member<HTMLImageElement>>&);
 
     // Returns true if the submission should proceed.
     bool validateInteractively();
@@ -151,23 +151,23 @@ private:
     // Validates each of the controls, and stores controls of which 'invalid'
     // event was not canceled to the specified vector. Returns true if there
     // are any invalid controls in this form.
-    bool checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>*, CheckValidityEventBehavior);
+    bool checkInvalidControlsAndCollectUnhandled(HeapVector<Member<HTMLFormControlElement>>*, CheckValidityEventBehavior);
 
     Element* elementFromPastNamesMap(const AtomicString&);
     void addToPastNamesMap(Element*, const AtomicString& pastName);
     void removeFromPastNamesMap(HTMLElement&);
 
-    typedef WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<Element>> PastNamesMap;
+    typedef HeapHashMap<AtomicString, Member<Element>> PastNamesMap;
 
     FormSubmission::Attributes m_attributes;
-    OwnPtrWillBeMember<PastNamesMap> m_pastNamesMap;
+    Member<PastNamesMap> m_pastNamesMap;
 
     RadioButtonGroupScope m_radioButtonGroupScope;
 
     // Do not access m_associatedElements directly. Use associatedElements() instead.
     FormAssociatedElement::List m_associatedElements;
     // Do not access m_imageElements directly. Use imageElements() instead.
-    WillBeHeapVector<RawPtrWillBeMember<HTMLImageElement>> m_imageElements;
+    HeapVector<Member<HTMLImageElement>> m_imageElements;
 #if !ENABLE(OILPAN)
     WeakPtrFactory<HTMLFormElement> m_weakPtrFactory;
 #endif
@@ -184,7 +184,7 @@ private:
 
     bool m_wasDemoted : 1;
 
-    OwnPtrWillBeMember<GenericEventQueue> m_pendingAutocompleteEventsQueue;
+    Member<GenericEventQueue> m_pendingAutocompleteEventsQueue;
 };
 
 } // namespace blink

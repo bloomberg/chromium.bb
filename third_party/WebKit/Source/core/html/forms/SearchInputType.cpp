@@ -52,9 +52,9 @@ inline SearchInputType::SearchInputType(HTMLInputElement& element)
 {
 }
 
-PassRefPtrWillBeRawPtr<InputType> SearchInputType::create(HTMLInputElement& element)
+RawPtr<InputType> SearchInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new SearchInputType(element));
+    return new SearchInputType(element);
 }
 
 void SearchInputType::countUsage()
@@ -98,7 +98,7 @@ void SearchInputType::handleKeydownEvent(KeyboardEvent* event)
 
     const String& key = event->keyIdentifier();
     if (key == "U+001B") {
-        RefPtrWillBeRawPtr<HTMLInputElement> input(element());
+        RawPtr<HTMLInputElement> input(element());
         input->setValueForUser("");
         input->onSearch();
         event->setDefaultHandled();
@@ -114,7 +114,7 @@ void SearchInputType::startSearchEventTimer()
 
     if (!length) {
         m_searchEventTimer.stop();
-        element().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLInputElement::onSearch, PassRefPtrWillBeRawPtr<HTMLInputElement>(&element())));
+        element().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLInputElement::onSearch, RawPtr<HTMLInputElement>(&element())));
         return;
     }
 

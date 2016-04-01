@@ -90,9 +90,9 @@ private:
 
     void invalidateTrackIndexesAfterTrack(TextTrack*);
 
-    RawPtrWillBeMember<HTMLMediaElement> m_owner;
+    Member<HTMLMediaElement> m_owner;
 
-    OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
+    Member<GenericEventQueue> m_asyncEventQueue;
 
     HeapVector<Member<TextTrack>> m_addTrackTracks;
     HeapVector<Member<TextTrack>> m_elementTracks;

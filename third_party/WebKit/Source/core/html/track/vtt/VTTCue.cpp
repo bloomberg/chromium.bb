@@ -465,7 +465,7 @@ void VTTCue::createVTTNodeTree()
 void VTTCue::copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* parent)
 {
     for (Node* node = vttNode->firstChild(); node; node = node->nextSibling()) {
-        RefPtrWillBeRawPtr<Node> clonedNode;
+        RawPtr<Node> clonedNode;
         if (node->isVTTElement())
             clonedNode = toVTTElement(node)->createEquivalentHTMLElement(document());
         else
@@ -476,10 +476,10 @@ void VTTCue::copyVTTNodeToDOMTree(ContainerNode* vttNode, ContainerNode* parent)
     }
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> VTTCue::getCueAsHTML()
+RawPtr<DocumentFragment> VTTCue::getCueAsHTML()
 {
     createVTTNodeTree();
-    RefPtrWillBeRawPtr<DocumentFragment> clonedFragment = DocumentFragment::create(document());
+    RawPtr<DocumentFragment> clonedFragment = DocumentFragment::create(document());
     copyVTTNodeToDOMTree(m_vttNodeTree.get(), clonedFragment.get());
     return clonedFragment.release();
 }
@@ -796,7 +796,7 @@ void VTTCue::updatePastAndFutureNodes(double movieTime)
     }
 }
 
-PassRefPtrWillBeRawPtr<VTTCueBox> VTTCue::getDisplayTree()
+RawPtr<VTTCueBox> VTTCue::getDisplayTree()
 {
     ASSERT(track() && track()->isRendered() && isActive());
 
@@ -875,7 +875,7 @@ void VTTCue::updateDisplay(HTMLDivElement& container)
     if (m_cueAlignment != Middle)
         UseCounter::count(document(), UseCounter::VTTCueRenderAlignNotMiddle);
 
-    RefPtrWillBeRawPtr<VTTCueBox> displayBox = getDisplayTree();
+    RawPtr<VTTCueBox> displayBox = getDisplayTree();
     VTTRegion* region = 0;
     if (track()->regions())
         region = track()->regions()->getRegionById(regionId());
@@ -891,7 +891,7 @@ void VTTCue::updateDisplay(HTMLDivElement& container)
     } else {
         // Let region be the WebVTT region whose region identifier matches the
         // region identifier of cue.
-        RefPtrWillBeRawPtr<HTMLDivElement> regionNode = region->getDisplayTree(document());
+        RawPtr<HTMLDivElement> regionNode = region->getDisplayTree(document());
 
         // Append the region to the viewport, if it was not already.
         if (!container.contains(regionNode.get()))

@@ -59,7 +59,7 @@ public:
 
 private:
     bool m_listValid;
-    WillBeHeapVector<RawPtrWillBeMember<NodeType>> m_cachedList;
+    HeapVector<Member<NodeType>> m_cachedList;
 };
 
 template <typename Collection, typename NodeType>

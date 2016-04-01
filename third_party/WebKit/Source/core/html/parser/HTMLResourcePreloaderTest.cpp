@@ -64,7 +64,7 @@ protected:
             PreloadRequest::RequestTypePreconnect);
         if (testCase.isCORS)
             preloadRequest->setCrossOrigin(CrossOriginAttributeAnonymous);
-        OwnPtrWillBeRawPtr<HTMLResourcePreloader> preloader = HTMLResourcePreloader::create(m_dummyPageHolder->document());
+        RawPtr<HTMLResourcePreloader> preloader = HTMLResourcePreloader::create(m_dummyPageHolder->document());
         preloader->preload(preloadRequest.release(), networkHints);
         ASSERT_TRUE(networkHints.didPreconnect());
         ASSERT_EQ(testCase.isCORS, networkHints.isCrossOrigin());

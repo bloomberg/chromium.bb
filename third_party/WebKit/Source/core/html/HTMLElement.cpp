@@ -379,9 +379,9 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
     }
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionState& exceptionState)
+RawPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
+    RawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
     unsigned i, length = text.length();
     UChar c = 0;
     for (unsigned start = 0; start < length; ) {
@@ -465,7 +465,7 @@ void HTMLElement::setInnerText(const String& text, ExceptionState& exceptionStat
     }
 
     // Add text nodes and <br> elements.
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = textToFragment(text, exceptionState);
+    RawPtr<DocumentFragment> fragment = textToFragment(text, exceptionState);
     if (!exceptionState.hadException())
         replaceChildrenWithFragment(this, fragment.release(), exceptionState);
 }
@@ -487,9 +487,9 @@ void HTMLElement::setOuterText(const String& text, ExceptionState& exceptionStat
         return;
     }
 
-    RefPtrWillBeRawPtr<Node> prev = previousSibling();
-    RefPtrWillBeRawPtr<Node> next = nextSibling();
-    RefPtrWillBeRawPtr<Node> newChild = nullptr;
+    RawPtr<Node> prev = previousSibling();
+    RawPtr<Node> next = nextSibling();
+    RawPtr<Node> newChild = nullptr;
 
     // Convert text to fragment with <br> tags instead of linebreaks if needed.
     if (text.contains('\r') || text.contains('\n'))
@@ -506,7 +506,7 @@ void HTMLElement::setOuterText(const String& text, ExceptionState& exceptionStat
 
     parent->replaceChild(newChild.release(), this, exceptionState);
 
-    RefPtrWillBeRawPtr<Node> node = next ? next->previousSibling() : nullptr;
+    RawPtr<Node> node = next ? next->previousSibling() : nullptr;
     if (!exceptionState.hadException() && node && node->isTextNode())
         mergeWithNextTextNode(toText(node.get()), exceptionState);
 

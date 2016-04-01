@@ -38,7 +38,7 @@ namespace blink {
 
 class Element;
 
-class DateTimeChooserClient : public WillBeGarbageCollectedMixin {
+class DateTimeChooserClient : public GarbageCollectedMixin {
 public:
     virtual ~DateTimeChooserClient();
     DEFINE_INLINE_VIRTUAL_TRACE() { }

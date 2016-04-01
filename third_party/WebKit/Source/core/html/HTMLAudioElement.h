@@ -36,8 +36,8 @@ class Document;
 class HTMLAudioElement final : public HTMLMediaElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLAudioElement> create(Document&);
-    static PassRefPtrWillBeRawPtr<HTMLAudioElement> createForJSConstructor(Document&, const AtomicString& src);
+    static RawPtr<HTMLAudioElement> create(Document&);
+    static RawPtr<HTMLAudioElement> createForJSConstructor(Document&, const AtomicString& src);
 
     bool isHTMLAudioElement() const override { return true; }
 

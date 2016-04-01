@@ -49,9 +49,9 @@ inline HTMLLabelElement::HTMLLabelElement(Document& document, HTMLFormElement* f
     FormAssociatedElement::associateByParser(form);
 }
 
-PassRefPtrWillBeRawPtr<HTMLLabelElement> HTMLLabelElement::create(Document& document, HTMLFormElement* form)
+RawPtr<HTMLLabelElement> HTMLLabelElement::create(Document& document, HTMLFormElement* form)
 {
-    RefPtrWillBeRawPtr<HTMLLabelElement> labelElement = adoptRefWillBeNoop(new HTMLLabelElement(document, form));
+    RawPtr<HTMLLabelElement> labelElement = new HTMLLabelElement(document, form);
     return labelElement.release();
 }
 
@@ -149,7 +149,7 @@ bool HTMLLabelElement::isInInteractiveContent(Node* node) const
 void HTMLLabelElement::defaultEventHandler(Event* evt)
 {
     if (evt->type() == EventTypeNames::click && !m_processingClick) {
-        RefPtrWillBeRawPtr<HTMLElement> element = control();
+        RawPtr<HTMLElement> element = control();
 
         // If we can't find a control or if the control received the click
         // event, then there's no need for us to do anything.

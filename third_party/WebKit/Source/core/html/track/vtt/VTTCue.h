@@ -56,9 +56,9 @@ struct VTTDisplayParameters {
 
 class VTTCueBox final : public HTMLDivElement {
 public:
-    static PassRefPtrWillBeRawPtr<VTTCueBox> create(Document& document)
+    static RawPtr<VTTCueBox> create(Document& document)
     {
-        return adoptRefWillBeNoop(new VTTCueBox(document));
+        return new VTTCueBox(document);
     }
 
     void applyCSSProperties(const VTTDisplayParameters&);
@@ -110,7 +110,7 @@ public:
     // Applies CSS override style from user settings.
     void applyUserOverrideCSSProperties();
 
-    PassRefPtrWillBeRawPtr<DocumentFragment> getCueAsHTML();
+    RawPtr<DocumentFragment> getCueAsHTML();
 
     const String& regionId() const { return m_regionId; }
     void setRegionId(const String&);
@@ -154,7 +154,7 @@ private:
 
     Document& document() const;
 
-    PassRefPtrWillBeRawPtr<VTTCueBox> getDisplayTree();
+    RawPtr<VTTCueBox> getDisplayTree();
 
     void cueDidChange() override;
 
@@ -187,9 +187,9 @@ private:
     CueAlignment m_cueAlignment;
     String m_regionId;
 
-    RefPtrWillBeMember<DocumentFragment> m_vttNodeTree;
-    RefPtrWillBeMember<HTMLDivElement> m_cueBackgroundBox;
-    RefPtrWillBeMember<VTTCueBox> m_displayTree;
+    Member<DocumentFragment> m_vttNodeTree;
+    Member<HTMLDivElement> m_cueBackgroundBox;
+    Member<VTTCueBox> m_displayTree;
 
     bool m_snapToLines : 1;
     bool m_displayTreeShouldChange : 1;

@@ -11,9 +11,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<HTMLImportTreeRoot> HTMLImportTreeRoot::create(Document* document)
+RawPtr<HTMLImportTreeRoot> HTMLImportTreeRoot::create(Document* document)
 {
-    return adoptPtrWillBeNoop(new HTMLImportTreeRoot(document));
+    return new HTMLImportTreeRoot(document);
 }
 
 HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
@@ -78,7 +78,7 @@ void HTMLImportTreeRoot::scheduleRecalcState()
     m_recalcTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-HTMLImportChild* HTMLImportTreeRoot::add(PassOwnPtrWillBeRawPtr<HTMLImportChild> child)
+HTMLImportChild* HTMLImportTreeRoot::add(RawPtr<HTMLImportChild> child)
 {
     m_imports.append(child);
     return m_imports.last().get();
@@ -98,7 +98,7 @@ HTMLImportChild* HTMLImportTreeRoot::find(const KURL& url) const
 void HTMLImportTreeRoot::recalcTimerFired(Timer<HTMLImportTreeRoot>*)
 {
     ASSERT(m_document);
-    RefPtrWillBeRawPtr<Document> protectDocument(m_document.get());
+    RawPtr<Document> protectDocument(m_document.get());
     HTMLImport::recalcTreeState(this);
 }
 

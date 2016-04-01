@@ -46,12 +46,12 @@ class FirstSummarySelectFilter final : public HTMLContentSelectFilter {
 public:
     virtual ~FirstSummarySelectFilter() { }
 
-    static PassOwnPtrWillBeRawPtr<FirstSummarySelectFilter> create()
+    static RawPtr<FirstSummarySelectFilter> create()
     {
-        return adoptPtrWillBeNoop(new FirstSummarySelectFilter());
+        return new FirstSummarySelectFilter();
     }
 
-    bool canSelectNode(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth) const override
+    bool canSelectNode(const HeapVector<Member<Node>, 32>& siblings, int nth) const override
     {
         if (!siblings[nth]->hasTagName(HTMLNames::summaryTag))
             return false;
@@ -73,13 +73,13 @@ private:
 
 static DetailsEventSender& detailsToggleEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<DetailsEventSender>, sharedToggleEventSender, (DetailsEventSender::create(EventTypeNames::toggle)));
+    DEFINE_STATIC_LOCAL(Persistent<DetailsEventSender>, sharedToggleEventSender, (DetailsEventSender::create(EventTypeNames::toggle)));
     return *sharedToggleEventSender;
 }
 
-PassRefPtrWillBeRawPtr<HTMLDetailsElement> HTMLDetailsElement::create(Document& document)
+RawPtr<HTMLDetailsElement> HTMLDetailsElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLDetailsElement> details = adoptRefWillBeNoop(new HTMLDetailsElement(document));
+    RawPtr<HTMLDetailsElement> details = new HTMLDetailsElement(document);
     details->ensureUserAgentShadowRoot();
     return details.release();
 }
@@ -112,15 +112,15 @@ LayoutObject* HTMLDetailsElement::createLayoutObject(const ComputedStyle&)
 
 void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    RefPtrWillBeRawPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(document());
+    RawPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(document());
     defaultSummary->appendChild(Text::create(document(), locale().queryString(WebLocalizedString::DetailsLabel)));
 
-    RefPtrWillBeRawPtr<HTMLContentElement> summary = HTMLContentElement::create(document(), FirstSummarySelectFilter::create());
+    RawPtr<HTMLContentElement> summary = HTMLContentElement::create(document(), FirstSummarySelectFilter::create());
     summary->setIdAttribute(ShadowElementNames::detailsSummary());
     summary->appendChild(defaultSummary);
     root.appendChild(summary.release());
 
-    RefPtrWillBeRawPtr<HTMLDivElement> content = HTMLDivElement::create(document());
+    RawPtr<HTMLDivElement> content = HTMLDivElement::create(document());
     content->setIdAttribute(ShadowElementNames::detailsContent());
     content->appendChild(HTMLContentElement::create(document()));
     content->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);

@@ -55,9 +55,9 @@ inline FileInputType::FileInputType(HTMLInputElement& element)
 {
 }
 
-PassRefPtrWillBeRawPtr<InputType> FileInputType::create(HTMLInputElement& element)
+RawPtr<InputType> FileInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new FileInputType(element));
+    return new FileInputType(element);
 }
 
 DEFINE_TRACE(FileInputType)
@@ -252,7 +252,7 @@ void FileInputType::countUsage()
 void FileInputType::createShadowSubtree()
 {
     ASSERT(element().shadow());
-    RefPtrWillBeRawPtr<HTMLInputElement> button = HTMLInputElement::create(element().document(), 0, false);
+    RawPtr<HTMLInputElement> button = HTMLInputElement::create(element().document(), 0, false);
     button->setType(InputTypeNames::button);
     button->setAttribute(valueAttr, AtomicString(locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel)));
     button->setShadowPseudoId(AtomicString("-webkit-file-upload-button"));
@@ -278,7 +278,7 @@ void FileInputType::setFiles(FileList* files)
     if (!files)
         return;
 
-    RefPtrWillBeRawPtr<HTMLInputElement> input(element());
+    RawPtr<HTMLInputElement> input(element());
 
     bool filesChanged = false;
     if (files->length() != m_fileList->length()) {

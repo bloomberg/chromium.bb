@@ -39,9 +39,9 @@ typedef int ExceptionCode;
 
 class ClassList final : public DOMTokenList {
 public:
-    static PassRefPtrWillBeRawPtr<ClassList> create(Element* element)
+    static RawPtr<ClassList> create(Element* element)
     {
-        return adoptRefWillBeNoop(new ClassList(element));
+        return new ClassList(element);
     }
 
 #if !ENABLE(OILPAN)
@@ -68,7 +68,7 @@ private:
     const AtomicString& value() const override { return m_element->getAttribute(HTMLNames::classAttr); }
     void setValue(const AtomicString& value) override { m_element->setAttribute(HTMLNames::classAttr, value); }
 
-    RawPtrWillBeMember<Element> m_element;
+    Member<Element> m_element;
     mutable OwnPtr<SpaceSplitString> m_classNamesForQuirksMode;
 };
 

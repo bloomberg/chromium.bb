@@ -40,9 +40,9 @@ inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     UseCounter::count(document, UseCounter::HTMLMarqueeElement);
 }
 
-PassRefPtrWillBeRawPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(Document& document)
+RawPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLMarqueeElement> marqueeElement(adoptRefWillBeNoop(new HTMLMarqueeElement(document)));
+    RawPtr<HTMLMarqueeElement> marqueeElement(new HTMLMarqueeElement(document));
     V8HTMLMarqueeElement::PrivateScript::createdCallbackMethod(document.frame(), marqueeElement.get());
     return marqueeElement.release();
 }

@@ -40,9 +40,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InputType> PasswordInputType::create(HTMLInputElement& element)
+RawPtr<InputType> PasswordInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new PasswordInputType(element));
+    return new PasswordInputType(element);
 }
 
 void PasswordInputType::countUsage()

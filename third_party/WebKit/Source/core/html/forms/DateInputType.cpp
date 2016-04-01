@@ -53,9 +53,9 @@ inline DateInputType::DateInputType(HTMLInputElement& element)
 {
 }
 
-PassRefPtrWillBeRawPtr<InputType> DateInputType::create(HTMLInputElement& element)
+RawPtr<InputType> DateInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new DateInputType(element));
+    return new DateInputType(element);
 }
 
 void DateInputType::countUsage()

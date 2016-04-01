@@ -32,15 +32,15 @@ namespace blink {
 
 class MediaDocument final : public HTMLDocument {
 public:
-    static PassRefPtrWillBeRawPtr<MediaDocument> create(const DocumentInit& initializer = DocumentInit())
+    static RawPtr<MediaDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeNoop(new MediaDocument(initializer));
+        return new MediaDocument(initializer);
     }
 
 private:
     MediaDocument(const DocumentInit&);
 
-    PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
+    RawPtr<DocumentParser> createParser() override;
 
     void defaultEventHandler(Event*) override;
 };

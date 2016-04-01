@@ -68,7 +68,7 @@ typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextO
 
 class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public DocumentVisibilityObserver, public CanvasImageSource, public ImageBufferClient, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
 public:
     DECLARE_NODE_FACTORY(HTMLCanvasElement);
     ~HTMLCanvasElement() override;
@@ -123,7 +123,7 @@ public:
     void disableDeferral(DisableDeferralReason) const;
     SkCanvas* existingDrawingCanvas() const;
 
-    void setRenderingContext(PassOwnPtrWillBeRawPtr<CanvasRenderingContext>);
+    void setRenderingContext(RawPtr<CanvasRenderingContext>);
     CanvasRenderingContext* renderingContext() const { return m_context.get(); }
 
     void ensureUnacceleratedImageBuffer();
@@ -219,11 +219,11 @@ private:
 
     String toDataURLInternal(const String& mimeType, const double& quality, SourceDrawingBuffer) const;
 
-    PersistentHeapHashSetWillBeHeapHashSet<WeakMember<CanvasDrawListener>> m_listeners;
+    HeapHashSet<WeakMember<CanvasDrawListener>> m_listeners;
 
     IntSize m_size;
 
-    OwnPtrWillBeMember<CanvasRenderingContext> m_context;
+    Member<CanvasRenderingContext> m_context;
 
     bool m_ignoreReset;
     FloatRect m_dirtyRect;

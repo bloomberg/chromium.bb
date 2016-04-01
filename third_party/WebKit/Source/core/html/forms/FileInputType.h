@@ -45,7 +45,7 @@ class FileList;
 
 class CORE_EXPORT FileInputType final : public BaseClickableWithKeyInputType, private FileChooserClient {
 public:
-    static PassRefPtrWillBeRawPtr<InputType> create(HTMLInputElement&);
+    static RawPtr<InputType> create(HTMLInputElement&);
     DECLARE_VIRTUAL_TRACE();
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);
     static FileList* createFileList(const Vector<FileChooserFileInfo>& files, bool hasWebkitDirectoryAttr);
@@ -80,7 +80,7 @@ private:
 
     void receiveDropForDirectoryUpload(const Vector<String>&);
 
-    PersistentWillBeMember<FileList> m_fileList;
+    Member<FileList> m_fileList;
     String m_droppedFileSystemId;
 };
 

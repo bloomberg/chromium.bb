@@ -318,7 +318,7 @@ const AtomicString& VTTRegion::textTrackRegionShadowPseudoId()
     return trackRegionShadowPseudoId;
 }
 
-PassRefPtrWillBeRawPtr<HTMLDivElement> VTTRegion::getDisplayTree(Document& document)
+RawPtr<HTMLDivElement> VTTRegion::getDisplayTree(Document& document)
 {
     if (!m_regionDisplayTree) {
         m_regionDisplayTree = HTMLDivElement::create(document);
@@ -341,7 +341,7 @@ void VTTRegion::willRemoveVTTCueBox(VTTCueBox* box)
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::UnitType::Pixels);
 }
 
-void VTTRegion::appendVTTCueBox(PassRefPtrWillBeRawPtr<VTTCueBox> displayBox)
+void VTTRegion::appendVTTCueBox(RawPtr<VTTCueBox> displayBox)
 {
     ASSERT(m_cueContainer);
 

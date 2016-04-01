@@ -63,17 +63,17 @@ HTMLOptionElement::~HTMLOptionElement()
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
+RawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLOptionElement> option = adoptRefWillBeNoop(new HTMLOptionElement(document));
+    RawPtr<HTMLOptionElement> option = new HTMLOptionElement(document);
     option->ensureUserAgentShadowRoot();
     return option.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const AtomicString& value,
+RawPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const AtomicString& value,
     bool defaultSelected, bool selected, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<HTMLOptionElement> element = adoptRefWillBeNoop(new HTMLOptionElement(document));
+    RawPtr<HTMLOptionElement> element = new HTMLOptionElement(document);
     element->ensureUserAgentShadowRoot();
     element->appendChild(Text::create(document, data.isNull() ? "" : data), exceptionState);
     if (exceptionState.hadException())
@@ -109,7 +109,7 @@ void HTMLOptionElement::detach(const AttachContext& context)
 
 bool HTMLOptionElement::supportsFocus() const
 {
-    RefPtrWillBeRawPtr<HTMLSelectElement> select = ownerSelectElement();
+    RawPtr<HTMLSelectElement> select = ownerSelectElement();
     if (select && select->usesMenuList())
         return false;
     return HTMLElement::supportsFocus();
@@ -145,12 +145,12 @@ String HTMLOptionElement::text() const
 
 void HTMLOptionElement::setText(const String &text, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
+    RawPtr<Node> protectFromMutationEvents(this);
 
     // Changing the text causes a recalc of a select's items, which will reset the selected
     // index to the first item if the select is single selection with a menu list. We attempt to
     // preserve the selected item.
-    RefPtrWillBeRawPtr<HTMLSelectElement> select = ownerSelectElement();
+    RawPtr<HTMLSelectElement> select = ownerSelectElement();
     bool selectIsMenuList = select && select->usesMenuList();
     int oldSelectedIndex = selectIsMenuList ? select->selectedIndex() : -1;
 
@@ -181,7 +181,7 @@ int HTMLOptionElement::index() const
 
     int optionIndex = 0;
 
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& items = selectElement->listItems();
+    const HeapVector<Member<HTMLElement>>& items = selectElement->listItems();
     size_t length = items.size();
     for (size_t i = 0; i < length; ++i) {
         if (!isHTMLOptionElement(*items[i]))

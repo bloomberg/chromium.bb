@@ -12,10 +12,10 @@ namespace blink {
 
 class DocumentNameCollection final : public HTMLNameCollection {
 public:
-    static PassRefPtrWillBeRawPtr<DocumentNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
+    static RawPtr<DocumentNameCollection> create(ContainerNode& document, CollectionType type, const AtomicString& name)
     {
         ASSERT_UNUSED(type, type == DocumentNamedItems);
-        return adoptRefWillBeNoop(new DocumentNameCollection(document, name));
+        return new DocumentNameCollection(document, name);
     }
 
     HTMLElement* item(unsigned offset) const { return toHTMLElement(HTMLNameCollection::item(offset)); }

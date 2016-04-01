@@ -38,16 +38,15 @@ namespace blink {
 using namespace HTMLNames;
 
 class FormAttributeTargetObserver : public IdTargetObserver {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(FormAttributeTargetObserver);
 public:
-    static PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
+    static RawPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
     DECLARE_VIRTUAL_TRACE();
     void idTargetChanged() override;
 
 private:
     FormAttributeTargetObserver(const AtomicString& id, FormAssociatedElement*);
 
-    RawPtrWillBeMember<FormAssociatedElement> m_element;
+    Member<FormAssociatedElement> m_element;
 };
 
 FormAssociatedElement::FormAssociatedElement()
@@ -279,7 +278,7 @@ void FormAssociatedElement::setCustomValidity(const String& error)
     m_customValidationMessage = error;
 }
 
-void FormAssociatedElement::setFormAttributeTargetObserver(PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> newObserver)
+void FormAssociatedElement::setFormAttributeTargetObserver(RawPtr<FormAttributeTargetObserver> newObserver)
 {
     if (m_formAttributeTargetObserver)
         m_formAttributeTargetObserver->unregister();
@@ -337,9 +336,9 @@ HTMLElement& toHTMLElement(FormAssociatedElement& associatedElement)
     return const_cast<HTMLElement&>(toHTMLElement(static_cast<const FormAssociatedElement&>(associatedElement)));
 }
 
-PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> FormAttributeTargetObserver::create(const AtomicString& id, FormAssociatedElement* element)
+RawPtr<FormAttributeTargetObserver> FormAttributeTargetObserver::create(const AtomicString& id, FormAssociatedElement* element)
 {
-    return adoptPtrWillBeNoop(new FormAttributeTargetObserver(id, element));
+    return new FormAttributeTargetObserver(id, element);
 }
 
 FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id, FormAssociatedElement* element)

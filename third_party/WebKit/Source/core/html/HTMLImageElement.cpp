@@ -61,9 +61,9 @@ using namespace HTMLNames;
 
 class HTMLImageElement::ViewportChangeListener final : public MediaQueryListListener {
 public:
-    static RefPtrWillBeRawPtr<ViewportChangeListener> create(HTMLImageElement* element)
+    static RawPtr<ViewportChangeListener> create(HTMLImageElement* element)
     {
-        return adoptRefWillBeNoop(new ViewportChangeListener(element));
+        return new ViewportChangeListener(element);
     }
 
     void notifyMediaQueryChanged() override
@@ -82,7 +82,7 @@ public:
     }
 private:
     explicit ViewportChangeListener(HTMLImageElement* element) : m_element(element) { }
-    RawPtrWillBeMember<HTMLImageElement> m_element;
+    Member<HTMLImageElement> m_element;
 };
 
 HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bool createdByParser)
@@ -110,14 +110,14 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     }
 }
 
-PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& document)
+RawPtr<HTMLImageElement> HTMLImageElement::create(Document& document)
 {
-    return adoptRefWillBeNoop(new HTMLImageElement(document));
+    return new HTMLImageElement(document);
 }
 
-PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
+RawPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    return adoptRefWillBeNoop(new HTMLImageElement(document, form, createdByParser));
+    return new HTMLImageElement(document, form, createdByParser);
 }
 
 HTMLImageElement::~HTMLImageElement()
@@ -149,24 +149,24 @@ void HTMLImageElement::notifyViewportChanged()
     selectSourceURL(ImageLoader::UpdateSizeChanged);
 }
 
-PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document)
+RawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLImageElement> image = adoptRefWillBeNoop(new HTMLImageElement(document));
+    RawPtr<HTMLImageElement> image = new HTMLImageElement(document);
     image->m_elementCreatedByParser = false;
     return image.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width)
+RawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width)
 {
-    RefPtrWillBeRawPtr<HTMLImageElement> image = adoptRefWillBeNoop(new HTMLImageElement(document));
+    RawPtr<HTMLImageElement> image = new HTMLImageElement(document);
     image->setWidth(width);
     image->m_elementCreatedByParser = false;
     return image.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
+RawPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
 {
-    RefPtrWillBeRawPtr<HTMLImageElement> image = adoptRefWillBeNoop(new HTMLImageElement(document));
+    RawPtr<HTMLImageElement> image = new HTMLImageElement(document);
     image->setWidth(width);
     image->setHeight(height);
     image->m_elementCreatedByParser = false;
@@ -381,7 +381,7 @@ void HTMLImageElement::attach(const AttachContext& context)
         if (m_isFallbackImage) {
             float deviceScaleFactor = blink::deviceScaleFactor(layoutImage->frame());
             std::pair<Image*, float> brokenImageAndImageScaleFactor = ImageResource::brokenImage(deviceScaleFactor);
-            RefPtrWillBeRawPtr<ImageResource> newImageResource = ImageResource::create(brokenImageAndImageScaleFactor.first);
+            RawPtr<ImageResource> newImageResource = ImageResource::create(brokenImageAndImageScaleFactor.first);
             layoutImage->imageResource()->setImageResource(newImageResource.get());
         }
         if (layoutImageResource->hasImage())

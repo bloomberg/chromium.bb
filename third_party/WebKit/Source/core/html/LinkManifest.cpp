@@ -11,9 +11,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<LinkManifest> LinkManifest::create(HTMLLinkElement* owner)
+RawPtr<LinkManifest> LinkManifest::create(HTMLLinkElement* owner)
 {
-    return adoptPtrWillBeNoop(new LinkManifest(owner));
+    return new LinkManifest(owner);
 }
 
 LinkManifest::LinkManifest(HTMLLinkElement* owner)

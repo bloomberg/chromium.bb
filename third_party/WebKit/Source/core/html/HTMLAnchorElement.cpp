@@ -50,9 +50,9 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tagName, Document& doc
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLAnchorElement> HTMLAnchorElement::create(Document& document)
+RawPtr<HTMLAnchorElement> HTMLAnchorElement::create(Document& document)
 {
-    return adoptRefWillBeNoop(new HTMLAnchorElement(aTag, document));
+    return new HTMLAnchorElement(aTag, document);
 }
 
 HTMLAnchorElement::~HTMLAnchorElement()

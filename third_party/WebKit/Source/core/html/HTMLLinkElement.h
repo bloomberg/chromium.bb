@@ -57,10 +57,9 @@ using LinkEventSender = EventSender<HTMLLinkElement>;
 // sticking current way so far.
 //
 class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(LinkStyle);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkStyle);
+    USING_GARBAGE_COLLECTED_MIXIN(LinkStyle);
 public:
-    static PassOwnPtrWillBeRawPtr<LinkStyle> create(HTMLLinkElement* owner);
+    static RawPtr<LinkStyle> create(HTMLLinkElement* owner);
 
     explicit LinkStyle(HTMLLinkElement* owner);
     ~LinkStyle() override;
@@ -119,7 +118,7 @@ private:
         m_fetchFollowingCORS = false;
     }
 
-    RefPtrWillBeMember<CSSStyleSheet> m_sheet;
+    Member<CSSStyleSheet> m_sheet;
     DisabledState m_disabledState;
     PendingSheetType m_pendingSheetType;
     bool m_loading;
@@ -131,9 +130,9 @@ private:
 
 class CORE_EXPORT HTMLLinkElement final : public HTMLElement, public LinkLoaderClient, private DOMTokenListObserver {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLLinkElement);
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLLinkElement);
 public:
-    static PassRefPtrWillBeRawPtr<HTMLLinkElement> create(Document&, bool createdByParser);
+    static RawPtr<HTMLLinkElement> create(Document&, bool createdByParser);
     ~HTMLLinkElement() override;
 
     KURL href() const;
@@ -218,15 +217,15 @@ private:
     // From DOMTokenListObserver
     void valueWasSet() final;
 
-    OwnPtrWillBeMember<LinkResource> m_link;
-    OwnPtrWillBeMember<LinkLoader> m_linkLoader;
+    Member<LinkResource> m_link;
+    Member<LinkLoader> m_linkLoader;
 
     String m_type;
     String m_as;
     String m_media;
-    RefPtrWillBeMember<DOMTokenList> m_sizes;
+    Member<DOMTokenList> m_sizes;
     Vector<IntSize> m_iconSizes;
-    RawPtrWillBeMember<RelList> m_relList;
+    Member<RelList> m_relList;
     LinkRelAttribute m_relAttribute;
     String m_scope;
 

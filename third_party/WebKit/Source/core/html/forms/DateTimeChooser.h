@@ -71,7 +71,7 @@ struct DateTimeChooserParameters {
 };
 
 // For pickers like color pickers and date pickers.
-class CORE_EXPORT DateTimeChooser : public RefCountedWillBeGarbageCollectedFinalized<DateTimeChooser> {
+class CORE_EXPORT DateTimeChooser : public GarbageCollectedFinalized<DateTimeChooser> {
 public:
     virtual ~DateTimeChooser();
 

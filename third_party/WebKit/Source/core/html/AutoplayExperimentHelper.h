@@ -96,12 +96,12 @@ enum AutoplayMetrics {
 };
 
 class CORE_EXPORT AutoplayExperimentHelper final :
-    public NoBaseWillBeGarbageCollectedFinalized<AutoplayExperimentHelper> {
+    public GarbageCollectedFinalized<AutoplayExperimentHelper> {
     friend class AutoplayExperimentTest;
 
 public:
     // For easier testing, collect all the things we care about here.
-    class Client : public NoBaseWillBeGarbageCollectedFinalized<Client> {
+    class Client : public GarbageCollectedFinalized<Client> {
     public:
         virtual ~Client() {}
 
@@ -131,9 +131,9 @@ public:
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
 
-    static PassOwnPtrWillBeRawPtr<AutoplayExperimentHelper> create(Client* client)
+    static RawPtr<AutoplayExperimentHelper> create(Client* client)
     {
-        return adoptPtrWillBeNoop(new AutoplayExperimentHelper(client));
+        return new AutoplayExperimentHelper(client);
     }
 
     ~AutoplayExperimentHelper();
@@ -250,7 +250,7 @@ private:
     // (as in, "The user really didn't want to play this").
     bool isBailout() const;
 
-    RawPtrWillBeMember<Client> m_client;
+    Member<Client> m_client;
 
     Mode m_mode;
 

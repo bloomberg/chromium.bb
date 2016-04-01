@@ -72,9 +72,9 @@ public:
     }
 
     Operation operation;
-    RefPtrWillBeMember<ContainerNode> parent;
-    RefPtrWillBeMember<Node> nextChild;
-    RefPtrWillBeMember<Node> child;
+    Member<ContainerNode> parent;
+    Member<Node> nextChild;
+    Member<Node> child;
     bool selfClosing;
 };
 
@@ -168,10 +168,10 @@ public:
     void insertAlreadyParsedChild(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* child);
     void takeAllChildren(HTMLStackItem* newParent, HTMLElementStack::ElementRecord* oldParent);
 
-    PassRefPtrWillBeRawPtr<HTMLStackItem> createElementFromSavedToken(HTMLStackItem*);
+    RawPtr<HTMLStackItem> createElementFromSavedToken(HTMLStackItem*);
 
     bool shouldFosterParent() const;
-    void fosterParent(PassRefPtrWillBeRawPtr<Node>);
+    void fosterParent(RawPtr<Node>);
 
     bool indexOfFirstUnopenFormattingElement(unsigned& firstUnopenElementIndex) const;
     void reconstructTheActiveFormattingElements();
@@ -197,7 +197,7 @@ public:
 
     void setForm(HTMLFormElement*);
     HTMLFormElement* form() const { return m_form.get(); }
-    PassRefPtrWillBeRawPtr<HTMLFormElement> takeForm();
+    RawPtr<HTMLFormElement> takeForm();
 
     ParserContentPolicy getParserContentPolicy() { return m_parserContentPolicy; }
 
@@ -225,17 +225,17 @@ public:
 private:
     // In the common case, this queue will have only one task because most
     // tokens produce only one DOM mutation.
-    typedef WillBeHeapVector<HTMLConstructionSiteTask, 1> TaskQueue;
+    typedef HeapVector<HTMLConstructionSiteTask, 1> TaskQueue;
 
     void setCompatibilityMode(Document::CompatibilityMode);
     void setCompatibilityModeFromDoctype(const String& name, const String& publicId, const String& systemId);
 
-    void attachLater(ContainerNode* parent, PassRefPtrWillBeRawPtr<Node> child, bool selfClosing = false);
+    void attachLater(ContainerNode* parent, RawPtr<Node> child, bool selfClosing = false);
 
     void findFosterSite(HTMLConstructionSiteTask&);
 
-    PassRefPtrWillBeRawPtr<HTMLElement> createHTMLElement(AtomicHTMLToken*);
-    PassRefPtrWillBeRawPtr<Element> createElement(AtomicHTMLToken*, const AtomicString& namespaceURI);
+    RawPtr<HTMLElement> createHTMLElement(AtomicHTMLToken*);
+    RawPtr<Element> createElement(AtomicHTMLToken*, const AtomicString& namespaceURI);
 
     void mergeAttributesFromTokenIntoElement(AtomicHTMLToken*, Element*);
     void dispatchDocumentElementAvailableIfNeeded();
@@ -243,15 +243,15 @@ private:
     void executeTask(HTMLConstructionSiteTask&);
     void queueTask(const HTMLConstructionSiteTask&);
 
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 
     // This is the root ContainerNode to which the parser attaches all newly
     // constructed nodes. It points to a DocumentFragment when parsing fragments
     // and a Document in all other cases.
-    RawPtrWillBeMember<ContainerNode> m_attachmentRoot;
+    Member<ContainerNode> m_attachmentRoot;
 
-    RefPtrWillBeMember<HTMLStackItem> m_head;
-    RefPtrWillBeMember<HTMLFormElement> m_form;
+    Member<HTMLStackItem> m_head;
+    Member<HTMLFormElement> m_form;
     mutable HTMLElementStack m_openElements;
     mutable HTMLFormattingElementList m_activeFormattingElements;
 
@@ -265,7 +265,7 @@ private:
         {
         }
 
-        void append(PassRefPtrWillBeRawPtr<ContainerNode> newParent, PassRefPtrWillBeRawPtr<Node> newNextChild, const String& newString, WhitespaceMode newWhitespaceMode)
+        void append(RawPtr<ContainerNode> newParent, RawPtr<Node> newNextChild, const String& newString, WhitespaceMode newWhitespaceMode)
         {
             ASSERT(!parent || parent == newParent);
             parent = newParent;
@@ -300,8 +300,8 @@ private:
 
         DECLARE_TRACE();
 
-        RefPtrWillBeMember<ContainerNode> parent;
-        RefPtrWillBeMember<Node> nextChild;
+        Member<ContainerNode> parent;
+        Member<Node> nextChild;
         StringBuilder stringBuilder;
         WhitespaceMode whitespaceMode;
     };

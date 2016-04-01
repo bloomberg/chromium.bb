@@ -44,9 +44,9 @@ inline HTMLEmbedElement::HTMLEmbedElement(Document& document, bool createdByPars
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document, bool createdByParser)
+RawPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document, bool createdByParser)
 {
-    RefPtrWillBeRawPtr<HTMLEmbedElement> element = adoptRefWillBeNoop(new HTMLEmbedElement(document, createdByParser));
+    RawPtr<HTMLEmbedElement> element = new HTMLEmbedElement(document, createdByParser);
     element->ensureUserAgentShadowRoot();
     return element.release();
 }
@@ -143,7 +143,7 @@ void HTMLEmbedElement::updateWidgetInternal()
     Vector<String> paramValues;
     parametersForPlugin(paramNames, paramValues);
 
-    RefPtrWillBeRawPtr<HTMLEmbedElement> protect(this); // Loading the plugin might remove us from the document.
+    RawPtr<HTMLEmbedElement> protect(this); // Loading the plugin might remove us from the document.
 
     // FIXME: Can we not have layoutObject here now that beforeload events are gone?
     if (!layoutObject())

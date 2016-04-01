@@ -45,9 +45,9 @@ using namespace HTMLNames;
 // FIXME: Share more code with MediaDocumentParser.
 class PluginDocumentParser : public RawDataDocumentParser {
 public:
-    static PassRefPtrWillBeRawPtr<PluginDocumentParser> create(PluginDocument* document)
+    static RawPtr<PluginDocumentParser> create(PluginDocument* document)
     {
-        return adoptRefWillBeNoop(new PluginDocumentParser(document));
+        return new PluginDocumentParser(document);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -71,7 +71,7 @@ private:
 
     PluginView* pluginView() const;
 
-    RefPtrWillBeMember<HTMLEmbedElement> m_embedElement;
+    Member<HTMLEmbedElement> m_embedElement;
 };
 
 void PluginDocumentParser::createDocumentStructure()
@@ -89,7 +89,7 @@ void PluginDocumentParser::createDocumentStructure()
     if (!frame->settings() || !frame->loader().allowPlugins(NotAboutToInstantiatePlugin))
         return;
 
-    RefPtrWillBeRawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
+    RawPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(*document());
     rootElement->insertedByParser();
     document()->appendChild(rootElement);
     frame->loader().dispatchDocumentElementAvailable();
@@ -97,7 +97,7 @@ void PluginDocumentParser::createDocumentStructure()
     if (isStopped())
         return; // runScriptsAtDocumentElementAvailable can detach the frame.
 
-    RefPtrWillBeRawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
+    RawPtr<HTMLBodyElement> body = HTMLBodyElement::create(*document());
     body->setAttribute(styleAttr, "background-color: rgb(38,38,38); height: 100%; width: 100%; overflow: hidden; margin: 0");
     rootElement->appendChild(body);
     if (isStopped())
@@ -168,7 +168,7 @@ PluginDocument::PluginDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-PassRefPtrWillBeRawPtr<DocumentParser> PluginDocument::createParser()
+RawPtr<DocumentParser> PluginDocument::createParser()
 {
     return PluginDocumentParser::create(this);
 }

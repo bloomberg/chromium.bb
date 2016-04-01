@@ -36,7 +36,7 @@ namespace blink {
 class HTMLImportChild;
 class HTMLLinkElement;
 
-class HTMLImportChildClient : public WillBeGarbageCollectedMixin {
+class HTMLImportChildClient : public GarbageCollectedMixin {
 public:
     virtual ~HTMLImportChildClient() { }
     virtual void didFinish() = 0;

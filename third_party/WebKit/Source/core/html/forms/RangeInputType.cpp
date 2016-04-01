@@ -74,9 +74,9 @@ static Decimal ensureMaximum(const Decimal& proposedValue, const Decimal& minimu
     return proposedValue >= minimum ? proposedValue : std::max(minimum, fallbackValue);
 }
 
-PassRefPtrWillBeRawPtr<InputType> RangeInputType::create(HTMLInputElement& element)
+RawPtr<InputType> RangeInputType::create(HTMLInputElement& element)
 {
-    return adoptRefWillBeNoop(new RangeInputType(element));
+    return new RangeInputType(element);
 }
 
 RangeInputType::RangeInputType(HTMLInputElement& element)
@@ -241,11 +241,11 @@ void RangeInputType::createShadowSubtree()
     ASSERT(element().shadow());
 
     Document& document = element().document();
-    RefPtrWillBeRawPtr<HTMLDivElement> track = HTMLDivElement::create(document);
+    RawPtr<HTMLDivElement> track = HTMLDivElement::create(document);
     track->setShadowPseudoId(AtomicString("-webkit-slider-runnable-track"));
     track->setAttribute(idAttr, ShadowElementNames::sliderTrack());
     track->appendChild(SliderThumbElement::create(document));
-    RefPtrWillBeRawPtr<HTMLElement> container = SliderContainerElement::create(document);
+    RawPtr<HTMLElement> container = SliderContainerElement::create(document);
     container->appendChild(track.release());
     element().userAgentShadowRoot()->appendChild(container.release());
 }
@@ -357,7 +357,7 @@ void RangeInputType::updateTickMarkValues()
     HTMLDataListElement* dataList = element().dataList();
     if (!dataList)
         return;
-    RefPtrWillBeRawPtr<HTMLDataListOptionsCollection> options = dataList->options();
+    RawPtr<HTMLDataListOptionsCollection> options = dataList->options();
     m_tickMarkValues.reserveCapacity(options->length());
     for (unsigned i = 0; i < options->length(); ++i) {
         HTMLOptionElement* optionElement = options->item(i);

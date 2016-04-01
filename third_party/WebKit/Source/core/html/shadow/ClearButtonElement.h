@@ -33,7 +33,7 @@ namespace blink {
 
 class ClearButtonElement final : public HTMLDivElement {
 public:
-    class ClearButtonOwner : public WillBeGarbageCollectedMixin {
+    class ClearButtonOwner : public GarbageCollectedMixin {
     public:
         virtual ~ClearButtonOwner() { }
         virtual void focusAndSelectClearButtonOwner() = 0;
@@ -41,7 +41,7 @@ public:
         virtual void clearValue() = 0;
     };
 
-    static PassRefPtrWillBeRawPtr<ClearButtonElement> create(Document&, ClearButtonOwner&);
+    static RawPtr<ClearButtonElement> create(Document&, ClearButtonOwner&);
     void removeClearButtonOwner() { m_clearButtonOwner = nullptr; }
 
     DECLARE_VIRTUAL_TRACE();
@@ -53,7 +53,7 @@ private:
     void defaultEventHandler(Event*) override;
     bool isClearButtonElement() const override;
 
-    RawPtrWillBeMember<ClearButtonOwner> m_clearButtonOwner;
+    Member<ClearButtonOwner> m_clearButtonOwner;
 };
 
 DEFINE_TYPE_CASTS(ClearButtonElement, Element, element, element->isClearButtonElement(), element.isClearButtonElement());

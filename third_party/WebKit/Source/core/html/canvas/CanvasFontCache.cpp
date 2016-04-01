@@ -81,7 +81,7 @@ bool CanvasFontCache::getFontUsingDefaultStyle(const String& fontString, Font& r
 
 MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString)
 {
-    RefPtrWillBeRawPtr<MutableStylePropertySet> parsedStyle;
+    RawPtr<MutableStylePropertySet> parsedStyle;
     MutableStylePropertyMap::iterator i = m_fetchedFonts.find(fontString);
     if (i != m_fetchedFonts.end()) {
         ASSERT(m_fontLRUList.contains(fontString));
@@ -95,7 +95,7 @@ MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString)
             return nullptr;
         // According to http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
         // the "inherit" and "initial" values must be ignored.
-        RefPtrWillBeRawPtr<CSSValue> fontValue = parsedStyle->getPropertyCSSValue(CSSPropertyFontSize);
+        RawPtr<CSSValue> fontValue = parsedStyle->getPropertyCSSValue(CSSPropertyFontSize);
         if (fontValue && (fontValue->isInitialValue() || fontValue->isInheritedValue()))
             return nullptr;
         m_fetchedFonts.add(fontString, parsedStyle);

@@ -47,11 +47,11 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement, public CanvasImag
 public:
     class ViewportChangeListener;
 
-    static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&);
-    static PassRefPtrWillBeRawPtr<HTMLImageElement> create(Document&, HTMLFormElement*, bool createdByParser);
-    static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&);
-    static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width);
-    static PassRefPtrWillBeRawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
+    static RawPtr<HTMLImageElement> create(Document&);
+    static RawPtr<HTMLImageElement> create(Document&, HTMLFormElement*, bool createdByParser);
+    static RawPtr<HTMLImageElement> createForJSConstructor(Document&);
+    static RawPtr<HTMLImageElement> createForJSConstructor(Document&, int width);
+    static RawPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
 
     ~HTMLImageElement() override;
     DECLARE_VIRTUAL_TRACE();
@@ -160,12 +160,12 @@ private:
     void notifyViewportChanged();
     void createMediaQueryListIfDoesNotExist();
 
-    OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
-    RefPtrWillBeMember<ViewportChangeListener> m_listener;
-    WeakPtrWillBeMember<HTMLFormElement> m_form;
+    Member<HTMLImageLoader> m_imageLoader;
+    Member<ViewportChangeListener> m_listener;
+    Member<HTMLFormElement> m_form;
     AtomicString m_bestFitImageURL;
     float m_imageDevicePixelRatio;
-    RefPtrWillBeMember<HTMLSourceElement> m_source;
+    Member<HTMLSourceElement> m_source;
     unsigned m_formWasSetByParser : 1;
     unsigned m_elementCreatedByParser : 1;
     unsigned m_useFallbackContent : 1;

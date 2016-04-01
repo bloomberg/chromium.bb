@@ -38,25 +38,25 @@
 
 namespace blink {
 
-typedef WillBeHeapHashMap<RefPtrWillBeMember<Widget>, RawPtrWillBeMember<FrameView>> WidgetToParentMap;
+typedef HeapHashMap<Member<Widget>, Member<FrameView>> WidgetToParentMap;
 static WidgetToParentMap& widgetNewParentMap()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WidgetToParentMap>, map, (adoptPtrWillBeNoop(new WidgetToParentMap())));
+    DEFINE_STATIC_LOCAL(Persistent<WidgetToParentMap>, map, (new WidgetToParentMap()));
     return *map;
 }
 
-typedef WillBeHeapHashSet<RefPtrWillBeMember<Widget>> WidgetSet;
+typedef HeapHashSet<Member<Widget>> WidgetSet;
 static WidgetSet& widgetsPendingTemporaryRemovalFromParent()
 {
     // Widgets in this set will not leak because it will be cleared in
     // HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperations.
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WidgetSet>, set, (adoptPtrWillBeNoop(new WidgetSet())));
+    DEFINE_STATIC_LOCAL(Persistent<WidgetSet>, set, (new WidgetSet()));
     return *set;
 }
 
-WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>& SubframeLoadingDisabler::disabledSubtreeRoots()
+HeapHashCountedSet<Member<Node>>& SubframeLoadingDisabler::disabledSubtreeRoots()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>>, nodes, (adoptPtrWillBeNoop(new WillBeHeapHashCountedSet<RawPtrWillBeMember<Node>>())));
+    DEFINE_STATIC_LOCAL(Persistent<HeapHashCountedSet<Member<Node>>>, nodes, (new HeapHashCountedSet<Member<Node>>()));
     return *nodes;
 }
 
@@ -178,7 +178,7 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
     // unload event in the subframe which could execute script that could then
     // reach up into this document and then attempt to look back down. We should
     // see if this behavior is really needed as Gecko does not allow this.
-    if (RefPtrWillBeRawPtr<Frame> frame = contentFrame()) {
+    if (RawPtr<Frame> frame = contentFrame()) {
         frame->detach(FrameDetachType::Remove);
     }
 }
@@ -227,7 +227,7 @@ Document* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionState) 
     return nullptr;
 }
 
-void HTMLFrameOwnerElement::setWidget(PassRefPtrWillBeRawPtr<Widget> widget)
+void HTMLFrameOwnerElement::setWidget(RawPtr<Widget> widget)
 {
     if (widget == m_widget)
         return;
@@ -257,7 +257,7 @@ void HTMLFrameOwnerElement::setWidget(PassRefPtrWillBeRawPtr<Widget> widget)
         cache->childrenChanged(layoutPart);
 }
 
-PassRefPtrWillBeRawPtr<Widget> HTMLFrameOwnerElement::releaseWidget()
+RawPtr<Widget> HTMLFrameOwnerElement::releaseWidget()
 {
     if (!m_widget)
         return nullptr;
@@ -278,7 +278,7 @@ Widget* HTMLFrameOwnerElement::ownedWidget() const
 
 bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool replaceCurrentItem)
 {
-    RefPtrWillBeRawPtr<LocalFrame> parentFrame = document().frame();
+    RawPtr<LocalFrame> parentFrame = document().frame();
     if (contentFrame()) {
         contentFrame()->navigate(document(), url, replaceCurrentItem, UserGestureStatus::None);
         return true;

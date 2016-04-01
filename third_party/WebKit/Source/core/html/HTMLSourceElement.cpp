@@ -42,7 +42,7 @@ using namespace HTMLNames;
 
 static SourceEventSender& sourceErrorEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SourceEventSender>, sharedErrorEventSender, (SourceEventSender::create(EventTypeNames::error)));
+    DEFINE_STATIC_LOCAL(Persistent<SourceEventSender>, sharedErrorEventSender, (SourceEventSender::create(EventTypeNames::error)));
     return *sharedErrorEventSender;
 }
 
@@ -62,12 +62,12 @@ public:
         MediaQueryListListener::trace(visitor);
     }
 private:
-    RawPtrWillBeMember<HTMLSourceElement> m_element;
+    Member<HTMLSourceElement> m_element;
 };
 
 inline HTMLSourceElement::HTMLSourceElement(Document& document)
     : HTMLElement(sourceTag, document)
-    , m_listener(adoptRefWillBeNoop(new Listener(this)))
+    , m_listener(new Listener(this))
 {
     WTF_LOG(Media, "HTMLSourceElement::HTMLSourceElement - %p", this);
 }
@@ -89,7 +89,7 @@ void HTMLSourceElement::createMediaQueryList(const AtomicString& media)
 
     if (m_mediaQueryList)
         m_mediaQueryList->removeListener(m_listener);
-    RefPtrWillBeRawPtr<MediaQuerySet> set = MediaQuerySet::create(media);
+    RawPtr<MediaQuerySet> set = MediaQuerySet::create(media);
     m_mediaQueryList = MediaQueryList::create(&document(), &document().mediaQueryMatcher(), set.release());
     m_mediaQueryList->addListener(m_listener);
 }

@@ -44,7 +44,7 @@ class Event;
 
 class SliderThumbElement final : public HTMLDivElement {
 public:
-    static PassRefPtrWillBeRawPtr<SliderThumbElement> create(Document&);
+    static RawPtr<SliderThumbElement> create(Document&);
 
     void setPositionFromValue();
 
@@ -61,7 +61,7 @@ public:
 private:
     SliderThumbElement(Document&);
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
-    PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    RawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
     bool isDisabledFormControl() const override;
     bool matchesReadOnlyPseudoClass() const override;
     bool matchesReadWritePseudoClass() const override;
@@ -71,7 +71,7 @@ private:
     bool m_inDragMode;
 };
 
-inline PassRefPtrWillBeRawPtr<Element> SliderThumbElement::cloneElementWithoutAttributesAndChildren()
+inline RawPtr<Element> SliderThumbElement::cloneElementWithoutAttributesAndChildren()
 {
     return create(document());
 }

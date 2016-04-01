@@ -34,7 +34,7 @@ namespace blink {
 class CORE_EXPORT HTMLScriptElement final : public HTMLElement, public ScriptLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLScriptElement> create(Document&, bool wasInsertedByParser, bool alreadyStarted = false);
+    static RawPtr<HTMLScriptElement> create(Document&, bool wasInsertedByParser, bool alreadyStarted = false);
 
     String text() { return textFromChildren(); }
     void setText(const String&);
@@ -73,9 +73,9 @@ private:
 
     void dispatchLoadEvent() override;
 
-    PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
+    RawPtr<Element> cloneElementWithoutAttributesAndChildren() override;
 
-    OwnPtrWillBeMember<ScriptLoader> m_loader;
+    Member<ScriptLoader> m_loader;
 };
 
 } // namespace blink

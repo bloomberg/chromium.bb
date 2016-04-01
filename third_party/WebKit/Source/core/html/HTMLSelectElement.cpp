@@ -96,16 +96,16 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtrWillBeRawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
+RawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLSelectElement> select = adoptRefWillBeNoop(new HTMLSelectElement(document, 0));
+    RawPtr<HTMLSelectElement> select = new HTMLSelectElement(document, 0);
     select->ensureUserAgentShadowRoot();
     return select.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document, HTMLFormElement* form)
+RawPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document, HTMLFormElement* form)
 {
-    RefPtrWillBeRawPtr<HTMLSelectElement> select = adoptRefWillBeNoop(new HTMLSelectElement(document, form));
+    RawPtr<HTMLSelectElement> select = new HTMLSelectElement(document, form);
     select->ensureUserAgentShadowRoot();
     return select.release();
 }
@@ -243,14 +243,14 @@ HTMLOptionElement* HTMLSelectElement::activeSelectionEnd() const
 
 void HTMLSelectElement::add(const HTMLOptionElementOrHTMLOptGroupElement& element, const HTMLElementOrLong& before, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<HTMLElement> elementToInsert;
+    RawPtr<HTMLElement> elementToInsert;
     ASSERT(!element.isNull());
     if (element.isHTMLOptionElement())
         elementToInsert = element.getAsHTMLOptionElement();
     else
         elementToInsert = element.getAsHTMLOptGroupElement();
 
-    RefPtrWillBeRawPtr<HTMLElement> beforeElement;
+    RawPtr<HTMLElement> beforeElement;
     if (before.isHTMLElement())
         beforeElement = before.getAsHTMLElement();
     else if (before.isLong())
@@ -408,12 +408,12 @@ LayoutObject* HTMLSelectElement::createLayoutObject(const ComputedStyle&)
     return new LayoutListBox(this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLCollection> HTMLSelectElement::selectedOptions()
+RawPtr<HTMLCollection> HTMLSelectElement::selectedOptions()
 {
     return ensureCachedCollection<HTMLCollection>(SelectedOptions);
 }
 
-PassRefPtrWillBeRawPtr<HTMLOptionsCollection> HTMLSelectElement::options()
+RawPtr<HTMLOptionsCollection> HTMLSelectElement::options()
 {
     return ensureCachedCollection<HTMLOptionsCollection>(SelectOptions);
 }
@@ -507,7 +507,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionStat
         // Removing children fires mutation events, which might mutate the DOM
         // further, so we first copy out a list of elements that we intend to
         // remove then attempt to remove them one at a time.
-        WillBeHeapVector<RefPtrWillBeMember<Element>> itemsToRemove;
+        HeapVector<Member<Element>> itemsToRemove;
         size_t optionIndex = 0;
         for (auto& item : listItems()) {
             if (isHTMLOptionElement(item) && optionIndex++ >= newLen) {
@@ -718,7 +718,7 @@ void HTMLSelectElement::listBoxOnChange()
     }
 
     if (fireOnChange) {
-        RefPtrWillBeRawPtr<HTMLSelectElement> protector(this);
+        RawPtr<HTMLSelectElement> protector(this);
         dispatchInputEvent();
         dispatchFormControlChangeEvent();
     }
@@ -731,7 +731,7 @@ void HTMLSelectElement::dispatchInputAndChangeEventForMenuList()
     HTMLOptionElement* selectedOption = this->selectedOption();
     if (m_lastOnChangeOption.get() != selectedOption) {
         m_lastOnChangeOption = selectedOption;
-        RefPtrWillBeRawPtr<HTMLSelectElement> protector(this);
+        RawPtr<HTMLSelectElement> protector(this);
         dispatchInputEvent();
         dispatchFormControlChangeEvent();
     }
@@ -762,7 +762,7 @@ const HTMLSelectElement::ListItems& HTMLSelectElement::listItems() const
         recalcListItems();
     } else {
 #if ENABLE(ASSERT)
-        WillBeHeapVector<RawPtrWillBeMember<HTMLElement>> items = m_listItems;
+        HeapVector<Member<HTMLElement>> items = m_listItems;
         recalcListItems();
         ASSERT(items == m_listItems);
 #endif
@@ -940,12 +940,12 @@ void HTMLSelectElement::scrollToOption(HTMLOptionElement* option)
     // inserted before executing scrollToOptionTask().
     m_optionToScrollTo = option;
     if (!hasPendingTask)
-        document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLSelectElement::scrollToOptionTask, PassRefPtrWillBeRawPtr<HTMLSelectElement>(this)));
+        document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLSelectElement::scrollToOptionTask, RawPtr<HTMLSelectElement>(this)));
 }
 
 void HTMLSelectElement::scrollToOptionTask()
 {
-    RefPtrWillBeRawPtr<HTMLOptionElement> option = m_optionToScrollTo.release();
+    RawPtr<HTMLOptionElement> option = m_optionToScrollTo.release();
     if (!option || !inDocument())
         return;
     // optionRemoved() makes sure m_optionToScrollTo doesn't have an option with
@@ -1794,7 +1794,7 @@ void HTMLSelectElement::finishParsingChildren()
         cache->listboxActiveIndexChanged(this);
 }
 
-bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtrWillBeRawPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
+bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, RawPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
 {
     if (!value) { // undefined or null
         remove(index);
@@ -1834,7 +1834,7 @@ DEFINE_TRACE(HTMLSelectElement)
 
 void HTMLSelectElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    RefPtrWillBeRawPtr<HTMLContentElement> content = HTMLContentElement::create(document());
+    RawPtr<HTMLContentElement> content = HTMLContentElement::create(document());
     content->setAttribute(selectAttr, "option,optgroup,hr");
     root.appendChild(content);
 }

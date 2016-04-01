@@ -44,9 +44,9 @@ inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document, HTMLFormElem
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)
+RawPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRefWillBeNoop(new HTMLFieldSetElement(document, form));
+    return new HTMLFieldSetElement(document, form);
 }
 
 DEFINE_TRACE(HTMLFieldSetElement)
@@ -121,7 +121,7 @@ HTMLLegendElement* HTMLFieldSetElement::legend() const
     return Traversal<HTMLLegendElement>::firstChild(*this);
 }
 
-PassRefPtrWillBeRawPtr<HTMLFormControlsCollection> HTMLFieldSetElement::elements()
+RawPtr<HTMLFormControlsCollection> HTMLFieldSetElement::elements()
 {
     return ensureCachedCollection<HTMLFormControlsCollection>(FormControls);
 }

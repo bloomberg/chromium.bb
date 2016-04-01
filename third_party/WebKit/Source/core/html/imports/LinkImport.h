@@ -46,11 +46,10 @@ class HTMLImportChild;
 // A LinkResource subclasss used for @rel=import.
 //
 class LinkImport final : public LinkResource, public HTMLImportChildClient {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(LinkImport);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkImport);
+    USING_GARBAGE_COLLECTED_MIXIN(LinkImport);
 public:
 
-    static PassOwnPtrWillBeRawPtr<LinkImport> create(HTMLLinkElement* owner);
+    static RawPtr<LinkImport> create(HTMLLinkElement* owner);
 
     explicit LinkImport(HTMLLinkElement* owner);
     ~LinkImport() override;
@@ -71,7 +70,7 @@ public:
     Document* importedDocument() const;
 
 private:
-    RawPtrWillBeMember<HTMLImportChild> m_child;
+    Member<HTMLImportChild> m_child;
 };
 
 } // namespace blink

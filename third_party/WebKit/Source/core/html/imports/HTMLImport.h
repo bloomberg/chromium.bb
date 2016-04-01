@@ -91,8 +91,7 @@ class HTMLImportLoader;
 
 // The superclass of HTMLImportTreeRoot and HTMLImportChild
 // This represents the import tree data structure.
-class HTMLImport : public NoBaseWillBeGarbageCollectedFinalized<HTMLImport>, public TreeNode<HTMLImport> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLImport);
+class HTMLImport : public GarbageCollectedFinalized<HTMLImport>, public TreeNode<HTMLImport> {
 public:
     enum SyncMode {
         Sync  = 0,

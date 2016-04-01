@@ -54,7 +54,7 @@ private:
     bool shouldBlockScriptExecution() const;
     bool isActive() const;
 
-    RawPtrWillBeMember<HTMLImport> m_import;
+    Member<HTMLImport> m_import;
 };
 
 } // namespace blink

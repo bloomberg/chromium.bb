@@ -124,7 +124,7 @@ static void parseSizes(const CharacterType* value, unsigned length, Vector<IntSi
 
 static LinkEventSender& linkLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<LinkEventSender>, sharedLoadEventSender, (LinkEventSender::create(EventTypeNames::load)));
+    DEFINE_STATIC_LOCAL(Persistent<LinkEventSender>, sharedLoadEventSender, (LinkEventSender::create(EventTypeNames::load)));
     return *sharedLoadEventSender;
 }
 
@@ -155,9 +155,9 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLLinkElement> HTMLLinkElement::create(Document& document, bool createdByParser)
+RawPtr<HTMLLinkElement> HTMLLinkElement::create(Document& document, bool createdByParser)
 {
-    return adoptRefWillBeNoop(new HTMLLinkElement(document, createdByParser));
+    return new HTMLLinkElement(document, createdByParser);
 }
 
 HTMLLinkElement::~HTMLLinkElement()
@@ -237,7 +237,7 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
             if (document().frame())
                 m_link = document().frame()->loader().client()->createServiceWorkerLinkResource(this);
         } else {
-            OwnPtrWillBeRawPtr<LinkStyle> link = LinkStyle::create(this);
+            RawPtr<LinkStyle> link = LinkStyle::create(this);
             if (fastHasAttribute(disabledAttr)) {
                 UseCounter::count(document(), UseCounter::HTMLLinkElementDisabled);
                 link->setDisabledState(true);
@@ -314,7 +314,7 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
     }
     document().styleEngine().removeStyleSheetCandidateNode(this);
 
-    RefPtrWillBeRawPtr<StyleSheet> removedSheet = sheet();
+    RawPtr<StyleSheet> removedSheet = sheet();
 
     if (m_link)
         m_link->ownerRemoved();
@@ -476,9 +476,9 @@ DEFINE_TRACE(HTMLLinkElement)
     DOMTokenListObserver::trace(visitor);
 }
 
-PassOwnPtrWillBeRawPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
+RawPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
 {
-    return adoptPtrWillBeNoop(new LinkStyle(owner));
+    return new LinkStyle(owner);
 }
 
 LinkStyle::LinkStyle(HTMLLinkElement* owner)
@@ -537,14 +537,14 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         return;
     }
     // Completing the sheet load may cause scripts to execute.
-    RefPtrWillBeRawPtr<Node> protector(m_owner.get());
+    RawPtr<Node> protector(m_owner.get());
 
     CSSParserContext parserContext(m_owner->document(), 0, baseURL, charset);
 
     DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheetHistogram, ("Blink.RestoredCachedStyleSheet", 2));
     DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheet2Histogram, ("Blink.RestoredCachedStyleSheet2", StyleSheetCacheStatusCount));
 
-    if (RefPtrWillBeRawPtr<StyleSheetContents> restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
+    if (RawPtr<StyleSheetContents> restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
         ASSERT(restoredSheet->isCacheable());
         ASSERT(!restoredSheet->isLoading());
 
@@ -566,7 +566,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     StyleSheetCacheStatus cacheStatus = cachedStyleSheet->response().wasCached() ? StyleSheetInDiskCache : StyleSheetNewEntry;
     restoredCachedStyleSheet2Histogram.count(cacheStatus);
 
-    RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(href, parserContext);
+    RawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(href, parserContext);
 
     if (m_sheet)
         clearSheet();
@@ -741,7 +741,7 @@ void LinkStyle::process()
         LocalFrame* frame = loadingFrame();
         if (!m_owner->media().isEmpty() && frame && frame->document()) {
             RefPtr<ComputedStyle> documentStyle = StyleResolver::styleForDocument(*frame->document());
-            RefPtrWillBeRawPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
+            RawPtr<MediaQuerySet> media = MediaQuerySet::create(m_owner->media());
             MediaQueryEvaluator evaluator(frame);
             mediaQueryMatches = evaluator.eval(media.get());
         }
@@ -771,7 +771,7 @@ void LinkStyle::process()
         }
     } else if (m_sheet) {
         // we no longer contain a stylesheet, e.g. perhaps rel or type was changed
-        RefPtrWillBeRawPtr<StyleSheet> removedSheet = m_sheet.get();
+        RawPtr<StyleSheet> removedSheet = m_sheet.get();
         clearSheet();
         document().styleEngine().setNeedsActiveStyleUpdate(removedSheet.get(), FullStyleUpdate);
     }

@@ -32,10 +32,10 @@ namespace blink {
 
 class LabelsNodeList final : public LiveNodeList {
 public:
-    static PassRefPtrWillBeRawPtr<LabelsNodeList> create(ContainerNode& ownerNode, CollectionType type)
+    static RawPtr<LabelsNodeList> create(ContainerNode& ownerNode, CollectionType type)
     {
         ASSERT_UNUSED(type, type == LabelsNodeListType);
-        return adoptRefWillBeNoop(new LabelsNodeList(ownerNode));
+        return new LabelsNodeList(ownerNode);
     }
 
     virtual ~LabelsNodeList();

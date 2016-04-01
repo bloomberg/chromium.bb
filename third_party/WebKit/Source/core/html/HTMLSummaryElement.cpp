@@ -35,9 +35,9 @@ namespace blink {
 
 using namespace HTMLNames;
 
-PassRefPtrWillBeRawPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& document)
+RawPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLSummaryElement> summary = adoptRefWillBeNoop(new HTMLSummaryElement(document));
+    RawPtr<HTMLSummaryElement> summary = new HTMLSummaryElement(document);
     summary->ensureUserAgentShadowRoot();
     return summary.release();
 }
@@ -54,7 +54,7 @@ LayoutObject* HTMLSummaryElement::createLayoutObject(const ComputedStyle&)
 
 void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    RefPtrWillBeRawPtr<DetailsMarkerControl> markerControl = DetailsMarkerControl::create(document());
+    RawPtr<DetailsMarkerControl> markerControl = DetailsMarkerControl::create(document());
     markerControl->setIdAttribute(ShadowElementNames::detailsMarker());
     root.appendChild(markerControl);
     root.appendChild(HTMLContentElement::create(document()));

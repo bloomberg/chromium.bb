@@ -37,17 +37,17 @@ HTMLAudioElement::HTMLAudioElement(Document& document)
 {
 }
 
-PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::create(Document& document)
+RawPtr<HTMLAudioElement> HTMLAudioElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLAudioElement> audio = adoptRefWillBeNoop(new HTMLAudioElement(document));
+    RawPtr<HTMLAudioElement> audio = new HTMLAudioElement(document);
     audio->ensureUserAgentShadowRoot();
     audio->suspendIfNeeded();
     return audio.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLAudioElement> HTMLAudioElement::createForJSConstructor(Document& document, const AtomicString& src)
+RawPtr<HTMLAudioElement> HTMLAudioElement::createForJSConstructor(Document& document, const AtomicString& src)
 {
-    RefPtrWillBeRawPtr<HTMLAudioElement> audio = adoptRefWillBeNoop(new HTMLAudioElement(document));
+    RawPtr<HTMLAudioElement> audio = new HTMLAudioElement(document);
     audio->ensureUserAgentShadowRoot();
     audio->setPreload(AtomicString("auto"));
     if (!src.isNull())

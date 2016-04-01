@@ -74,10 +74,9 @@ inline void FormControlState::append(const String& value)
 
 using SavedFormStateMap = HashMap<AtomicString, OwnPtr<SavedFormState>>;
 
-class DocumentState final : public RefCountedWillBeGarbageCollected<DocumentState> {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentState);
+class DocumentState final : public GarbageCollected<DocumentState> {
 public:
-    static PassRefPtrWillBeRawPtr<DocumentState> create();
+    static RawPtr<DocumentState> create();
     DECLARE_TRACE();
 
     void addControl(HTMLFormControlElementWithState*);
@@ -85,14 +84,13 @@ public:
     Vector<String> toStateVector();
 
 private:
-    using FormElementListHashSet = WillBeHeapListHashSet<RefPtrWillBeMember<HTMLFormControlElementWithState>, 64>;
+    using FormElementListHashSet = HeapListHashSet<Member<HTMLFormControlElementWithState>, 64>;
     FormElementListHashSet m_formControls;
 };
 
-class FormController final : public NoBaseWillBeGarbageCollectedFinalized<FormController> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(FormController);
+class FormController final : public GarbageCollectedFinalized<FormController> {
 public:
-    static PassOwnPtrWillBeRawPtr<FormController> create()
+    static RawPtr<FormController> create()
     {
         return adoptPtrWillBeNoop(new FormController);
     }
@@ -116,9 +114,9 @@ private:
     FormControlState takeStateForFormElement(const HTMLFormControlElementWithState&);
     static void formStatesFromStateVector(const Vector<String>&, SavedFormStateMap&);
 
-    RefPtrWillBeMember<DocumentState> m_documentState;
+    Member<DocumentState> m_documentState;
     SavedFormStateMap m_savedFormStateMap;
-    OwnPtrWillBeMember<FormKeyGenerator> m_formKeyGenerator;
+    Member<FormKeyGenerator> m_formKeyGenerator;
 };
 
 } // namespace blink

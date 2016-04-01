@@ -64,9 +64,9 @@ inline SliderThumbElement::SliderThumbElement(Document& document)
 {
 }
 
-PassRefPtrWillBeRawPtr<SliderThumbElement> SliderThumbElement::create(Document& document)
+RawPtr<SliderThumbElement> SliderThumbElement::create(Document& document)
 {
-    RefPtrWillBeRawPtr<SliderThumbElement> element = adoptRefWillBeNoop(new SliderThumbElement(document));
+    RawPtr<SliderThumbElement> element = new SliderThumbElement(document);
     element->setAttribute(idAttr, ShadowElementNames::sliderThumb());
     return element.release();
 }
@@ -107,14 +107,14 @@ Node* SliderThumbElement::focusDelegate()
 
 void SliderThumbElement::dragFrom(const LayoutPoint& point)
 {
-    RefPtrWillBeRawPtr<SliderThumbElement> protector(this);
+    RawPtr<SliderThumbElement> protector(this);
     startDragging();
     setPositionFromPoint(point);
 }
 
 void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
 {
-    RefPtrWillBeRawPtr<HTMLInputElement> input(hostInput());
+    RawPtr<HTMLInputElement> input(hostInput());
     Element* trackElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
 
     if (!input->layoutObject() || !layoutBox() || !trackElement->layoutBox())

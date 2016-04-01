@@ -31,7 +31,7 @@ class HTMLDivElement;
 class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLMeterElement> create(Document&);
+    static RawPtr<HTMLMeterElement> create(Document&);
 
     enum GaugeRegion {
         GaugeRegionOptimum,
@@ -79,7 +79,7 @@ private:
     void updateValueAppearance(double percentage);
     void didAddUserAgentShadowRoot(ShadowRoot&) override;
 
-    RefPtrWillBeMember<HTMLDivElement> m_value;
+    Member<HTMLDivElement> m_value;
 };
 
 } // namespace blink

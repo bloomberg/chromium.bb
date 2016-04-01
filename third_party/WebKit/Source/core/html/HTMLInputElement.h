@@ -48,7 +48,7 @@ struct DateTimeChooserParameters;
 class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<HTMLInputElement> create(Document&, HTMLFormElement*, bool createdByParser);
+    static RawPtr<HTMLInputElement> create(Document&, HTMLFormElement*, bool createdByParser);
     ~HTMLInputElement() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -361,7 +361,7 @@ private:
 
     void subtreeHasChanged() final;
 
-    void setListAttributeTargetObserver(PassOwnPtrWillBeRawPtr<ListAttributeTargetObserver>);
+    void setListAttributeTargetObserver(RawPtr<ListAttributeTargetObserver>);
     void resetListAttributeTargetObserver();
     void parseMaxLengthAttribute(const AtomicString&);
     void parseMinLengthAttribute(const AtomicString&);
@@ -396,13 +396,13 @@ private:
     unsigned m_shouldRevealPassword : 1;
     unsigned m_needsToUpdateViewValue : 1;
     unsigned m_isPlaceholderVisible : 1;
-    RefPtrWillBeMember<InputType> m_inputType;
-    RefPtrWillBeMember<InputTypeView> m_inputTypeView;
+    Member<InputType> m_inputType;
+    Member<InputTypeView> m_inputTypeView;
     // The ImageLoader must be owned by this element because the loader code assumes
     // that it lives as long as its owning element lives. If we move the loader into
     // the ImageInput object we may delete the loader while this element lives on.
-    OwnPtrWillBeMember<HTMLImageLoader> m_imageLoader;
-    OwnPtrWillBeMember<ListAttributeTargetObserver> m_listAttributeTargetObserver;
+    Member<HTMLImageLoader> m_imageLoader;
+    Member<ListAttributeTargetObserver> m_listAttributeTargetObserver;
 };
 
 } // namespace blink

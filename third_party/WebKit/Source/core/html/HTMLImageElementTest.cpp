@@ -25,7 +25,7 @@ protected:
 
 TEST_F(HTMLImageElementTest, width)
 {
-    RefPtrWillBeRawPtr<HTMLImageElement> image = HTMLImageElement::create(m_dummyPageHolder->document(), nullptr, /* createdByParser */ false);
+    RawPtr<HTMLImageElement> image = HTMLImageElement::create(m_dummyPageHolder->document(), nullptr, /* createdByParser */ false);
     image->setAttribute(HTMLNames::widthAttr, "400");
     // TODO(yoav): `width` does not impact resourceWidth until we resolve https://github.com/ResponsiveImagesCG/picture-element/issues/268
     EXPECT_EQ(500, image->getResourceWidth().width);
@@ -35,7 +35,7 @@ TEST_F(HTMLImageElementTest, width)
 
 TEST_F(HTMLImageElementTest, sourceSize)
 {
-    RefPtrWillBeRawPtr<HTMLImageElement> image = HTMLImageElement::create(m_dummyPageHolder->document(), nullptr, /* createdByParser */ false);
+    RawPtr<HTMLImageElement> image = HTMLImageElement::create(m_dummyPageHolder->document(), nullptr, /* createdByParser */ false);
     image->setAttribute(HTMLNames::widthAttr, "400");
     EXPECT_EQ(viewportWidth, image->sourceSize(*image));
     image->setAttribute(HTMLNames::sizesAttr, "50vw");

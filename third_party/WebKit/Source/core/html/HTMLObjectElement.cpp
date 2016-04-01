@@ -61,9 +61,9 @@ inline HTMLObjectElement::~HTMLObjectElement()
 #endif
 }
 
-PassRefPtrWillBeRawPtr<HTMLObjectElement> HTMLObjectElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
+RawPtr<HTMLObjectElement> HTMLObjectElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    RefPtrWillBeRawPtr<HTMLObjectElement> element = adoptRefWillBeNoop(new HTMLObjectElement(document, form, createdByParser));
+    RawPtr<HTMLObjectElement> element = new HTMLObjectElement(document, form, createdByParser);
     element->ensureUserAgentShadowRoot();
     return element.release();
 }

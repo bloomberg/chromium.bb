@@ -23,7 +23,7 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
-    RefPtrWillBePersistent<HTMLDocument> m_document;
+    Persistent<HTMLDocument> m_document;
 };
 
 void HTMLFormControlElementTest::SetUp()

@@ -79,7 +79,7 @@ String HTMLTitleElement::text() const
 
 void HTMLTitleElement::setText(const String &value)
 {
-    RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
+    RawPtr<Node> protectFromMutationEvents(this);
     ChildListMutationScope mutation(*this);
 
     {

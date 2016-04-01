@@ -104,7 +104,7 @@ public:
         return m_helper->isEligible();
     }
 
-    void setInterface(PassOwnPtrWillBeRawPtr<MockAutoplayClient> client)
+    void setInterface(RawPtr<MockAutoplayClient> client)
     {
         m_client = client;
 
@@ -129,8 +129,8 @@ public:
     }
 #endif
 
-    OwnPtrWillBePersistent<MockAutoplayClient> m_client;
-    OwnPtrWillBePersistent<AutoplayExperimentHelper> m_helper;
+    Persistent<MockAutoplayClient> m_client;
+    Persistent<AutoplayExperimentHelper> m_helper;
 
     // Mirror updatePlayState to transition to play.
     void startPlayback()
@@ -227,27 +227,27 @@ public:
 
 TEST_F(AutoplayExperimentTest, IsNotEligibleWithEmptyMode)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("", MockAutoplayClient::Video));
     EXPECT_FALSE(isEligible());
 }
 
 TEST_F(AutoplayExperimentTest, IsVideoEligibleForVideoMode)
 {
     // Video should be eligible in "forvideo" mode.
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
     EXPECT_TRUE(isEligible());
 }
 
 TEST_F(AutoplayExperimentTest, IsAudioNotEligibleForVideoMode)
 {
     // Audio should not be eligible for video mode.
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Audio)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Audio));
     EXPECT_FALSE(isEligible());
 }
 
 TEST_F(AutoplayExperimentTest, IsEligibleRequiresUserGesture)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
     // If a user gesture is not required, then we're not eligible.
     ON_CALL(*m_client, isUserGestureRequiredForPlay())
         .WillByDefault(Return(false));
@@ -256,7 +256,7 @@ TEST_F(AutoplayExperimentTest, IsEligibleRequiresUserGesture)
 
 TEST_F(AutoplayExperimentTest, IsEligibleRequiresShouldAutoplay)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
     // If we shouldn't autoplay, then we're not eligible.
     ON_CALL(*m_client, shouldAutoplay())
         .WillByDefault(Return(false));
@@ -265,13 +265,13 @@ TEST_F(AutoplayExperimentTest, IsEligibleRequiresShouldAutoplay)
 
 TEST_F(AutoplayExperimentTest, IsAudioEligibleForAudioMode)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-foraudio", MockAutoplayClient::Audio)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-foraudio", MockAutoplayClient::Audio));
     EXPECT_TRUE(isEligible());
 }
 
 TEST_F(AutoplayExperimentTest, EligibleIfOptimizedForMobile)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifmobile", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifmobile", MockAutoplayClient::Video));
     // Should not be eligible with our default of "not mobile".
     EXPECT_FALSE(isEligible());
 
@@ -282,7 +282,7 @@ TEST_F(AutoplayExperimentTest, EligibleIfOptimizedForMobile)
 
 TEST_F(AutoplayExperimentTest, EligibleIfMuted)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifmuted", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifmuted", MockAutoplayClient::Video));
     // Should not be eligible with our default of "not muted".
     EXPECT_FALSE(isEligible());
 
@@ -293,7 +293,7 @@ TEST_F(AutoplayExperimentTest, EligibleIfMuted)
 
 TEST_F(AutoplayExperimentTest, BecameReadyAutoplayThenBailout)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
 
     EXPECT_CALL(*m_client, removeUserGestureRequirement())
         .Times(1);
@@ -310,7 +310,7 @@ TEST_F(AutoplayExperimentTest, BecameReadyAutoplayThenBailout)
 
 TEST_F(AutoplayExperimentTest, BecameReadyAutoplayThenPause)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
 
     EXPECT_CALL(*m_client, removeUserGestureRequirement())
         .Times(1);
@@ -327,7 +327,7 @@ TEST_F(AutoplayExperimentTest, BecameReadyAutoplayThenPause)
 
 TEST_F(AutoplayExperimentTest, BecameReadyAutoplayThenComplete)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
 
     EXPECT_CALL(*m_client, removeUserGestureRequirement())
         .Times(1);
@@ -346,7 +346,7 @@ TEST_F(AutoplayExperimentTest, BecameReadyAutoplayThenComplete)
 TEST_F(AutoplayExperimentTest, NoUserGestureNeededShouldNotOverride)
 {
     // Make sure that we don't override the user gesture if it isn't needed.
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
     setUserGestureRequiredForPlay(false);
 
     // It is still autoplay media, though.
@@ -363,7 +363,7 @@ TEST_F(AutoplayExperimentTest, NoAutoplayMetricsIfNoAutoplay)
 {
     // If playback is started while processing a user gesture, then nothing
     // should be overridden or logged about autoplay.
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
     setUserGestureRequiredForPlay(false);
     setShouldAutoplay(false);
     startPlaybackWithUserGesture();
@@ -374,7 +374,7 @@ TEST_F(AutoplayExperimentTest, NoAutoplayMetricsIfNoAutoplay)
 
 TEST_F(AutoplayExperimentTest, PlayMethodThenBailout)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo", MockAutoplayClient::Video));
     setShouldAutoplay(false); // No autoplay attribute.
 
     EXPECT_CALL(*m_client, removeUserGestureRequirement())
@@ -392,7 +392,7 @@ TEST_F(AutoplayExperimentTest, PlayMethodThenBailout)
 
 TEST_F(AutoplayExperimentTest, DeferAutoplayUntilMuted)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifmuted", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifmuted", MockAutoplayClient::Video));
 
     // Should not override the gesture requirement yet.
     EXPECT_CALL(*m_client, recordAutoplayMetric(AutoplayMediaFound))
@@ -416,7 +416,7 @@ TEST_F(AutoplayExperimentTest, DeferAutoplayUntilMuted)
 
 TEST_F(AutoplayExperimentTest, DeferPlaybackUntilInViewport)
 {
-    setInterface(adoptPtrWillBeNoop(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifviewport", MockAutoplayClient::Video)));
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifviewport", MockAutoplayClient::Video));
 
     // Should not override the gesture requirement yet.
     EXPECT_CALL(*m_client, recordAutoplayMetric(AutoplayMediaFound))

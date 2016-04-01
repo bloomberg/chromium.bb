@@ -41,10 +41,10 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InputType> SubmitInputType::create(HTMLInputElement& element)
+RawPtr<InputType> SubmitInputType::create(HTMLInputElement& element)
 {
     UseCounter::count(element.document(), UseCounter::InputTypeSubmit);
-    return adoptRefWillBeNoop(new SubmitInputType(element));
+    return new SubmitInputType(element);
 }
 
 const AtomicString& SubmitInputType::formControlType() const
@@ -65,7 +65,7 @@ bool SubmitInputType::supportsRequired() const
 
 void SubmitInputType::handleDOMActivateEvent(Event* event)
 {
-    RefPtrWillBeRawPtr<HTMLInputElement> element(this->element());
+    RawPtr<HTMLInputElement> element(this->element());
     if (element->isDisabledFormControl() || !element->form())
         return;
     element->setActivatedSubmit(true);

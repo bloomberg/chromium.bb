@@ -61,7 +61,7 @@ public:
 private:
     explicit LoadableTextTrack(HTMLTrackElement*);
 
-    RawPtrWillBeMember<HTMLTrackElement> m_trackElement;
+    Member<HTMLTrackElement> m_trackElement;
 };
 
 } // namespace blink

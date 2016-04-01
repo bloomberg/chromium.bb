@@ -56,33 +56,29 @@ class LayoutObject;
 class ComputedStyle;
 class TouchEvent;
 
-struct ClickHandlingState final : public NoBaseWillBeGarbageCollected<ClickHandlingState> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ClickHandlingState);
-
+struct ClickHandlingState final : public GarbageCollected<ClickHandlingState> {
 public:
     DECLARE_TRACE();
 
     bool checked;
     bool indeterminate;
-    RefPtrWillBeMember<HTMLInputElement> checkedRadioButton;
+    Member<HTMLInputElement> checkedRadioButton;
 };
 
 // An InputTypeView object represents the UI-specific part of an
 // HTMLInputElement. Do not expose instances of InputTypeView and classes
 // derived from it to classes other than HTMLInputElement.
-class CORE_EXPORT InputTypeView : public RefCountedWillBeGarbageCollectedFinalized<InputTypeView> {
+class CORE_EXPORT InputTypeView : public GarbageCollectedFinalized<InputTypeView> {
     WTF_MAKE_NONCOPYABLE(InputTypeView);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InputTypeView);
-
 public:
-    static PassRefPtrWillBeRawPtr<InputTypeView> create(HTMLInputElement&);
+    static RawPtr<InputTypeView> create(HTMLInputElement&);
     virtual ~InputTypeView();
     DECLARE_VIRTUAL_TRACE();
 
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;
     virtual void handleClickEvent(MouseEvent*);
     virtual void handleMouseDownEvent(MouseEvent*);
-    virtual PassOwnPtrWillBeRawPtr<ClickHandlingState> willDispatchClick();
+    virtual RawPtr<ClickHandlingState> willDispatchClick();
     virtual void didDispatchClick(Event*, const ClickHandlingState&);
     virtual void handleKeydownEvent(KeyboardEvent*);
     virtual void handleKeypressEvent(KeyboardEvent*);
@@ -91,7 +87,7 @@ public:
     virtual void handleTouchEvent(TouchEvent*);
     virtual void forwardEvent(Event*);
     virtual bool shouldSubmitImplicitly(Event*);
-    virtual PassRefPtrWillBeRawPtr<HTMLFormElement> formForSubmission() const;
+    virtual RawPtr<HTMLFormElement> formForSubmission() const;
     virtual bool hasCustomFocusLogic() const;
     virtual void handleFocusEvent(Element* oldFocusedElement, WebFocusType);
     virtual void handleFocusInEvent(Element* oldFocusedElement, WebFocusType);
@@ -131,7 +127,7 @@ protected:
 private:
     // Not a RefPtr because the HTMLInputElement object owns this InputTypeView
     // object.
-    RawPtrWillBeMember<HTMLInputElement> m_element;
+    Member<HTMLInputElement> m_element;
 };
 
 } // namespace blink

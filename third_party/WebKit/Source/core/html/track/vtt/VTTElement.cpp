@@ -71,21 +71,21 @@ VTTElement::VTTElement(VTTNodeType nodeType, Document* document)
 {
 }
 
-PassRefPtrWillBeRawPtr<VTTElement> VTTElement::create(VTTNodeType nodeType, Document* document)
+RawPtr<VTTElement> VTTElement::create(VTTNodeType nodeType, Document* document)
 {
-    return adoptRefWillBeNoop(new VTTElement(nodeType, document));
+    return new VTTElement(nodeType, document);
 }
 
-PassRefPtrWillBeRawPtr<Element> VTTElement::cloneElementWithoutAttributesAndChildren()
+RawPtr<Element> VTTElement::cloneElementWithoutAttributesAndChildren()
 {
-    RefPtrWillBeRawPtr<VTTElement> clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
+    RawPtr<VTTElement> clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
     clone->setLanguage(m_language);
     return clone.release();
 }
 
-PassRefPtrWillBeRawPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Document& document)
+RawPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Document& document)
 {
-    RefPtrWillBeRawPtr<HTMLElement> htmlElement = nullptr;
+    RawPtr<HTMLElement> htmlElement = nullptr;
     switch (m_webVTTNodeType) {
     case VTTNodeTypeClass:
     case VTTNodeTypeLanguage:

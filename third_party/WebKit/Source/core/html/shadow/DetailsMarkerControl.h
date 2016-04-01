@@ -41,7 +41,7 @@ class HTMLSummaryElement;
 class DetailsMarkerControl final : public HTMLDivElement {
 public:
     explicit DetailsMarkerControl(Document&);
-    static PassRefPtrWillBeRawPtr<DetailsMarkerControl> create(Document&);
+    static RawPtr<DetailsMarkerControl> create(Document&);
 
 private:
     LayoutObject* createLayoutObject(const ComputedStyle&) override;
@@ -50,9 +50,9 @@ private:
     HTMLSummaryElement* summaryElement();
 };
 
-inline PassRefPtrWillBeRawPtr<DetailsMarkerControl> DetailsMarkerControl::create(Document& document)
+inline RawPtr<DetailsMarkerControl> DetailsMarkerControl::create(Document& document)
 {
-    RefPtrWillBeRawPtr<DetailsMarkerControl> element = adoptRefWillBeNoop(new DetailsMarkerControl(document));
+    RawPtr<DetailsMarkerControl> element = new DetailsMarkerControl(document);
     element->setShadowPseudoId(AtomicString("-webkit-details-marker"));
     return element.release();
 }

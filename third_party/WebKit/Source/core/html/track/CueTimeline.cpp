@@ -30,14 +30,14 @@ void CueTimeline::addCues(TextTrack* track, const TextTrackCueList* cues)
     updateActiveCues(mediaElement().currentTime());
 }
 
-void CueTimeline::addCue(TextTrack* track, PassRefPtrWillBeRawPtr<TextTrackCue> cue)
+void CueTimeline::addCue(TextTrack* track, RawPtr<TextTrackCue> cue)
 {
     ASSERT(track->mode() != TextTrack::disabledKeyword());
     addCueInternal(cue);
     updateActiveCues(mediaElement().currentTime());
 }
 
-void CueTimeline::addCueInternal(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
+void CueTimeline::addCueInternal(RawPtr<TextTrackCue> cue)
 {
     // Negative duration cues need be treated in the interval tree as
     // zero-length cues.
@@ -55,13 +55,13 @@ void CueTimeline::removeCues(TextTrack*, const TextTrackCueList* cues)
     updateActiveCues(mediaElement().currentTime());
 }
 
-void CueTimeline::removeCue(TextTrack*, PassRefPtrWillBeRawPtr<TextTrackCue> cue)
+void CueTimeline::removeCue(TextTrack*, RawPtr<TextTrackCue> cue)
 {
     removeCueInternal(cue);
     updateActiveCues(mediaElement().currentTime());
 }
 
-void CueTimeline::removeCueInternal(PassRefPtrWillBeRawPtr<TextTrackCue> cue)
+void CueTimeline::removeCueInternal(RawPtr<TextTrackCue> cue)
 {
     // Negative duration cues need to be treated in the interval tree as
     // zero-length cues.
@@ -112,9 +112,9 @@ static bool eventTimeCueCompare(const std::pair<double, TextTrackCue*>& a, const
     return a.second->cueIndex() < b.second->cueIndex();
 }
 
-static PassRefPtrWillBeRawPtr<Event> createEventWithTarget(const AtomicString& eventName, PassRefPtrWillBeRawPtr<EventTarget> eventTarget)
+static RawPtr<Event> createEventWithTarget(const AtomicString& eventName, RawPtr<EventTarget> eventTarget)
 {
-    RefPtrWillBeRawPtr<Event> event = Event::create(eventName);
+    RawPtr<Event> event = Event::create(eventName);
     event->setTarget(eventTarget);
     return event.release();
 }

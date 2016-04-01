@@ -51,9 +51,9 @@ inline SpinButtonElement::SpinButtonElement(Document& document, SpinButtonOwner&
 {
 }
 
-PassRefPtrWillBeRawPtr<SpinButtonElement> SpinButtonElement::create(Document& document, SpinButtonOwner& spinButtonOwner)
+RawPtr<SpinButtonElement> SpinButtonElement::create(Document& document, SpinButtonOwner& spinButtonOwner)
 {
-    RefPtrWillBeRawPtr<SpinButtonElement> element = adoptRefWillBeNoop(new SpinButtonElement(document, spinButtonOwner));
+    RawPtr<SpinButtonElement> element = new SpinButtonElement(document, spinButtonOwner);
     element->setShadowPseudoId(AtomicString("-webkit-inner-spin-button"));
     element->setAttribute(idAttr, ShadowElementNames::spinButton());
     return element.release();
@@ -93,7 +93,7 @@ void SpinButtonElement::defaultEventHandler(Event* event)
             // The following functions of HTMLInputElement may run JavaScript
             // code which detaches this shadow node. We need to take a reference
             // and check layoutObject() after such function calls.
-            RefPtrWillBeRawPtr<Node> protector(this);
+            RawPtr<Node> protector(this);
             if (m_spinButtonOwner)
                 m_spinButtonOwner->focusAndSelectSpinButtonOwner();
             if (layoutObject()) {
