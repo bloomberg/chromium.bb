@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "components/scheduler/base/real_time_domain.h"
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"

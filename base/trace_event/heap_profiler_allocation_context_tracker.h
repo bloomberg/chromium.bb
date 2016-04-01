@@ -58,6 +58,11 @@ class BASE_EXPORT AllocationContextTracker {
   // Pops a frame from the thread-local pseudo stack.
   void PopPseudoStackFrame(StackFrame frame);
 
+  // Push and pop current task's context. A stack is used to support nested
+  // tasks and the top of the stack will be used in allocation context.
+  void PushCurrentTaskContext(const char* context);
+  void PopCurrentTaskContext(const char* context);
+
   // Returns a snapshot of the current thread-local context.
   AllocationContext GetContextSnapshot();
 
@@ -73,6 +78,10 @@ class BASE_EXPORT AllocationContextTracker {
 
   // The thread name is used as the first entry in the pseudo stack.
   const char* thread_name_;
+
+  // Stack of tasks' contexts. Context serves as a different dimension than
+  // pseudo stack to cluster allocations.
+  std::vector<const char*> task_contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(AllocationContextTracker);
 };
