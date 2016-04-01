@@ -4017,6 +4017,14 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const
         left = std::max(left, borderOutsets.left());
     }
 
+    // Box-shadow and border-image-outsets are in physical direction. Flip into block direction.
+    if (UNLIKELY(hasFlippedBlocksWritingMode())) {
+        if (isHorizontalWritingMode())
+            std::swap(top, bottom);
+        else
+            std::swap(left, right);
+    }
+
     if (style()->hasOutline()) {
         Vector<LayoutRect> outlineRects;
         // The result rects are in coordinates of this object's border box.

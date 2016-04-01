@@ -203,4 +203,55 @@ TEST_F(LayoutObjectTest, LayoutViewMapToVisualRectInAncestorSpaceSubpixelRoundin
     EXPECT_EQ(LayoutRect(LayoutPoint(DoublePoint(0.5, 0)), LayoutSize(101, 100)), rect);
 }
 
+TEST_F(LayoutObjectTest, OverflowRectMappingWithSelfFlippedWritingMode)
+{
+    setBodyInnerHTML(
+        "<div id='target' style='writing-mode: vertical-rl; box-shadow: 40px 20px black;"
+        "    width: 100px; height: 50px; position: absolute; top: 111px; left: 222px'>"
+        "</div>");
+
+    LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
+    LayoutRect overflowRect = target->localOverflowRectForPaintInvalidation();
+    EXPECT_EQ(LayoutRect(-40, 0, 140, 70), overflowRect);
+    LayoutRect rect = overflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(target, rect));
+    EXPECT_EQ(LayoutRect(0, 0, 140, 70), rect);
+    rect = overflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+    EXPECT_EQ(LayoutRect(222, 111, 140, 70), rect);
+}
+
+TEST_F(LayoutObjectTest, OverflowRectMappingWithContainerFlippedWritingMode)
+{
+    setBodyInnerHTML(
+        "<div id='container' style='writing-mode: vertical-rl; position: absolute; top: 111px; left: 222px'>"
+        "    <div id='target' style='box-shadow: 40px 20px black; width: 100px; height: 90px'></div>"
+        "    <div style='width: 100px; height: 100px'></div>"
+        "</div>");
+
+    LayoutBlock* target = toLayoutBlock(getLayoutObjectByElementId("target"));
+    LayoutRect targetOverflowRect = target->localOverflowRectForPaintInvalidation();
+    EXPECT_EQ(LayoutRect(-40, 0, 140, 110), targetOverflowRect);
+    LayoutRect rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(target, rect));
+    EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
+
+    LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
+    rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
+    EXPECT_EQ(LayoutRect(100, 0, 140, 110), rect);
+    rect = targetOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+    EXPECT_EQ(LayoutRect(322, 111, 140, 110), rect);
+
+    LayoutRect containerOverflowRect = container->localOverflowRectForPaintInvalidation();
+    EXPECT_EQ(LayoutRect(-40, 0, 240, 110), containerOverflowRect);
+    rect = containerOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
+    EXPECT_EQ(LayoutRect(0, 0, 240, 110), rect);
+    rect = containerOverflowRect;
+    EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
+    EXPECT_EQ(LayoutRect(222, 111, 240, 110), rect);
+}
+
 } // namespace blink

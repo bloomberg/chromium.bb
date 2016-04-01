@@ -322,11 +322,6 @@ LayoutRect PaintInvalidationState::computePaintInvalidationRectInBackingForSVG()
 
 static void slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const LayoutBoxModelObject& ancestor, LayoutRect& rect)
 {
-    // TODO(crbug.com/597965): LayoutBox::mapToVisualRectInAncestorSpace() incorrectly flips a rect
-    // in its own space for writing mode. Here flip to workaround the flip.
-    if (object.isBox() && (toLayoutBox(object).isWritingModeRoot() || (ancestor == object && object.styleRef().isFlippedBlocksWritingMode())))
-        toLayoutBox(object).flipForWritingMode(rect);
-
     if (object.isLayoutView()) {
         toLayoutView(object).mapToVisualRectInAncestorSpace(&ancestor, rect, InputIsInFrameCoordinates, DefaultVisualRectFlags);
     } else if (object.isSVGRoot()) {
