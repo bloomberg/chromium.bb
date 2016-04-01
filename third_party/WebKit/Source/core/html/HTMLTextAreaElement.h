@@ -24,6 +24,7 @@
 #ifndef HTMLTextAreaElement_h
 #define HTMLTextAreaElement_h
 
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/html/HTMLTextFormControlElement.h"
 
@@ -66,6 +67,7 @@ public:
     void setRows(unsigned);
 
 private:
+    FRIEND_TEST_ALL_PREFIXES(HTMLTextAreaElementTest, SanitizeUserInputValue);
     HTMLTextAreaElement(Document&, HTMLFormElement*);
 
     enum WrapMethod { NoWrap, SoftWrap, HardWrap };

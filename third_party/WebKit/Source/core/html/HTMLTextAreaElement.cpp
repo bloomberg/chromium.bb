@@ -333,9 +333,20 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
 
 String HTMLTextAreaElement::sanitizeUserInputValue(const String& proposedValue, unsigned maxLength)
 {
-    if (maxLength > 0 && U16_IS_LEAD(proposedValue[maxLength - 1]))
-        --maxLength;
-    return proposedValue.left(maxLength);
+    unsigned submissionLength = 0;
+    unsigned i = 0;
+    for (; i < proposedValue.length(); ++i) {
+        submissionLength += proposedValue[i] == '\n' ? 2 : 1;
+        if (submissionLength == maxLength) {
+            ++i;
+            break;
+        }
+        if (submissionLength > maxLength)
+            break;
+    }
+    if (i > 0 && U16_IS_LEAD(proposedValue[i - 1]))
+        --i;
+    return proposedValue.left(i);
 }
 
 void HTMLTextAreaElement::updateValue() const

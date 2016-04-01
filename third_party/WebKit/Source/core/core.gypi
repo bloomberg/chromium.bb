@@ -3998,6 +3998,7 @@
             'html/HTMLOutputElementTest.cpp',
             'html/HTMLSelectElementTest.cpp',
             'html/HTMLTableRowElementTest.cpp',
+            'html/HTMLTextAreaElementTest.cpp',
             'html/HTMLTextFormControlElementTest.cpp',
             'html/HTMLVideoElementTest.cpp',
             'html/LinkRelAttributeTest.cpp',
