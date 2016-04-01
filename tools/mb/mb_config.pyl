@@ -112,7 +112,7 @@
       'Chromium Win PGO Builder': 'gyp_official_winpgo',
       'Chromium Win x64 Clobber': 'tbd',
       'Chromium Win x64 PGO Builder': 'gyp_official_winpgo_x64',
-      'Chromium Windows Analyze': 'gyp_windows_analyze',
+      'Chromium Windows Analyze': 'gn_windows_analyze',
       'Chromium Windows Buildrunner': 'tbd',
       'Chromium Windows Instant Extended': 'tbd',
       'ChromiumOS Linux Tests': 'tbd',
@@ -1133,7 +1133,7 @@
       'disable_nacl',
     ],
     'gn_release_libfuzzer_ubsan': [
-      'gn', 'release', 'libfuzzer', 'ubsan_security', 'proprietary_codecs', 
+      'gn', 'release', 'libfuzzer', 'ubsan_security', 'proprietary_codecs',
       'pdf_xfa', 'disable_nacl',
     ],
 
@@ -1144,17 +1144,17 @@
       'gn', 'release', 'drmemory', 'drfuzz', 'proprietary_codecs',
     ],
 
+    'gn_windows_analyze': [
+      'gn', 'no_symbols', 'disable_precompiled_headers',
+      'shared', 'x86', 'win_analyze',
+    ],
+
     'gyp_valgrind_release_bot': [
       'gyp', 'valgrind', 'release_bot',
     ],
 
     'gyp_valgrind_chromeos_release_bot': [
       'gyp', 'chromeos', 'valgrind', 'release_bot',
-    ],
-
-    'gyp_windows_analyze': [
-      'gyp', 'no_symbols', 'disable_precompiled_headers', 
-      'shared', 'x86', 'win_analyze',
     ],
 
     'gyp_drmemory_shared_release_x86': [
