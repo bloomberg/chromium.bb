@@ -42,12 +42,14 @@
 
 namespace blink {
 
+// Should be same with WebURLRequest::CachePolicy.
+// TODO(crbug.com/599364): Merge this with WebURLRequest::CachePolicy
 enum ResourceRequestCachePolicy {
     UseProtocolCachePolicy, // normal load
-    ReloadIgnoringCacheData, // reload
+    ValidatingCacheData, // reload
+    BypassingCache, // end-to-end reload
     ReturnCacheDataElseLoad, // back/forward or encoding change - allow stale data
     ReturnCacheDataDontLoad, // results of a post - allow stale data and only use cache
-    ReloadBypassingCache, // end-to-end reload
 };
 
 enum ResourceRequestBlockedReason {

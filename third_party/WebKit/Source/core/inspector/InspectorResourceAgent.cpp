@@ -529,7 +529,7 @@ void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long id
     request.setReportRawHeaders(true);
 
     if (m_state->booleanProperty(ResourceAgentState::cacheDisabled, false)) {
-        request.setCachePolicy(ReloadBypassingCache);
+        request.setCachePolicy(BypassingCache);
         request.setShouldResetAppCache(true);
     }
 

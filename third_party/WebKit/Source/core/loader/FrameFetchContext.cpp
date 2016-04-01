@@ -167,9 +167,9 @@ static ResourceRequestCachePolicy memoryCachePolicyToResourceRequestCachePolicy(
     if (policy == CachePolicyVerify)
         return UseProtocolCachePolicy;
     if (policy == CachePolicyRevalidate)
-        return ReloadIgnoringCacheData;
+        return ValidatingCacheData;
     if (policy == CachePolicyReload)
-        return ReloadBypassingCache;
+        return BypassingCache;
     if (policy == CachePolicyHistoryBuffer)
         return ReturnCacheDataElseLoad;
     return UseProtocolCachePolicy;
@@ -185,7 +185,7 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
         if (!frame()->host()->overrideEncoding().isEmpty())
             return ReturnCacheDataElseLoad;
         if (frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
-            return ReloadIgnoringCacheData;
+            return ValidatingCacheData;
 
         for (Frame* f = frame(); f; f = f->tree().parent()) {
             if (!f->isLocalFrame())
@@ -194,9 +194,9 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
             if (frameLoadType == FrameLoadTypeBackForward)
                 return ReturnCacheDataElseLoad;
             if (frameLoadType == FrameLoadTypeReloadFromOrigin)
-                return ReloadBypassingCache;
+                return BypassingCache;
             if (frameLoadType == FrameLoadTypeReload)
-                return ReloadIgnoringCacheData;
+                return ValidatingCacheData;
         }
         return UseProtocolCachePolicy;
     }
@@ -217,7 +217,7 @@ ResourceRequestCachePolicy FrameFetchContext::resourceRequestCachePolicy(const R
     }
 
     if (request.isConditional())
-        return ReloadIgnoringCacheData;
+        return ValidatingCacheData;
 
     if (m_documentLoader && m_document && !m_document->loadEventFinished()) {
         // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.

@@ -2936,8 +2936,8 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
       case WebURLRequest::UseProtocolCachePolicy:  // normal load.
         document_state->set_load_type(DocumentState::LINK_LOAD_NORMAL);
         break;
-      case WebURLRequest::ReloadIgnoringCacheData:  // reload.
-      case WebURLRequest::ReloadBypassingCache:     // end-to-end reload.
+      case WebURLRequest::ValidatingCacheData:  // reload.
+      case WebURLRequest::BypassingCache:       // end-to-end reload.
         document_state->set_load_type(DocumentState::LINK_LOAD_RELOAD);
         break;
       case WebURLRequest::ReturnCacheDataElseLoad:  // allow stale data.
@@ -5254,7 +5254,7 @@ void RenderFrameImpl::NavigateInternal(
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.
     is_reload = false;
-    cache_policy = WebURLRequest::ReloadIgnoringCacheData;
+    cache_policy = WebURLRequest::ValidatingCacheData;
   }
 
   // If the navigation is for "view source", the WebLocalFrame needs to be put

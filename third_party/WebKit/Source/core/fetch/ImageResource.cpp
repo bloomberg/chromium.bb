@@ -494,7 +494,7 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
 {
     if (!m_response.httpHeaderField("chrome-proxy").contains("q=low"))
         return;
-    m_resourceRequest.setCachePolicy(ResourceRequestCachePolicy::ReloadBypassingCache);
+    m_resourceRequest.setCachePolicy(ResourceRequestCachePolicy::BypassingCache);
     m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
     error(Resource::LoadError);
     load(fetcher);

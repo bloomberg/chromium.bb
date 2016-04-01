@@ -28,6 +28,7 @@
 
 namespace blink {
 
+// TODO(crbug.com/599364): Should be merged with other CachePolicies.
 enum CachePolicy {
     CachePolicyVerify,
     CachePolicyRevalidate,

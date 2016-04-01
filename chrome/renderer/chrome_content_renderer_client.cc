@@ -1054,8 +1054,8 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
 
   bool is_post = base::EqualsASCII(
       base::StringPiece16(failed_request.httpMethod()), "POST");
-  bool is_ignoring_cache = failed_request.getCachePolicy() ==
-                           blink::WebURLRequest::ReloadBypassingCache;
+  bool is_ignoring_cache =
+      failed_request.getCachePolicy() == blink::WebURLRequest::BypassingCache;
   if (error_html) {
     NetErrorHelper::Get(render_frame)
         ->GetErrorHTML(error, is_post, is_ignoring_cache, error_html);

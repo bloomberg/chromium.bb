@@ -198,11 +198,10 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
   int load_flags = net::LOAD_NORMAL;
   GURL url = request.url();
   switch (request.getCachePolicy()) {
-    case WebURLRequest::ReloadIgnoringCacheData:
-      // Required by LayoutTests/http/tests/misc/refresh-headers.php
+    case WebURLRequest::ValidatingCacheData:
       load_flags |= net::LOAD_VALIDATE_CACHE;
       break;
-    case WebURLRequest::ReloadBypassingCache:
+    case WebURLRequest::BypassingCache:
       load_flags |= net::LOAD_BYPASS_CACHE;
       break;
     case WebURLRequest::ReturnCacheDataElseLoad:

@@ -400,7 +400,7 @@ TEST_F(FrameFetchContextTest, MainResource)
     // Post
     ResourceRequest postRequest("http://www.example.com");
     postRequest.setHTTPMethod("POST");
-    EXPECT_EQ(ReloadIgnoringCacheData, fetchContext->resourceRequestCachePolicy(postRequest, Resource::MainResource));
+    EXPECT_EQ(ValidatingCacheData, fetchContext->resourceRequestCachePolicy(postRequest, Resource::MainResource));
 
     // Re-post
     document->frame()->loader().setLoadType(FrameLoadTypeBackForward);
@@ -414,13 +414,13 @@ TEST_F(FrameFetchContextTest, MainResource)
 
     // FrameLoadTypeSame
     document->frame()->loader().setLoadType(FrameLoadTypeSame);
-    EXPECT_EQ(ReloadIgnoringCacheData, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    EXPECT_EQ(ValidatingCacheData, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
 
     // Conditional request
     document->frame()->loader().setLoadType(FrameLoadTypeStandard);
     ResourceRequest conditional("http://www.example.com");
     conditional.setHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
-    EXPECT_EQ(ReloadIgnoringCacheData, fetchContext->resourceRequestCachePolicy(conditional, Resource::MainResource));
+    EXPECT_EQ(ValidatingCacheData, fetchContext->resourceRequestCachePolicy(conditional, Resource::MainResource));
 
     // Set up a child frame
     FrameFetchContext* childFetchContext = createChildFrame();
@@ -431,11 +431,11 @@ TEST_F(FrameFetchContextTest, MainResource)
 
     // Child frame as part of reload
     document->frame()->loader().setLoadType(FrameLoadTypeReload);
-    EXPECT_EQ(ReloadIgnoringCacheData, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    EXPECT_EQ(ValidatingCacheData, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
 
     // Child frame as part of end to end reload
     document->frame()->loader().setLoadType(FrameLoadTypeReloadFromOrigin);
-    EXPECT_EQ(ReloadBypassingCache, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
+    EXPECT_EQ(BypassingCache, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource));
 }
 
 TEST_F(FrameFetchContextTest, ModifyPriorityForExperiments)

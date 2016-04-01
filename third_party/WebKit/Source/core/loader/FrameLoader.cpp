@@ -136,8 +136,7 @@ ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadTyp
     const KURL& overrideURL, ClientRedirectPolicy clientRedirectPolicy)
 {
     ASSERT(frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin);
-    ResourceRequestCachePolicy cachePolicy = frameLoadType == FrameLoadTypeReloadFromOrigin ?
-        ReloadBypassingCache : ReloadIgnoringCacheData;
+    ResourceRequestCachePolicy cachePolicy = frameLoadType == FrameLoadTypeReloadFromOrigin ? BypassingCache : ValidatingCacheData;
     if (!m_currentItem)
         return ResourceRequest();
     ResourceRequest request = resourceRequestFromHistoryItem(m_currentItem.get(), cachePolicy);
@@ -774,9 +773,9 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeStandard;
     if (m_provisionalDocumentLoader && request.substituteData().failingURL() == m_provisionalDocumentLoader->url() && m_loadType == FrameLoadTypeBackForward)
         return FrameLoadTypeBackForward;
-    if (request.resourceRequest().getCachePolicy() == ReloadIgnoringCacheData)
+    if (request.resourceRequest().getCachePolicy() == ValidatingCacheData)
         return FrameLoadTypeReload;
-    if (request.resourceRequest().getCachePolicy() == ReloadBypassingCache)
+    if (request.resourceRequest().getCachePolicy() == BypassingCache)
         return FrameLoadTypeReloadFromOrigin;
     // From the HTML5 spec for location.assign():
     //  "If the browsing context's session history contains only one Document,

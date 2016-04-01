@@ -145,7 +145,7 @@ public:
         FrameLoadRequest request(originDocument(), url(), "_self");
         request.setReplacesCurrentItem(replacesCurrentItem());
         if (equalIgnoringFragmentIdentifier(frame->document()->url(), request.resourceRequest().url()))
-            request.resourceRequest().setCachePolicy(ReloadIgnoringCacheData);
+            request.resourceRequest().setCachePolicy(ValidatingCacheData);
         request.setClientRedirect(ClientRedirect);
         frame->loader().load(request);
     }
