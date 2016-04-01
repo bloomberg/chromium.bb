@@ -45,10 +45,10 @@ class Event;
 class LocalFrame;
 class Page;
 
-class CORE_EXPORT ContextMenuController final : public NoBaseWillBeGarbageCollectedFinalized<ContextMenuController> {
-    WTF_MAKE_NONCOPYABLE(ContextMenuController); USING_FAST_MALLOC_WILL_BE_REMOVED(ContextMenuController);
+class CORE_EXPORT ContextMenuController final : public GarbageCollectedFinalized<ContextMenuController> {
+    WTF_MAKE_NONCOPYABLE(ContextMenuController);
 public:
-    static PassOwnPtrWillBeRawPtr<ContextMenuController> create(Page*, ContextMenuClient*);
+    static RawPtr<ContextMenuController> create(Page*, ContextMenuClient*);
     ~ContextMenuController();
     DECLARE_TRACE();
 
@@ -58,8 +58,8 @@ public:
     void documentDetached(Document*);
 
     void handleContextMenuEvent(Event*);
-    void showContextMenu(Event*, PassRefPtrWillBeRawPtr<ContextMenuProvider>);
-    void showContextMenuAtPoint(LocalFrame*, float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider>);
+    void showContextMenu(Event*, RawPtr<ContextMenuProvider>);
+    void showContextMenuAtPoint(LocalFrame*, float x, float y, RawPtr<ContextMenuProvider>);
 
     void contextMenuItemSelected(const ContextMenuItem*);
 
@@ -75,7 +75,7 @@ private:
 
     ContextMenuClient* m_client;
     OwnPtr<ContextMenu> m_contextMenu;
-    RefPtrWillBeMember<ContextMenuProvider> m_menuProvider;
+    Member<ContextMenuProvider> m_menuProvider;
     HitTestResult m_hitTestResult;
 };
 

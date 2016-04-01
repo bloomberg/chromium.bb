@@ -22,11 +22,11 @@ class ScriptCallStack;
 class ScriptState;
 class WorkerInspectorProxy;
 
-class CORE_EXPORT ConsoleMessage final: public RefCountedWillBeGarbageCollectedFinalized<ConsoleMessage> {
+class CORE_EXPORT ConsoleMessage final: public GarbageCollectedFinalized<ConsoleMessage> {
 public:
-    static PassRefPtrWillBeRawPtr<ConsoleMessage> create(MessageSource source, MessageLevel level, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0)
+    static RawPtr<ConsoleMessage> create(MessageSource source, MessageLevel level, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0)
     {
-        return adoptRefWillBeNoop(new ConsoleMessage(source, level, message, url, lineNumber, columnNumber));
+        return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber);
     }
     ~ConsoleMessage();
 
@@ -42,8 +42,8 @@ public:
     void setCallStack(PassRefPtr<ScriptCallStack>);
     ScriptState* getScriptState() const;
     void setScriptState(ScriptState*);
-    PassRefPtrWillBeRawPtr<ScriptArguments> scriptArguments() const;
-    void setScriptArguments(PassRefPtrWillBeRawPtr<ScriptArguments>);
+    RawPtr<ScriptArguments> scriptArguments() const;
+    void setScriptArguments(RawPtr<ScriptArguments>);
     unsigned long requestIdentifier() const;
     void setRequestIdentifier(unsigned long);
     double timestamp() const;
@@ -80,10 +80,10 @@ private:
     unsigned m_columnNumber;
     RefPtr<ScriptCallStack> m_callStack;
     OwnPtr<ScriptStateProtectingContext> m_scriptState;
-    RefPtrWillBeMember<ScriptArguments> m_scriptArguments;
+    Member<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
     double m_timestamp;
-    RawPtrWillBeMember<WorkerInspectorProxy> m_workerProxy;
+    Member<WorkerInspectorProxy> m_workerProxy;
     unsigned m_messageId;
     unsigned m_relatedMessageId;
 };

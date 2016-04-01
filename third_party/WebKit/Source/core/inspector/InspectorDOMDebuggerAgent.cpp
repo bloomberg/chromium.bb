@@ -84,9 +84,9 @@ static const char xhrBreakpoints[] = "xhrBreakpoints";
 static const char enabled[] = "enabled";
 }
 
-PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent)
+RawPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent)
 {
-    return adoptPtrWillBeNoop(new InspectorDOMDebuggerAgent(isolate, domAgent, runtimeAgent, debuggerAgent));
+    return new InspectorDOMDebuggerAgent(isolate, domAgent, runtimeAgent, debuggerAgent);
 }
 
 void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate, v8::Local<v8::Value> value, V8EventListenerInfoList& eventInformation)
@@ -108,7 +108,7 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
         if (!listeners)
             continue;
         for (size_t k = 0; k < listeners->size(); ++k) {
-            RefPtrWillBeRawPtr<EventListener> eventListener = listeners->at(k).listener;
+            RawPtr<EventListener> eventListener = listeners->at(k).listener;
             if (eventListener->type() != EventListener::JSEventListenerType)
                 continue;
             V8AbstractEventListener* v8Listener = static_cast<V8AbstractEventListener*>(eventListener.get());
@@ -275,7 +275,7 @@ void InspectorDOMDebuggerAgent::didRemoveDOMNode(Node* node)
     if (m_domBreakpoints.size()) {
         // Remove subtree breakpoints.
         m_domBreakpoints.remove(node);
-        WillBeHeapVector<RawPtrWillBeMember<Node>> stack(1, InspectorDOMAgent::innerFirstChild(node));
+        HeapVector<Member<Node>> stack(1, InspectorDOMAgent::innerFirstChild(node));
         do {
             Node* node = stack.last();
             stack.removeLast();

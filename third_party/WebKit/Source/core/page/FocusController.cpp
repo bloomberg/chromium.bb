@@ -92,9 +92,9 @@ public:
 private:
     ScopedFocusNavigation(TreeScope&, const Element*);
     ScopedFocusNavigation(HTMLSlotElement&, const Element*);
-    RawPtrWillBeMember<ContainerNode> m_rootNode;
-    RawPtrWillBeMember<HTMLSlotElement> m_rootSlot;
-    RawPtrWillBeMember<Element> m_current;
+    Member<ContainerNode> m_rootNode;
+    Member<HTMLSlotElement> m_rootSlot;
+    Member<Element> m_current;
 };
 
 ScopedFocusNavigation::ScopedFocusNavigation(TreeScope& treeScope, const Element* current)
@@ -149,7 +149,7 @@ void ScopedFocusNavigation::moveToFirst()
 {
     if (m_rootSlot) {
         if (!m_rootSlot->getAssignedNodes().isEmpty()) {
-            WillBeHeapVector<RefPtrWillBeMember<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
+            HeapVector<Member<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
             for (auto assignedNode : assignedNodes) {
                 if (assignedNode->isElementNode()) {
                     m_current = toElement(assignedNode);
@@ -171,7 +171,7 @@ void ScopedFocusNavigation::moveToLast()
 {
     if (m_rootSlot) {
         if (!m_rootSlot->getAssignedNodes().isEmpty()) {
-            WillBeHeapVector<RefPtrWillBeMember<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
+            HeapVector<Member<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
             for (auto assignedNode = assignedNodes.rbegin(); assignedNode != assignedNodes.rend(); ++assignedNode) {
                 if ((*assignedNode)->isElementNode()) {
                     m_current = ElementTraversal::lastWithinOrSelf(*toElement(*assignedNode));
@@ -284,7 +284,7 @@ inline void dispatchEventsOnWindowAndFocusedElement(Document* document, bool foc
     }
 
     if (!focused && document->focusedElement()) {
-        RefPtrWillBeRawPtr<Element> focusedElement(document->focusedElement());
+        RawPtr<Element> focusedElement(document->focusedElement());
         focusedElement->setFocus(false);
         dispatchBlurEvent(*document, *focusedElement);
     }
@@ -292,7 +292,7 @@ inline void dispatchEventsOnWindowAndFocusedElement(Document* document, bool foc
     if (LocalDOMWindow* window = document->domWindow())
         window->dispatchEvent(Event::create(focused ? EventTypeNames::focus : EventTypeNames::blur));
     if (focused && document->focusedElement()) {
-        RefPtrWillBeRawPtr<Element> focusedElement(document->focusedElement());
+        RawPtr<Element> focusedElement(document->focusedElement());
         focusedElement->setFocus(true);
         dispatchFocusEvent(*document, *focusedElement);
     }
@@ -665,12 +665,12 @@ FocusController::FocusController(Page* page)
 {
 }
 
-PassOwnPtrWillBeRawPtr<FocusController> FocusController::create(Page* page)
+RawPtr<FocusController> FocusController::create(Page* page)
 {
-    return adoptPtrWillBeNoop(new FocusController(page));
+    return new FocusController(page);
 }
 
-void FocusController::setFocusedFrame(PassRefPtrWillBeRawPtr<Frame> frame, bool notifyEmbedder)
+void FocusController::setFocusedFrame(RawPtr<Frame> frame, bool notifyEmbedder)
 {
     ASSERT(!frame || frame->page() == m_page);
     if (m_focusedFrame == frame || (m_isChangingFocusedFrame && frame))
@@ -678,9 +678,9 @@ void FocusController::setFocusedFrame(PassRefPtrWillBeRawPtr<Frame> frame, bool 
 
     m_isChangingFocusedFrame = true;
 
-    RefPtrWillBeRawPtr<LocalFrame> oldFrame = (m_focusedFrame && m_focusedFrame->isLocalFrame()) ? toLocalFrame(m_focusedFrame.get()) : nullptr;
+    RawPtr<LocalFrame> oldFrame = (m_focusedFrame && m_focusedFrame->isLocalFrame()) ? toLocalFrame(m_focusedFrame.get()) : nullptr;
 
-    RefPtrWillBeRawPtr<LocalFrame> newFrame = (frame && frame->isLocalFrame()) ? toLocalFrame(frame.get()) : nullptr;
+    RawPtr<LocalFrame> newFrame = (frame && frame->isLocalFrame()) ? toLocalFrame(frame.get()) : nullptr;
 
     m_focusedFrame = frame.get();
 
@@ -703,23 +703,23 @@ void FocusController::setFocusedFrame(PassRefPtrWillBeRawPtr<Frame> frame, bool 
         m_focusedFrame->client()->frameFocused();
 }
 
-void FocusController::focusDocumentView(PassRefPtrWillBeRawPtr<Frame> frame, bool notifyEmbedder)
+void FocusController::focusDocumentView(RawPtr<Frame> frame, bool notifyEmbedder)
 {
     ASSERT(!frame || frame->page() == m_page);
     if (m_focusedFrame == frame)
         return;
 
-    RefPtrWillBeRawPtr<LocalFrame> focusedFrame = (m_focusedFrame && m_focusedFrame->isLocalFrame()) ? toLocalFrame(m_focusedFrame.get()) : nullptr;
+    RawPtr<LocalFrame> focusedFrame = (m_focusedFrame && m_focusedFrame->isLocalFrame()) ? toLocalFrame(m_focusedFrame.get()) : nullptr;
     if (focusedFrame && focusedFrame->view()) {
-        RefPtrWillBeRawPtr<Document> document = focusedFrame->document();
+        RawPtr<Document> document = focusedFrame->document();
         Element* focusedElement = document ? document->focusedElement() : nullptr;
         if (focusedElement)
             dispatchBlurEvent(*document, *focusedElement);
     }
 
-    RefPtrWillBeRawPtr<LocalFrame> newFocusedFrame = (frame && frame->isLocalFrame()) ? toLocalFrame(frame.get()) : nullptr;
+    RawPtr<LocalFrame> newFocusedFrame = (frame && frame->isLocalFrame()) ? toLocalFrame(frame.get()) : nullptr;
     if (newFocusedFrame && newFocusedFrame->view()) {
-        RefPtrWillBeRawPtr<Document> document = newFocusedFrame->document();
+        RawPtr<Document> document = newFocusedFrame->document();
         Element* focusedElement = document ? document->focusedElement() : nullptr;
         if (focusedElement)
             dispatchFocusEvent(*document, *focusedElement);
@@ -867,7 +867,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
 
     document->updateLayoutIgnorePendingStylesheets();
     ScopedFocusNavigation scope = current ? ScopedFocusNavigation::createFor(*current) : ScopedFocusNavigation::createForDocument(*document);
-    RefPtrWillBeRawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, scope);
+    RawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, scope);
 
     if (!element) {
         // If there's a RemoteFrame on the ancestor chain, we need to continue
@@ -996,15 +996,15 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
     selection.clear();
 }
 
-bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr<Frame> newFocusedFrame)
+bool FocusController::setFocusedElement(Element* element, RawPtr<Frame> newFocusedFrame)
 {
     return setFocusedElement(element, newFocusedFrame, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
 }
 
-bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr<Frame> newFocusedFrame, const FocusParams& params)
+bool FocusController::setFocusedElement(Element* element, RawPtr<Frame> newFocusedFrame, const FocusParams& params)
 {
-    RefPtrWillBeRawPtr<LocalFrame> oldFocusedFrame = focusedFrame();
-    RefPtrWillBeRawPtr<Document> oldDocument = oldFocusedFrame ? oldFocusedFrame->document() : nullptr;
+    RawPtr<LocalFrame> oldFocusedFrame = focusedFrame();
+    RawPtr<Document> oldDocument = oldFocusedFrame ? oldFocusedFrame->document() : nullptr;
 
     Element* oldFocusedElement = oldDocument ? oldDocument->focusedElement() : nullptr;
     if (element && oldFocusedElement == element)
@@ -1016,7 +1016,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr
 
     m_page->chromeClient().willSetInputMethodState();
 
-    RefPtrWillBeRawPtr<Document> newDocument = nullptr;
+    RawPtr<Document> newDocument = nullptr;
     if (element)
         newDocument = &element->document();
     else if (newFocusedFrame && newFocusedFrame->isLocalFrame())
@@ -1038,7 +1038,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr
     setFocusedFrame(newFocusedFrame);
 
     // Setting the focused element can result in losing our last reft to element when JS event handlers fire.
-    RefPtrWillBeRawPtr<Element> protect = element;
+    RawPtr<Element> protect = element;
     ALLOW_UNUSED_LOCAL(protect);
     if (newDocument) {
         bool successfullyFocused = newDocument->setFocusedElement(element, params);

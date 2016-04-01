@@ -317,7 +317,7 @@ void EventSource::didFailRedirectCheck()
 
 void EventSource::onMessageEvent(const AtomicString& eventType, const String& data, const AtomicString& lastEventId)
 {
-    RefPtrWillBeRawPtr<MessageEvent> e = MessageEvent::create();
+    RawPtr<MessageEvent> e = MessageEvent::create();
     e->initMessageEvent(eventType, false, false, SerializedScriptValueFactory::instance().create(data), m_eventStreamOrigin, lastEventId, 0, nullptr);
 
     InspectorInstrumentation::willDispatchEventSourceEvent(getExecutionContext(), this, eventType, lastEventId, data);

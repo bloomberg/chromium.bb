@@ -34,9 +34,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerGlobalScope* inspectedWorkerGlobalScope, V8RuntimeAgent* runtimeAgent)
+RawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerGlobalScope* inspectedWorkerGlobalScope, V8RuntimeAgent* runtimeAgent)
 {
-    return adoptPtrWillBeNoop(new WorkerDebuggerAgent(inspectedWorkerGlobalScope, runtimeAgent));
+    return new WorkerDebuggerAgent(inspectedWorkerGlobalScope, runtimeAgent);
 }
 
 WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerGlobalScope* inspectedWorkerGlobalScope, V8RuntimeAgent* runtimeAgent)

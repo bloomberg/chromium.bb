@@ -118,13 +118,12 @@ namespace blink {
 
 ${forward_list}
 
-class CORE_EXPORT InstrumentingAgents : public RefCountedWillBeGarbageCollectedFinalized<InstrumentingAgents> {
+class CORE_EXPORT InstrumentingAgents : public GarbageCollectedFinalized<InstrumentingAgents> {
     WTF_MAKE_NONCOPYABLE(InstrumentingAgents);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InstrumentingAgents);
 public:
-    static PassRefPtrWillBeRawPtr<InstrumentingAgents> create()
+    static RawPtr<InstrumentingAgents> create()
     {
-        return adoptRefWillBeNoop(new InstrumentingAgents());
+        return new InstrumentingAgents();
     }
     ~InstrumentingAgents() { }
     DECLARE_TRACE();
@@ -465,7 +464,7 @@ def generate_instrumenting_agents(used_agents):
             class_name=class_name,
             getter_name=getter_name,
             member_name=member_name))
-        member_list.append("    RawPtrWillBeMember<%s> %s;" % (class_name, member_name))
+        member_list.append("    Member<%s> %s;" % (class_name, member_name))
         init_list.append("%s(nullptr)" % member_name)
         trace_list.append("visitor->trace(%s);" % member_name)
         reset_list.append("%s = nullptr;" % member_name)

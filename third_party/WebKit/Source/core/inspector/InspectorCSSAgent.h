@@ -64,7 +64,7 @@ class CORE_EXPORT InspectorCSSAgent final
     , public protocol::Backend::CSS
     , public InspectorStyleSheetBase::Listener {
     WTF_MAKE_NONCOPYABLE(InspectorCSSAgent);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorCSSAgent);
+    USING_GARBAGE_COLLECTED_MIXIN(InspectorCSSAgent);
 public:
     enum MediaListSource {
         MediaListSourceLinkedSheet,
@@ -93,18 +93,18 @@ public:
         }
 
     private:
-        RawPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
+        Member<ContentSecurityPolicy> m_contentSecurityPolicy;
     };
 
     static CSSStyleRule* asCSSStyleRule(CSSRule*);
     static CSSMediaRule* asCSSMediaRule(CSSRule*);
 
-    static PassOwnPtrWillBeRawPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
+    static RawPtr<InspectorCSSAgent> create(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader)
     {
-        return adoptPtrWillBeNoop(new InspectorCSSAgent(domAgent, inspectedFrames, resourceAgent, resourceContentLoader));
+        return new InspectorCSSAgent(domAgent, inspectedFrames, resourceAgent, resourceContentLoader);
     }
 
-    static void collectAllDocumentStyleSheets(Document*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>>&);
+    static void collectAllDocumentStyleSheets(Document*, HeapVector<Member<CSSStyleSheet>>&);
 
     ~InspectorCSSAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -150,11 +150,11 @@ public:
     PassOwnPtr<protocol::CSS::CSSMedia> buildMediaObject(const MediaList*, MediaListSource, const String&, CSSStyleSheet*);
     PassOwnPtr<protocol::Array<protocol::CSS::CSSMedia>> buildMediaListChain(CSSRule*);
 
-    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> findEffectiveDeclaration(CSSPropertyID, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>>& styles);
-    void setLayoutEditorValue(ErrorString*, Element*, RefPtrWillBeRawPtr<CSSStyleDeclaration>, CSSPropertyID, const String& value, bool forceImportant = false);
-    void layoutEditorItemSelected(Element*, RefPtrWillBeRawPtr<CSSStyleDeclaration>);
+    RawPtr<CSSStyleDeclaration> findEffectiveDeclaration(CSSPropertyID, const HeapVector<Member<CSSStyleDeclaration>>& styles);
+    void setLayoutEditorValue(ErrorString*, Element*, RawPtr<CSSStyleDeclaration>, CSSPropertyID, const String& value, bool forceImportant = false);
+    void layoutEditorItemSelected(Element*, RawPtr<CSSStyleDeclaration>);
 
-    WillBeHeapVector<RefPtrWillBeMember<CSSStyleDeclaration>> matchingStyles(Element*);
+    HeapVector<Member<CSSStyleDeclaration>> matchingStyles(Element*);
     String styleSheetId(CSSStyleSheet*);
 private:
     class StyleSheetAction;
@@ -163,13 +163,13 @@ private:
     class SetElementStyleAction;
     class AddRuleAction;
 
-    static void collectStyleSheets(CSSStyleSheet*, WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>>&);
+    static void collectStyleSheets(CSSStyleSheet*, HeapVector<Member<CSSStyleSheet>>&);
 
     InspectorCSSAgent(InspectorDOMAgent*, InspectedFrames*, InspectorResourceAgent*, InspectorResourceContentLoader*);
 
-    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<InspectorStyleSheet>> IdToInspectorStyleSheet;
-    typedef WillBeHeapHashMap<String, RefPtrWillBeMember<InspectorStyleSheetForInlineStyle>> IdToInspectorStyleSheetForInlineStyle;
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<Node>, RefPtrWillBeMember<InspectorStyleSheetForInlineStyle>> NodeToInspectorStyleSheet; // bogus "stylesheets" with elements' inline styles
+    typedef HeapHashMap<String, Member<InspectorStyleSheet>> IdToInspectorStyleSheet;
+    typedef HeapHashMap<String, Member<InspectorStyleSheetForInlineStyle>> IdToInspectorStyleSheetForInlineStyle;
+    typedef HeapHashMap<Member<Node>, Member<InspectorStyleSheetForInlineStyle>> NodeToInspectorStyleSheet; // bogus "stylesheets" with elements' inline styles
     typedef HashMap<int, unsigned> NodeIdToForcedPseudoState;
 
     void resourceContentLoaded(PassOwnPtr<EnableCallback>);
@@ -179,9 +179,9 @@ private:
     Element* elementForId(ErrorString*, int nodeId);
 
     void updateActiveStyleSheets(Document*, StyleSheetsUpdateType);
-    void setActiveStyleSheets(Document*, const WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet>>&, StyleSheetsUpdateType);
+    void setActiveStyleSheets(Document*, const HeapVector<Member<CSSStyleSheet>>&, StyleSheetsUpdateType);
     CSSStyleDeclaration* setStyleText(ErrorString*, InspectorStyleSheetBase*, const SourceRange&, const String&);
-    bool multipleStyleTextsActions(ErrorString*, PassOwnPtr<protocol::Array<protocol::CSS::StyleDeclarationEdit>>, HeapVector<RefPtrWillBeMember<StyleSheetAction>>* actions);
+    bool multipleStyleTextsActions(ErrorString*, PassOwnPtr<protocol::Array<protocol::CSS::StyleDeclarationEdit>>, HeapVector<Member<StyleSheetAction>>* actions);
 
     PassOwnPtr<protocol::Array<protocol::CSS::CSSKeyframesRule>> animationsForNode(Element*);
 
@@ -212,23 +212,23 @@ private:
 
     void resetPseudoStates();
 
-    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
-    RawPtrWillBeMember<InspectorResourceContentLoader> m_resourceContentLoader;
+    Member<InspectorDOMAgent> m_domAgent;
+    Member<InspectedFrames> m_inspectedFrames;
+    Member<InspectorResourceAgent> m_resourceAgent;
+    Member<InspectorResourceContentLoader> m_resourceContentLoader;
 
     IdToInspectorStyleSheet m_idToInspectorStyleSheet;
     IdToInspectorStyleSheetForInlineStyle m_idToInspectorStyleSheetForInlineStyle;
-    WillBeHeapHashMap<RawPtrWillBeMember<CSSStyleSheet>, RefPtrWillBeMember<InspectorStyleSheet>> m_cssStyleSheetToInspectorStyleSheet;
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<Document>, OwnPtrWillBeMember<WillBeHeapHashSet<RawPtrWillBeMember<CSSStyleSheet>>>> DocumentStyleSheets;
+    HeapHashMap<Member<CSSStyleSheet>, Member<InspectorStyleSheet>> m_cssStyleSheetToInspectorStyleSheet;
+    typedef HeapHashMap<Member<Document>, Member<HeapHashSet<Member<CSSStyleSheet>>>> DocumentStyleSheets;
     DocumentStyleSheets m_documentToCSSStyleSheets;
-    WillBeHeapHashSet<RawPtrWillBeMember<Document>> m_invalidatedDocuments;
+    HeapHashSet<Member<Document>> m_invalidatedDocuments;
 
     NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
-    WillBeHeapHashMap<RefPtrWillBeMember<Document>, RefPtrWillBeMember<InspectorStyleSheet>> m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
+    HeapHashMap<Member<Document>, Member<InspectorStyleSheet>> m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
 
-    RefPtrWillBeMember<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
+    Member<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
     HashMap<String, String> m_editedStyleSheets;
     HashMap<int, String> m_editedStyleElements;
 

@@ -83,7 +83,7 @@ private:
         const AtomicString& fallbackName = nullAtom) const;
     bool uniqueNameExists(const AtomicString& name) const;
 
-    RawPtrWillBeMember<Frame> m_thisFrame;
+    Member<Frame> m_thisFrame;
 
     AtomicString m_name; // The actual frame name (may be empty).
     AtomicString m_uniqueName;

@@ -84,7 +84,7 @@ struct TouchTargetData {
     float score;
 };
 
-void findGoodTouchTargets(const IntRect& touchBoxInRootFrame, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, WillBeHeapVector<RawPtrWillBeMember<Node>>& highlightNodes)
+void findGoodTouchTargets(const IntRect& touchBoxInRootFrame, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, HeapVector<Member<Node>>& highlightNodes)
 {
     goodTargets.clear();
 
@@ -94,12 +94,12 @@ void findGoodTouchTargets(const IntRect& touchBoxInRootFrame, LocalFrame* mainFr
     IntPoint contentsPoint = mainFrame->view()->rootFrameToContents(touchPoint);
 
     HitTestResult result = mainFrame->eventHandler().hitTestResultAtPoint(contentsPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased, LayoutSize(touchPointPadding, touchPointPadding));
-    const WillBeHeapListHashSet<RefPtrWillBeMember<Node>>& hitResults = result.listBasedTestResult();
+    const HeapListHashSet<Member<Node>>& hitResults = result.listBasedTestResult();
 
     // Blacklist nodes that are container of disambiguated nodes.
     // It is not uncommon to have a clickable <div> that contains other clickable objects.
     // This heuristic avoids excessive disambiguation in that case.
-    WillBeHeapHashSet<RawPtrWillBeMember<Node>> blackList;
+    HeapHashSet<Member<Node>> blackList;
     for (const auto& hitResult : hitResults) {
         // Ignore any Nodes that can't be clicked on.
         LayoutObject* layoutObject = hitResult.get()->layoutObject();
@@ -116,7 +116,7 @@ void findGoodTouchTargets(const IntRect& touchBoxInRootFrame, LocalFrame* mainFr
         }
     }
 
-    WillBeHeapHashMap<RawPtrWillBeMember<Node>, TouchTargetData> touchTargets;
+    HeapHashMap<Member<Node>, TouchTargetData> touchTargets;
     float bestScore = 0;
     for (const auto& hitResult : hitResults) {
         for (Node* node = hitResult.get(); node; node = node->parentNode()) {

@@ -254,9 +254,9 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
     return decodeBuffer(data, size, textEncodingName, result);
 }
 
-PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, InspectorDebuggerAgent* debuggerAgent)
+RawPtr<InspectorPageAgent> InspectorPageAgent::create(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, InspectorDebuggerAgent* debuggerAgent)
 {
-    return adoptPtrWillBeNoop(new InspectorPageAgent(inspectedFrames, client, resourceContentLoader, debuggerAgent));
+    return new InspectorPageAgent(inspectedFrames, client, resourceContentLoader, debuggerAgent);
 }
 
 Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
@@ -266,7 +266,7 @@ Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
         return nullptr;
     Resource* cachedResource = document->fetcher()->cachedResource(url);
     if (!cachedResource) {
-        WillBeHeapVector<RawPtrWillBeMember<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
+        HeapVector<Member<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
         for (Document* import : allImports) {
             cachedResource = import->fetcher()->cachedResource(url);
             if (cachedResource)
@@ -431,7 +431,7 @@ void InspectorPageAgent::navigate(ErrorString*, const String& url, String* outFr
     *outFrameId = frameId(m_inspectedFrames->root());
 }
 
-static void cachedResourcesForDocument(Document* document, WillBeHeapVector<RawPtrWillBeMember<Resource>>& result, bool skipXHRs)
+static void cachedResourcesForDocument(Document* document, HeapVector<Member<Resource>>& result, bool skipXHRs)
 {
     const ResourceFetcher::DocumentResourceMap& allResources = document->fetcher()->allResources();
     for (const auto& resource : allResources) {
@@ -450,9 +450,9 @@ static void cachedResourcesForDocument(Document* document, WillBeHeapVector<RawP
 }
 
 // static
-WillBeHeapVector<RawPtrWillBeMember<Document>> InspectorPageAgent::importsForFrame(LocalFrame* frame)
+HeapVector<Member<Document>> InspectorPageAgent::importsForFrame(LocalFrame* frame)
 {
-    WillBeHeapVector<RawPtrWillBeMember<Document>> result;
+    HeapVector<Member<Document>> result;
     Document* rootDocument = frame->document();
 
     if (HTMLImportsController* controller = rootDocument->importsController()) {
@@ -465,11 +465,11 @@ WillBeHeapVector<RawPtrWillBeMember<Document>> InspectorPageAgent::importsForFra
     return result;
 }
 
-static WillBeHeapVector<RawPtrWillBeMember<Resource>> cachedResourcesForFrame(LocalFrame* frame, bool skipXHRs)
+static HeapVector<Member<Resource>> cachedResourcesForFrame(LocalFrame* frame, bool skipXHRs)
 {
-    WillBeHeapVector<RawPtrWillBeMember<Resource>> result;
+    HeapVector<Member<Resource>> result;
     Document* rootDocument = frame->document();
-    WillBeHeapVector<RawPtrWillBeMember<Document>> loaders = InspectorPageAgent::importsForFrame(frame);
+    HeapVector<Member<Document>> loaders = InspectorPageAgent::importsForFrame(frame);
 
     cachedResourcesForDocument(rootDocument, result, skipXHRs);
     for (size_t i = 0; i < loaders.size(); ++i)
@@ -711,7 +711,7 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
     OwnPtr<protocol::Page::Frame> frameObject = buildObjectForFrame(frame);
     OwnPtr<protocol::Array<protocol::Page::FrameResource>> subresources = protocol::Array<protocol::Page::FrameResource>::create();
 
-    WillBeHeapVector<RawPtrWillBeMember<Resource>> allResources = cachedResourcesForFrame(frame, true);
+    HeapVector<Member<Resource>> allResources = cachedResourcesForFrame(frame, true);
     for (Resource* cachedResource : allResources) {
         OwnPtr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
             .setUrl(urlWithoutFragment(cachedResource->url()).getString())
@@ -724,7 +724,7 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
         subresources->addItem(resourceObject.release());
     }
 
-    WillBeHeapVector<RawPtrWillBeMember<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
+    HeapVector<Member<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
     for (Document* import : allImports) {
         OwnPtr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
             .setUrl(urlWithoutFragment(import->url()).getString())

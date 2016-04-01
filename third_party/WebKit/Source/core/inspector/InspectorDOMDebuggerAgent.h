@@ -59,7 +59,7 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
     , public protocol::Backend::DOMDebugger {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(v8::Isolate*, InspectorDOMAgent*, V8RuntimeAgent*, V8DebuggerAgent*);
+    static RawPtr<InspectorDOMDebuggerAgent> create(v8::Isolate*, InspectorDOMAgent*, V8RuntimeAgent*, V8DebuggerAgent*);
 
     static void eventListenersInfoForTarget(v8::Isolate*, v8::Local<v8::Value>, V8EventListenerInfoList& listeners);
 
@@ -128,10 +128,10 @@ private:
     PassOwnPtr<protocol::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const String16& objectGroupId);
 
     v8::Isolate* m_isolate;
-    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
+    Member<InspectorDOMAgent> m_domAgent;
     V8RuntimeAgent* m_runtimeAgent;
     V8DebuggerAgent* m_debuggerAgent;
-    WillBeHeapHashMap<RawPtrWillBeMember<Node>, uint32_t> m_domBreakpoints;
+    HeapHashMap<Member<Node>, uint32_t> m_domBreakpoints;
 };
 
 } // namespace blink

@@ -14,9 +14,9 @@ namespace blink {
 class LocalFrame;
 class Page;
 
-class CORE_EXPORT PageAnimator final : public RefCountedWillBeGarbageCollected<PageAnimator> {
+class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
 public:
-    static PassRefPtrWillBeRawPtr<PageAnimator> create(Page&);
+    static RawPtr<PageAnimator> create(Page&);
     DECLARE_TRACE();
     void scheduleVisualUpdate(LocalFrame*);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
@@ -30,7 +30,7 @@ public:
 private:
     explicit PageAnimator(Page&);
 
-    RawPtrWillBeMember<Page> m_page;
+    Member<Page> m_page;
     bool m_servicingAnimations;
     bool m_updatingLayoutAndStyleForPainting;
     AnimationClock m_animationClock;

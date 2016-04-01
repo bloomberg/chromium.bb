@@ -50,13 +50,12 @@ class Node;
 class Page;
 class PlatformMouseEvent;
 
-class CORE_EXPORT DragController final : public NoBaseWillBeGarbageCollectedFinalized<DragController> {
+class CORE_EXPORT DragController final : public GarbageCollectedFinalized<DragController> {
     WTF_MAKE_NONCOPYABLE(DragController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DragController);
 public:
     ~DragController();
 
-    static PassOwnPtrWillBeRawPtr<DragController> create(Page*, DragClient*);
+    static RawPtr<DragController> create(Page*, DragClient*);
 
     DragSession dragEntered(DragData*);
     void dragExited(DragData*);
@@ -98,12 +97,12 @@ private:
     void doSystemDrag(DragImage*, const IntPoint& dragLocation, const IntPoint& dragOrigin, DataTransfer*, LocalFrame*, bool forLink);
     void cleanupAfterSystemDrag();
 
-    RawPtrWillBeMember<Page> m_page;
+    Member<Page> m_page;
     DragClient* m_client;
 
-    RefPtrWillBeMember<Document> m_documentUnderMouse; // The document the mouse was last dragged over.
-    RefPtrWillBeMember<Document> m_dragInitiator; // The Document (if any) that initiated the drag.
-    RefPtrWillBeMember<HTMLInputElement> m_fileInputElementUnderMouse;
+    Member<Document> m_documentUnderMouse; // The document the mouse was last dragged over.
+    Member<Document> m_dragInitiator; // The Document (if any) that initiated the drag.
+    Member<HTMLInputElement> m_fileInputElementUnderMouse;
     bool m_documentIsHandlingDrag;
 
     DragDestinationAction m_dragDestinationAction;

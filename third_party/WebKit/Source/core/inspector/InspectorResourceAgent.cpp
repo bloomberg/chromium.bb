@@ -702,7 +702,7 @@ void InspectorResourceAgent::didFinishXHRInternal(ExecutionContext* context, XML
 
     if (m_state->booleanProperty(ResourceAgentState::monitoringXHR, false)) {
         String message = (success ? "XHR finished loading: " : "XHR failed loading: ") + method + " \"" + url + "\".";
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
+        RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
         consoleMessage->setRequestIdentifier(it->value);
         m_inspectedFrames->root()->host()->consoleMessageStorage().reportMessage(context, consoleMessage.release());
     }
@@ -729,7 +729,7 @@ void InspectorResourceAgent::didFinishFetch(ExecutionContext* context, Threadabl
 
     if (m_state->booleanProperty(ResourceAgentState::monitoringXHR, false)) {
         String message = "Fetch complete: " + method + " \"" + url + "\".";
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
+        RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(NetworkMessageSource, DebugMessageLevel, message);
         consoleMessage->setRequestIdentifier(it->value);
         m_inspectedFrames->root()->host()->consoleMessageStorage().reportMessage(context, consoleMessage.release());
     }

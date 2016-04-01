@@ -26,9 +26,9 @@ class V8RuntimeAgent;
 class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, protocol::Frontend::Animation>, public protocol::Backend::Animation {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
+    static RawPtr<InspectorAnimationAgent> create(InspectedFrames* inspectedFrames, InspectorDOMAgent* domAgent, InspectorCSSAgent* cssAgent, V8RuntimeAgent* runtimeAgent)
     {
-        return adoptPtrWillBeNoop(new InspectorAnimationAgent(inspectedFrames, domAgent, cssAgent, runtimeAgent));
+        return new InspectorAnimationAgent(inspectedFrames, domAgent, cssAgent, runtimeAgent);
     }
 
     // Base agent methods.
@@ -69,13 +69,13 @@ private:
     blink::Animation* animationClone(blink::Animation*);
     String createCSSId(blink::Animation&);
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
+    Member<InspectedFrames> m_inspectedFrames;
+    Member<InspectorDOMAgent> m_domAgent;
+    Member<InspectorCSSAgent> m_cssAgent;
     V8RuntimeAgent* m_runtimeAgent;
-    PersistentHeapHashMapWillBeHeapHashMap<String, Member<blink::Animation>> m_idToAnimation;
-    PersistentHeapHashMapWillBeHeapHashMap<String, Member<blink::Animation>> m_idToAnimationClone;
-    WillBeHeapHashMap<String, String> m_idToAnimationType;
+    HeapHashMap<String, Member<blink::Animation>> m_idToAnimation;
+    HeapHashMap<String, Member<blink::Animation>> m_idToAnimationClone;
+    HeapHashMap<String, String> m_idToAnimationType;
     bool m_isCloning;
     HashSet<String> m_clearedAnimations;
 };

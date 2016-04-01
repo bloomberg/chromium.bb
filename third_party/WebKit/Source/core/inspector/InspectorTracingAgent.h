@@ -30,9 +30,9 @@ public:
         virtual void disableTracing() { }
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorTracingAgent> create(Client* client, InspectorWorkerAgent* workerAgent, InspectedFrames* inspectedFrames)
+    static RawPtr<InspectorTracingAgent> create(Client* client, InspectorWorkerAgent* workerAgent, InspectedFrames* inspectedFrames)
     {
-        return adoptPtrWillBeNoop(new InspectorTracingAgent(client, workerAgent, inspectedFrames));
+        return new InspectorTracingAgent(client, workerAgent, inspectedFrames);
     }
 
     DECLARE_VIRTUAL_TRACE();
@@ -57,8 +57,8 @@ private:
 
     int m_layerTreeId;
     Client* m_client;
-    RawPtrWillBeMember<InspectorWorkerAgent> m_workerAgent;
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    Member<InspectorWorkerAgent> m_workerAgent;
+    Member<InspectedFrames> m_inspectedFrames;
 };
 
 } // namespace blink

@@ -46,9 +46,8 @@ class InspectedFrames;
 class CORE_EXPORT PageDebuggerAgent final
     : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(PageDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageDebuggerAgent> create(InspectedFrames*, V8RuntimeAgent*);
+    static RawPtr<PageDebuggerAgent> create(InspectedFrames*, V8RuntimeAgent*);
     ~PageDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -67,7 +66,7 @@ private:
     // V8DebuggerAgent::Client implemntation.
     bool canExecuteScripts() const;
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    Member<InspectedFrames> m_inspectedFrames;
     HashMap<String, String> m_compiledScriptURLs;
 };
 

@@ -47,9 +47,9 @@ using blink::protocol::Runtime::RemoteObject;
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
+RawPtr<PageDebuggerAgent> PageDebuggerAgent::create(InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)
 {
-    return adoptPtrWillBeNoop(new PageDebuggerAgent(inspectedFrames, runtimeAgent));
+    return new PageDebuggerAgent(inspectedFrames, runtimeAgent);
 }
 
 PageDebuggerAgent::PageDebuggerAgent(InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent)

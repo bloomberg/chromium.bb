@@ -18,9 +18,9 @@ ConsoleMessageStorage::ConsoleMessageStorage()
 {
 }
 
-void ConsoleMessageStorage::reportMessage(ExecutionContext* context, PassRefPtrWillBeRawPtr<ConsoleMessage> prpMessage)
+void ConsoleMessageStorage::reportMessage(ExecutionContext* context, RawPtr<ConsoleMessage> prpMessage)
 {
-    RefPtrWillBeRawPtr<ConsoleMessage> message = prpMessage;
+    RawPtr<ConsoleMessage> message = prpMessage;
     message->collectCallStack();
 
     if (message->type() == ClearMessageType)

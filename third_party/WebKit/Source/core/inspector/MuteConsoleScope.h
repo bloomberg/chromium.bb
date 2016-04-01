@@ -42,7 +42,7 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<T> m_agent = nullptr;
+    Member<T> m_agent = nullptr;
 };
 
 } // namespace blink

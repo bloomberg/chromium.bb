@@ -134,8 +134,8 @@ protected:
         return observer.observedType() == type && observer.observedMaxBandwidth() == maxBandwidthMbps;
     }
 
-    RefPtrWillBePersistent<Document> m_document;
-    RefPtrWillBePersistent<Document> m_document2;
+    Persistent<Document> m_document;
+    Persistent<Document> m_document2;
     NetworkStateNotifier m_notifier;
 };
 

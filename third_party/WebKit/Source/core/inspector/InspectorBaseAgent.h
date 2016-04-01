@@ -51,8 +51,7 @@ class LocalFrame;
 
 using protocol::Maybe;
 
-class CORE_EXPORT InspectorAgent : public NoBaseWillBeGarbageCollectedFinalized<InspectorAgent> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorAgent);
+class CORE_EXPORT InspectorAgent : public GarbageCollectedFinalized<InspectorAgent> {
 public:
     explicit InspectorAgent(const String&);
     virtual ~InspectorAgent();
@@ -73,7 +72,7 @@ public:
     void appended(InstrumentingAgents*);
 
 protected:
-    RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
+    Member<InstrumentingAgents> m_instrumentingAgents;
     protocol::DictionaryValue* m_state;
 
 private:
@@ -85,7 +84,7 @@ class CORE_EXPORT InspectorAgentRegistry final {
     WTF_MAKE_NONCOPYABLE(InspectorAgentRegistry);
 public:
     explicit InspectorAgentRegistry(InstrumentingAgents*);
-    void append(PassOwnPtrWillBeRawPtr<InspectorAgent>);
+    void append(RawPtr<InspectorAgent>);
 
     void setFrontend(protocol::Frontend*);
     void clearFrontend();
@@ -99,9 +98,9 @@ public:
     DECLARE_TRACE();
 
 private:
-    RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
+    Member<InstrumentingAgents> m_instrumentingAgents;
     OwnPtr<protocol::DictionaryValue> m_state;
-    WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent>> m_agents;
+    HeapVector<Member<InspectorAgent>> m_agents;
 };
 
 template<typename AgentClass, typename FrontendClass>

@@ -80,13 +80,13 @@ String InspectorHistory::Action::mergeId()
     return "";
 }
 
-void InspectorHistory::Action::merge(PassRefPtrWillBeRawPtr<Action>)
+void InspectorHistory::Action::merge(RawPtr<Action>)
 {
 }
 
 InspectorHistory::InspectorHistory() : m_afterLastActionIndex(0) { }
 
-bool InspectorHistory::perform(PassRefPtrWillBeRawPtr<Action> action, ExceptionState& exceptionState)
+bool InspectorHistory::perform(RawPtr<Action> action, ExceptionState& exceptionState)
 {
     if (!action->perform(exceptionState))
         return false;
@@ -94,7 +94,7 @@ bool InspectorHistory::perform(PassRefPtrWillBeRawPtr<Action> action, ExceptionS
     return true;
 }
 
-void InspectorHistory::appendPerformedAction(PassRefPtrWillBeRawPtr<Action> action)
+void InspectorHistory::appendPerformedAction(RawPtr<Action> action)
 {
     if (!action->mergeId().isEmpty() && m_afterLastActionIndex > 0 && action->mergeId() == m_history[m_afterLastActionIndex - 1]->mergeId()) {
         m_history[m_afterLastActionIndex - 1]->merge(action);
@@ -110,7 +110,7 @@ void InspectorHistory::appendPerformedAction(PassRefPtrWillBeRawPtr<Action> acti
 
 void InspectorHistory::markUndoableState()
 {
-    perform(adoptRefWillBeNoop(new UndoableStateMark()), IGNORE_EXCEPTION);
+    perform(new UndoableStateMark(), IGNORE_EXCEPTION);
 }
 
 bool InspectorHistory::undo(ExceptionState& exceptionState)

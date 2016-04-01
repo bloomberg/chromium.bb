@@ -43,9 +43,9 @@ namespace blink {
 // Delay time in second for start autoscroll if pointer is in border edge of scrollable element.
 static double autoscrollDelay = 0.2;
 
-PassOwnPtrWillBeRawPtr<AutoscrollController> AutoscrollController::create(Page& page)
+RawPtr<AutoscrollController> AutoscrollController::create(Page& page)
 {
-    return adoptPtrWillBeNoop(new AutoscrollController(page));
+    return new AutoscrollController(page);
 }
 
 AutoscrollController::AutoscrollController(Page& page)

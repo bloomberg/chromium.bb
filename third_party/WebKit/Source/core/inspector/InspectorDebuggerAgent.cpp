@@ -313,7 +313,7 @@ void InspectorDebuggerAgent::setState(protocol::DictionaryValue* state)
 
 void InspectorDebuggerAgent::init()
 {
-    m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(m_v8DebuggerAgent.get(), m_instrumentingAgents.get()));
+    m_asyncCallTracker = new AsyncCallTracker(m_v8DebuggerAgent.get(), m_instrumentingAgents.get());
 }
 
 void InspectorDebuggerAgent::setFrontend(protocol::Frontend* frontend)

@@ -49,7 +49,7 @@ class CORE_EXPORT InspectorWorkerAgent final
     , public WorkerInspectorProxy::PageInspector {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> create(InspectedFrames*, PageConsoleAgent*);
+    static RawPtr<InspectorWorkerAgent> create(InspectedFrames*, PageConsoleAgent*);
     ~InspectorWorkerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -79,10 +79,10 @@ private:
     void dispatchMessageFromWorker(WorkerInspectorProxy*, const String& message) override;
     void workerConsoleAgentEnabled(WorkerInspectorProxy*) override;
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    WillBeHeapHashMap<String, RawPtrWillBeMember<WorkerInspectorProxy>> m_connectedProxies;
+    Member<InspectedFrames> m_inspectedFrames;
+    HeapHashMap<String, Member<WorkerInspectorProxy>> m_connectedProxies;
     String m_tracingSessionId;
-    RawPtrWillBeMember<PageConsoleAgent> m_consoleAgent;
+    Member<PageConsoleAgent> m_consoleAgent;
 };
 
 } // namespace blink

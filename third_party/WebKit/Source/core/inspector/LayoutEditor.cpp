@@ -190,13 +190,13 @@ void LayoutEditor::rebuild()
     editableSelectorUpdated(false);
 }
 
-RefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
+RawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
 {
-    RefPtrWillBeRawPtr<CSSStyleDeclaration> style = m_cssAgent->findEffectiveDeclaration(property, m_matchedStyles);
+    RawPtr<CSSStyleDeclaration> style = m_cssAgent->findEffectiveDeclaration(property, m_matchedStyles);
     if (!style)
         return nullptr;
 
-    RefPtrWillBeRawPtr<CSSValue> cssValue = style->getPropertyCSSValueInternal(property);
+    RawPtr<CSSValue> cssValue = style->getPropertyCSSValueInternal(property);
     if (!cssValue || !cssValue->isPrimitiveValue())
         return nullptr;
 
@@ -257,7 +257,7 @@ bool LayoutEditor::growInside(String propertyName, CSSPrimitiveValue* value)
 
 PassOwnPtr<protocol::DictionaryValue> LayoutEditor::createValueDescription(const String& propertyName)
 {
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
+    RawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(cssPropertyID(propertyName));
     if (cssValue && !(cssValue->isLength() || cssValue->isPercentage()))
         return nullptr;
 
@@ -287,7 +287,7 @@ void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
     if (!m_changingProperty)
         return;
 
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(m_changingProperty);
+    RawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(m_changingProperty);
     m_valueUnitType = cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels;
     if (!isMutableUnitType(m_valueUnitType))
         return;
@@ -386,7 +386,7 @@ PassOwnPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyle
     object->setArray("medias", mediaListValue.release());
 
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<StaticElementList> elements = ownerDocument->querySelectorAll(AtomicString(currentSelectorText), exceptionState);
+    RawPtr<StaticElementList> elements = ownerDocument->querySelectorAll(AtomicString(currentSelectorText), exceptionState);
 
     if (!elements || exceptionState.hadException())
         return object.release();

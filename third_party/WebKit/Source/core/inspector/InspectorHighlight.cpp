@@ -105,7 +105,7 @@ protected:
     }
 
 private:
-    RawPtrWillBeMember<FrameView> m_view;
+    Member<FrameView> m_view;
     LayoutObject& m_layoutObject;
     const ShapeOutsideInfo& m_shapeOutsideInfo;
 };

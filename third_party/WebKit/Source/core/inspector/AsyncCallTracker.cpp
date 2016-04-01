@@ -54,9 +54,8 @@ static const char enqueueMutationRecordName[] = "Mutation";
 
 namespace blink {
 
-class AsyncCallTracker::ExecutionContextData final : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AsyncCallTracker::ExecutionContextData);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(AsyncCallTracker::ExecutionContextData);
+class AsyncCallTracker::ExecutionContextData final : public GarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(AsyncCallTracker::ExecutionContextData);
 public:
     ExecutionContextData(AsyncCallTracker* tracker, ExecutionContext* executionContext)
         : ContextLifecycleObserver(executionContext)
@@ -74,7 +73,7 @@ public:
     void contextDestroyed() override
     {
         ASSERT(getExecutionContext());
-        OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(getExecutionContext());
+        RawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(getExecutionContext());
         ASSERT_UNUSED(self, self == this);
         ContextLifecycleObserver::contextDestroyed();
         disposeCallChains();
@@ -101,13 +100,13 @@ public:
         ContextLifecycleObserver::trace(visitor);
     }
 
-    RawPtrWillBeMember<AsyncCallTracker> m_tracker;
+    Member<AsyncCallTracker> m_tracker;
     HashSet<int> m_intervalTimerIds;
     AsyncOperationMap<int> m_timerCallChains;
     AsyncOperationMap<int> m_animationFrameCallChains;
-    AsyncOperationMap<RawPtrWillBeMember<Event>> m_eventCallChains;
-    AsyncOperationMap<RawPtrWillBeMember<EventTarget>> m_xhrCallChains;
-    AsyncOperationMap<RawPtrWillBeMember<MutationObserver>> m_mutationObserverCallChains;
+    AsyncOperationMap<Member<Event>> m_eventCallChains;
+    AsyncOperationMap<Member<EventTarget>> m_xhrCallChains;
+    AsyncOperationMap<Member<MutationObserver>> m_mutationObserverCallChains;
     AsyncOperationMap<ExecutionContextTask*> m_executionContextTaskCallChains;
     AsyncOperationMap<int> m_asyncOperations;
 
@@ -416,7 +415,7 @@ AsyncCallTracker::ExecutionContextData* AsyncCallTracker::createContextDataIfNee
 {
     ExecutionContextData* data = m_executionContextDataMap.get(context);
     if (!data) {
-        data = m_executionContextDataMap.set(context, adoptPtrWillBeNoop(new AsyncCallTracker::ExecutionContextData(this, context)))
+        data = m_executionContextDataMap.set(context, new AsyncCallTracker::ExecutionContextData(this, context))
             .storedValue->value.get();
     }
     return data;

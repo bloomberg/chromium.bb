@@ -53,9 +53,8 @@ class MutationObserver;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
 
-class CORE_EXPORT AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker> {
+class CORE_EXPORT AsyncCallTracker final : public GarbageCollectedFinalized<AsyncCallTracker> {
     WTF_MAKE_NONCOPYABLE(AsyncCallTracker);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(AsyncCallTracker);
 public:
     AsyncCallTracker(V8DebuggerAgent*, InstrumentingAgents*);
     ~AsyncCallTracker();
@@ -110,10 +109,10 @@ private:
 
     ExecutionContextData* createContextDataIfNeeded(ExecutionContext*);
 
-    using ExecutionContextDataMap = WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData>>;
+    using ExecutionContextDataMap = HeapHashMap<Member<ExecutionContext>, Member<ExecutionContextData>>;
     ExecutionContextDataMap m_executionContextDataMap;
     V8DebuggerAgent* m_debuggerAgent;
-    RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
+    Member<InstrumentingAgents> m_instrumentingAgents;
 };
 
 } // namespace blink

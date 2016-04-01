@@ -73,7 +73,7 @@ class ShadowRoot;
 class CORE_EXPORT InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, protocol::Frontend::DOM>, public protocol::Backend::DOM {
     WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
 public:
-    struct CORE_EXPORT DOMListener : public WillBeGarbageCollectedMixin {
+    struct CORE_EXPORT DOMListener : public GarbageCollectedMixin {
         virtual ~DOMListener()
         {
         }
@@ -94,9 +94,9 @@ public:
         virtual void setInspectedNode(Node*) { }
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorDOMAgent> create(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent, Client* client)
+    static RawPtr<InspectorDOMAgent> create(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8RuntimeAgent* runtimeAgent, Client* client)
     {
-        return adoptPtrWillBeNoop(new InspectorDOMAgent(isolate, inspectedFrames, runtimeAgent, client));
+        return new InspectorDOMAgent(isolate, inspectedFrames, runtimeAgent, client);
     }
 
     static String toErrorString(ExceptionState&);
@@ -108,7 +108,7 @@ public:
 
     void restore() override;
 
-    WillBeHeapVector<RawPtrWillBeMember<Document>> documents();
+    HeapVector<Member<Document>> documents();
     void reset();
 
     // Methods called from the frontend for DOM nodes inspection.
@@ -164,7 +164,7 @@ public:
     void willModifyDOMAttr(Element*, const AtomicString& oldValue, const AtomicString& newValue);
     void didModifyDOMAttr(Element*, const QualifiedName&, const AtomicString& value);
     void didRemoveDOMAttr(Element*, const QualifiedName&);
-    void styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element>>& elements);
+    void styleAttributeInvalidated(const HeapVector<Member<Element>>& elements);
     void characterDataModified(CharacterData*);
     void didInvalidateStyleAttr(Node*);
     void didPushShadowRoot(Element* host, ShadowRoot*);
@@ -209,7 +209,7 @@ private:
     PassOwnPtr<InspectorHighlightConfig> highlightConfigFromInspectorObject(ErrorString*, const Maybe<protocol::DOM::HighlightConfig>& highlightInspectorObject);
 
     // Node-related methods.
-    typedef WillBeHeapHashMap<RefPtrWillBeMember<Node>, int> NodeToIdMap;
+    typedef HeapHashMap<Member<Node>, int> NodeToIdMap;
     int bind(Node*, NodeToIdMap*);
     void unbind(Node*, NodeToIdMap*);
 
@@ -238,28 +238,28 @@ private:
 
     bool pushDocumentUponHandlelessOperation(ErrorString*);
 
-    RawPtrWillBeMember<InspectorRevalidateDOMTask> revalidateTask();
+    Member<InspectorRevalidateDOMTask> revalidateTask();
 
     v8::Isolate* m_isolate;
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    Member<InspectedFrames> m_inspectedFrames;
     V8RuntimeAgent* m_runtimeAgent;
     Client* m_client;
-    RawPtrWillBeMember<DOMListener> m_domListener;
-    OwnPtrWillBeMember<NodeToIdMap> m_documentNodeToIdMap;
+    Member<DOMListener> m_domListener;
+    Member<NodeToIdMap> m_documentNodeToIdMap;
     // Owns node mappings for dangling nodes.
-    WillBeHeapVector<OwnPtrWillBeMember<NodeToIdMap>> m_danglingNodeToIdMaps;
-    WillBeHeapHashMap<int, RawPtrWillBeMember<Node>> m_idToNode;
-    WillBeHeapHashMap<int, RawPtrWillBeMember<NodeToIdMap>> m_idToNodesMap;
+    HeapVector<Member<NodeToIdMap>> m_danglingNodeToIdMaps;
+    HeapHashMap<int, Member<Node>> m_idToNode;
+    HeapHashMap<int, Member<NodeToIdMap>> m_idToNodesMap;
     HashSet<int> m_childrenRequested;
     HashSet<int> m_distributedNodesRequested;
     HashMap<int, int> m_cachedChildCount;
     int m_lastNodeId;
-    RefPtrWillBeMember<Document> m_document;
-    typedef WillBeHeapHashMap<String, WillBeHeapVector<RefPtrWillBeMember<Node>>> SearchResults;
+    Member<Document> m_document;
+    typedef HeapHashMap<String, HeapVector<Member<Node>>> SearchResults;
     SearchResults m_searchResults;
-    OwnPtrWillBeMember<InspectorRevalidateDOMTask> m_revalidateTask;
-    OwnPtrWillBeMember<InspectorHistory> m_history;
-    OwnPtrWillBeMember<DOMEditor> m_domEditor;
+    Member<InspectorRevalidateDOMTask> m_revalidateTask;
+    Member<InspectorHistory> m_history;
+    Member<DOMEditor> m_domEditor;
     bool m_suppressAttributeModifiedEvent;
     int m_backendNodeIdToInspect;
 };

@@ -21,9 +21,9 @@ PageAnimator::PageAnimator(Page& page)
 {
 }
 
-PassRefPtrWillBeRawPtr<PageAnimator> PageAnimator::create(Page& page)
+RawPtr<PageAnimator> PageAnimator::create(Page& page)
 {
-    return adoptRefWillBeNoop(new PageAnimator(page));
+    return new PageAnimator(page);
 }
 
 DEFINE_TRACE(PageAnimator)
@@ -33,11 +33,11 @@ DEFINE_TRACE(PageAnimator)
 
 void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
-    RefPtrWillBeRawPtr<PageAnimator> protector(this);
+    RawPtr<PageAnimator> protector(this);
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
     clock().updateTime(monotonicAnimationStartTime);
 
-    WillBeHeapVector<RefPtrWillBeMember<Document>> documents;
+    HeapVector<Member<Document>> documents;
     for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->isLocalFrame())
             documents.append(toLocalFrame(frame)->document());
@@ -53,7 +53,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
             if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = document->view()->animatingScrollableAreas()) {
                 // Iterate over a copy, since ScrollableAreas may deregister
                 // themselves during the iteration.
-                WillBeHeapVector<RawPtrWillBeMember<ScrollableArea>> animatingScrollableAreasCopy;
+                HeapVector<Member<ScrollableArea>> animatingScrollableAreasCopy;
                 copyToVector(*animatingScrollableAreas, animatingScrollableAreasCopy);
                 for (ScrollableArea* scrollableArea : animatingScrollableAreasCopy)
                     scrollableArea->serviceScrollAnimations(monotonicAnimationStartTime);
@@ -80,7 +80,7 @@ void PageAnimator::scheduleVisualUpdate(LocalFrame* frame)
 
 void PageAnimator::updateAllLifecyclePhases(LocalFrame& rootFrame)
 {
-    RefPtrWillBeRawPtr<FrameView> view = rootFrame.view();
+    RawPtr<FrameView> view = rootFrame.view();
     TemporaryChange<bool> servicing(m_updatingLayoutAndStyleForPainting, true);
     view->updateAllLifecyclePhases();
 }

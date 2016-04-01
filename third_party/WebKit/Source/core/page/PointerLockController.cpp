@@ -40,9 +40,9 @@ PointerLockController::PointerLockController(Page* page)
 {
 }
 
-PassOwnPtrWillBeRawPtr<PointerLockController> PointerLockController::create(Page* page)
+RawPtr<PointerLockController> PointerLockController::create(Page* page)
 {
-    return adoptPtrWillBeNoop(new PointerLockController(page));
+    return new PointerLockController(page);
 }
 
 void PointerLockController::requestPointerLock(Element* target)

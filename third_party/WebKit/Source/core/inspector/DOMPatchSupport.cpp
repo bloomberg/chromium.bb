@@ -72,7 +72,7 @@ DOMPatchSupport::DOMPatchSupport(DOMEditor* domEditor, Document& document)
 
 void DOMPatchSupport::patchDocument(const String& markup)
 {
-    RefPtrWillBeRawPtr<Document> newDocument = nullptr;
+    RawPtr<Document> newDocument = nullptr;
     if (document().isHTMLDocument())
         newDocument = HTMLDocument::create();
     else if (document().isSVGDocument())
@@ -85,7 +85,7 @@ void DOMPatchSupport::patchDocument(const String& markup)
     ASSERT(newDocument);
     newDocument->setContextFeatures(document().contextFeatures());
     if (!document().isHTMLDocument()) {
-        RefPtrWillBeRawPtr<DocumentParser> parser = XMLDocumentParser::create(*newDocument, nullptr);
+        RawPtr<DocumentParser> parser = XMLDocumentParser::create(*newDocument, nullptr);
         parser->append(markup);
         parser->finish();
         parser->detach();
@@ -95,8 +95,8 @@ void DOMPatchSupport::patchDocument(const String& markup)
             return;
     }
     newDocument->setContent(markup);
-    OwnPtrWillBeRawPtr<Digest> oldInfo = createDigest(document().documentElement(), nullptr);
-    OwnPtrWillBeRawPtr<Digest> newInfo = createDigest(newDocument->documentElement(), &m_unusedNodesMap);
+    RawPtr<Digest> oldInfo = createDigest(document().documentElement(), nullptr);
+    RawPtr<Digest> newInfo = createDigest(newDocument->documentElement(), &m_unusedNodesMap);
 
     if (!innerPatchNode(oldInfo.get(), newInfo.get(), IGNORE_EXCEPTION)) {
         // Fall back to rewrite.
@@ -114,7 +114,7 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
     }
 
     Node* previousSibling = node->previousSibling();
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
+    RawPtr<DocumentFragment> fragment = DocumentFragment::create(document());
     Node* targetNode = node->parentElementOrShadowRoot() ? node->parentElementOrShadowRoot() : document().documentElement();
 
     // Use the document BODY as the context element when editing immediate shadow root children,
@@ -131,13 +131,13 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
 
     // Compose the old list.
     ContainerNode* parentNode = node->parentNode();
-    WillBeHeapVector<OwnPtrWillBeMember<Digest>> oldList;
+    HeapVector<Member<Digest>> oldList;
     for (Node* child = parentNode->firstChild(); child; child = child->nextSibling())
         oldList.append(createDigest(child, 0));
 
     // Compose the new list.
     String markupCopy = markup.lower();
-    WillBeHeapVector<OwnPtrWillBeMember<Digest>> newList;
+    HeapVector<Member<Digest>> newList;
     for (Node* child = parentNode->firstChild(); child != node; child = child->nextSibling())
         newList.append(createDigest(child, 0));
     for (Node* child = fragment->firstChild(); child; child = child->nextSibling()) {
@@ -201,7 +201,7 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest, Digest* newDigest, Excep
 }
 
 std::pair<DOMPatchSupport::ResultMap, DOMPatchSupport::ResultMap>
-DOMPatchSupport::diff(const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldList, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& newList)
+DOMPatchSupport::diff(const HeapVector<Member<Digest>>& oldList, const HeapVector<Member<Digest>>& newList)
 {
     ResultMap newMap(newList.size());
     ResultMap oldMap(oldList.size());
@@ -286,7 +286,7 @@ DOMPatchSupport::diff(const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldLis
     return std::make_pair(oldMap, newMap);
 }
 
-bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldList, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& newList, ExceptionState& exceptionState)
+bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const HeapVector<Member<Digest>>& oldList, const HeapVector<Member<Digest>>& newList, ExceptionState& exceptionState)
 {
     std::pair<ResultMap, ResultMap> resultMaps = diff(oldList, newList);
     ResultMap& oldMap = resultMaps.first;
@@ -296,7 +296,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const WillBe
     Digest* oldBody = nullptr;
 
     // 1. First strip everything except for the nodes that retain. Collect pending merges.
-    WillBeHeapHashMap<RawPtrWillBeMember<Digest>, RawPtrWillBeMember<Digest>> merges;
+    HeapHashMap<Member<Digest>, Member<Digest>> merges;
     HashSet<size_t, WTF::IntHash<size_t>, WTF::UnsignedWithZeroKeyHashTraits<size_t>> usedNewOrdinals;
     for (size_t i = 0; i < oldList.size(); ++i) {
         if (oldMap[i].first) {
@@ -377,7 +377,7 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const WillBe
     for (size_t i = 0; i < oldMap.size(); ++i) {
         if (!oldMap[i].first)
             continue;
-        RefPtrWillBeRawPtr<Node> node = oldMap[i].first->m_node;
+        RawPtr<Node> node = oldMap[i].first->m_node;
         Node* anchorNode = NodeTraversal::childAt(*parentNode, oldMap[i].second);
         if (node == anchorNode)
             continue;
@@ -395,7 +395,7 @@ static void addStringToDigestor(WebCryptoDigestor* digestor, const String& strin
     digestor->consume(reinterpret_cast<const unsigned char*>(string.utf8().data()), string.length());
 }
 
-PassOwnPtrWillBeRawPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, UnusedNodesMap* unusedNodesMap)
+RawPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, UnusedNodesMap* unusedNodesMap)
 {
     Digest* digest = new Digest(node);
 
@@ -411,7 +411,7 @@ PassOwnPtrWillBeRawPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(No
         Element& element = toElement(*node);
         Node* child = element.firstChild();
         while (child) {
-            OwnPtrWillBeRawPtr<Digest> childInfo = createDigest(child, unusedNodesMap);
+            RawPtr<Digest> childInfo = createDigest(child, unusedNodesMap);
             addStringToDigestor(digestor.get(), childInfo->m_sha1);
             child = child->nextSibling();
             digest->m_children.append(childInfo.release());
@@ -447,7 +447,7 @@ bool DOMPatchSupport::insertBeforeAndMarkAsUsed(ContainerNode* parentNode, Diges
 
 bool DOMPatchSupport::removeChildAndMoveToNew(Digest* oldDigest, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Node> oldNode = oldDigest->m_node;
+    RawPtr<Node> oldNode = oldDigest->m_node;
     if (!m_domEditor->removeChild(oldNode->parentNode(), oldNode.get(), exceptionState))
         return false;
 
@@ -476,7 +476,7 @@ bool DOMPatchSupport::removeChildAndMoveToNew(Digest* oldDigest, ExceptionState&
 
 void DOMPatchSupport::markNodeAsUsed(Digest* digest)
 {
-    WillBeHeapDeque<RawPtrWillBeMember<Digest>> queue;
+    HeapDeque<Member<Digest>> queue;
     queue.append(digest);
     while (!queue.isEmpty()) {
         Digest* first = queue.takeFirst();

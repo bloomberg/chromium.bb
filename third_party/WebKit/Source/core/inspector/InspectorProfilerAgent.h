@@ -46,7 +46,6 @@ class V8ProfilerAgent;
 
 class CORE_EXPORT InspectorProfilerAgent final : public InspectorBaseAgent<InspectorProfilerAgent, protocol::Frontend::Profiler>, public protocol::Backend::Profiler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorProfilerAgent);
 public:
     class Client {
     public:
@@ -55,7 +54,7 @@ public:
         virtual void profilingStopped() { }
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> create(V8Debugger*, Client*);
+    static RawPtr<InspectorProfilerAgent> create(V8Debugger*, Client*);
     ~InspectorProfilerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 

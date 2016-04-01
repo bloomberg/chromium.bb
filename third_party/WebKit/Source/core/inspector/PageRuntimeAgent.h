@@ -42,9 +42,9 @@ class InspectedFrames;
 
 class CORE_EXPORT PageRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InspectorRuntimeAgent::Client* client, V8Debugger* debugger, InspectedFrames* inspectedFrames, int contextGroupId)
+    static RawPtr<PageRuntimeAgent> create(InspectorRuntimeAgent::Client* client, V8Debugger* debugger, InspectedFrames* inspectedFrames, int contextGroupId)
     {
-        return adoptPtrWillBeNoop(new PageRuntimeAgent(client, debugger, inspectedFrames, contextGroupId));
+        return new PageRuntimeAgent(client, debugger, inspectedFrames, contextGroupId);
     }
     ~PageRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -58,7 +58,7 @@ private:
     void muteConsole() override;
     void unmuteConsole() override;
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    Member<InspectedFrames> m_inspectedFrames;
 };
 
 } // namespace blink

@@ -118,9 +118,9 @@ public:
     // We handle differently visibleNode and FocusableNode to properly handle the areas of imagemaps,
     // where visibleNode would represent the image element and focusableNode would represent the area element.
     // In all other cases, visibleNode and focusableNode are one and the same.
-    RawPtrWillBeMember<Node> visibleNode;
-    RawPtrWillBeMember<Node> focusableNode;
-    RawPtrWillBeMember<Node> enclosingScrollableBox;
+    Member<Node> visibleNode;
+    Member<Node> focusableNode;
+    Member<Node> enclosingScrollableBox;
     double distance;
     LayoutRect rect;
     bool isOffscreen;

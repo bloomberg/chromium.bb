@@ -72,9 +72,8 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(LocalFrame*);
 
-class CORE_EXPORT Page final : public NoBaseWillBeGarbageCollectedFinalized<Page>, public WillBeHeapSupplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate, public MemoryPurgeClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Page);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(Page);
+class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>, public HeapSupplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate, public MemoryPurgeClient {
+    USING_GARBAGE_COLLECTED_MIXIN(Page);
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
 public:
@@ -86,26 +85,26 @@ public:
         PageClients();
         ~PageClients();
 
-        RawPtrWillBeMember<ChromeClient> chromeClient;
+        Member<ChromeClient> chromeClient;
         ContextMenuClient* contextMenuClient;
         EditorClient* editorClient;
         DragClient* dragClient;
         SpellCheckerClient* spellCheckerClient;
     };
 
-    static PassOwnPtrWillBeRawPtr<Page> create(PageClients& pageClients)
+    static RawPtr<Page> create(PageClients& pageClients)
     {
-        return adoptPtrWillBeNoop(new Page(pageClients));
+        return new Page(pageClients);
     }
 
     // An "ordinary" page is a fully-featured page owned by a web view.
-    static PassOwnPtrWillBeRawPtr<Page> createOrdinary(PageClients&);
+    static RawPtr<Page> createOrdinary(PageClients&);
 
     ~Page() override;
 
     void willBeClosed();
 
-    using PageSet = WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<Page>>;
+    using PageSet = PersistentHeapHashSet<WeakMember<Page>>;
 
     // Return the current set of full-fledged, ordinary pages.
     // Each created and owned by a WebView.
@@ -154,7 +153,7 @@ public:
     ContextMenuController& contextMenuController() const { return *m_contextMenuController; }
     PointerLockController& pointerLockController() const { return *m_pointerLockController; }
     ValidationMessageClient& validationMessageClient() const { return *m_validationMessageClient; }
-    void setValidationMessageClient(PassOwnPtrWillBeRawPtr<ValidationMessageClient>);
+    void setValidationMessageClient(RawPtr<ValidationMessageClient>);
 
     ScrollingCoordinator* scrollingCoordinator();
 
@@ -201,7 +200,7 @@ public:
     bool isPainting() const { return m_isPainting; }
 #endif
 
-    class CORE_EXPORT MultisamplingChangedObserver : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT MultisamplingChangedObserver : public GarbageCollectedMixin {
     public:
         virtual void multisamplingChanged(bool) = 0;
     };
@@ -238,16 +237,16 @@ private:
 
     void compressStrings(Timer<Page>*);
 
-    RefPtrWillBeMember<PageAnimator> m_animator;
-    const OwnPtrWillBeMember<AutoscrollController> m_autoscrollController;
-    RawPtrWillBeMember<ChromeClient> m_chromeClient;
-    const OwnPtrWillBeMember<DragCaretController> m_dragCaretController;
-    const OwnPtrWillBeMember<DragController> m_dragController;
-    const OwnPtrWillBeMember<FocusController> m_focusController;
-    const OwnPtrWillBeMember<ContextMenuController> m_contextMenuController;
-    const OwnPtrWillBeMember<PointerLockController> m_pointerLockController;
-    OwnPtrWillBeMember<ScrollingCoordinator> m_scrollingCoordinator;
-    const OwnPtrWillBeMember<UndoStack> m_undoStack;
+    Member<PageAnimator> m_animator;
+    const Member<AutoscrollController> m_autoscrollController;
+    Member<ChromeClient> m_chromeClient;
+    const Member<DragCaretController> m_dragCaretController;
+    const Member<DragController> m_dragController;
+    const Member<FocusController> m_focusController;
+    const Member<ContextMenuController> m_contextMenuController;
+    const Member<PointerLockController> m_pointerLockController;
+    Member<ScrollingCoordinator> m_scrollingCoordinator;
+    const Member<UndoStack> m_undoStack;
 
     // Typically, the main frame and Page should both be owned by the embedder,
     // which must call Page::willBeDestroyed() prior to destroying Page. This
@@ -261,13 +260,13 @@ private:
     // other, thus keeping each other alive. The call to willBeDestroyed()
     // breaks this cycle, so the frame is still properly destroyed once no
     // longer needed.
-    RawPtrWillBeMember<Frame> m_mainFrame;
+    Member<Frame> m_mainFrame;
 
     mutable RefPtr<PluginData> m_pluginData;
 
     EditorClient* const m_editorClient;
     SpellCheckerClient* const m_spellCheckerClient;
-    OwnPtrWillBeMember<ValidationMessageClient> m_validationMessageClient;
+    Member<ValidationMessageClient> m_validationMessageClient;
 
     UseCounter m_useCounter;
     Deprecation m_deprecation;
@@ -288,18 +287,18 @@ private:
     bool m_isPainting;
 #endif
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<MultisamplingChangedObserver>> m_multisamplingChangedObservers;
+    HeapHashSet<WeakMember<MultisamplingChangedObserver>> m_multisamplingChangedObservers;
 
     // A pointer to all the interfaces provided to in-process Frames for this Page.
     // FIXME: Most of the members of Page should move onto FrameHost.
-    OwnPtrWillBeMember<FrameHost> m_frameHost;
+    Member<FrameHost> m_frameHost;
 
-    OwnPtrWillBeMember<MemoryPurgeController> m_memoryPurgeController;
+    Member<MemoryPurgeController> m_memoryPurgeController;
 
     Timer<Page> m_timerForCompressStrings;
 };
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT WillBeHeapSupplement<Page>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT HeapSupplement<Page>;
 
 } // namespace blink
 

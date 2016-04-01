@@ -41,7 +41,7 @@ class LocalFrame;
 class IntRect;
 class Node;
 
-CORE_EXPORT void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, WillBeHeapVector<RawPtrWillBeMember<Node>>& highlightNodes);
+CORE_EXPORT void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, HeapVector<Member<Node>>& highlightNodes);
 
 } // namespace blink
 

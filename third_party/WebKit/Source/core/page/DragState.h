@@ -42,7 +42,7 @@ class DragState final : public GarbageCollectedFinalized<DragState> {
 public:
     DragState() { }
 
-    RefPtrWillBeMember<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture
+    Member<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture
     DragSourceAction m_dragType;
     Member<DataTransfer> m_dragDataTransfer; // used on only the source side of dragging
 

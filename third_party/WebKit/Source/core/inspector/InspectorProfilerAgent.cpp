@@ -41,9 +41,9 @@ namespace ProfilerAgentState {
 static const char profilerEnabled[] = "profilerEnabled";
 }
 
-PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(V8Debugger* debugger, Client* client)
+RawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(V8Debugger* debugger, Client* client)
 {
-    return adoptPtrWillBeNoop(new InspectorProfilerAgent(debugger, client));
+    return new InspectorProfilerAgent(debugger, client);
 }
 
 InspectorProfilerAgent::InspectorProfilerAgent(V8Debugger* debugger, Client* client)

@@ -37,8 +37,8 @@ TEST_F(ChromeClientTest, SetToolTipFlood)
     ChromeClientToolTipLogger logger;
     ChromeClient* client = &logger;
     HitTestResult result(HitTestRequest(HitTestRequest::Move), LayoutPoint(10, 20));
-    RefPtrWillBeRawPtr<Document> doc = Document::create();
-    RefPtrWillBeRawPtr<Element> element = HTMLElement::create(HTMLNames::divTag, *doc);
+    RawPtr<Document> doc = Document::create();
+    RawPtr<Element> element = HTMLElement::create(HTMLNames::divTag, *doc);
     element->setAttribute(HTMLNames::titleAttr, "tooltip");
     result.setInnerNode(element.get());
 

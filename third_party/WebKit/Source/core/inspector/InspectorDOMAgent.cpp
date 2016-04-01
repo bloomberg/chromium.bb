@@ -141,8 +141,7 @@ v8::Local<v8::Value> nodeV8Value(v8::Local<v8::Context> context, Node* node)
 
 } // namespace
 
-class InspectorRevalidateDOMTask final : public NoBaseWillBeGarbageCollectedFinalized<InspectorRevalidateDOMTask> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorRevalidateDOMTask);
+class InspectorRevalidateDOMTask final : public GarbageCollectedFinalized<InspectorRevalidateDOMTask> {
 public:
     explicit InspectorRevalidateDOMTask(InspectorDOMAgent*);
     void scheduleStyleAttrRevalidationFor(Element*);
@@ -151,9 +150,9 @@ public:
     DECLARE_TRACE();
 
 private:
-    RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
+    Member<InspectorDOMAgent> m_domAgent;
     Timer<InspectorRevalidateDOMTask> m_timer;
-    WillBeHeapHashSet<RefPtrWillBeMember<Element>> m_styleAttrInvalidatedElements;
+    HeapHashSet<Member<Element>> m_styleAttrInvalidatedElements;
 };
 
 InspectorRevalidateDOMTask::InspectorRevalidateDOMTask(InspectorDOMAgent* domAgent)
@@ -172,7 +171,7 @@ void InspectorRevalidateDOMTask::scheduleStyleAttrRevalidationFor(Element* eleme
 void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
 {
     // The timer is stopped on m_domAgent destruction, so this method will never be called after m_domAgent has been destroyed.
-    WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
+    HeapVector<Member<Element>> elements;
     for (auto& attribute : m_styleAttrInvalidatedElements)
         elements.append(attribute.get());
     m_domAgent->styleAttributeInvalidated(elements);
@@ -254,7 +253,7 @@ InspectorDOMAgent::InspectorDOMAgent(v8::Isolate* isolate, InspectedFrames* insp
     , m_runtimeAgent(runtimeAgent)
     , m_client(client)
     , m_domListener(nullptr)
-    , m_documentNodeToIdMap(adoptPtrWillBeNoop(new NodeToIdMap()))
+    , m_documentNodeToIdMap(new NodeToIdMap())
     , m_lastNodeId(1)
     , m_suppressAttributeModifiedEvent(false)
     , m_backendNodeIdToInspect(0)
@@ -275,9 +274,9 @@ void InspectorDOMAgent::restore()
     innerEnable();
 }
 
-WillBeHeapVector<RawPtrWillBeMember<Document>> InspectorDOMAgent::documents()
+HeapVector<Member<Document>> InspectorDOMAgent::documents()
 {
-    WillBeHeapVector<RawPtrWillBeMember<Document>> result;
+    HeapVector<Member<Document>> result;
     if (m_document) {
         for (LocalFrame* frame : *m_inspectedFrames) {
             if (Document* document = frame->document())
@@ -487,8 +486,8 @@ Element* InspectorDOMAgent::assertEditableElement(ErrorString* errorString, int 
 void InspectorDOMAgent::innerEnable()
 {
     m_state->setBoolean(DOMAgentState::domAgentEnabled, true);
-    m_history = adoptPtrWillBeNoop(new InspectorHistory());
-    m_domEditor = adoptPtrWillBeNoop(new DOMEditor(m_history.get()));
+    m_history = new InspectorHistory();
+    m_domEditor = new DOMEditor(m_history.get());
     m_document = m_inspectedFrames->root()->document();
     m_instrumentingAgents->setInspectorDOMAgent(this);
     if (m_backendNodeIdToInspect)
@@ -586,7 +585,7 @@ Node* InspectorDOMAgent::nodeForId(int id)
     if (!id)
         return nullptr;
 
-    WillBeHeapHashMap<int, RawPtrWillBeMember<Node>>::iterator it = m_idToNode.find(id);
+    HeapHashMap<int, Member<Node>>::iterator it = m_idToNode.find(id);
     if (it != m_idToNode.end())
         return it->value;
     return nullptr;
@@ -613,7 +612,7 @@ void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, cons
         return;
 
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<Element> element = toContainerNode(node)->querySelector(AtomicString(selectors), exceptionState);
+    RawPtr<Element> element = toContainerNode(node)->querySelector(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
@@ -630,7 +629,7 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
         return;
 
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<StaticElementList> elements = toContainerNode(node)->querySelectorAll(AtomicString(selectors), exceptionState);
+    RawPtr<StaticElementList> elements = toContainerNode(node)->querySelectorAll(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
@@ -657,7 +656,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush, NodeToIdMap* nod
         return result;
 
     Node* node = nodeToPush;
-    WillBeHeapVector<RawPtrWillBeMember<Node>> path;
+    HeapVector<Member<Node>> path;
 
     while (true) {
         Node* parent = innerParentNode(node);
@@ -691,7 +690,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
         node = parent;
 
     // Node being pushed is detached -> push subtree root.
-    OwnPtrWillBeRawPtr<NodeToIdMap> newMap = adoptPtrWillBeNoop(new NodeToIdMap);
+    RawPtr<NodeToIdMap> newMap = adoptPtrWillBeNoop(new NodeToIdMap);
     NodeToIdMap* danglingMap = newMap.get();
     m_danglingNodeToIdMaps.append(newMap.release());
     OwnPtr<protocol::Array<protocol::DOM::Node>> children = protocol::Array<protocol::DOM::Node>::create();
@@ -722,7 +721,7 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
         return;
 
     String markup = "<span " + text + "></span>";
-    RefPtrWillBeRawPtr<DocumentFragment> fragment = element->document().createDocumentFragment();
+    RawPtr<DocumentFragment> fragment = element->document().createDocumentFragment();
 
     bool shouldIgnoreCase = element->document().isHTMLDocument() && element->isHTMLElement();
     // Not all elements can represent the context (i.e. IFRAME), hence using document.body.
@@ -793,7 +792,7 @@ void InspectorDOMAgent::setNodeName(ErrorString* errorString, int nodeId, const 
         return;
 
     TrackExceptionState exceptionState;
-    RefPtrWillBeRawPtr<Element> newElem = oldNode->document().createElement(AtomicString(tagName), exceptionState);
+    RawPtr<Element> newElem = oldNode->document().createElement(AtomicString(tagName), exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -940,8 +939,8 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     if (endQuoteFound)
         attributeQuery = attributeQuery.left(attributeQuery.length() - 1);
 
-    WillBeHeapVector<RawPtrWillBeMember<Document>> docs = documents();
-    WillBeHeapListHashSet<RawPtrWillBeMember<Node>> resultCollector;
+    HeapVector<Member<Document>> docs = documents();
+    HeapListHashSet<Member<Node>> resultCollector;
 
     for (Document* document : docs) {
         Node* documentElement = document->documentElement();
@@ -1015,7 +1014,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         // Selector evaluation
         for (Document* document : docs) {
             TrackExceptionState exceptionState;
-            RefPtrWillBeRawPtr<StaticElementList> elementList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
+            RawPtr<StaticElementList> elementList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
             if (exceptionState.hadException() || !elementList)
                 continue;
 
@@ -1026,7 +1025,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
     }
 
     *searchId = IdentifiersFactory::createIdentifier();
-    WillBeHeapVector<RefPtrWillBeMember<Node>>* resultsIt = &m_searchResults.add(*searchId, WillBeHeapVector<RefPtrWillBeMember<Node>>()).storedValue->value;
+    HeapVector<Member<Node>>* resultsIt = &m_searchResults.add(*searchId, HeapVector<Member<Node>>()).storedValue->value;
 
     for (auto& result : resultCollector)
         resultsIt->append(result);
@@ -1254,7 +1253,7 @@ void InspectorDOMAgent::copyTo(ErrorString* errorString, int nodeId, int targetE
     }
 
     // The clone is deep by default.
-    RefPtrWillBeRawPtr<Node> clonedNode = node->cloneNode(true);
+    RawPtr<Node> clonedNode = node->cloneNode(true);
     if (!clonedNode) {
         *errorString = "Failed to clone node";
         return;
@@ -1806,7 +1805,7 @@ void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const QualifiedName& 
     frontend()->attributeRemoved(id, name.toString());
 }
 
-void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element>>& elements)
+void InspectorDOMAgent::styleAttributeInvalidated(const HeapVector<Member<Element>>& elements)
 {
     OwnPtr<protocol::Array<int>> nodeIds = protocol::Array<int>::create();
     for (unsigned i = 0, size = elements.size(); i < size; ++i) {
@@ -1834,10 +1833,10 @@ void InspectorDOMAgent::characterDataModified(CharacterData* characterData)
     frontend()->characterDataModified(id, characterData->data());
 }
 
-RawPtrWillBeMember<InspectorRevalidateDOMTask> InspectorDOMAgent::revalidateTask()
+Member<InspectorRevalidateDOMTask> InspectorDOMAgent::revalidateTask()
 {
     if (!m_revalidateTask)
-        m_revalidateTask = adoptPtrWillBeNoop(new InspectorRevalidateDOMTask(this));
+        m_revalidateTask = new InspectorRevalidateDOMTask(this);
     return m_revalidateTask.get();
 }
 
@@ -1882,7 +1881,7 @@ void InspectorDOMAgent::didPerformElementShadowDistribution(Element* shadowHost)
         return;
 
     for (ShadowRoot* root = shadowHost->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& insertionPoints = root->descendantInsertionPoints();
+        const HeapVector<Member<InsertionPoint>>& insertionPoints = root->descendantInsertionPoints();
         for (const auto& it : insertionPoints) {
             InsertionPoint* insertionPoint = it.get();
             int insertionPointId = m_documentNodeToIdMap->get(insertionPoint);

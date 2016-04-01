@@ -101,7 +101,7 @@ protected:
     explicit InspectorDebuggerAgent(V8RuntimeAgent*);
 
     OwnPtr<V8DebuggerAgent> m_v8DebuggerAgent;
-    OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
+    Member<AsyncCallTracker> m_asyncCallTracker;
 
 private:
     void setTrackingAsyncCalls(bool);

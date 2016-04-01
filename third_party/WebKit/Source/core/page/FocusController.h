@@ -48,13 +48,13 @@ class Node;
 class Page;
 class RemoteFrame;
 
-class CORE_EXPORT FocusController final : public NoBaseWillBeGarbageCollectedFinalized<FocusController> {
-    WTF_MAKE_NONCOPYABLE(FocusController); USING_FAST_MALLOC_WILL_BE_REMOVED(FocusController);
+class CORE_EXPORT FocusController final : public GarbageCollectedFinalized<FocusController> {
+    WTF_MAKE_NONCOPYABLE(FocusController);
 public:
-    static PassOwnPtrWillBeRawPtr<FocusController> create(Page*);
+    static RawPtr<FocusController> create(Page*);
 
-    void setFocusedFrame(PassRefPtrWillBeRawPtr<Frame>, bool notifyEmbedder = true);
-    void focusDocumentView(PassRefPtrWillBeRawPtr<Frame>, bool notifyEmbedder = true);
+    void setFocusedFrame(RawPtr<Frame>, bool notifyEmbedder = true);
+    void focusDocumentView(RawPtr<Frame>, bool notifyEmbedder = true);
     LocalFrame* focusedFrame() const;
     Frame* focusedOrMainFrame() const;
 
@@ -72,10 +72,10 @@ public:
     bool advanceFocusAcrossFrames(WebFocusType, RemoteFrame* from, LocalFrame* to, InputDeviceCapabilities* sourceCapabilities = nullptr);
     Element* findFocusableElementInShadowHost(const Element& shadowHost);
 
-    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, const FocusParams&);
+    bool setFocusedElement(Element*, RawPtr<Frame>, const FocusParams&);
     // |setFocusedElement| variant with SelectionBehaviorOnFocus::None,
     // |WebFocusTypeNone, and null InputDeviceCapabilities.
-    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>);
+    bool setFocusedElement(Element*, RawPtr<Frame>);
 
     void setActive(bool);
     bool isActive() const { return m_isActive; }
@@ -97,8 +97,8 @@ private:
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, WebFocusType);
     void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, WebFocusType, FocusCandidate& closest);
 
-    RawPtrWillBeMember<Page> m_page;
-    RefPtrWillBeMember<Frame> m_focusedFrame;
+    Member<Page> m_page;
+    Member<Frame> m_focusedFrame;
     bool m_isActive;
     bool m_isFocused;
     bool m_isChangingFocusedFrame;

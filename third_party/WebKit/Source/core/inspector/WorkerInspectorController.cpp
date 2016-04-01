@@ -50,10 +50,10 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<WorkerInspectorController> WorkerInspectorController::create(WorkerGlobalScope* workerGlobalScope)
+RawPtr<WorkerInspectorController> WorkerInspectorController::create(WorkerGlobalScope* workerGlobalScope)
 {
     WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(workerGlobalScope->thread()->isolate());
-    return debugger ? adoptRefWillBeNoop(new WorkerInspectorController(workerGlobalScope, debugger->debugger(), debugger->contextGroupId())) : nullptr;
+    return debugger ? new WorkerInspectorController(workerGlobalScope, debugger->debugger(), debugger->contextGroupId()) : nullptr;
 }
 
 WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope, V8Debugger* debugger, int contextGroupId)
@@ -61,18 +61,18 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_agents(m_instrumentingAgents.get())
 {
-    OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(debugger, workerGlobalScope, this, contextGroupId);
+    RawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(debugger, workerGlobalScope, this, contextGroupId);
     m_workerRuntimeAgent = workerRuntimeAgent.get();
     m_agents.append(workerRuntimeAgent.release());
 
-    OwnPtrWillBeRawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(workerGlobalScope, m_workerRuntimeAgent->v8Agent());
+    RawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(workerGlobalScope, m_workerRuntimeAgent->v8Agent());
     m_workerDebuggerAgent = workerDebuggerAgent.get();
     m_agents.append(workerDebuggerAgent.release());
 
     m_agents.append(InspectorProfilerAgent::create(debugger, 0));
     m_agents.append(InspectorHeapProfilerAgent::create(workerGlobalScope->thread()->isolate(), m_workerRuntimeAgent->v8Agent()));
 
-    OwnPtrWillBeRawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_workerRuntimeAgent->v8Agent(), m_workerDebuggerAgent->v8Agent(), workerGlobalScope);
+    RawPtr<WorkerConsoleAgent> workerConsoleAgent = WorkerConsoleAgent::create(m_workerRuntimeAgent->v8Agent(), m_workerDebuggerAgent->v8Agent(), workerGlobalScope);
     WorkerConsoleAgent* workerConsoleAgentPtr = workerConsoleAgent.get();
     m_agents.append(workerConsoleAgent.release());
 

@@ -185,7 +185,7 @@ static LayoutBoxModelObject* enclosingBoxModelObject(LayoutObject* object)
 int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSizeInPixels)
 {
     // Make sure the element is not freed during the layout.
-    RefPtrWillBeRawPtr<Element> protect(element);
+    RawPtr<Element> protect(element);
     element->document().updateLayout();
 
     LayoutBoxModelObject* box = enclosingBoxModelObject(element->layoutObject());

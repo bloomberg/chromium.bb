@@ -42,10 +42,10 @@ class Document;
 class PagePopup;
 class PagePopupClient;
 
-class PagePopupController final : public RefCountedWillBeGarbageCollected<PagePopupController>, public ScriptWrappable {
+class PagePopupController final : public GarbageCollected<PagePopupController>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<PagePopupController> create(PagePopup&, PagePopupClient*);
+    static RawPtr<PagePopupController> create(PagePopup&, PagePopupClient*);
     void setValueAndClosePopup(int numValue, const String& stringValue);
     void setValue(const String&);
     void closePopup();

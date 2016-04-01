@@ -54,9 +54,9 @@ ContextMenuController::~ContextMenuController()
 {
 }
 
-PassOwnPtrWillBeRawPtr<ContextMenuController> ContextMenuController::create(Page* page, ContextMenuClient* client)
+RawPtr<ContextMenuController> ContextMenuController::create(Page* page, ContextMenuClient* client)
 {
-    return adoptPtrWillBeNoop(new ContextMenuController(page, client));
+    return new ContextMenuController(page, client);
 }
 
 DEFINE_TRACE(ContextMenuController)
@@ -94,10 +94,10 @@ void ContextMenuController::populateCustomContextMenu(const Event& event)
         return;
 
     HTMLElement& element = toHTMLElement(*node);
-    RefPtrWillBeRawPtr<HTMLMenuElement> menuElement = element.assignedContextMenu();
+    RawPtr<HTMLMenuElement> menuElement = element.assignedContextMenu();
     if (!menuElement || !equalIgnoringCase(menuElement->fastGetAttribute(typeAttr), "context"))
         return;
-    RefPtrWillBeRawPtr<RelatedEvent> relatedEvent = RelatedEvent::create(EventTypeNames::show, true, true, node);
+    RawPtr<RelatedEvent> relatedEvent = RelatedEvent::create(EventTypeNames::show, true, true, node);
     if (menuElement->dispatchEvent(relatedEvent.release()) != DispatchEventResult::NotCanceled)
         return;
     if (menuElement != element.assignedContextMenu())
@@ -115,7 +115,7 @@ void ContextMenuController::handleContextMenuEvent(Event* event)
     showContextMenu(event);
 }
 
-void ContextMenuController::showContextMenu(Event* event, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
+void ContextMenuController::showContextMenu(Event* event, RawPtr<ContextMenuProvider> menuProvider)
 {
     m_menuProvider = menuProvider;
 
@@ -129,7 +129,7 @@ void ContextMenuController::showContextMenu(Event* event, PassRefPtrWillBeRawPtr
     showContextMenu(event);
 }
 
-void ContextMenuController::showContextMenuAtPoint(LocalFrame* frame, float x, float y, PassRefPtrWillBeRawPtr<ContextMenuProvider> menuProvider)
+void ContextMenuController::showContextMenuAtPoint(LocalFrame* frame, float x, float y, RawPtr<ContextMenuProvider> menuProvider)
 {
     m_menuProvider = menuProvider;
 

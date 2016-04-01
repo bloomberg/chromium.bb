@@ -44,9 +44,9 @@ PagePopupController::PagePopupController(PagePopup& popup, PagePopupClient* clie
     ASSERT(client);
 }
 
-PassRefPtrWillBeRawPtr<PagePopupController> PagePopupController::create(PagePopup& popup, PagePopupClient* client)
+RawPtr<PagePopupController> PagePopupController::create(PagePopup& popup, PagePopupClient* client)
 {
-    return adoptRefWillBeNoop(new PagePopupController(popup, client));
+    return new PagePopupController(popup, client);
 }
 
 void PagePopupController::setValueAndClosePopup(int numValue, const String& stringValue)

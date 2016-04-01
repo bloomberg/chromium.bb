@@ -72,7 +72,7 @@ Page::PageSet& Page::ordinaryPages()
 
 void Page::networkStateChanged(bool online)
 {
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> frames;
+    HeapVector<Member<LocalFrame>> frames;
 
     // Get all the frames of all the pages in all the page groups
     for (Page* page : allPages()) {
@@ -106,9 +106,9 @@ float deviceScaleFactor(LocalFrame* frame)
     return page->deviceScaleFactor();
 }
 
-PassOwnPtrWillBeRawPtr<Page> Page::createOrdinary(PageClients& pageClients)
+RawPtr<Page> Page::createOrdinary(PageClients& pageClients)
 {
-    OwnPtrWillBeRawPtr<Page> page = create(pageClients);
+    RawPtr<Page> page = create(pageClients);
     ordinaryPages().add(page.get());
     page->memoryPurgeController().registerClient(page.get());
     return page.release();
@@ -283,7 +283,7 @@ void Page::unmarkAllTextMatches()
     } while (frame);
 }
 
-void Page::setValidationMessageClient(PassOwnPtrWillBeRawPtr<ValidationMessageClient> client)
+void Page::setValidationMessageClient(RawPtr<ValidationMessageClient> client)
 {
     m_validationMessageClient = client;
 }
@@ -505,7 +505,7 @@ void Page::didCommitLoad(LocalFrame* frame)
 
 void Page::acceptLanguagesChanged()
 {
-    WillBeHeapVector<RefPtrWillBeMember<LocalFrame>> frames;
+    HeapVector<Member<LocalFrame>> frames;
 
     // Even though we don't fire an event from here, the LocalDOMWindow's will fire
     // an event so we keep the frames alive until we are done.
@@ -567,7 +567,7 @@ void Page::willBeClosed()
 
 void Page::willBeDestroyed()
 {
-    RefPtrWillBeRawPtr<Frame> mainFrame = m_mainFrame;
+    RawPtr<Frame> mainFrame = m_mainFrame;
 
     mainFrame->detach(FrameDetachType::Remove);
 
@@ -610,6 +610,6 @@ Page::PageClients::~PageClients()
 {
 }
 
-template class CORE_TEMPLATE_EXPORT WillBeHeapSupplement<Page>;
+template class CORE_TEMPLATE_EXPORT HeapSupplement<Page>;
 
 } // namespace blink

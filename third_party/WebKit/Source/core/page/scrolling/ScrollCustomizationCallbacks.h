@@ -35,7 +35,7 @@ public:
 #endif
 
 private:
-    using ScrollStateCallbackList = HeapHashMap<RawPtrWillBeWeakMember<Element>, Member<ScrollStateCallback>>;
+    using ScrollStateCallbackList = HeapHashMap<WeakMember<Element>, Member<ScrollStateCallback>>;
     ScrollStateCallbackList m_applyScrollCallbacks;
     ScrollStateCallbackList m_distributeScrollCallbacks;
 };

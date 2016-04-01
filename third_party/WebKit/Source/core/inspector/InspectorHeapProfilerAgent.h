@@ -49,9 +49,8 @@ class V8RuntimeAgent;
 
 class CORE_EXPORT InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, protocol::Frontend::HeapProfiler>, public protocol::Backend::HeapProfiler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorHeapProfilerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, V8RuntimeAgent*);
+    static RawPtr<InspectorHeapProfilerAgent> create(v8::Isolate*, V8RuntimeAgent*);
     ~InspectorHeapProfilerAgent() override;
 
     // InspectorBaseAgent overrides.

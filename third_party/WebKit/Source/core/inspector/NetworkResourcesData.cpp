@@ -36,9 +36,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<XHRReplayData> XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, bool includeCredentials)
+RawPtr<XHRReplayData> XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, bool includeCredentials)
 {
-    return adoptRefWillBeNoop(new XHRReplayData(executionContext, method, url, async, formData, includeCredentials));
+    return new XHRReplayData(executionContext, method, url, async, formData, includeCredentials);
 }
 
 void XHRReplayData::addHeader(const AtomicString& key, const AtomicString& value)
@@ -302,9 +302,9 @@ void NetworkResourcesData::setXHRReplayData(const String& requestId, XHRReplayDa
     resourceData->setXHRReplayData(xhrReplayData);
 }
 
-WillBeHeapVector<RawPtrWillBeMember<NetworkResourcesData::ResourceData>> NetworkResourcesData::resources()
+HeapVector<Member<NetworkResourcesData::ResourceData>> NetworkResourcesData::resources()
 {
-    WillBeHeapVector<RawPtrWillBeMember<ResourceData>> result;
+    HeapVector<Member<ResourceData>> result;
     for (auto& request : m_requestIdToResourceDataMap)
         result.append(request.value);
     return result;

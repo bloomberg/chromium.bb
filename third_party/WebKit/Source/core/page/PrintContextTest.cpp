@@ -71,13 +71,13 @@ private:
 
 class PrintContextTest : public RenderingTest {
 protected:
-    explicit PrintContextTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = nullptr)
+    explicit PrintContextTest(RawPtr<FrameLoaderClient> frameLoaderClient = nullptr)
         : RenderingTest(frameLoaderClient) { }
 
     void SetUp() override
     {
         RenderingTest::SetUp();
-        m_printContext = adoptPtrWillBeNoop(new MockPrintContext(document().frame()));
+        m_printContext = new MockPrintContext(document().frame());
     }
 
     MockPrintContext& printContext() { return *m_printContext.get(); }
@@ -129,7 +129,7 @@ protected:
 
 private:
     OwnPtr<DummyPageHolder> m_pageHolder;
-    OwnPtrWillBePersistent<MockPrintContext> m_printContext;
+    Persistent<MockPrintContext> m_printContext;
 };
 
 class PrintContextFrameTest : public PrintContextTest {

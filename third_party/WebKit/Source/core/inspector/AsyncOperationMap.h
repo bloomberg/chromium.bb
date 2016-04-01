@@ -17,7 +17,7 @@ template <class K>
 class AsyncOperationMap final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    using MapType = WillBeHeapHashMap<K, int>;
+    using MapType = HeapHashMap<K, int>;
     explicit AsyncOperationMap(V8DebuggerAgent* debuggerAgent)
         : m_debuggerAgent(debuggerAgent)
     {

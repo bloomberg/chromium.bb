@@ -14,9 +14,8 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT InspectedFrames final : public NoBaseWillBeGarbageCollectedFinalized<InspectedFrames> {
+class CORE_EXPORT InspectedFrames final : public GarbageCollectedFinalized<InspectedFrames> {
     WTF_MAKE_NONCOPYABLE(InspectedFrames);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectedFrames);
 public:
     class CORE_EXPORT Iterator {
         STACK_ALLOCATED();
@@ -30,13 +29,13 @@ public:
     private:
         friend class InspectedFrames;
         Iterator(LocalFrame* root, LocalFrame* current);
-        RawPtrWillBeMember<LocalFrame> m_root;
-        RawPtrWillBeMember<LocalFrame> m_current;
+        Member<LocalFrame> m_root;
+        Member<LocalFrame> m_current;
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectedFrames> create(LocalFrame* root)
+    static RawPtr<InspectedFrames> create(LocalFrame* root)
     {
-        return adoptPtrWillBeNoop(new InspectedFrames(root));
+        return new InspectedFrames(root);
     }
 
     LocalFrame* root() { return m_root; }
@@ -50,7 +49,7 @@ public:
 private:
     explicit InspectedFrames(LocalFrame*);
 
-    RawPtrWillBeMember<LocalFrame> m_root;
+    Member<LocalFrame> m_root;
 };
 
 } // namespace blink

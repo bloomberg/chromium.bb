@@ -53,9 +53,9 @@ class PaintLayerCompositor;
 class CORE_EXPORT InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, protocol::Frontend::LayerTree>, public protocol::Backend::LayerTree {
     WTF_MAKE_NONCOPYABLE(InspectorLayerTreeAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorLayerTreeAgent> create(InspectedFrames* inspectedFrames)
+    static RawPtr<InspectorLayerTreeAgent> create(InspectedFrames* inspectedFrames)
     {
-        return adoptPtrWillBeNoop(new InspectorLayerTreeAgent(inspectedFrames));
+        return new InspectorLayerTreeAgent(inspectedFrames);
     }
     ~InspectorLayerTreeAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -100,7 +100,7 @@ private:
     void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, OwnPtr<protocol::Array<protocol::LayerTree::Layer>>&, bool hasWheelEventHandlers, int scrollingRootLayerId);
     int idForNode(Node*);
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    Member<InspectedFrames> m_inspectedFrames;
     Vector<int, 2> m_pageOverlayLayerIds;
 
     typedef HashMap<String, RefPtr<PictureSnapshot>> SnapshotById;

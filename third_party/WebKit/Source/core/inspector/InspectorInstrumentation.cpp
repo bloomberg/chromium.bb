@@ -49,9 +49,9 @@ namespace blink {
 
 namespace {
 
-WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<InstrumentingAgents>>& instrumentingAgentsSet()
+PersistentHeapHashSet<WeakMember<InstrumentingAgents>>& instrumentingAgentsSet()
 {
-    DEFINE_STATIC_LOCAL(WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<InstrumentingAgents>>, instrumentingAgentsSet, ());
+    DEFINE_STATIC_LOCAL(PersistentHeapHashSet<WeakMember<InstrumentingAgents>>, instrumentingAgentsSet, ());
     return instrumentingAgentsSet;
 }
 

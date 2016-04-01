@@ -43,12 +43,12 @@ class FrontendMenuProvider;
 class InspectorFrontendClient;
 class LocalFrame;
 
-class CORE_EXPORT DevToolsHost final : public RefCountedWillBeGarbageCollectedFinalized<DevToolsHost>, public ScriptWrappable {
+class CORE_EXPORT DevToolsHost final : public GarbageCollectedFinalized<DevToolsHost>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<DevToolsHost> create(InspectorFrontendClient* client, LocalFrame* frontendFrame)
+    static RawPtr<DevToolsHost> create(InspectorFrontendClient* client, LocalFrame* frontendFrame)
     {
-        return adoptRefWillBeNoop(new DevToolsHost(client, frontendFrame));
+        return new DevToolsHost(client, frontendFrame);
     }
 
     ~DevToolsHost();
@@ -83,8 +83,8 @@ private:
     void evaluateScript(const String&);
 
     InspectorFrontendClient* m_client;
-    RawPtrWillBeMember<LocalFrame> m_frontendFrame;
-    RawPtrWillBeMember<FrontendMenuProvider> m_menuProvider;
+    Member<LocalFrame> m_frontendFrame;
+    Member<FrontendMenuProvider> m_menuProvider;
 };
 
 } // namespace blink

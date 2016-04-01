@@ -194,7 +194,7 @@ void MainThreadDebugger::contextsToReport(int contextGroupId, V8ContextInfoVecto
     if (!root->loader().stateMachine()->committedFirstRealDocumentLoad())
         return;
 
-    OwnPtrWillBeRawPtr<InspectedFrames> inspectedFrames = InspectedFrames::create(root);
+    RawPtr<InspectedFrames> inspectedFrames = InspectedFrames::create(root);
 
     Vector<std::pair<ScriptState*, SecurityOrigin*>> isolatedContexts;
     for (LocalFrame* frame : *inspectedFrames) {

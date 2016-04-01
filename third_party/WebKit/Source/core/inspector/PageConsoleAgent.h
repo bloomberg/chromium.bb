@@ -47,9 +47,9 @@ class WorkerGlobalScopeProxy;
 class CORE_EXPORT PageConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<PageConsoleAgent> create(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent, InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames)
+    static RawPtr<PageConsoleAgent> create(V8RuntimeAgent* runtimeAgent, V8DebuggerAgent* debuggerAgent, InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames)
     {
-        return adoptPtrWillBeNoop(new PageConsoleAgent(runtimeAgent, debuggerAgent, domAgent, inspectedFrames));
+        return new PageConsoleAgent(runtimeAgent, debuggerAgent, domAgent, inspectedFrames);
     }
     ~PageConsoleAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -70,9 +70,9 @@ private:
     PageConsoleAgent(V8RuntimeAgent*, V8DebuggerAgent*, InspectorDOMAgent*, InspectedFrames*);
     void clearMessages(ErrorString*) override;
 
-    RawPtrWillBeMember<InspectorDOMAgent> m_inspectorDOMAgent;
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    using WorkerInspectorProxySet = WillBeHeapHashSet<RawPtrWillBeMember<WorkerInspectorProxy>>;
+    Member<InspectorDOMAgent> m_inspectorDOMAgent;
+    Member<InspectedFrames> m_inspectedFrames;
+    using WorkerInspectorProxySet = HeapHashSet<Member<WorkerInspectorProxy>>;
     WorkerInspectorProxySet m_workersWithEnabledConsole;
 
     static int s_enabledAgentCount;

@@ -71,9 +71,9 @@ class DictionaryValue;
 
 class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, protocol::Frontend::Network>, public protocol::Backend::Network {
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorResourceAgent> create(InspectedFrames* inspectedFrames)
+    static RawPtr<InspectorResourceAgent> create(InspectedFrames* inspectedFrames)
     {
-        return adoptPtrWillBeNoop(new InspectorResourceAgent(inspectedFrames));
+        return new InspectorResourceAgent(inspectedFrames);
     }
 
     void restore() override;
@@ -163,10 +163,10 @@ private:
     bool canGetResponseBodyBlob(const String& requestId);
     void getResponseBodyBlob(const String& requestId, PassOwnPtr<GetResponseBodyCallback>);
 
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
+    Member<InspectedFrames> m_inspectedFrames;
     String m_userAgentOverride;
     String m_hostId;
-    OwnPtrWillBeMember<NetworkResourcesData> m_resourcesData;
+    Member<NetworkResourcesData> m_resourcesData;
 
     typedef HashMap<ThreadableLoaderClient*, unsigned long> ThreadableLoaderClientRequestIdMap;
 
@@ -177,7 +177,7 @@ private:
     InspectorPageAgent::ResourceType m_pendingRequestType;
     ThreadableLoaderClientRequestIdMap m_knownRequestIdMap;
 
-    RefPtrWillBeMember<XHRReplayData> m_pendingXHRReplayData;
+    Member<XHRReplayData> m_pendingXHRReplayData;
 
     typedef HashMap<String, OwnPtr<protocol::Network::Initiator>> FrameNavigationInitiatorMap;
     FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;
@@ -186,8 +186,8 @@ private:
     OwnPtr<protocol::Network::Initiator> m_styleRecalculationInitiator;
     bool m_isRecalculatingStyle;
 
-    PersistentHeapHashSetWillBeHeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;
-    PersistentHeapHashSetWillBeHeapHashSet<Member<XMLHttpRequest>> m_replayXHRsToBeDeleted;
+    HeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;
+    HeapHashSet<Member<XMLHttpRequest>> m_replayXHRsToBeDeleted;
     Timer<InspectorResourceAgent> m_removeFinishedReplayXHRTimer;
 };
 

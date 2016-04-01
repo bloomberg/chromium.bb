@@ -60,9 +60,9 @@ namespace blink {
 
 class FrontendMenuProvider final : public ContextMenuProvider {
 public:
-    static PassRefPtrWillBeRawPtr<FrontendMenuProvider> create(DevToolsHost* devtoolsHost, const Vector<ContextMenuItem>& items)
+    static RawPtr<FrontendMenuProvider> create(DevToolsHost* devtoolsHost, const Vector<ContextMenuItem>& items)
     {
-        return adoptRefWillBeNoop(new FrontendMenuProvider(devtoolsHost, items));
+        return new FrontendMenuProvider(devtoolsHost, items);
     }
 
     ~FrontendMenuProvider() override
@@ -113,7 +113,7 @@ private:
     {
     }
 
-    RawPtrWillBeMember<DevToolsHost> m_devtoolsHost;
+    Member<DevToolsHost> m_devtoolsHost;
     Vector<ContextMenuItem> m_items;
 };
 
@@ -218,7 +218,7 @@ void DevToolsHost::sendMessageToEmbedder(const String& message)
 void DevToolsHost::showContextMenu(LocalFrame* targetFrame, float x, float y, const Vector<ContextMenuItem>& items)
 {
     ASSERT(m_frontendFrame);
-    RefPtrWillBeRawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, items);
+    RawPtr<FrontendMenuProvider> menuProvider = FrontendMenuProvider::create(this, items);
     m_menuProvider = menuProvider.get();
     float zoom = targetFrame->pageZoomFactor();
     if (m_client)

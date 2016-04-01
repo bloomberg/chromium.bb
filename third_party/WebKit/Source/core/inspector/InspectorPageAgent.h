@@ -81,9 +81,9 @@ public:
         OtherResource
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(InspectedFrames*, Client*, InspectorResourceContentLoader*, InspectorDebuggerAgent*);
+    static RawPtr<InspectorPageAgent> create(InspectedFrames*, Client*, InspectorResourceContentLoader*, InspectorDebuggerAgent*);
 
-    static WillBeHeapVector<RawPtrWillBeMember<Document>> importsForFrame(LocalFrame*);
+    static HeapVector<Member<Document>> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
 
@@ -145,8 +145,8 @@ private:
 
     PassOwnPtr<protocol::Page::Frame> buildObjectForFrame(LocalFrame*);
     PassOwnPtr<protocol::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
-    RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
+    Member<InspectedFrames> m_inspectedFrames;
+    Member<InspectorDebuggerAgent> m_debuggerAgent;
     Client* m_client;
     long m_lastScriptIdentifier;
     String m_pendingScriptToEvaluateOnLoadOnce;
@@ -154,7 +154,7 @@ private:
     bool m_enabled;
     bool m_reloading;
 
-    RawPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
+    Member<InspectorResourceContentLoader> m_inspectorResourceContentLoader;
 };
 
 

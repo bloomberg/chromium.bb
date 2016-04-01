@@ -52,10 +52,9 @@ enum AutoscrollType {
 };
 
 // AutscrollController handels autoscroll and pan scroll for EventHandler.
-class CORE_EXPORT AutoscrollController final : public NoBaseWillBeGarbageCollected<AutoscrollController> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(AutoscrollController);
+class CORE_EXPORT AutoscrollController final : public GarbageCollected<AutoscrollController> {
 public:
-    static PassOwnPtrWillBeRawPtr<AutoscrollController> create(Page&);
+    static RawPtr<AutoscrollController> create(Page&);
     DECLARE_TRACE();
 
     static const int noPanScrollRadius = 15;
@@ -83,7 +82,7 @@ private:
     void updatePanScrollState(FrameView*, const IntPoint& lastKnownMousePosition);
 #endif
 
-    RawPtrWillBeMember<Page> m_page;
+    Member<Page> m_page;
     LayoutBox* m_autoscrollLayoutObject;
     LayoutBox* m_pressedLayoutObject;
     AutoscrollType m_autoscrollType;

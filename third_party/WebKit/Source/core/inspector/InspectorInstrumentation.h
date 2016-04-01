@@ -77,7 +77,7 @@ public:
     bool isValid() const { return !!m_instrumentingAgents; }
 
 private:
-    RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
+    Member<InstrumentingAgents> m_instrumentingAgents;
 };
 
 namespace InspectorInstrumentation {

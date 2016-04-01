@@ -58,24 +58,24 @@ public:
     Node* patchNode(Node*, const String& markup, ExceptionState&);
 
 private:
-    class Digest : public NoBaseWillBeGarbageCollectedFinalized<Digest> {
+    class Digest : public GarbageCollectedFinalized<Digest> {
     public:
         explicit Digest(Node* node) : m_node(node) { }
         DECLARE_TRACE();
 
         String m_sha1;
         String m_attrsSHA1;
-        RawPtrWillBeMember<Node> m_node;
-        WillBeHeapVector<OwnPtrWillBeMember<Digest>> m_children;
+        Member<Node> m_node;
+        HeapVector<Member<Digest>> m_children;
     };
 
-    typedef WillBeHeapVector<std::pair<RawPtrWillBeMember<Digest>, size_t>> ResultMap;
-    typedef WillBeHeapHashMap<String, RawPtrWillBeMember<Digest>> UnusedNodesMap;
+    typedef HeapVector<std::pair<Member<Digest>, size_t>> ResultMap;
+    typedef HeapHashMap<String, Member<Digest>> UnusedNodesMap;
 
     bool innerPatchNode(Digest* oldNode, Digest* newNode, ExceptionState&);
-    std::pair<ResultMap, ResultMap> diff(const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldChildren, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& newChildren);
-    bool innerPatchChildren(ContainerNode*, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& oldChildren, const WillBeHeapVector<OwnPtrWillBeMember<Digest>>& newChildren, ExceptionState&);
-    PassOwnPtrWillBeRawPtr<Digest> createDigest(Node*, UnusedNodesMap*);
+    std::pair<ResultMap, ResultMap> diff(const HeapVector<Member<Digest>>& oldChildren, const HeapVector<Member<Digest>>& newChildren);
+    bool innerPatchChildren(ContainerNode*, const HeapVector<Member<Digest>>& oldChildren, const HeapVector<Member<Digest>>& newChildren, ExceptionState&);
+    RawPtr<Digest> createDigest(Node*, UnusedNodesMap*);
     bool insertBeforeAndMarkAsUsed(ContainerNode*, Digest*, Node* anchor, ExceptionState&);
     bool removeChildAndMoveToNew(Digest*, ExceptionState&);
     void markNodeAsUsed(Digest*);
@@ -84,8 +84,8 @@ private:
 #endif
     Document& document() const { return *m_document; }
 
-    RawPtrWillBeMember<DOMEditor> m_domEditor;
-    RawPtrWillBeMember<Document> m_document;
+    Member<DOMEditor> m_domEditor;
+    Member<Document> m_document;
 
     UnusedNodesMap m_unusedNodesMap;
 };

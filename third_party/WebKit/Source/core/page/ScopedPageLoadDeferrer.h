@@ -40,7 +40,7 @@ public:
 private:
     void setDefersLoading(bool);
 
-    Vector<RefPtrWillBePersistent<LocalFrame>, 16> m_deferredFrames;
+    Vector<Persistent<LocalFrame>, 16> m_deferredFrames;
 };
 
 } // namespace blink

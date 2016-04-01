@@ -38,8 +38,7 @@ class GraphicsContext;
 class IntRect;
 class Node;
 
-class CORE_EXPORT PrintContext : public NoBaseWillBeGarbageCollectedFinalized<PrintContext> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(PrintContext);
+class CORE_EXPORT PrintContext : public GarbageCollectedFinalized<PrintContext> {
 public:
     explicit PrintContext(LocalFrame*);
     virtual ~PrintContext();
@@ -80,7 +79,7 @@ public:
 protected:
     void outputLinkedDestinations(GraphicsContext&, const IntRect& pageRect);
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    Member<LocalFrame> m_frame;
     Vector<IntRect> m_pageRects;
 
 private:
@@ -90,7 +89,7 @@ private:
     // Used to prevent misuses of begin() and end() (e.g., call end without begin).
     bool m_isPrinting;
 
-    WillBeHeapHashMap<String, RawPtrWillBeMember<Element>> m_linkedDestinations;
+    HeapHashMap<String, Member<Element>> m_linkedDestinations;
     bool m_linkedDestinationsValid;
 };
 

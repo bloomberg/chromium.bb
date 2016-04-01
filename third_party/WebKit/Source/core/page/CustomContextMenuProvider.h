@@ -20,9 +20,9 @@ class CustomContextMenuProvider final : public ContextMenuProvider {
 public:
     ~CustomContextMenuProvider() override;
 
-    static PassRefPtrWillBeRawPtr<CustomContextMenuProvider> create(HTMLMenuElement& menu, HTMLElement& subject)
+    static RawPtr<CustomContextMenuProvider> create(HTMLMenuElement& menu, HTMLElement& subject)
     {
-        return adoptRefWillBeNoop(new CustomContextMenuProvider(menu, subject));
+        return new CustomContextMenuProvider(menu, subject);
     }
 
     DECLARE_VIRTUAL_TRACE();
@@ -38,9 +38,9 @@ private:
     void appendMenuItem(HTMLMenuItemElement*, ContextMenu&);
     HTMLElement* menuItemAt(unsigned menuId);
 
-    RefPtrWillBeMember<HTMLMenuElement> m_menu;
-    RefPtrWillBeMember<HTMLElement> m_subjectElement;
-    WillBeHeapVector<RefPtrWillBeMember<HTMLElement>> m_menuItems;
+    Member<HTMLMenuElement> m_menu;
+    Member<HTMLElement> m_subjectElement;
+    HeapVector<Member<HTMLElement>> m_menuItems;
 };
 
 } // namespace blink

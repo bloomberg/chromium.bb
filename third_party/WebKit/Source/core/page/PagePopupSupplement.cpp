@@ -40,8 +40,6 @@ PagePopupSupplement::PagePopupSupplement(PagePopup& popup, PagePopupClient* popu
     ASSERT(popupClient);
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(PagePopupSupplement);
-
 const char* PagePopupSupplement::supplementName()
 {
     return "PagePopupSupplement";
@@ -57,7 +55,7 @@ PagePopupController* PagePopupSupplement::pagePopupController(LocalFrame& frame)
 void PagePopupSupplement::install(LocalFrame& frame, PagePopup& popup, PagePopupClient* popupClient)
 {
     ASSERT(popupClient);
-    provideTo(frame, supplementName(), adoptPtrWillBeNoop(new PagePopupSupplement(popup, popupClient)));
+    provideTo(frame, supplementName(), new PagePopupSupplement(popup, popupClient));
 }
 
 void PagePopupSupplement::uninstall(LocalFrame& frame)
@@ -69,7 +67,7 @@ void PagePopupSupplement::uninstall(LocalFrame& frame)
 DEFINE_TRACE(PagePopupSupplement)
 {
     visitor->trace(m_controller);
-    WillBeHeapSupplement<LocalFrame>::trace(visitor);
+    HeapSupplement<LocalFrame>::trace(visitor);
 }
 
 } // namespace blink

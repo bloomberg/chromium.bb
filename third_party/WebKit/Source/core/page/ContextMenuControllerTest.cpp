@@ -68,7 +68,7 @@ TEST_F(ContextMenuControllerTest, TestCustomMenu)
         "</button>");
 
     // Create right button click event and pass it to context menu controller.
-    RefPtrWillBeRawPtr<Event> event = MouseEvent::create(EventTypeNames::click, false, false,
+    RawPtr<Event> event = MouseEvent::create(EventTypeNames::click, false, false,
         document().domWindow(), 50, 50, 0, 0, 0, 0, 0, PlatformEvent::NoModifiers, 1, 0, nullptr, 0,
         PlatformMouseEvent::RealOrIndistinguishable, String());
     document().getElementById("button_id")->focus();

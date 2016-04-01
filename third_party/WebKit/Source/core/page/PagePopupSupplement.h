@@ -42,23 +42,19 @@ class PagePopup;
 class PagePopupClient;
 class PagePopupController;
 
-class CORE_EXPORT PagePopupSupplement final : public NoBaseWillBeGarbageCollected<PagePopupSupplement>, public WillBeHeapSupplement<LocalFrame> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PagePopupSupplement);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(PagePopupSupplement);
-
+class CORE_EXPORT PagePopupSupplement final : public GarbageCollected<PagePopupSupplement>, public HeapSupplement<LocalFrame> {
+    USING_GARBAGE_COLLECTED_MIXIN(PagePopupSupplement);
 public:
     static PagePopupController* pagePopupController(LocalFrame&);
     static void install(LocalFrame&, PagePopup&, PagePopupClient*);
     static void uninstall(LocalFrame&);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(PagePopupSupplement);
-
     DECLARE_TRACE();
 
 private:
     PagePopupSupplement(PagePopup&, PagePopupClient*);
     static const char* supplementName();
 
-    RefPtrWillBeMember<PagePopupController> m_controller;
+    Member<PagePopupController> m_controller;
 };
 
 } // namespace blink

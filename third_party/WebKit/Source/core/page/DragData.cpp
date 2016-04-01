@@ -116,7 +116,7 @@ bool DragData::containsCompatibleContent() const
         || containsFiles();
 }
 
-PassRefPtrWillBeRawPtr<DocumentFragment> DragData::asFragment(LocalFrame* frame) const
+RawPtr<DocumentFragment> DragData::asFragment(LocalFrame* frame) const
 {
     /*
      * Order is richest format first. On OSX this is:
@@ -138,7 +138,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> DragData::asFragment(LocalFrame* frame)
         KURL baseURL;
         m_platformDragData->htmlAndBaseURL(html, baseURL);
         ASSERT(frame->document());
-        if (RefPtrWillBeRawPtr<DocumentFragment> fragment = createFragmentFromMarkup(*frame->document(), html, baseURL, DisallowScriptingAndPluginContent))
+        if (RawPtr<DocumentFragment> fragment = createFragmentFromMarkup(*frame->document(), html, baseURL, DisallowScriptingAndPluginContent))
             return fragment.release();
     }
 

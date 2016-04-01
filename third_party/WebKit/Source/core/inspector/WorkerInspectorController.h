@@ -55,11 +55,10 @@ class Frontend;
 class FrontendChannel;
 }
 
-class WorkerInspectorController final : public RefCountedWillBeGarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client, public protocol::FrontendChannel {
+class WorkerInspectorController final : public GarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client, public protocol::FrontendChannel {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerInspectorController);
 public:
-    static PassRefPtrWillBeRawPtr<WorkerInspectorController> create(WorkerGlobalScope*);
+    static RawPtr<WorkerInspectorController> create(WorkerGlobalScope*);
     ~WorkerInspectorController();
     DECLARE_TRACE();
 
@@ -80,13 +79,13 @@ private:
     void sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message) override;
     void flush() override;
 
-    RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
-    RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
+    Member<WorkerGlobalScope> m_workerGlobalScope;
+    Member<InstrumentingAgents> m_instrumentingAgents;
     InspectorAgentRegistry m_agents;
     OwnPtr<protocol::Frontend> m_frontend;
     OwnPtr<protocol::Dispatcher> m_backendDispatcher;
-    RawPtrWillBeMember<WorkerDebuggerAgent> m_workerDebuggerAgent;
-    RawPtrWillBeMember<WorkerRuntimeAgent> m_workerRuntimeAgent;
+    Member<WorkerDebuggerAgent> m_workerDebuggerAgent;
+    Member<WorkerRuntimeAgent> m_workerRuntimeAgent;
 };
 
 } // namespace blink

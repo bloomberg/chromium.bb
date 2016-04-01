@@ -41,10 +41,10 @@ namespace blink {
 
 class ScriptValue;
 
-class ScriptArguments final : public RefCountedWillBeGarbageCollectedFinalized<ScriptArguments> {
+class ScriptArguments final : public GarbageCollectedFinalized<ScriptArguments> {
 public:
-    static PassRefPtrWillBeRawPtr<ScriptArguments> create(ScriptState*, Vector<ScriptValue>& arguments);
-    static PassRefPtrWillBeRawPtr<ScriptArguments> create(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& arguments, unsigned skipArgumentCount);
+    static RawPtr<ScriptArguments> create(ScriptState*, Vector<ScriptValue>& arguments);
+    static RawPtr<ScriptArguments> create(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& arguments, unsigned skipArgumentCount);
 
     ~ScriptArguments();
 

@@ -80,15 +80,15 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<ContainerNode> m_parentNode;
-    RefPtrWillBeMember<Node> m_node;
-    RefPtrWillBeMember<Node> m_anchorNode;
+    Member<ContainerNode> m_parentNode;
+    Member<Node> m_node;
+    Member<Node> m_anchorNode;
 };
 
 class DOMEditor::InsertBeforeAction final : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(InsertBeforeAction);
 public:
-    InsertBeforeAction(ContainerNode* parentNode, PassRefPtrWillBeRawPtr<Node> node, Node* anchorNode)
+    InsertBeforeAction(ContainerNode* parentNode, RawPtr<Node> node, Node* anchorNode)
         : InspectorHistory::Action("InsertBefore")
         , m_parentNode(parentNode)
         , m_node(node)
@@ -99,7 +99,7 @@ public:
     bool perform(ExceptionState& exceptionState) override
     {
         if (m_node->parentNode()) {
-            m_removeChildAction = adoptRefWillBeNoop(new RemoveChildAction(m_node->parentNode(), m_node.get()));
+            m_removeChildAction = new RemoveChildAction(m_node->parentNode(), m_node.get());
             if (!m_removeChildAction->perform(exceptionState))
                 return false;
         }
@@ -135,10 +135,10 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<ContainerNode> m_parentNode;
-    RefPtrWillBeMember<Node> m_node;
-    RefPtrWillBeMember<Node> m_anchorNode;
-    RefPtrWillBeMember<RemoveChildAction> m_removeChildAction;
+    Member<ContainerNode> m_parentNode;
+    Member<Node> m_node;
+    Member<Node> m_anchorNode;
+    Member<RemoveChildAction> m_removeChildAction;
 };
 
 class DOMEditor::RemoveAttributeAction final : public InspectorHistory::Action {
@@ -176,7 +176,7 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<Element> m_element;
+    Member<Element> m_element;
     AtomicString m_name;
     AtomicString m_value;
 };
@@ -224,7 +224,7 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<Element> m_element;
+    Member<Element> m_element;
     AtomicString m_name;
     AtomicString m_value;
     bool m_hadAttribute;
@@ -240,8 +240,8 @@ public:
         , m_nextSibling(node->nextSibling())
         , m_html(html)
         , m_newNode(nullptr)
-        , m_history(adoptPtrWillBeNoop(new InspectorHistory()))
-        , m_domEditor(adoptPtrWillBeNoop(new DOMEditor(m_history.get())))
+        , m_history(new InspectorHistory())
+        , m_domEditor(new DOMEditor(m_history.get()))
     {
     }
 
@@ -280,13 +280,13 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<Node> m_node;
-    RefPtrWillBeMember<Node> m_nextSibling;
+    Member<Node> m_node;
+    Member<Node> m_nextSibling;
     String m_html;
     String m_oldHTML;
-    RawPtrWillBeMember<Node> m_newNode;
-    OwnPtrWillBeMember<InspectorHistory> m_history;
-    OwnPtrWillBeMember<DOMEditor> m_domEditor;
+    Member<Node> m_newNode;
+    Member<InspectorHistory> m_history;
+    Member<DOMEditor> m_domEditor;
 };
 
 class DOMEditor::ReplaceWholeTextAction final : public InspectorHistory::Action {
@@ -324,7 +324,7 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<Text> m_textNode;
+    Member<Text> m_textNode;
     String m_text;
     String m_oldText;
 };
@@ -332,7 +332,7 @@ private:
 class DOMEditor::ReplaceChildNodeAction final : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(ReplaceChildNodeAction);
 public:
-    ReplaceChildNodeAction(ContainerNode* parentNode, PassRefPtrWillBeRawPtr<Node> newNode, Node* oldNode)
+    ReplaceChildNodeAction(ContainerNode* parentNode, RawPtr<Node> newNode, Node* oldNode)
         : InspectorHistory::Action("ReplaceChildNode")
         , m_parentNode(parentNode)
         , m_newNode(newNode)
@@ -366,9 +366,9 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<ContainerNode> m_parentNode;
-    RefPtrWillBeMember<Node> m_newNode;
-    RefPtrWillBeMember<Node> m_oldNode;
+    Member<ContainerNode> m_parentNode;
+    Member<Node> m_newNode;
+    Member<Node> m_oldNode;
 };
 
 class DOMEditor::SetNodeValueAction final : public InspectorHistory::Action {
@@ -406,36 +406,36 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<Node> m_node;
+    Member<Node> m_node;
     String m_value;
     String m_oldValue;
 };
 
 DOMEditor::DOMEditor(InspectorHistory* history) : m_history(history) { }
 
-bool DOMEditor::insertBefore(ContainerNode* parentNode, PassRefPtrWillBeRawPtr<Node> node, Node* anchorNode, ExceptionState& exceptionState)
+bool DOMEditor::insertBefore(ContainerNode* parentNode, RawPtr<Node> node, Node* anchorNode, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptRefWillBeNoop(new InsertBeforeAction(parentNode, node, anchorNode)), exceptionState);
+    return m_history->perform(new InsertBeforeAction(parentNode, node, anchorNode), exceptionState);
 }
 
 bool DOMEditor::removeChild(ContainerNode* parentNode, Node* node, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptRefWillBeNoop(new RemoveChildAction(parentNode, node)), exceptionState);
+    return m_history->perform(new RemoveChildAction(parentNode, node), exceptionState);
 }
 
 bool DOMEditor::setAttribute(Element* element, const String& name, const String& value, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptRefWillBeNoop(new SetAttributeAction(element, AtomicString(name), AtomicString(value))), exceptionState);
+    return m_history->perform(new SetAttributeAction(element, AtomicString(name), AtomicString(value)), exceptionState);
 }
 
 bool DOMEditor::removeAttribute(Element* element, const String& name, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptRefWillBeNoop(new RemoveAttributeAction(element, AtomicString(name))), exceptionState);
+    return m_history->perform(new RemoveAttributeAction(element, AtomicString(name)), exceptionState);
 }
 
 bool DOMEditor::setOuterHTML(Node* node, const String& html, Node** newNode, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<SetOuterHTMLAction> action = adoptRefWillBeNoop(new SetOuterHTMLAction(node, html));
+    RawPtr<SetOuterHTMLAction> action = new SetOuterHTMLAction(node, html);
     bool result = m_history->perform(action, exceptionState);
     if (result)
         *newNode = action->newNode();
@@ -444,17 +444,17 @@ bool DOMEditor::setOuterHTML(Node* node, const String& html, Node** newNode, Exc
 
 bool DOMEditor::replaceWholeText(Text* textNode, const String& text, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptRefWillBeNoop(new ReplaceWholeTextAction(textNode, text)), exceptionState);
+    return m_history->perform(new ReplaceWholeTextAction(textNode, text), exceptionState);
 }
 
-bool DOMEditor::replaceChild(ContainerNode* parentNode, PassRefPtrWillBeRawPtr<Node> newNode, Node* oldNode, ExceptionState& exceptionState)
+bool DOMEditor::replaceChild(ContainerNode* parentNode, RawPtr<Node> newNode, Node* oldNode, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptRefWillBeNoop(new ReplaceChildNodeAction(parentNode, newNode, oldNode)), exceptionState);
+    return m_history->perform(new ReplaceChildNodeAction(parentNode, newNode, oldNode), exceptionState);
 }
 
 bool DOMEditor::setNodeValue(Node* node, const String& value, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptRefWillBeNoop(new SetNodeValueAction(node, value)), exceptionState);
+    return m_history->perform(new SetNodeValueAction(node, value), exceptionState);
 }
 
 static void populateErrorString(ExceptionState& exceptionState, ErrorString* errorString)
@@ -463,7 +463,7 @@ static void populateErrorString(ExceptionState& exceptionState, ErrorString* err
         *errorString = DOMException::getErrorName(exceptionState.code());
 }
 
-bool DOMEditor::insertBefore(ContainerNode* parentNode, PassRefPtrWillBeRawPtr<Node> node, Node* anchorNode, ErrorString* errorString)
+bool DOMEditor::insertBefore(ContainerNode* parentNode, RawPtr<Node> node, Node* anchorNode, ErrorString* errorString)
 {
     TrackExceptionState exceptionState;
     bool result = insertBefore(parentNode, node, anchorNode, exceptionState);

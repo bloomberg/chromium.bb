@@ -12,7 +12,7 @@ namespace blink {
 
 namespace {
 
-PassRefPtrWillBeRawPtr<ScrollState> CreateScrollState(double deltaX, double deltaY, bool beginning, bool ending)
+RawPtr<ScrollState> CreateScrollState(double deltaX, double deltaY, bool beginning, bool ending)
 {
     OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
     scrollStateData->delta_x = deltaX;
@@ -33,7 +33,7 @@ TEST_F(ScrollStateTest, ConsumeDeltaNative)
     const float deltaXToConsume = 1.2;
     const float deltaYToConsume = 2.3;
 
-    RefPtrWillBeRawPtr<ScrollState> scrollState = CreateScrollState(deltaX, deltaY, false, false);
+    RawPtr<ScrollState> scrollState = CreateScrollState(deltaX, deltaY, false, false);
     EXPECT_FLOAT_EQ(deltaX, scrollState->deltaX());
     EXPECT_FLOAT_EQ(deltaY, scrollState->deltaY());
     EXPECT_FALSE(scrollState->deltaConsumedForScrollSequence());
@@ -64,8 +64,8 @@ TEST_F(ScrollStateTest, ConsumeDeltaNative)
 
 TEST_F(ScrollStateTest, CurrentNativeScrollingElement)
 {
-    RefPtrWillBeRawPtr<ScrollState> scrollState = CreateScrollState(0, 0, false, false);
-    RefPtrWillBeRawPtr<Element> element = Element::create(
+    RawPtr<ScrollState> scrollState = CreateScrollState(0, 0, false, false);
+    RawPtr<Element> element = Element::create(
         QualifiedName::null(), Document::create().get());
     scrollState->setCurrentNativeScrollingElement(element.get());
 
@@ -74,9 +74,9 @@ TEST_F(ScrollStateTest, CurrentNativeScrollingElement)
 
 TEST_F(ScrollStateTest, FullyConsumed)
 {
-    RefPtrWillBeRawPtr<ScrollState> scrollStateBegin = CreateScrollState(0, 0, true, false);
-    RefPtrWillBeRawPtr<ScrollState> scrollState = CreateScrollState(0, 0, false, false);
-    RefPtrWillBeRawPtr<ScrollState> scrollStateEnd = CreateScrollState(0, 0, false, true);
+    RawPtr<ScrollState> scrollStateBegin = CreateScrollState(0, 0, true, false);
+    RawPtr<ScrollState> scrollState = CreateScrollState(0, 0, false, false);
+    RawPtr<ScrollState> scrollStateEnd = CreateScrollState(0, 0, false, true);
     EXPECT_FALSE(scrollStateBegin->fullyConsumed());
     EXPECT_TRUE(scrollState->fullyConsumed());
     EXPECT_FALSE(scrollStateEnd->fullyConsumed());

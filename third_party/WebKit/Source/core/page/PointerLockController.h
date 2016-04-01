@@ -37,11 +37,10 @@ class Document;
 class Page;
 class PlatformMouseEvent;
 
-class CORE_EXPORT PointerLockController final : public NoBaseWillBeGarbageCollected<PointerLockController> {
+class CORE_EXPORT PointerLockController final : public GarbageCollected<PointerLockController> {
     WTF_MAKE_NONCOPYABLE(PointerLockController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(PointerLockController);
 public:
-    static PassOwnPtrWillBeRawPtr<PointerLockController> create(Page*);
+    static RawPtr<PointerLockController> create(Page*);
 
     void requestPointerLock(Element* target);
     void requestPointerUnlock();
@@ -63,10 +62,10 @@ private:
     void enqueueEvent(const AtomicString& type, Element*);
     void enqueueEvent(const AtomicString& type, Document*);
 
-    RawPtrWillBeMember<Page> m_page;
+    Member<Page> m_page;
     bool m_lockPending;
-    RefPtrWillBeMember<Element> m_element;
-    RefPtrWillBeMember<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
+    Member<Element> m_element;
+    Member<Document> m_documentOfRemovedElementWhileWaitingForUnlock;
 };
 
 } // namespace blink

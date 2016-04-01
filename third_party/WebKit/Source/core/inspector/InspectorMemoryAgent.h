@@ -40,9 +40,9 @@ namespace blink {
 class CORE_EXPORT InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent, protocol::Frontend::Memory>, public protocol::Backend::Memory {
     WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorMemoryAgent> create()
+    static RawPtr<InspectorMemoryAgent> create()
     {
-        return adoptPtrWillBeNoop(new InspectorMemoryAgent());
+        return new InspectorMemoryAgent();
     }
     ~InspectorMemoryAgent() override;
 

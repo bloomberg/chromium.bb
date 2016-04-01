@@ -44,9 +44,9 @@ class DictionaryValue;
 class CORE_EXPORT InspectorInspectorAgent final : public InspectorBaseAgent<InspectorInspectorAgent, protocol::Frontend::Inspector>, public protocol::Backend::Inspector {
     WTF_MAKE_NONCOPYABLE(InspectorInspectorAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorInspectorAgent> create()
+    static RawPtr<InspectorInspectorAgent> create()
     {
-        return adoptPtrWillBeNoop(new InspectorInspectorAgent());
+        return new InspectorInspectorAgent();
     }
 
     ~InspectorInspectorAgent() override;
