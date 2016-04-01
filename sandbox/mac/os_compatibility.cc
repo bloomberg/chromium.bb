@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "sandbox/mac/xpc.h"
 

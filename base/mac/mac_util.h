@@ -11,13 +11,6 @@
 #include <string>
 
 #include "base/base_export.h"
-#include "base/logging.h"
-
-#if defined(__OBJC__)
-#import <Foundation/Foundation.h>
-#else  // __OBJC__
-class NSImage;
-#endif  // __OBJC__
 
 namespace base {
 
