@@ -1,22 +1,12 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=../video-test.js></script>
-    <script type="text/javascript">
-        function doTest ()
-        {
-            testExpected("HTMLTrackElement.NONE", 0);
-            testExpected("HTMLTrackElement.LOADING", 1);
-            testExpected("HTMLTrackElement.LOADED", 2);
-            testExpected("HTMLTrackElement.ERROR", 3);
-
-            endTest();
-        }
-    </script>
-</head>
-<body onload="doTest()">
-    <p>Test TextTrack constants.</p>
-</body>
-</html>
+<title>Test TextTrack constants</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    assert_equals(HTMLTrackElement.NONE, 0);
+    assert_equals(HTMLTrackElement.LOADING, 1);
+    assert_equals(HTMLTrackElement.LOADED, 2);
+    assert_equals(HTMLTrackElement.ERROR, 3);
+});
+</script>
