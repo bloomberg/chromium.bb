@@ -722,15 +722,6 @@
       'optimize_jni_generation%': 1,
 
       'conditions': [
-        # In Windows official builds, enable DCHECK as dump-without-crashing.
-        ['OS=="win" and buildtype=="Official"', {
-          'dcheck_always_on%': 1,
-          'dcheck_is_dump_without_crash': 1,
-        }, {
-          'dcheck_always_on%': 0,
-          'dcheck_is_dump_without_crash': 0,
-        }],
-
         # A flag for POSIX platforms
         ['OS=="win"', {
           'os_posix%': 0,
@@ -1202,7 +1193,6 @@
     'fastbuild%': '<(fastbuild)',
     'win_z7%': '<(win_z7)',
     'dcheck_always_on%': '<(dcheck_always_on)',
-    'dcheck_is_dump_without_crash%': '<(dcheck_is_dump_without_crash)',
     'tracing_like_official_build%': '<(tracing_like_official_build)',
     'fieldtrial_testing_like_official_build%': '<(fieldtrial_testing_like_official_build)',
     'arm_version%': '<(arm_version)',
@@ -2859,9 +2849,6 @@
       ['dcheck_always_on!=0', {
         'defines': ['DCHECK_ALWAYS_ON=1'],
       }],  # dcheck_always_on!=0
-      ['dcheck_is_dump_without_crash!=0', {
-        'defines': ['DCHECK_IS_DUMP_WITHOUT_CRASH=1'],
-      }],  # dcheck_is_dump_without_crash!=0
       ['tracing_like_official_build!=0', {
         'defines': ['TRACING_IS_OFFICIAL_BUILD=1'],
       }],  # tracing_like_official_build!=0
