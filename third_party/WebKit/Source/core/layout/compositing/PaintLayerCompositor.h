@@ -179,6 +179,8 @@ private:
     void assertNoUnresolvedDirtyBits();
 #endif
 
+    void updateIfNeededRecursiveInternal();
+
     // GraphicsLayerClient implementation
     // TODO(wkorman): Fix up needsRepaint implementation as part of reworking scrollbar compositing visual rects.
     bool needsRepaint(const GraphicsLayer&) const { return true; }

@@ -1115,6 +1115,7 @@
     'platform_test_files': [
       'DecimalTest.cpp',
       'DragImageTest.cpp',
+      'HistogramTest.cpp',
       'LayoutUnitTest.cpp',
       'LifecycleContextTest.cpp',
       'PODArenaTest.cpp',

@@ -649,6 +649,9 @@ private:
     void synchronizedPaint();
     void synchronizedPaintRecursively(GraphicsLayer*);
 
+    void updateStyleAndLayoutIfNeededRecursiveInternal();
+    void invalidateTreeIfNeededRecursiveInternal();
+
     void pushPaintArtifactToCompositor();
 
     void reset();

@@ -3282,6 +3282,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.Compositing.UpdateTime" units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent updating compositing in the Blink document lifecyce.
+  </summary>
+</histogram>
+
 <histogram name="Blink.DecodedImage.Orientation" enum="DecodedImageOrientation">
   <owner>rob.buis@samsung.org</owner>
   <summary>Image orientation inferred during decode.</summary>
@@ -3337,6 +3344,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.Paint.UpdateTime" units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>Time spent updating paint in the Blink document lifecycle.</summary>
+</histogram>
+
+<histogram name="Blink.PaintInvalidation.UpdateTime" units="microseconds">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Time spent updating paint invalidation in the Blink document lifecycle.
+  </summary>
+</histogram>
+
 <histogram name="Blink.RestoredCachedStyleSheet"
     enum="RestoredCachedStyleSheet">
   <obsolete>
@@ -3361,6 +3380,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Duration of time taken to scan pending activities of all V8 wrappers in a
     worker thread.
+  </summary>
+</histogram>
+
+<histogram name="Blink.StyleAndLayout.UpdateTime" units="microseconds">
+  <owner>layout-dev@chromium.org</owner>
+  <summary>
+    Time spent updating style and layout in the Blink document lifecycle.
   </summary>
 </histogram>
 
