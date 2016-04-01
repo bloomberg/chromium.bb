@@ -740,7 +740,18 @@
                   '|chrome/browser/.*supervised_user',
     },
     'sync': {
-      'filepath': 'chrome/browser/sync/|sync/|components/sync_driver/',
+      'filepath': '^chrome/android/sync_shell/'\
+                  '|^chrome/browser/ui/sync/'\
+                  '|^chrome/browser/ui/views/sync/'\
+                  '|^chrome/test/android/javatests/src/org/chromium/chrome/test/util/browser/sync/'\
+                  '|^ios/chrome/browser/sync/'\
+                  '|^chrome/android/java/src/org/chromium/chrome/browser/sync/'\
+                  '|^chrome/browser/sync/'\
+                  '|^components/browser_sync/'\
+                  '|^components/sync_bookmarks/'\
+                  '|^components/sync_driver/'\
+                  '|^components/sync_sessions/'\
+                  '|^sync/',
     },
     'syncfs': {
       'filepath': 'sync_file_system',
