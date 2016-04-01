@@ -1345,6 +1345,9 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
 
     // Keys: lowPriorityIframes
     "LowPriorityIFrames",
+
+    // Keys: disallowFetchForDocWrittenScriptsInMainFrame
+    "DisallowFetchForDocWrittenScriptsInMainFrame"
   };
 
   std::vector<std::string> blink_settings;
