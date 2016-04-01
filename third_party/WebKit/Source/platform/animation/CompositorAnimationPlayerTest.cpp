@@ -10,7 +10,7 @@
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/animation/CompositorTargetProperty.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "platform/testing/CompositorTest.h"
 
 namespace blink {
 
@@ -46,10 +46,12 @@ public:
     scoped_ptr<CompositorAnimationPlayer> m_player;
 };
 
+class CompositorAnimationPlayerTest : public CompositorTest {
+};
 
 // Test that when the animation delegate is null, the animation player
 // doesn't forward the finish notification.
-TEST(CompositorAnimationPlayerTest, NullDelegate)
+TEST_F(CompositorAnimationPlayerTest, NullDelegate)
 {
     scoped_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
 
@@ -69,7 +71,7 @@ TEST(CompositorAnimationPlayerTest, NullDelegate)
     EXPECT_FALSE(delegate->m_finished);
 }
 
-TEST(CompositorAnimationPlayerTest, NotifyFromCCAfterCompositorPlayerDeletion)
+TEST_F(CompositorAnimationPlayerTest, NotifyFromCCAfterCompositorPlayerDeletion)
 {
     scoped_ptr<CompositorAnimationDelegateForTesting> delegate(new CompositorAnimationDelegateForTesting);
 
@@ -87,7 +89,7 @@ TEST(CompositorAnimationPlayerTest, NotifyFromCCAfterCompositorPlayerDeletion)
     EXPECT_FALSE(delegate->m_finished);
 }
 
-TEST(CompositorAnimationPlayerTest, CompositorPlayerDeletionDetachesFromCCTimeline)
+TEST_F(CompositorAnimationPlayerTest, CompositorPlayerDeletionDetachesFromCCTimeline)
 {
     scoped_ptr<CompositorAnimationTimeline> timeline(new CompositorAnimationTimeline);
     scoped_ptr<CompositorAnimationPlayerTestClient> client(new CompositorAnimationPlayerTestClient);

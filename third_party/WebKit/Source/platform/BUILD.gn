@@ -461,6 +461,7 @@ source_set("test_support") {
     "//cc:test_support",
     "//cc/blink",
     "//testing/gmock",
+    "//testing/gtest:gtest",
   ]
 
   deps = [

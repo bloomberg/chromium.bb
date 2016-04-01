@@ -1133,6 +1133,7 @@
       'animation/AnimationTranslationUtilTest.cpp',
       'animation/CompositorAnimationPlayerTest.cpp',
       'animation/CompositorAnimationTest.cpp',
+      'animation/CompositorAnimationTimelineTest.cpp',
       'animation/CompositorFloatAnimationCurveTest.cpp',
       'animation/TimingFunctionTest.cpp',
       'animation/UnitBezierTest.cpp',
@@ -1239,6 +1240,8 @@
       'threading/BackgroundTaskRunnerTest.cpp',
     ],
     'platform_test_support_files': [
+      'testing/CompositorTest.cpp',
+      'testing/CompositorTest.h',
       'testing/FakeDisplayItemClient.h',
       'testing/FontTestHelpers.cpp',
       'testing/FontTestHelpers.h',
