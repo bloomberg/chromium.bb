@@ -7,6 +7,11 @@
 
 set -v
 
+get_instance_metadata() {
+  curl -fs http://metadata/computeMetadata/v1/instance/attributes/$1 \
+      -H "Metadata-Flavor: Google"
+}
+
 # Talk to the metadata server to get the project id
 PROJECTID=$(curl -s \
     "http://metadata.google.internal/computeMetadata/v1/project/project-id" \
@@ -34,9 +39,7 @@ pip install --upgrade pip virtualenv
 # Download the Clovis deployment from Google Cloud Storage and unzip it.
 # It is expected that the contents of the deployment have been generated using
 # the tools/android/loading/gce/deploy.sh script.
-CLOUD_STORAGE_PATH=$(curl -s \
-    "http://metadata/computeMetadata/v1/instance/attributes/cloud-storage-path" \
-    -H "Metadata-Flavor: Google")
+CLOUD_STORAGE_PATH=`get_instance_metadata cloud-storage-path`
 DEPLOYMENT_PATH=$CLOUD_STORAGE_PATH/deployment
 
 mkdir -p /opt/app/clovis
@@ -73,9 +76,7 @@ cat >$DEPLOYMENT_CONFIG_PATH << EOF
 EOF
 
 # Check if auto-start is enabled
-AUTO_START=$(curl -s \
-    "http://metadata/computeMetadata/v1/instance/attributes/auto-start" \
-    -H "Metadata-Flavor: Google")
+AUTO_START=`get_instance_metadata auto-start`
 
 # Exit early if auto start is not enabled.
 if [ "$AUTO_START" != "true" ]; then
