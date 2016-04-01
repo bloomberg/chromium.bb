@@ -291,12 +291,28 @@ void CastMetricsHelper::LogMediumTimeHistogramEvent(
                         50);
 }
 
-void CastMetricsHelper::RecordSimpleActionWithValue(const std::string& event,
-                                                    int value) {
+void CastMetricsHelper::RecordApplicationEvent(const std::string& event) {
   scoped_ptr<base::DictionaryValue> cast_event(new base::DictionaryValue());
   cast_event->SetString("name", event);
   base::TimeTicks now = base::TimeTicks::Now();
   cast_event->SetDouble("time", now.ToInternalValue());
+  cast_event->SetString("app_id", app_id_);
+  cast_event->SetString("session_id", session_id_);
+  cast_event->SetString("sdk_version", sdk_version_);
+  const std::string message = *SerializeToJson(*cast_event.get()).get();
+  RecordSimpleAction(message);
+}
+
+void CastMetricsHelper::RecordApplicationEventWithValue(
+    const std::string& event,
+    int value) {
+  scoped_ptr<base::DictionaryValue> cast_event(new base::DictionaryValue());
+  cast_event->SetString("name", event);
+  base::TimeTicks now = base::TimeTicks::Now();
+  cast_event->SetDouble("time", now.ToInternalValue());
+  cast_event->SetString("app_id", app_id_);
+  cast_event->SetString("session_id", session_id_);
+  cast_event->SetString("sdk_version", sdk_version_);
   cast_event->SetInteger("value", value);
   const std::string message = *SerializeToJson(*cast_event.get()).get();
   RecordSimpleAction(message);

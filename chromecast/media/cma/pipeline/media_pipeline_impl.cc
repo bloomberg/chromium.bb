@@ -65,8 +65,8 @@ void LogEstimatedBitrate(int decoded_bytes,
                       << estimated_bitrate_in_kbps << " kbps";
   metrics::CastMetricsHelper* metrics_helper =
       metrics::CastMetricsHelper::GetInstance();
-  metrics_helper->RecordSimpleActionWithValue(metric,
-                                              estimated_bitrate_in_kbps);
+  metrics_helper->RecordApplicationEventWithValue(metric,
+                                                  estimated_bitrate_in_kbps);
 }
 
 }  // namespace
@@ -101,7 +101,7 @@ MediaPipelineImpl::~MediaPipelineImpl() {
 
   if (backend_state_ != BACKEND_STATE_UNINITIALIZED &&
       backend_state_ != BACKEND_STATE_INITIALIZED)
-    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+    metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
         "Cast.Platform.Ended");
 
   // Since av pipeline still need to access device components in their
@@ -222,7 +222,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   }
   backend_state_ = BACKEND_STATE_PLAYING;
   ResetBitrateState();
-  metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
       "Cast.Platform.Playing");
 
   // Enable time updates.
@@ -275,7 +275,7 @@ void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
   // which may be invalidated later, to hardware. (b/25342604)
   CHECK(media_pipeline_backend_->Stop());
   backend_state_ = BACKEND_STATE_INITIALIZED;
-  metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
       "Cast.Platform.Ended");
 
   // 3. Flush both the audio and video pipeline. This will flush the frame
@@ -299,7 +299,7 @@ void MediaPipelineImpl::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(audio_pipeline_ || video_pipeline_);
   if (backend_state_ != BACKEND_STATE_UNINITIALIZED)
-    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+    metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
         "Cast.Platform.Ended");
 
   // Cancel pending flush callbacks since we are about to stop/shutdown
@@ -337,13 +337,13 @@ void MediaPipelineImpl::SetPlaybackRate(double rate) {
       media_pipeline_backend_->Resume();
       backend_state_ = BACKEND_STATE_PLAYING;
       ResetBitrateState();
-      metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+      metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
           "Cast.Platform.Playing");
     }
   } else if (backend_state_ == BACKEND_STATE_PLAYING) {
     media_pipeline_backend_->Pause();
     backend_state_ = BACKEND_STATE_PAUSED;
-    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+    metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
         "Cast.Platform.Pause");
   }
 }
@@ -413,7 +413,7 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
   if (is_buffering && (backend_state_ == BACKEND_STATE_PLAYING)) {
     media_pipeline_backend_->Pause();
     backend_state_ = BACKEND_STATE_PAUSED;
-    metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+    metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
         "Cast.Platform.Pause");
   } else if (!is_buffering && (backend_state_ == BACKEND_STATE_PAUSED)) {
     // Once we finish buffering, we need to honour the desired playback rate
@@ -504,7 +504,7 @@ void MediaPipelineImpl::OnError(::media::PipelineStatus error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(error, ::media::PIPELINE_OK) << "PIPELINE_OK is not an error!";
 
-  metrics::CastMetricsHelper::GetInstance()->RecordSimpleAction(
+  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
       "Cast.Platform.Error");
 
   if (!client_.error_cb.is_null())

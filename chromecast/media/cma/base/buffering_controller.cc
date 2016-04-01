@@ -171,10 +171,10 @@ void BufferingController::OnBufferingStateChanged(
       CMALOG(kLogControl)
           << "Time since last buffering event: "
           << time_between_buffering.InMilliseconds() << "ms";
-      metrics_helper->RecordSimpleActionWithValue(
+      metrics_helper->RecordApplicationEventWithValue(
           "Cast.Platform.PlayTimeBeforeAutoPause",
           time_between_buffering.InMilliseconds());
-      metrics_helper->RecordSimpleActionWithValue(
+      metrics_helper->RecordApplicationEventWithValue(
           "Cast.Platform.AutoPauseTime", buffering_user_time.InMilliseconds());
     }
     // Only the first buffering report is considered "initial buffering".
