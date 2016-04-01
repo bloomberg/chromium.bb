@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("Test transferControlToOffscreen.");
+window.jsTestIsAsync = true;
+
+var width = 50;
+var height = 50;
+var canvas = document.createElement("canvas");
+canvas.width = width;
+canvas.height = height;
+
+var offscreenCanvas = canvas.transferControlToOffscreen();
+shouldBe("offscreenCanvas.width", "width");
+shouldBe("offscreenCanvas.height", "height");
+
+var ctx = canvas.getContext("2d");
+try {
+    offscreenCanvas = canvas.transferControlToOffscreen();
+    testFailed("transferControlToOffscreen from a canvas with context didn't throw an exception.");
+} catch (ex) {
+    testPassed("transferControlToOffscreen from a canvas with context throws an exception: " + ex);
+}
+
+finishJSTest();
+</script>
+</body>
+</html>

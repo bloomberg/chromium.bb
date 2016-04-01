@@ -1,0 +1,12 @@
+Test transferControlToOffscreen.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS offscreenCanvas.width is width
+PASS offscreenCanvas.height is height
+PASS transferControlToOffscreen from a canvas with context throws an exception: InvalidStateError: Failed to execute 'transferControlToOffscreen' on 'HTMLCanvasElement': Cannot transfer control from a canvas that has a rendering context.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

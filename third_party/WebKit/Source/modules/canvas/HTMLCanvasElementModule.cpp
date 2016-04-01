@@ -17,4 +17,15 @@ void HTMLCanvasElementModule::getContext(HTMLCanvasElement& canvas, const String
     }
 }
 
+OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(HTMLCanvasElement& canvas, ExceptionState& exceptionState)
+{
+    if (canvas.renderingContext()) {
+        exceptionState.throwDOMException(InvalidStateError, "Cannot transfer control from a canvas that has a rendering context.");
+        return nullptr;
+    }
+    OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(canvas.width(), canvas.height());
+    offscreenCanvas->setAssociatedCanvas(&canvas);
+    return offscreenCanvas;
+}
+
 }

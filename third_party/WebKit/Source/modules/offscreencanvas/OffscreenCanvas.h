@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/html/HTMLCanvasElement.h"
 #include "modules/ModulesExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
@@ -38,6 +39,8 @@ public:
 
     IntSize size() const { return m_size; }
     OffscreenCanvasRenderingContext2D* renderingContext() const;
+    void setAssociatedCanvas(HTMLCanvasElement* canvas) { m_canvas = canvas; }
+    HTMLCanvasElement* getAssociatedCanvas() const { return m_canvas; }
 
     static void registerRenderingContextFactory(PassOwnPtr<OffscreenCanvasRenderingContextFactory>);
 
@@ -51,6 +54,7 @@ private:
     static OffscreenCanvasRenderingContextFactory* getRenderingContextFactory(int);
 
     Member<OffscreenCanvasRenderingContext> m_context;
+    WeakMember<HTMLCanvasElement> m_canvas;
     IntSize m_size;
 };
 

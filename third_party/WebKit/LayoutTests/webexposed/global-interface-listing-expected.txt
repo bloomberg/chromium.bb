@@ -1881,6 +1881,7 @@ interface HTMLCanvasElement : HTMLElement
     method getContext
     method toBlob
     method toDataURL
+    method transferControlToOffscreen
     setter height
     setter width
 interface HTMLCollection

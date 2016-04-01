@@ -110,6 +110,7 @@ void OffscreenCanvas::registerRenderingContextFactory(PassOwnPtr<OffscreenCanvas
 DEFINE_TRACE(OffscreenCanvas)
 {
     visitor->trace(m_context);
+    visitor->trace(m_canvas);
 }
 
 } // namespace blink

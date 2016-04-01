@@ -1971,6 +1971,7 @@
     'modules_unittest_files': [
       'accessibility/AXObjectTest.cpp',
       'cachestorage/CacheTest.cpp',
+      'canvas/HTMLCanvasElementModuleTest.cpp',
       'canvas2d/CanvasRenderingContext2DAPITest.cpp',
       'canvas2d/CanvasRenderingContext2DTest.cpp',
       'compositorworker/CompositorWorkerThreadTest.cpp',
