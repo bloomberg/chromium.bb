@@ -14,6 +14,12 @@ enum TrackId {
   kVideoTrackId = 1,
 };
 
+enum AvailableTracks {
+  AUDIO_TRACK_ONLY = 0,
+  VIDEO_TRACK_ONLY = 1,
+  AUDIO_AND_VIDEO_TRACKS = 2,
+};
+
 }  // namespace media
 }  // namespace chromecast
 

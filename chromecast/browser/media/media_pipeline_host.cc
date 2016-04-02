@@ -57,15 +57,19 @@ MediaPipelineHost::~MediaPipelineHost() {
 
 void MediaPipelineHost::Initialize(
     LoadType load_type,
+    AvailableTracks available_tracks,
     const MediaPipelineClient& client,
     const CreateMediaPipelineBackendCB& create_backend_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   media_pipeline_.reset(new MediaPipelineImpl());
   task_runner_.reset(new TaskRunnerImpl());
-  MediaPipelineDeviceParams::MediaSyncType sync_type =
-      (load_type == kLoadTypeMediaStream)
-          ? MediaPipelineDeviceParams::kModeIgnorePts
-          : MediaPipelineDeviceParams::kModeSyncPts;
+  MediaPipelineDeviceParams::MediaSyncType sync_type;
+  if (load_type == kLoadTypeMediaStream ||
+      available_tracks == AUDIO_TRACK_ONLY) {
+    sync_type = MediaPipelineDeviceParams::kModeIgnorePts;
+  } else {
+    sync_type = MediaPipelineDeviceParams::kModeSyncPts;
+  }
   MediaPipelineDeviceParams default_parameters(sync_type, task_runner_.get());
 
   media_pipeline_->SetClient(client);

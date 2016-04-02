@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chromecast/common/media/cma_ipc_common.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "chromecast/renderer/media/cma_message_filter_proxy.h"
 
@@ -26,7 +27,7 @@ class MediaChannelProxy
   MediaChannelProxy();
 
   // Opens a CMA ipc channel.
-  void Open(LoadType load_type);
+  void Open(LoadType load_type, AvailableTracks available_tracks);
 
   // Closes the ipc channel.
   void Close();

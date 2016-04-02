@@ -67,7 +67,9 @@ class CmaMessageFilterHost
   MediaPipelineHost* LookupById(int media_id);
 
   // Handling of incoming IPC messages.
-  void CreateMedia(int media_id, LoadType load_type);
+  void CreateMedia(int media_id,
+                   LoadType load_type,
+                   AvailableTracks available_tracks);
   void DestroyMedia(int media_id);
   void SetCdm(int media_id, int render_frame_id, int cdm_id);
   void CreateAvPipe(int media_id, TrackId track_id, size_t shared_mem_size);
