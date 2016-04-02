@@ -189,7 +189,7 @@ zuc_list_tests(void);
  * character will match any sequence and the '?' character will match any
  * single character.
  * The '-' character at the start of a pattern marks the end of the
- * patterns required to match and the begining of patterns that names
+ * patterns required to match and the beginning of patterns that names
  * must not match.
  * Defaults to use all tests.
  *
