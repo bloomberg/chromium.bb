@@ -49,7 +49,7 @@ void convertDeviceFilter(const USBDeviceFilter& filter, WebUSBDeviceFilter* webF
 
 void convertDeviceRequestOptions(const USBDeviceRequestOptions& options, WebUSBDeviceRequestOptions* webOptions)
 {
-    ASSERT(options.hasFilters());
+    DCHECK(options.hasFilters());
     webOptions->filters = WebVector<WebUSBDeviceFilter>(options.filters().size());
     for (size_t i = 0; i < options.filters().size(); ++i) {
         convertDeviceFilter(options.filters()[i], &webOptions->filters[i]);
@@ -79,13 +79,13 @@ USB::USB(LocalFrame& frame)
     , m_client(USBController::from(frame).client())
 {
     if (m_client)
-        m_client->setObserver(this);
+        m_client->addObserver(this);
 }
 
 USB::~USB()
 {
     if (m_client)
-        m_client->setObserver(nullptr);
+        m_client->removeObserver(this);
 }
 
 ScriptPromise USB::getDevices(ScriptState* scriptState)
@@ -139,7 +139,7 @@ const AtomicString& USB::interfaceName() const
 void USB::willDetachFrameHost()
 {
     if (m_client)
-        m_client->setObserver(nullptr);
+        m_client->removeObserver(this);
     m_client = nullptr;
 }
 

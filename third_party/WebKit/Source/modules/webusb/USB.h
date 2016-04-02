@@ -52,6 +52,7 @@ public:
     void onDeviceDisconnected(WebPassOwnPtr<WebUSBDevice>) override;
 
     DECLARE_VIRTUAL_TRACE();
+    EAGERLY_FINALIZE();
 
 private:
     explicit USB(LocalFrame& frame);

@@ -25,7 +25,8 @@ class WebUSBClientImpl : public blink::WebUSBClient {
   void requestDevice(
       const blink::WebUSBDeviceRequestOptions& options,
       blink::WebUSBClientRequestDeviceCallbacks* callbacks) override;
-  void setObserver(Observer* observer) override;
+  void addObserver(Observer* observer) override;
+  void removeObserver(Observer* observer) override;
 
   device::usb::DeviceManager* GetDeviceManager();
   void OnDeviceChangeNotification(
@@ -34,7 +35,7 @@ class WebUSBClientImpl : public blink::WebUSBClient {
   ServiceRegistry* const service_registry_;
   device::usb::DeviceManagerPtr device_manager_;
   device::usb::ChooserServicePtr chooser_service_;
-  Observer* observer_ = nullptr;
+  std::set<Observer*> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUSBClientImpl);
 };

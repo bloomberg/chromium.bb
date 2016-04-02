@@ -40,8 +40,11 @@ public:
     // Ownership of the WebUSBClientRequestDeviceCallbacks is transferred to the client.
     virtual void requestDevice(const WebUSBDeviceRequestOptions&, WebUSBClientRequestDeviceCallbacks*) = 0;
 
-    // Sets the observer of device changes through the WebUSBClient.
-    virtual void setObserver(Observer*) = 0;
+    // Adds an observer of device changes to the WebUSBClient.
+    virtual void addObserver(Observer*) = 0;
+
+    // Removes an observer of device changes from the WebUSBClient.
+    virtual void removeObserver(Observer*) = 0;
 };
 
 } // namespace blink
