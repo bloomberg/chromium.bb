@@ -30,7 +30,7 @@
           <iron-icon on-tap="onRemoveUrlTap_" icon="clear"></iron-icon>
         </div>
       </template>
-      <div class="list-item list-button" on-tap="onAddPageTap_"
+      <div class="list-item list-button" id="addPage" on-tap="onAddPageTap_"
           i18n-content="onStartupAddNewPage">
       </div>
       <div class="list-item list-button" on-tap="onUseCurrentPagesTap_"
@@ -41,7 +41,7 @@
     <settings-dialog id="addUrlDialog">
       <div class="title" i18n-content="onStartupAddNewPage"></div>
       <div class="body">
-        <paper-input class="flex" always-float-label
+        <paper-input class="flex" always-float-label id="newUrl"
             i18n-values="label:onStartupSiteUrl" value="{{newUrl_}}">
         </paper-input>
       </div>
@@ -49,8 +49,8 @@
         <div class="action-buttons">
           <paper-button class="cancel-button" on-tap="onCancelTap_"
               id="cancel" i18n-content="cancel"></paper-button>
-          <paper-button class="action-button" on-tap="onAddTap_"
-              i18n-content="add" disabled="[[!isAddEnabled_(newUrl_)]]">
+          <paper-button id="add" class="action-button" on-tap="onAddTap_"
+              i18n-content="add" disabled="[[!isNewUrlValid_]]">
           </paper-button>
         </div>
       </div>

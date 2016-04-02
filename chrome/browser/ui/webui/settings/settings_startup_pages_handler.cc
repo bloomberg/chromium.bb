@@ -9,9 +9,10 @@
 
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings_utils.h"
 #include "chrome/common/pref_names.h"
-#include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/web_ui.h"
+#include "url/gurl.h"
 
 namespace settings {
 
@@ -37,6 +38,9 @@ void StartupPagesHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("setStartupPagesToCurrentPages",
       base::Bind(&StartupPagesHandler::HandleSetStartupPagesToCurrentPages,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("validateStartupPage",
+      base::Bind(&StartupPagesHandler::HandleValidateStartupPage,
                  base::Unretained(this)));
 }
 
@@ -79,13 +83,13 @@ void StartupPagesHandler::OnItemsRemoved(int start, int length) {
 void StartupPagesHandler::HandleAddStartupPage(const base::ListValue* args) {
   std::string url_string;
   if (!args->GetString(0, &url_string)) {
-    DLOG(ERROR) << "Missing URL string parameter";
+    NOTREACHED();
     return;
   }
 
-  GURL url = url_formatter::FixupURL(url_string, std::string());
-  if (!url.is_valid()) {
-    LOG(ERROR) << "FixupURL failed on " << url_string;
+  GURL url;
+  if (!settings_utils::FixupAndValidateStartupPage(url_string, &url)) {
+    NOTREACHED();
     return;
   }
 
@@ -124,13 +128,13 @@ void StartupPagesHandler::HandleOnStartupPrefsPageLoad(
 void StartupPagesHandler::HandleRemoveStartupPage(const base::ListValue* args) {
   int selected_index;
   if (!args->GetInteger(0, &selected_index)) {
-    DLOG(ERROR) << "Missing index parameter";
+    NOTREACHED();
     return;
   }
 
   if (selected_index < 0 ||
       selected_index >= startup_custom_pages_table_model_.RowCount()) {
-    LOG(ERROR) << "Index out of range " << selected_index;
+    NOTREACHED();
     return;
   }
 
@@ -142,6 +146,20 @@ void StartupPagesHandler::HandleSetStartupPagesToCurrentPages(
     const base::ListValue* args) {
   startup_custom_pages_table_model_.SetToCurrentlyOpenPages();
   SaveStartupPagesPref();
+}
+
+void StartupPagesHandler::HandleValidateStartupPage(
+    const base::ListValue* args) {
+  CHECK_EQ(args->GetSize(), 2U);
+
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  std::string url_string;
+  CHECK(args->GetString(1, &url_string));
+
+  bool valid = settings_utils::FixupAndValidateStartupPage(url_string, nullptr);
+  ResolveJavascriptCallback(*callback_id, base::FundamentalValue(valid));
 }
 
 void StartupPagesHandler::SaveStartupPagesPref() {

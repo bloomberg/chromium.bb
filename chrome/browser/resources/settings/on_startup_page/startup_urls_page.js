@@ -42,8 +42,14 @@ Polymer({
 
     /** @private {string} */
     newUrl_: {
+      observer: 'newUrlChanged_',
       type: String,
       value: '',
+    },
+
+    isNewUrlValid_: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -94,16 +100,27 @@ Polymer({
   },
 
   /**
-   * @return {boolean} Whether tapping the Add button should be allowed.
+   * @param {string} newUrl
    * @private
    */
-  isAddEnabled_: function() {
-    return this.browserProxy_.canAddPage(this.newUrl_);
+  newUrlChanged_: function(newUrl) {
+    if (this.validationResolver_)
+      this.validationResolver_.reject(false);
+
+    /** @type {?PromiseResolver<boolean>} */
+    this.validationResolver_ = this.browserProxy_.validateStartupPage(newUrl);
+
+    this.validationResolver_.promise.then(function(isValid) {
+      this.isNewUrlValid_ = isValid;
+      this.validationResolver_ = null;
+    }.bind(this), function() {
+      // Squelchs console errors.
+    });
   },
 
   /** @private */
   onAddTap_: function() {
-    assert(this.isAddEnabled_());
+    assert(this.isNewUrlValid_);
     this.browserProxy_.addStartupPage(this.newUrl_);
     this.$.addUrlDialog.close();
   },

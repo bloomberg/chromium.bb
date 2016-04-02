@@ -11,8 +11,11 @@ cr.define('settings', function() {
 
     useCurrentPages: assertNotReached,
 
-    /** @param {string} url */
-    canAddPage: assertNotReached,
+    /**
+     * @param {string} url
+     * @return {!PromiseResolver<boolean>} Whether the URL is valid.
+     */
+    validateStartupPage: assertNotReached,
 
     /** @param {string} url */
     addStartupPage: assertNotReached,
@@ -30,23 +33,30 @@ cr.define('settings', function() {
   cr.addSingletonGetter(StartupUrlsPageBrowserProxyImpl);
 
   StartupUrlsPageBrowserProxyImpl.prototype = {
+    /** @override */
     loadStartupPages: function() {
       chrome.send('onStartupPrefsPageLoad');
     },
 
+    /** @override */
     useCurrentPages: function() {
       chrome.send('setStartupPagesToCurrentPages');
     },
 
-    canAddPage: function(url) {
-      // TODO(dbeam): hook up to C++ for deeper validation.
-      return url.trim().length > 0;
+    /** @override */
+    validateStartupPage: function(url) {
+      var resolver = new PromiseResolver();
+      resolver.promise = url.trim().length == 0 ? Promise.resolve(false) :
+          cr.sendWithPromise('validateStartupPage', url);
+      return resolver;
     },
 
+    /** @override */
     addStartupPage: function(url) {
       chrome.send('addStartupPage', [url.trim()]);
     },
 
+    /** @override */
     removeStartupPage: function(index) {
       chrome.send('removeStartupPage', [index]);
     },

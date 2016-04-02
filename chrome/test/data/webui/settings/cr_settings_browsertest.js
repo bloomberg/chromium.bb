@@ -300,3 +300,25 @@ TEST_F('CrSettingsSystemPageTest', 'Restart', function() {
   mocha.run();
 });
 GEN('#endif');
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsStartupUrlsPageTest() {}
+
+CrSettingsStartupUrlsPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  browsePreload: 'chrome://md-settings/on_startup_page/startup_urls_page.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'startup_urls_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsStartupUrlsPageTest', 'Validity', function() {
+  mocha.run();
+});

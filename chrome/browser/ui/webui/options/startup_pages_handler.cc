@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -168,8 +169,10 @@ void StartupPagesHandler::AddStartupPage(const base::ListValue* args) {
   CHECK(args->GetString(0, &url_string));
 
   GURL fixed_url;
-  if (!settings_utils::FixupAndValidateStartupPage(url_string, &fixed_url))
+  if (!settings_utils::FixupAndValidateStartupPage(url_string, &fixed_url)) {
+    NOTREACHED();
     return;
+  }
 
   int row_count = startup_custom_pages_table_model_->RowCount();
   int index;
