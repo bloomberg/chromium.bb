@@ -21,13 +21,12 @@ WebGLContextAttributes toWebGLContextAttributes(const CanvasContextCreationAttri
     return result;
 }
 
-WebGraphicsContext3D::Attributes toWebGraphicsContext3DAttributes(const WebGLContextAttributes& attrs, const WebString& topDocumentURL, unsigned webGLVersion)
+Platform::ContextAttributes toPlatformContextAttributes(const WebGLContextAttributes& attrs, unsigned webGLVersion)
 {
-    WebGraphicsContext3D::Attributes result;
+    Platform::ContextAttributes result;
     result.failIfMajorPerformanceCaveat = attrs.failIfMajorPerformanceCaveat();
     result.shareResources = false;
     result.preferDiscreteGPU = true;
-    result.topDocumentURL = topDocumentURL;
     result.webGLVersion = webGLVersion;
     return result;
 }

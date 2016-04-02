@@ -15,6 +15,8 @@
 #include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureMailbox.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/khronos/GLES2/gl2.h"

@@ -1006,7 +1006,8 @@ static void Collect3DContextInformationOnFailure(
 
 blink::WebGraphicsContext3DProvider*
 RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
-    const blink::WebGraphicsContext3D::Attributes& web_attributes,
+    const blink::Platform::ContextAttributes& web_attributes,
+    const blink::WebURL& top_document_web_url,
     blink::WebGraphicsContext3DProvider* share_provider,
     blink::Platform::GraphicsInfo* gl_info) {
   DCHECK(gl_info);
@@ -1048,13 +1049,13 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   gfx::GpuPreference gpu_preference = web_attributes.preferDiscreteGPU
                                           ? gfx::PreferDiscreteGpu
                                           : gfx::PreferIntegratedGpu;
-  GURL url = blink::WebStringToGURL(web_attributes.topDocumentURL);
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
           gpu_channel_host.get(), attributes, gpu_preference, share_resources,
-          automatic_flushes, url, limits, share_context));
+          automatic_flushes, GURL(top_document_web_url), limits,
+          share_context));
   scoped_refptr<ContextProviderCommandBuffer> provider =
       ContextProviderCommandBuffer::Create(std::move(context),
                                            RENDERER_MAINTHREAD_CONTEXT);

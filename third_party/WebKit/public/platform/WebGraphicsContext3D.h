@@ -31,19 +31,10 @@
 #ifndef WebGraphicsContext3D_h
 #define WebGraphicsContext3D_h
 
-#include "WebCommon.h"
 #include "WebNonCopyable.h"
-#include "WebString.h"
-
-namespace gpu {
-namespace gles2 {
-class GLES2Interface;
-}
-}
-
-struct GrGLInterface;
 
 namespace blink {
+class WebString;
 
 // This interface abstracts the operations performed by the
 // GraphicsContext3D in order to implement WebGL. Nearly all of the
@@ -51,19 +42,6 @@ namespace blink {
 // the OpenGL ES 2.0 API.
 class WebGraphicsContext3D : public WebNonCopyable {
 public:
-    // Context creation attributes.
-    struct Attributes {
-        bool shareResources = true;
-        bool preferDiscreteGPU = false;
-        bool noAutomaticFlushes = false;
-        bool failIfMajorPerformanceCaveat = false;
-        unsigned webGLVersion = 0;
-        // FIXME: ideally this would be a WebURL, but it is currently not
-        // possible to pass a WebURL by value across the WebKit API boundary.
-        // See https://bugs.webkit.org/show_bug.cgi?id=103793#c13 .
-        WebString topDocumentURL;
-    };
-
     class WebGraphicsContextLostCallback {
     public:
         virtual void onContextLost() = 0;

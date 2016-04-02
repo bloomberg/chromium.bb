@@ -170,7 +170,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebMediaStream* web_media_stream,
       blink::WebMediaPlayer* web_media_player) override;
   blink::WebGraphicsContext3DProvider* createOffscreenGraphicsContext3DProvider(
-      const blink::WebGraphicsContext3D::Attributes& attributes,
+      const blink::Platform::ContextAttributes& attributes,
+      const blink::WebURL& top_document_web_url,
       blink::WebGraphicsContext3DProvider* share_provider,
       blink::Platform::GraphicsInfo* gl_info) override;
   blink::WebGraphicsContext3DProvider*

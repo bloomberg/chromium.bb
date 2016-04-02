@@ -457,6 +457,13 @@ public:
 
     // GPU ----------------------------------------------------------------
     //
+    struct ContextAttributes {
+        bool shareResources = true;
+        bool preferDiscreteGPU = false;
+        bool noAutomaticFlushes = false;
+        bool failIfMajorPerformanceCaveat = false;
+        unsigned webGLVersion = 0;
+    };
     struct GraphicsInfo {
         unsigned vendorId = 0;
         unsigned deviceId = 0;
@@ -475,7 +482,11 @@ public:
     // created or initialized.
     // Passing an existing provider to shareContext will create the new context
     // in the same share group as the one passed.
-    virtual WebGraphicsContext3DProvider* createOffscreenGraphicsContext3DProvider(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3DProvider* shareContext, GraphicsInfo* glInfo) { return nullptr; }
+    virtual WebGraphicsContext3DProvider* createOffscreenGraphicsContext3DProvider(
+        const ContextAttributes&,
+        const WebURL& topDocumentURL,
+        WebGraphicsContext3DProvider* shareContext,
+        GraphicsInfo*) { return nullptr; }
 
     // Returns a newly allocated and initialized offscreen context provider,
     // backed by the process-wide shared main thread context. Returns null if

@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -173,11 +174,14 @@ TestPlugin::~TestPlugin() {
 }
 
 bool TestPlugin::initialize(blink::WebPluginContainer* container) {
-  blink::WebGraphicsContext3D::Attributes attrs;
+  blink::Platform::ContextAttributes attrs;
+  DCHECK(!container->element().isNull());
+  DCHECK(!container->element().document().isNull());
+  blink::WebURL url = container->element().document().url();
   blink::Platform::GraphicsInfo gl_info;
   context_provider_ = make_scoped_ptr(
       blink::Platform::current()->createOffscreenGraphicsContext3DProvider(
-          attrs, nullptr, &gl_info));
+          attrs, url, nullptr, &gl_info));
   context_ = context_provider_ ? context_provider_->context3d() : nullptr;
   gl_ = context_provider_ ? context_provider_->contextGL() : nullptr;
 

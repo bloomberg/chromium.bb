@@ -562,9 +562,10 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGra
         return nullptr;
     }
 
-    WebGraphicsContext3D::Attributes wgc3dAttributes = toWebGraphicsContext3DAttributes(attributes, document.topDocument().url().getString(), webGLVersion);
+    Platform::ContextAttributes contextAttributes = toPlatformContextAttributes(attributes, webGLVersion);
     Platform::GraphicsInfo glInfo;
-    OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(wgc3dAttributes, 0, &glInfo));
+    OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+        contextAttributes, document.topDocument().url(), 0, &glInfo));
     if (!contextProvider || shouldFailContextCreationForTesting) {
         shouldFailContextCreationForTesting = false;
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, extractWebGLContextCreationError(glInfo)));
@@ -6006,9 +6007,10 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
         m_drawingBuffer.clear();
     }
 
-    WebGraphicsContext3D::Attributes attributes = toWebGraphicsContext3DAttributes(m_requestedAttributes, canvas()->document().topDocument().url().getString(), version());
+    Platform::ContextAttributes attributes = toPlatformContextAttributes(m_requestedAttributes, version());
     Platform::GraphicsInfo glInfo;
-    OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(attributes, 0, &glInfo));
+    OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+        attributes, canvas()->document().topDocument().url(), 0, &glInfo));
     RefPtr<DrawingBuffer> buffer;
     if (contextProvider) {
         // Construct a new drawing buffer with the new WebGraphicsContext3D.
