@@ -4,7 +4,7 @@ Heading
 Division
 Paragraph
 
-éŸ“åœ‹í•œêµ­
+韓國한국
 Coffee
 - black hot drink
 Milk
@@ -63,11 +63,11 @@ AXRole: AXWebArea
     AXRole: AXGroup
         AXRole: AXRuby
             AXRole: AXAnnotation
-                AXRole: AXStaticText "í•œêµ­"
-                    AXRole: AXInlineTextBox "í•œêµ­"
+                AXRole: AXStaticText "한국"
+                    AXRole: AXInlineTextBox "한국"
             AXRole: AXGroup
-                AXRole: AXStaticText "éŸ“åœ‹"
-                    AXRole: AXInlineTextBox "éŸ“åœ‹"
+                AXRole: AXStaticText "韓國"
+                    AXRole: AXInlineTextBox "韓國"
     AXRole: AXDescriptionList
         AXRole: AXDescriptionListTerm
             AXRole: AXStaticText "Coffee"
