@@ -9,7 +9,6 @@
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffect.h"
 #include "wtf/Allocator.h"
-#include "wtf/BitArray.h"
 #include "wtf/Vector.h"
 
 namespace blink {

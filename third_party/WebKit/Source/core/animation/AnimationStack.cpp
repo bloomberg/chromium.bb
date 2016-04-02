@@ -34,7 +34,6 @@
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/BitArray.h"
 #include "wtf/NonCopyingSort.h"
 #include <algorithm>
 

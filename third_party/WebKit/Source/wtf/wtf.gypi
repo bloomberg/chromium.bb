@@ -22,7 +22,6 @@
             'Assertions.cpp',
             'Assertions.h',
             'Atomics.h',
-            'BitArray.h',
             'BitVector.cpp',
             'BitVector.h',
             'BitwiseOperations.h',

@@ -56,9 +56,9 @@
 #include "platform/Histogram.h"
 #include "platform/animation/TimingFunction.h"
 #include "public/platform/Platform.h"
-#include "wtf/BitArray.h"
 #include "wtf/HashSet.h"
 #include <algorithm>
+#include <bitset>
 
 namespace blink {
 
@@ -606,7 +606,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const 
     const bool animationStyleRecalc = elementAnimations && elementAnimations->isAnimationStyleChange();
 #endif
 
-    BitArray<numCSSProperties> listedProperties;
+    std::bitset<numCSSProperties> listedProperties;
     bool anyTransitionHadTransitionAll = false;
     const LayoutObject* layoutObject = animatingElement->layoutObject();
     if (!animationStyleRecalc && style.display() != NONE && layoutObject && layoutObject->style() && transitionData) {
@@ -648,7 +648,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const 
     if (activeTransitions) {
         for (const auto& entry : *activeTransitions) {
             CSSPropertyID id = entry.key;
-            if (!anyTransitionHadTransitionAll && !animationStyleRecalc && !listedProperties.get(id - firstCSSProperty)) {
+            if (!anyTransitionHadTransitionAll && !animationStyleRecalc && !listedProperties.test(id - firstCSSProperty)) {
                 // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
                 // ASSERT(animation.playStateInternal() == Animation::Finished || !(elementAnimations && elementAnimations->isAnimationStyleChange()));
                 update.cancelTransition(id);

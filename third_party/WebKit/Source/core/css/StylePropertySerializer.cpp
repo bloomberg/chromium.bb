@@ -27,8 +27,8 @@
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValuePool.h"
-#include "wtf/BitArray.h"
 #include "wtf/text/StringBuilder.h"
+#include <bitset>
 
 namespace blink {
 
@@ -83,7 +83,7 @@ StylePropertySerializer::PropertyValueForSerializer StylePropertySerializer::Sty
 
     CSSPropertyID propertyID = static_cast<CSSPropertyID>(index + firstCSSProperty);
     ASSERT(firstCSSProperty <= propertyID && propertyID <= lastCSSProperty);
-    if (m_longhandPropertyUsed.get(index)) {
+    if (m_longhandPropertyUsed.test(index)) {
         int index = m_propertySet->findPropertyIndex(propertyID);
         ASSERT(index != -1);
         return StylePropertySerializer::PropertyValueForSerializer(m_propertySet->propertyAt(index));
@@ -107,7 +107,7 @@ bool StylePropertySerializer::StylePropertySetForSerializer::shouldProcessProper
             return true;
         if (property.id() < firstCSSProperty || property.id() > lastCSSProperty)
             return false;
-        return m_longhandPropertyUsed.get(property.id() - firstCSSProperty);
+        return m_longhandPropertyUsed.test(property.id() - firstCSSProperty);
     }
 
     CSSPropertyID propertyID = static_cast<CSSPropertyID>(index + firstCSSProperty);
@@ -123,7 +123,7 @@ bool StylePropertySerializer::StylePropertySetForSerializer::shouldProcessProper
     // direction and unicode-bidi. It only accepts the CSS-wide keywords.
     // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
     if (!CSSProperty::isAffectedByAllProperty(propertyID))
-        return m_longhandPropertyUsed.get(index);
+        return m_longhandPropertyUsed.test(index);
 
     return true;
 }
@@ -223,8 +223,8 @@ String StylePropertySerializer::asText() const
 {
     StringBuilder result;
 
-    BitArray<numCSSProperties> shorthandPropertyUsed;
-    BitArray<numCSSProperties> shorthandPropertyAppeared;
+    std::bitset<numCSSProperties> shorthandPropertyUsed;
+    std::bitset<numCSSProperties> shorthandPropertyAppeared;
 
     unsigned size = m_propertySet.propertyCount();
     unsigned numDecls = 0;
@@ -276,13 +276,13 @@ String StylePropertySerializer::asText() const
                 borderFallbackShorthandProperty = CSSPropertyBorderColor;
 
             // FIXME: Deal with cases where only some of border-(top|right|bottom|left) are specified.
-            if (!shorthandPropertyAppeared.get(CSSPropertyBorder - firstCSSProperty)) {
+            if (!shorthandPropertyAppeared.test(CSSPropertyBorder - firstCSSProperty)) {
                 value = borderPropertyValue(ReturnNullOnUncommonValues);
                 if (value.isNull())
                     shorthandPropertyAppeared.set(CSSPropertyBorder - firstCSSProperty);
                 else
                     shorthandPropertyID = CSSPropertyBorder;
-            } else if (shorthandPropertyUsed.get(CSSPropertyBorder - firstCSSProperty)) {
+            } else if (shorthandPropertyUsed.test(CSSPropertyBorder - firstCSSProperty)) {
                 shorthandPropertyID = CSSPropertyBorder;
             }
             if (!shorthandPropertyID)
@@ -389,9 +389,9 @@ String StylePropertySerializer::asText() const
 
         unsigned shortPropertyIndex = shorthandPropertyID - firstCSSProperty;
         if (shorthandPropertyID) {
-            if (shorthandPropertyUsed.get(shortPropertyIndex))
+            if (shorthandPropertyUsed.test(shortPropertyIndex))
                 continue;
-            if (!shorthandPropertyAppeared.get(shortPropertyIndex) && value.isNull())
+            if (!shorthandPropertyAppeared.test(shortPropertyIndex) && value.isNull())
                 value = m_propertySet.getPropertyValue(shorthandPropertyID);
             shorthandPropertyAppeared.set(shortPropertyIndex);
         }
@@ -412,7 +412,7 @@ String StylePropertySerializer::asText() const
         result.append(getPropertyText(propertyID, value, property.isImportant(), numDecls++));
     }
 
-    if (shorthandPropertyAppeared.get(CSSPropertyBackground - firstCSSProperty))
+    if (shorthandPropertyAppeared.test(CSSPropertyBackground - firstCSSProperty))
         appendBackgroundPropertyAsText(result, numDecls);
 
     ASSERT(!numDecls ^ !result.isEmpty());

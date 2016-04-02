@@ -28,7 +28,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
-#include "wtf/BitArray.h"
+#include <bitset>
 
 namespace blink {
 
@@ -62,7 +62,7 @@ bool CSSParserImpl::parseVariableValue(MutableStylePropertySet* declaration, con
     return declaration->addParsedProperties(parser.m_parsedProperties);
 }
 
-static inline void filterProperties(bool important, const HeapVector<CSSProperty, 256>& input, HeapVector<CSSProperty, 256>& output, size_t& unusedEntries, BitArray<numCSSProperties>& seenProperties, HashSet<AtomicString>& seenCustomProperties)
+static inline void filterProperties(bool important, const HeapVector<CSSProperty, 256>& input, HeapVector<CSSProperty, 256>& output, size_t& unusedEntries, std::bitset<numCSSProperties>& seenProperties, HashSet<AtomicString>& seenCustomProperties)
 {
     // Add properties in reverse order so that highest priority definitions are reached first. Duplicate definitions can then be ignored when found.
     for (size_t i = input.size(); i--; ) {
@@ -79,7 +79,7 @@ static inline void filterProperties(bool important, const HeapVector<CSSProperty
         } else if (property.id() == CSSPropertyApplyAtRule) {
             // TODO(timloh): Do we need to do anything here?
         } else {
-            if (seenProperties.get(propertyIDIndex))
+            if (seenProperties.test(propertyIDIndex))
                 continue;
             seenProperties.set(propertyIDIndex);
         }
@@ -89,7 +89,7 @@ static inline void filterProperties(bool important, const HeapVector<CSSProperty
 
 static RawPtr<ImmutableStylePropertySet> createStylePropertySet(HeapVector<CSSProperty, 256>& parsedProperties, CSSParserMode mode)
 {
-    BitArray<numCSSProperties> seenProperties;
+    std::bitset<numCSSProperties> seenProperties;
     size_t unusedEntries = parsedProperties.size();
     HeapVector<CSSProperty, 256> results(unusedEntries);
     HashSet<AtomicString> seenCustomProperties;
@@ -125,7 +125,7 @@ bool CSSParserImpl::parseDeclarationList(MutableStylePropertySet* declaration, c
     if (parser.m_parsedProperties.isEmpty())
         return false;
 
-    BitArray<numCSSProperties> seenProperties;
+    std::bitset<numCSSProperties> seenProperties;
     size_t unusedEntries = parser.m_parsedProperties.size();
     HeapVector<CSSProperty, 256> results(unusedEntries);
     HashSet<AtomicString> seenCustomProperties;
