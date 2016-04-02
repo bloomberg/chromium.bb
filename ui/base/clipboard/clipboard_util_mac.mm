@@ -77,4 +77,24 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
   return item;
 }
 
+// static
+base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromString(
+    NSString* string) {
+  base::scoped_nsobject<NSPasteboardItem> item([[NSPasteboardItem alloc] init]);
+  [item setString:string forType:UTIFromPboardType(NSStringPboardType)];
+  return item;
+}
+
+//static
+NSString* ClipboardUtil::GetTitleFromPasteboardURL(NSPasteboard* pboard) {
+  return
+      [pboard stringForType:UTIFromPboardType(kCorePasteboardFlavorType_urln)];
+}
+
+//static
+NSString* ClipboardUtil::GetURLFromPasteboardURL(NSPasteboard* pboard) {
+  return
+      [pboard stringForType:UTIFromPboardType(kCorePasteboardFlavorType_url)];
+}
+
 }  // namespace ui

@@ -20,6 +20,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/size.h"
@@ -28,9 +29,6 @@
 namespace ui {
 
 namespace {
-
-// Would be nice if this were in UTCoreTypes.h, but it isn't
-NSString* const kUTTypeURLName = @"public.url-name";
 
 // Tells us if WebKit was the last to write to the pasteboard. There's no
 // actual data associated with this type.
@@ -354,12 +352,12 @@ void ClipboardMac::ReadBookmark(base::string16* title, std::string* url) const {
   NSPasteboard* pb = GetPasteboard();
 
   if (title) {
-    NSString* contents = [pb stringForType:kUTTypeURLName];
+    NSString* contents = ClipboardUtil::GetTitleFromPasteboardURL(pb);
     *title = base::SysNSStringToUTF16(contents);
   }
 
   if (url) {
-    NSString* url_string = [[NSURL URLFromPasteboard:pb] absoluteString];
+    NSString* url_string = ClipboardUtil::GetURLFromPasteboardURL(pb);
     if (!url_string)
       url->clear();
     else
@@ -425,18 +423,21 @@ void ClipboardMac::WriteBookmark(const char* title_data,
   std::string url_str(url_data, url_len);
   NSString* url = base::SysUTF8ToNSString(url_str);
 
-  // TODO(playmobil): In the Windows version of this function, an HTML
-  // representation of the bookmark is also added to the clipboard, to support
-  // drag and drop of web shortcuts.  I don't think we need to do this on the
-  // Mac, but we should double check later on.
-  NSURL* nsurl = [NSURL URLWithString:url];
-
+  base::scoped_nsobject<NSPasteboardItem> item(
+      ClipboardUtil::PasteboardItemFromUrl(url, title));
   NSPasteboard* pb = GetPasteboard();
-  // passing UTIs into the pasteboard methods is valid >= 10.5
-  [pb addTypes:[NSArray arrayWithObjects:NSURLPboardType, kUTTypeURLName, nil]
-         owner:nil];
-  [nsurl writeToPasteboard:pb];
-  [pb setString:title forType:kUTTypeURLName];
+
+  NSSet* oldTypes = [NSSet setWithArray:[pb types]];
+  NSMutableSet* newTypes = [NSMutableSet setWithArray:[item types]];
+  [newTypes minusSet:oldTypes];
+
+  [pb addTypes:[newTypes allObjects] owner:nil];
+  for (NSString* type in newTypes) {
+    // Technically, the object associated with |type| might be an NSString or a
+    // property list. It doesn't matter though, since the type gets pulled from
+    // and shoved into an NSDictionary.
+    [pb setData:[item dataForType:type] forType:type];
+  }
 }
 
 void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {

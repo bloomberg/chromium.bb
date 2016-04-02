@@ -92,6 +92,7 @@ class OmniboxViewMac : public OmniboxView,
   NSRange SelectionRangeForProposedRange(NSRange proposed_range) override;
   void OnControlKeyChanged(bool pressed) override;
   bool CanCopy() override;
+  base::scoped_nsobject<NSPasteboardItem> CreatePasteboardItem() override;
   void CopyToPasteboard(NSPasteboard* pboard) override;
   bool ShouldEnableShowURL() override;
   void ShowURL() override;

@@ -37,6 +37,7 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD1(SelectionRangeForProposedRange, NSRange(NSRange range));
   MOCK_METHOD1(OnControlKeyChanged, void(bool pressed));
   MOCK_METHOD0(CanCopy, bool());
+  MOCK_METHOD0(CreatePasteboardItem, base::scoped_nsobject<NSPasteboardItem>());
   MOCK_METHOD1(CopyToPasteboard, void(NSPasteboard* pboard));
   MOCK_METHOD0(ShouldEnableShowURL, bool());
   MOCK_METHOD0(ShowURL, void());

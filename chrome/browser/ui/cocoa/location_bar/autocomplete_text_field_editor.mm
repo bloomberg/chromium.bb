@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
@@ -19,6 +20,11 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 namespace {
+
+// Set to true when an instance of this class is running a nested run loop.
+// Since this must always be run on the UI thread, there should never be two
+// simultaneous drags.
+bool gInDrag = false;
 
 // When too much data is put into a single-line text field, things get
 // janky due to the cost of computing the blink rect.  Sometimes users
@@ -44,6 +50,9 @@ BOOL ThePasteboardIsTooDamnBig() {
 }
 
 }  // namespace
+
+@interface AutocompleteTextFieldEditor ()<NSDraggingSource>
+@end
 
 @implementation AutocompleteTextFieldEditor
 
@@ -104,24 +113,35 @@ BOOL ThePasteboardIsTooDamnBig() {
   AutocompleteTextFieldObserver* observer = [self observer];
   DCHECK(observer);
   if (observer && observer->CanCopy()) {
-    NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-    observer->CopyToPasteboard(pboard);
-
     NSPoint p;
     NSImage* image = [self dragImageForSelectionWithEvent:event origin:&p];
 
-    [self dragImage:image
-                 at:p
-             offset:mouseOffset
-              event:event
-         pasteboard:pboard
-             source:self
-          slideBack:slideBack];
+    base::scoped_nsobject<NSPasteboardItem> item(
+        observer->CreatePasteboardItem());
+    base::scoped_nsobject<NSDraggingItem> dragItem(
+        [[NSDraggingItem alloc] initWithPasteboardWriter:item]);
+    [dragItem setDraggingFrame:[self bounds] contents:image];
+    [self beginDraggingSessionWithItems:@[ dragItem.get() ]
+                                  event:event
+                                 source:self];
+    DCHECK(!gInDrag);
+    gInDrag = true;
+    while (gInDrag) {
+      [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                               beforeDate:[NSDate distantFuture]];
+    }
+
     return YES;
   }
   return [super dragSelectionWithEvent:event
                                 offset:mouseOffset
                              slideBack:slideBack];
+}
+
+- (void)draggingSession:(NSDraggingSession*)session
+           endedAtPoint:(NSPoint)aPoint
+              operation:(NSDragOperation)operation {
+  gInDrag = false;
 }
 
 - (void)copy:(id)sender {

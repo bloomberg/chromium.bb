@@ -34,6 +34,7 @@
 #import "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -926,7 +927,7 @@ bool OmniboxViewMac::CanCopy() {
   return selection.length > 0;
 }
 
-void OmniboxViewMac::CopyToPasteboard(NSPasteboard* pb) {
+base::scoped_nsobject<NSPasteboardItem> OmniboxViewMac::CreatePasteboardItem() {
   DCHECK(CanCopy());
 
   const NSRange selection = GetSelectedRange();
@@ -947,13 +948,17 @@ void OmniboxViewMac::CopyToPasteboard(NSPasteboard* pb) {
     UMA_HISTOGRAM_COUNTS(OmniboxEditModel::kCutOrCopyAllTextHistogram, 1);
 
   NSString* nstext = base::SysUTF16ToNSString(text);
-  [pb declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
-  [pb setString:nstext forType:NSStringPboardType];
-
   if (write_url) {
-    [pb declareURLPasteboardWithAdditionalTypes:[NSArray array] owner:nil];
-    [pb setDataForURL:base::SysUTF8ToNSString(url.spec()) title:nstext];
+    return ui::ClipboardUtil::PasteboardItemFromUrl(
+        base::SysUTF8ToNSString(url.spec()), nstext);
+  } else {
+    return ui::ClipboardUtil::PasteboardItemFromString(nstext);
   }
+}
+
+void OmniboxViewMac::CopyToPasteboard(NSPasteboard* pboard) {
+  base::scoped_nsobject<NSPasteboardItem> item(CreatePasteboardItem());
+  [pboard writeObjects:@[ item.get() ]];
 }
 
 void OmniboxViewMac::ShowURL() {

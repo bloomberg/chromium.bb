@@ -45,8 +45,11 @@ class AutocompleteTextFieldObserver {
   // Return |true| if there is a selection to copy.
   virtual bool CanCopy() = 0;
 
-  // Clears the |pboard| and adds the field's current selection.
-  // Called when the user does a copy or drag.
+  // Creates a pasteboard item from the field's current selection.
+  virtual base::scoped_nsobject<NSPasteboardItem> CreatePasteboardItem() = 0;
+
+  // Copies the pasteboard item returned from |CreatePasteboardItem()| to
+  // |pboard|.
   virtual void CopyToPasteboard(NSPasteboard* pboard) = 0;
 
   // Returns true if the Show URL option should be available.
