@@ -2038,7 +2038,7 @@
 
 	The timestamp is to be interpreted identical to the timestamp in the
 	wl_pointer.axis event. The timestamp value may be the same as a
-	preceeding wl_pointer.axis event.
+	preceding wl_pointer.axis event.
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
       <arg name="axis" type="uint" enum="axis" summary="the axis stopped with this event"/>
