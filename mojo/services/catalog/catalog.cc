@@ -23,8 +23,10 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
   // TODO(beng): think more about how this should be done for exe targets.
   std::string type = mojo::GetNameType(name);
   std::string path = mojo::GetNamePath(name);
-  if (type == mojo::kNameType_Mojo)
-    return package_dir.AppendASCII(path + "/manifest.json");
+  if (type == mojo::kNameType_Mojo) {
+    return package_dir.AppendASCII("Mojo Applications").AppendASCII(
+        path + "/manifest.json");
+  }
   if (type == mojo::kNameType_Exe)
     return package_dir.AppendASCII(path + "_manifest.json");
   return base::FilePath();
@@ -36,7 +38,8 @@ base::FilePath GetPackagePath(const base::FilePath& package_dir,
   if (type == mojo::kNameType_Mojo) {
     // It's still a mojo: URL, use the default mapping scheme.
     const std::string host = mojo::GetNamePath(name);
-    return package_dir.AppendASCII(host + "/" + host + ".mojo");
+    return package_dir.AppendASCII("Mojo Applications").AppendASCII(
+        host + "/" + host + ".mojo");
   }
   if (type == mojo::kNameType_Exe) {
 #if defined OS_WIN

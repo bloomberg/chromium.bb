@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/toolchain/toolchain.gni")
+import("//mojo/public/mojo_constants.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -32,7 +33,7 @@ template("mojo_native_application") {
     copy(copy_step_name) {
       sources = invoker.resources
       outputs = [
-        "${root_out_dir}/${base_target_name}/resources/{{source_file_part}}",
+        "${root_out_dir}/${mojo_application_subdir}/${base_target_name}/resources/{{source_file_part}}",
       ]
       if (defined(invoker.testonly)) {
         testonly = invoker.testonly
@@ -141,7 +142,7 @@ template("mojo_native_application") {
       "${root_shlib_dir}/${library_name}",
     ]
     outputs = [
-      "${root_out_dir}/${base_target_name}/${output}",
+      "${root_out_dir}/${mojo_application_subdir}/${base_target_name}/${output}",
     ]
   }
 
@@ -192,7 +193,7 @@ if (is_android) {
       copy(copy_step_name) {
         sources = invoker.resources
         outputs = [
-          "${root_out_dir}/${base_target_name}/resources/{{source_file_part}}",
+          "${root_out_dir}/${mojo_application_subdir}/${base_target_name}/resources/{{source_file_part}}",
         ]
         if (defined(invoker.testonly)) {
           testonly = invoker.testonly
@@ -222,8 +223,7 @@ if (is_android) {
                              ])
     }
 
-    _mojo_output =
-        "${root_out_dir}/${base_target_name}/${base_target_name}.mojo"
+    _mojo_output = "${root_out_dir}/${mojo_application_subdir}/${base_target_name}/${base_target_name}.mojo"
 
     action(target_name) {
       script = "//mojo/public/tools/prepend.py"

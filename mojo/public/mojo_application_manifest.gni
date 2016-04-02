@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/mojo_constants.gni")
+
 # Used to produce a Mojo Application Manifest for an application.
 #
 # Parameters:
@@ -67,7 +69,7 @@ template("mojo_application_manifest") {
     ]
 
     if (type == "mojo") {
-      output = "$root_out_dir/$application_name/manifest.json"
+      output = "$root_out_dir/$mojo_application_subdir/$application_name/manifest.json"
     } else {
       output = "$root_out_dir/${application_name}_manifest.json"
     }
@@ -86,7 +88,7 @@ template("mojo_application_manifest") {
 
     if (defined(invoker.packaged_applications)) {
       foreach(application_name, invoker.packaged_applications) {
-        input = "$root_out_dir/$application_name/manifest.json"
+        input = "$root_out_dir/$mojo_application_subdir/$application_name/manifest.json"
         inputs += [ input ]
         args += [ rebase_path(input, root_build_dir) ]
       }

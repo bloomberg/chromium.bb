@@ -6,6 +6,7 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/mojo_application_manifest.gni")
+import("//mojo/public/mojo_constants.gni")
 import("//tools/grit/repack.gni")
 
 if (is_android) {
@@ -67,7 +68,7 @@ if (is_win) {
     ]
 
     outputs = [
-      "$root_out_dir/mus/{{source_file_part}}",
+      "$root_out_dir/$mojo_application_subdir/mus/{{source_file_part}}",
     ]
   }
 }
@@ -120,7 +121,7 @@ repack("resources_strings") {
   sources = [
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
   ]
-  output = "$root_out_dir/mus/resources/mus_app_resources_strings.pak"
+  output = "$root_out_dir/$mojo_application_subdir/mus/resources/mus_app_resources_strings.pak"
   deps = [
     "//ui/strings",
   ]
@@ -130,7 +131,7 @@ repack("resources_100") {
   sources = [
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
   ]
-  output = "$root_out_dir/mus/resources/mus_app_resources_100.pak"
+  output = "$root_out_dir/$mojo_application_subdir/mus/resources/mus_app_resources_100.pak"
   deps = [
     "//ui/resources",
   ]
@@ -140,7 +141,7 @@ repack("resources_200") {
   sources = [
     "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
   ]
-  output = "$root_out_dir/mus/resources/mus_app_resources_200.pak"
+  output = "$root_out_dir/$mojo_application_subdir/mus/resources/mus_app_resources_200.pak"
   deps = [
     "//ui/resources",
   ]

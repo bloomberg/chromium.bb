@@ -69,7 +69,9 @@ base::FilePath GetPathForApplicationName(const std::string& application_name) {
 #else
   PathService::Get(base::DIR_EXE, &base_path);
 #endif
-  return base_path.AppendASCII(path).AppendASCII("resources");
+  // TODO(beng): this won't handle user-specific components.
+  return base_path.AppendASCII("Mojo Applications").AppendASCII(path).
+      AppendASCII("resources");
 }
 
 base::FilePath GetPathForResourceNamed(const base::FilePath& app_path,
