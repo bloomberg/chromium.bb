@@ -232,6 +232,7 @@ test("views_unittests") {
     "//ui/gl:test_support",
     "//ui/native_theme",
     "//ui/resources",
+    "//ui/resources:ui_test_pak",
     "//ui/strings",
     "//url",
   ]
