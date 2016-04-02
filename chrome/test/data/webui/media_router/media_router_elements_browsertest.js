@@ -64,16 +64,6 @@ MediaRouterElementsBrowserTest.prototype = {
     this.accessibilityAuditConfig.ignoreSelectors(
         'badAriaAttributeValue', '#input');
 
-    var requiredOwnedAriaRoleMissingSelectors = [
-      '#cast-mode-list',
-      '#sink-list'
-    ];
-
-    // Enable when failure is resolved.
-    // AX_ARIA_08: http://crbug.com/591552
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'requiredOwnedAriaRoleMissing', requiredOwnedAriaRoleMissingSelectors);
-
     // This element is used as a focus placeholder on dialog open, then
     // deleted. The user will be unable to tab to it. Remove when there is a
     // long term fix.

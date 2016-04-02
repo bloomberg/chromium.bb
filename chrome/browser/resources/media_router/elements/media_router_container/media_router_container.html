@@ -62,7 +62,7 @@
     </media-router-header>
     <div id="content">
       <template is="dom-if" if="[[!computeCastModeListHidden_(currentView_)]]">
-        <paper-menu id="cast-mode-list">
+        <paper-menu id="cast-mode-list" role="presentation">
           <template is="dom-repeat" id="defaultCastModeList"
               items="[[computeDefaultCastModeList_(castModeList)]]">
             <paper-item on-tap="onCastModeClick_">
@@ -105,7 +105,7 @@
             [[deviceMissingText_]]
           </a>
         </div>
-        <paper-menu id="sink-list"
+        <paper-menu id="sink-list" role="presentation"
             hidden$="[[computeSinkListHidden_(sinksToShow_, isUserSearching_)]]">
           <template is="dom-repeat" id="sinkList" items="[[sinksToShow_]]">
             <paper-item on-tap="onSinkClick_">
@@ -163,7 +163,7 @@
               hidden$="[[computeNoMatchesHidden_(searchResultsToShow_, isUserSearching_)]]">
             <span>[[searchNoMatchesText_]]</span>
           </div>
-          <paper-menu id="search-results" selected="0"
+          <paper-menu id="search-results" selected="0" role="presentation"
               hidden$="[[computeSearchResultsHidden_(isUserSearching_, searchResultsToShow_)]]">
             <template is="dom-repeat" id="searchResults"
                 items="[[searchResultsToShow_]]">
