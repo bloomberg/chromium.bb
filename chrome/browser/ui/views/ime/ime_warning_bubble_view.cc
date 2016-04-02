@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_nonchromeos.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
@@ -105,7 +106,8 @@ ImeWarningBubbleView::ImeWarningBubbleView(
   BrowserList::AddObserver(this);
 
   // The lifetime of this bubble is tied to the lifetime of the browser.
-  set_parent_window(browser_view_->GetNativeWindow());
+  set_parent_window(
+      platform_util::GetViewForWindow(browser_view_->GetNativeWindow()));
   InitAnchorView();
   InitLayout();
 
