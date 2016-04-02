@@ -6,59 +6,65 @@
 
 #include <algorithm>
 
-#include "base/single_thread_task_runner.h"
+#include "base/bind.h"
+#include "base/lazy_instance.h"
+#include "base/location.h"
+#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_wrapper.h"
 #include "chromecast/public/cast_media_shlib.h"
 
 namespace chromecast {
 namespace media {
 
-MediaPipelineBackendManager::MediaPipelineBackendManager(
-    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
-    : media_task_runner_(std::move(media_task_runner)) {
-}
+namespace {
 
-MediaPipelineBackendManager::~MediaPipelineBackendManager() {
-}
+base::LazyInstance<MediaPipelineBackendManager> g_instance =
+    LAZY_INSTANCE_INITIALIZER;
 
-scoped_ptr<MediaPipelineBackend>
-MediaPipelineBackendManager::CreateMediaPipelineBackend(
+}  // namespace
+
+// static
+MediaPipelineBackend* MediaPipelineBackendManager::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
   return CreateMediaPipelineBackend(params, 0);
 }
 
-scoped_ptr<MediaPipelineBackend>
-MediaPipelineBackendManager::CreateMediaPipelineBackend(
+// static
+MediaPipelineBackend* MediaPipelineBackendManager::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params,
     int stream_type) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  scoped_ptr<MediaPipelineBackend> backend_ptr(new MediaPipelineBackendWrapper(
-      make_scoped_ptr(
-          media::CastMediaShlib::CreateMediaPipelineBackend(params)),
-      stream_type, GetVolumeMultiplier(stream_type), this));
-  media_pipeline_backends_.push_back(backend_ptr.get());
+  DCHECK(MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  MediaPipelineBackendManager* backend_manager = Get();
+  MediaPipelineBackendWrapper* backend_ptr = new MediaPipelineBackendWrapper(
+      media::CastMediaShlib::CreateMediaPipelineBackend(params), stream_type,
+      backend_manager->GetVolumeMultiplier(stream_type));
+  backend_manager->media_pipeline_backends_.push_back(backend_ptr);
   return backend_ptr;
 }
 
+// static
 void MediaPipelineBackendManager::OnMediaPipelineBackendDestroyed(
     const MediaPipelineBackend* backend) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  media_pipeline_backends_.erase(
-      std::remove(media_pipeline_backends_.begin(),
-                  media_pipeline_backends_.end(), backend),
-      media_pipeline_backends_.end());
+  DCHECK(MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  MediaPipelineBackendManager* backend_manager = Get();
+  backend_manager->media_pipeline_backends_.erase(
+      std::remove(backend_manager->media_pipeline_backends_.begin(),
+                  backend_manager->media_pipeline_backends_.end(), backend),
+      backend_manager->media_pipeline_backends_.end());
 }
 
+// static
 void MediaPipelineBackendManager::SetVolumeMultiplier(int stream_type,
                                                       float volume) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  MediaPipelineBackendManager* backend_manager = Get();
   volume = std::max(0.0f, std::min(volume, 1.0f));
-  volume_by_stream_type_[stream_type] = volume;
+  backend_manager->volume_by_stream_type_[stream_type] = volume;
 
   // Set volume for each open media pipeline backends.
-  for (auto it = media_pipeline_backends_.begin();
-       it != media_pipeline_backends_.end(); it++) {
+  for (auto it = backend_manager->media_pipeline_backends_.begin();
+       it != backend_manager->media_pipeline_backends_.end(); it++) {
     MediaPipelineBackendWrapper* wrapper =
         static_cast<MediaPipelineBackendWrapper*>(*it);
     if (wrapper->GetStreamType() == stream_type)
@@ -66,10 +72,22 @@ void MediaPipelineBackendManager::SetVolumeMultiplier(int stream_type,
   }
 }
 
+// static
+MediaPipelineBackendManager* MediaPipelineBackendManager::Get() {
+  return g_instance.Pointer();
+}
+
+MediaPipelineBackendManager::MediaPipelineBackendManager() {
+}
+
+MediaPipelineBackendManager::~MediaPipelineBackendManager() {
+}
+
 float MediaPipelineBackendManager::GetVolumeMultiplier(int stream_type) {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  auto it = volume_by_stream_type_.find(stream_type);
-  if (it == volume_by_stream_type_.end()) {
+  DCHECK(MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+  MediaPipelineBackendManager* backend_manager = Get();
+  auto it = backend_manager->volume_by_stream_type_.find(stream_type);
+  if (it == backend_manager->volume_by_stream_type_.end()) {
     return 1.0;
   } else {
     return it->second;

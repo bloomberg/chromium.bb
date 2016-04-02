@@ -109,20 +109,15 @@ scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
 scoped_ptr<media::MediaPipelineBackend>
 CastContentBrowserClient::CreateMediaPipelineBackend(
     const media::MediaPipelineDeviceParams& params) {
-  DCHECK(cast_browser_main_parts_);
-  return media_pipeline_backend_manager()->CreateMediaPipelineBackend(params);
+  return make_scoped_ptr(
+      media::MediaPipelineBackendManager::CreateMediaPipelineBackend(params));
 }
 
 media::MediaResourceTracker*
 CastContentBrowserClient::media_resource_tracker() {
   return cast_browser_main_parts_->media_resource_tracker();
 }
-
-media::MediaPipelineBackendManager*
-CastContentBrowserClient::media_pipeline_backend_manager() {
-  return cast_browser_main_parts_->media_pipeline_backend_manager();
-}
-#endif  // !defined(OS_ANDROID)
+#endif  // OS_ANDROID
 
 void CastContentBrowserClient::SetMetricsClientId(
     const std::string& client_id) {

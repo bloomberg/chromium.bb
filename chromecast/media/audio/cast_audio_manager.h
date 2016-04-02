@@ -15,14 +15,11 @@ class TaskRunnerImpl;
 namespace media {
 
 class MediaPipelineBackend;
-class MediaPipelineBackendManager;
 struct MediaPipelineDeviceParams;
 
 class CastAudioManager : public ::media::AudioManagerBase {
  public:
-  // This class does not take ownership of |backend_manager|
-  CastAudioManager(::media::AudioLogFactory* audio_log_factory,
-                   MediaPipelineBackendManager* backend_manager);
+  explicit CastAudioManager(::media::AudioLogFactory* audio_log_factory);
   ~CastAudioManager() override;
 
   // AudioManager implementation.
@@ -55,8 +52,6 @@ class CastAudioManager : public ::media::AudioManagerBase {
   ::media::AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const ::media::AudioParameters& input_params) override;
-
-  MediaPipelineBackendManager* const backend_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioManager);
 };

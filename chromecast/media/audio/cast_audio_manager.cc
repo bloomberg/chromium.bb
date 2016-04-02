@@ -8,7 +8,10 @@
 #include <string>
 
 #include "chromecast/media/audio/cast_audio_output_stream.h"
+#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
+#include "chromecast/public/cast_media_shlib.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 
 namespace {
 // TODO(alokp): Query the preferred value from media backend.
@@ -25,10 +28,8 @@ static const int kDefaultOutputBufferSize = 2048;
 namespace chromecast {
 namespace media {
 
-CastAudioManager::CastAudioManager(::media::AudioLogFactory* audio_log_factory,
-                                   MediaPipelineBackendManager* backend_manager)
-    : AudioManagerBase(audio_log_factory), backend_manager_(backend_manager) {
-}
+CastAudioManager::CastAudioManager(::media::AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory) {}
 
 CastAudioManager::~CastAudioManager() {
   Shutdown();
@@ -63,7 +64,10 @@ void CastAudioManager::GetAudioInputDeviceNames(
 
 scoped_ptr<MediaPipelineBackend> CastAudioManager::CreateMediaPipelineBackend(
     const MediaPipelineDeviceParams& params) {
-  return backend_manager_->CreateMediaPipelineBackend(params);
+  DCHECK(media::MediaMessageLoop::GetTaskRunner()->BelongsToCurrentThread());
+
+  return scoped_ptr<MediaPipelineBackend>(
+      MediaPipelineBackendManager::CreateMediaPipelineBackend(params));
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLinearOutputStream(

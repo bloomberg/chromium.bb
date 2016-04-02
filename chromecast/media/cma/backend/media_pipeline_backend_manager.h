@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+template <typename T>
+struct DefaultLazyInstanceTraits;
 }  // namespace base
 
 namespace chromecast {
@@ -26,36 +26,36 @@ namespace media {
 // All functions in this class should be called on the media thread.
 class MediaPipelineBackendManager {
  public:
-  explicit MediaPipelineBackendManager(
-      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
-  ~MediaPipelineBackendManager();
-
   // Create media pipeline backend.
-  scoped_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
+  static MediaPipelineBackend* CreateMediaPipelineBackend(
       const MediaPipelineDeviceParams& params);
 
   // Create media pipeline backend with a specific stream_type.
-  scoped_ptr<MediaPipelineBackend> CreateMediaPipelineBackend(
+  static MediaPipelineBackend* CreateMediaPipelineBackend(
       const MediaPipelineDeviceParams& params,
       int stream_type);
 
   // Internal clean up when a new media pipeline backend is destroyed.
-  void OnMediaPipelineBackendDestroyed(const MediaPipelineBackend* backend);
+  static void OnMediaPipelineBackendDestroyed(
+      const MediaPipelineBackend* backend);
 
   // Sets the relative volume for a specified stream type,
   // with range [0.0, 1.0] inclusive. If |multiplier| is outside the
   // range [0.0, 1.0], it is clamped to that range.
   // TODO(tianyuwang): change stream_type to use a enum.
-  void SetVolumeMultiplier(int stream_type, float volume);
+  static void SetVolumeMultiplier(int stream_type, float volume);
 
  private:
+  friend struct base::DefaultLazyInstanceTraits<MediaPipelineBackendManager>;
+
   // Returns a pointer to a singleton instance of the
   // MediaPipelineBackendManager.
   static MediaPipelineBackendManager* Get();
 
-  float GetVolumeMultiplier(int stream_type);
+  MediaPipelineBackendManager();
+  ~MediaPipelineBackendManager();
 
-  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  float GetVolumeMultiplier(int stream_type);
 
   // A vector that stores all of the existing media_pipeline_backends_.
   std::vector<MediaPipelineBackend*> media_pipeline_backends_;

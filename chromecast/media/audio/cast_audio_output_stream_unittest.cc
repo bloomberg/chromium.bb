@@ -185,7 +185,7 @@ class FakeAudioSourceCallback
 class FakeAudioManager : public CastAudioManager {
  public:
   FakeAudioManager()
-      : CastAudioManager(nullptr, nullptr), media_pipeline_backend_(nullptr) {}
+      : CastAudioManager(nullptr), media_pipeline_backend_(nullptr) {}
   ~FakeAudioManager() override {}
 
   // CastAudioManager overrides.
