@@ -22,12 +22,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
-#include "content/public/common/dwrite_font_platform_win.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "skia/ext/fontmgr_default_win.h"
 #include "skia/ext/refptr.h"
-#include "third_party/WebKit/public/web/win/WebFontRendering.h"
-#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
@@ -97,36 +94,6 @@ NTSTATUS WINAPI NtALpcConnectPortPatch(HANDLE* port_handle,
                                        void* in_message_attributes,
                                        void* time_out) {
   return STATUS_ACCESS_DENIED;
-}
-
-// Windows-only DirectWrite support. These warm up the DirectWrite paths
-// before sandbox lock down to allow Skia access to the Font Manager service.
-void CreateDirectWriteFactory(IDWriteFactory** factory) {
-  typedef decltype(DWriteCreateFactory)* DWriteCreateFactoryProc;
-  HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
-  // TODO(scottmg): Temporary code to track crash in http://crbug.com/387867.
-  if (!dwrite_dll) {
-    DWORD load_library_get_last_error = GetLastError();
-    base::debug::Alias(&dwrite_dll);
-    base::debug::Alias(&load_library_get_last_error);
-    CHECK(false);
-  }
-
-  PatchServiceManagerCalls();
-
-  DWriteCreateFactoryProc dwrite_create_factory_proc =
-      reinterpret_cast<DWriteCreateFactoryProc>(
-          GetProcAddress(dwrite_dll, "DWriteCreateFactory"));
-  // TODO(scottmg): Temporary code to track crash in http://crbug.com/387867.
-  if (!dwrite_create_factory_proc) {
-    DWORD get_proc_address_get_last_error = GetLastError();
-    base::debug::Alias(&dwrite_create_factory_proc);
-    base::debug::Alias(&get_proc_address_get_last_error);
-    CHECK(false);
-  }
-  CHECK(SUCCEEDED(dwrite_create_factory_proc(
-      DWRITE_FACTORY_TYPE_ISOLATED, __uuidof(IDWriteFactory),
-      reinterpret_cast<IUnknown**>(factory))));
 }
 
 // Class to fake out a DC or a Font object. Maintains a reference to a
@@ -446,30 +413,9 @@ void PatchServiceManagerCalls() {
   DCHECK(patched == 0);
 }
 
-void DoPreSandboxWarmupForTypeface(SkTypeface* typeface) {
-  SkPaint paint_warmup;
-  paint_warmup.setTypeface(typeface);
-  wchar_t glyph = L'S';
-  paint_warmup.measureText(&glyph, 2);
-}
-
-SkFontMgr* GetPreSandboxWarmupFontMgr() {
-  if (!g_warmup_fontmgr) {
-    IDWriteFactory* factory;
-    CreateDirectWriteFactory(&factory);
-
-    g_warmup_fontmgr =
-        SkFontMgr_New_DirectWrite(factory, GetCustomFontCollection(factory));
-    blink::WebFontRendering::setSkiaFontManager(g_warmup_fontmgr);
-  }
-  return g_warmup_fontmgr;
-}
-
 GdiFontPatchData* PatchGdiFontEnumeration(const base::FilePath& path) {
-  if (ShouldUseDirectWriteFontProxyFieldTrial() && !g_warmup_fontmgr)
+  if (!g_warmup_fontmgr)
     g_warmup_fontmgr = SkFontMgr_New_DirectWrite();
-  // If not using the font proxy, we assume |g_warmup_fontmgr| is already
-  // initialized before this function is called.
   DCHECK(g_warmup_fontmgr);
   return new GdiFontPatchDataImpl(path);
 }
@@ -484,21 +430,6 @@ void ResetEmulatedGdiHandlesForTesting() {
 
 void SetPreSandboxWarmupFontMgrForTesting(SkFontMgr* fontmgr) {
   g_warmup_fontmgr = fontmgr;
-}
-
-void WarmupDirectWrite() {
-  TRACE_EVENT0("startup", "content::WarmupDirectWrite");
-
-  // The objects used here are intentionally not freed as we want the Skia
-  // code to use these objects after warmup.
-  SetDefaultSkiaFactory(GetPreSandboxWarmupFontMgr());
-
-  // We need to warm up *some* font for DirectWrite. Note that we don't use
-  // a monospace as would be nice in an attempt to avoid a small startup time
-  // regression, see http://crbug.com/463613.
-  skia::RefPtr<SkTypeface> hud_typeface = skia::AdoptRef(
-      GetPreSandboxWarmupFontMgr()->legacyCreateTypeface("Times New Roman", 0));
-  DoPreSandboxWarmupForTypeface(hud_typeface.get());
 }
 
 }  // namespace content

@@ -29,8 +29,6 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_win.h"
-#include "content/child/font_warmup_win.h"
-#include "content/public/common/dwrite_font_platform_win.h"
 #include "sandbox/win/src/sandbox.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
@@ -142,11 +140,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
     gfx::win::MaybeInitializeDirectWrite();
   bool use_direct_write = gfx::win::IsDirectWriteEnabled();
   if (use_direct_write) {
-    if (ShouldUseDirectWriteFontProxyFieldTrial()) {
-      InitializeDWriteFontProxy();
-    } else {
-      WarmupDirectWrite();
-    }
+    InitializeDWriteFontProxy();
   } else {
     SkTypeface_SetEnsureLOGFONTAccessibleProc(SkiaPreCacheFont);
   }
@@ -158,8 +152,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   main_message_loop.Run();
 
 #if defined(OS_WIN)
-  if (ShouldUseDirectWriteFontProxyFieldTrial())
-    UninitializeDWriteFontProxy();
+  UninitializeDWriteFontProxy();
 #endif
   return 0;
 }

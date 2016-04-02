@@ -672,7 +672,6 @@
       'common/database_identifier_unittest.cc',
       'common/discardable_shared_memory_heap_unittest.cc',
       'common/dom_storage/dom_storage_map_unittest.cc',
-      'common/dwrite_font_platform_win_unittest.cc',
       'common/fileapi/file_system_util_unittest.cc',
       'common/gpu/ca_layer_tree_unittest_mac.mm',
       'common/gpu/gpu_channel_manager_unittest.cc',

@@ -56,7 +56,6 @@
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/dwrite_font_platform_win.h"
 #include "content/public/common/main_function_params.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -65,7 +64,6 @@
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
-#include "ui/gfx/win/direct_write.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -109,16 +107,6 @@ class TranslationDelegate : public installer::TranslationDelegate {
  public:
   base::string16 GetLocalizedString(int installer_string_id) override;
 };
-
-void ExecuteFontCacheBuildTask(const base::FilePath& path) {
-  base::WeakPtr<content::UtilityProcessHost> utility_process_host(
-      content::UtilityProcessHost::Create(NULL, NULL)->AsWeakPtr());
-  utility_process_host->SetName(
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_FONT_CACHE_BUILDER_NAME));
-  utility_process_host->DisableSandbox();
-  utility_process_host->Send(
-      new ChromeUtilityHostMsg_BuildDirectWriteFontCache(path));
-}
 
 #if BUILDFLAG(ENABLE_KASKO)
 void ObserveFailedCrashReportDirectory(const base::FilePath& path, bool error) {
@@ -324,37 +312,6 @@ void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
 
 void ChromeBrowserMainPartsWin::PostProfileInit() {
   ChromeBrowserMainParts::PostProfileInit();
-
-  // DirectWrite support is mainly available Windows 7 and up.
-  // Skip loading the font cache if we are using the font proxy field trial.
-  if (gfx::win::ShouldUseDirectWrite() &&
-      !content::ShouldUseDirectWriteFontProxyFieldTrial()) {
-    base::FilePath path(
-      profile()->GetPath().AppendASCII(content::kFontCacheSharedSectionName));
-    // This function will create a read only section if cache file exists
-    // otherwise it will spawn utility process to build cache file, which will
-    // be used during next browser start/postprofileinit.
-    if (!content::LoadFontCache(path)) {
-      // We delay building of font cache until first startup page loads.
-      // During first renderer start there are lot of things happening
-      // simultaneously some of them are:
-      // - Renderer is going through all font files on the system to create a
-      //   font collection.
-      // - Renderer loading up startup URL, accessing HTML/JS File cache, net
-      //   activity etc.
-      // - Extension initialization.
-      // We delay building of cache mainly to avoid parallel font file loading
-      // along with Renderer. Some systems have significant number of font files
-      // which takes long time to process.
-      // Related information is at http://crbug.com/436195.
-      const int kBuildFontCacheDelaySec = 30;
-      content::BrowserThread::PostDelayedTask(
-          content::BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(ExecuteFontCacheBuildTask, path),
-          base::TimeDelta::FromSeconds(kBuildFontCacheDelaySec));
-    }
-  }
 }
 
 void ChromeBrowserMainPartsWin::PostBrowserStart() {

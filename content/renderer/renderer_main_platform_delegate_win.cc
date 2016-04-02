@@ -16,7 +16,6 @@
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_win.h"
 #include "content/child/font_warmup_win.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/dwrite_font_platform_win.h"
 #include "content/public/common/injection_test_win.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/render_thread_impl.h"
@@ -69,10 +68,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
     scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
     if (use_direct_write) {
-      if (ShouldUseDirectWriteFontProxyFieldTrial())
-        InitializeDWriteFontProxy();
-      else
-        WarmupDirectWrite();
+      InitializeDWriteFontProxy();
     } else {
       SkTypeface_SetEnsureLOGFONTAccessibleProc(SkiaPreCacheFont);
     }
@@ -82,8 +78,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {
-  if (ShouldUseDirectWriteFontProxyFieldTrial())
-    UninitializeDWriteFontProxy();
+  UninitializeDWriteFontProxy();
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
