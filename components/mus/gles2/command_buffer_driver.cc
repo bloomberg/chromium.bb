@@ -11,6 +11,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/mus/gles2/gl_surface_adapter.h"
 #include "components/mus/gles2/gpu_memory_tracker.h"
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/gles2/mojo_buffer_backing.h"
@@ -81,10 +82,17 @@ bool CommandBufferDriver::Initialize(
     return false;
 
   const bool offscreen = widget_ == gfx::kNullAcceleratedWidget;
+  static scoped_refptr<gfx::GLSurface> underlying_surface;
   if (offscreen) {
     surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
   } else {
-    surface_ = gfx::GLSurface::CreateViewGLSurface(widget_);
+    scoped_refptr<GLSurfaceAdapterMus> surface_adapter =
+        new GLSurfaceAdapterMus(gfx::GLSurface::CreateViewGLSurface(widget_));
+    surface_adapter->SetGpuCompletedSwapBuffersCallback(
+        base::Bind(&CommandBufferDriver::OnGpuCompletedSwapBuffers,
+                   weak_factory_.GetWeakPtr()));
+    surface_ = surface_adapter;
+
     gfx::VSyncProvider* vsync_provider =
         surface_ ? surface_->GetVSyncProvider() : nullptr;
     if (vsync_provider) {
@@ -494,6 +502,13 @@ void CommandBufferDriver::SignalQuery(uint32_t query_id,
     query->AddCallback(callback);
   else
     callback.Run();
+}
+
+void CommandBufferDriver::OnGpuCompletedSwapBuffers(gfx::SwapResult result) {
+  DCHECK(CalledOnValidThread());
+  if (client_) {
+    client_->OnGpuCompletedSwapBuffers(result);
+  }
 }
 
 }  // namespace mus

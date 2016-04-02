@@ -32,23 +32,6 @@ void RunMakeProgressCallback(
 
 }  // namespace
 
-class CommandBufferImpl::CommandBufferDriverClientImpl
-    : public CommandBufferDriver::Client {
- public:
-  explicit CommandBufferDriverClientImpl(CommandBufferImpl* command_buffer)
-      : command_buffer_(command_buffer) {}
-
- private:
-  void DidLoseContext(uint32_t reason) override {
-    command_buffer_->DidLoseContext(reason);
-  }
-  void UpdateVSyncParameters(int64_t timebase, int64_t interval) override {}
-
-  CommandBufferImpl* command_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(CommandBufferDriverClientImpl);
-};
-
 CommandBufferImpl::CommandBufferImpl(
     mojo::InterfaceRequest<mus::mojom::CommandBuffer> request,
     scoped_refptr<GpuState> gpu_state)
@@ -64,6 +47,11 @@ void CommandBufferImpl::DidLoseContext(uint32_t reason) {
   driver_->set_client(nullptr);
   client_->Destroyed(reason, gpu::error::kLostContext);
 }
+
+void CommandBufferImpl::UpdateVSyncParameters(int64_t timebase,
+                                              int64_t interval) {}
+
+void CommandBufferImpl::OnGpuCompletedSwapBuffers(gfx::SwapResult result) {}
 
 CommandBufferImpl::~CommandBufferImpl() {
 }
@@ -192,7 +180,7 @@ void CommandBufferImpl::InitializeOnGpuThread(
       gpu::CommandBufferNamespace::MOJO,
       gpu::CommandBufferId::FromUnsafeValue(++g_next_command_buffer_id),
       gfx::kNullAcceleratedWidget, gpu_state_));
-  driver_->set_client(make_scoped_ptr(new CommandBufferDriverClientImpl(this)));
+  driver_->set_client(this);
   client_ = mojo::MakeProxy(client.PassInterface());
   bool result =
       driver_->Initialize(std::move(shared_state), std::move(attribs));

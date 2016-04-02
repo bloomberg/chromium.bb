@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_SURFACES_DISPLAY_IMPL_H_
-#define COMPONENTS_MUS_SURFACES_DISPLAY_IMPL_H_
+#ifndef COMPONENTS_MUS_SURFACES_TOP_LEVEL_DISPLAY_CLIENT_H_
+#define COMPONENTS_MUS_SURFACES_TOP_LEVEL_DISPLAY_CLIENT_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
@@ -83,4 +84,4 @@ class TopLevelDisplayClient : public cc::DisplayClient,
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_SURFACES_DISPLAY_IMPL_H_
+#endif  // COMPONENTS_MUS_SURFACES_TOP_LEVEL_DISPLAY_CLIENT_H_

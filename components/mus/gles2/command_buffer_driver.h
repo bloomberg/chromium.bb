@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace gpu {
@@ -51,6 +52,7 @@ class CommandBufferDriver : base::NonThreadSafe {
     virtual ~Client();
     virtual void DidLoseContext(uint32_t reason) = 0;
     virtual void UpdateVSyncParameters(int64_t timebase, int64_t interval) = 0;
+    virtual void OnGpuCompletedSwapBuffers(gfx::SwapResult result) = 0;
   };
   CommandBufferDriver(gpu::CommandBufferNamespace command_buffer_namespace,
                       gpu::CommandBufferId command_buffer_id,
@@ -58,7 +60,10 @@ class CommandBufferDriver : base::NonThreadSafe {
                       scoped_refptr<GpuState> gpu_state);
   ~CommandBufferDriver();
 
-  void set_client(scoped_ptr<Client> client) { client_ = std::move(client); }
+  // The class owning the CommandBufferDriver instance (e.g. CommandBufferLocal)
+  // is itself the Client implementation so CommandBufferDriver does not own the
+  // client.
+  void set_client(Client* client) { client_ = client; }
 
   bool Initialize(mojo::ScopedSharedBufferHandle shared_state,
                   mojo::Array<int32_t> attribs);
@@ -118,11 +123,12 @@ class CommandBufferDriver : base::NonThreadSafe {
                        uint64_t release);
   void OnParseError();
   void OnContextLost(uint32_t reason);
+  void OnGpuCompletedSwapBuffers(gfx::SwapResult result);
 
   const gpu::CommandBufferNamespace command_buffer_namespace_;
   const gpu::CommandBufferId command_buffer_id_;
   gfx::AcceleratedWidget widget_;
-  scoped_ptr<Client> client_;
+  Client* client_;  // NOT OWNED.
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
   scoped_ptr<gpu::CommandExecutor> executor_;

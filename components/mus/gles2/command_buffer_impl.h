@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "components/mus/gles2/command_buffer_driver.h"
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -24,15 +25,20 @@ class GpuState;
 // so that we can insert sync points without blocking on the GL driver. It
 // forwards most method calls to the CommandBufferDriver, which runs on the
 // same thread as the native viewport.
-class CommandBufferImpl : public mojom::CommandBuffer {
+class CommandBufferImpl : public mojom::CommandBuffer,
+                          public CommandBufferDriver::Client {
  public:
   CommandBufferImpl(mojo::InterfaceRequest<CommandBuffer> request,
                     scoped_refptr<GpuState> gpu_state);
-  void DidLoseContext(uint32_t reason);
 
  private:
   class CommandBufferDriverClientImpl;
   ~CommandBufferImpl() override;
+
+  // CommandBufferDriver::Client. All called on the GPU thread.
+  void DidLoseContext(uint32_t reason) override;
+  void UpdateVSyncParameters(int64_t timebase, int64_t interval) override;
+  void OnGpuCompletedSwapBuffers(gfx::SwapResult result) override;
 
   // mojom::CommandBuffer:
   void Initialize(

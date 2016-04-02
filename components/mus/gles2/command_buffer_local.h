@@ -99,11 +99,12 @@ class CommandBufferLocal : public gpu::CommandBuffer,
                        const base::Closure& callback) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
 
-  // CommandBufferDriver::Client implementation:
+ private:
+  // CommandBufferDriver::Client implementation. All called on GPU thread.
   void DidLoseContext(uint32_t reason) override;
   void UpdateVSyncParameters(int64_t timebase, int64_t interval) override;
+  void OnGpuCompletedSwapBuffers(gfx::SwapResult result) override;
 
- private:
   ~CommandBufferLocal() override;
 
   gpu::CommandBufferSharedState* shared_state() const { return shared_state_; }
@@ -134,6 +135,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   // Helper functions are called in the client thread.
   void DidLoseContextOnClientThread(uint32_t reason);
   void UpdateVSyncParametersOnClientThread(int64_t timebase, int64_t interval);
+  void OnGpuCompletedSwapBuffersOnClientThread(gfx::SwapResult result);
 
   gfx::AcceleratedWidget widget_;
   scoped_refptr<GpuState> gpu_state_;

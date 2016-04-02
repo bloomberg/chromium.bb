@@ -114,4 +114,15 @@ void SurfacesContextProvider::DidLoseContext() {
   lost_context_callback_.Run();
 }
 
+void SurfacesContextProvider::GpuCompletedSwapBuffers(gfx::SwapResult result) {
+  if (!swap_buffers_completion_callback_.is_null()) {
+    swap_buffers_completion_callback_.Run(result);
+  }
+}
+
+void SurfacesContextProvider::SetSwapBuffersCompletionCallback(
+    gfx::GLSurface::SwapCompletionCallback callback) {
+  swap_buffers_completion_callback_ = callback;
+}
+
 }  // namespace mus

@@ -406,6 +406,15 @@ void CommandBufferLocal::UpdateVSyncParameters(int64_t timebase,
   }
 }
 
+void CommandBufferLocal::OnGpuCompletedSwapBuffers(gfx::SwapResult result) {
+  if (client_) {
+    client_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&CommandBufferLocal::OnGpuCompletedSwapBuffersOnClientThread,
+                   weak_ptr_, result));
+  }
+}
+
 CommandBufferLocal::~CommandBufferLocal() {}
 
 void CommandBufferLocal::TryUpdateState() {
@@ -433,6 +442,7 @@ void CommandBufferLocal::InitializeOnGpuThread(base::WaitableEvent* event,
       gpu::CommandBufferNamespace::MOJO_LOCAL,
       gpu::CommandBufferId::FromUnsafeValue(++g_next_command_buffer_id),
       widget_, gpu_state_));
+  driver_->set_client(this);
   const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
   void* memory = nullptr;
   mojo::ScopedSharedBufferHandle duped;
@@ -539,6 +549,12 @@ void CommandBufferLocal::UpdateVSyncParametersOnClientThread(int64_t timebase,
                                                              int64_t interval) {
   if (client_)
     client_->UpdateVSyncParameters(timebase, interval);
+}
+
+void CommandBufferLocal::OnGpuCompletedSwapBuffersOnClientThread(
+    gfx::SwapResult result) {
+  if (client_)
+    client_->GpuCompletedSwapBuffers(result);
 }
 
 }  // namespace mus
