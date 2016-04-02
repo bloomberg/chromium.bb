@@ -562,25 +562,21 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
 
-      if (data.forceReload ||
-          JSON.stringify(this.gaiaAuthParams_) != JSON.stringify(params)) {
-        this.gaiaAuthParams_ = params;
+      this.gaiaAuthParams_ = params;
+      switch (this.screenMode_) {
+        case ScreenMode.DEFAULT:
+          this.loadGaiaAuthHost_(false /* doSamlRedirect */);
+          break;
 
-        switch (this.screenMode_) {
-          case ScreenMode.DEFAULT:
-            this.loadGaiaAuthHost_(false /* doSamlRedirect */);
-            break;
+        case ScreenMode.OFFLINE:
+          this.loadOffline(params);
+          break;
 
-          case ScreenMode.OFFLINE:
-            this.loadOffline(params);
-            break;
-
-          case ScreenMode.SAML_INTERSTITIAL:
-            $('saml-interstitial').domain = data.enterpriseDomain;
-            if (this.loading)
-              this.loading = false;
-            break;
-        }
+        case ScreenMode.SAML_INTERSTITIAL:
+          $('saml-interstitial').domain = data.enterpriseDomain;
+          if (this.loading)
+            this.loading = false;
+          break;
       }
       this.updateControlsState();
     },
