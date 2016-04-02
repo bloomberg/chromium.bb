@@ -386,7 +386,8 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateServerTcpSocket(
     uint16_t min_port,
     uint16_t max_port,
     int opts) {
-  // We don't use TCP sockets for remoting connections.
+  // TCP sockets are not supported.
+  // TODO(sergeyu): Implement TCP support crbug.com/600032 .
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -398,8 +399,9 @@ ChromiumPacketSocketFactory::CreateClientTcpSocket(
       const rtc::ProxyInfo& proxy_info,
       const std::string& user_agent,
       int opts) {
-  // We don't use TCP sockets for remoting connections.
-  NOTREACHED();
+  // TCP sockets are not supported.
+  // TODO(sergeyu): Implement TCP support crbug.com/600032 .
+  NOTIMPLEMENTED();
   return nullptr;
 }
 
