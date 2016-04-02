@@ -46,6 +46,10 @@ const char kErrorNotCalledFromUserAction[] =
 // A preference determining whether to hide the warning bubble next time.
 const char kPrefWarningBubbleNeverShow[] = "skip_ime_warning_bubble";
 
+// A preference to see whether it is the first time to call input.ime.activate
+// since the extension is loaded.
+const char kPrefImeActivatedCalledBefore[] = "ime_activate_called_before";
+
 bool IsInputImeEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableInputImeAPI);
@@ -123,6 +127,10 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   // No-op if called multiple times.
   ui::IMEBridge::Initialize();
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  ExtensionPrefs::Get(profile)->UpdateExtensionPref(
+      extension->id(), kPrefImeActivatedCalledBefore,
+      new base::FundamentalValue(false));
 }
 
 void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -194,7 +202,31 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
   if (!event_router)
     return RespondNow(Error(kErrorNoActiveEngine));
 
-  // This API is only allowed to be called from a user action.
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
+  bool warning_bubble_never_show = false;
+  bool ime_activated_called = false;
+
+  if (prefs->ReadPrefAsBoolean(extension_id(), kPrefImeActivatedCalledBefore,
+                               &ime_activated_called) &&
+      prefs->ReadPrefAsBoolean(extension_id(), kPrefWarningBubbleNeverShow,
+                               &warning_bubble_never_show) &&
+      !ime_activated_called &&
+      warning_bubble_never_show) {
+    // If it the first time that the extension call input.ime.activate() since
+    // loaded, we allow it to be automatically activated from a non user action.
+    event_router->SetActiveEngine(extension_id());
+    ExtensionPrefs::Get(profile)->UpdateExtensionPref(
+        extension_id(), kPrefImeActivatedCalledBefore,
+        new base::FundamentalValue(true));
+    return RespondNow(NoArguments());
+  }
+
+  ExtensionPrefs::Get(profile)->UpdateExtensionPref(
+      extension_id(), kPrefImeActivatedCalledBefore,
+      new base::FundamentalValue(true));
+
+  // If not the first time, this API is only allowed to be called from a user
+  // action.
   if (!user_gesture())
     return RespondNow(Error(kErrorNotCalledFromUserAction));
 
@@ -204,11 +236,7 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
     return RespondNow(NoArguments());
   }
 
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
-  bool allowed_to_activate = false;
-  if (prefs->ReadPrefAsBoolean(extension_id(), kPrefWarningBubbleNeverShow,
-                               &allowed_to_activate) &&
-      allowed_to_activate) {
+  if (warning_bubble_never_show) {
     // If user allows to activate the extension without showing the warning
     // bubble, sets the active engine directly.
     // Otherwise, the extension will be activated when the user presses the 'OK'
