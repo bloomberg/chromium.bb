@@ -215,7 +215,7 @@ public:
     // If we've run out of columns in the last fragmentainer group (column row), we have to insert
     // another fragmentainer group in order to hold more columns. This means that we're moving to
     // the next outer column (in the enclosing fragmentation context).
-    void appendNewFragmentainerGroupIfNeeded(LayoutUnit bottomOffsetInFlowThread);
+    void appendNewFragmentainerGroupIfNeeded(LayoutUnit offsetInFlowThread, PageBoundaryRule);
 
     // Implementing FragmentationContext:
     bool isFragmentainerLogicalHeightKnown() final;

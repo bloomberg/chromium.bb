@@ -178,12 +178,13 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::previousSiblingMultiColumnSet() cons
     return nullptr;
 }
 
-bool LayoutMultiColumnSet::hasFragmentainerGroupForColumnAt(LayoutUnit bottomOffsetInFlowThread) const
+bool LayoutMultiColumnSet::hasFragmentainerGroupForColumnAt(LayoutUnit offsetInFlowThread, PageBoundaryRule pageBoundaryRule) const
 {
     const MultiColumnFragmentainerGroup& lastRow = lastFragmentainerGroup();
-    if (lastRow.logicalTopInFlowThread() > bottomOffsetInFlowThread)
-        return true;
-    return bottomOffsetInFlowThread - lastRow.logicalTopInFlowThread() <= lastRow.logicalHeight() * usedColumnCount();
+    LayoutUnit maxLogicalBottomInFlowThread = lastRow.logicalTopInFlowThread() + lastRow.logicalHeight() * usedColumnCount();
+    if (pageBoundaryRule == AssociateWithFormerPage)
+        return offsetInFlowThread <= maxLogicalBottomInFlowThread;
+    return offsetInFlowThread < maxLogicalBottomInFlowThread;
 }
 
 MultiColumnFragmentainerGroup& LayoutMultiColumnSet::appendNewFragmentainerGroup()
