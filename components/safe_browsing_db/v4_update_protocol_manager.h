@@ -87,6 +87,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
                            TestGetUpdatesErrorHandlingResponseCode);
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest, TestGetUpdatesNoError);
+  FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
+                           TestGetUpdatesWithOneBackoff);
   friend class V4UpdateProtocolManagerFactoryImpl;
 
   // The method to generate the URL for the request to be sent to the server.

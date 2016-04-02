@@ -34,9 +34,12 @@ namespace safe_browsing {
 
 class V4UpdateProtocolManagerTest : public testing::Test {
  protected:
-  static void ValidateGetUpdatesResults(
+  void ValidateGetUpdatesResults(
       const std::vector<ListUpdateResponse>& expected_lurs,
       const std::vector<ListUpdateResponse>& list_update_responses) {
+    // The callback should never be called if expect_callback_to_be_called_ is
+    // false.
+    EXPECT_TRUE(expect_callback_to_be_called_);
     ASSERT_EQ(expected_lurs.size(), list_update_responses.size());
 
     for (unsigned int i = 0; i < list_update_responses.size(); ++i) {
@@ -64,7 +67,8 @@ class V4UpdateProtocolManagerTest : public testing::Test {
     config.disable_auto_update = false;
     return V4UpdateProtocolManager::Create(
         NULL, config, current_list_states,
-        base::Bind(ValidateGetUpdatesResults, expected_lurs));
+        base::Bind(&V4UpdateProtocolManagerTest::ValidateGetUpdatesResults,
+                   base::Unretained(this), expected_lurs));
   }
 
   void SetupCurrentListStates(
@@ -130,6 +134,8 @@ class V4UpdateProtocolManagerTest : public testing::Test {
 
     return res_data;
   }
+
+  bool expect_callback_to_be_called_;
 };
 
 // TODO(vakh): Add many more tests.
@@ -147,8 +153,9 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingNetwork) {
   // Initial state. No errors.
   EXPECT_EQ(0ul, pm->update_error_count_);
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
-
+  expect_callback_to_be_called_ = false;
   pm->IssueUpdateRequest();
+
   EXPECT_FALSE(pm->IsUpdateScheduled());
 
   runner->RunPendingTasks();
@@ -177,7 +184,12 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingResponseCode) {
       CreateProtocolManager(current_list_states, expected_lurs));
   runner->ClearPendingTasks();
 
+  // Initial state. No errors.
+  EXPECT_EQ(0ul, pm->update_error_count_);
+  EXPECT_EQ(1ul, pm->update_back_off_mult_);
+  expect_callback_to_be_called_ = false;
   pm->IssueUpdateRequest();
+
   EXPECT_FALSE(pm->IsUpdateScheduled());
 
   runner->RunPendingTasks();
@@ -209,12 +221,70 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesNoError) {
       CreateProtocolManager(current_list_states, expected_lurs));
   runner->ClearPendingTasks();
 
+  // Initial state. No errors.
+  EXPECT_EQ(0ul, pm->update_error_count_);
+  EXPECT_EQ(1ul, pm->update_back_off_mult_);
+  expect_callback_to_be_called_ = true;
   pm->IssueUpdateRequest();
+
   EXPECT_FALSE(pm->IsUpdateScheduled());
 
   runner->RunPendingTasks();
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  DCHECK(fetcher);
+  fetcher->set_status(net::URLRequestStatus());
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(GetExpectedV4UpdateResponse(expected_lurs));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  // No error, back off multiplier is unchanged.
+  EXPECT_EQ(0ul, pm->update_error_count_);
+  EXPECT_EQ(1ul, pm->update_back_off_mult_);
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+}
+
+TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesWithOneBackoff) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory factory;
+  std::vector<ListUpdateResponse> expected_lurs;
+  SetupExpectedListUpdateResponse(&expected_lurs);
+  base::hash_map<UpdateListIdentifier, std::string> current_list_states;
+  SetupCurrentListStates(&current_list_states);
+  scoped_ptr<V4UpdateProtocolManager> pm(
+      CreateProtocolManager(current_list_states, expected_lurs));
+  runner->ClearPendingTasks();
+
+  // Initial state. No errors.
+  EXPECT_EQ(0ul, pm->update_error_count_);
+  EXPECT_EQ(1ul, pm->update_back_off_mult_);
+  expect_callback_to_be_called_ = false;
+  pm->IssueUpdateRequest();
+
+  EXPECT_FALSE(pm->IsUpdateScheduled());
+
+  runner->RunPendingTasks();
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  DCHECK(fetcher);
+  fetcher->set_status(net::URLRequestStatus());
+  // Response code of anything other than 200 should result in error.
+  fetcher->set_response_code(net::HTTP_NO_CONTENT);
+  fetcher->SetResponseString("");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  // Should have recorded one error, but back off multiplier is unchanged.
+  EXPECT_EQ(1ul, pm->update_error_count_);
+  EXPECT_EQ(1ul, pm->update_back_off_mult_);
+  EXPECT_TRUE(pm->IsUpdateScheduled());
+
+  // Retry, now no backoff.
+  expect_callback_to_be_called_ = true;
+  runner->RunPendingTasks();
+
+  fetcher = factory.GetFetcherByID(1);
   DCHECK(fetcher);
   fetcher->set_status(net::URLRequestStatus());
   fetcher->set_response_code(net::HTTP_OK);
