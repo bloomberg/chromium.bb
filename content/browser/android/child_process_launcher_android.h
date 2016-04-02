@@ -6,11 +6,13 @@
 #define CONTENT_BROWSER_ANDROID_CHILD_PROCESS_LAUNCHER_ANDROID_H_
 
 #include <jni.h>
+
 #include <map>
 
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "content/public/browser/file_descriptor_info.h"
 #include "ui/gl/android/scoped_java_surface.h"

@@ -9,6 +9,7 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/renderer/android/synchronous_compositor_registry.h"
 #include "content/renderer/input/input_handler_manager_client.h"

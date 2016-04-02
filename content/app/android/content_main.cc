@@ -8,6 +8,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"

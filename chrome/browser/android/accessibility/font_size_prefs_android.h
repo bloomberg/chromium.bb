@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_ANDROID_ACCESSIBILITY_FONT_SIZE_PREFS_ANDROID_H_
 
 #include <jni.h>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 
 class PrefChangeRegistrar;
