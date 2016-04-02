@@ -191,9 +191,15 @@
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_manager.h"
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/snapshot/screenshot_grabber.h"
@@ -3990,6 +3996,150 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, UnifiedDesktopEnabledByDefault) {
                NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(display_manager->unified_desktop_enabled());
+}
+
+namespace {
+const char kTestUser1[] = "test1@domain.com";
+}  // anonymous namespace
+
+class ChromeOSPolicyTest : public PolicyTest {
+ public:
+  ChromeOSPolicyTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PolicyTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                    cryptohome_id1_.id());
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "hash");
+    command_line->AppendSwitch(
+        chromeos::switches::kAllowFailedPolicyFetchForTest);
+
+    command_line->AppendSwitch(
+        chromeos::switches::kEnableSystemTimezoneAutomaticDetectionPolicy);
+  }
+
+ protected:
+  const AccountId test_account_id1_ = AccountId::FromUserEmail(kTestUser1);
+  const cryptohome::Identification cryptohome_id1_ =
+      cryptohome::Identification(test_account_id1_);
+
+  // Logs in |account_id|.
+  void LogIn(const AccountId& account_id, const std::string& user_id_hash) {
+    user_manager::UserManager::Get()->UserLoggedIn(account_id, user_id_hash,
+                                                   false);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void NavigateToUrl(const GURL& url) {
+    ui_test_utils::NavigateToURL(browser(), url);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void CheckSystemTimezoneAutomaticDetectionPolicyUnset() {
+    PrefService* local_state = g_browser_process->local_state();
+    EXPECT_FALSE(local_state->IsManagedPreference(
+        prefs::kSystemTimezoneAutomaticDetectionPolicy));
+    EXPECT_EQ(0, local_state->GetInteger(
+                     prefs::kSystemTimezoneAutomaticDetectionPolicy));
+  }
+
+  void SetAndTestSystemTimezoneAutomaticDetectionPolicy(int policy_value) {
+    PolicyMap policies;
+    policies.Set(key::kSystemTimezoneAutomaticDetection,
+                 POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_MACHINE,
+                 POLICY_SOURCE_CLOUD,
+                 new base::FundamentalValue(policy_value),
+                 NULL);
+    UpdateProviderPolicy(policies);
+
+    PrefService* local_state = g_browser_process->local_state();
+
+    EXPECT_TRUE(local_state->IsManagedPreference(
+        prefs::kSystemTimezoneAutomaticDetectionPolicy));
+    EXPECT_EQ(policy_value,
+              local_state->GetInteger(
+                  prefs::kSystemTimezoneAutomaticDetectionPolicy));
+  }
+
+  void SetEmptyPolicy() { UpdateProviderPolicy(PolicyMap()); }
+
+  bool CheckResolveTimezoneByGeolocation(bool checked, bool disabled) {
+    checker.set_web_contents(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    const std::string expression = base::StringPrintf(
+        "(function () {\n"
+        "  var checkbox = "
+        "document.getElementById('resolve-timezone-by-geolocation');\n"
+        "  if (!checkbox) {\n"
+        "    console.log('resolve-timezone-by-geolocation not found.');\n"
+        "    return false;\n"
+        "  }\n"
+        "  var expected_checked = %s;\n"
+        "  var expected_disabled = %s;\n"
+        "  var checked = checkbox.checked;\n"
+        "  var disabled = checkbox.disabled;\n"
+        "  if (checked != expected_checked)\n"
+        "    console.log('ERROR: expected_checked=' + expected_checked + ' != "
+        "checked=' + checked);\n"
+        "\n"
+        "  if (disabled != expected_disabled)\n"
+        "    console.log('ERROR: expected_disabled=' + expected_disabled + ' "
+        "!= disabled=' + disabled);\n"
+        "\n"
+        "  return (checked == expected_checked && disabled == "
+        "expected_disabled);\n"
+        "})()",
+        checked ? "true" : "false", disabled ? "true" : "false");
+    return checker.GetBool(expression);
+  }
+
+ private:
+  chromeos::test::JSChecker checker;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeOSPolicyTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ChromeOSPolicyTest, SystemTimezoneAutomaticDetection) {
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://settings"));
+  chromeos::system::TimeZoneResolverManager* manager =
+      g_browser_process->platform_part()->GetTimezoneResolverManager();
+
+  // Policy not set.
+  CheckSystemTimezoneAutomaticDetectionPolicyUnset();
+  EXPECT_TRUE(CheckResolveTimezoneByGeolocation(true, false));
+  EXPECT_TRUE(manager->TimeZoneResolverShouldBeRunningForTests());
+
+  int policy_value = 0 /* USERS_DECIDE */;
+  SetAndTestSystemTimezoneAutomaticDetectionPolicy(policy_value);
+  EXPECT_TRUE(CheckResolveTimezoneByGeolocation(true, false));
+  EXPECT_TRUE(manager->TimeZoneResolverShouldBeRunningForTests());
+
+  policy_value = 1 /* DISABLED */;
+  SetAndTestSystemTimezoneAutomaticDetectionPolicy(policy_value);
+  EXPECT_TRUE(CheckResolveTimezoneByGeolocation(false, true));
+  EXPECT_FALSE(manager->TimeZoneResolverShouldBeRunningForTests());
+
+  policy_value = 2 /* IP_ONLY */;
+  SetAndTestSystemTimezoneAutomaticDetectionPolicy(policy_value);
+  EXPECT_TRUE(CheckResolveTimezoneByGeolocation(true, true));
+  EXPECT_TRUE(manager->TimeZoneResolverShouldBeRunningForTests());
+
+  policy_value = 3 /* SEND_WIFI_ACCESS_POINTS */;
+  SetAndTestSystemTimezoneAutomaticDetectionPolicy(policy_value);
+  EXPECT_TRUE(CheckResolveTimezoneByGeolocation(true, true));
+  EXPECT_TRUE(manager->TimeZoneResolverShouldBeRunningForTests());
+
+  policy_value = 1 /* DISABLED */;
+  SetAndTestSystemTimezoneAutomaticDetectionPolicy(policy_value);
+  EXPECT_TRUE(CheckResolveTimezoneByGeolocation(false, true));
+  EXPECT_FALSE(manager->TimeZoneResolverShouldBeRunningForTests());
+
+  SetEmptyPolicy();
+  // Policy not set.
+  CheckSystemTimezoneAutomaticDetectionPolicyUnset();
+  EXPECT_TRUE(CheckResolveTimezoneByGeolocation(true, false));
+  EXPECT_TRUE(manager->TimeZoneResolverShouldBeRunningForTests());
 }
 #endif  // defined(OS_CHROMEOS)
 

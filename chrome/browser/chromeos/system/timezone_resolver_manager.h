@@ -32,6 +32,9 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
   // system timezone (preferences might have changed since request was started).
   bool ShouldApplyResolvedTimezone();
 
+  // Returns the result of the provate call for tests.
+  bool TimeZoneResolverShouldBeRunningForTests();
+
  private:
   // Returns true if TimeZoneResolver should be running and taking in account
   // all configuration data.
@@ -39,6 +42,9 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
 
   // This is non-null only after user logs in.
   PrefService* primary_user_prefs_;
+
+  // This is used to subscribe to policy preference.
+  PrefChangeRegistrar local_state_pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeZoneResolverManager);
 };

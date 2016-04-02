@@ -118,6 +118,18 @@ cr.define('options', function() {
     systemTimezoneIsManaged_: false,
 
     /**
+     * True if system timezone detection is managed by policy.
+     * @private {boolean}
+     */
+    systemTimezoneAutomaticDetectionIsManaged_: false,
+
+    /**
+     * This is the value of SystemTimezoneAutomaticDetection policy.
+     * @private {boolean}
+     */
+    systemTimezoneAutomaticDetectionValue_: 0,
+
+    /**
      * Cached bluetooth adapter state.
      * @private {?chrome.bluetooth.AdapterState}
      */
@@ -1681,17 +1693,36 @@ cr.define('options', function() {
      * @private
      */
     updateTimezoneSectionState_: function() {
+      var self = this;
+      $('resolve-timezone-by-geolocation')
+          .onclick = function(event) {
+        self.resolveTimezoneByGeolocation_ = event.currentTarget.checked;
+      };
       if (this.systemTimezoneIsManaged_) {
-        $('resolve-timezone-by-geolocation-selection').disabled = true;
-        $('resolve-timezone-by-geolocation').onclick = function(event) {};
+        $('resolve-timezone-by-geolocation').disabled = true;
+        $('resolve-timezone-by-geolocation').checked = false;
+      } else if (this.systemTimezoneAutomaticDetectionIsManaged_) {
+        if (this.systemTimezoneAutomaticDetectionValue_ ==
+            0 /* USERS_DECIDE */) {
+          $('resolve-timezone-by-geolocation').disabled = false;
+          $('resolve-timezone-by-geolocation')
+              .checked = this.resolveTimezoneByGeolocation_;
+          $('timezone-value-select')
+              .disabled = this.resolveTimezoneByGeolocation_;
+        } else {
+          $('resolve-timezone-by-geolocation').disabled = true;
+          $('resolve-timezone-by-geolocation')
+              .checked =
+              (this.systemTimezoneAutomaticDetectionValue_ != 1 /* DISABLED */);
+          $('timezone-value-select').disabled = true;
+        }
       } else {
         this.enableElementIfPossible_(
-            getRequiredElement('resolve-timezone-by-geolocation-selection'));
-        $('resolve-timezone-by-geolocation').onclick = function(event) {
-          $('timezone-value-select').disabled = event.currentTarget.checked;
-        };
+            getRequiredElement('resolve-timezone-by-geolocation'));
         $('timezone-value-select').disabled =
             this.resolveTimezoneByGeolocation_;
+        $('resolve-timezone-by-geolocation')
+            .checked = this.resolveTimezoneByGeolocation_;
       }
     },
 
@@ -1703,6 +1734,18 @@ cr.define('options', function() {
      */
     setSystemTimezoneManaged_: function(managed) {
       this.systemTimezoneIsManaged_ = managed;
+      this.updateTimezoneSectionState_();
+    },
+
+    /**
+     * This is called from chromium code when system timezone detection
+     * "managed" state is changed. Enables or disables dependent settings.
+     * @param {boolean} managed Is true when system timezone autodetection is
+     *     managed by enterprise policy. False otherwize.
+     */
+    setSystemTimezoneAutomaticDetectionManaged_: function(managed, value) {
+      this.systemTimezoneAutomaticDetectionIsManaged_ = managed;
+      this.systemTimezoneAutomaticDetectionValue_ = value;
       this.updateTimezoneSectionState_();
     },
 
@@ -2255,6 +2298,7 @@ cr.define('options', function() {
     'setProfilesInfo',
     'setSpokenFeedbackCheckboxState',
     'setSystemTimezoneManaged',
+    'setSystemTimezoneAutomaticDetectionManaged',
     'setThemesResetButtonEnabled',
     'setVirtualKeyboardCheckboxState',
     'setupPageZoomSelector',

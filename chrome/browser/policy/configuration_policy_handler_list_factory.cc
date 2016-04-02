@@ -550,6 +550,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSuppressUnsupportedOSWarning,
     base::Value::TYPE_BOOLEAN },
 #endif  // !OS_ANDROID
+
+#if defined(OS_CHROMEOS)
+  { key::kSystemTimezoneAutomaticDetection,
+    prefs::kSystemTimezoneAutomaticDetectionPolicy,
+    base::Value::TYPE_INTEGER },
+#endif
 };
 
 class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {

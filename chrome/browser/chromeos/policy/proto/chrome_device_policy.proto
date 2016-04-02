@@ -249,6 +249,18 @@ message SystemTimezoneProto {
   // the timezone and the change is persistent. Thus a change by one user
   // affects the login-screen and all other users.
   optional string timezone = 1;
+
+  // This allows domain administrators to control the timezone settings for
+  // their devices.
+  enum AutomaticTimezoneDetectionType {
+    USERS_DECIDE = 0;
+    DISABLED = 1;
+    IP_ONLY = 2;
+    SEND_WIFI_ACCESS_POINTS = 3;
+    SEND_WIFI_ACCESS_POINTS_TEST = 4;
+  };
+
+  optional AutomaticTimezoneDetectionType timezone_detection_type = 2;
 }
 
 message SystemUse24HourClockProto {
