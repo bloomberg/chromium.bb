@@ -61,7 +61,7 @@ private:
     ~PerformanceCompositeTiming() override;
 
     unsigned m_sourceFrame;
-    RefPtrWillBeMember<Document> m_requestingDocument;
+    Member<Document> m_requestingDocument;
 };
 
 } // namespace blink

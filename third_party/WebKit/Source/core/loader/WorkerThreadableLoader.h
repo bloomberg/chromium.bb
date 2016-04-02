@@ -197,7 +197,7 @@ private:
 
     void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 
-    RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
+    Persistent<WorkerGlobalScope> m_workerGlobalScope;
     RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;
 
     MainThreadBridgeBase* m_bridge;

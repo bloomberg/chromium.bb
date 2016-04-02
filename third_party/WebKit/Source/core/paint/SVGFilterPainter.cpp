@@ -118,7 +118,7 @@ GraphicsContext* SVGFilterPainter::prepareEffect(const LayoutObject& object, SVG
         return nullptr;
     }
 
-    OwnPtrWillBeRawPtr<FilterData> filterData = FilterData::create();
+    RawPtr<FilterData> filterData = FilterData::create();
     FloatRect referenceBox = object.objectBoundingBox();
 
     SVGFilterElement* filterElement = toSVGFilterElement(m_filter.element());

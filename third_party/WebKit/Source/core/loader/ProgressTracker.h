@@ -43,10 +43,10 @@ struct ProgressItem;
 // FIXME: This is only used on Android. Android is the only Chrome
 // browser which shows a progress bar during loading.
 // We should find a better way for Android to get this data and remove this!
-class CORE_EXPORT ProgressTracker final : public NoBaseWillBeGarbageCollectedFinalized<ProgressTracker> {
-    WTF_MAKE_NONCOPYABLE(ProgressTracker); USING_FAST_MALLOC_WILL_BE_REMOVED(ProgressTracker);
+class CORE_EXPORT ProgressTracker final : public GarbageCollectedFinalized<ProgressTracker> {
+    WTF_MAKE_NONCOPYABLE(ProgressTracker);
 public:
-    static PassOwnPtrWillBeRawPtr<ProgressTracker> create(LocalFrame*);
+    static RawPtr<ProgressTracker> create(LocalFrame*);
 
     ~ProgressTracker();
     DECLARE_TRACE();
@@ -73,7 +73,7 @@ private:
     void sendFinalProgress();
     void reset();
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    Member<LocalFrame> m_frame;
     unsigned long m_mainResourceIdentifier;
     long long m_totalPageAndResourceBytesToLoad;
     long long m_totalBytesReceived;

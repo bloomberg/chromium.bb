@@ -282,7 +282,7 @@ void ThemePainter::paintSliderTicks(const LayoutObject& o, const PaintInfo& pain
         tickRegionSideMargin = trackBounds.y() + (thumbSize.width() - tickSize.width() * zoomFactor) / 2.0;
         tickRegionWidth = trackBounds.height() - thumbSize.width();
     }
-    RefPtrWillBeRawPtr<HTMLDataListOptionsCollection> options = dataList->options();
+    RawPtr<HTMLDataListOptionsCollection> options = dataList->options();
     for (unsigned i = 0; HTMLOptionElement* optionElement = options->item(i); i++) {
         String value = optionElement->value();
         if (!input->isValidValue(value))

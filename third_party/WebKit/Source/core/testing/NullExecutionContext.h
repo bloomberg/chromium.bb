@@ -16,8 +16,8 @@
 
 namespace blink {
 
-class NullExecutionContext final : public RefCountedWillBeGarbageCollectedFinalized<NullExecutionContext>, public SecurityContext, public ExecutionContext {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
+class NullExecutionContext final : public GarbageCollectedFinalized<NullExecutionContext>, public SecurityContext, public ExecutionContext {
+    USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 public:
     NullExecutionContext();
 
@@ -37,7 +37,7 @@ public:
     SecurityContext& securityContext() override { return *this; }
     DOMTimerCoordinator* timers() override { return nullptr; }
 
-    void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
+    void addConsoleMessage(RawPtr<ConsoleMessage>) override { }
     void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) override { }
 
     void setIsSecureContext(bool);
@@ -65,7 +65,7 @@ protected:
 private:
     bool m_tasksNeedSuspension;
     bool m_isSecureContext;
-    OwnPtrWillBeMember<EventQueue> m_queue;
+    Member<EventQueue> m_queue;
 
     KURL m_dummyURL;
 };

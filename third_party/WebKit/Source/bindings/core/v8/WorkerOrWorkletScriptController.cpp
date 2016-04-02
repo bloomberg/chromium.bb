@@ -85,7 +85,7 @@ public:
     int columnNumber;
     String sourceURL;
     ScriptValue exception;
-    RefPtrWillBeMember<ErrorEvent> m_errorEventFromImportedScript;
+    Member<ErrorEvent> m_errorEventFromImportedScript;
 
     // A ExecutionState context is stack allocated by
     // WorkerOrWorkletScriptController::evaluate(), with the contoller using it
@@ -98,13 +98,13 @@ public:
     //
     // With Oilpan, |m_outerState| isn't traced. It'll be "up the stack"
     // and its fields will be traced when scanning the stack.
-    RawPtrWillBeMember<WorkerOrWorkletScriptController> m_controller;
+    Member<WorkerOrWorkletScriptController> m_controller;
     ExecutionState* m_outerState;
 };
 
-PassOwnPtrWillBeRawPtr<WorkerOrWorkletScriptController> WorkerOrWorkletScriptController::create(WorkerOrWorkletGlobalScope* globalScope, v8::Isolate* isolate)
+RawPtr<WorkerOrWorkletScriptController> WorkerOrWorkletScriptController::create(WorkerOrWorkletGlobalScope* globalScope, v8::Isolate* isolate)
 {
-    return adoptPtrWillBeNoop(new WorkerOrWorkletScriptController(globalScope, isolate));
+    return new WorkerOrWorkletScriptController(globalScope, isolate);
 }
 
 WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope* globalScope, v8::Isolate* isolate)
@@ -244,7 +244,7 @@ ScriptValue WorkerOrWorkletScriptController::evaluate(const CompressibleString& 
     return ScriptValue(m_scriptState.get(), result);
 }
 
-bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtrWillBeRawPtr<ErrorEvent>* errorEvent, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
+bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCode, RawPtr<ErrorEvent>* errorEvent, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
 {
     if (isExecutionForbidden())
         return false;
@@ -267,7 +267,7 @@ bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCod
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(m_scriptState.get(), errorEvent->get(), state.exception.v8Value(), m_scriptState->context()->Global());
         } else {
             ASSERT(!m_globalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
-            RefPtrWillBeRawPtr<ErrorEvent> event = nullptr;
+            RawPtr<ErrorEvent> event = nullptr;
             if (state.m_errorEventFromImportedScript)
                 event = state.m_errorEventFromImportedScript.release();
             else
@@ -312,7 +312,7 @@ void WorkerOrWorkletScriptController::disableEval(const String& errorMessage)
     m_disableEvalPending = errorMessage;
 }
 
-void WorkerOrWorkletScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent> errorEvent, ExceptionState& exceptionState)
+void WorkerOrWorkletScriptController::rethrowExceptionFromImportedScript(RawPtr<ErrorEvent> errorEvent, ExceptionState& exceptionState)
 {
     const String& errorMessage = errorEvent->message();
     if (m_executionState)

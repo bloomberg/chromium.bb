@@ -43,7 +43,7 @@ namespace blink {
 class ExecutionContext;
 
 class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>, public ScriptWrappable, public ActiveDOMObject {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Stream);
+    USING_GARBAGE_COLLECTED_MIXIN(Stream);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Stream* create(ExecutionContext* context, const String& mediaType)

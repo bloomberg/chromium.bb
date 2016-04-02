@@ -227,7 +227,7 @@ void ApplicationCacheHost::fillResourceList(ResourceInfoList* resources)
 
 void ApplicationCacheHost::stopDeferringEvents()
 {
-    RefPtrWillBeRawPtr<DocumentLoader> protect(documentLoader());
+    RawPtr<DocumentLoader> protect(documentLoader());
     for (unsigned i = 0; i < m_deferredEvents.size(); ++i) {
         const DeferredEvent& deferred = m_deferredEvents[i];
         dispatchDOMEvent(deferred.eventID, deferred.progressTotal, deferred.progressDone, deferred.errorReason, deferred.errorURL, deferred.errorStatus, deferred.errorMessage);
@@ -244,7 +244,7 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int p
     const AtomicString& eventType = ApplicationCache::toEventType(id);
     if (eventType.isEmpty() || !m_domApplicationCache->getExecutionContext())
         return;
-    RefPtrWillBeRawPtr<Event> event = nullptr;
+    RawPtr<Event> event = nullptr;
     if (id == PROGRESS_EVENT)
         event = ProgressEvent::create(eventType, true, progressDone, progressTotal);
     else if (id == ERROR_EVENT)

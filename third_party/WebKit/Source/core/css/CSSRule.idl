@@ -22,7 +22,7 @@
 
 [
     DependentLifetime,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface CSSRule {
     const unsigned short STYLE_RULE = 1;
     const unsigned short CHARSET_RULE = 2;

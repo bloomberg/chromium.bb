@@ -48,13 +48,12 @@ public:
     virtual void newRegionsAvailable(TextTrackLoader*) = 0;
 };
 
-class TextTrackLoader final : public NoBaseWillBeGarbageCollectedFinalized<TextTrackLoader>, public ResourceOwner<RawResource>, private VTTParserClient {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(TextTrackLoader);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
+class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>, public ResourceOwner<RawResource>, private VTTParserClient {
+    USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
 public:
-    static PassOwnPtrWillBeRawPtr<TextTrackLoader> create(TextTrackLoaderClient& client, Document& document)
+    static RawPtr<TextTrackLoader> create(TextTrackLoaderClient& client, Document& document)
     {
-        return adoptPtrWillBeNoop(new TextTrackLoader(client, document));
+        return new TextTrackLoader(client, document);
     }
     ~TextTrackLoader() override;
 
@@ -88,9 +87,9 @@ private:
     Document& document() const { return *m_document; }
 
     TextTrackLoaderClient& m_client;
-    PersistentWillBeMember<VTTParser> m_cueParser;
+    Member<VTTParser> m_cueParser;
     // FIXME: Remove this pointer and get the Document from m_client.
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
     Timer<TextTrackLoader> m_cueLoadTimer;
     State m_state;
     bool m_newCuesAvailable;

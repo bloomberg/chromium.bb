@@ -30,7 +30,7 @@
     Custom=LegacyCallAsFunction,
     DependentLifetime,
     SetWrapperReferenceFrom=ownerNode,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface HTMLAllCollection {
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter Element (unsigned long index);

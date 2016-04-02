@@ -89,7 +89,7 @@ public:
 
 protected:
     ResourceRequest m_resourceRequest;
-    RefPtrWillBePersistent<ScriptResource> m_resource;
+    Persistent<ScriptResource> m_resource;
     V8TestingScope m_scope;
 
     static int counter;
@@ -118,7 +118,7 @@ TEST_F(V8ScriptRunnerTest, parseOption)
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
     // The cached data is associated with the encoding.
     ResourceRequest request(url());
-    RefPtrWillBeRawPtr<ScriptResource> anotherResource = ScriptResource::create(request, "UTF-16");
+    RawPtr<ScriptResource> anotherResource = ScriptResource::create(request, "UTF-16");
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForParserCache(anotherResource->cacheHandler())));
 }
 
@@ -134,7 +134,7 @@ TEST_F(V8ScriptRunnerTest, codeOption)
     EXPECT_TRUE(cacheHandler()->cachedMetadata(tagForCodeCache(cacheHandler())));
     // The cached data is associated with the encoding.
     ResourceRequest request(url());
-    RefPtrWillBeRawPtr<ScriptResource> anotherResource = ScriptResource::create(request, "UTF-16");
+    RawPtr<ScriptResource> anotherResource = ScriptResource::create(request, "UTF-16");
     EXPECT_FALSE(cacheHandler()->cachedMetadata(tagForCodeCache(anotherResource->cacheHandler())));
 }
 

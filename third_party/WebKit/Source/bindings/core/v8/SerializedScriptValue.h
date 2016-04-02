@@ -57,7 +57,7 @@ typedef HeapVector<Member<MessagePort>, 1> MessagePortArray;
 typedef Vector<RefPtr<DOMArrayBufferBase>, 1> ArrayBufferArray;
 typedef HashMap<String, RefPtr<BlobDataHandle>> BlobDataHandleMap;
 typedef Vector<WebBlobInfo> WebBlobInfoArray;
-typedef WillBeHeapVector<RefPtrWillBeMember<ImageBitmap>, 1> ImageBitmapArray;
+typedef HeapVector<Member<ImageBitmap>, 1> ImageBitmapArray;
 
 class CORE_EXPORT SerializedScriptValue : public ThreadSafeRefCounted<SerializedScriptValue> {
 public:

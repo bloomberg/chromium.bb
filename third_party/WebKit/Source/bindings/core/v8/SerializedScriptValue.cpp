@@ -113,7 +113,7 @@ PassOwnPtr<SerializedScriptValue::ImageBitmapContentsArray> SerializedScriptValu
     }
 
     OwnPtr<ImageBitmapContentsArray> contents = adoptPtr(new ImageBitmapContentsArray);
-    WillBeHeapHashSet<RawPtrWillBeMember<ImageBitmap>> visited;
+    HeapHashSet<Member<ImageBitmap>> visited;
     for (size_t i = 0; i < imageBitmaps.size(); i++) {
         if (visited.contains(imageBitmaps[i].get()))
             continue;
@@ -247,7 +247,7 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
             }
             arrayBuffers.append(sharedArrayBuffer.release());
         } else if (V8ImageBitmap::hasInstance(transferrable, isolate)) {
-            RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = V8ImageBitmap::toImpl(v8::Local<v8::Object>::Cast(transferrable));
+            RawPtr<ImageBitmap> imageBitmap = V8ImageBitmap::toImpl(v8::Local<v8::Object>::Cast(transferrable));
             if (imageBitmaps.contains(imageBitmap)) {
                 exceptionState.throwDOMException(DataCloneError, "ImageBitmap at index " + String::number(i) + " is a duplicate of an earlier ImageBitmap.");
                 return false;

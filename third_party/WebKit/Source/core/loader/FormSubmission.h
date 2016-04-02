@@ -43,7 +43,7 @@ class Event;
 struct FrameLoadRequest;
 class HTMLFormElement;
 
-class FormSubmission : public RefCountedWillBeGarbageCollectedFinalized<FormSubmission> {
+class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
 public:
     enum SubmitMethod { GetMethod, PostMethod, DialogMethod };
 
@@ -89,7 +89,7 @@ public:
         String m_acceptCharset;
     };
 
-    static PassRefPtrWillBeRawPtr<FormSubmission> create(HTMLFormElement*, const Attributes&, PassRefPtrWillBeRawPtr<Event>);
+    static RawPtr<FormSubmission> create(HTMLFormElement*, const Attributes&, RawPtr<Event>);
     DECLARE_TRACE();
 
     void populateFrameLoadRequest(FrameLoadRequest&);
@@ -107,7 +107,7 @@ public:
     const String& result() const { return m_result; }
 
 private:
-    FormSubmission(SubmitMethod, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<EncodedFormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
+    FormSubmission(SubmitMethod, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<EncodedFormData>, const String& boundary, RawPtr<Event>);
     // FormSubmission for DialogMethod
     FormSubmission(const String& result);
 
@@ -116,10 +116,10 @@ private:
     KURL m_action;
     AtomicString m_target;
     AtomicString m_contentType;
-    RefPtrWillBeMember<HTMLFormElement> m_form;
+    Member<HTMLFormElement> m_form;
     RefPtr<EncodedFormData> m_formData;
     String m_boundary;
-    RefPtrWillBeMember<Event> m_event;
+    Member<Event> m_event;
     String m_result;
 };
 

@@ -43,9 +43,7 @@ public:
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
-#if ENABLE(OILPAN)
         visitor->trace(scriptWrappable->toImpl<TestInterfaceEventTarget>());
-#endif
     }
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;

@@ -26,20 +26,20 @@ public:
     DECLARE_TRACE();
 
     WebInputEventResult sendMousePointerEvent(
-        PassRefPtrWillBeRawPtr<Node>, const AtomicString& type,
+        RawPtr<Node>, const AtomicString& type,
         int clickCount, const PlatformMouseEvent&,
-        PassRefPtrWillBeRawPtr<Node> relatedTarget,
-        PassRefPtrWillBeRawPtr<AbstractView>,
-        PassRefPtrWillBeRawPtr<Node> lastNodeUnderMouse);
+        RawPtr<Node> relatedTarget,
+        RawPtr<AbstractView>,
+        RawPtr<Node> lastNodeUnderMouse);
 
     // Returns whether the event is consumed or not
     WebInputEventResult sendTouchPointerEvent(
-        PassRefPtrWillBeRawPtr<EventTarget>,
+        RawPtr<EventTarget>,
         const PlatformTouchPoint&, PlatformEvent::Modifiers,
         const double width, const double height,
         const double clientX, const double clientY);
 
-    void sendTouchCancelPointerEvent(PassRefPtrWillBeRawPtr<EventTarget>,
+    void sendTouchCancelPointerEvent(RawPtr<EventTarget>,
         const PlatformTouchPoint&);
 
     // Sends node transition events mouseout/leave/over/enter to the
@@ -54,10 +54,10 @@ public:
     // and their corresponding transition events will be handled altogether by
     // sendMousePointerEvent function.
     void sendMouseAndPossiblyPointerNodeTransitionEvents(
-        PassRefPtrWillBeRawPtr<Node> exitedNode,
-        PassRefPtrWillBeRawPtr<Node> enteredNode,
+        RawPtr<Node> exitedNode,
+        RawPtr<Node> enteredNode,
         const PlatformMouseEvent&,
-        PassRefPtrWillBeRawPtr<AbstractView>, bool isFrameBoundaryTransition);
+        RawPtr<AbstractView>, bool isFrameBoundaryTransition);
 
     // Clear all the existing ids.
     void clear();
@@ -68,7 +68,7 @@ public:
     bool isActive(const int);
 
 private:
-    typedef WillBeHeapHashMap<int, RefPtrWillBeMember<EventTarget>> PointerCapturingMap;
+    typedef HeapHashMap<int, Member<EventTarget>> PointerCapturingMap;
     class EventTargetAttributes {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
@@ -76,32 +76,32 @@ private:
         {
             visitor->trace(target);
         }
-        RefPtrWillBeMember<EventTarget> target;
+        Member<EventTarget> target;
         bool hasRecievedOverEvent;
         EventTargetAttributes()
         : target(nullptr)
         , hasRecievedOverEvent(false) {}
-        EventTargetAttributes(PassRefPtrWillBeRawPtr<EventTarget> target,
+        EventTargetAttributes(RawPtr<EventTarget> target,
             bool hasRecievedOverEvent)
         : target(target)
         , hasRecievedOverEvent(hasRecievedOverEvent) {}
     };
 
     void sendNodeTransitionEvents(
-        PassRefPtrWillBeRawPtr<EventTarget> exitedTarget,
-        PassRefPtrWillBeRawPtr<EventTarget> enteredTarget,
-        PassRefPtrWillBeRawPtr<PointerEvent>,
+        RawPtr<EventTarget> exitedTarget,
+        RawPtr<EventTarget> enteredTarget,
+        RawPtr<PointerEvent>,
         const PlatformMouseEvent& = PlatformMouseEvent(),
         bool sendMouseEvent = false);
-    void setNodeUnderPointer(PassRefPtrWillBeRawPtr<PointerEvent>,
-        PassRefPtrWillBeRawPtr<EventTarget>, bool sendEvent = true);
+    void setNodeUnderPointer(RawPtr<PointerEvent>,
+        RawPtr<EventTarget>, bool sendEvent = true);
 
     // Returns whether the pointer capture is changed. In this case this
     // function will take care of transition events and setNodeUnderPointer
     // should not send transition events.
     bool processPendingPointerCapture(
-        const PassRefPtrWillBeRawPtr<PointerEvent>,
-        const PassRefPtrWillBeRawPtr<EventTarget>,
+        const RawPtr<PointerEvent>,
+        const RawPtr<EventTarget>,
         const PlatformMouseEvent& = PlatformMouseEvent(),
         bool sendMouseEvent = false);
 
@@ -110,22 +110,22 @@ private:
     // setPointerPosition is true. It also sends corresponding transition events
     // for mouse if sendMouseEvent is true.
     void processCaptureAndPositionOfPointerEvent(
-        const PassRefPtrWillBeRawPtr<PointerEvent>,
-        const PassRefPtrWillBeRawPtr<EventTarget> hitTestTarget,
-        const PassRefPtrWillBeRawPtr<EventTarget> lastNodeUnderMouse = nullptr,
+        const RawPtr<PointerEvent>,
+        const RawPtr<EventTarget> hitTestTarget,
+        const RawPtr<EventTarget> lastNodeUnderMouse = nullptr,
         const PlatformMouseEvent& = PlatformMouseEvent(),
         bool sendMouseEvent = false,
         bool setPointerPosition = true);
 
     void removeTargetFromPointerCapturingMapping(
         PointerCapturingMap&, const EventTarget*);
-    PassRefPtrWillBeRawPtr<EventTarget> getEffectiveTargetForPointerEvent(
-        PassRefPtrWillBeRawPtr<EventTarget>, int);
+    RawPtr<EventTarget> getEffectiveTargetForPointerEvent(
+        RawPtr<EventTarget>, int);
     EventTarget* getCapturingNode(int);
-    void removePointer(const PassRefPtrWillBeRawPtr<PointerEvent>);
+    void removePointer(const RawPtr<PointerEvent>);
     WebInputEventResult dispatchPointerEvent(
-        PassRefPtrWillBeRawPtr<EventTarget>,
-        PassRefPtrWillBeRawPtr<PointerEvent>,
+        RawPtr<EventTarget>,
+        RawPtr<PointerEvent>,
         bool checkForListener = false);
     void releasePointerCapture(int);
 
@@ -138,7 +138,7 @@ private:
     // which might be different than m_nodeUnderMouse in EventHandler. That one
     // keeps track of any compatibility mouse event positions but this map for
     // the pointer with id=1 is only taking care of true mouse related events.
-    WillBeHeapHashMap<int, EventTargetAttributes> m_nodeUnderPointer;
+    HeapHashMap<int, EventTargetAttributes> m_nodeUnderPointer;
 
     PointerCapturingMap m_pointerCaptureTarget;
     PointerCapturingMap m_pendingPointerCaptureTarget;

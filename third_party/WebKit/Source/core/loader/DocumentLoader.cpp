@@ -166,7 +166,7 @@ const KURL& DocumentLoader::url() const
 
 Resource* DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
 {
-    RefPtrWillBeRawPtr<Resource> resource = nullptr;
+    RawPtr<Resource> resource = nullptr;
     switch (type) {
     case Resource::Image:
         resource = ImageResource::fetch(request, fetcher());
@@ -243,7 +243,7 @@ void DocumentLoader::notifyFinished(Resource* resource)
     ASSERT_UNUSED(resource, m_mainResource == resource);
     ASSERT(m_mainResource);
 
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RawPtr<DocumentLoader> protect(this);
 
     if (!m_mainResource->errorOccurred() && !m_mainResource->wasCanceled()) {
         finishedLoading(m_mainResource->loadFinishTime());
@@ -261,7 +261,7 @@ void DocumentLoader::finishedLoading(double finishTime)
 {
     ASSERT(!m_frame->page()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
 
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RawPtr<DocumentLoader> protect(this);
 
     double responseEndTime = finishTime;
     if (!responseEndTime)
@@ -366,7 +366,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
 {
     ASSERT_UNUSED(resource, m_mainResource == resource);
     ASSERT_UNUSED(handle, !handle);
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RawPtr<DocumentLoader> protect(this);
     ASSERT(frame());
 
     m_applicationCacheHost->didReceiveResponseForMainResource(response);
@@ -392,7 +392,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
             String content = it->value;
             if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), mainResourceIdentifier())) {
                 String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
-                RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
+                RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
                 consoleMessage->setRequestIdentifier(mainResourceIdentifier());
                 frame()->document()->addConsoleMessage(consoleMessage.release());
 
@@ -500,8 +500,8 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, size_t l
 
     // Both unloading the old page and parsing the new page may execute JavaScript which destroys the datasource
     // by starting a new load, so retain temporarily.
-    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame.get());
-    RefPtrWillBeRawPtr<DocumentLoader> protectLoader(this);
+    RawPtr<LocalFrame> protectFrame(m_frame.get());
+    RawPtr<DocumentLoader> protectLoader(this);
 
     TemporaryChange<bool> reentrancyProtector(m_inDataReceived, true);
     processData(data, length);
@@ -550,8 +550,8 @@ void DocumentLoader::appendRedirect(const KURL& url)
 void DocumentLoader::detachFromFrame()
 {
     ASSERT(m_frame);
-    RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame.get());
-    RefPtrWillBeRawPtr<DocumentLoader> protectLoader(this);
+    RawPtr<LocalFrame> protectFrame(m_frame.get());
+    RawPtr<DocumentLoader> protectLoader(this);
 
     // It never makes sense to have a document loader that is detached from its
     // frame have any loads active, so go ahead and kill all the loads.
@@ -624,7 +624,7 @@ bool DocumentLoader::maybeLoadEmpty()
 
 void DocumentLoader::startLoadingMainResource()
 {
-    RefPtrWillBeRawPtr<DocumentLoader> protect(this);
+    RawPtr<DocumentLoader> protect(this);
     timing().markNavigationStart();
     ASSERT(!m_mainResource);
     ASSERT(m_state == NotStarted);
@@ -671,7 +671,7 @@ void DocumentLoader::endWriting(DocumentWriter* writer)
     m_writer.clear();
 }
 
-PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const DocumentInit& init, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy parsingPolicy)
+RawPtr<DocumentWriter> DocumentLoader::createWriterFor(const DocumentInit& init, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy parsingPolicy)
 {
     LocalFrame* frame = init.frame();
 
@@ -681,7 +681,7 @@ PassRefPtrWillBeRawPtr<DocumentWriter> DocumentLoader::createWriterFor(const Doc
     if (!init.shouldReuseDefaultView())
         frame->setDOMWindow(LocalDOMWindow::create(*frame));
 
-    RefPtrWillBeRawPtr<Document> document = frame->localDOMWindow()->installNewDocument(mimeType, init);
+    RawPtr<Document> document = frame->localDOMWindow()->installNewDocument(mimeType, init);
 
     frame->loader().didBeginDocument(dispatch);
 

@@ -169,7 +169,7 @@ namespace blink {
         };
 
         WeakMember<ApplicationCache> m_domApplicationCache;
-        RawPtrWillBeMember<DocumentLoader> m_documentLoader;
+        Member<DocumentLoader> m_documentLoader;
         bool m_defersEvents; // Events are deferred until after document onload.
         Vector<DeferredEvent> m_deferredEvents;
 

@@ -25,7 +25,7 @@
 [
     ImplementedAs=SVGNumberTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface SVGNumber {
     [RaisesException=Setter] attribute float value;
 };

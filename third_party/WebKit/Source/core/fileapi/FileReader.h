@@ -53,7 +53,7 @@ class StringOrArrayBuffer;
 class CORE_EXPORT FileReader final : public RefCountedGarbageCollectedEventTargetWithInlineData<FileReader>, public ActiveScriptWrappable, public ActiveDOMObject, public FileReaderLoaderClient {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(FileReader);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader);
+    USING_GARBAGE_COLLECTED_MIXIN(FileReader);
 public:
     static FileReader* create(ExecutionContext*);
 

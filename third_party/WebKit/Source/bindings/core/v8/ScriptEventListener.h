@@ -43,8 +43,8 @@ class LocalFrame;
 class Node;
 class QualifiedName;
 
-PassRefPtrWillBeRawPtr<V8LazyEventListener> createAttributeEventListener(Node*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
-PassRefPtrWillBeRawPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
+RawPtr<V8LazyEventListener> createAttributeEventListener(Node*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
+RawPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame*, const QualifiedName&, const AtomicString& value, const AtomicString& eventParameterName);
 v8::Local<v8::Object> eventListenerHandler(ExecutionContext*, EventListener*);
 v8::Local<v8::Function> eventListenerEffectiveFunction(v8::Isolate*, v8::Local<v8::Object> handler);
 void getFunctionLocation(v8::Local<v8::Function>, String& scriptId, int& lineNumber, int& columnNumber);

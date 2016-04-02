@@ -48,7 +48,7 @@ void RootLayerScrollsFrameSettingOverride(Settings& settings)
 PassOwnPtr<DummyPageHolder> DummyPageHolder::create(
     const IntSize& initialViewSize,
     Page::PageClients* pageClients,
-    PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient,
+    RawPtr<FrameLoaderClient> frameLoaderClient,
     FrameSettingOverrideFunction settingOverrider) {
     return adoptPtr(new DummyPageHolder(initialViewSize, pageClients, frameLoaderClient, settingOverrider));
 }
@@ -56,7 +56,7 @@ PassOwnPtr<DummyPageHolder> DummyPageHolder::create(
 DummyPageHolder::DummyPageHolder(
     const IntSize& initialViewSize,
     Page::PageClients* pageClientsArgument,
-    PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient,
+    RawPtr<FrameLoaderClient> frameLoaderClient,
     FrameSettingOverrideFunction settingOverrider)
 {
     Page::PageClients pageClients;

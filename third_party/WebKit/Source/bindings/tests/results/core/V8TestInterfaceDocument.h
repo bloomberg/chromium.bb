@@ -36,9 +36,7 @@ public:
     template<typename VisitorDispatcher>
     static void trace(VisitorDispatcher visitor, ScriptWrappable* scriptWrappable)
     {
-#if ENABLE(OILPAN)
         visitor->trace(scriptWrappable->toImpl<TestInterfaceDocument>());
-#endif
     }
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static void installConditionallyEnabledProperties(v8::Local<v8::Object>, v8::Isolate*) { }

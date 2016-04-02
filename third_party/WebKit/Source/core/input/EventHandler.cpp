@@ -984,7 +984,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     if (mouseEvent.button() == NoButton)
         return WebInputEventResult::HandledSuppressed;
 
-    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+    RawPtr<FrameView> protector(m_frame->view());
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
     m_frame->localFrameRoot()->eventHandler().m_lastMouseDownUserGestureToken = gestureIndicator.currentToken();
@@ -1020,7 +1020,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
     m_mousePressNode = mev.innerNode();
     m_frame->document()->setSequentialFocusNavigationStartingPoint(mev.innerNode());
 
-    RefPtrWillBeRawPtr<LocalFrame> subframe = subframeForHitTestResult(mev);
+    RawPtr<LocalFrame> subframe = subframeForHitTestResult(mev);
     if (subframe) {
         WebInputEventResult result = passMousePressEventToSubframe(mev, subframe.get());
         // Start capturing future events for this frame.  We only do this if we didn't clear
@@ -1146,7 +1146,7 @@ WebInputEventResult EventHandler::handleMouseMoveEvent(const PlatformMouseEvent&
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
 
-    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+    RawPtr<FrameView> protector(m_frame->view());
 
     HitTestResult hoveredNode = HitTestResult();
     WebInputEventResult result = handleMouseMoveOrLeaveEvent(event, &hoveredNode);
@@ -1173,7 +1173,7 @@ void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
 
-    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+    RawPtr<FrameView> protector(m_frame->view());
     handleMouseMoveOrLeaveEvent(event, 0, false, true);
 }
 
@@ -1249,7 +1249,7 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMous
     }
 
     WebInputEventResult eventResult = WebInputEventResult::NotHandled;
-    RefPtrWillBeRawPtr<LocalFrame> newSubframe = m_capturingMouseEventsNode.get() ? subframeForTargetNode(m_capturingMouseEventsNode.get()) : subframeForHitTestResult(mev);
+    RawPtr<LocalFrame> newSubframe = m_capturingMouseEventsNode.get() ? subframeForTargetNode(m_capturingMouseEventsNode.get()) : subframeForHitTestResult(mev);
 
     // We want mouseouts to happen first, from the inside out.  First send a move event to the last subframe so that it will fire mouseouts.
     if (m_lastMouseMoveEventSubframe && m_lastMouseMoveEventSubframe->tree().isDescendantOf(m_frame) && m_lastMouseMoveEventSubframe != newSubframe)
@@ -1312,7 +1312,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
     if (mouseEvent.button() == NoButton)
         return WebInputEventResult::HandledSuppressed;
 
-    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+    RawPtr<FrameView> protector(m_frame->view());
 
     m_frame->selection().setCaretBlinkingSuspended(false);
 
@@ -1413,7 +1413,7 @@ WebInputEventResult EventHandler::dispatchDragEvent(const AtomicString& eventTyp
     if (!view)
         return WebInputEventResult::NotHandled;
 
-    RefPtrWillBeRawPtr<DragEvent> me = DragEvent::create(eventType,
+    RawPtr<DragEvent> me = DragEvent::create(eventType,
         true, true, m_frame->document()->domWindow(),
         0, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
@@ -1486,7 +1486,7 @@ WebInputEventResult EventHandler::updateDragAndDrop(const PlatformMouseEvent& ev
     MouseEventWithHitTestResults mev = prepareMouseEvent(request, event);
 
     // Drag events should never go to text nodes (following IE, and proper mouseover/out dispatch)
-    RefPtrWillBeRawPtr<Node> newTarget = mev.innerNode();
+    RawPtr<Node> newTarget = mev.innerNode();
     if (newTarget && newTarget->isTextNode())
         newTarget = FlatTreeTraversal::parent(*newTarget);
 
@@ -1584,7 +1584,7 @@ void EventHandler::clearDragState()
     m_shouldOnlyFireDragOverEvent = false;
 }
 
-void EventHandler::setCapturingMouseEventsNode(PassRefPtrWillBeRawPtr<Node> n)
+void EventHandler::setCapturingMouseEventsNode(RawPtr<Node> n)
 {
     m_capturingMouseEventsNode = n;
     m_eventHandlerWillResetCapturingMouseEventsNode = false;
@@ -1598,7 +1598,7 @@ MouseEventWithHitTestResults EventHandler::prepareMouseEvent(const HitTestReques
     return m_frame->document()->prepareMouseEvent(request, contentPointFromRootFrame(m_frame, mev.position()), mev);
 }
 
-PassRefPtrWillBeRawPtr<Node> EventHandler::updateMouseEventTargetNode(Node* targetNode,
+RawPtr<Node> EventHandler::updateMouseEventTargetNode(Node* targetNode,
     const PlatformMouseEvent& mouseEvent)
 {
     Node* result = targetNode;
@@ -1611,7 +1611,7 @@ PassRefPtrWillBeRawPtr<Node> EventHandler::updateMouseEventTargetNode(Node* targ
         if (result && result->isTextNode())
             result = FlatTreeTraversal::parent(*result);
     }
-    RefPtrWillBeMember<Node> lastNodeUnderMouse = m_nodeUnderMouse;
+    Member<Node> lastNodeUnderMouse = m_nodeUnderMouse;
     m_nodeUnderMouse = result;
 
     PaintLayer* layerForLastNode = layerForNode(lastNodeUnderMouse.get());
@@ -1653,7 +1653,7 @@ PassRefPtrWillBeRawPtr<Node> EventHandler::updateMouseEventTargetNode(Node* targ
 void EventHandler::updateMouseEventTargetNodeAndSendEvents(Node* targetNode,
     const PlatformMouseEvent& mouseEvent, bool isFrameBoundaryTransition)
 {
-    RefPtrWillBeRawPtr<Node> lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
+    RawPtr<Node> lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
     m_pointerEventManager.sendMouseAndPossiblyPointerNodeTransitionEvents(
         lastNodeUnderMouse, m_nodeUnderMouse, mouseEvent,
         m_frame->document()->domWindow(), isFrameBoundaryTransition);
@@ -1665,7 +1665,7 @@ WebInputEventResult EventHandler::dispatchMouseEvent(const AtomicString& eventTy
     if (!m_nodeUnderMouse)
         return WebInputEventResult::NotHandled;
 
-    RefPtrWillBeRawPtr<MouseEvent> event = MouseEvent::create(eventType, m_nodeUnderMouse->document().domWindow(), mouseEvent, clickCount, nullptr);
+    RawPtr<MouseEvent> event = MouseEvent::create(eventType, m_nodeUnderMouse->document().domWindow(), mouseEvent, clickCount, nullptr);
     return toWebInputEventResult(m_nodeUnderMouse->dispatchEvent(event));
 }
 
@@ -1697,7 +1697,7 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
         || mouseEventType == EventTypeNames::mousemove
         || mouseEventType == EventTypeNames::mouseup);
 
-    RefPtrWillBeRawPtr<Node> lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
+    RawPtr<Node> lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
 
     return m_pointerEventManager.sendMousePointerEvent(
         m_nodeUnderMouse, mouseEventType, clickCount, mouseEvent, nullptr,
@@ -1796,7 +1796,7 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
     if (!doc->layoutView())
         return WebInputEventResult::NotHandled;
 
-    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+    RawPtr<FrameView> protector(m_frame->view());
 
     FrameView* view = m_frame->view();
     if (!view)
@@ -1834,7 +1834,7 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
     }
 
     if (node) {
-        RefPtrWillBeRawPtr<WheelEvent> domEvent = WheelEvent::create(event, node->document().domWindow());
+        RawPtr<WheelEvent> domEvent = WheelEvent::create(event, node->document().domWindow());
         if (sendDOMEvent) {
             DispatchEventResult domEventResult = node->dispatchEvent(domEvent);
             if (domEventResult != DispatchEventResult::NotCanceled)
@@ -1960,8 +1960,8 @@ WebInputEventResult EventHandler::handleGestureEventInFrame(const GestureEventWi
 {
     ASSERT(!targetedEvent.event().isScrollEvent());
 
-    RefPtrWillBeRawPtr<Node> eventTarget = targetedEvent.hitTestResult().innerNode();
-    RefPtrWillBeRawPtr<Scrollbar> scrollbar = targetedEvent.hitTestResult().scrollbar();
+    RawPtr<Node> eventTarget = targetedEvent.hitTestResult().innerNode();
+    RawPtr<Scrollbar> scrollbar = targetedEvent.hitTestResult().scrollbar();
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
 
     if (scrollbar) {
@@ -1974,7 +1974,7 @@ WebInputEventResult EventHandler::handleGestureEventInFrame(const GestureEventWi
     }
 
     if (eventTarget) {
-        RefPtrWillBeRawPtr<GestureEvent> gestureDomEvent = GestureEvent::create(eventTarget->document().domWindow(), gestureEvent);
+        RawPtr<GestureEvent> gestureDomEvent = GestureEvent::create(eventTarget->document().domWindow(), gestureEvent);
         if (gestureDomEvent.get()) {
             DispatchEventResult gestureDomEventResult = eventTarget->dispatchEvent(gestureDomEvent);
             if (gestureDomEventResult != DispatchEventResult::NotCanceled) {
@@ -2013,8 +2013,8 @@ WebInputEventResult EventHandler::handleGestureScrollEvent(const PlatformGesture
 {
     TRACE_EVENT0("input", "EventHandler::handleGestureScrollEvent");
 
-    RefPtrWillBeRawPtr<Node> eventTarget = nullptr;
-    RefPtrWillBeRawPtr<Scrollbar> scrollbar = nullptr;
+    RawPtr<Node> eventTarget = nullptr;
+    RawPtr<Scrollbar> scrollbar = nullptr;
     if (gestureEvent.type() != PlatformEvent::GestureScrollBegin) {
         scrollbar = m_scrollbarHandlingScrollGesture.get();
         eventTarget = m_scrollGestureHandlingNode.get();
@@ -2055,7 +2055,7 @@ WebInputEventResult EventHandler::handleGestureScrollEvent(const PlatformGesture
         if (handleScrollGestureOnResizer(eventTarget.get(), gestureEvent))
             return WebInputEventResult::HandledSuppressed;
 
-        RefPtrWillBeRawPtr<GestureEvent> gestureDomEvent = GestureEvent::create(eventTarget->document().domWindow(), gestureEvent);
+        RawPtr<GestureEvent> gestureDomEvent = GestureEvent::create(eventTarget->document().domWindow(), gestureEvent);
         if (gestureDomEvent.get()) {
             DispatchEventResult gestureDomEventResult = eventTarget->dispatchEvent(gestureDomEvent);
             if (gestureDomEventResult != DispatchEventResult::NotCanceled) {
@@ -2085,7 +2085,7 @@ WebInputEventResult EventHandler::handleGestureScrollEvent(const PlatformGesture
 
 WebInputEventResult EventHandler::handleGestureTap(const GestureEventWithHitTestResults& targetedEvent)
 {
-    RefPtrWillBeRawPtr<FrameView> frameView(m_frame->view());
+    RawPtr<FrameView> frameView(m_frame->view());
     const PlatformGestureEvent& gestureEvent = targetedEvent.event();
     HitTestRequest::HitTestRequestType hitType = getHitTypeForGestureType(gestureEvent.type());
     uint64_t preDispatchDomTreeVersion = m_frame->document()->domTreeVersion();
@@ -2123,7 +2123,7 @@ WebInputEventResult EventHandler::handleGestureTap(const GestureEventWithHitTest
     m_clickNode = currentHitTest.innerNode();
 
     // Capture data for showUnhandledTapUIIfNeeded.
-    RefPtrWillBeRawPtr<Node> tappedNode = m_clickNode;
+    RawPtr<Node> tappedNode = m_clickNode;
     IntPoint tappedPosition = gestureEvent.position();
 
     if (m_clickNode && m_clickNode->isTextNode())
@@ -2216,7 +2216,7 @@ WebInputEventResult EventHandler::handleGestureLongPress(const GestureEventWithH
         m_mouseDownMayStartDrag = true;
         dragState().m_dragSrc = nullptr;
         m_mouseDownPos = m_frame->view()->rootFrameToContents(mouseDragEvent.position());
-        RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+        RawPtr<FrameView> protector(m_frame->view());
         if (handleDrag(mev, DragInitiator::Touch)) {
             m_longTapShouldInvokeContextMenu = true;
             return WebInputEventResult::HandledSystem;
@@ -2225,7 +2225,7 @@ WebInputEventResult EventHandler::handleGestureLongPress(const GestureEventWithH
 
     IntPoint hitTestPoint = m_frame->view()->rootFrameToContents(gestureEvent.position());
     HitTestResult result = hitTestResultAtPoint(hitTestPoint);
-    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+    RawPtr<FrameView> protector(m_frame->view());
     if (selectionController().handleGestureLongPress(gestureEvent, result)) {
         focusDocumentView();
         return WebInputEventResult::HandledSystem;
@@ -2289,7 +2289,7 @@ WebInputEventResult EventHandler::passScrollGestureEventToWidget(const PlatformG
 
 WebInputEventResult EventHandler::handleGestureScrollEnd(const PlatformGestureEvent& gestureEvent)
 {
-    RefPtrWillBeRawPtr<Node> node = m_scrollGestureHandlingNode;
+    RawPtr<Node> node = m_scrollGestureHandlingNode;
 
     if (node) {
         passScrollGestureEventToWidget(gestureEvent, node->layoutObject());
@@ -2300,7 +2300,7 @@ WebInputEventResult EventHandler::handleGestureScrollEnd(const PlatformGestureEv
             scrollStateData->from_user_input = true;
             scrollStateData->is_direct_manipulation = true;
             scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
-            RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(scrollStateData.release());
+            RawPtr<ScrollState> scrollState = ScrollState::create(scrollStateData.release());
             customizedScroll(*node.get(), *scrollState);
         }
     }
@@ -2341,7 +2341,7 @@ WebInputEventResult EventHandler::handleGestureScrollBegin(const PlatformGesture
         scrollStateData->is_beginning = true;
         scrollStateData->from_user_input = true;
         scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
-        RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(scrollStateData.release());
+        RawPtr<ScrollState> scrollState = ScrollState::create(scrollStateData.release());
         customizedScroll(*m_scrollGestureHandlingNode.get(), *scrollState);
     } else {
         if (m_frame->isMainFrame())
@@ -2404,7 +2404,7 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
         if (!layoutObject)
             return WebInputEventResult::NotHandled;
 
-        RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+        RawPtr<FrameView> protector(m_frame->view());
 
         // Try to send the event to the correct view.
         WebInputEventResult result = passScrollGestureEventToWidget(gestureEvent, layoutObject);
@@ -2431,7 +2431,7 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
             scrollStateData->is_in_inertial_phase = gestureEvent.inertial();
             scrollStateData->from_user_input = true;
             scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
-            RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(scrollStateData.release());
+            RawPtr<ScrollState> scrollState = ScrollState::create(scrollStateData.release());
             if (m_previousGestureScrolledNode) {
                 // The ScrollState needs to know what the current
                 // native scrolling element is, so that for an
@@ -2513,11 +2513,11 @@ bool EventHandler::bestClickableNodeForHitTestResult(const HitTestResult& result
     IntPoint touchCenter = m_frame->view()->contentsToRootFrame(result.roundedPointInMainFrame());
     IntRect touchRect = m_frame->view()->contentsToRootFrame(result.hitTestLocation().boundingBox());
 
-    WillBeHeapVector<RefPtrWillBeMember<Node>, 11> nodes;
+    HeapVector<Member<Node>, 11> nodes;
     copyToVector(result.listBasedTestResult(), nodes);
 
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
-    return findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node>> (nodes));
+    return findBestClickableCandidate(targetNode, targetPoint, touchCenter, touchRect, HeapVector<Member<Node>> (nodes));
 }
 
 bool EventHandler::bestContextMenuNodeForHitTestResult(const HitTestResult& result, IntPoint& targetPoint, Node*& targetNode)
@@ -2525,11 +2525,11 @@ bool EventHandler::bestContextMenuNodeForHitTestResult(const HitTestResult& resu
     ASSERT(result.isRectBasedTest());
     IntPoint touchCenter = m_frame->view()->contentsToRootFrame(result.roundedPointInMainFrame());
     IntRect touchRect = m_frame->view()->contentsToRootFrame(result.hitTestLocation().boundingBox());
-    WillBeHeapVector<RefPtrWillBeMember<Node>, 11> nodes;
+    HeapVector<Member<Node>, 11> nodes;
     copyToVector(result.listBasedTestResult(), nodes);
 
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
-    return findBestContextMenuCandidate(targetNode, targetPoint, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node>>(nodes));
+    return findBestContextMenuCandidate(targetNode, targetPoint, touchCenter, touchRect, HeapVector<Member<Node>>(nodes));
 }
 
 bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntRect& targetArea, Node*& targetNode)
@@ -2543,11 +2543,11 @@ bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, co
     HitTestResult result = hitTestResultAtPoint(hitTestPoint, hitType, LayoutSize(touchRadius));
 
     IntRect touchRect(touchCenter - touchRadius, touchRadius + touchRadius);
-    WillBeHeapVector<RefPtrWillBeMember<Node>, 11> nodes;
+    HeapVector<Member<Node>, 11> nodes;
     copyToVector(result.listBasedTestResult(), nodes);
 
     // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
-    return findBestZoomableArea(targetNode, targetArea, touchCenter, touchRect, WillBeHeapVector<RefPtrWillBeMember<Node>>(nodes));
+    return findBestZoomableArea(targetNode, targetArea, touchCenter, touchRect, HeapVector<Member<Node>>(nodes));
 }
 
 // Update the hover and active state across all frames for this gesture.
@@ -2557,7 +2557,7 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request, 
 {
     ASSERT(m_frame == m_frame->localFrameRoot());
 
-    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>> newHoverFrameChain;
+    HeapVector<Member<LocalFrame>> newHoverFrameChain;
     LocalFrame* newHoverFrameInDocument = innerElement ? innerElement->document().frame() : nullptr;
     // Insert the ancestors of the frame having the new hovered node to the frame chain
     // The frame chain doesn't include the main frame to avoid the redundant work that cleans the hover state.
@@ -2568,8 +2568,8 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request, 
         newHoverFrameInDocument = parentFrame && parentFrame->isLocalFrame() ? toLocalFrame(parentFrame) : nullptr;
     }
 
-    RefPtrWillBeRawPtr<Node> oldHoverNodeInCurDoc = m_frame->document()->hoverNode();
-    RefPtrWillBeRawPtr<Node> newInnermostHoverNode = innerElement;
+    RawPtr<Node> oldHoverNodeInCurDoc = m_frame->document()->hoverNode();
+    RawPtr<Node> newInnermostHoverNode = innerElement;
 
     if (newInnermostHoverNode != oldHoverNodeInCurDoc) {
         size_t indexFrameChain = newHoverFrameChain.size();
@@ -2617,7 +2617,7 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(const GestureEventWithHi
     // - Dispatch mouseover/mouseenter events of the entered frames into the inside.
 
     // Insert the ancestors of the frame having the new target node to the entered frame chain
-    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>> enteredFrameChain;
+    HeapVector<Member<LocalFrame>> enteredFrameChain;
     LocalFrame* enteredFrameInDocument = targetedEvent.hitTestResult().innerNodeFrame();
     while (enteredFrameInDocument) {
         enteredFrameChain.append(enteredFrameInDocument);
@@ -2627,7 +2627,7 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(const GestureEventWithHi
 
     size_t indexEnteredFrameChain = enteredFrameChain.size();
     LocalFrame* exitedFrameInDocument = m_frame;
-    WillBeHeapVector<RawPtrWillBeMember<LocalFrame>> exitedFrameChain;
+    HeapVector<Member<LocalFrame>> exitedFrameChain;
     // Insert the frame from the disagreement between last frames and entered frames
     while (exitedFrameInDocument) {
         Node* lastNodeUnderTap = exitedFrameInDocument->eventHandler().m_nodeUnderMouse.get();
@@ -3089,7 +3089,7 @@ bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
 
 WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 {
-    RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
+    RawPtr<FrameView> protector(m_frame->view());
     m_frame->chromeClient().clearToolTip();
 
     if (initialKeyEvent.windowsVirtualKeyCode() == VK_CAPITAL)
@@ -3108,7 +3108,7 @@ WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialK
 
     // Check for cases where we are too early for events -- possible unmatched key up
     // from pressing return in the location bar.
-    RefPtrWillBeRawPtr<Node> node = eventTargetNodeForDocument(m_frame->document());
+    RawPtr<Node> node = eventTargetNodeForDocument(m_frame->document());
     if (!node)
         return WebInputEventResult::NotHandled;
 
@@ -3125,7 +3125,7 @@ WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialK
 
     // FIXME: it would be fair to let an input method handle KeyUp events before DOM dispatch.
     if (initialKeyEvent.type() == PlatformEvent::KeyUp || initialKeyEvent.type() == PlatformEvent::Char) {
-        RefPtrWillBeRawPtr<KeyboardEvent> domEvent = KeyboardEvent::create(initialKeyEvent, m_frame->document()->domWindow());
+        RawPtr<KeyboardEvent> domEvent = KeyboardEvent::create(initialKeyEvent, m_frame->document()->domWindow());
 
         return toWebInputEventResult(node->dispatchEvent(domEvent));
     }
@@ -3133,7 +3133,7 @@ WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialK
     PlatformKeyboardEvent keyDownEvent = initialKeyEvent;
     if (keyDownEvent.type() != PlatformEvent::RawKeyDown)
         keyDownEvent.disambiguateKeyDownEvent(PlatformEvent::RawKeyDown);
-    RefPtrWillBeRawPtr<KeyboardEvent> keydown = KeyboardEvent::create(keyDownEvent, m_frame->document()->domWindow());
+    RawPtr<KeyboardEvent> keydown = KeyboardEvent::create(keyDownEvent, m_frame->document()->domWindow());
     if (matchedAnAccessKey)
         keydown->setDefaultPrevented(true);
     keydown->setTarget(node);
@@ -3159,7 +3159,7 @@ WebInputEventResult EventHandler::keyEvent(const PlatformKeyboardEvent& initialK
     keyPressEvent.disambiguateKeyDownEvent(PlatformEvent::Char);
     if (keyPressEvent.text().isEmpty())
         return WebInputEventResult::NotHandled;
-    RefPtrWillBeRawPtr<KeyboardEvent> keypress = KeyboardEvent::create(keyPressEvent, m_frame->document()->domWindow());
+    RawPtr<KeyboardEvent> keypress = KeyboardEvent::create(keyPressEvent, m_frame->document()->domWindow());
     keypress->setTarget(node);
     return toWebInputEventResult(node->dispatchEvent(keypress));
 }
@@ -3403,7 +3403,7 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
     if (!target)
         return false;
 
-    RefPtrWillBeRawPtr<TextEvent> event = TextEvent::create(m_frame->domWindow(), text, inputType);
+    RawPtr<TextEvent> event = TextEvent::create(m_frame->domWindow(), text, inputType);
     event->setUnderlyingEvent(underlyingEvent);
 
     target->dispatchEvent(event);
@@ -3570,7 +3570,7 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
 }
 
 void EventHandler::dispatchPointerEvents(const PlatformTouchEvent& event,
-    WillBeHeapVector<TouchInfo>& touchInfos)
+    HeapVector<TouchInfo>& touchInfos)
 {
     if (!RuntimeEnabledFeatures::pointerEventEnabled())
         return;
@@ -3594,7 +3594,7 @@ void EventHandler::dispatchPointerEvents(const PlatformTouchEvent& event,
     }
 }
 
-void EventHandler::sendPointerCancels(WillBeHeapVector<TouchInfo>& touchInfos)
+void EventHandler::sendPointerCancels(HeapVector<TouchInfo>& touchInfos)
 {
     if (!RuntimeEnabledFeatures::pointerEventEnabled())
         return;
@@ -3628,9 +3628,9 @@ class ChangedTouches final {
 public:
     // The touches corresponding to the particular change state this struct
     // instance represents.
-    RefPtrWillBeMember<TouchList> m_touches;
+    Member<TouchList> m_touches;
 
-    using EventTargetSet = WillBeHeapHashSet<RefPtrWillBeMember<EventTarget>>;
+    using EventTargetSet = HeapHashSet<Member<EventTarget>>;
     // Set of targets involved in m_touches.
     EventTargetSet m_targets;
 };
@@ -3638,7 +3638,7 @@ public:
 } // namespace
 
 WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& event,
-    WillBeHeapVector<TouchInfo>& touchInfos, bool freshTouchEvents, bool allTouchReleased)
+    HeapVector<TouchInfo>& touchInfos, bool freshTouchEvents, bool allTouchReleased)
 {
     // Build up the lists to use for the 'touches', 'targetTouches' and
     // 'changedTouches' attributes in the JS event. See
@@ -3646,11 +3646,11 @@ WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& 
     // lists fit together.
 
     // Holds the complete set of touches on the screen.
-    RefPtrWillBeRawPtr<TouchList> touches = TouchList::create();
+    RawPtr<TouchList> touches = TouchList::create();
 
     // A different view on the 'touches' list above, filtered and grouped by
     // event target. Used for the 'targetTouches' list in the JS event.
-    using TargetTouchesHeapMap = WillBeHeapHashMap<EventTarget*, RefPtrWillBeMember<TouchList>>;
+    using TargetTouchesHeapMap = HeapHashMap<EventTarget*, Member<TouchList>>;
     TargetTouchesHeapMap touchesByTarget;
 
     // Array of touches per state, used to assemble the 'changedTouches' list.
@@ -3664,7 +3664,7 @@ WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& 
         if (touchInfo.consumed)
             continue;
 
-        RefPtrWillBeRawPtr<Touch> touch = Touch::create(
+        RawPtr<Touch> touch = Touch::create(
             touchInfo.targetFrame.get(),
             touchInfo.touchTarget.get(),
             point.id(),
@@ -3721,7 +3721,7 @@ WebInputEventResult EventHandler::dispatchTouchEvents(const PlatformTouchEvent& 
         const AtomicString& eventName(touchEventNameForTouchPointState(static_cast<PlatformTouchPoint::TouchState>(state)));
         for (const auto& eventTarget : changedTouches[state].m_targets) {
             EventTarget* touchEventTarget = eventTarget.get();
-            RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(
+            RawPtr<TouchEvent> touchEvent = TouchEvent::create(
                 touches.get(), touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
                 eventName, touchEventTarget->toNode()->document().domWindow(),
                 event.getModifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
@@ -3846,12 +3846,12 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
     }
 
     // Compute and store the common info used by both PointerEvent and TouchEvent.
-    WillBeHeapVector<TouchInfo> touchInfos(points.size());
+    HeapVector<TouchInfo> touchInfos(points.size());
 
     for (unsigned i = 0; i < points.size(); ++i) {
         const PlatformTouchPoint& point = points[i];
         PlatformTouchPoint::TouchState pointState = point.state();
-        RefPtrWillBeRawPtr<EventTarget> touchTarget = nullptr;
+        RawPtr<EventTarget> touchTarget = nullptr;
         String regionID;
 
         if (pointState == PlatformTouchPoint::TouchReleased || pointState == PlatformTouchPoint::TouchCancelled) {

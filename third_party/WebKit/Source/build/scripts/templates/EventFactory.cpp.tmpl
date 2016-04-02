@@ -13,7 +13,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<{{namespace}}> {{namespace}}{{suffix}}Factory::create(ExecutionContext* executionContext, const String& type)
+RawPtr<{{namespace}}> {{namespace}}{{suffix}}Factory::create(ExecutionContext* executionContext, const String& type)
 {
     {% for event in events %}
     {% if event|script_name|create_event_whitelist %}

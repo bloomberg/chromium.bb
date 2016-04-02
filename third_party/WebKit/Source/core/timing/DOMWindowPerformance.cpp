@@ -16,13 +16,11 @@ DOMWindowPerformance::DOMWindowPerformance(LocalDOMWindow& window)
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPerformance);
-
 DEFINE_TRACE(DOMWindowPerformance)
 {
     visitor->trace(m_window);
     visitor->trace(m_performance);
-    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
+    HeapSupplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
@@ -35,7 +33,7 @@ const char* DOMWindowPerformance::supplementName()
 // static
 DOMWindowPerformance& DOMWindowPerformance::from(LocalDOMWindow& window)
 {
-    DOMWindowPerformance* supplement = static_cast<DOMWindowPerformance*>(WillBeHeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    DOMWindowPerformance* supplement = static_cast<DOMWindowPerformance*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowPerformance(window);
         provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));

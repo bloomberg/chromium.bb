@@ -27,7 +27,7 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface SVGAnimatedString {
     [RaisesException=Setter] attribute DOMString baseVal;
     readonly attribute DOMString animVal;

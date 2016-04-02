@@ -24,7 +24,7 @@
 [
     DependentLifetime,
     SetWrapperReferenceFrom=ownerNode,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
     getter Element? item(unsigned long index);

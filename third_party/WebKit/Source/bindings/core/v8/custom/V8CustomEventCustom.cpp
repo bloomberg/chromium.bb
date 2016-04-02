@@ -85,7 +85,7 @@ void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&
             return;
     }
 
-    RefPtrWillBeRawPtr<CustomEvent> impl = CustomEvent::create(type, eventInitDict);
+    RawPtr<CustomEvent> impl = CustomEvent::create(type, eventInitDict);
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8CustomEvent::wrapperTypeInfo, wrapper);
 

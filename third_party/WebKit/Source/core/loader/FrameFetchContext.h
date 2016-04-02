@@ -127,8 +127,8 @@ private:
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will
     // currently leak because ComputedStyle and its data are not on the heap.
     // See crbug.com/383860 for details.
-    RawPtrWillBeWeakMember<Document> m_document;
-    RawPtrWillBeMember<DocumentLoader> m_documentLoader;
+    WeakMember<Document> m_document;
+    Member<DocumentLoader> m_documentLoader;
 
     bool m_imageFetched : 1;
 };

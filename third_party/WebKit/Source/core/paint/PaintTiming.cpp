@@ -15,10 +15,10 @@ static const char kSupplementName[] = "PaintTiming";
 
 PaintTiming& PaintTiming::from(Document& document)
 {
-    PaintTiming* timing = static_cast<PaintTiming*>(WillBeHeapSupplement<Document>::from(document, kSupplementName));
+    PaintTiming* timing = static_cast<PaintTiming*>(HeapSupplement<Document>::from(document, kSupplementName));
     if (!timing) {
         timing = new PaintTiming(document);
-        WillBeHeapSupplement<Document>::provideTo(document, kSupplementName, adoptPtrWillBeNoop(timing));
+        HeapSupplement<Document>::provideTo(document, kSupplementName, adoptPtrWillBeNoop(timing));
     }
     return *timing;
 }

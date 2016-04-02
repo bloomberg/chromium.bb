@@ -32,7 +32,7 @@ private:
 
     const FrameView& frameView();
 
-    RawPtrWillBeMember<const FrameView> m_frameView;
+    Member<const FrameView> m_frameView;
     static bool s_inPaintContents;
 };
 

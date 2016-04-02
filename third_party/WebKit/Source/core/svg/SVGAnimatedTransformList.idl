@@ -27,7 +27,7 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface SVGAnimatedTransformList {
     [MeasureAs=SVGAnimatedTransformListBaseVal] readonly attribute SVGTransformList baseVal;
     readonly attribute SVGTransformList animVal;

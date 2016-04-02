@@ -50,7 +50,7 @@ public:
     explicit ScriptSourceCode(ScriptResource*);
     ScriptSourceCode(const String&, const KURL& = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition());
     ScriptSourceCode(const CompressibleString&, const KURL& = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition());
-    ScriptSourceCode(PassRefPtrWillBeRawPtr<ScriptStreamer>, ScriptResource*);
+    ScriptSourceCode(RawPtr<ScriptStreamer>, ScriptResource*);
 
     ~ScriptSourceCode();
     DECLARE_TRACE();
@@ -74,8 +74,8 @@ private:
     void treatNullSourceAsEmpty();
 
     CompressibleString m_source;
-    RefPtrWillBeMember<ScriptResource> m_resource;
-    RefPtrWillBeMember<ScriptStreamer> m_streamer;
+    Member<ScriptResource> m_resource;
+    Member<ScriptStreamer> m_streamer;
     mutable KURL m_url;
     TextPosition m_startPosition;
 };

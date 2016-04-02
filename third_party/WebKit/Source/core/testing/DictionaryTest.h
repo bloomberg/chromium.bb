@@ -74,13 +74,13 @@ private:
     String m_enumMemberWithDefault;
     String m_enumOrNullMember;
     Nullable<Vector<String>> m_enumArrayMember;
-    RefPtrWillBeMember<Element> m_elementMember;
-    RefPtrWillBeMember<Element> m_elementOrNullMember;
+    Member<Element> m_elementMember;
+    Member<Element> m_elementOrNullMember;
     ScriptValue m_objectMember;
     ScriptValue m_objectOrNullMemberWithDefault;
     DoubleOrString m_doubleOrStringMember;
     Nullable<HeapVector<DoubleOrString>> m_doubleOrStringSequenceMember;
-    RefPtrWillBeMember<EventTarget> m_eventTargetOrNullMember;
+    Member<EventTarget> m_eventTargetOrNullMember;
     String m_derivedStringMember;
     String m_derivedStringMemberWithDefault;
     bool m_requiredBooleanMember;

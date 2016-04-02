@@ -50,9 +50,9 @@ namespace blink {
 
 class StubFrameLoaderClientWithParent final : public EmptyFrameLoaderClient {
 public:
-    static PassOwnPtrWillBeRawPtr<StubFrameLoaderClientWithParent> create(Frame* parent)
+    static RawPtr<StubFrameLoaderClientWithParent> create(Frame* parent)
     {
-        return adoptPtrWillBeNoop(new StubFrameLoaderClientWithParent(parent));
+        return new StubFrameLoaderClientWithParent(parent);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -69,7 +69,7 @@ private:
     {
     }
 
-    RawPtrWillBeMember<Frame> m_parent;
+    Member<Frame> m_parent;
 };
 
 class MockFrameLoaderClient : public EmptyFrameLoaderClient {
@@ -122,15 +122,15 @@ protected:
     OwnPtr<DummyPageHolder> dummyPageHolder;
     // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
     // as the ResourceFetcher and Document live due to indirect usage.
-    RefPtrWillBePersistent<DocumentLoader> documentLoader;
-    RefPtrWillBePersistent<Document> document;
+    Persistent<DocumentLoader> documentLoader;
+    Persistent<Document> document;
     Persistent<FrameFetchContext> fetchContext;
 
-    OwnPtrWillBePersistent<StubFrameLoaderClientWithParent> childClient;
-    RefPtrWillBePersistent<LocalFrame> childFrame;
-    RefPtrWillBePersistent<DocumentLoader> childDocumentLoader;
-    RefPtrWillBePersistent<Document> childDocument;
-    OwnPtrWillBePersistent<DummyFrameOwner> owner;
+    Persistent<StubFrameLoaderClientWithParent> childClient;
+    Persistent<LocalFrame> childFrame;
+    Persistent<DocumentLoader> childDocumentLoader;
+    Persistent<Document> childDocument;
+    Persistent<DummyFrameOwner> owner;
 };
 
 // This test class sets up a mock frame loader client that expects a
@@ -568,7 +568,7 @@ TEST_F(FrameFetchContextDisplayedCertificateErrorsTest, MemoryCacheCertificateEr
     response.setURL(url);
     response.setSecurityInfo(securityInfo);
     response.setHasMajorCertificateErrors(true);
-    RefPtrWillBeRawPtr<Resource> resource = Resource::create(resourceRequest, Resource::Image);
+    RawPtr<Resource> resource = Resource::create(resourceRequest, Resource::Image);
     resource->setResponse(response);
     fetchContext->dispatchDidLoadResourceFromMemoryCache(resource.get(), WebURLRequest::FrameTypeNone, WebURLRequest::RequestContextImage);
 }

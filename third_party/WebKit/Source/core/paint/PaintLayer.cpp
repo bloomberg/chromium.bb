@@ -102,7 +102,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
     void* pointers[9];
     LayoutUnit layoutUnits[4];
     IntSize size;
-    OwnPtrWillBePersistent<PaintLayerScrollableArea> scrollableArea;
+    Persistent<PaintLayerScrollableArea> scrollableArea;
     struct {
         IntRect rect;
         void* pointers[2];
@@ -2600,7 +2600,7 @@ FilterOperations computeFilterOperationsHandleReferenceFilters(const FilterOpera
                 continue;
             ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
             // FIXME: Cache the Filter if it didn't change.
-            RefPtrWillBeRawPtr<Filter> referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingNode), nullptr, referenceOperation);
+            RawPtr<Filter> referenceFilter = ReferenceFilterBuilder::build(effectiveZoom, toElement(enclosingNode), nullptr, referenceOperation);
             referenceOperation.setFilter(referenceFilter.release());
         }
     }

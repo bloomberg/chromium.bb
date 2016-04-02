@@ -42,7 +42,7 @@ namespace blink {
 template<class CallbackInfo>
 static v8::Local<v8::Value> getNamedItems(HTMLAllCollection* collection, AtomicString name, const CallbackInfo& info)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Element>> namedItems;
+    HeapVector<Member<Element>> namedItems;
     collection->namedItems(name, namedItems);
 
     if (!namedItems.size())
@@ -76,7 +76,7 @@ static v8::Local<v8::Value> getItem(HTMLAllCollection* collection, v8::Local<v8:
     if (!argument->IsNumber())
         UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), indexedWithNonNumberFeature);
 
-    RefPtrWillBeRawPtr<Element> result = collection->item(index->Value());
+    RawPtr<Element> result = collection->item(index->Value());
     return toV8(result.release(), info.Holder(), info.GetIsolate());
 }
 

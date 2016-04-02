@@ -164,12 +164,12 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // this re-implementation of ResourceOwner.
         RawResource* resource() const { return m_resource.get(); }
         void clearResource() { setResource(nullptr); }
-        void setResource(const PassRefPtrWillBeRawPtr<RawResource>& newResource)
+        void setResource(const RawPtr<RawResource>& newResource)
         {
             if (newResource == m_resource)
                 return;
 
-            if (PassRefPtrWillBeRawPtr<RawResource> oldResource = m_resource.release())
+            if (RawPtr<RawResource> oldResource = m_resource.release())
                 oldResource->removeClient(this);
 
             if (newResource) {
@@ -177,14 +177,14 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
                 m_resource->addClient(this);
             }
         }
-        RefPtrWillBePersistent<RawResource> m_resource;
+        Persistent<RawResource> m_resource;
         // End of ResourceOwner re-implementation, see above.
 
         SecurityOrigin* getSecurityOrigin() const;
         Document& document() const;
 
         ThreadableLoaderClient* m_client;
-        RawPtrWillBeWeakPersistent<Document> m_document;
+        WeakPersistent<Document> m_document;
 
         const ThreadableLoaderOptions m_options;
         // Some items may be overridden by m_forceDoNotAllowStoredCredentials

@@ -21,7 +21,7 @@ namespace blink {
 
 using namespace {{namespace}}Names;
 
-typedef PassRefPtrWillBeRawPtr<{{namespace}}Element> (*ConstructorFunction)(
+typedef RawPtr<{{namespace}}Element> (*ConstructorFunction)(
     Document&,
     {% if namespace == 'HTML' %}
     HTMLFormElement*,
@@ -33,7 +33,7 @@ typedef HashMap<AtomicString, ConstructorFunction> FunctionMap;
 static FunctionMap* g_constructors = 0;
 
 {% for tag in tags|sort if not tag.noConstructor %}
-static PassRefPtrWillBeRawPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
+static RawPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
     Document& document,
     {% if namespace == 'HTML' %}
     HTMLFormElement* formElement,
@@ -73,7 +73,7 @@ static void create{{namespace}}FunctionMap()
         g_constructors->set(data[i].tag.localName(), data[i].func);
 }
 
-PassRefPtrWillBeRawPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(
+RawPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(
     const AtomicString& localName,
     Document& document,
     {% if namespace == 'HTML' %}
@@ -87,7 +87,7 @@ PassRefPtrWillBeRawPtr<{{namespace}}Element> {{namespace}}ElementFactory::create
         return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}createdByParser);
 
     if (document.registrationContext() && CustomElement::isValidName(localName)) {
-        RefPtrWillBeRawPtr<Element> element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
+        RawPtr<Element> element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
         ASSERT_WITH_SECURITY_IMPLICATION(element->is{{namespace}}Element());
         return static_pointer_cast<{{namespace}}Element>(element.release());
     }

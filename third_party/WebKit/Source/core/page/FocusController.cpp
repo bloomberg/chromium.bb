@@ -95,9 +95,9 @@ public:
 private:
     ScopedFocusNavigation(TreeScope&, const Element*);
     ScopedFocusNavigation(HTMLSlotElement&, const Element*);
-    RawPtrWillBeMember<ContainerNode> m_rootNode;
-    RawPtrWillBeMember<HTMLSlotElement> m_rootSlot;
-    RawPtrWillBeMember<Element> m_current;
+    Member<ContainerNode> m_rootNode;
+    Member<HTMLSlotElement> m_rootSlot;
+    Member<Element> m_current;
     bool m_slotFallbackTraversal;
 };
 
@@ -168,7 +168,7 @@ void ScopedFocusNavigation::moveToFirst()
 {
     if (m_rootSlot) {
         if (!m_slotFallbackTraversal) {
-            WillBeHeapVector<RefPtrWillBeMember<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
+            HeapVector<Member<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
             for (auto assignedNode : assignedNodes) {
                 if (assignedNode->isElementNode()) {
                     m_current = toElement(assignedNode);
@@ -194,7 +194,7 @@ void ScopedFocusNavigation::moveToLast()
 {
     if (m_rootSlot) {
         if (!m_slotFallbackTraversal) {
-            WillBeHeapVector<RefPtrWillBeMember<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
+            HeapVector<Member<Node>> assignedNodes = m_rootSlot->getAssignedNodes();
             for (auto assignedNode = assignedNodes.rbegin(); assignedNode != assignedNodes.rend(); ++assignedNode) {
                 if ((*assignedNode)->isElementNode()) {
                     m_current = ElementTraversal::lastWithinOrSelf(*toElement(*assignedNode));
@@ -923,7 +923,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
 
     document->updateLayoutIgnorePendingStylesheets();
     ScopedFocusNavigation scope = current ? ScopedFocusNavigation::createFor(*current) : ScopedFocusNavigation::createForDocument(*document);
-    RefPtrWillBeRawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, scope);
+    RawPtr<Element> element = findFocusableElementAcrossFocusScopes(type, scope);
     if (!element) {
         // If there's a RemoteFrame on the ancestor chain, we need to continue
         // searching for focusable elements there.

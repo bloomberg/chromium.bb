@@ -28,7 +28,7 @@
 [
     ImplementedAs=SVGPointListTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface SVGPointList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

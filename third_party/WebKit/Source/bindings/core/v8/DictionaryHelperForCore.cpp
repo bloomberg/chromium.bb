@@ -188,7 +188,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, unsi
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefPtrWillBeMember<DOMWindow>& value)
+bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Member<DOMWindow>& value)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))
@@ -222,7 +222,7 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Memb
 }
 
 template <>
-bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, RefPtrWillBeMember<EventTarget>& value)
+bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Member<EventTarget>& value)
 {
     v8::Local<v8::Value> v8Value;
     if (!dictionary.get(key, v8Value))

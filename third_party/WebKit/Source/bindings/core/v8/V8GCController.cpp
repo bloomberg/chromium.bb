@@ -229,7 +229,7 @@ private:
     // v8 guarantees that Blink will not regain control while a v8 GC runs
     // (=> no Oilpan GCs will be triggered), hence raw, untraced members
     // can safely be kept here.
-    Vector<RawPtrWillBeUntracedMember<Node>> m_groupsWhichNeedRetainerInfo;
+    Vector<UntracedMember<Node>> m_groupsWhichNeedRetainerInfo;
     int m_domObjectsWithPendingActivity;
     bool m_liveRootGroupIdSet;
     bool m_constructRetainedObjectInfos;
@@ -486,7 +486,7 @@ public:
 
 private:
     v8::Isolate* m_isolate;
-    RawPtrWillBePersistent<ExecutionContext> m_executionContext;
+    Persistent<ExecutionContext> m_executionContext;
     bool m_pendingActivityFound;
 };
 

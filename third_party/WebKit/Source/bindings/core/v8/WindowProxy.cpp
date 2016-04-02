@@ -76,9 +76,9 @@ static void checkDocumentWrapper(v8::Local<v8::Object> wrapper, Document* docume
     ASSERT(V8Document::toImpl(wrapper) == document);
 }
 
-PassOwnPtrWillBeRawPtr<WindowProxy> WindowProxy::create(v8::Isolate* isolate, Frame* frame, DOMWrapperWorld& world)
+RawPtr<WindowProxy> WindowProxy::create(v8::Isolate* isolate, Frame* frame, DOMWrapperWorld& world)
 {
-    return adoptPtrWillBeNoop(new WindowProxy(frame, &world, isolate));
+    return new WindowProxy(frame, &world, isolate);
 }
 
 WindowProxy::WindowProxy(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
@@ -507,7 +507,7 @@ static v8::Local<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const A
     if (!htmlDocument->hasNamedItem(key) && !htmlDocument->hasExtraNamedItem(key))
         return v8Undefined();
 
-    RefPtrWillBeRawPtr<DocumentNameCollection> items = htmlDocument->documentNamedItems(key);
+    RawPtr<DocumentNameCollection> items = htmlDocument->documentNamedItems(key);
     if (items->isEmpty())
         return v8Undefined();
 
@@ -519,7 +519,7 @@ static v8::Local<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const A
             return toV8(frame->domWindow(), creationContext, isolate);
         return toV8(element, creationContext, isolate);
     }
-    return toV8(PassRefPtrWillBeRawPtr<HTMLCollection>(items.release()), creationContext, isolate);
+    return toV8(RawPtr<HTMLCollection>(items.release()), creationContext, isolate);
 }
 
 static void getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)

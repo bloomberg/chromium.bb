@@ -848,7 +848,7 @@ private:
     AncestorDependentCompositingInputs m_ancestorDependentCompositingInputs;
     OwnPtr<RareAncestorDependentCompositingInputs> m_rareAncestorDependentCompositingInputs;
 
-    OwnPtrWillBePersistent<PaintLayerScrollableArea> m_scrollableArea;
+    Persistent<PaintLayerScrollableArea> m_scrollableArea;
 
     mutable OwnPtr<ClipRectsCache> m_clipRectsCache;
 

@@ -31,7 +31,7 @@ private:
 
     PaintLayerScrollableArea& getScrollableArea() const;
 
-    RawPtrWillBeMember<PaintLayerScrollableArea> m_scrollableArea;
+    Member<PaintLayerScrollableArea> m_scrollableArea;
 };
 
 } // namespace blink

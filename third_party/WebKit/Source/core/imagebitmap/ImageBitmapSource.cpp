@@ -9,7 +9,7 @@
 
 namespace blink {
 
-ScriptPromise ImageBitmapSource::fulfillImageBitmap(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ImageBitmap> imageBitmap)
+ScriptPromise ImageBitmapSource::fulfillImageBitmap(ScriptState* scriptState, RawPtr<ImageBitmap> imageBitmap)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();

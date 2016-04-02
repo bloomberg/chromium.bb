@@ -56,7 +56,7 @@ void V8Document::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
     Document* document = V8Document::toImpl(info.Holder());
 
     if (info.Length() > 2) {
-        RefPtrWillBeRawPtr<LocalFrame> frame = document->frame();
+        RawPtr<LocalFrame> frame = document->frame();
         if (!frame)
             return;
         // Fetch the global object for the frame.

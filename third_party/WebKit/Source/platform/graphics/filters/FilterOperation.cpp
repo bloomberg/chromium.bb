@@ -146,7 +146,7 @@ RawPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* 
         blink::blend(fromOp->getColor(), m_color, progress));
 }
 
-PassRefPtrWillBeRawPtr<FilterOperation> BoxReflectFilterOperation::blend(const FilterOperation* from, double progress) const
+RawPtr<FilterOperation> BoxReflectFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     ASSERT_NOT_REACHED();
     return nullptr;

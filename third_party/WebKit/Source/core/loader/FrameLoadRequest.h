@@ -81,10 +81,10 @@ public:
     void setClientRedirect(ClientRedirectPolicy clientRedirect) { m_clientRedirect = clientRedirect; }
 
     Event* triggeringEvent() const { return m_triggeringEvent.get(); }
-    void setTriggeringEvent(PassRefPtrWillBeRawPtr<Event> triggeringEvent) { m_triggeringEvent = triggeringEvent; }
+    void setTriggeringEvent(RawPtr<Event> triggeringEvent) { m_triggeringEvent = triggeringEvent; }
 
     HTMLFormElement* form() const { return m_form.get(); }
-    void setForm(PassRefPtrWillBeRawPtr<HTMLFormElement> form) { m_form = form; }
+    void setForm(RawPtr<HTMLFormElement> form) { m_form = form; }
 
     ShouldSendReferrer getShouldSendReferrer() const { return m_shouldSendReferrer; }
     void setShouldSendReferrer(ShouldSendReferrer shouldSendReferrer) { m_shouldSendReferrer = shouldSendReferrer; }
@@ -117,14 +117,14 @@ private:
         m_resourceRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
         m_resourceRequest.setFetchRedirectMode(WebURLRequest::FetchRedirectModeManual);
     }
-    RefPtrWillBeMember<Document> m_originDocument;
+    Member<Document> m_originDocument;
     ResourceRequest m_resourceRequest;
     AtomicString m_frameName;
     SubstituteData m_substituteData;
     bool m_replacesCurrentItem;
     ClientRedirectPolicy m_clientRedirect;
-    RefPtrWillBeMember<Event> m_triggeringEvent;
-    RefPtrWillBeMember<HTMLFormElement> m_form;
+    Member<Event> m_triggeringEvent;
+    Member<HTMLFormElement> m_form;
     ShouldSendReferrer m_shouldSendReferrer;
     ShouldSetOpener m_shouldSetOpener;
     ContentSecurityPolicyDisposition m_shouldCheckMainWorldContentSecurityPolicy;

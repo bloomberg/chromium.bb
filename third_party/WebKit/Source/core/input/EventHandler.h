@@ -86,9 +86,8 @@ class Widget;
 
 enum class DragInitiator;
 
-class CORE_EXPORT EventHandler final : public NoBaseWillBeGarbageCollectedFinalized<EventHandler> {
+class CORE_EXPORT EventHandler final : public GarbageCollectedFinalized<EventHandler> {
     WTF_MAKE_NONCOPYABLE(EventHandler);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(EventHandler);
 public:
     explicit EventHandler(LocalFrame*);
     ~EventHandler();
@@ -114,7 +113,7 @@ public:
 
     bool mousePressed() const { return m_mousePressed; }
 
-    void setCapturingMouseEventsNode(PassRefPtrWillBeRawPtr<Node>); // A caller is responsible for resetting capturing node to 0.
+    void setCapturingMouseEventsNode(RawPtr<Node>); // A caller is responsible for resetting capturing node to 0.
 
     WebInputEventResult updateDragAndDrop(const PlatformMouseEvent&, DataTransfer*);
     void cancelDragAndDrop(const PlatformMouseEvent&, DataTransfer*);
@@ -226,8 +225,8 @@ public:
         }
 
         PlatformTouchPoint point;
-        RefPtrWillBeMember<EventTarget> touchTarget;
-        RefPtrWillBeMember<LocalFrame> targetFrame;
+        Member<EventTarget> touchTarget;
+        Member<LocalFrame> targetFrame;
         FloatPoint adjustedPagePoint;
         FloatSize adjustedRadius;
         bool knownTarget;
@@ -310,7 +309,7 @@ private:
 
     void invalidateClick();
 
-    PassRefPtrWillBeRawPtr<Node> updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
+    RawPtr<Node> updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
     void updateMouseEventTargetNodeAndSendEvents(Node*, const PlatformMouseEvent&, bool isFrameBoundaryTransition = false);
 
 
@@ -373,25 +372,25 @@ private:
     // the given element.
     bool slideFocusOnShadowHostIfNecessary(const Element&);
 
-    void dispatchPointerEvents(const PlatformTouchEvent&, WillBeHeapVector<TouchInfo>&);
-    void sendPointerCancels(WillBeHeapVector<TouchInfo>&);
+    void dispatchPointerEvents(const PlatformTouchEvent&, HeapVector<TouchInfo>&);
+    void sendPointerCancels(HeapVector<TouchInfo>&);
 
-    WebInputEventResult dispatchTouchEvents(const PlatformTouchEvent&, WillBeHeapVector<TouchInfo>&, bool, bool);
+    WebInputEventResult dispatchTouchEvents(const PlatformTouchEvent&, HeapVector<TouchInfo>&, bool, bool);
 
     // NOTE: If adding a new field to this class please ensure that it is
     // cleared in |EventHandler::clear()|.
 
-    const RawPtrWillBeMember<LocalFrame> m_frame;
+    const Member<LocalFrame> m_frame;
 
     // Current button-press state for mouse/mouse-like-stylus.
     // TODO(crbug.com/563676): Buggy for chorded buttons.
     bool m_mousePressed;
 
     bool m_capturesDragging;
-    RefPtrWillBeMember<Node> m_mousePressNode;
+    Member<Node> m_mousePressNode;
 
     bool m_mouseDownMayStartDrag;
-    const OwnPtrWillBeMember<SelectionController> m_selectionController;
+    const Member<SelectionController> m_selectionController;
 
     LayoutPoint m_dragStartPos;
 
@@ -407,24 +406,24 @@ private:
 
     bool m_svgPan;
 
-    RawPtrWillBeMember<PaintLayerScrollableArea> m_resizeScrollableArea;
+    Member<PaintLayerScrollableArea> m_resizeScrollableArea;
 
-    RefPtrWillBeMember<Node> m_capturingMouseEventsNode;
+    Member<Node> m_capturingMouseEventsNode;
     bool m_eventHandlerWillResetCapturingMouseEventsNode;
 
     // Note the difference of this and m_nodeUnderPointer in PointerEventManager
-    RefPtrWillBeMember<Node> m_nodeUnderMouse;
+    Member<Node> m_nodeUnderMouse;
 
-    RefPtrWillBeMember<LocalFrame> m_lastMouseMoveEventSubframe;
-    RefPtrWillBeMember<Scrollbar> m_lastScrollbarUnderMouse;
+    Member<LocalFrame> m_lastMouseMoveEventSubframe;
+    Member<Scrollbar> m_lastScrollbarUnderMouse;
 
     int m_clickCount;
-    RefPtrWillBeMember<Node> m_clickNode;
+    Member<Node> m_clickNode;
 
-    RefPtrWillBeMember<Node> m_dragTarget;
+    Member<Node> m_dragTarget;
     bool m_shouldOnlyFireDragOverEvent;
 
-    RefPtrWillBeMember<HTMLFrameSetElement> m_frameSetBeingResized;
+    Member<HTMLFrameSetElement> m_frameSetBeingResized;
 
     LayoutSize m_offsetFromResizeCorner; // In the coords of m_resizeScrollableArea.
 
@@ -440,13 +439,13 @@ private:
     RefPtr<UserGestureToken> m_lastMouseDownUserGestureToken;
 
     // The target of each active touch point indexed by the touch ID.
-    using TouchTargetMap = WillBeHeapHashMap<unsigned, RefPtrWillBeMember<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+    using TouchTargetMap = HeapHashMap<unsigned, Member<EventTarget>, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
     TouchTargetMap m_targetForTouchID;
-    using TouchRegionMap = WillBeHeapHashMap<unsigned, String, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
+    using TouchRegionMap = HeapHashMap<unsigned, String, DefaultHash<unsigned>::Hash, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
     TouchRegionMap m_regionForTouchID;
 
     // If set, the document of the active touch sequence. Unset if no touch sequence active.
-    RefPtrWillBeMember<Document> m_touchSequenceDocument;
+    Member<Document> m_touchSequenceDocument;
     RefPtr<UserGestureToken> m_touchSequenceUserGestureToken;
 
     bool m_touchPressed;
@@ -458,14 +457,14 @@ private:
     // TODO(mustaq): Consider a state per pointerType, as in PointerIdManager? Exclude mouse?
     bool m_inPointerCanceledState;
 
-    RefPtrWillBeMember<Node> m_scrollGestureHandlingNode;
+    Member<Node> m_scrollGestureHandlingNode;
     bool m_lastGestureScrollOverWidget;
     // The most recent element to scroll natively during this scroll
     // sequence. Null if no native element has scrolled this scroll
     // sequence, or if the most recent element to scroll used scroll
     // customization.
-    RefPtrWillBeMember<Node> m_previousGestureScrolledNode;
-    RefPtrWillBeMember<Scrollbar> m_scrollbarHandlingScrollGesture;
+    Member<Node> m_previousGestureScrolledNode;
+    Member<Scrollbar> m_scrollbarHandlingScrollGesture;
 
     double m_maxMouseMovedDuration;
 
@@ -473,7 +472,7 @@ private:
 
     Timer<EventHandler> m_activeIntervalTimer;
     double m_lastShowPressTimestamp;
-    RefPtrWillBeMember<Element> m_lastDeferredTapElement;
+    Member<Element> m_lastDeferredTapElement;
 
     // Only used with the ScrollCustomization runtime enabled feature.
     std::deque<int> m_currentScrollChain;

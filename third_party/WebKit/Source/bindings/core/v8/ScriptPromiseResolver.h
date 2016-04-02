@@ -27,7 +27,7 @@ namespace blink {
 //    resolve or reject will be delayed. When it is stopped, resolve or reject
 //    will be ignored.
 class CORE_EXPORT ScriptPromiseResolver : public GarbageCollectedFinalized<ScriptPromiseResolver>, public ActiveDOMObject {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
+    USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 public:
     static ScriptPromiseResolver* create(ScriptState* scriptState)

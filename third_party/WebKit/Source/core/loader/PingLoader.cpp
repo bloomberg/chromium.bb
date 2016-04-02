@@ -126,7 +126,7 @@ void PingLoader::start(LocalFrame* frame, ResourceRequest& request, const FetchI
         return;
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
-    RefPtrWillBeRawPtr<PingLoader> loader = adoptRefWillBeNoop(new PingLoader(frame, request, initiatorInfo, credentialsAllowed));
+    RawPtr<PingLoader> loader = new PingLoader(frame, request, initiatorInfo, credentialsAllowed);
     loader->ref();
 }
 

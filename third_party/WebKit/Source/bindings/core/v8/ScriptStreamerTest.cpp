@@ -88,8 +88,8 @@ protected:
     // fetch any data outside the test; the test controls the data by calling
     // ScriptResource::appendData.
     ResourceRequest m_resourceRequest;
-    RefPtrWillBePersistent<ScriptResource> m_resource;
-    OwnPtrWillBePersistent<PendingScript> m_pendingScript;
+    Persistent<ScriptResource> m_resource;
+    Persistent<PendingScript> m_pendingScript;
 };
 
 class TestScriptResourceClient : public ScriptResourceClient {

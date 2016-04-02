@@ -31,7 +31,7 @@
 // https://dom.spec.whatwg.org/#interface-mutationrecord
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface MutationRecord {
     readonly attribute DOMString type;
     readonly attribute Node target;

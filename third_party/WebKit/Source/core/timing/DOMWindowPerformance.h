@@ -16,11 +16,9 @@ namespace blink {
 class DOMWindow;
 class Performance;
 
-class CORE_EXPORT DOMWindowPerformance final : public NoBaseWillBeGarbageCollected<DOMWindowPerformance>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPerformance);
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowPerformance);
+class CORE_EXPORT DOMWindowPerformance final : public GarbageCollected<DOMWindowPerformance>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+    USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPerformance);
     WTF_MAKE_NONCOPYABLE(DOMWindowPerformance);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DOMWindowPerformance);
 public:
     static DOMWindowPerformance& from(LocalDOMWindow&);
     static Performance* performance(DOMWindow&);
@@ -34,8 +32,8 @@ private:
     Performance* performance();
 
     // TODO(sof): try to move this direct reference and instead rely on frame().
-    RawPtrWillBeMember<LocalDOMWindow> m_window;
-    PersistentWillBeMember<Performance> m_performance;
+    Member<LocalDOMWindow> m_window;
+    Member<Performance> m_performance;
 };
 
 } // namespace blink

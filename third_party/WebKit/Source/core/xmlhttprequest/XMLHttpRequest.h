@@ -69,7 +69,7 @@ typedef int ExceptionCode;
 
 class XMLHttpRequest final : public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public DocumentParserClient, public ActiveScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
+    USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 public:
     static XMLHttpRequest* create(ScriptState*);
     static XMLHttpRequest* create(ExecutionContext*);
@@ -276,8 +276,8 @@ private:
     OwnPtr<TextResourceDecoder> m_decoder;
 
     ScriptString m_responseText;
-    RefPtrWillBeMember<Document> m_responseDocument;
-    RefPtrWillBeMember<DocumentParser> m_responseDocumentParser;
+    Member<Document> m_responseDocument;
+    Member<DocumentParser> m_responseDocumentParser;
 
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
     long long m_lengthDownloadedToFile;

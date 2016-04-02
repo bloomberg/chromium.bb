@@ -10,9 +10,9 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WindowProxyManager> WindowProxyManager::create(Frame& frame)
+RawPtr<WindowProxyManager> WindowProxyManager::create(Frame& frame)
 {
-    return adoptPtrWillBeNoop(new WindowProxyManager(frame));
+    return new WindowProxyManager(frame);
 }
 
 WindowProxyManager::~WindowProxyManager()
@@ -38,7 +38,7 @@ WindowProxy* WindowProxyManager::windowProxy(DOMWrapperWorld& world)
         if (iter != m_isolatedWorlds.end()) {
             windowProxy = iter->value.get();
         } else {
-            OwnPtrWillBeRawPtr<WindowProxy> isolatedWorldWindowProxy = WindowProxy::create(m_isolate, m_frame, world);
+            RawPtr<WindowProxy> isolatedWorldWindowProxy = WindowProxy::create(m_isolate, m_frame, world);
             windowProxy = isolatedWorldWindowProxy.get();
             m_isolatedWorlds.set(world.worldId(), isolatedWorldWindowProxy.release());
         }

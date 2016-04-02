@@ -32,15 +32,15 @@ namespace blink {
 
 class SinkDocument final : public HTMLDocument {
 public:
-    static PassRefPtrWillBeRawPtr<SinkDocument> create(const DocumentInit& initializer = DocumentInit())
+    static RawPtr<SinkDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRefWillBeNoop(new SinkDocument(initializer));
+        return new SinkDocument(initializer);
     }
 
 private:
     SinkDocument(const DocumentInit&);
 
-    PassRefPtrWillBeRawPtr<DocumentParser> createParser() override;
+    RawPtr<DocumentParser> createParser() override;
 };
 
 

@@ -45,12 +45,11 @@ class LocalFrame;
 class ExecutionContext;
 class WorkerGlobalScope;
 
-class ScheduledAction final : public NoBaseWillBeGarbageCollectedFinalized<ScheduledAction> {
+class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction> {
     WTF_MAKE_NONCOPYABLE(ScheduledAction);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ScheduledAction);
 public:
-    static PassOwnPtrWillBeRawPtr<ScheduledAction> create(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
-    static PassOwnPtrWillBeRawPtr<ScheduledAction> create(ScriptState*, const String& handler);
+    static RawPtr<ScheduledAction> create(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
+    static RawPtr<ScheduledAction> create(ScriptState*, const String& handler);
 
     ~ScheduledAction();
     DECLARE_TRACE();

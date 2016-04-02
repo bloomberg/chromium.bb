@@ -16,7 +16,7 @@ class NullEventQueue final : public EventQueue {
 public:
     NullEventQueue() { }
     ~NullEventQueue() override { }
-    bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) override { return true; }
+    bool enqueueEvent(RawPtr<Event>) override { return true; }
     bool cancelEvent(Event*) override { return true; }
     void close() override { }
 };
@@ -26,7 +26,7 @@ public:
 NullExecutionContext::NullExecutionContext()
     : m_tasksNeedSuspension(false)
     , m_isSecureContext(true)
-    , m_queue(adoptPtrWillBeNoop(new NullEventQueue()))
+    , m_queue(new NullEventQueue())
 {
 }
 

@@ -657,17 +657,17 @@ String Internals::elementLayoutTreeAsText(Element* element, ExceptionState& exce
     return representation;
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleDeclaration> Internals::computedStyleIncludingVisitedInfo(Node* node) const
+RawPtr<CSSStyleDeclaration> Internals::computedStyleIncludingVisitedInfo(Node* node) const
 {
     ASSERT(node);
     bool allowVisitedStyle = true;
     return CSSComputedStyleDeclaration::create(node, allowVisitedStyle);
 }
 
-PassRefPtrWillBeRawPtr<ShadowRoot> Internals::createUserAgentShadowRoot(Element* host)
+RawPtr<ShadowRoot> Internals::createUserAgentShadowRoot(Element* host)
 {
     ASSERT(host);
-    return PassRefPtrWillBeRawPtr<ShadowRoot>(host->ensureUserAgentShadowRoot());
+    return RawPtr<ShadowRoot>(host->ensureUserAgentShadowRoot());
 }
 
 ShadowRoot* Internals::shadowRoot(Element* host)
@@ -874,7 +874,7 @@ DocumentMarker* Internals::markerAt(Node* node, const String& markerType, unsign
     return markers[index];
 }
 
-PassRefPtrWillBeRawPtr<Range> Internals::markerRangeForNode(Node* node, const String& markerType, unsigned index, ExceptionState& exceptionState)
+RawPtr<Range> Internals::markerRangeForNode(Node* node, const String& markerType, unsigned index, ExceptionState& exceptionState)
 {
     ASSERT(node);
     DocumentMarker* marker = markerAt(node, markerType, index, exceptionState);
@@ -1040,7 +1040,7 @@ void Internals::setAutofilled(Element* element, bool enabled, ExceptionState& ex
     toHTMLFormControlElement(element)->setAutofilled(enabled);
 }
 
-PassRefPtrWillBeRawPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength)
+RawPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength)
 {
     ASSERT(scope);
 
@@ -1486,7 +1486,7 @@ Vector<AtomicString> Internals::svgTags()
     return tags;
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> Internals::nodesFromRect(Document* document, int centerX, int centerY, unsigned topPadding, unsigned rightPadding,
+RawPtr<StaticNodeList> Internals::nodesFromRect(Document* document, int centerX, int centerY, unsigned topPadding, unsigned rightPadding,
     unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowChildFrameContent, ExceptionState& exceptionState) const
 {
     ASSERT(document);
@@ -1517,7 +1517,7 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Internals::nodesFromRect(Document* docume
     if (!request.ignoreClipping() && !frameView->visibleContentRect().intersects(HitTestLocation::rectForPoint(point, topPadding, rightPadding, bottomPadding, leftPadding)))
         return nullptr;
 
-    WillBeHeapVector<RefPtrWillBeMember<Node>> matches;
+    HeapVector<Member<Node>> matches;
     HitTestResult result(request, point, topPadding, rightPadding, bottomPadding, leftPadding);
     layoutView->hitTest(result);
     copyToVector(result.listBasedTestResult(), matches);
@@ -2439,7 +2439,7 @@ unsigned Internals::canvasFontCacheMaxFonts()
 }
 
 void Internals::setScrollChain(
-    ScrollState* scrollState, const WillBeHeapVector<RefPtrWillBeMember<Element>>& elements, ExceptionState&)
+    ScrollState* scrollState, const HeapVector<Member<Element>>& elements, ExceptionState&)
 {
     std::deque<int> scrollChain;
     for (size_t i = 0; i < elements.size(); ++i)

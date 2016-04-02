@@ -45,9 +45,9 @@ class EncodedFormData;
 class KURL;
 class ResourceRequest;
 
-class CORE_EXPORT HistoryItem final : public RefCountedWillBeGarbageCollectedFinalized<HistoryItem> {
+class CORE_EXPORT HistoryItem final : public GarbageCollectedFinalized<HistoryItem> {
 public:
-    static PassRefPtrWillBeRawPtr<HistoryItem> create()
+    static RawPtr<HistoryItem> create()
     {
         return adoptRefWillBeNoop(new HistoryItem);
     }
@@ -112,7 +112,7 @@ private:
     IntPoint m_scrollPoint;
     float m_pageScaleFactor;
     Vector<String> m_documentStateVector;
-    RefPtrWillBeMember<DocumentState> m_documentState;
+    Member<DocumentState> m_documentState;
 
     // If two HistoryItems have the same item sequence number, then they are
     // clones of one another. Traversing history from one such HistoryItem to

@@ -14,7 +14,7 @@
 namespace blink {
 
 class V8IntersectionObserverCallback final : public IntersectionObserverCallback, public ActiveDOMCallback {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8IntersectionObserverCallback);
+    USING_GARBAGE_COLLECTED_MIXIN(V8IntersectionObserverCallback);
 public:
     CORE_EXPORT V8IntersectionObserverCallback(v8::Local<v8::Function>, v8::Local<v8::Object>, ScriptState*);
     ~V8IntersectionObserverCallback() override;

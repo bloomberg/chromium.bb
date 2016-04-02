@@ -44,12 +44,11 @@ class Document;
 class Prerender;
 class PrerenderClient;
 
-class PrerenderHandle final : public NoBaseWillBeGarbageCollectedFinalized<PrerenderHandle>, public DocumentLifecycleObserver {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(PrerenderHandle);
+class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>, public DocumentLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
     WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 public:
-    static PassOwnPtrWillBeRawPtr<PrerenderHandle> create(Document&, PrerenderClient*, const KURL&, unsigned prerenderRelTypes);
+    static RawPtr<PrerenderHandle> create(Document&, PrerenderClient*, const KURL&, unsigned prerenderRelTypes);
 
     virtual ~PrerenderHandle();
 

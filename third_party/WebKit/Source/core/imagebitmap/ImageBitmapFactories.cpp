@@ -143,10 +143,10 @@ ImageBitmapFactories& ImageBitmapFactories::from(EventTarget& eventTarget)
 template<class GlobalObject>
 ImageBitmapFactories& ImageBitmapFactories::fromInternal(GlobalObject& object)
 {
-    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(WillBeHeapSupplement<GlobalObject>::from(object, supplementName()));
+    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(HeapSupplement<GlobalObject>::from(object, supplementName()));
     if (!supplement) {
         supplement = new ImageBitmapFactories();
-        WillBeHeapSupplement<GlobalObject>::provideTo(object, supplementName(), adoptPtrWillBeNoop(supplement));
+        HeapSupplement<GlobalObject>::provideTo(object, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }
@@ -179,8 +179,8 @@ void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* co
 DEFINE_TRACE(ImageBitmapFactories)
 {
     visitor->trace(m_pendingLoaders);
-    WillBeHeapSupplement<LocalDOMWindow>::trace(visitor);
-    WillBeHeapSupplement<WorkerGlobalScope>::trace(visitor);
+    HeapSupplement<LocalDOMWindow>::trace(visitor);
+    HeapSupplement<WorkerGlobalScope>::trace(visitor);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()
@@ -249,7 +249,7 @@ void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(Pas
         m_cropRect = IntRect(IntPoint(), image->size());
     }
 
-    RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image, m_cropRect, m_options);
+    RawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image, m_cropRect, m_options);
     if (imageBitmap && imageBitmap->bitmapImage()) {
         m_resolver->resolve(imageBitmap.release());
     } else {

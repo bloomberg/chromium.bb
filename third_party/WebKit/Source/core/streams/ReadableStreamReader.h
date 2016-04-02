@@ -27,7 +27,7 @@ class ScriptState;
 // https://streams.spec.whatwg.org/.
 class CORE_EXPORT ReadableStreamReader final : public GarbageCollectedFinalized<ReadableStreamReader>, public ScriptWrappable, public ActiveScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamReader);
+    USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamReader);
 public:
     // The stream must not be locked to any ReadableStreamReader when called.
     ReadableStreamReader(ExecutionContext*, ReadableStream*);

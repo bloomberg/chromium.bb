@@ -27,7 +27,7 @@ public:
     static void paintIntoRect(const LayoutScrollbarPart&, GraphicsContext&, const LayoutPoint& paintOffset, const LayoutRect&);
 
 private:
-    RawPtrWillBeMember<const LayoutScrollbar> m_layoutScrollbar;
+    Member<const LayoutScrollbar> m_layoutScrollbar;
 };
 
 } // namespace blink

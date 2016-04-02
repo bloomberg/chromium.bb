@@ -52,12 +52,12 @@ class PrerenderHandle;
 struct ViewportDescriptionWrapper;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
-class CORE_EXPORT LinkLoader final : public NoBaseWillBeGarbageCollectedFinalized<LinkLoader>, public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
+class CORE_EXPORT LinkLoader final : public GarbageCollectedFinalized<LinkLoader>, public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
+    USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
 public:
-    static PassOwnPtrWillBeRawPtr<LinkLoader> create(LinkLoaderClient* client)
+    static RawPtr<LinkLoader> create(LinkLoaderClient* client)
     {
-        return adoptPtrWillBeNoop(new LinkLoader(client));
+        return new LinkLoader(client);
     }
     ~LinkLoader() override;
 
@@ -88,13 +88,13 @@ private:
     void linkLoadingErrorTimerFired(Timer<LinkLoader>*);
     void createLinkPreloadResourceClient(Resource*);
 
-    RawPtrWillBeMember<LinkLoaderClient> m_client;
+    Member<LinkLoaderClient> m_client;
 
     Timer<LinkLoader> m_linkLoadTimer;
     Timer<LinkLoader> m_linkLoadingErrorTimer;
 
-    OwnPtrWillBeMember<PrerenderHandle> m_prerender;
-    OwnPtrWillBeMember<LinkPreloadResourceClient> m_linkPreloadResourceClient;
+    Member<PrerenderHandle> m_prerender;
+    Member<LinkPreloadResourceClient> m_linkPreloadResourceClient;
 };
 
 } // namespace blink

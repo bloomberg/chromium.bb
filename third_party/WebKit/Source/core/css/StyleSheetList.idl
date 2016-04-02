@@ -23,7 +23,7 @@
 // TODO(philipj): StyleSheetList should be an [ArrayClass].
 [
     SetWrapperReferenceFrom=document,
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface StyleSheetList {
     [Measure] getter StyleSheet? item(unsigned long index);
     readonly attribute unsigned long length;

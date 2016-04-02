@@ -319,9 +319,9 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
 
 class PLATFORM_EXPORT BoxReflectFilterOperation : public FilterOperation {
 public:
-    static PassRefPtrWillBeRawPtr<BoxReflectFilterOperation> create(ReflectionDirection direction, float offset)
+    static RawPtr<BoxReflectFilterOperation> create(ReflectionDirection direction, float offset)
     {
-        return adoptRefWillBeNoop(new BoxReflectFilterOperation(direction, offset));
+        return new BoxReflectFilterOperation(direction, offset);
     }
 
     ReflectionDirection direction() const { return m_direction; }
@@ -331,7 +331,7 @@ public:
     bool movesPixels() const override { return true; }
 
 private:
-    PassRefPtrWillBeRawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
+    RawPtr<FilterOperation> blend(const FilterOperation* from, double progress) const override;
     bool operator==(const FilterOperation&) const override;
 
     BoxReflectFilterOperation(ReflectionDirection direction, float offset)

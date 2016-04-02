@@ -197,7 +197,7 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
     ScriptController::callFunction(m_scriptState->getExecutionContext(), m_callback.newLocal(m_scriptState->isolate()), thisHandle, 1, argv, m_scriptState->isolate());
 }
 
-void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>>& sequenceArg)
+void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const HeapVector<Member<TestInterfaceWillBeGarbageCollected>>& sequenceArg)
 {
     if (!canInvokeCallback())
         return;
@@ -217,7 +217,7 @@ void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const 
     ScriptController::callFunction(m_scriptState->getExecutionContext(), m_callback.newLocal(m_scriptState->isolate()), v8::Undefined(m_scriptState->isolate()), 1, argv, m_scriptState->isolate());
 }
 
-void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedArrayArg(const WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>>& arrayArg)
+void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedArrayArg(const HeapVector<Member<TestInterfaceWillBeGarbageCollected>>& arrayArg)
 {
     if (!canInvokeCallback())
         return;

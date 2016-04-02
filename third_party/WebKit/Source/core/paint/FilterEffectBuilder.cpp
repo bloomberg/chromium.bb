@@ -134,14 +134,14 @@ DEFINE_TRACE(FilterEffectBuilder)
 bool FilterEffectBuilder::build(Element* element, const FilterOperations& operations, float zoom, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
 {
     // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.
-    RefPtrWillBeRawPtr<Filter> parentFilter = Filter::create(1.0f);
-    RefPtrWillBeRawPtr<FilterEffect> previousEffect = parentFilter->getSourceGraphic();
+    RawPtr<Filter> parentFilter = Filter::create(1.0f);
+    RawPtr<FilterEffect> previousEffect = parentFilter->getSourceGraphic();
     for (size_t i = 0; i < operations.operations().size(); ++i) {
-        RefPtrWillBeRawPtr<FilterEffect> effect = nullptr;
+        RawPtr<FilterEffect> effect = nullptr;
         FilterOperation* filterOperation = operations.operations().at(i).get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
-            RefPtrWillBeRawPtr<Filter> referenceFilter = ReferenceFilterBuilder::build(zoom, element, previousEffect.get(), toReferenceFilterOperation(*filterOperation), referenceBoxSize, fillPaint, strokePaint);
+            RawPtr<Filter> referenceFilter = ReferenceFilterBuilder::build(zoom, element, previousEffect.get(), toReferenceFilterOperation(*filterOperation), referenceBoxSize, fillPaint, strokePaint);
             if (referenceFilter) {
                 effect = referenceFilter->lastEffect();
                 m_referenceFilters.append(referenceFilter);

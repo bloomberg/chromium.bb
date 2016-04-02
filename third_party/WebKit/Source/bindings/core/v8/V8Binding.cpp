@@ -92,17 +92,17 @@ void setMinimumArityTypeError(ExceptionState& exceptionState, unsigned expected,
     exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(expected, provided));
 }
 
-PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Local<v8::Value> callback, v8::Local<v8::Object> creationContext, ScriptState* scriptState)
+RawPtr<NodeFilter> toNodeFilter(v8::Local<v8::Value> callback, v8::Local<v8::Object> creationContext, ScriptState* scriptState)
 {
     if (callback->IsNull())
         return nullptr;
-    RefPtrWillBeRawPtr<NodeFilter> filter = NodeFilter::create();
+    RawPtr<NodeFilter> filter = NodeFilter::create();
 
     v8::Local<v8::Value> filterWrapper = toV8(filter.get(), creationContext, scriptState->isolate());
     if (filterWrapper.IsEmpty())
         return nullptr;
 
-    RefPtrWillBeRawPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper.As<v8::Object>(), scriptState);
+    RawPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper.As<v8::Object>(), scriptState);
     filter->setCondition(condition.release());
 
     return filter.release();

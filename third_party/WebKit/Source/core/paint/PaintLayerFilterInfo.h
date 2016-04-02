@@ -59,7 +59,7 @@ public:
     ~PaintLayerFilterInfo() override;
 
     FilterEffectBuilder* builder() const { return m_builder.get(); }
-    void setBuilder(PassRefPtrWillBeRawPtr<FilterEffectBuilder>);
+    void setBuilder(RawPtr<FilterEffectBuilder>);
 
     void updateReferenceFilterClients(const FilterOperations&);
 
@@ -67,7 +67,7 @@ public:
 
 private:
     PaintLayer* m_layer;
-    RefPtrWillBePersistent<FilterEffectBuilder> m_builder;
+    Persistent<FilterEffectBuilder> m_builder;
 };
 
 } // namespace blink

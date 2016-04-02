@@ -68,7 +68,7 @@ public:
             init.setPromise(ScriptPromise(m_scriptState, value));
             init.setReason(ScriptValue(m_scriptState, reason));
             init.setCancelable(true);
-            RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(m_scriptState, EventTypeNames::unhandledrejection, init);
+            RawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(m_scriptState, EventTypeNames::unhandledrejection, init);
             // Log to console if event was not canceled.
             m_shouldLogToConsole = target->dispatchEvent(event) == DispatchEventResult::NotCanceled;
         }
@@ -78,7 +78,7 @@ public:
             Vector<ScriptValue> args;
             args.append(ScriptValue(m_scriptState, v8String(m_scriptState->isolate(), errorMessage)));
             args.append(ScriptValue(m_scriptState, reason));
-            RefPtrWillBeRawPtr<ScriptArguments> arguments = ScriptArguments::create(m_scriptState, args);
+            RawPtr<ScriptArguments> arguments = ScriptArguments::create(m_scriptState, args);
 
             String embedderErrorMessage = m_errorMessage;
             if (embedderErrorMessage.isEmpty())
@@ -86,7 +86,7 @@ public:
             else if (embedderErrorMessage.startsWith("Uncaught "))
                 embedderErrorMessage.insert(" (in promise)", 8);
 
-            RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, m_resourceName, m_lineNumber, m_columnNumber);
+            RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, m_resourceName, m_lineNumber, m_columnNumber);
             consoleMessage->setScriptArguments(arguments);
             consoleMessage->setCallStack(m_callStack);
             consoleMessage->setScriptId(m_scriptId);
@@ -115,12 +115,12 @@ public:
             PromiseRejectionEventInit init;
             init.setPromise(ScriptPromise(m_scriptState, value));
             init.setReason(ScriptValue(m_scriptState, reason));
-            RefPtrWillBeRawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(m_scriptState, EventTypeNames::rejectionhandled, init);
+            RawPtr<PromiseRejectionEvent> event = PromiseRejectionEvent::create(m_scriptState, EventTypeNames::rejectionhandled, init);
             target->dispatchEvent(event);
         }
 
         if (m_shouldLogToConsole) {
-            RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, RevokedErrorMessageLevel, "Handler added to rejected promise");
+            RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, RevokedErrorMessageLevel, "Handler added to rejected promise");
             consoleMessage->setRelatedMessageId(m_consoleMessageId);
             executionContext->addConsoleMessage(consoleMessage.release());
         }
@@ -220,7 +220,7 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
         auto& message = m_reportedAsErrors.at(i);
         if (!message->isCollected() && message->hasPromise(data.GetPromise())) {
             message->makePromiseStrong();
-            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::revokeNow, PassRefPtrWillBeRawPtr<RejectedPromises>(this), message.release()));
+            Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, bind(&RejectedPromises::revokeNow, RawPtr<RejectedPromises>(this), message.release()));
             m_reportedAsErrors.remove(i);
             return;
         }

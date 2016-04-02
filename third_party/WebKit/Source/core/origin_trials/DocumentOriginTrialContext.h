@@ -33,7 +33,7 @@ protected:
     friend class DocumentOriginTrialContextTest;
 
 private:
-    RawPtrWillBeMember<Document> m_parent;
+    Member<Document> m_parent;
 };
 
 } // namespace blink

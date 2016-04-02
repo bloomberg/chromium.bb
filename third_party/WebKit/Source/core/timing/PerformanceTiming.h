@@ -50,7 +50,7 @@ class ScriptValue;
 
 class CORE_EXPORT PerformanceTiming final : public GarbageCollectedFinalized<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
+    USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 public:
     static PerformanceTiming* create(LocalFrame* frame)
     {

@@ -503,40 +503,40 @@ NodeOrNodeList::NodeOrNodeList()
 {
 }
 
-PassRefPtrWillBeRawPtr<Node> NodeOrNodeList::getAsNode() const
+Node* NodeOrNodeList::getAsNode() const
 {
     ASSERT(isNode());
     return m_node;
 }
 
-void NodeOrNodeList::setNode(PassRefPtrWillBeRawPtr<Node> value)
+void NodeOrNodeList::setNode(Node* value)
 {
     ASSERT(isNull());
     m_node = value;
     m_type = SpecificTypeNode;
 }
 
-NodeOrNodeList NodeOrNodeList::fromNode(PassRefPtrWillBeRawPtr<Node> value)
+NodeOrNodeList NodeOrNodeList::fromNode(Node* value)
 {
     NodeOrNodeList container;
     container.setNode(value);
     return container;
 }
 
-PassRefPtrWillBeRawPtr<NodeList> NodeOrNodeList::getAsNodeList() const
+NodeList* NodeOrNodeList::getAsNodeList() const
 {
     ASSERT(isNodeList());
     return m_nodeList;
 }
 
-void NodeOrNodeList::setNodeList(PassRefPtrWillBeRawPtr<NodeList> value)
+void NodeOrNodeList::setNodeList(NodeList* value)
 {
     ASSERT(isNull());
     m_nodeList = value;
     m_type = SpecificTypeNodeList;
 }
 
-NodeOrNodeList NodeOrNodeList::fromNodeList(PassRefPtrWillBeRawPtr<NodeList> value)
+NodeOrNodeList NodeOrNodeList::fromNodeList(NodeList* value)
 {
     NodeOrNodeList container;
     container.setNodeList(value);
@@ -562,13 +562,13 @@ void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
 
     if (V8Node::hasInstance(v8Value, isolate)) {
-        RefPtrWillBeRawPtr<Node> cppValue = V8Node::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        RawPtr<Node> cppValue = V8Node::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setNode(cppValue);
         return;
     }
 
     if (V8NodeList::hasInstance(v8Value, isolate)) {
-        RefPtrWillBeRawPtr<NodeList> cppValue = V8NodeList::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        RawPtr<NodeList> cppValue = V8NodeList::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setNodeList(cppValue);
         return;
     }
@@ -1455,20 +1455,20 @@ TestInterfaceWillBeGarbageCollectedOrTestDictionary::TestInterfaceWillBeGarbageC
 {
 }
 
-PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> TestInterfaceWillBeGarbageCollectedOrTestDictionary::getAsTestInterfaceWillBeGarbageCollected() const
+TestInterfaceWillBeGarbageCollected* TestInterfaceWillBeGarbageCollectedOrTestDictionary::getAsTestInterfaceWillBeGarbageCollected() const
 {
     ASSERT(isTestInterfaceWillBeGarbageCollected());
     return m_testInterfaceWillBeGarbageCollected;
 }
 
-void TestInterfaceWillBeGarbageCollectedOrTestDictionary::setTestInterfaceWillBeGarbageCollected(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> value)
+void TestInterfaceWillBeGarbageCollectedOrTestDictionary::setTestInterfaceWillBeGarbageCollected(TestInterfaceWillBeGarbageCollected* value)
 {
     ASSERT(isNull());
     m_testInterfaceWillBeGarbageCollected = value;
     m_type = SpecificTypeTestInterfaceWillBeGarbageCollected;
 }
 
-TestInterfaceWillBeGarbageCollectedOrTestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::fromTestInterfaceWillBeGarbageCollected(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> value)
+TestInterfaceWillBeGarbageCollectedOrTestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::fromTestInterfaceWillBeGarbageCollected(TestInterfaceWillBeGarbageCollected* value)
 {
     TestInterfaceWillBeGarbageCollectedOrTestDictionary container;
     container.setTestInterfaceWillBeGarbageCollected(value);
@@ -1514,7 +1514,7 @@ void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* 
         return;
 
     if (V8TestInterfaceWillBeGarbageCollected::hasInstance(v8Value, isolate)) {
-        RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> cppValue = V8TestInterfaceWillBeGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(v8Value));
+        RawPtr<TestInterfaceWillBeGarbageCollected> cppValue = V8TestInterfaceWillBeGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setTestInterfaceWillBeGarbageCollected(cppValue);
         return;
     }

@@ -570,7 +570,7 @@ void ScriptStreamer::notifyFinished(Resource* resource)
 
     // Calling notifyFinishedToClient can result into the upper layers dropping
     // references to ScriptStreamer. Keep it alive until this function ends.
-    RefPtrWillBeRawPtr<ScriptStreamer> protect(this);
+    RawPtr<ScriptStreamer> protect(this);
 
     notifyFinishedToClient();
 }

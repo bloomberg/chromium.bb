@@ -9,7 +9,7 @@
 
 namespace blink {
 
-OriginTrials::OriginTrials(PassOwnPtrWillBeRawPtr<OriginTrialContext> originTrialContext)
+OriginTrials::OriginTrials(RawPtr<OriginTrialContext> originTrialContext)
     : m_originTrialContext(originTrialContext) {}
 
 // static
@@ -21,10 +21,10 @@ const char* OriginTrials::supplementName()
 // static
 OriginTrials* OriginTrials::from(ExecutionContext* host)
 {
-    OriginTrials* originTrials = reinterpret_cast<OriginTrials*>(WillBeHeapSupplement<ExecutionContext>::from(host, supplementName()));
+    OriginTrials* originTrials = reinterpret_cast<OriginTrials*>(HeapSupplement<ExecutionContext>::from(host, supplementName()));
     if (!originTrials) {
         originTrials = new OriginTrials(host->createOriginTrialContext());
-        WillBeHeapSupplement<ExecutionContext>::provideTo(*host, supplementName(), adoptPtrWillBeNoop(originTrials));
+        HeapSupplement<ExecutionContext>::provideTo(*host, supplementName(), adoptPtrWillBeNoop(originTrials));
     }
     return originTrials;
 }
@@ -60,6 +60,6 @@ bool OriginTrials::{{feature.first_lowered_name}}EnabledImpl(String* errorMessag
 DEFINE_TRACE(OriginTrials)
 {
     visitor->trace(m_originTrialContext);
-    WillBeHeapSupplement<ExecutionContext>::trace(visitor);
+    HeapSupplement<ExecutionContext>::trace(visitor);
 }
 } // namespace blink

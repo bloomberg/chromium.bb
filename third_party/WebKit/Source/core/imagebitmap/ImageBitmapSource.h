@@ -24,7 +24,7 @@ public:
 
     virtual bool isBlob() const { return false; }
 
-    static ScriptPromise fulfillImageBitmap(ScriptState*, PassRefPtrWillBeRawPtr<ImageBitmap>);
+    static ScriptPromise fulfillImageBitmap(ScriptState*, RawPtr<ImageBitmap>);
 protected:
     virtual ~ImageBitmapSource() {}
 };

@@ -30,7 +30,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
     if (!layer.paintsWithFilters())
         return;
 
-    RefPtrWillBeRawPtr<FilterEffect> lastEffect = layer.lastFilterEffect();
+    RawPtr<FilterEffect> lastEffect = layer.lastFilterEffect();
     if (!lastEffect)
         return;
 

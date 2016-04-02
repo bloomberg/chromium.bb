@@ -14,7 +14,7 @@
 namespace blink {
 
 class V8PerformanceObserverCallback final : public PerformanceObserverCallback, public ActiveDOMCallback {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8PerformanceObserverCallback);
+    USING_GARBAGE_COLLECTED_MIXIN(V8PerformanceObserverCallback);
 public:
     static V8PerformanceObserverCallback* create(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
     {

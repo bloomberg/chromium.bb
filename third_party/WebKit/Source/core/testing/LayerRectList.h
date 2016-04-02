@@ -53,7 +53,7 @@ public:
 
     unsigned length() const;
     LayerRect* item(unsigned index);
-    void append(PassRefPtrWillBeRawPtr<Node> layerAssociatedNode, const String& layerName, int layerOffsetX, int layerOffsetY, ClientRect* layerRelativeRect);
+    void append(RawPtr<Node> layerAssociatedNode, const String& layerName, int layerOffsetX, int layerOffsetY, ClientRect* layerRelativeRect);
 
     DECLARE_TRACE();
 

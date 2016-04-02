@@ -26,7 +26,7 @@
 [
     ImplementedAs=SVGMatrixTearOff,
     SetWrapperReferenceTo(SVGTransform contextTransform),
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface SVGMatrix {
     // FIXME: these attributes should all be floats but since we implement
     // AffineTransform with doubles setting these as doubles makes more sense.

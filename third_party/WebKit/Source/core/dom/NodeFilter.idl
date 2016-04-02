@@ -23,7 +23,7 @@
 // FIXME: NodeFilter should be a callback interface. crbug.com/462946
 [
     DependentLifetime,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface NodeFilter {
     // Constants for acceptNode()
     const unsigned short FILTER_ACCEPT = 1;

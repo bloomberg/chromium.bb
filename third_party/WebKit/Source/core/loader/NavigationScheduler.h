@@ -49,13 +49,12 @@ class FormSubmission;
 class LocalFrame;
 class ScheduledNavigation;
 
-class CORE_EXPORT NavigationScheduler final : public NoBaseWillBeGarbageCollectedFinalized<NavigationScheduler> {
+class CORE_EXPORT NavigationScheduler final : public GarbageCollectedFinalized<NavigationScheduler> {
     WTF_MAKE_NONCOPYABLE(NavigationScheduler);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(NavigationScheduler);
 public:
-    static PassOwnPtrWillBeRawPtr<NavigationScheduler> create(LocalFrame* frame)
+    static RawPtr<NavigationScheduler> create(LocalFrame* frame)
     {
-        return adoptPtrWillBeNoop(new NavigationScheduler(frame));
+        return new NavigationScheduler(frame);
     }
 
     ~NavigationScheduler();
@@ -66,7 +65,7 @@ public:
     void scheduleRedirect(double delay, const String& url);
     void scheduleLocationChange(Document*, const String& url, bool replacesCurrentItem = true);
     void schedulePageBlock(Document*);
-    void scheduleFormSubmission(Document*, PassRefPtrWillBeRawPtr<FormSubmission>);
+    void scheduleFormSubmission(Document*, RawPtr<FormSubmission>);
     void scheduleReload();
 
     void startTimer();
@@ -81,13 +80,13 @@ private:
     bool shouldScheduleNavigation(const String& url) const;
 
     void navigateTask();
-    void schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation>);
+    void schedule(RawPtr<ScheduledNavigation>);
 
     static bool mustReplaceCurrentItem(LocalFrame* targetFrame);
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    Member<LocalFrame> m_frame;
     OwnPtr<CancellableTaskFactory> m_navigateTaskFactory;
-    OwnPtrWillBeMember<ScheduledNavigation> m_redirect;
+    Member<ScheduledNavigation> m_redirect;
 };
 
 class NavigationDisablerForBeforeUnload {

@@ -142,7 +142,7 @@ void FormSubmission::Attributes::copyFrom(const Attributes& other)
     m_acceptCharset = other.m_acceptCharset;
 }
 
-inline FormSubmission::FormSubmission(SubmitMethod method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement* form, PassRefPtr<EncodedFormData> data, const String& boundary, PassRefPtrWillBeRawPtr<Event> event)
+inline FormSubmission::FormSubmission(SubmitMethod method, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement* form, PassRefPtr<EncodedFormData> data, const String& boundary, RawPtr<Event> event)
     : m_method(method)
     , m_action(action)
     , m_target(target)
@@ -160,7 +160,7 @@ inline FormSubmission::FormSubmission(const String& result)
 {
 }
 
-PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, PassRefPtrWillBeRawPtr<Event> event)
+RawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const Attributes& attributes, RawPtr<Event> event)
 {
     ASSERT(form);
 
@@ -190,8 +190,8 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
 
     if (copiedAttributes.method() == DialogMethod) {
         if (submitButton)
-            return adoptRefWillBeNoop(new FormSubmission(submitButton->resultForDialogSubmit()));
-        return adoptRefWillBeNoop(new FormSubmission(""));
+            return new FormSubmission(submitButton->resultForDialogSubmit());
+        return new FormSubmission("");
     }
 
     Document& document = form->document();
@@ -242,7 +242,7 @@ PassRefPtrWillBeRawPtr<FormSubmission> FormSubmission::create(HTMLFormElement* f
     formData->setIdentifier(generateFormDataIdentifier());
     formData->setContainsPasswordData(containsPasswordData);
     AtomicString targetOrBaseTarget = copiedAttributes.target().isEmpty() ? document.baseTarget() : copiedAttributes.target();
-    return adoptRefWillBeNoop(new FormSubmission(copiedAttributes.method(), actionURL, targetOrBaseTarget, encodingType, form, formData.release(), boundary, event));
+    return new FormSubmission(copiedAttributes.method(), actionURL, targetOrBaseTarget, encodingType, form, formData.release(), boundary, event);
 }
 
 DEFINE_TRACE(FormSubmission)

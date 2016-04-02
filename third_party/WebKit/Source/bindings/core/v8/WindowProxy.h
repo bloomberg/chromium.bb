@@ -50,10 +50,9 @@ class SecurityOrigin;
 
 // WindowProxy represents all the per-global object state for a Frame that
 // persist between navigations.
-class WindowProxy final : public NoBaseWillBeGarbageCollectedFinalized<WindowProxy> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(WindowProxy);
+class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
 public:
-    static PassOwnPtrWillBeRawPtr<WindowProxy> create(v8::Isolate*, Frame*, DOMWrapperWorld&);
+    static RawPtr<WindowProxy> create(v8::Isolate*, Frame*, DOMWrapperWorld&);
 
     ~WindowProxy();
     DECLARE_TRACE();
@@ -109,7 +108,7 @@ private:
     void createContext();
     bool installDOMWindow();
 
-    RawPtrWillBeMember<Frame> m_frame;
+    Member<Frame> m_frame;
     v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_scriptState;
     RefPtr<DOMWrapperWorld> m_world;

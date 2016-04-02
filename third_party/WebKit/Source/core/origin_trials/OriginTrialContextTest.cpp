@@ -73,7 +73,7 @@ private:
 class TestOriginTrialContext : public OriginTrialContext {
 public:
     explicit TestOriginTrialContext()
-        : m_parent(adoptRefWillBeNoop(new NullExecutionContext()))
+        : m_parent(new NullExecutionContext())
     {
     }
 
@@ -110,7 +110,7 @@ public:
     }
 
 private:
-    RefPtrWillBeMember<NullExecutionContext> m_parent;
+    Member<NullExecutionContext> m_parent;
     Vector<String> m_tokens;
 };
 
@@ -148,7 +148,7 @@ protected:
 private:
     const bool m_frameworkWasEnabled;
     OwnPtr<MockTokenValidator> m_tokenValidator;
-    OwnPtrWillBePersistent<TestOriginTrialContext> m_originTrialContext;
+    Persistent<TestOriginTrialContext> m_originTrialContext;
 };
 
 TEST_F(OriginTrialContextTest, EnabledNonExistingFeature)

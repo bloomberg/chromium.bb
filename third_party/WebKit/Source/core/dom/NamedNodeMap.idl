@@ -22,7 +22,7 @@
 
 [
     SetWrapperReferenceFrom=element,
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface NamedNodeMap {
     readonly attribute unsigned long length;
     [MeasureAs=NamedNodeMapItem] getter Attr? item(unsigned long index);

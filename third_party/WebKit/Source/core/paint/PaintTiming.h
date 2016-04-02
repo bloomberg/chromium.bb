@@ -16,9 +16,9 @@ class LocalFrame;
 
 // PaintTiming is responsible for tracking paint-related timings for a given
 // document.
-class PaintTiming final : public NoBaseWillBeGarbageCollectedFinalized<PaintTiming>, public WillBeHeapSupplement<Document> {
+class PaintTiming final : public GarbageCollectedFinalized<PaintTiming>, public HeapSupplement<Document> {
     WTF_MAKE_NONCOPYABLE(PaintTiming);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PaintTiming);
+    USING_GARBAGE_COLLECTED_MIXIN(PaintTiming);
 public:
     virtual ~PaintTiming() { }
 
@@ -82,7 +82,7 @@ private:
     double m_firstImagePaint = 0.0;
     double m_firstContentfulPaint = 0.0;
 
-    RawPtrWillBeMember<Document> m_document;
+    Member<Document> m_document;
 };
 
 } // namespace blink

@@ -173,7 +173,7 @@ public:
 
     V8TestingScope m_scope;
     v8::TryCatch m_block;
-    RefPtrWillBePersistent<Document> m_document;
+    Persistent<Document> m_document;
 };
 
 TEST_F(ReadableStreamOperationsTest, IsReadableStream)

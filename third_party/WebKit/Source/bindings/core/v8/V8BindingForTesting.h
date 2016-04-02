@@ -21,7 +21,7 @@ public:
     void setExecutionContext(ExecutionContext*) override;
 private:
     ScriptStateForTesting(v8::Local<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-    RawPtrWillBePersistent<ExecutionContext> m_executionContext;
+    Persistent<ExecutionContext> m_executionContext;
 };
 
 class V8TestingScope {

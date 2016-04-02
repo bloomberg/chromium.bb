@@ -71,18 +71,18 @@ const CString utf8FilePath(Blob* blob)
 static const size_t kMaxOutstandingRequestsPerThread = 100;
 static const double progressNotificationIntervalMS = 50;
 
-class FileReader::ThrottlingController final : public NoBaseWillBeGarbageCollectedFinalized<FileReader::ThrottlingController>, public WillBeHeapSupplement<ExecutionContext> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
+class FileReader::ThrottlingController final : public GarbageCollectedFinalized<FileReader::ThrottlingController>, public HeapSupplement<ExecutionContext> {
+    USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
 public:
     static ThrottlingController* from(ExecutionContext* context)
     {
         if (!context)
             return 0;
 
-        ThrottlingController* controller = static_cast<ThrottlingController*>(WillBeHeapSupplement<ExecutionContext>::from(*context, supplementName()));
+        ThrottlingController* controller = static_cast<ThrottlingController*>(HeapSupplement<ExecutionContext>::from(*context, supplementName()));
         if (!controller) {
             controller = new ThrottlingController();
-            WillBeHeapSupplement<ExecutionContext>::provideTo(*context, supplementName(), adoptPtrWillBeNoop(controller));
+            HeapSupplement<ExecutionContext>::provideTo(*context, supplementName(), adoptPtrWillBeNoop(controller));
         }
         return controller;
     }
@@ -127,7 +127,7 @@ public:
         visitor->trace(m_pendingReaders);
         visitor->trace(m_runningReaders);
 #endif
-        WillBeHeapSupplement<ExecutionContext>::trace(visitor);
+        HeapSupplement<ExecutionContext>::trace(visitor);
     }
 
 private:
@@ -187,8 +187,8 @@ private:
 
     const size_t m_maxRunningReaders;
 
-    using FileReaderDeque = PersistentHeapDequeWillBeHeapDeque<Member<FileReader>>;
-    using FileReaderHashSet = PersistentHeapHashSetWillBeHeapHashSet<Member<FileReader>>;
+    using FileReaderDeque = HeapDeque<Member<FileReader>>;
+    using FileReaderHashSet = HeapHashSet<Member<FileReader>>;
 
     FileReaderDeque m_pendingReaders;
     FileReaderHashSet m_runningReaders;

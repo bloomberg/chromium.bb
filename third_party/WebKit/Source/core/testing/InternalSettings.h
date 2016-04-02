@@ -49,7 +49,7 @@ class Settings;
 
 #if ENABLE(OILPAN)
 class InternalSettings final : public InternalSettingsGenerated, public HeapSupplement<Page> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InternalSettings);
+    USING_GARBAGE_COLLECTED_MIXIN(InternalSettings);
 #else
 class InternalSettings final : public InternalSettingsGenerated {
 #endif
@@ -82,9 +82,9 @@ public:
         bool m_originalCompositorWorkerEnabled;
     };
 
-    static PassRefPtrWillBeRawPtr<InternalSettings> create(Page& page)
+    static RawPtr<InternalSettings> create(Page& page)
     {
-        return adoptRefWillBeNoop(new InternalSettings(page));
+        return new InternalSettings(page);
     }
     static InternalSettings* from(Page&);
 
@@ -146,7 +146,7 @@ private:
     Page* page() const { return m_page; }
     static const char* supplementName();
 
-    RawPtrWillBeWeakMember<Page> m_page;
+    WeakMember<Page> m_page;
     Backup m_backup;
 };
 

@@ -56,8 +56,8 @@ namespace blink {
 
 unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
 
-class ScheduledNavigation : public NoBaseWillBeGarbageCollectedFinalized<ScheduledNavigation> {
-    WTF_MAKE_NONCOPYABLE(ScheduledNavigation); USING_FAST_MALLOC_WILL_BE_REMOVED(ScheduledNavigation);
+class ScheduledNavigation : public GarbageCollectedFinalized<ScheduledNavigation> {
+    WTF_MAKE_NONCOPYABLE(ScheduledNavigation);
 public:
     ScheduledNavigation(double delay, Document* originDocument, bool replacesCurrentItem, bool isLocationChange)
         : m_delay(delay)
@@ -96,7 +96,7 @@ protected:
 
 private:
     double m_delay;
-    RefPtrWillBeMember<Document> m_originDocument;
+    Member<Document> m_originDocument;
     bool m_replacesCurrentItem;
     bool m_isLocationChange;
     bool m_wasUserGesture;
@@ -132,9 +132,9 @@ private:
 
 class ScheduledRedirect final : public ScheduledURLNavigation {
 public:
-    static PassOwnPtrWillBeRawPtr<ScheduledRedirect> create(double delay, Document* originDocument, const String& url, bool replacesCurrentItem)
+    static RawPtr<ScheduledRedirect> create(double delay, Document* originDocument, const String& url, bool replacesCurrentItem)
     {
-        return adoptPtrWillBeNoop(new ScheduledRedirect(delay, originDocument, url, replacesCurrentItem));
+        return new ScheduledRedirect(delay, originDocument, url, replacesCurrentItem);
     }
 
     bool shouldStartTimer(LocalFrame* frame) override { return frame->document()->loadEventFinished(); }
@@ -160,9 +160,9 @@ private:
 
 class ScheduledLocationChange final : public ScheduledURLNavigation {
 public:
-    static PassOwnPtrWillBeRawPtr<ScheduledLocationChange> create(Document* originDocument, const String& url, bool replacesCurrentItem)
+    static RawPtr<ScheduledLocationChange> create(Document* originDocument, const String& url, bool replacesCurrentItem)
     {
-        return adoptPtrWillBeNoop(new ScheduledLocationChange(originDocument, url, replacesCurrentItem));
+        return new ScheduledLocationChange(originDocument, url, replacesCurrentItem);
     }
 
 private:
@@ -172,7 +172,7 @@ private:
 
 class ScheduledReload final : public ScheduledNavigation {
 public:
-    static PassOwnPtrWillBeRawPtr<ScheduledReload> create()
+    static RawPtr<ScheduledReload> create()
     {
         return adoptPtrWillBeNoop(new ScheduledReload);
     }
@@ -198,9 +198,9 @@ private:
 
 class ScheduledPageBlock final : public ScheduledURLNavigation {
 public:
-    static PassOwnPtrWillBeRawPtr<ScheduledPageBlock> create(Document* originDocument, const String& url)
+    static RawPtr<ScheduledPageBlock> create(Document* originDocument, const String& url)
     {
-        return adoptPtrWillBeNoop(new ScheduledPageBlock(originDocument, url));
+        return new ScheduledPageBlock(originDocument, url);
     }
 
     void fire(LocalFrame* frame) override
@@ -222,9 +222,9 @@ private:
 
 class ScheduledFormSubmission final : public ScheduledNavigation {
 public:
-    static PassOwnPtrWillBeRawPtr<ScheduledFormSubmission> create(Document* document, PassRefPtrWillBeRawPtr<FormSubmission> submission, bool replacesCurrentItem)
+    static RawPtr<ScheduledFormSubmission> create(Document* document, RawPtr<FormSubmission> submission, bool replacesCurrentItem)
     {
-        return adoptPtrWillBeNoop(new ScheduledFormSubmission(document, submission, replacesCurrentItem));
+        return new ScheduledFormSubmission(document, submission, replacesCurrentItem);
     }
 
     void fire(LocalFrame* frame) override
@@ -245,14 +245,14 @@ public:
     }
 
 private:
-    ScheduledFormSubmission(Document* document, PassRefPtrWillBeRawPtr<FormSubmission> submission, bool replacesCurrentItem)
+    ScheduledFormSubmission(Document* document, RawPtr<FormSubmission> submission, bool replacesCurrentItem)
         : ScheduledNavigation(0, document, replacesCurrentItem, true)
         , m_submission(submission)
     {
         ASSERT(m_submission->form());
     }
 
-    RefPtrWillBeMember<FormSubmission> m_submission;
+    Member<FormSubmission> m_submission;
 };
 
 NavigationScheduler::NavigationScheduler(LocalFrame* frame)
@@ -350,7 +350,7 @@ void NavigationScheduler::schedulePageBlock(Document* originDocument)
     schedule(ScheduledPageBlock::create(originDocument, url));
 }
 
-void NavigationScheduler::scheduleFormSubmission(Document* document, PassRefPtrWillBeRawPtr<FormSubmission> submission)
+void NavigationScheduler::scheduleFormSubmission(Document* document, RawPtr<FormSubmission> submission)
 {
     ASSERT(m_frame->page());
     schedule(ScheduledFormSubmission::create(document, submission, mustReplaceCurrentItem(m_frame)));
@@ -376,14 +376,14 @@ void NavigationScheduler::navigateTask()
         return;
     }
 
-    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
+    RawPtr<LocalFrame> protect(m_frame.get());
 
-    OwnPtrWillBeRawPtr<ScheduledNavigation> redirect(m_redirect.release());
+    RawPtr<ScheduledNavigation> redirect(m_redirect.release());
     redirect->fire(m_frame);
     InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
 }
 
-void NavigationScheduler::schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation> redirect)
+void NavigationScheduler::schedule(RawPtr<ScheduledNavigation> redirect)
 {
     ASSERT(m_frame->page());
 
@@ -392,7 +392,7 @@ void NavigationScheduler::schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation> r
     // and/or confuse the JS when it shortly thereafter tries to schedule a location change. Let the JS have its way.
     // FIXME: This check seems out of place.
     if (!m_frame->loader().stateMachine()->committedFirstRealDocumentLoad() && m_frame->loader().provisionalDocumentLoader()) {
-        RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
+        RawPtr<LocalFrame> protect(m_frame.get());
         m_frame->loader().stopAllLoaders();
         if (!m_frame->host())
             return;

@@ -449,7 +449,7 @@ TEST(ScrollAnimatorTest, CancellingAnimationResetsState)
 TEST(ScrollAnimatorTest, CancellingCompositorAnimation)
 {
     RawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(true);
-    RawPtr<TestScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(new TestScrollAnimator(scrollableArea.get(), getMockedTime));
+    RawPtr<TestScrollAnimator> scrollAnimator = new TestScrollAnimator(scrollableArea.get(), getMockedTime);
 
     EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
         .WillRepeatedly(Return(IntPoint()));

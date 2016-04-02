@@ -84,7 +84,7 @@ public:
         // as it may attempt to compile a function (lazy event listener), get an error
         // and invoke onerror callback which can execute arbitrary JS code.
         // Protect this event listener to keep it alive.
-        RefPtrWillBeRawPtr<V8AbstractEventListener> protect(this);
+        RawPtr<V8AbstractEventListener> protect(this);
         prepareListenerObject(executionContext);
         return m_listener.newLocal(m_isolate);
     }
@@ -148,7 +148,7 @@ private:
     v8::Isolate* m_isolate;
 
     // nullptr unless this listener belongs to a worker.
-    RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
+    Member<WorkerGlobalScope> m_workerGlobalScope;
 
 #if ENABLE(OILPAN)
     SelfKeepAlive<V8AbstractEventListener> m_keepAlive;

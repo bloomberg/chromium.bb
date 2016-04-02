@@ -97,7 +97,7 @@ private:
     bool m_hasCrossOriginRedirect;
     bool m_hasSameOriginAsPreviousDocument;
 
-    RawPtrWillBeMember<DocumentLoader> m_documentLoader;
+    Member<DocumentLoader> m_documentLoader;
 };
 
 } // namespace blink

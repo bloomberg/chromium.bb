@@ -54,13 +54,13 @@ namespace blink {
 
 static ImageEventSender& loadEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<ImageEventSender>, sender, (ImageEventSender::create(EventTypeNames::load)));
+    DEFINE_STATIC_LOCAL(Persistent<ImageEventSender>, sender, (ImageEventSender::create(EventTypeNames::load)));
     return *sender;
 }
 
 static ImageEventSender& errorEventSender()
 {
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<ImageEventSender>, sender, (ImageEventSender::create(EventTypeNames::error)));
+    DEFINE_STATIC_LOCAL(Persistent<ImageEventSender>, sender, (ImageEventSender::create(EventTypeNames::error)));
     return *sender;
 }
 
@@ -137,7 +137,7 @@ public:
     }
 
 private:
-    RawPtrWillBeWeakPersistent<ImageLoader> m_loader;
+    WeakPersistent<ImageLoader> m_loader;
     BypassMainWorldBehavior m_shouldBypassMainWorldCSP;
     UpdateFromElementBehavior m_updateBehavior;
     RefPtr<ScriptState> m_scriptState;
@@ -298,8 +298,8 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
 
     AtomicString imageSourceURL = m_element->imageSourceURL();
     KURL url = imageSourceToKURL(imageSourceURL);
-    RefPtrWillBeRawPtr<ImageResource> newImage = nullptr;
-    RefPtrWillBeRawPtr<Element> protectElement(m_element.get());
+    RawPtr<ImageResource> newImage = nullptr;
+    RawPtr<Element> protectElement(m_element.get());
     if (!url.isNull()) {
         // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
         ResourceLoaderOptions resourceLoaderOptions = ResourceFetcher::defaultResourceOptions();
@@ -347,7 +347,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         noImageResourceToLoad();
     }
 
-    RefPtrWillBeRawPtr<ImageResource> oldImage = m_image.get();
+    RawPtr<ImageResource> oldImage = m_image.get();
     if (updateBehavior == UpdateSizeChanged && m_element->layoutObject() && m_element->layoutObject()->isImage() && newImage == oldImage) {
         toLayoutImage(m_element->layoutObject())->intrinsicSizeChanged();
     } else {

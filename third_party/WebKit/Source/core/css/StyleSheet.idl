@@ -22,7 +22,7 @@
 
 [
     SetWrapperReferenceFrom=ownerNode,
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface StyleSheet {
     readonly attribute DOMString type;
     readonly attribute DOMString? href;

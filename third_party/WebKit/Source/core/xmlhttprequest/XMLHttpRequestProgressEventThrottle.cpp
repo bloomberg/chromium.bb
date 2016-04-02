@@ -61,11 +61,11 @@ void XMLHttpRequestProgressEventThrottle::DeferredEvent::clear()
     m_total = 0;
 }
 
-PassRefPtrWillBeRawPtr<Event> XMLHttpRequestProgressEventThrottle::DeferredEvent::take()
+RawPtr<Event> XMLHttpRequestProgressEventThrottle::DeferredEvent::take()
 {
     ASSERT(m_isSet);
 
-    RefPtrWillBeRawPtr<Event> event = ProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
+    RawPtr<Event> event = ProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
     clear();
     return event.release();
 }
@@ -98,7 +98,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(const AtomicStri
     }
 }
 
-void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event> event, DeferredEventAction action)
+void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(RawPtr<Event> event, DeferredEventAction action)
 {
     XMLHttpRequest::State state = m_target->readyState();
     // Given that ResourceDispatcher doesn't deliver an event when suspended,
@@ -123,7 +123,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefP
     }
 }
 
-void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(PassRefPtrWillBeRawPtr<Event> progressEvent)
+void XMLHttpRequestProgressEventThrottle::dispatchProgressProgressEvent(RawPtr<Event> progressEvent)
 {
     XMLHttpRequest::State state = m_target->readyState();
     if (m_target->readyState() == XMLHttpRequest::LOADING && m_hasDispatchedProgressProgressEvent) {

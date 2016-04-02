@@ -34,7 +34,7 @@ class WebTrialTokenValidator;
 // which supports origin trials.
 //
 // TODO(chasej): Link to documentation, or provide more detail on keys, .etc
-class CORE_EXPORT OriginTrialContext : public NoBaseWillBeGarbageCollectedFinalized<OriginTrialContext> {
+class CORE_EXPORT OriginTrialContext : public GarbageCollectedFinalized<OriginTrialContext> {
 public:
     static const char kTrialHeaderName[];
     virtual ~OriginTrialContext() = default;

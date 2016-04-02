@@ -96,7 +96,7 @@ void HttpEquiv::processHttpEquivXFrameOptions(Document& document, const AtomicSt
     if (!frame->loader().shouldInterruptLoadForXFrameOptions(content, document.url(), requestIdentifier))
         return;
 
-    RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
+    RawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
         "Refused to display '" + document.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.");
     consoleMessage->setRequestIdentifier(requestIdentifier);
     document.addConsoleMessage(consoleMessage.release());

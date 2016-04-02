@@ -76,7 +76,7 @@ protected:
         HTMLElement* head = document().head();
         ASSERT_TRUE(head);
 
-        RefPtrWillBeRawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(document());
+        RawPtr<HTMLMetaElement> meta = HTMLMetaElement::create(document());
         meta->setAttribute(HTMLNames::http_equivAttr, OriginTrialContext::kTrialHeaderName);
         meta->setAttribute(HTMLNames::contentAttr, token);
         head->appendChild(meta.release());

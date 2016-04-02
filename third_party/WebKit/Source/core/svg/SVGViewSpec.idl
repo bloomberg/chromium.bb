@@ -27,7 +27,7 @@
 
 [
     DependentLifetime,
-    WillBeGarbageCollected,
+    GarbageCollected,
     SetWrapperReferenceTo(SVGElement contextElement),
 ] interface SVGViewSpec {
       [ImplementedAs=transformFromJavascript] readonly attribute SVGTransformList transform;

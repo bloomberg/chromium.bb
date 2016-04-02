@@ -27,7 +27,7 @@
 
 [
     SetWrapperReferenceTo(SVGElement contextElement),
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface SVGAnimatedBoolean {
     [RaisesException=Setter] attribute boolean baseVal;
     readonly attribute boolean animVal;

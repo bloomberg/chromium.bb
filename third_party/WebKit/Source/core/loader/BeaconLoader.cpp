@@ -98,7 +98,7 @@ public:
         initiatorInfo.name = FetchInitiatorTypeNames::beacon;
 
         // Leak the loader, since it will kill itself as soon as it receives a response.
-        RefPtrWillBeRawPtr<BeaconLoader> loader = adoptRefWillBeNoop(new BeaconLoader(frame, request, initiatorInfo, AllowStoredCredentials));
+        RawPtr<BeaconLoader> loader = new BeaconLoader(frame, request, initiatorInfo, AllowStoredCredentials);
         loader->ref();
         return true;
     }

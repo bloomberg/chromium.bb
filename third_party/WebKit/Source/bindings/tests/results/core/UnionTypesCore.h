@@ -260,14 +260,14 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isNode() const { return m_type == SpecificTypeNode; }
-    PassRefPtrWillBeRawPtr<Node> getAsNode() const;
-    void setNode(PassRefPtrWillBeRawPtr<Node>);
-    static NodeOrNodeList fromNode(PassRefPtrWillBeRawPtr<Node>);
+    Node* getAsNode() const;
+    void setNode(Node*);
+    static NodeOrNodeList fromNode(Node*);
 
     bool isNodeList() const { return m_type == SpecificTypeNodeList; }
-    PassRefPtrWillBeRawPtr<NodeList> getAsNodeList() const;
-    void setNodeList(PassRefPtrWillBeRawPtr<NodeList>);
-    static NodeOrNodeList fromNodeList(PassRefPtrWillBeRawPtr<NodeList>);
+    NodeList* getAsNodeList() const;
+    void setNodeList(NodeList*);
+    static NodeOrNodeList fromNodeList(NodeList*);
 
     NodeOrNodeList(const NodeOrNodeList&);
     ~NodeOrNodeList();
@@ -282,8 +282,8 @@ private:
     };
     SpecificTypes m_type;
 
-    RefPtrWillBeMember<Node> m_node;
-    RefPtrWillBeMember<NodeList> m_nodeList;
+    Member<Node> m_node;
+    Member<NodeList> m_nodeList;
 
     friend CORE_EXPORT v8::Local<v8::Value> toV8(const NodeOrNodeList&, v8::Local<v8::Object>, v8::Isolate*);
 };
@@ -744,9 +744,9 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isTestInterfaceWillBeGarbageCollected() const { return m_type == SpecificTypeTestInterfaceWillBeGarbageCollected; }
-    PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> getAsTestInterfaceWillBeGarbageCollected() const;
-    void setTestInterfaceWillBeGarbageCollected(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected>);
-    static TestInterfaceWillBeGarbageCollectedOrTestDictionary fromTestInterfaceWillBeGarbageCollected(PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected>);
+    TestInterfaceWillBeGarbageCollected* getAsTestInterfaceWillBeGarbageCollected() const;
+    void setTestInterfaceWillBeGarbageCollected(TestInterfaceWillBeGarbageCollected*);
+    static TestInterfaceWillBeGarbageCollectedOrTestDictionary fromTestInterfaceWillBeGarbageCollected(TestInterfaceWillBeGarbageCollected*);
 
     bool isTestDictionary() const { return m_type == SpecificTypeTestDictionary; }
     TestDictionary getAsTestDictionary() const;
@@ -766,7 +766,7 @@ private:
     };
     SpecificTypes m_type;
 
-    RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollected;
+    Member<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollected;
     TestDictionary m_testDictionary;
 
     friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);

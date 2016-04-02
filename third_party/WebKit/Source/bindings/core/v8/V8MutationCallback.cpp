@@ -48,7 +48,7 @@ V8MutationCallback::~V8MutationCallback()
 {
 }
 
-void V8MutationCallback::call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord>>& mutations, MutationObserver* observer)
+void V8MutationCallback::call(const HeapVector<Member<MutationRecord>>& mutations, MutationObserver* observer)
 {
     if (!canInvokeCallback())
         return;

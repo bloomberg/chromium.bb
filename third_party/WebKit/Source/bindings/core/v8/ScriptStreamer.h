@@ -29,7 +29,7 @@ class WebTaskRunner;
 // streaming. It is possible, though, that Document and the PendingScript are
 // destroyed while the streaming is in progress, and ScriptStreamer handles it
 // gracefully.
-class CORE_EXPORT ScriptStreamer final : public RefCountedWillBeRefCountedGarbageCollected<ScriptStreamer> {
+class CORE_EXPORT ScriptStreamer final : public RefCountedGarbageCollected<ScriptStreamer> {
     WTF_MAKE_NONCOPYABLE(ScriptStreamer);
 public:
     enum Type {
@@ -98,9 +98,9 @@ private:
     // streamed. Non-const for testing.
     static size_t s_smallScriptThreshold;
 
-    static PassRefPtrWillBeRawPtr<ScriptStreamer> create(PendingScript* script, Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions, WebTaskRunner* loadingTaskRunner)
+    static RawPtr<ScriptStreamer> create(PendingScript* script, Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions, WebTaskRunner* loadingTaskRunner)
     {
-        return adoptRefWillBeNoop(new ScriptStreamer(script, scriptType, scriptState, compileOptions, loadingTaskRunner));
+        return new ScriptStreamer(script, scriptType, scriptState, compileOptions, loadingTaskRunner);
     }
     ScriptStreamer(PendingScript*, Type, ScriptState*, v8::ScriptCompiler::CompileOptions, WebTaskRunner*);
 
@@ -109,11 +109,11 @@ private:
 
     static bool startStreamingInternal(PendingScript*, Type, Settings*, ScriptState*, WebTaskRunner*);
 
-    RawPtrWillBeMember<PendingScript> m_pendingScript;
+    Member<PendingScript> m_pendingScript;
     // This pointer is weak. If PendingScript and its Resource are deleted
     // before ScriptStreamer, PendingScript will notify ScriptStreamer of its
     // deletion by calling cancel().
-    RawPtrWillBeMember<ScriptResource> m_resource;
+    Member<ScriptResource> m_resource;
     // Whether ScriptStreamer is detached from the Resource. In those cases, the
     // script data is not needed any more, and the client won't get notified
     // when the loading and streaming are done.

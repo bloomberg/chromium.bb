@@ -41,7 +41,7 @@
 namespace blink {
 
 // static
-PassOwnPtrWillBeRawPtr<PrerenderHandle> PrerenderHandle::create(Document& document, PrerenderClient* client, const KURL& url, const unsigned prerenderRelTypes)
+RawPtr<PrerenderHandle> PrerenderHandle::create(Document& document, PrerenderClient* client, const KURL& url, const unsigned prerenderRelTypes)
 {
     // Prerenders are unlike requests in most ways (for instance, they pass down fragments, and they don't return data),
     // but they do have referrers.
@@ -55,7 +55,7 @@ PassOwnPtrWillBeRawPtr<PrerenderHandle> PrerenderHandle::create(Document& docume
         prerendererClient->willAddPrerender(prerender.get());
     prerender->add();
 
-    return adoptPtrWillBeNoop(new PrerenderHandle(document, prerender.release()));
+    return new PrerenderHandle(document, prerender.release());
 }
 
 PrerenderHandle::PrerenderHandle(Document& document, PassRefPtr<Prerender> prerender)

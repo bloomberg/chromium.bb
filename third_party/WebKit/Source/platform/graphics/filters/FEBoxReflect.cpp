@@ -10,9 +10,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<FEBoxReflect> FEBoxReflect::create(Filter* filter, ReflectionDirection direction, float offset)
+RawPtr<FEBoxReflect> FEBoxReflect::create(Filter* filter, ReflectionDirection direction, float offset)
 {
-    return adoptRefWillBeNoop(new FEBoxReflect(filter, direction, offset));
+    return new FEBoxReflect(filter, direction, offset);
 }
 
 FEBoxReflect::FEBoxReflect(Filter* filter, ReflectionDirection direction, float offset)

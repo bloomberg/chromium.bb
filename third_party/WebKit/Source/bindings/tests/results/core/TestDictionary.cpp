@@ -20,7 +20,7 @@ TestDictionary::TestDictionary()
     setStringSequenceMember(Vector<String>());
     setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
     setTestInterfaceSequenceMember(Vector<RefPtr<TestInterfaceImplementation>>());
-    setTestInterfaceWillBeGarbageCollectedSequenceMember(WillBeHeapVector<RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected>>());
+    setTestInterfaceWillBeGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceWillBeGarbageCollected>>());
     setUnrestrictedDoubleMember(3.14);
 }
 

@@ -31,9 +31,9 @@ namespace blink {
 
 class SinkDocumentParser : public RawDataDocumentParser {
 public:
-    static PassRefPtrWillBeRawPtr<SinkDocumentParser> create(SinkDocument* document)
+    static RawPtr<SinkDocumentParser> create(SinkDocument* document)
     {
-        return adoptRefWillBeNoop(new SinkDocumentParser(document));
+        return new SinkDocumentParser(document);
     }
 
 private:
@@ -53,7 +53,7 @@ SinkDocument::SinkDocument(const DocumentInit& initializer)
     lockCompatibilityMode();
 }
 
-PassRefPtrWillBeRawPtr<DocumentParser> SinkDocument::createParser()
+RawPtr<DocumentParser> SinkDocument::createParser()
 {
     return SinkDocumentParser::create(this);
 }

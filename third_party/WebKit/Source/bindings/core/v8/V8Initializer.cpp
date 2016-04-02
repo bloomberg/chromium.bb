@@ -157,7 +157,7 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
     if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
         && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
         ++columnNumber;
-    RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resourceName, lineNumber, columnNumber, &scriptState->world());
+    RawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resourceName, lineNumber, columnNumber, &scriptState->world());
 
     String messageForConsole = extractMessageForConsole(isolate, data);
     if (!messageForConsole.isEmpty())
@@ -430,7 +430,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
         if (v8Call(message->GetLineNumber(scriptState->context()), lineNumber)
             && v8Call(message->GetStartColumn(scriptState->context()), columnNumber))
             ++columnNumber;
-        RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, &DOMWrapperWorld::current(isolate));
+        RawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, &DOMWrapperWorld::current(isolate));
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
         // If execution termination has been triggered as part of constructing

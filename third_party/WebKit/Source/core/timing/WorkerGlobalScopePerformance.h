@@ -39,9 +39,8 @@ namespace blink {
 
 class WorkerGlobalScope;
 
-class WorkerGlobalScopePerformance final : public NoBaseWillBeGarbageCollected<WorkerGlobalScopePerformance>, public WillBeHeapSupplement<WorkerGlobalScope> {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerGlobalScopePerformance);
+class WorkerGlobalScopePerformance final : public GarbageCollected<WorkerGlobalScopePerformance>, public HeapSupplement<WorkerGlobalScope> {
+    USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
 public:
     static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
 
@@ -55,7 +54,7 @@ private:
     WorkerPerformance* performance(WorkerGlobalScope*);
     static const char* supplementName();
 
-    PersistentWillBeMember<WorkerPerformance> m_performance;
+    Member<WorkerPerformance> m_performance;
 };
 
 } // namespace blink

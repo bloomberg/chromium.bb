@@ -51,11 +51,10 @@ class ExceptionState;
 class ScriptSourceCode;
 class WorkerOrWorkletGlobalScope;
 
-class CORE_EXPORT WorkerOrWorkletScriptController : public NoBaseWillBeGarbageCollectedFinalized<WorkerOrWorkletScriptController> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerOrWorkletScriptController);
+class CORE_EXPORT WorkerOrWorkletScriptController : public GarbageCollectedFinalized<WorkerOrWorkletScriptController> {
     WTF_MAKE_NONCOPYABLE(WorkerOrWorkletScriptController);
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerOrWorkletScriptController> create(WorkerOrWorkletGlobalScope*, v8::Isolate*);
+    static RawPtr<WorkerOrWorkletScriptController> create(WorkerOrWorkletGlobalScope*, v8::Isolate*);
     virtual ~WorkerOrWorkletScriptController();
     void dispose();
 
@@ -63,7 +62,7 @@ public:
     bool isExecutionTerminating() const;
 
     // Returns true if the evaluation completed with no uncaught exception.
-    bool evaluate(const ScriptSourceCode&, RefPtrWillBeRawPtr<ErrorEvent>* = nullptr, CachedMetadataHandler* = nullptr, V8CacheOptions = V8CacheOptionsDefault);
+    bool evaluate(const ScriptSourceCode&, RawPtr<ErrorEvent>* = nullptr, CachedMetadataHandler* = nullptr, V8CacheOptions = V8CacheOptionsDefault);
 
     // Prevents future JavaScript execution. See
     // willScheduleExecutionTermination, isExecutionForbidden.
@@ -79,7 +78,7 @@ public:
     void willScheduleExecutionTermination();
 
     // Used by WorkerGlobalScope:
-    void rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent>, ExceptionState&);
+    void rethrowExceptionFromImportedScript(RawPtr<ErrorEvent>, ExceptionState&);
     void disableEval(const String&);
 
     // Used by Inspector agents:
@@ -102,7 +101,7 @@ private:
     ScriptValue evaluate(const CompressibleString& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
     void disposeContextIfNeeded();
 
-    RawPtrWillBeMember<WorkerOrWorkletGlobalScope> m_globalScope;
+    Member<WorkerOrWorkletGlobalScope> m_globalScope;
 
     // The v8 isolate associated to the (worker or worklet) global scope. For
     // workers this should be the worker thread's isolate, while for worklets

@@ -31,25 +31,25 @@ const AtomicString& pointerEventNameForTouchPointState(PlatformTouchPoint::Touch
     }
 }
 
-bool isInDocument(PassRefPtrWillBeRawPtr<EventTarget> n)
+bool isInDocument(RawPtr<EventTarget> n)
 {
     return n && n->toNode() && n->toNode()->inDocument();
 }
 
 WebInputEventResult dispatchMouseEvent(
-    PassRefPtrWillBeRawPtr<EventTarget> prpTarget,
+    RawPtr<EventTarget> prpTarget,
     const AtomicString& mouseEventType,
     const PlatformMouseEvent& mouseEvent,
-    PassRefPtrWillBeRawPtr<EventTarget> prpRelatedTarget,
+    RawPtr<EventTarget> prpRelatedTarget,
     int detail = 0,
     bool checkForListener = false)
 {
-    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
-    RefPtrWillBeRawPtr<EventTarget> relatedTarget = prpRelatedTarget;
+    RawPtr<EventTarget> target = prpTarget;
+    RawPtr<EventTarget> relatedTarget = prpRelatedTarget;
     if (target && target->toNode()
         && (!checkForListener || target->hasEventListeners(mouseEventType))) {
-        RefPtrWillBeRawPtr<Node> targetNode = target->toNode();
-        RefPtrWillBeRawPtr<MouseEvent> event = MouseEvent::create(mouseEventType,
+        RawPtr<Node> targetNode = target->toNode();
+        RawPtr<MouseEvent> event = MouseEvent::create(mouseEventType,
             targetNode->document().domWindow(), mouseEvent, detail,
             relatedTarget ? relatedTarget->toNode() : nullptr);
         DispatchEventResult dispatchResult = target->dispatchEvent(event);
@@ -61,12 +61,12 @@ WebInputEventResult dispatchMouseEvent(
 } // namespace
 
 WebInputEventResult PointerEventManager::dispatchPointerEvent(
-    PassRefPtrWillBeRawPtr<EventTarget> prpTarget,
-    PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
+    RawPtr<EventTarget> prpTarget,
+    RawPtr<PointerEvent> prpPointerEvent,
     bool checkForListener)
 {
-    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
+    RawPtr<EventTarget> target = prpTarget;
+    RawPtr<PointerEvent> pointerEvent = prpPointerEvent;
 
     if (!target)
         return WebInputEventResult::NotHandled;
@@ -77,7 +77,7 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
     if ((eventType == EventTypeNames::pointerout
         || eventType == EventTypeNames::pointerover)
         && m_nodeUnderPointer.contains(pointerId)) {
-        RefPtrWillBeRawPtr<EventTarget> targetUnderPointer =
+        RawPtr<EventTarget> targetUnderPointer =
             m_nodeUnderPointer.get(pointerId).target;
         if (targetUnderPointer == target) {
             m_nodeUnderPointer.set(pointerId, EventTargetAttributes
@@ -95,8 +95,8 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
     return WebInputEventResult::NotHandled;
 }
 
-PassRefPtrWillBeRawPtr<EventTarget> PointerEventManager::getEffectiveTargetForPointerEvent(
-    PassRefPtrWillBeRawPtr<EventTarget> target, int pointerId)
+RawPtr<EventTarget> PointerEventManager::getEffectiveTargetForPointerEvent(
+    RawPtr<EventTarget> target, int pointerId)
 {
     if (EventTarget* capturingTarget = getCapturingNode(pointerId))
         return capturingTarget;
@@ -104,14 +104,14 @@ PassRefPtrWillBeRawPtr<EventTarget> PointerEventManager::getEffectiveTargetForPo
 }
 
 void PointerEventManager::sendMouseAndPossiblyPointerNodeTransitionEvents(
-    PassRefPtrWillBeRawPtr<Node> exitedNode,
-    PassRefPtrWillBeRawPtr<Node> enteredNode,
+    RawPtr<Node> exitedNode,
+    RawPtr<Node> enteredNode,
     const PlatformMouseEvent& mouseEvent,
-    PassRefPtrWillBeRawPtr<AbstractView> view,
+    RawPtr<AbstractView> view,
     bool isFrameBoundaryTransition)
 {
     // Pointer event type does not matter as it will be overridden in the sendNodeTransitionEvents
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent =
+    RawPtr<PointerEvent> pointerEvent =
         m_pointerEventFactory.create(EventTypeNames::mouseout, mouseEvent,
         nullptr, view);
 
@@ -129,14 +129,14 @@ void PointerEventManager::sendMouseAndPossiblyPointerNodeTransitionEvents(
 }
 
 void PointerEventManager::sendNodeTransitionEvents(
-    PassRefPtrWillBeRawPtr<EventTarget> prpExitedTarget,
-    PassRefPtrWillBeRawPtr<EventTarget> prpEnteredTarget,
-    PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
+    RawPtr<EventTarget> prpExitedTarget,
+    RawPtr<EventTarget> prpEnteredTarget,
+    RawPtr<PointerEvent> prpPointerEvent,
     const PlatformMouseEvent& mouseEvent, bool sendMouseEvent)
 {
-    RefPtrWillBeRawPtr<EventTarget> exitedTarget = prpExitedTarget;
-    RefPtrWillBeRawPtr<EventTarget> enteredTarget = prpEnteredTarget;
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
+    RawPtr<EventTarget> exitedTarget = prpExitedTarget;
+    RawPtr<EventTarget> enteredTarget = prpEnteredTarget;
+    RawPtr<PointerEvent> pointerEvent = prpPointerEvent;
 
     if (exitedTarget == enteredTarget)
         return;
@@ -162,19 +162,19 @@ void PointerEventManager::sendNodeTransitionEvents(
     }
 
     // Create lists of all exited/entered ancestors, locate the common ancestor
-    WillBeHeapVector<RefPtrWillBeMember<Node>, 32> exitedAncestors;
-    WillBeHeapVector<RefPtrWillBeMember<Node>, 32> enteredAncestors;
+    HeapVector<Member<Node>, 32> exitedAncestors;
+    HeapVector<Member<Node>, 32> enteredAncestors;
     if (isInDocument(exitedTarget)) {
-        RefPtrWillBeRawPtr<Node> exitedNode = exitedTarget->toNode();
+        RawPtr<Node> exitedNode = exitedTarget->toNode();
         exitedNode->updateDistribution();
-        for (RefPtrWillBeRawPtr<Node> node = exitedNode; node; node = FlatTreeTraversal::parent(*node))
+        for (RawPtr<Node> node = exitedNode; node; node = FlatTreeTraversal::parent(*node))
             exitedAncestors.append(node);
     }
 
     if (isInDocument(enteredTarget)) {
-        RefPtrWillBeRawPtr<Node> enteredNode = enteredTarget->toNode();
+        RawPtr<Node> enteredNode = enteredTarget->toNode();
         enteredNode->updateDistribution();
-        for (RefPtrWillBeRawPtr<Node> node = enteredNode; node; node = FlatTreeTraversal::parent(*node))
+        for (RawPtr<Node> node = enteredNode; node; node = FlatTreeTraversal::parent(*node))
             enteredAncestors.append(node);
     }
 
@@ -268,12 +268,12 @@ void PointerEventManager::sendNodeTransitionEvents(
 }
 
 void PointerEventManager::setNodeUnderPointer(
-    PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
-    PassRefPtrWillBeRawPtr<EventTarget> prpTarget,
+    RawPtr<PointerEvent> prpPointerEvent,
+    RawPtr<EventTarget> prpTarget,
     bool sendEvent)
 {
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
-    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
+    RawPtr<PointerEvent> pointerEvent = prpPointerEvent;
+    RawPtr<EventTarget> target = prpTarget;
     if (m_nodeUnderPointer.contains(pointerEvent->pointerId())) {
         EventTargetAttributes node = m_nodeUnderPointer.get(
             pointerEvent->pointerId());
@@ -294,10 +294,10 @@ void PointerEventManager::setNodeUnderPointer(
     }
 }
 
-void PointerEventManager::sendTouchCancelPointerEvent(PassRefPtrWillBeRawPtr<EventTarget> prpTarget, const PlatformTouchPoint& point)
+void PointerEventManager::sendTouchCancelPointerEvent(RawPtr<EventTarget> prpTarget, const PlatformTouchPoint& point)
 {
-    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.createPointerCancelEvent(point);
+    RawPtr<EventTarget> target = prpTarget;
+    RawPtr<PointerEvent> pointerEvent = m_pointerEventFactory.createPointerCancelEvent(point);
 
 
     processCaptureAndPositionOfPointerEvent(pointerEvent, target);
@@ -313,14 +313,14 @@ void PointerEventManager::sendTouchCancelPointerEvent(PassRefPtrWillBeRawPtr<Eve
 }
 
 WebInputEventResult PointerEventManager::sendTouchPointerEvent(
-    PassRefPtrWillBeRawPtr<EventTarget> prpTarget,
+    RawPtr<EventTarget> prpTarget,
     const PlatformTouchPoint& touchPoint, PlatformEvent::Modifiers modifiers,
     const double width, const double height,
     const double clientX, const double clientY)
 {
-    RefPtrWillBeRawPtr<EventTarget> target = prpTarget;
+    RawPtr<EventTarget> target = prpTarget;
 
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent =
+    RawPtr<PointerEvent> pointerEvent =
         m_pointerEventFactory.create(
         pointerEventNameForTouchPointState(touchPoint.state()),
         touchPoint, modifiers, width, height, clientX, clientY);
@@ -342,15 +342,15 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
 }
 
 WebInputEventResult PointerEventManager::sendMousePointerEvent(
-    PassRefPtrWillBeRawPtr<Node> prpTarget, const AtomicString& mouseEventType,
+    RawPtr<Node> prpTarget, const AtomicString& mouseEventType,
     int clickCount, const PlatformMouseEvent& mouseEvent,
-    PassRefPtrWillBeRawPtr<Node> relatedTarget,
-    PassRefPtrWillBeRawPtr<AbstractView> view,
-    PassRefPtrWillBeRawPtr<Node> lastNodeUnderMouse)
+    RawPtr<Node> relatedTarget,
+    RawPtr<AbstractView> view,
+    RawPtr<Node> lastNodeUnderMouse)
 {
-    RefPtrWillBeRawPtr<Node> target = prpTarget;
+    RawPtr<Node> target = prpTarget;
 
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent =
+    RawPtr<PointerEvent> pointerEvent =
         m_pointerEventFactory.create(mouseEventType, mouseEvent,
         relatedTarget, view);
 
@@ -363,7 +363,7 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
     processCaptureAndPositionOfPointerEvent(pointerEvent, target,
         lastNodeUnderMouse, mouseEvent, true, true);
 
-    RefPtrWillBeRawPtr<EventTarget> effectiveTarget =
+    RawPtr<EventTarget> effectiveTarget =
         getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId());
 
     WebInputEventResult result =
@@ -404,14 +404,14 @@ void PointerEventManager::clear()
 }
 
 void PointerEventManager::processCaptureAndPositionOfPointerEvent(
-    const PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
-    const PassRefPtrWillBeRawPtr<EventTarget> prpHitTestTarget,
-    const PassRefPtrWillBeRawPtr<EventTarget> lastNodeUnderMouse,
+    const RawPtr<PointerEvent> prpPointerEvent,
+    const RawPtr<EventTarget> prpHitTestTarget,
+    const RawPtr<EventTarget> lastNodeUnderMouse,
     const PlatformMouseEvent& mouseEvent,
     bool sendMouseEvent, bool setPointerPosition)
 {
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
-    RefPtrWillBeRawPtr<EventTarget> hitTestTarget = prpHitTestTarget;
+    RawPtr<PointerEvent> pointerEvent = prpPointerEvent;
+    RawPtr<EventTarget> hitTestTarget = prpHitTestTarget;
     bool isCaptureChanged = false;
 
     if (setPointerPosition) {
@@ -430,17 +430,17 @@ void PointerEventManager::processCaptureAndPositionOfPointerEvent(
 }
 
 bool PointerEventManager::processPendingPointerCapture(
-    const PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent,
-    const PassRefPtrWillBeRawPtr<EventTarget> prpHitTestTarget,
+    const RawPtr<PointerEvent> prpPointerEvent,
+    const RawPtr<EventTarget> prpHitTestTarget,
     const PlatformMouseEvent& mouseEvent, bool sendMouseEvent)
 {
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
-    RefPtrWillBeRawPtr<EventTarget> hitTestTarget = prpHitTestTarget;
+    RawPtr<PointerEvent> pointerEvent = prpPointerEvent;
+    RawPtr<EventTarget> hitTestTarget = prpHitTestTarget;
     int pointerId = pointerEvent->pointerId();
-    const RefPtrWillBeRawPtr<EventTarget> pointerCaptureTarget =
+    const RawPtr<EventTarget> pointerCaptureTarget =
         m_pointerCaptureTarget.contains(pointerId)
         ? m_pointerCaptureTarget.get(pointerId) : nullptr;
-    const RefPtrWillBeRawPtr<EventTarget> pendingPointerCaptureTarget =
+    const RawPtr<EventTarget> pendingPointerCaptureTarget =
         m_pendingPointerCaptureTarget.contains(pointerId)
         ? m_pendingPointerCaptureTarget.get(pointerId) : nullptr;
     const EventTargetAttributes &nodeUnderPointerAtt =
@@ -528,9 +528,9 @@ EventTarget* PointerEventManager::getCapturingNode(int pointerId)
 }
 
 void PointerEventManager::removePointer(
-    const PassRefPtrWillBeRawPtr<PointerEvent> prpPointerEvent)
+    const RawPtr<PointerEvent> prpPointerEvent)
 {
-    RefPtrWillBeRawPtr<PointerEvent> pointerEvent = prpPointerEvent;
+    RawPtr<PointerEvent> pointerEvent = prpPointerEvent;
     if (m_pointerEventFactory.remove(pointerEvent)) {
         int pointerId = pointerEvent->pointerId();
         m_pendingPointerCaptureTarget.remove(pointerId);

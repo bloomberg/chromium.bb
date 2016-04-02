@@ -58,12 +58,11 @@ class LocalFrame;
 class FrameLoader;
 class ResourceLoader;
 
-class CORE_EXPORT DocumentLoader : public RefCountedWillBeGarbageCollectedFinalized<DocumentLoader>, private RawResourceClient {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentLoader);
+class CORE_EXPORT DocumentLoader : public GarbageCollectedFinalized<DocumentLoader>, private RawResourceClient {
 public:
-    static PassRefPtrWillBeRawPtr<DocumentLoader> create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
+    static RawPtr<DocumentLoader> create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
     {
-        return adoptRefWillBeNoop(new DocumentLoader(frame, request, data));
+        return new DocumentLoader(frame, request, data);
     }
     ~DocumentLoader() override;
 
@@ -118,7 +117,7 @@ public:
     void clearRedirectChain();
     void appendRedirect(const KURL&);
 
-    PassRefPtrWillBeRawPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
+    RawPtr<ContentSecurityPolicy> releaseContentSecurityPolicy() { return m_contentSecurityPolicy.release(); }
 
     ClientHintsPreferences& clientHintsPreferences() { return m_clientHintsPreferences; }
 
@@ -148,7 +147,7 @@ protected:
     Vector<KURL> m_redirectChain;
 
 private:
-    static PassRefPtrWillBeRawPtr<DocumentWriter> createWriterFor(const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy);
+    static RawPtr<DocumentWriter> createWriterFor(const DocumentInit&, const AtomicString& mimeType, const AtomicString& encoding, bool dispatch, ParserSynchronizationPolicy);
 
     void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
     void endWriting(DocumentWriter*);
@@ -177,12 +176,12 @@ private:
 
     bool shouldContinueForResponse() const;
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
-    PersistentWillBeMember<ResourceFetcher> m_fetcher;
+    Member<LocalFrame> m_frame;
+    Member<ResourceFetcher> m_fetcher;
 
-    RefPtrWillBeMember<RawResource> m_mainResource;
+    Member<RawResource> m_mainResource;
 
-    RefPtrWillBeMember<DocumentWriter> m_writer;
+    Member<DocumentWriter> m_writer;
 
     // A reference to actual request used to create the data source.
     // The only part of this request that should change is the url, and
@@ -207,9 +206,9 @@ private:
 
     double m_timeOfLastDataReceived;
 
-    PersistentWillBeMember<ApplicationCacheHost> m_applicationCacheHost;
+    Member<ApplicationCacheHost> m_applicationCacheHost;
 
-    RefPtrWillBeMember<ContentSecurityPolicy> m_contentSecurityPolicy;
+    Member<ContentSecurityPolicy> m_contentSecurityPolicy;
     ClientHintsPreferences m_clientHintsPreferences;
     InitialScrollState m_initialScrollState;
 

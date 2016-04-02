@@ -173,7 +173,7 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
 
 TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
 {
-    RefPtrWillBeRawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    RawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
     ResourceResponse response;
     response.setHTTPStatusCode(200);
     response.addHTTPHeaderField("keep-alive", "keep-alive value");

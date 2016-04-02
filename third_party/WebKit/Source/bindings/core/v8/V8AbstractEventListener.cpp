@@ -88,7 +88,7 @@ void V8AbstractEventListener::handleEvent(ScriptState* scriptState, Event* event
 {
     // The callback function on XMLHttpRequest can clear the event listener and destroys 'this' object. Keep a local reference to it.
     // See issue 889829.
-    RefPtrWillBeRawPtr<V8AbstractEventListener> protect(this);
+    RawPtr<V8AbstractEventListener> protect(this);
 
     ScriptState::Scope scope(scriptState);
 

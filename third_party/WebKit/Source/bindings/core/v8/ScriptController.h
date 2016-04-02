@@ -64,18 +64,17 @@ enum ReasonForCallingCanExecuteScripts {
     NotAboutToExecuteScript
 };
 
-class CORE_EXPORT ScriptController final : public NoBaseWillBeGarbageCollectedFinalized<ScriptController> {
+class CORE_EXPORT ScriptController final : public GarbageCollectedFinalized<ScriptController> {
     WTF_MAKE_NONCOPYABLE(ScriptController);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(ScriptController);
 public:
     enum ExecuteScriptPolicy {
         ExecuteScriptWhenScriptsDisabled,
         DoNotExecuteScriptWhenScriptsDisabled
     };
 
-    static PassOwnPtrWillBeRawPtr<ScriptController> create(LocalFrame* frame)
+    static RawPtr<ScriptController> create(LocalFrame* frame)
     {
-        return adoptPtrWillBeNoop(new ScriptController(frame));
+        return new ScriptController(frame);
     }
 
     ~ScriptController();
@@ -100,7 +99,7 @@ public:
     //
     // FIXME: Get rid of extensionGroup here.
     // FIXME: We don't want to support multiple scripts.
-    void executeScriptInIsolatedWorld(int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value>>* results);
+    void executeScriptInIsolatedWorld(int worldID, const HeapVector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value>>* results);
 
     // Returns true if argument is a JavaScript URL.
     bool executeScriptIfJavaScriptURL(const KURL&);
@@ -154,7 +153,7 @@ private:
 
     v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy, double* compilationFinishTime = 0);
 
-    OwnPtrWillBeMember<WindowProxyManager> m_windowProxyManager;
+    Member<WindowProxyManager> m_windowProxyManager;
     const String* m_sourceURL;
 };
 
