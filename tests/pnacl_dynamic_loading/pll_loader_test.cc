@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <pthread.h>
+
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/untrusted/pll_loader/pll_loader.h"
 
@@ -17,6 +19,20 @@ void CheckTlsVar(ModuleSet *modset, const char *name_of_getter,
   ASSERT_NE(var_ptr, NULL);
   ASSERT_EQ((uintptr_t) var_ptr & (alignment - 1), 0);
   ASSERT_EQ(*var_ptr, expected_value);
+}
+
+struct ThreadArgs {
+  int *(*tls_var_getter)();
+  void *tls_var_on_main_thread;
+};
+
+void *ThreadFunc(void *thread_arg) {
+  ThreadArgs *args = (ThreadArgs *) thread_arg;
+  int *var_ptr = args->tls_var_getter();
+  ASSERT_NE(var_ptr, NULL);
+  ASSERT_EQ(*var_ptr, 123);
+  ASSERT_NE(var_ptr, args->tls_var_on_main_thread);
+  return NULL;
 }
 
 }  // namespace
@@ -67,6 +83,20 @@ int main(int argc, char **argv) {
   CheckTlsVar<int>(&modset, "get_tls_var_aligned", 256, 345);
   CheckTlsVar<int>(&modset, "get_tls_bss_var1", sizeof(int), 0);
   CheckTlsVar<int>(&modset, "get_tls_bss_var_aligned", 256, 0);
+
+  // Test that TLS variables are instantiated separately for each thread.
+  ThreadArgs thread_args;
+  thread_args.tls_var_getter =
+      (int *(*)()) (uintptr_t) modset.GetSym("get_tls_var1");
+  thread_args.tls_var_on_main_thread = thread_args.tls_var_getter();
+  pthread_t tid;
+  int err = pthread_create(&tid, NULL, ThreadFunc, &thread_args);
+  ASSERT_EQ(err, 0);
+  err = pthread_join(tid, NULL);
+  ASSERT_EQ(err, 0);
+  // Check that the TLS var is still given the same address.  This
+  // should not have been affected by launching a child thread.
+  ASSERT_EQ(thread_args.tls_var_getter(), thread_args.tls_var_on_main_thread);
 
   return 0;
 }

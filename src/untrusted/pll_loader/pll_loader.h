@@ -36,6 +36,7 @@ class PLLModule {
 
   void *GetExportedSym(const char *name);
   void *InstantiateTLSBlock();
+  void InitializeTLS();
 
  private:
   const PLLRoot *root_;
