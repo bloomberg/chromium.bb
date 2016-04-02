@@ -1587,7 +1587,7 @@ wl_display_poll(struct wl_display *display, short int events)
  * the appropriate event queues. Finally, events on given event queue are
  * dispatched. On failure -1 is returned and errno set appropriately.
  *
- * In a multi threaded enviroment, do not manually wait using poll() (or
+ * In a multi threaded environment, do not manually wait using poll() (or
  * equivalent) before calling this function, as doing so might cause a dead
  * lock. If external reliance on poll() (or equivalent) is required, see
  * wl_display_prepare_read_queue() of how to do so.
@@ -1692,7 +1692,7 @@ wl_display_dispatch_queue_pending(struct wl_display *display,
  * the appropriate event queues. Finally, events on the default event queue
  * are dispatched. On failure -1 is returned and errno set appropriately.
  *
- * In a multi threaded enviroment, do not manually wait using poll() (or
+ * In a multi threaded environment, do not manually wait using poll() (or
  * equivalent) before calling this function, as doing so might cause a dead
  * lock. If external reliance on poll() (or equivalent) is required, see
  * wl_display_prepare_read_queue() of how to do so.
