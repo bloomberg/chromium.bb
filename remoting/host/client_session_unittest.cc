@@ -374,15 +374,6 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   }
 }
 
-// Verifies that the client's video pipeline can be reset mid-session.
-TEST_F(ClientSessionTest, ResetVideoPipeline) {
-  CreateClientSession();
-  ConnectClientSession();
-  NotifyVideoSize();
-
-  client_session_->ResetVideoPipeline();
-}
-
 // Verifies that clients can have extensions registered, resulting in the
 // correct capabilities being reported, and messages delivered correctly.
 // The extension system is tested more extensively in the
@@ -396,9 +387,6 @@ TEST_F(ClientSessionTest, Extensions) {
   FakeExtension extension3("ext3", "cap3");
   extensions_.push_back(&extension3);
 
-  // Set the second extension to request to modify the video pipeline.
-  extension2.set_steal_video_capturer(true);
-
   // Verify that the ClientSession reports the correct capabilities.
   EXPECT_CALL(client_stub_, SetCapabilities(EqCapabilities("cap1 cap3")));
 
@@ -411,11 +399,6 @@ TEST_F(ClientSessionTest, Extensions) {
   protocol::Capabilities capabilities_message;
   capabilities_message.set_capabilities("cap1 cap4 default");
   client_session_->SetCapabilities(capabilities_message);
-
-  // Simulate OnCreateVideoEncoder() which is normally called by the
-  // ConnectionToClient when creating the video stream.
-  scoped_ptr<VideoEncoder> encoder(new VideoEncoderVerbatim());
-  connection_->event_handler()->OnCreateVideoEncoder(&encoder);
 
   // Verify that the correct extension messages are delivered, and dropped.
   protocol::ExtensionMessage message1;
@@ -436,56 +419,13 @@ TEST_F(ClientSessionTest, Extensions) {
   // ext1 was instantiated and sent a message, and did not wrap anything.
   EXPECT_TRUE(extension1.was_instantiated());
   EXPECT_TRUE(extension1.has_handled_message());
-  EXPECT_FALSE(extension1.has_wrapped_video_encoder());
 
   // ext2 was instantiated but not sent a message, and wrapped video encoder.
   EXPECT_TRUE(extension2.was_instantiated());
   EXPECT_FALSE(extension2.has_handled_message());
-  EXPECT_TRUE(extension2.has_wrapped_video_encoder());
 
   // ext3 was sent a message but not instantiated.
   EXPECT_FALSE(extension3.was_instantiated());
-}
-
-// Verifies that an extension can "steal" the video capture, in which case no
-// VideoFramePump is instantiated.
-TEST_F(ClientSessionTest, StealVideoCapturer) {
-  FakeExtension extension("ext1", "cap1");
-  extensions_.push_back(&extension);
-
-  // Verify that the ClientSession reports the correct capabilities.
-  EXPECT_CALL(client_stub_, SetCapabilities(EqCapabilities("cap1")));
-
-  CreateClientSession();
-  ConnectClientSession();
-
-  // Mimic the client reporting an overlapping set of capabilities.
-  protocol::Capabilities capabilities_message;
-  capabilities_message.set_capabilities("cap1");
-  client_session_->SetCapabilities(capabilities_message);
-
-  extension.set_steal_video_capturer(true);
-  client_session_->ResetVideoPipeline();
-
-  base::RunLoop().RunUntilIdle();
-
-  // Verify that video control messages received while there is no video
-  // scheduler active won't crash things.
-  protocol::VideoControl video_control;
-  video_control.set_enable(false);
-  video_control.set_lossless_encode(true);
-  video_control.set_lossless_color(true);
-  client_session_->ControlVideo(video_control);
-
-  // TODO(wez): Find a way to verify that the ClientSession never captures any
-  // frames in this case.
-
-  client_session_->DisconnectSession(protocol::OK);
-  client_session_.reset();
-
-  // ext1 was instantiated and wrapped the video capturer.
-  EXPECT_TRUE(extension.was_instantiated());
-  EXPECT_TRUE(extension.has_wrapped_video_capturer());
 }
 
 }  // namespace remoting

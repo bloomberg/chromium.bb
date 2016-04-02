@@ -39,9 +39,6 @@ remoting.DesktopConnectedView = function(container, connectionInfo) {
   /** @private {remoting.ConnectedView} */
   this.view_ = null;
 
-  /** @private {remoting.VideoFrameRecorder} */
-  this.videoFrameRecorder_ = null;
-
   /** @private {base.Disposable} */
   this.eventHooks_ = null;
 
@@ -295,40 +292,6 @@ remoting.DesktopConnectedView.prototype.setRemapKeys = function(remappings) {
   this.host_.options.setRemapKeys(remappings);
   this.host_.options.save();
   this.plugin_.setRemapKeys(this.host_.options.getRemapKeys());
-};
-
-/** @param {remoting.VideoFrameRecorder} recorder */
-remoting.DesktopConnectedView.prototype.setVideoFrameRecorder =
-    function(recorder) {
-  this.videoFrameRecorder_ = recorder;
-};
-
-/**
- * Returns true if the ClientSession can record video frames to a file.
- * @return {boolean}
- */
-remoting.DesktopConnectedView.prototype.canRecordVideo = function() {
-  return !!this.videoFrameRecorder_;
-};
-
-/**
- * Returns true if the ClientSession is currently recording video frames.
- * @return {boolean}
- */
-remoting.DesktopConnectedView.prototype.isRecordingVideo = function() {
-  if (!this.videoFrameRecorder_) {
-    return false;
-  }
-  return this.videoFrameRecorder_.isRecording();
-};
-
-/**
- * Starts or stops recording of video frames.
- */
-remoting.DesktopConnectedView.prototype.startStopRecording = function() {
-  if (this.videoFrameRecorder_) {
-    this.videoFrameRecorder_.startStopRecording();
-  }
 };
 
 /**

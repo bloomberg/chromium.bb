@@ -134,15 +134,6 @@
             '<(remoting_android_google_play_services_javalib)',
           ],
           'includes': [ '../build/java.gypi' ],
-          'conditions' : [
-            ['enable_cast==1', {
-              'variables': {
-                'additional_src_dirs': [
-                  'android/cast',
-                ],
-              },
-            }],
-          ],
         },  # end of target 'remoting_android_client_java'
         {
           # TODO(lambroslambrou): Move some of this to third_party/cardboard-java/ in case it is

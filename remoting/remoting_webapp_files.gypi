@@ -24,7 +24,6 @@
     # These provide type information for jscompile.
     'remoting_webapp_js_proto_files': [
       'webapp/js_proto/chrome_proto.js',
-      'webapp/js_proto/chrome_cast_proto.js',
       'webapp/js_proto/dom_proto.js',
       'webapp/js_proto/remoting_proto.js',
     ],
@@ -136,7 +135,6 @@
     ],
     # Prototypes for objects that are not mocked.
     'remoting_webapp_unittests_js_proto_files': [
-      'webapp/js_proto/chrome_cast_proto.js',
       'webapp/js_proto/chrome_proto.js',
       'webapp/js_proto/dom_proto.js',
       'webapp/js_proto/remoting_proto.js',
@@ -254,16 +252,11 @@
       'webapp/crd/js/third_party_host_permissions.js',
       'webapp/crd/js/third_party_token_fetcher.js',
     ],
-    # Cast extension handler JavaScript files.
-    'remoting_webapp_js_cast_extension_files': [
-      'webapp/crd/js/cast_extension_handler.js',
-    ],
     # Client JavaScript files.
     'remoting_webapp_js_client_files': [
       'webapp/crd/js/apps_v2_migration.js',
       'webapp/crd/js/event_handlers.js',
       'webapp/crd/js/gcd_client.js',
-      'webapp/crd/js/video_frame_recorder.js',
     ],
     # Gnubby authentication JavaScript files.
     'remoting_webapp_js_gnubby_auth_files': [
@@ -353,7 +346,6 @@
       '<@(remoting_webapp_js_auth_client2host_files)',
       '<@(remoting_webapp_js_client_files)',
       '<@(remoting_webapp_js_gnubby_auth_files)',
-      '<@(remoting_webapp_js_cast_extension_files)',
       '<@(remoting_webapp_js_host_control_files)',
       '<@(remoting_webapp_js_host_display_files)',
     ],

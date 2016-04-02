@@ -21,13 +21,11 @@ var remoting = remoting || {};
  * @param {Element} newConnection
  * @param {Element?} fullscreen
  * @param {Element?} toggleStats
- * @param {Element?} startStopRecording
  * @constructor
  */
 remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn, mapRightCtrl,
                                 resizeToClient, shrinkToFit,
-                                newConnection, fullscreen, toggleStats,
-                                startStopRecording) {
+                                newConnection, fullscreen, toggleStats) {
   this.sendCtrlAltDel_ = sendCtrlAltDel;
   this.sendPrtScrn_ = sendPrtScrn;
   this.mapRightCtrl_ = mapRightCtrl;
@@ -36,7 +34,6 @@ remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn, mapRightCtrl,
   this.newConnection_ = newConnection;
   this.fullscreen_ = fullscreen;
   this.toggleStats_ = toggleStats;
-  this.startStopRecording_ = startStopRecording;
 
   /** @private {remoting.DesktopConnectedView} */
   this.desktopConnectedView_ = null;
@@ -61,10 +58,7 @@ remoting.OptionsMenu = function(sendCtrlAltDel, sendPrtScrn, mapRightCtrl,
     toggleStats.addEventListener(
         'click', this.onToggleStats_.bind(this), false);
   }
-  if (this.startStopRecording_) {
-    this.startStopRecording_.addEventListener(
-        'click', this.onStartStopRecording_.bind(this), false);
-  }
+
 };
 
 /**
@@ -100,17 +94,6 @@ remoting.OptionsMenu.prototype.onShow = function() {
     if (this.toggleStats_) {
       remoting.MenuButton.select(
           this.toggleStats_, this.desktopConnectedView_.isStatsVisible());
-    }
-    if (this.startStopRecording_) {
-      this.startStopRecording_.hidden =
-          !this.desktopConnectedView_.canRecordVideo();
-      if (this.desktopConnectedView_.isRecordingVideo()) {
-        l10n.localizeElementFromTag(this.startStopRecording_,
-                                    /*i18n-content*/'STOP_RECORDING');
-      } else {
-        l10n.localizeElementFromTag(this.startStopRecording_,
-                                    /*i18n-content*/'START_RECORDING');
-      }
     }
   }
 };
@@ -161,12 +144,6 @@ remoting.OptionsMenu.prototype.onFullscreen_ = function() {
 remoting.OptionsMenu.prototype.onToggleStats_ = function() {
   if (this.desktopConnectedView_) {
     this.desktopConnectedView_.toggleStats();
-  }
-};
-
-remoting.OptionsMenu.prototype.onStartStopRecording_ = function() {
-  if (this.desktopConnectedView_) {
-    this.desktopConnectedView_.startStopRecording();
   }
 };
 

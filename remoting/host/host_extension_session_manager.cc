@@ -10,6 +10,7 @@
 #include "remoting/host/host_extension.h"
 #include "remoting/host/host_extension_session.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
+
 namespace remoting {
 
 HostExtensionSessionManager::HostExtensionSessionManager(
@@ -17,11 +18,9 @@ HostExtensionSessionManager::HostExtensionSessionManager(
     ClientSessionControl* client_session_control)
     : client_session_control_(client_session_control),
       client_stub_(nullptr),
-      extensions_(extensions) {
-}
+      extensions_(extensions) {}
 
-HostExtensionSessionManager::~HostExtensionSessionManager() {
-}
+HostExtensionSessionManager::~HostExtensionSessionManager() {}
 
 std::string HostExtensionSessionManager::GetCapabilities() const {
   std::string capabilities;
@@ -39,26 +38,6 @@ std::string HostExtensionSessionManager::GetCapabilities() const {
   return capabilities;
 }
 
-void HostExtensionSessionManager::OnCreateVideoCapturer(
-    scoped_ptr<webrtc::DesktopCapturer>* capturer) {
-  for (HostExtensionSessions::const_iterator it = extension_sessions_.begin();
-      it != extension_sessions_.end(); ++it) {
-    if ((*it)->ModifiesVideoPipeline()) {
-      (*it)->OnCreateVideoCapturer(capturer);
-    }
-  }
-}
-
-void HostExtensionSessionManager::OnCreateVideoEncoder(
-    scoped_ptr<VideoEncoder>* encoder) {
-  for (HostExtensionSessions::const_iterator it = extension_sessions_.begin();
-      it != extension_sessions_.end(); ++it) {
-    if ((*it)->ModifiesVideoPipeline()) {
-      (*it)->OnCreateVideoEncoder(encoder);
-    }
-  }
-}
-
 void HostExtensionSessionManager::OnNegotiatedCapabilities(
     protocol::ClientStub* client_stub,
     const std::string& capabilities) {
@@ -66,8 +45,6 @@ void HostExtensionSessionManager::OnNegotiatedCapabilities(
   DCHECK(!client_stub_);
 
   client_stub_ = client_stub;
-
-  bool reset_video_pipeline = false;
 
   for (HostExtensions::const_iterator extension = extensions_.begin();
        extension != extensions_.end(); ++extension) {
@@ -79,20 +56,11 @@ void HostExtensionSessionManager::OnNegotiatedCapabilities(
     }
 
     scoped_ptr<HostExtensionSession> extension_session =
-        (*extension)->CreateExtensionSession(
-            client_session_control_, client_stub_);
+        (*extension)
+            ->CreateExtensionSession(client_session_control_, client_stub_);
     DCHECK(extension_session);
 
-    if (extension_session->ModifiesVideoPipeline()) {
-      reset_video_pipeline = true;
-    }
-
     extension_sessions_.push_back(extension_session.release());
-  }
-
-  // Re-create the video pipeline if one or more extensions need to modify it.
-  if (reset_video_pipeline) {
-    client_session_control_->ResetVideoPipeline();
   }
 }
 
@@ -100,8 +68,8 @@ bool HostExtensionSessionManager::OnExtensionMessage(
     const protocol::ExtensionMessage& message) {
   for(HostExtensionSessions::const_iterator it = extension_sessions_.begin();
       it != extension_sessions_.end(); ++it) {
-    if ((*it)->OnExtensionMessage(
-            client_session_control_, client_stub_, message)) {
+    if ((*it)->OnExtensionMessage(client_session_control_, client_stub_,
+                                  message)) {
       return true;
     }
   }

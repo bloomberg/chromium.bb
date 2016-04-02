@@ -247,21 +247,6 @@ remoting.ClientSession.Capability = {
   // input, for compatibility with non-touch-aware systems.
   TOUCH_EVENTS: 'touchEvents',
 
-  // Indicates that host/client supports Google Drive integration, and that the
-  // client should send to the host the OAuth tokens to be used by Google Drive
-  // on the host.
-  GOOGLE_DRIVE: 'googleDrive',
-
-  // Indicates that the client supports the video frame-recording extension.
-  VIDEO_RECORDER: 'videoRecorder',
-
-  // Indicates that the client supports 'cast'ing the video stream to a
-  // cast-enabled device.
-  CAST: 'casting',
-
-  // Indicates desktop shape support.
-  DESKTOP_SHAPE: 'desktopShape',
-
   // Indicates whether the client supports security key request forwarding.
   SECURITY_KEY: 'securityKey',
 };

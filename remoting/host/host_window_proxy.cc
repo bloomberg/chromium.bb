@@ -44,7 +44,6 @@ class HostWindowProxy::Core
   void DisconnectSession(protocol::ErrorCode error) override;
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
-  void ResetVideoPipeline() override;
 
   // Task runner on which public methods of this class must be called.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
@@ -178,11 +177,6 @@ void HostWindowProxy::Core::SetDisableInputs(bool disable_inputs) {
 
   if (client_session_control_.get())
     client_session_control_->SetDisableInputs(disable_inputs);
-}
-
-void HostWindowProxy::Core::ResetVideoPipeline() {
-  // ResetVideoPipeline is only used by HostExtensionSession implementations.
-  NOTREACHED();
 }
 
 }  // namespace remoting

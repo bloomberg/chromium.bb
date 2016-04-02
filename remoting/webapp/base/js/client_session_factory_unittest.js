@@ -35,7 +35,7 @@ QUnit.module('ClientSessionFactory', {
                                         base.doNothing);
     factory = new remoting.ClientSessionFactory(
         document.createElement('div'),
-        [remoting.ClientSession.Capability.VIDEO_RECORDER]);
+        [remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION]);
   },
   afterEach: function() {
     mockConnection.restore();
@@ -49,7 +49,7 @@ QUnit.test('createSession() should return a remoting.ClientSession',
       assert.ok(session instanceof remoting.ClientSession);
       assert.ok(
           mockConnection.plugin().hasCapability(
-              remoting.ClientSession.Capability.VIDEO_RECORDER),
+              remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION),
           'Capability is set correctly.');
   });
 });

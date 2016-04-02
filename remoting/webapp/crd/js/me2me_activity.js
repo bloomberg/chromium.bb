@@ -257,13 +257,10 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
   this.retryOnHostOffline_ = true;
 
   var plugin = connectionInfo.plugin();
-  if (plugin.hasCapability(remoting.ClientSession.Capability.CAST)) {
-    plugin.extensions().register(new remoting.CastExtensionHandler());
-  }
   // TODO(joedow): Do not register the GnubbyAuthHandler extension if the host
   //               does not support security key forwarding.
   plugin.extensions().register(this.gnubbyAuthHandler_);
-  this.pinDialog_.requestPairingIfNecessary(connectionInfo.plugin());
+  this.pinDialog_.requestPairingIfNecessary(plugin);
 
   // Drop the session after 30s of suspension.  If this timeout is too short, we
   // risk dropping a connection that is self-recoverable. If this timeout is too

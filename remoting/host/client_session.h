@@ -116,7 +116,6 @@ class ClientSession
       protocol::ConnectionToClient* connection) override;
   void OnConnectionClosed(protocol::ConnectionToClient* connection,
                           protocol::ErrorCode error) override;
-  void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) override;
   void OnInputEventReceived(protocol::ConnectionToClient* connection,
                             int64_t timestamp) override;
   void OnRouteChange(protocol::ConnectionToClient* connection,
@@ -128,13 +127,10 @@ class ClientSession
   void DisconnectSession(protocol::ErrorCode error) override;
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
-  void ResetVideoPipeline() override;
 
-  protocol::ConnectionToClient* connection() const {
-    return connection_.get();
-  }
+  protocol::ConnectionToClient* connection() const { return connection_.get(); }
 
-  bool is_authenticated() { return is_authenticated_;  }
+  bool is_authenticated() { return is_authenticated_; }
 
   const std::string* client_capabilities() const {
     return client_capabilities_.get();
@@ -197,8 +193,6 @@ class ClientSession
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
 
   // Objects responsible for sending video, audio and mouse shape.
-  // |video_stream_| and |mouse_shape_pump_| may be nullptr if the video
-  // stream is handled by an extension, see ResetVideoPipeline().
   scoped_ptr<AudioPump> audio_pump_;
   scoped_ptr<protocol::VideoStream> video_stream_;
   scoped_ptr<MouseShapePump> mouse_shape_pump_;

@@ -81,7 +81,6 @@
 #include "remoting/host/token_validator_factory_impl.h"
 #include "remoting/host/usage_stats_consent.h"
 #include "remoting/host/username.h"
-#include "remoting/host/video_frame_recorder_host_extension.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
@@ -159,9 +158,6 @@ const char kSignalParentSwitchName[] = "signal-parent";
 
 // Command line switch used to enable VP9 encoding.
 const char kEnableVp9SwitchName[] = "enable-vp9";
-
-// Command line switch used to enable and configure the frame-recorder.
-const char kFrameRecorderBufferKbName[] = "frame-recorder-buffer-kb";
 
 const char kWindowIdSwitchName[] = "window-id";
 
@@ -400,7 +396,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
 
   // Accessed on the network thread.
-  HostState state_;
+  HostState state_ = HOST_STARTING;
 
   scoped_ptr<ConfigWatcher> config_watcher_;
 
@@ -411,32 +407,31 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::string serialized_config_;
   std::string host_owner_;
   std::string host_owner_email_;
-  bool use_service_account_;
-  bool enable_vp9_;
-  int64_t frame_recorder_buffer_size_;
+  bool use_service_account_ = false;
+  bool enable_vp9_ = false;
 
   scoped_ptr<PolicyWatcher> policy_watcher_;
-  PolicyState policy_state_;
+  PolicyState policy_state_ = POLICY_INITIALIZING;
   std::string client_domain_;
   std::string host_domain_;
-  bool host_username_match_required_;
-  bool allow_nat_traversal_;
-  bool allow_relay_;
+  bool host_username_match_required_ = false;
+  bool allow_nat_traversal_ = true;
+  bool allow_relay_ = true;
   PortRange udp_port_range_;
   std::string talkgadget_prefix_;
-  bool allow_pairing_;
+  bool allow_pairing_ = true;
 
-  bool curtain_required_;
+  bool curtain_required_ = false;
   ThirdPartyAuthConfig third_party_auth_config_;
-  bool gnubby_auth_policy_enabled_;
-  bool gnubby_extension_supported_;
+  bool gnubby_auth_policy_enabled_ = false;
+  bool gnubby_extension_supported_ = false;
 
   // Boolean to change flow, where necessary, if we're
   // capturing a window instead of the entire desktop.
-  bool enable_window_capture_;
+  bool enable_window_capture_ = false;
 
   // Used to specify which window to stream, if enabled.
-  webrtc::WindowId window_id_;
+  webrtc::WindowId window_id_ = 0;
 
   // Must outlive |gcd_state_updater_| and |signaling_connector_|.
   scoped_ptr<OAuthTokenGetter> oauth_token_getter_;
@@ -470,7 +465,7 @@ class HostProcess : public ConfigWatcher::Delegate,
 #endif  // defined(REMOTING_MULTI_PROCESS)
 
   int* exit_code_out_;
-  bool signal_parent_;
+  bool signal_parent_ = false;
 
   scoped_refptr<PairingRegistry> pairing_registry_;
 
@@ -483,23 +478,8 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
                          int* exit_code_out,
                          ShutdownWatchdog* shutdown_watchdog)
     : context_(std::move(context)),
-      state_(HOST_STARTING),
-      use_service_account_(false),
-      enable_vp9_(false),
-      frame_recorder_buffer_size_(0),
-      policy_state_(POLICY_INITIALIZING),
-      host_username_match_required_(false),
-      allow_nat_traversal_(true),
-      allow_relay_(true),
-      allow_pairing_(true),
-      curtain_required_(false),
-      gnubby_auth_policy_enabled_(false),
-      gnubby_extension_supported_(false),
-      enable_window_capture_(false),
-      window_id_(0),
       self_(this),
       exit_code_out_(exit_code_out),
-      signal_parent_(false),
       shutdown_watchdog_(shutdown_watchdog) {
   StartOnUiThread();
 }
@@ -1070,22 +1050,6 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
     config.GetBoolean(kEnableVp9ConfigPath, &enable_vp9_);
   }
 
-  // Allow the command-line to override the size of the frame recorder buffer.
-  int frame_recorder_buffer_kb = 0;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kFrameRecorderBufferKbName)) {
-    std::string switch_value =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            kFrameRecorderBufferKbName);
-    base::StringToInt(switch_value, &frame_recorder_buffer_kb);
-  } else {
-    config.GetInteger(kFrameRecorderBufferKbConfigPath,
-                      &frame_recorder_buffer_kb);
-  }
-  if (frame_recorder_buffer_kb > 0) {
-    frame_recorder_buffer_size_ = 1024LL * frame_recorder_buffer_kb;
-  }
-
   return true;
 }
 
@@ -1543,13 +1507,6 @@ void HostProcess::StartHost() {
 
   if (gnubby_auth_policy_enabled_ && gnubby_extension_supported_) {
     host_->AddExtension(make_scoped_ptr(new GnubbyExtension()));
-  }
-
-  if (frame_recorder_buffer_size_ > 0) {
-    scoped_ptr<VideoFrameRecorderHostExtension> frame_recorder_extension(
-        new VideoFrameRecorderHostExtension());
-    frame_recorder_extension->SetMaxContentBytes(frame_recorder_buffer_size_);
-    host_->AddExtension(std::move(frame_recorder_extension));
   }
 
   // TODO(simonmorris): Get the maximum session duration from a policy.

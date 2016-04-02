@@ -46,8 +46,6 @@ remoting.MockHostList.prototype.getHostStatusUpdateElapsedTime = function() {
  */
 var MockDesktopConnectedView = function() {};
 /** @override */
-MockDesktopConnectedView.prototype.setVideoFrameRecorder = function() {};
-/** @override */
 MockDesktopConnectedView.prototype.dispose = function() {};
 /** @override */
 MockDesktopConnectedView.prototype.setRemapKeys = function() {};

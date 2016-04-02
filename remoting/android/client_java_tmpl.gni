@@ -66,10 +66,6 @@ template("remoting_android_client_java_tmpl") {
       "//remoting/android/java/src/org/chromium/chromoting/TrackpadInputStrategy.java",
     ]
 
-    if (remoting_enable_cast) {
-      java_files += [ "//remoting/android/cast/src/org/chromium/chromoting/CastExtensionHandler.java" ]
-    }
-
     deps = [
       "//base:base_java",
       "//remoting/android:remoting_android_client_java_resources",

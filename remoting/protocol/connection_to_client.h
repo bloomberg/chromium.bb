@@ -46,10 +46,6 @@ class ConnectionToClient {
     virtual void OnConnectionChannelsConnected(
         ConnectionToClient* connection) = 0;
 
-    // Called when a VideoEncoder is created. Used by ClientSession to modify
-    // the video pipeline if necessary.
-    virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) = 0;
-
     // Called when the network connection is closed or failed.
     virtual void OnConnectionClosed(ConnectionToClient* connection,
                                     ErrorCode error) = 0;

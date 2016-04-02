@@ -12,9 +12,6 @@ declare_args() {
   # Set this to enable building internal AppRemoting apps.
   enable_internal_app_remoting_targets = false
 
-  # Set this to enable cast mode on the android client.
-  remoting_enable_cast = false
-
   # Set this to enable Android Chromoting Cardboard Activity.
   remoting_enable_cardboard = false
 }

@@ -183,9 +183,6 @@
               'dependencies': [
                 '../third_party/webrtc/modules/modules.gyp:desktop_capture',
               ],
-              'sources': [
-                '<@(remoting_cast_sources)',
-              ],
             }],
             ['remoting_use_gcd==1', {
               'defines': [

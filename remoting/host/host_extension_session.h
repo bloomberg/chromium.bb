@@ -27,20 +27,6 @@ class HostExtensionSession {
  public:
   virtual ~HostExtensionSession() {}
 
-  // Hook functions called when the video pipeline is being (re)constructed.
-  // Implementations will receive these calls only if they express the need to
-  // modify the pipeline (see below). They may replace or wrap |capturer| and/or
-  // |encoder|, e.g. to filter video frames in some way.
-  // If either |capturer| or |encoder| are reset then the video pipeline is not
-  // constructed.
-  virtual void OnCreateVideoCapturer(
-      scoped_ptr<webrtc::DesktopCapturer>* capturer);
-  virtual void OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder);
-
-  // Must return true if the HostExtensionSession needs the opportunity to
-  // modify the video pipeline.
-  virtual bool ModifiesVideoPipeline() const;
-
   // Called when the host receives an |ExtensionMessage| for the |ClientSession|
   // associated with this |HostExtensionSession|.
   // It returns |true| if the message was handled, and |false| otherwise.

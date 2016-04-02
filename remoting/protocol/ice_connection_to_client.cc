@@ -92,8 +92,6 @@ scoped_ptr<VideoStream> IceConnectionToClient::StartVideoStream(
 
   scoped_ptr<VideoEncoder> video_encoder =
       CreateVideoEncoder(session_->config());
-  event_handler_->OnCreateVideoEncoder(&video_encoder);
-  DCHECK(video_encoder);
 
   scoped_ptr<VideoFramePump> pump(
       new VideoFramePump(video_encode_task_runner_, std::move(desktop_capturer),

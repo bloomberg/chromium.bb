@@ -310,8 +310,24 @@ void ClientSession::OnConnectionChannelsConnected(
   input_injector_->Start(CreateClipboardProxy());
   SetDisableInputs(false);
 
-  // Start recording video.
-  ResetVideoPipeline();
+  // Create MouseShapePump to send mouse cursor shape.
+  mouse_shape_pump_.reset(
+      new MouseShapePump(desktop_environment_->CreateMouseCursorMonitor(),
+                         connection_->client_stub()));
+
+  // Create a VideoStream to pump frames from the capturer to the client.
+  video_stream_ = connection_->StartVideoStream(
+      desktop_environment_->CreateVideoCapturer());
+
+  video_stream_->SetSizeCallback(
+      base::Bind(&ClientSession::OnScreenSizeChanged, base::Unretained(this)));
+
+  // Apply video-control parameters to the new stream.
+  video_stream_->SetLosslessEncode(lossless_video_encode_);
+  video_stream_->SetLosslessColor(lossless_video_color_);
+
+  // Pause capturing if necessary.
+  video_stream_->Pause(pause_video_);
 
   // Create an AudioPump if audio is enabled, to pump audio samples.
   if (connection_->session()->config().is_audio_enabled()) {
@@ -356,11 +372,6 @@ void ClientSession::OnConnectionClosed(
 
   // Notify the ChromotingHost that this client is disconnected.
   event_handler_->OnSessionClosed(this);
-}
-
-void ClientSession::OnCreateVideoEncoder(scoped_ptr<VideoEncoder>* encoder) {
-  DCHECK(CalledOnValidThread());
-  extension_manager_->OnCreateVideoEncoder(encoder);
 }
 
 void ClientSession::OnInputEventReceived(
@@ -410,42 +421,6 @@ void ClientSession::SetDisableInputs(bool disable_inputs) {
 
   disable_input_filter_.set_enabled(!disable_inputs);
   disable_clipboard_filter_.set_enabled(!disable_inputs);
-}
-
-void ClientSession::ResetVideoPipeline() {
-  DCHECK(CalledOnValidThread());
-
-  video_stream_.reset();
-  mouse_shape_pump_.reset();
-
-  // Create VideoEncoder and DesktopCapturer to match the session's video
-  // channel configuration.
-  scoped_ptr<webrtc::DesktopCapturer> video_capturer =
-      desktop_environment_->CreateVideoCapturer();
-  extension_manager_->OnCreateVideoCapturer(&video_capturer);
-
-  // Don't start the video stream if the extension took ownership of the
-  // capturer.
-  if (!video_capturer)
-    return;
-
-  // Create MouseShapePump to send mouse cursor shape.
-  mouse_shape_pump_.reset(
-      new MouseShapePump(desktop_environment_->CreateMouseCursorMonitor(),
-                         connection_->client_stub()));
-
-  // Create a VideoStream to pump frames from the capturer to the client.
-  video_stream_ = connection_->StartVideoStream(std::move(video_capturer));
-
-  video_stream_->SetSizeCallback(
-      base::Bind(&ClientSession::OnScreenSizeChanged, base::Unretained(this)));
-
-  // Apply video-control parameters to the new stream.
-  video_stream_->SetLosslessEncode(lossless_video_encode_);
-  video_stream_->SetLosslessColor(lossless_video_color_);
-
-  // Pause capturing if necessary.
-  video_stream_->Pause(pause_video_);
 }
 
 scoped_ptr<protocol::ClipboardStub> ClientSession::CreateClipboardProxy() {

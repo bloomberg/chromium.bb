@@ -89,8 +89,7 @@ remoting.WindowFrame.prototype.createOptionsMenu = function() {
       this.titleBar_.querySelector('.menu-shrink-to-fit'),
       this.titleBar_.querySelector('.menu-new-window'),
       this.titleBar_.querySelector('.window-fullscreen'),
-      this.titleBar_.querySelector('.menu-toggle-connection-stats'),
-      this.titleBar_.querySelector('.menu-start-stop-recording'));
+      this.titleBar_.querySelector('.menu-toggle-connection-stats'));
 };
 
 /**

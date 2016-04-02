@@ -103,14 +103,6 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
   // Apply the default or previously-specified keyboard remapping.
   var remapping = connectionInfo.host().options.getRemapKeys();
   this.connectedView_.setRemapKeys(remapping);
-
-  if (connectionInfo.plugin().hasCapability(
-          remoting.ClientSession.Capability.VIDEO_RECORDER)) {
-    var recorder = new remoting.VideoFrameRecorder();
-    connectionInfo.plugin().extensions().register(recorder);
-    this.connectedView_.setVideoFrameRecorder(recorder);
-  }
-
   this.parentActivity_.onConnected(connectionInfo);
 };
 
