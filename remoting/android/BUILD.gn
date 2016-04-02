@@ -44,6 +44,7 @@ shared_library("remoting_client_jni") {
     "//remoting/client/jni/remoting_jni_registrar.cc",
     "//remoting/client/jni/remoting_jni_registrar.h",
   ]
+  configs += [ "//remoting:enable_webrtc_remoting_client" ]
 }
 
 _raw_resources_base_dir = "$target_gen_dir/remoting_android_raw_resources/res"
