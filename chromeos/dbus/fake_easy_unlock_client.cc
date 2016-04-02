@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/fake_easy_unlock_client.h"
 

@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 #include "net/cert/x509_certificate.h"
 

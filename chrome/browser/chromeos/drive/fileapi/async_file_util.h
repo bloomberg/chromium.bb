@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
 namespace drive {

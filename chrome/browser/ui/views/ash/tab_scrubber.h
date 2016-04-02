@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"

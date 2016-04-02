@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

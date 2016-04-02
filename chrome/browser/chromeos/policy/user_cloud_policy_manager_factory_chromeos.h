@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 
