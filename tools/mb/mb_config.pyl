@@ -649,12 +649,12 @@
     'tryserver.chromium.android': {
       'android_amp': 'tbd',
       'android_archive_rel_ng': 'tbd',
-      'android_blink_rel': 'tbd',
       'android_chromium_variable': 'tbd',
       'android_coverage': 'tbd',
       'cast_shell_android': 'tbd',
 
       'android_arm64_dbg_recipe': 'swarming_android_gyp_debug_trybot_arm64',
+      'android_blink_rel': 'swarming_android_gyp_release_trybot',
       'android_chromium_gn_compile_dbg': 'android_gn_debug_trybot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
       'android_chromium_gn_rel': 'android_gn_release_trybot',
