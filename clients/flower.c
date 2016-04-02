@@ -110,7 +110,7 @@ resize_handler(struct widget *widget,
 {
 	struct flower *flower = data;
 
-	/* Dont resize me */
+	/* Don't resize me */
 	widget_set_size(flower->widget, flower->width, flower->height);
 }
 

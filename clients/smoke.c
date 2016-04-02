@@ -260,7 +260,7 @@ resize_handler(struct widget *widget,
 {
 	struct smoke *smoke = data;
 
-	/* Dont resize me */
+	/* Don't resize me */
 	widget_set_size(smoke->widget, smoke->width, smoke->height);
 }
 

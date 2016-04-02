@@ -123,7 +123,7 @@ resize_handler(struct widget *widget,
 {
 	struct box *box = data;
 
-	/* Dont resize me */
+	/* Don't resize me */
 	widget_set_size(box->widget, box->width, box->height);
 }
 
