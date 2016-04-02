@@ -615,7 +615,7 @@ uint64_t MakeUID(unsigned int* seed) {
     int32_t temp_num = 1;
     int fd = open("/dev/urandom", O_RDONLY);
     if (fd != -1) {
-      read(fd, &temp_num, sizeof(int32));
+      read(fd, &temp_num, sizeof(temp_num));
       close(fd);
     }
     const int32_t nn = temp_num;
