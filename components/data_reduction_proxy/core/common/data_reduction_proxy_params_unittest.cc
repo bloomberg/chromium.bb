@@ -229,6 +229,45 @@ TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {
       "google/hammerhead/hammerhead:5.0/LRX210/1570415:user/release-keys"));
 }
 
+TEST_F(DataReductionProxyParamsTest, IsClientConfigEnabled) {
+  const struct {
+    std::string test_case;
+    std::string trial_group_value;
+    bool expected;
+  } tests[] = {
+      {
+          "Nothing set", "", true,
+      },
+      {
+          "Enabled in experiment", "Enabled", true,
+      },
+      {
+          "Alternate enabled in experiment", "Enabled_Other", true,
+      },
+      {
+          "Control in experiment", "Control", true,
+      },
+      {
+          "Disabled in experiment", "Disabled", false,
+      },
+      {
+          "Disabled in experiment", "Disabled_Other", false,
+      },
+      {
+          "disabled in experiment lower case", "disabled", true,
+      },
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+    if (!test.trial_group_value.empty()) {
+      ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+          "DataReductionProxyConfigService", test.trial_group_value));
+    }
+    EXPECT_EQ(test.expected, params::IsConfigClientEnabled()) << test.test_case;
+  }
+}
+
 TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
   struct {
     bool command_line_set;
@@ -268,9 +307,9 @@ TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
     }
 
     if (test_case.experiment_enabled) {
-      base::FieldTrialList::CreateFieldTrial(
+      ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
           "DataReductionProxySecureProxyAfterCheck",
-          test_case.in_trial_group ? "Enabled" : "Disabled");
+          test_case.in_trial_group ? "Enabled" : "Disabled"));
     }
 
     EXPECT_EQ(test_case.expected_use_by_default,

@@ -26,6 +26,7 @@ namespace {
 
 const char kEnabled[] = "Enabled";
 const char kControl[] = "Control";
+const char kDisabled[] = "Disabled";
 const char kPreview[] = "Enabled_Preview";
 const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
 const char kDefaultQuicOrigin[] = "quic://proxy.googlezip.net:443";
@@ -184,9 +185,11 @@ bool IsDevRolloutEnabled() {
 }
 
 bool IsConfigClientEnabled() {
-  // TODO(tbansal): crbug.com/597768 Remove the data reduction proxy deprecated
-  // code which was used when config client is not enabled.
-  return true;
+  // Config client is enabled by default. It can be disabled only if Chromium
+  // belongs to a field trial group whose name starts with "Disabled".
+  return !base::StartsWith(
+      base::FieldTrialList::FindFullName("DataReductionProxyConfigService"),
+      kDisabled, base::CompareCase::SENSITIVE);
 }
 
 GURL GetConfigServiceURL() {
