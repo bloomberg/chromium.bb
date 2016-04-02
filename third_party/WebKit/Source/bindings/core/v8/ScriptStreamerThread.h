@@ -27,7 +27,7 @@ public:
     static void shutdown();
     static ScriptStreamerThread* shared();
 
-    void postTask(WTF::PassOwnPtr<WTF::CrossThreadClosure>);
+    void postTask(PassOwnPtr<CrossThreadClosure>);
 
     bool isRunningTask() const
     {
@@ -37,7 +37,7 @@ public:
 
     void taskDone();
 
-    static void runScriptStreamingTask(WTF::PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask>, ScriptStreamer*);
+    static void runScriptStreamingTask(PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask>, ScriptStreamer*);
 
 private:
     ScriptStreamerThread()
@@ -52,7 +52,7 @@ private:
 
     // At the moment, we only use one thread, so we can only stream one script
     // at a time. FIXME: Use a thread pool and stream multiple scripts.
-    WTF::OwnPtr<WebThread> m_thread;
+    OwnPtr<WebThread> m_thread;
     bool m_runningTask;
     mutable Mutex m_mutex; // Guards m_runningTask.
 };

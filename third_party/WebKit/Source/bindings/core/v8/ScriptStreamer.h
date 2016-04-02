@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 #include <v8.h>
@@ -29,7 +29,7 @@ class WebTaskRunner;
 // streaming. It is possible, though, that Document and the PendingScript are
 // destroyed while the streaming is in progress, and ScriptStreamer handles it
 // gracefully.
-class CORE_EXPORT ScriptStreamer final : public RefCountedGarbageCollected<ScriptStreamer> {
+class CORE_EXPORT ScriptStreamer final : public GarbageCollectedFinalized<ScriptStreamer> {
     WTF_MAKE_NONCOPYABLE(ScriptStreamer);
 public:
     enum Type {

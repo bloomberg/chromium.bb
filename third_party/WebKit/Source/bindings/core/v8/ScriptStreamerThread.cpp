@@ -76,7 +76,7 @@ WebThread& ScriptStreamerThread::platformThread()
     return *m_thread;
 }
 
-void ScriptStreamerThread::runScriptStreamingTask(WTF::PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask> task, ScriptStreamer* streamer)
+void ScriptStreamerThread::runScriptStreamingTask(PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask> task, ScriptStreamer* streamer)
 {
     TRACE_EVENT1("v8,devtools.timeline", "v8.parseOnBackground", "data", InspectorParseScriptEvent::data(streamer->scriptResourceIdentifier(), streamer->scriptURLString()));
     // Running the task can and will block: SourceStream::GetSomeData will get

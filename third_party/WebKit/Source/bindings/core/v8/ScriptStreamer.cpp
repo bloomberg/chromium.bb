@@ -17,6 +17,7 @@
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/WebScheduler.h"
+#include "wtf/Deque.h"
 #include "wtf/text/TextEncodingRegistry.h"
 
 namespace blink {
@@ -156,7 +157,7 @@ private:
         }
     }
 
-    WTF::Deque<std::pair<const uint8_t*, size_t>> m_data;
+    Deque<std::pair<const uint8_t*, size_t>> m_data;
     bool m_finished;
     Mutex m_mutex;
     ThreadCondition m_haveData;
@@ -529,7 +530,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         m_source = adoptPtr(new v8::ScriptCompiler::StreamedSource(m_stream, m_encoding));
 
         ScriptState::Scope scope(m_scriptState.get());
-        WTF::OwnPtr<v8::ScriptCompiler::ScriptStreamingTask> scriptStreamingTask(adoptPtr(v8::ScriptCompiler::StartStreamingScript(m_scriptState->isolate(), m_source.get(), m_compileOptions)));
+        OwnPtr<v8::ScriptCompiler::ScriptStreamingTask> scriptStreamingTask(adoptPtr(v8::ScriptCompiler::StartStreamingScript(m_scriptState->isolate(), m_source.get(), m_compileOptions)));
         if (!scriptStreamingTask) {
             // V8 cannot stream the script.
             suppressStreaming();
@@ -540,10 +541,6 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             return;
         }
 
-        // ScriptStreamer needs to stay alive as long as the background task is
-        // running. This is taken care of with a manual ref() & deref() pair;
-        // the corresponding deref() is in streamingComplete.
-        ref();
         ScriptStreamerThread::shared()->postTask(threadSafeBind(&ScriptStreamerThread::runScriptStreamingTask, scriptStreamingTask.release(), AllowCrossThreadAccess(this)));
         recordStartedStreamingHistogram(m_scriptType, 1);
     }
@@ -615,18 +612,13 @@ void ScriptStreamer::streamingComplete()
     // needed. In addition, if the streaming is suppressed, the non-streaming
     // code path will resume after the resource has loaded, before the
     // background task finishes.
-    if (m_detached || m_streamingSuppressed) {
-        deref();
+    if (m_detached || m_streamingSuppressed)
         return;
-    }
 
     // We have now streamed the whole script to V8 and it has parsed the
     // script. We're ready for the next step: compiling and executing the
     // script.
     notifyFinishedToClient();
-
-    // The background thread no longer holds an implicit reference.
-    deref();
 }
 
 void ScriptStreamer::notifyFinishedToClient()
