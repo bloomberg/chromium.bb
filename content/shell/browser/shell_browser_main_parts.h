@@ -39,6 +39,9 @@ class ShellBrowserMainParts : public BrowserMainParts {
 
   // BrowserMainParts overrides.
   void PreEarlyInitialization() override;
+#if defined(OS_ANDROID)
+  int PreCreateThreads() override;
+#endif
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
   void PreMainMessageLoopRun() override;

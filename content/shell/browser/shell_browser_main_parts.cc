@@ -146,8 +146,8 @@ void ShellBrowserMainParts::InitializeMessageLoopContext() {
                          gfx::Size());
 }
 
-void ShellBrowserMainParts::PreMainMessageLoopRun() {
 #if defined(OS_ANDROID)
+int ShellBrowserMainParts::PreCreateThreads() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     base::FilePath crash_dumps_dir =
@@ -155,8 +155,12 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
             switches::kCrashDumpsDir);
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dumps_dir));
   }
+
+  return 0;
+}
 #endif
 
+void ShellBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new ShellNetLog("content_shell"));
   InitializeBrowserContexts();
   Shell::Initialize();
