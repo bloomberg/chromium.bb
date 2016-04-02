@@ -2021,6 +2021,7 @@
         '../build/linux/system.gyp:atk',
         '../build/linux/system.gyp:gconf',
         '../build/linux/system.gyp:glib',
+        '../build/linux/system.gyp:xscrnsaver',
       ],
       'variables': {
         'clang_warning_flags': [
