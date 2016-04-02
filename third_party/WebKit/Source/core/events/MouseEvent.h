@@ -39,7 +39,7 @@ class CORE_EXPORT MouseEvent : public MouseRelatedEvent {
 public:
     static RawPtr<MouseEvent> create()
     {
-        return adoptRefWillBeNoop(new MouseEvent);
+        return new MouseEvent;
     }
 
     // TODO(mustaq): Should replace most/all of these params with a MouseEventInit.

@@ -37,7 +37,7 @@ class CompositionEvent final : public UIEvent {
 public:
     static RawPtr<CompositionEvent> create()
     {
-        return adoptRefWillBeNoop(new CompositionEvent);
+        return new CompositionEvent;
     }
 
     static RawPtr<CompositionEvent> create(const AtomicString& type, RawPtr<AbstractView> view, const String& data)

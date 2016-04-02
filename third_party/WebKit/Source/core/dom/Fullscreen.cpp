@@ -139,7 +139,7 @@ Fullscreen& Fullscreen::from(Document& document)
     Fullscreen* fullscreen = fromIfExists(document);
     if (!fullscreen) {
         fullscreen = new Fullscreen(document);
-        HeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(fullscreen));
+        HeapSupplement<Document>::provideTo(document, supplementName(), fullscreen);
     }
 
     return *fullscreen;

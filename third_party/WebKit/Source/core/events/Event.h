@@ -77,7 +77,7 @@ public:
 
     static RawPtr<Event> create()
     {
-        return adoptRefWillBeNoop(new Event);
+        return new Event;
     }
 
     // A factory for a simple event. The event doesn't bubble, and isn't

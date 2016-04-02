@@ -26,7 +26,7 @@ public:
         GlobalFetchImpl* supplement = static_cast<GlobalFetchImpl*>(HeapSupplement<T>::from(supplementable, supplementName()));
         if (!supplement) {
             supplement = new GlobalFetchImpl(executionContext);
-            HeapSupplement<T>::provideTo(supplementable, supplementName(), adoptPtrWillBeNoop(supplement));
+            HeapSupplement<T>::provideTo(supplementable, supplementName(), supplement);
         }
 #if ENABLE(OILPAN)
         return supplement;

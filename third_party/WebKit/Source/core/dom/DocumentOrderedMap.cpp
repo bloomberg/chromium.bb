@@ -43,7 +43,7 @@ using namespace HTMLNames;
 
 RawPtr<DocumentOrderedMap> DocumentOrderedMap::create()
 {
-    return adoptPtrWillBeNoop(new DocumentOrderedMap);
+    return new DocumentOrderedMap;
 }
 
 DocumentOrderedMap::DocumentOrderedMap()

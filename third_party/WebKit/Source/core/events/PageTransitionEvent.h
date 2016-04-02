@@ -36,7 +36,7 @@ class PageTransitionEvent final : public Event {
 public:
     static RawPtr<PageTransitionEvent> create()
     {
-        return adoptRefWillBeNoop(new PageTransitionEvent);
+        return new PageTransitionEvent;
     }
     static RawPtr<PageTransitionEvent> create(const AtomicString& type, bool persisted)
     {

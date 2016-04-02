@@ -32,7 +32,7 @@ namespace blink {
 
 RawPtr<TextEvent> TextEvent::create()
 {
-    return adoptRefWillBeNoop(new TextEvent);
+    return new TextEvent;
 }
 
 RawPtr<TextEvent> TextEvent::create(RawPtr<AbstractView> view, const String& data, TextEventInputType inputType)

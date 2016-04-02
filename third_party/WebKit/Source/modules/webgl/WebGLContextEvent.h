@@ -37,7 +37,7 @@ class WebGLContextEvent final : public Event {
 public:
     static RawPtr<WebGLContextEvent> create()
     {
-        return adoptRefWillBeNoop(new WebGLContextEvent);
+        return new WebGLContextEvent;
     }
     static RawPtr<WebGLContextEvent> create(const AtomicString& type, bool canBubble, bool cancelable, const String& statusMessage)
     {

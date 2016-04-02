@@ -65,7 +65,7 @@ private:
 
 class SingleChildFrameLoaderClient final : public EmptyFrameLoaderClient {
 public:
-    static RawPtr<SingleChildFrameLoaderClient> create() { return adoptPtrWillBeNoop(new SingleChildFrameLoaderClient); }
+    static RawPtr<SingleChildFrameLoaderClient> create() { return new SingleChildFrameLoaderClient; }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

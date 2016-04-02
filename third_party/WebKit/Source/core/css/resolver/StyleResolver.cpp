@@ -376,7 +376,7 @@ StyleSharingList& StyleResolver::styleSharingList()
     unsigned depth = std::max(std::min(m_styleSharingDepth, styleSharingMaxDepth), 1u) - 1u;
 
     if (!m_styleSharingLists[depth])
-        m_styleSharingLists[depth] = adoptPtrWillBeNoop(new StyleSharingList);
+        m_styleSharingLists[depth] = new StyleSharingList;
     return *m_styleSharingLists[depth];
 }
 

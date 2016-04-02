@@ -37,7 +37,7 @@ class TransitionEvent final : public Event {
 public:
     static RawPtr<TransitionEvent> create()
     {
-        return adoptRefWillBeNoop(new TransitionEvent);
+        return new TransitionEvent;
     }
     static RawPtr<TransitionEvent> create(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
     {

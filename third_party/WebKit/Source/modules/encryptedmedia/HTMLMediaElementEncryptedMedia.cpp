@@ -303,7 +303,7 @@ HTMLMediaElementEncryptedMedia& HTMLMediaElementEncryptedMedia::from(HTMLMediaEl
     HTMLMediaElementEncryptedMedia* supplement = static_cast<HTMLMediaElementEncryptedMedia*>(HeapSupplement<HTMLMediaElement>::from(element, supplementName()));
     if (!supplement) {
         supplement = new HTMLMediaElementEncryptedMedia(element);
-        provideTo(element, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(element, supplementName(), supplement);
     }
     return *supplement;
 }

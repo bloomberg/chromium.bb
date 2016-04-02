@@ -920,7 +920,7 @@ Resource::ResourceCallback* Resource::ResourceCallback::callbackHandler()
     //
     // Keep it out of LSan's reach instead.
     LEAK_SANITIZER_DISABLED_SCOPE;
-    DEFINE_STATIC_LOCAL(Persistent<ResourceCallback>, callbackHandler, (adoptPtrWillBeNoop(new ResourceCallback)));
+    DEFINE_STATIC_LOCAL(Persistent<ResourceCallback>, callbackHandler, (new ResourceCallback));
     return callbackHandler.get();
 }
 

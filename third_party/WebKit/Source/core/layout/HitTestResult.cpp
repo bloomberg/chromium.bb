@@ -493,14 +493,14 @@ void HitTestResult::append(const HitTestResult& other)
 const HitTestResult::NodeSet& HitTestResult::listBasedTestResult() const
 {
     if (!m_listBasedTestResult)
-        m_listBasedTestResult = adoptPtrWillBeNoop(new NodeSet);
+        m_listBasedTestResult = new NodeSet;
     return *m_listBasedTestResult;
 }
 
 HitTestResult::NodeSet& HitTestResult::mutableListBasedTestResult()
 {
     if (!m_listBasedTestResult)
-        m_listBasedTestResult = adoptPtrWillBeNoop(new NodeSet);
+        m_listBasedTestResult = new NodeSet;
     return *m_listBasedTestResult;
 }
 

@@ -40,7 +40,7 @@ public:
     ~DeviceOrientationEvent() override;
     static RawPtr<DeviceOrientationEvent> create()
     {
-        return adoptRefWillBeNoop(new DeviceOrientationEvent);
+        return new DeviceOrientationEvent;
     }
     static RawPtr<DeviceOrientationEvent> create(const AtomicString& eventType, DeviceOrientationData* orientation)
     {

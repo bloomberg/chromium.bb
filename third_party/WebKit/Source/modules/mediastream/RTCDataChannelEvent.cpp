@@ -28,7 +28,7 @@ namespace blink {
 
 RawPtr<RTCDataChannelEvent> RTCDataChannelEvent::create()
 {
-    return adoptRefWillBeNoop(new RTCDataChannelEvent);
+    return new RTCDataChannelEvent;
 }
 
 RawPtr<RTCDataChannelEvent> RTCDataChannelEvent::create(const AtomicString& type, bool canBubble, bool cancelable, RTCDataChannel* channel)

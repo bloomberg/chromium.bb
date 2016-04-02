@@ -40,7 +40,7 @@ class StyleFilterData final : public RefCountedGarbageCollected<StyleFilterData>
 public:
     static RawPtr<StyleFilterData> create()
     {
-        return adoptRefWillBeNoop(new StyleFilterData);
+        return new StyleFilterData;
     }
 
     RawPtr<StyleFilterData> copy() const

@@ -18,7 +18,7 @@ PaintTiming& PaintTiming::from(Document& document)
     PaintTiming* timing = static_cast<PaintTiming*>(HeapSupplement<Document>::from(document, kSupplementName));
     if (!timing) {
         timing = new PaintTiming(document);
-        HeapSupplement<Document>::provideTo(document, kSupplementName, adoptPtrWillBeNoop(timing));
+        HeapSupplement<Document>::provideTo(document, kSupplementName, timing);
     }
     return *timing;
 }

@@ -16,7 +16,7 @@ class InputEvent final : public UIEvent {
 public:
     static RawPtr<InputEvent> create()
     {
-        return adoptRefWillBeNoop(new InputEvent);
+        return new InputEvent;
     }
 
     static RawPtr<InputEvent> create(const AtomicString& type, const InputEventInit& initializer)

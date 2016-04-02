@@ -86,7 +86,7 @@ namespace {
 TEST(MixedContentCheckerTest, HandleCertificateError)
 {
     MockFrameLoaderClient* client = new MockFrameLoaderClient;
-    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(1, 1), nullptr, adoptPtrWillBeNoop(client));
+    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(1, 1), nullptr, client);
 
     KURL mainResourceUrl(KURL(), "https://example.test");
     KURL displayedUrl(KURL(), "https://example-displayed.test");

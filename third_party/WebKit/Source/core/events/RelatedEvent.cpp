@@ -12,7 +12,7 @@ RelatedEvent::~RelatedEvent()
 
 RawPtr<RelatedEvent> RelatedEvent::create()
 {
-    return adoptRefWillBeNoop(new RelatedEvent);
+    return new RelatedEvent;
 }
 
 RawPtr<RelatedEvent> RelatedEvent::create(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget)

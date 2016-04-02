@@ -29,7 +29,7 @@ namespace blink {
 
 RawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create()
 {
-    return adoptRefWillBeNoop(new RTCDTMFToneChangeEvent);
+    return new RTCDTMFToneChangeEvent;
 }
 
 RawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const String& tone)

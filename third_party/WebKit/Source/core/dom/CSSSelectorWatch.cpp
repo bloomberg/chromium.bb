@@ -56,7 +56,7 @@ CSSSelectorWatch& CSSSelectorWatch::from(Document& document)
     CSSSelectorWatch* watch = fromIfExists(document);
     if (!watch) {
         watch = new CSSSelectorWatch(document);
-        HeapSupplement<Document>::provideTo(document, kSupplementName, adoptPtrWillBeNoop(watch));
+        HeapSupplement<Document>::provideTo(document, kSupplementName, watch);
     }
     return *watch;
 }

@@ -47,7 +47,7 @@ CredentialManagerClient* CredentialManagerClient::from(Page* page)
 
 void provideCredentialManagerClientTo(Page& page, CredentialManagerClient* client)
 {
-    CredentialManagerClient::provideTo(page, CredentialManagerClient::supplementName(), adoptPtrWillBeNoop(client));
+    CredentialManagerClient::provideTo(page, CredentialManagerClient::supplementName(), client);
 }
 
 void CredentialManagerClient::dispatchFailedSignIn(const WebCredential& credential, WebCredentialManagerClient::NotificationCallbacks* callbacks)

@@ -82,7 +82,7 @@ public:
         ThrottlingController* controller = static_cast<ThrottlingController*>(HeapSupplement<ExecutionContext>::from(*context, supplementName()));
         if (!controller) {
             controller = new ThrottlingController();
-            HeapSupplement<ExecutionContext>::provideTo(*context, supplementName(), adoptPtrWillBeNoop(controller));
+            HeapSupplement<ExecutionContext>::provideTo(*context, supplementName(), controller);
         }
         return controller;
     }

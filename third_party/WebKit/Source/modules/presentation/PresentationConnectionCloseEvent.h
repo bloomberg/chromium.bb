@@ -22,7 +22,7 @@ public:
 
     static RawPtr<PresentationConnectionCloseEvent> create()
     {
-        return adoptRefWillBeNoop(new PresentationConnectionCloseEvent);
+        return new PresentationConnectionCloseEvent;
     }
 
     static RawPtr<PresentationConnectionCloseEvent> create(const AtomicString& eventType, const String& reason, const String& message)

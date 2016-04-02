@@ -21,7 +21,7 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
 public:
     static RawPtr<PromiseRejectionEvent> create()
     {
-        return adoptRefWillBeNoop(new PromiseRejectionEvent);
+        return new PromiseRejectionEvent;
     }
     static RawPtr<PromiseRejectionEvent> create(ScriptState* state, const AtomicString& type, const PromiseRejectionEventInit& initializer)
     {

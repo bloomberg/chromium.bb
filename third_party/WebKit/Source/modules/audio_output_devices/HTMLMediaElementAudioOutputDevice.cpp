@@ -120,7 +120,7 @@ HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::from(HTMLM
     HTMLMediaElementAudioOutputDevice* supplement = static_cast<HTMLMediaElementAudioOutputDevice*>(HeapSupplement<HTMLMediaElement>::from(element, supplementName()));
     if (!supplement) {
         supplement = new HTMLMediaElementAudioOutputDevice();
-        provideTo(element, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(element, supplementName(), supplement);
     }
     return *supplement;
 }

@@ -68,7 +68,7 @@ namespace blink {
 
 class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 public:
-    static RawPtr<EmptyChromeClient> create() { return adoptPtrWillBeNoop(new EmptyChromeClient); }
+    static RawPtr<EmptyChromeClient> create() { return new EmptyChromeClient; }
 
     ~EmptyChromeClient() override {}
     void chromeDestroyed() override {}
@@ -176,7 +176,7 @@ public:
 class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
     WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient);
 public:
-    static RawPtr<EmptyFrameLoaderClient> create() { return adoptPtrWillBeNoop(new EmptyFrameLoaderClient); }
+    static RawPtr<EmptyFrameLoaderClient> create() { return new EmptyFrameLoaderClient; }
     ~EmptyFrameLoaderClient() override {}
 
     bool hasWebView() const override { return true; } // mainly for assertions

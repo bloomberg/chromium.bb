@@ -15,7 +15,7 @@ class AnimationPlayerEvent final : public Event {
 public:
     static RawPtr<AnimationPlayerEvent> create()
     {
-        return adoptRefWillBeNoop(new AnimationPlayerEvent);
+        return new AnimationPlayerEvent;
     }
     static RawPtr<AnimationPlayerEvent> create(const AtomicString& type, double currentTime, double timelineTime)
     {

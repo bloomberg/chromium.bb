@@ -18,7 +18,7 @@ public:
 
     static RawPtr<DeviceLightEvent> create()
     {
-        return adoptRefWillBeNoop(new DeviceLightEvent);
+        return new DeviceLightEvent;
     }
     static RawPtr<DeviceLightEvent> create(const AtomicString& eventType, double value)
     {

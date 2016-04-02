@@ -19,7 +19,7 @@ public:
 
     static RawPtr<ApplicationCacheErrorEvent> create()
     {
-        return adoptRefWillBeNoop(new ApplicationCacheErrorEvent);
+        return new ApplicationCacheErrorEvent;
     }
 
     static RawPtr<ApplicationCacheErrorEvent> create(WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)

@@ -50,7 +50,7 @@ DOMWindowCrypto& DOMWindowCrypto::from(LocalDOMWindow& window)
     DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowCrypto(window);
-        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(window, supplementName(), supplement);
     }
     return *supplement;
 }

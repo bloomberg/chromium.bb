@@ -38,7 +38,7 @@ public:
 
     static RawPtr<MediaEncryptedEvent> create()
     {
-        return adoptRefWillBeNoop(new MediaEncryptedEvent);
+        return new MediaEncryptedEvent;
     }
 
     static RawPtr<MediaEncryptedEvent> create(const AtomicString& type, const MediaEncryptedEventInit& initializer)

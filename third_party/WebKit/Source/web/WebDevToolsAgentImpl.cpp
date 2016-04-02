@@ -275,7 +275,7 @@ RawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLocalFrameImpl* fra
         WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, nullptr);
         if (frame->frameWidget())
             agent->layerTreeViewChanged(toWebFrameWidgetImpl(frame->frameWidget())->layerTreeView());
-        return adoptPtrWillBeNoop(agent);
+        return agent;
     }
 
     WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, client, InspectorOverlay::create(view));
@@ -291,7 +291,7 @@ RawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLocalFrameImpl* fra
     agent->m_agents.append(InspectorDOMStorageAgent::create(view->page()));
     agent->m_agents.append(InspectorCacheStorageAgent::create());
     agent->layerTreeViewChanged(view->layerTreeView());
-    return adoptPtrWillBeNoop(agent);
+    return agent;
 }
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(

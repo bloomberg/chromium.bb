@@ -53,7 +53,7 @@ DOMWindowQuota& DOMWindowQuota::from(LocalDOMWindow& window)
     DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowQuota(window);
-        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(window, supplementName(), supplement);
     }
     return *supplement;
 }

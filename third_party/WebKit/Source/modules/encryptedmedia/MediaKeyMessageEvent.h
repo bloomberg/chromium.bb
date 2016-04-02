@@ -41,7 +41,7 @@ public:
 
     static RawPtr<MediaKeyMessageEvent> create()
     {
-        return adoptRefWillBeNoop(new MediaKeyMessageEvent);
+        return new MediaKeyMessageEvent;
     }
 
     static RawPtr<MediaKeyMessageEvent> create(const AtomicString& type, const MediaKeyMessageEventInit& initializer)

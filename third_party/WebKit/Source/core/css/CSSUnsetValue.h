@@ -14,7 +14,7 @@ class CSSUnsetValue : public CSSValue {
 public:
     static RawPtr<CSSUnsetValue> create()
     {
-        return adoptRefWillBeNoop(new CSSUnsetValue);
+        return new CSSUnsetValue;
     }
 
     String customCSSText() const;

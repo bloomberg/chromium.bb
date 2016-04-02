@@ -41,7 +41,7 @@ public:
 
     static RawPtr<TrackEvent> create()
     {
-        return adoptRefWillBeNoop(new TrackEvent);
+        return new TrackEvent;
     }
 
     static RawPtr<TrackEvent> create(const AtomicString& type, const TrackEventInit& initializer)

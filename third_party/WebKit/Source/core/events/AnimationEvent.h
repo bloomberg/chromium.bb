@@ -36,7 +36,7 @@ class AnimationEvent final : public Event {
 public:
     static RawPtr<AnimationEvent> create()
     {
-        return adoptRefWillBeNoop(new AnimationEvent);
+        return new AnimationEvent;
     }
     static RawPtr<AnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
     {

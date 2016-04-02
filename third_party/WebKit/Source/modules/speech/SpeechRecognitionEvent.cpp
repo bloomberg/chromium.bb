@@ -29,7 +29,7 @@ namespace blink {
 
 RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create()
 {
-    return adoptRefWillBeNoop(new SpeechRecognitionEvent);
+    return new SpeechRecognitionEvent;
 }
 
 RawPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::create(const AtomicString& eventName, const SpeechRecognitionEventInit& initializer)

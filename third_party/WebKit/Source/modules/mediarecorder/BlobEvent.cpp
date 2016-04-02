@@ -12,7 +12,7 @@ namespace blink {
 // static
 RawPtr<BlobEvent> BlobEvent::create()
 {
-    return adoptRefWillBeNoop(new BlobEvent);
+    return new BlobEvent;
 }
 
 // static

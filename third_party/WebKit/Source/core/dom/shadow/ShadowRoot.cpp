@@ -223,7 +223,7 @@ ShadowRootRareData* ShadowRoot::ensureShadowRootRareData()
     if (m_shadowRootRareData)
         return m_shadowRootRareData.get();
 
-    m_shadowRootRareData = adoptPtrWillBeNoop(new ShadowRootRareData);
+    m_shadowRootRareData = new ShadowRootRareData;
     return m_shadowRootRareData.get();
 }
 

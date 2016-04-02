@@ -36,7 +36,7 @@ public:
 
     static RawPtr<BeforeUnloadEvent> create()
     {
-        return adoptRefWillBeNoop(new BeforeUnloadEvent);
+        return new BeforeUnloadEvent;
     }
 
     bool isBeforeUnloadEvent() const override;

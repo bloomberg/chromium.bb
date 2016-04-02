@@ -60,7 +60,7 @@ class StubFrameLoaderClient : public EmptyFrameLoaderClient {
 public:
     static RawPtr<StubFrameLoaderClient> create()
     {
-        return adoptPtrWillBeNoop(new StubFrameLoaderClient);
+        return new StubFrameLoaderClient;
     }
 
     PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*) override

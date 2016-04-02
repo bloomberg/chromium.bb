@@ -30,7 +30,7 @@ namespace blink {
 
 RawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create()
 {
-    return adoptRefWillBeNoop(new MediaStreamTrackEvent);
+    return new MediaStreamTrackEvent;
 }
 
 RawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, MediaStreamTrack* track)

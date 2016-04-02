@@ -43,7 +43,7 @@ public:
     // We only initialize sourceCapabilities when we create TouchEvent from EventHandler, null if it is from JavaScript.
     static RawPtr<TouchEvent> create()
     {
-        return adoptRefWillBeNoop(new TouchEvent);
+        return new TouchEvent;
     }
     static RawPtr<TouchEvent> create(TouchList* touches,
         TouchList* targetTouches, TouchList* changedTouches,

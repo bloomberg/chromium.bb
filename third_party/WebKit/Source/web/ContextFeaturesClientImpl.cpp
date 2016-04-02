@@ -108,7 +108,7 @@ ContextFeaturesCache& ContextFeaturesCache::from(Document& document)
     ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(HeapSupplement<Document>::from(document, supplementName()));
     if (!cache) {
         cache = new ContextFeaturesCache();
-        HeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(cache));
+        HeapSupplement<Document>::provideTo(document, supplementName(), cache);
     }
 
     return *cache;

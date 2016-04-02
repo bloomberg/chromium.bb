@@ -23,7 +23,7 @@ public:
 
     static RawPtr<PresentationConnectionAvailableEvent> create()
     {
-        return adoptRefWillBeNoop(new PresentationConnectionAvailableEvent);
+        return new PresentationConnectionAvailableEvent;
     }
     static RawPtr<PresentationConnectionAvailableEvent> create(const AtomicString& eventType, PresentationConnection* connection)
     {

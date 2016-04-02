@@ -198,7 +198,7 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
 
 RawPtr<UniqueElementData> UniqueElementData::create()
 {
-    return adoptRefWillBeNoop(new UniqueElementData);
+    return new UniqueElementData;
 }
 
 RawPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const

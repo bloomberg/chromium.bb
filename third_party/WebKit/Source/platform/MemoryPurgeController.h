@@ -43,7 +43,7 @@ public:
 
     static RawPtr<MemoryPurgeController> create()
     {
-        return adoptPtrWillBeNoop(new MemoryPurgeController);
+        return new MemoryPurgeController;
     }
     ~MemoryPurgeController();
 

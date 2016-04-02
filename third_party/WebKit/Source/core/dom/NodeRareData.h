@@ -39,7 +39,7 @@ public:
 
     static RawPtr<NodeMutationObserverData> create()
     {
-        return adoptPtrWillBeNoop(new NodeMutationObserverData);
+        return new NodeMutationObserverData;
     }
 
     DEFINE_INLINE_TRACE()

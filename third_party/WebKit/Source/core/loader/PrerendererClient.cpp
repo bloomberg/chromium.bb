@@ -50,7 +50,7 @@ PrerendererClient* PrerendererClient::from(Page* page)
 
 void providePrerendererClientTo(Page& page, PrerendererClient* client)
 {
-    PrerendererClient::provideTo(page, PrerendererClient::supplementName(), adoptPtrWillBeNoop(client));
+    PrerendererClient::provideTo(page, PrerendererClient::supplementName(), client);
 }
 
 } // namespace blink

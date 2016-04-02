@@ -2947,7 +2947,7 @@ void FrameView::addScrollableArea(ScrollableArea* scrollableArea)
 {
     ASSERT(scrollableArea);
     if (!m_scrollableAreas)
-        m_scrollableAreas = adoptPtrWillBeNoop(new ScrollableAreaSet);
+        m_scrollableAreas = new ScrollableAreaSet;
     m_scrollableAreas->add(scrollableArea);
 
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
@@ -2968,7 +2968,7 @@ void FrameView::addAnimatingScrollableArea(ScrollableArea* scrollableArea)
 {
     ASSERT(scrollableArea);
     if (!m_animatingScrollableAreas)
-        m_animatingScrollableAreas = adoptPtrWillBeNoop(new ScrollableAreaSet);
+        m_animatingScrollableAreas = new ScrollableAreaSet;
     m_animatingScrollableAreas->add(scrollableArea);
 }
 

@@ -33,7 +33,7 @@ namespace blink {
 
 RawPtr<StorageEvent> StorageEvent::create()
 {
-    return adoptRefWillBeNoop(new StorageEvent);
+    return new StorageEvent;
 }
 
 StorageEvent::StorageEvent()

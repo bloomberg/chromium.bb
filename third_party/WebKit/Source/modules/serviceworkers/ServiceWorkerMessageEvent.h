@@ -18,7 +18,7 @@ class MODULES_EXPORT ServiceWorkerMessageEvent final : public Event {
 public:
     static RawPtr<ServiceWorkerMessageEvent> create()
     {
-        return adoptRefWillBeNoop(new ServiceWorkerMessageEvent);
+        return new ServiceWorkerMessageEvent;
     }
 
     static RawPtr<ServiceWorkerMessageEvent> create(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer)

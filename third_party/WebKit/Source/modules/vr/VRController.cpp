@@ -18,7 +18,7 @@ void VRController::provideTo(LocalFrame& frame, WebVRClient* client)
     ASSERT(RuntimeEnabledFeatures::webVREnabled());
 
     VRController* controller = new VRController(frame, client);
-    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), adoptPtrWillBeNoop(controller));
+    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
 VRController* VRController::from(LocalFrame& frame)

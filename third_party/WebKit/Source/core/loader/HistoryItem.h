@@ -49,7 +49,7 @@ class CORE_EXPORT HistoryItem final : public GarbageCollectedFinalized<HistoryIt
 public:
     static RawPtr<HistoryItem> create()
     {
-        return adoptRefWillBeNoop(new HistoryItem);
+        return new HistoryItem;
     }
     ~HistoryItem();
 

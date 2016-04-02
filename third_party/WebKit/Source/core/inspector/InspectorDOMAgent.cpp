@@ -690,7 +690,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
         node = parent;
 
     // Node being pushed is detached -> push subtree root.
-    RawPtr<NodeToIdMap> newMap = adoptPtrWillBeNoop(new NodeToIdMap);
+    RawPtr<NodeToIdMap> newMap = new NodeToIdMap;
     NodeToIdMap* danglingMap = newMap.get();
     m_danglingNodeToIdMaps.append(newMap.release());
     OwnPtr<protocol::Array<protocol::DOM::Node>> children = protocol::Array<protocol::DOM::Node>::create();

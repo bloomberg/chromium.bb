@@ -17,7 +17,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 public:
     static RawPtr<SlotAssignment> create()
     {
-        return adoptPtrWillBeNoop(new SlotAssignment);
+        return new SlotAssignment;
     }
 
     HTMLSlotElement* assignedSlotFor(const Node&) const;

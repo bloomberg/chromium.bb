@@ -37,7 +37,7 @@ class CORE_EXPORT ProgressEvent : public Event {
 public:
     static RawPtr<ProgressEvent> create()
     {
-        return adoptRefWillBeNoop(new ProgressEvent);
+        return new ProgressEvent;
     }
     static RawPtr<ProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
     {

@@ -435,7 +435,7 @@ RawPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(Node* node, Unused
 
     if (unusedNodesMap)
         unusedNodesMap->add(digest->m_sha1, digest);
-    return adoptPtrWillBeNoop(digest);
+    return digest;
 }
 
 bool DOMPatchSupport::insertBeforeAndMarkAsUsed(ContainerNode* parentNode, Digest* digest, Node* anchor, ExceptionState& exceptionState)

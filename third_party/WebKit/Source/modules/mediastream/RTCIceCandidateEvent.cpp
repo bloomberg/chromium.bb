@@ -30,7 +30,7 @@ namespace blink {
 
 RawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create()
 {
-    return adoptRefWillBeNoop(new RTCIceCandidateEvent);
+    return new RTCIceCandidateEvent;
 }
 
 RawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create(bool canBubble, bool cancelable, RTCIceCandidate* candidate)

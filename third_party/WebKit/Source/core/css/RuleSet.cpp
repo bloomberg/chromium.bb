@@ -124,7 +124,7 @@ void RuleSet::addToRuleSet(const AtomicString& key, PendingRuleMap& map, const R
 {
     Member<HeapLinkedStack<RuleData>>& rules = map.add(key, nullptr).storedValue->value;
     if (!rules)
-        rules = adoptPtrWillBeNoop(new HeapLinkedStack<RuleData>);
+        rules = new HeapLinkedStack<RuleData>;
     rules->push(ruleData);
 }
 

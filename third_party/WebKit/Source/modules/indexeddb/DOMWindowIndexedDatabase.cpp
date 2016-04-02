@@ -56,7 +56,7 @@ DOMWindowIndexedDatabase& DOMWindowIndexedDatabase::from(LocalDOMWindow& window)
     DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowIndexedDatabase(window);
-        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(window, supplementName(), supplement);
     }
     return *supplement;
 }

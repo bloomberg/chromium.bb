@@ -35,7 +35,7 @@ class AutocompleteErrorEvent final : public Event {
 public:
     static RawPtr<AutocompleteErrorEvent> create()
     {
-        return adoptRefWillBeNoop(new AutocompleteErrorEvent);
+        return new AutocompleteErrorEvent;
     }
 
     static RawPtr<AutocompleteErrorEvent> create(const String& reason)

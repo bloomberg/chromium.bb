@@ -121,7 +121,7 @@ protected:
     OriginTrialContextTest()
         : m_frameworkWasEnabled(RuntimeEnabledFeatures::experimentalFrameworkEnabled())
         , m_tokenValidator(adoptPtr(new MockTokenValidator()))
-        , m_originTrialContext(adoptPtrWillBeNoop(new TestOriginTrialContext))
+        , m_originTrialContext(new TestOriginTrialContext)
     {
         RuntimeEnabledFeatures::setExperimentalFrameworkEnabled(true);
     }

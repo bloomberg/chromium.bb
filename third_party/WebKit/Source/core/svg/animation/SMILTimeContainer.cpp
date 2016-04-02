@@ -93,7 +93,7 @@ void SMILTimeContainer::schedule(SVGSMILElement* animation, SVGElement* target, 
     ElementAttributePair key(target, attributeName);
     Member<AnimationsLinkedHashSet>& scheduled = m_scheduledAnimations.add(key, nullptr).storedValue->value;
     if (!scheduled)
-        scheduled = adoptPtrWillBeNoop(new AnimationsLinkedHashSet);
+        scheduled = new AnimationsLinkedHashSet;
     ASSERT(!scheduled->contains(animation));
     scheduled->add(animation);
 

@@ -174,7 +174,7 @@ class ScheduledReload final : public ScheduledNavigation {
 public:
     static RawPtr<ScheduledReload> create()
     {
-        return adoptPtrWillBeNoop(new ScheduledReload);
+        return new ScheduledReload;
     }
 
     void fire(LocalFrame* frame) override

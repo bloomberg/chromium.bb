@@ -19,7 +19,7 @@ class NavigatorContentUtilsClientMock final : public NavigatorContentUtilsClient
 public:
     static RawPtr<NavigatorContentUtilsClientMock> create()
     {
-        return adoptPtrWillBeNoop(new NavigatorContentUtilsClientMock);
+        return new NavigatorContentUtilsClientMock;
     }
 
     ~NavigatorContentUtilsClientMock() override { }

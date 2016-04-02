@@ -174,7 +174,7 @@ RawPtr<ClickHandlingState> RadioInputType::willDispatchClick()
     // Therefore if nothing is currently selected, we won't allow the upcoming action to be "undone", since
     // we want some object in the radio group to actually get selected.
 
-    RawPtr<ClickHandlingState> state = adoptPtrWillBeNoop(new ClickHandlingState);
+    RawPtr<ClickHandlingState> state = new ClickHandlingState;
 
     state->checked = element().checked();
     state->checkedRadioButton = element().checkedRadioButtonForGroup();

@@ -32,7 +32,7 @@ DeviceOrientationAbsoluteController& DeviceOrientationAbsoluteController::from(D
     DeviceOrientationAbsoluteController* controller = static_cast<DeviceOrientationAbsoluteController*>(HeapSupplement<Document>::from(document, DeviceOrientationAbsoluteController::supplementName()));
     if (!controller) {
         controller = new DeviceOrientationAbsoluteController(document);
-        HeapSupplement<Document>::provideTo(document, DeviceOrientationAbsoluteController::supplementName(), adoptPtrWillBeNoop(controller));
+        HeapSupplement<Document>::provideTo(document, DeviceOrientationAbsoluteController::supplementName(), controller);
     }
     return *controller;
 }

@@ -420,7 +420,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_containsPlugins(false)
     , m_updateFocusAppearanceSelectionBahavior(SelectionBehaviorOnFocus::Reset)
     , m_ignoreDestructiveWriteCount(0)
-    , m_markers(adoptPtrWillBeNoop(new DocumentMarkerController))
+    , m_markers(new DocumentMarkerController)
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
     , m_cssTarget(nullptr)
     , m_loadEventProgress(LoadEventNotRun)

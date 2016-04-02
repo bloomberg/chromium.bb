@@ -48,7 +48,7 @@ class CORE_EXPORT ResourceProgressEvent final : public ProgressEvent {
 public:
     static RawPtr<ResourceProgressEvent> create()
     {
-        return adoptRefWillBeNoop(new ResourceProgressEvent);
+        return new ResourceProgressEvent;
     }
     static RawPtr<ResourceProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const String& url)
     {

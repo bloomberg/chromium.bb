@@ -92,7 +92,7 @@ class FormController final : public GarbageCollectedFinalized<FormController> {
 public:
     static RawPtr<FormController> create()
     {
-        return adoptPtrWillBeNoop(new FormController);
+        return new FormController;
     }
     ~FormController();
     DECLARE_TRACE();

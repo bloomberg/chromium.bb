@@ -46,7 +46,7 @@ public:
 
     static RawPtr<StaticNodeTypeList> createEmpty()
     {
-        return adoptRefWillBeNoop(new StaticNodeTypeList);
+        return new StaticNodeTypeList;
     }
 
     ~StaticNodeTypeList() override;
@@ -66,7 +66,7 @@ typedef StaticNodeTypeList<Element> StaticElementList;
 template <typename NodeType>
 RawPtr<StaticNodeTypeList<NodeType>> StaticNodeTypeList<NodeType>::adopt(HeapVector<Member<NodeType>>& nodes)
 {
-    RawPtr<StaticNodeTypeList<NodeType>> nodeList = adoptRefWillBeNoop(new StaticNodeTypeList<NodeType>);
+    RawPtr<StaticNodeTypeList<NodeType>> nodeList = new StaticNodeTypeList<NodeType>;
     nodeList->m_nodes.swap(nodes);
     return nodeList.release();
 }

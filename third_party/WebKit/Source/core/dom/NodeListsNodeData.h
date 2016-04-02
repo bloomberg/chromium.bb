@@ -168,7 +168,7 @@ public:
 
     static RawPtr<NodeListsNodeData> create()
     {
-        return adoptPtrWillBeNoop(new NodeListsNodeData);
+        return new NodeListsNodeData;
     }
 
     void invalidateCaches(const QualifiedName* attrName = 0);

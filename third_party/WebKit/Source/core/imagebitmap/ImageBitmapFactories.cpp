@@ -146,7 +146,7 @@ ImageBitmapFactories& ImageBitmapFactories::fromInternal(GlobalObject& object)
     ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(HeapSupplement<GlobalObject>::from(object, supplementName()));
     if (!supplement) {
         supplement = new ImageBitmapFactories();
-        HeapSupplement<GlobalObject>::provideTo(object, supplementName(), adoptPtrWillBeNoop(supplement));
+        HeapSupplement<GlobalObject>::provideTo(object, supplementName(), supplement);
     }
     return *supplement;
 }

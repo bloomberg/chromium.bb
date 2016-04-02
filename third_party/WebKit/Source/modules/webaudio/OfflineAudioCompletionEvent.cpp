@@ -28,7 +28,7 @@ namespace blink {
 
 RawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create()
 {
-    return adoptRefWillBeNoop(new OfflineAudioCompletionEvent);
+    return new OfflineAudioCompletionEvent;
 }
 
 RawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create(AudioBuffer* renderedBuffer)

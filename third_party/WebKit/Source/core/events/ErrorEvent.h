@@ -44,7 +44,7 @@ class ErrorEvent final : public Event {
 public:
     static RawPtr<ErrorEvent> create()
     {
-        return adoptRefWillBeNoop(new ErrorEvent);
+        return new ErrorEvent;
     }
     static RawPtr<ErrorEvent> create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld* world)
     {

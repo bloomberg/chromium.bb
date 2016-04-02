@@ -744,7 +744,7 @@ void InspectorCSSAgent::setActiveStyleSheets(Document* document, const HeapVecto
     HeapHashSet<Member<CSSStyleSheet>>* documentCSSStyleSheets = m_documentToCSSStyleSheets.get(document);
     if (!documentCSSStyleSheets) {
         documentCSSStyleSheets = new HeapHashSet<Member<CSSStyleSheet>>();
-        RawPtr<HeapHashSet<Member<CSSStyleSheet>>> documentCSSStyleSheetsPtr = adoptPtrWillBeNoop(documentCSSStyleSheets);
+        RawPtr<HeapHashSet<Member<CSSStyleSheet>>> documentCSSStyleSheetsPtr = documentCSSStyleSheets;
         m_documentToCSSStyleSheets.set(document, documentCSSStyleSheetsPtr.release());
     }
 

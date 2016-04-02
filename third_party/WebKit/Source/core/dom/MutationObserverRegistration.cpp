@@ -79,7 +79,7 @@ void MutationObserverRegistration::observedSubtreeNodeWillDetach(Node& node)
     m_observer->setHasTransientRegistration();
 
     if (!m_transientRegistrationNodes) {
-        m_transientRegistrationNodes = adoptPtrWillBeNoop(new NodeHashSet);
+        m_transientRegistrationNodes = new NodeHashSet;
 
         ASSERT(m_registrationNode);
         ASSERT(!m_registrationNodeKeepAlive);

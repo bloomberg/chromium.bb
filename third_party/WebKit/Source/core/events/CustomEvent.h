@@ -41,7 +41,7 @@ public:
 
     static RawPtr<CustomEvent> create()
     {
-        return adoptRefWillBeNoop(new CustomEvent);
+        return new CustomEvent;
     }
 
     static RawPtr<CustomEvent> create(const AtomicString& type, const CustomEventInit& initializer)

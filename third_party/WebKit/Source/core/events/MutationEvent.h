@@ -42,7 +42,7 @@ public:
 
     static RawPtr<MutationEvent> create()
     {
-        return adoptRefWillBeNoop(new MutationEvent);
+        return new MutationEvent;
     }
 
     static RawPtr<MutationEvent> create(

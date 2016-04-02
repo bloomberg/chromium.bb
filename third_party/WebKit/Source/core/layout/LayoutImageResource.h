@@ -40,7 +40,7 @@ public:
 
     static RawPtr<LayoutImageResource> create()
     {
-        return adoptPtrWillBeNoop(new LayoutImageResource);
+        return new LayoutImageResource;
     }
 
     virtual void initialize(LayoutObject*);

@@ -17,7 +17,7 @@ class PointerEvent final : public MouseEvent {
 public:
     static RawPtr<PointerEvent> create()
     {
-        return adoptRefWillBeNoop(new PointerEvent);
+        return new PointerEvent;
     }
 
     static RawPtr<PointerEvent> create(const AtomicString& type, const PointerEventInit& initializer)

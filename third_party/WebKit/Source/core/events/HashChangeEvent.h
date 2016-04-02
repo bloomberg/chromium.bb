@@ -31,7 +31,7 @@ class HashChangeEvent final : public Event {
 public:
     static RawPtr<HashChangeEvent> create()
     {
-        return adoptRefWillBeNoop(new HashChangeEvent);
+        return new HashChangeEvent;
     }
 
     static RawPtr<HashChangeEvent> create(const String& oldURL, const String& newURL)

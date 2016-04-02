@@ -71,7 +71,7 @@ RadioButtonGroup::RadioButtonGroup()
 
 RawPtr<RadioButtonGroup> RadioButtonGroup::create()
 {
-    return adoptPtrWillBeNoop(new RadioButtonGroup);
+    return new RadioButtonGroup;
 }
 
 inline bool RadioButtonGroup::isValid() const
@@ -236,7 +236,7 @@ void RadioButtonGroupScope::addButton(HTMLInputElement* element)
         return;
 
     if (!m_nameToGroupMap)
-        m_nameToGroupMap = adoptPtrWillBeNoop(new NameToGroupMap);
+        m_nameToGroupMap = new NameToGroupMap;
 
     Member<RadioButtonGroup>& group = m_nameToGroupMap->add(element->name(), nullptr).storedValue->value;
     if (!group)

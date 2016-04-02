@@ -136,7 +136,7 @@ protected:
     void SetUp() override
     {
         DeferredImageDecoder::setEnabled(m_enableDeferredDecoding);
-        m_imageObserver = adoptPtrWillBeNoop(new FakeImageObserver);
+        m_imageObserver = new FakeImageObserver;
         m_image = BitmapImage::create(m_imageObserver.get());
     }
 

@@ -75,7 +75,7 @@ protected:
     public:
         static RawPtr<NamedItemCache> create()
         {
-            return adoptPtrWillBeNoop(new NamedItemCache);
+            return new NamedItemCache;
         }
 
         HeapVector<Member<Element>>* getElementsById(const AtomicString& id) const { return m_idCache.get(id.impl()); }
@@ -98,7 +98,7 @@ protected:
         {
             Member<HeapVector<Member<Element>>>& vector = map.add(key.impl(), nullptr).storedValue->value;
             if (!vector)
-                vector = adoptPtrWillBeNoop(new HeapVector<Member<Element>>);
+                vector = new HeapVector<Member<Element>>;
             vector->append(element);
         }
 

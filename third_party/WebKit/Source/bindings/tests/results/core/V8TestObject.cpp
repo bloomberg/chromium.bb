@@ -10192,7 +10192,7 @@ void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::
         exceptionState.throwIfNeeded();
         return;
     }
-    RawPtr<MessagePortArray> ports = adoptPtrWillBeNoop(new MessagePortArray);
+    RawPtr<MessagePortArray> ports = new MessagePortArray;
     ArrayBufferArray arrayBuffers;
     ImageBitmapArray imageBitmaps;
     if (info.Length() > 1) {

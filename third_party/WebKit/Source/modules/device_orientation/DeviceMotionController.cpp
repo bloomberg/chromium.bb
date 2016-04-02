@@ -39,7 +39,7 @@ DeviceMotionController& DeviceMotionController::from(Document& document)
     DeviceMotionController* controller = static_cast<DeviceMotionController*>(HeapSupplement<Document>::from(document, supplementName()));
     if (!controller) {
         controller = new DeviceMotionController(document);
-        HeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
+        HeapSupplement<Document>::provideTo(document, supplementName(), controller);
     }
     return *controller;
 }

@@ -42,7 +42,7 @@ class ShareableElementData;
 
 class ElementDataCache final : public GarbageCollected<ElementDataCache>  {
 public:
-    static RawPtr<ElementDataCache> create() { return adoptPtrWillBeNoop(new ElementDataCache); }
+    static RawPtr<ElementDataCache> create() { return new ElementDataCache; }
 
     RawPtr<ShareableElementData> cachedShareableElementDataWithAttributes(const Vector<Attribute>&);
 

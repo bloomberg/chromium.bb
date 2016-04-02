@@ -44,7 +44,7 @@ DOMWindowStorage& DOMWindowStorage::from(LocalDOMWindow& window)
     DOMWindowStorage* supplement = static_cast<DOMWindowStorage*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowStorage(window);
-        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(window, supplementName(), supplement);
     }
     return *supplement;
 }

@@ -41,7 +41,7 @@ public:
     ~DeviceMotionEvent() override;
     static RawPtr<DeviceMotionEvent> create()
     {
-        return adoptRefWillBeNoop(new DeviceMotionEvent);
+        return new DeviceMotionEvent;
     }
     static RawPtr<DeviceMotionEvent> create(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
     {

@@ -1901,7 +1901,7 @@ EventTargetData& Node::ensureEventTargetData()
         return *eventTargetDataMap().get(this);
     ASSERT(!eventTargetDataMap().contains(this));
     setHasEventTargetData(true);
-    RawPtr<EventTargetData> data = adoptPtrWillBeNoop(new EventTargetData);
+    RawPtr<EventTargetData> data = new EventTargetData;
     EventTargetData* dataPtr = data.get();
     eventTargetDataMap().set(this, data.release());
     return *dataPtr;

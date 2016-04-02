@@ -192,7 +192,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     //   postMessage(message, targetOrigin, {sequence of transferrables})
     // Legacy non-standard implementations in webkit allowed:
     //   postMessage(message, {sequence of transferrables}, targetOrigin);
-    RawPtr<MessagePortArray> portArray = adoptPtrWillBeNoop(new MessagePortArray);
+    RawPtr<MessagePortArray> portArray = new MessagePortArray;
     ArrayBufferArray arrayBufferArray;
     ImageBitmapArray imageBitmapArray;
     int targetOriginArgIndex = 1;

@@ -22,7 +22,7 @@ class MODULES_EXPORT PushEvent final : public ExtendableEvent {
 public:
     static RawPtr<PushEvent> create()
     {
-        return adoptRefWillBeNoop(new PushEvent);
+        return new PushEvent;
     }
     static RawPtr<PushEvent> create(const AtomicString& type, PushMessageData* data, WaitUntilObserver* observer)
     {

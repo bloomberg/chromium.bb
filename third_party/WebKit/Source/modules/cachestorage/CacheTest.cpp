@@ -39,7 +39,7 @@ class ScopedFetcherForTests final : public GarbageCollectedFinalized<ScopedFetch
 public:
     static RawPtr<ScopedFetcherForTests> create()
     {
-        return adoptPtrWillBeNoop(new ScopedFetcherForTests);
+        return new ScopedFetcherForTests;
     }
 
     ScriptPromise fetch(ScriptState* scriptState, const RequestInfo& requestInfo, const Dictionary&, ExceptionState&) override

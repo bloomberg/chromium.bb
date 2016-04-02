@@ -47,7 +47,7 @@ public:
 
     static RawPtr<WheelEvent> create()
     {
-        return adoptRefWillBeNoop(new WheelEvent);
+        return new WheelEvent;
     }
 
     static RawPtr<WheelEvent> create(const PlatformWheelEvent& platformEvent, RawPtr<AbstractView>);

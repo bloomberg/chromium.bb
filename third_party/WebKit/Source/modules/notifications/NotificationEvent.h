@@ -20,7 +20,7 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
 public:
     static RawPtr<NotificationEvent> create()
     {
-        return adoptRefWillBeNoop(new NotificationEvent);
+        return new NotificationEvent;
     }
     static RawPtr<NotificationEvent> create(const AtomicString& type, const NotificationEventInit& initializer)
     {

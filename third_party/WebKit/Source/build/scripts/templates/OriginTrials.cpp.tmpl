@@ -24,7 +24,7 @@ OriginTrials* OriginTrials::from(ExecutionContext* host)
     OriginTrials* originTrials = reinterpret_cast<OriginTrials*>(HeapSupplement<ExecutionContext>::from(host, supplementName()));
     if (!originTrials) {
         originTrials = new OriginTrials(host->createOriginTrialContext());
-        HeapSupplement<ExecutionContext>::provideTo(*host, supplementName(), adoptPtrWillBeNoop(originTrials));
+        HeapSupplement<ExecutionContext>::provideTo(*host, supplementName(), originTrials);
     }
     return originTrials;
 }

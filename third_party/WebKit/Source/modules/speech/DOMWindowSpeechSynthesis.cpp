@@ -52,7 +52,7 @@ DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::from(LocalDOMWindow& window)
     DOMWindowSpeechSynthesis* supplement = static_cast<DOMWindowSpeechSynthesis*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowSpeechSynthesis(window);
-        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(window, supplementName(), supplement);
     }
     return *supplement;
 }

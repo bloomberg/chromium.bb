@@ -40,12 +40,12 @@ class CORE_EXPORT TouchList final : public GarbageCollected<TouchList>, public S
 public:
     static RawPtr<TouchList> create()
     {
-        return adoptRefWillBeNoop(new TouchList);
+        return new TouchList;
     }
 
     static RawPtr<TouchList> create(const HeapVector<Member<Touch>>& touches)
     {
-        RawPtr<TouchList> list = adoptRefWillBeNoop(new TouchList);
+        RawPtr<TouchList> list = new TouchList;
         list->m_values.appendVector(touches);
         return list.release();
     }

@@ -16,7 +16,7 @@ class GamepadEvent final : public Event {
 public:
     static RawPtr<GamepadEvent> create()
     {
-        return adoptRefWillBeNoop(new GamepadEvent);
+        return new GamepadEvent;
     }
     static RawPtr<GamepadEvent> create(const AtomicString& type, bool canBubble, bool cancelable, Gamepad* gamepad)
     {

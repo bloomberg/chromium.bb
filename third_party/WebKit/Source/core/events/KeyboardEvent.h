@@ -45,7 +45,7 @@ public:
 
     static RawPtr<KeyboardEvent> create()
     {
-        return adoptRefWillBeNoop(new KeyboardEvent);
+        return new KeyboardEvent;
     }
 
     static RawPtr<KeyboardEvent> create(const PlatformKeyboardEvent& platformEvent, AbstractView* view)

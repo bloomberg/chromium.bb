@@ -37,7 +37,7 @@ class FocusEvent final : public UIEvent {
 public:
     static RawPtr<FocusEvent> create()
     {
-        return adoptRefWillBeNoop(new FocusEvent);
+        return new FocusEvent;
     }
 
     static RawPtr<FocusEvent> create(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView> view, int detail, EventTarget* relatedTarget, InputDeviceCapabilities* sourceCapabilities)

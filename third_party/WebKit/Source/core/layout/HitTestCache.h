@@ -39,7 +39,7 @@ class CORE_EXPORT HitTestCache final : public GarbageCollectedFinalized<HitTestC
 public:
     static RawPtr<HitTestCache> create()
     {
-        return adoptPtrWillBeNoop(new HitTestCache);
+        return new HitTestCache;
     }
 
     // Check the cache for a possible hit and update |result| if

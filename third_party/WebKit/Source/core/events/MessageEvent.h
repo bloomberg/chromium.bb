@@ -45,7 +45,7 @@ class CORE_EXPORT MessageEvent final : public Event {
 public:
     static RawPtr<MessageEvent> create()
     {
-        return adoptRefWillBeNoop(new MessageEvent);
+        return new MessageEvent;
     }
     static RawPtr<MessageEvent> create(MessagePortArray* ports, const String& origin = String(), const String& lastEventId = String(), RawPtr<EventTarget> source = nullptr, const String& suborigin = String())
     {

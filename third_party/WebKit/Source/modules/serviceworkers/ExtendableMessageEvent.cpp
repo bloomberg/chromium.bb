@@ -8,7 +8,7 @@ namespace blink {
 
 RawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create()
 {
-    return adoptRefWillBeNoop(new ExtendableMessageEvent);
+    return new ExtendableMessageEvent;
 }
 
 RawPtr<ExtendableMessageEvent> ExtendableMessageEvent::create(const AtomicString& type, const ExtendableMessageEventInit& initializer)

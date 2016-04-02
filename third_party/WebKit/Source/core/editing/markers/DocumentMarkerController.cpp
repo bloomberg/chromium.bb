@@ -197,13 +197,13 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
 
     Member<MarkerLists>& markers = m_markers.add(node, nullptr).storedValue->value;
     if (!markers) {
-        markers = adoptPtrWillBeNoop(new MarkerLists);
+        markers = new MarkerLists;
         markers->grow(DocumentMarker::MarkerTypeIndexesCount);
     }
 
     DocumentMarker::MarkerTypeIndex markerListIndex = MarkerTypeToMarkerIndex(newMarker.type());
     if (!markers->at(markerListIndex)) {
-        markers->insert(markerListIndex, adoptPtrWillBeNoop(new MarkerList));
+        markers->insert(markerListIndex, new MarkerList);
     }
 
     Member<MarkerList>& list = markers->at(markerListIndex);

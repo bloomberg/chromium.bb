@@ -22,7 +22,7 @@ class MODULES_EXPORT GeofencingEvent final : public Event {
 public:
     static RawPtr<GeofencingEvent> create()
     {
-        return adoptRefWillBeNoop(new GeofencingEvent);
+        return new GeofencingEvent;
     }
 
     static RawPtr<GeofencingEvent> create(const AtomicString& type, const String& id, GeofencingRegion* region)

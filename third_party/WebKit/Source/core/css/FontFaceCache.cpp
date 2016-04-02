@@ -61,7 +61,7 @@ void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, RawPtr<FontFac
 
     FamilyToTraitsMap::AddResult traitsResult = m_fontFaces.add(fontFace->family(), nullptr);
     if (!traitsResult.storedValue->value)
-        traitsResult.storedValue->value = adoptPtrWillBeNoop(new TraitsMap);
+        traitsResult.storedValue->value = new TraitsMap;
 
     TraitsMap::AddResult segmentedFontFaceResult = traitsResult.storedValue->value->add(fontFace->traits().bitfield(), nullptr);
     if (!segmentedFontFaceResult.storedValue->value)
@@ -136,7 +136,7 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
 
     FamilyToTraitsMap::AddResult traitsResult = m_fonts.add(family, nullptr);
     if (!traitsResult.storedValue->value)
-        traitsResult.storedValue->value = adoptPtrWillBeNoop(new TraitsMap);
+        traitsResult.storedValue->value = new TraitsMap;
 
     FontTraits traits = fontDescription.traits();
     TraitsMap::AddResult faceResult = traitsResult.storedValue->value->add(traits.bitfield(), nullptr);

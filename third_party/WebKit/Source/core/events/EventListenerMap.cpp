@@ -126,7 +126,7 @@ bool EventListenerMap::add(const AtomicString& eventType, RawPtr<EventListener> 
             return addListenerToVector(entry.second.get(), listener, options);
     }
 
-    m_entries.append(std::make_pair(eventType, adoptPtrWillBeNoop(new EventListenerVector)));
+    m_entries.append(std::make_pair(eventType, new EventListenerVector));
     return addListenerToVector(m_entries.last().second.get(), listener, options);
 }
 

@@ -289,7 +289,7 @@ static inline void removeFromCacheAndInvalidateDependencies(LayoutObject* object
     // reference graph adjustments on changes, so we need to break possible cycles here.
     // This strong reference is safe, as it is guaranteed that this set will be emptied
     // at the end of recursion.
-    DEFINE_STATIC_LOCAL(Persistent<SVGElementSet>, invalidatingDependencies, (adoptPtrWillBeNoop(new SVGElementSet)));
+    DEFINE_STATIC_LOCAL(Persistent<SVGElementSet>, invalidatingDependencies, (new SVGElementSet));
 
     for (SVGElement* element : *dependencies) {
         if (LayoutObject* layoutObject = element->layoutObject()) {

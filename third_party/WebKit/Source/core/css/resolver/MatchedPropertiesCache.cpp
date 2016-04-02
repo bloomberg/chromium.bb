@@ -95,7 +95,7 @@ void MatchedPropertiesCache::add(const ComputedStyle& style, const ComputedStyle
     ASSERT(hash);
     Cache::AddResult addResult = m_cache.add(hash, nullptr);
     if (addResult.isNewEntry)
-        addResult.storedValue->value = adoptPtrWillBeNoop(new CachedMatchedProperties);
+        addResult.storedValue->value = new CachedMatchedProperties;
 
     CachedMatchedProperties* cacheItem = addResult.storedValue->value.get();
     if (!addResult.isNewEntry)

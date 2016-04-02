@@ -72,7 +72,7 @@ RawPtr<ClickHandlingState> CheckboxInputType::willDispatchClick()
     // An event handler can use preventDefault or "return false" to reverse the checking we do here.
     // The ClickHandlingState object contains what we need to undo what we did here in didDispatchClick.
 
-    RawPtr<ClickHandlingState> state = adoptPtrWillBeNoop(new ClickHandlingState);
+    RawPtr<ClickHandlingState> state = new ClickHandlingState;
 
     state->checked = element().checked();
     state->indeterminate = element().indeterminate();

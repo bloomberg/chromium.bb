@@ -19,7 +19,7 @@ class MODULES_EXPORT SyncEvent final : public ExtendableEvent {
 public:
     static RawPtr<SyncEvent> create()
     {
-        return adoptRefWillBeNoop(new SyncEvent);
+        return new SyncEvent;
     }
     static RawPtr<SyncEvent> create(const AtomicString& type, const String& tag, bool lastChance, WaitUntilObserver* observer)
     {

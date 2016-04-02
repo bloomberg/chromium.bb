@@ -34,7 +34,7 @@ class SVGZoomEvent final : public UIEvent {
 public:
     static RawPtr<SVGZoomEvent> create()
     {
-        return adoptRefWillBeNoop(new SVGZoomEvent);
+        return new SVGZoomEvent;
     }
 
     // 'SVGZoomEvent' functions

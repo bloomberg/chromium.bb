@@ -95,7 +95,7 @@ private:
     public:
         static RawPtr<WrapGradients> create()
         {
-            return adoptPtrWillBeNoop(new WrapGradients);
+            return new WrapGradients;
         }
 
         DEFINE_INLINE_TRACE()

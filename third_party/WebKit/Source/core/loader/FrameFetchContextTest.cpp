@@ -144,7 +144,7 @@ protected:
         mainResourceUrl = KURL(KURL(), "https://www.example.test");
         MockFrameLoaderClient* client = new MockFrameLoaderClient;
         EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(url, securityInfo, WebURL(mainResourceUrl), CString()));
-        dummyPageHolder = DummyPageHolder::create(IntSize(500, 500), nullptr, adoptPtrWillBeNoop(client));
+        dummyPageHolder = DummyPageHolder::create(IntSize(500, 500), nullptr, client);
         dummyPageHolder->page().setDeviceScaleFactor(1.0);
         documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest(mainResourceUrl), SubstituteData());
         document = toHTMLDocument(&dummyPageHolder->document());

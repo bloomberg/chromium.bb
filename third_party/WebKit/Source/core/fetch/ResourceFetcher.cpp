@@ -854,7 +854,7 @@ void ResourceFetcher::preloadStarted(Resource* resource)
     resource->increasePreloadCount();
 
     if (!m_preloads)
-        m_preloads = adoptPtrWillBeNoop(new HeapListHashSet<Member<Resource>>);
+        m_preloads = new HeapListHashSet<Member<Resource>>;
     m_preloads->add(resource);
 
 #if PRELOAD_DEBUG

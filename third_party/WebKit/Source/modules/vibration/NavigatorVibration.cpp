@@ -187,7 +187,7 @@ NavigatorVibration& NavigatorVibration::from(Page& page)
     NavigatorVibration* navigatorVibration = static_cast<NavigatorVibration*>(HeapSupplement<Page>::from(page, supplementName()));
     if (!navigatorVibration) {
         navigatorVibration = new NavigatorVibration(page);
-        HeapSupplement<Page>::provideTo(page, supplementName(), adoptPtrWillBeNoop(navigatorVibration));
+        HeapSupplement<Page>::provideTo(page, supplementName(), navigatorVibration);
     }
     return *navigatorVibration;
 }

@@ -31,7 +31,7 @@ HTMLMediaElementRemotePlayback& HTMLMediaElementRemotePlayback::from(HTMLMediaEl
     HTMLMediaElementRemotePlayback* supplement = static_cast<HTMLMediaElementRemotePlayback*>(HeapSupplement<HTMLMediaElement>::from(element, supplementName()));
     if (!supplement) {
         supplement = new HTMLMediaElementRemotePlayback();
-        provideTo(element, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(element, supplementName(), supplement);
     }
     return *supplement;
 }

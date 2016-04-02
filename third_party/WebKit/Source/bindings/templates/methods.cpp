@@ -475,7 +475,7 @@ void postMessageImpl(const char* interfaceName, {{cpp_class}}* instance, const v
         exceptionState.throwIfNeeded();
         return;
     }
-    RawPtr<MessagePortArray> ports = adoptPtrWillBeNoop(new MessagePortArray);
+    RawPtr<MessagePortArray> ports = new MessagePortArray;
     ArrayBufferArray arrayBuffers;
     ImageBitmapArray imageBitmaps;
     if (info.Length() > 1) {

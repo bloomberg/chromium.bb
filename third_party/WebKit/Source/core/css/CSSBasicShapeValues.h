@@ -42,7 +42,7 @@ namespace blink {
 
 class CSSBasicShapeCircleValue final : public CSSValue {
 public:
-    static RawPtr<CSSBasicShapeCircleValue> create() { return adoptRefWillBeNoop(new CSSBasicShapeCircleValue); }
+    static RawPtr<CSSBasicShapeCircleValue> create() { return new CSSBasicShapeCircleValue; }
 
     String customCSSText() const;
     bool equals(const CSSBasicShapeCircleValue&) const;
@@ -70,7 +70,7 @@ private:
 
 class CSSBasicShapeEllipseValue final : public CSSValue {
 public:
-    static RawPtr<CSSBasicShapeEllipseValue> create() { return adoptRefWillBeNoop(new CSSBasicShapeEllipseValue); }
+    static RawPtr<CSSBasicShapeEllipseValue> create() { return new CSSBasicShapeEllipseValue; }
 
     String customCSSText() const;
     bool equals(const CSSBasicShapeEllipseValue&) const;
@@ -101,7 +101,7 @@ private:
 
 class CSSBasicShapePolygonValue final : public CSSValue {
 public:
-    static RawPtr<CSSBasicShapePolygonValue> create() { return adoptRefWillBeNoop(new CSSBasicShapePolygonValue); }
+    static RawPtr<CSSBasicShapePolygonValue> create() { return new CSSBasicShapePolygonValue; }
 
     void appendPoint(RawPtr<CSSPrimitiveValue> x, RawPtr<CSSPrimitiveValue> y)
     {
@@ -134,7 +134,7 @@ private:
 
 class CSSBasicShapeInsetValue final : public CSSValue {
 public:
-    static RawPtr<CSSBasicShapeInsetValue> create() { return adoptRefWillBeNoop(new CSSBasicShapeInsetValue); }
+    static RawPtr<CSSBasicShapeInsetValue> create() { return new CSSBasicShapeInsetValue; }
 
     CSSPrimitiveValue* top() const { return m_top.get(); }
     CSSPrimitiveValue* right() const { return m_right.get(); }

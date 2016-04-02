@@ -49,7 +49,7 @@ WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::from(WorkerGlobalSco
     WorkerGlobalScopePerformance* supplement = static_cast<WorkerGlobalScopePerformance*>(HeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
     if (!supplement) {
         supplement = new WorkerGlobalScopePerformance();
-        provideTo(context, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(context, supplementName(), supplement);
     }
     return *supplement;
 }

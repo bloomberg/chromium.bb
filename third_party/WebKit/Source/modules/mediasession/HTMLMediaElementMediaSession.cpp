@@ -36,7 +36,7 @@ HTMLMediaElementMediaSession& HTMLMediaElementMediaSession::from(HTMLMediaElemen
     HTMLMediaElementMediaSession* supplement = fromIfExists(element);
     if (!supplement) {
         supplement = new HTMLMediaElementMediaSession();
-        provideTo(element, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(element, supplementName(), supplement);
     }
     return *supplement;
 }

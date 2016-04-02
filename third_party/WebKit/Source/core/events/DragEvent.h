@@ -19,7 +19,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
 public:
     static RawPtr<DragEvent> create()
     {
-        return adoptRefWillBeNoop(new DragEvent);
+        return new DragEvent;
     }
 
     static RawPtr<DragEvent> create(DataTransfer* dataTransfer)

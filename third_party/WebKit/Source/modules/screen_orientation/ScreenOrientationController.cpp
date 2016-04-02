@@ -27,7 +27,7 @@ void ScreenOrientationController::provideTo(LocalFrame& frame, WebScreenOrientat
     ASSERT(RuntimeEnabledFeatures::screenOrientationEnabled());
 
     ScreenOrientationController* controller = new ScreenOrientationController(frame, client);
-    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), adoptPtrWillBeNoop(controller));
+    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
 ScreenOrientationController* ScreenOrientationController::from(LocalFrame& frame)

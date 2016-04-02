@@ -46,7 +46,7 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(ExecutionContex
     ServiceWorkerContainerClient* client = static_cast<ServiceWorkerContainerClient*>(HeapSupplement<Document>::from(document, supplementName()));
     if (!client) {
         client = new ServiceWorkerContainerClient(document->frame()->loader().client()->createServiceWorkerProvider());
-        HeapSupplement<Document>::provideTo(*document, supplementName(), adoptPtrWillBeNoop(client));
+        HeapSupplement<Document>::provideTo(*document, supplementName(), client);
     }
     return client;
 }

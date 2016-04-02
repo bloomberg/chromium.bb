@@ -36,7 +36,7 @@ DOMWindowPerformance& DOMWindowPerformance::from(LocalDOMWindow& window)
     DOMWindowPerformance* supplement = static_cast<DOMWindowPerformance*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowPerformance(window);
-        provideTo(window, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(window, supplementName(), supplement);
     }
     return *supplement;
 }

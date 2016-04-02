@@ -122,7 +122,7 @@ static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData), "RuleData should s
 class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     WTF_MAKE_NONCOPYABLE(RuleSet);
 public:
-    static RawPtr<RuleSet> create() { return adoptPtrWillBeNoop(new RuleSet); }
+    static RawPtr<RuleSet> create() { return new RuleSet; }
 
     void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, AddRuleFlags = RuleHasNoSpecialState);
     void addStyleRule(StyleRule*, AddRuleFlags);
@@ -187,7 +187,7 @@ private:
 
     class PendingRuleMaps : public GarbageCollected<PendingRuleMaps> {
     public:
-        static RawPtr<PendingRuleMaps> create() { return adoptPtrWillBeNoop(new PendingRuleMaps); }
+        static RawPtr<PendingRuleMaps> create() { return new PendingRuleMaps; }
 
         PendingRuleMap idRules;
         PendingRuleMap classRules;

@@ -41,7 +41,7 @@ public:
 class FrameViewTestBase : public testing::Test {
 protected:
     FrameViewTestBase()
-        : m_chromeClient(adoptPtrWillBeNoop(new MockChromeClient))
+        : m_chromeClient(new MockChromeClient)
     { }
 
     ~FrameViewTestBase()

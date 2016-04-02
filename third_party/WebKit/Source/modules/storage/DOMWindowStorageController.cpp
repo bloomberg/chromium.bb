@@ -37,7 +37,7 @@ DOMWindowStorageController& DOMWindowStorageController::from(Document& document)
     DOMWindowStorageController* controller = static_cast<DOMWindowStorageController*>(HeapSupplement<Document>::from(document, supplementName()));
     if (!controller) {
         controller = new DOMWindowStorageController(document);
-        HeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
+        HeapSupplement<Document>::provideTo(document, supplementName(), controller);
     }
     return *controller;
 }

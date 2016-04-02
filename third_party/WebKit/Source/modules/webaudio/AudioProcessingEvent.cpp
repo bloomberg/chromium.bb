@@ -28,7 +28,7 @@ namespace blink {
 
 RawPtr<AudioProcessingEvent> AudioProcessingEvent::create()
 {
-    return adoptRefWillBeNoop(new AudioProcessingEvent);
+    return new AudioProcessingEvent;
 }
 
 RawPtr<AudioProcessingEvent> AudioProcessingEvent::create(AudioBuffer* inputBuffer, AudioBuffer* outputBuffer, double playbackTime)

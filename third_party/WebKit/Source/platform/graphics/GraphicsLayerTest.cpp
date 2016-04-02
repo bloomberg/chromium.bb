@@ -163,7 +163,7 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
 public:
     static RawPtr<FakeScrollableArea> create()
     {
-        return adoptPtrWillBeNoop(new FakeScrollableArea);
+        return new FakeScrollableArea;
     }
 
     LayoutRect visualRectForScrollbarParts() const override { return LayoutRect(); }

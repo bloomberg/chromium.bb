@@ -24,7 +24,7 @@ class CanvasRenderingContext2DState final : public GarbageCollectedFinalized<Can
 public:
     static RawPtr<CanvasRenderingContext2DState> create()
     {
-        return adoptPtrWillBeNoop(new CanvasRenderingContext2DState);
+        return new CanvasRenderingContext2DState;
     }
 
     ~CanvasRenderingContext2DState() override;

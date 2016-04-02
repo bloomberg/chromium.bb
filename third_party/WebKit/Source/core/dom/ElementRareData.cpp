@@ -52,7 +52,7 @@ CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(Element* o
 AttrNodeList& ElementRareData::ensureAttrNodeList()
 {
     if (!m_attrNodeList)
-        m_attrNodeList = adoptPtrWillBeNoop(new AttrNodeList);
+        m_attrNodeList = new AttrNodeList;
     return *m_attrNodeList;
 }
 

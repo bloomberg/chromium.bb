@@ -43,7 +43,7 @@ class SVGFilterGraphNodeMap final : public GarbageCollectedFinalized<SVGFilterGr
 public:
     static RawPtr<SVGFilterGraphNodeMap> create()
     {
-        return adoptRefWillBeNoop(new SVGFilterGraphNodeMap);
+        return new SVGFilterGraphNodeMap;
     }
 
     typedef HeapHashSet<Member<FilterEffect>> FilterEffectSet;

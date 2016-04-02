@@ -34,7 +34,7 @@ namespace blink {
 
 RawPtr<TouchEventContext> TouchEventContext::create()
 {
-    return adoptRefWillBeNoop(new TouchEventContext);
+    return new TouchEventContext;
 }
 
 TouchEventContext::TouchEventContext()

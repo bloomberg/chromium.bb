@@ -59,7 +59,7 @@ PopStateEvent::~PopStateEvent()
 
 RawPtr<PopStateEvent> PopStateEvent::create()
 {
-    return adoptRefWillBeNoop(new PopStateEvent);
+    return new PopStateEvent;
 }
 
 RawPtr<PopStateEvent> PopStateEvent::create(PassRefPtr<SerializedScriptValue> serializedState, History* history)

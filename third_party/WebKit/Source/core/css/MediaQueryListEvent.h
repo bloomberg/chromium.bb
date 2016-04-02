@@ -16,7 +16,7 @@ class MediaQueryListEvent final : public Event {
 public:
     static RawPtr<MediaQueryListEvent> create()
     {
-        return adoptRefWillBeNoop(new MediaQueryListEvent);
+        return new MediaQueryListEvent;
     }
 
     static RawPtr<MediaQueryListEvent> create(RawPtr<MediaQueryList> list)

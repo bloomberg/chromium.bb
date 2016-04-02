@@ -187,7 +187,7 @@ RawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
     if (!cacheHash || cacheValue->value)
         return style.release();
 
-    RawPtr<PresentationAttributeCacheEntry> newEntry = adoptPtrWillBeNoop(new PresentationAttributeCacheEntry);
+    RawPtr<PresentationAttributeCacheEntry> newEntry = new PresentationAttributeCacheEntry;
     newEntry->key = cacheKey;
     newEntry->value = style;
 

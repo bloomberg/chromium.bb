@@ -45,7 +45,7 @@ class CORE_EXPORT DummyFrameOwner : public GarbageCollectedFinalized<DummyFrameO
 public:
     static RawPtr<DummyFrameOwner> create()
     {
-        return adoptPtrWillBeNoop(new DummyFrameOwner);
+        return new DummyFrameOwner;
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { FrameOwner::trace(visitor); }

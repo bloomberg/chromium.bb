@@ -38,7 +38,7 @@ DragCaretController::DragCaretController()
 
 RawPtr<DragCaretController> DragCaretController::create()
 {
-    return adoptPtrWillBeNoop(new DragCaretController);
+    return new DragCaretController;
 }
 
 bool DragCaretController::isContentRichlyEditable() const

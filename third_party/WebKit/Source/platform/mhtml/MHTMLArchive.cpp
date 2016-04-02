@@ -82,7 +82,7 @@ RawPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, SharedBuffer* data)
     if (resources.isEmpty())
         return nullptr; // Invalid MHTML file.
 
-    RawPtr<MHTMLArchive> archive = adoptRefWillBeNoop(new MHTMLArchive);
+    RawPtr<MHTMLArchive> archive = new MHTMLArchive;
     // The first document suitable resource is the main resource of the top frame.
     for (size_t i = 0; i < resources.size(); ++i) {
         const AtomicString& mimeType = resources[i]->mimeType();

@@ -29,7 +29,7 @@ namespace blink {
 
 RawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
 {
-    return adoptRefWillBeNoop(new SpeechSynthesisEvent);
+    return new SpeechSynthesisEvent;
 }
 
 RawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned charIndex, float elapsedTime, const String& name)

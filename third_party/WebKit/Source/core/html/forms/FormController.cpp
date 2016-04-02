@@ -290,7 +290,7 @@ Vector<String> SavedFormState::getReferencedFilePaths() const
 class FormKeyGenerator final : public GarbageCollectedFinalized<FormKeyGenerator> {
     WTF_MAKE_NONCOPYABLE(FormKeyGenerator);
 public:
-    static RawPtr<FormKeyGenerator> create() { return adoptPtrWillBeNoop(new FormKeyGenerator); }
+    static RawPtr<FormKeyGenerator> create() { return new FormKeyGenerator; }
     DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
@@ -381,7 +381,7 @@ void FormKeyGenerator::willDeleteForm(HTMLFormElement* form)
 
 RawPtr<DocumentState> DocumentState::create()
 {
-    return adoptRefWillBeNoop(new DocumentState);
+    return new DocumentState;
 }
 
 DEFINE_TRACE(DocumentState)

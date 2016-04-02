@@ -34,7 +34,7 @@ DeviceLightController& DeviceLightController::from(Document& document)
     DeviceLightController* controller = static_cast<DeviceLightController*>(HeapSupplement<Document>::from(document, supplementName()));
     if (!controller) {
         controller = new DeviceLightController(document);
-        HeapSupplement<Document>::provideTo(document, supplementName(), adoptPtrWillBeNoop(controller));
+        HeapSupplement<Document>::provideTo(document, supplementName(), controller);
     }
     return *controller;
 }

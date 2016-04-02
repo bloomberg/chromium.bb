@@ -17,7 +17,7 @@ void USBController::provideTo(LocalFrame& frame, WebUSBClient* client)
 {
     ASSERT(RuntimeEnabledFeatures::webUSBEnabled());
     USBController* controller = new USBController(frame, client);
-    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), adoptPtrWillBeNoop(controller));
+    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
 USBController& USBController::from(LocalFrame& frame)

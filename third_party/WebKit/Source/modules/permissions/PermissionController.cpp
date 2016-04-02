@@ -19,7 +19,7 @@ void PermissionController::provideTo(LocalFrame& frame, WebPermissionClient* cli
     ASSERT(RuntimeEnabledFeatures::permissionsEnabled());
 
     PermissionController* controller = new PermissionController(frame, client);
-    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), adoptPtrWillBeNoop(controller));
+    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
 PermissionController* PermissionController::from(LocalFrame& frame)

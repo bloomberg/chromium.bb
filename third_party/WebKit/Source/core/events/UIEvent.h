@@ -41,7 +41,7 @@ class CORE_EXPORT UIEvent : public Event {
 public:
     static RawPtr<UIEvent> create()
     {
-        return adoptRefWillBeNoop(new UIEvent);
+        return new UIEvent;
     }
     static RawPtr<UIEvent> create(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView> view, int detail)
     {

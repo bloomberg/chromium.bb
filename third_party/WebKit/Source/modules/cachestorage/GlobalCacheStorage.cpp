@@ -27,7 +27,7 @@ public:
         GlobalCacheStorageImpl* supplement = static_cast<GlobalCacheStorageImpl*>(HeapSupplement<T>::from(supplementable, name()));
         if (!supplement) {
             supplement = new GlobalCacheStorageImpl();
-            HeapSupplement<T>::provideTo(supplementable, name(), adoptPtrWillBeNoop(supplement));
+            HeapSupplement<T>::provideTo(supplementable, name(), supplement);
         }
         return *supplement;
     }
