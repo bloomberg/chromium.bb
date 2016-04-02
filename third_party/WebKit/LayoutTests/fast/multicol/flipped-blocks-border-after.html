@@ -4,7 +4,6 @@
     .pos1 { left: 50px; top: 50px;}
     .pos2 { left: 250px; top: 50px;}
     .pos3 { left: 50px; top: 300px;}
-    .pos4 { left: 250px; top: 300px;}
 
     .multicol {
         border: 0 solid black;
@@ -18,10 +17,6 @@
         background-color: green;
     }
 
-    .horizontal_bt {
-        -webkit-writing-mode: horizontal-bt;
-        border-top-width: 50px;
-    }
     .horizontal_tb {
         -webkit-writing-mode: horizontal-tb;
         border-bottom-width: 50px;
@@ -49,24 +44,18 @@
     indicated. There should be no red.
 </p>
 <div class="test pos1">
-    <p>Border above</p>
-    <div class="multicol horizontal_bt">
-        <div></div><div class="break_before"></div>
-    </div>
-</div>
-<div class="test pos2">
     <p>Border below</p>
     <div class="multicol horizontal_tb">
         <div></div><div class="break_before"></div>
     </div>
 </div>
-<div class="test pos3">
+<div class="test pos2">
     <p>Border left</p>
     <div class="multicol vertical_rl">
         <div></div><div class="break_before"></div>
     </div>
 </div>
-<div class="test pos4">
+<div class="test pos3">
     <p>Border right</p>
     <div class="multicol vertical_lr">
         <div></div><div class="break_before"></div>
