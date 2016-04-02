@@ -13,6 +13,10 @@
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/public/browser/browser_message_filter.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class CacheStorageContextImpl;
@@ -49,20 +53,22 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
   // The message receiver functions for the CacheStorage API:
   void OnCacheStorageHas(int thread_id,
                          int request_id,
-                         const GURL& origin,
+                         const url::Origin& origin,
                          const base::string16& cache_name);
   void OnCacheStorageOpen(int thread_id,
                           int request_id,
-                          const GURL& origin,
+                          const url::Origin& origin,
                           const base::string16& cache_name);
   void OnCacheStorageDelete(int thread_id,
                             int request_id,
-                            const GURL& origin,
+                            const url::Origin& origin,
                             const base::string16& cache_name);
-  void OnCacheStorageKeys(int thread_id, int request_id, const GURL& origin);
+  void OnCacheStorageKeys(int thread_id,
+                          int request_id,
+                          const url::Origin& origin);
   void OnCacheStorageMatch(int thread_id,
                            int request_id,
-                           const GURL& origin,
+                           const url::Origin& origin,
                            const ServiceWorkerFetchRequest& request,
                            const CacheStorageCacheQueryParams& match_params);
 

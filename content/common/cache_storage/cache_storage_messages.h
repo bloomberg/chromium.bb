@@ -13,7 +13,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -51,30 +51,30 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerCacheError,
 IPC_MESSAGE_CONTROL4(CacheStorageHostMsg_CacheStorageHas,
                      int /* thread_id */,
                      int /* request_id */,
-                     GURL /* origin */,
+                     url::Origin /* origin */,
                      base::string16 /* fetch_store_name */)
 
 IPC_MESSAGE_CONTROL4(CacheStorageHostMsg_CacheStorageOpen,
                      int /* thread_id */,
                      int /* request_id */,
-                     GURL /* origin */,
+                     url::Origin /* origin */,
                      base::string16 /* fetch_store_name */)
 
 IPC_MESSAGE_CONTROL4(CacheStorageHostMsg_CacheStorageDelete,
                      int /* thread_id */,
                      int /* request_id */,
-                     GURL /* origin */,
+                     url::Origin /* origin */,
                      base::string16 /* fetch_store_name */)
 
 IPC_MESSAGE_CONTROL3(CacheStorageHostMsg_CacheStorageKeys,
                      int /* thread_id */,
                      int /* request_id */,
-                     GURL /* origin */)
+                     url::Origin /* origin */)
 
 IPC_MESSAGE_CONTROL5(CacheStorageHostMsg_CacheStorageMatch,
                      int /* thread_id */,
                      int /* request_id */,
-                     GURL /* origin */,
+                     url::Origin /* origin */,
                      content::ServiceWorkerFetchRequest,
                      content::CacheStorageCacheQueryParams)
 

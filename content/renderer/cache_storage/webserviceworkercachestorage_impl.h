@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -28,7 +29,7 @@ class WebServiceWorkerCacheStorageImpl
     : public blink::WebServiceWorkerCacheStorage {
  public:
   WebServiceWorkerCacheStorageImpl(ThreadSafeSender* thread_safe_sender,
-                                   const GURL& origin);
+                                   const url::Origin& origin);
   ~WebServiceWorkerCacheStorageImpl() override;
 
   // From WebServiceWorkerCacheStorage:
@@ -49,7 +50,7 @@ class WebServiceWorkerCacheStorageImpl
   CacheStorageDispatcher* GetDispatcher() const;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  const GURL origin_;
+  const url::Origin origin_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerCacheStorageImpl);
 };

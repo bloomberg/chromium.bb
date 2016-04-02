@@ -23,6 +23,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "url/origin.h"
 
 using base::TimeTicks;
 
@@ -525,7 +526,7 @@ void CacheStorageDispatcher::OnCacheBatchError(
 
 void CacheStorageDispatcher::dispatchHas(
     WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks,
-    const GURL& origin,
+    const url::Origin& origin,
     const blink::WebString& cacheName) {
   int request_id = has_callbacks_.Add(callbacks);
   has_times_[request_id] = base::TimeTicks::Now();
@@ -535,7 +536,7 @@ void CacheStorageDispatcher::dispatchHas(
 
 void CacheStorageDispatcher::dispatchOpen(
     WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks* callbacks,
-    const GURL& origin,
+    const url::Origin& origin,
     const blink::WebString& cacheName) {
   int request_id = open_callbacks_.Add(callbacks);
   open_times_[request_id] = base::TimeTicks::Now();
@@ -545,7 +546,7 @@ void CacheStorageDispatcher::dispatchOpen(
 
 void CacheStorageDispatcher::dispatchDelete(
     WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks,
-    const GURL& origin,
+    const url::Origin& origin,
     const blink::WebString& cacheName) {
   int request_id = delete_callbacks_.Add(callbacks);
   delete_times_[request_id] = base::TimeTicks::Now();
@@ -555,7 +556,7 @@ void CacheStorageDispatcher::dispatchDelete(
 
 void CacheStorageDispatcher::dispatchKeys(
     WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks* callbacks,
-    const GURL& origin) {
+    const url::Origin& origin) {
   int request_id = keys_callbacks_.Add(callbacks);
   keys_times_[request_id] = base::TimeTicks::Now();
   Send(new CacheStorageHostMsg_CacheStorageKeys(CurrentWorkerId(), request_id,
@@ -564,7 +565,7 @@ void CacheStorageDispatcher::dispatchKeys(
 
 void CacheStorageDispatcher::dispatchMatch(
     WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks* callbacks,
-    const GURL& origin,
+    const url::Origin& origin,
     const blink::WebServiceWorkerRequest& request,
     const blink::WebServiceWorkerCache::QueryParams& query_params) {
   int request_id = match_callbacks_.Add(callbacks);

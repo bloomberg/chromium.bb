@@ -20,6 +20,10 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class ThreadSafeSender;
@@ -105,24 +109,24 @@ class CacheStorageDispatcher : public WorkerThread::Observer {
   // and should be renamed to match Chromium conventions. crbug.com/439389
   void dispatchHas(
       blink::WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks,
-      const GURL& origin,
+      const url::Origin& origin,
       const blink::WebString& cacheName);
   void dispatchOpen(
       blink::WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks*
           callbacks,
-      const GURL& origin,
+      const url::Origin& origin,
       const blink::WebString& cacheName);
   void dispatchDelete(
       blink::WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks,
-      const GURL& origin,
+      const url::Origin& origin,
       const blink::WebString& cacheName);
   void dispatchKeys(
       blink::WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks* callbacks,
-      const GURL& origin);
+      const url::Origin& origin);
   void dispatchMatch(
       blink::WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks*
           callbacks,
-      const GURL& origin,
+      const url::Origin& origin,
       const blink::WebServiceWorkerRequest& request,
       const blink::WebServiceWorkerCache::QueryParams& query_params);
 
