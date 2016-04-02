@@ -193,6 +193,11 @@ class SpellCheckObserver : public content::WebContentsObserver {
   [historySwiper_ rendererHandledWheelEvent:event consumed:consumed];
 }
 
+- (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
+                                 consumed:(BOOL)consumed {
+  [historySwiper_ rendererHandledGestureScrollEvent:event consumed:consumed];
+}
+
 // Spellchecking methods
 // The next five methods are implemented here since this class is the first
 // responder for anything in the browser.

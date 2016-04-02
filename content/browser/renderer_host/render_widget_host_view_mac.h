@@ -348,6 +348,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void UnlockMouse() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;
+  void GestureEventAck(const blink::WebGestureEvent& event,
+                       InputEventAckState ack_result) override;
 
   scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
 
@@ -587,6 +589,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // True when this view acts as a platform view hack for a
   // RenderWidgetHostViewGuest.
   bool is_guest_view_hack_;
+
+  // True if gestures are generated for mouse wheel events.
+  bool wheel_gestures_enabled_;
 
   // selected text on the renderer.
   std::string selected_text_;

@@ -79,6 +79,11 @@
   if (!consumed)
     unhandledWheelEventReceived_ = true;
 }
+- (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
+                                 consumed:(BOOL)consumed {
+  if (!consumed && event.type == blink::WebInputEvent::GestureScrollUpdate)
+    unhandledWheelEventReceived_ = true;
+}
 - (void)touchesBeganWithEvent:(NSEvent*)event {}
 - (void)touchesMovedWithEvent:(NSEvent*)event {}
 - (void)touchesCancelledWithEvent:(NSEvent*)event {}
@@ -958,6 +963,12 @@ TEST_F(RenderWidgetHostViewMacTest,
   ASSERT_EQ(2U, process_host->sink().message_count());
   process_host->sink().ClearMessages();
 
+  InputEventAck unhandled_scroll_ack(blink::WebInputEvent::GestureScrollUpdate,
+                                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  scoped_ptr<IPC::Message> scroll_response1(
+      new InputHostMsg_HandleInputEvent_ACK(0, unhandled_scroll_ack));
+  host->OnMessageReceived(*scroll_response1);
+
   // Check that the view delegate got an unhandled wheel event.
   ASSERT_EQ(YES, view_delegate.get().unhandledWheelEventReceived);
   view_delegate.get().unhandledWheelEventReceived = NO;
@@ -965,7 +976,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   // Send another wheel event, this time for scrolling by 0 lines (empty event).
   NSEvent* event2 = MockScrollWheelEventWithPhase(@selector(phaseChanged), 0);
   [view->cocoa_view() scrollWheel:event2];
-  ASSERT_EQ(1U, process_host->sink().message_count());
+  ASSERT_EQ(2U, process_host->sink().message_count());
 
   // Indicate that the wheel event was also unhandled.
   scoped_ptr<IPC::Message> response2(

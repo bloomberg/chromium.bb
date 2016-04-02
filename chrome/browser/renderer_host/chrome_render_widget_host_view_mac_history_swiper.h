@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 namespace blink {
+class WebGestureEvent;
 class WebMouseWheelEvent;
 }
 
@@ -153,9 +154,19 @@ enum RecognitionState {
   // the transition from kPending -> kPotential.
   BOOL historySwipeDirectionInverted_;
 
-  // Whether the event with phase NSEventPhaseBegan was not consumed by the
-  // renderer. This variables defaults to NO for new gestures.
-  BOOL beganEventUnconsumed_;
+  // Whether:
+  //  1) When wheel gestures are disabled if the wheel event with phase
+  //     NSEventPhaseBegan was consumed by the renderer.
+  //  2) When wheel gestures are enabled and if the first gesture
+  //     scroll was not consumed by the renderer.
+  // This variables defaults to NO for new gestures.
+  BOOL firstScrollUnconsumed_;
+
+  // Whether we have received a gesture scroll begin and are awiting on the
+  // first gesture scroll update to deteremine of the event was consumed by
+  // the renderer.
+  BOOL waitingForFirstGestureScroll_;
+
   history_swiper::RecognitionState recognitionState_;
 
   id<HistorySwiperDelegate> delegate_;
@@ -171,6 +182,8 @@ enum RecognitionState {
 - (BOOL)handleEvent:(NSEvent*)event;
 - (void)rendererHandledWheelEvent:(const blink::WebMouseWheelEvent&)event
                          consumed:(BOOL)consumed;
+- (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
+                                 consumed:(BOOL)consumed;
 
 // The event passed in is a gesture event, and has touch data associated with
 // the trackpad.

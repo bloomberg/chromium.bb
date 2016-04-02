@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 namespace blink {
+class WebGestureEvent;
 class WebMouseWheelEvent;
 }
 
@@ -60,6 +61,8 @@ class WebMouseWheelEvent;
 // |event|.
 - (void)rendererHandledWheelEvent:(const blink::WebMouseWheelEvent&)event
                          consumed:(BOOL)consumed;
+- (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
+                                 consumed:(BOOL)consumed;
 @end
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_

@@ -118,7 +118,25 @@ BOOL forceMagicMouse = NO;
                          consumed:(BOOL)consumed {
   if (event.phase != NSEventPhaseBegan)
     return;
-  beganEventUnconsumed_ = !consumed;
+  firstScrollUnconsumed_ = !consumed;
+}
+
+- (void)rendererHandledGestureScrollEvent:(const blink::WebGestureEvent&)event
+                                 consumed:(BOOL)consumed {
+  switch (event.type) {
+    case blink::WebInputEvent::GestureScrollBegin:
+      if (event.data.scrollBegin.synthetic || event.data.scrollBegin.inertial)
+        return;
+      waitingForFirstGestureScroll_ = YES;
+      break;
+    case blink::WebInputEvent::GestureScrollUpdate:
+      if (waitingForFirstGestureScroll_)
+        firstScrollUnconsumed_ = !consumed;
+      waitingForFirstGestureScroll_ = NO;
+      break;
+    default:
+      break;
+  }
 }
 
 - (BOOL)canRubberbandLeft:(NSView*)view {
@@ -219,7 +237,8 @@ BOOL forceMagicMouse = NO;
   // Reset state pertaining to previous trackpad gestures.
   gestureStartPointValid_ = NO;
   gestureTotalY_ = 0;
-  beganEventUnconsumed_ = NO;
+  firstScrollUnconsumed_ = NO;
+  waitingForFirstGestureScroll_ = NO;
   recognitionState_ = history_swiper::kPending;
 }
 
@@ -543,7 +562,7 @@ BOOL forceMagicMouse = NO;
 
   // Don't enable history swiping until the renderer has decided to not consume
   // the event with phase NSEventPhaseBegan.
-  if (!beganEventUnconsumed_)
+  if (!firstScrollUnconsumed_)
     return NO;
 
   // Magic mouse and touchpad swipe events are identical except magic mouse

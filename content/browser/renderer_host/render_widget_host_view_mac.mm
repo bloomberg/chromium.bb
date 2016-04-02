@@ -54,6 +54,7 @@
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/edit_command.h"
+#include "content/common/input/input_event_utils.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
@@ -178,6 +179,8 @@ static BOOL SupportsBackingPropertiesChangedNotification() {
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed;
+- (void)processedGestureScrollEvent:(const blink::WebGestureEvent&)event
+                           consumed:(BOOL)consumed;
 
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
@@ -525,6 +528,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       is_loading_(false),
       allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
+      wheel_gestures_enabled_(UseGestureBasedWheelScrolling()),
       fullscreen_parent_host_view_(NULL),
       weak_factory_(this) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
@@ -1543,11 +1547,32 @@ void RenderWidgetHostViewMac::UnlockMouse() {
 void RenderWidgetHostViewMac::WheelEventAck(
     const blink::WebMouseWheelEvent& event,
     InputEventAckState ack_result) {
+  // TODO(dtapuska): Remove this handling of the wheel event ack
+  // once wheel gestures is enabled for a full release; see crbug.com/598798.
+  if (wheel_gestures_enabled_)
+    return;
   bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
   // Only record a wheel event as unhandled if JavaScript handlers got a chance
   // to see it (no-op wheel events are ignored by the event dispatcher)
   if (event.deltaX || event.deltaY)
     [cocoa_view_ processedWheelEvent:event consumed:consumed];
+}
+
+void RenderWidgetHostViewMac::GestureEventAck(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  if (!wheel_gestures_enabled_)
+    return;
+  bool consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+  switch (event.type) {
+    case blink::WebInputEvent::GestureScrollBegin:
+    case blink::WebInputEvent::GestureScrollUpdate:
+    case blink::WebInputEvent::GestureScrollEnd:
+      [cocoa_view_ processedGestureScrollEvent:event consumed:consumed];
+      return;
+    default:
+      break;
+  }
 }
 
 scoped_ptr<SyntheticGestureTarget>
@@ -1855,6 +1880,12 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed {
   [responderDelegate_ rendererHandledWheelEvent:event consumed:consumed];
+}
+
+- (void)processedGestureScrollEvent:(const blink::WebGestureEvent&)event
+                           consumed:(BOOL)consumed {
+  [responderDelegate_ rendererHandledGestureScrollEvent:event
+                                               consumed:consumed];
 }
 
 - (BOOL)respondsToSelector:(SEL)selector {
