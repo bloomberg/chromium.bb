@@ -783,7 +783,7 @@ TEST_F(CALayerTreeTest, AVLayer) {
     content_layer1 = [[transform_layer sublayers] objectAtIndex:0];
 
     // Validate the content layer.
-    EXPECT_TRUE([content_layer1
+    EXPECT_FALSE([content_layer1
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
   }
 
@@ -812,7 +812,7 @@ TEST_F(CALayerTreeTest, AVLayer) {
     content_layer2 = [[transform_layer sublayers] objectAtIndex:0];
 
     // Validate the content layer.
-    EXPECT_TRUE([content_layer2
+    EXPECT_FALSE([content_layer2
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
     EXPECT_EQ(content_layer2, content_layer1);
   }
@@ -845,7 +845,7 @@ TEST_F(CALayerTreeTest, AVLayer) {
     // Validate the content layer.
     EXPECT_FALSE([content_layer3
         isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
-    EXPECT_NE(content_layer3, content_layer2);
+    EXPECT_EQ(content_layer3, content_layer2);
   }
 }
 

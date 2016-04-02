@@ -233,7 +233,7 @@ CALayerTree::ContentLayer::ContentLayer(
   // mask refers to what appears as the bottom edge on-screen. For CALayers
   // without content (solid color layers), the top edge in the AA mask is the
   // top edge on-screen.
-  // http://crbug.com/567946
+  // https://crbug.com/567946
   if (edge_aa_mask & GL_CA_LAYER_EDGE_LEFT_CHROMIUM)
     ca_edge_aa_mask |= kCALayerLeftEdge;
   if (edge_aa_mask & GL_CA_LAYER_EDGE_RIGHT_CHROMIUM)
@@ -255,7 +255,10 @@ CALayerTree::ContentLayer::ContentLayer(
   if (IOSurfaceGetPixelFormat(io_surface) ==
           kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange &&
       contents_rect == gfx::RectF(0, 0, 1, 1)) {
-    use_av_layer = true;
+    // Leave AVFoundation disabled for now while crashing and flashing bugs are
+    // being investigated.
+    // https://crbug.com/598243, https://crbug.com/598388
+    use_av_layer = false;
   }
 }
 
