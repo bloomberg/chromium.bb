@@ -374,7 +374,8 @@ void CastTransportSenderImpl::OnReceivedCastMessage(
   }
 
   if (!cast_message.missing_frames_and_packets.empty()) {
-    VLOG(2) << "feedback_count: " << cast_message.feedback_count;
+    VLOG(2) << "feedback_count: "
+            << static_cast<uint32_t>(cast_message.feedback_count);
     // This call does two things.
     // 1. Specifies that retransmissions for packets not listed in the set are
     //    cancelled.
