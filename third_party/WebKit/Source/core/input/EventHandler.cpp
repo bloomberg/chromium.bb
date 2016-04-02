@@ -586,10 +586,10 @@ HitTestResult EventHandler::hitTestResultAtPoint(const LayoutPoint& point, HitTe
     // mousemove events before the first layout should not lead to a premature layout()
     // happening, which could show a flash of white.
     // See also the similar code in Document::prepareMouseEvent.
-    if (!m_frame->contentLayoutObject() || !m_frame->view() || !m_frame->view()->didFirstLayout())
+    if (m_frame->contentLayoutItem().isNull() || !m_frame->view() || !m_frame->view()->didFirstLayout())
         return result;
 
-    m_frame->contentLayoutObject()->hitTest(result);
+    m_frame->contentLayoutItem().hitTest(result);
     if (!request.readOnly())
         m_frame->document()->updateHoverActiveState(request, result.innerElement());
 
@@ -1707,8 +1707,8 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
 WebInputEventResult EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDeviceCapabilities* sourceCapabilities)
 {
     // If clicking on a frame scrollbar, do not mess up with content focus.
-    if (targetedEvent.hitTestResult().scrollbar() && m_frame->contentLayoutObject()) {
-        if (targetedEvent.hitTestResult().scrollbar()->getScrollableArea() == m_frame->contentLayoutObject()->getScrollableArea())
+    if (targetedEvent.hitTestResult().scrollbar() && !m_frame->contentLayoutItem().isNull()) {
+        if (targetedEvent.hitTestResult().scrollbar()->getScrollableArea() == m_frame->contentLayoutItem().getScrollableArea())
             return WebInputEventResult::NotHandled;
     }
 
@@ -3036,11 +3036,11 @@ void EventHandler::hoverTimerFired(Timer<EventHandler>*)
     ASSERT(m_frame);
     ASSERT(m_frame->document());
 
-    if (LayoutView* layoutObject = m_frame->contentLayoutObject()) {
+    if (LayoutViewItem layoutItem = m_frame->contentLayoutItem()) {
         if (FrameView* view = m_frame->view()) {
             HitTestRequest request(HitTestRequest::Move);
             HitTestResult result(request, view->rootFrameToContents(m_lastKnownMousePosition));
-            layoutObject->hitTest(result);
+            layoutItem.hitTest(result);
             m_frame->document()->updateHoverActiveState(request, result.innerElement());
         }
     }
@@ -3297,7 +3297,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, DragIni
     if (m_mouseDownMayStartDrag) {
         HitTestRequest request(HitTestRequest::ReadOnly);
         HitTestResult result(request, m_mouseDownPos);
-        m_frame->contentLayoutObject()->hitTest(result);
+        m_frame->contentLayoutItem().hitTest(result);
         Node* node = result.innerNode();
         if (node) {
             DragController::SelectionDragPolicy selectionDragPolicy = event.event().timestamp() - m_mouseDownTimestamp < TextDragDelay
@@ -3558,14 +3558,14 @@ HitTestResult EventHandler::hitTestResultInFrame(LocalFrame* frame, const Layout
 {
     HitTestResult result(HitTestRequest(hitType), point);
 
-    if (!frame || !frame->contentLayoutObject())
+    if (!frame || frame->contentLayoutItem().isNull())
         return result;
     if (frame->view()) {
         IntRect rect = frame->view()->visibleContentRect(IncludeScrollbars);
         if (!rect.contains(roundedIntPoint(point)))
             return result;
     }
-    frame->contentLayoutObject()->hitTest(result);
+    frame->contentLayoutItem().hitTest(result);
     return result;
 }
 

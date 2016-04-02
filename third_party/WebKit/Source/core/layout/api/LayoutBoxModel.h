@@ -34,6 +34,11 @@ public:
         return toBoxModel()->layer();
     }
 
+    PaintLayerScrollableArea* getScrollableArea() const
+    {
+        return toBoxModel()->getScrollableArea();
+    }
+
 private:
     LayoutBoxModelObject* toBoxModel() { return toLayoutBoxModelObject(layoutObject()); }
     const LayoutBoxModelObject* toBoxModel() const { return toLayoutBoxModelObject(layoutObject()); }
