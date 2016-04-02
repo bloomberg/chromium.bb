@@ -55,10 +55,9 @@ const char* GetValueSessionState(ConnectionToHost::State state) {
       return "connection-failed";
     case ConnectionToHost::CLOSED:
       return kValueSessionStateClosed;
-    default:
-      NOTREACHED();
-      return nullptr;
   }
+  NOTREACHED();
+  return nullptr;
 }
 
 const char* GetValueError(ErrorCode error) {
@@ -83,12 +82,15 @@ const char* GetValueError(ErrorCode error) {
       return "network-failure";
     case protocol::HOST_OVERLOAD:
       return "host-overload";
+    case protocol::MAX_SESSION_LENGTH:
+      return "max-session-length";
+    case protocol::HOST_CONFIGURATION_ERROR:
+      return "host-configuration-error";
     case protocol::UNKNOWN_ERROR:
       return "unknown-error";
-    default:
-      NOTREACHED();
-      return nullptr;
   }
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace
