@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/common/pref_names.h"
@@ -27,39 +26,6 @@ enum ServiceConfiguration {
   SHOULD_STOP = 2,   // This source requires service Stop.
 };
 
-// Starts or stops TimezoneResolver if required by
-// SystemTimezoneAutomaticDetectionPolicy.
-// Returns SHOULD_* if timezone resolver status is controlled by this policy.
-ServiceConfiguration GetServiceConfigurationFromAutomaticDetectionPolicy() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableSystemTimezoneAutomaticDetectionPolicy)) {
-    return UNSPECIFIED;
-  }
-
-  PrefService* local_state = g_browser_process->local_state();
-  const bool is_managed = local_state->IsManagedPreference(
-      prefs::kSystemTimezoneAutomaticDetectionPolicy);
-  if (!is_managed)
-    return UNSPECIFIED;
-
-  int policy_value =
-      local_state->GetInteger(prefs::kSystemTimezoneAutomaticDetectionPolicy);
-
-  switch (policy_value) {
-    case enterprise_management::SystemTimezoneProto::USERS_DECIDE:
-      return UNSPECIFIED;
-    case enterprise_management::SystemTimezoneProto::DISABLED:
-      return SHOULD_STOP;
-    case enterprise_management::SystemTimezoneProto::IP_ONLY:
-      return SHOULD_START;
-    case enterprise_management::SystemTimezoneProto::SEND_WIFI_ACCESS_POINTS:
-      return SHOULD_START;
-  }
-  // Default for unknown policy value.
-  NOTREACHED() << "Unrecognized policy value: " << policy_value;
-  return SHOULD_STOP;
-}
-
 // Stops TimezoneResolver if SystemTimezonePolicy is applied.
 // Returns SHOULD_* if timezone resolver status is controlled by this policy.
 ServiceConfiguration GetServiceConfigurationFromSystemTimezonePolicy() {
@@ -78,7 +44,6 @@ ServiceConfiguration GetServiceConfigurationFromPolicy() {
   if (result != UNSPECIFIED)
     return result;
 
-  result = GetServiceConfigurationFromAutomaticDetectionPolicy();
   return result;
 }
 
@@ -113,12 +78,6 @@ ServiceConfiguration GetServiceConfigurationForSigninScreen() {
 
 TimeZoneResolverManager::TimeZoneResolverManager()
     : primary_user_prefs_(nullptr) {
-  local_state_pref_change_registrar_.Init(g_browser_process->local_state());
-  local_state_pref_change_registrar_.Add(
-      prefs::kSystemTimezoneAutomaticDetectionPolicy,
-      base::Bind(
-          &::chromeos::system::TimeZoneResolverManager::UpdateTimezoneResolver,
-          base::Unretained(this)));
 }
 
 TimeZoneResolverManager::~TimeZoneResolverManager() {}
@@ -128,20 +87,7 @@ void TimeZoneResolverManager::SetPrimaryUserPrefs(PrefService* pref_service) {
 }
 
 bool TimeZoneResolverManager::ShouldSendWiFiGeolocationData() {
-  PrefService* local_state = g_browser_process->local_state();
-  const bool is_managed = local_state->IsManagedPreference(
-      prefs::kSystemTimezoneAutomaticDetectionPolicy);
-  if (!is_managed)
-    return false;
-
-  int policy_value =
-      local_state->GetInteger(prefs::kSystemTimezoneAutomaticDetectionPolicy);
-
-  DCHECK(policy_value <= enterprise_management::SystemTimezoneProto::
-                             AutomaticTimezoneDetectionType_MAX);
-
-  return policy_value ==
-         enterprise_management::SystemTimezoneProto::SEND_WIFI_ACCESS_POINTS;
+  return false;
 }
 
 void TimeZoneResolverManager::UpdateTimezoneResolver() {
@@ -152,10 +98,6 @@ void TimeZoneResolverManager::UpdateTimezoneResolver() {
 }
 
 bool TimeZoneResolverManager::ShouldApplyResolvedTimezone() {
-  return TimeZoneResolverShouldBeRunning();
-}
-
-bool TimeZoneResolverManager::TimeZoneResolverShouldBeRunningForTests() {
   return TimeZoneResolverShouldBeRunning();
 }
 

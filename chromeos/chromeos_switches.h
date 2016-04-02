@@ -119,8 +119,6 @@ CHROMEOS_EXPORT extern const char kCrosRegionsModeHide[];
 CHROMEOS_EXPORT extern const char kCrosRegion[];
 CHROMEOS_EXPORT extern const char kTestCrosGaiaIdMigration[];
 CHROMEOS_EXPORT extern const char kTestCrosGaiaIdMigrationStarted[];
-CHROMEOS_EXPORT extern const char
-    kEnableSystemTimezoneAutomaticDetectionPolicy[];
 
 CHROMEOS_EXPORT bool WakeOnWifiEnabled();
 

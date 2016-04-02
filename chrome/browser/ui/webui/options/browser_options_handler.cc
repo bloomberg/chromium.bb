@@ -1013,13 +1013,6 @@ void BrowserOptionsHandler::InitializeHandler() {
       chromeos::kSystemTimezonePolicy,
       base::Bind(&BrowserOptionsHandler::OnSystemTimezonePolicyChanged,
                  weak_ptr_factory_.GetWeakPtr()));
-  local_state_pref_change_registrar_.Init(g_browser_process->local_state());
-  local_state_pref_change_registrar_.Add(
-      prefs::kSystemTimezoneAutomaticDetectionPolicy,
-      base::Bind(&BrowserOptionsHandler::
-                     OnSystemTimezoneAutomaticDetectionPolicyChanged,
-                 base::Unretained(this)));
-
 #else  // !defined(OS_CHROMEOS)
   profile_pref_registrar_.Add(
       proxy_config::prefs::kProxy,
@@ -1088,7 +1081,6 @@ void BrowserOptionsHandler::InitializePage() {
       profile->IsLegacySupervised()) {
     web_ui()->CallJavascriptFunction("BrowserOptions.hideAndroidAppsSection");
   }
-  OnSystemTimezoneAutomaticDetectionPolicyChanged();
 #endif
 }
 
@@ -1447,22 +1439,6 @@ void BrowserOptionsHandler::OnSystemTimezonePolicyChanged() {
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setSystemTimezoneManaged",
       base::FundamentalValue(chromeos::system::HasSystemTimezonePolicy()));
-}
-
-void BrowserOptionsHandler::OnSystemTimezoneAutomaticDetectionPolicyChanged() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableSystemTimezoneAutomaticDetectionPolicy)) {
-    return;
-  }
-
-  PrefService* prefs = g_browser_process->local_state();
-  const bool is_managed = prefs->IsManagedPreference(
-      prefs::kSystemTimezoneAutomaticDetectionPolicy);
-  const int value =
-      prefs->GetInteger(prefs::kSystemTimezoneAutomaticDetectionPolicy);
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setSystemTimezoneAutomaticDetectionManaged",
-      base::FundamentalValue(is_managed), base::FundamentalValue(value));
 }
 #endif
 

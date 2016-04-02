@@ -5740,9 +5740,7 @@
 
       New devices start out with the timezone set to "US/Pacific".
 
-      The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "https://en.wikipedia.org/wiki/Tz_database"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".
-
-      Setting this policy completely disables automatic timezone resolve by device location. It also overrides SystemTimezoneAutomaticDetection policy.''',
+      The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "https://en.wikipedia.org/wiki/Tz_database"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".''',
     },
     {
       'name': 'SystemUse24HourClock',
@@ -8378,58 +8376,6 @@
       'example_value': True,
       'tags': ['system-security'],
       'id': 324,
-    },
-    {
-      'name': 'SystemTimezoneAutomaticDetection',
-      'type': 'int-enum',
-      'schema': {
-        'type': 'integer',
-        'enum': [ 0, 1, 2, 3 ],
-      },
-      'items': [
-        {
-          'name': 'TimezoneAutomaticDetectionUsersDecide',
-          'value': 0,
-          'caption': '''Let users decide.''',
-        },
-        {
-          'name': 'TimezoneAutomaticDetectionDisabled',
-          'value': 1,
-          'caption': '''Never auto-detect timezone.''',
-        },
-        {
-          'name': 'TimezoneAutomaticDetectionIPOnly',
-          'value': 2,
-          'caption': '''Always use coarse timezone detection.''',
-        },
-        {
-          'name': 'TimezoneAutomaticDetectionSendWiFiAccessPoints',
-          'value': 3,
-          'caption': '''Always send WiFi acess-points to server while resolving timezone.''',
-        },
-      ],
-      'supported_on': ['chrome_os:51-'],
-      'device_only': True,
-      'features': {
-        'dynamic_refresh': True,
-      },
-      'example_value': 0,
-      'id': 325,
-      'caption': '''Configure the automatic timezone detection method''',
-      'tags': ['google-sharing'],
-      'desc': '''When this policy is set, automatic timezone detection flow will be in one of the following ways depending on the value of the setting:
-
-      If set to TimezoneAutomaticDetectionUsersDecide, users would be able to control automatic timezone detection using normal controls in chrome://settings.
-
-      If set to TimezoneAutomaticDetectionDisabled, automatic timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always off.
-
-      If set to TimezoneAutomaticDetectionIPOnly, timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always on. Timezone detection will use IP-only method to resolve location.
-
-      If set to TimezoneAutomaticDetectionSendWiFiAccessPoints, timezone controls in chrome://settings will be disabled. Automatic timezone detection will be always on. The list of visible WiFi access-points will be always sent to Geolocation API server for fine-grained timezone detection.
-
-      If this policy is not set, it will behave as if TimezoneAutomaticDetectionUsersDecide is set.
-
-      If SystemTimezone policy is set, it overrides this policy. In this case automatic timezone detection is completely disabled.''',
     },
   ],
   'messages': {

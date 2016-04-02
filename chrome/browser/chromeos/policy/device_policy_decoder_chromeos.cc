@@ -706,19 +706,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                         policy.system_timezone().timezone()),
                     NULL);
     }
-
-    if (policy.system_timezone().has_timezone_detection_type()) {
-      scoped_ptr<base::Value> value(DecodeIntegerValue(
-          policy.system_timezone().timezone_detection_type()));
-      if (value) {
-        policies->Set(key::kSystemTimezoneAutomaticDetection,
-                      POLICY_LEVEL_MANDATORY,
-                      POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_CLOUD,
-                      value.release(),
-                      nullptr);
-      }
-    }
   }
 
   if (policy.has_use_24hour_clock()) {
