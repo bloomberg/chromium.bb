@@ -270,6 +270,14 @@ _BANNED_CPP_FUNCTIONS = (
         r'^base[\\\/]message_loop[\\\/].*',
       ),
     ),
+    (
+      '#pragma comment(lib,',
+      (
+        'Specify libraries to link with in build files and not in the source.',
+      ),
+      True,
+      (),
+    ),
 )
 
 _IPC_ENUM_TRAITS_DEPRECATED = (
