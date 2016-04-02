@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/common/variations/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"

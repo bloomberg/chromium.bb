@@ -6,6 +6,7 @@
 #define GOOGLE_APIS_GCM_ENGINE_CONNECTION_HANDLER_H_
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
 
 namespace net{

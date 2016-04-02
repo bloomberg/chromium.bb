@@ -5,6 +5,7 @@
 #include "components/gcm_driver/gcm_delayed_task_controller.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {

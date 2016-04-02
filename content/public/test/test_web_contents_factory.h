@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_TEST_TEST_WEB_CONTENTS_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 
 namespace content {

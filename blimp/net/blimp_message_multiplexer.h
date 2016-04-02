@@ -6,6 +6,7 @@
 #define BLIMP_NET_BLIMP_MESSAGE_MULTIPLEXER_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_net_export.h"

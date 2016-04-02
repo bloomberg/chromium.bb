@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/favicon/core/favicon_driver.h"
 
 class GURL;

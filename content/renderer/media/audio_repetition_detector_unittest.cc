@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "content/renderer/media/audio_repetition_detector.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 
 namespace blimp {

@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_SCHEDULER_TQM_DELEGATE_FOR_TEST_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
 

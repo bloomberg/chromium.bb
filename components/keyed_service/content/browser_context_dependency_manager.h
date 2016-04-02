@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/dependency_manager.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 

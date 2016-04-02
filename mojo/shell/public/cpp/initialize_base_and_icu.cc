@@ -11,6 +11,7 @@
 
 #include "base/files/file.h"
 #include "base/i18n/icu_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "mojo/public/c/system/types.h"

@@ -9,6 +9,7 @@
 #include "base/cpu.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "media/base/djb2.h"

@@ -6,6 +6,7 @@
 #define GOOGLE_APIS_DRIVE_TASK_UTIL_H_
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 
 namespace google_apis {

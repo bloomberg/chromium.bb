@@ -6,11 +6,13 @@
 #define CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_DATABASE_H_
 
 #include <stdint.h>
+
 #include <set>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 

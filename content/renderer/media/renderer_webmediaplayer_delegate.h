@@ -9,6 +9,7 @@
 
 #include "base/id_map.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"

@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"

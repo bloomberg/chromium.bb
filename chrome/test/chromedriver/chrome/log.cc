@@ -5,10 +5,12 @@
 #include "chrome/test/chromedriver/chrome/log.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"

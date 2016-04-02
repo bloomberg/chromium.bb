@@ -6,6 +6,7 @@
 #define CC_SCHEDULER_SCHEDULER_SETTINGS_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/cc_export.h"

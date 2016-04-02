@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace aura {
 class Window;

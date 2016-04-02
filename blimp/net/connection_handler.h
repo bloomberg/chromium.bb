@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_CONNECTION_HANDLER_H_
 #define BLIMP_NET_CONNECTION_HANDLER_H_
 
+#include "base/memory/scoped_ptr.h"
+
 namespace blimp {
 
 class BlimpConnection;

@@ -6,8 +6,10 @@
 #define COMPONENTS_WEBCRYPTO_JWK_H_
 
 #include <stdint.h>
+
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 

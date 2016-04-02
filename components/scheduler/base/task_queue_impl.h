@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/pending_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"

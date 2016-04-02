@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_CATALOG_STORE_H_
 #define MOJO_SERVICES_CATALOG_STORE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 namespace catalog {

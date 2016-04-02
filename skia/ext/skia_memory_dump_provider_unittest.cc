@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"

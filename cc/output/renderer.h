@@ -6,6 +6,7 @@
 #define CC_OUTPUT_RENDERER_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/renderer_capabilities.h"
 #include "cc/output/renderer_settings.h"

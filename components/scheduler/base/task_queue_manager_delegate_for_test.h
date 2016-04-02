@@ -6,6 +6,7 @@
 #define COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_MANAGER_DELEGATE_FOR_TEST_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
 

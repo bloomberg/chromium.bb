@@ -7,6 +7,7 @@
 
 #include "base/callback_list.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 // This is a helper class for objects that depend on one or more keyed services,

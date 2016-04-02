@@ -6,6 +6,7 @@
 #define COMPONENTS_SCHEDULER_CHILD_SCHEDULER_TQM_DELEGATE_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"

@@ -6,6 +6,7 @@
 #define COMPONENTS_SCHEDULER_CHILD_WORKER_SCHEDULER_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/scheduler/child/child_scheduler.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"

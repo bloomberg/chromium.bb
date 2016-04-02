@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BACKGROUND_TRACING_CONFIG_H_
 #define CONTENT_PUBLIC_BROWSER_BACKGROUND_TRACING_CONFIG_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "content/common/content_export.h"
 

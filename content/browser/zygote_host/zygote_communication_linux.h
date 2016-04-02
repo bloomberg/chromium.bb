@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"

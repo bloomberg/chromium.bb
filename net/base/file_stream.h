@@ -14,6 +14,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 

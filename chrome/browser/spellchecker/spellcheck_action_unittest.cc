@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/spellchecker/spellcheck_action.h"

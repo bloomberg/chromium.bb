@@ -6,7 +6,9 @@
 #define COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_H_
 
 #include <string>
+
 #include "base/callback_list.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class TaskRunner;

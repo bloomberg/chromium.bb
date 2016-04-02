@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/utility/image_writer/image_writer.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "ipc/ipc_message.h"

@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_WEBRTC_VIDEO_RENDERER_ADAPTER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/media/base/videosinkinterface.h"
