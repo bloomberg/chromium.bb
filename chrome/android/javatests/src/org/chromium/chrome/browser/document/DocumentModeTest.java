@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.incognito.IncognitoNotificationService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -463,7 +464,7 @@ public class DocumentModeTest extends DocumentModeTestBase {
         assertEquals(1, selector.getCurrentModel().getCount());
 
         PendingIntent closeAllIntent =
-                ChromeLauncherActivity.getRemoveAllIncognitoTabsIntent(mContext);
+                IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(mContext);
         closeAllIntent.send();
 
         CriteriaHelper.pollUiThread(new Criteria() {

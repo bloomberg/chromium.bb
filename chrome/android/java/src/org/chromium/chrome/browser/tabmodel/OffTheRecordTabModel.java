@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -50,6 +51,8 @@ public class OffTheRecordTabModel implements TabModel {
     protected void ensureTabModelImpl() {
         ThreadUtils.assertOnUiThread();
         if (!(mDelegateModel instanceof EmptyTabModel)) return;
+
+        IncognitoNotificationManager.showIncognitoNotification();
         mDelegateModel = mDelegate.createTabModel();
         for (TabModelObserver observer : mObservers) {
             mDelegateModel.addObserver(observer);
@@ -79,6 +82,8 @@ public class OffTheRecordTabModel implements TabModel {
         // Only delete the incognito profile if there are no incognito tabs open in any tab
         // model selector as the profile is shared between them.
         if (profile != null && !mDelegate.doOffTheRecordTabsExist()) {
+            IncognitoNotificationManager.dismissIncognitoNotification();
+
             profile.destroyWhenAppropriate();
         }
 

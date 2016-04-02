@@ -97,12 +97,6 @@ public class ChromeLauncherActivity extends Activity
     public static final String EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT =
             "org.chromium.chrome.browser.document.IS_ALLOWED_TO_RETURN_TO_PARENT";
 
-    /**
-     * Action fired when the user selects the "Close all incognito tabs" notification.
-     */
-    static final String ACTION_CLOSE_ALL_INCOGNITO =
-            "com.google.android.apps.chrome.document.CLOSE_ALL_INCOGNITO";
-
     private static final String TAG = "document_CLActivity";
 
     /** New instance should be launched in the foreground. */
@@ -238,13 +232,6 @@ public class ChromeLauncherActivity extends Activity
             ApiCompatibilityUtils.finishAndRemoveTask(this);
             return;
         } else {
-            // Check if we're just closing all of the Incognito tabs.
-            if (TextUtils.equals(intent.getAction(), ACTION_CLOSE_ALL_INCOGNITO)) {
-                ChromeApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
-                ApiCompatibilityUtils.finishAndRemoveTask(this);
-                return;
-            }
-
             // Launch a DocumentActivity to handle the Intent.
             handleDocumentActivityIntent();
         }
@@ -766,18 +753,6 @@ public class ChromeLauncherActivity extends Activity
         }
 
         return true;
-    }
-
-    /**
-     * Get an intent that will close all incognito tabs through {@link ChromeLauncherActivity}.
-     * @param context The context to use for creating the {@link PendingIntent}.
-     * @return {@link PendingIntent} to use for closing all incognito tabs.
-     */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static PendingIntent getRemoveAllIncognitoTabsIntent(Context context) {
-        Intent intent = new Intent(
-                ACTION_CLOSE_ALL_INCOGNITO, null, context, ChromeLauncherActivity.class);
-        return PendingIntent.getActivity(context, 0, intent, 0);
     }
 
     static String getDocumentClassName(boolean isIncognito) {

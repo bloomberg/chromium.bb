@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.document;
+package org.chromium.chrome.browser.incognito;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
 
@@ -21,10 +20,9 @@ public class IncognitoNotificationManager {
     private static final int INCOGNITO_TABS_OPEN_ID = 100;
 
     /**
-     * Updates the notification being displayed.
-     * @param intent Intent to fire if the notification is selected.
+     * Shows the close all incognito notification.
      */
-    public static void updateIncognitoNotification(PendingIntent intent) {
+    public static void showIncognitoNotification() {
         Context context = ApplicationStatus.getApplicationContext();
         String actionMessage =
                 context.getResources().getString(R.string.close_all_incognito_notification);
@@ -32,7 +30,8 @@ public class IncognitoNotificationManager {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setContentTitle(title)
-                .setContentIntent(intent)
+                .setContentIntent(
+                        IncognitoNotificationService.getRemoveAllIncognitoTabsIntent(context))
                 .setContentText(actionMessage)
                 .setOngoing(true)
                 .setVisibility(Notification.VISIBILITY_SECRET)

@@ -647,6 +647,9 @@ by a child template that "extends" this file.
 
         <service android:name="org.chromium.chrome.browser.omaha.OmahaClient"
             android:exported="false"/>
+        <service android:name="org.chromium.chrome.browser.incognito.IncognitoNotificationService"
+            android:exported="false"/>
+
 
         <!-- The following service entries exist in order to allow us to
              start more than one sandboxed process. -->

@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
+import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content.browser.crypto.CipherFactory.CipherDataObserver;
 
@@ -61,8 +62,7 @@ public class IncognitoDocumentActivity extends DocumentActivity {
     @Override
     public void onResume() {
         super.onResume();
-        IncognitoNotificationManager.updateIncognitoNotification(
-                ChromeLauncherActivity.getRemoveAllIncognitoTabsIntent(this));
+        IncognitoNotificationManager.showIncognitoNotification();
     }
 
     @Override
