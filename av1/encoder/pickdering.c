@@ -111,7 +111,7 @@ int av1_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
             cm->mi_cols*bsize[0], nhb, nvb, sbc, sbr, nhsb, nvsb, 0, dir, 0,
             &bskip[MI_BLOCK_SIZE*sbr*cm->mi_cols + MI_BLOCK_SIZE*sbc],
             cm->mi_cols, threshold, OD_DERING_NO_CHECK_OVERLAP, coeff_shift);
-        cur_mse = compute_dist(
+        cur_mse =  (int)compute_dist(
             dst, MI_BLOCK_SIZE*bsize[0],
             &ref_coeff[sbr*stride*bsize[0]*MI_BLOCK_SIZE +
             sbc*bsize[0]*MI_BLOCK_SIZE],
