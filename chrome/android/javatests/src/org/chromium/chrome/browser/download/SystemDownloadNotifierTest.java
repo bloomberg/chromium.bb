@@ -71,7 +71,7 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
     public void testNotificationNotHandledUntilServiceConnection() {
         DownloadInfo info = new DownloadInfo.Builder()
                 .setDownloadGuid(UUID.randomUUID().toString()).setNotificationId(1).build();
-        mDownloadNotifier.notifyDownloadProgress(info, 1L);
+        mDownloadNotifier.notifyDownloadProgress(info, 1L, true);
         assertTrue(mDownloadNotifier.mStarted);
 
         onServiceConnected();
@@ -88,11 +88,11 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
         onServiceConnected();
         DownloadInfo info = new DownloadInfo.Builder()
                 .setDownloadGuid(UUID.randomUUID().toString()).setNotificationId(1).build();
-        mDownloadNotifier.notifyDownloadProgress(info, 1L);
+        mDownloadNotifier.notifyDownloadProgress(info, 1L, true);
         assertTrue(mDownloadNotifier.mStarted);
         DownloadInfo info2 = new DownloadInfo.Builder()
                 .setDownloadGuid(UUID.randomUUID().toString()).setNotificationId(2).build();
-        mDownloadNotifier.notifyDownloadProgress(info2, 1L);
+        mDownloadNotifier.notifyDownloadProgress(info2, 1L, true);
 
         mDownloadNotifier.notifyDownloadFailed(info);
         assertTrue(mDownloadNotifier.mStarted);

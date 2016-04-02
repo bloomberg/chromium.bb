@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.download;
 
+import android.text.TextUtils;
+
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.content.browser.DownloadInfo;
 
 import java.util.UUID;
 
@@ -20,17 +23,15 @@ public class DownloadSharedPreferenceEntry {
     @VisibleForTesting static final int VERSION = 1;
     public final int notificationId;
     public final boolean isResumable;
-    // This field is not yet used, but will soon be used. We add it here to avoid changing the
-    // format of the SharedPreference string again.
-    public final boolean isStartedOnMeteredNetwork;
+    public boolean canDownloadWhileMetered;
     public final String fileName;
     public final String downloadGuid;
 
     DownloadSharedPreferenceEntry(int notificationId, boolean isResumable,
-            boolean isStartedOnMeteredNetwork, String guid, String fileName) {
+            boolean canDownloadWhileMetered, String guid, String fileName) {
         this.notificationId = notificationId;
         this.isResumable = isResumable;
-        this.isStartedOnMeteredNetwork = isStartedOnMeteredNetwork;
+        this.canDownloadWhileMetered = canDownloadWhileMetered;
         this.downloadGuid = guid;
         this.fileName = fileName;
     }
@@ -53,12 +54,12 @@ public class DownloadSharedPreferenceEntry {
                 }
                 int id = Integer.parseInt(values[1]);
                 boolean isResumable = "1".equals(values[2]);
-                boolean isStartedOnMeteredNetwork = "1".equals(values[3]);
+                boolean canDownloadWhileMetered = "1".equals(values[3]);
                 if (!isValidGUID(values[4])) {
                     return new DownloadSharedPreferenceEntry(-1, false, false, null, "");
                 }
                 return new DownloadSharedPreferenceEntry(
-                        id, isResumable, isStartedOnMeteredNetwork, values[4], values[5]);
+                        id, isResumable, canDownloadWhileMetered, values[4], values[5]);
             } catch (NumberFormatException nfe) {
                 Log.w(TAG, "Exception while parsing pending download:" + sharedPrefString);
             }
@@ -72,7 +73,7 @@ public class DownloadSharedPreferenceEntry {
      */
     String getSharedPreferenceString() {
         return VERSION + "," + notificationId + "," + (isResumable ? "1" : "0") + ","
-                + (isStartedOnMeteredNetwork ? "1" : "0") + "," + downloadGuid + "," + fileName;
+                + (canDownloadWhileMetered ? "1" : "0") + "," + downloadGuid + "," + fileName;
     }
 
     /**
@@ -92,5 +93,42 @@ public class DownloadSharedPreferenceEntry {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    /**
+     * Build a download item from this object.
+     */
+    DownloadItem buildDownloadItem() {
+        DownloadInfo info = new DownloadInfo.Builder()
+                .setDownloadGuid(downloadGuid)
+                .setFileName(fileName)
+                .setNotificationId(notificationId)
+                .setIsResumable(isResumable)
+                .build();
+        return new DownloadItem(false, info);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof DownloadSharedPreferenceEntry)) {
+            return false;
+        }
+        final DownloadSharedPreferenceEntry other = (DownloadSharedPreferenceEntry) object;
+        return TextUtils.equals(downloadGuid, other.downloadGuid)
+                && TextUtils.equals(fileName, other.fileName)
+                && notificationId == other.notificationId
+                && isResumable == other.isResumable
+                && canDownloadWhileMetered == other.canDownloadWhileMetered;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 31;
+        hash = 37 * hash + (isResumable ? 1 : 0);
+        hash = 37 * hash + (canDownloadWhileMetered ? 1 : 0);
+        hash = 37 * hash + notificationId;
+        hash = 37 * hash + downloadGuid.hashCode();
+        hash = 37 * hash + fileName.hashCode();
+        return hash;
     }
 }

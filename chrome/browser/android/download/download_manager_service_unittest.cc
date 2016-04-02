@@ -52,10 +52,12 @@ class DownloadManagerServiceTest : public testing::Test {
     service_->set_resume_callback_for_testing(base::Bind(
         &DownloadManagerServiceTest::OnResumptionDone, base::Unretained(this)));
     service_->ResumeDownload(
-        env, nullptr, 0, JavaParamRef<jstring>(
-            env, base::android::ConvertUTF8ToJavaString(
-                env, download_guid).obj()),
-        base::android::ConvertUTF8ToJavaString(env, "test").obj());
+        env, nullptr,
+        JavaParamRef<jstring>(
+            env,
+            base::android::ConvertUTF8ToJavaString(env, download_guid).obj()));
+    EXPECT_FALSE(success_);
+    service_->OnHistoryQueryComplete();
     while (!finished_)
       message_loop_.RunUntilIdle();
   }
@@ -80,12 +82,6 @@ class DownloadManagerServiceTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerServiceTest);
 };
-
-// Test that resumption will fail if no download item is found before times out.
-TEST_F(DownloadManagerServiceTest, ResumptionTimeOut) {
-  StartDownload("0000");
-  EXPECT_FALSE(success_);
-}
 
 // Test that resumption succeeds if the download item is found and can be
 // resumed.

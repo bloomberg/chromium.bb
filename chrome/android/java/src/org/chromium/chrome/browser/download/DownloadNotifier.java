@@ -31,8 +31,10 @@ public interface DownloadNotifier {
      * @param startTimeInMillis the startTime of the download, measured in milliseconds, between the
      *        current time and midnight, January 1, 1970 UTC. Useful to keep progress notifications
      *        sorted by time.
+     * @param canDownloadWhileMetered Wheter the download can take place on metered network.
      */
-    void notifyDownloadProgress(DownloadInfo downloadInfo, long startTimeInMillis);
+    void notifyDownloadProgress(
+            DownloadInfo downloadInfo, long startTimeInMillis, boolean mCanDownloadWhileMetered);
 
     /**
      * Update the download notification to paused.
@@ -44,11 +46,12 @@ public interface DownloadNotifier {
     /**
      * Cancel the notification for a download.
      * @param notificationId The notification ID of the cancelled download.
+     * @param downloadGuid The GUID of the cancelled download.
      */
-    void cancelNotification(int notificationId);
+    void cancelNotification(int notificationId, String downloadGuid);
 
     /**
-     * Called to clear all the pending download entries in SharedPreferences.
+     * Called to resume all the pending download entries in SharedPreferences.
      */
-    void clearPendingDownloads();
+    void resumePendingDownloads();
 }

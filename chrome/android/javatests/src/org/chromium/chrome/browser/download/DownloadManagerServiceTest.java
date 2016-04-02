@@ -122,7 +122,8 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void notifyDownloadProgress(DownloadInfo downloadInfo, long startTime) {
+        public void notifyDownloadProgress(
+                DownloadInfo downloadInfo, long startTime, boolean canDownloadWhileMetered) {
             assertCorrectExpectedCall(MethodID.DOWNLOAD_PROGRESS, downloadInfo);
         }
 
@@ -132,14 +133,12 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void cancelNotification(int notificationId) {
+        public void cancelNotification(int notificationId, String downloadGuid) {
             assertCorrectExpectedCall(MethodID.CANCEL_DOWNLOAD_ID, notificationId);
         }
 
         @Override
-        public void clearPendingDownloads() {
-            assertCorrectExpectedCall(MethodID.CLEAR_PENDING_DOWNLOADS, null);
-        }
+        public void resumePendingDownloads() {}
     }
 
     /**
@@ -261,7 +260,6 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
     private static class DownloadManagerServiceForTest extends DownloadManagerService {
         boolean mResumed;
-        boolean mIsActiveNetworkMetered;
 
         public DownloadManagerServiceForTest(Context context, MockDownloadNotifier mockNotifier,
                 long updateDelayInMillis) {
@@ -275,16 +273,10 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        protected boolean isActiveNetworkMetered() {
-            return mIsActiveNetworkMetered;
-        }
-
-        @Override
         protected void init() {}
 
         @Override
-        protected void resumeDownload(int notificationId, String downloadGuid, String fileName,
-                boolean hasUserGesture) {
+        protected void resumeDownload(DownloadItem item, boolean hasUserGesture) {
             mResumed = true;
         }
     }
@@ -411,7 +403,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
-        dService.disableNetworkChangeNotifierForTest();
+        DownloadManagerService.disableNetworkListenerForTest();
         DownloadInfo paused =
                 Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(true).build();
         notifier.expect(MethodID.DOWNLOAD_PAUSED, paused);
@@ -447,7 +439,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         final DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
-        dService.disableNetworkChangeNotifierForTest();
+        DownloadManagerService.disableNetworkListenerForTest();
         DownloadInfo paused =
                 Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(true).build();
         notifier.expect(MethodID.DOWNLOAD_PROGRESS, paused)
@@ -474,7 +466,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         final DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
-        dService.disableNetworkChangeNotifierForTest();
+        DownloadManagerService.disableNetworkListenerForTest();
         DownloadInfo paused =
                 Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(true).build();
         notifier.expect(MethodID.DOWNLOAD_PROGRESS, paused)
@@ -483,7 +475,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         Thread.sleep(DELAY_BETWEEN_CALLS);
         dService.onDownloadInterrupted(paused, true);
         notifier.waitTillExpectedCallsComplete();
-        dService.mIsActiveNetworkMetered = true;
+        DownloadManagerService.setIsNetworkMeteredForTest(true);
         int resumableIdCount = dService.mAutoResumableDownloadIds.size();
         dService.onConnectionTypeChanged(ConnectionType.CONNECTION_2G);
         assertEquals(resumableIdCount, dService.mAutoResumableDownloadIds.size());

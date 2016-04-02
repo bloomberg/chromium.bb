@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_MANAGER_SERVICE_H_
 
 #include <jni.h>
+#include <map>
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/download/download_history.h"
 #include "content/public/browser/download_manager.h"
 
 using base::android::JavaParamRef;
@@ -21,7 +23,8 @@ class DownloadItem;
 
 // Native side of DownloadManagerService.java. The native object is owned by its
 // Java object.
-class DownloadManagerService : public content::DownloadManager::Observer {
+class DownloadManagerService : public content::DownloadManager::Observer,
+                               public DownloadHistory::Observer {
  public:
   // JNI registration.
   static bool RegisterDownloadManagerService(JNIEnv* env);
@@ -32,13 +35,10 @@ class DownloadManagerService : public content::DownloadManager::Observer {
   ~DownloadManagerService() override;
 
   // Called to resume downloading the item that has GUID equal to
-  // |jdownload_guid|. If the DownloadItem is not yet created, retry after
-  // a while.
+  // |jdownload_guid|..
   void ResumeDownload(JNIEnv* env,
                       jobject obj,
-                      uint32_t download_id,
-                      const JavaParamRef<jstring>& jdownload_guid,
-                      jstring fileName);
+                      const JavaParamRef<jstring>& jdownload_guid);
 
   // Called to cancel a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, retry after a while.
@@ -55,27 +55,26 @@ class DownloadManagerService : public content::DownloadManager::Observer {
   // content::DownloadManager::Observer methods.
   void ManagerGoingDown(content::DownloadManager* manager) override;
 
+  // DownloadHistory::Observer methods.
+  void OnHistoryQueryComplete() override;
+
  private:
   // For testing.
   friend class DownloadManagerServiceTest;
 
-  // Resume downloading the given DownloadItem.
-  void ResumeDownloadItem(content::DownloadItem* item,
-                          const std::string& fileName);
+  // Helper function to start the download resumption.
+  void ResumeDownloadInternal(const std::string& download_guid);
 
-  // Helper function to start the download resumption. If |retry| is true,
-  // chrome will retry the resumption if the download item is not loaded.
-  void ResumeDownloadInternal(uint32_t download_id,
-                              const std::string& download_guid,
-                              const std::string& fileName,
-                              bool retry);
+  // Helper function to cancel a download.
+  void CancelDownloadInternal(const std::string& download_guid);
 
-  // Helper function to cancel a download. If |retry| is true,
-  // chrome will retry the cancellation if the download item is not loaded.
-  void CancelDownloadInternal(const std::string& download_guid, bool retry);
+  // Helper function to pause a download.
+  void PauseDownloadInternal(const std::string& download_guid);
 
   // Called to notify the java side that download resumption failed.
-  void OnResumptionFailed(uint32_t download_id, const std::string& fileName);
+  void OnResumptionFailed(const std::string& download_guid);
+
+  void OnResumptionFailedInternal(const std::string& download_guid);
 
   typedef base::Callback<void(bool)> ResumeCallback;
   void set_resume_callback_for_testing(const ResumeCallback& resume_cb) {
@@ -87,6 +86,16 @@ class DownloadManagerService : public content::DownloadManager::Observer {
 
   // Download manager this class observes
   content::DownloadManager* manager_;
+
+  bool is_history_query_complete_;
+
+  enum DownloadAction { RESUME, PAUSE, CANCEL, UNKNOWN };
+
+  using PendingDownloadActions = std::map<std::string, DownloadAction>;
+  PendingDownloadActions pending_actions_;
+
+  void EnqueueDownloadAction(const std::string& download_guid,
+                             DownloadAction action);
 
   ResumeCallback resume_callback_for_testing_;
 
