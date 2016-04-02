@@ -280,7 +280,7 @@ class GNValueParser(object):
     returns true. Otherwise, returns false and the current position is
     unchanged."""
     end = self.cur + len(constant)
-    if end >= len(self.input):
+    if end > len(self.input):
       return False  # Not enough room.
     if self.input[self.cur:end] == constant:
       self.cur = end

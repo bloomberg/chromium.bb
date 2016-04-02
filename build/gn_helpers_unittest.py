@@ -27,6 +27,13 @@ class UnitTest(unittest.TestCase):
       parser = gn_helpers.GNValueParser('123 456')
       parser.Parse()
 
+  def test_ParseBool(self):
+    parser = gn_helpers.GNValueParser('true')
+    self.assertEqual(parser.Parse(), True)
+
+    parser = gn_helpers.GNValueParser('false')
+    self.assertEqual(parser.Parse(), False)
+
   def test_ParseNumber(self):
     parser = gn_helpers.GNValueParser('123')
     self.assertEqual(parser.ParseNumber(), 123)
