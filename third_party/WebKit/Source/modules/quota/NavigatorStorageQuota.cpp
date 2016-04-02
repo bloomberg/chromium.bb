@@ -53,7 +53,7 @@ const char* NavigatorStorageQuota::supplementName()
 
 NavigatorStorageQuota& NavigatorStorageQuota::from(Navigator& navigator)
 {
-    NavigatorStorageQuota* supplement = static_cast<NavigatorStorageQuota*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorStorageQuota* supplement = static_cast<NavigatorStorageQuota*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorStorageQuota(navigator.frame());
         provideTo(navigator, supplementName(), supplement);
@@ -115,7 +115,7 @@ DEFINE_TRACE(NavigatorStorageQuota)
     visitor->trace(m_temporaryStorage);
     visitor->trace(m_persistentStorage);
     visitor->trace(m_storageManager);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

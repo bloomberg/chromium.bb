@@ -13,7 +13,7 @@ class ExecutionContext;
 class NetworkInformation;
 class WorkerNavigator;
 
-class WorkerNavigatorNetworkInformation final : public GarbageCollected<WorkerNavigatorNetworkInformation>, public HeapSupplement<WorkerNavigator> {
+class WorkerNavigatorNetworkInformation final : public GarbageCollected<WorkerNavigatorNetworkInformation>, public Supplement<WorkerNavigator> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorNetworkInformation);
 public:
     static WorkerNavigatorNetworkInformation& from(WorkerNavigator&, ExecutionContext*);

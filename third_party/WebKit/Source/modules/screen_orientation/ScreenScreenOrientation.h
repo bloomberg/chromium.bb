@@ -14,7 +14,7 @@ class ScreenOrientation;
 class Screen;
 class ScriptState;
 
-class ScreenScreenOrientation final : public GarbageCollected<ScreenScreenOrientation>, public HeapSupplement<Screen> {
+class ScreenScreenOrientation final : public GarbageCollected<ScreenScreenOrientation>, public Supplement<Screen> {
     USING_GARBAGE_COLLECTED_MIXIN(ScreenScreenOrientation);
 public:
     static ScreenScreenOrientation& from(Screen&);

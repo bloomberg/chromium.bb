@@ -22,7 +22,7 @@ const char* NavigatorUserMedia::supplementName()
 
 NavigatorUserMedia& NavigatorUserMedia::from(Navigator& navigator)
 {
-    NavigatorUserMedia* supplement = static_cast<NavigatorUserMedia*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorUserMedia* supplement = static_cast<NavigatorUserMedia*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorUserMedia();
         provideTo(navigator, supplementName(), supplement);
@@ -43,7 +43,7 @@ MediaDevices* NavigatorUserMedia::mediaDevices(Navigator& navigator)
 DEFINE_TRACE(NavigatorUserMedia)
 {
     visitor->trace(m_mediaDevices);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
 }
 
 } // namespace blink

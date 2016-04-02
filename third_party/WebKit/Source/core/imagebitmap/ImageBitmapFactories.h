@@ -55,7 +55,7 @@ class WebTaskRunner;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmap ImageBitmapSourceUnion;
 
-class ImageBitmapFactories final : public GarbageCollectedFinalized<ImageBitmapFactories>, public HeapSupplement<LocalDOMWindow>, public HeapSupplement<WorkerGlobalScope> {
+class ImageBitmapFactories final : public GarbageCollectedFinalized<ImageBitmapFactories>, public Supplement<LocalDOMWindow>, public Supplement<WorkerGlobalScope> {
     USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 public:
     static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, const ImageBitmapSourceUnion&, ExceptionState&);

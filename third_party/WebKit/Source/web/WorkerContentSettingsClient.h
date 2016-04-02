@@ -40,7 +40,7 @@ class ExecutionContext;
 class WebString;
 class WebWorkerContentSettingsClientProxy;
 
-class WorkerContentSettingsClient final : public GarbageCollectedFinalized<WorkerContentSettingsClient>, public HeapSupplement<WorkerClients> {
+class WorkerContentSettingsClient final : public GarbageCollectedFinalized<WorkerContentSettingsClient>, public Supplement<WorkerClients> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
 public:
     static RawPtr<WorkerContentSettingsClient> create(PassOwnPtr<WebWorkerContentSettingsClientProxy>);
@@ -52,7 +52,7 @@ public:
     static const char* supplementName();
     static WorkerContentSettingsClient* from(ExecutionContext&);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<WorkerClients>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<WorkerClients>::trace(visitor); }
 
 private:
     explicit WorkerContentSettingsClient(PassOwnPtr<WebWorkerContentSettingsClientProxy>);

@@ -13,7 +13,7 @@ namespace blink {
 
 class Event;
 
-class MODULES_EXPORT DeviceMotionController final : public DeviceSingleWindowEventController, public HeapSupplement<Document> {
+class MODULES_EXPORT DeviceMotionController final : public DeviceSingleWindowEventController, public Supplement<Document> {
     USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionController);
 public:
     ~DeviceMotionController() override;

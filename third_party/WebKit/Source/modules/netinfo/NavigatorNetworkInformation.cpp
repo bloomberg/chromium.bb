@@ -32,7 +32,7 @@ NavigatorNetworkInformation& NavigatorNetworkInformation::from(Navigator& naviga
 
 NavigatorNetworkInformation* NavigatorNetworkInformation::toNavigatorNetworkInformation(Navigator& navigator)
 {
-    return static_cast<NavigatorNetworkInformation*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    return static_cast<NavigatorNetworkInformation*>(Supplement<Navigator>::from(navigator, supplementName()));
 }
 
 const char* NavigatorNetworkInformation::supplementName()
@@ -57,7 +57,7 @@ NetworkInformation* NavigatorNetworkInformation::connection()
 DEFINE_TRACE(NavigatorNetworkInformation)
 {
     visitor->trace(m_connection);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

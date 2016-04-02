@@ -34,7 +34,7 @@ namespace blink {
 class MediaDevicesRequest;
 class UserMediaRequest;
 
-class UserMediaController final : public GarbageCollected<UserMediaController>, public HeapSupplement<LocalFrame> {
+class UserMediaController final : public GarbageCollected<UserMediaController>, public Supplement<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
 public:
     static RawPtr<UserMediaController> create(UserMediaClient*);
@@ -52,7 +52,7 @@ public:
     void requestSources(MediaStreamTrackSourcesRequest*);
 
     static const char* supplementName();
-    static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(HeapSupplement<LocalFrame>::from(frame, supplementName())); }
+    static UserMediaController* from(LocalFrame* frame) { return static_cast<UserMediaController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
 
 private:
     explicit UserMediaController(UserMediaClient*);

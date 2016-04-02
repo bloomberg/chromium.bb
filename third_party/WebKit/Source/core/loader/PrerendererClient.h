@@ -41,7 +41,7 @@ namespace blink {
 class Page;
 class Prerender;
 
-class CORE_EXPORT PrerendererClient : public HeapSupplement<Page> {
+class CORE_EXPORT PrerendererClient : public Supplement<Page> {
 public:
     virtual void willAddPrerender(Prerender*) = 0;
 

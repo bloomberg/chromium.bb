@@ -27,7 +27,7 @@ enum class WebPresentationConnectionState;
 // layer represented via |WebPresentationClient|.
 class MODULES_EXPORT PresentationController final
     : public GarbageCollectedFinalized<PresentationController>
-    , public HeapSupplement<LocalFrame>
+    , public Supplement<LocalFrame>
     , public LocalFrameLifecycleObserver
     , public WebPresentationController {
     USING_GARBAGE_COLLECTED_MIXIN(PresentationController);
@@ -44,7 +44,7 @@ public:
 
     WebPresentationClient* client();
 
-    // Implementation of HeapSupplement.
+    // Implementation of Supplement.
     DECLARE_VIRTUAL_TRACE();
 
     // Implementation of WebPresentationController.

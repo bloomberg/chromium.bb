@@ -32,7 +32,7 @@ NavigatorVRDevice* NavigatorVRDevice::from(Document& document)
 
 NavigatorVRDevice& NavigatorVRDevice::from(Navigator& navigator)
 {
-    NavigatorVRDevice* supplement = static_cast<NavigatorVRDevice*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorVRDevice* supplement = static_cast<NavigatorVRDevice*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorVRDevice(navigator.frame());
         provideTo(navigator, supplementName(), supplement);
@@ -75,7 +75,7 @@ DEFINE_TRACE(NavigatorVRDevice)
 {
     visitor->trace(m_hardwareUnits);
 
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

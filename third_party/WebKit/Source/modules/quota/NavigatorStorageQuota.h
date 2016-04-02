@@ -43,7 +43,7 @@ class Navigator;
 class StorageManager;
 class StorageQuota;
 
-class NavigatorStorageQuota final : public GarbageCollectedFinalized<NavigatorStorageQuota>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorStorageQuota final : public GarbageCollectedFinalized<NavigatorStorageQuota>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorStorageQuota);
 public:
     static NavigatorStorageQuota& from(Navigator&);

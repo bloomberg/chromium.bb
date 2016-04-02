@@ -23,7 +23,7 @@ const char* WindowPaintWorklet::supplementName()
 // static
 WindowPaintWorklet& WindowPaintWorklet::from(LocalDOMWindow& window)
 {
-    WindowPaintWorklet* supplement = static_cast<WindowPaintWorklet*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    WindowPaintWorklet* supplement = static_cast<WindowPaintWorklet*>(Supplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new WindowPaintWorklet(window);
         provideTo(window, supplementName(), supplement);
@@ -47,7 +47,7 @@ PaintWorklet* WindowPaintWorklet::paintWorklet(ExecutionContext* executionContex
 DEFINE_TRACE(WindowPaintWorklet)
 {
     visitor->trace(m_paintWorklet);
-    HeapSupplement<LocalDOMWindow>::trace(visitor);
+    Supplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

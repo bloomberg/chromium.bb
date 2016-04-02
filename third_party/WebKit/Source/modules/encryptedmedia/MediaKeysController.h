@@ -14,15 +14,15 @@ class ExecutionContext;
 class MediaKeysClient;
 class WebEncryptedMediaClient;
 
-class MODULES_EXPORT MediaKeysController final : public GarbageCollected<MediaKeysController>, public HeapSupplement<Page> {
+class MODULES_EXPORT MediaKeysController final : public GarbageCollected<MediaKeysController>, public Supplement<Page> {
     USING_GARBAGE_COLLECTED_MIXIN(MediaKeysController);
 public:
     WebEncryptedMediaClient* encryptedMediaClient(ExecutionContext*);
 
     static void provideMediaKeysTo(Page&, MediaKeysClient*);
-    static MediaKeysController* from(Page* page) { return static_cast<MediaKeysController*>(HeapSupplement<Page>::from(page, supplementName())); }
+    static MediaKeysController* from(Page* page) { return static_cast<MediaKeysController*>(Supplement<Page>::from(page, supplementName())); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<Page>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::trace(visitor); }
 
 private:
     explicit MediaKeysController(MediaKeysClient*);

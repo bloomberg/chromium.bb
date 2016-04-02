@@ -47,7 +47,7 @@ const char* DOMWindowCrypto::supplementName()
 
 DOMWindowCrypto& DOMWindowCrypto::from(LocalDOMWindow& window)
 {
-    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(Supplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowCrypto(window);
         provideTo(window, supplementName(), supplement);
@@ -70,7 +70,7 @@ Crypto* DOMWindowCrypto::crypto() const
 DEFINE_TRACE(DOMWindowCrypto)
 {
     visitor->trace(m_crypto);
-    HeapSupplement<LocalDOMWindow>::trace(visitor);
+    Supplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

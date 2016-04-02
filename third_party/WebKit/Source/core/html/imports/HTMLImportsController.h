@@ -46,7 +46,7 @@ class HTMLImportLoader;
 class HTMLImportTreeRoot;
 class KURL;
 
-class HTMLImportsController final : public GarbageCollectedFinalized<HTMLImportsController>, public HeapSupplement<Document> {
+class HTMLImportsController final : public GarbageCollectedFinalized<HTMLImportsController>, public Supplement<Document> {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLImportsController);
 public:
     static const char* supplementName();

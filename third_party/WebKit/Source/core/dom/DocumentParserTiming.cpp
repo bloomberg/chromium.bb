@@ -15,10 +15,10 @@ static const char kSupplementName[] = "DocumentParserTiming";
 
 DocumentParserTiming& DocumentParserTiming::from(Document& document)
 {
-    DocumentParserTiming* timing = static_cast<DocumentParserTiming*>(HeapSupplement<Document>::from(document, kSupplementName));
+    DocumentParserTiming* timing = static_cast<DocumentParserTiming*>(Supplement<Document>::from(document, kSupplementName));
     if (!timing) {
         timing = new DocumentParserTiming(document);
-        HeapSupplement<Document>::provideTo(document, kSupplementName, timing);
+        Supplement<Document>::provideTo(document, kSupplementName, timing);
     }
     return *timing;
 }

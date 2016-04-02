@@ -16,7 +16,7 @@ namespace blink {
 class Document;
 class Event;
 
-class MODULES_EXPORT DOMWindowStorageController final : public GarbageCollected<DOMWindowStorageController>, public HeapSupplement<Document>, public DOMWindowLifecycleObserver {
+class MODULES_EXPORT DOMWindowStorageController final : public GarbageCollected<DOMWindowStorageController>, public Supplement<Document>, public DOMWindowLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorageController);
 public:
     DECLARE_VIRTUAL_TRACE();

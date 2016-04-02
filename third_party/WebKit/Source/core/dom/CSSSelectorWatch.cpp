@@ -56,14 +56,14 @@ CSSSelectorWatch& CSSSelectorWatch::from(Document& document)
     CSSSelectorWatch* watch = fromIfExists(document);
     if (!watch) {
         watch = new CSSSelectorWatch(document);
-        HeapSupplement<Document>::provideTo(document, kSupplementName, watch);
+        Supplement<Document>::provideTo(document, kSupplementName, watch);
     }
     return *watch;
 }
 
 CSSSelectorWatch* CSSSelectorWatch::fromIfExists(Document& document)
 {
-    return static_cast<CSSSelectorWatch*>(HeapSupplement<Document>::from(document, kSupplementName));
+    return static_cast<CSSSelectorWatch*>(Supplement<Document>::from(document, kSupplementName));
 }
 
 void CSSSelectorWatch::callbackSelectorChangeTimerFired(Timer<CSSSelectorWatch>*)
@@ -166,7 +166,7 @@ DEFINE_TRACE(CSSSelectorWatch)
 {
     visitor->trace(m_watchedCallbackSelectors);
     visitor->trace(m_document);
-    HeapSupplement<Document>::trace(visitor);
+    Supplement<Document>::trace(visitor);
 }
 
 } // namespace blink

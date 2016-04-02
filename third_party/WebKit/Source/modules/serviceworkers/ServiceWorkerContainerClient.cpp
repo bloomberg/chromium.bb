@@ -37,16 +37,16 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(ExecutionContex
     if (context->isWorkerGlobalScope()) {
         WorkerClients* clients = toWorkerGlobalScope(context)->clients();
         ASSERT(clients);
-        return static_cast<ServiceWorkerContainerClient*>(HeapSupplement<WorkerClients>::from(clients, supplementName()));
+        return static_cast<ServiceWorkerContainerClient*>(Supplement<WorkerClients>::from(clients, supplementName()));
     }
     Document* document = toDocument(context);
     if (!document->frame())
         return nullptr;
 
-    ServiceWorkerContainerClient* client = static_cast<ServiceWorkerContainerClient*>(HeapSupplement<Document>::from(document, supplementName()));
+    ServiceWorkerContainerClient* client = static_cast<ServiceWorkerContainerClient*>(Supplement<Document>::from(document, supplementName()));
     if (!client) {
         client = new ServiceWorkerContainerClient(document->frame()->loader().client()->createServiceWorkerProvider());
-        HeapSupplement<Document>::provideTo(*document, supplementName(), client);
+        Supplement<Document>::provideTo(*document, supplementName(), client);
     }
     return client;
 }

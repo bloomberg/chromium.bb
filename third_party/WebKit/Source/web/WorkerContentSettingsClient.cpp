@@ -70,7 +70,7 @@ WorkerContentSettingsClient* WorkerContentSettingsClient::from(ExecutionContext&
 {
     WorkerClients* clients = toWorkerGlobalScope(context).clients();
     DCHECK(clients);
-    return static_cast<WorkerContentSettingsClient*>(HeapSupplement<WorkerClients>::from(*clients, supplementName()));
+    return static_cast<WorkerContentSettingsClient*>(Supplement<WorkerClients>::from(*clients, supplementName()));
 }
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)

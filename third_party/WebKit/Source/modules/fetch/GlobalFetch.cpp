@@ -18,21 +18,17 @@ namespace blink {
 namespace {
 
 template <typename T>
-class GlobalFetchImpl final : public GarbageCollectedFinalized<GlobalFetchImpl<T>>, public GlobalFetch::ScopedFetcher, public HeapSupplement<T> {
+class GlobalFetchImpl final : public GarbageCollectedFinalized<GlobalFetchImpl<T>>, public GlobalFetch::ScopedFetcher, public Supplement<T> {
     USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
 public:
     static RawPtr<ScopedFetcher> from(T& supplementable, ExecutionContext* executionContext)
     {
-        GlobalFetchImpl* supplement = static_cast<GlobalFetchImpl*>(HeapSupplement<T>::from(supplementable, supplementName()));
+        GlobalFetchImpl* supplement = static_cast<GlobalFetchImpl*>(Supplement<T>::from(supplementable, supplementName()));
         if (!supplement) {
             supplement = new GlobalFetchImpl(executionContext);
-            HeapSupplement<T>::provideTo(supplementable, supplementName(), supplement);
+            Supplement<T>::provideTo(supplementable, supplementName(), supplement);
         }
-#if ENABLE(OILPAN)
         return supplement;
-#else
-        return supplement->m_weakFactory.createWeakPtr();
-#endif
     }
 
     ScriptPromise fetch(ScriptState* scriptState, const RequestInfo& input, const Dictionary& init, ExceptionState& exceptionState) override
@@ -55,23 +51,18 @@ public:
     {
         visitor->trace(m_fetchManager);
         ScopedFetcher::trace(visitor);
-        HeapSupplement<T>::trace(visitor);
+        Supplement<T>::trace(visitor);
     }
 
 private:
     explicit GlobalFetchImpl(ExecutionContext* executionContext)
         : m_fetchManager(FetchManager::create(executionContext))
-#if !ENABLE(OILPAN)
-        , m_weakFactory(this)
-#endif
     {
     }
+
     static const char* supplementName() { return "GlobalFetch"; }
 
     Member<FetchManager> m_fetchManager;
-#if !ENABLE(OILPAN)
-    WeakPtrFactory<ScopedFetcher> m_weakFactory;
-#endif
 };
 
 } // namespace

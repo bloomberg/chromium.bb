@@ -204,11 +204,11 @@ const char* LocalFileSystem::supplementName()
 LocalFileSystem* LocalFileSystem::from(ExecutionContext& context)
 {
     if (context.isDocument())
-        return static_cast<LocalFileSystem*>(HeapSupplement<LocalFrame>::from(toDocument(context).frame(), supplementName()));
+        return static_cast<LocalFileSystem*>(Supplement<LocalFrame>::from(toDocument(context).frame(), supplementName()));
 
     WorkerClients* clients = toWorkerGlobalScope(context).clients();
     ASSERT(clients);
-    return static_cast<LocalFileSystem*>(HeapSupplement<WorkerClients>::from(clients, supplementName()));
+    return static_cast<LocalFileSystem*>(Supplement<WorkerClients>::from(clients, supplementName()));
 }
 
 void provideLocalFileSystemTo(LocalFrame& frame, PassOwnPtr<FileSystemClient> client)

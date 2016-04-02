@@ -35,7 +35,7 @@ class UnsignedLongOrUnsignedLongSequence;
 
 class MODULES_EXPORT NavigatorVibration final
     : public GarbageCollectedFinalized<NavigatorVibration>
-    , public HeapSupplement<Page>
+    , public Supplement<Page>
     , public PageLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
 public:

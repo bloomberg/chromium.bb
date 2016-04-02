@@ -25,7 +25,7 @@ const char* ServiceWorkerRegistrationPush::supplementName()
 
 ServiceWorkerRegistrationPush& ServiceWorkerRegistrationPush::from(ServiceWorkerRegistration& registration)
 {
-    ServiceWorkerRegistrationPush* supplement = static_cast<ServiceWorkerRegistrationPush*>(HeapSupplement<ServiceWorkerRegistration>::from(registration, supplementName()));
+    ServiceWorkerRegistrationPush* supplement = static_cast<ServiceWorkerRegistrationPush*>(Supplement<ServiceWorkerRegistration>::from(registration, supplementName()));
     if (!supplement) {
         supplement = new ServiceWorkerRegistrationPush(&registration);
         provideTo(registration, supplementName(), supplement);
@@ -49,7 +49,7 @@ DEFINE_TRACE(ServiceWorkerRegistrationPush)
 {
     visitor->trace(m_registration);
     visitor->trace(m_pushManager);
-    HeapSupplement<ServiceWorkerRegistration>::trace(visitor);
+    Supplement<ServiceWorkerRegistration>::trace(visitor);
 }
 
 } // namespace blink

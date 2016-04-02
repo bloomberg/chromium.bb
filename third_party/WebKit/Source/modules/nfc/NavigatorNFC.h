@@ -15,7 +15,7 @@ class Navigator;
 
 class NavigatorNFC final
     : public GarbageCollected<NavigatorNFC>
-    , public HeapSupplement<Navigator> {
+    , public Supplement<Navigator> {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorNFC);
 
 public:

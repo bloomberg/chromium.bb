@@ -19,15 +19,15 @@ namespace blink {
 namespace {
 
 template <typename T>
-class GlobalCacheStorageImpl final : public GarbageCollectedFinalized<GlobalCacheStorageImpl<T>>, public HeapSupplement<T> {
+class GlobalCacheStorageImpl final : public GarbageCollectedFinalized<GlobalCacheStorageImpl<T>>, public Supplement<T> {
     USING_GARBAGE_COLLECTED_MIXIN(GlobalCacheStorageImpl);
 public:
     static GlobalCacheStorageImpl& from(T& supplementable, ExecutionContext* executionContext)
     {
-        GlobalCacheStorageImpl* supplement = static_cast<GlobalCacheStorageImpl*>(HeapSupplement<T>::from(supplementable, name()));
+        GlobalCacheStorageImpl* supplement = static_cast<GlobalCacheStorageImpl*>(Supplement<T>::from(supplementable, name()));
         if (!supplement) {
-            supplement = new GlobalCacheStorageImpl();
-            HeapSupplement<T>::provideTo(supplementable, name(), supplement);
+            supplement = new GlobalCacheStorageImpl;
+            Supplement<T>::provideTo(supplementable, name(), supplement);
         }
         return *supplement;
     }
@@ -62,7 +62,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_caches);
-        HeapSupplement<T>::trace(visitor);
+        Supplement<T>::trace(visitor);
     }
 
 private:

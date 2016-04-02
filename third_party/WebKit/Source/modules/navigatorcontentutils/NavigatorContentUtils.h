@@ -40,7 +40,7 @@ class ExceptionState;
 class LocalFrame;
 class Navigator;
 
-class MODULES_EXPORT NavigatorContentUtils final : public GarbageCollectedFinalized<NavigatorContentUtils>, public HeapSupplement<LocalFrame> {
+class MODULES_EXPORT NavigatorContentUtils final : public GarbageCollectedFinalized<NavigatorContentUtils>, public Supplement<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorContentUtils);
 public:
     virtual ~NavigatorContentUtils();
@@ -57,7 +57,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         visitor->trace(m_client);
-        HeapSupplement<LocalFrame>::trace(visitor);
+        Supplement<LocalFrame>::trace(visitor);
     }
 
     void setClientForTest(RawPtr<NavigatorContentUtilsClient> client) { m_client = client; }

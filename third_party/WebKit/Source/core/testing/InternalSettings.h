@@ -47,12 +47,8 @@ class LocalFrame;
 class Page;
 class Settings;
 
-#if ENABLE(OILPAN)
-class InternalSettings final : public InternalSettingsGenerated, public HeapSupplement<Page> {
+class InternalSettings final : public InternalSettingsGenerated, public Supplement<Page> {
     USING_GARBAGE_COLLECTED_MIXIN(InternalSettings);
-#else
-class InternalSettings final : public InternalSettingsGenerated {
-#endif
     DEFINE_WRAPPERTYPEINFO();
 public:
     class Backup {
@@ -87,10 +83,6 @@ public:
         return new InternalSettings(page);
     }
     static InternalSettings* from(Page&);
-
-#if !ENABLE(OILPAN)
-    void hostDestroyed() { m_page = nullptr; }
-#endif
 
     ~InternalSettings() override;
     void resetToConsistentState();

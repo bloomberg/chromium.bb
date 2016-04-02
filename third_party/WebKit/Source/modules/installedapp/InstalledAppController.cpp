@@ -19,12 +19,12 @@ void InstalledAppController::provideTo(LocalFrame& frame, WebInstalledAppClient*
     ASSERT(RuntimeEnabledFeatures::installedAppEnabled());
 
     RawPtr<InstalledAppController> controller = new InstalledAppController(frame, client);
-    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), controller.release());
+    Supplement<LocalFrame>::provideTo(frame, supplementName(), controller.release());
 }
 
 InstalledAppController* InstalledAppController::from(LocalFrame& frame)
 {
-    InstalledAppController* controller = static_cast<InstalledAppController*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
+    InstalledAppController* controller = static_cast<InstalledAppController*>(Supplement<LocalFrame>::from(frame, supplementName()));
     ASSERT(controller);
     return controller;
 }
@@ -59,7 +59,7 @@ void InstalledAppController::willDetachFrameHost()
 
 DEFINE_TRACE(InstalledAppController)
 {
-    HeapSupplement<LocalFrame>::trace(visitor);
+    Supplement<LocalFrame>::trace(visitor);
     LocalFrameLifecycleObserver::trace(visitor);
 }
 

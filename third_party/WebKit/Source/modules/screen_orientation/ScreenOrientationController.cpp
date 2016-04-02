@@ -27,12 +27,12 @@ void ScreenOrientationController::provideTo(LocalFrame& frame, WebScreenOrientat
     ASSERT(RuntimeEnabledFeatures::screenOrientationEnabled());
 
     ScreenOrientationController* controller = new ScreenOrientationController(frame, client);
-    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), controller);
+    Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
 ScreenOrientationController* ScreenOrientationController::from(LocalFrame& frame)
 {
-    return static_cast<ScreenOrientationController*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
+    return static_cast<ScreenOrientationController*>(Supplement<LocalFrame>::from(frame, supplementName()));
 }
 
 ScreenOrientationController::ScreenOrientationController(LocalFrame& frame, WebScreenOrientationClient* client)
@@ -214,7 +214,7 @@ DEFINE_TRACE(ScreenOrientationController)
 {
     visitor->trace(m_orientation);
     LocalFrameLifecycleObserver::trace(visitor);
-    HeapSupplement<LocalFrame>::trace(visitor);
+    Supplement<LocalFrame>::trace(visitor);
     PlatformEventController::trace(visitor);
 }
 

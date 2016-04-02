@@ -12,14 +12,14 @@ namespace blink {
 class Console;
 class MemoryInfo;
 
-class ConsoleMemory final : public GarbageCollected<ConsoleMemory>, public HeapSupplement<Console> {
+class ConsoleMemory final : public GarbageCollected<ConsoleMemory>, public Supplement<Console> {
     USING_GARBAGE_COLLECTED_MIXIN(ConsoleMemory);
 public:
     static ConsoleMemory& from(Console&);
     static MemoryInfo* memory(Console&);
     static void setMemory(Console&, MemoryInfo*) { }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<Console>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Console>::trace(visitor); }
 
 private:
     static const char* supplementName() { return "ConsoleMemory"; }

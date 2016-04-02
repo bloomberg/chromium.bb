@@ -22,7 +22,7 @@ CredentialManagerClient::~CredentialManagerClient()
 
 DEFINE_TRACE(CredentialManagerClient)
 {
-    HeapSupplement<Page>::trace(visitor);
+    Supplement<Page>::trace(visitor);
 }
 
 // static
@@ -42,7 +42,7 @@ CredentialManagerClient* CredentialManagerClient::from(ExecutionContext* executi
 // static
 CredentialManagerClient* CredentialManagerClient::from(Page* page)
 {
-    return static_cast<CredentialManagerClient*>(HeapSupplement<Page>::from(page, supplementName()));
+    return static_cast<CredentialManagerClient*>(Supplement<Page>::from(page, supplementName()));
 }
 
 void provideCredentialManagerClientTo(Page& page, CredentialManagerClient* client)

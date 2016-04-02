@@ -14,7 +14,7 @@ class Geofencing;
 class WorkerNavigator;
 
 // FIXME: Delete this class once ServiceWorkerRegistration is exposed in service workers.
-class WorkerNavigatorGeofencing final : public GarbageCollectedFinalized<WorkerNavigatorGeofencing>, public HeapSupplement<WorkerNavigator> {
+class WorkerNavigatorGeofencing final : public GarbageCollectedFinalized<WorkerNavigatorGeofencing>, public Supplement<WorkerNavigator> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorGeofencing);
     WTF_MAKE_NONCOPYABLE(WorkerNavigatorGeofencing);
 public:

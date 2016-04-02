@@ -138,7 +138,7 @@ static bool verifyCustomHandlerScheme(const String& scheme, ExceptionState& exce
 
 NavigatorContentUtils* NavigatorContentUtils::from(LocalFrame& frame)
 {
-    return static_cast<NavigatorContentUtils*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
+    return static_cast<NavigatorContentUtils*>(Supplement<LocalFrame>::from(frame, supplementName()));
 }
 
 NavigatorContentUtils::~NavigatorContentUtils()

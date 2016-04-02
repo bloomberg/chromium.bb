@@ -27,7 +27,7 @@ StorageNamespaceController::~StorageNamespaceController()
 
 DEFINE_TRACE(StorageNamespaceController)
 {
-    HeapSupplement<Page>::trace(visitor);
+    Supplement<Page>::trace(visitor);
     visitor->trace(m_inspectorAgent);
 }
 

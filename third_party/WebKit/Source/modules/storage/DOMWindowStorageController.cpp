@@ -21,7 +21,7 @@ DOMWindowStorageController::DOMWindowStorageController(Document& document)
 DEFINE_TRACE(DOMWindowStorageController)
 {
     visitor->trace(m_document);
-    HeapSupplement<Document>::trace(visitor);
+    Supplement<Document>::trace(visitor);
     DOMWindowLifecycleObserver::trace(visitor);
 }
 
@@ -34,10 +34,10 @@ const char* DOMWindowStorageController::supplementName()
 // static
 DOMWindowStorageController& DOMWindowStorageController::from(Document& document)
 {
-    DOMWindowStorageController* controller = static_cast<DOMWindowStorageController*>(HeapSupplement<Document>::from(document, supplementName()));
+    DOMWindowStorageController* controller = static_cast<DOMWindowStorageController*>(Supplement<Document>::from(document, supplementName()));
     if (!controller) {
         controller = new DOMWindowStorageController(document);
-        HeapSupplement<Document>::provideTo(document, supplementName(), controller);
+        Supplement<Document>::provideTo(document, supplementName(), controller);
     }
     return *controller;
 }

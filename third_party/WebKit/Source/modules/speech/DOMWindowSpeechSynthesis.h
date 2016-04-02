@@ -36,7 +36,7 @@ namespace blink {
 
 class DOMWindow;
 
-class MODULES_EXPORT DOMWindowSpeechSynthesis final : public GarbageCollected<DOMWindowSpeechSynthesis>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+class MODULES_EXPORT DOMWindowSpeechSynthesis final : public GarbageCollected<DOMWindowSpeechSynthesis>, public Supplement<LocalDOMWindow>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
 public:
     static SpeechSynthesis* speechSynthesis(DOMWindow&);

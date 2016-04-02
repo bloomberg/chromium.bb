@@ -53,7 +53,7 @@ class WebURL;
 class WorkerClients;
 
 // See WebServiceWorkerContextClient for documentation for the methods in this class.
-class MODULES_EXPORT ServiceWorkerGlobalScopeClient : public HeapSupplement<WorkerClients> {
+class MODULES_EXPORT ServiceWorkerGlobalScopeClient : public Supplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
     DISALLOW_NEW();
 public:

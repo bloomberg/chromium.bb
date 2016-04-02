@@ -21,12 +21,12 @@ BluetoothSupplement::BluetoothSupplement(WebBluetooth* bluetooth)
 void BluetoothSupplement::provideTo(LocalFrame& frame, WebBluetooth* bluetooth)
 {
     RawPtr<BluetoothSupplement> bluetoothSupplement = new BluetoothSupplement(bluetooth);
-    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), bluetoothSupplement.release());
+    Supplement<LocalFrame>::provideTo(frame, supplementName(), bluetoothSupplement.release());
 };
 
 WebBluetooth* BluetoothSupplement::from(LocalFrame* frame)
 {
-    BluetoothSupplement* supplement = static_cast<BluetoothSupplement*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
+    BluetoothSupplement* supplement = static_cast<BluetoothSupplement*>(Supplement<LocalFrame>::from(frame, supplementName()));
 
     ASSERT(supplement);
     ASSERT(supplement->m_bluetooth);
@@ -49,7 +49,7 @@ WebBluetooth* BluetoothSupplement::fromExecutionContext(ExecutionContext* execut
 
 DEFINE_TRACE(BluetoothSupplement)
 {
-    HeapSupplement<LocalFrame>::trace(visitor);
+    Supplement<LocalFrame>::trace(visitor);
 }
 
 } // namespace blink

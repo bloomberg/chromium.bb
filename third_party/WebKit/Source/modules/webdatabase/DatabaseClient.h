@@ -44,7 +44,7 @@ class ExecutionContext;
 class InspectorDatabaseAgent;
 class Page;
 
-class MODULES_EXPORT DatabaseClient : public HeapSupplement<Page> {
+class MODULES_EXPORT DatabaseClient : public Supplement<Page> {
     WTF_MAKE_NONCOPYABLE(DatabaseClient);
 public:
     DatabaseClient();

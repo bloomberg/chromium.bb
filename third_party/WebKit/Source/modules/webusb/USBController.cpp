@@ -17,12 +17,12 @@ void USBController::provideTo(LocalFrame& frame, WebUSBClient* client)
 {
     ASSERT(RuntimeEnabledFeatures::webUSBEnabled());
     USBController* controller = new USBController(frame, client);
-    HeapSupplement<LocalFrame>::provideTo(frame, supplementName(), controller);
+    Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
 USBController& USBController::from(LocalFrame& frame)
 {
-    USBController* controller = static_cast<USBController*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
+    USBController* controller = static_cast<USBController*>(Supplement<LocalFrame>::from(frame, supplementName()));
     ASSERT(controller);
     return *controller;
 }
@@ -45,7 +45,7 @@ void USBController::willDetachFrameHost()
 
 DEFINE_TRACE(USBController)
 {
-    HeapSupplement<LocalFrame>::trace(visitor);
+    Supplement<LocalFrame>::trace(visitor);
     LocalFrameLifecycleObserver::trace(visitor);
 }
 

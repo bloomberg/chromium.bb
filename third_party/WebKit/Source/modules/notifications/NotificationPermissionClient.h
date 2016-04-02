@@ -17,7 +17,7 @@ class LocalFrame;
 class NotificationPermissionCallback;
 class ScriptState;
 
-class NotificationPermissionClient : public HeapSupplement<LocalFrame> {
+class NotificationPermissionClient : public Supplement<LocalFrame> {
 public:
     virtual ~NotificationPermissionClient() { }
 
@@ -25,7 +25,7 @@ public:
     // current frame. The provided callback will be ran when the user has made a decision.
     virtual ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback*) = 0;
 
-    // HeapSupplement requirements.
+    // Supplement requirements.
     static const char* supplementName();
     static NotificationPermissionClient* from(ExecutionContext*);
 };

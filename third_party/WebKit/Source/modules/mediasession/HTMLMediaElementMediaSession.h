@@ -15,7 +15,7 @@ namespace blink {
 
 // A supplement to HTMLMediaElement responsible for the integration of
 // MediaSession with HTMLMediaElement.
-class MODULES_EXPORT HTMLMediaElementMediaSession final : public GarbageCollected<HTMLMediaElementMediaSession>, public HeapSupplement<HTMLMediaElement> {
+class MODULES_EXPORT HTMLMediaElementMediaSession final : public GarbageCollected<HTMLMediaElementMediaSession>, public Supplement<HTMLMediaElement> {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementMediaSession);
 public:
     static MediaSession* session(HTMLMediaElement&);

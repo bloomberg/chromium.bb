@@ -16,7 +16,7 @@ class InspectorDOMStorageAgent;
 class StorageClient;
 class StorageNamespace;
 
-class MODULES_EXPORT StorageNamespaceController final : public GarbageCollectedFinalized<StorageNamespaceController>, public HeapSupplement<Page> {
+class MODULES_EXPORT StorageNamespaceController final : public GarbageCollectedFinalized<StorageNamespaceController>, public Supplement<Page> {
     USING_GARBAGE_COLLECTED_MIXIN(StorageNamespaceController);
 public:
     StorageNamespace* sessionStorage(bool optionalCreate = true);
@@ -24,7 +24,7 @@ public:
     ~StorageNamespaceController();
 
     static void provideStorageNamespaceTo(Page&, StorageClient*);
-    static StorageNamespaceController* from(Page* page) { return static_cast<StorageNamespaceController*>(HeapSupplement<Page>::from(page, supplementName())); }
+    static StorageNamespaceController* from(Page* page) { return static_cast<StorageNamespaceController*>(Supplement<Page>::from(page, supplementName())); }
 
     DECLARE_TRACE();
 

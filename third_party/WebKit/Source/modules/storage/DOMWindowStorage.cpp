@@ -28,7 +28,7 @@ DEFINE_TRACE(DOMWindowStorage)
     visitor->trace(m_window);
     visitor->trace(m_sessionStorage);
     visitor->trace(m_localStorage);
-    HeapSupplement<LocalDOMWindow>::trace(visitor);
+    Supplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
@@ -41,7 +41,7 @@ const char* DOMWindowStorage::supplementName()
 // static
 DOMWindowStorage& DOMWindowStorage::from(LocalDOMWindow& window)
 {
-    DOMWindowStorage* supplement = static_cast<DOMWindowStorage*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    DOMWindowStorage* supplement = static_cast<DOMWindowStorage*>(Supplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowStorage(window);
         provideTo(window, supplementName(), supplement);

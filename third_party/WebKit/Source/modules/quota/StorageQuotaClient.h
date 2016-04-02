@@ -47,7 +47,7 @@ class ScriptState;
 class StorageErrorCallback;
 class StorageQuotaCallback;
 
-class StorageQuotaClient : public HeapSupplement<Page> {
+class StorageQuotaClient : public Supplement<Page> {
     WTF_MAKE_NONCOPYABLE(StorageQuotaClient);
 public:
     StorageQuotaClient() { }

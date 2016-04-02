@@ -32,7 +32,7 @@ NavigatorBeacon::~NavigatorBeacon()
 DEFINE_TRACE(NavigatorBeacon)
 {
     LocalFrameLifecycleObserver::trace(visitor);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
 }
 
 const char* NavigatorBeacon::supplementName()
@@ -42,7 +42,7 @@ const char* NavigatorBeacon::supplementName()
 
 NavigatorBeacon& NavigatorBeacon::from(Navigator& navigator)
 {
-    NavigatorBeacon* supplement = static_cast<NavigatorBeacon*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorBeacon* supplement = static_cast<NavigatorBeacon*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorBeacon(navigator);
         provideTo(navigator, supplementName(), supplement);

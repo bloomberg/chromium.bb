@@ -45,7 +45,7 @@ const char* NavigatorGeolocation::supplementName()
 
 NavigatorGeolocation& NavigatorGeolocation::from(Navigator& navigator)
 {
-    NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorGeolocation* supplement = static_cast<NavigatorGeolocation*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorGeolocation(navigator.frame());
         provideTo(navigator, supplementName(), supplement);
@@ -68,7 +68,7 @@ Geolocation* NavigatorGeolocation::geolocation()
 DEFINE_TRACE(NavigatorGeolocation)
 {
     visitor->trace(m_geolocation);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

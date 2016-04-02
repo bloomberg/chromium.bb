@@ -20,7 +20,7 @@ const char* NavigatorNFC::supplementName()
 
 NavigatorNFC& NavigatorNFC::from(Navigator& navigator)
 {
-    NavigatorNFC* supplement = static_cast<NavigatorNFC*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorNFC* supplement = static_cast<NavigatorNFC*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorNFC();
         provideTo(navigator, supplementName(), supplement);
@@ -42,7 +42,7 @@ NFC* NavigatorNFC::nfc(Navigator& navigator)
 DEFINE_TRACE(NavigatorNFC)
 {
     visitor->trace(m_nfc);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
 }
 
 } // namespace blink

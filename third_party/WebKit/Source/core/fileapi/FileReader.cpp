@@ -71,7 +71,7 @@ const CString utf8FilePath(Blob* blob)
 static const size_t kMaxOutstandingRequestsPerThread = 100;
 static const double progressNotificationIntervalMS = 50;
 
-class FileReader::ThrottlingController final : public GarbageCollectedFinalized<FileReader::ThrottlingController>, public HeapSupplement<ExecutionContext> {
+class FileReader::ThrottlingController final : public GarbageCollectedFinalized<FileReader::ThrottlingController>, public Supplement<ExecutionContext> {
     USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
 public:
     static ThrottlingController* from(ExecutionContext* context)
@@ -79,10 +79,10 @@ public:
         if (!context)
             return 0;
 
-        ThrottlingController* controller = static_cast<ThrottlingController*>(HeapSupplement<ExecutionContext>::from(*context, supplementName()));
+        ThrottlingController* controller = static_cast<ThrottlingController*>(Supplement<ExecutionContext>::from(*context, supplementName()));
         if (!controller) {
-            controller = new ThrottlingController();
-            HeapSupplement<ExecutionContext>::provideTo(*context, supplementName(), controller);
+            controller = new ThrottlingController;
+            provideTo(*context, supplementName(), controller);
         }
         return controller;
     }
@@ -127,7 +127,7 @@ public:
         visitor->trace(m_pendingReaders);
         visitor->trace(m_runningReaders);
 #endif
-        HeapSupplement<ExecutionContext>::trace(visitor);
+        Supplement<ExecutionContext>::trace(visitor);
     }
 
 private:

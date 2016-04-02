@@ -41,7 +41,7 @@ namespace blink {
 
 class Navigator;
 
-class NavigatorWebMIDI final : public GarbageCollectedFinalized<NavigatorWebMIDI>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorWebMIDI final : public GarbageCollectedFinalized<NavigatorWebMIDI>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorWebMIDI);
 public:
     static NavigatorWebMIDI& from(Navigator&);

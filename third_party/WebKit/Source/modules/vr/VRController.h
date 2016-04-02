@@ -15,7 +15,7 @@ namespace blink {
 
 class MODULES_EXPORT VRController final
     : public GarbageCollectedFinalized<VRController>
-    , public HeapSupplement<LocalFrame>
+    , public Supplement<LocalFrame>
     , public LocalFrameLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(VRController);
     WTF_MAKE_NONCOPYABLE(VRController);

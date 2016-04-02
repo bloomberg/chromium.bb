@@ -36,10 +36,10 @@ const char* DeviceMotionController::supplementName()
 
 DeviceMotionController& DeviceMotionController::from(Document& document)
 {
-    DeviceMotionController* controller = static_cast<DeviceMotionController*>(HeapSupplement<Document>::from(document, supplementName()));
+    DeviceMotionController* controller = static_cast<DeviceMotionController*>(Supplement<Document>::from(document, supplementName()));
     if (!controller) {
         controller = new DeviceMotionController(document);
-        HeapSupplement<Document>::provideTo(document, supplementName(), controller);
+        Supplement<Document>::provideTo(document, supplementName(), controller);
     }
     return *controller;
 }
@@ -101,7 +101,7 @@ const AtomicString& DeviceMotionController::eventTypeName() const
 DEFINE_TRACE(DeviceMotionController)
 {
     DeviceSingleWindowEventController::trace(visitor);
-    HeapSupplement<Document>::trace(visitor);
+    Supplement<Document>::trace(visitor);
 }
 
 } // namespace blink

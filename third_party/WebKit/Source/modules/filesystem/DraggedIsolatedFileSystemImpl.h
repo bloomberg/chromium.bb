@@ -41,7 +41,7 @@ namespace blink {
 
 class DOMFileSystem;
 
-class DraggedIsolatedFileSystemImpl final : public GarbageCollectedFinalized<DraggedIsolatedFileSystemImpl>, public DraggedIsolatedFileSystem, public HeapSupplement<DataObject> {
+class DraggedIsolatedFileSystemImpl final : public GarbageCollectedFinalized<DraggedIsolatedFileSystemImpl>, public DraggedIsolatedFileSystem, public Supplement<DataObject> {
     USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
 public:
     static DraggedIsolatedFileSystemImpl* create(DataObject& host, const String& filesystemId)

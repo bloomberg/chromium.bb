@@ -49,7 +49,7 @@ const char* SharedWorkerPerformance::supplementName()
 
 SharedWorkerPerformance& SharedWorkerPerformance::from(SharedWorker& sharedWorker)
 {
-    SharedWorkerPerformance* supplement = static_cast<SharedWorkerPerformance*>(HeapSupplement<SharedWorker>::from(sharedWorker, supplementName()));
+    SharedWorkerPerformance* supplement = static_cast<SharedWorkerPerformance*>(Supplement<SharedWorker>::from(sharedWorker, supplementName()));
     if (!supplement) {
         supplement = new SharedWorkerPerformance();
         provideTo(sharedWorker, supplementName(), supplement);

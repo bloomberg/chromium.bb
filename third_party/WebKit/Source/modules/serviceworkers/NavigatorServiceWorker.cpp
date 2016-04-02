@@ -45,7 +45,7 @@ NavigatorServiceWorker& NavigatorServiceWorker::from(Navigator& navigator)
 
 NavigatorServiceWorker* NavigatorServiceWorker::toNavigatorServiceWorker(Navigator& navigator)
 {
-    return static_cast<NavigatorServiceWorker*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    return static_cast<NavigatorServiceWorker*>(Supplement<Navigator>::from(navigator, supplementName()));
 }
 
 const char* NavigatorServiceWorker::supplementName()
@@ -86,7 +86,7 @@ void NavigatorServiceWorker::willDetachGlobalObjectFromFrame()
 DEFINE_TRACE(NavigatorServiceWorker)
 {
     visitor->trace(m_serviceWorker);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

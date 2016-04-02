@@ -41,7 +41,7 @@ namespace blink {
 
 class StorageManager;
 
-class WorkerNavigatorStorageQuota final : public GarbageCollected<WorkerNavigatorStorageQuota>, public HeapSupplement<WorkerNavigator> {
+class WorkerNavigatorStorageQuota final : public GarbageCollected<WorkerNavigatorStorageQuota>, public Supplement<WorkerNavigator> {
     USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
 public:
     static WorkerNavigatorStorageQuota& from(WorkerNavigator&);

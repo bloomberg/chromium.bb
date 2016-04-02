@@ -35,7 +35,7 @@ namespace blink {
 class IDBFactory;
 class DOMWindow;
 
-class DOMWindowIndexedDatabase final : public GarbageCollected<DOMWindowIndexedDatabase>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+class DOMWindowIndexedDatabase final : public GarbageCollected<DOMWindowIndexedDatabase>, public Supplement<LocalDOMWindow>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(DOMWindowIndexedDatabase);
 public:
     static DOMWindowIndexedDatabase& from(LocalDOMWindow&);

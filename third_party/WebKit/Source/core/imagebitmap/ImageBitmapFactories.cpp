@@ -143,10 +143,10 @@ ImageBitmapFactories& ImageBitmapFactories::from(EventTarget& eventTarget)
 template<class GlobalObject>
 ImageBitmapFactories& ImageBitmapFactories::fromInternal(GlobalObject& object)
 {
-    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(HeapSupplement<GlobalObject>::from(object, supplementName()));
+    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(Supplement<GlobalObject>::from(object, supplementName()));
     if (!supplement) {
-        supplement = new ImageBitmapFactories();
-        HeapSupplement<GlobalObject>::provideTo(object, supplementName(), supplement);
+        supplement = new ImageBitmapFactories;
+        Supplement<GlobalObject>::provideTo(object, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -179,8 +179,8 @@ void ImageBitmapFactories::ImageBitmapLoader::loadBlobAsync(ExecutionContext* co
 DEFINE_TRACE(ImageBitmapFactories)
 {
     visitor->trace(m_pendingLoaders);
-    HeapSupplement<LocalDOMWindow>::trace(visitor);
-    HeapSupplement<WorkerGlobalScope>::trace(visitor);
+    Supplement<LocalDOMWindow>::trace(visitor);
+    Supplement<WorkerGlobalScope>::trace(visitor);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::rejectPromise()

@@ -25,7 +25,7 @@ const char* ServiceWorkerRegistrationGeofencing::supplementName()
 
 ServiceWorkerRegistrationGeofencing& ServiceWorkerRegistrationGeofencing::from(ServiceWorkerRegistration& registration)
 {
-    ServiceWorkerRegistrationGeofencing* supplement = static_cast<ServiceWorkerRegistrationGeofencing*>(HeapSupplement<ServiceWorkerRegistration>::from(registration, supplementName()));
+    ServiceWorkerRegistrationGeofencing* supplement = static_cast<ServiceWorkerRegistrationGeofencing*>(Supplement<ServiceWorkerRegistration>::from(registration, supplementName()));
     if (!supplement) {
         supplement = new ServiceWorkerRegistrationGeofencing(&registration);
         provideTo(registration, supplementName(), supplement);
@@ -49,7 +49,7 @@ DEFINE_TRACE(ServiceWorkerRegistrationGeofencing)
 {
     visitor->trace(m_registration);
     visitor->trace(m_geofencing);
-    HeapSupplement<ServiceWorkerRegistration>::trace(visitor);
+    Supplement<ServiceWorkerRegistration>::trace(visitor);
 }
 
 } // namespace blink

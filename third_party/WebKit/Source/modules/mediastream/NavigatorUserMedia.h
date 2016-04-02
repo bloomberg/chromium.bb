@@ -13,7 +13,7 @@ namespace blink {
 class Navigator;
 class MediaDevices;
 
-class NavigatorUserMedia final : public GarbageCollected<NavigatorUserMedia>, public HeapSupplement<Navigator> {
+class NavigatorUserMedia final : public GarbageCollected<NavigatorUserMedia>, public Supplement<Navigator> {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorUserMedia)
 public:
     static MediaDevices* mediaDevices(Navigator&);

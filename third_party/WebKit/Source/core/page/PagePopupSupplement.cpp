@@ -67,7 +67,7 @@ void PagePopupSupplement::uninstall(LocalFrame& frame)
 DEFINE_TRACE(PagePopupSupplement)
 {
     visitor->trace(m_controller);
-    HeapSupplement<LocalFrame>::trace(visitor);
+    Supplement<LocalFrame>::trace(visitor);
 }
 
 } // namespace blink

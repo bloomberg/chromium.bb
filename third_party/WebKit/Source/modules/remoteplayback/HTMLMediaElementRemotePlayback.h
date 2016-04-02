@@ -17,7 +17,7 @@ class RemotePlayback;
 
 // Class used to implement the Remote Playback API. It is a supplement to
 // HTMLMediaElement.
-class HTMLMediaElementRemotePlayback final : public GarbageCollected<HTMLMediaElementRemotePlayback>, public HeapSupplement<HTMLMediaElement> {
+class HTMLMediaElementRemotePlayback final : public GarbageCollected<HTMLMediaElementRemotePlayback>, public Supplement<HTMLMediaElement> {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementRemotePlayback);
 public:
     static bool fastHasAttribute(const QualifiedName&, const HTMLMediaElement&);

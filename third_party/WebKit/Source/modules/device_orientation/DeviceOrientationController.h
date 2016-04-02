@@ -15,7 +15,7 @@ class DeviceOrientationData;
 class DeviceOrientationDispatcher;
 class Event;
 
-class MODULES_EXPORT DeviceOrientationController : public DeviceSingleWindowEventController, public HeapSupplement<Document> {
+class MODULES_EXPORT DeviceOrientationController : public DeviceSingleWindowEventController, public Supplement<Document> {
     USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationController);
 public:
     ~DeviceOrientationController() override;

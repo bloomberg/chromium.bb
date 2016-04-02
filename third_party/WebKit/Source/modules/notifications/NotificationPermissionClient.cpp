@@ -24,7 +24,7 @@ NotificationPermissionClient* NotificationPermissionClient::from(ExecutionContex
     if (!document->frame() || !document->frame()->isLocalFrame())
         return nullptr;
 
-    return static_cast<NotificationPermissionClient*>(HeapSupplement<LocalFrame>::from(document->frame(), supplementName()));
+    return static_cast<NotificationPermissionClient*>(Supplement<LocalFrame>::from(document->frame(), supplementName()));
 }
 
 void provideNotificationPermissionClientTo(LocalFrame& frame, RawPtr<NotificationPermissionClient> client)

@@ -43,7 +43,7 @@ class Page;
 class WorkerGlobalScopeProxy;
 class Worker;
 
-class WorkerGlobalScopeProxyProvider : public HeapSupplement<Page> {
+class WorkerGlobalScopeProxyProvider : public Supplement<Page> {
     WTF_MAKE_NONCOPYABLE(WorkerGlobalScopeProxyProvider);
 public:
     WorkerGlobalScopeProxyProvider() { }

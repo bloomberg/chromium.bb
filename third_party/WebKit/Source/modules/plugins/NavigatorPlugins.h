@@ -15,7 +15,7 @@ class DOMPluginArray;
 class LocalFrame;
 class Navigator;
 
-class NavigatorPlugins final : public GarbageCollectedFinalized<NavigatorPlugins>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorPlugins final : public GarbageCollectedFinalized<NavigatorPlugins>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorPlugins);
 public:
     static NavigatorPlugins& from(Navigator&);

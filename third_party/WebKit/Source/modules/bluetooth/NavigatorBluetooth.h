@@ -13,7 +13,7 @@ namespace blink {
 class Bluetooth;
 class Navigator;
 
-class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>, public HeapSupplement<Navigator> {
+class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>, public Supplement<Navigator> {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorBluetooth);
 public:
     // Gets, or creates, NavigatorBluetooth supplement on Navigator.

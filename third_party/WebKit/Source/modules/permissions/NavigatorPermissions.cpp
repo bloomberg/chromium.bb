@@ -22,7 +22,7 @@ const char* NavigatorPermissions::supplementName()
 // static
 NavigatorPermissions& NavigatorPermissions::from(Navigator& navigator)
 {
-    NavigatorPermissions* supplement = static_cast<NavigatorPermissions*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorPermissions* supplement = static_cast<NavigatorPermissions*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorPermissions();
         provideTo(navigator, supplementName(), supplement);
@@ -42,7 +42,7 @@ Permissions* NavigatorPermissions::permissions(Navigator& navigator)
 DEFINE_TRACE(NavigatorPermissions)
 {
     visitor->trace(m_permissions);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
 }
 
 } // namespace blink

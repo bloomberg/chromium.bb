@@ -13,7 +13,7 @@ namespace blink {
 class Navigator;
 class Permissions;
 
-class NavigatorPermissions final : public GarbageCollected<NavigatorPermissions>, public HeapSupplement<Navigator> {
+class NavigatorPermissions final : public GarbageCollected<NavigatorPermissions>, public Supplement<Navigator> {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorPermissions);
 public:
     static NavigatorPermissions& from(Navigator&);

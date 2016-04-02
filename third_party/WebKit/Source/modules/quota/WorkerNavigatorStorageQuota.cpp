@@ -46,7 +46,7 @@ const char* WorkerNavigatorStorageQuota::supplementName()
 
 WorkerNavigatorStorageQuota& WorkerNavigatorStorageQuota::from(WorkerNavigator& navigator)
 {
-    WorkerNavigatorStorageQuota* supplement = static_cast<WorkerNavigatorStorageQuota*>(HeapSupplement<WorkerNavigator>::from(navigator, supplementName()));
+    WorkerNavigatorStorageQuota* supplement = static_cast<WorkerNavigatorStorageQuota*>(Supplement<WorkerNavigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new WorkerNavigatorStorageQuota();
         provideTo(navigator, supplementName(), supplement);
@@ -95,7 +95,7 @@ DEFINE_TRACE(WorkerNavigatorStorageQuota)
     visitor->trace(m_temporaryStorage);
     visitor->trace(m_persistentStorage);
     visitor->trace(m_storageManager);
-    HeapSupplement<WorkerNavigator>::trace(visitor);
+    Supplement<WorkerNavigator>::trace(visitor);
 }
 
 } // namespace blink

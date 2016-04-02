@@ -28,7 +28,7 @@ void HTMLMediaElementRemotePlayback::setBooleanAttribute(const QualifiedName& na
 // static
 HTMLMediaElementRemotePlayback& HTMLMediaElementRemotePlayback::from(HTMLMediaElement& element)
 {
-    HTMLMediaElementRemotePlayback* supplement = static_cast<HTMLMediaElementRemotePlayback*>(HeapSupplement<HTMLMediaElement>::from(element, supplementName()));
+    HTMLMediaElementRemotePlayback* supplement = static_cast<HTMLMediaElementRemotePlayback*>(Supplement<HTMLMediaElement>::from(element, supplementName()));
     if (!supplement) {
         supplement = new HTMLMediaElementRemotePlayback();
         provideTo(element, supplementName(), supplement);
@@ -59,7 +59,7 @@ const char* HTMLMediaElementRemotePlayback::supplementName()
 DEFINE_TRACE(HTMLMediaElementRemotePlayback)
 {
     visitor->trace(m_remote);
-    HeapSupplement<HTMLMediaElement>::trace(visitor);
+    Supplement<HTMLMediaElement>::trace(visitor);
 }
 
 } // namespace blink

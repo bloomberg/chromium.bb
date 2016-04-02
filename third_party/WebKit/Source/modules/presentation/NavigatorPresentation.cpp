@@ -22,7 +22,7 @@ const char* NavigatorPresentation::supplementName()
 // static
 NavigatorPresentation& NavigatorPresentation::from(Navigator& navigator)
 {
-    NavigatorPresentation* supplement = static_cast<NavigatorPresentation*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorPresentation* supplement = static_cast<NavigatorPresentation*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorPresentation();
         provideTo(navigator, supplementName(), supplement);
@@ -45,7 +45,7 @@ Presentation* NavigatorPresentation::presentation(Navigator& navigator)
 DEFINE_TRACE(NavigatorPresentation)
 {
     visitor->trace(m_presentation);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
 }
 
 } // namespace blink

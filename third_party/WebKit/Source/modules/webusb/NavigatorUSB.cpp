@@ -11,7 +11,7 @@ namespace blink {
 
 NavigatorUSB& NavigatorUSB::from(Navigator& navigator)
 {
-    NavigatorUSB* supplement = static_cast<NavigatorUSB*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorUSB* supplement = static_cast<NavigatorUSB*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorUSB(navigator);
         provideTo(navigator, supplementName(), supplement);
@@ -32,7 +32,7 @@ USB* NavigatorUSB::usb()
 DEFINE_TRACE(NavigatorUSB)
 {
     visitor->trace(m_usb);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
 }
 
 NavigatorUSB::NavigatorUSB(Navigator& navigator)

@@ -56,7 +56,7 @@ const char* DraggedIsolatedFileSystemImpl::supplementName()
 
 DraggedIsolatedFileSystemImpl* DraggedIsolatedFileSystemImpl::from(DataObject* dataObject)
 {
-    return static_cast<DraggedIsolatedFileSystemImpl*>(HeapSupplement<DataObject>::from(dataObject, supplementName()));
+    return static_cast<DraggedIsolatedFileSystemImpl*>(Supplement<DataObject>::from(dataObject, supplementName()));
 }
 
 DraggedIsolatedFileSystemImpl::DraggedIsolatedFileSystemImpl(DataObject& host, const String& filesystemId)
@@ -67,7 +67,7 @@ DraggedIsolatedFileSystemImpl::DraggedIsolatedFileSystemImpl(DataObject& host, c
 DEFINE_TRACE(DraggedIsolatedFileSystemImpl)
 {
     visitor->trace(m_filesystem);
-    HeapSupplement<DataObject>::trace(visitor);
+    Supplement<DataObject>::trace(visitor);
 }
 
 void DraggedIsolatedFileSystemImpl::prepareForDataObject(DataObject* dataObject, const String& filesystemId)

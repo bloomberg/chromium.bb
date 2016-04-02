@@ -39,13 +39,13 @@ const char* PresentationController::supplementName()
 // static
 PresentationController* PresentationController::from(LocalFrame& frame)
 {
-    return static_cast<PresentationController*>(HeapSupplement<LocalFrame>::from(frame, supplementName()));
+    return static_cast<PresentationController*>(Supplement<LocalFrame>::from(frame, supplementName()));
 }
 
 // static
 void PresentationController::provideTo(LocalFrame& frame, WebPresentationClient* client)
 {
-    HeapSupplement<LocalFrame>::provideTo(frame, PresentationController::supplementName(), PresentationController::create(frame, client));
+    Supplement<LocalFrame>::provideTo(frame, PresentationController::supplementName(), PresentationController::create(frame, client));
 }
 
 WebPresentationClient* PresentationController::client()
@@ -57,7 +57,7 @@ DEFINE_TRACE(PresentationController)
 {
     visitor->trace(m_presentation);
     visitor->trace(m_connections);
-    HeapSupplement<LocalFrame>::trace(visitor);
+    Supplement<LocalFrame>::trace(visitor);
     LocalFrameLifecycleObserver::trace(visitor);
 }
 

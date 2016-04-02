@@ -24,7 +24,7 @@ class ScriptState;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
 
-class MODULES_EXPORT HTMLMediaElementEncryptedMedia final : public GarbageCollectedFinalized<HTMLMediaElementEncryptedMedia>, public HeapSupplement<HTMLMediaElement>, public WebMediaPlayerEncryptedMediaClient {
+class MODULES_EXPORT HTMLMediaElementEncryptedMedia final : public GarbageCollectedFinalized<HTMLMediaElementEncryptedMedia>, public Supplement<HTMLMediaElement>, public WebMediaPlayerEncryptedMediaClient {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
 public:
     static MediaKeys* mediaKeys(HTMLMediaElement&);

@@ -47,7 +47,7 @@ NavigatorDoNotTrack::~NavigatorDoNotTrack()
 
 DEFINE_TRACE(NavigatorDoNotTrack)
 {
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
@@ -58,7 +58,7 @@ const char* NavigatorDoNotTrack::supplementName()
 
 NavigatorDoNotTrack& NavigatorDoNotTrack::from(Navigator& navigator)
 {
-    NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorDoNotTrack(navigator.frame());
         provideTo(navigator, supplementName(), supplement);

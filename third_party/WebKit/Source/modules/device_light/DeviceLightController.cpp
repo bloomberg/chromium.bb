@@ -31,10 +31,10 @@ const char* DeviceLightController::supplementName()
 
 DeviceLightController& DeviceLightController::from(Document& document)
 {
-    DeviceLightController* controller = static_cast<DeviceLightController*>(HeapSupplement<Document>::from(document, supplementName()));
+    DeviceLightController* controller = static_cast<DeviceLightController*>(Supplement<Document>::from(document, supplementName()));
     if (!controller) {
         controller = new DeviceLightController(document);
-        HeapSupplement<Document>::provideTo(document, supplementName(), controller);
+        Supplement<Document>::provideTo(document, supplementName(), controller);
     }
     return *controller;
 }
@@ -74,7 +74,7 @@ const AtomicString& DeviceLightController::eventTypeName() const
 DEFINE_TRACE(DeviceLightController)
 {
     DeviceSingleWindowEventController::trace(visitor);
-    HeapSupplement<Document>::trace(visitor);
+    Supplement<Document>::trace(visitor);
 }
 
 

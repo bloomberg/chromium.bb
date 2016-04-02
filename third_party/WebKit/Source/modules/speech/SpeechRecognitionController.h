@@ -34,7 +34,7 @@ namespace blink {
 
 class MediaStreamTrack;
 
-class SpeechRecognitionController final : public GarbageCollectedFinalized<SpeechRecognitionController>, public HeapSupplement<Page> {
+class SpeechRecognitionController final : public GarbageCollectedFinalized<SpeechRecognitionController>, public Supplement<Page> {
     USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
 public:
     virtual ~SpeechRecognitionController();
@@ -49,9 +49,9 @@ public:
 
     static RawPtr<SpeechRecognitionController> create(PassOwnPtr<SpeechRecognitionClient>);
     static const char* supplementName();
-    static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(HeapSupplement<Page>::from(page, supplementName())); }
+    static SpeechRecognitionController* from(Page* page) { return static_cast<SpeechRecognitionController*>(Supplement<Page>::from(page, supplementName())); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<Page>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::trace(visitor); }
 
 private:
     explicit SpeechRecognitionController(PassOwnPtr<SpeechRecognitionClient>);

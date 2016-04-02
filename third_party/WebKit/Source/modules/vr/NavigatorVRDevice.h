@@ -22,7 +22,7 @@ class Navigator;
 class VRController;
 class VRHardwareUnitCollection;
 
-class MODULES_EXPORT NavigatorVRDevice final : public GarbageCollectedFinalized<NavigatorVRDevice>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+class MODULES_EXPORT NavigatorVRDevice final : public GarbageCollectedFinalized<NavigatorVRDevice>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorVRDevice);
     WTF_MAKE_NONCOPYABLE(NavigatorVRDevice);
 public:

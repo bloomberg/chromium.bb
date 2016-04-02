@@ -72,7 +72,7 @@ private:
 // token strings to use for tests.
 class TestOriginTrialContext : public OriginTrialContext {
 public:
-    explicit TestOriginTrialContext()
+    TestOriginTrialContext()
         : m_parent(new NullExecutionContext())
     {
     }

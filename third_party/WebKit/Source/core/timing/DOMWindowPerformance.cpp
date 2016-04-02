@@ -20,7 +20,7 @@ DEFINE_TRACE(DOMWindowPerformance)
 {
     visitor->trace(m_window);
     visitor->trace(m_performance);
-    HeapSupplement<LocalDOMWindow>::trace(visitor);
+    Supplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
@@ -33,7 +33,7 @@ const char* DOMWindowPerformance::supplementName()
 // static
 DOMWindowPerformance& DOMWindowPerformance::from(LocalDOMWindow& window)
 {
-    DOMWindowPerformance* supplement = static_cast<DOMWindowPerformance*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    DOMWindowPerformance* supplement = static_cast<DOMWindowPerformance*>(Supplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowPerformance(window);
         provideTo(window, supplementName(), supplement);

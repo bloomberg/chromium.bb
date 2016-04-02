@@ -16,7 +16,7 @@ class LocalFrame;
 
 // DocumentParserTiming is responsible for tracking parser-related timings for a
 // given document.
-class DocumentParserTiming final : public GarbageCollectedFinalized<DocumentParserTiming>, public HeapSupplement<Document> {
+class DocumentParserTiming final : public GarbageCollectedFinalized<DocumentParserTiming>, public Supplement<Document> {
     WTF_MAKE_NONCOPYABLE(DocumentParserTiming);
     USING_GARBAGE_COLLECTED_MIXIN(DocumentParserTiming);
 

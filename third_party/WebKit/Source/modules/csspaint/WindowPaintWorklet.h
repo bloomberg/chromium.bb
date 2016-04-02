@@ -17,7 +17,7 @@ class ExecutionContext;
 class PaintWorklet;
 class Worklet;
 
-class MODULES_EXPORT WindowPaintWorklet final : public GarbageCollected<WindowPaintWorklet>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+class MODULES_EXPORT WindowPaintWorklet final : public GarbageCollected<WindowPaintWorklet>, public Supplement<LocalDOMWindow>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(WindowPaintWorklet);
 public:
     static WindowPaintWorklet& from(LocalDOMWindow&);

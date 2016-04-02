@@ -15,7 +15,7 @@ class WebPermissionClient;
 
 class MODULES_EXPORT PermissionController final
     : public GarbageCollectedFinalized<PermissionController>
-    , public HeapSupplement<LocalFrame>
+    , public Supplement<LocalFrame>
     , public LocalFrameLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(PermissionController);
     USING_GARBAGE_COLLECTED_MIXIN(PermissionController);

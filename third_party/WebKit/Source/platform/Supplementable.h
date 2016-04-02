@@ -163,9 +163,6 @@ private:
 #endif
 };
 
-// TODO(sof): replace all HeapSupplement<T> uses with Supplement<T>.
-#define HeapSupplement Supplement
-
 template<typename T>
 struct ThreadingTrait<Supplement<T>> {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;

@@ -23,7 +23,7 @@ NavigatorCredentials::~NavigatorCredentials()
 
 NavigatorCredentials& NavigatorCredentials::from(Navigator& navigator)
 {
-    NavigatorCredentials* supplement = static_cast<NavigatorCredentials*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorCredentials* supplement = static_cast<NavigatorCredentials*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorCredentials(navigator);
         provideTo(navigator, supplementName(), supplement);
@@ -51,7 +51,7 @@ CredentialsContainer* NavigatorCredentials::credentials()
 DEFINE_TRACE(NavigatorCredentials)
 {
     visitor->trace(m_credentialsContainer);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

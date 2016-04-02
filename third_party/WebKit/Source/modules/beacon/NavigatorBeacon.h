@@ -18,7 +18,7 @@ class ExecutionContext;
 class KURL;
 class ArrayBufferViewOrBlobOrStringOrFormData;
 
-class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>, public LocalFrameLifecycleObserver, public HeapSupplement<Navigator> {
+class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>, public LocalFrameLifecycleObserver, public Supplement<Navigator> {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorBeacon);
 public:
     static NavigatorBeacon& from(Navigator&);

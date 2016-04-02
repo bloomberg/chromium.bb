@@ -36,7 +36,7 @@ namespace blink {
 
 WorkerGlobalScopeProxyProvider* WorkerGlobalScopeProxyProvider::from(Page& page)
 {
-    return static_cast<WorkerGlobalScopeProxyProvider*>(HeapSupplement<Page>::from(page, supplementName()));
+    return static_cast<WorkerGlobalScopeProxyProvider*>(Supplement<Page>::from(page, supplementName()));
 }
 
 const char* WorkerGlobalScopeProxyProvider::supplementName()
@@ -46,7 +46,7 @@ const char* WorkerGlobalScopeProxyProvider::supplementName()
 
 void provideWorkerGlobalScopeProxyProviderTo(Page& page, RawPtr<WorkerGlobalScopeProxyProvider> provider)
 {
-    HeapSupplement<Page>::provideTo(page, WorkerGlobalScopeProxyProvider::supplementName(), provider);
+    Supplement<Page>::provideTo(page, WorkerGlobalScopeProxyProvider::supplementName(), provider);
 }
 
 } // namespace blink

@@ -139,7 +139,7 @@ Fullscreen& Fullscreen::from(Document& document)
     Fullscreen* fullscreen = fromIfExists(document);
     if (!fullscreen) {
         fullscreen = new Fullscreen(document);
-        HeapSupplement<Document>::provideTo(document, supplementName(), fullscreen);
+        Supplement<Document>::provideTo(document, supplementName(), fullscreen);
     }
 
     return *fullscreen;
@@ -147,7 +147,7 @@ Fullscreen& Fullscreen::from(Document& document)
 
 Fullscreen* Fullscreen::fromIfExistsSlow(Document& document)
 {
-    return static_cast<Fullscreen*>(HeapSupplement<Document>::from(document, supplementName()));
+    return static_cast<Fullscreen*>(Supplement<Document>::from(document, supplementName()));
 }
 
 Element* Fullscreen::fullscreenElementFrom(Document& document)
@@ -627,7 +627,7 @@ DEFINE_TRACE(Fullscreen)
     visitor->trace(m_fullScreenElementStack);
     visitor->trace(m_eventQueue);
 #endif
-    HeapSupplement<Document>::trace(visitor);
+    Supplement<Document>::trace(visitor);
     DocumentLifecycleObserver::trace(visitor);
 }
 

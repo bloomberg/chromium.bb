@@ -50,7 +50,7 @@ const char* DOMWindowQuota::supplementName()
 // static
 DOMWindowQuota& DOMWindowQuota::from(LocalDOMWindow& window)
 {
-    DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(Supplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowQuota(window);
         provideTo(window, supplementName(), supplement);
@@ -74,7 +74,7 @@ DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const
 DEFINE_TRACE(DOMWindowQuota)
 {
     visitor->trace(m_storageInfo);
-    HeapSupplement<LocalDOMWindow>::trace(visitor);
+    Supplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

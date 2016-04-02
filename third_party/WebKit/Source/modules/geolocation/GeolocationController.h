@@ -40,7 +40,7 @@ class GeolocationClient;
 class GeolocationError;
 class GeolocationPosition;
 
-class MODULES_EXPORT GeolocationController : public GarbageCollectedFinalized<GeolocationController>, public HeapSupplement<LocalFrame>, public PageLifecycleObserver {
+class MODULES_EXPORT GeolocationController : public GarbageCollectedFinalized<GeolocationController>, public Supplement<LocalFrame>, public PageLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(GeolocationController);
     WTF_MAKE_NONCOPYABLE(GeolocationController);
 public:
@@ -67,7 +67,7 @@ public:
     void pageVisibilityChanged() override;
 
     static const char* supplementName();
-    static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(HeapSupplement<LocalFrame>::from(frame, supplementName())); }
+    static GeolocationController* from(LocalFrame* frame) { return static_cast<GeolocationController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
 
     // Inherited from Supplement.
     DECLARE_VIRTUAL_TRACE();

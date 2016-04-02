@@ -22,7 +22,7 @@ const char* WorkerNavigatorPermissions::supplementName()
 // static
 WorkerNavigatorPermissions& WorkerNavigatorPermissions::from(WorkerNavigator& workerNavigator)
 {
-    WorkerNavigatorPermissions* supplement = static_cast<WorkerNavigatorPermissions*>(HeapSupplement<WorkerNavigator>::from(workerNavigator, supplementName()));
+    WorkerNavigatorPermissions* supplement = static_cast<WorkerNavigatorPermissions*>(Supplement<WorkerNavigator>::from(workerNavigator, supplementName()));
     if (!supplement) {
         supplement = new WorkerNavigatorPermissions();
         provideTo(workerNavigator, supplementName(), supplement);
@@ -42,7 +42,7 @@ Permissions* WorkerNavigatorPermissions::permissions(WorkerNavigator& workerNavi
 DEFINE_TRACE(WorkerNavigatorPermissions)
 {
     visitor->trace(m_permissions);
-    HeapSupplement<WorkerNavigator>::trace(visitor);
+    Supplement<WorkerNavigator>::trace(visitor);
 }
 
 } // namespace blink

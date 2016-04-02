@@ -184,10 +184,10 @@ bool NavigatorVibration::vibrate(Navigator& navigator, const VibrationPattern& p
 
 NavigatorVibration& NavigatorVibration::from(Page& page)
 {
-    NavigatorVibration* navigatorVibration = static_cast<NavigatorVibration*>(HeapSupplement<Page>::from(page, supplementName()));
+    NavigatorVibration* navigatorVibration = static_cast<NavigatorVibration*>(Supplement<Page>::from(page, supplementName()));
     if (!navigatorVibration) {
         navigatorVibration = new NavigatorVibration(page);
-        HeapSupplement<Page>::provideTo(page, supplementName(), navigatorVibration);
+        Supplement<Page>::provideTo(page, supplementName(), navigatorVibration);
     }
     return *navigatorVibration;
 }
@@ -199,7 +199,7 @@ const char* NavigatorVibration::supplementName()
 
 DEFINE_TRACE(NavigatorVibration)
 {
-    HeapSupplement<Page>::trace(visitor);
+    Supplement<Page>::trace(visitor);
     PageLifecycleObserver::trace(visitor);
 }
 

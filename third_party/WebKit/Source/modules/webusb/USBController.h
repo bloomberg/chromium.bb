@@ -16,7 +16,7 @@ class WebUSBClient;
 
 class MODULES_EXPORT USBController final
     : public GarbageCollectedFinalized<USBController>
-    , public HeapSupplement<LocalFrame>
+    , public Supplement<LocalFrame>
     , public LocalFrameLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(USBController);
     USING_GARBAGE_COLLECTED_MIXIN(USBController);

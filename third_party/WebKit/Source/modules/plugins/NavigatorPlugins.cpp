@@ -35,7 +35,7 @@ NavigatorPlugins& NavigatorPlugins::from(Navigator& navigator)
 // static
 NavigatorPlugins* NavigatorPlugins::toNavigatorPlugins(Navigator& navigator)
 {
-    return static_cast<NavigatorPlugins*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    return static_cast<NavigatorPlugins*>(Supplement<Navigator>::from(navigator, supplementName()));
 }
 
 // static
@@ -80,7 +80,7 @@ DEFINE_TRACE(NavigatorPlugins)
 {
     visitor->trace(m_plugins);
     visitor->trace(m_mimeTypes);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 

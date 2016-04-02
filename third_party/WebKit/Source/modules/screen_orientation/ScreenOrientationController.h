@@ -22,7 +22,7 @@ class WebScreenOrientationClient;
 
 class MODULES_EXPORT ScreenOrientationController final
     : public GarbageCollectedFinalized<ScreenOrientationController>
-    , public HeapSupplement<LocalFrame>
+    , public Supplement<LocalFrame>
     , public LocalFrameLifecycleObserver
     , public PlatformEventController {
     USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);

@@ -46,9 +46,9 @@ const char* WorkerGlobalScopePerformance::supplementName()
 
 WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::from(WorkerGlobalScope& context)
 {
-    WorkerGlobalScopePerformance* supplement = static_cast<WorkerGlobalScopePerformance*>(HeapSupplement<WorkerGlobalScope>::from(context, supplementName()));
+    WorkerGlobalScopePerformance* supplement = static_cast<WorkerGlobalScopePerformance*>(Supplement<WorkerGlobalScope>::from(context, supplementName()));
     if (!supplement) {
-        supplement = new WorkerGlobalScopePerformance();
+        supplement = new WorkerGlobalScopePerformance;
         provideTo(context, supplementName(), supplement);
     }
     return *supplement;
@@ -69,7 +69,7 @@ WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope* 
 DEFINE_TRACE(WorkerGlobalScopePerformance)
 {
     visitor->trace(m_performance);
-    HeapSupplement<WorkerGlobalScope>::trace(visitor);
+    Supplement<WorkerGlobalScope>::trace(visitor);
 }
 
 } // namespace blink

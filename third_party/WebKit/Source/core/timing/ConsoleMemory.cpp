@@ -12,7 +12,7 @@ namespace blink {
 // static
 ConsoleMemory& ConsoleMemory::from(Console& console)
 {
-    ConsoleMemory* supplement = static_cast<ConsoleMemory*>(HeapSupplement<Console>::from(console, supplementName()));
+    ConsoleMemory* supplement = static_cast<ConsoleMemory*>(Supplement<Console>::from(console, supplementName()));
     if (!supplement) {
         supplement = new ConsoleMemory();
         provideTo(console, supplementName(), supplement);

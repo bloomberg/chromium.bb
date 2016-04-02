@@ -21,10 +21,10 @@ const char* OriginTrials::supplementName()
 // static
 OriginTrials* OriginTrials::from(ExecutionContext* host)
 {
-    OriginTrials* originTrials = reinterpret_cast<OriginTrials*>(HeapSupplement<ExecutionContext>::from(host, supplementName()));
+    OriginTrials* originTrials = reinterpret_cast<OriginTrials*>(Supplement<ExecutionContext>::from(host, supplementName()));
     if (!originTrials) {
         originTrials = new OriginTrials(host->createOriginTrialContext());
-        HeapSupplement<ExecutionContext>::provideTo(*host, supplementName(), originTrials);
+        Supplement<ExecutionContext>::provideTo(*host, supplementName(), originTrials);
     }
     return originTrials;
 }
@@ -60,6 +60,6 @@ bool OriginTrials::{{feature.first_lowered_name}}EnabledImpl(String* errorMessag
 DEFINE_TRACE(OriginTrials)
 {
     visitor->trace(m_originTrialContext);
-    HeapSupplement<ExecutionContext>::trace(visitor);
+    Supplement<ExecutionContext>::trace(visitor);
 }
 } // namespace blink

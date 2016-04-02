@@ -16,16 +16,16 @@ namespace blink {
 
 class WebPushClient;
 
-class PushController final : public GarbageCollected<PushController>, public HeapSupplement<LocalFrame> {
+class PushController final : public GarbageCollected<PushController>, public Supplement<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(PushController);
     WTF_MAKE_NONCOPYABLE(PushController);
 public:
     static RawPtr<PushController> create(WebPushClient*);
     static const char* supplementName();
-    static PushController* from(LocalFrame* frame) { return static_cast<PushController*>(HeapSupplement<LocalFrame>::from(frame, supplementName())); }
+    static PushController* from(LocalFrame* frame) { return static_cast<PushController*>(Supplement<LocalFrame>::from(frame, supplementName())); }
     static WebPushClient& clientFrom(LocalFrame*);
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { HeapSupplement<LocalFrame>::trace(visitor); }
+    DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<LocalFrame>::trace(visitor); }
 
 private:
     explicit PushController(WebPushClient*);

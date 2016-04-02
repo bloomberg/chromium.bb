@@ -15,7 +15,7 @@ class DOMWindow;
 class ExceptionState;
 class Storage;
 
-class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>, public Supplement<LocalDOMWindow>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorage);
 public:
     static DOMWindowStorage& from(LocalDOMWindow&);

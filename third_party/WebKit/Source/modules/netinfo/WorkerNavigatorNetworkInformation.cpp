@@ -25,7 +25,7 @@ WorkerNavigatorNetworkInformation& WorkerNavigatorNetworkInformation::from(Worke
 
 WorkerNavigatorNetworkInformation* WorkerNavigatorNetworkInformation::toWorkerNavigatorNetworkInformation(WorkerNavigator& navigator, ExecutionContext* context)
 {
-    return static_cast<WorkerNavigatorNetworkInformation*>(HeapSupplement<WorkerNavigator>::from(navigator, supplementName()));
+    return static_cast<WorkerNavigatorNetworkInformation*>(Supplement<WorkerNavigator>::from(navigator, supplementName()));
 }
 
 const char* WorkerNavigatorNetworkInformation::supplementName()
@@ -41,7 +41,7 @@ NetworkInformation* WorkerNavigatorNetworkInformation::connection(ExecutionConte
 DEFINE_TRACE(WorkerNavigatorNetworkInformation)
 {
     visitor->trace(m_connection);
-    HeapSupplement<WorkerNavigator>::trace(visitor);
+    Supplement<WorkerNavigator>::trace(visitor);
 }
 
 NetworkInformation* WorkerNavigatorNetworkInformation::connection(ExecutionContext* context)

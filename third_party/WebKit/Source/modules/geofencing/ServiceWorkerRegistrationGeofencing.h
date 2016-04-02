@@ -13,7 +13,7 @@ namespace blink {
 class Geofencing;
 class ServiceWorkerRegistration;
 
-class ServiceWorkerRegistrationGeofencing final : public GarbageCollectedFinalized<ServiceWorkerRegistrationGeofencing>, public HeapSupplement<ServiceWorkerRegistration> {
+class ServiceWorkerRegistrationGeofencing final : public GarbageCollectedFinalized<ServiceWorkerRegistrationGeofencing>, public Supplement<ServiceWorkerRegistration> {
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationGeofencing);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerRegistrationGeofencing);
 public:

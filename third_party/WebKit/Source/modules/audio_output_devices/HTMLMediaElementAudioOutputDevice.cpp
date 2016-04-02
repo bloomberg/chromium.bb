@@ -117,7 +117,7 @@ const char* HTMLMediaElementAudioOutputDevice::supplementName()
 
 HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::from(HTMLMediaElement& element)
 {
-    HTMLMediaElementAudioOutputDevice* supplement = static_cast<HTMLMediaElementAudioOutputDevice*>(HeapSupplement<HTMLMediaElement>::from(element, supplementName()));
+    HTMLMediaElementAudioOutputDevice* supplement = static_cast<HTMLMediaElementAudioOutputDevice*>(Supplement<HTMLMediaElement>::from(element, supplementName()));
     if (!supplement) {
         supplement = new HTMLMediaElementAudioOutputDevice();
         provideTo(element, supplementName(), supplement);
@@ -127,7 +127,7 @@ HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::from(HTMLM
 
 DEFINE_TRACE(HTMLMediaElementAudioOutputDevice)
 {
-    HeapSupplement<HTMLMediaElement>::trace(visitor);
+    Supplement<HTMLMediaElement>::trace(visitor);
 }
 
 } // namespace blink

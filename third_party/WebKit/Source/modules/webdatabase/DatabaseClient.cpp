@@ -48,7 +48,7 @@ DEFINE_TRACE(DatabaseClient)
 
 DatabaseClient* DatabaseClient::fromPage(Page* page)
 {
-    return static_cast<DatabaseClient*>(HeapSupplement<Page>::from(page, supplementName()));
+    return static_cast<DatabaseClient*>(Supplement<Page>::from(page, supplementName()));
 }
 
 DatabaseClient* DatabaseClient::from(ExecutionContext* context)

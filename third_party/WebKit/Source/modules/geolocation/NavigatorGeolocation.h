@@ -30,7 +30,7 @@ class LocalFrame;
 class Geolocation;
 class Navigator;
 
-class NavigatorGeolocation final : public GarbageCollectedFinalized<NavigatorGeolocation>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorGeolocation final : public GarbageCollectedFinalized<NavigatorGeolocation>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
 public:
     static NavigatorGeolocation& from(Navigator&);

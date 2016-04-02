@@ -19,8 +19,8 @@ class WebServiceWorkerProvider;
 // Owned by Document (or WorkerClients).
 class MODULES_EXPORT ServiceWorkerContainerClient final
     : public GarbageCollectedFinalized<ServiceWorkerContainerClient>
-    , public HeapSupplement<Document>
-    , public HeapSupplement<WorkerClients> {
+    , public Supplement<Document>
+    , public Supplement<WorkerClients> {
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 public:
@@ -34,8 +34,8 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        HeapSupplement<Document>::trace(visitor);
-        HeapSupplement<WorkerClients>::trace(visitor);
+        Supplement<Document>::trace(visitor);
+        Supplement<WorkerClients>::trace(visitor);
     }
 
 protected:

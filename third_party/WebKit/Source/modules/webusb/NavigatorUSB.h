@@ -15,7 +15,7 @@ class USB;
 
 class NavigatorUSB final
     : public GarbageCollected<NavigatorUSB>
-    , public HeapSupplement<Navigator> {
+    , public Supplement<Navigator> {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorUSB);
 public:
     // Gets, or creates, NavigatorUSB supplement on Navigator.

@@ -79,7 +79,7 @@ NavigatorGamepad* NavigatorGamepad::from(Document& document)
 
 NavigatorGamepad& NavigatorGamepad::from(Navigator& navigator)
 {
-    NavigatorGamepad* supplement = static_cast<NavigatorGamepad*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorGamepad* supplement = static_cast<NavigatorGamepad*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorGamepad(navigator.frame());
         provideTo(navigator, supplementName(), supplement);
@@ -106,7 +106,7 @@ DEFINE_TRACE(NavigatorGamepad)
     visitor->trace(m_gamepads);
     visitor->trace(m_pendingEvents);
     visitor->trace(m_dispatchOneEventRunner);
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
     PlatformEventController::trace(visitor);
     DOMWindowLifecycleObserver::trace(visitor);

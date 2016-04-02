@@ -42,7 +42,7 @@ class PagePopup;
 class PagePopupClient;
 class PagePopupController;
 
-class CORE_EXPORT PagePopupSupplement final : public GarbageCollected<PagePopupSupplement>, public HeapSupplement<LocalFrame> {
+class CORE_EXPORT PagePopupSupplement final : public GarbageCollected<PagePopupSupplement>, public Supplement<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(PagePopupSupplement);
 public:
     static PagePopupController* pagePopupController(LocalFrame&);

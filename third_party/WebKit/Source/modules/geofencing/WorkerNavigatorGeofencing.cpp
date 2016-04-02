@@ -24,7 +24,7 @@ const char* WorkerNavigatorGeofencing::supplementName()
 
 WorkerNavigatorGeofencing& WorkerNavigatorGeofencing::from(WorkerNavigator& navigator)
 {
-    WorkerNavigatorGeofencing* supplement = static_cast<WorkerNavigatorGeofencing*>(HeapSupplement<WorkerNavigator>::from(navigator, supplementName()));
+    WorkerNavigatorGeofencing* supplement = static_cast<WorkerNavigatorGeofencing*>(Supplement<WorkerNavigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new WorkerNavigatorGeofencing();
         provideTo(navigator, supplementName(), supplement);
@@ -47,7 +47,7 @@ Geofencing* WorkerNavigatorGeofencing::geofencing()
 DEFINE_TRACE(WorkerNavigatorGeofencing)
 {
     visitor->trace(m_geofencing);
-    HeapSupplement<WorkerNavigator>::trace(visitor);
+    Supplement<WorkerNavigator>::trace(visitor);
 }
 
 } // namespace blink

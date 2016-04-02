@@ -38,7 +38,7 @@ UserMediaController::UserMediaController(UserMediaClient* client)
 
 DEFINE_TRACE(UserMediaController)
 {
-    HeapSupplement<LocalFrame>::trace(visitor);
+    Supplement<LocalFrame>::trace(visitor);
 }
 
 RawPtr<UserMediaController> UserMediaController::create(UserMediaClient* client)

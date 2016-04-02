@@ -18,7 +18,7 @@ class ScriptPromise;
 class ScriptState;
 class InstalledAppController;
 
-class NavigatorInstalledApp final : public GarbageCollectedFinalized<NavigatorInstalledApp>, public HeapSupplement<Navigator>, public DOMWindowProperty {
+class NavigatorInstalledApp final : public GarbageCollectedFinalized<NavigatorInstalledApp>, public Supplement<Navigator>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorInstalledApp);
 public:
     static NavigatorInstalledApp* from(Document&);

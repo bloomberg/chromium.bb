@@ -40,7 +40,7 @@ namespace blink {
 class DeprecatedStorageInfo;
 class DOMWindow;
 
-class DOMWindowQuota final : public GarbageCollected<DOMWindowQuota>, public HeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
+class DOMWindowQuota final : public GarbageCollected<DOMWindowQuota>, public Supplement<LocalDOMWindow>, public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(DOMWindowQuota);
 public:
     static DOMWindowQuota& from(LocalDOMWindow&);

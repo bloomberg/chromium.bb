@@ -42,7 +42,7 @@ DEFINE_TRACE(DOMWindowIndexedDatabase)
 {
     visitor->trace(m_window);
     visitor->trace(m_idbFactory);
-    HeapSupplement<LocalDOMWindow>::trace(visitor);
+    Supplement<LocalDOMWindow>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
@@ -53,7 +53,7 @@ const char* DOMWindowIndexedDatabase::supplementName()
 
 DOMWindowIndexedDatabase& DOMWindowIndexedDatabase::from(LocalDOMWindow& window)
 {
-    DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(HeapSupplement<LocalDOMWindow>::from(window, supplementName()));
+    DOMWindowIndexedDatabase* supplement = static_cast<DOMWindowIndexedDatabase*>(Supplement<LocalDOMWindow>::from(window, supplementName()));
     if (!supplement) {
         supplement = new DOMWindowIndexedDatabase(window);
         provideTo(window, supplementName(), supplement);

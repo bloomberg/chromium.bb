@@ -47,7 +47,7 @@ class KURL;
 class LocalFrame;
 class WebFileSystem;
 
-class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>, public HeapSupplement<LocalFrame>, public HeapSupplement<WorkerClients> {
+class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>, public Supplement<LocalFrame>, public Supplement<WorkerClients> {
     USING_GARBAGE_COLLECTED_MIXIN(LocalFileSystem);
     WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 public:
@@ -65,8 +65,8 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
-        HeapSupplement<LocalFrame>::trace(visitor);
-        HeapSupplement<WorkerClients>::trace(visitor);
+        Supplement<LocalFrame>::trace(visitor);
+        Supplement<WorkerClients>::trace(visitor);
     }
 
 protected:

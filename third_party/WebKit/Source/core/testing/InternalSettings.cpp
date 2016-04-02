@@ -102,9 +102,9 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 
 InternalSettings* InternalSettings::from(Page& page)
 {
-    if (!HeapSupplement<Page>::from(page, supplementName()))
-        HeapSupplement<Page>::provideTo(page, supplementName(), new InternalSettings(page));
-    return static_cast<InternalSettings*>(HeapSupplement<Page>::from(page, supplementName()));
+    if (!Supplement<Page>::from(page, supplementName()))
+        Supplement<Page>::provideTo(page, supplementName(), new InternalSettings(page));
+    return static_cast<InternalSettings*>(Supplement<Page>::from(page, supplementName()));
 }
 const char* InternalSettings::supplementName()
 {

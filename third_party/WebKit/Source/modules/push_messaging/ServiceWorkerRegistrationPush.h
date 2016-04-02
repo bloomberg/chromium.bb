@@ -13,7 +13,7 @@ namespace blink {
 class PushManager;
 class ServiceWorkerRegistration;
 
-class ServiceWorkerRegistrationPush final : public GarbageCollectedFinalized<ServiceWorkerRegistrationPush>, public HeapSupplement<ServiceWorkerRegistration> {
+class ServiceWorkerRegistrationPush final : public GarbageCollectedFinalized<ServiceWorkerRegistrationPush>, public Supplement<ServiceWorkerRegistration> {
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationPush);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerRegistrationPush);
 public:

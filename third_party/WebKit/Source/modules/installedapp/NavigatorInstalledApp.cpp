@@ -36,7 +36,7 @@ NavigatorInstalledApp* NavigatorInstalledApp::from(Document& document)
 
 NavigatorInstalledApp& NavigatorInstalledApp::from(Navigator& navigator)
 {
-    NavigatorInstalledApp* supplement = static_cast<NavigatorInstalledApp*>(HeapSupplement<Navigator>::from(navigator, supplementName()));
+    NavigatorInstalledApp* supplement = static_cast<NavigatorInstalledApp*>(Supplement<Navigator>::from(navigator, supplementName()));
     if (!supplement) {
         supplement = new NavigatorInstalledApp(navigator.frame());
         provideTo(navigator, supplementName(), supplement);
@@ -99,7 +99,7 @@ const char* NavigatorInstalledApp::supplementName()
 
 DEFINE_TRACE(NavigatorInstalledApp)
 {
-    HeapSupplement<Navigator>::trace(visitor);
+    Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
 
