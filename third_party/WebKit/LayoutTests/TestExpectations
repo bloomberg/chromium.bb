@@ -1357,14 +1357,6 @@ crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/resize-squas
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/squash-partial-repaint-inside-squashed-layer.html [ Failure ]
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/squashing-inside-preserve-3d-element.html [ Failure ]
 
-crbug.com/593079 fast/backgrounds/size/backgroundSize12.html [ NeedsRebaseline ]
-crbug.com/593079 fast/backgrounds/size/backgroundSize18.html [ NeedsRebaseline ]
-crbug.com/593079 fast/backgrounds/size/backgroundSize19.html [ NeedsRebaseline ]
-crbug.com/593079 fast/backgrounds/size/backgroundSize21.html [ NeedsRebaseline ]
-crbug.com/593079 fast/backgrounds/size/backgroundSize22.html [ NeedsRebaseline ]
-crbug.com/593079 fast/inline/inline-box-background-repeat-x.html [ NeedsRebaseline ]
-crbug.com/593079 css3/background/background-large-position-and-size-remains-stable.html [ NeedsRebaseline ]
-
 crbug.com/591902 [ Linux Mac10.10 Mac10.11 Retina ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
 
 crbug.com/592185 fast/repaint/fixed-right-in-page-scale.html [ Failure Pass ]
