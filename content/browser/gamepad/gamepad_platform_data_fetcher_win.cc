@@ -53,10 +53,25 @@ const WebUChar* GamepadSubTypeName(BYTE sub_type) {
   }
 }
 
+const WebUChar* XInputDllFileName() {
+  // Xinput.h defines filename (XINPUT_DLL) on different Windows versions, but
+  // Xinput.h specifies it in build time. Approach here uses the same values
+  // and it is resolving dll filename based on Windows version it is running on.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // For Windows 8 and 10, XINPUT_DLL is xinput1_4.dll.
+    return FILE_PATH_LITERAL("xinput1_4.dll");
+  } else if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
+    return FILE_PATH_LITERAL("xinput9_1_0.dll");
+  } else {
+    NOTREACHED();
+    return nullptr;
+  }
+}
+
 }  // namespace
 
 GamepadPlatformDataFetcherWin::GamepadPlatformDataFetcherWin()
-    : xinput_dll_(base::FilePath(FILE_PATH_LITERAL("xinput1_3.dll"))),
+    : xinput_dll_(base::FilePath(XInputDllFileName())),
       xinput_available_(GetXInputDllFunctions()) {
   for (size_t i = 0; i < WebGamepads::itemsLengthCap; ++i) {
     platform_pad_state_[i].status = DISCONNECTED;
@@ -317,10 +332,8 @@ void GamepadPlatformDataFetcherWin::GetRawInputPadData(
 bool GamepadPlatformDataFetcherWin::GetXInputDllFunctions() {
   xinput_get_capabilities_ = NULL;
   xinput_get_state_ = NULL;
-  xinput_enable_ = reinterpret_cast<XInputEnableFunc>(
+  XInputEnableFunc xinput_enable = reinterpret_cast<XInputEnableFunc>(
       xinput_dll_.GetFunctionPointer("XInputEnable"));
-  if (!xinput_enable_)
-    return false;
   xinput_get_capabilities_ = reinterpret_cast<XInputGetCapabilitiesFunc>(
       xinput_dll_.GetFunctionPointer("XInputGetCapabilities"));
   if (!xinput_get_capabilities_)
@@ -329,7 +342,10 @@ bool GamepadPlatformDataFetcherWin::GetXInputDllFunctions() {
       xinput_dll_.GetFunctionPointer("XInputGetState"));
   if (!xinput_get_state_)
     return false;
-  xinput_enable_(true);
+  if (xinput_enable) {
+    // XInputEnable is unavailable before Win8 and deprecated in Win10.
+    xinput_enable(true);
+  }
   return true;
 }
 

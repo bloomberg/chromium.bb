@@ -38,7 +38,6 @@ natives_blob.bin: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 snapshot_blob.bin: %(VersionDir)s\
 syzyasan_rtl.dll: %(VersionDir)s\
-xinput1_3.dll: %(VersionDir)s\
 #
 # Sub directories living in the version dir
 #

@@ -49,10 +49,8 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   typedef DWORD (WINAPI *XInputGetStateFunc)(
       DWORD dwUserIndex, XINPUT_STATE* pState);
 
-  // Get functions from dynamically loaded xinput1_3.dll. We don't use
-  // DELAYLOAD because the import library for Win8 SDK pulls xinput1_4 which
-  // isn't redistributable. Returns true if loading was successful. We include
-  // xinput1_3.dll with Chrome.
+  // Get functions from dynamically loading the xinput dll.
+  // Returns true if loading was successful.
   bool GetXInputDllFunctions();
 
   // Scan for connected XInput and DirectInput gamepads.
@@ -71,7 +69,6 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
 
   // Function pointers to XInput functionality, retrieved in
   // |GetXinputDllFunctions|.
-  XInputEnableFunc xinput_enable_;
   XInputGetCapabilitiesFunc xinput_get_capabilities_;
   XInputGetStateFunc xinput_get_state_;
 
