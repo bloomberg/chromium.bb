@@ -57,7 +57,7 @@ class ResourceRequest;
 // The ping loader is used by audit pings, beacon transmissions and image loads
 // during page unloading.
 //
-class CORE_EXPORT PingLoader : public RefCountedGarbageCollected<PingLoader>, public LocalFrameLifecycleObserver, private WebURLLoaderClient {
+class CORE_EXPORT PingLoader : public GarbageCollectedFinalized<PingLoader>, public LocalFrameLifecycleObserver, private WebURLLoaderClient {
     USING_GARBAGE_COLLECTED_MIXIN(PingLoader);
     WTF_MAKE_NONCOPYABLE(PingLoader);
 public:
@@ -98,6 +98,7 @@ private:
     Timer<PingLoader> m_timeout;
     String m_url;
     unsigned long m_identifier;
+    SelfKeepAlive<PingLoader> m_keepAlive;
 };
 
 } // namespace blink

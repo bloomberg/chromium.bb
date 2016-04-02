@@ -97,9 +97,9 @@ public:
         FetchInitiatorInfo initiatorInfo;
         initiatorInfo.name = FetchInitiatorTypeNames::beacon;
 
-        // Leak the loader, since it will kill itself as soon as it receives a response.
-        RawPtr<BeaconLoader> loader = new BeaconLoader(frame, request, initiatorInfo, AllowStoredCredentials);
-        loader->ref();
+        // The loader keeps itself alive until it receives a response and disposes itself.
+        BeaconLoader* loader = new BeaconLoader(frame, request, initiatorInfo, AllowStoredCredentials);
+        ASSERT_UNUSED(loader, loader);
         return true;
     }
 };
