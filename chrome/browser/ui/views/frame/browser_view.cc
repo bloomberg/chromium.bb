@@ -2215,18 +2215,32 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
 }
 
 void BrowserView::SetBookmarkBarParent(views::View* new_parent) {
+  // Because children are drawn in order, the child order also affects z-order:
+  // earlier children will appear "below" later ones.  This is important for ink
+  // drops, which are drawn with the z-order of the view that parents them.  Ink
+  // drops in the toolbar can spread beyond the toolbar bounds, so if the
+  // bookmark bar is attached, we want it to be below the toolbar so the toolbar
+  // ink drops draw atop it.  This doesn't cause a problem for interactions with
+  // the bookmark bar, since it does not host any ink drops that spread beyond
+  // its bounds.  If it did, we would need to change how ink drops are drawn.
+  // TODO(bruthig): Consider a more general mechanism for manipulating the
+  // z-order of the ink drops.
+
   if (new_parent == this) {
-    // Add it underneath |top_container_| or at the end if top container isn't
-    // found.
-    int top_container_index = GetIndexOf(top_container_);
-    if (top_container_index >= 0)
-      AddChildViewAt(bookmark_bar_view_.get(), top_container_index);
-    else
-      AddChildView(bookmark_bar_view_.get());
-  } else if (new_parent) {
-    // No special stacking is required for other parents.
-    new_parent->AddChildView(bookmark_bar_view_.get());
+    // BookmarkBarView is detached.
+    const int top_container_index = GetIndexOf(top_container_);
+    DCHECK_GE(top_container_index, 0);
+    // |top_container_| contains the toolbar, so putting the bookmark bar ahead
+    // of it will ensure it's drawn before the toolbar.
+    AddChildViewAt(bookmark_bar_view_.get(), top_container_index);
+  } else if (new_parent == top_container_) {
+    // BookmarkBarView is attached.
+
+    // The toolbar is a child of |top_container_|, so making the bookmark bar
+    // the first child ensures it's drawn before the toolbar.
+    new_parent->AddChildViewAt(bookmark_bar_view_.get(), 0);
   } else {
+    DCHECK(!new_parent);
     // Bookmark bar is being detached from all views because it is hidden.
     bookmark_bar_view_->parent()->RemoveChildView(bookmark_bar_view_.get());
   }
