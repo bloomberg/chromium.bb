@@ -163,12 +163,8 @@ ShareableElementData::ShareableElementData(const UniqueElementData& other)
 
 RawPtr<ShareableElementData> ShareableElementData::createWithAttributes(const Vector<Attribute>& attributes)
 {
-#if ENABLE(OILPAN)
     void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(attributes.size()));
-#else
-    void* slot = WTF::Partitions::fastMalloc(sizeForShareableElementDataWithAttributeCount(attributes.size()), WTF_HEAP_PROFILER_TYPE_NAME(ShareableElementData));
-#endif
-    return adoptRefWillBeNoop(new (slot) ShareableElementData(attributes));
+    return new (slot) ShareableElementData(attributes);
 }
 
 UniqueElementData::UniqueElementData()
@@ -203,12 +199,8 @@ RawPtr<UniqueElementData> UniqueElementData::create()
 
 RawPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
 {
-#if ENABLE(OILPAN)
     void* slot = Heap::allocate<ElementData>(sizeForShareableElementDataWithAttributeCount(m_attributeVector.size()));
-#else
-    void* slot = WTF::Partitions::fastMalloc(sizeForShareableElementDataWithAttributeCount(m_attributeVector.size()), WTF_HEAP_PROFILER_TYPE_NAME(ShareableElementData));
-#endif
-    return adoptRefWillBeNoop(new (slot) ShareableElementData(*this));
+    return new (slot) ShareableElementData(*this);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(UniqueElementData)

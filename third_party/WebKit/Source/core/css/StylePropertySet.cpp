@@ -48,12 +48,8 @@ static size_t sizeForImmutableStylePropertySetWithPropertyCount(unsigned count)
 RawPtr<ImmutableStylePropertySet> ImmutableStylePropertySet::create(const CSSProperty* properties, unsigned count, CSSParserMode cssParserMode)
 {
     ASSERT(count <= MaxArraySize);
-#if ENABLE(OILPAN)
     void* slot = Heap::allocate<StylePropertySet>(sizeForImmutableStylePropertySetWithPropertyCount(count));
-#else
-    void* slot = WTF::Partitions::fastMalloc(sizeForImmutableStylePropertySetWithPropertyCount(count), "blink::ImmutableStylePropertySet");
-#endif // ENABLE(OILPAN)
-    return adoptRefWillBeNoop(new (slot) ImmutableStylePropertySet(properties, count, cssParserMode));
+    return new (slot) ImmutableStylePropertySet(properties, count, cssParserMode);
 }
 
 RawPtr<ImmutableStylePropertySet> StylePropertySet::immutableCopyIfNeeded() const

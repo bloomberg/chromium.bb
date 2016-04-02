@@ -97,7 +97,7 @@ HitTestResult::HitTestResult(const HitTestResult& other)
     , m_isOverWidget(other.isOverWidget())
 {
     // Only copy the NodeSet in case of list hit test.
-    m_listBasedTestResult = adoptPtrWillBeNoop(other.m_listBasedTestResult ? new NodeSet(*other.m_listBasedTestResult) : 0);
+    m_listBasedTestResult = other.m_listBasedTestResult ? new NodeSet(*other.m_listBasedTestResult) : nullptr;
 }
 
 HitTestResult::~HitTestResult()
@@ -143,7 +143,7 @@ void HitTestResult::populateFromCachedResult(const HitTestResult& other)
     m_cacheable = other.m_cacheable;
 
     // Only copy the NodeSet in case of list hit test.
-    m_listBasedTestResult = adoptPtrWillBeNoop(other.m_listBasedTestResult ? new NodeSet(*other.m_listBasedTestResult) : 0);
+    m_listBasedTestResult = other.m_listBasedTestResult ? new NodeSet(*other.m_listBasedTestResult) : nullptr;
 }
 
 DEFINE_TRACE(HitTestResult)
@@ -152,9 +152,7 @@ DEFINE_TRACE(HitTestResult)
     visitor->trace(m_innerPossiblyPseudoNode);
     visitor->trace(m_innerURLElement);
     visitor->trace(m_scrollbar);
-#if ENABLE(OILPAN)
     visitor->trace(m_listBasedTestResult);
-#endif
 }
 
 PositionWithAffinity HitTestResult::position() const

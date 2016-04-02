@@ -1360,11 +1360,11 @@ Persistent<FinalizationObserverWithHashMap::ObserverMap>* FinalizationObserverWi
 
 class SuperClass;
 
-class PointsBack : public RefCountedWillBeGarbageCollectedFinalized<PointsBack> {
+class PointsBack : public GarbageCollectedFinalized<PointsBack> {
 public:
-    static PassRefPtrWillBeRawPtr<PointsBack> create()
+    static PointsBack* create()
     {
-        return adoptRefWillBeNoop(new PointsBack());
+        return new PointsBack;
     }
 
     ~PointsBack()
@@ -1391,16 +1391,16 @@ private:
         ++s_aliveCount;
     }
 
-    RawPtrWillBeWeakMember<SuperClass> m_backPointer;
+    WeakMember<SuperClass> m_backPointer;
 };
 
 int PointsBack::s_aliveCount = 0;
 
-class SuperClass : public RefCountedWillBeGarbageCollectedFinalized<SuperClass> {
+class SuperClass : public GarbageCollectedFinalized<SuperClass> {
 public:
-    static PassRefPtrWillBeRawPtr<SuperClass> create(PassRefPtrWillBeRawPtr<PointsBack> pointsBack)
+    static SuperClass* create(PointsBack* pointsBack)
     {
-        return adoptRefWillBeNoop(new SuperClass(pointsBack));
+        return new SuperClass(pointsBack);
     }
 
     virtual ~SuperClass()
@@ -1411,9 +1411,8 @@ public:
         --s_aliveCount;
     }
 
-    void doStuff(PassRefPtrWillBeRawPtr<SuperClass> targetPass, PointsBack* pointsBack, int superClassCount)
+    void doStuff(SuperClass* target, PointsBack* pointsBack, int superClassCount)
     {
-        RefPtrWillBeRawPtr<SuperClass> target = targetPass;
         conservativelyCollectGarbage();
         EXPECT_EQ(pointsBack, target->getPointsBack());
         EXPECT_EQ(superClassCount, SuperClass::s_aliveCount);
@@ -1428,7 +1427,7 @@ public:
 
     static int s_aliveCount;
 protected:
-    explicit SuperClass(PassRefPtrWillBeRawPtr<PointsBack> pointsBack)
+    explicit SuperClass(PointsBack* pointsBack)
         : m_pointsBack(pointsBack)
     {
         m_pointsBack->setBackPointer(this);
@@ -1436,11 +1435,11 @@ protected:
     }
 
 private:
-    RefPtrWillBeMember<PointsBack> m_pointsBack;
+    Member<PointsBack> m_pointsBack;
 };
 
 int SuperClass::s_aliveCount = 0;
-class SubData : public NoBaseWillBeGarbageCollectedFinalized<SubData> {
+class SubData : public GarbageCollectedFinalized<SubData> {
 public:
     SubData() { ++s_aliveCount; }
     ~SubData() { --s_aliveCount; }
@@ -1454,9 +1453,9 @@ int SubData::s_aliveCount = 0;
 
 class SubClass : public SuperClass {
 public:
-    static PassRefPtrWillBeRawPtr<SubClass> create(PassRefPtrWillBeRawPtr<PointsBack> pointsBack)
+    static SubClass* create(PointsBack* pointsBack)
     {
-        return adoptRefWillBeNoop(new SubClass(pointsBack));
+        return new SubClass(pointsBack);
     }
 
     ~SubClass() override
@@ -1472,24 +1471,24 @@ public:
 
     static int s_aliveCount;
 private:
-    explicit SubClass(PassRefPtrWillBeRawPtr<PointsBack> pointsBack)
+    explicit SubClass(PointsBack* pointsBack)
         : SuperClass(pointsBack)
-        , m_data(adoptPtrWillBeNoop(new SubData()))
+        , m_data(new SubData)
     {
         ++s_aliveCount;
     }
 
 private:
-    OwnPtrWillBeMember<SubData> m_data;
+    Member<SubData> m_data;
 };
 
 int SubClass::s_aliveCount = 0;
 
-class TransitionRefCounted : public RefCountedWillBeRefCountedGarbageCollected<TransitionRefCounted> {
+class TransitionRefCounted : public RefCountedGarbageCollected<TransitionRefCounted> {
 public:
-    static PassRefPtrWillBeRawPtr<TransitionRefCounted> create()
+    static TransitionRefCounted* create()
     {
-        return adoptRefWillBeNoop(new TransitionRefCounted());
+        return new TransitionRefCounted;
     }
 
     ~TransitionRefCounted()
@@ -1690,7 +1689,7 @@ private:
 TEST(HeapTest, Transition)
 {
     {
-        RefPtrWillBePersistent<TransitionRefCounted> refCounted = TransitionRefCounted::create();
+        Persistent<TransitionRefCounted> refCounted = TransitionRefCounted::create();
         EXPECT_EQ(1, TransitionRefCounted::s_aliveCount);
         preciselyCollectGarbage();
         EXPECT_EQ(1, TransitionRefCounted::s_aliveCount);
@@ -1698,10 +1697,10 @@ TEST(HeapTest, Transition)
     preciselyCollectGarbage();
     EXPECT_EQ(0, TransitionRefCounted::s_aliveCount);
 
-    RefPtrWillBePersistent<PointsBack> pointsBack1 = PointsBack::create();
-    RefPtrWillBePersistent<PointsBack> pointsBack2 = PointsBack::create();
-    RefPtrWillBePersistent<SuperClass> superClass = SuperClass::create(pointsBack1);
-    RefPtrWillBePersistent<SubClass> subClass = SubClass::create(pointsBack2);
+    Persistent<PointsBack> pointsBack1 = PointsBack::create();
+    Persistent<PointsBack> pointsBack2 = PointsBack::create();
+    Persistent<SuperClass> superClass = SuperClass::create(pointsBack1);
+    Persistent<SubClass> subClass = SubClass::create(pointsBack2);
     EXPECT_EQ(2, PointsBack::s_aliveCount);
     EXPECT_EQ(2, SuperClass::s_aliveCount);
     EXPECT_EQ(1, SubClass::s_aliveCount);
@@ -2434,10 +2433,10 @@ struct NeedsTracingTrait {
 // These class definitions test compile-time asserts with transition
 // types. They are therefore unused in test code and just need to
 // compile. This is intentional; do not delete the A and B classes below.
-class A : public WillBeGarbageCollectedMixin {
+class A : public GarbageCollectedMixin {
 };
 
-class B : public NoBaseWillBeGarbageCollected<B>, public A {
+class B : public GarbageCollected<B>, public A {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(B);
 public:
     DEFINE_INLINE_TRACE() { }
