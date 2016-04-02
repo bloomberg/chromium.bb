@@ -20,71 +20,6 @@
 namespace media {
 namespace internal {
 
-enum MediaFormatType { COMMON, PROPRIETARY };
-
-struct MediaFormat {
-  const char* const mime_type;
-  MediaFormatType format_type;
-  const char* const codecs_list;
-};
-
-// Strings used as the |codecs_list| only need one valid unambiguous variant for
-// each supported MimeUtil::Codec enum value. Each codec string is parsed and
-// mapped to corresponding MimeUtil::Codec value. See https://crbug.com/461009.
-#if defined(USE_PROPRIETARY_CODECS)
-static const char kMP4AudioCodecsExpression[] =
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-    "ac-3,ec-3,"  // AC-3 and E-AC-3.
-#endif
-    "mp4a.66,mp4a.69,mp4a.40.2";  // MPEG-2 AAC, MP3, and MPEG-4 AAC.
-static const char kMP4VideoCodecsExpression[] =
-    "avc1.42E00A,"
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    "hev1.1.6.L93.B0,"
-#endif
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-    "ac-3,ec-3,"  // AC-3 and E-AC-3.
-#endif
-    "mp4a.66,mp4a.69,mp4a.40.2";  // MPEG-2 AAC, MP3, and MPEG-4 AAC.
-#endif  // USE_PROPRIETARY_CODECS
-
-// A list of media types (https://en.wikipedia.org/wiki/Media_type) and
-// corresponding media codecs supported by these types/containers.
-// Media formats marked as PROPRIETARY are not supported by Chromium, only
-// Google Chrome browser supports them.
-static const MediaFormat kFormatCodecMappings[] = {
-    {"video/webm", COMMON, "opus,vorbis,vp8,vp9"},
-    {"audio/webm", COMMON, "opus,vorbis"},
-    {"audio/wav", COMMON, "1"},
-    {"audio/x-wav", COMMON, "1"},
-#if !defined(OS_ANDROID)
-    // Note: Android does not support Theora and thus video/ogg.
-    {"video/ogg", COMMON, "opus,theora,vorbis"},
-#endif
-    {"audio/ogg", COMMON, "opus,vorbis"},
-    // Note: Theora is not supported on Android and will be rejected during the
-    // call to IsCodecSupportedOnPlatform().
-    {"application/ogg", COMMON, "opus,theora,vorbis"},
-#if defined(USE_PROPRIETARY_CODECS)
-    {"audio/mpeg", PROPRIETARY, "mp3"},
-    {"audio/mp3", PROPRIETARY, ""},
-    {"audio/x-mp3", PROPRIETARY, ""},
-    {"audio/aac", PROPRIETARY, ""},  // AAC / ADTS
-    {"audio/mp4", PROPRIETARY, kMP4AudioCodecsExpression},
-    {"audio/x-m4a", PROPRIETARY, kMP4AudioCodecsExpression},
-    {"video/mp4", PROPRIETARY, kMP4VideoCodecsExpression},
-    {"video/x-m4v", PROPRIETARY, kMP4VideoCodecsExpression},
-#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
-    {"video/mp2t", PROPRIETARY, kMP4VideoCodecsExpression},
-#endif
-#if defined(OS_ANDROID)
-    // HTTP Live Streaming (HLS)
-    {"application/x-mpegurl", PROPRIETARY, kMP4VideoCodecsExpression},
-    {"application/vnd.apple.mpegurl", PROPRIETARY, kMP4VideoCodecsExpression}
-#endif
-#endif  // USE_PROPRIETARY_CODECS
-};
-
 struct CodecIDMappings {
   const char* const codec_id;
   MimeUtil::Codec codec;
@@ -99,7 +34,7 @@ static const CodecIDMappings kUnambiguousCodecStringMap[] = {
     // avc1/avc3.XXXXXX may be unambiguous; handled by ParseAVCCodecId().
     // hev1/hvc1.XXXXXX may be unambiguous; handled by ParseHEVCCodecID().
     {"mp3", MimeUtil::MP3},
-    // Following is the list of RFC 6381 compliant audio codecs:
+    // Following is the list of RFC 6381 compliant audio codec strings:
     //   mp4a.66     - MPEG-2 AAC MAIN
     //   mp4a.67     - MPEG-2 AAC LC
     //   mp4a.68     - MPEG-2 AAC SSR
@@ -297,7 +232,6 @@ SupportsType MimeUtil::AreSupportedCodecs(
 }
 
 void MimeUtil::InitializeMimeTypeMaps() {
-// Initialize the supported media types.
 #if defined(USE_PROPRIETARY_CODECS)
   allow_proprietary_codecs_ = true;
 #endif
@@ -312,23 +246,110 @@ void MimeUtil::InitializeMimeTypeMaps() {
         CodecEntry(kAmbiguousCodecStringMap[i].codec, true);
   }
 
-  // Initialize the supported media formats.
-  for (size_t i = 0; i < arraysize(kFormatCodecMappings); ++i) {
-    std::vector<std::string> mime_type_codecs;
-    ParseCodecString(kFormatCodecMappings[i].codecs_list, &mime_type_codecs,
-                     false);
+  AddSupportedMediaFormats();
+}
 
-    CodecSet codecs;
-    for (size_t j = 0; j < mime_type_codecs.size(); ++j) {
-      Codec codec = INVALID_CODEC;
-      bool is_ambiguous = true;
-      CHECK(StringToCodec(mime_type_codecs[j], &codec, &is_ambiguous));
-      DCHECK(!is_ambiguous);
-      codecs.insert(codec);
-    }
+// Each call to AddContainerWithCodecs() contains a media type
+// (https://en.wikipedia.org/wiki/Media_type) and corresponding media codec(s)
+// supported by these types/containers.
+//
+// Strings used as the |codecs_list| only need one valid unambiguous variant for
+// each supported MimeUtil::Codec enum value. Each codec string is parsed and
+// mapped to corresponding MimeUtil::Codec value. See https://crbug.com/461009.
+void MimeUtil::AddSupportedMediaFormats() {
+  const std::string ogg_audio_codecs = "opus,vorbis";
+  std::string ogg_video_codecs;
+#if !defined(OS_ANDROID)
+  ogg_video_codecs = "theora";
+#endif  // !defined(OS_ANDROID)
+  std::string ogg_codecs = ogg_audio_codecs;
+  if (!ogg_video_codecs.empty())
+    ogg_codecs += "," + ogg_video_codecs;
 
-    media_format_map_[kFormatCodecMappings[i].mime_type] = codecs;
+#if defined(USE_PROPRIETARY_CODECS)
+  const std::string aac = "mp4a.66,mp4a.40.2";  // MPEG-2 and MPEG-4 AAC.
+  const std::string mp3 = "mp4a.69";
+  const std::string avc = "avc1.42E00A";
+
+  const std::string avc_and_aac = avc + "," + aac;
+  std::string mp4_audio_codecs = aac + "," + mp3;
+#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+  mp4_audio_codecs += ",ac-3,ec-3";  // AC-3 and E-AC-3.
+#endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+
+  std::string mp4_video_codecs = avc;
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  mp4_video_codecs += ",hev1.1.6.L93.B0";
+#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  const std::string mp4_codecs = mp4_video_codecs + "," + mp4_audio_codecs;
+#endif  // defined(USE_PROPRIETARY_CODECS)
+
+  AddContainerWithCodecs("audio/wav", "1", false);
+  AddContainerWithCodecs("audio/x-wav", "1", false);
+  AddContainerWithCodecs("audio/webm", "opus,vorbis", false);
+  AddContainerWithCodecs("video/webm", "opus,vorbis,vp8,vp9", false);
+  AddContainerWithCodecs("audio/ogg", ogg_audio_codecs, false);
+  // video/ogg is only supported if an appropriate video codec is supported.
+  // Note: This assumes such codecs cannot be later excluded.
+  if (!ogg_video_codecs.empty())
+    AddContainerWithCodecs("video/ogg", ogg_codecs, false);
+  // TODO(ddorwin): Should the application type support Opus?
+  AddContainerWithCodecs("application/ogg", ogg_codecs, false);
+
+#if defined(USE_PROPRIETARY_CODECS)
+  AddContainerWithCodecs("audio/mpeg", "mp3", true);
+  AddContainerWithCodecs("audio/mp3", "", true);
+  AddContainerWithCodecs("audio/x-mp3", "", true);
+  AddContainerWithCodecs("audio/aac", "", true);  // AAC / ADTS
+  AddContainerWithCodecs("audio/mp4", mp4_audio_codecs, true);
+  DCHECK(!mp4_video_codecs.empty());
+  AddContainerWithCodecs("video/mp4", mp4_codecs, true);
+  // These strings are supported for backwards compatibility only and thus only
+  // support the codecs needed for compatibility.
+  AddContainerWithCodecs("audio/x-m4a", aac, true);
+  AddContainerWithCodecs("video/x-m4v", avc_and_aac, true);
+
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+  // TODO(ddorwin): Exactly which codecs should be supported?
+  DCHECK(!mp4_video_codecs.empty());
+  AddContainerWithCodecs("video/mp2t", mp4_codecs, true);
+#endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+#if defined(OS_ANDROID)
+  // HTTP Live Streaming (HLS).
+  // TODO(ddorwin): Is any MP3 codec string variant included in real queries?
+  const std::string hls_codecs = avc_and_aac + "," + mp3;
+  AddContainerWithCodecs("application/x-mpegurl", hls_codecs, true);
+  AddContainerWithCodecs("application/vnd.apple.mpegurl", hls_codecs, true);
+#endif  // defined(OS_ANDROID)
+#endif  // defined(USE_PROPRIETARY_CODECS)
+}
+
+// TODO(ddorwin): Replace |codecs_list| with a vector of MimeUtil::Codec values.
+// See https://crbug.com/461009.
+void MimeUtil::AddContainerWithCodecs(const std::string& mime_type,
+                                      const std::string& codecs_list,
+                                      bool is_proprietary_mime_type) {
+#if !defined(USE_PROPRIETARY_CODECS)
+  DCHECK(!is_proprietary_mime_type);
+#endif
+
+  std::vector<std::string> codec_strings;
+  ParseCodecString(codecs_list, &codec_strings, false);
+
+  CodecSet codecs;
+  for (const auto& codec_string : codec_strings) {
+    DCHECK(!codec_string.empty()) << codecs_list;
+    Codec codec = INVALID_CODEC;
+    bool is_ambiguous = true;
+    CHECK(StringToCodec(codec_string, &codec, &is_ambiguous));
+    DCHECK(!is_ambiguous) << codec_string;
+    codecs.insert(codec);
   }
+
+  media_format_map_[mime_type] = codecs;
+
+  if (is_proprietary_mime_type)
+    proprietary_media_containers_.push_back(mime_type);
 }
 
 bool MimeUtil::IsSupportedMediaMimeType(const std::string& mime_type) const {
@@ -407,9 +428,8 @@ SupportsType MimeUtil::IsSupportedMediaFormat(
 }
 
 void MimeUtil::RemoveProprietaryMediaTypesAndCodecs() {
-  for (size_t i = 0; i < arraysize(kFormatCodecMappings); ++i)
-    if (kFormatCodecMappings[i].format_type == PROPRIETARY)
-      media_format_map_.erase(kFormatCodecMappings[i].mime_type);
+  for (const auto& container : proprietary_media_containers_)
+    media_format_map_.erase(container);
   allow_proprietary_codecs_ = false;
 }
 

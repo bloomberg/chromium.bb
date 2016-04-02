@@ -87,8 +87,16 @@ class MEDIA_EXPORT MimeUtil {
   };
   typedef std::map<std::string, CodecEntry> StringToCodecMappings;
 
-  // For faster lookup, keep hash sets.
+  // Initializes the supported media types into hash sets for faster lookup.
   void InitializeMimeTypeMaps();
+
+  // Initializes the supported media formats (|media_format_map_|).
+  void AddSupportedMediaFormats();
+
+  // Adds |mime_type| with the specified codecs to |media_format_map_|.
+  void AddContainerWithCodecs(const std::string& mime_type,
+                              const std::string& codecs_list,
+                              bool is_proprietary_mime_type);
 
   // Returns IsSupported if all codec IDs in |codecs| are unambiguous and are
   // supported in |mime_type_lower_case|. MayBeSupported is returned if at least
@@ -144,8 +152,9 @@ class MEDIA_EXPORT MimeUtil {
   // A map of mime_types and hash map of the supported codecs for the mime_type.
   MediaFormatMappings media_format_map_;
 
-  // Keeps track of whether proprietary codec support should be
-  // advertised to callers.
+  // List of proprietary containers in |media_format_map_|.
+  std::vector<std::string> proprietary_media_containers_;
+  // Whether proprietary codec support should be advertised to callers.
   bool allow_proprietary_codecs_;
 
   // Lookup table for string compare based string -> Codec mappings.
