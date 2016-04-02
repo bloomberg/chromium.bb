@@ -186,6 +186,7 @@ TypeConverter<mojo::Array<device::usb::InterfaceInfoPtr>,
       // number, so add a new InterfaceInfo to the array and map the number.
       auto info = device::usb::InterfaceInfo::New();
       info->interface_number = interfaces[i].interface_number;
+      info->first_interface = interfaces[i].first_interface;
       iter = interface_map
                  .insert(
                      std::make_pair(interfaces[i].interface_number, info.get()))

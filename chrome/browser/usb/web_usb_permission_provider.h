@@ -32,8 +32,8 @@ class WebUSBPermissionProvider : public device::usb::PermissionProvider {
   bool HasConfigurationPermission(
       uint8_t requested_configuration,
       const device::usb::DeviceInfo& device_info) const override;
-  bool HasInterfacePermission(
-      uint8_t requested_interface,
+  bool HasFunctionPermission(
+      uint8_t requested_function,
       uint8_t configuration_value,
       const device::usb::DeviceInfo& device_info) const override;
 

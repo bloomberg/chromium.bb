@@ -756,15 +756,13 @@ void UsbDeviceHandleImpl::GenericTransfer(UsbEndpointDirection direction,
   }
 }
 
-bool UsbDeviceHandleImpl::FindInterfaceByEndpoint(uint8_t endpoint_address,
-                                                  uint8_t* interface_number) {
+const UsbInterfaceDescriptor* UsbDeviceHandleImpl::FindInterfaceByEndpoint(
+    uint8_t endpoint_address) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const auto endpoint_it = endpoint_map_.find(endpoint_address);
-  if (endpoint_it != endpoint_map_.end()) {
-    *interface_number = endpoint_it->second.interface_number;
-    return true;
-  }
-  return false;
+  if (endpoint_it != endpoint_map_.end())
+    return endpoint_it->second.interface;
+  return nullptr;
 }
 
 UsbDeviceHandleImpl::UsbDeviceHandleImpl(
@@ -908,8 +906,7 @@ void UsbDeviceHandleImpl::RefreshEndpointMap() {
         if (iface.interface_number == interface_number &&
             iface.alternate_setting == claimed_iface->alternate_setting()) {
           for (const UsbEndpointDescriptor& endpoint : iface.endpoints) {
-            endpoint_map_[endpoint.address] = {interface_number,
-                                               endpoint.transfer_type};
+            endpoint_map_[endpoint.address] = {&iface, &endpoint};
           }
           break;
         }
@@ -922,7 +919,7 @@ scoped_refptr<UsbDeviceHandleImpl::InterfaceClaimer>
 UsbDeviceHandleImpl::GetClaimedInterfaceForEndpoint(uint8_t endpoint) {
   const auto endpoint_it = endpoint_map_.find(endpoint);
   if (endpoint_it != endpoint_map_.end())
-    return claimed_interfaces_[endpoint_it->second.interface_number];
+    return claimed_interfaces_[endpoint_it->second.interface->interface_number];
   return nullptr;
 }
 
@@ -1058,7 +1055,7 @@ void UsbDeviceHandleImpl::GenericTransferInternal(
   }
 
   scoped_ptr<Transfer> transfer;
-  UsbTransferType transfer_type = endpoint_it->second.transfer_type;
+  UsbTransferType transfer_type = endpoint_it->second.endpoint->transfer_type;
   if (transfer_type == USB_TRANSFER_BULK) {
     transfer = Transfer::CreateBulkTransfer(this, endpoint_address, buffer,
                                             static_cast<int>(length), timeout,

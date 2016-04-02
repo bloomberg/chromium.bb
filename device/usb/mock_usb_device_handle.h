@@ -64,8 +64,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                     size_t length,
                     unsigned int timeout,
                     const TransferCallback& callback));
-  MOCK_METHOD2(FindInterfaceByEndpoint,
-               bool(uint8_t endpoint_address, uint8_t* interface_number));
+  MOCK_METHOD1(FindInterfaceByEndpoint,
+               const UsbInterfaceDescriptor*(uint8_t endpoint_address));
 
  private:
   ~MockUsbDeviceHandle() override;

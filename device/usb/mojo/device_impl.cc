@@ -165,15 +165,23 @@ bool DeviceImpl::HasControlTransferPermission(
     if (!config)
       return false;
 
-    uint8_t interface_number = index & 0xff;
-    if (recipient == ControlTransferRecipient::ENDPOINT &&
-        !device_handle_->FindInterfaceByEndpoint(index & 0xff,
-                                                 &interface_number)) {
-      return false;
+    const UsbInterfaceDescriptor* interface = nullptr;
+    if (recipient == ControlTransferRecipient::ENDPOINT) {
+      interface = device_handle_->FindInterfaceByEndpoint(index & 0xff);
+    } else {
+      auto interface_it =
+          std::find_if(config->interfaces.begin(), config->interfaces.end(),
+                       [index](const UsbInterfaceDescriptor& this_iface) {
+                         return this_iface.interface_number == (index & 0xff);
+                       });
+      if (interface_it != config->interfaces.end())
+        interface = &*interface_it;
     }
+    if (interface == nullptr)
+      return false;
 
-    return permission_provider_->HasInterfacePermission(
-        interface_number, config->configuration_value, *device_info_);
+    return permission_provider_->HasFunctionPermission(
+        interface->first_interface, config->configuration_value, *device_info_);
   } else if (config) {
     return permission_provider_->HasConfigurationPermission(
         config->configuration_value, *device_info_);
@@ -236,9 +244,20 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
     return;
   }
 
+  auto interface_it =
+      std::find_if(config->interfaces.begin(), config->interfaces.end(),
+                   [interface_number](const UsbInterfaceDescriptor& interface) {
+                     return interface.interface_number == interface_number;
+                   });
+  if (interface_it == config->interfaces.end()) {
+    callback.Run(false);
+    return;
+  }
+
   if (permission_provider_ &&
-      permission_provider_->HasInterfacePermission(
-          interface_number, config->configuration_value, *device_info_)) {
+      permission_provider_->HasFunctionPermission(interface_it->first_interface,
+                                                  config->configuration_value,
+                                                  *device_info_)) {
     device_handle_->ClaimInterface(interface_number,
                                    WrapMojoCallback(callback));
   } else {

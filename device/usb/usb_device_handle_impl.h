@@ -32,8 +32,8 @@ class IOBuffer;
 namespace device {
 
 struct EndpointMapValue {
-  int interface_number;
-  UsbTransferType transfer_type;
+  const UsbInterfaceDescriptor* interface;
+  const UsbEndpointDescriptor* endpoint;
 };
 
 class UsbContext;
@@ -91,8 +91,8 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                        size_t length,
                        unsigned int timeout,
                        const TransferCallback& callback) override;
-  bool FindInterfaceByEndpoint(uint8_t endpoint_address,
-                               uint8_t* interface_number) override;
+  const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
+      uint8_t endpoint_address) override;
 
  protected:
   friend class UsbDeviceImpl;

@@ -20,7 +20,7 @@
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/mojo/device_impl.h"
-#include "device/usb/mojo/fake_permission_provider.h"
+#include "device/usb/mojo/mock_permission_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Invoke;
@@ -47,7 +47,7 @@ class USBDeviceManagerImplTest : public testing::Test {
   MockDeviceClient device_client_;
 
  private:
-  FakePermissionProvider permission_provider_;
+  MockPermissionProvider permission_provider_;
   scoped_ptr<base::MessageLoop> message_loop_;
 };
 

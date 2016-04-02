@@ -23,9 +23,9 @@ class PermissionProvider {
   virtual bool HasConfigurationPermission(
       uint8_t requested_configuration,
       const DeviceInfo& device_info) const = 0;
-  virtual bool HasInterfacePermission(uint8_t requested_interface,
-                                      uint8_t configuration_value,
-                                      const DeviceInfo& device_info) const = 0;
+  virtual bool HasFunctionPermission(uint8_t requested_function,
+                                     uint8_t configuration_value,
+                                     const DeviceInfo& device_info) const = 0;
 };
 
 }  // namespace usb

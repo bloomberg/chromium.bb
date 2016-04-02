@@ -27,7 +27,7 @@ namespace {
 bool FindOriginInDescriptorSet(const WebUsbDescriptorSet* set,
                                const GURL& origin,
                                const uint8_t* configuration_value,
-                               const uint8_t* interface_number) {
+                               const uint8_t* first_interface) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebUsbSecurity))
     return true;
@@ -47,9 +47,7 @@ bool FindOriginInDescriptorSet(const WebUsbDescriptorSet* set,
         return true;
     for (size_t j = 0; j < config->functions.size(); ++j) {
       const WebUsbFunctionSubsetPtr& function = config->functions[j];
-      // TODO(reillyg): Implement support for Interface Association Descriptors
-      // so that this check will match associated interfaces.
-      if (interface_number && *interface_number != function->first_interface)
+      if (first_interface && *first_interface != function->first_interface)
         continue;
       for (size_t k = 0; k < function->origins.size(); ++k)
         if (origin.spec() == function->origins[k])
@@ -105,13 +103,13 @@ bool WebUSBPermissionProvider::HasConfigurationPermission(
       &requested_configuration_value, nullptr);
 }
 
-bool WebUSBPermissionProvider::HasInterfacePermission(
-    uint8_t requested_interface,
+bool WebUSBPermissionProvider::HasFunctionPermission(
+    uint8_t requested_function,
     uint8_t configuration_value,
     const device::usb::DeviceInfo& device_info) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return FindOriginInDescriptorSet(
       device_info.webusb_allowed_origins.get(),
       render_frame_host_->GetLastCommittedURL().GetOrigin(),
-      &configuration_value, &requested_interface);
+      &configuration_value, &requested_function);
 }

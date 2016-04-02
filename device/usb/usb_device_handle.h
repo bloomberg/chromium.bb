@@ -111,10 +111,10 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                unsigned int timeout,
                                const TransferCallback& callback) = 0;
 
-  // Gets the interface containing |endpoint_address|. Returns false if no
+  // Gets the interface containing |endpoint_address|. Returns nullptr if no
   // claimed interface contains that endpoint.
-  virtual bool FindInterfaceByEndpoint(uint8_t endpoint_address,
-                                       uint8_t* interface_number) = 0;
+  virtual const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
+      uint8_t endpoint_address) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<UsbDeviceHandle>;

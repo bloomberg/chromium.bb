@@ -58,6 +58,9 @@ struct AlternateInterfaceInfo {
 
 struct InterfaceInfo {
   uint8 interface_number;
+  // Interface number of the first interface in the function to which this
+  // interface belongs.
+  uint8 first_interface;
   array<AlternateInterfaceInfo> alternates;
 };
 

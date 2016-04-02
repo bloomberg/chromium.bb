@@ -230,10 +230,10 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     }
   }
 
-  bool FindInterfaceByEndpoint(uint8_t endpoint_address,
-                               uint8_t* interface_number) {
+  const UsbInterfaceDescriptor* FindInterfaceByEndpoint(
+      uint8_t endpoint_address) {
     NOTIMPLEMENTED();
-    return false;
+    return nullptr;
   }
 
   template <class D>
