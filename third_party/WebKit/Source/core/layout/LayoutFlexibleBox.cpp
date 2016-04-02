@@ -288,8 +288,13 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
 
         layoutFlexItems(relayoutChildren, layoutScope);
 
-        if (LayoutBlock::finishDelayUpdateScrollInfo(&layoutScope))
+        ScrollPositionMap scrollMap;
+        if (LayoutBlock::finishDelayUpdateScrollInfo(&layoutScope, &scrollMap)) {
             layoutFlexItems(false, layoutScope);
+            for (auto& entry : scrollMap) {
+                entry.key->scrollToPosition(entry.value);
+            }
+        }
 
         if (logicalHeight() != previousHeight)
             relayoutChildren = true;
