@@ -53,10 +53,6 @@ class WebGraphicsContext3D : public WebNonCopyable {
 public:
     // Context creation attributes.
     struct Attributes {
-        bool alpha = true;
-        bool depth = true;
-        bool stencil = true;
-        bool antialias = true;
         bool shareResources = true;
         bool preferDiscreteGPU = false;
         bool noAutomaticFlushes = false;

@@ -237,15 +237,18 @@ public:
     {
         OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
         RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(contextProvider, extensionsUtil.release(), preserve));
-        if (!drawingBuffer->initialize(size)) {
+        bool wantDepthBuffer = false;
+        bool wantStencilBuffer = false;
+        bool multisampleExtensionSupported = false;
+        if (!drawingBuffer->initialize(size, wantDepthBuffer, wantStencilBuffer, multisampleExtensionSupported)) {
             drawingBuffer->beginDestruction();
-            return PassRefPtr<DrawingBufferForTests>();
+            return nullptr;
         }
         return drawingBuffer.release();
     }
 
     DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
-        : DrawingBuffer(contextProvider, extensionsUtil, false /* multisampleExtensionSupported */, false /* discardFramebufferSupported */, false /* premultipliedAlpha */, preserve, WebGraphicsContext3D::Attributes())
+        : DrawingBuffer(contextProvider, extensionsUtil, false /* discardFramebufferSupported */, true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve)
         , m_live(0)
     { }
 
@@ -287,6 +290,7 @@ protected:
         m_context = context.get();
         OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(context.release(), gl.release()));
         m_drawingBuffer = DrawingBufferForTests::create(provider.release(), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
+        CHECK(m_drawingBuffer);
     }
 
     WebGraphicsContext3DForTests* webContext()
@@ -312,7 +316,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
     EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
 
     // Resize to 100x50.
-    m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight));
+    m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight), false);
     m_drawingBuffer->mailboxReleased(mailbox, false);
 
     // Produce a mailbox at this size.
@@ -321,7 +325,7 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
     EXPECT_EQ(alternateSize, webContext()->mostRecentlyProducedSize());
 
     // Reset to initial size.
-    m_drawingBuffer->reset(IntSize(initialWidth, initialHeight));
+    m_drawingBuffer->reset(IntSize(initialWidth, initialHeight), false);
     m_drawingBuffer->mailboxReleased(mailbox, false);
 
     // Prepare another mailbox and verify that it's the correct size.
@@ -520,6 +524,7 @@ protected:
         EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId0)).Times(1);
         m_drawingBuffer = DrawingBufferForTests::create(provider.release(),
             IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
+        CHECK(m_drawingBuffer);
         testing::Mock::VerifyAndClearExpectations(webContext());
     }
 
@@ -552,7 +557,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId0)).Times(1);
     EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId0)).Times(1);
     // Resize to 100x50.
-    m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight));
+    m_drawingBuffer->reset(IntSize(initialWidth, alternateHeight), false);
     m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
@@ -572,7 +577,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId2)).Times(1);
     EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId2)).Times(1);
     // Reset to initial size.
-    m_drawingBuffer->reset(IntSize(initialWidth, initialHeight));
+    m_drawingBuffer->reset(IntSize(initialWidth, initialHeight), false);
     m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
@@ -631,12 +636,6 @@ public:
     void GetIntegerv(GLenum ptype, GLint* value) override
     {
         switch (ptype) {
-        case GL_DEPTH_BITS:
-            *value = (m_depthAttachment || m_depthStencilAttachment) ? 24 : 0;
-            return;
-        case GL_STENCIL_BITS:
-            *value = (m_stencilAttachment || m_depthStencilAttachment) ? 8 : 0;
-            return;
         case GL_MAX_TEXTURE_SIZE:
             *value = 1024;
             return;
@@ -721,13 +720,24 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
         OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(context.release(), gl.release()));
         DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::Preserve;
 
-        WebGraphicsContext3D::Attributes requestedAttributes;
-        requestedAttributes.stencil = cases[i].requestStencil;
-        requestedAttributes.depth = cases[i].requestDepth;
-        RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(provider.release(), IntSize(10, 10), false /* premultipliedAlpha */, preserve, requestedAttributes);
+        bool premultipliedAlpha = false;
+        bool wantAlphaChannel = true;
+        bool wantDepthBuffer = cases[i].requestDepth;
+        bool wantStencilBuffer = cases[i].requestStencil;
+        bool wantAntialiasing = false;
+        RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(
+            provider.release(),
+            IntSize(10, 10),
+            premultipliedAlpha,
+            wantAlphaChannel,
+            wantDepthBuffer,
+            wantStencilBuffer,
+            wantAntialiasing,
+            preserve);
 
-        EXPECT_EQ(cases[i].requestDepth, drawingBuffer->getActualAttributes().depth);
-        EXPECT_EQ(cases[i].requestStencil, drawingBuffer->getActualAttributes().stencil);
+        // When we request a depth or a stencil buffer, we will get both.
+        EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil, drawingBuffer->hasDepthBuffer());
+        EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil, drawingBuffer->hasStencilBuffer());
         EXPECT_EQ(cases[i].expectedRenderBuffers, trackingContext->numAllocatedRenderBuffer());
         if (cases[i].requestDepth || cases[i].requestStencil) {
             EXPECT_NE(0u, trackingContext->depthStencilAttachment());
@@ -739,9 +749,9 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
             EXPECT_EQ(0u, trackingContext->stencilAttachment());
         }
 
-        drawingBuffer->reset(IntSize(10, 20));
-        EXPECT_EQ(cases[i].requestDepth, drawingBuffer->getActualAttributes().depth);
-        EXPECT_EQ(cases[i].requestStencil, drawingBuffer->getActualAttributes().stencil);
+        drawingBuffer->reset(IntSize(10, 20), false);
+        EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil, drawingBuffer->hasDepthBuffer());
+        EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil, drawingBuffer->hasStencilBuffer());
         EXPECT_EQ(cases[i].expectedRenderBuffers, trackingContext->numAllocatedRenderBuffer());
         if (cases[i].requestDepth || cases[i].requestStencil) {
             EXPECT_NE(0u, trackingContext->depthStencilAttachment());

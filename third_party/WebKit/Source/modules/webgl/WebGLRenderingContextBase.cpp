@@ -562,7 +562,7 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGra
         return nullptr;
     }
 
-    WebGraphicsContext3D::Attributes wgc3dAttributes = toWebGraphicsContext3DAttributes(attributes, document.topDocument().url().getString(), settings, webGLVersion);
+    WebGraphicsContext3D::Attributes wgc3dAttributes = toWebGraphicsContext3DAttributes(attributes, document.topDocument().url().getString(), webGLVersion);
     Platform::GraphicsInfo glInfo;
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(wgc3dAttributes, 0, &glInfo));
     if (!contextProvider || shouldFailContextCreationForTesting) {
@@ -879,14 +879,21 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
 
 PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider)
 {
-    WebGraphicsContext3D::Attributes attrs;
-    attrs.alpha = m_requestedAttributes.alpha();
-    attrs.depth = m_requestedAttributes.depth();
-    attrs.stencil = m_requestedAttributes.stencil();
-    attrs.antialias = m_requestedAttributes.antialias();
     bool premultipliedAlpha = m_requestedAttributes.premultipliedAlpha();
+    bool wantAlphaChannel = m_requestedAttributes.alpha();
+    bool wantDepthBuffer = m_requestedAttributes.depth();
+    bool wantStencilBuffer = m_requestedAttributes.stencil();
+    bool wantAntialiasing = m_requestedAttributes.antialias();
     DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes.preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    return DrawingBuffer::create(contextProvider, clampedCanvasSize(), premultipliedAlpha, preserve, attrs);
+    return DrawingBuffer::create(
+        contextProvider,
+        clampedCanvasSize(),
+        premultipliedAlpha,
+        wantAlphaChannel,
+        wantDepthBuffer,
+        wantStencilBuffer,
+        wantAntialiasing,
+        preserve);
 }
 
 void WebGLRenderingContextBase::initializeNewContext()
@@ -1298,7 +1305,8 @@ void WebGLRenderingContextBase::reshape(int width, int height)
 
     // We don't have to mark the canvas as dirty, since the newly created image buffer will also start off
     // clear (and this matches what reshape will do).
-    drawingBuffer()->reset(IntSize(width, height));
+    bool wantDepthOrStencilBuffer = m_requestedAttributes.depth() || m_requestedAttributes.stencil();
+    drawingBuffer()->reset(IntSize(width, height), wantDepthOrStencilBuffer);
     restoreStateAfterClear();
 
     contextGL()->BindTexture(GL_TEXTURE_2D, objectOrZero(m_textureUnits[m_activeTextureUnit].m_texture2DBinding.get()));
@@ -2405,10 +2413,9 @@ void WebGLRenderingContextBase::getContextAttributes(Nullable<WebGLContextAttrib
     result.set(m_requestedAttributes);
     // Some requested attributes may not be honored, so we need to query the underlying
     // context/drawing buffer and adjust accordingly.
-    WebGraphicsContext3D::Attributes attrs = drawingBuffer()->getActualAttributes();
-    if (m_requestedAttributes.depth() && !attrs.depth)
+    if (m_requestedAttributes.depth() && !drawingBuffer()->hasDepthBuffer())
         result.get().setDepth(false);
-    if (m_requestedAttributes.stencil() && !attrs.stencil)
+    if (m_requestedAttributes.stencil() && !drawingBuffer()->hasStencilBuffer())
         result.get().setStencil(false);
     result.get().setAntialias(drawingBuffer()->multisample());
 }
@@ -5999,7 +6006,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
         m_drawingBuffer.clear();
     }
 
-    WebGraphicsContext3D::Attributes attributes = toWebGraphicsContext3DAttributes(m_requestedAttributes, canvas()->document().topDocument().url().getString(), settings, version());
+    WebGraphicsContext3D::Attributes attributes = toWebGraphicsContext3DAttributes(m_requestedAttributes, canvas()->document().topDocument().url().getString(), version());
     Platform::GraphicsInfo glInfo;
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(attributes, 0, &glInfo));
     RefPtr<DrawingBuffer> buffer;

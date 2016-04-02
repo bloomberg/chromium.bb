@@ -90,7 +90,7 @@ static bool shouldFailDrawingBufferCreationForTesting = false;
 
 } // namespace
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, bool premultipliedAlpha, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, bool premultipliedAlpha, bool wantAlphaChannel, bool wantDepthBuffer, bool wantStencilBuffer, bool wantAntialiasing, PreserveDrawingBuffer preserve)
 {
     ASSERT(contextProvider);
 
@@ -106,8 +106,9 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DP
     }
     ASSERT(extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"));
     extensionsUtil->ensureExtensionEnabled("GL_OES_packed_depth_stencil");
-    bool multisampleSupported = (extensionsUtil->supportsExtension("GL_CHROMIUM_framebuffer_multisample")
-        || extensionsUtil->supportsExtension("GL_EXT_multisampled_render_to_texture"))
+    bool multisampleSupported = wantAntialiasing
+        && (extensionsUtil->supportsExtension("GL_CHROMIUM_framebuffer_multisample")
+            || extensionsUtil->supportsExtension("GL_EXT_multisampled_render_to_texture"))
         && extensionsUtil->supportsExtension("GL_OES_rgb8_rgba8");
     if (multisampleSupported) {
         extensionsUtil->ensureExtensionEnabled("GL_OES_rgb8_rgba8");
@@ -120,8 +121,8 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DP
     if (discardFramebufferSupported)
         extensionsUtil->ensureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(contextProvider), extensionsUtil.release(), multisampleSupported, discardFramebufferSupported, premultipliedAlpha, preserve, requestedAttributes));
-    if (!drawingBuffer->initialize(size)) {
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(contextProvider), extensionsUtil.release(), discardFramebufferSupported, wantAlphaChannel, premultipliedAlpha, preserve));
+    if (!drawingBuffer->initialize(size, wantDepthBuffer, wantStencilBuffer, multisampleSupported)) {
         drawingBuffer->beginDestruction();
         return PassRefPtr<DrawingBuffer>();
     }
@@ -133,7 +134,13 @@ void DrawingBuffer::forceNextDrawingBufferCreationToFail()
     shouldFailDrawingBufferCreationForTesting = true;
 }
 
-DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, bool multisampleExtensionSupported, bool discardFramebufferSupported, bool premultipliedAlpha, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
+DrawingBuffer::DrawingBuffer(
+    PassOwnPtr<WebGraphicsContext3DProvider> contextProvider,
+    PassOwnPtr<Extensions3DUtil> extensionsUtil,
+    bool discardFramebufferSupported,
+    bool wantAlphaChannel,
+    bool premultipliedAlpha,
+    PreserveDrawingBuffer preserve)
     : m_preserveDrawingBuffer(preserve)
     , m_scissorEnabled(false)
     , m_texture2DBinding(0)
@@ -145,10 +152,10 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider> contextPro
     , m_gl(m_contextProvider->contextGL())
     , m_extensionsUtil(std::move(extensionsUtil))
     , m_size(-1, -1)
-    , m_requestedAttributes(requestedAttributes)
-    , m_multisampleExtensionSupported(multisampleExtensionSupported)
     , m_discardFramebufferSupported(discardFramebufferSupported)
+    , m_wantAlphaChannel(wantAlphaChannel)
     , m_premultipliedAlpha(premultipliedAlpha)
+    , m_hasImplicitStencilBuffer(false)
     , m_fbo(0)
     , m_depthStencilBuffer(0)
     , m_multisampleFBO(0)
@@ -268,7 +275,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
         bitmap->setSize(size());
 
         unsigned char* pixels = bitmap->pixels();
-        bool needPremultiply = m_actualAttributes.alpha && !m_premultipliedAlpha;
+        bool needPremultiply = m_wantAlphaChannel && !m_premultipliedAlpha;
         WebGLImageConversion::AlphaOp op = needPremultiply ? WebGLImageConversion::AlphaDoPremultiply : WebGLImageConversion::AlphaDoNothing;
         if (pixels)
             readBackFramebuffer(pixels, size().width(), size().height(), ReadbackSkia, op);
@@ -282,9 +289,8 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     RefPtr<MailboxInfo> frontColorBufferMailbox = recycledMailbox();
 
     // No buffer available to recycle, create a new one.
-    if (!frontColorBufferMailbox) {
+    if (!frontColorBufferMailbox)
         frontColorBufferMailbox = createNewMailbox(createTextureAndAllocateMemory(m_size));
-    }
 
     if (m_preserveDrawingBuffer == Discard) {
         std::swap(frontColorBufferMailbox->textureInfo, m_colorBuffer);
@@ -367,7 +373,7 @@ DrawingBuffer::TextureParameters DrawingBuffer::defaultTextureParameters()
 {
     TextureParameters parameters;
     parameters.target = GL_TEXTURE_2D;
-    if (m_requestedAttributes.alpha) {
+    if (m_wantAlphaChannel) {
         parameters.internalColorFormat = GL_RGBA;
         parameters.colorFormat = GL_RGBA;
         parameters.internalRenderbufferFormat = GL_RGBA8_OES;
@@ -449,7 +455,7 @@ void DrawingBuffer::deleteMailbox(const WebExternalTextureMailbox& mailbox)
     ASSERT_NOT_REACHED();
 }
 
-bool DrawingBuffer::initialize(const IntSize& size)
+bool DrawingBuffer::initialize(const IntSize& size, bool wantDepthBuffer, bool wantStencilBuffer, bool useMultisampling)
 {
     if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
         // Need to try to restore the context again later.
@@ -460,7 +466,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
 
     int maxSampleCount = 0;
     m_antiAliasingMode = None;
-    if (m_requestedAttributes.antialias && m_multisampleExtensionSupported) {
+    if (useMultisampling) {
         m_gl->GetIntegerv(GL_MAX_SAMPLES_ANGLE, &maxSampleCount);
         m_antiAliasingMode = MSAAExplicitResolve;
         if (m_extensionsUtil->supportsExtension("GL_EXT_multisampled_render_to_texture")) {
@@ -475,27 +481,13 @@ bool DrawingBuffer::initialize(const IntSize& size)
 
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     createSecondaryBuffers();
-    // We first try to initialize everything with the requested attributes.
-    if (!reset(size))
+    if (!reset(size, wantDepthBuffer || wantStencilBuffer))
         return false;
-    // If that succeeds, we then see what we actually got and update our actual attributes to reflect that.
-    m_actualAttributes = m_requestedAttributes;
-    if (m_requestedAttributes.alpha) {
-        GLint alphaBits = 0;
-        m_gl->GetIntegerv(GL_ALPHA_BITS, &alphaBits);
-        m_actualAttributes.alpha = alphaBits > 0;
+
+    if (m_depthStencilBuffer) {
+        DCHECK(wantDepthBuffer || wantStencilBuffer);
+        m_hasImplicitStencilBuffer = !wantStencilBuffer;
     }
-    if (m_requestedAttributes.depth) {
-        GLint depthBits = 0;
-        m_gl->GetIntegerv(GL_DEPTH_BITS, &depthBits);
-        m_actualAttributes.depth = depthBits > 0;
-    }
-    if (m_requestedAttributes.stencil) {
-        GLint stencilBits = 0;
-        m_gl->GetIntegerv(GL_STENCIL_BITS, &stencilBits);
-        m_actualAttributes.stencil = stencilBits > 0;
-    }
-    m_actualAttributes.antialias = multisample();
 
     if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
         // It's possible that the drawing buffer allocation provokes a context loss, so check again just in case. http://crbug.com/512302
@@ -545,9 +537,9 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gl
 
     GLboolean unpackPremultiplyAlphaNeeded = GL_FALSE;
     GLboolean unpackUnpremultiplyAlphaNeeded = GL_FALSE;
-    if (m_actualAttributes.alpha && m_premultipliedAlpha && !premultiplyAlpha)
+    if (m_wantAlphaChannel && m_premultipliedAlpha && !premultiplyAlpha)
         unpackUnpremultiplyAlphaNeeded = GL_TRUE;
-    else if (m_actualAttributes.alpha && !m_premultipliedAlpha && premultiplyAlpha)
+    else if (m_wantAlphaChannel && !m_premultipliedAlpha && premultiplyAlpha)
         unpackPremultiplyAlphaNeeded = GL_TRUE;
 
     gl->CopyTextureCHROMIUM(sourceTexture, texture, internalFormat, destType, flipY, unpackPremultiplyAlphaNeeded, unpackUnpremultiplyAlphaNeeded);
@@ -574,8 +566,8 @@ WebLayer* DrawingBuffer::platformLayer()
     if (!m_layer) {
         m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
 
-        m_layer->setOpaque(!m_actualAttributes.alpha);
-        m_layer->setBlendBackgroundColor(m_actualAttributes.alpha);
+        m_layer->setOpaque(!m_wantAlphaChannel);
+        m_layer->setBlendBackgroundColor(m_wantAlphaChannel);
         m_layer->setPremultipliedAlpha(m_premultipliedAlpha);
         m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
         GraphicsLayer::registerContentsLayer(m_layer->layer());
@@ -654,10 +646,10 @@ void DrawingBuffer::createSecondaryBuffers()
     }
 }
 
-bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
+bool DrawingBuffer::resizeFramebuffer(const IntSize& size, bool wantDepthOrStencilBuffer)
 {
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    if (m_antiAliasingMode != MSAAExplicitResolve)
+    if (m_antiAliasingMode != MSAAExplicitResolve && wantDepthOrStencilBuffer)
         resizeDepthStencil(size);
     if (m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return false;
@@ -665,7 +657,7 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
     return true;
 }
 
-bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
+bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size, bool wantDepthOrStencilBuffer)
 {
     if (m_antiAliasingMode == MSAAExplicitResolve) {
         m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
@@ -677,7 +669,8 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
             return false;
 
         m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleColorBuffer);
-        resizeDepthStencil(size);
+        if (wantDepthOrStencilBuffer)
+            resizeDepthStencil(size);
         if (m_gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             return false;
     }
@@ -687,9 +680,6 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
 
 void DrawingBuffer::resizeDepthStencil(const IntSize& size)
 {
-    if (!m_requestedAttributes.depth && !m_requestedAttributes.stencil)
-        return;
-
     if (!m_depthStencilBuffer)
         m_gl->GenRenderbuffers(1, &m_depthStencilBuffer);
     m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
@@ -717,11 +707,6 @@ void DrawingBuffer::clearFramebuffers(GLbitfield clearMask)
     m_gl->Clear(clearMask);
 }
 
-bool DrawingBuffer::hasImplicitStencilBuffer() const
-{
-    return m_depthStencilBuffer && m_requestedAttributes.depth && !m_requestedAttributes.stencil;
-}
-
 void DrawingBuffer::setSize(const IntSize& size)
 {
     if (m_size == size)
@@ -744,7 +729,7 @@ IntSize DrawingBuffer::adjustSize(const IntSize& desiredSize, const IntSize& cur
     return adjustedSize;
 }
 
-bool DrawingBuffer::reset(const IntSize& newSize)
+bool DrawingBuffer::reset(const IntSize& newSize, bool wantDepthOrStencilBuffer)
 {
     ASSERT(!newSize.isEmpty());
     IntSize adjustedSize = adjustSize(newSize, m_size, m_maxTextureSize);
@@ -763,7 +748,8 @@ bool DrawingBuffer::reset(const IntSize& newSize)
             attachColorBufferToCurrentFBO();
 
             // resize multisample FBO
-            if (!resizeMultisampleFramebuffer(adjustedSize) || !resizeFramebuffer(adjustedSize)) {
+            if (!resizeMultisampleFramebuffer(adjustedSize, wantDepthOrStencilBuffer)
+                || !resizeFramebuffer(adjustedSize, wantDepthOrStencilBuffer)) {
                 adjustedSize.scale(s_resourceAdjustedRatio);
                 continue;
             }
@@ -781,12 +767,12 @@ bool DrawingBuffer::reset(const IntSize& newSize)
     m_gl->ColorMask(true, true, true, true);
 
     GLbitfield clearMask = GL_COLOR_BUFFER_BIT;
-    if (m_actualAttributes.depth) {
+    if (!!m_depthStencilBuffer) {
         m_gl->ClearDepthf(1.0f);
         clearMask |= GL_DEPTH_BUFFER_BIT;
         m_gl->DepthMask(true);
     }
-    if (m_actualAttributes.stencil) {
+    if (!!m_depthStencilBuffer) {
         m_gl->ClearStencil(0);
         clearMask |= GL_STENCIL_BUFFER_BIT;
         m_gl->StencilMaskSeparate(GL_FRONT, 0xFFFFFFFF);
@@ -967,7 +953,7 @@ DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(const I
     // TODO(erikchen): Add support for a CHROMIUM_image back buffer whose
     // behavior mimics a texture with internal format GL_RGB.
     // https://crbug.com/581777.
-    if (!m_requestedAttributes.alpha)
+    if (!m_wantAlphaChannel)
         return createDefaultTextureAndAllocateMemory(size);
 
     if (!RuntimeEnabledFeatures::webGLImageChromiumEnabled())

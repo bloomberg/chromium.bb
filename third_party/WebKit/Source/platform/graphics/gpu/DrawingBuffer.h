@@ -76,7 +76,15 @@ public:
         Discard
     };
 
-    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, bool premultipliedAlpha, PreserveDrawingBuffer, WebGraphicsContext3D::Attributes requestedAttributes);
+    static PassRefPtr<DrawingBuffer> create(
+        PassOwnPtr<WebGraphicsContext3DProvider>,
+        const IntSize&,
+        bool premultipliedAlpha,
+        bool wantAlphaChannel,
+        bool wantDepthBuffer,
+        bool wantStencilBuffer,
+        bool wantAntialiasing,
+        PreserveDrawingBuffer);
     static void forceNextDrawingBufferCreationToFail();
 
     ~DrawingBuffer() override;
@@ -92,11 +100,13 @@ public:
     // in the situation where the end user only asked for a depth buffer. In this case, we need to
     // upgrade clears of the depth buffer to clears of the depth and stencil buffers in order to
     // avoid performance problems on some GPUs.
-    bool hasImplicitStencilBuffer() const;
+    bool hasImplicitStencilBuffer() const { return m_hasImplicitStencilBuffer; }
+    bool hasDepthBuffer() const { return !!m_depthStencilBuffer; }
+    bool hasStencilBuffer() const { return !!m_depthStencilBuffer; }
 
     // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
     static IntSize adjustSize(const IntSize& desiredSize, const IntSize& curSize, int maxTextureSize);
-    bool reset(const IntSize&);
+    bool reset(const IntSize&, bool wantDepthOrStencilBuffer);
     void bind(GLenum target);
     IntSize size() const { return m_size; }
 
@@ -154,10 +164,6 @@ public:
     gpu::gles2::GLES2Interface* contextGL();
     WebGraphicsContext3DProvider* contextProvider();
 
-    // Returns the actual context attributes for this drawing buffer which may differ from the
-    // requested context attributes due to implementation limits.
-    WebGraphicsContext3D::Attributes getActualAttributes() const { return m_actualAttributes; }
-
     // WebExternalTextureLayerClient implementation.
     bool prepareMailbox(WebExternalTextureMailbox*, WebExternalBitmap*) override;
     void mailboxReleased(const WebExternalTextureMailbox&, bool lostResource = false) override;
@@ -183,13 +189,12 @@ protected: // For unittests
     DrawingBuffer(
         PassOwnPtr<WebGraphicsContext3DProvider>,
         PassOwnPtr<Extensions3DUtil>,
-        bool multisampleExtensionSupported,
         bool discardFramebufferSupported,
+        bool wantAlphaChannel,
         bool premultipliedAlpha,
-        PreserveDrawingBuffer,
-        WebGraphicsContext3D::Attributes requestedAttributes);
+        PreserveDrawingBuffer);
 
-    bool initialize(const IntSize&);
+    bool initialize(const IntSize&, bool wantDepthBuffer, bool wantStencilBuffer, bool useMultisampling);
 
 private:
     struct TextureParameters {
@@ -254,8 +259,8 @@ private:
 
     // Create the depth/stencil and multisample buffers, if needed.
     void createSecondaryBuffers();
-    bool resizeFramebuffer(const IntSize&);
-    bool resizeMultisampleFramebuffer(const IntSize&);
+    bool resizeFramebuffer(const IntSize&, bool wantDepthOrStencilBuffer);
+    bool resizeMultisampleFramebuffer(const IntSize&, bool wantDepthOrStencilBuffer);
     void resizeDepthStencil(const IntSize&);
 
     void clearPlatformLayer();
@@ -299,7 +304,7 @@ private:
 
     void attachColorBufferToCurrentFBO();
 
-    PreserveDrawingBuffer m_preserveDrawingBuffer;
+    const PreserveDrawingBuffer m_preserveDrawingBuffer;
     bool m_scissorEnabled;
     GLuint m_texture2DBinding;
     GLuint m_drawFramebufferBinding;
@@ -311,10 +316,10 @@ private:
     gpu::gles2::GLES2Interface* m_gl; // Lifetime is tied to the m_contextProvider.
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
     IntSize m_size;
-    WebGraphicsContext3D::Attributes m_requestedAttributes;
-    bool m_multisampleExtensionSupported;
-    bool m_discardFramebufferSupported;
-    bool m_premultipliedAlpha;
+    const bool m_discardFramebufferSupported;
+    const bool m_wantAlphaChannel;
+    const bool m_premultipliedAlpha;
+    bool m_hasImplicitStencilBuffer;
     GLuint m_fbo;
     // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
     TextureInfo m_colorBuffer;
@@ -349,7 +354,6 @@ private:
 
     AntialiasingMode m_antiAliasingMode;
 
-    WebGraphicsContext3D::Attributes m_actualAttributes;
     int m_maxTextureSize;
     int m_sampleCount;
     int m_packAlignment;

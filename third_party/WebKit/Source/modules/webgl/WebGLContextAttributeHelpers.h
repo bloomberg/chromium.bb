@@ -18,7 +18,7 @@ WebGLContextAttributes toWebGLContextAttributes(const CanvasContextCreationAttri
 // Set up the attributes that can be used to initialize a WebGraphicsContext3D.
 // It's mostly based on WebGLContextAttributes, but may be adjusted based
 // on settings.
-WebGraphicsContext3D::Attributes toWebGraphicsContext3DAttributes(const WebGLContextAttributes&, const WebString&, Settings*, unsigned webGLVersion);
+WebGraphicsContext3D::Attributes toWebGraphicsContext3DAttributes(const WebGLContextAttributes&, const WebString&, unsigned webGLVersion);
 
 } // namespace blink
 

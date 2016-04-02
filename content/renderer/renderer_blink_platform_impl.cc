@@ -1025,38 +1025,18 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
                            share_provider->context3d())
                      : nullptr;
 
+  // This is an offscreen context, which doesn't use the default frame buffer,
+  // so don't request any alpha, depth, stencil, antialiasing.
   gpu::gles2::ContextCreationAttribHelper attributes;
-  // Defaults matching WebGraphicsContext3D::Attributes.
-  // TODO(danakj): This is an offscreen context, so we shouldn't care what the
-  // default framebuffer has, as we won't be using it. Can we always set these
-  // to 0 and stop requesting them from blink (remove from the web_attributes)?
-  //
-  // From kbr: There's a subtle tie between the Blink-level code and the command
-  // buffer. DrawingBuffer::initialize queries the GL_MAX_SAMPLES_ANGLE
-  // parameter to figure out how many samples it can request when allocating its
-  // multisampled renderbuffer or texture. I recall that if we don't request
-  // antialiasing from the command buffer's default back buffer, that this query
-  // comes back with 0, disabling WebGL's ability to antialias. I think that the
-  // pixel tests would catch this if it were broken, but I'm not sure the WebGL
-  // conformance suite would, since it's legal for a WebGL implementation to not
-  // support antialiasing.
-  attributes.alpha_size = 8;
-  attributes.depth_size = 24;
-  attributes.stencil_size = 8;
-  attributes.samples = 4;
-  attributes.sample_buffers = 1;
+  attributes.alpha_size = -1;
+  attributes.depth_size = 0;
+  attributes.stencil_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
-  // Overrides from WebGraphicsContext3D::Attributes.
-  if (!web_attributes.alpha)
-    attributes.alpha_size = 0;
-  if (!web_attributes.depth)
-    attributes.depth_size = 0;
-  if (!web_attributes.stencil)
-    attributes.stencil_size = 0;
-  if (!web_attributes.antialias)
-    attributes.samples = attributes.sample_buffers = 0;
-  if (web_attributes.failIfMajorPerformanceCaveat)
-    attributes.fail_if_major_perf_caveat = true;
+
+  attributes.fail_if_major_perf_caveat =
+      web_attributes.failIfMajorPerformanceCaveat;
   DCHECK_LE(web_attributes.webGLVersion, 2u);
   if (web_attributes.webGLVersion == 1)
     attributes.context_type = gpu::gles2::CONTEXT_TYPE_WEBGL1;
