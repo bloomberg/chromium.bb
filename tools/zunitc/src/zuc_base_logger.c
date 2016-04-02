@@ -310,22 +310,16 @@ zuc_get_opstr(enum zuc_check_op op)
 	switch (op) {
 	case ZUC_OP_EQ:
 		return "=";
-		break;
 	case ZUC_OP_NE:
 		return "!=";
-		break;
 	case ZUC_OP_GE:
 		return ">=";
-		break;
 	case ZUC_OP_GT:
 		return ">";
-		break;
 	case ZUC_OP_LE:
 		return "<=";
-		break;
 	case ZUC_OP_LT:
 		return "<";
-		break;
 	default:
 		return "???";
 	}

@@ -1066,7 +1066,6 @@ spawn_test(struct zuc_test *test, void *test_data,
 
 		zuc_cleanup();
 		exit(rc);
-		break;
 	}
 	default: { /* parent */
 		ssize_t rc = 0;
@@ -1519,40 +1518,30 @@ get_pred2(enum zuc_check_op op, enum zuc_check_valtype valtype)
 	switch (op) {
 	case ZUC_OP_TRUE:
 		return pred2_true;
-		break;
 	case ZUC_OP_FALSE:
 		return pred2_false;
-		break;
 	case ZUC_OP_NULL:
 		return pred2_false;
-		break;
 	case ZUC_OP_NOT_NULL:
 		return pred2_true;
-		break;
 	case ZUC_OP_EQ:
 		if (valtype == ZUC_VAL_CSTR)
 			return pred2_streq;
 		else
 			return pred2_eq;
-		break;
 	case ZUC_OP_NE:
 		if (valtype == ZUC_VAL_CSTR)
 			return pred2_strne;
 		else
 			return pred2_ne;
-		break;
 	case ZUC_OP_GE:
 		return pred2_ge;
-		break;
 	case ZUC_OP_GT:
 		return pred2_gt;
-		break;
 	case ZUC_OP_LE:
 		return pred2_le;
-		break;
 	case ZUC_OP_LT:
 		return pred2_lt;
-		break;
 	default:
 		return pred2_unknown;
 	}
