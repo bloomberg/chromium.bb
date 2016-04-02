@@ -4,7 +4,7 @@
 
 // This is used by the app window API internally to pass through messages to
 // the shell window.
-[use_movable_types=true] namespace app.currentWindowInternal {
+namespace app.currentWindowInternal {
 
   // Null or undefined indicates that a value should not change.
   dictionary Bounds {

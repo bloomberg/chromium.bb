@@ -12,7 +12,7 @@
 // is internally dispatched having a requestId argument (which is removed from
 // the argument list before the event actually reaches the event listeners). The
 // requestId is forwarded to the chrome.printerProviderInternal API functions.
-[use_movable_types=true] namespace printerProviderInternal {
+namespace printerProviderInternal {
   // Same as in printerProvider.PrintError enum API.
   enum PrintError { OK, FAILED, INVALID_TICKET, INVALID_DATA };
 

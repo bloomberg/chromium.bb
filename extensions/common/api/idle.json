@@ -6,7 +6,6 @@
   {
     "namespace": "idle",
     "description": "Use the <code>chrome.idle</code> API to detect when the machine's idle state changes.",
-    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "IdleState",

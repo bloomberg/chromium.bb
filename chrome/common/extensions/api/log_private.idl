@@ -4,7 +4,7 @@
 
 // Use chrome.logPrivate API to retrieve log information from multiple
 // resources in a consistent format.
-[use_movable_types=true] namespace logPrivate {
+namespace logPrivate {
 
   // A filter class that filters log entries by different fields
   dictionary Filter {

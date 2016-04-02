@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.audio_modem</code> API
 // to transmit and receive short tokens over audio.
-[use_movable_types=true]namespace audioModem {
+namespace audioModem {
   // The audio bands supported.
   enum Audioband {
     // Audible (up to 3 kHz)

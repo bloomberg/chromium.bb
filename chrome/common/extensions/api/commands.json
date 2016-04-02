@@ -6,7 +6,6 @@
   {
     "namespace": "commands",
     "description": "Use the commands API to add keyboard shortcuts that trigger actions in your extension, for example, an action to open the browser action or send a command to the extension.",
-    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "Command",

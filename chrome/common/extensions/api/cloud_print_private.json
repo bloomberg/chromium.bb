@@ -6,7 +6,6 @@
   {
     "namespace": "cloudPrintPrivate",
     "description": "none",
-    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "PrinterSettings",

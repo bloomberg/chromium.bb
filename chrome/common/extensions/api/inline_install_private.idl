@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Private API to initiate inline install flow of other apps.
-[use_movable_types=true] namespace inlineInstallPrivate {
+namespace inlineInstallPrivate {
 
   // This returns a developer-readable error message in error and
   // a string error code in errorCode (see $ref:webstore.ErrorCode)

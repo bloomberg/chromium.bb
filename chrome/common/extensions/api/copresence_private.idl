@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.copresencePrivate</code> API to interface with Chrome
 // from the whispernet_proxy extension.
-[use_movable_types=true]namespace copresencePrivate {
+namespace copresencePrivate {
   dictionary Token {
     DOMString token;
     boolean audible;

@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.bluetooth</code> API to connect to a Bluetooth
 // device. All functions report failures via chrome.runtime.lastError.
-[use_movable_types=true] namespace bluetooth {
+namespace bluetooth {
   // Allocation authorities for Vendor IDs.
   enum VendorIdSource {bluetooth, usb};
 

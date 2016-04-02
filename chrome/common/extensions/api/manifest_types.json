@@ -8,10 +8,7 @@
   {
     "namespace": "manifestTypes",
     "description": "Schemas for structured manifest entries",
-    "compiler_options": {
-      "generate_error_messages": true,
-      "use_movable_types": true
-    },
+    "compiler_options": { "generate_error_messages": true },
     "types": [
       {
         "id": "ChromeSettingsOverrides",

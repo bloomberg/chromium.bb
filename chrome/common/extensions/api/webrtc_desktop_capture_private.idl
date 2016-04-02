@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.webrtcDesktopCapturePrivate</code> API to capture
 // desktop media requested from a WebView.
-[use_movable_types=true] namespace webrtcDesktopCapturePrivate {
+namespace webrtcDesktopCapturePrivate {
   dictionary RequestInfo {
     // The guest process id for the requester.
     long guestProcessId;

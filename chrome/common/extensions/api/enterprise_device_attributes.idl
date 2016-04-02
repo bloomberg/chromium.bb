@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.enterprise.deviceAttributes</code> API to read device
 // attributes.
-[use_movable_types=true] namespace enterprise.deviceAttributes {
+namespace enterprise.deviceAttributes {
   callback GetDirectoryDeviceIdCallback = void (DOMString deviceId);
 
   interface Functions {

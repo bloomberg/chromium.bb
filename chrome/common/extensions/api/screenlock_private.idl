@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Control and monitor the screen locker.
-[permissions=screenlockPrivate, nodoc, use_movable_types=true]
+[permissions=screenlockPrivate, nodoc]
 namespace screenlockPrivate {
   // Supported authentication types shown on the user pod.
   // |offlinePassword|: The standard password field, which authenticates using

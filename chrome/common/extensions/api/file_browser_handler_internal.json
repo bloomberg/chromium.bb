@@ -6,8 +6,7 @@
   {
     "namespace": "fileBrowserHandlerInternal",
     "compiler_options": {
-      "implemented_in": "chrome/browser/chromeos/extensions/file_manager/file_browser_handler_api.h",
-      "use_movable_types": true
+      "implemented_in": "chrome/browser/chromeos/extensions/file_manager/file_browser_handler_api.h"
     },
     "description": "none",
     "types": [

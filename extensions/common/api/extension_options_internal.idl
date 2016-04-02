@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Internal API for the &lt;extensiontoptions&gt; tag
-[use_movable_types=true] namespace extensionOptionsInternal {
+namespace extensionOptionsInternal {
   dictionary SizeChangedOptions {
     long oldWidth;
     long oldHeight;

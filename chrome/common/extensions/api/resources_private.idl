@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // resourcesPrivate.
-[use_movable_types=true]namespace resourcesPrivate {
+namespace resourcesPrivate {
   enum Component { identity, pdf };
 
   callback GetStringsCallback = void (object result);

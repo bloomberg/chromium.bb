@@ -6,7 +6,6 @@
   {
     "namespace": "sessions",
     "description": "Use the <code>chrome.sessions</code> API to query and restore tabs and windows from a browsing session.",
-    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "Filter",

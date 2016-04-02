@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.autofillPrivate</code> API to add, remove, or update
 // autofill data from the settings UI.
-[use_movable_types=true]namespace autofillPrivate {
+namespace autofillPrivate {
   // Fields used as part of an address.
   enum AddressField {
     FULL_NAME,

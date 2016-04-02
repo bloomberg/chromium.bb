@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.alarms</code> API to schedule code to run
 // periodically or at a specified time in the future.
-[use_movable_types=true] namespace alarms {
+namespace alarms {
   dictionary Alarm {
     // Name of this alarm.
     DOMString name;

@@ -6,7 +6,6 @@
   {
     "namespace": "extensionTypes",
     "description": "The <code>chrome.extensionTypes</code> API contains type declarations for Chrome extensions.",
-    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "ImageFormat",

@@ -7,8 +7,7 @@
     "namespace": "webRequestInternal",
     "description": "none",
     "compiler_options": {
-      "implemented_in": "extensions/browser/api/web_request/web_request_api.h",
-      "use_movable_types": true
+      "implemented_in": "extensions/browser/api/web_request/web_request_api.h"
     },
     "types": [
       {

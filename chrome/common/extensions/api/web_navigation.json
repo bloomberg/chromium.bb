@@ -6,7 +6,6 @@
   {
     "namespace": "webNavigation",
     "description": "Use the <code>chrome.webNavigation</code> API to receive notifications about the status of navigation requests in-flight.",
-    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "TransitionType",

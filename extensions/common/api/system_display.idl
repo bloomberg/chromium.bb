@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Use the <code>system.display</code> API to query display metadata.
-[use_movable_types=true] namespace system.display {
+namespace system.display {
 
   dictionary Bounds {
     // The x-coordinate of the upper-left corner.

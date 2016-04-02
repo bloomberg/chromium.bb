@@ -6,8 +6,7 @@
   {
     "namespace":"wallpaperPrivate",
     "compiler_options": {
-      "implemented_in": "chrome/browser/chromeos/extensions/wallpaper_private_api.h",
-      "use_movable_types": true
+      "implemented_in": "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
     },
     "description": "none",
     "types": [

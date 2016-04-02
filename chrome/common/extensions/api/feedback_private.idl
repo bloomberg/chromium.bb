@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.feedbackPrivate</code> API to provide Chrome [OS]
 // feedback to the Google Feedback servers.
-[use_movable_types=true] namespace feedbackPrivate {
+namespace feedbackPrivate {
 
   dictionary AttachedFile {
     DOMString name;

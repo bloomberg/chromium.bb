@@ -6,7 +6,6 @@
   {
     "namespace": "topSites",
     "description": "Use the <code>chrome.topSites</code> API to access the top sites that are displayed on the new tab page.",
-    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "MostVisitedURL",

@@ -37,9 +37,13 @@ def DeleteNodes(item, delete_key=None, matcher=None):
 
 
 def Load(filename):
-  with open(filename, 'r') as handle:
-    schemas = json_parse.Parse(handle.read())
-  return schemas
+  try:
+    with open(filename, 'r') as handle:
+      schemas = json_parse.Parse(handle.read())
+    return schemas
+  except:
+    print('FAILED: Exception encountered while loading "%s"' % filename)
+    raise
 
 
 # A dictionary mapping |filename| to the object resulting from loading the JSON

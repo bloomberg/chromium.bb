@@ -10,7 +10,7 @@
 // runs the callback to report its results, the callback magically prepends the
 // request ID to the results and calls the respective internal report function
 // (reportSignature or reportCertificates).
-[implemented_in = "chrome/browser/extensions/api/certificate_provider/certificate_provider_api.h",use_movable_types=true]
+[implemented_in = "chrome/browser/extensions/api/certificate_provider/certificate_provider_api.h"]
 namespace certificateProviderInternal {
   callback DoneCallback = void ();
   callback ResultCallback = void (ArrayBuffer[] rejectedCertificates);

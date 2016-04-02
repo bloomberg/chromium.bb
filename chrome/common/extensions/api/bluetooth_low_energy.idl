@@ -6,7 +6,7 @@
 // Bluetooth Smart (Low Energy) devices using the
 // <a href="https://developer.bluetooth.org/TechnologyOverview/Pages/GATT.aspx">
 // Generic Attribute Profile (GATT)</a>.
-[use_movable_types=true] namespace bluetoothLowEnergy {
+namespace bluetoothLowEnergy {
   // Values representing the possible properties of a characteristic.
   enum CharacteristicProperty {broadcast, read, writeWithoutResponse, write,
                                notify, indicate, authenticatedSignedWrites,

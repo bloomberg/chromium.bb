@@ -4,7 +4,7 @@
 
 // API for integration testing. To be used on test images with a test component
 // extension.
-[use_movable_types=true] namespace autotestPrivate {
+namespace autotestPrivate {
 
   dictionary LoginStatusDict {
     // Are we logged in?

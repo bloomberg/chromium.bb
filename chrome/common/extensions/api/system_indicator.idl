@@ -6,7 +6,7 @@
 // menubar, system tray, or other visible area provided by the OS.
 // This is modelled after the other extension action APIs, such as
 // chrome.browserAction and chrome.pageAction.
-[use_movable_types=true] namespace systemIndicator {
+namespace systemIndicator {
   dictionary SetIconDetails {
     any? path;
     any? imageData;

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Webcam Private API.
-[use_movable_types=true] namespace webcamPrivate {
+namespace webcamPrivate {
   enum PanDirection { stop, right, left };
   enum TiltDirection { stop, up, down };
   enum Protocol { visca };

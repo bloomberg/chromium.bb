@@ -6,8 +6,7 @@
   {
     "namespace": "virtualKeyboardPrivate",
     "compiler_options": {
-      "implemented_in": "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h",
-      "use_movable_types": true
+      "implemented_in": "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
     },
     "platforms": ["chromeos"],
     "description": "none",

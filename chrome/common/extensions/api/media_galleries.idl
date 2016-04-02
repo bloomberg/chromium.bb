@@ -5,7 +5,7 @@
 
 // Use the <code>chrome.mediaGalleries</code> API to access media files (audio,
 // images, video) from the user's local disks (with the user's consent).
-[use_movable_types=true] namespace mediaGalleries {
+namespace mediaGalleries {
 
   [inline_doc] enum GalleryChangeType {
     // The contents of the gallery have changed.

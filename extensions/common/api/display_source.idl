@@ -4,7 +4,7 @@
 
 // The <code>chrome.displaySource</code> API creates a Display
 // session using WebMediaStreamTrack as sources.
-[use_movable_types=true] namespace displaySource {
+namespace displaySource {
   enum ErrorType {
     // The connection with sink cannot be established or has dropped
     // unexpectedly.

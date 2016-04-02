@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.settingsPrivate</code> API to get or set preferences
 // from the settings UI.
-[use_movable_types=true] namespace settingsPrivate {
+namespace settingsPrivate {
   // Type of a pref.
   enum PrefType { BOOLEAN, NUMBER, STRING, URL, LIST, DICTIONARY };
 

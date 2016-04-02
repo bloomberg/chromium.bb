@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.vpnProvider</code> API to implement a VPN
 // client.
-[use_movable_types=true] namespace vpnProvider {
+namespace vpnProvider {
   // A parameters class for the VPN interface.
   dictionary Parameters {
     // IP address for the VPN interface in CIDR notation.

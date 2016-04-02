@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Use the <code>system.cpu</code> API to query CPU metadata.
-[use_movable_types=true] namespace system.cpu {
+namespace system.cpu {
 
   // Counters for assessing CPU utilization.  Each field is monotonically
   // increasing while the processor is powered on.  Values are in milliseconds.

@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.languageSettingsPrivate</code> API to get or change
 // language and input method settings.
-[use_movable_types=true] namespace languageSettingsPrivate {
+namespace languageSettingsPrivate {
   dictionary Language {
     // The unique code identifying the language.
     DOMString code;

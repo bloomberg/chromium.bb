@@ -11,7 +11,7 @@
 // APIs.
 //
 // Valid resource IDs are positive and non-zero.
-[use_movable_types=true]namespace cast.streaming.session {
+namespace cast.streaming.session {
   // Callback from the <code>create</code> method.
   // |audioStreamId| : The audio RTP stream ID.
   // |videoStreamId| : The video RTP stream ID.

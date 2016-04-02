@@ -4,7 +4,7 @@
 
 // Use this API to expose certificates to the platform which can use these
 // certificates for TLS authentications.
-[use_movable_types=true]namespace certificateProvider {
+namespace certificateProvider {
   enum Hash {
     MD5_SHA1,
     SHA1,

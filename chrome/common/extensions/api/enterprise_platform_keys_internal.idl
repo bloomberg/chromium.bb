@@ -4,8 +4,7 @@
 
 // Internal API for platform keys and certificate management.
 [ platforms = ("chromeos"),
-  implemented_in = "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h",
-  use_movable_types=true ]
+  implemented_in = "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h" ]
 namespace enterprise.platformKeysInternal {
   // Invoked by <code>getTokens</code>.
   // |tokenIds| The list of IDs of the avialable Tokens.

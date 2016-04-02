@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.documentScan</code> API to discover and retrieve
 // images from attached paper document scanners.
-[use_movable_types=true] namespace documentScan {
+namespace documentScan {
   dictionary ScanOptions {
     // The MIME types that are accepted by the caller.
     DOMString[]? mimeTypes;
