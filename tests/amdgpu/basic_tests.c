@@ -803,7 +803,7 @@ static void amdgpu_command_submission_write_linear_helper(unsigned ip_type)
 
 		resources[0] = bo;
 
-		/* fullfill PM4: test DMA write-linear */
+		/* fulfill PM4: test DMA write-linear */
 		i = j = 0;
 		if (ip_type == AMDGPU_HW_IP_DMA) {
 			pm4[i++] = SDMA_PACKET(SDMA_OPCODE_WRITE,
@@ -902,7 +902,7 @@ static void amdgpu_command_submission_const_fill_helper(unsigned ip_type)
 
 		resources[0] = bo;
 
-		/* fullfill PM4: test DMA const fill */
+		/* fulfill PM4: test DMA const fill */
 		i = j = 0;
 		if (ip_type == AMDGPU_HW_IP_DMA) {
 			pm4[i++] = SDMA_PACKET(SDMA_OPCODE_CONSTANT_FILL, 0,
@@ -1020,7 +1020,7 @@ static void amdgpu_command_submission_copy_linear_helper(unsigned ip_type)
 			resources[0] = bo1;
 			resources[1] = bo2;
 
-			/* fullfill PM4: test DMA copy linear */
+			/* fulfill PM4: test DMA copy linear */
 			i = j = 0;
 			if (ip_type == AMDGPU_HW_IP_DMA) {
 				pm4[i++] = SDMA_PACKET(SDMA_OPCODE_COPY, SDMA_COPY_SUB_OPCODE_LINEAR, 0);
