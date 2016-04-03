@@ -6,6 +6,8 @@
 #define DEVICE_USB_WEBUSB_DESCRIPTORS_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -64,8 +66,9 @@ bool ParseWebUsbUrlDescriptor(const std::vector<uint8_t>& bytes, GURL* output);
 
 void ReadWebUsbDescriptors(
     scoped_refptr<UsbDeviceHandle> device_handle,
-    const base::Callback<void(scoped_ptr<WebUsbAllowedOrigins> allowed_origins,
-                              const GURL& landing_page)>& callback);
+    const base::Callback<
+        void(std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
+             const GURL& landing_page)>& callback);
 
 // Check if the origin is allowed.
 bool FindInWebUsbAllowedOrigins(

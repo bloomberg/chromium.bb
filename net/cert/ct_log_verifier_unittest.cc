@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
@@ -409,7 +410,7 @@ class TreeHasher {
     SHA256HashValue sha256;
     memset(sha256.data, 0, sizeof(sha256.data));
 
-    scoped_ptr<crypto::SecureHash> hash(
+    std::unique_ptr<crypto::SecureHash> hash(
         crypto::SecureHash::Create(crypto::SecureHash::SHA256));
     hash->Update(kLeafPrefix, 1);
     hash->Update(leaf.data(), leaf.size());

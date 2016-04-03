@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_DRIVER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_DRIVER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -54,7 +56,7 @@ class TestAutofillDriver : public AutofillDriver {
   void SetURLRequestContext(net::URLRequestContextGetter* url_request_context);
 
  private:
-  scoped_ptr<base::SequencedWorkerPoolOwner> blocking_pool_owner_;
+  std::unique_ptr<base::SequencedWorkerPoolOwner> blocking_pool_owner_;
   net::URLRequestContextGetter* url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDriver);

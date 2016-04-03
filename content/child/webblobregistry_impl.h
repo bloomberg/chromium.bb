@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -91,7 +92,7 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
    private:
     const std::string uuid_;
     const std::string content_type_;
-    scoped_ptr<BlobConsolidation> consolidation_;
+    std::unique_ptr<BlobConsolidation> consolidation_;
     scoped_refptr<ThreadSafeSender> sender_;
     scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
     scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
@@ -100,7 +101,7 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
   // Method called on the IO thread.
   static void StartBlobAsyncConstruction(
       const std::string& uuid,
-      scoped_ptr<BlobConsolidation> consolidation,
+      std::unique_ptr<BlobConsolidation> consolidation,
       scoped_refptr<ThreadSafeSender> sender,
       scoped_refptr<base::SingleThreadTaskRunner> main_runner);
 

@@ -28,11 +28,11 @@ void AppendV8Value(const std::string& api_name,
                    const v8::Local<v8::Value>& v8_value,
                    base::ListValue* list) {
   DCHECK(list);
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   ActivityLogConverterStrategy strategy;
   converter->SetFunctionAllowed(true);
   converter->SetStrategy(&strategy);
-  scoped_ptr<base::Value> value(converter->FromV8Value(
+  std::unique_ptr<base::Value> value(converter->FromV8Value(
       v8_value, v8::Isolate::GetCurrent()->GetCurrentContext()));
 
   if (value.get())
@@ -63,11 +63,8 @@ void DOMActivityLogger::AttachToWorld(int world_id,
 void DOMActivityLogger::logGetter(const WebString& api_name,
                                   const WebURL& url,
                                   const WebString& title) {
-  SendDomActionMessage(api_name.utf8(),
-                       url,
-                       title,
-                       DomActionType::GETTER,
-                       scoped_ptr<base::ListValue>(new base::ListValue()));
+  SendDomActionMessage(api_name.utf8(), url, title, DomActionType::GETTER,
+                       std::unique_ptr<base::ListValue>(new base::ListValue()));
 }
 
 void DOMActivityLogger::logSetter(const WebString& api_name,
@@ -82,7 +79,7 @@ void DOMActivityLogger::logSetter(const WebString& api_name,
                                   const v8::Local<v8::Value>& old_value,
                                   const WebURL& url,
                                   const WebString& title) {
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   std::string api_name_utf8 = api_name.utf8();
   AppendV8Value(api_name_utf8, new_value, args.get());
   if (!old_value.IsEmpty())
@@ -96,7 +93,7 @@ void DOMActivityLogger::logMethod(const WebString& api_name,
                                   const v8::Local<v8::Value>* argv,
                                   const WebURL& url,
                                   const WebString& title) {
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   std::string api_name_utf8 = api_name.utf8();
   for (int i = 0; i < argc; ++i)
     AppendV8Value(api_name_utf8, argv[i], args.get());
@@ -109,7 +106,7 @@ void DOMActivityLogger::logEvent(const WebString& event_name,
                                  const WebString* argv,
                                  const WebURL& url,
                                  const WebString& title) {
-  scoped_ptr<base::ListValue> args(new base::ListValue);
+  std::unique_ptr<base::ListValue> args(new base::ListValue);
   std::string event_name_utf8 = event_name.utf8();
   for (int i = 0; i < argc; ++i)
     args->Append(new base::StringValue(argv[i]));
@@ -117,11 +114,12 @@ void DOMActivityLogger::logEvent(const WebString& event_name,
                        std::move(args));
 }
 
-void DOMActivityLogger::SendDomActionMessage(const std::string& api_call,
-                                             const GURL& url,
-                                             const base::string16& url_title,
-                                             DomActionType::Type call_type,
-                                             scoped_ptr<base::ListValue> args) {
+void DOMActivityLogger::SendDomActionMessage(
+    const std::string& api_call,
+    const GURL& url,
+    const base::string16& url_title,
+    DomActionType::Type call_type,
+    std::unique_ptr<base::ListValue> args) {
   ExtensionHostMsg_DOMAction_Params params;
   params.api_call = api_call;
   params.url = url;

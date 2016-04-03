@@ -9,7 +9,6 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
@@ -60,7 +59,7 @@ blink::WebBlobRegistry::Builder* WebBlobRegistryImpl::createBuilder(
 void WebBlobRegistryImpl::registerBlobData(const blink::WebString& uuid,
                                            const blink::WebBlobData& data) {
   TRACE_EVENT0("Blob", "Registry::RegisterBlob");
-  scoped_ptr<Builder> builder(createBuilder(uuid, data.contentType()));
+  std::unique_ptr<Builder> builder(createBuilder(uuid, data.contentType()));
 
   // This is temporary until we move to createBuilder() as our blob creation
   // method.
@@ -148,7 +147,7 @@ void WebBlobRegistryImpl::addDataToStream(const WebURL& url,
     // writing it directly to the IPC channel.
     size_t shared_memory_size =
         std::min(length, storage::kBlobStorageMaxSharedMemoryBytes);
-    scoped_ptr<base::SharedMemory> shared_memory(
+    std::unique_ptr<base::SharedMemory> shared_memory(
         ChildThreadImpl::AllocateSharedMemory(shared_memory_size,
                                               sender_.get()));
     CHECK(shared_memory.get());
@@ -247,7 +246,7 @@ void WebBlobRegistryImpl::BuilderImpl::build() {
 /* static */
 void WebBlobRegistryImpl::StartBlobAsyncConstruction(
     const std::string& uuid,
-    scoped_ptr<BlobConsolidation> consolidation,
+    std::unique_ptr<BlobConsolidation> consolidation,
     scoped_refptr<ThreadSafeSender> sender,
     scoped_refptr<base::SingleThreadTaskRunner> main_runner) {
   BlobTransportController::GetInstance()->InitiateBlobTransfer(

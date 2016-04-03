@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_RENDERER_DOM_ACTIVITY_LOGGER_H_
 #define EXTENSIONS_RENDERER_DOM_ACTIVITY_LOGGER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -76,7 +77,7 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
                             const GURL& url,
                             const base::string16& url_title,
                             DomActionType::Type call_type,
-                            scoped_ptr<base::ListValue> args);
+                            std::unique_ptr<base::ListValue> args);
 
   // The id of the extension with which this logger is associated.
   std::string extension_id_;

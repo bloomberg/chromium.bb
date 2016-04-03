@@ -8,6 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -41,7 +42,7 @@ bool GetTestUrlForAndroid(std::string& path_or_url, GURL* url) {
 }
 #endif  // defined(OS_ANDROID)
 
-scoped_ptr<TestInfo> GetTestInfoFromLayoutTestName(
+std::unique_ptr<TestInfo> GetTestInfoFromLayoutTestName(
     const std::string& test_name) {
   // A test name is formated like file:///path/to/test'--pixel-test'pixelhash
   std::string path_or_url = test_name;
@@ -63,8 +64,8 @@ scoped_ptr<TestInfo> GetTestInfoFromLayoutTestName(
   GURL test_url;
 #if defined(OS_ANDROID)
   if (GetTestUrlForAndroid(path_or_url, &test_url)) {
-    return make_scoped_ptr(new TestInfo(test_url, enable_pixel_dumping,
-                                        expected_pixel_hash, base::FilePath()));
+    return base::WrapUnique(new TestInfo(
+        test_url, enable_pixel_dumping, expected_pixel_hash, base::FilePath()));
   }
 #endif
 
@@ -98,9 +99,9 @@ scoped_ptr<TestInfo> GetTestInfoFromLayoutTestName(
     current_working_directory = local_path.DirName();
   else
     base::GetCurrentDirectory(&current_working_directory);
-  return make_scoped_ptr(new TestInfo(test_url, enable_pixel_dumping,
-                                      expected_pixel_hash,
-                                      current_working_directory));
+  return base::WrapUnique(new TestInfo(test_url, enable_pixel_dumping,
+                                       expected_pixel_hash,
+                                       current_working_directory));
 }
 
 }  // namespace
@@ -121,7 +122,7 @@ TestInfoExtractor::TestInfoExtractor(
 
 TestInfoExtractor::~TestInfoExtractor() {}
 
-scoped_ptr<TestInfo> TestInfoExtractor::GetNextTest() {
+std::unique_ptr<TestInfo> TestInfoExtractor::GetNextTest() {
   if (cmdline_position_ >= cmdline_args_.size())
     return nullptr;
 

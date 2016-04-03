@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_SHARED_WORKER_EMBEDDED_SHARED_WORKER_STUB_H_
 #define CONTENT_RENDERER_SHARED_WORKER_EMBEDDED_SHARED_WORKER_STUB_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -95,7 +96,7 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   bool running_ = false;
   GURL url_;
   blink::WebSharedWorker* impl_ = nullptr;
-  scoped_ptr<SharedWorkerDevToolsAgent> worker_devtools_agent_;
+  std::unique_ptr<SharedWorkerDevToolsAgent> worker_devtools_agent_;
 
   typedef std::vector<WebMessagePortChannelImpl*> PendingChannelList;
   PendingChannelList pending_channels_;

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPET_H_
 #define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPET_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -30,10 +31,10 @@ class NTPSnippet {
   // dictionary doesn't contain at least a url. The keys in the dictionary are
   // expected to be the same as the property name, with exceptions documented in
   // the property comment.
-  static scoped_ptr<NTPSnippet> CreateFromDictionary(
+  static std::unique_ptr<NTPSnippet> CreateFromDictionary(
       const base::DictionaryValue& dict);
 
-  scoped_ptr<base::DictionaryValue> ToDictionary() const;
+  std::unique_ptr<base::DictionaryValue> ToDictionary() const;
 
   // URL of the page described by this snippet.
   const GURL& url() const { return url_; }

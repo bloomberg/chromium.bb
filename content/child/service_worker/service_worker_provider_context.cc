@@ -21,16 +21,16 @@ class ServiceWorkerProviderContext::Delegate {
  public:
   virtual ~Delegate(){};
   virtual void AssociateRegistration(
-      scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
-      scoped_ptr<ServiceWorkerHandleReference> installing,
-      scoped_ptr<ServiceWorkerHandleReference> waiting,
-      scoped_ptr<ServiceWorkerHandleReference> active) = 0;
+      std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
+      std::unique_ptr<ServiceWorkerHandleReference> installing,
+      std::unique_ptr<ServiceWorkerHandleReference> waiting,
+      std::unique_ptr<ServiceWorkerHandleReference> active) = 0;
   virtual void DisassociateRegistration() = 0;
   virtual void GetAssociatedRegistration(
       ServiceWorkerRegistrationObjectInfo* info,
       ServiceWorkerVersionAttributes* attrs) = 0;
   virtual void SetController(
-      scoped_ptr<ServiceWorkerHandleReference> controller) = 0;
+      std::unique_ptr<ServiceWorkerHandleReference> controller) = 0;
   virtual ServiceWorkerHandleReference* controller() = 0;
 };
 
@@ -44,10 +44,10 @@ class ServiceWorkerProviderContext::ControlleeDelegate
   ~ControlleeDelegate() override {}
 
   void AssociateRegistration(
-      scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
-      scoped_ptr<ServiceWorkerHandleReference> installing,
-      scoped_ptr<ServiceWorkerHandleReference> waiting,
-      scoped_ptr<ServiceWorkerHandleReference> active) override {
+      std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
+      std::unique_ptr<ServiceWorkerHandleReference> installing,
+      std::unique_ptr<ServiceWorkerHandleReference> waiting,
+      std::unique_ptr<ServiceWorkerHandleReference> active) override {
     DCHECK(!registration_);
     registration_ = std::move(registration);
   }
@@ -58,7 +58,7 @@ class ServiceWorkerProviderContext::ControlleeDelegate
   }
 
   void SetController(
-      scoped_ptr<ServiceWorkerHandleReference> controller) override {
+      std::unique_ptr<ServiceWorkerHandleReference> controller) override {
     DCHECK(registration_);
     DCHECK(!controller ||
            controller->handle_id() != kInvalidServiceWorkerHandleId);
@@ -76,8 +76,8 @@ class ServiceWorkerProviderContext::ControlleeDelegate
   }
 
  private:
-  scoped_ptr<ServiceWorkerRegistrationHandleReference> registration_;
-  scoped_ptr<ServiceWorkerHandleReference> controller_;
+  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration_;
+  std::unique_ptr<ServiceWorkerHandleReference> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlleeDelegate);
 };
@@ -91,10 +91,10 @@ class ServiceWorkerProviderContext::ControllerDelegate
   ~ControllerDelegate() override {}
 
   void AssociateRegistration(
-      scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
-      scoped_ptr<ServiceWorkerHandleReference> installing,
-      scoped_ptr<ServiceWorkerHandleReference> waiting,
-      scoped_ptr<ServiceWorkerHandleReference> active) override {
+      std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
+      std::unique_ptr<ServiceWorkerHandleReference> installing,
+      std::unique_ptr<ServiceWorkerHandleReference> waiting,
+      std::unique_ptr<ServiceWorkerHandleReference> active) override {
     DCHECK(!registration_);
     registration_ = std::move(registration);
     installing_ = std::move(installing);
@@ -108,7 +108,7 @@ class ServiceWorkerProviderContext::ControllerDelegate
   }
 
   void SetController(
-      scoped_ptr<ServiceWorkerHandleReference> controller) override {
+      std::unique_ptr<ServiceWorkerHandleReference> controller) override {
     NOTREACHED();
   }
 
@@ -131,10 +131,10 @@ class ServiceWorkerProviderContext::ControllerDelegate
   }
 
  private:
-  scoped_ptr<ServiceWorkerRegistrationHandleReference> registration_;
-  scoped_ptr<ServiceWorkerHandleReference> installing_;
-  scoped_ptr<ServiceWorkerHandleReference> waiting_;
-  scoped_ptr<ServiceWorkerHandleReference> active_;
+  std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration_;
+  std::unique_ptr<ServiceWorkerHandleReference> installing_;
+  std::unique_ptr<ServiceWorkerHandleReference> waiting_;
+  std::unique_ptr<ServiceWorkerHandleReference> active_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerDelegate);
 };
@@ -166,10 +166,10 @@ ServiceWorkerProviderContext::~ServiceWorkerProviderContext() {
 }
 
 void ServiceWorkerProviderContext::OnAssociateRegistration(
-    scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
-    scoped_ptr<ServiceWorkerHandleReference> installing,
-    scoped_ptr<ServiceWorkerHandleReference> waiting,
-    scoped_ptr<ServiceWorkerHandleReference> active) {
+    std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
+    std::unique_ptr<ServiceWorkerHandleReference> installing,
+    std::unique_ptr<ServiceWorkerHandleReference> waiting,
+    std::unique_ptr<ServiceWorkerHandleReference> active) {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
   delegate_->AssociateRegistration(std::move(registration),
                                    std::move(installing), std::move(waiting),
@@ -182,7 +182,7 @@ void ServiceWorkerProviderContext::OnDisassociateRegistration() {
 }
 
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
-    scoped_ptr<ServiceWorkerHandleReference> controller) {
+    std::unique_ptr<ServiceWorkerHandleReference> controller) {
   DCHECK(main_thread_task_runner_->RunsTasksOnCurrentThread());
   delegate_->SetController(std::move(controller));
 }

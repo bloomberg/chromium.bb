@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -110,7 +111,7 @@ class NavigationController {
   // Creates a navigation entry and translates the virtual url to a real one.
   // This is a general call; prefer LoadURL[FromRenderer]/TransferURL below.
   // Extra headers are separated by \n.
-  CONTENT_EXPORT static scoped_ptr<NavigationEntry> CreateNavigationEntry(
+  CONTENT_EXPORT static std::unique_ptr<NavigationEntry> CreateNavigationEntry(
       const GURL& url,
       const Referrer& referrer,
       ui::PageTransition transition,
@@ -239,9 +240,10 @@ class NavigationController {
   // indicates where the restor comes from. This takes ownership of the
   // NavigationEntrys in |entries| and clears it out. This is used for session
   // restore.
-  virtual void Restore(int selected_navigation,
-                       RestoreType type,
-                       std::vector<scoped_ptr<NavigationEntry>>* entries) = 0;
+  virtual void Restore(
+      int selected_navigation,
+      RestoreType type,
+      std::vector<std::unique_ptr<NavigationEntry>>* entries) = 0;
 
   // Entries -------------------------------------------------------------------
 
@@ -330,7 +332,7 @@ class NavigationController {
   // represented as an entry, but should go away when the user navigates away
   // from them.
   // Note that adding a transient entry does not change the active contents.
-  virtual void SetTransientEntry(scoped_ptr<NavigationEntry> entry) = 0;
+  virtual void SetTransientEntry(std::unique_ptr<NavigationEntry> entry) = 0;
 
   // New navigations -----------------------------------------------------------
 

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_H_
 #define CHROME_BROWSER_INTERSTITIALS_SECURITY_INTERSTITIAL_PAGE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -70,7 +72,7 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   void OpenExtendedReportingPrivacyPolicy();
   security_interstitials::MetricsHelper* metrics_helper();
   void set_metrics_helper(
-      scoped_ptr<security_interstitials::MetricsHelper> metrics_helper);
+      std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper);
 
  private:
   // The WebContents with which this interstitial page is
@@ -84,7 +86,7 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   // Whether the interstitial should create a view.
   bool create_view_;
   // For subclasses that don't have their own ChromeControllerClients yet.
-  scoped_ptr<ChromeControllerClient> controller_;
+  std::unique_ptr<ChromeControllerClient> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityInterstitialPage);
 };

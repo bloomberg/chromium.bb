@@ -6,6 +6,7 @@
 #define COMPONENTS_DOMAIN_RELIABILITY_UPLOADER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
@@ -50,10 +51,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
   // Creates an uploader that uses the given |url_request_context_getter| to
   // get a URLRequestContext to use for uploads. (See test_util.h for a mock
   // version.)
-  static scoped_ptr<DomainReliabilityUploader> Create(
+  static std::unique_ptr<DomainReliabilityUploader> Create(
       MockableTime* time,
-      const scoped_refptr<
-          net::URLRequestContextGetter>& url_request_context_getter);
+      const scoped_refptr<net::URLRequestContextGetter>&
+          url_request_context_getter);
 
   // Uploads |report_json| to |upload_url| and calls |callback| when the upload
   // has either completed or failed.

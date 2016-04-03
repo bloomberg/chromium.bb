@@ -29,7 +29,7 @@ NTPSnippet::NTPSnippet(const GURL& url) : url_(url) {
 NTPSnippet::~NTPSnippet() {}
 
 // static
-scoped_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
+std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
     const base::DictionaryValue& dict) {
   // Need at least the url.
   std::string url_str;
@@ -39,7 +39,7 @@ scoped_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
   if (!url.is_valid())
     return nullptr;
 
-  scoped_ptr<NTPSnippet> snippet(new NTPSnippet(url));
+  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(url));
 
   std::string site_title;
   if (dict.GetString(kSiteTitle, &site_title))
@@ -83,8 +83,8 @@ scoped_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
   return snippet;
 }
 
-scoped_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
-  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+std::unique_ptr<base::DictionaryValue> NTPSnippet::ToDictionary() const {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 
   dict->SetString(kUrl, url_.spec());
   if (!site_title_.empty())

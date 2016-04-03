@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -29,7 +31,7 @@ int main(int argc, char** argv) {
 #if !defined(OS_IOS)
   mojo::edk::Init();
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
-  scoped_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support;
+  std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support;
   ipc_support.reset(
       new mojo::edk::test::ScopedIPCSupport(test_io_thread.task_runner()));
 #endif

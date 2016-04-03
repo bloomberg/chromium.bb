@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -108,7 +109,7 @@ void ManifestParser::Parse() {
   std::string error_msg;
   int error_line = 0;
   int error_column = 0;
-  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       data_, base::JSON_PARSE_RFC, nullptr, &error_msg, &error_line,
       &error_column);
 
@@ -149,7 +150,7 @@ const Manifest& ManifestParser::manifest() const {
   return manifest_;
 }
 
-const std::vector<scoped_ptr<ManifestParser::ErrorInfo>>&
+const std::vector<std::unique_ptr<ManifestParser::ErrorInfo>>&
 ManifestParser::errors() const {
   return errors_;
 }
@@ -460,6 +461,6 @@ void ManifestParser::AddErrorInfo(const std::string& error_msg,
                                   int error_line,
                                   int error_column) {
   errors_.push_back(
-      make_scoped_ptr(new ErrorInfo(error_msg, error_line, error_column)));
+      base::WrapUnique(new ErrorInfo(error_msg, error_line, error_column)));
 }
 } // namespace content

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/manifest.h"
@@ -32,7 +34,7 @@ class ManifestParserTest : public testing::Test  {
     ManifestParser parser(data, document_url, manifest_url);
     parser.Parse();
     errors_.clear();
-    for (const scoped_ptr<ManifestParser::ErrorInfo>& error_info :
+    for (const std::unique_ptr<ManifestParser::ErrorInfo>& error_info :
          parser.errors()) {
       errors_.push_back(error_info->error_msg);
     }

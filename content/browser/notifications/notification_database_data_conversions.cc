@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -84,7 +86,7 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
                                        std::string* output) {
   DCHECK(output);
 
-  scoped_ptr<NotificationDatabaseDataProto::NotificationData> payload(
+  std::unique_ptr<NotificationDatabaseDataProto::NotificationData> payload(
       new NotificationDatabaseDataProto::NotificationData());
 
   const PlatformNotificationData& notification_data = input.notification_data;

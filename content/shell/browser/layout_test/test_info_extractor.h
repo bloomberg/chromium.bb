@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/command_line.h"
@@ -34,7 +35,7 @@ class TestInfoExtractor {
   explicit TestInfoExtractor(const base::CommandLine::StringVector& cmd_args);
   ~TestInfoExtractor();
 
-  scoped_ptr<TestInfo> GetNextTest();
+  std::unique_ptr<TestInfo> GetNextTest();
 
  private:
   base::CommandLine::StringVector cmdline_args_;

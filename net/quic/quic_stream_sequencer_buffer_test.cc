@@ -507,7 +507,8 @@ TEST_F(QuicStreamSequencerBufferTest, ReadvAcrossLastBlock) {
   EXPECT_EQ(2u, helper_->frame_arrival_time_map()->size());
 
   // Read all data out.
-  std::unique_ptr<char[]> dest1{new char[max_capacity_bytes_]{0}};
+  std::unique_ptr<char[]> dest1{new char[max_capacity_bytes_]};
+  dest1[0] = 0;
   const iovec iov1{dest1.get(), max_capacity_bytes_};
   EXPECT_EQ(max_capacity_bytes_ - 512 + 256, buffer_->Readv(&iov1, 1));
   EXPECT_EQ(max_capacity_bytes_ + 256, buffer_->BytesConsumed());

@@ -83,7 +83,7 @@ class WebServiceWorkerNetworkProviderImpl
                        blink::WebURLRequest& request) override {
     ServiceWorkerNetworkProvider* provider =
         GetNetworkProviderFromDataSource(data_source);
-    scoped_ptr<RequestExtraData> extra_data(new RequestExtraData);
+    std::unique_ptr<RequestExtraData> extra_data(new RequestExtraData);
     extra_data->set_service_worker_provider_id(provider->provider_id());
     request.setExtraData(extra_data.release());
     // Explicitly set the SkipServiceWorker flag for subresources here if the
@@ -239,7 +239,7 @@ EmbeddedSharedWorkerStub::createServiceWorkerNetworkProvider(
     blink::WebDataSource* data_source) {
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
-  scoped_ptr<ServiceWorkerNetworkProvider> provider(
+  std::unique_ptr<ServiceWorkerNetworkProvider> provider(
       new ServiceWorkerNetworkProvider(
           route_id_, SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER));
 

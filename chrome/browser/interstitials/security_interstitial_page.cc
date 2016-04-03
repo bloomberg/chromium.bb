@@ -113,6 +113,6 @@ SecurityInterstitialPage::metrics_helper() {
 }
 
 void SecurityInterstitialPage::set_metrics_helper(
-    scoped_ptr<security_interstitials::MetricsHelper> metrics_helper) {
+    std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper) {
   controller_->set_metrics_helper(std::move(metrics_helper));
 }

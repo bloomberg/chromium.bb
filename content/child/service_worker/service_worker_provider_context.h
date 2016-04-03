@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_CONTEXT_H_
 #define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_CONTEXT_H_
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -51,13 +52,13 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // Called from ServiceWorkerDispatcher.
   void OnAssociateRegistration(
-      scoped_ptr<ServiceWorkerRegistrationHandleReference> registration,
-      scoped_ptr<ServiceWorkerHandleReference> installing,
-      scoped_ptr<ServiceWorkerHandleReference> waiting,
-      scoped_ptr<ServiceWorkerHandleReference> active);
+      std::unique_ptr<ServiceWorkerRegistrationHandleReference> registration,
+      std::unique_ptr<ServiceWorkerHandleReference> installing,
+      std::unique_ptr<ServiceWorkerHandleReference> waiting,
+      std::unique_ptr<ServiceWorkerHandleReference> active);
   void OnDisassociateRegistration();
   void OnSetControllerServiceWorker(
-      scoped_ptr<ServiceWorkerHandleReference> controller);
+      std::unique_ptr<ServiceWorkerHandleReference> controller);
 
   // Called on the worker thread. Used for initializing
   // ServiceWorkerGlobalScope.
@@ -85,7 +86,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
-  scoped_ptr<Delegate> delegate_;
+  std::unique_ptr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContext);
 };

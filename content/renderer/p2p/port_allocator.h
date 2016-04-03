@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_P2P_PORT_ALLOCATOR_H_
 #define CONTENT_RENDERER_P2P_PORT_ALLOCATOR_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
@@ -38,7 +40,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
 
   P2PPortAllocator(
       const scoped_refptr<P2PSocketDispatcher>& socket_dispatcher,
-      scoped_ptr<rtc::NetworkManager> network_manager,
+      std::unique_ptr<rtc::NetworkManager> network_manager,
       rtc::PacketSocketFactory* socket_factory,
       const Config& config,
       const GURL& origin,
@@ -46,7 +48,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
   ~P2PPortAllocator() override;
 
  private:
-  scoped_ptr<rtc::NetworkManager> network_manager_;
+  std::unique_ptr<rtc::NetworkManager> network_manager_;
   scoped_refptr<P2PSocketDispatcher> socket_dispatcher_;
   Config config_;
   GURL origin_;

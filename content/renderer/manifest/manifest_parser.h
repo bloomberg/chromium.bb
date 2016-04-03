@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_piece.h"
@@ -46,7 +48,7 @@ class CONTENT_EXPORT ManifestParser {
   void Parse();
 
   const Manifest& manifest() const;
-  const std::vector<scoped_ptr<ErrorInfo>>& errors() const;
+  const std::vector<std::unique_ptr<ErrorInfo>>& errors() const;
   bool failed() const;
 
  private:
@@ -203,7 +205,7 @@ class CONTENT_EXPORT ManifestParser {
 
   bool failed_;
   Manifest manifest_;
-  std::vector<scoped_ptr<ErrorInfo>> errors_;
+  std::vector<std::unique_ptr<ErrorInfo>> errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestParser);
 };

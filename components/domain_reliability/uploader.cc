@@ -164,11 +164,11 @@ DomainReliabilityUploader::DomainReliabilityUploader() {}
 DomainReliabilityUploader::~DomainReliabilityUploader() {}
 
 // static
-scoped_ptr<DomainReliabilityUploader> DomainReliabilityUploader::Create(
+std::unique_ptr<DomainReliabilityUploader> DomainReliabilityUploader::Create(
     MockableTime* time,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter) {
-  return scoped_ptr<DomainReliabilityUploader>(
+  return std::unique_ptr<DomainReliabilityUploader>(
       new DomainReliabilityUploaderImpl(time, url_request_context_getter));
 }
 

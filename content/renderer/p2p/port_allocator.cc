@@ -5,6 +5,8 @@
 #include "content/renderer/p2p/port_allocator.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
@@ -16,7 +18,7 @@ namespace content {
 
 P2PPortAllocator::P2PPortAllocator(
     const scoped_refptr<P2PSocketDispatcher>& socket_dispatcher,
-    scoped_ptr<rtc::NetworkManager> network_manager,
+    std::unique_ptr<rtc::NetworkManager> network_manager,
     rtc::PacketSocketFactory* socket_factory,
     const Config& config,
     const GURL& origin,
