@@ -212,7 +212,7 @@ void RlzValueStoreChromeOS::ReadStore() {
   int error_code = 0;
   std::string error_msg;
   JSONFileValueDeserializer deserializer(store_path_);
-  scoped_ptr<base::Value> value =
+  std::unique_ptr<base::Value> value =
       deserializer.Deserialize(&error_code, &error_msg);
   switch (error_code) {
     case JSONFileValueDeserializer::JSON_NO_SUCH_FILE:
@@ -231,7 +231,7 @@ void RlzValueStoreChromeOS::WriteStore() {
   std::string json_data;
   JSONStringValueSerializer serializer(&json_data);
   serializer.set_pretty_print(true);
-  scoped_ptr<base::DictionaryValue> copy =
+  std::unique_ptr<base::DictionaryValue> copy =
       rlz_store_->DeepCopyWithoutEmptyChildren();
   if (!serializer.Serialize(*copy.get())) {
     LOG(ERROR) << "Failed to serialize RLZ data";

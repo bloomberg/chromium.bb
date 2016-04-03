@@ -8,9 +8,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/atomicops.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -280,7 +281,7 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
     return false;
 
   // Get the response text.
-  scoped_ptr<char[]> buffer(new char[kMaxPingResponseLength]);
+  std::unique_ptr<char[]> buffer(new char[kMaxPingResponseLength]);
   if (buffer.get() == NULL)
     return false;
 
@@ -305,7 +306,7 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
     return false;
 
   // Run a blocking event loop to match the win inet implementation.
-  scoped_ptr<base::MessageLoop> message_loop;
+  std::unique_ptr<base::MessageLoop> message_loop;
   // Ensure that we have a MessageLoop.
   if (!base::MessageLoop::current())
     message_loop.reset(new base::MessageLoop);
@@ -316,7 +317,7 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
                                        kFinancialServer, kFinancialPort,
                                        request);
 
-  scoped_ptr<net::URLFetcher> fetcher =
+  std::unique_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(GURL(url), net::URLFetcher::GET, &delegate);
 
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |

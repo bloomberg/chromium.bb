@@ -10,7 +10,6 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_info.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"

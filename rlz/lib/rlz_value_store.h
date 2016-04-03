@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "rlz/lib/rlz_enums.h"
 
@@ -99,7 +99,7 @@ class ScopedRlzValueStoreLock {
   RlzValueStore* GetStore();
 
  private:
-  scoped_ptr<RlzValueStore> store_;
+  std::unique_ptr<RlzValueStore> store_;
 #if defined(OS_WIN)
   LibMutex lock_;
 #elif defined(OS_MACOSX)

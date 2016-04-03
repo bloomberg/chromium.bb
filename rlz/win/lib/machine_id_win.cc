@@ -4,10 +4,11 @@
 
 #include <windows.h>
 #include <Sddl.h>  // For ConvertSidToStringSidW.
+
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "rlz/lib/assert.h"
 
@@ -42,7 +43,7 @@ bool GetSystemVolumeSerialNumber(int* number) {
 bool GetComputerSid(const wchar_t* account_name, SID* sid, DWORD sid_size) {
   static const DWORD kStartDomainLength = 128;  // reasonable to start with
 
-  scoped_ptr<wchar_t[]> domain_buffer(new wchar_t[kStartDomainLength]);
+  std::unique_ptr<wchar_t[]> domain_buffer(new wchar_t[kStartDomainLength]);
   DWORD domain_size = kStartDomainLength;
   DWORD sid_dword_size = sid_size;
   SID_NAME_USE sid_name_use;

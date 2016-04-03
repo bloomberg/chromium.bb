@@ -15,8 +15,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -574,7 +575,7 @@ TEST_F(RlzLibTest, ClearProductState) {
 #if defined(OS_WIN)
 template<class T>
 class typed_buffer_ptr {
-  scoped_ptr<char[]> buffer_;
+  std::unique_ptr<char[]> buffer_;
 
  public:
   typed_buffer_ptr() {

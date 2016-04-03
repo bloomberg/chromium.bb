@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
@@ -74,7 +76,7 @@ class RlzValueStoreChromeOS : public RlzValueStore,
                            const base::Value& value);
 
   // In-memory store with RLZ data.
-  scoped_ptr<base::DictionaryValue> rlz_store_;
+  std::unique_ptr<base::DictionaryValue> rlz_store_;
 
   base::FilePath store_path_;
 
