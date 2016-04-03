@@ -59,7 +59,7 @@ public:
     WTFThreadData();
     ~WTFThreadData();
 
-    AtomicStringTable* atomicStringTable()
+    AtomicStringTable* getAtomicStringTable()
     {
         return m_atomicStringTable;
     }

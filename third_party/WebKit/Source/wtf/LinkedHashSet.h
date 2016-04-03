@@ -369,7 +369,7 @@ private:
 
     typedef LinkedHashSetConstIterator<LinkedHashSetType> const_iterator;
 
-    Node* getNode() { return const_cast<Node*>(m_iterator.node()); }
+    Node* getNode() { return const_cast<Node*>(m_iterator.getNode()); }
 
 protected:
     LinkedHashSetIterator(const Node* position, LinkedHashSetType* m_container)
@@ -410,7 +410,7 @@ private:
     typedef const typename LinkedHashSetType::Value& ReferenceType;
     typedef const typename LinkedHashSetType::Value* PointerType;
 
-    const Node* node() const { return static_cast<const Node*>(m_position); }
+    const Node* getNode() const { return static_cast<const Node*>(m_position); }
 
 protected:
     LinkedHashSetConstIterator(const LinkedHashSetNodeBase* position, const LinkedHashSetType* container)

@@ -468,7 +468,7 @@ public:
     operator const_iterator() const { return m_iterator; }
 
 private:
-    Node* getNode() { return m_iterator.node(); }
+    Node* getNode() { return m_iterator.getNode(); }
 
     const_iterator m_iterator;
 
@@ -536,7 +536,7 @@ public:
     }
 
 private:
-    Node* node() { return m_position; }
+    Node* getNode() { return m_position; }
 
     const Set* m_set;
     Node* m_position;
@@ -578,7 +578,7 @@ public:
     operator const_reverse_iterator() const { return m_iterator; }
 
 private:
-    Node* node() { return m_iterator.node(); }
+    Node* getNode() { return m_iterator.node(); }
 
     const_reverse_iterator m_iterator;
 
@@ -645,7 +645,7 @@ public:
     }
 
 private:
-    Node* node() { return m_position; }
+    Node* getNode() { return m_position; }
 
     const Set* m_set;
     Node* m_position;

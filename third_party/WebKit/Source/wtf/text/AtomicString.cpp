@@ -95,11 +95,11 @@ private:
     HashSet<StringImpl*> m_table;
 };
 
-static inline AtomicStringTable& atomicStringTable()
+static inline AtomicStringTable& getAtomicStringTable()
 {
     // Once possible we should make this non-lazy (constructed in WTFThreadData's constructor).
     WTFThreadData& data = wtfThreadData();
-    AtomicStringTable* table = data.atomicStringTable();
+    AtomicStringTable* table = data.getAtomicStringTable();
     if (UNLIKELY(!table))
         table = AtomicStringTable::create(data);
     return *table;
@@ -107,12 +107,12 @@ static inline AtomicStringTable& atomicStringTable()
 
 static inline HashSet<StringImpl*>& atomicStrings()
 {
-    return atomicStringTable().table();
+    return getAtomicStringTable().table();
 }
 
 void AtomicString::reserveTableCapacity(size_t size)
 {
-    atomicStringTable().table().reserveCapacityForSize(size);
+    getAtomicStringTable().table().reserveCapacityForSize(size);
 }
 
 template<typename T, typename HashTranslator>
@@ -371,7 +371,7 @@ PassRefPtr<StringImpl> AtomicString::add(const LChar* s, unsigned length)
 
 PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* string)
 {
-    return atomicStringTable().addStringImpl(string);
+    return getAtomicStringTable().addStringImpl(string);
 }
 
 template<typename CharacterType>
