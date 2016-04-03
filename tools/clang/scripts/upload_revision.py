@@ -64,8 +64,11 @@ def main():
   Git(["checkout", "-b", "clang-{}-{}".format(
       clang_revision, clang_sub_revision)])
   Git(["add", UPDATE_PY_PATH])
-  Git(["commit", "-m", "Roll clang {}:{}.".format(
-      clang_old_revision, clang_revision)])
+
+  commit_message = 'Ran `{}`.'.format(' '.join(sys.argv))
+  Git(["commit", "-m", "Roll clang {}:{}.\n\n{}".format(
+      clang_old_revision, clang_revision, commit_message)])
+
   Git(["cl", "upload"])
   Git(["cl", "try", "-b", "linux_chromium_clang_upload", "-r", git_revision])
   Git(["cl", "try", "-b", "mac_chromium_clang_upload", "-r", git_revision])
