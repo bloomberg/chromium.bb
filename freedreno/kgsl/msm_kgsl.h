@@ -31,7 +31,7 @@
 #define KGSL_FLAGS_SOFT_RESET  0x00000100
 #define KGSL_FLAGS_PER_CONTEXT_TIMESTAMPS 0x00000200
 
-/* Clock flags to show which clocks should be controled by a given platform */
+/* Clock flags to show which clocks should be controlled by a given platform */
 #define KGSL_CLK_SRC	0x00000001
 #define KGSL_CLK_CORE	0x00000002
 #define KGSL_CLK_IFACE	0x00000004
@@ -295,7 +295,7 @@ struct kgsl_cmdstream_freememontimestamp {
 
 /* Previous versions of this header had incorrectly defined
    IOCTL_KGSL_CMDSTREAM_FREEMEMONTIMESTAMP as a read-only ioctl instead
-   of a write only ioctl.  To ensure binary compatability, the following
+   of a write only ioctl.  To ensure binary compatibility, the following
    #define will be used to intercept the incorrect ioctl
 */
 

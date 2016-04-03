@@ -81,7 +81,7 @@ struct drm_kgsl_gem_create_fd)
 /* Memory types - these define the source and caching policies
    of the GEM memory chunk */
 
-/* Legacy definitions left for compatability */
+/* Legacy definitions left for compatibility */
 
 #define DRM_KGSL_GEM_TYPE_EBI          0
 #define DRM_KGSL_GEM_TYPE_SMI          1
