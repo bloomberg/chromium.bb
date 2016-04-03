@@ -19,18 +19,8 @@ class GPU_EXPORT GLStreamTextureImage : public gl::GLImage {
 
   // Get the matrix.
   // Copy the texture matrix for this image into |matrix|.
-  // Subclasses must return a matrix appropriate for a coordinate system where
-  // UV=(0,0) corresponds to the bottom left corner of the image.
   virtual void GetTextureMatrix(float matrix[16]) = 0;
 
-  // Copy the texture matrix for this image into |matrix|, returning a matrix
-  // for which UV=(0,0) corresponds to the top left of corner of the image,
-  // which is what Chromium generally expects.
-  void GetFlippedTextureMatrix(float matrix[16]) {
-    GetTextureMatrix(matrix);
-    matrix[13] += matrix[5];
-    matrix[5] = -matrix[5];
-  }
  protected:
   ~GLStreamTextureImage() override {}
 

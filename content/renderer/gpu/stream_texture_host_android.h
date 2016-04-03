@@ -37,6 +37,7 @@ class StreamTextureHost : public IPC::Listener {
   class Listener {
    public:
     virtual void OnFrameAvailable() = 0;
+    virtual void OnMatrixChanged(const float mtx[16]) = 0;
     virtual ~Listener() {}
   };
 
@@ -49,6 +50,7 @@ class StreamTextureHost : public IPC::Listener {
  private:
   // Message handlers:
   void OnFrameAvailable();
+  void OnMatrixChanged(const GpuStreamTextureMsg_MatrixChanged_Params& param);
 
   int stream_id_;
   Listener* listener_;

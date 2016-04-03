@@ -395,6 +395,7 @@ class WebMediaPlayerMSTest : public testing::TestWithParam<bool>,
   void StartRendering() override;
   void StopRendering() override;
   void DidReceiveFrame() override {}
+  void DidUpdateMatrix(const float* matrix) override {}
 
   // For test use
   void SetBackgroundRendering(bool background_rendering) {
