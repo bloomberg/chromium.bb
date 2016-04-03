@@ -440,11 +440,11 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                    BrowserThread::GetMessageLoopProxyForThread(
                                        BrowserThread::FILE).get());
 
-  base::FilePath path = in_memory ? base::FilePath() : context->GetPath();
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context =
-      new DOMStorageContextWrapper(BrowserContext::GetMojoUserIdFor(context),
-                                   path, relative_partition_path,
-                                   context->GetSpecialStoragePolicy());
+      new DOMStorageContextWrapper(
+          BrowserContext::GetMojoUserIdFor(context),
+          in_memory ? base::FilePath() : context->GetPath(),
+          relative_partition_path, context->GetSpecialStoragePolicy());
 
   // BrowserMainLoop may not be initialized in unit tests. Tests will
   // need to inject their own task runner into the IndexedDBContext.
@@ -456,6 +456,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                 ->task_runner()
                 .get()
           : NULL;
+
+  base::FilePath path = in_memory ? base::FilePath() : partition_path;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context =
       new IndexedDBContextImpl(path,
                                context->GetSpecialStoragePolicy(),
