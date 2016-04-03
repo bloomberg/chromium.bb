@@ -35,6 +35,11 @@ class UI_BASE_EXPORT ClipboardUtil {
       NSString* url,
       NSString* title);
 
+  // Returns an NSPasteboardItem that represents the given |urls| and |titles|.
+  static base::scoped_nsobject<NSPasteboardItem> PasteboardItemFromUrls(
+      NSArray* urls,
+      NSArray* titles);
+
   // Returns an NSPasteboardItem that represents the given string.
   // |string| must not be nil.
   static base::scoped_nsobject<NSPasteboardItem> PasteboardItemFromString(
@@ -44,6 +49,21 @@ class UI_BASE_EXPORT ClipboardUtil {
   // url NSPasteboardItem.
   static NSString* GetTitleFromPasteboardURL(NSPasteboard* pboard);
   static NSString* GetURLFromPasteboardURL(NSPasteboard* pboard);
+
+  // Returns the UTI of a pasteboard type.
+  static NSString* UTIForPasteboardType(NSString* type);
+  static NSString* UTIForWebURLsAndTitles();
+
+  // For each pasteboard type in |item| that is not in |pboard|, add the type
+  // and its associated data.
+  static void AddDataToPasteboard(NSPasteboard* pboard, NSPasteboardItem* item);
+
+  // Returns whether the operation was succesful. On success, the two arrays are
+  // guaranteed to be equal length, and are populated with strings of |urls| and
+  // |titles|.
+  static bool URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
+                                          NSArray** urls,
+                                          NSArray** titles);
 };
 }
 

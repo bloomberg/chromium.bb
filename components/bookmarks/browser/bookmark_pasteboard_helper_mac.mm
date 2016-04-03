@@ -12,22 +12,19 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 
 NSString* const kBookmarkDictionaryListPboardType =
-    @"BookmarkDictionaryListPboardType";
+    @"com.google.chrome.BookmarkDictionaryListPboardType";
 
 namespace bookmarks {
 
 namespace {
 
-// An unofficial standard pasteboard title type to be provided alongside the
-// |NSURLPboardType|.
-NSString* const kNSURLTitlePboardType = @"public.url-name";
-
 // Pasteboard type used to store profile path to determine which profile
 // a set of bookmarks came from.
 NSString* const kChromiumProfilePathPboardType =
-    @"ChromiumProfilePathPboardType";
+    @"com.google.chrome.ChromiumProfilePathPboardType";
 
 // Internal bookmark ID for a bookmark node.  Used only when moving inside
 // of one profile.
@@ -35,10 +32,6 @@ NSString* const kChromiumBookmarkId = @"ChromiumBookmarkId";
 
 // Internal bookmark meta info dictionary for a bookmark node.
 NSString* const kChromiumBookmarkMetaInfo = @"ChromiumBookmarkMetaInfo";
-
-// Mac WebKit uses this type, declared in
-// WebKit/mac/History/WebURLsWithTitles.h.
-NSString* const kCrWebURLsWithTitlesPboardType = @"WebURLsWithTitlesPboardType";
 
 // Keys for the type of node in BookmarkDictionaryListPboardType.
 NSString* const kWebBookmarkType = @"WebBookmarkType";
@@ -100,8 +93,9 @@ void ConvertPlistToElements(NSArray* input,
 bool ReadBookmarkDictionaryListPboardType(
     NSPasteboard* pb,
     std::vector<BookmarkNodeData::Element>& elements) {
-  NSArray* bookmarks =
-      [pb propertyListForType:kBookmarkDictionaryListPboardType];
+  NSString* uti = ui::ClipboardUtil::UTIForPasteboardType(
+      kBookmarkDictionaryListPboardType);
+  NSArray* bookmarks = [pb propertyListForType:uti];
   if (!bookmarks)
     return false;
   ConvertPlistToElements(bookmarks, elements);
@@ -111,16 +105,9 @@ bool ReadBookmarkDictionaryListPboardType(
 bool ReadWebURLsWithTitlesPboardType(
     NSPasteboard* pb,
     std::vector<BookmarkNodeData::Element>& elements) {
-  NSArray* bookmarkPairs =
-      [pb propertyListForType:kCrWebURLsWithTitlesPboardType];
-  if (![bookmarkPairs isKindOfClass:[NSArray class]])
-    return false;
-
-  NSArray* urlsArr = [bookmarkPairs objectAtIndex:0];
-  NSArray* titlesArr = [bookmarkPairs objectAtIndex:1];
-  if ([urlsArr count] < 1)
-    return false;
-  if ([urlsArr count] != [titlesArr count])
+  NSArray* urlsArr = nil;
+  NSArray* titlesArr = nil;
+  if (!ui::ClipboardUtil::URLsAndTitlesFromPasteboard(pb, &urlsArr, &titlesArr))
     return false;
 
   NSUInteger len = [titlesArr count];
@@ -136,25 +123,6 @@ bool ReadWebURLsWithTitlesPboardType(
       elements.push_back(element);
     }
   }
-  return true;
-}
-
-bool ReadNSURLPboardType(NSPasteboard* pb,
-                         std::vector<BookmarkNodeData::Element>& elements) {
-  NSURL* url = [NSURL URLFromPasteboard:pb];
-  if (url == nil)
-    return false;
-
-  std::string urlString = base::SysNSStringToUTF8([url absoluteString]);
-  NSString* title = [pb stringForType:kNSURLTitlePboardType];
-  if (!title)
-    title = [pb stringForType:NSStringPboardType];
-
-  BookmarkNodeData::Element element;
-  element.is_url = true;
-  element.url = GURL(urlString);
-  element.title = base::SysNSStringToUTF16(title);
-  elements.push_back(element);
   return true;
 }
 
@@ -215,7 +183,10 @@ void WriteBookmarkDictionaryListPboardType(
     NSPasteboard* pb,
     const std::vector<BookmarkNodeData::Element>& elements) {
   NSArray* plist = GetPlistForBookmarkList(elements);
-  [pb setPropertyList:plist forType:kBookmarkDictionaryListPboardType];
+  NSString* uti = ui::ClipboardUtil::UTIForPasteboardType(
+      kBookmarkDictionaryListPboardType);
+  [pb addTypes:@[ uti ] owner:nil];
+  [pb setPropertyList:plist forType:uti];
 }
 
 void FillFlattenedArraysForBookmarks(
@@ -248,23 +219,22 @@ void WriteSimplifiedBookmarkTypes(
   FillFlattenedArraysForBookmarks(
       elements, url_titles, urls, toplevel_string_data);
 
+  if ([urls count] > 0) {
+    base::scoped_nsobject<NSPasteboardItem> item;
+    if ([urls count] == 1) {
+      item = ui::ClipboardUtil::PasteboardItemFromUrl([urls firstObject],
+                                                      [url_titles firstObject]);
+    } else {
+      item = ui::ClipboardUtil::PasteboardItemFromUrls(urls, url_titles);
+    }
+
+    ui::ClipboardUtil::AddDataToPasteboard(pb, item);
+  }
+
   // Write NSStringPboardType.
+  [pb addTypes:@[ NSStringPboardType ] owner:nil];
   [pb setString:[toplevel_string_data componentsJoinedByString:@"\n"]
         forType:NSStringPboardType];
-
-  // The following pasteboard types only act on urls, not folders.
-  if ([urls count] < 1)
-    return;
-
-  // Write WebURLsWithTitlesPboardType.
-  [pb setPropertyList:[NSArray arrayWithObjects:urls, url_titles, nil]
-              forType:kCrWebURLsWithTitlesPboardType];
-
-  // Write NSURLPboardType (with title).
-  NSURL* url = [NSURL URLWithString:[urls objectAtIndex:0]];
-  [url writeToPasteboard:pb];
-  NSString* titleString = [url_titles objectAtIndex:0];
-  [pb setString:titleString forType:kNSURLTitlePboardType];
 }
 
 NSPasteboard* PasteboardFromType(ui::ClipboardType type) {
@@ -295,16 +265,10 @@ void WriteBookmarksToPasteboard(
 
   NSPasteboard* pb = PasteboardFromType(type);
 
-  NSArray* types = [NSArray arrayWithObjects:kBookmarkDictionaryListPboardType,
-                                             kCrWebURLsWithTitlesPboardType,
-                                             NSStringPboardType,
-                                             NSURLPboardType,
-                                             kNSURLTitlePboardType,
-                                             kChromiumProfilePathPboardType,
-                                             nil];
-  [pb declareTypes:types owner:nil];
-  [pb setString:base::SysUTF8ToNSString(profile_path.value())
-        forType:kChromiumProfilePathPboardType];
+  NSString* uti =
+      ui::ClipboardUtil::UTIForPasteboardType(kChromiumProfilePathPboardType);
+  [pb declareTypes:@[ uti ] owner:nil];
+  [pb setString:base::SysUTF8ToNSString(profile_path.value()) forType:uti];
   WriteBookmarkDictionaryListPboardType(pb, elements);
   WriteSimplifiedBookmarkTypes(pb, elements);
 }
@@ -316,21 +280,21 @@ bool ReadBookmarksFromPasteboard(
   NSPasteboard* pb = PasteboardFromType(type);
 
   elements.clear();
-  NSString* profile = [pb stringForType:kChromiumProfilePathPboardType];
+  NSString* uti =
+      ui::ClipboardUtil::UTIForPasteboardType(kChromiumProfilePathPboardType);
+  NSString* profile = [pb stringForType:uti];
   *profile_path = base::FilePath(base::SysNSStringToUTF8(profile));
   return ReadBookmarkDictionaryListPboardType(pb, elements) ||
-         ReadWebURLsWithTitlesPboardType(pb, elements) ||
-         ReadNSURLPboardType(pb, elements);
+         ReadWebURLsWithTitlesPboardType(pb, elements);
 }
 
 bool PasteboardContainsBookmarks(ui::ClipboardType type) {
   NSPasteboard* pb = PasteboardFromType(type);
 
-  NSArray* availableTypes =
-      [NSArray arrayWithObjects:kBookmarkDictionaryListPboardType,
-                                kCrWebURLsWithTitlesPboardType,
-                                NSURLPboardType,
-                                nil];
+  NSArray* availableTypes = @[
+    ui::ClipboardUtil::UTIForWebURLsAndTitles(),
+    ui::ClipboardUtil::UTIForPasteboardType(kBookmarkDictionaryListPboardType)
+  ];
   return [pb availableTypeFromArray:availableTypes] != nil;
 }
 

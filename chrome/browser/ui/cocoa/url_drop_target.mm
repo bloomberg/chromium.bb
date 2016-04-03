@@ -6,16 +6,8 @@
 
 #include "chrome/browser/ui/cocoa/drag_util.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 #include "url/gurl.h"
-
-namespace {
-
-// Mac WebKit uses this type, declared in
-// WebKit/mac/History/WebURLsWithTitles.h.
-NSString* const kCrWebURLsWithTitlesPboardType =
-    @"WebURLsWithTitlesPboardType";
-
-}  // namespace
 
 @interface URLDropTargetHandler(Private)
 
@@ -30,11 +22,10 @@ NSString* const kCrWebURLsWithTitlesPboardType =
 @implementation URLDropTargetHandler
 
 + (NSArray*)handledDragTypes {
-  return [NSArray arrayWithObjects:kCrWebURLsWithTitlesPboardType,
-                                   NSURLPboardType,
-                                   NSStringPboardType,
-                                   NSFilenamesPboardType,
-                                   nil];
+  return @[
+    ui::ClipboardUtil::UTIForWebURLsAndTitles(), NSURLPboardType,
+    NSStringPboardType, NSFilenamesPboardType
+  ];
 }
 
 - (id)initWithView:(NSView<URLDropTarget>*)view {

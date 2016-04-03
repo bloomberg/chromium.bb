@@ -78,6 +78,20 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
 }
 
 // static
+base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrls(
+    NSArray* urls,
+    NSArray* titles) {
+  base::scoped_nsobject<NSPasteboardItem> item([[NSPasteboardItem alloc] init]);
+
+  // Set Safari's URL + title arrays Pboard type.
+  NSArray* urlsAndTitles = @[ urls, titles ];
+  [item setPropertyList:urlsAndTitles
+                forType:UTIFromPboardType(kWebURLsWithTitlesPboardType)];
+
+  return item;
+}
+
+// static
 base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromString(
     NSString* string) {
   base::scoped_nsobject<NSPasteboardItem> item([[NSPasteboardItem alloc] init]);
@@ -95,6 +109,71 @@ NSString* ClipboardUtil::GetTitleFromPasteboardURL(NSPasteboard* pboard) {
 NSString* ClipboardUtil::GetURLFromPasteboardURL(NSPasteboard* pboard) {
   return
       [pboard stringForType:UTIFromPboardType(kCorePasteboardFlavorType_url)];
+}
+
+// static
+NSString* ClipboardUtil::UTIForPasteboardType(NSString* type) {
+  return UTIFromPboardType(type);
+}
+
+// static
+NSString* ClipboardUtil::UTIForWebURLsAndTitles() {
+  return UTIFromPboardType(kWebURLsWithTitlesPboardType);
+}
+
+// static
+void ClipboardUtil::AddDataToPasteboard(NSPasteboard* pboard,
+                                        NSPasteboardItem* item) {
+  NSSet* oldTypes = [NSSet setWithArray:[pboard types]];
+  NSMutableSet* newTypes = [NSMutableSet setWithArray:[item types]];
+  [newTypes minusSet:oldTypes];
+
+  [pboard addTypes:[newTypes allObjects] owner:nil];
+  for (NSString* type in newTypes) {
+    // Technically, the object associated with |type| might be an NSString or a
+    // property list. It doesn't matter though, since the type gets pulled from
+    // and shoved into an NSDictionary.
+    [pboard setData:[item dataForType:type] forType:type];
+  }
+}
+
+// static
+bool ClipboardUtil::URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
+                                                NSArray** urls,
+                                                NSArray** titles) {
+  NSArray* bookmarkPairs = base::mac::ObjCCast<NSArray>([pboard
+      propertyListForType:UTIFromPboardType(kWebURLsWithTitlesPboardType)]);
+  if (!bookmarkPairs)
+    return false;
+
+  if ([bookmarkPairs count] != 2)
+    return false;
+
+  NSArray* urlsArr =
+      base::mac::ObjCCast<NSArray>([bookmarkPairs objectAtIndex:0]);
+  NSArray* titlesArr =
+      base::mac::ObjCCast<NSArray>([bookmarkPairs objectAtIndex:1]);
+
+  if (!urlsArr || !titlesArr)
+    return false;
+  if ([urlsArr count] < 1)
+    return false;
+  if ([urlsArr count] != [titlesArr count])
+    return false;
+
+  for (id obj in urlsArr) {
+    if (![obj isKindOfClass:[NSString class]])
+      return false;
+  }
+
+  for (id obj in titlesArr) {
+    if (![obj isKindOfClass:[NSString class]])
+      return false;
+  }
+
+  *urls = urlsArr;
+  *titles = titlesArr;
+  return true;
 }
 
 }  // namespace ui

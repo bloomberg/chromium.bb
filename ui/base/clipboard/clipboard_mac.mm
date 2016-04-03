@@ -426,18 +426,7 @@ void ClipboardMac::WriteBookmark(const char* title_data,
   base::scoped_nsobject<NSPasteboardItem> item(
       ClipboardUtil::PasteboardItemFromUrl(url, title));
   NSPasteboard* pb = GetPasteboard();
-
-  NSSet* oldTypes = [NSSet setWithArray:[pb types]];
-  NSMutableSet* newTypes = [NSMutableSet setWithArray:[item types]];
-  [newTypes minusSet:oldTypes];
-
-  [pb addTypes:[newTypes allObjects] owner:nil];
-  for (NSString* type in newTypes) {
-    // Technically, the object associated with |type| might be an NSString or a
-    // property list. It doesn't matter though, since the type gets pulled from
-    // and shoved into an NSDictionary.
-    [pb setData:[item dataForType:type] forType:type];
-  }
+  ui::ClipboardUtil::AddDataToPasteboard(pb, item);
 }
 
 void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {
