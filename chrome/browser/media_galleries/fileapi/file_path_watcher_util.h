@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/memory/scoped_ptr.h"
 
 typedef base::Callback<void(scoped_ptr<base::FilePathWatcher> watcher)>
     FileWatchStartedCallback;

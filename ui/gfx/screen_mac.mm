@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_change_notifier.h"

@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/rand_util.h"
 #include "media/filters/memory_data_source.h"
 #include "testing/gmock/include/gmock/gmock.h"

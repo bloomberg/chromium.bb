@@ -6,6 +6,7 @@
 #define MEDIA_CAPTURE_DEVICE_MONITOR_MAC_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/media_export.h"

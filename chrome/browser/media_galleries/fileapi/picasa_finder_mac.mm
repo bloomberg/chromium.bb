@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/policy/core/common/preferences_mac.h"
 #include "content/public/browser/browser_thread.h"
 

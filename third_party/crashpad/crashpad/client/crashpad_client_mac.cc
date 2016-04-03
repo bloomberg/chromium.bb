@@ -25,6 +25,7 @@
 
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "util/mac/mac_util.h"

@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "components/wifi/wifi_export.h"
 
