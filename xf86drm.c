@@ -2942,7 +2942,7 @@ static int drmGetMaxNodeName(void)
            MAX3(sizeof(DRM_PRIMARY_MINOR_NAME),
                 sizeof(DRM_CONTROL_MINOR_NAME),
                 sizeof(DRM_RENDER_MINOR_NAME)) +
-           3 /* lenght of the node number */;
+           3 /* length of the node number */;
 }
 
 static int drmParsePciDeviceInfo(const char *d_name,
