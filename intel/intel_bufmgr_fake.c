@@ -312,7 +312,7 @@ _fence_wait_internal(drm_intel_bufmgr_fake *bufmgr_fake, int seq)
 	 *
 	 * Assume that in userland we treat sequence numbers as ints, which
 	 * makes some of the comparisons convenient, since the sequence
-	 * numbers are all postive signed integers.
+	 * numbers are all positive signed integers.
 	 *
 	 * From this we get several cases we need to handle.  Here's a timeline.
 	 * 0x2   0x7                                    0x7ffffff8   0x7ffffffd

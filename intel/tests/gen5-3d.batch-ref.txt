@@ -24,7 +24,7 @@
 0x1230005c:      0x00000000:    dword 3
 0x12300060:      0x00000000:    dword 4
 0x12300064:      0x79050004: 3DSTATE_DEPTH_BUFFER
-0x12300068:      0x2c0805ff:    2D, z24s8, pitch = 1536 bytes, tiled, HiZ 0, Seperate Stencil 0
+0x12300068:      0x2c0805ff:    2D, z24s8, pitch = 1536 bytes, tiled, HiZ 0, Separate Stencil 0
 0x1230006c:      0x00000000:    depth offset
 0x12300070:      0x09584ac0:    300x300
 0x12300074:      0x00000000:    volume depth

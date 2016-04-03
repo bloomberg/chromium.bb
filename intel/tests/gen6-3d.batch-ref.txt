@@ -140,7 +140,7 @@
 0x1230022c:      0x00000000:    
 0x12300230:      0x00000000:    
 0x12300234:      0x79050005: 3DSTATE_DEPTH_BUFFER
-0x12300238:      0x2c6c05ff:    2D, unknown, pitch = 1536 bytes, tiled, HiZ 1, Seperate Stencil 1
+0x12300238:      0x2c6c05ff:    2D, unknown, pitch = 1536 bytes, tiled, HiZ 1, Separate Stencil 1
 0x1230023c:      0x00000000:    depth offset
 0x12300240:      0x09584ac0:    300x300
 0x12300244:      0x00000000:    volume depth
