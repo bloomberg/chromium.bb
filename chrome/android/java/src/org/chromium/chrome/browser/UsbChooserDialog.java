@@ -9,6 +9,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -36,7 +37,8 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
     /**
      * Creates the UsbChooserDialog.
      */
-    private UsbChooserDialog(long nativeUsbChooserDialogPtr) {
+    @VisibleForTesting
+    UsbChooserDialog(long nativeUsbChooserDialogPtr) {
         mNativeUsbChooserDialogPtr = nativeUsbChooserDialogPtr;
     }
 
@@ -48,7 +50,8 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
      * @param securityLevel The security level of the connection to the site wanting to connect to
      *                      the USB device. For valid values see SecurityStateModel::SecurityLevel.
      */
-    private void show(Context context, String origin, int securityLevel) {
+    @VisibleForTesting
+    void show(Context context, String origin, int securityLevel) {
         // Emphasize the origin.
         Profile profile = Profile.getLastUsedProfile();
         SpannableString originSpannableString = new SpannableString(origin);
@@ -117,8 +120,9 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
         mItemChooserDialog.setIdleState();
     }
 
+    @VisibleForTesting
     @CalledByNative
-    private void addDevice(String deviceId, String deviceName) {
+    void addDevice(String deviceId, String deviceName) {
         mItemChooserDialog.addItemToList(
                 new ItemChooserDialog.ItemChooserRow(deviceId, deviceName));
     }
@@ -135,7 +139,10 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
         mItemChooserDialog.dismiss();
     }
 
-    private native void nativeOnItemSelected(long nativeUsbChooserDialogAndroid, String deviceId);
-    private native void nativeOnDialogCancelled(long nativeUsbChooserDialogAndroid);
-    private native void nativeLoadUsbHelpPage(long nativeUsbChooserDialogAndroid);
+    @VisibleForTesting
+    native void nativeOnItemSelected(long nativeUsbChooserDialogAndroid, String deviceId);
+    @VisibleForTesting
+    native void nativeOnDialogCancelled(long nativeUsbChooserDialogAndroid);
+    @VisibleForTesting
+    native void nativeLoadUsbHelpPage(long nativeUsbChooserDialogAndroid);
 }
