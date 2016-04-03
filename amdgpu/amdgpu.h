@@ -685,7 +685,7 @@ int amdgpu_create_bo_from_user_mem(amdgpu_device_handle dev,
 int amdgpu_bo_free(amdgpu_bo_handle buf_handle);
 
 /**
- * Request CPU access to GPU accessable memory
+ * Request CPU access to GPU accessible memory
  *
  * \param   buf_handle - \c [in] Buffer handle
  * \param   cpu        - \c [out] CPU address to be used for access
@@ -851,7 +851,7 @@ int amdgpu_cs_query_reset_state(amdgpu_context_handle context,
  * order.
  *
  * The caller can specify the user fence buffer/location with the fence_info in the
- * cs_request.The sequence number is returned via the 'seq_no' paramter
+ * cs_request.The sequence number is returned via the 'seq_no' parameter
  * in ibs_request structure.
  *
  *
