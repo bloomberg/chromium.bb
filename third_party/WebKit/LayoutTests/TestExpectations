@@ -1209,15 +1209,6 @@ crbug.com/591500 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
 crbug.com/591500 [ Win10 ] printing/iframe-print.html [ Skip ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/iframe-print.html [ Skip ]
 
-crbug.com/599946 [ Win ] printing/quirks-percentage-height-body.html [ NeedsRebaseline ]
-crbug.com/599946 [ Win ] printing/quirks-percentage-height.html [ NeedsRebaseline ]
-crbug.com/599946 [ Win ] printing/standards-percentage-heights.html [ NeedsRebaseline ]
-crbug.com/599946 [ Win ] printing/subframes-percentage-height.html [ NeedsRebaseline ]
-crbug.com/599946 [ Win ] virtual/threaded/printing/quirks-percentage-height-body.html [ NeedsRebaseline ]
-crbug.com/599946 [ Win ] virtual/threaded/printing/quirks-percentage-height.html [ NeedsRebaseline ]
-crbug.com/599946 [ Win ] virtual/threaded/printing/standards-percentage-heights.html [ NeedsRebaseline ]
-crbug.com/599946 [ Win ] virtual/threaded/printing/subframes-percentage-height.html [ NeedsRebaseline ]
-
 crbug.com/331582 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 
