@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/test/v8_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

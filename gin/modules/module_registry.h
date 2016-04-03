@@ -7,13 +7,13 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "gin/gin_export.h"
@@ -59,7 +59,7 @@ class GIN_EXPORT ModuleRegistry {
 
   // The caller must have already entered our context.
   void AddPendingModule(v8::Isolate* isolate,
-                        scoped_ptr<PendingModule> pending);
+                        std::unique_ptr<PendingModule> pending);
 
   void LoadModule(v8::Isolate* isolate,
                   const std::string& id,
@@ -82,13 +82,14 @@ class GIN_EXPORT ModuleRegistry {
 
   explicit ModuleRegistry(v8::Isolate* isolate);
 
-  bool Load(v8::Isolate* isolate, scoped_ptr<PendingModule> pending);
+  bool Load(v8::Isolate* isolate, std::unique_ptr<PendingModule> pending);
   bool RegisterModule(v8::Isolate* isolate,
                       const std::string& id,
                       v8::Local<v8::Value> module);
 
   bool CheckDependencies(PendingModule* pending);
-  bool AttemptToLoad(v8::Isolate* isolate, scoped_ptr<PendingModule> pending);
+  bool AttemptToLoad(v8::Isolate* isolate,
+                     std::unique_ptr<PendingModule> pending);
 
   v8::Local<v8::Value> GetModule(v8::Isolate* isolate, const std::string& id);
 

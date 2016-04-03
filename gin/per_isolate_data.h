@@ -6,10 +6,10 @@
 #define GIN_PER_ISOLATE_DATA_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "gin/gin_export.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "gin/public/wrapper_info.h"
@@ -65,7 +65,7 @@ class GIN_EXPORT PerIsolateData {
       WrappableBase* base);
   NamedPropertyInterceptor* GetNamedPropertyInterceptor(WrappableBase* base);
 
-  void EnableIdleTasks(scoped_ptr<V8IdleTaskRunner> idle_task_runner);
+  void EnableIdleTasks(std::unique_ptr<V8IdleTaskRunner> idle_task_runner);
 
   v8::Isolate* isolate() { return isolate_; }
   v8::ArrayBuffer::Allocator* allocator() { return allocator_; }
@@ -93,7 +93,7 @@ class GIN_EXPORT PerIsolateData {
   IndexedPropertyInterceptorMap indexed_interceptors_;
   NamedPropertyInterceptorMap named_interceptors_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_ptr<V8IdleTaskRunner> idle_task_runner_;
+  std::unique_ptr<V8IdleTaskRunner> idle_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PerIsolateData);
 };

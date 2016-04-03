@@ -56,7 +56,7 @@ namespace {
 const char kModuleRegistryKey[] = "ModuleRegistry";
 
 struct ModuleRegistryData : public base::SupportsUserData::Data {
-  scoped_ptr<ModuleRegistry> registry;
+  std::unique_ptr<ModuleRegistry> registry;
 };
 
 void Define(const v8::FunctionCallbackInfo<Value>& info) {
@@ -76,7 +76,7 @@ void Define(const v8::FunctionCallbackInfo<Value>& info) {
   if (!args.GetNext(&factory))
     return args.ThrowError();
 
-  scoped_ptr<PendingModule> pending(new PendingModule);
+  std::unique_ptr<PendingModule> pending(new PendingModule);
   pending->id = id;
   pending->dependencies = dependencies;
   pending->factory.Reset(args.isolate(), factory);
@@ -158,7 +158,7 @@ void ModuleRegistry::AddBuiltinModule(Isolate* isolate, const std::string& id,
 }
 
 void ModuleRegistry::AddPendingModule(Isolate* isolate,
-                                      scoped_ptr<PendingModule> pending) {
+                                      std::unique_ptr<PendingModule> pending) {
   const std::string pending_id = pending->id;
   const std::vector<std::string> pending_dependencies = pending->dependencies;
   AttemptToLoad(isolate, std::move(pending));
@@ -227,7 +227,8 @@ bool ModuleRegistry::CheckDependencies(PendingModule* pending) {
   return num_missing_dependencies == 0;
 }
 
-bool ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
+bool ModuleRegistry::Load(Isolate* isolate,
+                          std::unique_ptr<PendingModule> pending) {
   if (!pending->id.empty() && available_modules_.count(pending->id))
     return true;  // We've already loaded this module.
 
@@ -253,7 +254,7 @@ bool ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
 }
 
 bool ModuleRegistry::AttemptToLoad(Isolate* isolate,
-                                   scoped_ptr<PendingModule> pending) {
+                                   std::unique_ptr<PendingModule> pending) {
   if (!CheckDependencies(pending.get())) {
     pending_modules_.push_back(pending.release());
     return false;
@@ -276,7 +277,7 @@ void ModuleRegistry::AttemptToLoadMoreModules(Isolate* isolate) {
     PendingModuleVector pending_modules;
     pending_modules.swap(pending_modules_);
     for (size_t i = 0; i < pending_modules.size(); ++i) {
-      scoped_ptr<PendingModule> pending(pending_modules[i]);
+      std::unique_ptr<PendingModule> pending(pending_modules[i]);
       pending_modules[i] = NULL;
       if (AttemptToLoad(isolate, std::move(pending)))
         keep_trying = true;

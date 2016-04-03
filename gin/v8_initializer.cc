@@ -7,13 +7,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -111,7 +112,8 @@ static bool MapV8File(base::PlatformFile platform_file,
                       base::MemoryMappedFile::Region region,
                       base::MemoryMappedFile** mmapped_file_out) {
   DCHECK(*mmapped_file_out == NULL);
-  scoped_ptr<base::MemoryMappedFile> mmapped_file(new base::MemoryMappedFile());
+  std::unique_ptr<base::MemoryMappedFile> mmapped_file(
+      new base::MemoryMappedFile());
   if (mmapped_file->Initialize(base::File(platform_file), region)) {
     *mmapped_file_out = mmapped_file.release();
     return true;

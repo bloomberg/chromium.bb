@@ -114,7 +114,7 @@ NamedPropertyInterceptor* PerIsolateData::GetNamedPropertyInterceptor(
 }
 
 void PerIsolateData::EnableIdleTasks(
-    scoped_ptr<V8IdleTaskRunner> idle_task_runner) {
+    std::unique_ptr<V8IdleTaskRunner> idle_task_runner) {
   idle_task_runner_ = std::move(idle_task_runner);
 }
 

@@ -4,6 +4,8 @@
 
 #include "gin/v8_isolate_memory_dump_provider.h"
 
+#include <memory>
+
 #include "base/trace_event/process_memory_dump.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/test/v8_test.h"
@@ -21,7 +23,7 @@ TEST_F(V8MemoryDumpProviderTest, DumpStatistics) {
   v8::V8::SetFlagsFromString(track_objects_flag,
                              static_cast<int>(strlen(track_objects_flag)));
 
-  scoped_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
+  std::unique_ptr<base::trace_event::ProcessMemoryDump> process_memory_dump(
       new base::trace_event::ProcessMemoryDump(nullptr));
   base::trace_event::MemoryDumpArgs dump_args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};

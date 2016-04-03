@@ -4,7 +4,8 @@
 
 #include "gin/modules/timer.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -71,7 +72,7 @@ struct TestHelper {
   }
 
   ShellRunnerDelegate delegate;
-  scoped_ptr<ShellRunner> runner;
+  std::unique_ptr<ShellRunner> runner;
   Runner::Scope scope;
   Handle<TimerModule> timer_module;
   Handle<Result> result;

@@ -5,9 +5,10 @@
 #ifndef GIN_TEST_V8_TEST_H_
 #define GIN_TEST_V8_TEST_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
@@ -28,7 +29,7 @@ class V8Test : public testing::Test {
 
  protected:
   base::MessageLoop message_loop_;
-  scoped_ptr<IsolateHolder> instance_;
+  std::unique_ptr<IsolateHolder> instance_;
   v8::Persistent<v8::Context> context_;
 
  private:
