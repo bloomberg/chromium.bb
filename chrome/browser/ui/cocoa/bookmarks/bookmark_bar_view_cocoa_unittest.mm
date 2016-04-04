@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -237,7 +238,8 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
       [[BookmarkButton alloc] init]);
   [dragged_button setCell:button_cell];
   [info setDraggingSource:dragged_button.get()];
-  [info setDragDataType:kBookmarkButtonDragType];
+  [info setDragDataType:ui::ClipboardUtil::UTIForPasteboardType(
+                            kBookmarkButtonDragType)];
   [info setButton:dragged_button.get()];
   [info setBookmarkModel:bookmark_model];
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
@@ -279,7 +281,8 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
       [[BookmarkButton alloc] init]);
   [dragged_button setCell:button_cell];
   [info setDraggingSource:dragged_button.get()];
-  [info setDragDataType:kBookmarkButtonDragType];
+  [info setDragDataType:ui::ClipboardUtil::UTIForPasteboardType(
+                            kBookmarkButtonDragType)];
   [info setButton:dragged_button.get()];
   [info setBookmarkModel:BookmarkModelFactory::GetForProfile(other_profile)];
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
@@ -317,7 +320,8 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDropIndicator) {
   base::scoped_nsobject<BookmarkButton> dragged_button(
       [[BookmarkButton alloc] init]);
   [info setDraggingSource:dragged_button.get()];
-  [info setDragDataType:kBookmarkButtonDragType];
+  [info setDragDataType:ui::ClipboardUtil::UTIForPasteboardType(
+                            kBookmarkButtonDragType)];
   EXPECT_FALSE([info draggingEnteredCalled]);
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
   EXPECT_TRUE([info draggingEnteredCalled]);  // Ensure controller pinged.

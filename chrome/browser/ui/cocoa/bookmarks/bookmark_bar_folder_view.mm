@@ -17,6 +17,7 @@ using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 
 @interface BookmarkBarFolderView()
 
@@ -29,13 +30,11 @@ using bookmarks::BookmarkNode;
 @implementation BookmarkBarFolderView
 
 - (void)awakeFromNib {
-  NSArray* types = [NSArray arrayWithObjects:
-                    NSStringPboardType,
-                    NSHTMLPboardType,
-                    NSURLPboardType,
-                    kBookmarkButtonDragType,
-                    kBookmarkDictionaryListPboardType,
-                    nil];
+  NSArray* types = @[
+    NSStringPboardType, NSHTMLPboardType, NSURLPboardType,
+    ui::ClipboardUtil::UTIForPasteboardType(kBookmarkButtonDragType),
+    ui::ClipboardUtil::UTIForPasteboardType(kBookmarkDictionaryListPboardType)
+  ];
   [self registerForDraggedTypes:types];
 }
 
@@ -58,7 +57,9 @@ using bookmarks::BookmarkNode;
   inDrag_ = YES;
   if (![[self controller] draggingAllowed:info])
     return NSDragOperationNone;
-  if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType] ||
+  if ([[info draggingPasteboard]
+          dataForType:ui::ClipboardUtil::UTIForPasteboardType(
+                          kBookmarkButtonDragType)] ||
       bookmarks::PasteboardContainsBookmarks(ui::CLIPBOARD_TYPE_DRAG) ||
       [[info draggingPasteboard] containsURLData]) {
     // Find the position of the drop indicator.
@@ -149,7 +150,8 @@ using bookmarks::BookmarkNode;
 - (BOOL)performDragOperationForBookmarkButton:(id<NSDraggingInfo>)info {
   BOOL doDrag = NO;
   NSData* data = [[info draggingPasteboard]
-                   dataForType:kBookmarkButtonDragType];
+      dataForType:ui::ClipboardUtil::UTIForPasteboardType(
+                      kBookmarkButtonDragType)];
   // [info draggingSource] is nil if not the same application.
   if (data && [info draggingSource]) {
     BookmarkButton* button = nil;
@@ -181,7 +183,8 @@ using bookmarks::BookmarkNode;
   if ([[self controller] dragBookmarkData:info])
     return YES;
   NSPasteboard* pboard = [info draggingPasteboard];
-  if ([pboard dataForType:kBookmarkButtonDragType] &&
+  if ([pboard dataForType:ui::ClipboardUtil::UTIForPasteboardType(
+                              kBookmarkButtonDragType)] &&
       [self performDragOperationForBookmarkButton:info])
     return YES;
   if ([pboard containsURLData] && [self performDragOperationForURL:info])

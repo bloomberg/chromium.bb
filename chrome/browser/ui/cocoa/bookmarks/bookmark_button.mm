@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
@@ -215,7 +216,9 @@ BookmarkButton* gDraggedButton = nil; // Weak
   [self setHidden:YES];
 
   NSPasteboardItem* pbItem = [NSPasteboardItem new];
-  [pbItem setDataProvider:self forTypes:@[ kBookmarkButtonDragType ]];
+  [pbItem setDataProvider:self
+                 forTypes:@[ ui::ClipboardUtil::UTIForPasteboardType(
+                              kBookmarkButtonDragType) ]];
 
   base::scoped_nsobject<NSDraggingItem> dragItem(
       [[NSDraggingItem alloc] initWithPasteboardWriter:pbItem]);
@@ -240,9 +243,10 @@ BookmarkButton* gDraggedButton = nil; // Weak
 - (void)pasteboard:(NSPasteboard*)sender
                   item:(NSPasteboardItem*)item
     provideDataForType:(NSString*)type {
-  [sender setData:[NSData dataWithBytes:&gDraggedButton
-                                 length:sizeof(gDraggedButton)]
-          forType:kBookmarkButtonDragType];
+  [sender
+      setData:[NSData dataWithBytes:&gDraggedButton
+                             length:sizeof(gDraggedButton)]
+      forType:ui::ClipboardUtil::UTIForPasteboardType(kBookmarkButtonDragType)];
 }
 
 - (NSDragOperation)draggingSession:(NSDraggingSession*)session

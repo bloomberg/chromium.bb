@@ -12,6 +12,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_pasteboard_helper_mac.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 
 using bookmarks::BookmarkNode;
@@ -114,12 +115,15 @@ NSString* kBookmarkButtonDragType = @"com.google.chrome.BookmarkButtonDrag";
        forDragOfButton:(BookmarkButton*)button {
   if (const BookmarkNode* node = [button bookmarkNode]) {
     // Put the bookmark information into the pasteboard, and then write our own
-    // data for |kBookmarkButtonDragType|.
+    // data for
+    // |ui::ClipboardUtil::UTIForPasteboardType(kBookmarkButtonDragType)|.
     [self copyBookmarkNode:node toDragPasteboard:pboard];
-    [pboard addTypes:[NSArray arrayWithObject:kBookmarkButtonDragType]
+    [pboard addTypes:@[ ui::ClipboardUtil::UTIForPasteboardType(
+                         kBookmarkButtonDragType) ]
                owner:nil];
     [pboard setData:[NSData dataWithBytes:&button length:sizeof(button)]
-            forType:kBookmarkButtonDragType];
+            forType:ui::ClipboardUtil::UTIForPasteboardType(
+                        kBookmarkButtonDragType)];
   } else {
     NOTREACHED();
   }

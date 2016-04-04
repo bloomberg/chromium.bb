@@ -18,6 +18,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "content/public/browser/user_metrics.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#include "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
 
 using base::UserMetricsAction;
@@ -68,13 +69,11 @@ using bookmarks::BookmarkNode;
                       object:nil];
 
   DCHECK(controller_) << "Expected this to be hooked up via Interface Builder";
-  NSArray* types = [NSArray arrayWithObjects:
-                    NSStringPboardType,
-                    NSHTMLPboardType,
-                    NSURLPboardType,
-                    kBookmarkButtonDragType,
-                    kBookmarkDictionaryListPboardType,
-                    nil];
+  NSArray* types = @[
+    NSStringPboardType, NSHTMLPboardType, NSURLPboardType,
+    ui::ClipboardUtil::UTIForPasteboardType(kBookmarkButtonDragType),
+    ui::ClipboardUtil::UTIForPasteboardType(kBookmarkDictionaryListPboardType)
+  ];
   [self registerForDraggedTypes:types];
 }
 
@@ -141,7 +140,9 @@ using bookmarks::BookmarkNode;
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
   if (![controller_ draggingAllowed:info])
     return NSDragOperationNone;
-  if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType] ||
+  if ([[info draggingPasteboard]
+          dataForType:ui::ClipboardUtil::UTIForPasteboardType(
+                          kBookmarkButtonDragType)] ||
       bookmarks::PasteboardContainsBookmarks(ui::CLIPBOARD_TYPE_DRAG) ||
       [[info draggingPasteboard] containsURLData]) {
     // We only show the drop indicator if we're not in a position to
@@ -227,7 +228,8 @@ using bookmarks::BookmarkNode;
 - (BOOL)performDragOperationForBookmarkButton:(id<NSDraggingInfo>)info {
   BOOL rtn = NO;
   NSData* data = [[info draggingPasteboard]
-                  dataForType:kBookmarkButtonDragType];
+      dataForType:ui::ClipboardUtil::UTIForPasteboardType(
+                      kBookmarkButtonDragType)];
   // [info draggingSource] is nil if not the same application.
   if (data && [info draggingSource]) {
     BookmarkButton* button = nil;
@@ -259,7 +261,8 @@ using bookmarks::BookmarkNode;
   if ([controller_ dragBookmarkData:info])
     return YES;
   NSPasteboard* pboard = [info draggingPasteboard];
-  if ([pboard dataForType:kBookmarkButtonDragType]) {
+  if ([pboard dataForType:ui::ClipboardUtil::UTIForPasteboardType(
+                              kBookmarkButtonDragType)]) {
     if ([self performDragOperationForBookmarkButton:info])
       return YES;
     // Fall through....
