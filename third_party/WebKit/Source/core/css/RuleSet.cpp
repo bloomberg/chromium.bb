@@ -204,10 +204,8 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
         return true;
     }
 
-    // TODO(esprehn): We shouldn't favor tagName over m_shadowHostRules, it means
-    // selectors with div:host end up in the tagName list matched against all tags
-    // even though they can't match anything at all.
     if (component.isHostPseudoClass()) {
+        ASSERT(component.isLastInTagHistory() || (component.relation() == CSSSelector::SubSelector && component.tagHistory()->match() == CSSSelector::PseudoElement));
         m_shadowHostRules.append(ruleData);
         return true;
     }
