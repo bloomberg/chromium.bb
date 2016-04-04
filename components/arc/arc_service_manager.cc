@@ -91,6 +91,10 @@ void ArcServiceManager::OnPrimaryUserProfilePrepared(
       new ArcNotificationManager(arc_bridge_service(), account_id)));
 }
 
+void ArcServiceManager::Shutdown() {
+  services_.clear();
+}
+
 //static
 void ArcServiceManager::SetArcBridgeServiceForTesting(
     scoped_ptr<ArcBridgeService> arc_bridge_service) {

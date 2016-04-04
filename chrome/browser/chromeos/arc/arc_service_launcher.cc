@@ -40,6 +40,7 @@ void ArcServiceLauncher::Initialize() {
 
 void ArcServiceLauncher::Shutdown() {
   DCHECK(arc_service_manager_);
+  arc_service_manager_->Shutdown();
   arc_service_manager_->arc_bridge_service()->Shutdown();
 }
 
