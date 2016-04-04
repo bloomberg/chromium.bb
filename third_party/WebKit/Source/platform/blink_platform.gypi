@@ -1210,6 +1210,7 @@
       'text/SegmentedStringTest.cpp',
       'text/TextBreakIteratorTest.cpp',
       'text/UnicodeUtilitiesTest.cpp',
+      'threading/BackgroundTaskRunnerTest.cpp',
       'transforms/TransformOperationsTest.cpp',
       'transforms/TransformTestHelper.h',
       'transforms/TransformationMatrixTest.cpp',
@@ -1236,7 +1237,6 @@
       'graphics/test/MockGLES2Interface.h',
       'graphics/test/MockImageDecoder.h',
       'graphics/test/MockWebGraphicsContext3D.h',
-      'threading/BackgroundTaskRunnerTest.cpp',
     ],
     'platform_test_support_files': [
       'testing/CompositorTest.cpp',
