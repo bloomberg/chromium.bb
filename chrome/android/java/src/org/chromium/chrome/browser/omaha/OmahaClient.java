@@ -198,6 +198,10 @@ public class OmahaClient extends IntentService {
             return;
         }
 
+        if (getRequestGenerator() == null) {
+            return;
+        }
+
         if (!mStateHasBeenRestored) {
             restoreState();
         }
