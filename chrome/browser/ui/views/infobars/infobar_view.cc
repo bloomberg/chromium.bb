@@ -102,6 +102,12 @@ InfoBarView::InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate)
   }
 }
 
+const infobars::InfoBarContainer::Delegate* InfoBarView::container_delegate()
+    const {
+  const infobars::InfoBarContainer* infobar_container = container();
+  return infobar_container ? infobar_container->delegate() : NULL;
+}
+
 InfoBarView::~InfoBarView() {
   // We should have closed any open menus in PlatformSpecificHide(), then
   // subclasses' RunMenu() functions should have prevented opening any new ones
@@ -180,12 +186,11 @@ void InfoBarView::Layout() {
   // Calculate the fill and stroke paths.  We do this here, rather than in
   // PlatformSpecificRecalculateHeight(), because this is also reached when our
   // width is changed, which affects both paths.
+  // TODO(estade): these paths aren't used for MD; remove when MD is default.
   stroke_path_.rewind();
   fill_path_.rewind();
   const infobars::InfoBarContainer::Delegate* delegate = container_delegate();
   if (delegate) {
-    static_cast<InfoBarBackground*>(background())->set_separator_color(
-        delegate->GetInfoBarSeparatorColor());
     int arrow_x;
     SkScalar arrow_fill_height = SkIntToScalar(std::max(
         arrow_height() - InfoBarContainerDelegate::kSeparatorLineHeight, 0));
@@ -330,12 +335,6 @@ int InfoBarView::EndX() const {
 int InfoBarView::OffsetY(views::View* view) const {
   return std::max((bar_target_height() - view->height()) / 2, 0) -
          (bar_target_height() - bar_height());
-}
-
-const infobars::InfoBarContainer::Delegate* InfoBarView::container_delegate()
-    const {
-  const infobars::InfoBarContainer* infobar_container = container();
-  return infobar_container ? infobar_container->delegate() : NULL;
 }
 
 void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,

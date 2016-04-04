@@ -39,6 +39,7 @@ class InfoBarView : public infobars::InfoBar,
  public:
   explicit InfoBarView(scoped_ptr<infobars::InfoBarDelegate> delegate);
 
+  const infobars::InfoBarContainer::Delegate* container_delegate() const;
   const SkPath& fill_path() const { return fill_path_; }
   const SkPath& stroke_path() const { return stroke_path_; }
 
@@ -99,9 +100,6 @@ class InfoBarView : public infobars::InfoBar,
   // animate open and closed.
   int OffsetY(views::View* view) const;
 
-  // Convenience getter.
-  const infobars::InfoBarContainer::Delegate* container_delegate() const;
-
   // Shows a menu at the specified position.
   // NOTE: This must not be called if we're unowned.  (Subclasses should ignore
   // calls to RunMenu() in this case.)
@@ -146,7 +144,7 @@ class InfoBarView : public infobars::InfoBar,
   views::ImageButton* close_button_;
 
   // The paths for the InfoBarBackground to draw, sized according to the heights
-  // above.
+  // above. TODO(estade): remove these when MD is default.
   SkPath fill_path_;
   SkPath stroke_path_;
 

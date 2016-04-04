@@ -12,6 +12,28 @@
 #include "ui/views/window/non_client_view.h"
 #endif
 
+namespace {
+
+int GetDefaultArrowTargetHeight() {
+  return ui::MaterialDesignController::IsModeMaterial()
+             ? InfoBarContainerDelegate::kDefaultArrowTargetHeightMd
+             : InfoBarContainerDelegate::kDefaultArrowTargetHeight;
+}
+
+int GetDefaultArrowTargetHalfWidth() {
+  return ui::MaterialDesignController::IsModeMaterial()
+             ? InfoBarContainerDelegate::kDefaultArrowTargetHalfWidthMd
+             : InfoBarContainerDelegate::kDefaultArrowTargetHalfWidth;
+}
+
+int GetSeparatorLineHeightForLayout() {
+  return ui::MaterialDesignController::IsModeMaterial()
+             ? 0
+             : InfoBarContainerDelegate::kSeparatorLineHeight;
+}
+
+}  // namespace
+
 // static
 #if defined(OS_MACOSX)
 const int InfoBarContainerDelegate::kSeparatorLineHeight = 1;
@@ -22,17 +44,19 @@ const int InfoBarContainerDelegate::kSeparatorLineHeight =
     views::NonClientFrameView::kClientEdgeThickness;
 const int InfoBarContainerDelegate::kDefaultArrowTargetHeight = 9;
 #endif
+const int InfoBarContainerDelegate::kDefaultArrowTargetHeightMd = 11;
 
 const int InfoBarContainerDelegate::kDefaultBarTargetHeight = 36;
 const int InfoBarContainerDelegate::kDefaultBarTargetHeightMd = 40;
 const int InfoBarContainerDelegate::kMaximumArrowTargetHeight = 24;
 const int InfoBarContainerDelegate::kDefaultArrowTargetHalfWidth =
     kDefaultArrowTargetHeight;
+const int InfoBarContainerDelegate::kDefaultArrowTargetHalfWidthMd =
+    kDefaultArrowTargetHeightMd;
 const int InfoBarContainerDelegate::kMaximumArrowTargetHalfWidth = 14;
 
 InfoBarContainerDelegate::InfoBarContainerDelegate()
-    : top_arrow_target_height_(kDefaultArrowTargetHeight) {
-}
+    : top_arrow_target_height_(GetDefaultArrowTargetHeight()) {}
 
 InfoBarContainerDelegate::~InfoBarContainerDelegate() {
 }
@@ -40,10 +64,9 @@ InfoBarContainerDelegate::~InfoBarContainerDelegate() {
 void InfoBarContainerDelegate::SetMaxTopArrowHeight(
     int height,
     infobars::InfoBarContainer* container) {
-  // Decrease the height by the arrow stroke thickness, which is the separator
-  // line height, because the infobar arrow target heights are without-stroke.
-  top_arrow_target_height_ = std::min(
-      std::max(height - kSeparatorLineHeight, 0), kMaximumArrowTargetHeight);
+  top_arrow_target_height_ =
+      std::min(std::max(height - GetSeparatorLineHeightForLayout(), 0),
+               kMaximumArrowTargetHeight);
   container->UpdateInfoBarArrowTargetHeights();
 }
 
@@ -55,13 +78,14 @@ int InfoBarContainerDelegate::ArrowTargetHeightForInfoBar(
   if (index == 0)
     return top_arrow_target_height_;
   if ((index > 1) || animation.IsShowing())
-    return kDefaultArrowTargetHeight;
+    return GetDefaultArrowTargetHeight();
   // When the first infobar is animating closed, we animate the second infobar's
   // arrow target height from the default to the top target height.  Note that
   // the animation values here are going from 1.0 -> 0.0 as the top bar closes.
-  return top_arrow_target_height_ + static_cast<int>(
-      (kDefaultArrowTargetHeight - top_arrow_target_height_) *
-          animation.GetCurrentValue());
+  return top_arrow_target_height_ +
+         static_cast<int>(
+             (GetDefaultArrowTargetHeight() - top_arrow_target_height_) *
+             animation.GetCurrentValue());
 }
 
 void InfoBarContainerDelegate::ComputeInfoBarElementSizes(
@@ -86,8 +110,9 @@ void InfoBarContainerDelegate::ComputeInfoBarElementSizes(
     // When the infobar is not animating (i.e. fully open), we set the
     // half-width to be proportionally the same distance between its default and
     // maximum values as the height is between its.
-    *arrow_half_width = kDefaultArrowTargetHalfWidth +
-        ((kMaximumArrowTargetHalfWidth - kDefaultArrowTargetHalfWidth) *
+    *arrow_half_width =
+        GetDefaultArrowTargetHalfWidth() +
+        ((kMaximumArrowTargetHalfWidth - GetDefaultArrowTargetHalfWidth()) *
          ((*arrow_height - kDefaultArrowTargetHeight) /
           (kMaximumArrowTargetHeight - kDefaultArrowTargetHeight)));
   }
@@ -95,8 +120,8 @@ void InfoBarContainerDelegate::ComputeInfoBarElementSizes(
   // this, changing the arrow height from 0 to kSeparatorLineHeight would
   // produce no visible effect, because the stroke would paint atop the divider
   // line above the infobar.
-  if (*arrow_height)
-    *arrow_height += kSeparatorLineHeight;
+  if (*arrow_height && !ui::MaterialDesignController::IsModeMaterial())
+    *arrow_height += GetSeparatorLineHeightForLayout();
 
   int target_height = bar_target_height != -1
                           ? bar_target_height
