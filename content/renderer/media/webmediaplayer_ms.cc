@@ -447,7 +447,7 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
 
   scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
 
-  if (!video_frame.get() || video_frame->HasTextures() ||
+  if (!video_frame.get() || !video_frame->HasTextures() ||
       media::VideoFrame::NumPlanes(video_frame->format()) != 1) {
     return false;
   }
