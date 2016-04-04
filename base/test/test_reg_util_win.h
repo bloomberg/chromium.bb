@@ -6,10 +6,10 @@
 #define BASE_TEST_TEST_REG_UTIL_WIN_H_
 
 // Registry utility functions used only by tests.
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
@@ -64,7 +64,7 @@ class RegistryOverrideManager {
   base::string16 guid_;
 
   base::string16 test_key_root_;
-  std::vector<scoped_ptr<ScopedRegistryKeyOverride>> overrides_;
+  std::vector<std::unique_ptr<ScopedRegistryKeyOverride>> overrides_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryOverrideManager);
 };

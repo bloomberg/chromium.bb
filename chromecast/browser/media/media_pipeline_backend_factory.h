@@ -6,6 +6,7 @@
 #define CHROMECAST_BROWSER_MEDIA_MEDIA_PIPELINE_BACKEND_FACTORY_H_
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 

@@ -4,11 +4,12 @@
 
 #include "base/process/process_metrics.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ProcessMetricsTestIos, Memory) {
-  scoped_ptr<base::ProcessMetrics> process_metrics(
+  std::unique_ptr<base::ProcessMetrics> process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(
           base::GetCurrentProcessHandle()));
 

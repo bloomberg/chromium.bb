@@ -7,12 +7,12 @@
 
 #include "base/callback_list.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 
@@ -26,9 +26,9 @@ class FooListener {
  public:
   FooListener() {}
 
-  void GotAScopedFoo(scoped_ptr<Foo> f) { foo_ = std::move(f); }
+  void GotAScopedFoo(std::unique_ptr<Foo> f) { foo_ = std::move(f); }
 
-  scoped_ptr<Foo> foo_;
+  std::unique_ptr<Foo> foo_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FooListener);
@@ -45,10 +45,10 @@ class FooListener {
 // first callback has been run.
 void WontCompile() {
   FooListener f;
-  CallbackList<void(scoped_ptr<Foo>)> c1;
-  scoped_ptr<CallbackList<void(scoped_ptr<Foo>)>::Subscription> sub =
+  CallbackList<void(std::unique_ptr<Foo>)> c1;
+  std::unique_ptr<CallbackList<void(std::unique_ptr<Foo>)>::Subscription> sub =
       c1.Add(Bind(&FooListener::GotAScopedFoo, Unretained(&f)));
-  c1.Notify(scoped_ptr<Foo>(new Foo()));
+  c1.Notify(std::unique_ptr<Foo>(new Foo()));
 }
 
 #endif

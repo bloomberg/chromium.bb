@@ -21,7 +21,7 @@ class TestDiscardableMemoryAllocator : public DiscardableMemoryAllocator {
   ~TestDiscardableMemoryAllocator() override;
 
   // Overridden from DiscardableMemoryAllocator:
-  scoped_ptr<DiscardableMemory> AllocateLockedDiscardableMemory(
+  std::unique_ptr<DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) override;
 
  private:

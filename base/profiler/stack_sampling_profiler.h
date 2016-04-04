@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -197,7 +197,7 @@ class BASE_EXPORT StackSamplingProfiler {
     // Samples stacks using |native_sampler|. When complete, invokes
     // |completed_callback| with the collected call stack profiles.
     // |completed_callback| must be callable on any thread.
-    SamplingThread(scoped_ptr<NativeStackSampler> native_sampler,
+    SamplingThread(std::unique_ptr<NativeStackSampler> native_sampler,
                    const SamplingParams& params,
                    const CompletedCallback& completed_callback);
     ~SamplingThread() override;
@@ -219,7 +219,7 @@ class BASE_EXPORT StackSamplingProfiler {
     // |call_stack_profiles| may contain a partial burst.
     void CollectProfiles(CallStackProfiles* profiles);
 
-    scoped_ptr<NativeStackSampler> native_sampler_;
+    std::unique_ptr<NativeStackSampler> native_sampler_;
     const SamplingParams params_;
 
     // If Stop() is called, it signals this event to force the sampling to
@@ -236,7 +236,7 @@ class BASE_EXPORT StackSamplingProfiler {
 
   const SamplingParams params_;
 
-  scoped_ptr<SamplingThread> sampling_thread_;
+  std::unique_ptr<SamplingThread> sampling_thread_;
   PlatformThreadHandle sampling_thread_handle_;
 
   const CompletedCallback completed_callback_;

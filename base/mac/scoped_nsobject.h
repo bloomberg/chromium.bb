@@ -19,10 +19,10 @@
 
 namespace base {
 
-// scoped_nsobject<> is patterned after scoped_ptr<>, but maintains ownership
-// of an NSObject subclass object.  Style deviations here are solely for
-// compatibility with scoped_ptr<>'s interface, with which everyone is already
-// familiar.
+// scoped_nsobject<> is patterned after std::unique_ptr<>, but maintains
+// ownership of an NSObject subclass object.  Style deviations here are solely
+// for compatibility with std::unique_ptr<>'s interface, with which everyone is
+// already familiar.
 //
 // scoped_nsobject<> takes ownership of an object (in the constructor or in
 // reset()) by taking over the caller's existing ownership claim.  The caller

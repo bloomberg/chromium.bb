@@ -12,11 +12,11 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -110,8 +110,8 @@ TEST(SecurityTest, MAYBE_NewOverflow) {
   const size_t kArraySize2 = kMaxSizeT / kArraySize + 10;
   const size_t kDynamicArraySize2 = HideValueFromCompiler(kArraySize2);
   {
-    scoped_ptr<char[][kArraySize]> array_pointer(new (nothrow)
-        char[kDynamicArraySize2][kArraySize]);
+    std::unique_ptr<char[][kArraySize]> array_pointer(
+        new (nothrow) char[kDynamicArraySize2][kArraySize]);
     OverflowTestsSoftExpectTrue(!array_pointer);
   }
   // On windows, the compiler prevents static array sizes of more than
@@ -120,8 +120,8 @@ TEST(SecurityTest, MAYBE_NewOverflow) {
   ALLOW_UNUSED_LOCAL(kDynamicArraySize);
 #else
   {
-    scoped_ptr<char[][kArraySize2]> array_pointer(new (nothrow)
-        char[kDynamicArraySize][kArraySize2]);
+    std::unique_ptr<char[][kArraySize2]> array_pointer(
+        new (nothrow) char[kDynamicArraySize][kArraySize2]);
     OverflowTestsSoftExpectTrue(!array_pointer);
   }
 #endif  // !defined(OS_WIN) || !defined(ARCH_CPU_64_BITS)
@@ -157,7 +157,7 @@ TEST(SecurityTest, MALLOC_OVERFLOW_TEST(RandomMemoryAllocations)) {
   // 1 MB should get us past what TCMalloc pre-allocated before initializing
   // the sophisticated allocators.
   size_t kAllocSize = 1<<20;
-  scoped_ptr<char, base::FreeDeleter> ptr(
+  std::unique_ptr<char, base::FreeDeleter> ptr(
       static_cast<char*>(malloc(kAllocSize)));
   ASSERT_TRUE(ptr != NULL);
   // If two pointers are separated by less than 512MB, they are considered

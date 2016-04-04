@@ -14,16 +14,17 @@
 namespace base {
 namespace internal {
 
-scoped_ptr<SchedulerWorkerThread>
+std::unique_ptr<SchedulerWorkerThread>
 SchedulerWorkerThread::CreateSchedulerWorkerThread(
     ThreadPriority thread_priority,
     const Closure& main_entry_callback,
     const GetWorkCallback& get_work_callback,
     const RanTaskFromSequenceCallback& ran_task_from_sequence_callback,
     TaskTracker* task_tracker) {
-  scoped_ptr<SchedulerWorkerThread> worker_thread(new SchedulerWorkerThread(
-      thread_priority, main_entry_callback, get_work_callback,
-      ran_task_from_sequence_callback, task_tracker));
+  std::unique_ptr<SchedulerWorkerThread> worker_thread(
+      new SchedulerWorkerThread(thread_priority, main_entry_callback,
+                                get_work_callback,
+                                ran_task_from_sequence_callback, task_tracker));
 
   if (worker_thread->thread_handle_.is_null())
     return nullptr;

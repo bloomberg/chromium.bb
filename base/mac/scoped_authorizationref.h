@@ -61,10 +61,9 @@ class ScopedAuthorizationRef {
     authorization_ = temp;
   }
 
-  // ScopedAuthorizationRef::release() is like scoped_ptr<>::release.  It is
-  // NOT a wrapper for AuthorizationFree().  To force a
-  // ScopedAuthorizationRef object to call AuthorizationFree(), use
-  // ScopedAuthorizationRef::reset().
+  // ScopedAuthorizationRef::release() is like std::unique_ptr<>::release. It is
+  // NOT a wrapper for AuthorizationFree(). To force a ScopedAuthorizationRef
+  // object to call AuthorizationFree(), use ScopedAuthorizationRef::reset().
   AuthorizationRef release() WARN_UNUSED_RESULT {
     AuthorizationRef temp = authorization_;
     authorization_ = NULL;

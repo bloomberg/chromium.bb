@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"

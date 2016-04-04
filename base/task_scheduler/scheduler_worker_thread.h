@@ -5,11 +5,12 @@
 #ifndef BASE_TASK_SCHEDULER_SCHEDULER_WORKER_THREAD_H_
 #define BASE_TASK_SCHEDULER_SCHEDULER_WORKER_THREAD_H_
 
+#include <memory>
+
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence.h"
@@ -49,7 +50,7 @@ class BASE_EXPORT SchedulerWorkerThread : public PlatformThread::Delegate {
   // SchedulerWorkerThread has tried to run a Task from a Sequence returned by
   // |get_work_callback|. |task_tracker| is used to handle shutdown behavior of
   // Tasks. Returns nullptr if creating the underlying platform thread fails.
-  static scoped_ptr<SchedulerWorkerThread> CreateSchedulerWorkerThread(
+  static std::unique_ptr<SchedulerWorkerThread> CreateSchedulerWorkerThread(
       ThreadPriority thread_priority,
       const Closure& main_entry_callback,
       const GetWorkCallback& get_work_callback,

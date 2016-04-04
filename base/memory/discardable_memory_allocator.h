@@ -7,8 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/base_export.h"
-#include "base/memory/scoped_ptr.h"
 
 namespace base {
 class DiscardableMemory;
@@ -22,7 +23,7 @@ class BASE_EXPORT DiscardableMemoryAllocator {
   // Ownership of |instance| remains with the caller.
   static void SetInstance(DiscardableMemoryAllocator* allocator);
 
-  virtual scoped_ptr<DiscardableMemory> AllocateLockedDiscardableMemory(
+  virtual std::unique_ptr<DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) = 0;
 
  protected:

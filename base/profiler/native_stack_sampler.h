@@ -5,9 +5,10 @@
 #ifndef BASE_PROFILER_NATIVE_STACK_SAMPLER_H_
 #define BASE_PROFILER_NATIVE_STACK_SAMPLER_H_
 
+#include <memory>
+
 #include "base/base_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/threading/platform_thread.h"
 
@@ -24,7 +25,7 @@ class NativeStackSampler {
 
   // Creates a stack sampler that records samples for |thread_handle|. Returns
   // null if this platform does not support stack sampling.
-  static scoped_ptr<NativeStackSampler> Create(
+  static std::unique_ptr<NativeStackSampler> Create(
       PlatformThreadId thread_id,
       NativeStackSamplerTestDelegate* test_delegate);
 

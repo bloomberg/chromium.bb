@@ -52,7 +52,7 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
       MemoryPressureLevelForMacMemoryPressure(int mac_memory_pressure);
   static void NotifyMemoryPressureChanged(dispatch_source_s* event_source);
 
-  scoped_ptr<dispatch_source_s, DispatchSourceSDeleter>
+  std::unique_ptr<dispatch_source_s, DispatchSourceSDeleter>
       memory_level_event_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitor);

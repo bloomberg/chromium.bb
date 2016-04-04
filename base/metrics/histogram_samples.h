@@ -8,9 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/atomicops.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
 
 namespace base {
@@ -68,7 +69,7 @@ class BASE_EXPORT HistogramSamples {
 
   virtual void Subtract(const HistogramSamples& other);
 
-  virtual scoped_ptr<SampleCountIterator> Iterator() const = 0;
+  virtual std::unique_ptr<SampleCountIterator> Iterator() const = 0;
   virtual bool Serialize(Pickle* pickle) const;
 
   // Accessor fuctions.

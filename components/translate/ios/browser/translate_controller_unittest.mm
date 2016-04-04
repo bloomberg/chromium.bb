@@ -4,6 +4,7 @@
 
 #import "components/translate/ios/browser/translate_controller.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
 #include "ios/web/public/test/test_web_state.h"

@@ -4,12 +4,12 @@
 
 #include "base/memory/weak_ptr.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/debug/leak_annotations.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -327,7 +327,7 @@ TEST(WeakPtrTest, ObjectAndWeakPtrOnDifferentThreads) {
   // Test that it is OK to create an object that supports WeakPtr on one thread,
   // but use it on another.  This tests that we do not trip runtime checks that
   // ensure that a WeakPtr is not used by multiple threads.
-  scoped_ptr<Target> target(OffThreadObjectCreator<Target>::NewObject());
+  std::unique_ptr<Target> target(OffThreadObjectCreator<Target>::NewObject());
   WeakPtr<Target> weak_ptr = target->AsWeakPtr();
   EXPECT_EQ(target.get(), weak_ptr.get());
 }
@@ -336,7 +336,7 @@ TEST(WeakPtrTest, WeakPtrInitiateAndUseOnDifferentThreads) {
   // Test that it is OK to create an object that has a WeakPtr member on one
   // thread, but use it on another.  This tests that we do not trip runtime
   // checks that ensure that a WeakPtr is not used by multiple threads.
-  scoped_ptr<Arrow> arrow(OffThreadObjectCreator<Arrow>::NewObject());
+  std::unique_ptr<Arrow> arrow(OffThreadObjectCreator<Arrow>::NewObject());
   Target target;
   arrow->target = target.AsWeakPtr();
   EXPECT_EQ(&target, arrow->target.get());
@@ -409,7 +409,7 @@ TEST(WeakPtrTest, MoveOwnershipAfterInvalidate) {
   background.Start();
 
   Arrow arrow;
-  scoped_ptr<TargetWithFactory> target(new TargetWithFactory);
+  std::unique_ptr<TargetWithFactory> target(new TargetWithFactory);
 
   // Bind to main thread.
   arrow.target = target->factory.GetWeakPtr();
@@ -579,7 +579,7 @@ TEST(WeakPtrDeathTest, NonOwnerThreadDeletesWeakPtrAfterReference) {
   // (introduces deadlock on Linux).
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
-  scoped_ptr<Target> target(new Target());
+  std::unique_ptr<Target> target(new Target());
 
   // Main thread creates an arrow referencing the Target.
   Arrow arrow;
@@ -603,7 +603,7 @@ TEST(WeakPtrDeathTest, NonOwnerThreadDeletesObjectAfterReference) {
   // (introduces deadlock on Linux).
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
-  scoped_ptr<Target> target(new Target());
+  std::unique_ptr<Target> target(new Target());
 
   // Main thread creates an arrow referencing the Target, and references it, so
   // that it becomes bound to the thread.
@@ -622,7 +622,7 @@ TEST(WeakPtrDeathTest, NonOwnerThreadReferencesObjectAfterDeletion) {
   // (introduces deadlock on Linux).
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
-  scoped_ptr<Target> target(new Target());
+  std::unique_ptr<Target> target(new Target());
 
   // Main thread creates an arrow referencing the Target.
   Arrow arrow;

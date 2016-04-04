@@ -55,9 +55,10 @@ void LogFailure(const FilePath& path, TempFileFailure failure_code,
   DPLOG(WARNING) << "temp file failure: " << path.value() << " : " << message;
 }
 
-// Helper function to call WriteFileAtomically() with a scoped_ptr<std::string>.
+// Helper function to call WriteFileAtomically() with a
+// std::unique_ptr<std::string>.
 bool WriteScopedStringToFileAtomically(const FilePath& path,
-                                       scoped_ptr<std::string> data) {
+                                       std::unique_ptr<std::string> data) {
   return ImportantFileWriter::WriteFileAtomically(path, *data);
 }
 
@@ -157,7 +158,7 @@ bool ImportantFileWriter::HasPendingWrite() const {
   return timer_.IsRunning();
 }
 
-void ImportantFileWriter::WriteNow(scoped_ptr<std::string> data) {
+void ImportantFileWriter::WriteNow(std::unique_ptr<std::string> data) {
   DCHECK(CalledOnValidThread());
   if (!IsValueInRangeForNumericType<int32_t>(data->length())) {
     NOTREACHED();
@@ -192,7 +193,7 @@ void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {
 
 void ImportantFileWriter::DoScheduledWrite() {
   DCHECK(serializer_);
-  scoped_ptr<std::string> data(new std::string);
+  std::unique_ptr<std::string> data(new std::string);
   if (serializer_->SerializeData(data.get())) {
     WriteNow(std::move(data));
   } else {

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/debug/asan_invalid_access.h"
+
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/debug/alias.h"
-#include "base/debug/asan_invalid_access.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -61,7 +63,7 @@ static const size_t kArraySize = 5;
 
 void AsanHeapOverflow() {
   // Declares the array as volatile to make sure it doesn't get optimized away.
-  scoped_ptr<volatile int[]> array(
+  std::unique_ptr<volatile int[]> array(
       const_cast<volatile int*>(new int[kArraySize]));
   int dummy = array[kArraySize];
   base::debug::Alias(&dummy);
@@ -69,7 +71,7 @@ void AsanHeapOverflow() {
 
 void AsanHeapUnderflow() {
   // Declares the array as volatile to make sure it doesn't get optimized away.
-  scoped_ptr<volatile int[]> array(
+  std::unique_ptr<volatile int[]> array(
       const_cast<volatile int*>(new int[kArraySize]));
   // We need to store the underflow address in a temporary variable as trying to
   // access array[-1] will trigger a warning C4245: "conversion from 'int' to
@@ -81,7 +83,7 @@ void AsanHeapUnderflow() {
 
 void AsanHeapUseAfterFree() {
   // Declares the array as volatile to make sure it doesn't get optimized away.
-  scoped_ptr<volatile int[]> array(
+  std::unique_ptr<volatile int[]> array(
       const_cast<volatile int*>(new int[kArraySize]));
   volatile int* dangling = array.get();
   array.reset();

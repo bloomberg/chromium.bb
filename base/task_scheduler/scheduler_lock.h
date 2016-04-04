@@ -5,9 +5,10 @@
 #ifndef BASE_TASK_SCHEDULER_SCHEDULER_LOCK_H
 #define BASE_TASK_SCHEDULER_SCHEDULER_LOCK_H
 
+#include <memory>
+
 #include "base/base_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/task_scheduler/scheduler_lock_impl.h"
@@ -41,7 +42,7 @@ namespace internal {
 // void AssertAcquired().
 //     DCHECKs if the lock is not acquired.
 //
-// scoped_ptr<ConditionVariable> CreateConditionVariable()
+// std::unique_ptr<ConditionVariable> CreateConditionVariable()
 //     Creates a condition variable using this as a lock.
 
 #if DCHECK_IS_ON()
@@ -57,8 +58,8 @@ class SchedulerLock : public Lock {
   SchedulerLock() = default;
   explicit SchedulerLock(const SchedulerLock*) {}
 
-  scoped_ptr<ConditionVariable> CreateConditionVariable() {
-    return scoped_ptr<ConditionVariable>(new ConditionVariable(this));
+  std::unique_ptr<ConditionVariable> CreateConditionVariable() {
+    return std::unique_ptr<ConditionVariable>(new ConditionVariable(this));
   }
 };
 #endif  // DCHECK_IS_ON()

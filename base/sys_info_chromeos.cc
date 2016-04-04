@@ -60,7 +60,7 @@ class ChromeOSVersionInfo {
     is_running_on_chromeos_ = false;
 
     std::string lsb_release, lsb_release_time_str;
-    scoped_ptr<Environment> env(Environment::Create());
+    std::unique_ptr<Environment> env(Environment::Create());
     bool parsed_from_env =
         env->GetVar(kLsbReleaseKey, &lsb_release) &&
         env->GetVar(kLsbReleaseTimeKey, &lsb_release_time_str);
@@ -212,7 +212,7 @@ bool SysInfo::IsRunningOnChromeOS() {
 // static
 void SysInfo::SetChromeOSVersionInfoForTest(const std::string& lsb_release,
                                             const Time& lsb_release_time) {
-  scoped_ptr<Environment> env(Environment::Create());
+  std::unique_ptr<Environment> env(Environment::Create());
   env->SetVar(kLsbReleaseKey, lsb_release);
   env->SetVar(kLsbReleaseTimeKey,
               DoubleToString(lsb_release_time.ToDoubleT()));

@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_mach_port.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"

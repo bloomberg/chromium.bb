@@ -4,11 +4,12 @@
 
 #include "base/metrics/persistent_memory_allocator.h"
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -79,8 +80,8 @@ class PersistentMemoryAllocatorTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<char[]> mem_segment_;
-  scoped_ptr<PersistentMemoryAllocator> allocator_;
+  std::unique_ptr<char[]> mem_segment_;
+  std::unique_ptr<PersistentMemoryAllocator> allocator_;
 };
 
 TEST_F(PersistentMemoryAllocatorTest, AllocateAndIterate) {
@@ -154,13 +155,13 @@ TEST_F(PersistentMemoryAllocatorTest, AllocateAndIterate) {
 
   // Check the internal histogram record of used memory.
   allocator_->UpdateTrackingHistograms();
-  scoped_ptr<HistogramSamples> used_samples(
+  std::unique_ptr<HistogramSamples> used_samples(
       allocator_->used_histogram_->SnapshotSamples());
   EXPECT_TRUE(used_samples);
   EXPECT_EQ(1, used_samples->TotalCount());
 
   // Check the internal histogram record of allocation requests.
-  scoped_ptr<HistogramSamples> allocs_samples(
+  std::unique_ptr<HistogramSamples> allocs_samples(
       allocator_->allocs_histogram_->SnapshotSamples());
   EXPECT_TRUE(allocs_samples);
   EXPECT_EQ(2, allocs_samples->TotalCount());
@@ -182,10 +183,9 @@ TEST_F(PersistentMemoryAllocatorTest, AllocateAndIterate) {
   EXPECT_EQ(2U, allocator_->GetType(block2));
 
   // Create second allocator (read/write) using the same memory segment.
-  scoped_ptr<PersistentMemoryAllocator> allocator2(
-      new PersistentMemoryAllocator(
-          mem_segment_.get(), TEST_MEMORY_SIZE, TEST_MEMORY_PAGE, 0, "",
-          false));
+  std::unique_ptr<PersistentMemoryAllocator> allocator2(
+      new PersistentMemoryAllocator(mem_segment_.get(), TEST_MEMORY_SIZE,
+                                    TEST_MEMORY_PAGE, 0, "", false));
   EXPECT_EQ(TEST_ID, allocator2->Id());
   EXPECT_FALSE(allocator2->used_histogram_);
   EXPECT_FALSE(allocator2->allocs_histogram_);
@@ -200,9 +200,9 @@ TEST_F(PersistentMemoryAllocatorTest, AllocateAndIterate) {
   EXPECT_NE(nullptr, allocator2->GetAsObject<TestObject2>(block2, 2));
 
   // Create a third allocator (read-only) using the same memory segment.
-  scoped_ptr<const PersistentMemoryAllocator> allocator3(
-      new PersistentMemoryAllocator(
-          mem_segment_.get(), TEST_MEMORY_SIZE, TEST_MEMORY_PAGE, 0, "", true));
+  std::unique_ptr<const PersistentMemoryAllocator> allocator3(
+      new PersistentMemoryAllocator(mem_segment_.get(), TEST_MEMORY_SIZE,
+                                    TEST_MEMORY_PAGE, 0, "", true));
   EXPECT_EQ(TEST_ID, allocator3->Id());
   EXPECT_FALSE(allocator3->used_histogram_);
   EXPECT_FALSE(allocator3->allocs_histogram_);
@@ -396,7 +396,7 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
   PersistentMemoryAllocator::MemoryInfo meminfo1;
   Reference r123, r456, r789;
   {
-    scoped_ptr<SharedMemory> shmem1(new SharedMemory());
+    std::unique_ptr<SharedMemory> shmem1(new SharedMemory());
     ASSERT_TRUE(shmem1->CreateAndMapAnonymous(TEST_MEMORY_SIZE));
     SharedPersistentMemoryAllocator local(std::move(shmem1), TEST_ID, "",
                                           false);
@@ -417,8 +417,8 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
   }
 
   // Read-only test.
-  scoped_ptr<SharedMemory> shmem2(new SharedMemory(shared_handle,
-                                                   /*readonly=*/true));
+  std::unique_ptr<SharedMemory> shmem2(new SharedMemory(shared_handle,
+                                                        /*readonly=*/true));
   ASSERT_TRUE(shmem2->Map(TEST_MEMORY_SIZE));
 
   SharedPersistentMemoryAllocator shalloc2(std::move(shmem2), 0, "", true);
@@ -444,8 +444,8 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
   EXPECT_EQ(meminfo1.free, meminfo2.free);
 
   // Read/write test.
-  scoped_ptr<SharedMemory> shmem3(new SharedMemory(shared_handle,
-                                                   /*readonly=*/false));
+  std::unique_ptr<SharedMemory> shmem3(new SharedMemory(shared_handle,
+                                                        /*readonly=*/false));
   ASSERT_TRUE(shmem3->Map(TEST_MEMORY_SIZE));
 
   SharedPersistentMemoryAllocator shalloc3(std::move(shmem3), 0, "", false);
@@ -505,7 +505,7 @@ TEST(FilePersistentMemoryAllocatorTest, CreationTest) {
     writer.Write(0, (const char*)local.data(), local.used());
   }
 
-  scoped_ptr<MemoryMappedFile> mmfile(new MemoryMappedFile());
+  std::unique_ptr<MemoryMappedFile> mmfile(new MemoryMappedFile());
   mmfile->Initialize(file_path);
   EXPECT_TRUE(mmfile->IsValid());
   const size_t mmlength = mmfile->length();
@@ -545,10 +545,10 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
   local.Allocate(1, 1);
   local.Allocate(11, 11);
   const size_t minsize = local.used();
-  scoped_ptr<char[]> garbage(new char[minsize]);
+  std::unique_ptr<char[]> garbage(new char[minsize]);
   RandBytes(garbage.get(), minsize);
 
-  scoped_ptr<MemoryMappedFile> mmfile;
+  std::unique_ptr<MemoryMappedFile> mmfile;
   char filename[100];
   for (size_t filesize = minsize; filesize > 0; --filesize) {
     strings::SafeSPrintf(filename, "memory_%d_A", filesize);

@@ -56,7 +56,7 @@ TraceEvent::TraceEvent()
 TraceEvent::~TraceEvent() {
 }
 
-void TraceEvent::MoveFrom(scoped_ptr<TraceEvent> other) {
+void TraceEvent::MoveFrom(std::unique_ptr<TraceEvent> other) {
   timestamp_ = other->timestamp_;
   thread_timestamp_ = other->thread_timestamp_;
   duration_ = other->duration_;
@@ -94,7 +94,7 @@ void TraceEvent::Initialize(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    scoped_ptr<ConvertableToTraceFormat>* convertable_values,
+    std::unique_ptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   timestamp_ = timestamp;
   thread_timestamp_ = thread_timestamp;

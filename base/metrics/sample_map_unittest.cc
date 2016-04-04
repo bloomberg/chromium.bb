@@ -4,7 +4,8 @@
 
 #include "base/metrics/sample_map.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -76,7 +77,7 @@ TEST(SampleMapIteratorTest, IterateTest) {
   samples.Accumulate(4, -300);
   samples.Accumulate(5, 0);
 
-  scoped_ptr<SampleCountIterator> it = samples.Iterator();
+  std::unique_ptr<SampleCountIterator> it = samples.Iterator();
 
   HistogramBase::Sample min;
   HistogramBase::Sample max;
@@ -119,7 +120,7 @@ TEST(SampleMapIteratorTest, SkipEmptyRanges) {
 
   samples.Subtract(samples2);
 
-  scoped_ptr<SampleCountIterator> it = samples.Iterator();
+  std::unique_ptr<SampleCountIterator> it = samples.Iterator();
   EXPECT_FALSE(it->Done());
 
   HistogramBase::Sample min;
@@ -148,7 +149,7 @@ TEST(SampleMapIteratorTest, SkipEmptyRanges) {
 TEST(SampleMapIteratorDeathTest, IterateDoneTest) {
   SampleMap samples(1);
 
-  scoped_ptr<SampleCountIterator> it = samples.Iterator();
+  std::unique_ptr<SampleCountIterator> it = samples.Iterator();
 
   EXPECT_TRUE(it->Done());
 

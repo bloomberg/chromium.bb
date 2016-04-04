@@ -5,6 +5,7 @@
 #include "components/dom_distiller/content/browser/distillable_page_utils_android.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "content/public/browser/web_contents.h"

@@ -4,11 +4,13 @@
 
 #include "base/task_scheduler/priority_queue.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
@@ -43,7 +45,7 @@ class ThreadBeginningTransaction : public SimpleThread {
 
   // SimpleThread:
   void Run() override {
-    scoped_ptr<PriorityQueue::Transaction> transaction =
+    std::unique_ptr<PriorityQueue::Transaction> transaction =
         priority_queue_->BeginTransaction();
     transaction_began_.Signal();
   }
@@ -82,25 +84,25 @@ void ExpectSequenceAndSortKeyEq(
 TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
   // Create test sequences.
   scoped_refptr<Sequence> sequence_a(new Sequence);
-  sequence_a->PushTask(make_scoped_ptr(
+  sequence_a->PushTask(WrapUnique(
       new Task(FROM_HERE, Closure(),
                TaskTraits().WithPriority(TaskPriority::USER_VISIBLE))));
   SequenceSortKey sort_key_a = sequence_a->GetSortKey();
 
   scoped_refptr<Sequence> sequence_b(new Sequence);
-  sequence_b->PushTask(make_scoped_ptr(
+  sequence_b->PushTask(WrapUnique(
       new Task(FROM_HERE, Closure(),
                TaskTraits().WithPriority(TaskPriority::USER_BLOCKING))));
   SequenceSortKey sort_key_b = sequence_b->GetSortKey();
 
   scoped_refptr<Sequence> sequence_c(new Sequence);
-  sequence_c->PushTask(make_scoped_ptr(
+  sequence_c->PushTask(WrapUnique(
       new Task(FROM_HERE, Closure(),
                TaskTraits().WithPriority(TaskPriority::USER_BLOCKING))));
   SequenceSortKey sort_key_c = sequence_c->GetSortKey();
 
   scoped_refptr<Sequence> sequence_d(new Sequence);
-  sequence_d->PushTask(make_scoped_ptr(
+  sequence_d->PushTask(WrapUnique(
       new Task(FROM_HERE, Closure(),
                TaskTraits().WithPriority(TaskPriority::BACKGROUND))));
   SequenceSortKey sort_key_d = sequence_d->GetSortKey();
@@ -110,13 +112,14 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
   PriorityQueue pq(
       Bind(&PriorityQueueCallbackMock::SequenceInsertedInPriorityQueue,
            Unretained(&mock)));
-  scoped_ptr<PriorityQueue::Transaction> transaction(pq.BeginTransaction());
+  std::unique_ptr<PriorityQueue::Transaction> transaction(
+      pq.BeginTransaction());
   EXPECT_SEQUENCE_AND_SORT_KEY_EQ(PriorityQueue::SequenceAndSortKey(),
                                   transaction->Peek());
 
   // Push |sequence_a| in the PriorityQueue. It becomes the sequence with the
   // highest priority.
-  transaction->Push(make_scoped_ptr(
+  transaction->Push(WrapUnique(
       new PriorityQueue::SequenceAndSortKey(sequence_a, sort_key_a)));
   EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
       PriorityQueue::SequenceAndSortKey(sequence_a, sort_key_a),
@@ -124,7 +127,7 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
 
   // Push |sequence_b| in the PriorityQueue. It becomes the sequence with the
   // highest priority.
-  transaction->Push(make_scoped_ptr(
+  transaction->Push(WrapUnique(
       new PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b)));
   EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
       PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b),
@@ -132,7 +135,7 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
 
   // Push |sequence_c| in the PriorityQueue. |sequence_b| is still the sequence
   // with the highest priority.
-  transaction->Push(make_scoped_ptr(
+  transaction->Push(WrapUnique(
       new PriorityQueue::SequenceAndSortKey(sequence_c, sort_key_c)));
   EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
       PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b),
@@ -140,7 +143,7 @@ TEST(TaskSchedulerPriorityQueueTest, PushPopPeek) {
 
   // Push |sequence_d| in the PriorityQueue. |sequence_b| is still the sequence
   // with the highest priority.
-  transaction->Push(make_scoped_ptr(
+  transaction->Push(WrapUnique(
       new PriorityQueue::SequenceAndSortKey(sequence_d, sort_key_d)));
   EXPECT_SEQUENCE_AND_SORT_KEY_EQ(
       PriorityQueue::SequenceAndSortKey(sequence_b, sort_key_b),
@@ -186,9 +189,9 @@ TEST(TaskSchedulerPriorityQueueTest, IllegalTwoTransactionsSameThread) {
 
   EXPECT_DCHECK_DEATH(
       {
-        scoped_ptr<PriorityQueue::Transaction> transaction_a =
+        std::unique_ptr<PriorityQueue::Transaction> transaction_a =
             pq_a.BeginTransaction();
-        scoped_ptr<PriorityQueue::Transaction> transaction_b =
+        std::unique_ptr<PriorityQueue::Transaction> transaction_b =
             pq_b.BeginTransaction();
       },
       "");
@@ -201,9 +204,9 @@ TEST(TaskSchedulerPriorityQueueTest, LegalTwoTransactionsSameThread) {
   PriorityQueue pq_b(Bind(&DoNothing), &pq_a);
 
   // This shouldn't crash.
-  scoped_ptr<PriorityQueue::Transaction> transaction_a =
+  std::unique_ptr<PriorityQueue::Transaction> transaction_a =
       pq_a.BeginTransaction();
-  scoped_ptr<PriorityQueue::Transaction> transaction_b =
+  std::unique_ptr<PriorityQueue::Transaction> transaction_b =
       pq_b.BeginTransaction();
 }
 
@@ -215,7 +218,8 @@ TEST(TaskSchedulerPriorityQueueTest, TwoTransactionsTwoThreads) {
   PriorityQueue pq(Bind(&DoNothing));
 
   // Call BeginTransaction() on this thread and keep the Transaction alive.
-  scoped_ptr<PriorityQueue::Transaction> transaction = pq.BeginTransaction();
+  std::unique_ptr<PriorityQueue::Transaction> transaction =
+      pq.BeginTransaction();
 
   // Call BeginTransaction() on another thread.
   ThreadBeginningTransaction thread_beginning_transaction(&pq);

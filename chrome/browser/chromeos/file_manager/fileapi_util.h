@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "url/gurl.h"
 

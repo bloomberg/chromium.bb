@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/threading/thread_collision_warner.h"
+
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
-#include "base/threading/thread_collision_warner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // '' : local class member function does not have a body
@@ -19,7 +21,7 @@ MSVC_PUSH_DISABLE_WARNING(4822)
 
 // Would cause a memory leak otherwise.
 #undef DFAKE_MUTEX
-#define DFAKE_MUTEX(obj) scoped_ptr<base::AsserterBase> obj
+#define DFAKE_MUTEX(obj) std::unique_ptr<base::AsserterBase> obj
 
 // In Release, we expect the AsserterBase::warn() to not happen.
 #define EXPECT_NDEBUG_FALSE_DEBUG_TRUE EXPECT_FALSE

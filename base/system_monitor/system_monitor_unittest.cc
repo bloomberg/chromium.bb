@@ -22,7 +22,7 @@ class SystemMonitorTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  scoped_ptr<SystemMonitor> system_monitor_;
+  std::unique_ptr<SystemMonitor> system_monitor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemMonitorTest);

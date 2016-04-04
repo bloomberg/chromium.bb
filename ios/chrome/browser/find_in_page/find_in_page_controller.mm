@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/scoped_ptr.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
 #import "ios/chrome/browser/web/dom_altering_lock.h"

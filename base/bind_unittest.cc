@@ -10,8 +10,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -817,7 +817,7 @@ struct CustomDeleter {
 };
 
 using MoveOnlyTypesToTest =
-    ::testing::Types<scoped_ptr<DeleteCounter>,
+    ::testing::Types<std::unique_ptr<DeleteCounter>,
                      std::unique_ptr<DeleteCounter>,
                      std::unique_ptr<DeleteCounter, CustomDeleter>>;
 TYPED_TEST_CASE(BindMoveOnlyTypeTest, MoveOnlyTypesToTest);
@@ -874,23 +874,23 @@ TYPED_TEST(BindMoveOnlyTypeTest, UnboundForwarding) {
   EXPECT_EQ(1, deletes);
 }
 
-void VerifyVector(const std::vector<scoped_ptr<int>>& v) {
+void VerifyVector(const std::vector<std::unique_ptr<int>>& v) {
   ASSERT_EQ(1u, v.size());
   EXPECT_EQ(12345, *v[0]);
 }
 
-std::vector<scoped_ptr<int>> AcceptAndReturnMoveOnlyVector(
-    std::vector<scoped_ptr<int>> v) {
+std::vector<std::unique_ptr<int>> AcceptAndReturnMoveOnlyVector(
+    std::vector<std::unique_ptr<int>> v) {
   VerifyVector(v);
   return v;
 }
 
 // Test that a vector containing move-only types can be used with Callback.
 TEST_F(BindTest, BindMoveOnlyVector) {
-  using MoveOnlyVector = std::vector<scoped_ptr<int>>;
+  using MoveOnlyVector = std::vector<std::unique_ptr<int>>;
 
   MoveOnlyVector v;
-  v.push_back(make_scoped_ptr(new int(12345)));
+  v.push_back(WrapUnique(new int(12345)));
 
   // Early binding should work:
   base::Callback<MoveOnlyVector()> bound_cb =

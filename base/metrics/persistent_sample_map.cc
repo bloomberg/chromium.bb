@@ -5,6 +5,7 @@
 #include "base/metrics/persistent_sample_map.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 
 namespace base {
@@ -135,11 +136,11 @@ Count PersistentSampleMap::TotalCount() const {
   return count;
 }
 
-scoped_ptr<SampleCountIterator> PersistentSampleMap::Iterator() const {
+std::unique_ptr<SampleCountIterator> PersistentSampleMap::Iterator() const {
   // Have to override "const" in order to make sure all samples have been
   // loaded before trying to iterate over the map.
   const_cast<PersistentSampleMap*>(this)->ImportSamples(kAllSamples);
-  return make_scoped_ptr(new PersistentSampleMapIterator(sample_counts_));
+  return WrapUnique(new PersistentSampleMapIterator(sample_counts_));
 }
 
 bool PersistentSampleMap::AddSubtractImpl(SampleCountIterator* iter,

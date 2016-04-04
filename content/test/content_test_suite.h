@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/public/test/content_test_suite_base.h"
 

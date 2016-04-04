@@ -43,7 +43,8 @@ void HistogramTester::ExpectUniqueSample(
       << "Histogram \"" << name << "\" does not exist.";
 
   if (histogram) {
-    scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
+    std::unique_ptr<base::HistogramSamples> samples(
+        histogram->SnapshotSamples());
     CheckBucketCount(name, sample, expected_count, *samples);
     CheckTotalCount(name, expected_count, *samples);
   }
@@ -59,7 +60,8 @@ void HistogramTester::ExpectBucketCount(
       << "Histogram \"" << name << "\" does not exist.";
 
   if (histogram) {
-    scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
+    std::unique_ptr<base::HistogramSamples> samples(
+        histogram->SnapshotSamples());
     CheckBucketCount(name, sample, expected_count, *samples);
   }
 }
@@ -69,7 +71,8 @@ void HistogramTester::ExpectTotalCount(const std::string& name,
   base::HistogramBase* histogram =
       base::StatisticsRecorder::FindHistogram(name);
   if (histogram) {
-    scoped_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
+    std::unique_ptr<base::HistogramSamples> samples(
+        histogram->SnapshotSamples());
     CheckTotalCount(name, count, *samples);
   } else {
     // No histogram means there were zero samples.
@@ -80,7 +83,7 @@ void HistogramTester::ExpectTotalCount(const std::string& name,
 std::vector<Bucket> HistogramTester::GetAllSamples(
     const std::string& name) const {
   std::vector<Bucket> samples;
-  scoped_ptr<HistogramSamples> snapshot =
+  std::unique_ptr<HistogramSamples> snapshot =
       GetHistogramSamplesSinceCreation(name);
   if (snapshot) {
     for (auto it = snapshot->Iterator(); !it->Done(); it->Next()) {
@@ -105,7 +108,7 @@ HistogramTester::CountsMap HistogramTester::GetTotalCountsForPrefix(
 
   CountsMap result;
   for (base::HistogramBase* histogram : query_matches) {
-    scoped_ptr<HistogramSamples> new_samples =
+    std::unique_ptr<HistogramSamples> new_samples =
         GetHistogramSamplesSinceCreation(histogram->histogram_name());
     // Omit unchanged histograms from the result.
     if (new_samples->TotalCount()) {
@@ -115,7 +118,8 @@ HistogramTester::CountsMap HistogramTester::GetTotalCountsForPrefix(
   return result;
 }
 
-scoped_ptr<HistogramSamples> HistogramTester::GetHistogramSamplesSinceCreation(
+std::unique_ptr<HistogramSamples>
+HistogramTester::GetHistogramSamplesSinceCreation(
     const std::string& histogram_name) const {
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(histogram_name);
   // Whether the histogram exists or not may not depend on the current test
@@ -125,10 +129,10 @@ scoped_ptr<HistogramSamples> HistogramTester::GetHistogramSamplesSinceCreation(
   // creates empty samples in the absence of the histogram, rather than
   // returning null.
   if (!histogram) {
-    return scoped_ptr<HistogramSamples>(
+    return std::unique_ptr<HistogramSamples>(
         new SampleMap(HashMetricName(histogram_name)));
   }
-  scoped_ptr<HistogramSamples> named_samples(histogram->SnapshotSamples());
+  std::unique_ptr<HistogramSamples> named_samples(histogram->SnapshotSamples());
   auto original_samples_it = histograms_snapshot_.find(histogram_name);
   if (original_samples_it != histograms_snapshot_.end())
     named_samples->Subtract(*original_samples_it->second);

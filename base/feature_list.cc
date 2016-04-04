@@ -161,7 +161,7 @@ void FeatureList::InitializeInstance(const std::string& enable_features,
     g_instance = nullptr;
   }
 
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(enable_features, disable_features);
   base::FeatureList::SetInstance(std::move(feature_list));
 }
@@ -172,7 +172,7 @@ FeatureList* FeatureList::GetInstance() {
 }
 
 // static
-void FeatureList::SetInstance(scoped_ptr<FeatureList> instance) {
+void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
   DCHECK(!g_instance);
   instance->FinalizeInitialization();
 

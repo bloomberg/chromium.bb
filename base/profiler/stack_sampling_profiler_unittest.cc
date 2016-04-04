@@ -790,7 +790,7 @@ TEST(StackSamplingProfilerTest, MAYBE_DestroyProfilerWhileProfiling) {
 
   CallStackProfiles profiles;
   WithTargetThread([&params, &profiles](PlatformThreadId target_thread_id) {
-    scoped_ptr<StackSamplingProfiler> profiler;
+    std::unique_ptr<StackSamplingProfiler> profiler;
     profiler.reset(new StackSamplingProfiler(
         target_thread_id, params, Bind(&SaveProfiles, Unretained(&profiles))));
     profiler->Start();

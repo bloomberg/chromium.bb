@@ -5,9 +5,10 @@
 #ifndef BASE_TASK_SCHEDULER_SCHEDULER_LOCK_IMPL_H
 #define BASE_TASK_SCHEDULER_SCHEDULER_LOCK_IMPL_H
 
+#include <memory>
+
 #include "base/base_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 
 namespace base {
@@ -31,7 +32,7 @@ class BASE_EXPORT SchedulerLockImpl {
 
   void AssertAcquired() const;
 
-  scoped_ptr<ConditionVariable> CreateConditionVariable();
+  std::unique_ptr<ConditionVariable> CreateConditionVariable();
 
  private:
   Lock lock_;

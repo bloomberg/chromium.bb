@@ -4,8 +4,9 @@
 
 #include "base/i18n/time_formatting.h"
 
+#include <memory>
+
 #include "base/i18n/rtl.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/time/time.h"
@@ -28,8 +29,8 @@ const Time::Exploded kTestDateTimeExploded = {
 // see https://en.wikipedia.org/wiki/Daylight_saving_time for details.
 base::string16 GetShortTimeZone(const Time& time) {
   UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
-  scoped_ptr<icu::TimeZoneFormat> zone_formatter(
+  std::unique_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+  std::unique_ptr<icu::TimeZoneFormat> zone_formatter(
       icu::TimeZoneFormat::createInstance(icu::Locale::getDefault(), status));
   EXPECT_TRUE(U_SUCCESS(status));
   icu::UnicodeString name;

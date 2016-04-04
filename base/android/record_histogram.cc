@@ -314,7 +314,7 @@ jint GetHistogramValueCountForTesting(
     return 0;
   }
 
-  scoped_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
+  std::unique_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
   return samples->GetCount(static_cast<int>(sample));
 }
 

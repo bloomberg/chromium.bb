@@ -36,13 +36,13 @@ struct Foo {
   }
 };
 
-scoped_ptr<Foo> CreateFoo() {
-  return scoped_ptr<Foo>(new Foo);
+std::unique_ptr<Foo> CreateFoo() {
+  return std::unique_ptr<Foo>(new Foo);
 }
 
-void ExpectFoo(scoped_ptr<Foo> foo) {
+void ExpectFoo(std::unique_ptr<Foo> foo) {
   EXPECT_TRUE(foo.get());
-  scoped_ptr<Foo> local_foo(std::move(foo));
+  std::unique_ptr<Foo> local_foo(std::move(foo));
   EXPECT_TRUE(local_foo.get());
   EXPECT_FALSE(foo.get());
 }
@@ -54,13 +54,13 @@ struct FooDeleter {
   };
 };
 
-scoped_ptr<Foo, FooDeleter> CreateScopedFoo() {
-  return scoped_ptr<Foo, FooDeleter>(new Foo);
+std::unique_ptr<Foo, FooDeleter> CreateScopedFoo() {
+  return std::unique_ptr<Foo, FooDeleter>(new Foo);
 }
 
-void ExpectScopedFoo(scoped_ptr<Foo, FooDeleter> foo) {
+void ExpectScopedFoo(std::unique_ptr<Foo, FooDeleter> foo) {
   EXPECT_TRUE(foo.get());
-  scoped_ptr<Foo, FooDeleter> local_foo(std::move(foo));
+  std::unique_ptr<Foo, FooDeleter> local_foo(std::move(foo));
   EXPECT_TRUE(local_foo.get());
   EXPECT_FALSE(foo.get());
 }

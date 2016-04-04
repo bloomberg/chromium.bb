@@ -136,8 +136,9 @@ void SchedulerLockImpl::AssertAcquired() const {
   lock_.AssertAcquired();
 }
 
-scoped_ptr<ConditionVariable> SchedulerLockImpl::CreateConditionVariable() {
-  return scoped_ptr<ConditionVariable>(new ConditionVariable(&lock_));
+std::unique_ptr<ConditionVariable>
+SchedulerLockImpl::CreateConditionVariable() {
+  return std::unique_ptr<ConditionVariable>(new ConditionVariable(&lock_));
 }
 
 }  // namespace internal

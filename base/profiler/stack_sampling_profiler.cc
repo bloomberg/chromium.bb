@@ -42,12 +42,12 @@ class AsyncRunner {
 
   // Runs the callback and deletes the AsyncRunner instance.
   static void RunCallbackAndDeleteInstance(
-      scoped_ptr<AsyncRunner> object_to_be_deleted,
+      std::unique_ptr<AsyncRunner> object_to_be_deleted,
       const StackSamplingProfiler::CompletedCallback& callback,
       scoped_refptr<SingleThreadTaskRunner> task_runner,
       const StackSamplingProfiler::CallStackProfiles& profiles);
 
-  scoped_ptr<StackSamplingProfiler> profiler_;
+  std::unique_ptr<StackSamplingProfiler> profiler_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncRunner);
 };
@@ -57,7 +57,7 @@ void AsyncRunner::Run(
     PlatformThreadId thread_id,
     const StackSamplingProfiler::SamplingParams& params,
     const StackSamplingProfiler::CompletedCallback &callback) {
-  scoped_ptr<AsyncRunner> runner(new AsyncRunner);
+  std::unique_ptr<AsyncRunner> runner(new AsyncRunner);
   AsyncRunner* temp_ptr = runner.get();
   temp_ptr->profiler_.reset(
       new StackSamplingProfiler(thread_id, params,
@@ -72,7 +72,7 @@ void AsyncRunner::Run(
 AsyncRunner::AsyncRunner() {}
 
 void AsyncRunner::RunCallbackAndDeleteInstance(
-    scoped_ptr<AsyncRunner> object_to_be_deleted,
+    std::unique_ptr<AsyncRunner> object_to_be_deleted,
     const StackSamplingProfiler::CompletedCallback& callback,
     scoped_refptr<SingleThreadTaskRunner> task_runner,
     const StackSamplingProfiler::CallStackProfiles& profiles) {
@@ -115,7 +115,7 @@ StackSamplingProfiler::CallStackProfile::~CallStackProfile() {}
 // StackSamplingProfiler::SamplingThread --------------------------------------
 
 StackSamplingProfiler::SamplingThread::SamplingThread(
-    scoped_ptr<NativeStackSampler> native_sampler,
+    std::unique_ptr<NativeStackSampler> native_sampler,
     const SamplingParams& params,
     const CompletedCallback& completed_callback)
     : native_sampler_(std::move(native_sampler)),
@@ -255,7 +255,7 @@ void StackSamplingProfiler::Start() {
   if (completed_callback_.is_null())
     return;
 
-  scoped_ptr<NativeStackSampler> native_sampler =
+  std::unique_ptr<NativeStackSampler> native_sampler =
       NativeStackSampler::Create(thread_id_, test_delegate_);
   if (!native_sampler)
     return;

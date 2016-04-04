@@ -4,7 +4,8 @@
 
 #include "base/metrics/histogram_snapshot_manager.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -43,7 +44,7 @@ void HistogramSnapshotManager::PrepareDelta(HistogramBase* histogram) {
 }
 
 void HistogramSnapshotManager::PrepareDeltaTakingOwnership(
-    scoped_ptr<HistogramBase> histogram) {
+    std::unique_ptr<HistogramBase> histogram) {
   PrepareSamples(histogram.get(), histogram->SnapshotDelta());
   owned_histograms_.push_back(std::move(histogram));
 }
@@ -53,7 +54,7 @@ void HistogramSnapshotManager::PrepareAbsolute(const HistogramBase* histogram) {
 }
 
 void HistogramSnapshotManager::PrepareAbsoluteTakingOwnership(
-    scoped_ptr<const HistogramBase> histogram) {
+    std::unique_ptr<const HistogramBase> histogram) {
   PrepareSamples(histogram.get(), histogram->SnapshotSamples());
   owned_histograms_.push_back(std::move(histogram));
 }
@@ -96,7 +97,7 @@ void HistogramSnapshotManager::FinishDeltas() {
 
 void HistogramSnapshotManager::PrepareSamples(
     const HistogramBase* histogram,
-    scoped_ptr<HistogramSamples> samples) {
+    std::unique_ptr<HistogramSamples> samples) {
   DCHECK(histogram_flattener_);
 
   // Get information known about this histogram.

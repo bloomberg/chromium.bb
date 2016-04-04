@@ -6,7 +6,8 @@
 
 #include <shlobj.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/win/scoped_com_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -84,7 +85,7 @@ TEST(ScopedComPtrTest, ScopedComPtrVector) {
   typedef ScopedComPtr<Dummy, &dummy_iid> Ptr;
   std::vector<Ptr> bleh;
 
-  scoped_ptr<Dummy> p(new Dummy);
+  std::unique_ptr<Dummy> p(new Dummy);
   {
     Ptr p2(p.get());
     EXPECT_EQ(p->adds, 1);

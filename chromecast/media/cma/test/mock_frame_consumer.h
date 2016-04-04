@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace media {
 class AudioDecoderConfig;

@@ -7,9 +7,9 @@
 #include <limits.h>
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/histogram.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -244,7 +244,7 @@ TEST(SampleVectorIteratorTest, IterateTest) {
   samples.Accumulate(1, 1);
   samples.Accumulate(2, 2);
   samples.Accumulate(3, 3);
-  scoped_ptr<SampleCountIterator> it2 = samples.Iterator();
+  std::unique_ptr<SampleCountIterator> it2 = samples.Iterator();
 
   int i;
   for (i = 1; !it2->Done(); i++, it2->Next()) {
@@ -271,7 +271,7 @@ TEST(SampleVectorIteratorDeathTest, IterateDoneTest) {
   ranges.set_range(4, INT_MAX);
   SampleVector samples(1, &ranges);
 
-  scoped_ptr<SampleCountIterator> it = samples.Iterator();
+  std::unique_ptr<SampleCountIterator> it = samples.Iterator();
 
   EXPECT_TRUE(it->Done());
 

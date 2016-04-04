@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -103,7 +104,7 @@ TEST_F(ImportantFileWriterTest, Basic) {
   ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
   EXPECT_FALSE(PathExists(writer.path()));
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
-  writer.WriteNow(make_scoped_ptr(new std::string("foo")));
+  writer.WriteNow(WrapUnique(new std::string("foo")));
   RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
@@ -116,7 +117,7 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
   EXPECT_FALSE(PathExists(writer.path()));
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
   successful_write_observer_.ObserveNextSuccessfulWrite(&writer);
-  writer.WriteNow(make_scoped_ptr(new std::string("foo")));
+  writer.WriteNow(WrapUnique(new std::string("foo")));
   RunLoop().RunUntilIdle();
 
   // Confirm that the observer is invoked.
@@ -127,7 +128,7 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
   // Confirm that re-installing the observer works for another write.
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
   successful_write_observer_.ObserveNextSuccessfulWrite(&writer);
-  writer.WriteNow(make_scoped_ptr(new std::string("bar")));
+  writer.WriteNow(WrapUnique(new std::string("bar")));
   RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(successful_write_observer_.GetAndResetObservationState());
@@ -137,7 +138,7 @@ TEST_F(ImportantFileWriterTest, BasicWithSuccessfulWriteObserver) {
   // Confirm that writing again without re-installing the observer doesn't
   // result in a notification.
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());
-  writer.WriteNow(make_scoped_ptr(new std::string("baz")));
+  writer.WriteNow(WrapUnique(new std::string("baz")));
   RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(successful_write_observer_.GetAndResetObservationState());

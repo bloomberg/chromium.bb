@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/json/json_writer.h"
+
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,11 +57,11 @@ TEST(JSONWriterTest, NestedTypes) {
   // Writer unittests like empty list/dict nesting,
   // list list nesting, etc.
   DictionaryValue root_dict;
-  scoped_ptr<ListValue> list(new ListValue());
-  scoped_ptr<DictionaryValue> inner_dict(new DictionaryValue());
+  std::unique_ptr<ListValue> list(new ListValue());
+  std::unique_ptr<DictionaryValue> inner_dict(new DictionaryValue());
   inner_dict->SetInteger("inner int", 10);
   list->Append(std::move(inner_dict));
-  list->Append(make_scoped_ptr(new ListValue()));
+  list->Append(WrapUnique(new ListValue()));
   list->AppendBoolean(true);
   root_dict.Set("list", std::move(list));
 
@@ -91,7 +93,7 @@ TEST(JSONWriterTest, KeysWithPeriods) {
   DictionaryValue period_dict;
   period_dict.SetIntegerWithoutPathExpansion("a.b", 3);
   period_dict.SetIntegerWithoutPathExpansion("c", 2);
-  scoped_ptr<DictionaryValue> period_dict2(new DictionaryValue());
+  std::unique_ptr<DictionaryValue> period_dict2(new DictionaryValue());
   period_dict2->SetIntegerWithoutPathExpansion("g.h.i.j", 1);
   period_dict.SetWithoutPathExpansion("d.e.f", std::move(period_dict2));
   EXPECT_TRUE(JSONWriter::Write(period_dict, &output_js));
@@ -109,7 +111,7 @@ TEST(JSONWriterTest, BinaryValues) {
 
   // Binary values should return errors unless suppressed via the
   // OPTIONS_OMIT_BINARY_VALUES flag.
-  scoped_ptr<Value> root(BinaryValue::CreateWithCopiedBuffer("asdf", 4));
+  std::unique_ptr<Value> root(BinaryValue::CreateWithCopiedBuffer("asdf", 4));
   EXPECT_FALSE(JSONWriter::Write(*root, &output_js));
   EXPECT_TRUE(JSONWriter::WriteWithOptions(
       *root, JSONWriter::OPTIONS_OMIT_BINARY_VALUES, &output_js));
@@ -117,9 +119,9 @@ TEST(JSONWriterTest, BinaryValues) {
 
   ListValue binary_list;
   binary_list.Append(BinaryValue::CreateWithCopiedBuffer("asdf", 4));
-  binary_list.Append(make_scoped_ptr(new FundamentalValue(5)));
+  binary_list.Append(WrapUnique(new FundamentalValue(5)));
   binary_list.Append(BinaryValue::CreateWithCopiedBuffer("asdf", 4));
-  binary_list.Append(make_scoped_ptr(new FundamentalValue(2)));
+  binary_list.Append(WrapUnique(new FundamentalValue(2)));
   binary_list.Append(BinaryValue::CreateWithCopiedBuffer("asdf", 4));
   EXPECT_FALSE(JSONWriter::Write(binary_list, &output_js));
   EXPECT_TRUE(JSONWriter::WriteWithOptions(
@@ -128,13 +130,13 @@ TEST(JSONWriterTest, BinaryValues) {
 
   DictionaryValue binary_dict;
   binary_dict.Set(
-      "a", make_scoped_ptr(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
+      "a", WrapUnique(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
   binary_dict.SetInteger("b", 5);
   binary_dict.Set(
-      "c", make_scoped_ptr(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
+      "c", WrapUnique(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
   binary_dict.SetInteger("d", 2);
   binary_dict.Set(
-      "e", make_scoped_ptr(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
+      "e", WrapUnique(BinaryValue::CreateWithCopiedBuffer("asdf", 4)));
   EXPECT_FALSE(JSONWriter::Write(binary_dict, &output_js));
   EXPECT_TRUE(JSONWriter::WriteWithOptions(
       binary_dict, JSONWriter::OPTIONS_OMIT_BINARY_VALUES, &output_js));

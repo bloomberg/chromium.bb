@@ -59,8 +59,8 @@ void TaskTracker::Shutdown() {
 }
 
 void TaskTracker::PostTask(
-    const Callback<void(scoped_ptr<Task>)>& post_task_callback,
-    scoped_ptr<Task> task) {
+    const Callback<void(std::unique_ptr<Task>)>& post_task_callback,
+    std::unique_ptr<Task> task) {
   DCHECK(!post_task_callback.is_null());
   DCHECK(task);
 

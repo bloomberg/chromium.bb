@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/profiler/native_stack_sampler.h"
+
 #include <objbase.h>
 #include <windows.h>
 #include <stddef.h>
@@ -9,14 +11,13 @@
 
 #include <cstdlib>
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/profiler/native_stack_sampler.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -414,7 +415,7 @@ class NativeStackSamplerWin : public NativeStackSampler {
 
   // Buffer to use for copies of the stack. We use the same buffer for all the
   // samples to avoid the overhead of multiple allocations and frees.
-  const scoped_ptr<unsigned char[]> stack_copy_buffer_;
+  const std::unique_ptr<unsigned char[]> stack_copy_buffer_;
 
   // Weak. Points to the modules associated with the profile being recorded
   // between ProfileRecordingStarting() and ProfileRecordingStopped().
@@ -519,7 +520,7 @@ void NativeStackSamplerWin::CopyToSample(
 
 }  // namespace
 
-scoped_ptr<NativeStackSampler> NativeStackSampler::Create(
+std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
     NativeStackSamplerTestDelegate* test_delegate) {
 #if _WIN64
@@ -530,12 +531,11 @@ scoped_ptr<NativeStackSampler> NativeStackSampler::Create(
       thread_id);
 
   if (thread_handle) {
-    return scoped_ptr<NativeStackSampler>(new NativeStackSamplerWin(
-        win::ScopedHandle(thread_handle),
-        test_delegate));
+    return std::unique_ptr<NativeStackSampler>(new NativeStackSamplerWin(
+        win::ScopedHandle(thread_handle), test_delegate));
   }
 #endif
-  return scoped_ptr<NativeStackSampler>();
+  return std::unique_ptr<NativeStackSampler>();
 }
 
 }  // namespace base

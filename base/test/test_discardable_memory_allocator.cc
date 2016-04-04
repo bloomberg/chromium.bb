@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/discardable_memory.h"
+#include "base/memory/ptr_util.h"
 
 namespace base {
 namespace {
@@ -46,7 +47,7 @@ class DiscardableMemoryImpl : public DiscardableMemory {
 
  private:
   bool is_locked_ = true;
-  scoped_ptr<uint8_t[]> data_;
+  std::unique_ptr<uint8_t[]> data_;
   size_t size_;
 };
 
@@ -58,9 +59,9 @@ TestDiscardableMemoryAllocator::TestDiscardableMemoryAllocator() {
 TestDiscardableMemoryAllocator::~TestDiscardableMemoryAllocator() {
 }
 
-scoped_ptr<DiscardableMemory>
+std::unique_ptr<DiscardableMemory>
 TestDiscardableMemoryAllocator::AllocateLockedDiscardableMemory(size_t size) {
-  return make_scoped_ptr(new DiscardableMemoryImpl(size));
+  return WrapUnique(new DiscardableMemoryImpl(size));
 }
 
 }  // namespace base

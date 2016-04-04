@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/threading/non_thread_safe.h"
+
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -72,7 +74,7 @@ class DeleteNonThreadSafeClassOnThread : public SimpleThread {
   void Run() override { non_thread_safe_class_.reset(); }
 
  private:
-  scoped_ptr<NonThreadSafeClass> non_thread_safe_class_;
+  std::unique_ptr<NonThreadSafeClass> non_thread_safe_class_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteNonThreadSafeClassOnThread);
 };
@@ -80,7 +82,7 @@ class DeleteNonThreadSafeClassOnThread : public SimpleThread {
 }  // namespace
 
 TEST(NonThreadSafeTest, CallsAllowedOnSameThread) {
-  scoped_ptr<NonThreadSafeClass> non_thread_safe_class(
+  std::unique_ptr<NonThreadSafeClass> non_thread_safe_class(
       new NonThreadSafeClass);
 
   // Verify that DoStuff doesn't assert.
@@ -91,7 +93,7 @@ TEST(NonThreadSafeTest, CallsAllowedOnSameThread) {
 }
 
 TEST(NonThreadSafeTest, DetachThenDestructOnDifferentThread) {
-  scoped_ptr<NonThreadSafeClass> non_thread_safe_class(
+  std::unique_ptr<NonThreadSafeClass> non_thread_safe_class(
       new NonThreadSafeClass);
 
   // Verify that the destructor doesn't assert when called on a different thread
@@ -107,7 +109,7 @@ TEST(NonThreadSafeTest, DetachThenDestructOnDifferentThread) {
 #if GTEST_HAS_DEATH_TEST || !ENABLE_NON_THREAD_SAFE
 
 void NonThreadSafeClass::MethodOnDifferentThreadImpl() {
-  scoped_ptr<NonThreadSafeClass> non_thread_safe_class(
+  std::unique_ptr<NonThreadSafeClass> non_thread_safe_class(
       new NonThreadSafeClass);
 
   // Verify that DoStuff asserts in debug builds only when called
@@ -131,7 +133,7 @@ TEST(NonThreadSafeTest, MethodAllowedOnDifferentThreadInRelease) {
 #endif  // ENABLE_NON_THREAD_SAFE
 
 void NonThreadSafeClass::DestructorOnDifferentThreadImpl() {
-  scoped_ptr<NonThreadSafeClass> non_thread_safe_class(
+  std::unique_ptr<NonThreadSafeClass> non_thread_safe_class(
       new NonThreadSafeClass);
 
   // Verify that the destructor asserts in debug builds only

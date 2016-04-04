@@ -6,10 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,7 +38,7 @@ struct NumberFormatWrapper {
     DCHECK(U_SUCCESS(status));
   }
 
-  scoped_ptr<icu::NumberFormat> number_format;
+  std::unique_ptr<icu::NumberFormat> number_format;
 };
 
 LazyInstance<NumberFormatWrapper> g_number_format_int =

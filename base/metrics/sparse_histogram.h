@@ -9,13 +9,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/sample_map.h"
 #include "base/synchronization/lock.h"
@@ -60,7 +60,7 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   static HistogramBase* FactoryGet(const std::string& name, int32_t flags);
 
   // Create a histogram using data in persistent storage.
-  static scoped_ptr<HistogramBase> PersistentCreate(
+  static std::unique_ptr<HistogramBase> PersistentCreate(
       PersistentMemoryAllocator* allocator,
       const std::string& name,
       HistogramSamples::Metadata* meta,
@@ -78,8 +78,8 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   void AddCount(Sample value, int count) override;
   void AddSamples(const HistogramSamples& samples) override;
   bool AddSamplesFromPickle(base::PickleIterator* iter) override;
-  scoped_ptr<HistogramSamples> SnapshotSamples() const override;
-  scoped_ptr<HistogramSamples> SnapshotDelta() override;
+  std::unique_ptr<HistogramSamples> SnapshotSamples() const override;
+  std::unique_ptr<HistogramSamples> SnapshotDelta() override;
   void WriteHTMLGraph(std::string* output) const override;
   void WriteAscii(std::string* output) const override;
 
@@ -120,8 +120,8 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   // Protects access to |samples_|.
   mutable base::Lock lock_;
 
-  scoped_ptr<HistogramSamples> samples_;
-  scoped_ptr<HistogramSamples> logged_samples_;
+  std::unique_ptr<HistogramSamples> samples_;
+  std::unique_ptr<HistogramSamples> logged_samples_;
 
   DISALLOW_COPY_AND_ASSIGN(SparseHistogram);
 };

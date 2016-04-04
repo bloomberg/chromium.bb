@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/common/favicon_url.h"
 
 class GURL;

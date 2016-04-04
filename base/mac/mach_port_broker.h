@@ -8,13 +8,13 @@
 #include <mach/mach.h>
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/base_export.h"
 #include "base/mac/dispatch_source_mach.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/port_provider_mac.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
@@ -91,7 +91,7 @@ class BASE_EXPORT MachPortBroker : public base::PortProvider {
   base::mac::ScopedMachReceiveRight server_port_;
 
   // The dispatch source and queue on which Mach messages will be received.
-  scoped_ptr<base::DispatchSourceMach> dispatch_source_;
+  std::unique_ptr<base::DispatchSourceMach> dispatch_source_;
 
   // Stores mach info for every process in the broker.
   typedef std::map<base::ProcessHandle, mach_port_t> MachMap;

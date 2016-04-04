@@ -12,6 +12,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"

@@ -191,7 +191,7 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
     }  // lock(allocation_register_lock_)
 
     if (!bytes_by_context.empty()) {
-      scoped_ptr<TracedValue> heap_dump = ExportHeapDump(
+      std::unique_ptr<TracedValue> heap_dump = ExportHeapDump(
           bytes_by_context, pmd->session_state()->stack_frame_deduplicator(),
           pmd->session_state()->type_name_deduplicator());
       pmd->AddHeapDump("malloc", std::move(heap_dump));

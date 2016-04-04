@@ -7,10 +7,10 @@
 #include <math.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/pattern.h"
 #include "base/values.h"
 
@@ -144,7 +144,7 @@ bool TraceEvent::GetArgAsNumber(const std::string& name,
 }
 
 bool TraceEvent::GetArgAsValue(const std::string& name,
-                               scoped_ptr<base::Value>* arg) const {
+                               std::unique_ptr<base::Value>* arg) const {
   const auto it = arg_values.find(name);
   if (it != arg_values.end()) {
     *arg = it->second->CreateDeepCopy();
@@ -193,9 +193,9 @@ bool TraceEvent::GetKnownArgAsBool(const std::string& name) const {
   return (arg_double != 0.0);
 }
 
-scoped_ptr<base::Value> TraceEvent::GetKnownArgAsValue(
+std::unique_ptr<base::Value> TraceEvent::GetKnownArgAsValue(
     const std::string& name) const {
-  scoped_ptr<base::Value> arg_value;
+  std::unique_ptr<base::Value> arg_value;
   bool result = GetArgAsValue(name, &arg_value);
   DCHECK(result);
   return arg_value;
@@ -679,7 +679,7 @@ size_t FindMatchingEvents(const std::vector<TraceEvent>& events,
 
 bool ParseEventsFromJson(const std::string& json,
                          std::vector<TraceEvent>* output) {
-  scoped_ptr<base::Value> root = base::JSONReader::Read(json);
+  std::unique_ptr<base::Value> root = base::JSONReader::Read(json);
 
   base::ListValue* root_list = NULL;
   if (!root.get() || !root->GetAsList(&root_list))
@@ -712,7 +712,7 @@ TraceAnalyzer::~TraceAnalyzer() {
 
 // static
 TraceAnalyzer* TraceAnalyzer::Create(const std::string& json_events) {
-  scoped_ptr<TraceAnalyzer> analyzer(new TraceAnalyzer());
+  std::unique_ptr<TraceAnalyzer> analyzer(new TraceAnalyzer());
   if (analyzer->SetEvents(json_events))
     return analyzer.release();
   return NULL;

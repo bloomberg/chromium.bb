@@ -4,11 +4,11 @@
 
 #include "base/json/json_value_converter.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -106,7 +106,7 @@ TEST(JSONValueConverterTest, ParseSimpleMessage) {
       "  \"ints\": [1, 2]"
       "}\n";
 
-  scoped_ptr<Value> value = base::JSONReader::Read(normal_data);
+  std::unique_ptr<Value> value = base::JSONReader::Read(normal_data);
   SimpleMessage message;
   base::JSONValueConverter<SimpleMessage> converter;
   EXPECT_TRUE(converter.Convert(*value.get(), &message));
@@ -148,7 +148,7 @@ TEST(JSONValueConverterTest, ParseNestedMessage) {
       "  }]\n"
       "}\n";
 
-  scoped_ptr<Value> value = base::JSONReader::Read(normal_data);
+  std::unique_ptr<Value> value = base::JSONReader::Read(normal_data);
   NestedMessage message;
   base::JSONValueConverter<NestedMessage> converter;
   EXPECT_TRUE(converter.Convert(*value.get(), &message));
@@ -190,7 +190,7 @@ TEST(JSONValueConverterTest, ParseFailures) {
       "  \"ints\": [1, 2]"
       "}\n";
 
-  scoped_ptr<Value> value = base::JSONReader::Read(normal_data);
+  std::unique_ptr<Value> value = base::JSONReader::Read(normal_data);
   SimpleMessage message;
   base::JSONValueConverter<SimpleMessage> converter;
   EXPECT_FALSE(converter.Convert(*value.get(), &message));
@@ -206,7 +206,7 @@ TEST(JSONValueConverterTest, ParseWithMissingFields) {
       "  \"ints\": [1, 2]"
       "}\n";
 
-  scoped_ptr<Value> value = base::JSONReader::Read(normal_data);
+  std::unique_ptr<Value> value = base::JSONReader::Read(normal_data);
   SimpleMessage message;
   base::JSONValueConverter<SimpleMessage> converter;
   // Convert() still succeeds even if the input doesn't have "bar" field.
@@ -229,7 +229,7 @@ TEST(JSONValueConverterTest, EnumParserFails) {
       "  \"ints\": [1, 2]"
       "}\n";
 
-  scoped_ptr<Value> value = base::JSONReader::Read(normal_data);
+  std::unique_ptr<Value> value = base::JSONReader::Read(normal_data);
   SimpleMessage message;
   base::JSONValueConverter<SimpleMessage> converter;
   EXPECT_FALSE(converter.Convert(*value.get(), &message));
@@ -246,7 +246,7 @@ TEST(JSONValueConverterTest, RepeatedValueErrorInTheMiddle) {
       "  \"ints\": [1, false]"
       "}\n";
 
-  scoped_ptr<Value> value = base::JSONReader::Read(normal_data);
+  std::unique_ptr<Value> value = base::JSONReader::Read(normal_data);
   SimpleMessage message;
   base::JSONValueConverter<SimpleMessage> converter;
   EXPECT_FALSE(converter.Convert(*value.get(), &message));

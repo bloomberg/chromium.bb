@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
@@ -53,7 +54,7 @@ icu::SimpleDateFormat CreateSimpleDateFormatter(const char* pattern) {
   // use (some locales use '.' instead of ':'), and where to put the am/pm
   // marker.
   UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<icu::DateTimePatternGenerator> generator(
+  std::unique_ptr<icu::DateTimePatternGenerator> generator(
       icu::DateTimePatternGenerator::createInstance(status));
   DCHECK(U_SUCCESS(status));
   icu::UnicodeString generated_pattern =
@@ -72,7 +73,7 @@ icu::SimpleDateFormat CreateSimpleDateFormatter(const char* pattern) {
 string16 TimeFormatTimeOfDay(const Time& time) {
   // We can omit the locale parameter because the default should match
   // Chrome's application locale.
-  scoped_ptr<icu::DateFormat> formatter(
+  std::unique_ptr<icu::DateFormat> formatter(
       icu::DateFormat::createTimeInstance(icu::DateFormat::kShort));
   return TimeFormat(formatter.get(), time);
 }
@@ -103,38 +104,39 @@ string16 TimeFormatTimeOfDayWithHourClockType(const Time& time,
 }
 
 string16 TimeFormatShortDate(const Time& time) {
-  scoped_ptr<icu::DateFormat> formatter(
+  std::unique_ptr<icu::DateFormat> formatter(
       icu::DateFormat::createDateInstance(icu::DateFormat::kMedium));
   return TimeFormat(formatter.get(), time);
 }
 
 string16 TimeFormatShortDateNumeric(const Time& time) {
-  scoped_ptr<icu::DateFormat> formatter(
+  std::unique_ptr<icu::DateFormat> formatter(
       icu::DateFormat::createDateInstance(icu::DateFormat::kShort));
   return TimeFormat(formatter.get(), time);
 }
 
 string16 TimeFormatShortDateAndTime(const Time& time) {
-  scoped_ptr<icu::DateFormat> formatter(
+  std::unique_ptr<icu::DateFormat> formatter(
       icu::DateFormat::createDateTimeInstance(icu::DateFormat::kShort));
   return TimeFormat(formatter.get(), time);
 }
 
 string16 TimeFormatShortDateAndTimeWithTimeZone(const Time& time) {
-  scoped_ptr<icu::DateFormat> formatter(icu::DateFormat::createDateTimeInstance(
-      icu::DateFormat::kShort, icu::DateFormat::kLong));
+  std::unique_ptr<icu::DateFormat> formatter(
+      icu::DateFormat::createDateTimeInstance(icu::DateFormat::kShort,
+                                              icu::DateFormat::kLong));
   return TimeFormat(formatter.get(), time);
 }
 
 string16 TimeFormatFriendlyDateAndTime(const Time& time) {
-  scoped_ptr<icu::DateFormat> formatter(
+  std::unique_ptr<icu::DateFormat> formatter(
       icu::DateFormat::createDateTimeInstance(icu::DateFormat::kFull));
   return TimeFormat(formatter.get(), time);
 }
 
 string16 TimeFormatFriendlyDate(const Time& time) {
-  scoped_ptr<icu::DateFormat> formatter(icu::DateFormat::createDateInstance(
-      icu::DateFormat::kFull));
+  std::unique_ptr<icu::DateFormat> formatter(
+      icu::DateFormat::createDateInstance(icu::DateFormat::kFull));
   return TimeFormat(formatter.get(), time);
 }
 
@@ -142,7 +144,7 @@ HourClockType GetHourClockType() {
   // TODO(satorux,jshin): Rework this with ures_getByKeyWithFallback()
   // once it becomes public. The short time format can be found at
   // "calendar/gregorian/DateTimePatterns/3" in the resources.
-  scoped_ptr<icu::SimpleDateFormat> formatter(
+  std::unique_ptr<icu::SimpleDateFormat> formatter(
       static_cast<icu::SimpleDateFormat*>(
           icu::DateFormat::createTimeInstance(icu::DateFormat::kShort)));
   // Retrieve the short time format.

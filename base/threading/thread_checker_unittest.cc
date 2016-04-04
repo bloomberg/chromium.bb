@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/threading/thread_checker.h"
+
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/simple_thread.h"
-#include "base/threading/thread_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Duplicated from base/threading/thread_checker.h so that we can be
@@ -72,7 +74,7 @@ class DeleteThreadCheckerClassOnThread : public base::SimpleThread {
   void Run() override { thread_checker_class_.reset(); }
 
  private:
-  scoped_ptr<ThreadCheckerClass> thread_checker_class_;
+  std::unique_ptr<ThreadCheckerClass> thread_checker_class_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteThreadCheckerClassOnThread);
 };
@@ -80,7 +82,7 @@ class DeleteThreadCheckerClassOnThread : public base::SimpleThread {
 }  // namespace
 
 TEST(ThreadCheckerTest, CallsAllowedOnSameThread) {
-  scoped_ptr<ThreadCheckerClass> thread_checker_class(
+  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
       new ThreadCheckerClass);
 
   // Verify that DoStuff doesn't assert.
@@ -91,7 +93,7 @@ TEST(ThreadCheckerTest, CallsAllowedOnSameThread) {
 }
 
 TEST(ThreadCheckerTest, DestructorAllowedOnDifferentThread) {
-  scoped_ptr<ThreadCheckerClass> thread_checker_class(
+  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
       new ThreadCheckerClass);
 
   // Verify that the destructor doesn't assert
@@ -104,7 +106,7 @@ TEST(ThreadCheckerTest, DestructorAllowedOnDifferentThread) {
 }
 
 TEST(ThreadCheckerTest, DetachFromThread) {
-  scoped_ptr<ThreadCheckerClass> thread_checker_class(
+  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
       new ThreadCheckerClass);
 
   // Verify that DoStuff doesn't assert when called on a different thread after
@@ -119,7 +121,7 @@ TEST(ThreadCheckerTest, DetachFromThread) {
 #if GTEST_HAS_DEATH_TEST || !ENABLE_THREAD_CHECKER
 
 void ThreadCheckerClass::MethodOnDifferentThreadImpl() {
-  scoped_ptr<ThreadCheckerClass> thread_checker_class(
+  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
       new ThreadCheckerClass);
 
   // DoStuff should assert in debug builds only when called on a
@@ -143,7 +145,7 @@ TEST(ThreadCheckerTest, MethodAllowedOnDifferentThreadInRelease) {
 #endif  // ENABLE_THREAD_CHECKER
 
 void ThreadCheckerClass::DetachThenCallFromDifferentThreadImpl() {
-  scoped_ptr<ThreadCheckerClass> thread_checker_class(
+  std::unique_ptr<ThreadCheckerClass> thread_checker_class(
       new ThreadCheckerClass);
 
   // DoStuff doesn't assert when called on a different thread

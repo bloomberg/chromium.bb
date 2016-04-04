@@ -6,7 +6,6 @@
 
 #include <CommonCrypto/CommonDigest.h>
 #import <UIKit/UIKit.h>
-
 #include <ifaddrs.h>
 #include <net/if_dl.h>
 #include <stddef.h>
@@ -14,9 +13,10 @@
 #include <sys/socket.h>
 #include <sys/sysctl.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"

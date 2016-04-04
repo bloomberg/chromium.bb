@@ -4,9 +4,9 @@
 
 #include "base/timer/hi_res_timer_manager.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
@@ -22,9 +22,9 @@ TEST(HiResTimerManagerTest, ToggleOnOff) {
   // Windows, which makes this test flaky if you run while the machine
   // goes in or out of AC power.
   base::MessageLoop loop(base::MessageLoop::TYPE_UI);
-  scoped_ptr<base::PowerMonitorSource> power_monitor_source(
+  std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
       new base::PowerMonitorDeviceSource());
-  scoped_ptr<base::PowerMonitor> power_monitor(
+  std::unique_ptr<base::PowerMonitor> power_monitor(
       new base::PowerMonitor(std::move(power_monitor_source)));
 
   HighResolutionTimerManager manager;

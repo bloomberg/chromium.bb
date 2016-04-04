@@ -9,9 +9,9 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -143,7 +143,7 @@ TEST(RandUtilTest, DISABLED_RandBytesPerf) {
   const int kTestIterations = 10;
   const size_t kTestBufferSize = 1 * 1024 * 1024;
 
-  scoped_ptr<uint8_t[]> buffer(new uint8_t[kTestBufferSize]);
+  std::unique_ptr<uint8_t[]> buffer(new uint8_t[kTestBufferSize]);
   const base::TimeTicks now = base::TimeTicks::Now();
   for (int i = 0; i < kTestIterations; ++i)
     base::RandBytes(buffer.get(), kTestBufferSize);

@@ -46,8 +46,8 @@ class MemoryPressureListenerTest : public testing::Test {
   MOCK_METHOD1(OnMemoryPressure,
                void(MemoryPressureListener::MemoryPressureLevel));
 
-  scoped_ptr<MessageLoopForUI> message_loop_;
-  scoped_ptr<MemoryPressureListener> listener_;
+  std::unique_ptr<MessageLoopForUI> message_loop_;
+  std::unique_ptr<MemoryPressureListener> listener_;
 };
 
 TEST_F(MemoryPressureListenerTest, NotifyMemoryPressure) {

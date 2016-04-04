@@ -7,12 +7,12 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequence_checker_impl.h"
 #include "base/stl_util.h"
@@ -294,7 +294,7 @@ class SequencedWorkerPoolTest : public testing::Test {
 
  private:
   MessageLoop message_loop_;
-  scoped_ptr<SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<SequencedWorkerPoolOwner> pool_owner_;
   const scoped_refptr<TestTracker> tracker_;
 };
 
@@ -1067,7 +1067,7 @@ class SequencedWorkerPoolTaskRunnerTestDelegate {
 
  private:
   MessageLoop message_loop_;
-  scoped_ptr<SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<SequencedWorkerPoolOwner> pool_owner_;
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(
@@ -1105,7 +1105,7 @@ class SequencedWorkerPoolTaskRunnerWithShutdownBehaviorTestDelegate {
 
  private:
   MessageLoop message_loop_;
-  scoped_ptr<SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<SequencedWorkerPoolOwner> pool_owner_;
   scoped_refptr<TaskRunner> task_runner_;
 };
 
@@ -1145,7 +1145,7 @@ class SequencedWorkerPoolSequencedTaskRunnerTestDelegate {
 
  private:
   MessageLoop message_loop_;
-  scoped_ptr<SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<SequencedWorkerPoolOwner> pool_owner_;
   scoped_refptr<SequencedTaskRunner> task_runner_;
 };
 

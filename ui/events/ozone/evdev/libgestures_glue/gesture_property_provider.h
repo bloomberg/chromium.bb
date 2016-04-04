@@ -17,6 +17,7 @@
 
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"

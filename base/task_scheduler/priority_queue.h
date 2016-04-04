@@ -5,6 +5,7 @@
 #ifndef BASE_TASK_SCHEDULER_PRIORITY_QUEUE_H_
 #define BASE_TASK_SCHEDULER_PRIORITY_QUEUE_H_
 
+#include <memory>
 #include <queue>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/sequence_sort_key.h"
@@ -57,7 +57,7 @@ class BASE_EXPORT PriorityQueue {
     ~Transaction();
 
     // Inserts |sequence_and_sort_key| in the PriorityQueue.
-    void Push(scoped_ptr<SequenceAndSortKey> sequence_and_sort_key);
+    void Push(std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key);
 
     // Returns the SequenceAndSortKey with the highest priority or a null
     // SequenceAndSortKey if the PriorityQueue is empty. The reference becomes
@@ -77,7 +77,7 @@ class BASE_EXPORT PriorityQueue {
     // Transaction. Using a scoped_ptr allows the destructor to release the lock
     // before performing internal operations which have to be done outside of
     // its scope.
-    scoped_ptr<AutoSchedulerLock> auto_lock_;
+    std::unique_ptr<AutoSchedulerLock> auto_lock_;
 
     PriorityQueue* const outer_queue_;
 
@@ -105,18 +105,18 @@ class BASE_EXPORT PriorityQueue {
   // active Transaction unless the last Transaction created on the thread was
   // for the allowed predecessor specified in the constructor of this
   // PriorityQueue.
-  scoped_ptr<Transaction> BeginTransaction();
+  std::unique_ptr<Transaction> BeginTransaction();
 
  private:
   struct SequenceAndSortKeyComparator {
-    bool operator()(const scoped_ptr<SequenceAndSortKey>& left,
-                    const scoped_ptr<SequenceAndSortKey>& right) const {
+    bool operator()(const std::unique_ptr<SequenceAndSortKey>& left,
+                    const std::unique_ptr<SequenceAndSortKey>& right) const {
       return left->sort_key < right->sort_key;
     }
   };
   using ContainerType =
-      std::priority_queue<scoped_ptr<SequenceAndSortKey>,
-                          std::vector<scoped_ptr<SequenceAndSortKey>>,
+      std::priority_queue<std::unique_ptr<SequenceAndSortKey>,
+                          std::vector<std::unique_ptr<SequenceAndSortKey>>,
                           SequenceAndSortKeyComparator>;
 
   // Synchronizes access to |container_|.

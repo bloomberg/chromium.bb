@@ -5,6 +5,7 @@
 #include "base/metrics/persistent_histogram_allocator.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -39,7 +40,7 @@ class PersistentHistogramAllocatorTest : public testing::Test {
     PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
   }
 
-  scoped_ptr<char[]> allocator_memory_;
+  std::unique_ptr<char[]> allocator_memory_;
   PersistentMemoryAllocator* allocator_ = nullptr;
 
  private:
@@ -96,9 +97,9 @@ TEST_F(PersistentHistogramAllocatorTest, CreateAndIterateTest) {
   EXPECT_EQ(0U, allocator_->GetNextIterable(&iter, &type));
 
   // Create a second allocator and have it access the memory of the first.
-  scoped_ptr<HistogramBase> recovered;
+  std::unique_ptr<HistogramBase> recovered;
   PersistentHistogramAllocator recovery(
-      make_scoped_ptr(new PersistentMemoryAllocator(
+      WrapUnique(new PersistentMemoryAllocator(
           allocator_memory_.get(), kAllocatorMemorySize, 0, 0, "", false)));
   PersistentHistogramAllocator::Iterator histogram_iter;
   recovery.CreateIterator(&histogram_iter);

@@ -7,12 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <queue>
 
 #include "base/base_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence_sort_key.h"
 #include "base/task_scheduler/task.h"
@@ -29,7 +29,7 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
 
   // Adds |task| at the end of the sequence's queue. Returns true if the
   // sequence was empty before this operation.
-  bool PushTask(scoped_ptr<Task> task);
+  bool PushTask(std::unique_ptr<Task> task);
 
   // Returns the task in front of the sequence's queue, if any.
   const Task* PeekTask() const;
@@ -51,7 +51,7 @@ class BASE_EXPORT Sequence : public RefCountedThreadSafe<Sequence> {
   mutable SchedulerLock lock_;
 
   // Queue of tasks to execute.
-  std::queue<scoped_ptr<Task>> queue_;
+  std::queue<std::unique_ptr<Task>> queue_;
 
   // Number of tasks contained in the sequence for each priority.
   size_t num_tasks_per_priority_[static_cast<int>(TaskPriority::HIGHEST) + 1] =

@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/threading/sequenced_task_runner_handle.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker_impl.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +32,8 @@ class SequencedTaskRunnerHandleTest : public ::testing::Test {
     ASSERT_TRUE(task_runner);
 
     // Use SequenceCheckerImpl to make sure it's not a no-op in Release builds.
-    scoped_ptr<SequenceCheckerImpl> sequence_checker(new SequenceCheckerImpl);
+    std::unique_ptr<SequenceCheckerImpl> sequence_checker(
+        new SequenceCheckerImpl);
     task_runner->PostTask(
         FROM_HERE,
         base::Bind(&SequencedTaskRunnerHandleTest::CheckValidSequence,
@@ -39,7 +42,7 @@ class SequencedTaskRunnerHandleTest : public ::testing::Test {
 
  private:
   static void CheckValidSequence(
-      scoped_ptr<SequenceCheckerImpl> sequence_checker,
+      std::unique_ptr<SequenceCheckerImpl> sequence_checker,
       const Closure& callback) {
     EXPECT_TRUE(sequence_checker->CalledOnValidSequencedThread());
     callback.Run();

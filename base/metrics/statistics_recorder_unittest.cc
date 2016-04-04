@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/metrics/statistics_recorder.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -272,7 +273,7 @@ TEST_F(StatisticsRecorderTest, ToJSON) {
   std::string json(StatisticsRecorder::ToJSON(std::string()));
 
   // Check for valid JSON.
-  scoped_ptr<Value> root = JSONReader::Read(json);
+  std::unique_ptr<Value> root = JSONReader::Read(json);
   ASSERT_TRUE(root.get());
 
   DictionaryValue* root_dict = NULL;

@@ -66,10 +66,10 @@ class BASE_EXPORT HistogramSnapshotManager {
   // automatically delete the histogram once it is "finished".
   void StartDeltas();
   void PrepareDelta(HistogramBase* histogram);
-  void PrepareDeltaTakingOwnership(scoped_ptr<HistogramBase> histogram);
+  void PrepareDeltaTakingOwnership(std::unique_ptr<HistogramBase> histogram);
   void PrepareAbsolute(const HistogramBase* histogram);
   void PrepareAbsoluteTakingOwnership(
-      scoped_ptr<const HistogramBase> histogram);
+      std::unique_ptr<const HistogramBase> histogram);
   void FinishDeltas();
 
  private:
@@ -100,7 +100,7 @@ class BASE_EXPORT HistogramSnapshotManager {
   // Capture and hold samples from a histogram. This does all the heavy
   // lifting for PrepareDelta() and PrepareAbsolute().
   void PrepareSamples(const HistogramBase* histogram,
-                      scoped_ptr<HistogramSamples> samples);
+                      std::unique_ptr<HistogramSamples> samples);
 
   // Try to detect and fix count inconsistency of logged samples.
   void InspectLoggedSamplesInconsistency(
@@ -113,7 +113,7 @@ class BASE_EXPORT HistogramSnapshotManager {
 
   // Collection of histograms of which ownership has been passed to this
   // object. They will be deleted by FinishDeltas().
-  std::vector<scoped_ptr<const HistogramBase>> owned_histograms_;
+  std::vector<std::unique_ptr<const HistogramBase>> owned_histograms_;
 
   // Indicates if deltas are currently being prepared.
   bool preparing_deltas_;

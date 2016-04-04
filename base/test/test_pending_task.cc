@@ -52,9 +52,9 @@ void TestPendingTask::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("delay", delay.ToInternalValue());
 }
 
-scoped_ptr<base::trace_event::ConvertableToTraceFormat>
+std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 TestPendingTask::AsValue() const {
-  scoped_ptr<base::trace_event::TracedValue> state(
+  std::unique_ptr<base::trace_event::TracedValue> state(
       new base::trace_event::TracedValue());
   AsValueInto(state.get());
   return std::move(state);

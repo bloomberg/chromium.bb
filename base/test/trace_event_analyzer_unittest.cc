@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/trace_event_analyzer.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/trace_event_analyzer.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -76,8 +78,8 @@ TEST_F(TraceEventAnalyzerTest, NoEvents) {
   buffer_.Start();
   buffer_.Finish();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
 
   // Search for all events and verify that nothing is returned.
@@ -99,7 +101,7 @@ TEST_F(TraceEventAnalyzerTest, TraceEvent) {
   event.arg_numbers["int"] = static_cast<double>(int_num);
   event.arg_numbers["double"] = double_num;
   event.arg_strings["string"] = str;
-  event.arg_values["dict"] = make_scoped_ptr(new base::DictionaryValue());
+  event.arg_values["dict"] = WrapUnique(new base::DictionaryValue());
 
   ASSERT_TRUE(event.HasNumberArg("false"));
   ASSERT_TRUE(event.HasNumberArg("true"));
@@ -117,7 +119,7 @@ TEST_F(TraceEventAnalyzerTest, TraceEvent) {
   EXPECT_EQ(double_num, event.GetKnownArgAsDouble("double"));
   EXPECT_STREQ(str, event.GetKnownArgAsString("string").c_str());
 
-  scoped_ptr<base::Value> arg;
+  std::unique_ptr<base::Value> arg;
   EXPECT_TRUE(event.GetArgAsValue("dict", &arg));
   EXPECT_EQ(base::Value::TYPE_DICTIONARY, arg->GetType());
 }
@@ -235,8 +237,8 @@ TEST_F(TraceEventAnalyzerTest, BooleanOperators) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer);
   analyzer->SetIgnoreMetadataEvents(true);
 
@@ -326,8 +328,8 @@ TEST_F(TraceEventAnalyzerTest, ArithmeticOperators) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
 
   TraceEventVector found;
@@ -381,8 +383,8 @@ TEST_F(TraceEventAnalyzerTest, StringPattern) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
   analyzer->SetIgnoreMetadataEvents(true);
 
@@ -431,8 +433,8 @@ TEST_F(TraceEventAnalyzerTest, BeginEndDuration) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
   analyzer->AssociateBeginEndEvents();
 
@@ -473,8 +475,8 @@ TEST_F(TraceEventAnalyzerTest, CompleteDuration) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
   analyzer->AssociateBeginEndEvents();
 
@@ -505,8 +507,8 @@ TEST_F(TraceEventAnalyzerTest, BeginEndAssocations) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
   analyzer->AssociateBeginEndEvents();
 
@@ -528,8 +530,8 @@ TEST_F(TraceEventAnalyzerTest, MergeAssociatedEventArgs) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
   analyzer->AssociateBeginEndEvents();
 
@@ -561,8 +563,8 @@ TEST_F(TraceEventAnalyzerTest, AsyncBeginEndAssocations) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
   analyzer->AssociateAsyncBeginEndEvents();
 
@@ -593,8 +595,8 @@ TEST_F(TraceEventAnalyzerTest, AsyncBeginEndAssocationsWithSteps) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
   analyzer->AssociateAsyncBeginEndEvents();
 
@@ -646,8 +648,8 @@ TEST_F(TraceEventAnalyzerTest, CustomAssociations) {
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer>
-      analyzer(TraceAnalyzer::Create(output_.json_output));
+  std::unique_ptr<TraceAnalyzer> analyzer(
+      TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
 
   // begin, end, and match queries to find proper begin/end pairs.
@@ -920,14 +922,14 @@ TEST_F(TraceEventAnalyzerTest, ComplexArgument) {
 
   BeginTracing();
   {
-    scoped_ptr<base::trace_event::TracedValue> value(
+    std::unique_ptr<base::trace_event::TracedValue> value(
         new base::trace_event::TracedValue);
     value->SetString("property", "value");
     TRACE_EVENT1("cat", "name", "arg", std::move(value));
   }
   EndTracing();
 
-  scoped_ptr<TraceAnalyzer> analyzer(
+  std::unique_ptr<TraceAnalyzer> analyzer(
       TraceAnalyzer::Create(output_.json_output));
   ASSERT_TRUE(analyzer.get());
 
@@ -939,7 +941,7 @@ TEST_F(TraceEventAnalyzerTest, ComplexArgument) {
   EXPECT_EQ("name", events[0]->name);
   EXPECT_TRUE(events[0]->HasArg("arg"));
 
-  scoped_ptr<base::Value> arg;
+  std::unique_ptr<base::Value> arg;
   events[0]->GetArgAsValue("arg", &arg);
   base::DictionaryValue* arg_dict;
   EXPECT_TRUE(arg->GetAsDictionary(&arg_dict));

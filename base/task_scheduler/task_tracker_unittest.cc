@@ -4,12 +4,13 @@
 
 #include "base/task_scheduler/task_tracker.h"
 
+#include <memory>
 #include <queue>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_traits.h"
@@ -67,8 +68,8 @@ class TaskSchedulerTaskTrackerTest
   TaskSchedulerTaskTrackerTest() = default;
 
   // Creates a task with |shutdown_behavior|.
-  scoped_ptr<Task> CreateTask(TaskShutdownBehavior shutdown_behavior) {
-    return make_scoped_ptr(new Task(
+  std::unique_ptr<Task> CreateTask(TaskShutdownBehavior shutdown_behavior) {
+    return WrapUnique(new Task(
         FROM_HERE,
         Bind(&TaskSchedulerTaskTrackerTest::RunTaskCallback, Unretained(this)),
         TaskTraits().WithShutdownBehavior(shutdown_behavior)));
@@ -76,7 +77,7 @@ class TaskSchedulerTaskTrackerTest
 
   // Tries to post |task| via |tracker_|. If |tracker_| approves the operation,
   // |task| is added to |posted_tasks_|.
-  void PostTaskViaTracker(scoped_ptr<Task> task) {
+  void PostTaskViaTracker(std::unique_ptr<Task> task) {
     tracker_.PostTask(
         Bind(&TaskSchedulerTaskTrackerTest::PostTaskCallback, Unretained(this)),
         std::move(task));
@@ -118,16 +119,16 @@ class TaskSchedulerTaskTrackerTest
 
   TaskTracker tracker_;
   size_t num_tasks_executed_ = 0;
-  std::queue<scoped_ptr<Task>> posted_tasks_;
+  std::queue<std::unique_ptr<Task>> posted_tasks_;
 
  private:
-  void PostTaskCallback(scoped_ptr<Task> task) {
+  void PostTaskCallback(std::unique_ptr<Task> task) {
     posted_tasks_.push(std::move(task));
   }
 
   void RunTaskCallback() { ++num_tasks_executed_; }
 
-  scoped_ptr<ThreadCallingShutdown> thread_calling_shutdown_;
+  std::unique_ptr<ThreadCallingShutdown> thread_calling_shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerTaskTrackerTest);
 };
@@ -147,7 +148,7 @@ class TaskSchedulerTaskTrackerTest
 }  // namespace
 
 TEST_P(TaskSchedulerTaskTrackerTest, PostAndRunBeforeShutdown) {
-  scoped_ptr<Task> task_to_post(CreateTask(GetParam()));
+  std::unique_ptr<Task> task_to_post(CreateTask(GetParam()));
   const Task* task_to_post_raw = task_to_post.get();
 
   // Post the task.
@@ -169,7 +170,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, PostAndRunLongTaskBeforeShutdown) {
   // Post a task that will block until |event| is signaled.
   EXPECT_TRUE(posted_tasks_.empty());
   WaitableEvent event(false, false);
-  PostTaskViaTracker(make_scoped_ptr(
+  PostTaskViaTracker(WrapUnique(
       new Task(FROM_HERE, Bind(&WaitableEvent::Wait, Unretained(&event)),
                TaskTraits().WithShutdownBehavior(GetParam()))));
   EXPECT_EQ(1U, posted_tasks_.size());
@@ -199,7 +200,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, PostAndRunLongTaskBeforeShutdown) {
 }
 
 TEST_P(TaskSchedulerTaskTrackerTest, PostBeforeShutdownRunDuringShutdown) {
-  scoped_ptr<Task> task_to_post(CreateTask(GetParam()));
+  std::unique_ptr<Task> task_to_post(CreateTask(GetParam()));
   const Task* task_to_post_raw = task_to_post.get();
 
   // Post the task.
@@ -231,7 +232,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, PostBeforeShutdownRunDuringShutdown) {
 }
 
 TEST_P(TaskSchedulerTaskTrackerTest, PostBeforeShutdownRunAfterShutdown) {
-  scoped_ptr<Task> task_to_post(CreateTask(GetParam()));
+  std::unique_ptr<Task> task_to_post(CreateTask(GetParam()));
   const Task* task_to_post_raw = task_to_post.get();
 
   // Post the task.
@@ -267,7 +268,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, PostBeforeShutdownRunAfterShutdown) {
 TEST_P(TaskSchedulerTaskTrackerTest, PostAndRunDuringShutdown) {
   // Post a BLOCK_SHUTDOWN task just to block shutdown.
   PostTaskViaTracker(CreateTask(TaskShutdownBehavior::BLOCK_SHUTDOWN));
-  scoped_ptr<Task> block_shutdown_task = std::move(posted_tasks_.front());
+  std::unique_ptr<Task> block_shutdown_task = std::move(posted_tasks_.front());
   posted_tasks_.pop();
 
   // Call Shutdown() asynchronously.

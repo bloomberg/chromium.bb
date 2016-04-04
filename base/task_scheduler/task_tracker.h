@@ -5,10 +5,11 @@
 #ifndef BASE_TASK_SCHEDULER_TASK_TRACKER_H_
 #define BASE_TASK_SCHEDULER_TASK_TRACKER_H_
 
+#include <memory>
+
 #include "base/base_export.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task_scheduler/scheduler_lock.h"
@@ -37,8 +38,8 @@ class BASE_EXPORT TaskTracker {
   // Posts |task| by calling |post_task_callback| unless the current shutdown
   // state prevents that. A task forwarded to |post_task_callback| must be
   // handed back to this instance's RunTask() when it is to be executed.
-  void PostTask(const Callback<void(scoped_ptr<Task>)>& post_task_callback,
-                scoped_ptr<Task> task);
+  void PostTask(const Callback<void(std::unique_ptr<Task>)>& post_task_callback,
+                std::unique_ptr<Task> task);
 
   // Runs |task| unless the current shutdown state prevents that. |task| must
   // have been successfully posted via PostTask() first.
@@ -75,7 +76,7 @@ class BASE_EXPORT TaskTracker {
 
   // Condition variable signaled when |num_tasks_blocking_shutdown_| reaches
   // zero while shutdown is in progress. Null if shutdown isn't in progress.
-  scoped_ptr<ConditionVariable> shutdown_cv_;
+  std::unique_ptr<ConditionVariable> shutdown_cv_;
 
   // Number of tasks blocking shutdown.
   size_t num_tasks_blocking_shutdown_ = 0;

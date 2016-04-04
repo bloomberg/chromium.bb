@@ -7,7 +7,8 @@
 
 #include <unknwn.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/win/iunknown_impl.h"
 
 namespace base {
@@ -41,7 +42,7 @@ class BASE_EXPORT EnumVariant
  private:
   ~EnumVariant() override;
 
-  scoped_ptr<VARIANT[]> items_;
+  std::unique_ptr<VARIANT[]> items_;
   unsigned long count_;
   unsigned long current_index_;
 };

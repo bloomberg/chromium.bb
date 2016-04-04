@@ -192,7 +192,7 @@ class ReadHelper : public FileHelper {
   }
 
  private:
-  scoped_ptr<char[]> buffer_;
+  std::unique_ptr<char[]> buffer_;
   int bytes_to_read_;
   int bytes_read_;
   DISALLOW_COPY_AND_ASSIGN(ReadHelper);
@@ -222,7 +222,7 @@ class WriteHelper : public FileHelper {
   }
 
  private:
-  scoped_ptr<char[]> buffer_;
+  std::unique_ptr<char[]> buffer_;
   int bytes_to_write_;
   int bytes_written_;
   DISALLOW_COPY_AND_ASSIGN(WriteHelper);

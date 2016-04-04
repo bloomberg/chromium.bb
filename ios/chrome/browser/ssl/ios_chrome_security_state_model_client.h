@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_SSL_IOS_CHROME_SECURITY_STATE_MODEL_CLIENT_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/security_state/security_state_model.h"
 #include "components/security_state/security_state_model_client.h"
 #include "ios/web/public/web_state/web_state_user_data.h"

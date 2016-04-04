@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,7 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread.h"
@@ -94,7 +94,7 @@ class SequenceCheckerTest : public testing::Test {
   }
 
   void PostDeleteToOtherThread(
-      scoped_ptr<SequenceCheckedObject> sequence_checked_object) {
+      std::unique_ptr<SequenceCheckedObject> sequence_checked_object) {
     other_thread()->message_loop()->DeleteSoon(
         FROM_HERE,
         sequence_checked_object.release());
@@ -115,11 +115,11 @@ class SequenceCheckerTest : public testing::Test {
  private:
   MessageLoop message_loop_;  // Needed by SequencedWorkerPool to function.
   base::Thread other_thread_;
-  scoped_ptr<SequencedWorkerPoolOwner> pool_owner_;
+  std::unique_ptr<SequencedWorkerPoolOwner> pool_owner_;
 };
 
 TEST_F(SequenceCheckerTest, CallsAllowedOnSameThread) {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   // Verify that DoStuff doesn't assert.
@@ -130,7 +130,7 @@ TEST_F(SequenceCheckerTest, CallsAllowedOnSameThread) {
 }
 
 TEST_F(SequenceCheckerTest, DestructorAllowedOnDifferentThread) {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   // Verify the destructor doesn't assert when called on a different thread.
@@ -139,7 +139,7 @@ TEST_F(SequenceCheckerTest, DestructorAllowedOnDifferentThread) {
 }
 
 TEST_F(SequenceCheckerTest, DetachFromSequence) {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   // Verify that DoStuff doesn't assert when called on a different thread after
@@ -151,7 +151,7 @@ TEST_F(SequenceCheckerTest, DetachFromSequence) {
 }
 
 TEST_F(SequenceCheckerTest, SameSequenceTokenValid) {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   sequence_checked_object->DetachFromSequence();
@@ -166,7 +166,7 @@ TEST_F(SequenceCheckerTest, SameSequenceTokenValid) {
 }
 
 TEST_F(SequenceCheckerTest, DetachSequenceTokenValid) {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   sequence_checked_object->DetachFromSequence();
@@ -186,7 +186,7 @@ TEST_F(SequenceCheckerTest, DetachSequenceTokenValid) {
 #if GTEST_HAS_DEATH_TEST || !ENABLE_SEQUENCE_CHECKER
 
 void SequenceCheckerTest::MethodOnDifferentThreadDeathTest() {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   // DoStuff should assert in debug builds only when called on a
@@ -210,7 +210,7 @@ TEST_F(SequenceCheckerTest, MethodAllowedOnDifferentThreadDeathTestInRelease) {
 #endif  // ENABLE_SEQUENCE_CHECKER
 
 void SequenceCheckerTest::DetachThenCallFromDifferentThreadDeathTest() {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   // DoStuff doesn't assert when called on a different thread
@@ -239,7 +239,7 @@ TEST_F(SequenceCheckerTest, DetachFromThreadDeathTestInRelease) {
 #endif  // ENABLE_SEQUENCE_CHECKER
 
 void SequenceCheckerTest::DifferentSequenceTokensDeathTest() {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   sequence_checked_object->DetachFromSequence();
@@ -268,7 +268,7 @@ TEST_F(SequenceCheckerTest, DifferentSequenceTokensDeathTestInRelease) {
 #endif  // ENABLE_SEQUENCE_CHECKER
 
 void SequenceCheckerTest::WorkerPoolAndSimpleThreadDeathTest() {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   sequence_checked_object->DetachFromSequence();
@@ -295,7 +295,7 @@ TEST_F(SequenceCheckerTest, WorkerPoolAndSimpleThreadDeathTestInRelease) {
 #endif  // ENABLE_SEQUENCE_CHECKER
 
 void SequenceCheckerTest::TwoDifferentWorkerPoolsDeathTest() {
-  scoped_ptr<SequenceCheckedObject> sequence_checked_object(
+  std::unique_ptr<SequenceCheckedObject> sequence_checked_object(
       new SequenceCheckedObject);
 
   sequence_checked_object->DetachFromSequence();

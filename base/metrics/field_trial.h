@@ -514,7 +514,7 @@ class BASE_EXPORT FieldTrialList {
 
   // Entropy provider to be used for one-time randomized field trials. If NULL,
   // one-time randomization is not supported.
-  scoped_ptr<const FieldTrial::EntropyProvider> entropy_provider_;
+  std::unique_ptr<const FieldTrial::EntropyProvider> entropy_provider_;
 
   // List of observers to be notified when a group is selected for a FieldTrial.
   scoped_refptr<ObserverListThreadSafe<Observer> > observer_list_;

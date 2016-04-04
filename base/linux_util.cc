@@ -13,11 +13,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
@@ -155,7 +155,7 @@ pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
   }
   closedir(task);
 
-  scoped_ptr<char[]> syscall_data(new char[expected_data.length()]);
+  std::unique_ptr<char[]> syscall_data(new char[expected_data.length()]);
   for (std::vector<pid_t>::const_iterator
        i = tids.begin(); i != tids.end(); ++i) {
     const pid_t current_tid = *i;

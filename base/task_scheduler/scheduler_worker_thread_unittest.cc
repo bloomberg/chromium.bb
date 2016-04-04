@@ -6,12 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence.h"
@@ -98,7 +99,7 @@ class TaskSchedulerWorkerThreadTest : public testing::Test {
     return num_get_work_callback_;
   }
 
-  scoped_ptr<SchedulerWorkerThread> worker_thread_;
+  std::unique_ptr<SchedulerWorkerThread> worker_thread_;
 
  private:
   void MainEntryCallback() {
@@ -130,7 +131,7 @@ class TaskSchedulerWorkerThreadTest : public testing::Test {
     scoped_refptr<Sequence> sequence(new Sequence);
     task_tracker_.PostTask(
         Bind(IgnoreResult(&Sequence::PushTask), Unretained(sequence.get())),
-        make_scoped_ptr(new Task(
+        WrapUnique(new Task(
             FROM_HERE, Bind(&TaskSchedulerWorkerThreadTest::RunTaskCallback,
                             Unretained(this)),
             TaskTraits())));
@@ -167,7 +168,7 @@ class TaskSchedulerWorkerThreadTest : public testing::Test {
   size_t num_main_entry_callback_ = 0;
 
   // Condition variable signaled when |num_main_entry_callback_| is incremented.
-  scoped_ptr<ConditionVariable> num_main_entry_callback_cv_;
+  std::unique_ptr<ConditionVariable> num_main_entry_callback_cv_;
 
   // Number of Sequences that should be created by GetWorkCallback(). When this
   // is 0, GetWorkCallback() returns nullptr.
@@ -177,7 +178,7 @@ class TaskSchedulerWorkerThreadTest : public testing::Test {
   size_t num_get_work_callback_ = 0;
 
   // Condition variable signaled when |num_get_work_callback_| is incremented.
-  scoped_ptr<ConditionVariable> num_get_work_callback_cv_;
+  std::unique_ptr<ConditionVariable> num_get_work_callback_cv_;
 
   // Sequences created by GetWorkCallback().
   std::vector<scoped_refptr<Sequence>> created_sequences_;
@@ -186,7 +187,7 @@ class TaskSchedulerWorkerThreadTest : public testing::Test {
   std::vector<scoped_refptr<Sequence>> run_sequences_;
 
   // Condition variable signaled when a Sequence is added to |run_sequences_|.
-  scoped_ptr<ConditionVariable> run_sequences_cv_;
+  std::unique_ptr<ConditionVariable> run_sequences_cv_;
 
   // Number of times that RunTaskCallback() has been called.
   size_t num_run_tasks_ = 0;

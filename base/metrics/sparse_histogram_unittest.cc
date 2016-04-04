@@ -4,9 +4,9 @@
 
 #include "base/metrics/sparse_histogram.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/persistent_histogram_allocator.h"
@@ -73,14 +73,14 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
     PersistentHistogramAllocator::ReleaseGlobalAllocatorForTesting();
   }
 
-  scoped_ptr<SparseHistogram> NewSparseHistogram(const std::string& name) {
-    return scoped_ptr<SparseHistogram>(new SparseHistogram(name));
+  std::unique_ptr<SparseHistogram> NewSparseHistogram(const std::string& name) {
+    return std::unique_ptr<SparseHistogram>(new SparseHistogram(name));
   }
 
   const bool use_persistent_histogram_allocator_;
 
   StatisticsRecorder* statistics_recorder_;
-  scoped_ptr<char[]> allocator_memory_;
+  std::unique_ptr<char[]> allocator_memory_;
   PersistentMemoryAllocator* allocator_ = nullptr;
 
  private:
@@ -94,57 +94,57 @@ INSTANTIATE_TEST_CASE_P(HeapAndPersistent,
 
 
 TEST_P(SparseHistogramTest, BasicTest) {
-  scoped_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
-  scoped_ptr<HistogramSamples> snapshot(histogram->SnapshotSamples());
+  std::unique_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
+  std::unique_ptr<HistogramSamples> snapshot(histogram->SnapshotSamples());
   EXPECT_EQ(0, snapshot->TotalCount());
   EXPECT_EQ(0, snapshot->sum());
 
   histogram->Add(100);
-  scoped_ptr<HistogramSamples> snapshot1(histogram->SnapshotSamples());
+  std::unique_ptr<HistogramSamples> snapshot1(histogram->SnapshotSamples());
   EXPECT_EQ(1, snapshot1->TotalCount());
   EXPECT_EQ(1, snapshot1->GetCount(100));
 
   histogram->Add(100);
   histogram->Add(101);
-  scoped_ptr<HistogramSamples> snapshot2(histogram->SnapshotSamples());
+  std::unique_ptr<HistogramSamples> snapshot2(histogram->SnapshotSamples());
   EXPECT_EQ(3, snapshot2->TotalCount());
   EXPECT_EQ(2, snapshot2->GetCount(100));
   EXPECT_EQ(1, snapshot2->GetCount(101));
 }
 
 TEST_P(SparseHistogramTest, BasicTestAddCount) {
-  scoped_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
-  scoped_ptr<HistogramSamples> snapshot(histogram->SnapshotSamples());
+  std::unique_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
+  std::unique_ptr<HistogramSamples> snapshot(histogram->SnapshotSamples());
   EXPECT_EQ(0, snapshot->TotalCount());
   EXPECT_EQ(0, snapshot->sum());
 
   histogram->AddCount(100, 15);
-  scoped_ptr<HistogramSamples> snapshot1(histogram->SnapshotSamples());
+  std::unique_ptr<HistogramSamples> snapshot1(histogram->SnapshotSamples());
   EXPECT_EQ(15, snapshot1->TotalCount());
   EXPECT_EQ(15, snapshot1->GetCount(100));
 
   histogram->AddCount(100, 15);
   histogram->AddCount(101, 25);
-  scoped_ptr<HistogramSamples> snapshot2(histogram->SnapshotSamples());
+  std::unique_ptr<HistogramSamples> snapshot2(histogram->SnapshotSamples());
   EXPECT_EQ(55, snapshot2->TotalCount());
   EXPECT_EQ(30, snapshot2->GetCount(100));
   EXPECT_EQ(25, snapshot2->GetCount(101));
 }
 
 TEST_P(SparseHistogramTest, AddCount_LargeValuesDontOverflow) {
-  scoped_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
-  scoped_ptr<HistogramSamples> snapshot(histogram->SnapshotSamples());
+  std::unique_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
+  std::unique_ptr<HistogramSamples> snapshot(histogram->SnapshotSamples());
   EXPECT_EQ(0, snapshot->TotalCount());
   EXPECT_EQ(0, snapshot->sum());
 
   histogram->AddCount(1000000000, 15);
-  scoped_ptr<HistogramSamples> snapshot1(histogram->SnapshotSamples());
+  std::unique_ptr<HistogramSamples> snapshot1(histogram->SnapshotSamples());
   EXPECT_EQ(15, snapshot1->TotalCount());
   EXPECT_EQ(15, snapshot1->GetCount(1000000000));
 
   histogram->AddCount(1000000000, 15);
   histogram->AddCount(1010000000, 25);
-  scoped_ptr<HistogramSamples> snapshot2(histogram->SnapshotSamples());
+  std::unique_ptr<HistogramSamples> snapshot2(histogram->SnapshotSamples());
   EXPECT_EQ(55, snapshot2->TotalCount());
   EXPECT_EQ(30, snapshot2->GetCount(1000000000));
   EXPECT_EQ(25, snapshot2->GetCount(1010000000));
@@ -170,7 +170,8 @@ TEST_P(SparseHistogramTest, MacroBasicTest) {
                                                : 0),
       sparse_histogram->flags());
 
-  scoped_ptr<HistogramSamples> samples = sparse_histogram->SnapshotSamples();
+  std::unique_ptr<HistogramSamples> samples =
+      sparse_histogram->SnapshotSamples();
   EXPECT_EQ(3, samples->TotalCount());
   EXPECT_EQ(2, samples->GetCount(100));
   EXPECT_EQ(1, samples->GetCount(200));
@@ -195,7 +196,7 @@ TEST_P(SparseHistogramTest, MacroInLoopTest) {
 }
 
 TEST_P(SparseHistogramTest, Serialize) {
-  scoped_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
+  std::unique_ptr<SparseHistogram> histogram(NewSparseHistogram("Sparse"));
   histogram->SetFlags(HistogramBase::kIPCSerializationSourceFlag);
 
   Pickle pickle;

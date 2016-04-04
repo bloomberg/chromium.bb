@@ -6,11 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -233,12 +234,12 @@ class MemoryDumpManagerTest : public testing::Test {
   }
 
   const MemoryDumpProvider::Options kDefaultOptions;
-  scoped_ptr<MemoryDumpManager> mdm_;
-  scoped_ptr<MemoryDumpManagerDelegateForTesting> delegate_;
+  std::unique_ptr<MemoryDumpManager> mdm_;
+  std::unique_ptr<MemoryDumpManagerDelegateForTesting> delegate_;
   bool last_callback_success_;
 
  private:
-  scoped_ptr<MessageLoop> message_loop_;
+  std::unique_ptr<MessageLoop> message_loop_;
 
   // We want our singleton torn down after each test.
   ShadowingAtExitManager at_exit_manager_;
@@ -445,18 +446,18 @@ TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
   const uint32_t kNumInitialThreads = 8;
 
-  std::vector<scoped_ptr<Thread>> threads;
-  std::vector<scoped_ptr<MockMemoryDumpProvider>> mdps;
+  std::vector<std::unique_ptr<Thread>> threads;
+  std::vector<std::unique_ptr<MockMemoryDumpProvider>> mdps;
 
   // Create the threads and setup the expectations. Given that at each iteration
   // we will pop out one thread/MemoryDumpProvider, each MDP is supposed to be
   // invoked a number of times equal to its index.
   for (uint32_t i = kNumInitialThreads; i > 0; --i) {
-    threads.push_back(make_scoped_ptr(new Thread("test thread")));
+    threads.push_back(WrapUnique(new Thread("test thread")));
     auto thread = threads.back().get();
     thread->Start();
     scoped_refptr<SingleThreadTaskRunner> task_runner = thread->task_runner();
-    mdps.push_back(make_scoped_ptr(new MockMemoryDumpProvider()));
+    mdps.push_back(WrapUnique(new MockMemoryDumpProvider()));
     auto mdp = mdps.back().get();
     RegisterDumpProvider(mdp, task_runner, kDefaultOptions);
     EXPECT_CALL(*mdp, OnMemoryDump(_, _))
@@ -650,13 +651,13 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperWhileDumping) {
 // dumping from a different thread than the dumping thread.
 TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
-  std::vector<scoped_ptr<TestIOThread>> threads;
-  std::vector<scoped_ptr<MockMemoryDumpProvider>> mdps;
+  std::vector<std::unique_ptr<TestIOThread>> threads;
+  std::vector<std::unique_ptr<MockMemoryDumpProvider>> mdps;
 
   for (int i = 0; i < 2; i++) {
     threads.push_back(
-        make_scoped_ptr(new TestIOThread(TestIOThread::kAutoStart)));
-    mdps.push_back(make_scoped_ptr(new MockMemoryDumpProvider()));
+        WrapUnique(new TestIOThread(TestIOThread::kAutoStart)));
+    mdps.push_back(WrapUnique(new MockMemoryDumpProvider()));
     RegisterDumpProvider(mdps.back().get(), threads.back()->task_runner(),
                          kDefaultOptions);
   }
@@ -665,7 +666,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
 
   // When OnMemoryDump is called on either of the dump providers, it will
   // unregister the other one.
-  for (const scoped_ptr<MockMemoryDumpProvider>& mdp : mdps) {
+  for (const std::unique_ptr<MockMemoryDumpProvider>& mdp : mdps) {
     int other_idx = (mdps.front() == mdp);
     TestIOThread* other_thread = threads[other_idx].get();
     MockMemoryDumpProvider* other_mdp = mdps[other_idx].get();
@@ -700,13 +701,13 @@ TEST_F(MemoryDumpManagerTest, UnregisterDumperFromThreadWhileDumping) {
 // its dump provider should be skipped but the dump itself should succeed.
 TEST_F(MemoryDumpManagerTest, TearDownThreadWhileDumping) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
-  std::vector<scoped_ptr<TestIOThread>> threads;
-  std::vector<scoped_ptr<MockMemoryDumpProvider>> mdps;
+  std::vector<std::unique_ptr<TestIOThread>> threads;
+  std::vector<std::unique_ptr<MockMemoryDumpProvider>> mdps;
 
   for (int i = 0; i < 2; i++) {
     threads.push_back(
-        make_scoped_ptr(new TestIOThread(TestIOThread::kAutoStart)));
-    mdps.push_back(make_scoped_ptr(new MockMemoryDumpProvider()));
+        WrapUnique(new TestIOThread(TestIOThread::kAutoStart)));
+    mdps.push_back(WrapUnique(new MockMemoryDumpProvider()));
     RegisterDumpProvider(mdps.back().get(), threads.back()->task_runner(),
                          kDefaultOptions);
   }
@@ -715,7 +716,7 @@ TEST_F(MemoryDumpManagerTest, TearDownThreadWhileDumping) {
 
   // When OnMemoryDump is called on either of the dump providers, it will
   // tear down the thread of the other one.
-  for (const scoped_ptr<MockMemoryDumpProvider>& mdp : mdps) {
+  for (const std::unique_ptr<MockMemoryDumpProvider>& mdp : mdps) {
     int other_idx = (mdps.front() == mdp);
     TestIOThread* other_thread = threads[other_idx].get();
     auto on_dump = [other_thread, &on_memory_dump_call_count](
@@ -888,7 +889,7 @@ TEST_F(MemoryDumpManagerTest, DisableTracingWhileDumping) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
 
   // Register a bound dump provider.
-  scoped_ptr<Thread> mdp_thread(new Thread("test thread"));
+  std::unique_ptr<Thread> mdp_thread(new Thread("test thread"));
   mdp_thread->Start();
   MockMemoryDumpProvider mdp_with_affinity;
   RegisterDumpProvider(&mdp_with_affinity, mdp_thread->task_runner(),
@@ -995,7 +996,7 @@ TEST_F(MemoryDumpManagerTest, DumpOnBehalfOfOtherProcess) {
   buffer.Finish();
 
   // Analyze the JSON.
-  scoped_ptr<trace_analyzer::TraceAnalyzer> analyzer = make_scoped_ptr(
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer = WrapUnique(
       trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
   trace_analyzer::TraceEventVector events;
   analyzer->FindEvents(Query::EventPhaseIs(TRACE_EVENT_PHASE_MEMORY_DUMP),
@@ -1016,9 +1017,9 @@ TEST_F(MemoryDumpManagerTest, UnregisterAndDeleteDumpProviderSoon) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
   static const int kNumProviders = 3;
   int dtor_count = 0;
-  std::vector<scoped_ptr<MemoryDumpProvider>> mdps;
+  std::vector<std::unique_ptr<MemoryDumpProvider>> mdps;
   for (int i = 0; i < kNumProviders; ++i) {
-    scoped_ptr<MockMemoryDumpProvider> mdp(new MockMemoryDumpProvider);
+    std::unique_ptr<MockMemoryDumpProvider> mdp(new MockMemoryDumpProvider);
     mdp->enable_mock_destructor = true;
     EXPECT_CALL(*mdp, Destructor())
         .WillOnce(Invoke([&dtor_count]() { dtor_count++; }));
@@ -1041,7 +1042,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterAndDeleteDumpProviderSoon) {
 // happen on the same thread (the MemoryDumpManager utility thread).
 TEST_F(MemoryDumpManagerTest, UnregisterAndDeleteDumpProviderSoonDuringDump) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
-  scoped_ptr<MockMemoryDumpProvider> mdp(new MockMemoryDumpProvider);
+  std::unique_ptr<MockMemoryDumpProvider> mdp(new MockMemoryDumpProvider);
   mdp->enable_mock_destructor = true;
   RegisterDumpProvider(mdp.get(), nullptr, kDefaultOptions);
 
@@ -1055,7 +1056,7 @@ TEST_F(MemoryDumpManagerTest, UnregisterAndDeleteDumpProviderSoonDuringDump) {
         base::Bind(
             &MemoryDumpManager::UnregisterAndDeleteDumpProviderSoon,
             base::Unretained(MemoryDumpManager::GetInstance()),
-            base::Passed(scoped_ptr<MemoryDumpProvider>(std::move(mdp)))));
+            base::Passed(std::unique_ptr<MemoryDumpProvider>(std::move(mdp)))));
     thread_for_unregistration.Stop();
     return true;
   };

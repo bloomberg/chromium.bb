@@ -6,13 +6,13 @@
 #define BASE_FEATURE_LIST_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 
@@ -159,7 +159,7 @@ class BASE_EXPORT FeatureList {
 
   // Registers the given |instance| to be the singleton feature list for this
   // process. This should only be called once and |instance| must not be null.
-  static void SetInstance(scoped_ptr<FeatureList> instance);
+  static void SetInstance(std::unique_ptr<FeatureList> instance);
 
   // Clears the previously-registered singleton instance for tests.
   static void ClearInstanceForTesting();

@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/values.h"
+
 #include <stddef.h>
 
 #include <limits>
+#include <memory>
 #include <utility>
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -36,11 +38,11 @@ TEST(ValuesTest, Basic) {
   ASSERT_FALSE(
     settings.GetList("global.toolbar.bookmarks", &toolbar_bookmarks));
 
-  scoped_ptr<ListValue> new_toolbar_bookmarks(new ListValue);
+  std::unique_ptr<ListValue> new_toolbar_bookmarks(new ListValue);
   settings.Set("global.toolbar.bookmarks", std::move(new_toolbar_bookmarks));
   ASSERT_TRUE(settings.GetList("global.toolbar.bookmarks", &toolbar_bookmarks));
 
-  scoped_ptr<DictionaryValue> new_bookmark(new DictionaryValue);
+  std::unique_ptr<DictionaryValue> new_bookmark(new DictionaryValue);
   new_bookmark->SetString("name", "Froogle");
   new_bookmark->SetString("url", "http://froogle.com");
   toolbar_bookmarks->Append(std::move(new_bookmark));
@@ -59,11 +61,11 @@ TEST(ValuesTest, Basic) {
 }
 
 TEST(ValuesTest, List) {
-  scoped_ptr<ListValue> mixed_list(new ListValue());
-  mixed_list->Set(0, make_scoped_ptr(new FundamentalValue(true)));
-  mixed_list->Set(1, make_scoped_ptr(new FundamentalValue(42)));
-  mixed_list->Set(2, make_scoped_ptr(new FundamentalValue(88.8)));
-  mixed_list->Set(3, make_scoped_ptr(new StringValue("foo")));
+  std::unique_ptr<ListValue> mixed_list(new ListValue());
+  mixed_list->Set(0, WrapUnique(new FundamentalValue(true)));
+  mixed_list->Set(1, WrapUnique(new FundamentalValue(42)));
+  mixed_list->Set(2, WrapUnique(new FundamentalValue(88.8)));
+  mixed_list->Set(3, WrapUnique(new StringValue("foo")));
   ASSERT_EQ(4u, mixed_list->GetSize());
 
   Value *value = NULL;
@@ -109,13 +111,13 @@ TEST(ValuesTest, List) {
 
 TEST(ValuesTest, BinaryValue) {
   // Default constructor creates a BinaryValue with a null buffer and size 0.
-  scoped_ptr<BinaryValue> binary(new BinaryValue());
+  std::unique_ptr<BinaryValue> binary(new BinaryValue());
   ASSERT_TRUE(binary.get());
   ASSERT_EQ(NULL, binary->GetBuffer());
   ASSERT_EQ(0U, binary->GetSize());
 
   // Test the common case of a non-empty buffer
-  scoped_ptr<char[]> buffer(new char[15]);
+  std::unique_ptr<char[]> buffer(new char[15]);
   char* original_buffer = buffer.get();
   binary.reset(new BinaryValue(std::move(buffer), 15));
   ASSERT_TRUE(binary.get());
@@ -141,10 +143,10 @@ TEST(ValuesTest, BinaryValue) {
 
 TEST(ValuesTest, StringValue) {
   // Test overloaded StringValue constructor.
-  scoped_ptr<Value> narrow_value(new StringValue("narrow"));
+  std::unique_ptr<Value> narrow_value(new StringValue("narrow"));
   ASSERT_TRUE(narrow_value.get());
   ASSERT_TRUE(narrow_value->IsType(Value::TYPE_STRING));
-  scoped_ptr<Value> utf16_value(new StringValue(ASCIIToUTF16("utf16")));
+  std::unique_ptr<Value> utf16_value(new StringValue(ASCIIToUTF16("utf16")));
   ASSERT_TRUE(utf16_value.get());
   ASSERT_TRUE(utf16_value->IsType(Value::TYPE_STRING));
 
@@ -198,14 +200,14 @@ TEST(ValuesTest, ListDeletion) {
 
   {
     ListValue list;
-    list.Append(make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
   }
   EXPECT_TRUE(deletion_flag);
 
   {
     ListValue list;
-    list.Append(make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     list.Clear();
     EXPECT_TRUE(deletion_flag);
@@ -213,7 +215,7 @@ TEST(ValuesTest, ListDeletion) {
 
   {
     ListValue list;
-    list.Append(make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(list.Set(0, Value::CreateNullValue()));
     EXPECT_TRUE(deletion_flag);
@@ -222,11 +224,11 @@ TEST(ValuesTest, ListDeletion) {
 
 TEST(ValuesTest, ListRemoval) {
   bool deletion_flag = true;
-  scoped_ptr<Value> removed_item;
+  std::unique_ptr<Value> removed_item;
 
   {
     ListValue list;
-    list.Append(make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     EXPECT_EQ(1U, list.GetSize());
     EXPECT_FALSE(list.Remove(std::numeric_limits<size_t>::max(),
@@ -242,7 +244,7 @@ TEST(ValuesTest, ListRemoval) {
 
   {
     ListValue list;
-    list.Append(make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    list.Append(WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(list.Remove(0, NULL));
     EXPECT_TRUE(deletion_flag);
@@ -251,7 +253,8 @@ TEST(ValuesTest, ListRemoval) {
 
   {
     ListValue list;
-    scoped_ptr<DeletionTestValue> value(new DeletionTestValue(&deletion_flag));
+    std::unique_ptr<DeletionTestValue> value(
+        new DeletionTestValue(&deletion_flag));
     DeletionTestValue* original_value = value.get();
     list.Append(std::move(value));
     EXPECT_FALSE(deletion_flag);
@@ -269,14 +272,14 @@ TEST(ValuesTest, DictionaryDeletion) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
   }
   EXPECT_TRUE(deletion_flag);
 
   {
     DictionaryValue dict;
-    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     dict.Clear();
     EXPECT_TRUE(deletion_flag);
@@ -284,7 +287,7 @@ TEST(ValuesTest, DictionaryDeletion) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     dict.Set(key, Value::CreateNullValue());
     EXPECT_TRUE(deletion_flag);
@@ -294,11 +297,11 @@ TEST(ValuesTest, DictionaryDeletion) {
 TEST(ValuesTest, DictionaryRemoval) {
   std::string key = "test";
   bool deletion_flag = true;
-  scoped_ptr<Value> removed_item;
+  std::unique_ptr<Value> removed_item;
 
   {
     DictionaryValue dict;
-    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(dict.HasKey(key));
     EXPECT_FALSE(dict.Remove("absent key", &removed_item));
@@ -312,7 +315,7 @@ TEST(ValuesTest, DictionaryRemoval) {
 
   {
     DictionaryValue dict;
-    dict.Set(key, make_scoped_ptr(new DeletionTestValue(&deletion_flag)));
+    dict.Set(key, WrapUnique(new DeletionTestValue(&deletion_flag)));
     EXPECT_FALSE(deletion_flag);
     EXPECT_TRUE(dict.HasKey(key));
     EXPECT_TRUE(dict.Remove(key, NULL));
@@ -372,7 +375,7 @@ TEST(ValuesTest, DictionaryRemovePath) {
   dict.SetInteger("a.long.way.down", 1);
   dict.SetBoolean("a.long.key.path", true);
 
-  scoped_ptr<Value> removed_item;
+  std::unique_ptr<Value> removed_item;
   EXPECT_TRUE(dict.RemovePath("a.long.way.down", &removed_item));
   ASSERT_TRUE(removed_item);
   EXPECT_TRUE(removed_item->IsType(base::Value::TYPE_INTEGER));
@@ -394,49 +397,52 @@ TEST(ValuesTest, DictionaryRemovePath) {
 
 TEST(ValuesTest, DeepCopy) {
   DictionaryValue original_dict;
-  scoped_ptr<Value> scoped_null = Value::CreateNullValue();
+  std::unique_ptr<Value> scoped_null = Value::CreateNullValue();
   Value* original_null = scoped_null.get();
   original_dict.Set("null", std::move(scoped_null));
-  scoped_ptr<FundamentalValue> scoped_bool(new FundamentalValue(true));
+  std::unique_ptr<FundamentalValue> scoped_bool(new FundamentalValue(true));
   FundamentalValue* original_bool = scoped_bool.get();
   original_dict.Set("bool", std::move(scoped_bool));
-  scoped_ptr<FundamentalValue> scoped_int(new FundamentalValue(42));
+  std::unique_ptr<FundamentalValue> scoped_int(new FundamentalValue(42));
   FundamentalValue* original_int = scoped_int.get();
   original_dict.Set("int", std::move(scoped_int));
-  scoped_ptr<FundamentalValue> scoped_double(new FundamentalValue(3.14));
+  std::unique_ptr<FundamentalValue> scoped_double(new FundamentalValue(3.14));
   FundamentalValue* original_double = scoped_double.get();
   original_dict.Set("double", std::move(scoped_double));
-  scoped_ptr<StringValue> scoped_string(new StringValue("hello"));
+  std::unique_ptr<StringValue> scoped_string(new StringValue("hello"));
   StringValue* original_string = scoped_string.get();
   original_dict.Set("string", std::move(scoped_string));
-  scoped_ptr<StringValue> scoped_string16(
+  std::unique_ptr<StringValue> scoped_string16(
       new StringValue(ASCIIToUTF16("hello16")));
   StringValue* original_string16 = scoped_string16.get();
   original_dict.Set("string16", std::move(scoped_string16));
 
-  scoped_ptr<char[]> original_buffer(new char[42]);
+  std::unique_ptr<char[]> original_buffer(new char[42]);
   memset(original_buffer.get(), '!', 42);
-  scoped_ptr<BinaryValue> scoped_binary(
+  std::unique_ptr<BinaryValue> scoped_binary(
       new BinaryValue(std::move(original_buffer), 42));
   BinaryValue* original_binary = scoped_binary.get();
   original_dict.Set("binary", std::move(scoped_binary));
 
-  scoped_ptr<ListValue> scoped_list(new ListValue());
+  std::unique_ptr<ListValue> scoped_list(new ListValue());
   Value* original_list = scoped_list.get();
-  scoped_ptr<FundamentalValue> scoped_list_element_0(new FundamentalValue(0));
+  std::unique_ptr<FundamentalValue> scoped_list_element_0(
+      new FundamentalValue(0));
   Value* original_list_element_0 = scoped_list_element_0.get();
   scoped_list->Append(std::move(scoped_list_element_0));
-  scoped_ptr<FundamentalValue> scoped_list_element_1(new FundamentalValue(1));
+  std::unique_ptr<FundamentalValue> scoped_list_element_1(
+      new FundamentalValue(1));
   Value* original_list_element_1 = scoped_list_element_1.get();
   scoped_list->Append(std::move(scoped_list_element_1));
   original_dict.Set("list", std::move(scoped_list));
 
-  scoped_ptr<DictionaryValue> scoped_nested_dictionary(new DictionaryValue());
+  std::unique_ptr<DictionaryValue> scoped_nested_dictionary(
+      new DictionaryValue());
   Value* original_nested_dictionary = scoped_nested_dictionary.get();
   scoped_nested_dictionary->SetString("key", "value");
   original_dict.Set("dictionary", std::move(scoped_nested_dictionary));
 
-  scoped_ptr<DictionaryValue> copy_dict = original_dict.CreateDeepCopy();
+  std::unique_ptr<DictionaryValue> copy_dict = original_dict.CreateDeepCopy();
   ASSERT_TRUE(copy_dict.get());
   ASSERT_NE(copy_dict.get(), &original_dict);
 
@@ -546,8 +552,8 @@ TEST(ValuesTest, DeepCopy) {
 }
 
 TEST(ValuesTest, Equals) {
-  scoped_ptr<Value> null1(Value::CreateNullValue());
-  scoped_ptr<Value> null2(Value::CreateNullValue());
+  std::unique_ptr<Value> null1(Value::CreateNullValue());
+  std::unique_ptr<Value> null2(Value::CreateNullValue());
   EXPECT_NE(null1.get(), null2.get());
   EXPECT_TRUE(null1->Equals(null2.get()));
 
@@ -562,21 +568,21 @@ TEST(ValuesTest, Equals) {
   dv.SetString("d2", ASCIIToUTF16("http://google.com"));
   dv.Set("e", Value::CreateNullValue());
 
-  scoped_ptr<DictionaryValue> copy = dv.CreateDeepCopy();
+  std::unique_ptr<DictionaryValue> copy = dv.CreateDeepCopy();
   EXPECT_TRUE(dv.Equals(copy.get()));
 
-  scoped_ptr<ListValue> list(new ListValue);
+  std::unique_ptr<ListValue> list(new ListValue);
   ListValue* original_list = list.get();
   list->Append(Value::CreateNullValue());
-  list->Append(make_scoped_ptr(new DictionaryValue));
-  scoped_ptr<Value> list_copy(list->CreateDeepCopy());
+  list->Append(WrapUnique(new DictionaryValue));
+  std::unique_ptr<Value> list_copy(list->CreateDeepCopy());
 
   dv.Set("f", std::move(list));
   EXPECT_FALSE(dv.Equals(copy.get()));
   copy->Set("f", std::move(list_copy));
   EXPECT_TRUE(dv.Equals(copy.get()));
 
-  original_list->Append(make_scoped_ptr(new FundamentalValue(true)));
+  original_list->Append(WrapUnique(new FundamentalValue(true)));
   EXPECT_FALSE(dv.Equals(copy.get()));
 
   // Check if Equals detects differences in only the keys.
@@ -588,14 +594,14 @@ TEST(ValuesTest, Equals) {
 }
 
 TEST(ValuesTest, StaticEquals) {
-  scoped_ptr<Value> null1(Value::CreateNullValue());
-  scoped_ptr<Value> null2(Value::CreateNullValue());
+  std::unique_ptr<Value> null1(Value::CreateNullValue());
+  std::unique_ptr<Value> null2(Value::CreateNullValue());
   EXPECT_TRUE(Value::Equals(null1.get(), null2.get()));
   EXPECT_TRUE(Value::Equals(NULL, NULL));
 
-  scoped_ptr<Value> i42(new FundamentalValue(42));
-  scoped_ptr<Value> j42(new FundamentalValue(42));
-  scoped_ptr<Value> i17(new FundamentalValue(17));
+  std::unique_ptr<Value> i42(new FundamentalValue(42));
+  std::unique_ptr<Value> j42(new FundamentalValue(42));
+  std::unique_ptr<Value> i17(new FundamentalValue(17));
   EXPECT_TRUE(Value::Equals(i42.get(), i42.get()));
   EXPECT_TRUE(Value::Equals(j42.get(), i42.get()));
   EXPECT_TRUE(Value::Equals(i42.get(), j42.get()));
@@ -612,50 +618,52 @@ TEST(ValuesTest, StaticEquals) {
 
 TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
   DictionaryValue original_dict;
-  scoped_ptr<Value> scoped_null(Value::CreateNullValue());
+  std::unique_ptr<Value> scoped_null(Value::CreateNullValue());
   Value* original_null = scoped_null.get();
   original_dict.Set("null", std::move(scoped_null));
-  scoped_ptr<FundamentalValue> scoped_bool(new FundamentalValue(true));
+  std::unique_ptr<FundamentalValue> scoped_bool(new FundamentalValue(true));
   Value* original_bool = scoped_bool.get();
   original_dict.Set("bool", std::move(scoped_bool));
-  scoped_ptr<FundamentalValue> scoped_int(new FundamentalValue(42));
+  std::unique_ptr<FundamentalValue> scoped_int(new FundamentalValue(42));
   Value* original_int = scoped_int.get();
   original_dict.Set("int", std::move(scoped_int));
-  scoped_ptr<FundamentalValue> scoped_double(new FundamentalValue(3.14));
+  std::unique_ptr<FundamentalValue> scoped_double(new FundamentalValue(3.14));
   Value* original_double = scoped_double.get();
   original_dict.Set("double", std::move(scoped_double));
-  scoped_ptr<StringValue> scoped_string(new StringValue("hello"));
+  std::unique_ptr<StringValue> scoped_string(new StringValue("hello"));
   Value* original_string = scoped_string.get();
   original_dict.Set("string", std::move(scoped_string));
-  scoped_ptr<StringValue> scoped_string16(
+  std::unique_ptr<StringValue> scoped_string16(
       new StringValue(ASCIIToUTF16("hello16")));
   Value* original_string16 = scoped_string16.get();
   original_dict.Set("string16", std::move(scoped_string16));
 
-  scoped_ptr<char[]> original_buffer(new char[42]);
+  std::unique_ptr<char[]> original_buffer(new char[42]);
   memset(original_buffer.get(), '!', 42);
-  scoped_ptr<BinaryValue> scoped_binary(
+  std::unique_ptr<BinaryValue> scoped_binary(
       new BinaryValue(std::move(original_buffer), 42));
   Value* original_binary = scoped_binary.get();
   original_dict.Set("binary", std::move(scoped_binary));
 
-  scoped_ptr<ListValue> scoped_list(new ListValue());
+  std::unique_ptr<ListValue> scoped_list(new ListValue());
   Value* original_list = scoped_list.get();
-  scoped_ptr<FundamentalValue> scoped_list_element_0(new FundamentalValue(0));
+  std::unique_ptr<FundamentalValue> scoped_list_element_0(
+      new FundamentalValue(0));
   scoped_list->Append(std::move(scoped_list_element_0));
-  scoped_ptr<FundamentalValue> scoped_list_element_1(new FundamentalValue(1));
+  std::unique_ptr<FundamentalValue> scoped_list_element_1(
+      new FundamentalValue(1));
   scoped_list->Append(std::move(scoped_list_element_1));
   original_dict.Set("list", std::move(scoped_list));
 
-  scoped_ptr<Value> copy_dict = original_dict.CreateDeepCopy();
-  scoped_ptr<Value> copy_null = original_null->CreateDeepCopy();
-  scoped_ptr<Value> copy_bool = original_bool->CreateDeepCopy();
-  scoped_ptr<Value> copy_int = original_int->CreateDeepCopy();
-  scoped_ptr<Value> copy_double = original_double->CreateDeepCopy();
-  scoped_ptr<Value> copy_string = original_string->CreateDeepCopy();
-  scoped_ptr<Value> copy_string16 = original_string16->CreateDeepCopy();
-  scoped_ptr<Value> copy_binary = original_binary->CreateDeepCopy();
-  scoped_ptr<Value> copy_list = original_list->CreateDeepCopy();
+  std::unique_ptr<Value> copy_dict = original_dict.CreateDeepCopy();
+  std::unique_ptr<Value> copy_null = original_null->CreateDeepCopy();
+  std::unique_ptr<Value> copy_bool = original_bool->CreateDeepCopy();
+  std::unique_ptr<Value> copy_int = original_int->CreateDeepCopy();
+  std::unique_ptr<Value> copy_double = original_double->CreateDeepCopy();
+  std::unique_ptr<Value> copy_string = original_string->CreateDeepCopy();
+  std::unique_ptr<Value> copy_string16 = original_string16->CreateDeepCopy();
+  std::unique_ptr<Value> copy_binary = original_binary->CreateDeepCopy();
+  std::unique_ptr<Value> copy_list = original_list->CreateDeepCopy();
 
   EXPECT_TRUE(original_dict.Equals(copy_dict.get()));
   EXPECT_TRUE(original_null->Equals(copy_null.get()));
@@ -669,18 +677,18 @@ TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
 }
 
 TEST(ValuesTest, RemoveEmptyChildren) {
-  scoped_ptr<DictionaryValue> root(new DictionaryValue);
+  std::unique_ptr<DictionaryValue> root(new DictionaryValue);
   // Remove empty lists and dictionaries.
-  root->Set("empty_dict", make_scoped_ptr(new DictionaryValue));
-  root->Set("empty_list", make_scoped_ptr(new ListValue));
+  root->Set("empty_dict", WrapUnique(new DictionaryValue));
+  root->Set("empty_list", WrapUnique(new ListValue));
   root->SetWithoutPathExpansion("a.b.c.d.e",
-                                make_scoped_ptr(new DictionaryValue));
+                                WrapUnique(new DictionaryValue));
   root = root->DeepCopyWithoutEmptyChildren();
   EXPECT_TRUE(root->empty());
 
   // Make sure we don't prune too much.
   root->SetBoolean("bool", true);
-  root->Set("empty_dict", make_scoped_ptr(new DictionaryValue));
+  root->Set("empty_dict", WrapUnique(new DictionaryValue));
   root->SetString("empty_string", std::string());
   root = root->DeepCopyWithoutEmptyChildren();
   EXPECT_EQ(2U, root->size());
@@ -692,22 +700,22 @@ TEST(ValuesTest, RemoveEmptyChildren) {
   // Nested test cases.  These should all reduce back to the bool and string
   // set above.
   {
-    root->Set("a.b.c.d.e", make_scoped_ptr(new DictionaryValue));
+    root->Set("a.b.c.d.e", WrapUnique(new DictionaryValue));
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->size());
   }
   {
-    scoped_ptr<DictionaryValue> inner(new DictionaryValue);
-    inner->Set("empty_dict", make_scoped_ptr(new DictionaryValue));
-    inner->Set("empty_list", make_scoped_ptr(new ListValue));
+    std::unique_ptr<DictionaryValue> inner(new DictionaryValue);
+    inner->Set("empty_dict", WrapUnique(new DictionaryValue));
+    inner->Set("empty_list", WrapUnique(new ListValue));
     root->Set("dict_with_empty_children", std::move(inner));
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->size());
   }
   {
-    scoped_ptr<ListValue> inner(new ListValue);
-    inner->Append(make_scoped_ptr(new DictionaryValue));
-    inner->Append(make_scoped_ptr(new ListValue));
+    std::unique_ptr<ListValue> inner(new ListValue);
+    inner->Append(WrapUnique(new DictionaryValue));
+    inner->Append(WrapUnique(new ListValue));
     root->Set("list_with_empty_children", std::move(inner));
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->size());
@@ -715,13 +723,13 @@ TEST(ValuesTest, RemoveEmptyChildren) {
 
   // Nested with siblings.
   {
-    scoped_ptr<ListValue> inner(new ListValue());
-    inner->Append(make_scoped_ptr(new DictionaryValue));
-    inner->Append(make_scoped_ptr(new ListValue));
+    std::unique_ptr<ListValue> inner(new ListValue());
+    inner->Append(WrapUnique(new DictionaryValue));
+    inner->Append(WrapUnique(new ListValue));
     root->Set("list_with_empty_children", std::move(inner));
-    scoped_ptr<DictionaryValue> inner2(new DictionaryValue);
-    inner2->Set("empty_dict", make_scoped_ptr(new DictionaryValue));
-    inner2->Set("empty_list", make_scoped_ptr(new ListValue));
+    std::unique_ptr<DictionaryValue> inner2(new DictionaryValue);
+    inner2->Set("empty_dict", WrapUnique(new DictionaryValue));
+    inner2->Set("empty_list", WrapUnique(new ListValue));
     root->Set("dict_with_empty_children", std::move(inner2));
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(2U, root->size());
@@ -729,10 +737,10 @@ TEST(ValuesTest, RemoveEmptyChildren) {
 
   // Make sure nested values don't get pruned.
   {
-    scoped_ptr<ListValue> inner(new ListValue);
-    scoped_ptr<ListValue> inner2(new ListValue);
-    inner2->Append(make_scoped_ptr(new StringValue("hello")));
-    inner->Append(make_scoped_ptr(new DictionaryValue));
+    std::unique_ptr<ListValue> inner(new ListValue);
+    std::unique_ptr<ListValue> inner2(new ListValue);
+    inner2->Append(WrapUnique(new StringValue("hello")));
+    inner->Append(WrapUnique(new DictionaryValue));
     inner->Append(std::move(inner2));
     root->Set("list_with_empty_children", std::move(inner));
     root = root->DeepCopyWithoutEmptyChildren();
@@ -747,18 +755,18 @@ TEST(ValuesTest, RemoveEmptyChildren) {
 }
 
 TEST(ValuesTest, MergeDictionary) {
-  scoped_ptr<DictionaryValue> base(new DictionaryValue);
+  std::unique_ptr<DictionaryValue> base(new DictionaryValue);
   base->SetString("base_key", "base_key_value_base");
   base->SetString("collide_key", "collide_key_value_base");
-  scoped_ptr<DictionaryValue> base_sub_dict(new DictionaryValue);
+  std::unique_ptr<DictionaryValue> base_sub_dict(new DictionaryValue);
   base_sub_dict->SetString("sub_base_key", "sub_base_key_value_base");
   base_sub_dict->SetString("sub_collide_key", "sub_collide_key_value_base");
   base->Set("sub_dict_key", std::move(base_sub_dict));
 
-  scoped_ptr<DictionaryValue> merge(new DictionaryValue);
+  std::unique_ptr<DictionaryValue> merge(new DictionaryValue);
   merge->SetString("merge_key", "merge_key_value_merge");
   merge->SetString("collide_key", "collide_key_value_merge");
-  scoped_ptr<DictionaryValue> merge_sub_dict(new DictionaryValue);
+  std::unique_ptr<DictionaryValue> merge_sub_dict(new DictionaryValue);
   merge_sub_dict->SetString("sub_merge_key", "sub_merge_key_value_merge");
   merge_sub_dict->SetString("sub_collide_key", "sub_collide_key_value_merge");
   merge->Set("sub_dict_key", std::move(merge_sub_dict));
@@ -792,7 +800,7 @@ TEST(ValuesTest, MergeDictionary) {
 }
 
 TEST(ValuesTest, MergeDictionaryDeepCopy) {
-  scoped_ptr<DictionaryValue> child(new DictionaryValue);
+  std::unique_ptr<DictionaryValue> child(new DictionaryValue);
   DictionaryValue* original_child = child.get();
   child->SetString("test", "value");
   EXPECT_EQ(1U, child->size());
@@ -801,7 +809,7 @@ TEST(ValuesTest, MergeDictionaryDeepCopy) {
   EXPECT_TRUE(child->GetString("test", &value));
   EXPECT_EQ("value", value);
 
-  scoped_ptr<DictionaryValue> base(new DictionaryValue);
+  std::unique_ptr<DictionaryValue> base(new DictionaryValue);
   base->Set("dict", std::move(child));
   EXPECT_EQ(1U, base->size());
 
@@ -809,7 +817,7 @@ TEST(ValuesTest, MergeDictionaryDeepCopy) {
   EXPECT_TRUE(base->GetDictionary("dict", &ptr));
   EXPECT_EQ(original_child, ptr);
 
-  scoped_ptr<DictionaryValue> merged(new DictionaryValue);
+  std::unique_ptr<DictionaryValue> merged(new DictionaryValue);
   merged->MergeDictionary(base.get());
   EXPECT_EQ(1U, merged->size());
   EXPECT_TRUE(merged->GetDictionary("dict", &ptr));

@@ -4,12 +4,12 @@
 
 #include "base/memory/scoped_vector.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -112,7 +112,7 @@ class LifeCycleWatcher : public LifeCycleObject::Observer {
 
  private:
   LifeCycleState life_cycle_state_;
-  scoped_ptr<LifeCycleObject> constructed_life_cycle_object_;
+  std::unique_ptr<LifeCycleObject> constructed_life_cycle_object_;
 
   DISALLOW_COPY_AND_ASSIGN(LifeCycleWatcher);
 };
@@ -325,7 +325,7 @@ TEST(ScopedVectorTest, InsertRange) {
 // Assertions for push_back(scoped_ptr).
 TEST(ScopedVectorTest, PushBackScopedPtr) {
   int delete_counter = 0;
-  scoped_ptr<DeleteCounter> elem(new DeleteCounter(&delete_counter));
+  std::unique_ptr<DeleteCounter> elem(new DeleteCounter(&delete_counter));
   EXPECT_EQ(0, delete_counter);
   {
     ScopedVector<DeleteCounter> v;

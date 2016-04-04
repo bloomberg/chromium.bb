@@ -38,7 +38,7 @@ class HistogramBaseTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<StatisticsRecorder> statistics_recorder_;
+  std::unique_ptr<StatisticsRecorder> statistics_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(HistogramBaseTest);
 };
@@ -181,7 +181,7 @@ TEST_F(HistogramBaseTest, CreationReportHistogram) {
   CustomHistogram::FactoryGet("CRH-Custom", ranges, 0);
   SparseHistogram::FactoryGet("CRH-Sparse", 0);
 
-  scoped_ptr<HistogramSamples> samples = report->SnapshotSamples();
+  std::unique_ptr<HistogramSamples> samples = report->SnapshotSamples();
   EXPECT_EQ(1, samples->GetCount(HISTOGRAM_REPORT_CREATED));
   EXPECT_EQ(5, samples->GetCount(HISTOGRAM_REPORT_HISTOGRAM_CREATED));
   EXPECT_EQ(0, samples->GetCount(HISTOGRAM_REPORT_HISTOGRAM_LOOKUP));

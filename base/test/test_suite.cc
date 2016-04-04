@@ -4,6 +4,8 @@
 
 #include "base/test/test_suite.h"
 
+#include <memory>
+
 #include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/base_switches.h"
@@ -17,7 +19,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
@@ -226,7 +228,7 @@ int TestSuite::Run() {
 
   // Set up a FeatureList instance, so that code using that API will not hit a
   // an error that it's not set. Cleared by ClearInstanceForTesting() below.
-  base::FeatureList::SetInstance(make_scoped_ptr(new base::FeatureList));
+  base::FeatureList::SetInstance(WrapUnique(new base::FeatureList));
 
   int result = RUN_ALL_TESTS();
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 
 namespace base {
 namespace internal {
@@ -40,7 +41,7 @@ PriorityQueue::Transaction::~Transaction() {
 }
 
 void PriorityQueue::Transaction::Push(
-    scoped_ptr<SequenceAndSortKey> sequence_and_sort_key) {
+    std::unique_ptr<SequenceAndSortKey> sequence_and_sort_key) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sequence_and_sort_key->is_null());
 
@@ -81,8 +82,8 @@ PriorityQueue::PriorityQueue(const Closure& sequence_inserted_callback,
 
 PriorityQueue::~PriorityQueue() = default;
 
-scoped_ptr<PriorityQueue::Transaction> PriorityQueue::BeginTransaction() {
-  return make_scoped_ptr(new Transaction(this));
+std::unique_ptr<PriorityQueue::Transaction> PriorityQueue::BeginTransaction() {
+  return WrapUnique(new Transaction(this));
 }
 
 }  // namespace internal

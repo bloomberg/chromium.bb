@@ -4,8 +4,9 @@
 
 #include "base/test/values_test_util.h"
 
+#include <memory>
+
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +55,7 @@ void ExpectDictStringValue(const std::string& expected_value,
 
 void ExpectStringValue(const std::string& expected_str,
                        StringValue* actual) {
-  scoped_ptr<StringValue> scoped_actual(actual);
+  std::unique_ptr<StringValue> scoped_actual(actual);
   std::string actual_str;
   EXPECT_TRUE(scoped_actual->GetAsString(&actual_str));
   EXPECT_EQ(expected_str, actual_str);
@@ -62,9 +63,9 @@ void ExpectStringValue(const std::string& expected_str,
 
 namespace test {
 
-scoped_ptr<Value> ParseJson(base::StringPiece json) {
+std::unique_ptr<Value> ParseJson(base::StringPiece json) {
   std::string error_msg;
-  scoped_ptr<Value> result = base::JSONReader::ReadAndReturnError(
+  std::unique_ptr<Value> result = base::JSONReader::ReadAndReturnError(
       json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error_msg);
   if (!result) {
     ADD_FAILURE() << "Failed to parse \"" << json << "\": " << error_msg;

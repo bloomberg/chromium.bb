@@ -74,9 +74,9 @@ class TestMemoryPressureMonitor : public MemoryPressureMonitor {
 // for the correct behavior on event reposting as well as state updates.
 TEST(ChromeOSMemoryPressureMonitorTest, CheckMemoryPressure) {
   base::MessageLoopForUI message_loop;
-  scoped_ptr<TestMemoryPressureMonitor> monitor(
+  std::unique_ptr<TestMemoryPressureMonitor> monitor(
       new TestMemoryPressureMonitor);
-  scoped_ptr<MemoryPressureListener> listener(
+  std::unique_ptr<MemoryPressureListener> listener(
       new MemoryPressureListener(base::Bind(&OnMemoryPressure)));
   // Checking the memory pressure while 0% are used should not produce any
   // events.

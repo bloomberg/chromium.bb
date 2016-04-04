@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"
 #include "net/url_request/url_request_context_getter.h"

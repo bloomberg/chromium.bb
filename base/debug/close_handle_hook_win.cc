@@ -9,11 +9,11 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
@@ -243,7 +243,7 @@ void HandleHooks::Unpatch() {
 void PatchLoadedModules(HandleHooks* hooks) {
   const DWORD kSize = 256;
   DWORD returned;
-  scoped_ptr<HMODULE[]> modules(new HMODULE[kSize]);
+  std::unique_ptr<HMODULE[]> modules(new HMODULE[kSize]);
   if (!EnumProcessModules(GetCurrentProcess(), modules.get(),
                           kSize * sizeof(HMODULE), &returned)) {
     return;

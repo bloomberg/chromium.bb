@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/ios/browser/language_detection_controller.h"

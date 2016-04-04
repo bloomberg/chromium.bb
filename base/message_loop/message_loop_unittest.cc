@@ -41,15 +41,15 @@ namespace base {
 
 namespace {
 
-scoped_ptr<MessagePump> TypeDefaultMessagePumpFactory() {
+std::unique_ptr<MessagePump> TypeDefaultMessagePumpFactory() {
   return MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_DEFAULT);
 }
 
-scoped_ptr<MessagePump> TypeIOMessagePumpFactory() {
+std::unique_ptr<MessagePump> TypeIOMessagePumpFactory() {
   return MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_IO);
 }
 
-scoped_ptr<MessagePump> TypeUIMessagePumpFactory() {
+std::unique_ptr<MessagePump> TypeUIMessagePumpFactory() {
   return MessageLoop::CreateMessagePumpForType(MessageLoop::TYPE_UI);
 }
 
@@ -971,7 +971,7 @@ TEST(MessageLoopTest, DeleteUnboundLoop) {
   // It should be possible to delete an unbound message loop on a thread which
   // already has another active loop. This happens when thread creation fails.
   MessageLoop loop;
-  scoped_ptr<MessageLoop> unbound_loop(MessageLoop::CreateUnbound(
+  std::unique_ptr<MessageLoop> unbound_loop(MessageLoop::CreateUnbound(
       MessageLoop::TYPE_DEFAULT, MessageLoop::MessagePumpFactoryCallback()));
   unbound_loop.reset();
   EXPECT_EQ(&loop, MessageLoop::current());

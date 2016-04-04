@@ -607,7 +607,7 @@ class TimezoneMap {
 }  // namespace
 
 std::string CountryCodeForCurrentTimezone() {
-  scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+  std::unique_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
   icu::UnicodeString id;
   zone->getID(id);
   string16 olson_code(id.getBuffer(), id.length());

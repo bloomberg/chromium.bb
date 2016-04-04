@@ -12,10 +12,10 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -36,7 +36,7 @@ class BASE_EXPORT PersistentSampleMap : public HistogramSamples {
                   HistogramBase::Count count) override;
   HistogramBase::Count GetCount(HistogramBase::Sample value) const override;
   HistogramBase::Count TotalCount() const override;
-  scoped_ptr<SampleCountIterator> Iterator() const override;
+  std::unique_ptr<SampleCountIterator> Iterator() const override;
 
  protected:
   // Performs arithemetic. |op| is ADD or SUBTRACT.

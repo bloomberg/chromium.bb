@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
@@ -87,7 +88,7 @@ class ScheduleWorkTest : public testing::Test {
       target_->WaitUntilThreadStarted();
     }
 
-    std::vector<scoped_ptr<Thread>> scheduling_threads;
+    std::vector<std::unique_ptr<Thread>> scheduling_threads;
     scheduling_times_.reset(new base::TimeDelta[num_scheduling_threads]);
     scheduling_thread_times_.reset(new base::TimeDelta[num_scheduling_threads]);
     min_batch_times_.reset(new base::TimeDelta[num_scheduling_threads]);
@@ -95,7 +96,7 @@ class ScheduleWorkTest : public testing::Test {
 
     for (int i = 0; i < num_scheduling_threads; ++i) {
       scheduling_threads.push_back(
-          make_scoped_ptr(new Thread("posting thread")));
+          WrapUnique(new Thread("posting thread")));
       scheduling_threads[i]->Start();
     }
 
@@ -175,14 +176,14 @@ class ScheduleWorkTest : public testing::Test {
   }
 
  private:
-  scoped_ptr<Thread> target_;
+  std::unique_ptr<Thread> target_;
 #if defined(OS_ANDROID)
-  scoped_ptr<android::JavaHandlerThread> java_thread_;
+  std::unique_ptr<android::JavaHandlerThread> java_thread_;
 #endif
-  scoped_ptr<base::TimeDelta[]> scheduling_times_;
-  scoped_ptr<base::TimeDelta[]> scheduling_thread_times_;
-  scoped_ptr<base::TimeDelta[]> min_batch_times_;
-  scoped_ptr<base::TimeDelta[]> max_batch_times_;
+  std::unique_ptr<base::TimeDelta[]> scheduling_times_;
+  std::unique_ptr<base::TimeDelta[]> scheduling_thread_times_;
+  std::unique_ptr<base::TimeDelta[]> min_batch_times_;
+  std::unique_ptr<base::TimeDelta[]> max_batch_times_;
   uint64_t counter_;
 
   static const size_t kTargetTimeSec = 5;
@@ -256,7 +257,7 @@ class PostTaskTest : public testing::Test {
   void Run(int batch_size, int tasks_per_reload) {
     base::TimeTicks start = base::TimeTicks::Now();
     base::TimeTicks now;
-    MessageLoop loop(scoped_ptr<MessagePump>(new FakeMessagePump));
+    MessageLoop loop(std::unique_ptr<MessagePump>(new FakeMessagePump));
     scoped_refptr<internal::IncomingTaskQueue> queue(
         new internal::IncomingTaskQueue(&loop));
     uint32_t num_posted = 0;

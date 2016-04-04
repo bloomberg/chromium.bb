@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/trace_event/heap_profiler_heap_dump_writer.h"
+
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
-#include "base/trace_event/heap_profiler_heap_dump_writer.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"
 #include "base/trace_event/heap_profiler_type_name_deduplicator.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -38,18 +40,18 @@ namespace base {
 namespace trace_event {
 namespace internal {
 
-scoped_ptr<const Value> WriteAndReadBack(const std::set<Entry>& entries) {
-  scoped_ptr<TracedValue> traced_value = Serialize(entries);
+std::unique_ptr<const Value> WriteAndReadBack(const std::set<Entry>& entries) {
+  std::unique_ptr<TracedValue> traced_value = Serialize(entries);
   std::string json;
   traced_value->AppendAsTraceFormat(&json);
   return JSONReader::Read(json);
 }
 
-scoped_ptr<const DictionaryValue> WriteAndReadBackEntry(Entry entry) {
+std::unique_ptr<const DictionaryValue> WriteAndReadBackEntry(Entry entry) {
   std::set<Entry> input_entries;
   input_entries.insert(entry);
 
-  scoped_ptr<const Value> json_dict = WriteAndReadBack(input_entries);
+  std::unique_ptr<const Value> json_dict = WriteAndReadBack(input_entries);
 
   // Note: Ideally these should use |ASSERT_TRUE| instead of |EXPECT_TRUE|, but
   // |ASSERT_TRUE| can only be used in void functions.
@@ -106,7 +108,8 @@ TEST(HeapDumpWriterTest, BacktraceIndex) {
   entry.type_id = 0;
   entry.size = 1;
 
-  scoped_ptr<const DictionaryValue> json_entry = WriteAndReadBackEntry(entry);
+  std::unique_ptr<const DictionaryValue> json_entry =
+      WriteAndReadBackEntry(entry);
 
   // For an empty backtrace, the "bt" key cannot reference a stack frame.
   // Instead it should be set to the empty string.
@@ -127,7 +130,8 @@ TEST(HeapDumpWriterTest, TypeId) {
   entry.stack_frame_id = 0;
   entry.size = 1;
 
-  scoped_ptr<const DictionaryValue> json_entry = WriteAndReadBackEntry(entry);
+  std::unique_ptr<const DictionaryValue> json_entry =
+      WriteAndReadBackEntry(entry);
 
   // Entries for the cumulative size of all types should not have the "type"
   // key set.
@@ -153,7 +157,8 @@ TEST(HeapDumpWriterTest, SizeIsHexadecimalString) {
   entry.stack_frame_id = 0;
   entry.size = large_value;
 
-  scoped_ptr<const DictionaryValue> json_entry = WriteAndReadBackEntry(entry);
+  std::unique_ptr<const DictionaryValue> json_entry =
+      WriteAndReadBackEntry(entry);
 
   std::string size;
   ASSERT_TRUE(json_entry->GetString("size", &size));
@@ -197,8 +202,8 @@ TEST(HeapDumpWriterTest, BacktraceTypeNameTable) {
   // +--------+--------------------+-----------------+-----+
   // | Sum    |                 28 |              49 |  77 |
 
-  auto sf_deduplicator = make_scoped_ptr(new StackFrameDeduplicator);
-  auto tn_deduplicator = make_scoped_ptr(new TypeNameDeduplicator);
+  auto sf_deduplicator = WrapUnique(new StackFrameDeduplicator);
+  auto tn_deduplicator = WrapUnique(new TypeNameDeduplicator);
   HeapDumpWriter writer(sf_deduplicator.get(), tn_deduplicator.get());
   const std::set<Entry>& dump = writer.Summarize(bytes_by_context);
 
@@ -262,8 +267,8 @@ TEST(HeapDumpWriterTest, InsignificantValuesNotDumped) {
   ctx.backtrace.frames[2] = kInitialize;
   bytes_by_context[ctx] = 512;
 
-  auto sf_deduplicator = make_scoped_ptr(new StackFrameDeduplicator);
-  auto tn_deduplicator = make_scoped_ptr(new TypeNameDeduplicator);
+  auto sf_deduplicator = WrapUnique(new StackFrameDeduplicator);
+  auto tn_deduplicator = WrapUnique(new TypeNameDeduplicator);
   HeapDumpWriter writer(sf_deduplicator.get(), tn_deduplicator.get());
   const std::set<Entry>& dump = writer.Summarize(bytes_by_context);
 

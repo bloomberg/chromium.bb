@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/android/application_status_listener.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -92,7 +94,7 @@ class MultiThreadedTest {
   base::WaitableEvent event_;
   base::Thread thread_;
   base::MessageLoop main_;
-  scoped_ptr<ApplicationStatusListener> listener_;
+  std::unique_ptr<ApplicationStatusListener> listener_;
 };
 
 }  // namespace

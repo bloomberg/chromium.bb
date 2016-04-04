@@ -5,12 +5,12 @@
 #ifndef BASE_METRICS_HISTOGRAM_DELTA_SERIALIZATION_H_
 #define BASE_METRICS_HISTOGRAM_DELTA_SERIALIZATION_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_snapshot_manager.h"
 #include "base/threading/thread_checker.h"

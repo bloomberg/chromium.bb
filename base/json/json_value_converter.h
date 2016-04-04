@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -131,7 +131,7 @@ class FieldConverter : public FieldConverterBase<StructType> {
 
  private:
   FieldType StructType::* field_pointer_;
-  scoped_ptr<ValueConverter<FieldType> > value_converter_;
+  std::unique_ptr<ValueConverter<FieldType>> value_converter_;
   DISALLOW_COPY_AND_ASSIGN(FieldConverter);
 };
 
@@ -266,7 +266,7 @@ class RepeatedValueConverter : public ValueConverter<ScopedVector<Element> > {
       if (!list->Get(i, &element))
         continue;
 
-      scoped_ptr<Element> e(new Element);
+      std::unique_ptr<Element> e(new Element);
       if (basic_converter_.Convert(*element, e.get())) {
         field->push_back(e.release());
       } else {
@@ -300,7 +300,7 @@ class RepeatedMessageConverter
       if (!list->Get(i, &element))
         continue;
 
-      scoped_ptr<NestedType> nested(new NestedType);
+      std::unique_ptr<NestedType> nested(new NestedType);
       if (converter_.Convert(*element, nested.get())) {
         field->push_back(nested.release());
       } else {
@@ -337,7 +337,7 @@ class RepeatedCustomValueConverter
       if (!list->Get(i, &element))
         continue;
 
-      scoped_ptr<NestedType> nested(new NestedType);
+      std::unique_ptr<NestedType> nested(new NestedType);
       if ((*convert_func_)(element, nested.get())) {
         field->push_back(nested.release());
       } else {

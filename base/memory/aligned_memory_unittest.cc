@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/aligned_memory.h"
-#include "base/memory/scoped_ptr.h"
+
+#include <memory>
+
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -92,7 +94,7 @@ TEST(AlignedMemoryTest, DynamicAllocation) {
 }
 
 TEST(AlignedMemoryTest, ScopedDynamicAllocation) {
-  scoped_ptr<float, base::AlignedFreeDeleter> p(
+  std::unique_ptr<float, base::AlignedFreeDeleter> p(
       static_cast<float*>(base::AlignedAlloc(8, 8)));
   EXPECT_TRUE(p.get());
   EXPECT_ALIGNED(p.get(), 8);

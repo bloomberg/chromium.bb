@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <queue>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/test/test_pending_task.h"
@@ -77,11 +77,11 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner {
 
   // Returns a Clock that uses the virtual time of |this| as its time source.
   // The returned Clock will hold a reference to |this|.
-  scoped_ptr<Clock> GetMockClock() const;
+  std::unique_ptr<Clock> GetMockClock() const;
 
   // Returns a TickClock that uses the virtual time ticks of |this| as its tick
   // source. The returned TickClock will hold a reference to |this|.
-  scoped_ptr<TickClock> GetMockTickClock() const;
+  std::unique_ptr<TickClock> GetMockTickClock() const;
 
   bool HasPendingTask() const;
   size_t GetPendingTaskCount() const;

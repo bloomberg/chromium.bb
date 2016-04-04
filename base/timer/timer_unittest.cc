@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/timer/timer.h"
+
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -78,7 +80,7 @@ class OneShotSelfDeletingTimerTester {
   }
 
   bool* did_run_;
-  scoped_ptr<base::OneShotTimer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 };
 
 class RepeatingTimerTester {

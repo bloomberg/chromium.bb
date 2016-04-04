@@ -6,13 +6,13 @@
 #define BASE_TEST_HISTOGRAM_TESTER_H_
 
 #include <map>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 
@@ -93,7 +93,7 @@ class HistogramTester {
 
   // Access a modified HistogramSamples containing only what has been logged
   // to the histogram since the creation of this object.
-  scoped_ptr<HistogramSamples> GetHistogramSamplesSinceCreation(
+  std::unique_ptr<HistogramSamples> GetHistogramSamplesSinceCreation(
       const std::string& histogram_name) const;
 
  private:

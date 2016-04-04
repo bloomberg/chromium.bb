@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/pickle.h"
+
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -163,7 +164,7 @@ TEST(PickleTest, LongFrom64Bit) {
 
 // Tests that we can handle really small buffers.
 TEST(PickleTest, SmallBuffer) {
-  scoped_ptr<char[]> buffer(new char[1]);
+  std::unique_ptr<char[]> buffer(new char[1]);
 
   // We should not touch the buffer.
   Pickle pickle(buffer.get(), 1);
@@ -329,7 +330,7 @@ TEST(PickleTest, FindNext) {
 
 TEST(PickleTest, FindNextWithIncompleteHeader) {
   size_t header_size = sizeof(Pickle::Header);
-  scoped_ptr<char[]> buffer(new char[header_size - 1]);
+  std::unique_ptr<char[]> buffer(new char[header_size - 1]);
   memset(buffer.get(), 0x1, header_size - 1);
 
   const char* start = buffer.get();
@@ -346,7 +347,7 @@ TEST(PickleTest, FindNextOverflow) {
   size_t header_size = sizeof(Pickle::Header);
   size_t header_size2 = 2 * header_size;
   size_t payload_received = 100;
-  scoped_ptr<char[]> buffer(new char[header_size2 + payload_received]);
+  std::unique_ptr<char[]> buffer(new char[header_size2 + payload_received]);
   const char* start = buffer.get();
   Pickle::Header* header = reinterpret_cast<Pickle::Header*>(buffer.get());
   const char* end = start + header_size2 + payload_received;
@@ -390,7 +391,7 @@ TEST(PickleTest, GetReadPointerAndAdvance) {
 
 TEST(PickleTest, Resize) {
   size_t unit = Pickle::kPayloadUnit;
-  scoped_ptr<char[]> data(new char[unit]);
+  std::unique_ptr<char[]> data(new char[unit]);
   char* data_ptr = data.get();
   for (size_t i = 0; i < unit; i++)
     data_ptr[i] = 'G';
