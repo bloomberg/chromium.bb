@@ -128,6 +128,7 @@ struct hmi_controller {
 	struct wl_listener                  destroy_listener;
 
 	struct wl_listener                  surface_created;
+	struct wl_listener                  surface_removed;
 
 	struct wl_client                   *user_interface;
 	struct ui_setting                   ui_setting;
@@ -600,10 +601,12 @@ set_notification_create_surface(struct wl_listener *listener, void *data)
 }
 
 static void
-set_notification_remove_surface(struct ivi_layout_surface *ivisurf,
-				void *userdata)
+set_notification_remove_surface(struct wl_listener *listener, void *data)
 {
-	struct hmi_controller *hmi_ctrl = userdata;
+	struct hmi_controller *hmi_ctrl =
+			wl_container_of(listener, hmi_ctrl,
+					surface_removed);
+	(void)data;
 
 	switch_mode(hmi_ctrl, hmi_ctrl->layout_mode);
 }
@@ -840,8 +843,9 @@ hmi_controller_create(struct weston_compositor *ec)
 
 	hmi_ctrl->surface_created.notify = set_notification_create_surface;
 	ivi_layout_interface->add_listener_create_surface(&hmi_ctrl->surface_created);
-	ivi_layout_interface->add_notification_remove_surface(
-		set_notification_remove_surface, hmi_ctrl);
+
+	hmi_ctrl->surface_removed.notify = set_notification_remove_surface;
+	ivi_layout_interface->add_listener_remove_surface(&hmi_ctrl->surface_removed);
 	ivi_layout_interface->add_notification_configure_surface(
 		set_notification_configure_surface, hmi_ctrl);
 

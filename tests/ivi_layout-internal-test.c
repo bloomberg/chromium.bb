@@ -873,7 +873,7 @@ test_surface_bad_remove_notification(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 
-	iassert(lyt->add_notification_remove_surface(NULL, NULL) == IVI_FAILED);
+	iassert(lyt->add_listener_remove_surface(NULL) == IVI_FAILED);
 }
 
 /************************ tests end ********************************/

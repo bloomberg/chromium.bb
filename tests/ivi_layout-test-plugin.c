@@ -86,6 +86,7 @@ struct test_context {
 
 	struct wl_listener surface_property_changed;
 	struct wl_listener surface_created;
+	struct wl_listener surface_removed;
 };
 
 static struct test_context static_context;
@@ -952,11 +953,13 @@ RUNNER_TEST(surface_create_notification_p3)
 }
 
 static void
-test_surface_remove_notification_callback(struct ivi_layout_surface *ivisurf,
-					  void *userdata)
+test_surface_remove_notification_callback(struct wl_listener *listener, void *data)
 {
-	struct test_context *ctx = userdata;
+	struct test_context *ctx =
+			container_of(listener, struct test_context,
+					surface_removed);
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_surface *ivisurf = data;
 
 	runner_assert_or_return(lyt->get_id_of_surface(ivisurf) == IVI_TEST_SURFACE_ID(0));
 
@@ -967,19 +970,19 @@ RUNNER_TEST(surface_remove_notification_p1)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 
-	runner_assert(lyt->add_notification_remove_surface(
-		      test_surface_remove_notification_callback, ctx) == IVI_SUCCEEDED);
+	ctx->surface_removed.notify = test_surface_remove_notification_callback;
+	runner_assert(lyt->add_listener_remove_surface(&ctx->surface_removed)
+			== IVI_SUCCEEDED);
 
 	ctx->user_flags = 0;
 }
 
 RUNNER_TEST(surface_remove_notification_p2)
 {
-	const struct ivi_layout_interface *lyt = ctx->layout_interface;
-
 	runner_assert(ctx->user_flags == 1);
 
-	lyt->remove_notification_remove_surface(test_surface_remove_notification_callback, ctx);
+	// remove surface removed listener.
+	wl_list_remove(&ctx->surface_removed.link);
 	ctx->user_flags = 0;
 }
 

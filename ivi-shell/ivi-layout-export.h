@@ -138,10 +138,6 @@ enum ivi_layout_transition_type{
 	IVI_LAYOUT_TRANSITION_MAX,
 };
 
-typedef void (*surface_remove_notification_func)(
-			struct ivi_layout_surface *ivisurf,
-			void *userdata);
-
 typedef void (*surface_configure_notification_func)(
 			struct ivi_layout_surface *ivisurf,
 			void *userdata);
@@ -172,15 +168,14 @@ struct ivi_layout_interface {
 	int32_t (*add_listener_create_surface)(struct wl_listener *listener);
 
 	/**
-	 * \brief register/unregister for notification when ivi_surface is removed
+	 * \brief add a listener for notification when ivi_surface is removed
+	 *
+	 * When an ivi_surface is removed, a signal is emitted
+	 * to the listening controller plugins.
+	 * The pointer of the removed ivi_surface is sent as the void *data argument
+	 * to the wl_listener::notify callback function of the listener.
 	 */
-	int32_t (*add_notification_remove_surface)(
-				surface_remove_notification_func callback,
-				void *userdata);
-
-	void (*remove_notification_remove_surface)(
-				surface_remove_notification_func callback,
-				void *userdata);
+	int32_t (*add_listener_remove_surface)(struct wl_listener *listener);
 
 	/**
 	 * \brief register/unregister for notification when ivi_surface is configured
