@@ -233,8 +233,6 @@ public:
     bool cacheControlContainsNoStore() const;
     bool hasCacheValidatorFields() const;
 
-    static bool compare(const ResourceRequest&, const ResourceRequest&);
-
     bool checkForBrowserSideNavigation() const { return m_checkForBrowserSideNavigation; }
     void setCheckForBrowserSideNavigation(bool check) { m_checkForBrowserSideNavigation = check; }
 
@@ -297,9 +295,6 @@ private:
 
     bool m_followedRedirect;
 };
-
-inline bool operator==(const ResourceRequest& a, const ResourceRequest& b) { return ResourceRequest::compare(a, b); }
-inline bool operator!=(ResourceRequest& a, const ResourceRequest& b) { return !(a == b); }
 
 struct CrossThreadResourceRequestData {
     WTF_MAKE_NONCOPYABLE(CrossThreadResourceRequestData); USING_FAST_MALLOC(CrossThreadResourceRequestData);

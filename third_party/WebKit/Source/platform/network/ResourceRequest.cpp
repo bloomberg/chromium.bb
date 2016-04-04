@@ -323,49 +323,6 @@ void ResourceRequest::clearHTTPHeaderField(const AtomicString& name)
     m_httpHeaderFields.remove(name);
 }
 
-bool ResourceRequest::compare(const ResourceRequest& a, const ResourceRequest& b)
-{
-    if (a.url() != b.url())
-        return false;
-
-    if (a.getCachePolicy() != b.getCachePolicy())
-        return false;
-
-    if (a.timeoutInterval() != b.timeoutInterval())
-        return false;
-
-    if (a.firstPartyForCookies() != b.firstPartyForCookies())
-        return false;
-
-    if (a.httpMethod() != b.httpMethod())
-        return false;
-
-    if (a.allowStoredCredentials() != b.allowStoredCredentials())
-        return false;
-
-    if (a.priority() != b.priority())
-        return false;
-
-    if (a.getReferrerPolicy() != b.getReferrerPolicy())
-        return false;
-
-    EncodedFormData* formDataA = a.httpBody();
-    EncodedFormData* formDataB = b.httpBody();
-
-    if (!formDataA)
-        return !formDataB;
-    if (!formDataB)
-        return !formDataA;
-
-    if (*formDataA != *formDataB)
-        return false;
-
-    if (a.httpHeaderFields() != b.httpHeaderFields())
-        return false;
-
-    return true;
-}
-
 void ResourceRequest::setExternalRequestStateFromRequestorAddressSpace(WebAddressSpace requestorSpace)
 {
     static_assert(WebAddressSpaceLocal < WebAddressSpacePrivate, "Local is inside Private");
