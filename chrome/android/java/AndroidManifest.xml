@@ -203,7 +203,7 @@ by a child template that "extends" this file.
         </activity-alias>
 
         <!-- Upgrade related -->
-        <activity android:name="org.chromium.chrome.browser.UpgradeActivity"
+        <activity android:name="org.chromium.chrome.browser.upgrade.UpgradeActivity"
             android:excludeFromRecents="true"
             android:theme="@style/MainTheme"
             android:windowSoftInputMode="adjustResize"
@@ -214,6 +214,14 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:hardwareAccelerated="false">
         </activity>
+        <service android:name="org.chromium.chrome.browser.upgrade.UpgradeIntentService"
+            android:exported="false"/>
+        <receiver android:name="org.chromium.chrome.browser.upgrade.PackageReplacedBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
         <!-- Document mode Activities. -->
         <activity android:name="org.chromium.chrome.browser.document.DocumentActivity"

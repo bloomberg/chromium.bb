@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.upgrade;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
  */
 public class UpgradeActivity extends AppCompatActivity {
     public static final String EXTRA_INTENT_TO_REFIRE =
-            "org.chromium.chrome.browser.INTENT_TO_REFIRE";
+            "org.chromium.chrome.browser.upgrade.INTENT_TO_REFIRE";
 
     private static final long MIN_MS_TO_DISPLAY_ACTIVITY = 1000;
     private static final long INVALID_TIMESTAMP = -1;
@@ -77,14 +77,13 @@ public class UpgradeActivity extends AppCompatActivity {
         setContentView(R.layout.upgrade_activity);
 
         DocumentModeAssassin assassin = DocumentModeAssassin.getInstance();
-        if (!DocumentModeAssassin.getInstance().isMigrationNecessary()
-                || assassin.getStage() == DocumentModeAssassin.STAGE_DONE) {
-            // Migration finished in the background.
-            continueApplicationLaunch();
-        } else {
+        if (assassin.isMigrationNecessary()) {
             // Kick off migration if it hasn't already started.
             assassin.addObserver(mObserver);
             assassin.migrateFromDocumentToTabbedMode();
+        } else {
+            // Migration finished in the background.
+            continueApplicationLaunch();
         }
     }
 
