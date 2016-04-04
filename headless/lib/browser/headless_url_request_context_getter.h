@@ -5,11 +5,12 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_URL_REQUEST_CONTEXT_GETTER_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_URL_REQUEST_CONTEXT_GETTER_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 #include "headless/public/headless_browser.h"
 #include "net/proxy/proxy_config_service.h"
@@ -54,9 +55,9 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
  protected:
   ~HeadlessURLRequestContextGetter() override;
 
-  scoped_ptr<net::NetworkDelegate> CreateNetworkDelegate();
-  scoped_ptr<net::ProxyConfigService> GetProxyConfigService();
-  scoped_ptr<net::ProxyService> GetProxyService();
+  std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate();
+  std::unique_ptr<net::ProxyConfigService> GetProxyConfigService();
+  std::unique_ptr<net::ProxyService> GetProxyService();
 
  private:
   bool ignore_certificate_errors_;
@@ -66,10 +67,10 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
   net::NetLog* net_log_;
   HeadlessBrowser::Options options_;
 
-  scoped_ptr<net::ProxyConfigService> proxy_config_service_;
-  scoped_ptr<net::NetworkDelegate> network_delegate_;
-  scoped_ptr<net::URLRequestContextStorage> storage_;
-  scoped_ptr<net::URLRequestContext> url_request_context_;
+  std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
+  std::unique_ptr<net::NetworkDelegate> network_delegate_;
+  std::unique_ptr<net::URLRequestContextStorage> storage_;
+  std::unique_ptr<net::URLRequestContext> url_request_context_;
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;
 

@@ -5,7 +5,7 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
 
 namespace devtools_http_handler {
 class DevToolsHttpHandler;
@@ -16,7 +16,7 @@ class HeadlessBrowserContext;
 
 // Starts a DevTools HTTP handler on the loopback interface on the port
 // configured by HeadlessBrowser::Options.
-scoped_ptr<devtools_http_handler::DevToolsHttpHandler>
+std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
 CreateLocalDevToolsHttpHandler(HeadlessBrowserContext* browser_context);
 
 }  // namespace content

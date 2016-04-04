@@ -5,9 +5,10 @@
 #ifndef HEADLESS_LIB_HEADLESS_CONTENT_MAIN_DELEGATE_H_
 #define HEADLESS_LIB_HEADLESS_CONTENT_MAIN_DELEGATE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/app/content_main_delegate.h"
 #include "headless/lib/headless_content_client.h"
 
@@ -24,7 +25,8 @@ class HeadlessContentRendererClient;
 
 class HeadlessContentMainDelegate : public content::ContentMainDelegate {
  public:
-  explicit HeadlessContentMainDelegate(scoped_ptr<HeadlessBrowserImpl> browser);
+  explicit HeadlessContentMainDelegate(
+      std::unique_ptr<HeadlessBrowserImpl> browser);
   ~HeadlessContentMainDelegate() override;
 
   // content::ContentMainDelegate implementation:
@@ -47,12 +49,12 @@ class HeadlessContentMainDelegate : public content::ContentMainDelegate {
 
   static HeadlessContentMainDelegate* GetInstance();
 
-  scoped_ptr<HeadlessContentBrowserClient> browser_client_;
-  scoped_ptr<HeadlessContentRendererClient> renderer_client_;
-  scoped_ptr<HeadlessContentUtilityClient> utility_client_;
+  std::unique_ptr<HeadlessContentBrowserClient> browser_client_;
+  std::unique_ptr<HeadlessContentRendererClient> renderer_client_;
+  std::unique_ptr<HeadlessContentUtilityClient> utility_client_;
   HeadlessContentClient content_client_;
 
-  scoped_ptr<HeadlessBrowserImpl> browser_;
+  std::unique_ptr<HeadlessBrowserImpl> browser_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessContentMainDelegate);
 };

@@ -7,6 +7,7 @@
 
 #include "headless/public/headless_web_contents.h"
 
+#include <memory>
 #include <unordered_map>
 
 namespace aura {
@@ -44,12 +45,12 @@ class HeadlessWebContentsImpl : public HeadlessWebContents {
                           const gfx::Size& initial_size);
 
   class Delegate;
-  scoped_ptr<Delegate> web_contents_delegate_;
-  scoped_ptr<content::WebContents> web_contents_;
+  std::unique_ptr<Delegate> web_contents_delegate_;
+  std::unique_ptr<content::WebContents> web_contents_;
 
   using ObserverMap =
       std::unordered_map<HeadlessWebContents::Observer*,
-                         scoped_ptr<WebContentsObserverAdapter>>;
+                         std::unique_ptr<WebContentsObserverAdapter>>;
   ObserverMap observer_map_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWebContentsImpl);

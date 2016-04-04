@@ -5,6 +5,8 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_CONTEXT_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_CONTEXT_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -21,7 +23,7 @@ class HeadlessBrowserContext : public content::BrowserContext {
   ~HeadlessBrowserContext() override;
 
   // BrowserContext implementation:
-  scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+  std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
   base::FilePath GetPath() const override;
   bool IsOffTheRecord() const override;
@@ -55,7 +57,7 @@ class HeadlessBrowserContext : public content::BrowserContext {
   void InitWhileIOAllowed();
 
   base::FilePath path_;
-  scoped_ptr<HeadlessResourceContext> resource_context_;
+  std::unique_ptr<HeadlessResourceContext> resource_context_;
   HeadlessBrowser::Options options_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContext);

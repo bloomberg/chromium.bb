@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "content/public/test/browser_test.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_web_contents.h"
@@ -13,7 +15,7 @@
 namespace headless {
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, CreateAndDestroyWebContents) {
-  scoped_ptr<HeadlessWebContents> web_contents =
+  std::unique_ptr<HeadlessWebContents> web_contents =
       browser()->CreateWebContents(gfx::Size(800, 600));
   EXPECT_TRUE(web_contents);
   // TODO(skyostil): Verify viewport dimensions once we can.
@@ -49,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestWithProxy, SetProxyServer) {
   builder.SetProxyServer(proxy_server()->host_port_pair());
   SetBrowserOptions(builder.Build());
 
-  scoped_ptr<HeadlessWebContents> web_contents =
+  std::unique_ptr<HeadlessWebContents> web_contents =
       browser()->CreateWebContents(gfx::Size(800, 600));
 
   // Load a page which doesn't actually exist, but for which the our proxy

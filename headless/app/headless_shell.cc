@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -73,7 +75,7 @@ class HeadlessShell : public HeadlessWebContents::Observer {
 
  private:
   HeadlessBrowser* browser_;  // Not owned.
-  scoped_ptr<HeadlessWebContents> web_contents_;
+  std::unique_ptr<HeadlessWebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };

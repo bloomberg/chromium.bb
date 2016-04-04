@@ -5,7 +5,8 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_MAIN_PARTS_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_BROWSER_MAIN_PARTS_H_
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "content/public/browser/browser_main_parts.h"
 #include "headless/public/headless_browser.h"
 
@@ -31,8 +32,9 @@ class HeadlessBrowserMainParts : public content::BrowserMainParts {
 
  private:
   HeadlessBrowserImpl* browser_;  // Not owned.
-  scoped_ptr<HeadlessBrowserContext> browser_context_;
-  scoped_ptr<devtools_http_handler::DevToolsHttpHandler> devtools_http_handler_;
+  std::unique_ptr<HeadlessBrowserContext> browser_context_;
+  std::unique_ptr<devtools_http_handler::DevToolsHttpHandler>
+      devtools_http_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserMainParts);
 };

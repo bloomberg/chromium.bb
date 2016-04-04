@@ -5,6 +5,7 @@
 #include "headless/lib/browser/headless_devtools.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -33,11 +34,11 @@ class TCPServerSocketFactory : public DevToolsHttpHandler::ServerSocketFactory {
 
  private:
   // DevToolsHttpHandler::ServerSocketFactory implementation:
-  scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    scoped_ptr<net::ServerSocket> socket(
+  std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
+    std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLog::Source()));
     if (socket->Listen(endpoint_, kBackLog) != net::OK)
-      return scoped_ptr<net::ServerSocket>();
+      return std::unique_ptr<net::ServerSocket>();
 
     return socket;
   }
@@ -89,13 +90,13 @@ HeadlessDevToolsDelegate::HandleWebSocketConnection(const std::string& path) {
 
 }  // namespace
 
-scoped_ptr<DevToolsHttpHandler> CreateLocalDevToolsHttpHandler(
+std::unique_ptr<DevToolsHttpHandler> CreateLocalDevToolsHttpHandler(
     HeadlessBrowserContext* browser_context) {
   const net::IPEndPoint& endpoint =
       browser_context->options().devtools_endpoint;
-  scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> socket_factory(
+  std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> socket_factory(
       new TCPServerSocketFactory(endpoint));
-  return make_scoped_ptr(new DevToolsHttpHandler(
+  return base::WrapUnique(new DevToolsHttpHandler(
       std::move(socket_factory), std::string(), new HeadlessDevToolsDelegate(),
       browser_context->GetPath(), base::FilePath(), std::string(),
       browser_context->options().user_agent));

@@ -5,12 +5,12 @@
 #ifndef HEADLESS_PUBLIC_HEADLESS_BROWSER_H_
 #define HEADLESS_PUBLIC_HEADLESS_BROWSER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "headless/public/headless_export.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
@@ -36,7 +36,7 @@ class HEADLESS_EXPORT HeadlessBrowser {
   struct Options;
 
   // Create a new browser tab. |size| is in physical pixels.
-  virtual scoped_ptr<HeadlessWebContents> CreateWebContents(
+  virtual std::unique_ptr<HeadlessWebContents> CreateWebContents(
       const gfx::Size& size) = 0;
 
   // Returns a task runner for submitting work to the browser main thread.

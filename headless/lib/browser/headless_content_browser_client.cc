@@ -4,6 +4,9 @@
 
 #include "headless/lib/browser/headless_content_browser_client.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "headless/lib/browser/headless_browser_context.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -19,8 +22,8 @@ HeadlessContentBrowserClient::~HeadlessContentBrowserClient() {}
 
 content::BrowserMainParts* HeadlessContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams&) {
-  scoped_ptr<HeadlessBrowserMainParts> browser_main_parts =
-      make_scoped_ptr(new HeadlessBrowserMainParts(browser_));
+  std::unique_ptr<HeadlessBrowserMainParts> browser_main_parts =
+      base::WrapUnique(new HeadlessBrowserMainParts(browser_));
   browser_->set_browser_main_parts(browser_main_parts.get());
   return browser_main_parts.release();
 }

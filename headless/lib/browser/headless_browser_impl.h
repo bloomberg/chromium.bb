@@ -7,7 +7,8 @@
 
 #include "headless/public/headless_browser.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/synchronization/lock.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 
@@ -28,7 +29,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   ~HeadlessBrowserImpl() override;
 
   // HeadlessBrowser implementation:
-  scoped_ptr<HeadlessWebContents> CreateWebContents(
+  std::unique_ptr<HeadlessWebContents> CreateWebContents(
       const gfx::Size& size) override;
   scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
       const override;
@@ -53,7 +54,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   base::Callback<void(HeadlessBrowser*)> on_start_callback_;
   HeadlessBrowser::Options options_;
   HeadlessBrowserMainParts* browser_main_parts_;  // Not owned.
-  scoped_ptr<aura::WindowTreeHost> window_tree_host_;
+  std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserImpl);
 };

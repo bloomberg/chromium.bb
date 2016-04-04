@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/sys_info.h"
@@ -47,7 +49,7 @@ class HeadlessTestLauncherDelegate : public content::TestLauncherDelegate {
   content::ContentMainDelegate* CreateContentMainDelegate() override {
     // Use HeadlessBrowserTest::SetBrowserOptions to override these defaults.
     HeadlessBrowser::Options::Builder options_builder;
-    scoped_ptr<HeadlessBrowserImpl> browser(
+    std::unique_ptr<HeadlessBrowserImpl> browser(
         new HeadlessBrowserImplForTest(options_builder.Build()));
     return new HeadlessContentMainDelegate(std::move(browser));
   }

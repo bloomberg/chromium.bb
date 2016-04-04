@@ -4,6 +4,8 @@
 
 #include "headless/lib/browser/headless_browser_context.h"
 
+#include <memory>
+
 #include "base/path_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
@@ -77,10 +79,10 @@ void HeadlessBrowserContext::InitWhileIOAllowed() {
   BrowserContext::Initialize(this, path_);
 }
 
-scoped_ptr<content::ZoomLevelDelegate>
+std::unique_ptr<content::ZoomLevelDelegate>
 HeadlessBrowserContext::CreateZoomLevelDelegate(
     const base::FilePath& partition_path) {
-  return scoped_ptr<content::ZoomLevelDelegate>();
+  return std::unique_ptr<content::ZoomLevelDelegate>();
 }
 
 base::FilePath HeadlessBrowserContext::GetPath() const {

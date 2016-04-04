@@ -4,6 +4,7 @@
 
 #include "headless/lib/browser/headless_browser_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,10 +30,10 @@ HeadlessBrowserImpl::HeadlessBrowserImpl(
 
 HeadlessBrowserImpl::~HeadlessBrowserImpl() {}
 
-scoped_ptr<HeadlessWebContents> HeadlessBrowserImpl::CreateWebContents(
+std::unique_ptr<HeadlessWebContents> HeadlessBrowserImpl::CreateWebContents(
     const gfx::Size& size) {
   DCHECK(BrowserMainThread()->BelongsToCurrentThread());
-  return make_scoped_ptr(new HeadlessWebContentsImpl(
+  return base::WrapUnique(new HeadlessWebContentsImpl(
       browser_context(), window_tree_host_->window(), size));
 }
 
@@ -83,7 +84,7 @@ void HeadlessBrowserImpl::SetOptionsForTesting(
 int HeadlessBrowserMain(
     const HeadlessBrowser::Options& options,
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {
-  scoped_ptr<HeadlessBrowserImpl> browser(
+  std::unique_ptr<HeadlessBrowserImpl> browser(
       new HeadlessBrowserImpl(on_browser_start_callback, options));
 
   // TODO(skyostil): Implement custom message pumps.

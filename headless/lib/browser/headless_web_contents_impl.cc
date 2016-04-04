@@ -5,6 +5,7 @@
 #include "headless/lib/browser/headless_web_contents_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/navigation_handle.h"
@@ -94,7 +95,7 @@ bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {
 
 void HeadlessWebContentsImpl::AddObserver(Observer* observer) {
   DCHECK(observer_map_.find(observer) == observer_map_.end());
-  observer_map_[observer] = make_scoped_ptr(
+  observer_map_[observer] = base::WrapUnique(
       new WebContentsObserverAdapter(web_contents_.get(), observer));
 }
 
