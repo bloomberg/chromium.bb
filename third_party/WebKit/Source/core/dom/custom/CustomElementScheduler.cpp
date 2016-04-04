@@ -51,8 +51,8 @@ typedef HeapHashMap<Member<Element>, Member<CustomElementCallbackQueue>> Element
 
 static ElementCallbackQueueMap& callbackQueues()
 {
-    DEFINE_STATIC_LOCAL(Persistent<ElementCallbackQueueMap>, map, (new ElementCallbackQueueMap()));
-    return *map;
+    DEFINE_STATIC_LOCAL(ElementCallbackQueueMap, map, (new ElementCallbackQueueMap));
+    return map;
 }
 
 static CustomElementCallbackQueue& ensureCallbackQueue(RawPtr<Element> element)

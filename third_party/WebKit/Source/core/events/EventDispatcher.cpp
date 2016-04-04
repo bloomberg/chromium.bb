@@ -73,15 +73,15 @@ void EventDispatcher::dispatchSimulatedClick(Node& node, Event* underlyingEvent,
     // This persistent vector doesn't cause leaks, because added Nodes are removed
     // before dispatchSimulatedClick() returns. This vector is here just to prevent
     // the code from running into an infinite recursion of dispatchSimulatedClick().
-    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<Member<Node>>>, nodesDispatchingSimulatedClicks, (new HeapHashSet<Member<Node>>()));
+    DEFINE_STATIC_LOCAL(HeapHashSet<Member<Node>>, nodesDispatchingSimulatedClicks, (new HeapHashSet<Member<Node>>));
 
     if (isDisabledFormControl(&node))
         return;
 
-    if (nodesDispatchingSimulatedClicks->contains(&node))
+    if (nodesDispatchingSimulatedClicks.contains(&node))
         return;
 
-    nodesDispatchingSimulatedClicks->add(&node);
+    nodesDispatchingSimulatedClicks.add(&node);
 
     if (mouseEventOptions == SendMouseOverUpDownEvents)
         EventDispatcher(node, MouseEvent::create(EventTypeNames::mouseover, node.document().domWindow(), underlyingEvent, creationScope)).dispatch();
@@ -98,7 +98,7 @@ void EventDispatcher::dispatchSimulatedClick(Node& node, Event* underlyingEvent,
     // always send click
     EventDispatcher(node, MouseEvent::create(EventTypeNames::click, node.document().domWindow(), underlyingEvent, creationScope)).dispatch();
 
-    nodesDispatchingSimulatedClicks->remove(&node);
+    nodesDispatchingSimulatedClicks.remove(&node);
 }
 
 DispatchEventResult EventDispatcher::dispatch()

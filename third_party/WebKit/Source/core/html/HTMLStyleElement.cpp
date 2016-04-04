@@ -37,8 +37,8 @@ using namespace HTMLNames;
 
 static StyleEventSender& styleLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(Persistent<StyleEventSender>, sharedLoadEventSender, (StyleEventSender::create(EventTypeNames::load)));
-    return *sharedLoadEventSender;
+    DEFINE_STATIC_LOCAL(StyleEventSender, sharedLoadEventSender, (StyleEventSender::create(EventTypeNames::load)));
+    return sharedLoadEventSender;
 }
 
 inline HTMLStyleElement::HTMLStyleElement(Document& document, bool createdByParser)

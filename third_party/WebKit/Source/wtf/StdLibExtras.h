@@ -59,33 +59,62 @@ private:
 };
 #endif
 
-// A direct static local to a Blink garbage collected objects isn't allowed;
-// must be wrapped up with a persistent reference.
-#define STATIC_ASSERT_FOR_LOCAL_WITH_GARBAGE_COLLECTED_TYPE(Name, Type) \
-    using Name##NoConstType = std::remove_const<Type>::type; \
-    using Name##NoPointerType = std::remove_pointer<Name##NoConstType>::type; \
-    using Name##NoReferenceType = std::remove_reference<Name##NoPointerType>::type; \
-    static_assert(!WTF::IsGarbageCollectedType<Name##NoReferenceType>::value || WTF::IsPersistentReferenceType<Name##NoReferenceType>::value, "Garbage collected static local needs to be wrapped up with a persistent reference")
+namespace blink {
+template<typename T>class Persistent;
+};
 
-// Use DEFINE_STATIC_LOCAL() to declare and define a static local variable (static T;)
-// so that it is leaked and its destructors are not called at exit.
-//
-// To cooperate with leak detection, the objects held onto by these local statics
-// will in some cases have to be finalized prior to leak checking. This only applies
-// to static references to Oilpan heap objects and what they transitively hold on to.
-// LEAK_SANITIZER_REGISTER_STATIC_LOCAL() takes care of the details.
-//
+template<typename T, bool = WTF::IsGarbageCollectedType<T>::value && !WTF::IsPersistentReferenceType<T>::value>
+class StaticLocalWrapper {
+public:
+    using WrapType = T;
+
+    static T& unwrap(T* singleton)
+    {
+        return *singleton;
+    }
+};
+
+template<typename T>
+class StaticLocalWrapper<T, true> {
+public:
+    using WrapType = blink::Persistent<T>;
+
+    static T& unwrap(blink::Persistent<T>* singleton)
+    {
+        ASSERT(singleton);
+        // If this assert triggers, you're supplying an empty ("()") 'Arguments' argument
+        // to DEFINE_STATIC_LOCAL() - it must be the heap object you wish to create
+        // as a static singleton and wrapped up with a Persistent reference.
+        ASSERT(*singleton);
+        return **singleton;
+    }
+};
+
 #if ENABLE(ASSERT)
-#define DEFINE_STATIC_LOCAL(Type, Name, Arguments)        \
-    STATIC_ASSERT_FOR_LOCAL_WITH_GARBAGE_COLLECTED_TYPE(Name, Type); \
+#define DEFINE_STATIC_LOCAL_CHECK_THREADSAFE_ACCESS(Name) \
     static StaticLocalVerifier Name##StaticLocalVerifier; \
-    ASSERT(Name##StaticLocalVerifier.isNotRacy());        \
-    static Type& Name = *LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, new Type Arguments)
+    ASSERT(Name##StaticLocalVerifier.isNotRacy())
 #else
-#define DEFINE_STATIC_LOCAL(Type, Name, Arguments) \
-    STATIC_ASSERT_FOR_LOCAL_WITH_GARBAGE_COLLECTED_TYPE(Name, Type); \
-    static Type& Name = *LEAK_SANITIZER_REGISTER_STATIC_LOCAL(Type, new Type Arguments)
+#define DEFINE_STATIC_LOCAL_CHECK_THREADSAFE_ACCESS(Name)
 #endif
+
+// Use DEFINE_STATIC_LOCAL() to declare and define a static local variable
+// (static T;) so that it is leaked and its destructors are not called at exit.
+// T may also be a Blink garbage collected object, in which case it is
+// wrapped up by an off-heap Persistent<T> reference to the object, keeping
+// it alive across GCs.
+//
+// To cooperate with leak detection(LSan) for Blink garbage collected objects,
+// the objects owned by persistent local statics will in some cases have to be
+// finalized prior to leak checking. This only applies to static references to
+// Blink heap objects and what they transitively hold on to. Hence the
+// LEAK_SANITIZER_REGISTER_STATIC_LOCAL() use, it taking care of the grungy
+// details.
+//
+#define DEFINE_STATIC_LOCAL(Type, Name, Arguments)                    \
+    DEFINE_STATIC_LOCAL_CHECK_THREADSAFE_ACCESS(Name);                \
+    using WrappedTypeFor##Name = StaticLocalWrapper<Type>::WrapType;  \
+    static Type& Name = StaticLocalWrapper<Type>::unwrap(LEAK_SANITIZER_REGISTER_STATIC_LOCAL(WrappedTypeFor##Name, new WrappedTypeFor##Name Arguments))
 
 // Use this to declare and define a static local pointer to a ref-counted object so that
 // it is leaked so that the object's destructors are not called at exit.

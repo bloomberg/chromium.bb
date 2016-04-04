@@ -73,8 +73,8 @@ private:
 
 static DetailsEventSender& detailsToggleEventSender()
 {
-    DEFINE_STATIC_LOCAL(Persistent<DetailsEventSender>, sharedToggleEventSender, (DetailsEventSender::create(EventTypeNames::toggle)));
-    return *sharedToggleEventSender;
+    DEFINE_STATIC_LOCAL(DetailsEventSender, sharedToggleEventSender, (DetailsEventSender::create(EventTypeNames::toggle)));
+    return sharedToggleEventSender;
 }
 
 RawPtr<HTMLDetailsElement> HTMLDetailsElement::create(Document& document)

@@ -22,14 +22,14 @@ InputDeviceCapabilities::~InputDeviceCapabilities()
 
 InputDeviceCapabilities* InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
 {
-    DEFINE_STATIC_LOCAL(Persistent<InputDeviceCapabilities>, instance, (InputDeviceCapabilities::create(true)));
-    return instance;
+    DEFINE_STATIC_LOCAL(InputDeviceCapabilities, instance, (InputDeviceCapabilities::create(true)));
+    return &instance;
 }
 
 InputDeviceCapabilities* InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()
 {
-    DEFINE_STATIC_LOCAL(Persistent<InputDeviceCapabilities>, instance, (InputDeviceCapabilities::create(false)));
-    return instance;
+    DEFINE_STATIC_LOCAL(InputDeviceCapabilities, instance, (InputDeviceCapabilities::create(false)));
+    return &instance;
 }
 
 } // namespace blink

@@ -53,8 +53,8 @@ const NodeSet& Value::toNodeSet(EvaluationContext* context) const
         context->hadTypeConversionError = true;
 
     if (!m_data) {
-        DEFINE_STATIC_LOCAL(Persistent<NodeSet>, emptyNodeSet, (NodeSet::create()));
-        return *emptyNodeSet;
+        DEFINE_STATIC_LOCAL(NodeSet, emptyNodeSet, (NodeSet::create()));
+        return emptyNodeSet;
     }
 
     return m_data->nodeSet();

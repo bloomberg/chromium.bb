@@ -363,8 +363,8 @@ static bool s_threadedParsingEnabledForTesting = true;
 
 Document::WeakDocumentSet& Document::liveDocumentSet()
 {
-    DEFINE_STATIC_LOCAL(Persistent<WeakDocumentSet>, set, (new WeakDocumentSet()));
-    return *set;
+    DEFINE_STATIC_LOCAL(WeakDocumentSet, set, (new WeakDocumentSet));
+    return set;
 }
 
 // This class doesn't work with non-Document ExecutionContext.

@@ -6497,4 +6497,25 @@ TEST(HeapTest, TestPersistentHeapVectorWithUnusedSlots)
 #endif
 }
 
+TEST(HeapTest, TestStaticLocals)
+{
+    // Sanity check DEFINE_STATIC_LOCAL()s over heap allocated objects and collections.
+
+    DEFINE_STATIC_LOCAL(IntWrapper, intWrapper, (new IntWrapper(33)));
+    DEFINE_STATIC_LOCAL(PersistentHeapVector<Member<IntWrapper>>, persistentHeapVectorIntWrapper, ());
+    DEFINE_STATIC_LOCAL(HeapVector<Member<IntWrapper>>, heapVectorIntWrapper, (new HeapVector<Member<IntWrapper>>));
+
+    EXPECT_EQ(33, intWrapper.value());
+    EXPECT_EQ(0u, persistentHeapVectorIntWrapper.size());
+    EXPECT_EQ(0u, heapVectorIntWrapper.size());
+
+    persistentHeapVectorIntWrapper.append(&intWrapper);
+    heapVectorIntWrapper.append(&intWrapper);
+    EXPECT_EQ(1u, persistentHeapVectorIntWrapper.size());
+    EXPECT_EQ(1u, heapVectorIntWrapper.size());
+
+    EXPECT_EQ(persistentHeapVectorIntWrapper[0], heapVectorIntWrapper[0]);
+    EXPECT_EQ(33, heapVectorIntWrapper[0]->value());
+}
+
 } // namespace blink

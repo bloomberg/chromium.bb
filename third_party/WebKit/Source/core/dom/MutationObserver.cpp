@@ -166,14 +166,14 @@ void MutationObserver::observationEnded(MutationObserverRegistration* registrati
 
 static MutationObserverSet& activeMutationObservers()
 {
-    DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, activeObservers, (new MutationObserverSet()));
-    return *activeObservers;
+    DEFINE_STATIC_LOCAL(MutationObserverSet, activeObservers, (new MutationObserverSet));
+    return activeObservers;
 }
 
 static MutationObserverSet& suspendedMutationObservers()
 {
-    DEFINE_STATIC_LOCAL(Persistent<MutationObserverSet>, suspendedObservers, (new MutationObserverSet()));
-    return *suspendedObservers;
+    DEFINE_STATIC_LOCAL(MutationObserverSet, suspendedObservers, (new MutationObserverSet));
+    return suspendedObservers;
 }
 
 static void activateObserver(RawPtr<MutationObserver> observer)

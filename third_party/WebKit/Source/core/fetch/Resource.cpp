@@ -144,6 +144,73 @@ String Resource::CacheHandler::encoding() const
     return m_resource->encoding();
 }
 
+class Resource::ResourceCallback final : public GarbageCollectedFinalized<ResourceCallback> {
+public:
+    static ResourceCallback& callbackHandler();
+    DECLARE_TRACE();
+    void schedule(Resource*);
+    void cancel(Resource*);
+    bool isScheduled(Resource*) const;
+private:
+    ResourceCallback();
+
+    void runTask();
+    OwnPtr<CancellableTaskFactory> m_callbackTaskFactory;
+    HeapHashSet<Member<Resource>> m_resourcesWithPendingClients;
+};
+
+Resource::ResourceCallback& Resource::ResourceCallback::callbackHandler()
+{
+    // Oilpan + LSan: as the callbackHandler() singleton is used by Resource
+    // and ResourcePtr finalizers, it cannot be released upon shutdown in
+    // preparation for leak detection.
+    //
+    // Keep it out of LSan's reach instead.
+    LEAK_SANITIZER_DISABLED_SCOPE;
+    DEFINE_STATIC_LOCAL(ResourceCallback, callbackHandler, (new ResourceCallback));
+    return callbackHandler;
+}
+
+DEFINE_TRACE(Resource::ResourceCallback)
+{
+    visitor->trace(m_resourcesWithPendingClients);
+}
+
+Resource::ResourceCallback::ResourceCallback()
+    : m_callbackTaskFactory(CancellableTaskFactory::create(this, &ResourceCallback::runTask))
+{
+}
+
+void Resource::ResourceCallback::schedule(Resource* resource)
+{
+    if (!m_callbackTaskFactory->isPending())
+        Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(BLINK_FROM_HERE, m_callbackTaskFactory->cancelAndCreate());
+    m_resourcesWithPendingClients.add(resource);
+}
+
+void Resource::ResourceCallback::cancel(Resource* resource)
+{
+    m_resourcesWithPendingClients.remove(resource);
+    if (m_callbackTaskFactory->isPending() && m_resourcesWithPendingClients.isEmpty())
+        m_callbackTaskFactory->cancel();
+}
+
+bool Resource::ResourceCallback::isScheduled(Resource* resource) const
+{
+    return m_resourcesWithPendingClients.contains(resource);
+}
+
+void Resource::ResourceCallback::runTask()
+{
+    HeapVector<Member<Resource>> resources;
+    for (const Member<Resource>& resource : m_resourcesWithPendingClients)
+        resources.append(resource.get());
+    m_resourcesWithPendingClients.clear();
+
+    for (const auto& resource : resources)
+        resource->finishPendingClients();
+}
+
 Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options)
     : m_resourceRequest(request)
     , m_options(options)
@@ -609,7 +676,7 @@ void Resource::addClient(ResourceClient* client)
     // If we have existing data to send to the new client and the resource type supprts it, send it asynchronously.
     if (!m_response.isNull() && !shouldSendCachedDataSynchronouslyForType(getType()) && !m_needsSynchronousCacheHit) {
         m_clientsAwaitingCallback.add(client);
-        ResourceCallback::callbackHandler()->schedule(this);
+        ResourceCallback::callbackHandler().schedule(this);
         return;
     }
 
@@ -629,7 +696,7 @@ void Resource::removeClient(ResourceClient* client)
         m_clients.remove(client);
 
     if (m_clientsAwaitingCallback.isEmpty())
-        ResourceCallback::callbackHandler()->cancel(this);
+        ResourceCallback::callbackHandler().cancel(this);
 
     didRemoveClientOrObserver();
     // This object may be dead here.
@@ -727,9 +794,9 @@ void Resource::finishPendingClients()
 
     // It is still possible for the above loop to finish a new client synchronously.
     // If there's no client waiting we should deschedule.
-    bool scheduled = ResourceCallback::callbackHandler()->isScheduled(this);
+    bool scheduled = ResourceCallback::callbackHandler().isScheduled(this);
     if (scheduled && m_clientsAwaitingCallback.isEmpty())
-        ResourceCallback::callbackHandler()->cancel(this);
+        ResourceCallback::callbackHandler().cancel(this);
 
     // Prevent the case when there are clients waiting but no callback scheduled.
     ASSERT(m_clientsAwaitingCallback.isEmpty() || scheduled);
@@ -910,60 +977,6 @@ void Resource::didChangePriority(ResourceLoadPriority loadPriority, int intraPri
     m_resourceRequest.setPriority(loadPriority, intraPriorityValue);
     if (m_loader)
         m_loader->didChangePriority(loadPriority, intraPriorityValue);
-}
-
-Resource::ResourceCallback* Resource::ResourceCallback::callbackHandler()
-{
-    // Oilpan + LSan: as the callbackHandler() singleton is used by Resource
-    // and ResourcePtr finalizers, it cannot be released upon shutdown in
-    // preparation for leak detection.
-    //
-    // Keep it out of LSan's reach instead.
-    LEAK_SANITIZER_DISABLED_SCOPE;
-    DEFINE_STATIC_LOCAL(Persistent<ResourceCallback>, callbackHandler, (new ResourceCallback));
-    return callbackHandler.get();
-}
-
-DEFINE_TRACE(Resource::ResourceCallback)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_resourcesWithPendingClients);
-#endif
-}
-
-Resource::ResourceCallback::ResourceCallback()
-    : m_callbackTaskFactory(CancellableTaskFactory::create(this, &ResourceCallback::runTask))
-{
-}
-
-void Resource::ResourceCallback::schedule(Resource* resource)
-{
-    if (!m_callbackTaskFactory->isPending())
-        Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postTask(BLINK_FROM_HERE, m_callbackTaskFactory->cancelAndCreate());
-    m_resourcesWithPendingClients.add(resource);
-}
-
-void Resource::ResourceCallback::cancel(Resource* resource)
-{
-    m_resourcesWithPendingClients.remove(resource);
-    if (m_callbackTaskFactory->isPending() && m_resourcesWithPendingClients.isEmpty())
-        m_callbackTaskFactory->cancel();
-}
-
-bool Resource::ResourceCallback::isScheduled(Resource* resource) const
-{
-    return m_resourcesWithPendingClients.contains(resource);
-}
-
-void Resource::ResourceCallback::runTask()
-{
-    HeapVector<Member<Resource>> resources;
-    for (const Member<Resource>& resource : m_resourcesWithPendingClients)
-        resources.append(resource.get());
-    m_resourcesWithPendingClients.clear();
-
-    for (const auto& resource : resources)
-        resource->finishPendingClients();
 }
 
 static const char* initatorTypeNameToString(const AtomicString& initiatorTypeName)
