@@ -181,26 +181,6 @@ get_screen_from_output(struct weston_output *output)
 	return NULL;
 }
 
-static void
-remove_all_notification(struct wl_list *listener_list)
-{
-	struct wl_listener *listener = NULL;
-	struct wl_listener *next = NULL;
-
-	wl_list_for_each_safe(listener, next, listener_list, link) {
-		struct listener_layout_notification *notification = NULL;
-		wl_list_remove(&listener->link);
-
-		notification =
-			container_of(listener,
-				     struct listener_layout_notification,
-				     listener);
-
-		free(notification->userdata);
-		free(notification);
-	}
-}
-
 /**
  * Called at destruction of wl_surface/ivi_surface
  */
@@ -985,23 +965,6 @@ layer_removed(struct wl_listener *listener, void *data)
 }
 
 static void
-layer_prop_changed(struct wl_listener *listener, void *data)
-{
-	struct ivi_layout_layer *ivilayer = data;
-
-	struct listener_layout_notification *layout_listener =
-		container_of(listener,
-			     struct listener_layout_notification,
-			     listener);
-
-	struct ivi_layout_notification_callback *prop_callback =
-		layout_listener->userdata;
-
-	((layer_property_notification_func)prop_callback->callback)
-		(ivilayer, &ivilayer->prop, ivilayer->prop.event_mask, prop_callback->data);
-}
-
-static void
 surface_created(struct wl_listener *listener, void *data)
 {
 	struct ivi_layout_surface *ivisurface = data;
@@ -1582,30 +1545,6 @@ ivi_layout_layer_create_with_dimension(uint32_t id_layer,
 }
 
 static void
-ivi_layout_layer_remove_notification(struct ivi_layout_layer *ivilayer)
-{
-	if (ivilayer == NULL) {
-		weston_log("ivi_layout_layer_remove_notification: invalid argument\n");
-		return;
-	}
-
-	remove_all_notification(&ivilayer->property_changed.listener_list);
-}
-
-static void
-ivi_layout_layer_remove_notification_by_callback(struct ivi_layout_layer *ivilayer,
-						 layer_property_notification_func callback,
-						 void *userdata)
-{
-	if (ivilayer == NULL) {
-		weston_log("ivi_layout_layer_remove_notification_by_callback: invalid argument\n");
-		return;
-	}
-
-	remove_notification(&ivilayer->property_changed.listener_list, callback, userdata);
-}
-
-static void
 ivi_layout_layer_destroy(struct ivi_layout_layer *ivilayer)
 {
 	struct ivi_layout *layout = get_instance();
@@ -1626,8 +1565,6 @@ ivi_layout_layer_destroy(struct ivi_layout_layer *ivilayer)
 	wl_list_remove(&ivilayer->pending.link);
 	wl_list_remove(&ivilayer->order.link);
 	wl_list_remove(&ivilayer->link);
-
-	ivi_layout_layer_remove_notification(ivilayer);
 
 	free(ivilayer);
 }
@@ -1983,29 +1920,17 @@ ivi_layout_surface_get_size(struct ivi_layout_surface *ivisurf,
 }
 
 static int32_t
-ivi_layout_layer_add_notification(struct ivi_layout_layer *ivilayer,
-				  layer_property_notification_func callback,
-				  void *userdata)
+ivi_layout_layer_add_listener(struct ivi_layout_layer *ivilayer,
+				  struct wl_listener *listener)
 {
-	struct ivi_layout_notification_callback *prop_callback = NULL;
-
-	if (ivilayer == NULL || callback == NULL) {
-		weston_log("ivi_layout_layer_add_notification: invalid argument\n");
+	if (ivilayer == NULL || listener == NULL) {
+		weston_log("ivi_layout_layer_add_listener: invalid argument\n");
 		return IVI_FAILED;
 	}
 
-	prop_callback = malloc(sizeof *prop_callback);
-	if (prop_callback == NULL) {
-		weston_log("fails to allocate memory\n");
-		return IVI_FAILED;
-	}
+	wl_signal_add(&ivilayer->property_changed, listener);
 
-	prop_callback->callback = callback;
-	prop_callback->data = userdata;
-
-	return add_notification(&ivilayer->property_changed,
-				layer_prop_changed,
-				prop_callback);
+	return IVI_SUCCEEDED;
 }
 
 static const struct ivi_layout_surface_properties *
@@ -2348,8 +2273,7 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.layer_add_surface			= ivi_layout_layer_add_surface,
 	.layer_remove_surface			= ivi_layout_layer_remove_surface,
 	.layer_set_render_order			= ivi_layout_layer_set_render_order,
-	.layer_add_notification			= ivi_layout_layer_add_notification,
-	.layer_remove_notification		= ivi_layout_layer_remove_notification,
+	.layer_add_listener			= ivi_layout_layer_add_listener,
 	.layer_set_transition			= ivi_layout_layer_set_transition,
 
 	/**
@@ -2370,11 +2294,6 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	 */
 	.surface_get_size		= ivi_layout_surface_get_size,
 	.surface_dump			= ivi_layout_surface_dump,
-
-	/**
-	 * remove notification by callback on property changes of ivi_surface/layer
-	 */
-	.layer_remove_notification_by_callback		= ivi_layout_layer_remove_notification_by_callback
 };
 
 int

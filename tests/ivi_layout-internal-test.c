@@ -35,11 +35,14 @@
 #include "ivi-shell/ivi-layout-export.h"
 #include "ivi-shell/ivi-layout-private.h"
 #include "ivi-test.h"
+#include "shared/helpers.h"
 
 struct test_context {
 	struct weston_compositor *compositor;
 	const struct ivi_layout_interface *layout_interface;
 	uint32_t user_flags;
+
+	struct wl_listener layer_property_changed;
 };
 
 static void
@@ -652,13 +655,14 @@ test_commit_changes_after_render_order_set_layer_destroy(
 }
 
 static void
-test_layer_properties_changed_notification_callback(struct ivi_layout_layer *ivilayer,
-						    const struct ivi_layout_layer_properties *prop,
-						    enum ivi_layout_notification_mask mask,
-						    void *userdata)
+test_layer_properties_changed_notification_callback(struct wl_listener *listener, void *data)
 {
-	struct test_context *ctx = userdata;
+	struct test_context *ctx =
+			container_of(listener, struct test_context,
+					layer_property_changed);
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_layer *ivilayer = data;
+	const struct ivi_layout_layer_properties *prop = lyt->get_properties_of_layer(ivilayer);
 
 	iassert(lyt->get_id_of_layer(ivilayer) == IVI_TEST_LAYER_ID(0));
 	iassert(prop->source_width == 200);
@@ -679,7 +683,9 @@ test_layer_properties_changed_notification(struct test_context *ctx)
 
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 
-	iassert(lyt->layer_add_notification(ivilayer, test_layer_properties_changed_notification_callback, ctx) == IVI_SUCCEEDED);
+	ctx->layer_property_changed.notify = test_layer_properties_changed_notification_callback;
+
+	iassert(lyt->layer_add_listener(ivilayer, &ctx->layer_property_changed) == IVI_SUCCEEDED);
 
 	lyt->commit_changes();
 
@@ -700,7 +706,8 @@ test_layer_properties_changed_notification(struct test_context *ctx)
 
 	iassert(ctx->user_flags == 0);
 
-	lyt->layer_remove_notification(ivilayer);
+	// remove layer property changed listener.
+	wl_list_remove(&ctx->layer_property_changed.link);
 
 	ctx->user_flags = 0;
 	lyt->commit_changes();
@@ -800,10 +807,7 @@ test_layer_remove_notification(struct test_context *ctx)
 }
 
 static void
-test_layer_bad_properties_changed_notification_callback(struct ivi_layout_layer *ivilayer,
-							const struct ivi_layout_layer_properties *prop,
-							enum ivi_layout_notification_mask mask,
-							void *userdata)
+test_layer_bad_properties_changed_notification_callback(struct wl_listener *listener, void *data)
 {
 }
 
@@ -815,9 +819,10 @@ test_layer_bad_properties_changed_notification(struct test_context *ctx)
 
 	ivilayer = lyt->layer_create_with_dimension(IVI_TEST_LAYER_ID(0), 200, 300);
 
-	iassert(lyt->layer_add_notification(
-		    NULL, test_layer_bad_properties_changed_notification_callback, NULL) == IVI_FAILED);
-	iassert(lyt->layer_add_notification(ivilayer, NULL, NULL) == IVI_FAILED);
+	ctx->layer_property_changed.notify = test_layer_bad_properties_changed_notification_callback;
+
+	iassert(lyt->layer_add_listener(NULL, &ctx->layer_property_changed) == IVI_FAILED);
+	iassert(lyt->layer_add_listener(ivilayer, NULL) == IVI_FAILED);
 
 	lyt->layer_destroy(ivilayer);
 }

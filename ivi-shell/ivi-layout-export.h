@@ -138,12 +138,6 @@ enum ivi_layout_transition_type{
 	IVI_LAYOUT_TRANSITION_MAX,
 };
 
-typedef void (*layer_property_notification_func)(
-			struct ivi_layout_layer *ivilayer,
-			const struct ivi_layout_layer_properties *,
-			enum ivi_layout_notification_mask mask,
-			void *userdata);
-
 typedef void (*layer_create_notification_func)(
 			struct ivi_layout_layer *ivilayer,
 			void *userdata);
@@ -522,19 +516,18 @@ struct ivi_layout_interface {
 					  int32_t number);
 
 	/**
-	 * \brief register for notification on property changes of ivi_layer
+	 * \brief add a listener to listen property changes of ivi_layer
+	 *
+	 *	When a property of the ivi_layer is changed, the property_changed
+	 * signal is emitted to the listening controller plugins.
+	 * The pointer of the ivi_layer is sent as the void *data argument
+	 * to the wl_listener::notify callback function of the listener.
 	 *
 	 * \return IVI_SUCCEEDED if the method call was successful
 	 * \return IVI_FAILED if the method call was failed
 	 */
-	int32_t (*layer_add_notification)(struct ivi_layout_layer *ivilayer,
-					  layer_property_notification_func callback,
-					  void *userdata);
-
-	/**
-	 * \brief remove notification on property changes of ivi_layer
-	 */
-	void (*layer_remove_notification)(struct ivi_layout_layer *ivilayer);
+	int32_t (*layer_add_listener)(struct ivi_layout_layer *ivilayer,
+					  struct wl_listener *listener);
 
 	/**
 	 * \brief set type of transition animation
@@ -596,13 +589,6 @@ struct ivi_layout_interface {
 				void *target, size_t size,
 				int32_t x, int32_t y,
 				int32_t width, int32_t height);
-
-	/**
-	 * \brief remove notification by callback on property changes of ivi_layer
-	 */
-	void (*layer_remove_notification_by_callback)(struct ivi_layout_layer *ivilayer,
-						      layer_property_notification_func callback,
-						      void *userdata);
 };
 
 #ifdef __cplusplus
