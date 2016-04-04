@@ -33,6 +33,7 @@ class _OortOnlineMeasurement(page_test.PageTest):
 
 
 @benchmark.Disabled('android')
+@benchmark.Disabled('mac', 'win')  # crbug.com/599416
 class OortOnline(perf_benchmark.PerfBenchmark):
   """OortOnline benchmark that measures WebGL and V8 performance.
   URL: http://oortonline.gl/#run
