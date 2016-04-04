@@ -215,26 +215,16 @@ PassRefPtr<SkImageFilter> FilterEffect::createTransparentBlack(SkiaImageFilterBu
     return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), nullptr, &rect));
 }
 
-bool FilterEffect::hasConnectedInput() const
-{
-    for (unsigned i = 0; i < m_inputEffects.size(); i++) {
-        if (m_inputEffects[i] && m_inputEffects[i]->getFilterEffectType() != FilterEffectTypeSourceInput) {
-            return true;
-        }
-    }
-    return false;
-}
-
 SkImageFilter::CropRect FilterEffect::getCropRect() const
 {
-    FloatRect rect;
-    uint32_t flags = 0;
-    if (!hasConnectedInput() && !getFilter()->filterRegion().isEmpty()) {
-        rect = getFilter()->filterRegion();
-        flags = SkImageFilter::CropRect::kHasAll_CropEdge;
+    if (!filterPrimitiveSubregion().isEmpty()) {
+        FloatRect rect = filterPrimitiveSubregion();
+        rect.scale(getFilter()->scale());
+        return SkImageFilter::CropRect(rect);
     }
 
-    rect = applyEffectBoundaries(rect);
+    uint32_t flags = 0;
+    FloatRect rect = applyEffectBoundaries(rect);
 
     rect.scale(getFilter()->scale());
 
