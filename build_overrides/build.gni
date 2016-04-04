@@ -8,4 +8,4 @@
 # builds. We can remove this when Chromium drops 10.6 support and also
 # requires 10.7.
 mac_sdk_min_build_override = "10.10"
-mac_deployment_target_build_override = "10.6"
+mac_deployment_target_build_override = "10.7"

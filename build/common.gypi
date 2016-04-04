@@ -1945,8 +1945,8 @@
           # macros are available, #include <AvailabilityMacros.h>.  Additional
           # documentation on these macros is available at
           # http://developer.apple.com/mac/library/technotes/tn2002/tn2064.html#SECTION3
-          # Chrome normally builds with the Mac OS X 10.6 SDK and sets the
-          # deployment target to 10.6.  Other projects, such as O3D, may
+          # Chrome normally builds with the Mac OS X 10.10 SDK and sets the
+          # deployment target to 10.7.  Other projects, such as O3D, may
           # override these defaults.
 
           # Normally, mac_sdk_min is used to find an SDK that Xcode knows
@@ -1955,16 +1955,7 @@
           # someplace that Xcode doesn't know about, set mac_sdk_path to the
           # path to the SDK; when set to a non-empty string, SDK detection
           # based on mac_sdk_min will be bypassed entirely.
-          'conditions': [
-            ['OS=="ios"', {
-              # The iOS build can use Xcode's clang, and that will complain
-              # about -stdlib=libc++ if the deployment target is not at least
-              # 10.7.
-              'mac_deployment_target%': '10.7',
-            }, {  # else OS!="ios"
-              'mac_deployment_target%': '10.6',
-            }],
-          ],
+          'mac_deployment_target%': '10.7',
           'mac_sdk_min%': '10.10',
           'mac_sdk_path%': '',
         },
