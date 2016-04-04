@@ -52,6 +52,9 @@ static INLINE int is_inter_mode(PREDICTION_MODE mode) {
 typedef struct {
   PREDICTION_MODE as_mode;
   int_mv as_mv[2];  // first, second inter predictor motion vectors
+#if CONFIG_REF_MV
+  int_mv pred_mv[2];
+#endif
 } b_mode_info;
 
 // Note that the rate-distortion optimization loop, bit-stream writer, and
@@ -94,6 +97,7 @@ typedef struct {
   TX_TYPE tx_type;
 
 #if CONFIG_REF_MV
+  int_mv pred_mv[2];
   uint8_t ref_mv_idx;
 #endif
   // TODO(slavarnway): Delete and use bmi[3].as_mv[] instead.

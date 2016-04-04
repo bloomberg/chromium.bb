@@ -537,12 +537,21 @@ static INLINE int is_mv_valid(const MV *mv) {
 }
 
 static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
-                            PREDICTION_MODE mode, int_mv mv[2],
+                            PREDICTION_MODE mode, int block, int_mv mv[2],
                             int_mv ref_mv[2], int_mv nearest_mv[2],
                             int_mv near_mv[2], int is_compound, int allow_hp,
                             aom_reader *r) {
   int i;
   int ret = 1;
+
+#if CONFIG_REF_MV
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  BLOCK_SIZE bsize = mbmi->sb_type;
+  int_mv *pred_mv = (bsize >= BLOCK_8X8) ?
+      mbmi->pred_mv : xd->mi[0]->bmi[block].pred_mv;
+#else
+  (void)block;
+#endif
 
   switch (mode) {
     case NEWMV: {
@@ -552,22 +561,40 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
         read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, &cm->fc->nmvc, mv_counts,
                 allow_hp);
         ret = ret && is_mv_valid(&mv[i].as_mv);
+#if CONFIG_REF_MV
+        pred_mv[i].as_int = ref_mv[i].as_int;
+#endif
       }
       break;
     }
     case NEARESTMV: {
       mv[0].as_int = nearest_mv[0].as_int;
       if (is_compound) mv[1].as_int = nearest_mv[1].as_int;
+#if CONFIG_REF_MV
+      pred_mv[0].as_int = nearest_mv[0].as_int;
+      if (is_compound)
+        pred_mv[1].as_int = nearest_mv[1].as_int;
+#endif
       break;
     }
     case NEARMV: {
       mv[0].as_int = near_mv[0].as_int;
       if (is_compound) mv[1].as_int = near_mv[1].as_int;
+#if CONFIG_REF_MV
+      pred_mv[0].as_int = near_mv[0].as_int;
+      if (is_compound)
+        pred_mv[1].as_int = near_mv[1].as_int;
+#endif
       break;
     }
     case ZEROMV: {
       mv[0].as_int = 0;
       if (is_compound) mv[1].as_int = 0;
+#if CONFIG_REF_MV
+      pred_mv[0].as_int = 0;
+      if (is_compound)
+        pred_mv[1].as_int = 0;
+#endif
       break;
     }
     default: { return 0; }
@@ -730,7 +757,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
                                            &near_sub8x8[ref]);
         }
 
-        if (!assign_mv(cm, xd, b_mode, block, nearestmv, nearest_sub8x8,
+        if (!assign_mv(cm, xd, b_mode, j, block, nearestmv, nearest_sub8x8,
                        near_sub8x8, is_compound, allow_hp, r)) {
           xd->corrupted |= 1;
           break;
@@ -749,7 +776,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     mbmi->mv[0].as_int = mi->bmi[3].as_mv[0].as_int;
     mbmi->mv[1].as_int = mi->bmi[3].as_mv[1].as_int;
   } else {
-    xd->corrupted |= !assign_mv(cm, xd, mbmi->mode, mbmi->mv, nearestmv,
+    xd->corrupted |= !assign_mv(cm, xd, mbmi->mode, 0, mbmi->mv, nearestmv,
                                 nearestmv, nearmv, is_compound, allow_hp, r);
   }
 }

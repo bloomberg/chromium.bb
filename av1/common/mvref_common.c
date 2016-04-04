@@ -40,6 +40,8 @@ static uint8_t add_ref_mv_candidate(const MACROBLOCKD *xd,
         // Add a new item to the list.
         if (index == *refmv_count) {
           ref_mv_stack[index].this_mv = this_refmv;
+          ref_mv_stack[index].pred_mv =
+              get_sub_block_pred_mv(candidate_mi, ref, col, block);
           ref_mv_stack[index].weight = 2 * len;
           ++(*refmv_count);
 
@@ -64,6 +66,8 @@ static uint8_t add_ref_mv_candidate(const MACROBLOCKD *xd,
           // Add a new item to the list.
           if (index == *refmv_count) {
             ref_mv_stack[index].this_mv = this_refmv;
+            ref_mv_stack[index].pred_mv =
+                get_sub_block_pred_mv(candidate_mi, ref, col, alt_block);
             ref_mv_stack[index].weight = len;
             ++(*refmv_count);
 
