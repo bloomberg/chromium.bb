@@ -28,15 +28,16 @@ Branches are colorized as follows:
 import argparse
 import collections
 import os
-import sys
 import subprocess2
-
-from third_party import colorama
-from third_party.colorama import Fore, Style
+import sys
 
 from git_common import current_branch, upstream, tags, get_branches_info
 from git_common import get_git_version, MIN_UPSTREAM_TRACK_GIT_VERSION, hash_one
 from git_common import run
+
+import setup_color
+
+from third_party.colorama import Fore, Style
 
 DEFAULT_SEPARATOR = ' ' * 4
 
@@ -272,7 +273,7 @@ class BranchMapper(object):
 
 
 def main(argv):
-  colorama.init(wrap="TERM" not in os.environ)
+  setup_color.init()
   if get_git_version() < MIN_UPSTREAM_TRACK_GIT_VERSION:
     print >> sys.stderr, (
         'This tool will not show all tracking information for git version '

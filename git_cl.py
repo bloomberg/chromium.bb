@@ -45,6 +45,7 @@ from luci_hacks import trigger_luci_job as luci_trigger
 import clang_format
 import commit_queue
 import dart_format
+import setup_color
 import fix_encoding
 import gclient_utils
 import gerrit_util
@@ -2481,7 +2482,7 @@ def CMDstatus(parser, args):
     issue_url, status = branch_statuses.pop(branch)
     color = color_for_status(status)
     reset = Fore.RESET
-    if not sys.stdout.isatty():
+    if not setup_color.IS_TTY:
       color = ''
       reset = ''
     status_str = '(%s)' % status if status else ''
@@ -4181,7 +4182,7 @@ def CMDtry_results(parser, args):
   group.add_option(
       "--print-master", action='store_true', help="print master name as well.")
   group.add_option(
-      "--color", action='store_true', default=sys.stdout.isatty(),
+      "--color", action='store_true', default=setup_color.IS_TTY,
       help="force color output, useful when piping output.")
   group.add_option(
       "--buildbucket-host", default='cr-buildbucket.appspot.com',
@@ -4615,7 +4616,7 @@ if __name__ == '__main__':
   # These affect sys.stdout so do it outside of main() to simplify mocks in
   # unit testing.
   fix_encoding.fix_encoding()
-  colorama.init(wrap="TERM" not in os.environ)
+  setup_color.init()
   try:
     sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:

@@ -102,7 +102,7 @@ import git_cache
 from third_party.repo.progress import Progress
 import subcommand
 import subprocess2
-from third_party import colorama
+import setup_color
 
 CHROMIUM_SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
 
@@ -1511,7 +1511,7 @@ been automagically updated.  The previous version is available at %s.old.
       revision_overrides = self._EnforceRevisions()
     pm = None
     # Disable progress for non-tty stdout.
-    if (sys.stdout.isatty() and not self._options.verbose and progress):
+    if (setup_color.IS_TTY and not self._options.verbose and progress):
       if command in ('update', 'revert'):
         pm = Progress('Syncing projects', 1)
       elif command == 'recurse':
@@ -2303,7 +2303,7 @@ def main(argv):
     return 2
   fix_encoding.fix_encoding()
   disable_buffering()
-  colorama.init(wrap="TERM" not in os.environ)
+  setup_color.init()
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
     return dispatcher.execute(OptionParser(), argv)

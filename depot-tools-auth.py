@@ -16,9 +16,8 @@ import optparse
 import sys
 import os
 
-from third_party import colorama
-
 import auth
+import setup_color
 import subcommand
 
 __version__ = '1.0'
@@ -95,7 +94,7 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  colorama.init(wrap="TERM" not in os.environ)
+  setup_color.init()
   try:
     sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:

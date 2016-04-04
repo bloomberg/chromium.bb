@@ -22,6 +22,7 @@ import functools
 import logging
 import os
 import re
+import setup_color
 import shutil
 import signal
 import sys
@@ -281,7 +282,7 @@ def once(function):
 ## Git functions
 
 
-def blame(filename, revision=None, porcelain=False, *args):
+def blame(filename, revision=None, porcelain=False, *_args):
   command = ['blame']
   if porcelain:
     command.append('-p')
@@ -576,7 +577,7 @@ def less():  # pragma: no cover
   Automatically checks if sys.stdout is a non-TTY stream. If so, it avoids
   running less and just yields sys.stdout.
   """
-  if not sys.stdout.isatty():
+  if not setup_color.IS_TTY:
     yield sys.stdout
     return
 
