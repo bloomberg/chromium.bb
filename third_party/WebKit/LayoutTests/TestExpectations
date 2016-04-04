@@ -18,10 +18,6 @@ crbug.com/356658 fast/dom/gc-5.html [ Failure ]
 crbug.com/356658 fast/dom/gc-12.html [ Failure ]
 crbug.com/356658 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Failure Timeout ]
 
-crbug.com/377567 [ Debug ] editing/selection/extend-selection-character.html [ Timeout Pass ]
-crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
-crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pass ]
-
 crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure Pass ]
 
 crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]
