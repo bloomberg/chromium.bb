@@ -43,7 +43,6 @@ const char kShelfAutoHideBehaviorNever[] = "Never";
 const char kShelfAlignmentBottom[] = "Bottom";
 const char kShelfAlignmentLeft[] = "Left";
 const char kShelfAlignmentRight[] = "Right";
-const char kShelfAlignmentTop[] = "Top";
 
 void RegisterChromeLauncherUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {

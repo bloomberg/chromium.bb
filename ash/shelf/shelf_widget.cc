@@ -183,8 +183,7 @@ void DimmerView::OnPaintBackground(gfx::Canvas* canvas) {
         shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
             SkBitmapOperations::ROTATION_90_CW,
             SkBitmapOperations::ROTATION_90_CW,
-            SkBitmapOperations::ROTATION_270_CW,
-            SkBitmapOperations::ROTATION_180_CW));
+            SkBitmapOperations::ROTATION_270_CW));
   }
   paint.setAlpha(alpha_);
   canvas->DrawImageInt(shelf_background,
@@ -272,8 +271,6 @@ class ShelfWindowTargeter : public wm::EasyResizeWindowTargeter,
         return gfx::Insets(0, 0, 0, distance);
       case ash::SHELF_ALIGNMENT_RIGHT:
         return gfx::Insets(0, distance, 0, 0);
-      case ash::SHELF_ALIGNMENT_TOP:
-        return gfx::Insets(0, 0, distance, 0);
     }
     NOTREACHED();
     return gfx::Insets();
@@ -476,8 +473,7 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
         shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
             SkBitmapOperations::ROTATION_90_CW,
             SkBitmapOperations::ROTATION_90_CW,
-            SkBitmapOperations::ROTATION_270_CW,
-            SkBitmapOperations::ROTATION_180_CW));
+            SkBitmapOperations::ROTATION_270_CW));
   const gfx::Rect dock_bounds(shelf_->shelf_layout_manager()->dock_bounds());
   SkPaint paint;
   paint.setAlpha(alpha_);
@@ -538,8 +534,7 @@ void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
       shelf_->shelf_layout_manager()->SelectValueForShelfAlignment(
           gfx::Rect(0, height() - kNumBlackPixels, width(), kNumBlackPixels),
           gfx::Rect(0, 0, kNumBlackPixels, height()),
-          gfx::Rect(width() - kNumBlackPixels, 0, kNumBlackPixels, height()),
-          gfx::Rect(0, 0, width(), kNumBlackPixels));
+          gfx::Rect(width() - kNumBlackPixels, 0, kNumBlackPixels, height()));
   canvas->FillRect(black_rect, SK_ColorBLACK);
 }
 

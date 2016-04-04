@@ -630,7 +630,7 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
                               shelf->SelectValueForShelfAlignment(
                                   SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
                                   SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
-                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT, -1),
+                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT),
                               SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
   }
 

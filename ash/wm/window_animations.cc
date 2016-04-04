@@ -479,9 +479,6 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
         case SHELF_ALIGNMENT_RIGHT:
           item_rect.set_x(shelf_bounds.x());
           break;
-        case SHELF_ALIGNMENT_TOP:
-          item_rect.set_y(shelf_bounds.bottom());
-          break;
       }
       return item_rect;
     }
@@ -496,8 +493,7 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   return shelf->SelectValueForShelfAlignment(
       gfx::Rect(ltr_adjusted_x, work_area.bottom(), 0, 0),
       gfx::Rect(work_area.x(), work_area.y(), 0, 0),
-      gfx::Rect(work_area.right(), work_area.y(), 0, 0),
-      gfx::Rect(ltr_adjusted_x, work_area.y(), 0, 0));
+      gfx::Rect(work_area.right(), work_area.y(), 0, 0));
 }
 
 }  // namespace ash

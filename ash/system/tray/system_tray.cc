@@ -422,8 +422,7 @@ base::string16 SystemTray::GetAccessibleNameForTray() {
 
 int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
   // Don't attempt to align the arrow if the shelf is on the left or right.
-  if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM &&
-      shelf_alignment() != SHELF_ALIGNMENT_TOP)
+  if (shelf_alignment() != SHELF_ALIGNMENT_BOTTOM)
     return TrayBubbleView::InitParams::kArrowDefaultOffset;
 
   std::map<SystemTrayItem*, views::View*>::const_iterator it =
@@ -603,13 +602,8 @@ void SystemTray::UpdateWebNotifications() {
         gfx::Screen::GetScreen()
             ->GetDisplayNearestWindow(bubble_view->GetWidget()->GetNativeView())
             .work_area();
-    if (GetShelfLayoutManager()->GetAlignment() != SHELF_ALIGNMENT_TOP) {
-      height = std::max(
-          0, work_area.height() - bubble_view->GetBoundsInScreen().y());
-    } else {
-      height = std::max(
-          0, bubble_view->GetBoundsInScreen().bottom() - work_area.y());
-    }
+    height =
+        std::max(0, work_area.height() - bubble_view->GetBoundsInScreen().y());
   }
   status_area_widget()->web_notification_tray()->SetSystemTrayHeight(height);
 }
@@ -723,8 +717,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
     if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {
       const ui::LocatedEvent& located_event =
           static_cast<const ui::LocatedEvent&>(event);
-      if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM ||
-          shelf_alignment() == SHELF_ALIGNMENT_TOP) {
+      if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
         gfx::Point point(located_event.x(), 0);
         ConvertPointToWidget(this, &point);
         arrow_offset = point.x();

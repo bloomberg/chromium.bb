@@ -258,17 +258,6 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachRight) {
   DetachReattachTest(window.get(), -1, 0);
 }
 
-TEST_F(PanelWindowResizerTest, PanelDetachReattachTop) {
- if (!SupportsHostWindowResize())
-    return;
-
-  ash::Shell* shell = ash::Shell::GetInstance();
-  shell->SetShelfAlignment(SHELF_ALIGNMENT_TOP, shell->GetPrimaryRootWindow());
-  scoped_ptr<aura::Window> window(
-      CreatePanelWindow(gfx::Point(0, 0)));
-  DetachReattachTest(window.get(), 0, 1);
-}
-
 // Tests that a drag continues when the shelf is hidden. This occurs as part of
 // the animation when switching profiles. http://crbug.com/393047.
 TEST_F(PanelWindowResizerTest, DetachThenHideShelf) {

@@ -377,9 +377,6 @@ void ShelfButton::Layout() {
   if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
     x_offset = button_bounds.width() - (kIconSize + icon_pad);
 
-  if (SHELF_ALIGNMENT_TOP == shelf->alignment())
-    y_offset = button_bounds.height() - (kIconSize + icon_pad);
-
   // Center icon with respect to the secondary axis, and ensure
   // that the icon doesn't occlude the bar highlight.
   if (shelf->IsHorizontalAlignment()) {
@@ -499,15 +496,14 @@ void ShelfButton::UpdateBar() {
           *image, shelf->SelectValueForShelfAlignment(
                       SkBitmapOperations::ROTATION_90_CW,
                       SkBitmapOperations::ROTATION_90_CW,
-                      SkBitmapOperations::ROTATION_270_CW,
-                      SkBitmapOperations::ROTATION_180_CW)));
+                      SkBitmapOperations::ROTATION_270_CW)));
     }
     bar_->SetHorizontalAlignment(shelf->SelectValueForShelfAlignment(
         views::ImageView::CENTER, views::ImageView::LEADING,
-        views::ImageView::TRAILING, views::ImageView::CENTER));
+        views::ImageView::TRAILING));
     bar_->SetVerticalAlignment(shelf->SelectValueForShelfAlignment(
         views::ImageView::TRAILING, views::ImageView::CENTER,
-        views::ImageView::CENTER, views::ImageView::LEADING));
+        views::ImageView::CENTER));
     bar_->SchedulePaint();
   }
 

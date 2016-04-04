@@ -185,8 +185,8 @@ class ASH_EXPORT ShelfLayoutManager
   // new Shelf class.
   // A helper function that provides a shortcut for choosing
   // values specific to a shelf alignment.
-  template<typename T>
-  T SelectValueForShelfAlignment(T bottom, T left, T right, T top) const {
+  template <typename T>
+  T SelectValueForShelfAlignment(T bottom, T left, T right) const {
     switch (GetAlignment()) {
       case SHELF_ALIGNMENT_BOTTOM:
         return bottom;
@@ -194,8 +194,6 @@ class ASH_EXPORT ShelfLayoutManager
         return left;
       case SHELF_ALIGNMENT_RIGHT:
         return right;
-      case SHELF_ALIGNMENT_TOP:
-        return top;
     }
     NOTREACHED();
     return right;

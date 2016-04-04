@@ -79,11 +79,6 @@ class CalloutWidgetBackground : public views::Background {
         path.lineTo(SkIntToScalar(0), SkIntToScalar(kArrowWidth / 2));
         path.lineTo(SkIntToScalar(kArrowHeight), SkIntToScalar(0));
         break;
-      case SHELF_ALIGNMENT_TOP:
-        path.moveTo(SkIntToScalar(0), SkIntToScalar(kArrowHeight));
-        path.lineTo(SkIntToScalar(kArrowWidth / 2), SkIntToScalar(0));
-        path.lineTo(SkIntToScalar(kArrowWidth), SkIntToScalar(kArrowHeight));
-        break;
       case SHELF_ALIGNMENT_RIGHT:
         path.moveTo(SkIntToScalar(0), SkIntToScalar(0));
         path.lineTo(SkIntToScalar(kArrowHeight),
@@ -193,9 +188,6 @@ gfx::Vector2d GetSlideInAnimationOffset(ShelfAlignment alignment) {
     case SHELF_ALIGNMENT_RIGHT:
       offset.set_x(kPanelSlideInOffset);
       break;
-    case SHELF_ALIGNMENT_TOP:
-      offset.set_y(-kPanelSlideInOffset);
-      break;
   }
   return offset;
 }
@@ -211,8 +203,7 @@ class PanelCalloutWidget : public views::Widget {
 
   void SetAlignment(ShelfAlignment alignment) {
     gfx::Rect callout_bounds = GetWindowBoundsInScreen();
-    if (alignment == SHELF_ALIGNMENT_BOTTOM ||
-        alignment == SHELF_ALIGNMENT_TOP) {
+    if (alignment == SHELF_ALIGNMENT_BOTTOM) {
       callout_bounds.set_width(kArrowWidth);
       callout_bounds.set_height(kArrowHeight);
     } else {
@@ -721,9 +712,6 @@ void PanelLayoutManager::Relayout() {
       case SHELF_ALIGNMENT_RIGHT:
         bounds.set_x(shelf_bounds.x() - bounds.width());
         break;
-      case SHELF_ALIGNMENT_TOP:
-        bounds.set_y(shelf_bounds.bottom());
-        break;
     }
     bool on_shelf = visible_panels[i].window->GetTargetBounds() == bounds;
 
@@ -866,9 +854,6 @@ void PanelLayoutManager::UpdateCallouts() {
         break;
       case SHELF_ALIGNMENT_RIGHT:
         callout_bounds.set_x(bounds.right());
-        break;
-      case SHELF_ALIGNMENT_TOP:
-        callout_bounds.set_y(bounds.y() - callout_bounds.height());
         break;
     }
     callout_bounds = ScreenUtil::ConvertRectFromScreen(

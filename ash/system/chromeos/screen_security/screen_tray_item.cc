@@ -188,10 +188,8 @@ void ScreenTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 
   // Center the item dependent on the orientation of the shelf.
   views::BoxLayout::Orientation layout =
-      (alignment == ash::SHELF_ALIGNMENT_BOTTOM ||
-       alignment == ash::SHELF_ALIGNMENT_TOP)
-          ? views::BoxLayout::kHorizontal
-          : views::BoxLayout::kVertical;
+      alignment == ash::SHELF_ALIGNMENT_BOTTOM ? views::BoxLayout::kHorizontal
+                                               : views::BoxLayout::kVertical;
   tray_view_->SetLayoutManager(new views::BoxLayout(layout, 0, 0, 0));
   tray_view_->Layout();
 }

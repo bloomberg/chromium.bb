@@ -63,10 +63,6 @@ bool ShelfBezelEventFilter::IsShelfOnBezel(
       if (point.x() <= screen.x())
         return true;
       break;
-    case SHELF_ALIGNMENT_TOP:
-      if (point.y() <= screen.y())
-        return true;
-      break;
     case SHELF_ALIGNMENT_RIGHT:
       if (point.x() >= screen.right())
         return true;

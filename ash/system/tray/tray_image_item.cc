@@ -76,7 +76,6 @@ void TrayImageItem::SetItemAlignment(ShelfAlignment alignment) {
   views::BoxLayout::Orientation layout = views::BoxLayout::kHorizontal;
   switch (alignment) {
     case ash::SHELF_ALIGNMENT_BOTTOM:
-    case ash::SHELF_ALIGNMENT_TOP:
       layout = views::BoxLayout::kHorizontal;
       break;
     case ash::SHELF_ALIGNMENT_LEFT:

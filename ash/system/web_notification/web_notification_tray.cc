@@ -226,12 +226,6 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
       max_height = shelf_bounds.y();
       break;
     }
-    case SHELF_ALIGNMENT_TOP: {
-      aura::Window* root = status_area_window->GetRootWindow();
-      max_height =
-          root->bounds().height() - status_area_window->bounds().height();
-      break;
-    }
     case SHELF_ALIGNMENT_LEFT:
     case SHELF_ALIGNMENT_RIGHT: {
       // Assume that the bottom line of the status area widget and the bubble
@@ -239,8 +233,6 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
       max_height = status_area_window->GetBoundsInRootWindow().bottom();
       break;
     }
-    default:
-      NOTREACHED();
   }
 
   message_center_bubble->SetMaxHeight(std::max(0,

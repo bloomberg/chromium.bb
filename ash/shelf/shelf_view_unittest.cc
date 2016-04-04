@@ -959,7 +959,6 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   const ShelfAlignment kAlignments[] = {
       SHELF_ALIGNMENT_LEFT,
       SHELF_ALIGNMENT_RIGHT,
-      SHELF_ALIGNMENT_TOP,
       SHELF_ALIGNMENT_BOTTOM
   };
 
@@ -983,15 +982,14 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
 // Making sure the overflow bubble arrow correctly tracks with shelf position.
 TEST_F(ShelfViewTest, OverflowArrowForShelfPosition) {
   const ShelfAlignment kAlignments[] = {
-      SHELF_ALIGNMENT_BOTTOM, SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT,
-      SHELF_ALIGNMENT_TOP};
+      SHELF_ALIGNMENT_BOTTOM, SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT};
 
   // These must match what is expected for each alignment above.
   const views::BubbleBorder::Arrow kArrows[] = {
       views::BubbleBorder::BOTTOM_LEFT, views::BubbleBorder::LEFT_TOP,
-      views::BubbleBorder::RIGHT_TOP, views::BubbleBorder::TOP_LEFT};
+      views::BubbleBorder::RIGHT_TOP};
 
-  for (int i = 0; i < 4; i++) {
+  for (size_t i = 0; i < arraysize(kAlignments); i++) {
     shelf_view_->shelf()->SetAlignment(kAlignments[i]);
 
     // Make sure there are enough icons to trigger the overflow in new

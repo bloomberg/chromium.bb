@@ -63,7 +63,6 @@ INSTANTIATE_TEST_CASE_P(ShelfAlignmentAny,
                         KeyboardOverlayDelegateTest,
                         testing::Values(SHELF_ALIGNMENT_BOTTOM,
                                         SHELF_ALIGNMENT_LEFT,
-                                        SHELF_ALIGNMENT_RIGHT,
-                                        SHELF_ALIGNMENT_TOP));
+                                        SHELF_ALIGNMENT_RIGHT));
 
 }  // namespace ash

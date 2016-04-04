@@ -181,8 +181,7 @@ class ShelfDragCallback {
         scroll_.x());
     bool increasing_drag =
         GetShelfWidget()->shelf()->SelectValueForShelfAlignment(
-            scroll_delta < 0, scroll_delta > 0,
-            scroll_delta < 0, scroll_delta > 0);
+            scroll_delta < 0, scroll_delta > 0, scroll_delta < 0);
     int shelf_size = GetShelfLayoutManager()->PrimaryAxisValue(
         shelf_bounds.height(),
         shelf_bounds.width());
@@ -1707,7 +1706,7 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
 #define MAYBE_SetAlignment SetAlignment
 #endif
 
-// Tests SHELF_ALIGNMENT_(LEFT, RIGHT, TOP).
+// Tests SHELF_ALIGNMENT_(LEFT, RIGHT).
 TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   // Force an initial layout.
@@ -1774,35 +1773,6 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetAlignment) {
       display.GetWorkAreaInsets().right());
   EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
       display.bounds().right() - display.work_area().right());
-
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
-  shelf->SetAlignment(SHELF_ALIGNMENT_TOP);
-  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
-  shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
-  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
-  ASSERT_NE(-1, display.id());
-  EXPECT_EQ(shelf->GetIdealBounds().height(),
-            display.GetWorkAreaInsets().top());
-  EXPECT_GE(shelf_bounds.height(),
-            GetShelfWidget()->GetContentsView()->GetPreferredSize().height());
-  EXPECT_EQ(SHELF_ALIGNMENT_TOP, GetSystemTray()->shelf_alignment());
-  status_bounds = gfx::Rect(status_area_widget->GetWindowBoundsInScreen());
-  EXPECT_GE(status_bounds.height(),
-            status_area_widget->GetContentsView()->GetPreferredSize().height());
-  EXPECT_EQ(shelf->GetIdealBounds().height(),
-            display.GetWorkAreaInsets().top());
-  EXPECT_EQ(0, display.GetWorkAreaInsets().right());
-  EXPECT_EQ(0, display.GetWorkAreaInsets().bottom());
-  EXPECT_EQ(0, display.GetWorkAreaInsets().left());
-  EXPECT_EQ(display.work_area().y(), shelf_bounds.bottom());
-  EXPECT_EQ(display.bounds().x(), shelf_bounds.x());
-  EXPECT_EQ(display.bounds().width(), shelf_bounds.width());
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  display = screen->GetDisplayNearestWindow(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
-      display.GetWorkAreaInsets().top());
-  EXPECT_EQ(ShelfLayoutManager::kAutoHideSize,
-            display.work_area().y() - display.bounds().y());
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureEdgeSwipe) {

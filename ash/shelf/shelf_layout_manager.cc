@@ -276,8 +276,8 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() {
   return SelectValueForShelfAlignment(
       gfx::Rect(rect.x(), rect.bottom() - kShelfSize, rect.width(), kShelfSize),
       gfx::Rect(rect.x(), rect.y(), kShelfSize, rect.height()),
-      gfx::Rect(rect.right() - kShelfSize, rect.y(), kShelfSize, rect.height()),
-      gfx::Rect(rect.x(), rect.y(), rect.width(), kShelfSize));
+      gfx::Rect(rect.right() - kShelfSize, rect.y(), kShelfSize,
+                rect.height()));
 }
 
 void ShelfLayoutManager::LayoutShelf() {
@@ -428,7 +428,6 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
           correct_direction = gesture_drag_amount_ < 0;
           break;
         case SHELF_ALIGNMENT_LEFT:
-        case SHELF_ALIGNMENT_TOP:
           correct_direction = gesture_drag_amount_ > 0;
           break;
       }
@@ -439,11 +438,10 @@ void ShelfLayoutManager::CompleteGestureDrag(const ui::GestureEvent& gesture) {
       should_change = horizontal ? fabs(gesture.details().velocity_y()) > 0 :
                                    fabs(gesture.details().velocity_x()) > 0;
     } else {
-      should_change = SelectValueForShelfAlignment(
-          gesture.details().velocity_y() < 0,
-          gesture.details().velocity_x() > 0,
-          gesture.details().velocity_x() < 0,
-          gesture.details().velocity_y() > 0);
+      should_change =
+          SelectValueForShelfAlignment(gesture.details().velocity_y() < 0,
+                                       gesture.details().velocity_x() > 0,
+                                       gesture.details().velocity_x() < 0);
     }
   } else {
     NOTREACHED();
@@ -521,8 +519,7 @@ void ShelfLayoutManager::OnWindowActivated(
 }
 
 bool ShelfLayoutManager::IsHorizontalAlignment() const {
-  return GetAlignment() == SHELF_ALIGNMENT_BOTTOM ||
-         GetAlignment() == SHELF_ALIGNMENT_TOP;
+  return GetAlignment() == SHELF_ALIGNMENT_BOTTOM;
 }
 
 void ShelfLayoutManager::SetChromeVoxPanelHeight(int height) {
@@ -746,8 +743,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   gfx::Point shelf_origin = SelectValueForShelfAlignment(
       gfx::Point(available_bounds.x(), bottom_shelf_vertical_offset),
       gfx::Point(available_bounds.x(), available_bounds.y()),
-      gfx::Point(available_bounds.right() - shelf_width, available_bounds.y()),
-      gfx::Point(available_bounds.x(), available_bounds.y()));
+      gfx::Point(available_bounds.right() - shelf_width, available_bounds.y()));
   target_bounds->shelf_bounds_in_root =
       gfx::Rect(shelf_origin.x(), shelf_origin.y(), shelf_width, shelf_height);
 
@@ -762,7 +758,6 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
       gfx::Point(0, 0),
       gfx::Point(shelf_width - status_size.width(),
                  shelf_height - status_size.height()),
-      gfx::Point(0, shelf_height - status_size.height()),
       gfx::Point(0, shelf_height - status_size.height()));
   if (IsHorizontalAlignment() && !base::i18n::IsRTL())
     status_origin.set_x(shelf_width - status_size.width());
@@ -771,8 +766,7 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   target_bounds->work_area_insets = SelectValueForShelfAlignment(
       gfx::Insets(0, 0, GetWorkAreaSize(state, shelf_height), 0),
       gfx::Insets(0, GetWorkAreaSize(state, shelf_width), 0, 0),
-      gfx::Insets(0, 0, 0, GetWorkAreaSize(state, shelf_width)),
-      gfx::Insets(GetWorkAreaSize(state, shelf_height), 0, 0, 0));
+      gfx::Insets(0, 0, 0, GetWorkAreaSize(state, shelf_width)));
 
   // TODO(varkha): The functionality of managing insets for display areas
   // should probably be pushed to a separate component. This would simplify or
@@ -814,16 +808,12 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
   target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
-      gfx::Rect(0, 0,
-                shelf_width - status_size.width(),
+      gfx::Rect(0, 0, shelf_width - status_size.width(),
                 target_bounds->shelf_bounds_in_root.height()),
       gfx::Rect(0, 0, target_bounds->shelf_bounds_in_root.width(),
                 shelf_height - status_size.height()),
       gfx::Rect(0, 0, target_bounds->shelf_bounds_in_root.width(),
-                shelf_height - status_size.height()),
-      gfx::Rect(0, 0,
-                shelf_width - status_size.width(),
-                target_bounds->shelf_bounds_in_root.height()));
+                shelf_height - status_size.height()));
 
   available_bounds.Subtract(target_bounds->shelf_bounds_in_root);
   available_bounds.Subtract(keyboard_bounds_);
@@ -852,8 +842,7 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
   bool resist = SelectValueForShelfAlignment(
       gesture_drag_amount_ < -resistance_free_region,
       gesture_drag_amount_ > resistance_free_region,
-      gesture_drag_amount_ < -resistance_free_region,
-      gesture_drag_amount_ > resistance_free_region);
+      gesture_drag_amount_ < -resistance_free_region);
 
   float translate = 0.f;
   if (resist) {
@@ -943,8 +932,7 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
   gfx::Vector2d offset = SelectValueForShelfAlignment(
       gfx::Vector2d(0, shelf_bounds_in_screen.height()),
       gfx::Vector2d(-kMaxAutoHideShowShelfRegionSize, 0),
-      gfx::Vector2d(shelf_bounds_in_screen.width(), 0),
-      gfx::Vector2d(0, -kMaxAutoHideShowShelfRegionSize));
+      gfx::Vector2d(shelf_bounds_in_screen.width(), 0));
 
   gfx::Rect show_shelf_region_in_screen = shelf_bounds_in_screen;
   show_shelf_region_in_screen += offset;
@@ -1027,14 +1015,11 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     // Increase the the hit test area to prevent the shelf from disappearing
     // when the mouse is over the bubble gap.
     ShelfAlignment alignment = GetAlignment();
-    shelf_region.Inset(alignment == SHELF_ALIGNMENT_RIGHT ?
-                           -kNotificationBubbleGapHeight : 0,
-                       alignment == SHELF_ALIGNMENT_BOTTOM ?
-                           -kNotificationBubbleGapHeight : 0,
-                       alignment == SHELF_ALIGNMENT_LEFT ?
-                           -kNotificationBubbleGapHeight : 0,
-                       alignment == SHELF_ALIGNMENT_TOP ?
-                           -kNotificationBubbleGapHeight : 0);
+    shelf_region.Inset(
+        alignment == SHELF_ALIGNMENT_RIGHT ? -kNotificationBubbleGapHeight : 0,
+        alignment == SHELF_ALIGNMENT_BOTTOM ? -kNotificationBubbleGapHeight : 0,
+        alignment == SHELF_ALIGNMENT_LEFT ? -kNotificationBubbleGapHeight : 0,
+        0);
   }
 
   gfx::Point cursor_position_in_screen =

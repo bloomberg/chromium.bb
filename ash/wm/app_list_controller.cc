@@ -57,7 +57,7 @@ views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
   DCHECK(Shell::HasInstance());
   return Shelf::ForWindow(window)->SelectValueForShelfAlignment(
       views::BubbleBorder::BOTTOM_CENTER, views::BubbleBorder::LEFT_CENTER,
-      views::BubbleBorder::RIGHT_CENTER, views::BubbleBorder::TOP_CENTER);
+      views::BubbleBorder::RIGHT_CENTER);
 }
 
 // Offset given |rect| towards shelf.
@@ -76,9 +76,6 @@ gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect, views::Widget* widget) {
     case SHELF_ALIGNMENT_RIGHT:
       offseted.Offset(kAnimationOffset, 0);
       break;
-    case SHELF_ALIGNMENT_TOP:
-      offseted.Offset(0, -kAnimationOffset);
-      break;
   }
 
   return offseted;
@@ -93,7 +90,6 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(
       widget->GetNativeView()->GetRootWindow());
   gfx::Point anchor(button_bounds.CenterPoint());
   switch (shelf_alignment) {
-    case SHELF_ALIGNMENT_TOP:
     case SHELF_ALIGNMENT_BOTTOM:
       if (base::i18n::IsRTL()) {
         int screen_width = widget->GetWorkAreaBoundsInScreen().width();
@@ -109,10 +105,9 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(
     case SHELF_ALIGNMENT_RIGHT:
       return gfx::Vector2d(
           0, std::max(kMinimalAnchorPositionOffset - anchor.y(), 0));
-    default:
-      NOTREACHED();
-      return gfx::Vector2d();
   }
+  NOTREACHED();
+  return gfx::Vector2d();
 }
 
 // Gets the point at the center of the display that a particular view is on.

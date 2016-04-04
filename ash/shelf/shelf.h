@@ -66,7 +66,7 @@ class ASH_EXPORT Shelf {
 
   // A helper functions that chooses values specific to a shelf alignment.
   template <typename T>
-  T SelectValueForShelfAlignment(T bottom, T left, T right, T top) const {
+  T SelectValueForShelfAlignment(T bottom, T left, T right) const {
     switch (alignment_) {
       case SHELF_ALIGNMENT_BOTTOM:
         return bottom;
@@ -74,8 +74,6 @@ class ASH_EXPORT Shelf {
         return left;
       case SHELF_ALIGNMENT_RIGHT:
         return right;
-      case SHELF_ALIGNMENT_TOP:
-        return top;
     }
     NOTREACHED();
     return right;

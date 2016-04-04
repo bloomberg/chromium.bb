@@ -75,8 +75,7 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
 }
 
 bool Shelf::IsHorizontalAlignment() const {
-  return alignment_ == SHELF_ALIGNMENT_BOTTOM ||
-         alignment_ == SHELF_ALIGNMENT_TOP;
+  return alignment_ == SHELF_ALIGNMENT_BOTTOM;
 }
 
 void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {

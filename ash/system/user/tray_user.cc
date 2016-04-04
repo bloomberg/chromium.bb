@@ -191,8 +191,7 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   // Inactive users won't have a layout.
   if (!layout_view_)
     return;
-  if (alignment == SHELF_ALIGNMENT_BOTTOM ||
-      alignment == SHELF_ALIGNMENT_TOP) {
+  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
     if (avatar_) {
       avatar_->SetBorder(views::Border::NullBorder());
       avatar_->SetCornerRadii(

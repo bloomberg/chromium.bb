@@ -730,7 +730,7 @@ void ShelfView::PointerPressedOnButton(views::View* view,
                             shelf_->SelectValueForShelfAlignment(
                                 SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
                                 SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
-                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT, -1),
+                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT),
                             SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
 }
 
@@ -1799,7 +1799,7 @@ void ShelfView::ShowMenu(ui::MenuModel* menu_model,
     // Determine the menu alignment dependent on the shelf.
     menu_alignment = shelf_->SelectValueForShelfAlignment(
         views::MENU_ANCHOR_BUBBLE_ABOVE, views::MENU_ANCHOR_BUBBLE_RIGHT,
-        views::MENU_ANCHOR_BUBBLE_LEFT, views::MENU_ANCHOR_BUBBLE_BELOW);
+        views::MENU_ANCHOR_BUBBLE_LEFT);
   }
   // If this is deleted while the menu is running, the shelf will also be gone.
   bool got_deleted = false;
@@ -1880,7 +1880,7 @@ int ShelfView::CalculateShelfDistance(const gfx::Point& coordinate) const {
   const gfx::Rect bounds = GetBoundsInScreen();
   int distance = shelf_->SelectValueForShelfAlignment(
       bounds.y() - coordinate.y(), coordinate.x() - bounds.right(),
-      bounds.x() - coordinate.x(), coordinate.y() - bounds.bottom());
+      bounds.x() - coordinate.x());
   return distance > 0 ? distance : 0;
 }
 

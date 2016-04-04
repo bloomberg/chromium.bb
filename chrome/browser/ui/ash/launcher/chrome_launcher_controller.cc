@@ -252,8 +252,7 @@ ash::ShelfAlignment GetShelfAlignmentFromPrefs(Profile* profile,
     return ash::SHELF_ALIGNMENT_LEFT;
   else if (alignment_value == ash::kShelfAlignmentRight)
     return ash::SHELF_ALIGNMENT_RIGHT;
-  else if (alignment_value == ash::kShelfAlignmentTop)
-    return ash::SHELF_ALIGNMENT_TOP;
+  // Default to bottom.
   return ash::SHELF_ALIGNMENT_BOTTOM;
 }
 
@@ -1296,8 +1295,6 @@ void ChromeLauncherController::OnShelfAlignmentChanged(
     case ash::SHELF_ALIGNMENT_RIGHT:
       pref_value = ash::kShelfAlignmentRight;
       break;
-    case ash::SHELF_ALIGNMENT_TOP:
-      pref_value = ash::kShelfAlignmentTop;
   }
 
   UpdatePerDisplayPref(

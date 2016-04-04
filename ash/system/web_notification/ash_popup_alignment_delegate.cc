@@ -85,11 +85,8 @@ int AshPopupAlignmentDelegate::GetToastOriginX(
 }
 
 int AshPopupAlignmentDelegate::GetBaseLine() const {
-  return IsTopDown()
-      ? work_area_.y() + kNoToastMarginBorderAndShadowOffset +
-        system_tray_height_
-      : work_area_.bottom() - kNoToastMarginBorderAndShadowOffset -
-        system_tray_height_;
+  return work_area_.bottom() - kNoToastMarginBorderAndShadowOffset -
+         system_tray_height_;
 }
 
 int AshPopupAlignmentDelegate::GetWorkAreaBottom() const {
@@ -97,7 +94,7 @@ int AshPopupAlignmentDelegate::GetWorkAreaBottom() const {
 }
 
 bool AshPopupAlignmentDelegate::IsTopDown() const {
-  return GetAlignment() == SHELF_ALIGNMENT_TOP;
+  return false;
 }
 
 bool AshPopupAlignmentDelegate::IsFromLeft() const {

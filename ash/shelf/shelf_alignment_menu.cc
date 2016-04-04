@@ -34,9 +34,9 @@ ShelfAlignmentMenu::ShelfAlignmentMenu(Shelf* shelf)
 ShelfAlignmentMenu::~ShelfAlignmentMenu() {}
 
 bool ShelfAlignmentMenu::IsCommandIdChecked(int command_id) const {
-  return shelf_->SelectValueForShelfAlignment(
-      MENU_ALIGN_BOTTOM == command_id, MENU_ALIGN_LEFT == command_id,
-      MENU_ALIGN_RIGHT == command_id, false);
+  return shelf_->SelectValueForShelfAlignment(MENU_ALIGN_BOTTOM == command_id,
+                                              MENU_ALIGN_LEFT == command_id,
+                                              MENU_ALIGN_RIGHT == command_id);
 }
 
 bool ShelfAlignmentMenu::IsCommandIdEnabled(int command_id) const {

@@ -75,7 +75,7 @@ views::BubbleBorder::Arrow OverflowBubbleView::GetBubbleArrow() const {
     return views::BubbleBorder::NONE;
   return shelf_view_->shelf()->SelectValueForShelfAlignment(
       views::BubbleBorder::BOTTOM_LEFT, views::BubbleBorder::LEFT_TOP,
-      views::BubbleBorder::RIGHT_TOP, views::BubbleBorder::TOP_LEFT);
+      views::BubbleBorder::RIGHT_TOP);
 }
 
 void OverflowBubbleView::ScrollByXOffset(int x_offset) {

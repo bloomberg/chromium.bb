@@ -191,8 +191,7 @@ void TrayBackgroundView::TrayContainer::ViewHierarchyChanged(
 void TrayBackgroundView::TrayContainer::UpdateLayout() {
   // Adjust the size of status tray dark background by adding additional
   // empty border.
-  if (alignment_ == SHELF_ALIGNMENT_BOTTOM ||
-      alignment_ == SHELF_ALIGNMENT_TOP) {
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
     SetBorder(views::Border::CreateEmptyBorder(
         kPaddingFromEdgeOfShelf,
         kPaddingFromEdgeOfShelf,
@@ -450,8 +449,7 @@ bool TrayBackgroundView::RequiresNotificationWhenAnimatorDestroyed() const {
 
 void TrayBackgroundView::HideTransformation() {
   gfx::Transform transform;
-  if (shelf_alignment_ == SHELF_ALIGNMENT_BOTTOM ||
-      shelf_alignment_ == SHELF_ALIGNMENT_TOP)
+  if (shelf_alignment_ == SHELF_ALIGNMENT_BOTTOM)
     transform.Translate(width(), 0.0f);
   else
     transform.Translate(0.0f, height());
@@ -567,8 +565,6 @@ TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
       return TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
     case SHELF_ALIGNMENT_RIGHT:
       return TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT;
-    case SHELF_ALIGNMENT_TOP:
-      return TrayBubbleView::ANCHOR_ALIGNMENT_TOP;
   }
   NOTREACHED();
   return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;

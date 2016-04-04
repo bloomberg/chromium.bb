@@ -61,12 +61,6 @@ void AttachedPanelWindowTargeter::UpdateTouchExtend(aura::Window* root_window) {
     case SHELF_ALIGNMENT_RIGHT:
       touch = gfx::Insets(touch.top(), touch.left(), touch.bottom(), 0);
       break;
-    case SHELF_ALIGNMENT_TOP:
-      touch = gfx::Insets(0, touch.left(), touch.bottom(), touch.right());
-      break;
-    default:
-      NOTREACHED();
-      return;
   }
 
   set_touch_extend(touch);

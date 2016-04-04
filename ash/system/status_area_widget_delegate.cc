@@ -113,8 +113,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  if (alignment_ == SHELF_ALIGNMENT_BOTTOM ||
-      alignment_ == SHELF_ALIGNMENT_TOP) {
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
     bool is_first_visible_child = true;
     for (int c = 0; c < child_count(); ++c) {
       views::View* child = child_at(c);

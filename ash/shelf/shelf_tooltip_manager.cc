@@ -147,7 +147,7 @@ void ShelfTooltipManager::ShowTooltip(views::View* view) {
   Shelf* shelf = shelf_view_->shelf();
   views::BubbleBorder::Arrow arrow = shelf->SelectValueForShelfAlignment(
       views::BubbleBorder::BOTTOM_CENTER, views::BubbleBorder::LEFT_CENTER,
-      views::BubbleBorder::RIGHT_CENTER, views::BubbleBorder::TOP_CENTER);
+      views::BubbleBorder::RIGHT_CENTER);
 
   base::string16 text = shelf_view_->GetTitleForView(view);
   bubble_ = new ShelfTooltipBubble(view, arrow, text);

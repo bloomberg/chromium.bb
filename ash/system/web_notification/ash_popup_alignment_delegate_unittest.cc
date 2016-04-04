@@ -135,15 +135,6 @@ TEST_F(AshPopupAlignmentDelegateTest, MAYBE_ShelfAlignment) {
   EXPECT_EQ(BOTTOM_LEFT, GetPositionInDisplay(toast_point));
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_TRUE(alignment_delegate()->IsFromLeft());
-
-  Shell::GetInstance()->SetShelfAlignment(
-      SHELF_ALIGNMENT_TOP,
-      Shell::GetPrimaryRootWindow());
-  toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
-  toast_point.set_y(alignment_delegate()->GetBaseLine());
-  EXPECT_EQ(TOP_RIGHT, GetPositionInDisplay(toast_point));
-  EXPECT_TRUE(alignment_delegate()->IsTopDown());
-  EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, LockScreen) {

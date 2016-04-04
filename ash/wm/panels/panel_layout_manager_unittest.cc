@@ -150,9 +150,6 @@ class PanelLayoutManagerTest : public test::AshTestBase {
       case SHELF_ALIGNMENT_RIGHT:
         EXPECT_EQ(shelf_bounds.x(), window_bounds.right());
         break;
-      case SHELF_ALIGNMENT_TOP:
-        EXPECT_EQ(shelf_bounds.bottom(), window_bounds.y());
-        break;
     }
   }
 
@@ -181,9 +178,6 @@ class PanelLayoutManagerTest : public test::AshTestBase {
         break;
       case SHELF_ALIGNMENT_RIGHT:
         EXPECT_EQ(panel_bounds.right(), callout_bounds.x());
-        break;
-      case SHELF_ALIGNMENT_TOP:
-        EXPECT_EQ(panel_bounds.y(), callout_bounds.bottom());
         break;
     }
 
@@ -256,8 +250,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
   scoped_ptr<test::ShelfViewTestAPI> shelf_view_test_;
 
   bool IsHorizontal(ShelfAlignment alignment) {
-    return alignment == SHELF_ALIGNMENT_BOTTOM ||
-           alignment == SHELF_ALIGNMENT_TOP;
+    return alignment == SHELF_ALIGNMENT_BOTTOM;
   }
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManagerTest);
@@ -699,9 +692,6 @@ TEST_F(PanelLayoutManagerTest, PanelAlignmentSecondDisplay) {
   SetAlignment(root_windows[1], SHELF_ALIGNMENT_LEFT);
   IsPanelAboveLauncherIcon(p1_d2.get());
   IsCalloutAboveLauncherIcon(p1_d2.get());
-  SetAlignment(root_windows[1], SHELF_ALIGNMENT_TOP);
-  IsPanelAboveLauncherIcon(p1_d2.get());
-  IsCalloutAboveLauncherIcon(p1_d2.get());
 }
 
 TEST_F(PanelLayoutManagerTest, AlignmentLeft) {
@@ -716,14 +706,6 @@ TEST_F(PanelLayoutManagerTest, AlignmentRight) {
   gfx::Rect bounds(0, 0, 201, 201);
   scoped_ptr<aura::Window> w(CreatePanelWindow(bounds));
   SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_RIGHT);
-  IsPanelAboveLauncherIcon(w.get());
-  IsCalloutAboveLauncherIcon(w.get());
-}
-
-TEST_F(PanelLayoutManagerTest, AlignmentTop) {
-  gfx::Rect bounds(0, 0, 201, 201);
-  scoped_ptr<aura::Window> w(CreatePanelWindow(bounds));
-  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_TOP);
   IsPanelAboveLauncherIcon(w.get());
   IsCalloutAboveLauncherIcon(w.get());
 }
@@ -829,18 +811,6 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
 
   // Hit test outside the left edge with a left-aligned shelf.
   touch.set_location(gfx::Point(bounds.x() - 1, bounds.y() + 5));
-  target = targeter->FindTargetForEvent(root, &touch);
-  EXPECT_NE(w.get(), target);
-
-  // Hit test outside the left edge with a top-aligned shelf.
-  SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_TOP);
-  bounds = w->bounds();
-  touch.set_location(gfx::Point(bounds.x() - 1, bounds.y() + 5));
-  target = targeter->FindTargetForEvent(root, &touch);
-  EXPECT_EQ(w.get(), target);
-
-  // Hit test outside the top edge with a top-aligned shelf.
-  touch.set_location(gfx::Point(bounds.x() + 4, bounds.y() - 6));
   target = targeter->FindTargetForEvent(root, &touch);
   EXPECT_NE(w.get(), target);
 }

@@ -107,8 +107,7 @@ void OverviewButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
 }
 
 void OverviewButtonTray::SetIconBorderForShelfAlignment() {
-  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM ||
-      shelf_alignment() == SHELF_ALIGNMENT_TOP) {
+  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
     icon_->SetBorder(views::Border::CreateEmptyBorder(
         kHorizontalShelfVerticalPadding,
         kHorizontalShelfHorizontalPadding,
