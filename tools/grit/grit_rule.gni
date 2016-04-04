@@ -182,8 +182,6 @@ if (enable_image_loader_extension) {
 
 if (is_android) {
   grit_defines += [
-    "-t",
-    "android",
     "-E",
     "ANDROID_JAVA_TAGGED_ONLY=true",
   ]
@@ -196,11 +194,38 @@ if (is_mac || is_ios) {
   ]
 }
 
-if (is_ios) {
-  grit_defines += [
-    "-t",
-    "ios",
-  ]
+# When cross-compiling, explicitly pass the target system to grit.
+if (current_toolchain != host_toolchain) {
+  if (is_android) {
+    grit_defines += [
+      "-t",
+      "android",
+    ]
+  }
+  if (is_ios) {
+    grit_defines += [
+      "-t",
+      "ios",
+    ]
+  }
+  if (is_linux) {
+    grit_defines += [
+      "-t",
+      "linux2",
+    ]
+  }
+  if (is_mac) {
+    grit_defines += [
+      "-t",
+      "darwin",
+    ]
+  }
+  if (is_win) {
+    grit_defines += [
+      "-t",
+      "win32",
+    ]
+  }
 }
 
 if (enable_extensions) {
