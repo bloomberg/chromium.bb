@@ -70,7 +70,7 @@
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
@@ -1362,7 +1362,7 @@ void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int 
         return;
     HitTestRequest request(HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent);
     HitTestResult result(request, IntPoint(x, y));
-    m_document->frame()->contentLayoutObject()->hitTest(result);
+    m_document->frame()->contentLayoutItem().hitTest(result);
     Node* node = result.innerPossiblyPseudoNode();
     while (node && node->getNodeType() == Node::TEXT_NODE)
         node = node->parentNode();
