@@ -5,6 +5,7 @@
 #include "mash/wm/frame/move_loop.h"
 
 #include "base/auto_reset.h"
+#include "base/memory/ptr_util.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/input_event_constants.mojom.h"
 #include "mash/wm/property_util.h"
@@ -31,9 +32,9 @@ MoveLoop::~MoveLoop() {
 }
 
 // static
-scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
-                                      int ht_location,
-                                      const ui::PointerEvent& event) {
+std::unique_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
+                                           int ht_location,
+                                           const ui::PointerEvent& event) {
   DCHECK_EQ(event.type(), ui::ET_POINTER_DOWN);
   // Start a move on left mouse, or any other type of pointer.
   if (event.IsMousePointerEvent() &&
@@ -47,7 +48,7 @@ scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
   if (!DetermineType(ht_location, &type, &h_loc, &v_loc))
     return nullptr;
 
-  return make_scoped_ptr(new MoveLoop(target, event, type, h_loc, v_loc));
+  return base::WrapUnique(new MoveLoop(target, event, type, h_loc, v_loc));
 }
 
 MoveLoop::MoveResult MoveLoop::Move(const ui::PointerEvent& event) {

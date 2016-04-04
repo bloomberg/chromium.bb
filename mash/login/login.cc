@@ -5,6 +5,7 @@
 #include "mash/login/login.h"
 
 #include <map>
+#include <memory>
 
 #include "base/guid.h"
 #include "base/macros.h"
@@ -123,7 +124,7 @@ class UI : public views::WidgetDelegateView,
   const std::string user_id_2_;
   views::LabelButton* login_button_1_;
   views::LabelButton* login_button_2_;
-  scoped_ptr<mojo::Connection> window_manager_connection_;
+  std::unique_ptr<mojo::Connection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(UI);
 };
@@ -177,10 +178,10 @@ class Login : public mojo::ShellClient,
 
   mojo::Connector* connector_;
   mojo::TracingImpl tracing_;
-  scoped_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<views::AuraInit> aura_init_;
   mojo::BindingSet<mojom::Login> bindings_;
   mus::mojom::UserAccessManagerPtr user_access_manager_;
-  scoped_ptr<mojo::Connection> window_manager_connection_;
+  std::unique_ptr<mojo::Connection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(Login);
 };

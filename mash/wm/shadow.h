@@ -5,8 +5,9 @@
 #ifndef MASH_WM_SHADOW_H_
 #define MASH_WM_SHADOW_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -83,10 +84,10 @@ class Shadow : public ui::ImplicitAnimationObserver,
 
   // The parent layer of the shadow layer. It serves as a container accessible
   // from the outside to control the visibility of the shadow.
-  scoped_ptr<ui::Layer> layer_;
+  std::unique_ptr<ui::Layer> layer_;
 
   // The actual shadow layer corresponding to a cc::NinePatchLayer.
-  scoped_ptr<ui::Layer> shadow_layer_;
+  std::unique_ptr<ui::Layer> shadow_layer_;
 
   // Size of the current shadow image.
   gfx::Size image_size_;

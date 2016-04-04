@@ -5,8 +5,9 @@
 #ifndef MASH_WM_FRAME_MOVE_EVENT_HANDLER_H_
 #define MASH_WM_FRAME_MOVE_EVENT_HANDLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 
@@ -51,7 +52,7 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   mus::Window* mus_window_;
   aura::Window* aura_window_;
   aura::Window* root_window_;
-  scoped_ptr<MoveLoop> move_loop_;
+  std::unique_ptr<MoveLoop> move_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MoveEventHandler);
 };

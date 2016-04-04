@@ -6,10 +6,10 @@
 #define MASH_INIT_INIT_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mash/init/public/interfaces/init.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/public/cpp/connector.h"
@@ -51,9 +51,9 @@ class Init : public mojo::ShellClient,
   void StartLogin();
 
   mojo::Connector* connector_;
-  scoped_ptr<mojo::Connection> login_connection_;
+  std::unique_ptr<mojo::Connection> login_connection_;
   mojo::BindingSet<mojom::Init> init_bindings_;
-  std::map<std::string, scoped_ptr<mojo::Connection>> user_services_;
+  std::map<std::string, std::unique_ptr<mojo::Connection>> user_services_;
 
   DISALLOW_COPY_AND_ASSIGN(Init);
 };

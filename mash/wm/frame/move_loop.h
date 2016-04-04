@@ -7,8 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/interfaces/input_events.mojom.h"
 #include "ui/gfx/geometry/point.h"
@@ -50,9 +51,9 @@ class MoveLoop : public mus::WindowObserver {
   // and returns a new MoveLoop. All events should be funneled to the MoveLoop
   // until done (Move()). |ht_location| is one of the constants defined by
   // HitTestCompat.
-  static scoped_ptr<MoveLoop> Create(mus::Window* target,
-                                     int ht_location,
-                                     const ui::PointerEvent& event);
+  static std::unique_ptr<MoveLoop> Create(mus::Window* target,
+                                          int ht_location,
+                                          const ui::PointerEvent& event);
 
   // Processes an event for a move/resize loop.
   MoveResult Move(const ui::PointerEvent& event);

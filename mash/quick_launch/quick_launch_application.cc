@@ -130,7 +130,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 
   mojo::Connector* connector_;
   views::Textfield* prompt_;
-  std::vector<scoped_ptr<mojo::Connection>> connections_;
+  std::vector<std::unique_ptr<mojo::Connection>> connections_;
   catalog::mojom::CatalogPtr catalog_;
   std::set<base::string16> app_names_;
   bool suggestion_rejected_ = false;

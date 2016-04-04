@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
@@ -203,7 +204,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
   }
 
   void InsertInstance(uint32_t id, const std::string& url, uint32_t pid) {
-    instances_.push_back(make_scoped_ptr(new InstanceInfo(id, url, pid)));
+    instances_.push_back(base::WrapUnique(new InstanceInfo(id, url, pid)));
   }
 
   void OnGotCatalogEntries(
@@ -258,7 +259,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
   views::LabelButton* kill_button_;
   ui::TableModelObserver* observer_;
 
-  std::vector<scoped_ptr<InstanceInfo>> instances_;
+  std::vector<std::unique_ptr<InstanceInfo>> instances_;
 
   base::WeakPtrFactory<TaskViewerContents> weak_ptr_factory_;
 

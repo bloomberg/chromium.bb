@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_observer.h"
@@ -49,7 +51,7 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
 
   RootWindowController* root_controller_;
   mojom::UserWindowObserverPtr user_window_observer_;
-  scoped_ptr<WindowPropertyObserver> window_property_observer_;
+  std::unique_ptr<WindowPropertyObserver> window_property_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UserWindowControllerImpl);
 };

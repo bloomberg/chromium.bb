@@ -360,7 +360,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
   views::LabelButton* examples_button_;
   views::LabelButton* show_hide_window_button_;
   views::LabelButton* show_web_notification_;
-  scoped_ptr<views::MenuRunner> menu_runner_;
+  std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncherView);
 };

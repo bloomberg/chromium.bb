@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
@@ -48,9 +50,10 @@ class WindowManager : public mus::WindowObserver,
   // WindowManagerDelegate:
   void SetWindowManagerClient(mus::WindowManagerClient* client) override;
   bool OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) override;
-  bool OnWmSetProperty(mus::Window* window,
-                       const std::string& name,
-                       scoped_ptr<std::vector<uint8_t>>* new_data) override;
+  bool OnWmSetProperty(
+      mus::Window* window,
+      const std::string& name,
+      std::unique_ptr<std::vector<uint8_t>>* new_data) override;
   mus::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnAccelerator(uint32_t id, const ui::Event& event) override;

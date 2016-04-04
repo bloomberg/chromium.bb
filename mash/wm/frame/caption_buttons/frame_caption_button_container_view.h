@@ -6,6 +6,7 @@
 #define MASH_WM_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_CONTAINER_VIEW_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "mash/wm/frame/caption_buttons/caption_button_types.h"
@@ -124,7 +125,7 @@ class FrameCaptionButtonContainerView : public views::View,
 
   // Animation that affects the position of |minimize_button_| and the
   // visibility of |size_button_|.
-  scoped_ptr<gfx::SlideAnimation> maximize_mode_animation_;
+  std::unique_ptr<gfx::SlideAnimation> maximize_mode_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerView);
 };

@@ -37,7 +37,7 @@ void Init::StartService(const mojo::String& name,
                         const mojo::String& user_id) {
   if (user_services_.find(user_id) == user_services_.end()) {
     mojo::Connector::ConnectParams params(mojo::Identity(name, user_id));
-    scoped_ptr<mojo::Connection> connection = connector_->Connect(&params);
+    std::unique_ptr<mojo::Connection> connection = connector_->Connect(&params);
     connection->SetConnectionLostClosure(
         base::Bind(&Init::UserServiceQuit, base::Unretained(this), user_id));
     user_services_[user_id] = std::move(connection);

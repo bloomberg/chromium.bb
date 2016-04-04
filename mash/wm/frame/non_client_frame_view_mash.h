@@ -6,7 +6,6 @@
 #define MASH_WM_FRAME_NON_CLIENT_FRAME_VIEW_MASH_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "third_party/skia/include/core/SkColor.h"

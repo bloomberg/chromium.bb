@@ -125,7 +125,7 @@ void Session::StartRestartableService(
     const base::Closure& restart_callback) {
   // TODO(beng): This would be the place to insert logic that counted restarts
   //             to avoid infinite crash-restart loops.
-  scoped_ptr<mojo::Connection> connection = connector_->Connect(url);
+  std::unique_ptr<mojo::Connection> connection = connector_->Connect(url);
   // Note: |connection| may be null if we've lost our connection to the shell.
   if (connection) {
     connection->SetConnectionLostClosure(restart_callback);

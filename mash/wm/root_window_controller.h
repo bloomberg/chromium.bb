@@ -5,6 +5,8 @@
 #ifndef MASH_WM_ROOT_WINDOW_CONTROLLER_H_
 #define MASH_WM_ROOT_WINDOW_CONTROLLER_H_
 
+#include <memory>
+
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
@@ -86,11 +88,11 @@ class RootWindowController : public mus::WindowObserver,
   mus::Window* root_;
   int window_count_;
 
-  scoped_ptr<WindowManager> window_manager_;
+  std::unique_ptr<WindowManager> window_manager_;
 
-  std::map<mus::Window*, scoped_ptr<LayoutManager>> layout_manager_;
+  std::map<mus::Window*, std::unique_ptr<LayoutManager>> layout_manager_;
 
-  scoped_ptr<ShadowController> shadow_controller_;
+  std::unique_ptr<ShadowController> shadow_controller_;
 
   mus::mojom::DisplayPtr display_;
 

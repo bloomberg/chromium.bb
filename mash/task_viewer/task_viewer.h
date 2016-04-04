@@ -6,10 +6,10 @@
 #define MASH_TASK_VIEWER_TASK_VIEWER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
@@ -32,7 +32,7 @@ class TaskViewer : public mojo::ShellClient {
                   uint32_t id) override;
 
   mojo::TracingImpl tracing_;
-  scoped_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<views::AuraInit> aura_init_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskViewer);
 };

@@ -6,9 +6,9 @@
 #define MASH_SCREENLOCK_SCREENLOCK_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
@@ -37,7 +37,7 @@ class Screenlock : public mojo::ShellClient,
   void ScreenlockStateChanged(bool locked) override;
 
   mojo::TracingImpl tracing_;
-  scoped_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<views::AuraInit> aura_init_;
   mojo::BindingSet<session::mojom::ScreenlockStateListener> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Screenlock);

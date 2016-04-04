@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -50,7 +52,7 @@ TEST_F(WindowManagerTest, OpenWindow) {
 
   // Connect to mus and create a new top level window. The request goes to
   // the |desktop_wm|, but is async.
-  scoped_ptr<mus::WindowTreeConnection> connection(
+  std::unique_ptr<mus::WindowTreeConnection> connection(
       mus::WindowTreeConnection::Create(&window_tree_delegate, connector()));
   mus::Window* top_level_window = connection->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(top_level_window);
@@ -63,7 +65,7 @@ TEST_F(WindowManagerTest, OpenWindow) {
   mus::mojom::WindowTreeClientPtr tree_client;
   auto tree_client_request = GetProxy(&tree_client);
   child_window->Embed(std::move(tree_client), base::Bind(&OnEmbed));
-  scoped_ptr<mus::WindowTreeConnection> child_connection(
+  std::unique_ptr<mus::WindowTreeConnection> child_connection(
       mus::WindowTreeConnection::Create(
           &window_tree_delegate, std::move(tree_client_request),
           mus::WindowTreeConnection::CreateType::WAIT_FOR_EMBED));

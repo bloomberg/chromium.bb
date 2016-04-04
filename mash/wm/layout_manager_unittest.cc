@@ -4,6 +4,8 @@
 
 #include "mash/wm/layout_manager.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/mus/public/cpp/tests/test_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +38,7 @@ class TestLayoutManager : public LayoutManager {
 
 // Tests that owning window can be destroyed before the layout manager.
 TEST(LayoutManagerTest, OwningWindowDestroyedFirst) {
-  scoped_ptr<mus::TestWindow> parent(new mus::TestWindow(1));
+  std::unique_ptr<mus::TestWindow> parent(new mus::TestWindow(1));
   mus::TestWindow child(2);
   TestLayoutManager layout_manager(parent.get());
   parent->AddChild(&child);
@@ -49,7 +51,8 @@ TEST(LayoutManagerTest, OwningWindowDestroyedFirst) {
 TEST(LayoutManagerTest, LayoutManagerDestroyedFirst) {
   mus::TestWindow parent(1);
   mus::TestWindow child(2);
-  scoped_ptr<TestLayoutManager> layout_manager(new TestLayoutManager(&parent));
+  std::unique_ptr<TestLayoutManager> layout_manager(
+      new TestLayoutManager(&parent));
   parent.AddChild(&child);
   EXPECT_TRUE(layout_manager->GetAndResetLayoutCalled());
 

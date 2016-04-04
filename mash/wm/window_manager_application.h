@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
@@ -110,16 +110,16 @@ class WindowManagerApplication
 
   mojo::TracingImpl tracing_;
 
-  scoped_ptr<ui::mojo::UIInit> ui_init_;
-  scoped_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<ui::mojo::UIInit> ui_init_;
+  std::unique_ptr<views::AuraInit> aura_init_;
 
   // |user_window_controller_| is created once OnEmbed() is called. Until that
   // time |user_window_controller_requests_| stores pending interface requests.
-  scoped_ptr<UserWindowControllerImpl> user_window_controller_;
+  std::unique_ptr<UserWindowControllerImpl> user_window_controller_;
   mojo::BindingSet<mash::wm::mojom::UserWindowController>
       user_window_controller_binding_;
-  std::vector<
-      scoped_ptr<mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>>>
+  std::vector<std::unique_ptr<
+      mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>>>
       user_window_controller_requests_;
 
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;

@@ -5,8 +5,9 @@
 #ifndef MASH_EXAMPLE_WINDOW_TYPE_LAUNCHER_WINDOW_TYPE_LAUNCHER_H_
 #define MASH_EXAMPLE_WINDOW_TYPE_LAUNCHER_WINDOW_TYPE_LAUNCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
 namespace views {
@@ -24,7 +25,7 @@ class WindowTypeLauncher : public mojo::ShellClient {
                   uint32_t id) override;
   bool ShellConnectionLost() override;
 
-  scoped_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<views::AuraInit> aura_init_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);
 };

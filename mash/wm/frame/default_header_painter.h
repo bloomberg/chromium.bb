@@ -5,8 +5,9 @@
 #ifndef MASH_WM_FRAME_DEFAULT_HEADER_PAINTER_H_
 #define MASH_WM_FRAME_DEFAULT_HEADER_PAINTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mash/wm/frame/header_painter.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -105,7 +106,7 @@ class DefaultHeaderPainter : public HeaderPainter,
   // Whether the header is painted for the first time.
   bool initial_paint_;
 
-  scoped_ptr<gfx::SlideAnimation> activation_animation_;
+  std::unique_ptr<gfx::SlideAnimation> activation_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultHeaderPainter);
 };

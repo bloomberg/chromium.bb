@@ -5,8 +5,9 @@
 #ifndef MASH_EXAMPLE_COMMON_MUS_VIEWS_INIT_H_
 #define MASH_EXAMPLE_COMMON_MUS_VIEWS_INIT_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/views/mus/aura_init.h"
@@ -45,7 +46,7 @@ class MUSViewsInit : public views::ViewsDelegate,
 #endif
 
   mojo::ShellConnection* app_;
-  scoped_ptr<views::AuraInit> aura_init_;
+  std::unique_ptr<views::AuraInit> aura_init_;
   mus::mojom::WindowManagerPtr window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MUSViewsInit);

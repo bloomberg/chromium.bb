@@ -6,10 +6,10 @@
 #define MASH_SESSION_SESSION_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -63,7 +63,7 @@ class Session : public mojo::ShellClient,
                                const base::Closure& restart_callback);
 
   mojo::Connector* connector_;
-  std::map<std::string, scoped_ptr<mojo::Connection>> connections_;
+  std::map<std::string, std::unique_ptr<mojo::Connection>> connections_;
   bool screen_locked_;
   mojo::BindingSet<mojom::Session> bindings_;
   mojo::InterfacePtrSet<mojom::ScreenlockStateListener> screenlock_listeners_;

@@ -49,7 +49,7 @@ TEST_F(MoveLoopTest, Move) {
     ui::PointerEvent pointer_down_event(
         ui::ET_POINTER_DOWN, ui::EventPointerType::POINTER_TYPE_TOUCH,
         pointer_location, pointer_location, ui::EF_NONE, 1, base::TimeDelta());
-    scoped_ptr<MoveLoop> move_loop =
+    std::unique_ptr<MoveLoop> move_loop =
         MoveLoop::Create(&window, data[i].ht_location, pointer_down_event);
     ASSERT_TRUE(move_loop.get()) << i;
     pointer_location.Offset(data[i].delta_x, data[i].delta_y);

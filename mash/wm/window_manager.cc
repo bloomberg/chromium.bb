@@ -5,6 +5,7 @@
 #include "mash/wm/window_manager.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "components/mus/common/types.h"
@@ -146,7 +147,7 @@ bool WindowManager::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
 bool WindowManager::OnWmSetProperty(
     mus::Window* window,
     const std::string& name,
-    scoped_ptr<std::vector<uint8_t>>* new_data) {
+    std::unique_ptr<std::vector<uint8_t>>* new_data) {
   // TODO(sky): constrain this to set of keys we know about, and allowed
   // values.
   return name == mus::mojom::WindowManager::kShowState_Property ||

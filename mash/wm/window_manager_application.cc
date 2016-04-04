@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
@@ -134,7 +135,7 @@ void WindowManagerApplication::Create(
     user_window_controller_binding_.AddBinding(user_window_controller_.get(),
                                                std::move(request));
   } else {
-    user_window_controller_requests_.push_back(make_scoped_ptr(
+    user_window_controller_requests_.push_back(base::WrapUnique(
         new mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>(
             std::move(request))));
   }

@@ -66,7 +66,7 @@ void MoveEventHandler::ProcessLocatedEvent(ui::LocatedEvent* event) {
 
   // TODO(moshayedi): no need for this once MoveEventHandler directly receives
   // pointer events.
-  scoped_ptr<ui::PointerEvent> pointer_event;
+  std::unique_ptr<ui::PointerEvent> pointer_event;
   if (event->IsMouseEvent())
     pointer_event.reset(new ui::PointerEvent(*event->AsMouseEvent()));
   else

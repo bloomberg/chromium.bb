@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -57,7 +59,7 @@ class TestAcceleratorHandler : public AcceleratorHandler {
   void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override {}
 
   std::set<uint32_t> installed_accelerators_;
-  scoped_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   mojo::Binding<AcceleratorHandler> binding_;
   AcceleratorRegistrarPtr registrar_;
   bool add_accelerator_result_;

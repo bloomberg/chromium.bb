@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
@@ -140,9 +142,9 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
 
  private:
   // The shadow, may be null.
-  scoped_ptr<Shadow> shadow_;
+  std::unique_ptr<Shadow> shadow_;
 
-  scoped_ptr<MoveEventHandler> move_event_handler_;
+  std::unique_ptr<MoveEventHandler> move_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetMus);
 };

@@ -5,6 +5,7 @@
 #include "mash/wm/frame/non_client_frame_view_mash.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -70,7 +71,7 @@ class NonClientFrameViewMash::HeaderView : public views::View {
   views::Widget* frame_;
 
   // Helper for painting the header.
-  scoped_ptr<DefaultHeaderPainter> header_painter_;
+  std::unique_ptr<DefaultHeaderPainter> header_painter_;
 
   // View which contains the window caption buttons.
   FrameCaptionButtonContainerView* caption_button_container_;
