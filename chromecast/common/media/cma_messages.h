@@ -26,10 +26,9 @@
 
 // Messages sent from the renderer to the browser process.
 
-IPC_MESSAGE_CONTROL3(CmaHostMsg_CreateMedia,
+IPC_MESSAGE_CONTROL2(CmaHostMsg_CreateMedia,
                      int /* Media pipeline ID */,
-                     chromecast::media::LoadType /* Load type */,
-                     chromecast::media::AvailableTracks /* Available tracks */)
+                     chromecast::media::LoadType /* Load type */)
 IPC_MESSAGE_CONTROL1(CmaHostMsg_DestroyMedia,
                      int /* Media pipeline ID */)
 IPC_MESSAGE_CONTROL3(CmaHostMsg_SetCdm,

@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chromecast/common/media/cma_ipc_common.h"
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/demuxer_stream_adapter.h"
@@ -116,16 +115,6 @@ void CmaRenderer::Initialize(
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
-
-  bool has_audio = (demuxer_stream_provider_->GetStream(
-                        ::media::DemuxerStream::AUDIO) != nullptr);
-  bool has_video = (demuxer_stream_provider_->GetStream(
-                        ::media::DemuxerStream::VIDEO) != nullptr);
-  DCHECK(has_audio || has_video);
-  AvailableTracks available_tracks =
-      (has_audio ? (has_video ? AUDIO_AND_VIDEO_TRACKS : AUDIO_TRACK_ONLY)
-                 : VIDEO_TRACK_ONLY);
-  media_pipeline_->Initialize(available_tracks);
 
   MediaPipelineClient media_pipeline_client;
   media_pipeline_client.error_cb = ::media::BindToCurrentLoop(error_cb_);

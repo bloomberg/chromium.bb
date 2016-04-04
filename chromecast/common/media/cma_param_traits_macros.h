@@ -27,9 +27,6 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(chromecast::media::LoadType,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(chromecast::media::TrackId,
                               chromecast::media::kNoTrackId,
                               chromecast::media::kVideoTrackId)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(chromecast::media::AvailableTracks,
-                              chromecast::media::AUDIO_TRACK_ONLY,
-                              chromecast::media::AUDIO_AND_VIDEO_TRACKS)
 
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::AudioCodec,
                               media::AudioCodec::kUnknownAudioCodec,

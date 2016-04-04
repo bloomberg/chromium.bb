@@ -203,9 +203,7 @@ MediaPipelineHost* CmaMessageFilterHost::LookupById(int media_id) {
 
 // *** Handle incoming messages ***
 
-void CmaMessageFilterHost::CreateMedia(int media_id,
-                                       LoadType load_type,
-                                       AvailableTracks available_tracks) {
+void CmaMessageFilterHost::CreateMedia(int media_id, LoadType load_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   scoped_ptr<MediaPipelineHost> media_pipeline_host(new MediaPipelineHost());
@@ -228,11 +226,10 @@ void CmaMessageFilterHost::CreateMedia(int media_id,
       FROM_HERE, base::Bind(&MediaPipelineCmaMap::SetMediaPipeline,
                             base::Unretained(g_pipeline_map.Pointer()),
                             process_id_, media_id, media_pipeline_host.get()));
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&MediaPipelineHost::Initialize,
-                 base::Unretained(media_pipeline_host.get()), load_type,
-                 available_tracks, client, create_backend_cb_));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&MediaPipelineHost::Initialize,
+                                    base::Unretained(media_pipeline_host.get()),
+                                    load_type, client, create_backend_cb_));
   std::pair<MediaPipelineMap::iterator, bool> ret =
     media_pipelines_.insert(
         std::make_pair(media_id, media_pipeline_host.release()));

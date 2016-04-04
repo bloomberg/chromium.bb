@@ -160,7 +160,6 @@ MediaPipelineProxy::MediaPipelineProxy(
     LoadType load_type)
     : io_task_runner_(io_task_runner),
       render_frame_id_(render_frame_id),
-      load_type_(load_type),
       media_channel_proxy_(new MediaChannelProxy),
       proxy_(new MediaPipelineProxyInternal(media_channel_proxy_)),
       has_audio_(false),
@@ -171,6 +170,9 @@ MediaPipelineProxy::MediaPipelineProxy(
           new VideoPipelineProxy(io_task_runner, media_channel_proxy_)),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&MediaChannelProxy::Open, media_channel_proxy_, load_type));
   thread_checker_.DetachFromThread();
 }
 
@@ -200,21 +202,12 @@ VideoPipelineProxy* MediaPipelineProxy::GetVideoPipeline() const {
   return video_pipeline_.get();
 }
 
-void MediaPipelineProxy::Initialize(AvailableTracks available_tracks) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  has_audio_ = (available_tracks != VIDEO_TRACK_ONLY);
-  has_video_ = (available_tracks != AUDIO_TRACK_ONLY);
-  io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MediaChannelProxy::Open, media_channel_proxy_,
-                            load_type_, available_tracks));
-}
-
 void MediaPipelineProxy::InitializeAudio(
     const ::media::AudioDecoderConfig& config,
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(has_audio_);
+  has_audio_ = true;
   audio_pipeline_->Initialize(config, std::move(frame_provider), status_cb);
 }
 
@@ -223,7 +216,7 @@ void MediaPipelineProxy::InitializeVideo(
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(has_video_);
+  has_video_ = true;
   video_pipeline_->Initialize(configs, std::move(frame_provider), status_cb);
 }
 

@@ -45,7 +45,6 @@ class MediaPipelineHost {
   ~MediaPipelineHost();
 
   void Initialize(LoadType load_type,
-                  AvailableTracks available_tracks,
                   const MediaPipelineClient& client,
                   const CreateMediaPipelineBackendCB& create_backend_cb);
 

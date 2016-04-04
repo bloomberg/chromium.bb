@@ -22,16 +22,15 @@ MediaChannelProxy::MediaChannelProxy()
 MediaChannelProxy::~MediaChannelProxy() {
 }
 
-void MediaChannelProxy::Open(LoadType load_type,
-                             AvailableTracks available_tracks) {
+void MediaChannelProxy::Open(LoadType load_type) {
   CHECK(!is_open_);
   // Renderer side.
   id_ = filter_->CreateChannel();
   is_open_ = true;
 
   // Browser side.
-  bool success = Send(scoped_ptr<IPC::Message>(
-      new CmaHostMsg_CreateMedia(id_, load_type, available_tracks)));
+  bool success = Send(
+      scoped_ptr<IPC::Message>(new CmaHostMsg_CreateMedia(id_, load_type)));
   if (!success) {
     is_open_ = false;
     id_ = 0;

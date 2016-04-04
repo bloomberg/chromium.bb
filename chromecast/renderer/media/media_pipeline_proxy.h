@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chromecast/common/media/cma_ipc_common.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
 #include "media/base/audio_decoder_config.h"
@@ -40,7 +39,6 @@ class MediaPipelineProxy {
   void SetCdm(int cdm_id);
   AudioPipelineProxy* GetAudioPipeline() const;
   VideoPipelineProxy* GetVideoPipeline() const;
-  void Initialize(AvailableTracks available_tracks);
   void InitializeAudio(const ::media::AudioDecoderConfig& config,
                        scoped_ptr<CodedFrameProvider> frame_provider,
                        const ::media::PipelineStatusCB& status_cb);
@@ -61,7 +59,6 @@ class MediaPipelineProxy {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   const int render_frame_id_;
-  const LoadType load_type_;
 
   // CMA channel to convey IPC messages.
   scoped_refptr<MediaChannelProxy> const media_channel_proxy_;
