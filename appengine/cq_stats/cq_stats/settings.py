@@ -59,7 +59,7 @@ PROJECT_DIR = os.path.join(BASE_DIR, PROJECT_NAME)
 # create this symlink yourself. :(
 # These credentials must be for the 'annotator' cidb user for the debug
 # instance of cidb. See go/cros-cidb-admin
-CIDB_CREDS_DIR = os.path.join(BASE_DIR, 'annotator_cidb_creds')
+CIDB_CREDS_DIR = os.path.join(BASE_DIR, 'annotator_cidb_creds.debug')
 
 ANNOTATOR_PASSWORD_PATH = os.path.join(CIDB_CREDS_DIR, 'password.txt')
 _AssertFileExists(ANNOTATOR_PASSWORD_PATH)

@@ -60,20 +60,24 @@ def _GetDeploySettings(options):
   return '\n'.join(content)
 
 
-def _DeployApp(basedir):
+def _DeployApp(basedir, options):
   """Deploy the prepared app from basedir.
 
   Args:
     basedir: The base directory where the app has already been prepped.
+    options: The command-line options passed in.
   """
   cros_build_lib.RunCommand(
       ['./ae_shell', 'cq_stats', '--',
        'python', 'cq_stats/manage.py', 'collectstatic', '--noinput'],
       cwd=basedir)
 
-  # Remove sensetive files that are needed to run tools locally to prepare the
+  # Remove sensitive files that are needed to run tools locally to prepare the
   # deploy directory, but that we don't want to push to AE.
-  cidb_cred_path = os.path.join(basedir, 'cq_stats', 'annotator_cidb_creds')
+  cidb_cred_file = 'annotator_cidb_creds'
+  if options.instance == APP_INSTANCE_DEBUG:
+    cidb_cred_file += '.debug'
+  cidb_cred_path = os.path.join(basedir, 'cq_stats', cidb_cred_file)
   osutils.SafeUnlink(os.path.join(cidb_cred_path, 'client-cert.pem'))
   osutils.SafeUnlink(os.path.join(cidb_cred_path, 'client-key.pem'))
   osutils.SafeUnlink(os.path.join(cidb_cred_path, 'server-ca.pem'))
@@ -142,5 +146,5 @@ def main(argv):
     ]
     cros_build_lib.RunCommand(cmd, cwd=tempdir)
 
-    _DeployApp(tempdir)
+    _DeployApp(tempdir, options)
     # _Hang(tempdir)

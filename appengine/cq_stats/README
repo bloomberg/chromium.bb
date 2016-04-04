@@ -13,8 +13,10 @@ Local development
 =================
 - We require cidb credentials to be made available to the app in a very specific
   way. Create a directory / symlink to your *annotator* user credentials for the
-  *debug-cidb* instance named "annotator_cidb_creds". See go/cros-cidb-admin to
-  obtain these credentials.
+  *debug-cidb* instance named "annotator_cidb_creds.debug".  Create another
+  directory / symlink for the prod credentials named "annotator_cidb_creds".
+  See go/cros-cidb-admin to obtain these credentials.  The deploy script
+  will choose the right credential symlink based on the instance chosen.
 - Then from chromite/appengine, you can launch the local dev_appserver using:
     $ ./cq_stats/dev_appserver
 - There are two kinds of changes that will not be picked up by the dev_appserver
