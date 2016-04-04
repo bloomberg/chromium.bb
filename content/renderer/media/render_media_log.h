@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/base/media_log.h"
@@ -40,16 +41,24 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
  private:
   ~RenderMediaLog() override;
 
-  // Add event on the |task_runner_|.
-  void AddEventInternal(scoped_ptr<media::MediaLogEvent> event);
-
-  // Posted as a delayed task to throttle ipc message frequency.
+  // Posted as a delayed task on |task_runner_| to throttle ipc message
+  // frequency.
   void SendQueuedMediaEvents();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // |lock_| serializes access to |tick_clock_|, |last_ipc_send_time_|,
+  // |queued_media_events_|, |ipc_send_pending_| and
+  // |last_buffered_extents_changed_event_|. It allows any render process thread
+  // to AddEvent(), while preserving their sequence for throttled send on
+  // |task_runner_|.
+  mutable base::Lock lock_;
   scoped_ptr<base::TickClock> tick_clock_;
   base::TimeTicks last_ipc_send_time_;
   std::vector<media::MediaLogEvent> queued_media_events_;
+
+  // For enforcing max 1 pending send.
+  bool ipc_send_pending_;
 
   // Limits the number buffered extents changed events we send over IPC to one.
   scoped_ptr<media::MediaLogEvent> last_buffered_extents_changed_event_;
