@@ -38,4 +38,11 @@ public interface CrashReportingPermissionManager {
      * @return whether uploading logic should be constrained.
      */
     public boolean isUploadLimited();
+
+    /**
+     * Check whether to ignore all consent and upload, used by test devices to avoid UI dependency.
+     *
+     * @return whether crash dumps should be uploaded if at all possible.
+     */
+    public boolean isUploadEnabledForTests();
 }

@@ -365,8 +365,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     @Override
     public boolean isUploadPermitted() {
         return !mCrashUploadingCommandLineDisabled && isNetworkAvailable()
-                && (allowUploadCrashDump() || CommandLine.getInstance().hasSwitch(
-                        ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD));
+                && (allowUploadCrashDump() || isUploadEnabledForTests());
     }
 
     /**
@@ -451,5 +450,16 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     public boolean isPhysicalWebEnabled() {
         int state = mSharedPreferences.getInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ONBOARDING);
         return (state == PHYSICAL_WEB_ON);
+    }
+
+    /**
+     * Check whether the command line switch is used to force uploading if at all possible. Used by
+     * test devices to avoid UI manipulation.
+     *
+     * @return whether uploading should be enabled if at all possible.
+     */
+    @Override
+    public boolean isUploadEnabledForTests() {
+        return CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD);
     }
 }

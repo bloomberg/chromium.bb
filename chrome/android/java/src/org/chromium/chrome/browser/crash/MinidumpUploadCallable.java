@@ -92,17 +92,21 @@ public class MinidumpUploadCallable implements Callable<Integer> {
             return UPLOAD_COMMANDLINE_DISABLED;
         }
 
-        if (!mPermManager.isUploadUserPermitted()) {
-            Log.i(TAG, "Minidump upload is not permitted by user. Marking file as uploaded for "
-                    + "cleanup to prevent future uploads.");
-            cleanupMinidumpFile();
-            return UPLOAD_USER_DISABLED;
-        }
+        if (mPermManager.isUploadEnabledForTests()) {
+            Log.i(TAG, "Minidump upload enabled for tests, skipping other checks.");
+        } else {
+            if (!mPermManager.isUploadUserPermitted()) {
+                Log.i(TAG, "Minidump upload is not permitted by user. Marking file as uploaded for "
+                        + "cleanup to prevent future uploads.");
+                cleanupMinidumpFile();
+                return UPLOAD_USER_DISABLED;
+            }
 
-        boolean isLimited = mPermManager.isUploadLimited();
-        if (isLimited || !mPermManager.isUploadPermitted()) {
-            Log.i(TAG, "Minidump cannot currently be uploaded due to constraints.");
-            return UPLOAD_FAILURE;
+            boolean isLimited = mPermManager.isUploadLimited();
+            if (isLimited || !mPermManager.isUploadPermitted()) {
+                Log.i(TAG, "Minidump cannot currently be uploaded due to constraints.");
+                return UPLOAD_FAILURE;
+            }
         }
 
         HttpURLConnection connection =
