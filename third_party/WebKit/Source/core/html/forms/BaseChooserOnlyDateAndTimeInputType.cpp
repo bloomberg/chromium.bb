@@ -79,9 +79,9 @@ void BaseChooserOnlyDateAndTimeInputType::createShadowSubtree()
 {
     DEFINE_STATIC_LOCAL(AtomicString, valueContainerPseudo, ("-webkit-date-and-time-value"));
 
-    RawPtr<HTMLDivElement> valueContainer = HTMLDivElement::create(element().document());
+    HTMLDivElement* valueContainer = HTMLDivElement::create(element().document());
     valueContainer->setShadowPseudoId(valueContainerPseudo);
-    element().userAgentShadowRoot()->appendChild(valueContainer.get());
+    element().userAgentShadowRoot()->appendChild(valueContainer);
     updateView();
 }
 

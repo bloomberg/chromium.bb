@@ -35,7 +35,7 @@
 
 namespace blink {
 
-RawPtr<InputType> TelephoneInputType::create(HTMLInputElement& element)
+InputType* TelephoneInputType::create(HTMLInputElement& element)
 {
     return new TelephoneInputType(element);
 }

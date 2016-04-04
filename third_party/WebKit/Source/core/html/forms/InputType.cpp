@@ -78,7 +78,7 @@ namespace blink {
 using blink::WebLocalizedString;
 using namespace HTMLNames;
 
-using InputTypeFactoryFunction = RawPtr<InputType> (*)(HTMLInputElement&);
+using InputTypeFactoryFunction = InputType* (*)(HTMLInputElement&);
 using InputTypeFactoryMap = HashMap<AtomicString, InputTypeFactoryFunction, CaseFoldingHash>;
 
 static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
@@ -115,7 +115,7 @@ static const InputTypeFactoryMap* factoryMap()
     return factoryMap;
 }
 
-RawPtr<InputType> InputType::create(HTMLInputElement& element, const AtomicString& typeName)
+InputType* InputType::create(HTMLInputElement& element, const AtomicString& typeName)
 {
     InputTypeFactoryFunction factory = typeName.isEmpty() ? 0 : factoryMap()->get(typeName);
     if (!factory)
@@ -123,7 +123,7 @@ RawPtr<InputType> InputType::create(HTMLInputElement& element, const AtomicStrin
     return factory(element);
 }
 
-RawPtr<InputType> InputType::createText(HTMLInputElement& element)
+InputType* InputType::createText(HTMLInputElement& element)
 {
     return TextInputType::create(element);
 }

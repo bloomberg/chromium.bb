@@ -34,7 +34,7 @@
 
 namespace blink {
 
-RawPtr<InputTypeView> InputTypeView::create(HTMLInputElement& input)
+InputTypeView* InputTypeView::create(HTMLInputElement& input)
 {
     return new InputTypeView(input);
 }
@@ -91,7 +91,7 @@ bool InputTypeView::shouldSubmitImplicitly(Event* event)
     return false;
 }
 
-RawPtr<HTMLFormElement> InputTypeView::formForSubmission() const
+HTMLFormElement* InputTypeView::formForSubmission() const
 {
     return element().form();
 }
@@ -162,7 +162,7 @@ void InputTypeView::stepAttributeChanged()
 {
 }
 
-RawPtr<ClickHandlingState> InputTypeView::willDispatchClick()
+ClickHandlingState* InputTypeView::willDispatchClick()
 {
     return nullptr;
 }

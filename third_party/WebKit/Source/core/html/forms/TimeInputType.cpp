@@ -57,7 +57,7 @@ TimeInputType::TimeInputType(HTMLInputElement& element)
 {
 }
 
-RawPtr<InputType> TimeInputType::create(HTMLInputElement& element)
+InputType* TimeInputType::create(HTMLInputElement& element)
 {
     return new TimeInputType(element);
 }

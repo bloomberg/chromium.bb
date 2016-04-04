@@ -41,7 +41,7 @@ class ColorChooser;
 class ColorInputType final : public BaseClickableWithKeyInputType, public ColorChooserClient {
     USING_GARBAGE_COLLECTED_MIXIN(ColorInputType);
 public:
-    static RawPtr<InputType> create(HTMLInputElement&);
+    static InputType* create(HTMLInputElement&);
     ~ColorInputType() override;
     DECLARE_VIRTUAL_TRACE();
 

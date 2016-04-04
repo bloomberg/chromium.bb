@@ -46,7 +46,7 @@ HTMLInputElement* nextInputElement(const HTMLInputElement& element, const HTMLFo
 
 using namespace HTMLNames;
 
-RawPtr<InputType> RadioInputType::create(HTMLInputElement& element)
+InputType* RadioInputType::create(HTMLInputElement& element)
 {
     return new RadioInputType(element);
 }
@@ -116,7 +116,6 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
         }
     }
     if (inputElement) {
-        RawPtr<HTMLInputElement> protector(inputElement);
         document.setFocusedElement(inputElement, FocusParams(SelectionBehaviorOnFocus::None, WebFocusTypeNone, nullptr));
         inputElement->dispatchSimulatedClick(event, SendNoEvents);
         event->setDefaultHandled();
@@ -165,7 +164,7 @@ bool RadioInputType::shouldSendChangeEventAfterCheckedChanged()
     return element().checked();
 }
 
-RawPtr<ClickHandlingState> RadioInputType::willDispatchClick()
+ClickHandlingState* RadioInputType::willDispatchClick()
 {
     // An event handler can use preventDefault or "return false" to reverse the selection we do here.
     // The ClickHandlingState object contains what we need to undo what we did here in didDispatchClick.
@@ -174,13 +173,13 @@ RawPtr<ClickHandlingState> RadioInputType::willDispatchClick()
     // Therefore if nothing is currently selected, we won't allow the upcoming action to be "undone", since
     // we want some object in the radio group to actually get selected.
 
-    RawPtr<ClickHandlingState> state = new ClickHandlingState;
+    ClickHandlingState* state = new ClickHandlingState;
 
     state->checked = element().checked();
     state->checkedRadioButton = element().checkedRadioButtonForGroup();
     element().setChecked(true, DispatchChangeEvent);
     m_isInClickHandler = true;
-    return state.release();
+    return state;
 }
 
 void RadioInputType::didDispatchClick(Event* event, const ClickHandlingState& state)

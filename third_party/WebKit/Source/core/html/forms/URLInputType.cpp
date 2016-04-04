@@ -38,7 +38,7 @@
 
 namespace blink {
 
-RawPtr<InputType> URLInputType::create(HTMLInputElement& element)
+InputType* URLInputType::create(HTMLInputElement& element)
 {
     return new URLInputType(element);
 }

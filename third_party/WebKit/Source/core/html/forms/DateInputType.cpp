@@ -53,7 +53,7 @@ inline DateInputType::DateInputType(HTMLInputElement& element)
 {
 }
 
-RawPtr<InputType> DateInputType::create(HTMLInputElement& element)
+InputType* DateInputType::create(HTMLInputElement& element)
 {
     return new DateInputType(element);
 }

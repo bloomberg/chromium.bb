@@ -40,7 +40,7 @@
 
 namespace blink {
 
-RawPtr<InputType> PasswordInputType::create(HTMLInputElement& element)
+InputType* PasswordInputType::create(HTMLInputElement& element)
 {
     return new PasswordInputType(element);
 }

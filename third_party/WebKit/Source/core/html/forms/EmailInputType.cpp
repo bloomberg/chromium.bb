@@ -147,7 +147,7 @@ bool EmailInputType::isValidEmailAddress(const String& address)
     return !matchOffset && matchLength == addressLength;
 }
 
-RawPtr<InputType> EmailInputType::create(HTMLInputElement& element)
+InputType* EmailInputType::create(HTMLInputElement& element)
 {
     return new EmailInputType(element);
 }

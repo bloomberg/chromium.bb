@@ -71,14 +71,14 @@ public:
 class CORE_EXPORT InputTypeView : public GarbageCollectedFinalized<InputTypeView> {
     WTF_MAKE_NONCOPYABLE(InputTypeView);
 public:
-    static RawPtr<InputTypeView> create(HTMLInputElement&);
+    static InputTypeView* create(HTMLInputElement&);
     virtual ~InputTypeView();
     DECLARE_VIRTUAL_TRACE();
 
     virtual bool sizeShouldIncludeDecoration(int defaultSize, int& preferredSize) const;
     virtual void handleClickEvent(MouseEvent*);
     virtual void handleMouseDownEvent(MouseEvent*);
-    virtual RawPtr<ClickHandlingState> willDispatchClick();
+    virtual ClickHandlingState* willDispatchClick();
     virtual void didDispatchClick(Event*, const ClickHandlingState&);
     virtual void handleKeydownEvent(KeyboardEvent*);
     virtual void handleKeypressEvent(KeyboardEvent*);
@@ -87,7 +87,7 @@ public:
     virtual void handleTouchEvent(TouchEvent*);
     virtual void forwardEvent(Event*);
     virtual bool shouldSubmitImplicitly(Event*);
-    virtual RawPtr<HTMLFormElement> formForSubmission() const;
+    virtual HTMLFormElement* formForSubmission() const;
     virtual bool hasCustomFocusLogic() const;
     virtual void handleFocusEvent(Element* oldFocusedElement, WebFocusType);
     virtual void handleFocusInEvent(Element* oldFocusedElement, WebFocusType);

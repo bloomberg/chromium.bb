@@ -37,7 +37,7 @@ namespace blink {
 
 class PasswordInputType final : public BaseTextInputType {
 public:
-    static RawPtr<InputType> create(HTMLInputElement&);
+    static InputType* create(HTMLInputElement&);
 
 private:
     PasswordInputType(HTMLInputElement& element) : BaseTextInputType(element) { }

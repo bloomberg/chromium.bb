@@ -55,8 +55,8 @@ class FormData;
 class CORE_EXPORT InputType : public InputTypeView {
     WTF_MAKE_NONCOPYABLE(InputType);
 public:
-    static RawPtr<InputType> create(HTMLInputElement&, const AtomicString&);
-    static RawPtr<InputType> createText(HTMLInputElement&);
+    static InputType* create(HTMLInputElement&, const AtomicString&);
+    static InputType* createText(HTMLInputElement&);
     static const AtomicString& normalizeTypeName(const AtomicString&);
     ~InputType() override;
 

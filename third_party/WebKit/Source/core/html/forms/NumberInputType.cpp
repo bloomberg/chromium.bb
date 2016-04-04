@@ -95,7 +95,7 @@ static RealNumberRenderSize calculateRenderSize(const Decimal& value)
     return RealNumberRenderSize(sizeOfSign + sizeOfZero , numberOfZeroAfterDecimalPoint + sizeOfDigits);
 }
 
-RawPtr<InputType> NumberInputType::create(HTMLInputElement& element)
+InputType* NumberInputType::create(HTMLInputElement& element)
 {
     return new NumberInputType(element);
 }

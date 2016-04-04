@@ -55,7 +55,7 @@ inline FileInputType::FileInputType(HTMLInputElement& element)
 {
 }
 
-RawPtr<InputType> FileInputType::create(HTMLInputElement& element)
+InputType* FileInputType::create(HTMLInputElement& element)
 {
     return new FileInputType(element);
 }
@@ -252,11 +252,11 @@ void FileInputType::countUsage()
 void FileInputType::createShadowSubtree()
 {
     ASSERT(element().shadow());
-    RawPtr<HTMLInputElement> button = HTMLInputElement::create(element().document(), 0, false);
+    HTMLInputElement* button = HTMLInputElement::create(element().document(), 0, false);
     button->setType(InputTypeNames::button);
     button->setAttribute(valueAttr, AtomicString(locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel)));
     button->setShadowPseudoId(AtomicString("-webkit-file-upload-button"));
-    element().userAgentShadowRoot()->appendChild(button.release());
+    element().userAgentShadowRoot()->appendChild(button);
 }
 
 void FileInputType::disabledAttributeChanged()
@@ -278,8 +278,6 @@ void FileInputType::setFiles(FileList* files)
     if (!files)
         return;
 
-    RawPtr<HTMLInputElement> input(element());
-
     bool filesChanged = false;
     if (files->length() != m_fileList->length()) {
         filesChanged = true;
@@ -294,18 +292,18 @@ void FileInputType::setFiles(FileList* files)
 
     m_fileList = files;
 
-    input->notifyFormStateChanged();
-    input->setNeedsValidityCheck();
+    element().notifyFormStateChanged();
+    element().setNeedsValidityCheck();
 
-    if (input->layoutObject())
-        input->layoutObject()->setShouldDoFullPaintInvalidation();
+    if (element().layoutObject())
+        element().layoutObject()->setShouldDoFullPaintInvalidation();
 
     if (filesChanged) {
         // This call may cause destruction of this instance.
         // input instance is safe since it is ref-counted.
-        input->dispatchChangeEvent();
+        element().dispatchChangeEvent();
     }
-    input->setChangedSinceLastFormControlChangeEvent(false);
+    element().setChangedSinceLastFormControlChangeEvent(false);
 }
 
 void FileInputType::filesChosen(const Vector<FileChooserFileInfo>& files)

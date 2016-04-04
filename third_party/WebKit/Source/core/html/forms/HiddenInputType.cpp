@@ -42,7 +42,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-RawPtr<InputType> HiddenInputType::create(HTMLInputElement& element)
+InputType* HiddenInputType::create(HTMLInputElement& element)
 {
     return new HiddenInputType(element);
 }

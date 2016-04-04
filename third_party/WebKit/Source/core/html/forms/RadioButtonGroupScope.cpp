@@ -28,7 +28,7 @@ namespace blink {
 
 class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
 public:
-    static RawPtr<RadioButtonGroup> create();
+    static RadioButtonGroup* create();
     bool isEmpty() const { return m_members.isEmpty(); }
     bool isRequired() const { return m_requiredCount; }
     HTMLInputElement* checkedButton() const { return m_checkedButton; }
@@ -69,7 +69,7 @@ RadioButtonGroup::RadioButtonGroup()
 {
 }
 
-RawPtr<RadioButtonGroup> RadioButtonGroup::create()
+RadioButtonGroup* RadioButtonGroup::create()
 {
     return new RadioButtonGroup;
 }

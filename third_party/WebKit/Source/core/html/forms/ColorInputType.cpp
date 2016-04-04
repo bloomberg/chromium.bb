@@ -76,7 +76,7 @@ static bool isValidColorString(const String& value)
     return color.setFromString(value) && !color.hasAlpha();
 }
 
-RawPtr<InputType> ColorInputType::create(HTMLInputElement& element)
+InputType* ColorInputType::create(HTMLInputElement& element)
 {
     return new ColorInputType(element);
 }
@@ -133,12 +133,12 @@ void ColorInputType::createShadowSubtree()
     ASSERT(element().shadow());
 
     Document& document = element().document();
-    RawPtr<HTMLDivElement> wrapperElement = HTMLDivElement::create(document);
+    HTMLDivElement* wrapperElement = HTMLDivElement::create(document);
     wrapperElement->setShadowPseudoId(AtomicString("-webkit-color-swatch-wrapper"));
-    RawPtr<HTMLDivElement> colorSwatch = HTMLDivElement::create(document);
+    HTMLDivElement* colorSwatch = HTMLDivElement::create(document);
     colorSwatch->setShadowPseudoId(AtomicString("-webkit-color-swatch"));
-    wrapperElement->appendChild(colorSwatch.release());
-    element().userAgentShadowRoot()->appendChild(wrapperElement.release());
+    wrapperElement->appendChild(colorSwatch);
+    element().userAgentShadowRoot()->appendChild(wrapperElement);
 
     element().updateView();
 }
@@ -262,7 +262,7 @@ Vector<ColorSuggestion> ColorInputType::suggestions() const
     Vector<ColorSuggestion> suggestions;
     HTMLDataListElement* dataList = element().dataList();
     if (dataList) {
-        RawPtr<HTMLDataListOptionsCollection> options = dataList->options();
+        HTMLDataListOptionsCollection* options = dataList->options();
         for (unsigned i = 0; HTMLOptionElement* option = options->item(i); i++) {
             if (!element().isValidValue(option->value()))
                 continue;

@@ -97,12 +97,12 @@ private:
     }
 
 public:
-    static RawPtr<DataListIndicatorElement> create(Document& document)
+    static DataListIndicatorElement* create(Document& document)
     {
-        RawPtr<DataListIndicatorElement> element = new DataListIndicatorElement(document);
+        DataListIndicatorElement* element = new DataListIndicatorElement(document);
         element->setShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
         element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
-        return element.release();
+        return element;
     }
 
 };
@@ -147,22 +147,18 @@ bool TextFieldInputType::canSetSuggestedValue()
 
 void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)
 {
-    // Grab this input element to keep reference even if JS event handler
-    // changes input type.
-    RawPtr<HTMLInputElement> input(element());
-
     // We don't ask InputType::setValue to dispatch events because
     // TextFieldInputType dispatches events different way from InputType.
     InputType::setValue(sanitizedValue, valueChanged, DispatchNoEvent);
 
     if (valueChanged)
-        input->updateView();
+        element().updateView();
 
     unsigned max = visibleValue().length();
-    if (input->focused())
-        input->setSelectionRange(max, max, SelectionHasNoDirection, NotDispatchSelectEvent);
+    if (element().focused())
+        element().setSelectionRange(max, max, SelectionHasNoDirection, NotDispatchSelectEvent);
     else
-        input->cacheSelectionInResponseToSetValue(max);
+        element().cacheSelectionInResponseToSetValue(max);
 
     if (!valueChanged)
         return;
@@ -171,15 +167,15 @@ void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChange
     case DispatchChangeEvent:
         // If the user is still editing this field, dispatch an input event rather than a change event.
         // The change event will be dispatched when editing finishes.
-        if (input->focused())
-            input->dispatchFormControlInputEvent();
+        if (element().focused())
+            element().dispatchFormControlInputEvent();
         else
-            input->dispatchFormControlChangeEvent();
+            element().dispatchFormControlChangeEvent();
         break;
 
     case DispatchInputAndChangeEvent: {
-        input->dispatchFormControlInputEvent();
-        input->dispatchFormControlChangeEvent();
+        element().dispatchFormControlInputEvent();
+        element().dispatchFormControlChangeEvent();
         break;
     }
 
@@ -187,8 +183,8 @@ void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChange
         break;
     }
 
-    if (!input->focused())
-        input->setTextAsOfLastFormControlChangeEvent(sanitizedValue.isNull() ? input->defaultValue() : sanitizedValue);
+    if (!element().focused())
+        element().setTextAsOfLastFormControlChangeEvent(sanitizedValue.isNull() ? element().defaultValue() : sanitizedValue);
 }
 
 void TextFieldInputType::handleKeydownEvent(KeyboardEvent* event)
@@ -287,19 +283,19 @@ void TextFieldInputType::createShadowSubtree()
     bool shouldHaveDataListIndicator = element().hasValidDataListOptions();
     bool createsContainer = shouldHaveSpinButton || shouldHaveDataListIndicator || needsContainer();
 
-    RawPtr<TextControlInnerEditorElement> innerEditor = TextControlInnerEditorElement::create(document);
+    TextControlInnerEditorElement* innerEditor = TextControlInnerEditorElement::create(document);
     if (!createsContainer) {
-        shadowRoot->appendChild(innerEditor.release());
+        shadowRoot->appendChild(innerEditor);
         return;
     }
 
-    RawPtr<TextControlInnerContainer> container = TextControlInnerContainer::create(document);
+    TextControlInnerContainer* container = TextControlInnerContainer::create(document);
     container->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container"));
     shadowRoot->appendChild(container);
 
-    RawPtr<EditingViewPortElement> editingViewPort = EditingViewPortElement::create(document);
-    editingViewPort->appendChild(innerEditor.release());
-    container->appendChild(editingViewPort.release());
+    EditingViewPortElement* editingViewPort = EditingViewPortElement::create(document);
+    editingViewPort->appendChild(innerEditor);
+    container->appendChild(editingViewPort);
 
     if (shouldHaveDataListIndicator)
         container->appendChild(DataListIndicatorElement::create(document));
@@ -342,13 +338,13 @@ void TextFieldInputType::listAttributeTargetChanged()
             // FIXME: The following code is similar to createShadowSubtree(),
             // but they are different. We should simplify the code by making
             // containerElement mandatory.
-            RawPtr<Element> rpContainer = TextControlInnerContainer::create(document);
+            Element* rpContainer = TextControlInnerContainer::create(document);
             rpContainer->setShadowPseudoId(AtomicString("-webkit-textfield-decoration-container"));
-            RawPtr<Element> innerEditor = element().innerEditorElement();
-            innerEditor->parentNode()->replaceChild(rpContainer.get(), innerEditor.get());
-            RawPtr<Element> editingViewPort = EditingViewPortElement::create(document);
-            editingViewPort->appendChild(innerEditor.release());
-            rpContainer->appendChild(editingViewPort.release());
+            Element* innerEditor = element().innerEditorElement();
+            innerEditor->parentNode()->replaceChild(rpContainer, innerEditor);
+            Element* editingViewPort = EditingViewPortElement::create(document);
+            editingViewPort->appendChild(innerEditor);
+            rpContainer->appendChild(editingViewPort);
             rpContainer->appendChild(DataListIndicatorElement::create(document));
             if (element().document().focusedElement() == element())
                 element().updateFocusAppearance(SelectionBehaviorOnFocus::Restore);
@@ -457,8 +453,8 @@ void TextFieldInputType::updatePlaceholderText()
         return;
     }
     if (!placeholder) {
-        RawPtr<HTMLElement> newElement = HTMLDivElement::create(element().document());
-        placeholder = newElement.get();
+        HTMLElement* newElement = HTMLDivElement::create(element().document());
+        placeholder = newElement;
         placeholder->setShadowPseudoId(AtomicString("-webkit-input-placeholder"));
         placeholder->setInlineStyleProperty(CSSPropertyDisplay, element().isPlaceholderVisible() ? CSSValueBlock : CSSValueNone, true);
         placeholder->setAttribute(idAttr, ShadowElementNames::placeholder());
@@ -533,9 +529,8 @@ void TextFieldInputType::updateView()
 
 void TextFieldInputType::focusAndSelectSpinButtonOwner()
 {
-    RawPtr<HTMLInputElement> input(element());
-    input->focus();
-    input->select(NotDispatchSelectEvent);
+    element().focus();
+    element().select(NotDispatchSelectEvent);
 }
 
 bool TextFieldInputType::shouldSpinButtonRespondToMouseEvents()

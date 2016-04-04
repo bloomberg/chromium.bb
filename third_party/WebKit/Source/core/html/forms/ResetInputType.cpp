@@ -40,7 +40,7 @@
 
 namespace blink {
 
-RawPtr<InputType> ResetInputType::create(HTMLInputElement& element)
+InputType* ResetInputType::create(HTMLInputElement& element)
 {
     return new ResetInputType(element);
 }

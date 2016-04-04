@@ -48,7 +48,7 @@ inline ImageInputType::ImageInputType(HTMLInputElement& element)
 {
 }
 
-RawPtr<InputType> ImageInputType::create(HTMLInputElement& element)
+InputType* ImageInputType::create(HTMLInputElement& element)
 {
     return new ImageInputType(element);
 }
@@ -109,13 +109,12 @@ static IntPoint extractClickLocation(Event* event)
 
 void ImageInputType::handleDOMActivateEvent(Event* event)
 {
-    RawPtr<HTMLInputElement> element(this->element());
-    if (element->isDisabledFormControl() || !element->form())
+    if (element().isDisabledFormControl() || !element().form())
         return;
-    element->setActivatedSubmit(true);
+    element().setActivatedSubmit(true);
     m_clickLocation = extractClickLocation(event);
-    element->form()->prepareForSubmission(event); // Event handlers can run.
-    element->setActivatedSubmit(false);
+    element().form()->prepareForSubmission(event); // Event handlers can run.
+    element().setActivatedSubmit(false);
     event->setDefaultHandled();
 }
 
@@ -189,45 +188,41 @@ bool ImageInputType::shouldRespectHeightAndWidthAttributes()
 
 unsigned ImageInputType::height() const
 {
-    RawPtr<HTMLInputElement> element(this->element());
-
-    if (!element->layoutObject()) {
+    if (!element().layoutObject()) {
         // Check the attribute first for an explicit pixel value.
         unsigned height;
-        if (parseHTMLNonNegativeInteger(element->fastGetAttribute(heightAttr), height))
+        if (parseHTMLNonNegativeInteger(element().fastGetAttribute(heightAttr), height))
             return height;
 
         // If the image is available, use its height.
-        HTMLImageLoader* imageLoader = element->imageLoader();
+        HTMLImageLoader* imageLoader = element().imageLoader();
         if (imageLoader && imageLoader->image())
             return imageLoader->image()->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr), 1).height();
     }
 
-    element->document().updateLayout();
+    element().document().updateLayout();
 
-    LayoutBox* box = element->layoutBox();
+    LayoutBox* box = element().layoutBox();
     return box ? adjustForAbsoluteZoom(box->contentHeight(), box) : 0;
 }
 
 unsigned ImageInputType::width() const
 {
-    RawPtr<HTMLInputElement> element(this->element());
-
-    if (!element->layoutObject()) {
+    if (!element().layoutObject()) {
         // Check the attribute first for an explicit pixel value.
         unsigned width;
-        if (parseHTMLNonNegativeInteger(element->fastGetAttribute(widthAttr), width))
+        if (parseHTMLNonNegativeInteger(element().fastGetAttribute(widthAttr), width))
             return width;
 
         // If the image is available, use its width.
-        HTMLImageLoader* imageLoader = element->imageLoader();
+        HTMLImageLoader* imageLoader = element().imageLoader();
         if (imageLoader && imageLoader->image())
             return imageLoader->image()->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr), 1).width();
     }
 
-    element->document().updateLayout();
+    element().document().updateLayout();
 
-    LayoutBox* box = element->layoutBox();
+    LayoutBox* box = element().layoutBox();
     return box ? adjustForAbsoluteZoom(box->contentWidth(), box) : 0;
 }
 

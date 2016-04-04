@@ -46,10 +46,10 @@ TEST(FileInputTypeTest, createFileList)
 
 TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles)
 {
-    const RawPtr<Document> document = Document::create();
-    const RawPtr<HTMLInputElement> input =
+    Document* document = Document::create();
+    HTMLInputElement* input =
         HTMLInputElement::create(*document, nullptr, false);
-    const RawPtr<InputType> fileInput = FileInputType::create(*input);
+    InputType* fileInput = FileInputType::create(*input);
 
     DataObject* nativeFileRawDragData = DataObject::create();
     const DragData nativeFileDragData(nativeFileRawDragData, IntPoint(), IntPoint(), DragOperationCopy);

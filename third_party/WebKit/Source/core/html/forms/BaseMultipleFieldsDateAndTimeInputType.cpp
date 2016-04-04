@@ -160,7 +160,6 @@ void BaseMultipleFieldsDateAndTimeInputType::didBlurFromControl()
     if (containsFocusedShadowElement())
         return;
     EventQueueScope scope;
-    RawPtr<HTMLInputElement> protector(element());
     // Remove focus ring by CSS "focus" pseudo class.
     element().setFocus(false);
     if (SpinButtonElement *spinButton = spinButtonElement())
@@ -181,19 +180,18 @@ void BaseMultipleFieldsDateAndTimeInputType::didFocusOnControl()
 
 void BaseMultipleFieldsDateAndTimeInputType::editControlValueChanged()
 {
-    RawPtr<HTMLInputElement> input(element());
-    String oldValue = input->value();
+    String oldValue = element().value();
     String newValue = sanitizeValue(dateTimeEditElement()->value());
     // Even if oldValue is null and newValue is "", we should assume they are same.
     if ((oldValue.isEmpty() && newValue.isEmpty()) || oldValue == newValue) {
-        input->setNeedsValidityCheck();
+        element().setNeedsValidityCheck();
     } else {
-        input->setValueInternal(newValue, DispatchNoEvent);
-        input->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
-        input->dispatchFormControlInputEvent();
+        element().setValueInternal(newValue, DispatchNoEvent);
+        element().setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ControlValue));
+        element().dispatchFormControlInputEvent();
     }
-    input->notifyFormStateChanged();
-    input->updateClearButtonVisibility();
+    element().notifyFormStateChanged();
+    element().updateClearButtonVisibility();
 }
 
 bool BaseMultipleFieldsDateAndTimeInputType::hasCustomFocusLogic() const
@@ -600,9 +598,8 @@ bool BaseMultipleFieldsDateAndTimeInputType::shouldClearButtonRespondToMouseEven
 
 void BaseMultipleFieldsDateAndTimeInputType::clearValue()
 {
-    RawPtr<HTMLInputElement> input(element());
-    input->setValue("", DispatchInputAndChangeEvent);
-    input->updateClearButtonVisibility();
+    element().setValue("", DispatchInputAndChangeEvent);
+    element().updateClearButtonVisibility();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::updateClearButtonVisibility()

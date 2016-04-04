@@ -37,7 +37,7 @@ namespace blink {
 
 class ResetInputType final : public BaseButtonInputType {
 public:
-    static RawPtr<InputType> create(HTMLInputElement&);
+    static InputType* create(HTMLInputElement&);
 
 private:
     ResetInputType(HTMLInputElement& element) : BaseButtonInputType(element) { }

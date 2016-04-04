@@ -290,7 +290,7 @@ Vector<String> SavedFormState::getReferencedFilePaths() const
 class FormKeyGenerator final : public GarbageCollectedFinalized<FormKeyGenerator> {
     WTF_MAKE_NONCOPYABLE(FormKeyGenerator);
 public:
-    static RawPtr<FormKeyGenerator> create() { return new FormKeyGenerator; }
+    static FormKeyGenerator* create() { return new FormKeyGenerator; }
     DEFINE_INLINE_TRACE()
     {
 #if ENABLE(OILPAN)
@@ -379,7 +379,7 @@ void FormKeyGenerator::willDeleteForm(HTMLFormElement* form)
 
 // ----------------------------------------------------------------------------
 
-RawPtr<DocumentState> DocumentState::create()
+DocumentState* DocumentState::create()
 {
     return new DocumentState;
 }
@@ -414,7 +414,7 @@ static String formStateSignature()
 
 Vector<String> DocumentState::toStateVector()
 {
-    RawPtr<FormKeyGenerator> keyGenerator = FormKeyGenerator::create();
+    FormKeyGenerator* keyGenerator = FormKeyGenerator::create();
     OwnPtr<SavedFormStateMap> stateMap = adoptPtr(new SavedFormStateMap);
     for (const auto& formControl : m_formControls) {
         HTMLFormControlElementWithState* control = formControl.get();

@@ -52,7 +52,7 @@ inline SearchInputType::SearchInputType(HTMLInputElement& element)
 {
 }
 
-RawPtr<InputType> SearchInputType::create(HTMLInputElement& element)
+InputType* SearchInputType::create(HTMLInputElement& element)
 {
     return new SearchInputType(element);
 }
@@ -98,9 +98,8 @@ void SearchInputType::handleKeydownEvent(KeyboardEvent* event)
 
     const String& key = event->keyIdentifier();
     if (key == "U+001B") {
-        RawPtr<HTMLInputElement> input(element());
-        input->setValueForUser("");
-        input->onSearch();
+        element().setValueForUser("");
+        element().onSearch();
         event->setDefaultHandled();
         return;
     }
@@ -114,7 +113,7 @@ void SearchInputType::startSearchEventTimer()
 
     if (!length) {
         m_searchEventTimer.stop();
-        element().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLInputElement::onSearch, RawPtr<HTMLInputElement>(&element())));
+        element().document().postTask(BLINK_FROM_HERE, createSameThreadTask(&HTMLInputElement::onSearch, &element()));
         return;
     }
 

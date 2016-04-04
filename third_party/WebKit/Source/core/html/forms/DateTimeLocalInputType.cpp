@@ -49,7 +49,7 @@ static const int dateTimeLocalDefaultStep = 60;
 static const int dateTimeLocalDefaultStepBase = 0;
 static const int dateTimeLocalStepScaleFactor = 1000;
 
-RawPtr<InputType> DateTimeLocalInputType::create(HTMLInputElement& element)
+InputType* DateTimeLocalInputType::create(HTMLInputElement& element)
 {
     return new DateTimeLocalInputType(element);
 }

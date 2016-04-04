@@ -45,7 +45,7 @@ class FileList;
 
 class CORE_EXPORT FileInputType final : public BaseClickableWithKeyInputType, private FileChooserClient {
 public:
-    static RawPtr<InputType> create(HTMLInputElement&);
+    static InputType* create(HTMLInputElement&);
     DECLARE_VIRTUAL_TRACE();
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);
     static FileList* createFileList(const Vector<FileChooserFileInfo>& files, bool hasWebkitDirectoryAttr);

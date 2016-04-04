@@ -76,7 +76,7 @@ using SavedFormStateMap = HashMap<AtomicString, OwnPtr<SavedFormState>>;
 
 class DocumentState final : public GarbageCollected<DocumentState> {
 public:
-    static RawPtr<DocumentState> create();
+    static DocumentState* create();
     DECLARE_TRACE();
 
     void addControl(HTMLFormControlElementWithState*);
@@ -90,7 +90,7 @@ private:
 
 class FormController final : public GarbageCollectedFinalized<FormController> {
 public:
-    static RawPtr<FormController> create()
+    static FormController* create()
     {
         return new FormController;
     }

@@ -37,7 +37,7 @@ namespace blink {
 
 class ButtonInputType final : public BaseButtonInputType {
 public:
-    static RawPtr<InputType> create(HTMLInputElement&);
+    static InputType* create(HTMLInputElement&);
 
 private:
     ButtonInputType(HTMLInputElement& element) : BaseButtonInputType(element) { }

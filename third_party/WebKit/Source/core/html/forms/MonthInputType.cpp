@@ -50,7 +50,7 @@ static const int monthDefaultStep = 1;
 static const int monthDefaultStepBase = 0;
 static const int monthStepScaleFactor = 1;
 
-RawPtr<InputType> MonthInputType::create(HTMLInputElement& element)
+InputType* MonthInputType::create(HTMLInputElement& element)
 {
     return new MonthInputType(element);
 }
