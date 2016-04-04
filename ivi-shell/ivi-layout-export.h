@@ -146,10 +146,6 @@ typedef void (*layer_remove_notification_func)(
 			struct ivi_layout_layer *ivilayer,
 			void *userdata);
 
-typedef void (*surface_create_notification_func)(
-			struct ivi_layout_surface *ivisurf,
-			void *userdata);
-
 typedef void (*surface_remove_notification_func)(
 			struct ivi_layout_surface *ivisurf,
 			void *userdata);
@@ -174,15 +170,14 @@ struct ivi_layout_interface {
 	 */
 
 	/**
-	 * \brief register/unregister for notification when ivi_surface is created
+	 * \brief add a listener for notification when ivi_surface is created
+	 *
+	 * When an ivi_surface is created, a signal is emitted
+	 * to the listening controller plugins.
+	 * The pointer of the created ivi_surface is sent as the void *data argument
+	 * to the wl_listener::notify callback function of the listener.
 	 */
-	int32_t (*add_notification_create_surface)(
-				surface_create_notification_func callback,
-				void *userdata);
-
-	void (*remove_notification_create_surface)(
-				surface_create_notification_func callback,
-				void *userdata);
+	int32_t (*add_listener_create_surface)(struct wl_listener *listener);
 
 	/**
 	 * \brief register/unregister for notification when ivi_surface is removed

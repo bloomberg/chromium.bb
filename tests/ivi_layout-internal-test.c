@@ -848,7 +848,7 @@ test_surface_bad_create_notification(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 
-	iassert(lyt->add_notification_create_surface(NULL, NULL) == IVI_FAILED);
+	iassert(lyt->add_listener_create_surface(NULL) == IVI_FAILED);
 }
 
 static void

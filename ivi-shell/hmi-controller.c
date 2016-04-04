@@ -127,6 +127,8 @@ struct hmi_controller {
 	struct weston_compositor           *compositor;
 	struct wl_listener                  destroy_listener;
 
+	struct wl_listener                  surface_created;
+
 	struct wl_client                   *user_interface;
 	struct ui_setting                   ui_setting;
 
@@ -576,10 +578,12 @@ create_layer(struct weston_output *output,
  * Internal set notification
  */
 static void
-set_notification_create_surface(struct ivi_layout_surface *ivisurf,
-				void *userdata)
+set_notification_create_surface(struct wl_listener *listener, void *data)
 {
-	struct hmi_controller *hmi_ctrl = userdata;
+	struct hmi_controller *hmi_ctrl =
+			wl_container_of(listener, hmi_ctrl,
+					surface_created);
+	struct ivi_layout_surface *ivisurf = data;
 	struct hmi_controller_layer *layer_link =
 					wl_container_of(hmi_ctrl->application_layer_list.prev,
 							layer_link,
@@ -834,8 +838,8 @@ hmi_controller_create(struct weston_compositor *ec)
 	wl_list_insert(&hmi_ctrl->workspace_fade.layer_list,
 		       &tmp_link_layer->link);
 
-	ivi_layout_interface->add_notification_create_surface(
-		set_notification_create_surface, hmi_ctrl);
+	hmi_ctrl->surface_created.notify = set_notification_create_surface;
+	ivi_layout_interface->add_listener_create_surface(&hmi_ctrl->surface_created);
 	ivi_layout_interface->add_notification_remove_surface(
 		set_notification_remove_surface, hmi_ctrl);
 	ivi_layout_interface->add_notification_configure_surface(
