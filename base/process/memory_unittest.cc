@@ -49,8 +49,6 @@ typedef long ssize_t;
 typedef BOOL (WINAPI* HeapQueryFn)  \
     (HANDLE, HEAP_INFORMATION_CLASS, PVOID, SIZE_T, PSIZE_T);
 
-const int kConstantInModule = 42;
-
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
