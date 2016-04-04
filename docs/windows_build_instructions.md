@@ -19,33 +19,33 @@ You must have Windows 7 x64 or later. x86 OSs are unsupported.
 
 ### Open source contributors
 
-####For building with Visual Studio 2015 (default compiler as of March 10, 2016):
+####For building with Visual Studio 2015 (default compiler as of March 11, 2016):
 
-Install Visual Studio 2015 Update 1 or later - Community Edition
-should work if its license is appropriate for you. Use the Custom Install option
-and select:
+> Install Visual Studio 2015 Update 2 or later - Community Edition
+> should work if its license is appropriate for you. Use the Custom Install option
+> and select:
+> 
+> - Visual C++, which will select three sub-categories including MFC
+> - Universal Windows Apps Development Tools > Tools
+> - Universal Windows Apps Development Tools > Windows 10 SDK (10.0.10586)
+> 
+> You must have the 10586 SDK installed or else you will hit compile errors such
+> as redefined macros.
 
-- Visual C++, which will select three sub-categories including MFC
-- Universal Windows Apps Development Tools > Tools (1.2)
-- Universal Windows Apps Development Tools > Windows 10 SDK (10.0.10586)
+#### For building with Visual Studio 2013 (no longer default as of March 11, 2016, and not recommended - requires setting `GYP_MSVS_VERSION=2013`):
 
-You must have the 10586 SDK installed or else you will hit compile errors such
-as redefined macros.
-
-#### For building with Visual Studio 2013 (no longer default as of March 10, 2016, and not recommended - requires setting `GYP_MSVS_VERSION=2013`):
-
-Install [Visual Studio 2013
-Community](http://www.visualstudio.com/products/visual-studio-community-vs)
-or [Visual Studio 2013
-Professional](http://www.visualstudio.com/products/visual-studio-professional-with-msdn-vs)
-depending on which license is appropriate for you. You can deselect
-the default options if you want, but you must make sure to install
-"Microsoft Foundation Classes for C++".
-
-You should also install the [Windows 10
-SDK](https://dev.windows.com/en-us/downloads/windows-10-sdk) to the
-default install location. You must have SDK version 10.0.10586 or
-greater installed.
+> Install [Visual Studio 2013
+> Community](http://www.visualstudio.com/products/visual-studio-community-vs)
+> or [Visual Studio 2013
+> Professional](http://www.visualstudio.com/products/visual-studio-professional-with-msdn-vs)
+> depending on which license is appropriate for you. You can deselect
+> the default options if you want, but you must make sure to install
+> "Microsoft Foundation Classes for C++".
+> 
+> You should also install the [Windows 10
+> SDK](https://dev.windows.com/en-us/downloads/windows-10-sdk) to the
+> default install location. You must have SDK version 10.0.10586 or
+> greater installed.
 
 Run `set DEPOT_TOOLS_WIN_TOOLCHAIN=0`, or set that variable in your
 global environment.
