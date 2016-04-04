@@ -333,7 +333,13 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Bookmark) {
   RunTestsInFile("bookmarks_test.js", "test-bookmarks.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Navigator) {
+// https://crbug.com/600445
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_Navigator DISABLED_Navigator
+#else
+#define MAYBE_Navigator Navigator
+#endif
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_Navigator) {
   RunTestsInFile("navigator_test.js", "test.pdf");
 }
 
