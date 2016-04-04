@@ -341,9 +341,25 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
         for (ref = 0; ref < 2; ++ref) {
           if (prev_frame_mvs->ref_frame[ref] == ref_frame) {
-            if (abs(prev_frame_mvs->mv[ref].as_mv.row) >= 8 ||
-                abs(prev_frame_mvs->mv[ref].as_mv.col) >= 8)
-              mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+            for (idx = 0; idx < *refmv_count; ++idx)
+              if (prev_frame_mvs->mv[ref].as_int ==
+                  ref_mv_stack[idx].this_mv.as_int)
+                break;
+
+            if (idx < *refmv_count)
+              ref_mv_stack[idx].weight += 2;
+
+            if (idx == *refmv_count &&
+                *refmv_count < MAX_REF_MV_STACK_SIZE) {
+              ref_mv_stack[idx].this_mv.as_int = prev_frame_mvs->mv[ref].as_int;
+              ref_mv_stack[idx].weight = 2;
+              ++(*refmv_count);
+
+              if (abs(ref_mv_stack[idx].this_mv.as_mv.row) >= 8 ||
+                  abs(ref_mv_stack[idx].this_mv.as_mv.col) >= 8)
+                mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+            }
+
             ++coll_blk_count;
           }
         }
