@@ -34,7 +34,7 @@ class BeforeUnloadEvent final : public Event {
 public:
     ~BeforeUnloadEvent() override;
 
-    static RawPtr<BeforeUnloadEvent> create()
+    static BeforeUnloadEvent* create()
     {
         return new BeforeUnloadEvent;
     }

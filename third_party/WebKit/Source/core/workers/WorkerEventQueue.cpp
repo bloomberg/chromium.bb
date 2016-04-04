@@ -115,14 +115,13 @@ void WorkerEventQueue::removeEvent(Event* event)
     m_eventTaskMap.remove(event);
 }
 
-bool WorkerEventQueue::enqueueEvent(RawPtr<Event> prpEvent)
+bool WorkerEventQueue::enqueueEvent(Event* event)
 {
     if (m_isClosed)
         return false;
-    RawPtr<Event> event = prpEvent;
-    InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
+    InspectorInstrumentation::didEnqueueEvent(event->target(), event);
     OwnPtr<EventDispatcherTask> task = EventDispatcherTask::create(event, this);
-    m_eventTaskMap.add(event.release(), task.get());
+    m_eventTaskMap.add(event, task.get());
     m_executionContext->postTask(BLINK_FROM_HERE, task.release());
     return true;
 }

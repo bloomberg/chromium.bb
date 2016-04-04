@@ -657,7 +657,7 @@ void Animation::stop()
     m_pendingFinishedEvent = nullptr;
 }
 
-DispatchEventResult Animation::dispatchEventInternal(RawPtr<Event> event)
+DispatchEventResult Animation::dispatchEventInternal(Event* event)
 {
     if (m_pendingFinishedEvent == event)
         m_pendingFinishedEvent = nullptr;
@@ -1053,7 +1053,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope()
         InspectorInstrumentation::animationPlayStateChanged(m_animation->timeline()->document(), m_animation, oldPlayState, newPlayState);
 }
 
-bool Animation::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
+bool Animation::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::finish)
         UseCounter::count(getExecutionContext(), UseCounter::AnimationFinishEvent);

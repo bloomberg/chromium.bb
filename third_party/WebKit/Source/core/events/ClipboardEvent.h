@@ -33,12 +33,12 @@ class ClipboardEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~ClipboardEvent() override;
-    static RawPtr<ClipboardEvent> create()
+    static ClipboardEvent* create()
     {
         return new ClipboardEvent();
     }
 
-    static RawPtr<ClipboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* dataTransfer)
+    static ClipboardEvent* create(const AtomicString& type, bool canBubble, bool cancelable, DataTransfer* dataTransfer)
     {
         return new ClipboardEvent(type, canBubble, cancelable, dataTransfer);
     }

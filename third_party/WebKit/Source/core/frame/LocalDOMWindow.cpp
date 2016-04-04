@@ -712,7 +712,7 @@ void LocalDOMWindow::removePostMessageTimer(PostMessageTimer* timer)
     m_postMessageTimers.remove(timer);
 }
 
-void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, RawPtr<Event> event, PassRefPtr<ScriptCallStack> stackTrace)
+void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, Event* event, PassRefPtr<ScriptCallStack> stackTrace)
 {
     if (intendedTargetOrigin) {
         // Check target origin now since the target document may have changed since the timer was scheduled.
@@ -1312,9 +1312,8 @@ void LocalDOMWindow::cancelIdleCallback(int id)
         document->cancelIdleCallback(id);
 }
 
-bool LocalDOMWindow::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> prpListener, const EventListenerOptions& options)
+bool LocalDOMWindow::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
-    RawPtr<EventListener> listener = prpListener;
     if (!EventTarget::addEventListenerInternal(eventType, listener, options))
         return false;
 
@@ -1346,7 +1345,7 @@ bool LocalDOMWindow::addEventListenerInternal(const AtomicString& eventType, Raw
     return true;
 }
 
-bool LocalDOMWindow::removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
+bool LocalDOMWindow::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     if (!EventTarget::removeEventListenerInternal(eventType, listener, options))
         return false;

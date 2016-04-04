@@ -31,7 +31,7 @@
 
 namespace blink {
 
-RawPtr<GenericEventQueue> GenericEventQueue::create(EventTarget* owner)
+GenericEventQueue* GenericEventQueue::create(EventTarget* owner)
 {
     return new GenericEventQueue(owner);
 }
@@ -54,7 +54,7 @@ DEFINE_TRACE(GenericEventQueue)
     EventQueue::trace(visitor);
 }
 
-bool GenericEventQueue::enqueueEvent(RawPtr<Event> event)
+bool GenericEventQueue::enqueueEvent(Event* event)
 {
     if (m_isClosed)
         return false;
@@ -62,8 +62,8 @@ bool GenericEventQueue::enqueueEvent(RawPtr<Event> event)
     if (event->target() == m_owner)
         event->setTarget(nullptr);
 
-    TRACE_EVENT_ASYNC_BEGIN1("event", "GenericEventQueue:enqueueEvent", event.get(), "type", event->type().ascii());
-    InspectorInstrumentation::didEnqueueEvent(event->target() ? event->target() : m_owner.get(), event.get());
+    TRACE_EVENT_ASYNC_BEGIN1("event", "GenericEventQueue:enqueueEvent", event, "type", event->type().ascii());
+    InspectorInstrumentation::didEnqueueEvent(event->target() ? event->target() : m_owner.get(), event);
     m_pendingEvents.append(event);
 
     if (!m_timer.isActive())
@@ -96,7 +96,6 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
     HeapVector<Member<Event>> pendingEvents;
     m_pendingEvents.swap(pendingEvents);
 
-    RawPtr<EventTarget> protect(m_owner.get());
     for (const auto& pendingEvent : pendingEvents) {
         Event* event = pendingEvent.get();
         EventTarget* target = event->target() ? event->target() : m_owner.get();

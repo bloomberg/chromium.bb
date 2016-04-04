@@ -13,9 +13,9 @@ namespace blink {
 class RelatedEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<RelatedEvent> create();
-    static RawPtr<RelatedEvent> create(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget);
-    static RawPtr<RelatedEvent> create(const AtomicString& eventType, const RelatedEventInit&);
+    static RelatedEvent* create();
+    static RelatedEvent* create(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget);
+    static RelatedEvent* create(const AtomicString& eventType, const RelatedEventInit&);
 
     ~RelatedEvent() override;
 

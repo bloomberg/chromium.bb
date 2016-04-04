@@ -227,8 +227,8 @@ protected:
     void reportAttributeParsingError(SVGParsingError, const QualifiedName&, const AtomicString&);
     bool hasFocusEventListeners() const;
 
-    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) final;
-    bool removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) final;
+    bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) final;
+    bool removeEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) final;
 
 private:
     bool isSVGElement() const = delete; // This will catch anyone doing an unnecessary check.

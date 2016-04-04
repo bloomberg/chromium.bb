@@ -57,7 +57,7 @@ public:
 
 #if BLINK_IMPLEMENTATION
     WebDOMEvent(const RawPtr<Event>&);
-    operator RawPtr<Event>() const;
+    operator Event*() const;
 #endif
 
     template<typename T> T to()

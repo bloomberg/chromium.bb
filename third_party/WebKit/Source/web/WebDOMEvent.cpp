@@ -55,7 +55,7 @@ WebDOMEvent::WebDOMEvent(const RawPtr<Event>& event)
 {
 }
 
-WebDOMEvent::operator RawPtr<Event>() const
+WebDOMEvent::operator Event*() const
 {
     return m_private.get();
 }

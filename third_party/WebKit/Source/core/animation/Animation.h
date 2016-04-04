@@ -181,8 +181,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    DispatchEventResult dispatchEventInternal(RawPtr<Event>) override;
-    bool addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener>, const EventListenerOptions&) override;
+    DispatchEventResult dispatchEventInternal(Event*) override;
+    bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const EventListenerOptions&) override;
 
 private:
     Animation(ExecutionContext*, AnimationTimeline&, AnimationEffect*);

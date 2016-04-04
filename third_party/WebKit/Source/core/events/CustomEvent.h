@@ -39,12 +39,12 @@ class CORE_EXPORT CustomEvent final : public Event {
 public:
     ~CustomEvent() override;
 
-    static RawPtr<CustomEvent> create()
+    static CustomEvent* create()
     {
         return new CustomEvent;
     }
 
-    static RawPtr<CustomEvent> create(const AtomicString& type, const CustomEventInit& initializer)
+    static CustomEvent* create(const AtomicString& type, const CustomEventInit& initializer)
     {
         return new CustomEvent(type, initializer);
     }

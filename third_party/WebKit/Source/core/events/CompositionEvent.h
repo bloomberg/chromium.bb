@@ -35,24 +35,24 @@ namespace blink {
 class CompositionEvent final : public UIEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<CompositionEvent> create()
+    static CompositionEvent* create()
     {
         return new CompositionEvent;
     }
 
-    static RawPtr<CompositionEvent> create(const AtomicString& type, RawPtr<AbstractView> view, const String& data)
+    static CompositionEvent* create(const AtomicString& type, AbstractView* view, const String& data)
     {
         return new CompositionEvent(type, view, data);
     }
 
-    static RawPtr<CompositionEvent> create(const AtomicString& type, const CompositionEventInit& initializer)
+    static CompositionEvent* create(const AtomicString& type, const CompositionEventInit& initializer)
     {
         return new CompositionEvent(type, initializer);
     }
 
     ~CompositionEvent() override;
 
-    void initCompositionEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView>, const String& data);
+    void initCompositionEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*, const String& data);
 
     String data() const { return m_data; }
 
@@ -62,7 +62,7 @@ public:
 
 private:
     CompositionEvent();
-    CompositionEvent(const AtomicString& type, RawPtr<AbstractView>, const String&);
+    CompositionEvent(const AtomicString& type, AbstractView*, const String&);
     CompositionEvent(const AtomicString& type, const CompositionEventInit&);
 
     String m_data;

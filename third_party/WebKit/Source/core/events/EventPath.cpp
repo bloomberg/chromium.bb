@@ -228,7 +228,7 @@ void EventPath::calculateAdjustedTargets()
 
 void EventPath::buildRelatedNodeMap(const Node& relatedNode, RelatedTargetMap& relatedTargetMap)
 {
-    RawPtr<EventPath> relatedTargetEventPath = new EventPath(const_cast<Node&>(relatedNode));
+    EventPath* relatedTargetEventPath = new EventPath(const_cast<Node&>(relatedNode));
     for (size_t i = 0; i < relatedTargetEventPath->m_treeScopeEventContexts.size(); ++i) {
         TreeScopeEventContext* treeScopeEventContext = relatedTargetEventPath->m_treeScopeEventContexts[i].get();
         relatedTargetMap.add(&treeScopeEventContext->treeScope(), treeScopeEventContext->target());

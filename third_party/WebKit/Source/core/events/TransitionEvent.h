@@ -35,15 +35,15 @@ namespace blink {
 class TransitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<TransitionEvent> create()
+    static TransitionEvent* create()
     {
         return new TransitionEvent;
     }
-    static RawPtr<TransitionEvent> create(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
+    static TransitionEvent* create(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
     {
         return new TransitionEvent(type, propertyName, elapsedTime, pseudoElement);
     }
-    static RawPtr<TransitionEvent> create(const AtomicString& type, const TransitionEventInit& initializer)
+    static TransitionEvent* create(const AtomicString& type, const TransitionEventInit& initializer)
     {
         return new TransitionEvent(type, initializer);
     }

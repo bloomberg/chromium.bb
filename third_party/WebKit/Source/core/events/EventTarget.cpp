@@ -118,14 +118,14 @@ inline LocalDOMWindow* EventTarget::executingWindow()
     return nullptr;
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, RawPtr<EventListener> listener, bool useCapture)
+bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
     EventListenerOptions options;
     setDefaultEventListenerOptionsLegacy(options, useCapture);
     return addEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptionsOrBoolean& optionsUnion)
+bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, const EventListenerOptionsOrBoolean& optionsUnion)
 {
     if (optionsUnion.isBoolean())
         return addEventListener(eventType, listener, optionsUnion.getAsBoolean());
@@ -136,13 +136,13 @@ bool EventTarget::addEventListener(const AtomicString& eventType, RawPtr<EventLi
     return addEventListener(eventType, listener);
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, RawPtr<EventListener> listener, EventListenerOptions& options)
+bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, EventListenerOptions& options)
 {
     setDefaultEventListenerOptions(options);
     return addEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
+bool EventTarget::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     if (!listener)
         return false;
@@ -158,14 +158,14 @@ bool EventTarget::addEventListenerInternal(const AtomicString& eventType, RawPtr
     return ensureEventTargetData().eventListenerMap.add(eventType, listener, options);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, RawPtr<EventListener> listener, bool useCapture)
+bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
     EventListenerOptions options;
     setDefaultEventListenerOptionsLegacy(options, useCapture);
     return removeEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptionsOrBoolean& optionsUnion)
+bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, const EventListenerOptionsOrBoolean& optionsUnion)
 {
     if (optionsUnion.isBoolean())
         return removeEventListener(eventType, listener, optionsUnion.getAsBoolean());
@@ -176,13 +176,13 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, RawPtr<Even
     return removeEventListener(eventType, listener);
 }
 
-bool EventTarget::removeEventListener(const AtomicString& eventType, RawPtr<EventListener> listener, EventListenerOptions& options)
+bool EventTarget::removeEventListener(const AtomicString& eventType, EventListener* listener, EventListenerOptions& options)
 {
     setDefaultEventListenerOptions(options);
     return removeEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
+bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     if (!listener)
         return false;
@@ -193,7 +193,7 @@ bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, Raw
 
     size_t indexOfRemovedListener;
 
-    if (!d->eventListenerMap.remove(eventType, listener.get(), options, indexOfRemovedListener))
+    if (!d->eventListenerMap.remove(eventType, listener, options, indexOfRemovedListener))
         return false;
 
     // Notify firing events planning to invoke the listener at 'index' that
@@ -220,7 +220,7 @@ bool EventTarget::removeEventListenerInternal(const AtomicString& eventType, Raw
     return true;
 }
 
-bool EventTarget::setAttributeEventListener(const AtomicString& eventType, RawPtr<EventListener> listener)
+bool EventTarget::setAttributeEventListener(const AtomicString& eventType, EventListener* listener)
 {
     clearAttributeEventListener(eventType);
     if (!listener)
@@ -249,7 +249,7 @@ bool EventTarget::clearAttributeEventListener(const AtomicString& eventType)
     return removeEventListener(eventType, listener, false);
 }
 
-bool EventTarget::dispatchEventForBindings(RawPtr<Event> event, ExceptionState& exceptionState)
+bool EventTarget::dispatchEventForBindings(Event* event, ExceptionState& exceptionState)
 {
     if (event->type().isEmpty()) {
         exceptionState.throwDOMException(InvalidStateError, "The event provided is uninitialized.");
@@ -271,18 +271,18 @@ bool EventTarget::dispatchEventForBindings(RawPtr<Event> event, ExceptionState& 
     return dispatchEventInternal(event) != DispatchEventResult::CanceledByEventHandler;
 }
 
-DispatchEventResult EventTarget::dispatchEvent(RawPtr<Event> event)
+DispatchEventResult EventTarget::dispatchEvent(Event* event)
 {
     event->setTrusted(true);
     return dispatchEventInternal(event);
 }
 
-DispatchEventResult EventTarget::dispatchEventInternal(RawPtr<Event> event)
+DispatchEventResult EventTarget::dispatchEventInternal(Event* event)
 {
     event->setTarget(this);
     event->setCurrentTarget(this);
     event->setEventPhase(Event::AT_TARGET);
-    DispatchEventResult dispatchResult = fireEventListeners(event.get());
+    DispatchEventResult dispatchResult = fireEventListeners(event);
     event->setEventPhase(0);
     return dispatchResult;
 }
@@ -384,8 +384,6 @@ DispatchEventResult EventTarget::fireEventListeners(Event* event)
 
 void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventListenerVector& entry)
 {
-    RawPtr<EventTarget> protect(this);
-
     // Fire all listeners registered for this event. Don't fire listeners removed
     // during event dispatch. Also, don't fire event listeners added during event
     // dispatch. Conveniently, all new event listeners will be added after or at

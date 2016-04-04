@@ -34,15 +34,15 @@ namespace blink {
 class PageTransitionEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<PageTransitionEvent> create()
+    static PageTransitionEvent* create()
     {
         return new PageTransitionEvent;
     }
-    static RawPtr<PageTransitionEvent> create(const AtomicString& type, bool persisted)
+    static PageTransitionEvent* create(const AtomicString& type, bool persisted)
     {
         return new PageTransitionEvent(type, persisted);
     }
-    static RawPtr<PageTransitionEvent> create(const AtomicString& type, const PageTransitionEventInit& initializer)
+    static PageTransitionEvent* create(const AtomicString& type, const PageTransitionEventInit& initializer)
     {
         return new PageTransitionEvent(type, initializer);
     }

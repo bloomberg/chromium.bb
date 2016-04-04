@@ -38,12 +38,12 @@ namespace blink {
 
 class CORE_EXPORT GenericEventQueue final : public EventQueue {
 public:
-    static RawPtr<GenericEventQueue> create(EventTarget*);
+    static GenericEventQueue* create(EventTarget*);
     ~GenericEventQueue() override;
 
     // EventQueue
     DECLARE_VIRTUAL_TRACE();
-    bool enqueueEvent(RawPtr<Event>) override;
+    bool enqueueEvent(Event*) override;
     bool cancelEvent(Event*) override;
     void close() override;
 

@@ -81,7 +81,7 @@ TouchEventContext* TreeScopeEventContext::ensureTouchEventContext()
     return m_touchEventContext.get();
 }
 
-RawPtr<TreeScopeEventContext> TreeScopeEventContext::create(TreeScope& treeScope)
+TreeScopeEventContext* TreeScopeEventContext::create(TreeScope& treeScope)
 {
     return new TreeScopeEventContext(treeScope);
 }

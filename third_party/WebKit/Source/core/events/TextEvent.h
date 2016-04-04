@@ -37,15 +37,15 @@ class DocumentFragment;
 class TextEvent final : public UIEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<TextEvent> create();
-    static RawPtr<TextEvent> create(RawPtr<AbstractView>, const String& data, TextEventInputType = TextEventInputKeyboard);
-    static RawPtr<TextEvent> createForPlainTextPaste(RawPtr<AbstractView>, const String& data, bool shouldSmartReplace);
-    static RawPtr<TextEvent> createForFragmentPaste(RawPtr<AbstractView>, RawPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle);
-    static RawPtr<TextEvent> createForDrop(RawPtr<AbstractView>, const String& data);
+    static TextEvent* create();
+    static TextEvent* create(AbstractView*, const String& data, TextEventInputType = TextEventInputKeyboard);
+    static TextEvent* createForPlainTextPaste(AbstractView*, const String& data, bool shouldSmartReplace);
+    static TextEvent* createForFragmentPaste(AbstractView*, DocumentFragment* data, bool shouldSmartReplace, bool shouldMatchStyle);
+    static TextEvent* createForDrop(AbstractView*, const String& data);
 
     ~TextEvent() override;
 
-    void initTextEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView>, const String& data);
+    void initTextEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*, const String& data);
 
     String data() const { return m_data; }
 
@@ -65,8 +65,8 @@ public:
 private:
     TextEvent();
 
-    TextEvent(RawPtr<AbstractView>, const String& data, TextEventInputType = TextEventInputKeyboard);
-    TextEvent(RawPtr<AbstractView>, const String& data, RawPtr<DocumentFragment>, bool shouldSmartReplace, bool shouldMatchStyle);
+    TextEvent(AbstractView*, const String& data, TextEventInputType = TextEventInputKeyboard);
+    TextEvent(AbstractView*, const String& data, DocumentFragment*, bool shouldSmartReplace, bool shouldMatchStyle);
 
     TextEventInputType m_inputType;
     String m_data;

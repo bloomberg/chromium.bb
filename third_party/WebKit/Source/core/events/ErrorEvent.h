@@ -42,19 +42,19 @@ namespace blink {
 class ErrorEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<ErrorEvent> create()
+    static ErrorEvent* create()
     {
         return new ErrorEvent;
     }
-    static RawPtr<ErrorEvent> create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld* world)
+    static ErrorEvent* create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld* world)
     {
         return new ErrorEvent(message, fileName, lineNumber, columnNumber, world);
     }
-    static RawPtr<ErrorEvent> create(const AtomicString& type, const ErrorEventInit& initializer)
+    static ErrorEvent* create(const AtomicString& type, const ErrorEventInit& initializer)
     {
         return new ErrorEvent(type, initializer);
     }
-    static RawPtr<ErrorEvent> createSanitizedError(DOMWrapperWorld* world)
+    static ErrorEvent* createSanitizedError(DOMWrapperWorld* world)
     {
         return new ErrorEvent("Script error.", String(), 0, 0, world);
     }

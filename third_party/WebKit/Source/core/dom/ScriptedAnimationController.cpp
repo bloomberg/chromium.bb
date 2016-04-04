@@ -170,9 +170,9 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
     scheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::enqueueEvent(RawPtr<Event> event)
+void ScriptedAnimationController::enqueueEvent(Event* event)
 {
-    InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
+    InspectorInstrumentation::didEnqueueEvent(event->target(), event);
     m_eventQueue.append(event);
     scheduleAnimationIfNeeded();
 }

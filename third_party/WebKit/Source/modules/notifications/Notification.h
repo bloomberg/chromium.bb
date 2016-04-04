@@ -122,7 +122,7 @@ public:
 
 protected:
     // EventTarget interface.
-    DispatchEventResult dispatchEventInternal(RawPtr<Event>) final;
+    DispatchEventResult dispatchEventInternal(Event*) final;
 
 private:
     Notification(ExecutionContext*, const WebNotificationData&);

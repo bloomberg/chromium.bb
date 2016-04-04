@@ -45,20 +45,20 @@ public:
         DOM_DELTA_PAGE
     };
 
-    static RawPtr<WheelEvent> create()
+    static WheelEvent* create()
     {
         return new WheelEvent;
     }
 
-    static RawPtr<WheelEvent> create(const PlatformWheelEvent& platformEvent, RawPtr<AbstractView>);
+    static WheelEvent* create(const PlatformWheelEvent& platformEvent, AbstractView*);
 
-    static RawPtr<WheelEvent> create(const AtomicString& type, const WheelEventInit& initializer)
+    static WheelEvent* create(const AtomicString& type, const WheelEventInit& initializer)
     {
         return new WheelEvent(type, initializer);
     }
 
-    static RawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
-        const FloatPoint& rawDelta, unsigned deltaMode, RawPtr<AbstractView> view,
+    static WheelEvent* create(const FloatPoint& wheelTicks,
+        const FloatPoint& rawDelta, unsigned deltaMode, AbstractView* view,
         const IntPoint& screenLocation, const IntPoint& windowLocation,
         PlatformEvent::Modifiers modifiers, unsigned short buttons, double platformTimeStamp,
         bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode)
@@ -86,7 +86,7 @@ public:
     bool isMouseEvent() const override;
     bool isWheelEvent() const override;
 
-    RawPtr<EventDispatchMediator> createMediator() override;
+    EventDispatchMediator* createMediator() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -94,7 +94,7 @@ private:
     WheelEvent();
     WheelEvent(const AtomicString&, const WheelEventInit&);
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
-        unsigned, RawPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& windowLocation,
+        unsigned, AbstractView*, const IntPoint& screenLocation, const IntPoint& windowLocation,
         PlatformEvent::Modifiers, unsigned short buttons, double platformTimeStamp,
         bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode);
 

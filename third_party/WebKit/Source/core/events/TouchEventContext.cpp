@@ -32,7 +32,7 @@
 
 namespace blink {
 
-RawPtr<TouchEventContext> TouchEventContext::create()
+TouchEventContext* TouchEventContext::create()
 {
     return new TouchEventContext;
 }

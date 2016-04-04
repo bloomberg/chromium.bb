@@ -47,7 +47,7 @@ class CORE_EXPORT ScopedEventQueue {
 public:
     ~ScopedEventQueue();
 
-    void enqueueEventDispatchMediator(RawPtr<EventDispatchMediator>);
+    void enqueueEventDispatchMediator(EventDispatchMediator*);
     void dispatchAllEvents();
     static ScopedEventQueue* instance();
 
@@ -58,7 +58,7 @@ public:
 private:
     ScopedEventQueue();
     static void initialize();
-    void dispatchEvent(RawPtr<EventDispatchMediator>) const;
+    void dispatchEvent(EventDispatchMediator*) const;
 
     PersistentHeapVector<Member<EventDispatchMediator>> m_queuedEventDispatchMediators;
     unsigned m_scopingLevel;

@@ -35,12 +35,12 @@
 
 namespace blink {
 
-RawPtr<EventDispatchMediator> EventDispatchMediator::create(RawPtr<Event> event)
+EventDispatchMediator* EventDispatchMediator::create(Event* event)
 {
     return new EventDispatchMediator(event);
 }
 
-EventDispatchMediator::EventDispatchMediator(RawPtr<Event> event)
+EventDispatchMediator::EventDispatchMediator(Event* event)
     : m_event(event)
 {
 }

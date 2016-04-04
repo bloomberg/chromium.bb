@@ -33,12 +33,12 @@ namespace blink {
 class SecurityPolicyViolationEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<SecurityPolicyViolationEvent> create()
+    static SecurityPolicyViolationEvent* create()
     {
         return new SecurityPolicyViolationEvent();
     }
 
-    static RawPtr<SecurityPolicyViolationEvent> create(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
+    static SecurityPolicyViolationEvent* create(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
     {
         return new SecurityPolicyViolationEvent(type, initializer);
     }

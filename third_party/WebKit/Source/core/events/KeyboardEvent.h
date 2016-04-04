@@ -43,19 +43,19 @@ public:
         DOM_KEY_LOCATION_NUMPAD     = 0x03
     };
 
-    static RawPtr<KeyboardEvent> create()
+    static KeyboardEvent* create()
     {
         return new KeyboardEvent;
     }
 
-    static RawPtr<KeyboardEvent> create(const PlatformKeyboardEvent& platformEvent, AbstractView* view)
+    static KeyboardEvent* create(const PlatformKeyboardEvent& platformEvent, AbstractView* view)
     {
         return new KeyboardEvent(platformEvent, view);
     }
 
-    static RawPtr<KeyboardEvent> create(ScriptState*, const AtomicString& type, const KeyboardEventInit&);
+    static KeyboardEvent* create(ScriptState*, const AtomicString& type, const KeyboardEventInit&);
 
-    static RawPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
+    static KeyboardEvent* create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
         const String& keyIdentifier, const String& code, const String& key, unsigned location,
         PlatformEvent::Modifiers modifiers, double platformTimeStamp)
     {

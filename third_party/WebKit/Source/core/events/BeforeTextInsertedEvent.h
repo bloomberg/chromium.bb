@@ -34,7 +34,7 @@ class BeforeTextInsertedEvent final : public Event {
 public:
     ~BeforeTextInsertedEvent() override;
 
-    static RawPtr<BeforeTextInsertedEvent> create(const String& text)
+    static BeforeTextInsertedEvent* create(const String& text)
     {
         return new BeforeTextInsertedEvent(text);
     }

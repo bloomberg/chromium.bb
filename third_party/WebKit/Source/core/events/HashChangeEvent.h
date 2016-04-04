@@ -29,17 +29,17 @@ namespace blink {
 class HashChangeEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<HashChangeEvent> create()
+    static HashChangeEvent* create()
     {
         return new HashChangeEvent;
     }
 
-    static RawPtr<HashChangeEvent> create(const String& oldURL, const String& newURL)
+    static HashChangeEvent* create(const String& oldURL, const String& newURL)
     {
         return new HashChangeEvent(oldURL, newURL);
     }
 
-    static RawPtr<HashChangeEvent> create(const AtomicString& type, const HashChangeEventInit& initializer)
+    static HashChangeEvent* create(const AtomicString& type, const HashChangeEventInit& initializer)
     {
         return new HashChangeEvent(type, initializer);
     }

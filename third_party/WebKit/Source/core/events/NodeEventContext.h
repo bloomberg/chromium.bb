@@ -42,12 +42,12 @@ class CORE_EXPORT NodeEventContext {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     // FIXME: Use ContainerNode instead of Node.
-    NodeEventContext(RawPtr<Node>, RawPtr<EventTarget> currentTarget);
+    NodeEventContext(Node*, EventTarget* currentTarget);
     DECLARE_TRACE();
 
     Node* node() const { return m_node.get(); }
 
-    void setTreeScopeEventContext(RawPtr<TreeScopeEventContext> prpTreeScopeEventContext) { m_treeScopeEventContext = prpTreeScopeEventContext; }
+    void setTreeScopeEventContext(TreeScopeEventContext* treeScopeEventContext) { m_treeScopeEventContext = treeScopeEventContext; }
     TreeScopeEventContext& treeScopeEventContext() { ASSERT(m_treeScopeEventContext); return *m_treeScopeEventContext; }
 
     EventTarget* target() const { return m_treeScopeEventContext->target(); }

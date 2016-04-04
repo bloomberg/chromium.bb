@@ -72,7 +72,7 @@ protected:
     // TODO(lanwei): Will make this argument non-optional and all the callers need to provide
     // sourceCapabilities even when it is null, see https://crbug.com/476530.
     MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget,
-        RawPtr<AbstractView>, int detail, const IntPoint& screenLocation,
+        AbstractView*, int detail, const IntPoint& screenLocation,
         const IntPoint& rootFrameLocation, const IntPoint& movementDelta, PlatformEvent::Modifiers,
         double platformTimeStamp, PositionType, InputDeviceCapabilities* sourceCapabilities = nullptr);
 

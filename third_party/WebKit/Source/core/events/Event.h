@@ -75,7 +75,7 @@ public:
         RailsModeVertical   = 2
     };
 
-    static RawPtr<Event> create()
+    static Event* create()
     {
         return new Event;
     }
@@ -83,24 +83,24 @@ public:
     // A factory for a simple event. The event doesn't bubble, and isn't
     // cancelable.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#fire-a-simple-event
-    static RawPtr<Event> create(const AtomicString& type)
+    static Event* create(const AtomicString& type)
     {
         return new Event(type, false, false);
     }
-    static RawPtr<Event> createCancelable(const AtomicString& type)
+    static Event* createCancelable(const AtomicString& type)
     {
         return new Event(type, false, true);
     }
-    static RawPtr<Event> createBubble(const AtomicString& type)
+    static Event* createBubble(const AtomicString& type)
     {
         return new Event(type, true, false);
     }
-    static RawPtr<Event> createCancelableBubble(const AtomicString& type)
+    static Event* createCancelableBubble(const AtomicString& type)
     {
         return new Event(type, true, true);
     }
 
-    static RawPtr<Event> create(const AtomicString& type, const EventInit& initializer)
+    static Event* create(const AtomicString& type, const EventInit& initializer)
     {
         return new Event(type, initializer);
     }
@@ -114,7 +114,7 @@ public:
     void setType(const AtomicString& type) { m_type = type; }
 
     EventTarget* target() const { return m_target.get(); }
-    void setTarget(RawPtr<EventTarget>);
+    void setTarget(EventTarget*);
 
     EventTarget* currentTarget() const;
     void setCurrentTarget(EventTarget* currentTarget) { m_currentTarget = currentTarget; }
@@ -183,7 +183,7 @@ public:
     void setCancelBubble(bool cancel) { m_cancelBubble = cancel; }
 
     Event* underlyingEvent() const { return m_underlyingEvent.get(); }
-    void setUnderlyingEvent(RawPtr<Event>);
+    void setUnderlyingEvent(Event*);
 
     EventPath& eventPath() { ASSERT(m_eventPath); return *m_eventPath; }
     void initEventPath(Node&);
@@ -197,7 +197,7 @@ public:
     // ErrorEvent behaves, can override this method.
     virtual bool canBeDispatchedInWorld(const DOMWrapperWorld&) const { return true; }
 
-    virtual RawPtr<EventDispatchMediator> createMediator();
+    virtual EventDispatchMediator* createMediator();
 
     bool isTrusted() const { return m_isTrusted; }
     void setTrusted(bool value) { m_isTrusted = value; }

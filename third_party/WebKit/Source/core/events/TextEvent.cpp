@@ -30,27 +30,27 @@
 
 namespace blink {
 
-RawPtr<TextEvent> TextEvent::create()
+TextEvent* TextEvent::create()
 {
     return new TextEvent;
 }
 
-RawPtr<TextEvent> TextEvent::create(RawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
+TextEvent* TextEvent::create(AbstractView* view, const String& data, TextEventInputType inputType)
 {
     return new TextEvent(view, data, inputType);
 }
 
-RawPtr<TextEvent> TextEvent::createForPlainTextPaste(RawPtr<AbstractView> view, const String& data, bool shouldSmartReplace)
+TextEvent* TextEvent::createForPlainTextPaste(AbstractView* view, const String& data, bool shouldSmartReplace)
 {
     return new TextEvent(view, data, nullptr, shouldSmartReplace, false);
 }
 
-RawPtr<TextEvent> TextEvent::createForFragmentPaste(RawPtr<AbstractView> view, RawPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle)
+TextEvent* TextEvent::createForFragmentPaste(AbstractView* view, DocumentFragment* data, bool shouldSmartReplace, bool shouldMatchStyle)
 {
     return new TextEvent(view, "", data, shouldSmartReplace, shouldMatchStyle);
 }
 
-RawPtr<TextEvent> TextEvent::createForDrop(RawPtr<AbstractView> view, const String& data)
+TextEvent* TextEvent::createForDrop(AbstractView* view, const String& data)
 {
     return new TextEvent(view, data, TextEventInputDrop);
 }
@@ -62,7 +62,7 @@ TextEvent::TextEvent()
 {
 }
 
-TextEvent::TextEvent(RawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
+TextEvent::TextEvent(AbstractView* view, const String& data, TextEventInputType inputType)
     : UIEvent(EventTypeNames::textInput, true, true, view, 0)
     , m_inputType(inputType)
     , m_data(data)
@@ -72,7 +72,7 @@ TextEvent::TextEvent(RawPtr<AbstractView> view, const String& data, TextEventInp
 {
 }
 
-TextEvent::TextEvent(RawPtr<AbstractView> view, const String& data, RawPtr<DocumentFragment> pastingFragment,
+TextEvent::TextEvent(AbstractView* view, const String& data, DocumentFragment* pastingFragment,
                      bool shouldSmartReplace, bool shouldMatchStyle)
     : UIEvent(EventTypeNames::textInput, true, true, view, 0)
     , m_inputType(TextEventInputPaste)
@@ -87,7 +87,7 @@ TextEvent::~TextEvent()
 {
 }
 
-void TextEvent::initTextEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView> view, const String& data)
+void TextEvent::initTextEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, const String& data)
 {
     if (dispatched())
         return;

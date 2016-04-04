@@ -32,7 +32,7 @@ namespace blink {
 class RegisteredEventListener {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    RegisteredEventListener(RawPtr<EventListener> listener, const EventListenerOptions& options)
+    RegisteredEventListener(EventListener* listener, const EventListenerOptions& options)
         : listener(listener)
         , useCapture(options.capture())
         , passive(options.passive())

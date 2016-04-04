@@ -47,17 +47,17 @@ class TreeScope;
 
 class CORE_EXPORT TreeScopeEventContext final : public GarbageCollected<TreeScopeEventContext> {
 public:
-    static RawPtr<TreeScopeEventContext> create(TreeScope&);
+    static TreeScopeEventContext* create(TreeScope&);
     DECLARE_TRACE();
 
     TreeScope& treeScope() const { return *m_treeScope; }
     Node& rootNode() const { return *m_rootNode; }
 
     EventTarget* target() const { return m_target.get(); }
-    void setTarget(RawPtr<EventTarget>);
+    void setTarget(EventTarget*);
 
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
-    void setRelatedTarget(RawPtr<EventTarget>);
+    void setRelatedTarget(EventTarget*);
 
     TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
     TouchEventContext* ensureTouchEventContext();
@@ -107,14 +107,14 @@ inline bool TreeScopeEventContext::isUnreachableNode(EventTarget& target)
 }
 #endif
 
-inline void TreeScopeEventContext::setTarget(RawPtr<EventTarget> target)
+inline void TreeScopeEventContext::setTarget(EventTarget* target)
 {
     ASSERT(target);
     ASSERT(!isUnreachableNode(*target));
     m_target = target;
 }
 
-inline void TreeScopeEventContext::setRelatedTarget(RawPtr<EventTarget> relatedTarget)
+inline void TreeScopeEventContext::setRelatedTarget(EventTarget* relatedTarget)
 {
     ASSERT(relatedTarget);
     ASSERT(!isUnreachableNode(*relatedTarget));

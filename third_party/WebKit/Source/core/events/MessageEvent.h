@@ -43,35 +43,35 @@ namespace blink {
 class CORE_EXPORT MessageEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<MessageEvent> create()
+    static MessageEvent* create()
     {
         return new MessageEvent;
     }
-    static RawPtr<MessageEvent> create(MessagePortArray* ports, const String& origin = String(), const String& lastEventId = String(), RawPtr<EventTarget> source = nullptr, const String& suborigin = String())
+    static MessageEvent* create(MessagePortArray* ports, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
     {
         return new MessageEvent(origin, lastEventId, source, ports, suborigin);
     }
-    static RawPtr<MessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), RawPtr<EventTarget> source = nullptr, const String& suborigin = String())
+    static MessageEvent* create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
     {
         return new MessageEvent(data, origin, lastEventId, source, ports, suborigin);
     }
-    static RawPtr<MessageEvent> create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), RawPtr<EventTarget> source = nullptr, const String& suborigin = String())
+    static MessageEvent* create(PassOwnPtr<MessagePortChannelArray> channels, PassRefPtr<SerializedScriptValue> data, const String& origin = String(), const String& lastEventId = String(), EventTarget* source = nullptr, const String& suborigin = String())
     {
         return new MessageEvent(data, origin, lastEventId, source, std::move(channels), suborigin);
     }
-    static RawPtr<MessageEvent> create(const String& data, const String& origin = String(), const String& suborigin = String())
+    static MessageEvent* create(const String& data, const String& origin = String(), const String& suborigin = String())
     {
         return new MessageEvent(data, origin, suborigin);
     }
-    static RawPtr<MessageEvent> create(Blob* data, const String& origin = String(), const String& suborigin = String())
+    static MessageEvent* create(Blob* data, const String& origin = String(), const String& suborigin = String())
     {
         return new MessageEvent(data, origin, suborigin);
     }
-    static RawPtr<MessageEvent> create(PassRefPtr<DOMArrayBuffer> data, const String& origin = String(), const String& suborigin = String())
+    static MessageEvent* create(PassRefPtr<DOMArrayBuffer> data, const String& origin = String(), const String& suborigin = String())
     {
         return new MessageEvent(data, origin, suborigin);
     }
-    static RawPtr<MessageEvent> create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
+    static MessageEvent* create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState&);
     ~MessageEvent() override;
 
     void initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, ScriptValue data, const String& origin, const String& lastEventId, DOMWindow* source, MessagePortArray*);
@@ -116,9 +116,9 @@ public:
 private:
     MessageEvent();
     MessageEvent(const AtomicString&, const MessageEventInit&);
-    MessageEvent(const String& origin, const String& lastEventId, RawPtr<EventTarget> source, MessagePortArray*, const String& suborigin);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, RawPtr<EventTarget> source, MessagePortArray*, const String& suborigin);
-    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, RawPtr<EventTarget> source, PassOwnPtr<MessagePortChannelArray>, const String& suborigin);
+    MessageEvent(const String& origin, const String& lastEventId, EventTarget* source, MessagePortArray*, const String& suborigin);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, EventTarget* source, MessagePortArray*, const String& suborigin);
+    MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, EventTarget* source, PassOwnPtr<MessagePortChannelArray>, const String& suborigin);
 
     MessageEvent(const String& data, const String& origin, const String& suborigin);
     MessageEvent(Blob* data, const String& origin, const String& suborigin);

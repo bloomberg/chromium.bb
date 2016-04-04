@@ -41,13 +41,13 @@ public:
     ~TouchEvent() override;
 
     // We only initialize sourceCapabilities when we create TouchEvent from EventHandler, null if it is from JavaScript.
-    static RawPtr<TouchEvent> create()
+    static TouchEvent* create()
     {
         return new TouchEvent;
     }
-    static RawPtr<TouchEvent> create(TouchList* touches,
+    static TouchEvent* create(TouchList* touches,
         TouchList* targetTouches, TouchList* changedTouches,
-        const AtomicString& type, RawPtr<AbstractView> view,
+        const AtomicString& type, AbstractView* view,
         PlatformEvent::Modifiers modifiers, bool cancelable, bool causesScrollingIfUncanceled,
         double platformTimeStamp)
     {
@@ -55,14 +55,14 @@ public:
             modifiers, cancelable, causesScrollingIfUncanceled, platformTimeStamp);
     }
 
-    static RawPtr<TouchEvent> create(const AtomicString& type, const TouchEventInit& initializer)
+    static TouchEvent* create(const AtomicString& type, const TouchEventInit& initializer)
     {
         return new TouchEvent(type, initializer);
     }
 
     void initTouchEvent(ScriptState*, TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
-        RawPtr<AbstractView>,
+        AbstractView*,
         int, int, int, int, // unused useless members of web exposed API
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
@@ -70,9 +70,9 @@ public:
     TouchList* targetTouches() const { return m_targetTouches.get(); }
     TouchList* changedTouches() const { return m_changedTouches.get(); }
 
-    void setTouches(RawPtr<TouchList> touches) { m_touches = touches; }
-    void setTargetTouches(RawPtr<TouchList> targetTouches) { m_targetTouches = targetTouches; }
-    void setChangedTouches(RawPtr<TouchList> changedTouches) { m_changedTouches = changedTouches; }
+    void setTouches(TouchList* touches) { m_touches = touches; }
+    void setTargetTouches(TouchList* targetTouches) { m_targetTouches = targetTouches; }
+    void setChangedTouches(TouchList* changedTouches) { m_changedTouches = changedTouches; }
 
     bool causesScrollingIfUncanceled() const { return m_causesScrollingIfUncanceled; }
 
@@ -82,7 +82,7 @@ public:
 
     void preventDefault() override;
 
-    RawPtr<EventDispatchMediator> createMediator() override;
+    EventDispatchMediator* createMediator() override;
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -90,7 +90,7 @@ private:
     TouchEvent();
     TouchEvent(TouchList* touches, TouchList* targetTouches,
         TouchList* changedTouches, const AtomicString& type,
-        RawPtr<AbstractView>, PlatformEvent::Modifiers,
+        AbstractView*, PlatformEvent::Modifiers,
         bool cancelable, bool causesScrollingIfUncanceled,
         double platformTimeStamp);
     TouchEvent(const AtomicString&, const TouchEventInit&);
@@ -103,10 +103,10 @@ private:
 
 class TouchEventDispatchMediator final : public EventDispatchMediator {
 public:
-    static RawPtr<TouchEventDispatchMediator> create(RawPtr<TouchEvent>);
+    static TouchEventDispatchMediator* create(TouchEvent*);
 
 private:
-    explicit TouchEventDispatchMediator(RawPtr<TouchEvent>);
+    explicit TouchEventDispatchMediator(TouchEvent*);
     TouchEvent& event() const;
     DispatchEventResult dispatchEvent(EventDispatcher&) const override;
 };

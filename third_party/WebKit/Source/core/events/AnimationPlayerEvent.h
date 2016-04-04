@@ -13,15 +13,15 @@ namespace blink {
 class AnimationPlayerEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<AnimationPlayerEvent> create()
+    static AnimationPlayerEvent* create()
     {
         return new AnimationPlayerEvent;
     }
-    static RawPtr<AnimationPlayerEvent> create(const AtomicString& type, double currentTime, double timelineTime)
+    static AnimationPlayerEvent* create(const AtomicString& type, double currentTime, double timelineTime)
     {
         return new AnimationPlayerEvent(type, currentTime, timelineTime);
     }
-    static RawPtr<AnimationPlayerEvent> create(const AtomicString& type, const AnimationPlayerEventInit& initializer)
+    static AnimationPlayerEvent* create(const AtomicString& type, const AnimationPlayerEventInit& initializer)
     {
         return new AnimationPlayerEvent(type, initializer);
     }

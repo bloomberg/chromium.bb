@@ -35,15 +35,15 @@ namespace blink {
 class CORE_EXPORT ProgressEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<ProgressEvent> create()
+    static ProgressEvent* create()
     {
         return new ProgressEvent;
     }
-    static RawPtr<ProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
+    static ProgressEvent* create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
     {
         return new ProgressEvent(type, lengthComputable, loaded, total);
     }
-    static RawPtr<ProgressEvent> create(const AtomicString& type, const ProgressEventInit& initializer)
+    static ProgressEvent* create(const AtomicString& type, const ProgressEventInit& initializer)
     {
         return new ProgressEvent(type, initializer);
     }

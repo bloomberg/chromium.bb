@@ -34,7 +34,7 @@ inline static unsigned convertDeltaMode(const PlatformWheelEvent& event)
     return event.granularity() == ScrollByPageWheelEvent ? WheelEvent::DOM_DELTA_PAGE : WheelEvent::DOM_DELTA_PIXEL;
 }
 
-RawPtr<WheelEvent> WheelEvent::create(const PlatformWheelEvent& event, RawPtr<AbstractView> view)
+WheelEvent* WheelEvent::create(const PlatformWheelEvent& event, AbstractView* view)
 {
     return new WheelEvent(FloatPoint(event.wheelTicksX(), event.wheelTicksY()), FloatPoint(event.deltaX(), event.deltaY()),
         convertDeltaMode(event), view, event.globalPosition(), event.position(),
@@ -71,7 +71,7 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
 }
 
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
-    RawPtr<AbstractView> view, const IntPoint& screenLocation, const IntPoint& windowLocation,
+    AbstractView* view, const IntPoint& screenLocation, const IntPoint& windowLocation,
     PlatformEvent::Modifiers modifiers, unsigned short buttons, double platformTimeStamp,
     bool canScroll, int resendingPluginId, bool hasPreciseScrollingDeltas, RailsMode railsMode)
     : MouseEvent(EventTypeNames::wheel, true, true, view, 0, screenLocation.x(), screenLocation.y(),
@@ -107,7 +107,7 @@ bool WheelEvent::isWheelEvent() const
     return true;
 }
 
-RawPtr<EventDispatchMediator> WheelEvent::createMediator()
+EventDispatchMediator* WheelEvent::createMediator()
 {
     return EventDispatchMediator::create(this);
 }

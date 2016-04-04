@@ -65,7 +65,7 @@ void MIDIInput::setOnmidimessage(RawPtr<EventListener> listener)
     setAttributeEventListener(EventTypeNames::midimessage, listener);
 }
 
-bool MIDIInput::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
+bool MIDIInput::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     if (eventType == EventTypeNames::midimessage) {
         // Implicit open. See setOnmidimessage().

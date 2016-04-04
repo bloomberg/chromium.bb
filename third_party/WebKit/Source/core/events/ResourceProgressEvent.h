@@ -46,11 +46,11 @@ namespace blink {
 class CORE_EXPORT ResourceProgressEvent final : public ProgressEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<ResourceProgressEvent> create()
+    static ResourceProgressEvent* create()
     {
         return new ResourceProgressEvent;
     }
-    static RawPtr<ResourceProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const String& url)
+    static ResourceProgressEvent* create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const String& url)
     {
         return new ResourceProgressEvent(type, lengthComputable, loaded, total, url);
     }

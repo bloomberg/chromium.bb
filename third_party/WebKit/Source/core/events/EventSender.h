@@ -37,7 +37,7 @@ template<typename T>
 class EventSender final : public GarbageCollectedFinalized<EventSender<T>> {
     WTF_MAKE_NONCOPYABLE(EventSender);
 public:
-    static RawPtr<EventSender> create(const AtomicString& eventType)
+    static EventSender* create(const AtomicString& eventType)
     {
         return new EventSender(eventType);
     }

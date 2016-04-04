@@ -148,7 +148,7 @@ void ServiceWorkerGlobalScope::setRegistration(WebPassOwnPtr<WebServiceWorkerReg
     m_registration = ServiceWorkerRegistration::getOrCreate(getExecutionContext(), handle.release());
 }
 
-bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
+bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     if (m_didEvaluateScript) {
         if (eventType == EventTypeNames::install) {
@@ -167,10 +167,10 @@ const AtomicString& ServiceWorkerGlobalScope::interfaceName() const
     return EventTargetNames::ServiceWorkerGlobalScope;
 }
 
-DispatchEventResult ServiceWorkerGlobalScope::dispatchEventInternal(RawPtr<Event> event)
+DispatchEventResult ServiceWorkerGlobalScope::dispatchEventInternal(Event* event)
 {
     m_eventNestingLevel++;
-    DispatchEventResult dispatchResult = WorkerGlobalScope::dispatchEventInternal(event.get());
+    DispatchEventResult dispatchResult = WorkerGlobalScope::dispatchEventInternal(event);
     if (event->interfaceName() == EventNames::ErrorEvent && m_eventNestingLevel == 2)
         m_hadErrorInTopLevelEventHandler = true;
     m_eventNestingLevel--;

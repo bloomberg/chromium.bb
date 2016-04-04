@@ -57,17 +57,17 @@ PopStateEvent::~PopStateEvent()
 {
 }
 
-RawPtr<PopStateEvent> PopStateEvent::create()
+PopStateEvent* PopStateEvent::create()
 {
     return new PopStateEvent;
 }
 
-RawPtr<PopStateEvent> PopStateEvent::create(PassRefPtr<SerializedScriptValue> serializedState, History* history)
+PopStateEvent* PopStateEvent::create(PassRefPtr<SerializedScriptValue> serializedState, History* history)
 {
     return new PopStateEvent(serializedState, history);
 }
 
-RawPtr<PopStateEvent> PopStateEvent::create(const AtomicString& type, const PopStateEventInit& initializer)
+PopStateEvent* PopStateEvent::create(const AtomicString& type, const PopStateEventInit& initializer)
 {
     return new PopStateEvent(type, initializer);
 }

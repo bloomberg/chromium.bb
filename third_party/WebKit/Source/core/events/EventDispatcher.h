@@ -49,8 +49,8 @@ enum EventDispatchContinuation {
 class EventDispatcher {
     STACK_ALLOCATED();
 public:
-    static DispatchEventResult dispatchEvent(Node&, RawPtr<EventDispatchMediator>);
-    static void dispatchScopedEvent(Node&, RawPtr<EventDispatchMediator>);
+    static DispatchEventResult dispatchEvent(Node&, EventDispatchMediator*);
+    static void dispatchScopedEvent(Node&, EventDispatchMediator*);
 
     static void dispatchSimulatedClick(Node&, Event* underlyingEvent, SimulatedClickMouseEventOptions, SimulatedClickCreationScope);
 
@@ -59,7 +59,7 @@ public:
     Event& event() const { return *m_event; }
 
 private:
-    EventDispatcher(Node&, RawPtr<Event>);
+    EventDispatcher(Node&, Event*);
 
     EventDispatchContinuation dispatchEventPreProcess(void*& preDispatchEventHandlerResult);
     EventDispatchContinuation dispatchEventAtCapturing();

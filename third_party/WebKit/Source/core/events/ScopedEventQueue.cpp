@@ -58,7 +58,7 @@ void ScopedEventQueue::initialize()
     s_instance = instance.leakPtr();
 }
 
-void ScopedEventQueue::enqueueEventDispatchMediator(RawPtr<EventDispatchMediator> mediator)
+void ScopedEventQueue::enqueueEventDispatchMediator(EventDispatchMediator* mediator)
 {
     if (shouldQueueEvents())
         m_queuedEventDispatchMediators.append(mediator);
@@ -75,7 +75,7 @@ void ScopedEventQueue::dispatchAllEvents()
         dispatchEvent(queuedEventDispatchMediators[i].release());
 }
 
-void ScopedEventQueue::dispatchEvent(RawPtr<EventDispatchMediator> mediator) const
+void ScopedEventQueue::dispatchEvent(EventDispatchMediator* mediator) const
 {
     ASSERT(mediator->event().target());
     Node* node = mediator->event().target()->toNode();

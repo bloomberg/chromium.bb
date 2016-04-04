@@ -41,7 +41,7 @@
 
 namespace blink {
 
-DispatchEventResult EventDispatcher::dispatchEvent(Node& node, RawPtr<EventDispatchMediator> mediator)
+DispatchEventResult EventDispatcher::dispatchEvent(Node& node, EventDispatchMediator* mediator)
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "EventDispatcher::dispatchEvent");
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
@@ -49,7 +49,7 @@ DispatchEventResult EventDispatcher::dispatchEvent(Node& node, RawPtr<EventDispa
     return mediator->dispatchEvent(dispatcher);
 }
 
-EventDispatcher::EventDispatcher(Node& node, RawPtr<Event> event)
+EventDispatcher::EventDispatcher(Node& node, Event* event)
     : m_node(node)
     , m_event(event)
 #if ENABLE(ASSERT)
@@ -61,7 +61,7 @@ EventDispatcher::EventDispatcher(Node& node, RawPtr<Event> event)
     m_event->initEventPath(*m_node);
 }
 
-void EventDispatcher::dispatchScopedEvent(Node& node, RawPtr<EventDispatchMediator> mediator)
+void EventDispatcher::dispatchScopedEvent(Node& node, EventDispatchMediator* mediator)
 {
     // We need to set the target here because it can go away by the time we actually fire the event.
     mediator->event().setTarget(EventPath::eventTargetRespectingTargetRules(node));

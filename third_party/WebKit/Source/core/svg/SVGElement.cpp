@@ -767,10 +767,8 @@ static inline void collectInstancesForSVGElement(SVGElement* element, HeapHashSe
     instances = element->instancesForElement();
 }
 
-bool SVGElement::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> prpListener, const EventListenerOptions& options)
+bool SVGElement::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
-    EventListener* listener = prpListener;
-
     // Add event listener to regular DOM element
     if (!Node::addEventListenerInternal(eventType, listener, options))
         return false;
@@ -786,10 +784,8 @@ bool SVGElement::addEventListenerInternal(const AtomicString& eventType, RawPtr<
     return true;
 }
 
-bool SVGElement::removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> prpListener, const EventListenerOptions& options)
+bool SVGElement::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
-    EventListener* listener = prpListener;
-
     // Remove event listener from regular DOM element
     if (!Node::removeEventListenerInternal(eventType, listener, options))
         return false;

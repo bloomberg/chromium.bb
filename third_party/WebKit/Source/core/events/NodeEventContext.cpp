@@ -34,7 +34,7 @@
 
 namespace blink {
 
-NodeEventContext::NodeEventContext(RawPtr<Node> node, RawPtr<EventTarget> currentTarget)
+NodeEventContext::NodeEventContext(Node* node, EventTarget* currentTarget)
     : m_node(node)
     , m_currentTarget(currentTarget)
 {

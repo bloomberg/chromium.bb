@@ -361,7 +361,7 @@ ExecutionContext* IDBTransaction::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-DispatchEventResult IDBTransaction::dispatchEventInternal(RawPtr<Event> event)
+DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event)
 {
     IDB_TRACE("IDBTransaction::dispatchEvent");
     if (m_contextStopped || !getExecutionContext()) {
@@ -390,7 +390,7 @@ DispatchEventResult IDBTransaction::dispatchEventInternal(RawPtr<Event> event)
 
     // FIXME: When we allow custom event dispatching, this will probably need to change.
     ASSERT(event->type() == EventTypeNames::complete || event->type() == EventTypeNames::abort);
-    DispatchEventResult dispatchResult = IDBEventDispatcher::dispatch(event.get(), targets);
+    DispatchEventResult dispatchResult = IDBEventDispatcher::dispatch(event, targets);
     // FIXME: Try to construct a test where |this| outlives openDBRequest and we
     // get a crash.
     if (m_openDBRequest) {
@@ -411,7 +411,7 @@ void IDBTransaction::stop()
     abort(IGNORE_EXCEPTION);
 }
 
-void IDBTransaction::enqueueEvent(RawPtr<Event> event)
+void IDBTransaction::enqueueEvent(Event* event)
 {
     DCHECK_NE(m_state, Finished) << "A finished transaction tried to enqueue an event of type " << event->type() << ".";
     if (m_contextStopped || !getExecutionContext())

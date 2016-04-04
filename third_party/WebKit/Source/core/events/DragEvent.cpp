@@ -10,12 +10,12 @@
 
 namespace blink {
 
-RawPtr<DragEvent> DragEvent::create(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView> view,
+DragEvent* DragEvent::create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
     int detail, int screenX, int screenY, int windowX, int windowY,
     int movementX, int movementY,
     PlatformEvent::Modifiers modifiers,
     short button, unsigned short buttons,
-    RawPtr<EventTarget> relatedTarget,
+    EventTarget* relatedTarget,
     double platformTimeStamp, DataTransfer* dataTransfer,
     PlatformMouseEvent::SyntheticEventType syntheticEventType)
 {
@@ -37,11 +37,11 @@ DragEvent::DragEvent(DataTransfer* dataTransfer)
 {
 }
 
-DragEvent::DragEvent(const AtomicString& eventType, bool canBubble, bool cancelable, RawPtr<AbstractView> view,
+DragEvent::DragEvent(const AtomicString& eventType, bool canBubble, bool cancelable, AbstractView* view,
     int detail, int screenX, int screenY, int windowX, int windowY,
     int movementX, int movementY,
     PlatformEvent::Modifiers modifiers,
-    short button, unsigned short buttons, RawPtr<EventTarget> relatedTarget,
+    short button, unsigned short buttons, EventTarget* relatedTarget,
     double platformTimeStamp, DataTransfer* dataTransfer,
     PlatformMouseEvent::SyntheticEventType syntheticEventType)
     : MouseEvent(eventType, canBubble, cancelable, view, detail, screenX, screenY,
@@ -71,7 +71,7 @@ bool DragEvent::isMouseEvent() const
     return false;
 }
 
-RawPtr<EventDispatchMediator> DragEvent::createMediator()
+EventDispatchMediator* DragEvent::createMediator()
 {
     return DragEventDispatchMediator::create(this);
 }
@@ -82,12 +82,12 @@ DEFINE_TRACE(DragEvent)
     MouseEvent::trace(visitor);
 }
 
-RawPtr<DragEventDispatchMediator> DragEventDispatchMediator::create(RawPtr<DragEvent> dragEvent)
+DragEventDispatchMediator* DragEventDispatchMediator::create(DragEvent* dragEvent)
 {
     return new DragEventDispatchMediator(dragEvent);
 }
 
-DragEventDispatchMediator::DragEventDispatchMediator(RawPtr<DragEvent> dragEvent)
+DragEventDispatchMediator::DragEventDispatchMediator(DragEvent* dragEvent)
     : EventDispatchMediator(dragEvent)
 {
 }

@@ -378,28 +378,28 @@ void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::versionchange, oldVersion, newVersionNullable));
 }
 
-void IDBDatabase::enqueueEvent(RawPtr<Event> event)
+void IDBDatabase::enqueueEvent(Event* event)
 {
     ASSERT(!m_contextStopped);
     ASSERT(getExecutionContext());
     EventQueue* eventQueue = getExecutionContext()->getEventQueue();
     event->setTarget(this);
-    eventQueue->enqueueEvent(event.get());
+    eventQueue->enqueueEvent(event);
     m_enqueuedEvents.append(event);
 }
 
-DispatchEventResult IDBDatabase::dispatchEventInternal(RawPtr<Event> event)
+DispatchEventResult IDBDatabase::dispatchEventInternal(Event* event)
 {
     IDB_TRACE("IDBDatabase::dispatchEvent");
     if (m_contextStopped || !getExecutionContext())
         return DispatchEventResult::CanceledBeforeDispatch;
     ASSERT(event->type() == EventTypeNames::versionchange || event->type() == EventTypeNames::close);
     for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
-        if (m_enqueuedEvents[i].get() == event.get())
+        if (m_enqueuedEvents[i].get() == event)
             m_enqueuedEvents.remove(i);
     }
 
-    DispatchEventResult dispatchResult = EventTarget::dispatchEventInternal(event.get());
+    DispatchEventResult dispatchResult = EventTarget::dispatchEventInternal(event);
     if (event->type() == EventTypeNames::versionchange && !m_closePending && m_backend)
         m_backend->versionChangeIgnored();
     return dispatchResult;

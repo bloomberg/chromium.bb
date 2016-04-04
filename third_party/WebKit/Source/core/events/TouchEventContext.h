@@ -39,7 +39,7 @@ class TouchList;
 
 class TouchEventContext : public GarbageCollected<TouchEventContext> {
 public:
-    static RawPtr<TouchEventContext> create();
+    static TouchEventContext* create();
     void handleLocalEvents(Event&) const;
     TouchList& touches() { return *m_touches; }
     TouchList& targetTouches() { return *m_targetTouches; }

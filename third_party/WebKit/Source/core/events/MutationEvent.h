@@ -40,19 +40,19 @@ public:
         REMOVAL         = 3  // NOLINT
     };
 
-    static RawPtr<MutationEvent> create()
+    static MutationEvent* create()
     {
         return new MutationEvent;
     }
 
-    static RawPtr<MutationEvent> create(
-        const AtomicString& type, bool canBubble, RawPtr<Node> relatedNode = nullptr,
+    static MutationEvent* create(
+        const AtomicString& type, bool canBubble, Node* relatedNode = nullptr,
         const String& prevValue = String(), const String& newValue = String(), const String& attrName = String(), unsigned short attrChange = 0)
     {
         return new MutationEvent(type, canBubble, false, relatedNode, prevValue, newValue, attrName, attrChange);
     }
 
-    void initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<Node> relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
+    void initMutationEvent(const AtomicString& type, bool canBubble, bool cancelable, Node* relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
 
     Node* relatedNode() const { return m_relatedNode.get(); }
     String prevValue() const { return m_prevValue; }
@@ -66,7 +66,7 @@ public:
 
 private:
     MutationEvent();
-    MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<Node> relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
+    MutationEvent(const AtomicString& type, bool canBubble, bool cancelable, Node* relatedNode, const String& prevValue, const String& newValue, const String& attrName, unsigned short attrChange);
 
     Member<Node> m_relatedNode;
     String m_prevValue;

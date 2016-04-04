@@ -58,7 +58,7 @@ private:
     Member<DOMWindowEventQueue> m_eventQueue;
 };
 
-RawPtr<DOMWindowEventQueue> DOMWindowEventQueue::create(ExecutionContext* context)
+DOMWindowEventQueue* DOMWindowEventQueue::create(ExecutionContext* context)
 {
     return new DOMWindowEventQueue(context);
 }
@@ -83,13 +83,13 @@ DEFINE_TRACE(DOMWindowEventQueue)
     EventQueue::trace(visitor);
 }
 
-bool DOMWindowEventQueue::enqueueEvent(RawPtr<Event> event)
+bool DOMWindowEventQueue::enqueueEvent(Event* event)
 {
     if (m_isClosed)
         return false;
 
     ASSERT(event->target());
-    InspectorInstrumentation::didEnqueueEvent(event->target(), event.get());
+    InspectorInstrumentation::didEnqueueEvent(event->target(), event);
 
     bool wasAdded = m_queuedEvents.add(event).isNewEntry;
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
@@ -119,9 +119,9 @@ void DOMWindowEventQueue::close()
     m_pendingEventTimer->stop();
     if (InspectorInstrumentation::hasFrontends()) {
         for (const auto& queuedEvent : m_queuedEvents) {
-            RawPtr<Event> event = queuedEvent;
+            Event* event = queuedEvent;
             if (event)
-                InspectorInstrumentation::didRemoveEvent(event->target(), event.get());
+                InspectorInstrumentation::didRemoveEvent(event->target(), event);
         }
     }
     m_queuedEvents.clear();
@@ -137,20 +137,18 @@ void DOMWindowEventQueue::pendingEventTimerFired()
     bool wasAdded = m_queuedEvents.add(nullptr).isNewEntry;
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
 
-    RawPtr<DOMWindowEventQueue> protector(this);
-
     while (!m_queuedEvents.isEmpty()) {
         HeapListHashSet<Member<Event>, 16>::iterator iter = m_queuedEvents.begin();
-        RawPtr<Event> event = *iter;
+        Event* event = *iter;
         m_queuedEvents.remove(iter);
         if (!event)
             break;
-        dispatchEvent(event.get());
-        InspectorInstrumentation::didRemoveEvent(event->target(), event.get());
+        dispatchEvent(event);
+        InspectorInstrumentation::didRemoveEvent(event->target(), event);
     }
 }
 
-void DOMWindowEventQueue::dispatchEvent(RawPtr<Event> event)
+void DOMWindowEventQueue::dispatchEvent(Event* event)
 {
     EventTarget* eventTarget = event->target();
     if (eventTarget->toDOMWindow())

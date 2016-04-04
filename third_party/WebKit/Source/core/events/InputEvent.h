@@ -14,12 +14,12 @@ class InputEvent final : public UIEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static RawPtr<InputEvent> create()
+    static InputEvent* create()
     {
         return new InputEvent;
     }
 
-    static RawPtr<InputEvent> create(const AtomicString& type, const InputEventInit& initializer)
+    static InputEvent* create(const AtomicString& type, const InputEventInit& initializer)
     {
         return new InputEvent(type, initializer);
     }

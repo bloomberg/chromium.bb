@@ -16,7 +16,7 @@ class NullEventQueue final : public EventQueue {
 public:
     NullEventQueue() { }
     ~NullEventQueue() override { }
-    bool enqueueEvent(RawPtr<Event>) override { return true; }
+    bool enqueueEvent(Event*) override { return true; }
     bool cancelEvent(Event*) override { return true; }
     void close() override { }
 };

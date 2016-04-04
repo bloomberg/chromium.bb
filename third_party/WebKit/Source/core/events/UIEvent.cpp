@@ -32,7 +32,7 @@ UIEvent::UIEvent()
 }
 
 // TODO(lanwei): Will add sourceCapabilities to all the subclass of UIEvent later, see https://crbug.com/476530.
-UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, RawPtr<AbstractView> viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
+UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
     : Event(eventType, canBubbleArg, cancelableArg)
     , m_view(viewArg)
     , m_detail(detailArg)
@@ -40,7 +40,7 @@ UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelab
 {
 }
 
-UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, RawPtr<AbstractView> viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
+UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
     : Event(eventType, canBubbleArg, cancelableArg, relatedTarget)
     , m_view(viewArg)
     , m_detail(detailArg)
@@ -48,7 +48,7 @@ UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelab
 {
 }
 
-UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, double platformTimeStamp, RawPtr<AbstractView> viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
+UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, double platformTimeStamp, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
     : Event(eventType, canBubbleArg, cancelableArg, platformTimeStamp)
     , m_view(viewArg)
     , m_detail(detailArg)
@@ -56,7 +56,7 @@ UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelab
 {
 }
 
-UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, double platformTimeStamp, RawPtr<AbstractView> viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
+UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, double platformTimeStamp, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
     : Event(eventType, canBubbleArg, cancelableArg, relatedTarget, platformTimeStamp)
     , m_view(viewArg)
     , m_detail(detailArg)
@@ -76,12 +76,12 @@ UIEvent::~UIEvent()
 {
 }
 
-void UIEvent::initUIEvent(const AtomicString& typeArg, bool canBubbleArg, bool cancelableArg, RawPtr<AbstractView> viewArg, int detailArg)
+void UIEvent::initUIEvent(const AtomicString& typeArg, bool canBubbleArg, bool cancelableArg, AbstractView* viewArg, int detailArg)
 {
     initUIEventInternal(typeArg, canBubbleArg, cancelableArg, nullptr, viewArg, detailArg, nullptr);
 }
 
-void UIEvent::initUIEventInternal(const AtomicString& typeArg, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, RawPtr<AbstractView> viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
+void UIEvent::initUIEventInternal(const AtomicString& typeArg, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg)
 {
     if (dispatched())
         return;

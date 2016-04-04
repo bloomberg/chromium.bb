@@ -105,7 +105,7 @@ public:
     bool isClosePending() const { return m_closePending; }
     void forceClose();
     const IDBDatabaseMetadata& metadata() const { return m_metadata; }
-    void enqueueEvent(RawPtr<Event>);
+    void enqueueEvent(Event*);
 
     int64_t findObjectStoreId(const String& name) const;
     bool containsObjectStore(const String& name) const
@@ -138,7 +138,7 @@ public:
 
 protected:
     // EventTarget
-    DispatchEventResult dispatchEventInternal(RawPtr<Event>) override;
+    DispatchEventResult dispatchEventInternal(Event*) override;
 
 private:
     IDBDatabase(ExecutionContext*, PassOwnPtr<WebIDBDatabase>, IDBDatabaseCallbacks*);

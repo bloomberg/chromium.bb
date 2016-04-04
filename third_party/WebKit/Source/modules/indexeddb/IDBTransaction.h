@@ -108,12 +108,12 @@ public:
 
 protected:
     // EventTarget
-    DispatchEventResult dispatchEventInternal(RawPtr<Event>) override;
+    DispatchEventResult dispatchEventInternal(Event*) override;
 
 private:
     IDBTransaction(ScriptState*, int64_t, const HashSet<String>&, WebIDBTransactionMode, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata&);
 
-    void enqueueEvent(RawPtr<Event>);
+    void enqueueEvent(Event*);
 
     enum State {
         Inactive, // Created or started, but not in an event callback

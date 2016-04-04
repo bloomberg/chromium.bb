@@ -1841,7 +1841,7 @@ void Node::didMoveToNewDocument(Document& oldDocument)
     }
 }
 
-bool Node::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
+bool Node::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     if (!EventTarget::addEventListenerInternal(eventType, listener, options))
         return false;
@@ -1853,7 +1853,7 @@ bool Node::addEventListenerInternal(const AtomicString& eventType, RawPtr<EventL
     return true;
 }
 
-bool Node::removeEventListenerInternal(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
+bool Node::removeEventListenerInternal(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     if (!EventTarget::removeEventListenerInternal(eventType, listener, options))
         return false;
@@ -2061,7 +2061,7 @@ void Node::dispatchScopedEvent(RawPtr<Event> event)
     EventDispatcher::dispatchScopedEvent(*this, event->createMediator());
 }
 
-DispatchEventResult Node::dispatchEventInternal(RawPtr<Event> event)
+DispatchEventResult Node::dispatchEventInternal(Event* event)
 {
     return EventDispatcher::dispatchEvent(*this, event->createMediator());
 }

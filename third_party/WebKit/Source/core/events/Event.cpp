@@ -241,7 +241,7 @@ void Event::preventDefault()
         m_defaultPrevented = true;
 }
 
-void Event::setTarget(RawPtr<EventTarget> target)
+void Event::setTarget(EventTarget* target)
 {
     if (m_target == target)
         return;
@@ -255,10 +255,10 @@ void Event::receivedTarget()
 {
 }
 
-void Event::setUnderlyingEvent(RawPtr<Event> ue)
+void Event::setUnderlyingEvent(Event* ue)
 {
     // Prohibit creation of a cycle -- just do nothing in that case.
-    for (Event* e = ue.get(); e; e = e->underlyingEvent())
+    for (Event* e = ue; e; e = e->underlyingEvent())
         if (e == this)
             return;
     m_underlyingEvent = ue;
@@ -320,7 +320,7 @@ HeapVector<Member<EventTarget>> Event::pathInternal(ScriptState* scriptState, Ev
     return HeapVector<Member<EventTarget>>();
 }
 
-RawPtr<EventDispatchMediator> Event::createMediator()
+EventDispatchMediator* Event::createMediator()
 {
     return EventDispatchMediator::create(this);
 }

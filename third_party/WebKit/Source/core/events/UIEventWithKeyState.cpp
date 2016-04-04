@@ -22,14 +22,14 @@
 
 namespace blink {
 
-UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView> view,
+UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
     int detail, PlatformEvent::Modifiers modifiers, double platformTimeStamp, InputDeviceCapabilities* sourceCapabilities)
     : UIEvent(type, canBubble, cancelable, platformTimeStamp, view, detail, sourceCapabilities)
     , m_modifiers(modifiers)
 {
 }
 
-UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, RawPtr<AbstractView> view,
+UIEventWithKeyState::UIEventWithKeyState(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, AbstractView* view,
     int detail, PlatformEvent::Modifiers modifiers, double platformTimeStamp, InputDeviceCapabilities* sourceCapabilities)
     : UIEvent(type, canBubble, cancelable, relatedTarget, platformTimeStamp, view, detail, sourceCapabilities)
     , m_modifiers(modifiers)

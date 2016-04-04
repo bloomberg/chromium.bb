@@ -10,17 +10,17 @@ RelatedEvent::~RelatedEvent()
 {
 }
 
-RawPtr<RelatedEvent> RelatedEvent::create()
+RelatedEvent* RelatedEvent::create()
 {
     return new RelatedEvent;
 }
 
-RawPtr<RelatedEvent> RelatedEvent::create(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget)
+RelatedEvent* RelatedEvent::create(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget)
 {
     return new RelatedEvent(type, canBubble, cancelable, relatedTarget);
 }
 
-RawPtr<RelatedEvent> RelatedEvent::create(const AtomicString& type, const RelatedEventInit& initializer)
+RelatedEvent* RelatedEvent::create(const AtomicString& type, const RelatedEventInit& initializer)
 {
     return new RelatedEvent(type, initializer);
 }

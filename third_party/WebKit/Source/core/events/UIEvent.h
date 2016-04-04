@@ -39,22 +39,22 @@ using AbstractView = DOMWindow;
 class CORE_EXPORT UIEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RawPtr<UIEvent> create()
+    static UIEvent* create()
     {
         return new UIEvent;
     }
-    static RawPtr<UIEvent> create(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView> view, int detail)
+    static UIEvent* create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, int detail)
     {
         return new UIEvent(type, canBubble, cancelable, view, detail);
     }
-    static RawPtr<UIEvent> create(const AtomicString& type, const UIEventInit& initializer)
+    static UIEvent* create(const AtomicString& type, const UIEventInit& initializer)
     {
         return new UIEvent(type, initializer);
     }
     ~UIEvent() override;
 
-    void initUIEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView>, int detail);
-    void initUIEventInternal(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, RawPtr<AbstractView>, int detail, InputDeviceCapabilities* sourceCapabilities);
+    void initUIEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*, int detail);
+    void initUIEventInternal(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities);
 
     AbstractView* view() const { return m_view.get(); }
     int detail() const { return m_detail; }
@@ -70,10 +70,10 @@ public:
 protected:
     UIEvent();
     // TODO(crbug.com/563542): Remove of this ctor in favor of making platformTimeStamp (and perhaps sourceCapabilities) required in all constructions sites
-    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView>, int detail, InputDeviceCapabilities* sourceCapabilities = nullptr);
-    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, RawPtr<AbstractView>, int detail, InputDeviceCapabilities* sourceCapabilities = nullptr);
-    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp, RawPtr<AbstractView>, int detail, InputDeviceCapabilities* sourceCapabilities);
-    UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, double platformTimeStamp, RawPtr<AbstractView> viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg);
+    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities = nullptr);
+    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities = nullptr);
+    UIEvent(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp, AbstractView*, int detail, InputDeviceCapabilities* sourceCapabilities);
+    UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, double platformTimeStamp, AbstractView* viewArg, int detailArg, InputDeviceCapabilities* sourceCapabilitiesArg);
     UIEvent(const AtomicString&, const UIEventInit&);
 
 private:

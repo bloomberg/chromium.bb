@@ -46,7 +46,7 @@ public:
     DECLARE_TRACE();
 
     // EventQueue
-    bool enqueueEvent(RawPtr<Event>) override;
+    bool enqueueEvent(Event*) override;
     bool cancelEvent(Event*) override;
     void close() override;
 

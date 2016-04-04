@@ -59,7 +59,7 @@ public:
     void cancelCallback(CallbackId);
     void serviceScriptedAnimations(double monotonicTimeNow);
 
-    void enqueueEvent(RawPtr<Event>);
+    void enqueueEvent(Event*);
     void enqueuePerFrameEvent(RawPtr<Event>);
     void enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryListListener>>&);
 

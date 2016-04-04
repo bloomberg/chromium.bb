@@ -17,25 +17,25 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
-    static RawPtr<DragEvent> create()
+    static DragEvent* create()
     {
         return new DragEvent;
     }
 
-    static RawPtr<DragEvent> create(DataTransfer* dataTransfer)
+    static DragEvent* create(DataTransfer* dataTransfer)
     {
         return new DragEvent(dataTransfer);
     }
 
-    static RawPtr<DragEvent> create(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView>,
+    static DragEvent* create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY,
         PlatformEvent::Modifiers, short button, unsigned short buttons,
-        RawPtr<EventTarget> relatedTarget,
+        EventTarget* relatedTarget,
         double platformTimeStamp, DataTransfer*,
         PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable);
 
-    static RawPtr<DragEvent> create(const AtomicString& type, const DragEventInit& initializer)
+    static DragEvent* create(const AtomicString& type, const DragEventInit& initializer)
     {
         return new DragEvent(type, initializer);
     }
@@ -45,18 +45,18 @@ public:
     bool isDragEvent() const override;
     bool isMouseEvent() const override;
 
-    RawPtr<EventDispatchMediator> createMediator() override;
+    EventDispatchMediator* createMediator() override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     DragEvent();
     DragEvent(DataTransfer*);
-    DragEvent(const AtomicString& type, bool canBubble, bool cancelable, RawPtr<AbstractView>,
+    DragEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
         int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY,
         PlatformEvent::Modifiers, short button, unsigned short buttons,
-        RawPtr<EventTarget> relatedTarget,
+        EventTarget* relatedTarget,
         double platformTimeStamp, DataTransfer*,
         PlatformMouseEvent::SyntheticEventType);
 
@@ -67,10 +67,10 @@ private:
 
 class DragEventDispatchMediator final : public EventDispatchMediator {
 public:
-    static RawPtr<DragEventDispatchMediator> create(RawPtr<DragEvent>);
+    static DragEventDispatchMediator* create(DragEvent*);
 
 private:
-    explicit DragEventDispatchMediator(RawPtr<DragEvent>);
+    explicit DragEventDispatchMediator(DragEvent*);
     DragEvent& event() const;
     DispatchEventResult dispatchEvent(EventDispatcher&) const override;
 };

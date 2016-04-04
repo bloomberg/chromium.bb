@@ -411,7 +411,7 @@ ExecutionContext* IDBRequest::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
-DispatchEventResult IDBRequest::dispatchEventInternal(RawPtr<Event> event)
+DispatchEventResult IDBRequest::dispatchEventInternal(Event* event)
 {
     IDB_TRACE("IDBRequest::dispatchEvent");
     if (m_contextStopped || !getExecutionContext())
@@ -425,7 +425,7 @@ DispatchEventResult IDBRequest::dispatchEventInternal(RawPtr<Event> event)
 
     if (event->type() != EventTypeNames::blocked)
         m_readyState = DONE;
-    dequeueEvent(event.get());
+    dequeueEvent(event);
 
     HeapVector<Member<EventTarget>> targets;
     targets.append(this);
@@ -458,7 +458,7 @@ DispatchEventResult IDBRequest::dispatchEventInternal(RawPtr<Event> event)
     if (setTransactionActive)
         m_transaction->setActive(true);
 
-    DispatchEventResult dispatchResult = IDBEventDispatcher::dispatch(event.get(), targets);
+    DispatchEventResult dispatchResult = IDBEventDispatcher::dispatch(event, targets);
 
     if (m_transaction) {
         if (m_readyState == DONE)
@@ -510,7 +510,7 @@ void IDBRequest::transactionDidFinishAndDispatch()
     m_readyState = PENDING;
 }
 
-void IDBRequest::enqueueEvent(RawPtr<Event> event)
+void IDBRequest::enqueueEvent(Event* event)
 {
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
 
@@ -525,7 +525,7 @@ void IDBRequest::enqueueEvent(RawPtr<Event> event)
     // Keep track of enqueued events in case we need to abort prior to dispatch,
     // in which case these must be cancelled. If the events not dispatched for
     // other reasons they must be removed from this list via dequeueEvent().
-    if (eventQueue->enqueueEvent(event.get()))
+    if (eventQueue->enqueueEvent(event))
         m_enqueuedEvents.append(event);
 }
 

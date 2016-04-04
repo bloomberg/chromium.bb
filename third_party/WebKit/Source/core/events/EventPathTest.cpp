@@ -30,8 +30,8 @@ void EventPathTest::SetUp()
 
 TEST_F(EventPathTest, ShouldBeEmptyForPseudoElementWithoutParentElement)
 {
-    RawPtr<Element> div = document().createElement(HTMLNames::divTag, false);
-    RawPtr<PseudoElement> pseudo = PseudoElement::create(div.get(), PseudoIdFirstLetter);
+    Element* div = document().createElement(HTMLNames::divTag, false);
+    PseudoElement* pseudo = PseudoElement::create(div, PseudoIdFirstLetter);
     pseudo->dispose();
     EventPath eventPath(*pseudo);
     EXPECT_TRUE(eventPath.isEmpty());

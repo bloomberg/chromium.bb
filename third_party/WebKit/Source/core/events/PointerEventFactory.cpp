@@ -75,10 +75,10 @@ void PointerEventFactory::setIdTypeButtons(PointerEventInit &pointerEventInit,
     pointerEventInit.setIsPrimary(isPrimary(pointerId));
 }
 
-RawPtr<PointerEvent> PointerEventFactory::create(
+PointerEvent* PointerEventFactory::create(
     const AtomicString& mouseEventName, const PlatformMouseEvent& mouseEvent,
-    RawPtr<EventTarget> relatedTarget,
-    RawPtr<AbstractView> view)
+    EventTarget* relatedTarget,
+    AbstractView* view)
 {
     AtomicString pointerEventName = pointerEventNameForMouseEventName(mouseEventName);
     unsigned buttons = MouseEvent::platformModifiersToButtons(mouseEvent.getModifiers());
@@ -125,7 +125,7 @@ RawPtr<PointerEvent> PointerEventFactory::create(
     return PointerEvent::create(pointerEventName, pointerEventInit);
 }
 
-RawPtr<PointerEvent> PointerEventFactory::create(const AtomicString& type,
+PointerEvent* PointerEventFactory::create(const AtomicString& type,
     const PlatformTouchPoint& touchPoint, PlatformEvent::Modifiers modifiers,
     const double width, const double height,
     const double clientX, const double clientY)
@@ -167,7 +167,7 @@ RawPtr<PointerEvent> PointerEventFactory::create(const AtomicString& type,
 }
 
 
-RawPtr<PointerEvent> PointerEventFactory::createPointerCancelEvent(const PlatformTouchPoint& touchPoint)
+PointerEvent* PointerEventFactory::createPointerCancelEvent(const PlatformTouchPoint& touchPoint)
 {
     PointerEventInit pointerEventInit;
 
@@ -179,8 +179,8 @@ RawPtr<PointerEvent> PointerEventFactory::createPointerCancelEvent(const Platfor
     return PointerEvent::create(EventTypeNames::pointercancel, pointerEventInit);
 }
 
-RawPtr<PointerEvent> PointerEventFactory::createPointerCaptureEvent(
-    RawPtr<PointerEvent> pointerEvent,
+PointerEvent* PointerEventFactory::createPointerCaptureEvent(
+    PointerEvent* pointerEvent,
     const AtomicString& type)
 {
     ASSERT(type == EventTypeNames::gotpointercapture
@@ -196,10 +196,10 @@ RawPtr<PointerEvent> PointerEventFactory::createPointerCaptureEvent(
     return PointerEvent::create(type, pointerEventInit);
 }
 
-RawPtr<PointerEvent> PointerEventFactory::createPointerTransitionEvent(
-    RawPtr<PointerEvent> pointerEvent,
+PointerEvent* PointerEventFactory::createPointerTransitionEvent(
+    PointerEvent* pointerEvent,
     const AtomicString& type,
-    RawPtr<EventTarget> relatedTarget)
+    EventTarget* relatedTarget)
 {
     ASSERT(type == EventTypeNames::pointerout
         || type == EventTypeNames::pointerleave
@@ -290,7 +290,7 @@ int PointerEventFactory::addIdAndActiveButtons(const IncomingId p,
 }
 
 bool PointerEventFactory::remove(
-    const RawPtr<PointerEvent> pointerEvent)
+    const PointerEvent* pointerEvent)
 {
     int mappedId = pointerEvent->pointerId();
     // Do not remove mouse pointer id as it should always be there

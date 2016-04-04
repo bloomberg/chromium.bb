@@ -29,29 +29,29 @@ public:
     PointerEventFactory();
     ~PointerEventFactory();
 
-    RawPtr<PointerEvent> create(
+    PointerEvent* create(
         const AtomicString& mouseEventName, const PlatformMouseEvent&,
-        RawPtr<EventTarget> relatedTarget,
-        RawPtr<AbstractView>);
+        EventTarget* relatedTarget,
+        AbstractView*);
 
-    RawPtr<PointerEvent> create(const AtomicString& type,
+    PointerEvent* create(const AtomicString& type,
         const PlatformTouchPoint&, PlatformEvent::Modifiers,
         const double width, const double height,
         const double clientX, const double clientY);
 
-    RawPtr<PointerEvent> createPointerCancelEvent(
+    PointerEvent* createPointerCancelEvent(
         const PlatformTouchPoint&);
 
     // For creating capture events (i.e got/lostpointercapture)
-    RawPtr<PointerEvent> createPointerCaptureEvent(
-        RawPtr<PointerEvent>,
+    PointerEvent* createPointerCaptureEvent(
+        PointerEvent*,
         const AtomicString&);
 
     // For creating transition events (i.e pointerout/leave/over/enter)
-    RawPtr<PointerEvent> createPointerTransitionEvent(
-        RawPtr<PointerEvent>,
+    PointerEvent* createPointerTransitionEvent(
+        PointerEvent*,
         const AtomicString&,
-        RawPtr<EventTarget>);
+        EventTarget*);
 
     // Clear all the existing ids.
     void clear();
@@ -60,7 +60,7 @@ public:
     // particular id is removed that id is considered free even though there
     // might have been other PointerEvents that were generated with the same id
     // before.
-    bool remove(const RawPtr<PointerEvent>);
+    bool remove(const PointerEvent*);
 
     // Returns whether a pointer id exists and active
     bool isActive(const int);

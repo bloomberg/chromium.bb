@@ -131,14 +131,14 @@ public:
 
 protected:
     IDBRequest(ScriptState*, IDBAny* source, IDBTransaction*);
-    void enqueueEvent(RawPtr<Event>);
+    void enqueueEvent(Event*);
     void dequeueEvent(Event*);
     virtual bool shouldEnqueueEvent() const;
     void onSuccessInternal(IDBAny*);
     void setResult(IDBAny*);
 
     // EventTarget
-    DispatchEventResult dispatchEventInternal(RawPtr<Event>) override;
+    DispatchEventResult dispatchEventInternal(Event*) override;
 
     bool m_contextStopped = false;
     Member<IDBTransaction> m_transaction;

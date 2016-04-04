@@ -17,17 +17,17 @@ class ApplicationCacheErrorEvent final : public Event {
 public:
     ~ApplicationCacheErrorEvent() override;
 
-    static RawPtr<ApplicationCacheErrorEvent> create()
+    static ApplicationCacheErrorEvent* create()
     {
         return new ApplicationCacheErrorEvent;
     }
 
-    static RawPtr<ApplicationCacheErrorEvent> create(WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
+    static ApplicationCacheErrorEvent* create(WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
     {
         return new ApplicationCacheErrorEvent(reason, url, status, message);
     }
 
-    static RawPtr<ApplicationCacheErrorEvent> create(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer)
+    static ApplicationCacheErrorEvent* create(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer)
     {
         return new ApplicationCacheErrorEvent(eventType, initializer);
     }

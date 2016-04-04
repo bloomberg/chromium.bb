@@ -162,12 +162,12 @@ bool IDBOpenDBRequest::shouldEnqueueEvent() const
     return true;
 }
 
-DispatchEventResult IDBOpenDBRequest::dispatchEventInternal(RawPtr<Event> event)
+DispatchEventResult IDBOpenDBRequest::dispatchEventInternal(Event* event)
 {
     // If the connection closed between onUpgradeNeeded and the delivery of the "success" event,
     // an "error" event should be fired instead.
     if (event->type() == EventTypeNames::success && resultAsAny()->getType() == IDBAny::IDBDatabaseType && resultAsAny()->idbDatabase()->isClosePending()) {
-        dequeueEvent(event.get());
+        dequeueEvent(event);
         setResult(nullptr);
         onError(DOMException::create(AbortError, "The connection was closed."));
         return DispatchEventResult::CanceledBeforeDispatch;

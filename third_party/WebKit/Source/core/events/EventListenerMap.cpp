@@ -106,7 +106,7 @@ Vector<AtomicString> EventListenerMap::eventTypes() const
     return types;
 }
 
-static bool addListenerToVector(EventListenerVector* vector, RawPtr<EventListener> listener, const EventListenerOptions& options)
+static bool addListenerToVector(EventListenerVector* vector, EventListener* listener, const EventListenerOptions& options)
 {
     RegisteredEventListener registeredListener(listener, options);
 
@@ -117,7 +117,7 @@ static bool addListenerToVector(EventListenerVector* vector, RawPtr<EventListene
     return true;
 }
 
-bool EventListenerMap::add(const AtomicString& eventType, RawPtr<EventListener> listener, const EventListenerOptions& options)
+bool EventListenerMap::add(const AtomicString& eventType, EventListener* listener, const EventListenerOptions& options)
 {
     assertNoActiveIterators();
 

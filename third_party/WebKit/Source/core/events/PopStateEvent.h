@@ -40,9 +40,9 @@ class PopStateEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     ~PopStateEvent() override;
-    static RawPtr<PopStateEvent> create();
-    static RawPtr<PopStateEvent> create(PassRefPtr<SerializedScriptValue>, History*);
-    static RawPtr<PopStateEvent> create(const AtomicString&, const PopStateEventInit&);
+    static PopStateEvent* create();
+    static PopStateEvent* create(PassRefPtr<SerializedScriptValue>, History*);
+    static PopStateEvent* create(const AtomicString&, const PopStateEventInit&);
 
     ScriptValue state() const { return m_state; }
     SerializedScriptValue* serializedState() const { return m_serializedState.get(); }

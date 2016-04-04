@@ -44,16 +44,16 @@ class EventDispatcher;
 
 class EventDispatchMediator : public GarbageCollectedFinalized<EventDispatchMediator> {
 public:
-    static RawPtr<EventDispatchMediator> create(RawPtr<Event>);
+    static EventDispatchMediator* create(Event*);
     virtual ~EventDispatchMediator() { }
     DECLARE_VIRTUAL_TRACE();
     virtual DispatchEventResult dispatchEvent(EventDispatcher&) const;
     Event& event() const { return *m_event; }
 
 protected:
-    explicit EventDispatchMediator(RawPtr<Event>);
+    explicit EventDispatchMediator(Event*);
     EventDispatchMediator() { }
-    void setEvent(RawPtr<Event> event) { ASSERT(event.get()); m_event = event; }
+    void setEvent(Event* event) { ASSERT(event); m_event = event; }
 
 private:
     Member<Event> m_event;
