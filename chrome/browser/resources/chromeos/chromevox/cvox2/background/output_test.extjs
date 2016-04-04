@@ -366,63 +366,56 @@ TEST_F('OutputE2ETest', 'Tree', function() {
     var range = cursors.Range.fromNode(el);
     var o = new Output().withSpeechAndBraille(range, null, 'navigate');
     assertEqualsJSON(
-        {string_: 'a||Tree|with 3 items|Tree item|Expanded| 1 of 3 | level 1 ',
+        {string_: 'a|Tree item|Expanded| 1 of 3 | level 1 ||Tree|with 3 items',
         spans_: [
-          // InLineTextBox.
-          {value: 'name', start: 2, end: 2},
-          
           // TreeItem.
-          {value: 'role','start': 21, end: 30},
-          {value: 'state', start: 31, end: 39}
+          {value: 'state', start: 12, end: 20},
+          {value: 'name', 'start': 40, end: 40},
+          {value: 'role','start': 41, end: 45},
     ]}, o.speechOutputForTest);
     // TODO(plundblad): Braille output is wrong.
     checkBrailleOutput(
-        'a tree +3 tritm - 1/3  level 1 ',
+        'a tritm - 1/3  level 1  tree +3',
         [{value: new Output.NodeSpan(el), start: 0, end: 1},
-         {value: new Output.NodeSpan(el.parent.parent), start: 2, end: 9},
-         {value: new Output.NodeSpan(el.parent), start: 10, end: 31}],
+         {value: new Output.NodeSpan(el.parent), start: 2, end: 23},
+         {value: new Output.NodeSpan(el.parent.parent), start: 24, end: 31}],
         o);
 
     el = root.firstChild.children[1].firstChild;
-    var range = cursors.Range.fromNode(el);
-    var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+    range = cursors.Range.fromNode(el);
+    o = new Output().withSpeechAndBraille(range, null, 'navigate');
     assertEqualsJSON(
-        {string_: 'b||Tree|with 3 items|Tree item| 2 of 3 | level 1 ',
+        {string_: 'b|Tree item| 2 of 3 | level 1 ||Tree|with 3 items',
         spans_: [
-
-          // InLineTextBox.
-          {value: 'name', start: 2, end: 2},
-
           // TreeItem.
-          {value: 'role','start': 21, end: 30}
+          {value: 'name', start: 31, end: 31},
+          {value: 'role', 'start': 32, end: 36}
     ]}, o.speechOutputForTest);
     // TODO(plundblad): Braille output is wrong.
     checkBrailleOutput(
-        'b tree +3 tritm 2/3  level 1 ',
+        'b tritm 2/3  level 1  tree +3',
         [{value: new Output.NodeSpan(el), start: 0, end: 1},
-         {value: new Output.NodeSpan(el.parent.parent), start: 2, end: 9},
-         {value: new Output.NodeSpan(el.parent), start: 10, end: 29}],
+         {value: new Output.NodeSpan(el.parent), start: 2, end: 21},
+         {value: new Output.NodeSpan(el.parent.parent), start: 22, end: 29}],
         o);
 
     el = root.firstChild.children[2].firstChild;
-    var range = cursors.Range.fromNode(el);
-    var o = new Output().withSpeechAndBraille(range, null, 'navigate');
+    range = cursors.Range.fromNode(el);
+    o = new Output().withSpeechAndBraille(range, null, 'navigate');
     assertEqualsJSON(
-        {string_: 'c||Tree|with 3 items|Tree item|Collapsed| 3 of 3 | level 1 ',
+        {string_: 'c|Tree item|Collapsed| 3 of 3 | level 1 ||Tree|with 3 items',
         spans_: [
-          // InLineTextBox.
-          {value: 'name', start: 2, end: 2},
-
           // TreeItem.
-          {value: 'role','start': 21, end: 30},
-          {value: 'state', start: 31, end: 40}
+          {value: 'state', start: 12, end: 21},
+          {value: 'name', 'start': 41, end: 41},
+          {value: 'role','start': 42, end: 46},
     ]}, o.speechOutputForTest);
     // TODO(plundblad): Braille output is wrong.
     checkBrailleOutput(
-        'c tree +3 tritm + 3/3  level 1 ',
+        'c tritm + 3/3  level 1  tree +3',
         [{value: new Output.NodeSpan(el), start: 0, end: 1},
-         {value: new Output.NodeSpan(el.parent.parent), start: 2, end: 9},
-         {value: new Output.NodeSpan(el.parent), start: 10, end: 31}],
+         {value: new Output.NodeSpan(el.parent), start: 2, end: 23},
+         {value: new Output.NodeSpan(el.parent.parent), start: 24, end: 31}],
         o);
   });
 });

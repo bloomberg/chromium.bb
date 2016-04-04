@@ -268,10 +268,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusToolbar) {
   chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
   EXPECT_EQ("Reload", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(
-      base::MatchPattern(speech_monitor_.GetNextUtterance(), "about:blank*"));
   EXPECT_EQ("main", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "about:blank*"));
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
@@ -281,10 +281,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
   EXPECT_EQ("Address and search bar", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("about:blank", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(
-      base::MatchPattern(speech_monitor_.GetNextUtterance(), "*about:blank*"));
   EXPECT_EQ("main", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "*about:blank*"));
 
   SendKeyPress(ui::VKEY_X);
   EXPECT_EQ("x", speech_monitor_.GetNextUtterance());
@@ -665,10 +665,10 @@ IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
 
   EXPECT_EQ("Reload", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
-  EXPECT_TRUE(
-      base::MatchPattern(speech_monitor_.GetNextUtterance(), "about:blank*"));
   EXPECT_EQ("main", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  EXPECT_TRUE(
+      base::MatchPattern(speech_monitor_.GetNextUtterance(), "about:blank*"));
 }
 
 //

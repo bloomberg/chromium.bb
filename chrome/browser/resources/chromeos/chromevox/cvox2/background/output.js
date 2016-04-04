@@ -106,7 +106,8 @@ Output.SPACE = ' ';
  */
 Output.ROLE_INFO_ = {
   alert: {
-    msgId: 'role_alert'
+    msgId: 'role_alert',
+    earconId: 'ALERT_NONMODAL'
   },
   alertDialog: {
     msgId: 'role_alertdialog'
@@ -399,7 +400,7 @@ Output.RULES = {
       leave: '@exited_container($role)'
     },
     alert: {
-      speak: '!doNotInterrupt $role $earcon(ALERT_NONMODAL) $descendants'
+      speak: '!doNotInterrupt $role $descendants'
     },
     alertDialog: {
       enter: '$name $role $description $descendants'
@@ -983,18 +984,9 @@ Output.prototype = {
           this.append_(buff, text, options);
         } else if (token == 'name') {
           options.annotation.push(token);
-          if (this.formatOptions_.speech) {
-            var earconFinder = node;
-            while (earconFinder) {
-              var info = Output.ROLE_INFO_[earconFinder.role];
-              if (info && info.earconId) {
-                options.annotation.push(
-                    new Output.EarconAction(info.earconId));
-                break;
-              }
-              earconFinder = earconFinder.parent;
-            }
-          }
+          var earcon = node ? this.findEarcon_(node) : null;
+          if (earcon)
+            options.annotation.push(earcon);
           this.append_(buff, node.name, options);
         } else if (token == 'nameOrDescendants') {
           options.annotation.push(token);
@@ -1325,16 +1317,11 @@ Output.prototype = {
         if (enterRole[formatNode.role])
           continue;
         enterRole[formatNode.role] = true;
-        var tempBuff = [];
-        this.format_(formatNode, roleBlock.enter, tempBuff);
-        enterOutputs.unshift(tempBuff);
+        this.format_(formatNode, roleBlock.enter, buff);
       }
       if (formatNode.role == 'window')
         break;
     }
-    enterOutputs.forEach(function(b) {
-      buff.push.apply(buff, b);
-    });
   },
 
   /**
@@ -1388,6 +1375,9 @@ Output.prototype = {
     var outputContextFirst = localStorage['outputContextFirst'] == 'true';
     if (outputContextFirst)
       this.ancestry_(node, prevNode, type, buff);
+    var earcon = this.findEarcon_(node);
+    if (earcon)
+      options.annotation.push(earcon);
     this.append_(buff, range.start.getText().substring(startIndex, endIndex),
         options);
     if (!outputContextFirst)
@@ -1545,6 +1535,26 @@ Output.prototype = {
       separator = Output.SPACE;
     });
     return result;
+  },
+
+  /**
+   * Find the earcon for a given node (including ancestry).
+   * @param {!AutomationNode} node
+   * @return {Output.Action}
+   */
+  findEarcon_: function(node) {
+    if (this.formatOptions_.speech) {
+      var earconFinder = node;
+      while (earconFinder) {
+        var info = Output.ROLE_INFO_[earconFinder.role];
+        if (info && info.earconId) {
+          return new Output.EarconAction(info.earconId);
+          break;
+        }
+        earconFinder = earconFinder.parent;
+      }
+    }
+    return null;
   }
 };
 
