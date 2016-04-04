@@ -113,12 +113,6 @@ static bool invokePreFinalizer(void* object)        \
 }                                                   \
 using UsingPreFinalizerMacroNeedsTrailingSemiColon = char
 
-#if ENABLE(OILPAN)
-#define WILL_BE_USING_PRE_FINALIZER(Class, method) USING_PRE_FINALIZER(Class, method)
-#else
-#define WILL_BE_USING_PRE_FINALIZER(Class, method)
-#endif
-
 class PLATFORM_EXPORT ThreadState {
     USING_FAST_MALLOC(ThreadState);
     WTF_MAKE_NONCOPYABLE(ThreadState);

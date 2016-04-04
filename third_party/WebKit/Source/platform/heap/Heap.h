@@ -492,12 +492,6 @@ public:                                                \
 #define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
 #endif
 
-#if !ENABLE(OILPAN)
-#define EAGERLY_FINALIZE_WILL_BE_REMOVED() EAGERLY_FINALIZE()
-#else
-#define EAGERLY_FINALIZE_WILL_BE_REMOVED()
-#endif
-
 inline Address Heap::allocateOnArenaIndex(ThreadState* state, size_t size, int arenaIndex, size_t gcInfoIndex, const char* typeName)
 {
     ASSERT(state->isAllocationAllowed());

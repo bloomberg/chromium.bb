@@ -208,12 +208,6 @@ public:                                                                 \
     }                                                                   \
 private:
 
-#if ENABLE(OILPAN)
-#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE) USING_GARBAGE_COLLECTED_MIXIN(TYPE)
-#else
-#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE)
-#endif
-
 // An empty class with a constructor that's arranged invoked when all derived constructors
 // of a mixin instance have completed and it is safe to allow GCs again. See
 // AllocateObjectTrait<> comment for more.

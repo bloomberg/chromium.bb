@@ -2432,18 +2432,6 @@ struct NeedsTracingTrait {
     Member<IntWrapper> m_wrapper;
 };
 
-// These class definitions test compile-time asserts with transition
-// types. They are therefore unused in test code and just need to
-// compile. This is intentional; do not delete the A and B classes below.
-class A : public GarbageCollectedMixin {
-};
-
-class B : public GarbageCollected<B>, public A {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(B);
-public:
-    DEFINE_INLINE_TRACE() { }
-};
-
 TEST(HeapTest, HeapVectorFilledWithValue)
 {
     IntWrapper* val = IntWrapper::create(1);
