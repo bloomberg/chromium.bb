@@ -957,6 +957,7 @@ base::scoped_nsobject<NSPasteboardItem> OmniboxViewMac::CreatePasteboardItem() {
 }
 
 void OmniboxViewMac::CopyToPasteboard(NSPasteboard* pboard) {
+  [pboard clearContents];
   base::scoped_nsobject<NSPasteboardItem> item(CreatePasteboardItem());
   [pboard writeObjects:@[ item.get() ]];
 }

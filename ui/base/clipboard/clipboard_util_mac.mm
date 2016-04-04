@@ -67,7 +67,7 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
                   forType:UTIFromPboardType(NSURLPboardType)];
   }
 
-  [item setString:urlString forType:UTIFromPboardType(NSStringPboardType)];
+  [item setString:urlString forType:NSPasteboardTypeString];
 
   [item setData:[urlString dataUsingEncoding:NSUTF8StringEncoding]
         forType:UTIFromPboardType(kCorePasteboardFlavorType_url)];
@@ -95,7 +95,7 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrls(
 base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromString(
     NSString* string) {
   base::scoped_nsobject<NSPasteboardItem> item([[NSPasteboardItem alloc] init]);
-  [item setString:string forType:UTIFromPboardType(NSStringPboardType)];
+  [item setString:string forType:NSPasteboardTypeString];
   return item;
 }
 

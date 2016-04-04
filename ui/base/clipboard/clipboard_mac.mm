@@ -112,7 +112,7 @@ const Clipboard::FormatType& Clipboard::GetUrlWFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetPlainTextFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSStringPboardType));
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (NSPasteboardTypeString));
   return type;
 }
 
@@ -243,7 +243,7 @@ void ClipboardMac::ReadText(ClipboardType type, base::string16* result) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   NSPasteboard* pb = GetPasteboard();
-  NSString* contents = [pb stringForType:NSStringPboardType];
+  NSString* contents = [pb stringForType:NSPasteboardTypeString];
 
   *result = base::SysNSStringToUTF16(contents);
 }
@@ -253,7 +253,7 @@ void ClipboardMac::ReadAsciiText(ClipboardType type,
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   NSPasteboard* pb = GetPasteboard();
-  NSString* contents = [pb stringForType:NSStringPboardType];
+  NSString* contents = [pb stringForType:NSPasteboardTypeString];
 
   if (!contents)
     result->clear();
@@ -277,7 +277,7 @@ void ClipboardMac::ReadHTML(ClipboardType type,
   NSPasteboard* pb = GetPasteboard();
   NSArray* supportedTypes = [NSArray arrayWithObjects:NSHTMLPboardType,
                                                       NSRTFPboardType,
-                                                      NSStringPboardType,
+                                                      NSPasteboardTypeString,
                                                       nil];
   NSString* bestType = [pb availableTypeFromArray:supportedTypes];
   if (bestType) {
@@ -391,8 +391,8 @@ void ClipboardMac::WriteText(const char* text_data, size_t text_len) {
   std::string text_str(text_data, text_len);
   NSString* text = base::SysUTF8ToNSString(text_str);
   NSPasteboard* pb = GetPasteboard();
-  [pb addTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
-  [pb setString:text forType:NSStringPboardType];
+  [pb addTypes:[NSArray arrayWithObject:NSPasteboardTypeString] owner:nil];
+  [pb setString:text forType:NSPasteboardTypeString];
 }
 
 void ClipboardMac::WriteHTML(const char* markup_data,
