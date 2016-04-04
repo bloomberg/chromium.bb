@@ -2058,8 +2058,17 @@ The valid additional options for a test are as follows:
 
 @table @samp
 @item xfail
-Whether a test is expected to fail. Valid options are @samp{true},
-@samp{Y}, @samp{Yes} or @samp{ON}. Anything else is considered false.
+Whether a test is expected to fail. If you expect a test to fail, set
+this to @samp{true}. If you prefer you can also specifiy a reason for
+the failure:
+
+@example
+  - [Hello, ⠨, @{xfail: Testcase is not complete@}]
+@end example
+
+If you expect a test case to pass then just don't mark it with
+@samp{xfail} or if you really have to, set @samp{xfail} to
+@samp{false} or @samp{off}.
 
 @item typeform
 The typeform used for a translation. It consists of one or more

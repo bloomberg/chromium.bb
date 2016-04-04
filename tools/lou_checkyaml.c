@@ -189,15 +189,14 @@ read_flags (yaml_parser_t *parser, int *direction, int *hyphenation) {
 int
 read_xfail (yaml_parser_t *parser) {
   yaml_event_t event;
-  int xfail = 0;
+  /* assume xfail true if there is an xfail key */
+  int xfail = 1;
   if (!yaml_parser_parse(parser, &event) ||
       (event.type != YAML_SCALAR_EVENT))
     yaml_error(YAML_SCALAR_EVENT, &event);
-  if (!strcmp(event.data.scalar.value, "Y") ||
-      !strcmp(event.data.scalar.value, "true") ||
-      !strcmp(event.data.scalar.value, "Yes") ||
-      !strcmp(event.data.scalar.value, "ON"))
-    xfail = 1;
+  if (!strcmp(event.data.scalar.value, "false") ||
+      !strcmp(event.data.scalar.value, "off"))
+    xfail = 0;
   yaml_event_delete(&event);
   return xfail;
 }
