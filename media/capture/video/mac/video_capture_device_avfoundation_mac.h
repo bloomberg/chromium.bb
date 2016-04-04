@@ -12,7 +12,6 @@
 #include "base/threading/thread_checker.h"
 #import "media/base/mac/avfoundation_glue.h"
 #include "media/base/video_capture_types.h"
-#import "media/capture/video/mac/platform_video_capturing_mac.h"
 #include "media/capture/video/video_capture_device.h"
 
 namespace media {
@@ -56,8 +55,7 @@ class VideoCaptureDeviceMac;
 //
 //
 @interface VideoCaptureDeviceAVFoundation
-    : NSObject<CrAVCaptureVideoDataOutputSampleBufferDelegate,
-               PlatformVideoCapturingMac> {
+    : NSObject<CrAVCaptureVideoDataOutputSampleBufferDelegate> {
  @private
   // The following attributes are set via -setCaptureHeight:width:frameRate:.
   int frameWidth_;
@@ -77,7 +75,6 @@ class VideoCaptureDeviceMac;
   base::scoped_nsobject<CrAVCaptureVideoDataOutput> captureVideoDataOutput_;
 
   base::ThreadChecker main_thread_checker_;
-  base::ThreadChecker callback_thread_checker_;
 }
 
 // Returns a dictionary of capture devices with friendly name and unique id.

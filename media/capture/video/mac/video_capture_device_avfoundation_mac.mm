@@ -251,12 +251,8 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
 - (BOOL)setCaptureHeight:(int)height
                    width:(int)width
                frameRate:(float)frameRate {
-  // Check if either of VideoCaptureDeviceMac::AllocateAndStart() or
-  // VideoCaptureDeviceMac::ReceiveFrame() is calling here, depending on the
-  // running state. VCDM::ReceiveFrame() calls here to change aspect ratio.
-  DCHECK((![captureSession_ isRunning] &&
-          main_thread_checker_.CalledOnValidThread()) ||
-         callback_thread_checker_.CalledOnValidThread());
+  DCHECK(![captureSession_ isRunning] &&
+         main_thread_checker_.CalledOnValidThread());
 
   frameWidth_ = width;
   frameHeight_ = height;
@@ -350,14 +346,11 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
 #pragma mark Private methods
 
 // |captureOutput| is called by the capture device to deliver a new frame.
+// AVFoundation calls from a number of threads, depending on, at least, if
+// Chrome is on foreground or background.
 - (void)captureOutput:(CrAVCaptureOutput*)captureOutput
 didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
        fromConnection:(CrAVCaptureConnection*)connection {
-  // AVFoundation calls from a number of threads, depending on, at least, if
-  // Chrome is on foreground or background. Sample the actual thread here.
-  callback_thread_checker_.DetachFromThread();
-  CHECK(callback_thread_checker_.CalledOnValidThread());
-
   const CoreMediaGlue::CMFormatDescriptionRef formatDescription =
       CoreMediaGlue::CMSampleBufferGetFormatDescription(sampleBuffer);
   const FourCharCode fourcc =

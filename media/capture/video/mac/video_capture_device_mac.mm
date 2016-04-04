@@ -25,7 +25,6 @@
 #include "base/time/time.h"
 #import "media/base/mac/avfoundation_glue.h"
 #include "media/base/timestamp_constants.h"
-#import "media/capture/video/mac/platform_video_capturing_mac.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -323,7 +322,6 @@ VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
 
 VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  [capture_device_ release];
 }
 
 void VideoCaptureDeviceMac::AllocateAndStart(
@@ -356,8 +354,8 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   // will be passed to |ReceiveFrame|.
   capture_format_.pixel_format = PIXEL_FORMAT_UNKNOWN;
 
-    if (!UpdateCaptureResolution())
-      return;
+  if (!UpdateCaptureResolution())
+    return;
 
   // Try setting the power line frequency removal (anti-flicker). The built-in
   // cameras are normally suspended so the configuration must happen right
@@ -397,10 +395,11 @@ bool VideoCaptureDeviceMac::Init(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kNotInitialized);
 
-  if (capture_api_type == Name::AVFOUNDATION) {
-    capture_device_ =
-        [[VideoCaptureDeviceAVFoundation alloc] initWithFrameReceiver:this];
-  }
+  if (capture_api_type != Name::AVFOUNDATION)
+    return false;
+
+  capture_device_.reset(
+      [[VideoCaptureDeviceAVFoundation alloc] initWithFrameReceiver:this]);
 
   if (!capture_device_)
     return false;

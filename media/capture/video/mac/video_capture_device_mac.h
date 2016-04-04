@@ -22,7 +22,7 @@
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
 
-@protocol PlatformVideoCapturingMac;
+@class VideoCaptureDeviceAVFoundation;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -96,7 +96,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   InternalState state_;
 
-  id<PlatformVideoCapturingMac> capture_device_;
+  base::scoped_nsobject<VideoCaptureDeviceAVFoundation> capture_device_;
 
   base::TimeDelta first_timestamp_;
   base::TimeTicks first_aligned_timestamp_;

@@ -47,7 +47,6 @@
       'capture/video/linux/video_capture_device_factory_linux.h',
       'capture/video/linux/video_capture_device_linux.cc',
       'capture/video/linux/video_capture_device_linux.h',
-      'capture/video/mac/platform_video_capturing_mac.h',
       'capture/video/mac/video_capture_device_avfoundation_mac.h',
       'capture/video/mac/video_capture_device_avfoundation_mac.mm',
       'capture/video/mac/video_capture_device_decklink_mac.h',
