@@ -17,9 +17,7 @@ class Profile;
 namespace chromeos {
 
 // Show the feedback UI to collect a feedback on the login screen. Note that
-// it dynamically loads/unloads the feedback extension on the signin profile,
-// there should only be one instance live of this class. Otherwise, they would
-// stamp on each other toes and not function properly.
+// it dynamically loads/unloads the feedback extension on the signin profile.
 class LoginFeedback {
  public:
   explicit LoginFeedback(Profile* signin_profile);
@@ -32,15 +30,9 @@ class LoginFeedback {
                const base::Closure& finished_callback);
 
  private:
-  // Loads and unloads the feedback extension on the signin profile.
-  class ScopedFeedbackExtension;
-
   // Makes the feedback UI windows on top of login screen and watches when
   // all feedback windows are closed.
   class FeedbackWindowHandler;
-
-  // Invoked by ScopedFeedbackExtension when feedback extension is ready.
-  void OnFeedbackExtensionReady();
 
   // Invoked by FeedbackWindowHandler when all feedback windows are closed.
   void OnFeedbackFinished();
@@ -52,7 +44,6 @@ class LoginFeedback {
   std::string description_;
   base::Closure finished_callback_;
 
-  scoped_ptr<ScopedFeedbackExtension> feedback_extension_;
   scoped_ptr<FeedbackWindowHandler> feedback_window_handler_;
 
   base::WeakPtrFactory<LoginFeedback> weak_factory_;

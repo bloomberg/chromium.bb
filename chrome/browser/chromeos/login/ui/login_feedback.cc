@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/login/ui/login_feedback.h"
 
+#include <vector>
+
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
@@ -13,10 +16,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/extension.h"
 #include "grit/browser_resources.h"
 #include "ui/aura/window.h"
@@ -35,53 +41,111 @@ extensions::ComponentLoader* GetComponentLoader(
   return extension_service->component_loader();
 }
 
-}  // namespace
+extensions::ProcessManager* GetProcessManager(
+    content::BrowserContext* context) {
+  return extensions::ProcessManager::Get(context);
+}
 
-////////////////////////////////////////////////////////////////////////////////
-// LoginFeedback::ScopedFeedbackExtension
-
-class LoginFeedback::ScopedFeedbackExtension
-    : public extensions::ExtensionRegistryObserver {
+// Ensures that the feedback extension is loaded on the signin profile and
+// invokes the callback when the extension is ready to use. Unload the
+// extension and delete itself when the extension's background page shuts down.
+class FeedbackExtensionLoader : public extensions::ProcessManagerObserver,
+                                public content::WebContentsObserver {
  public:
-  explicit ScopedFeedbackExtension(LoginFeedback* owner);
-  ~ScopedFeedbackExtension() override;
-
-  // extensions::ExtensionRegistryObserver
-  void OnExtensionReady(content::BrowserContext* browser_context,
-                        const extensions::Extension* extension) override;
+  // Loads the feedback extension on the given profile and invokes
+  // |on_ready_callback| when it is ready.
+  static void Load(Profile* profile, const base::Closure& on_ready_callback);
 
  private:
-  LoginFeedback* const owner_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedFeedbackExtension);
+  explicit FeedbackExtensionLoader(Profile* profile);
+  ~FeedbackExtensionLoader() override;
+
+  void AddOnReadyCallback(const base::Closure& on_ready_callback);
+  void RunOnReadyCallbacks();
+
+  // extensions::ProcessManagerObserver
+  void OnBackgroundHostCreated(extensions::ExtensionHost* host) override;
+  void OnBackgroundHostClose(const std::string& extension_id) override;
+
+  // content::WebContentsObserver
+  void DocumentOnLoadCompletedInMainFrame() override;
+
+  Profile* const profile_;
+  std::vector<base::Closure> on_ready_callbacks_;
+  bool ready_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(FeedbackExtensionLoader);
 };
 
-LoginFeedback::ScopedFeedbackExtension::ScopedFeedbackExtension(
-    LoginFeedback* owner)
-    : owner_(owner) {
-  Profile* profile = owner_->profile_;
-  extensions::ExtensionRegistry::Get(profile)->AddObserver(this);
+// Current live instance of FeedbackExtensionLoader.
+FeedbackExtensionLoader* instance = nullptr;
 
-  extensions::ComponentLoader* component_loader = GetComponentLoader(profile);
+// static
+void FeedbackExtensionLoader::Load(Profile* profile,
+                                   const base::Closure& on_ready_callback) {
+  if (instance == nullptr)
+    instance = new FeedbackExtensionLoader(profile);
+
+  DCHECK_EQ(instance->profile_, profile);
+  DCHECK(!on_ready_callback.is_null());
+  instance->AddOnReadyCallback(on_ready_callback);
+}
+
+FeedbackExtensionLoader::FeedbackExtensionLoader(Profile* profile)
+    : profile_(profile) {
+  extensions::ComponentLoader* component_loader = GetComponentLoader(profile_);
   DCHECK(!component_loader->Exists(extension_misc::kFeedbackExtensionId))
-      << "Feedback extension is already loaded. Is there any other "
-         "LoginFeedback instance running?";
+      << "Feedback extension should not be loaded in signin profile by default";
   component_loader->Add(IDR_FEEDBACK_MANIFEST,
                         base::FilePath(FILE_PATH_LITERAL("feedback")));
+
+  extensions::ProcessManager* pm = GetProcessManager(profile_);
+  pm->AddObserver(this);
+  DCHECK(
+      !pm->GetBackgroundHostForExtension(extension_misc::kFeedbackExtensionId));
 }
 
-LoginFeedback::ScopedFeedbackExtension::~ScopedFeedbackExtension() {
-  Profile* profile = owner_->profile_;
-  extensions::ExtensionRegistry::Get(profile)->RemoveObserver(this);
-  GetComponentLoader(profile)->Remove(extension_misc::kFeedbackExtensionId);
+FeedbackExtensionLoader::~FeedbackExtensionLoader() {
+  DCHECK_EQ(instance, this);
+  instance = nullptr;
+
+  GetProcessManager(profile_)->RemoveObserver(this);
+  GetComponentLoader(profile_)->Remove(extension_misc::kFeedbackExtensionId);
 }
 
-void LoginFeedback::ScopedFeedbackExtension::OnExtensionReady(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
-  if (extension->id() != extension_misc::kFeedbackExtensionId)
-    return;
-  owner_->OnFeedbackExtensionReady();
+void FeedbackExtensionLoader::AddOnReadyCallback(
+    const base::Closure& on_ready_callback) {
+  on_ready_callbacks_.push_back(on_ready_callback);
+  if (ready_)
+    RunOnReadyCallbacks();
 }
+
+void FeedbackExtensionLoader::RunOnReadyCallbacks() {
+  std::vector<base::Closure> callbacks;
+  callbacks.swap(on_ready_callbacks_);
+
+  for (const auto& callback : callbacks)
+    callback.Run();
+}
+
+void FeedbackExtensionLoader::OnBackgroundHostCreated(
+    extensions::ExtensionHost* host) {
+  if (host->extension_id() == extension_misc::kFeedbackExtensionId)
+    Observe(host->host_contents());
+}
+
+void FeedbackExtensionLoader::OnBackgroundHostClose(
+    const std::string& extension_id) {
+  if (extension_id == extension_misc::kFeedbackExtensionId)
+    delete this;
+}
+
+void FeedbackExtensionLoader::DocumentOnLoadCompletedInMainFrame() {
+  ready_ = true;
+  RunOnReadyCallbacks();
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // LoginFeedback::FeedbackWindowHandler
@@ -157,12 +221,13 @@ void LoginFeedback::Request(const std::string& description,
                             const base::Closure& finished_callback) {
   description_ = description;
   finished_callback_ = finished_callback;
-
-  feedback_extension_.reset(new ScopedFeedbackExtension(this));
-}
-
-void LoginFeedback::OnFeedbackExtensionReady() {
   feedback_window_handler_.reset(new FeedbackWindowHandler(this));
+
+  FeedbackExtensionLoader::Load(
+      profile_,
+      base::Bind(&LoginFeedback::EnsureFeedbackUI, weak_factory_.GetWeakPtr()));
+
+  // Triggers the extension background to be loaded.
   EnsureFeedbackUI();
 }
 
@@ -176,17 +241,6 @@ void LoginFeedback::EnsureFeedbackUI() {
   api->RequestFeedbackForFlow(
       description_, "Login", GURL(),
       extensions::api::feedback_private::FeedbackFlow::FEEDBACK_FLOW_LOGIN);
-
-  // Check feedback app window shortly after to ensure it is opened. There is
-  // some racing between the event dispatching and the starting of the
-  // background page. This is a poor man's way to make sure the event is
-  // delivered.
-  // TODO(xiyuan): Investigate why the occasional event lost and remove this.
-  const int kCheckDelaySecond = 1;
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&LoginFeedback::EnsureFeedbackUI, weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kCheckDelaySecond));
 }
 
 void LoginFeedback::OnFeedbackFinished() {
