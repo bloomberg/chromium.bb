@@ -2,16 +2,5 @@ include_rules = [
   "-sync/engine",
   "-sync/sessions",
   "-sync/syncable",
-
-  "+sync/internal_api/public",
   "+sync/util",
-  "+sync/test",
-
-  # TODO(zea): SessionModelAssociator shouldn't need this.
-  # TODO(sync): Also need to fix crbug.com/123674.
-  "+sync/syncable",
-
-  # TODO(tim): This shouldn't be needed.
-  "+sync/util/cryptographer.h"
-
 ]

@@ -1,23 +1,8 @@
 include_rules = [
+  "+components/invalidation",
   "+components/sync_driver",
   "+components/sync_sessions",
   "+components/wifi_sync",
-
-  # Used by tests.
   "+google/cacheinvalidation",
-
-  # For files not in a subdirectory.
   "+sync/internal_api/public",
-  "+sync/js",
-
-  # TODO(tim): Remove everything below. Bug 131130.
-  "+sync/util/cryptographer.h",
-  #  Used by tests.
-  "+sync/syncable",
-  # Used by autofill tests, which should use the public sync API instead.
-  "+sync/test/engine/test_id_factory.h",
-  # TODO(zea): Needed for bookmark title comparison.
-  "+sync/internal_api/syncapi_internal.h",
-
-  "+components/invalidation",
 ]

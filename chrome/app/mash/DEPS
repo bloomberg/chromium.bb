@@ -2,7 +2,7 @@ include_rules = [
   "+ash",
   # This code is purely a packaging convenience and should be no different
   # than running mojo_runner with mash_session. As such, this code should not
-  # depend upon chrome code in any way. 
+  # depend upon chrome code in any way.
   "-chrome",
   "+chrome/app/mash",
   "+components/font_service",

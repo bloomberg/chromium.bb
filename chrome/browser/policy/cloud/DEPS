@@ -9,7 +9,6 @@ include_rules = [
   "-chromeos",
   "-content",
   "+chrome/browser/policy",
-  "+chrome/browser/policy/cloud",
   "+components/invalidation",
 ]
 

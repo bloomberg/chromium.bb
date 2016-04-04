@@ -1,4 +1,4 @@
 include_rules = [
-  "+courgette",
   "+chrome_elf/chrome_elf_constants.h",
+  "+courgette",
 ]

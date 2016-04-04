@@ -18,8 +18,8 @@ include_rules = [
   "+components/nacl/common",
   "+components/offline_pages/offline_page_feature.h",
   "+components/password_manager/core/common",
-  "+components/printing/common",
   "+components/policy/core/common",
+  "+components/printing/common",
   "+components/signin/core/common",
   # TODO(fdoray): Remove this once the PreRead field trial has expired.
   # crbug.com/577698

@@ -17,8 +17,8 @@ include_rules = [
   "+device/bluetooth",
   "+device/core",
   "+device/hid",
-  "+device/usb",
   "+device/media_transfer_protocol",
+  "+device/usb",
   "+extensions/browser",
   "+extensions/common",
   "+extensions/components/javascript_dialog_extensions_client",
@@ -35,16 +35,14 @@ include_rules = [
   "+media/base",  # For media switches
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
-  "+mojo/shell/public/cpp",
   "+mojo/converters",
   "+mojo/runner/child",
+  "+mojo/shell/public/cpp",
   "+policy",  # For generated headers and source
   "+ppapi/c",  # For various types.
   "+ppapi/host",
   "+ppapi/proxy",
   "+ppapi/shared_impl",
-  # Defines some types that are marshalled over IPC.
-  "+ppapi/shared_impl/ppp_flash_browser_operations_shared.h",
   "+rlz",
   "+sandbox/win/src",  # The path doesn't say it, but this is the Windows sandbox.
   "+skia/ext",

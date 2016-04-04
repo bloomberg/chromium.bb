@@ -1,13 +1,13 @@
 include_rules = [
   "+chrome/grit",  # For generated headers.
+  "+components/safe_json",
+  "+components/wifi",
   "+content/public/child",
   "+content/public/utility",
-  "+components/wifi",
-  "+components/safe_json",
   "+courgette",
   "+extensions/common",
-  "+skia/ext",
   "+media",
+  "+skia/ext",
   "+third_party/libxml",
   "+third_party/zlib/google",
 ]
