@@ -8,9 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/page/Page.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
@@ -19,11 +17,6 @@
 #include "wtf/OwnPtr.h"
 
 namespace blink {
-namespace {
-
-const char kPageHiddenError[] = "Connection is only allowed while the page is visible. This is a temporary measure until we are able to effectively communicate to the user that a page is connected to a device.";
-
-}
 
 BluetoothRemoteGATTServer::BluetoothRemoteGATTServer(BluetoothDevice* device)
     : m_device(device)
@@ -52,16 +45,7 @@ public:
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
         m_device->gatt()->setConnected(true);
-        if (!m_device->page()->isPageVisible()) {
-            // TODO(ortuno): Allow connections when the tab is in the background.
-            // This is a short term solution instead of implementing a tab indicator
-            // for bluetooth connections.
-            // https://crbug.com/579746
-            m_device->disconnectGATTIfConnected();
-            m_resolver->reject(DOMException::create(SecurityError, kPageHiddenError));
-        } else {
-            m_resolver->resolve(m_device->gatt());
-        }
+        m_resolver->resolve(m_device->gatt());
     }
 
     void onError(const WebBluetoothError& e) override
@@ -77,14 +61,6 @@ private:
 
 ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState)
 {
-    // TODO(ortuno): Allow connections when the tab is in the background.
-    // This is a short term solution instead of implementing a tab indicator
-    // for bluetooth connections.
-    // https://crbug.com/579746
-    if (!toDocument(scriptState->getExecutionContext())->page()->isPageVisible()) {
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, kPageHiddenError));
-    }
-
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     if (!webbluetooth)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));

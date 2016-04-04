@@ -322,8 +322,6 @@ add_result_callback(() => {
   // will notify the renderer that the device disconnected so we won't need
   // this hack.
   // https://crbug.com/581855
-  testRunner.setPageVisibility('hidden');
-  testRunner.setPageVisibility('visible');
   testRunner.setBluetoothManualChooser(false);
   setBluetoothFakeAdapter('');
 });

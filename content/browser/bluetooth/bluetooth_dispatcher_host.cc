@@ -701,16 +701,11 @@ void BluetoothDispatcherHost::OnGATTServerDisconnect(
   RecordWebBluetoothFunctionCall(
       UMAWebBluetoothFunction::REMOTE_GATT_SERVER_DISCONNECT);
 
-  // Make sure the origin is allowed to access the device. We perform this check
-  // in case a hostile renderer is trying to disconnect a device that the
-  // renderer is not allowed to access.
-  if (allowed_devices_map_.GetDeviceAddress(GetOrigin(frame_routing_id),
-                                            device_id)
-          .empty()) {
-    bad_message::ReceivedBadMessage(
-        this, bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
-    return;
-  }
+  // Frames can send a disconnect request after they've started navigating,
+  // making calls to GetLastCommitted origin invalid. Because we still need
+  // to disconnect the device, otherwise we would leave users with no other
+  // option to disconnect than closing the tab, we purposefully don't
+  // check if the frame has permission to interact with the device.
 
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
