@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_SHELL_SURFACE_H_
 #define COMPONENTS_EXO_SHELL_SURFACE_H_
 
+#include <deque>
 #include <string>
 
 #include "ash/wm/window_state_observer.h"
@@ -14,6 +15,9 @@
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
 #include "ui/aura/window_observer.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -65,13 +69,18 @@ class ShellSurface : public SurfaceDelegate,
   // it doesn't resize, pick a smaller size (to satisfy aspect ratio or resize
   // in steps of NxM pixels).
   using ConfigureCallback =
-      base::Callback<void(const gfx::Size& size,
-                          ash::wm::WindowStateType state_type,
-                          bool resizing,
-                          bool activated)>;
+      base::Callback<uint32_t(const gfx::Size& size,
+                              ash::wm::WindowStateType state_type,
+                              bool resizing,
+                              bool activated)>;
   void set_configure_callback(const ConfigureCallback& configure_callback) {
     configure_callback_ = configure_callback;
   }
+
+  // When the client is asked to configure the surface, it should acknowledge
+  // the configure request sometime before the commit. |serial| is the serial
+  // from the configure callback.
+  void AcknowledgeConfigure(uint32_t serial);
 
   // Set the "parent" of this surface. This window should be stacked above a
   // parent.
@@ -149,6 +158,9 @@ class ShellSurface : public SurfaceDelegate,
                                    ash::wm::WindowStateType old_type) override;
 
   // Overridden from aura::WindowObserver:
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
   void OnWindowDestroying(aura::Window* window) override;
 
   // Overridden from aura::client::ActivationChangeObserver:
@@ -162,14 +174,18 @@ class ShellSurface : public SurfaceDelegate,
   void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
+  // Surface state associated with each configure request.
+  struct Config {
+    uint32_t serial;
+    gfx::Vector2d origin_offset;
+    int resize_component;
+  };
+
   // Creates the |widget_| for |surface_|.
   void CreateShellSurfaceWidget();
 
   // Asks the client to configure its surface.
   void Configure();
-
-  // Returns the "visible bounds" for the surface from the user's perspective.
-  gfx::Rect GetVisibleBounds() const;
 
   // Attempt to start a drag operation. The type of drag operation to start is
   // determined by |component|.
@@ -181,6 +197,16 @@ class ShellSurface : public SurfaceDelegate,
   // Returns true if surface is currently being resized.
   bool IsResizing() const;
 
+  // Returns the "visible bounds" for the surface from the user's perspective.
+  gfx::Rect GetVisibleBounds() const;
+
+  // Returns the origin for the surface taking visible bounds and current
+  // resize direction into account.
+  gfx::Point GetSurfaceOrigin() const;
+
+  // Update bounds of widget to match the current surface bounds.
+  void UpdateWidgetBounds();
+
   views::Widget* widget_;
   Surface* surface_;
   aura::Window* parent_;
@@ -189,9 +215,17 @@ class ShellSurface : public SurfaceDelegate,
   base::string16 title_;
   std::string application_id_;
   gfx::Rect geometry_;
+  gfx::Rect pending_geometry_;
   base::Closure close_callback_;
   base::Closure surface_destroyed_callback_;
   ConfigureCallback configure_callback_;
+  bool ignore_window_bounds_changes_;
+  gfx::Point origin_;
+  gfx::Vector2d pending_origin_offset_;
+  gfx::Vector2d pending_origin_config_offset_;
+  int resize_component_;  // HT constant (see ui/base/hit_test.h)
+  int pending_resize_component_;
+  std::deque<Config> pending_configs_;
   scoped_ptr<ash::WindowResizer> resizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);

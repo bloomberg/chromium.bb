@@ -765,29 +765,6 @@ void bind_subcompositor(wl_client* client,
 ////////////////////////////////////////////////////////////////////////////////
 // wl_shell_surface_interface:
 
-int ResizeComponent(uint32_t edges) {
-  switch (edges) {
-    case WL_SHELL_SURFACE_RESIZE_TOP:
-      return HTTOP;
-    case WL_SHELL_SURFACE_RESIZE_BOTTOM:
-      return HTBOTTOM;
-    case WL_SHELL_SURFACE_RESIZE_LEFT:
-      return HTLEFT;
-    case WL_SHELL_SURFACE_RESIZE_TOP_LEFT:
-      return HTTOPLEFT;
-    case WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT:
-      return HTBOTTOMLEFT;
-    case WL_SHELL_SURFACE_RESIZE_RIGHT:
-      return HTRIGHT;
-    case WL_SHELL_SURFACE_RESIZE_TOP_RIGHT:
-      return HTTOPRIGHT;
-    case WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT:
-      return HTBOTTOMRIGHT;
-    default:
-      return HTNOWHERE;
-  }
-}
-
 void shell_surface_pong(wl_client* client,
                         wl_resource* resource,
                         uint32_t serial) {
@@ -806,9 +783,7 @@ void shell_surface_resize(wl_client* client,
                           wl_resource* seat_resource,
                           uint32_t serial,
                           uint32_t edges) {
-  int component = ResizeComponent(edges);
-  if (component != HTNOWHERE)
-    GetUserDataAs<ShellSurface>(resource)->Resize(component);
+  NOTIMPLEMENTED();
 }
 
 void shell_surface_set_toplevel(wl_client* client, wl_resource* resource) {
@@ -831,6 +806,11 @@ void shell_surface_set_fullscreen(wl_client* client,
                                   wl_resource* output_resource) {
   GetUserDataAs<ShellSurface>(resource)->SetEnabled(true);
   GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
+  gfx::Rect bounds = GetUserDataAs<ShellSurface>(resource)
+                         ->GetWidget()
+                         ->GetWindowBoundsInScreen();
+  wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
+                                  bounds.width(), bounds.height());
 }
 
 void shell_surface_set_popup(wl_client* client,
@@ -849,6 +829,11 @@ void shell_surface_set_maximized(wl_client* client,
                                  wl_resource* output_resource) {
   GetUserDataAs<ShellSurface>(resource)->SetEnabled(true);
   GetUserDataAs<ShellSurface>(resource)->Maximize();
+  gfx::Rect bounds = GetUserDataAs<ShellSurface>(resource)
+                         ->GetWidget()
+                         ->GetWindowBoundsInScreen();
+  wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
+                                  bounds.width(), bounds.height());
 }
 
 void shell_surface_set_title(wl_client* client,
@@ -874,16 +859,6 @@ const struct wl_shell_surface_interface shell_surface_implementation = {
 ////////////////////////////////////////////////////////////////////////////////
 // wl_shell_interface:
 
-void HandleShellSurfaceConfigureCallback(wl_resource* resource,
-                                         const gfx::Size& size,
-                                         ash::wm::WindowStateType state_type,
-                                         bool resizing,
-                                         bool activated) {
-  wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
-                                  size.width(), size.height());
-  wl_client_flush(wl_resource_get_client(resource));
-}
-
 void shell_get_shell_surface(wl_client* client,
                              wl_resource* resource,
                              uint32_t id,
@@ -906,10 +881,6 @@ void shell_get_shell_surface(wl_client* client,
 
   shell_surface->set_surface_destroyed_callback(base::Bind(
       &wl_resource_destroy, base::Unretained(shell_surface_resource)));
-
-  shell_surface->set_configure_callback(
-      base::Bind(&HandleShellSurfaceConfigureCallback,
-                 base::Unretained(shell_surface_resource)));
 
   SetImplementation(shell_surface_resource, &shell_surface_implementation,
                     std::move(shell_surface));
@@ -1052,7 +1023,7 @@ int XdgResizeComponent(uint32_t edges) {
     case XDG_SURFACE_RESIZE_EDGE_BOTTOM_RIGHT:
       return HTBOTTOMRIGHT;
     default:
-      return HTNOWHERE;
+      return HTBOTTOMRIGHT;
   }
 }
 
@@ -1116,7 +1087,7 @@ void xdg_surface_resize(wl_client* client,
 void xdg_surface_ack_configure(wl_client* client,
                                wl_resource* resource,
                                uint32_t serial) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->AcknowledgeConfigure(serial);
 }
 
 void xdg_surface_set_window_geometry(wl_client* client,
@@ -1209,11 +1180,11 @@ void AddXdgSurfaceState(wl_array* states, xdg_surface_state state) {
   *value = state;
 }
 
-void HandleXdgSurfaceConfigureCallback(wl_resource* resource,
-                                       const gfx::Size& size,
-                                       ash::wm::WindowStateType state_type,
-                                       bool resizing,
-                                       bool activated) {
+uint32_t HandleXdgSurfaceConfigureCallback(wl_resource* resource,
+                                           const gfx::Size& size,
+                                           ash::wm::WindowStateType state_type,
+                                           bool resizing,
+                                           bool activated) {
   wl_array states;
   wl_array_init(&states);
   if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED)
@@ -1224,11 +1195,13 @@ void HandleXdgSurfaceConfigureCallback(wl_resource* resource,
     AddXdgSurfaceState(&states, XDG_SURFACE_STATE_RESIZING);
   if (activated)
     AddXdgSurfaceState(&states, XDG_SURFACE_STATE_ACTIVATED);
+  uint32_t serial = wl_display_next_serial(
+      wl_client_get_display(wl_resource_get_client(resource)));
   xdg_surface_send_configure(resource, size.width(), size.height(), &states,
-                             wl_display_next_serial(wl_client_get_display(
-                                 wl_resource_get_client(resource))));
+                             serial);
   wl_client_flush(wl_resource_get_client(resource));
   wl_array_release(&states);
+  return serial;
 }
 
 void xdg_shell_get_xdg_surface(wl_client* client,

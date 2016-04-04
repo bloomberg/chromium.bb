@@ -20,6 +20,50 @@ namespace {
 
 using ShellSurfaceTest = test::ExoTestBase;
 
+uint32_t ConfigureFullscreen(uint32_t serial,
+                             const gfx::Size& size,
+                             ash::wm::WindowStateType state_type,
+                             bool resizing,
+                             bool activated) {
+  EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_FULLSCREEN, state_type);
+  return serial;
+}
+
+TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
+  gfx::Size buffer_size(32, 32);
+  scoped_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  gfx::Point origin(100, 100);
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(origin, buffer_size));
+  EXPECT_EQ(origin.ToString(),
+            surface->GetBoundsInRootWindow().origin().ToString());
+
+  const uint32_t kSerial = 1;
+  shell_surface->set_configure_callback(
+      base::Bind(&ConfigureFullscreen, kSerial));
+  shell_surface->SetFullscreen(true);
+
+  // Surface origin should not change until configure request is acknowledged.
+  EXPECT_EQ(origin.ToString(),
+            surface->GetBoundsInRootWindow().origin().ToString());
+
+  shell_surface->AcknowledgeConfigure(kSerial);
+  scoped_ptr<Buffer> fullscreen_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(
+          CurrentContext()->bounds().size())));
+  surface->Attach(fullscreen_buffer.get());
+  surface->Commit();
+
+  EXPECT_EQ(gfx::Point().ToString(),
+            surface->GetBoundsInRootWindow().origin().ToString());
+}
+
 TEST_F(ShellSurfaceTest, SetParent) {
   gfx::Size buffer_size(256, 256);
   scoped_ptr<Buffer> parent_buffer(
@@ -195,18 +239,19 @@ TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
   EXPECT_FALSE(shell_surface.get());
 }
 
-void Configure(gfx::Size* suggested_size,
-               ash::wm::WindowStateType* has_state_type,
-               bool* is_resizing,
-               bool* is_active,
-               const gfx::Size& size,
-               ash::wm::WindowStateType state_type,
-               bool resizing,
-               bool activated) {
+uint32_t Configure(gfx::Size* suggested_size,
+                   ash::wm::WindowStateType* has_state_type,
+                   bool* is_resizing,
+                   bool* is_active,
+                   const gfx::Size& size,
+                   ash::wm::WindowStateType state_type,
+                   bool resizing,
+                   bool activated) {
   *suggested_size = size;
   *has_state_type = state_type;
   *is_resizing = resizing;
   *is_active = activated;
+  return 0;
 }
 
 TEST_F(ShellSurfaceTest, ConfigureCallback) {
