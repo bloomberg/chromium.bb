@@ -120,7 +120,8 @@ public class GCMDriver {
 
     // The caller of this function is responsible for setting the PathUtils Private Data Directory
     // Suffix before calling onMessageReceived().
-    public static void onMessageReceived(Context context, final String appId, final Bundle extras) {
+    public static void onMessageReceived(
+            Context context, final String appId, final String senderId, final Bundle extras) {
         // TODO(johnme): Store message and redeliver later if Chrome is killed before delivery.
         ThreadUtils.assertOnUiThread();
         launchNativeThen(context, new Runnable() {
@@ -131,7 +132,6 @@ public class GCMDriver {
                 final String bundleRawData = "rawData";
                 final String bundleGcmplex = "com.google.ipc.invalidation.gcmmplex.";
 
-                String senderId = extras.getString(bundleSenderId);
                 String collapseKey = extras.getString(bundleCollapseKey);  // May be null.
                 byte[] rawData = extras.getByteArray(bundleRawData);  // May be null.
 

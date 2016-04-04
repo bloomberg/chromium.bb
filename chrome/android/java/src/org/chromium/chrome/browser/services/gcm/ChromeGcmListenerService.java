@@ -28,7 +28,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
             AndroidGcmController.get(this).onMessageReceived(data);
             return;
         }
-        pushMessageReceived(data);
+        pushMessageReceived(from, data);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
                 + "know what subtype (app ID) it occurred for.");
     }
 
-    private void pushMessageReceived(final Bundle data) {
+    private void pushMessageReceived(final String from, final Bundle data) {
         final String bundleSubtype = "subtype";
         if (!data.containsKey(bundleSubtype)) {
             Log.w(TAG, "Received push message with no subtype");
@@ -62,7 +62,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
             public void run() {
                 PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
                         getApplicationContext());
-                GCMDriver.onMessageReceived(getApplicationContext(), appId, data);
+                GCMDriver.onMessageReceived(getApplicationContext(), appId, from, data);
             }
         });
     }
