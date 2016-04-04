@@ -12,9 +12,25 @@
 </if>
 
 <dom-module id="settings-language-detail-page">
-  <link rel="import" type="css" href="language_detail_page.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      label {
+        align-items: center;
+        display: flex;
+      }
+
+      label > *:not(:first-child) {
+        -webkit-margin-start: 5px;
+      }
+
+      label > span {
+        line-height: 42px;
+      }
+
+      label paper-button {
+        line-height: initial;
+      }
+    </style>
     <settings-languages languages="{{languages}}"></settings-languages>
 <if expr="chromeos or is_win">
     <div id="languageSettings">

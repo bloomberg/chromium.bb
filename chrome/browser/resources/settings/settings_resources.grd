@@ -374,17 +374,11 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_PAGE_CSS"
-                 file="languages_page/manage_languages_page.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_PAGE_HTML"
                  file="languages_page/manage_languages_page.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_PAGE_JS"
                  file="languages_page/manage_languages_page.js"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_CSS"
-                 file="languages_page/language_detail_page.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_LANGUAGES_LANGUAGE_DETAIL_PAGE_HTML"
                  file="languages_page/language_detail_page.html"
@@ -397,9 +391,6 @@
                  flattenhtml="true"
                  allowexternalscript="true" />
       <if expr="not is_macosx">
-        <structure name="IDR_SETTINGS_LANGUAGES_EDIT_DICTIONARY_PAGE_CSS"
-                   file="languages_page/edit_dictionary_page.css"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_LANGUAGES_EDIT_DICTIONARY_PAGE_HTML"
                    file="languages_page/edit_dictionary_page.html"
                    type="chrome_html" />

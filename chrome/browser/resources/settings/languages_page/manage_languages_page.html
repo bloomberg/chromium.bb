@@ -10,9 +10,12 @@
 <link rel="import" href="languages.html">
 
 <dom-module id="settings-manage-languages-page">
-  <link rel="import" type="css" href="manage_languages_page.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      iron-list {
+        height: 300px;
+      }
+    </style>
     <settings-languages languages="{{languages}}"></settings-languages>
     <div class="settings-box first content">
       <div class="start">

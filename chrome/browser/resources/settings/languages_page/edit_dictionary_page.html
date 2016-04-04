@@ -8,9 +8,30 @@
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-edit-dictionary-page">
-  <link rel="import" type="css" href="edit_dictionary_page.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      :host {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #addWordRow {
+        display: flex;
+      }
+
+      #newWord {
+        flex: 1;
+      }
+
+      iron-list {
+        /* TODO(michaelpg): Size to fit the viewport. */
+        height: 300px;
+      }
+
+      iron-list .word {
+        flex: 1;
+      }
+    </style>
     <div class="settings-box block">
       <div id="addWordRow">
         <iron-a11y-keys id="keys" keys="enter esc"
