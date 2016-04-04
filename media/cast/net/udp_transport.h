@@ -14,8 +14,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -30,7 +30,7 @@ namespace media {
 namespace cast {
 
 // This class implements UDP transport mechanism for Cast.
-class UdpTransport : public PacketSender {
+class UdpTransport : public PacketTransport {
  public:
   // Construct a UDP transport.
   // All methods must be called on |io_thread_proxy|.
@@ -80,7 +80,7 @@ class UdpTransport : public PacketSender {
   void UseNonBlockingIO();
 #endif
 
-  // PacketSender implementations.
+  // PacketTransport implementations.
   bool SendPacket(PacketRef packet, const base::Closure& cb) final;
   int64_t GetBytesSent() final;
 

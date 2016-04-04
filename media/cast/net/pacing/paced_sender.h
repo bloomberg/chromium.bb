@@ -105,7 +105,7 @@ class PacedSender : public PacedPacketSender,
       size_t max_burst_size,     // Should normally be kMaxBurstSize.
       base::TickClock* clock,
       std::vector<PacketEvent>* recent_packet_events,
-      PacketSender* external_transport,
+      PacketTransport* external_transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   ~PacedSender() final;
@@ -198,7 +198,7 @@ class PacedSender : public PacedPacketSender,
   // These are externally-owned objects injected via the constructor.
   base::TickClock* const clock_;
   std::vector<PacketEvent>* const recent_packet_events_;
-  PacketSender* const transport_;
+  PacketTransport* const transport_;
 
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
   uint32_t audio_ssrc_;

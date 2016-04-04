@@ -15,14 +15,12 @@
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/cast_transport.h"
 
 namespace media {
 class VideoFrame;
 
 namespace cast {
-
-class PacketSender;
 
 // The following callbacks are used to deliver decoded audio/video frame data,
 // the frame's corresponding play-out time, and a continuity flag.
@@ -51,7 +49,7 @@ class CastReceiver {
       scoped_refptr<CastEnvironment> cast_environment,
       const FrameReceiverConfig& audio_config,
       const FrameReceiverConfig& video_config,
-      CastTransportSender* const transport);
+      CastTransport* const transport);
 
   // All received RTP and RTCP packets for the call should be sent to this
   // PacketReceiver.  Can be called from any thread.

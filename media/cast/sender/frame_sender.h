@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/cast_transport.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
 #include "media/cast/sender/congestion_control.h"
 
@@ -29,7 +29,7 @@ class FrameSender {
  public:
   FrameSender(scoped_refptr<CastEnvironment> cast_environment,
               bool is_audio,
-              CastTransportSender* const transport_sender,
+              CastTransport* const transport_sender,
               int rtp_timebase,
               uint32_t ssrc,
               double max_frame_rate,
@@ -75,7 +75,7 @@ class FrameSender {
   // process to the browser process over IPC, with the browser process being
   // responsible for "packetizing" the frames and pushing packets into the
   // network layer.
-  CastTransportSender* const transport_sender_;
+  CastTransport* const transport_sender_;
 
   const uint32_t ssrc_;
 

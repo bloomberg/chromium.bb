@@ -19,7 +19,7 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "media/cast/net/cast_transport_sender_impl.h"
+#include "media/cast/net/cast_transport_impl.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,7 +35,7 @@ void SaveOperationalStatus(OperationalStatus* out_status,
   *out_status = in_status;
 }
 
-class TransportClient : public CastTransportSender::Client {
+class TransportClient : public CastTransport::Client {
  public:
   TransportClient() {}
 
@@ -52,7 +52,7 @@ class TransportClient : public CastTransportSender::Client {
 
 }  // namespace
 
-class TestPacketSender : public PacketSender {
+class TestPacketSender : public PacketTransport {
  public:
   TestPacketSender() : number_of_rtp_packets_(0), number_of_rtcp_packets_(0) {}
 
@@ -108,9 +108,9 @@ class AudioSenderTest : public ::testing::Test {
 
     transport_ = new TestPacketSender();
     transport_sender_.reset(
-        new CastTransportSenderImpl(testing_clock_, base::TimeDelta(),
-                                    make_scoped_ptr(new TransportClient()),
-                                    make_scoped_ptr(transport_), task_runner_));
+        new CastTransportImpl(testing_clock_, base::TimeDelta(),
+                              make_scoped_ptr(new TransportClient()),
+                              make_scoped_ptr(transport_), task_runner_));
     OperationalStatus operational_status = STATUS_UNINITIALIZED;
     audio_sender_.reset(new AudioSender(
         cast_environment_,
@@ -124,8 +124,8 @@ class AudioSenderTest : public ::testing::Test {
   ~AudioSenderTest() override {}
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
-  TestPacketSender* transport_;               // Owned by CastTransportSender.
-  scoped_ptr<CastTransportSenderImpl> transport_sender_;
+  TestPacketSender* transport_;               // Owned by CastTransport.
+  scoped_ptr<CastTransportImpl> transport_sender_;
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<AudioSender> audio_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;

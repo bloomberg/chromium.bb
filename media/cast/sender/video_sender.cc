@@ -93,7 +93,7 @@ VideoSender::VideoSender(
     const StatusChangeCallback& status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
-    CastTransportSender* const transport_sender,
+    CastTransport* const transport_sender,
     const PlayoutDelayChangeCB& playout_delay_change_cb)
     : FrameSender(
           cast_environment,

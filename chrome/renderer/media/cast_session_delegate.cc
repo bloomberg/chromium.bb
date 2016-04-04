@@ -14,7 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/renderer/media/cast_threads.h"
-#include "chrome/renderer/media/cast_transport_sender_ipc.h"
+#include "chrome/renderer/media/cast_transport_ipc.h"
 #include "components/version_info/version_info.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/cast/cast_config.h"
@@ -24,8 +24,8 @@
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/proto/raw_events.pb.h"
 #include "media/cast/logging/raw_event_subscriber_bundle.h"
+#include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "media/cast/net/cast_transport_sender.h"
 
 using media::cast::AudioSenderConfig;
 using media::cast::CastEnvironment;
@@ -73,8 +73,8 @@ void CastSessionDelegateBase::StartUDP(
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy());
 
   // Rationale for using unretained: The callback cannot be called after the
-  // destruction of CastTransportSenderIPC, and they both share the same thread.
-  cast_transport_.reset(new CastTransportSenderIPC(
+  // destruction of CastTransportIPC, and they both share the same thread.
+  cast_transport_.reset(new CastTransportIPC(
       local_endpoint, remote_endpoint, std::move(options),
       base::Bind(&CastSessionDelegateBase::ReceivePacket,
                  base::Unretained(this)),

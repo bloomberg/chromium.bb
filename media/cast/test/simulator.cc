@@ -69,10 +69,10 @@
 #include "media/cast/logging/proto/raw_events.pb.h"
 #include "media/cast/logging/raw_event_subscriber_bundle.h"
 #include "media/cast/logging/simple_event_subscriber.h"
+#include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
-#include "media/cast/net/cast_transport_sender.h"
-#include "media/cast/net/cast_transport_sender_impl.h"
+#include "media/cast/net/cast_transport_impl.h"
 #include "media/cast/test/fake_media_source.h"
 #include "media/cast/test/loopback_transport.h"
 #include "media/cast/test/proto/network_simulation_model.pb.h"
@@ -131,7 +131,7 @@ struct PacketProxy {
   CastReceiver* receiver;
 };
 
-class TransportClient : public CastTransportSender::Client {
+class TransportClient : public CastTransport::Client {
  public:
   TransportClient(LogEventDispatcher* log_event_dispatcher,
                   PacketProxy* packet_proxy)
@@ -379,19 +379,18 @@ void RunSimulation(const base::FilePath& source_path,
   video_receiver_config.rtp_max_delay_ms =
       video_sender_config.max_playout_delay.InMilliseconds();
 
-  // Loopback transport. Owned by CastTransportSender.
+  // Loopback transport. Owned by CastTransport.
   LoopBackTransport* receiver_to_sender = new LoopBackTransport(receiver_env);
   LoopBackTransport* sender_to_receiver = new LoopBackTransport(sender_env);
 
   PacketProxy packet_proxy;
 
   // Cast receiver.
-  scoped_ptr<CastTransportSender> transport_receiver(
-      new CastTransportSenderImpl(
-          &testing_clock, base::TimeDelta::FromSeconds(1),
-          make_scoped_ptr(
-              new TransportClient(receiver_env->logger(), &packet_proxy)),
-          make_scoped_ptr(receiver_to_sender), task_runner));
+  scoped_ptr<CastTransport> transport_receiver(
+      new CastTransportImpl(&testing_clock, base::TimeDelta::FromSeconds(1),
+                            make_scoped_ptr(new TransportClient(
+                                receiver_env->logger(), &packet_proxy)),
+                            make_scoped_ptr(receiver_to_sender), task_runner));
   scoped_ptr<CastReceiver> cast_receiver(
       CastReceiver::Create(receiver_env,
                            audio_receiver_config,
@@ -401,7 +400,7 @@ void RunSimulation(const base::FilePath& source_path,
   packet_proxy.receiver = cast_receiver.get();
 
   // Cast sender and transport sender.
-  scoped_ptr<CastTransportSender> transport_sender(new CastTransportSenderImpl(
+  scoped_ptr<CastTransport> transport_sender(new CastTransportImpl(
       &testing_clock, base::TimeDelta::FromSeconds(1),
       make_scoped_ptr(new TransportClient(sender_env->logger(), nullptr)),
       make_scoped_ptr(sender_to_receiver), task_runner));

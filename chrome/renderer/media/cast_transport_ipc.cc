@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/media/cast_transport_sender_ipc.h"
+#include "chrome/renderer/media/cast_transport_ipc.h"
 
 #include <utility>
 
@@ -13,38 +13,36 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/cast/cast_sender.h"
 
-CastTransportSenderIPC::ClientCallbacks::ClientCallbacks() {}
-CastTransportSenderIPC::ClientCallbacks::ClientCallbacks(
+CastTransportIPC::ClientCallbacks::ClientCallbacks() {}
+CastTransportIPC::ClientCallbacks::ClientCallbacks(
     const ClientCallbacks& other) = default;
-CastTransportSenderIPC::ClientCallbacks::~ClientCallbacks() {}
+CastTransportIPC::ClientCallbacks::~ClientCallbacks() {}
 
-CastTransportSenderIPC::CastTransportSenderIPC(
+CastTransportIPC::CastTransportIPC(
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
     scoped_ptr<base::DictionaryValue> options,
     const media::cast::PacketReceiverCallback& packet_callback,
     const media::cast::CastTransportStatusCallback& status_cb,
     const media::cast::BulkRawEventsCallback& raw_events_cb)
-    : packet_callback_(packet_callback) ,
+    : packet_callback_(packet_callback),
       status_callback_(status_cb),
       raw_events_callback_(raw_events_cb) {
   if (CastIPCDispatcher::Get()) {
     channel_id_ = CastIPCDispatcher::Get()->AddSender(this);
   }
-  Send(new CastHostMsg_New(channel_id_,
-                           local_end_point,
-                           remote_end_point,
+  Send(new CastHostMsg_New(channel_id_, local_end_point, remote_end_point,
                            *options));
 }
 
-CastTransportSenderIPC::~CastTransportSenderIPC() {
+CastTransportIPC::~CastTransportIPC() {
   Send(new CastHostMsg_Delete(channel_id_));
   if (CastIPCDispatcher::Get()) {
     CastIPCDispatcher::Get()->RemoveSender(channel_id_);
   }
 }
 
-void CastTransportSenderIPC::InitializeAudio(
+void CastTransportIPC::InitializeAudio(
     const media::cast::CastTransportRtpConfig& config,
     const media::cast::RtcpCastMessageCallback& cast_message_cb,
     const media::cast::RtcpRttCallback& rtt_cb,
@@ -55,7 +53,7 @@ void CastTransportSenderIPC::InitializeAudio(
   Send(new CastHostMsg_InitializeAudio(channel_id_, config));
 }
 
-void CastTransportSenderIPC::InitializeVideo(
+void CastTransportIPC::InitializeVideo(
     const media::cast::CastTransportRtpConfig& config,
     const media::cast::RtcpCastMessageCallback& cast_message_cb,
     const media::cast::RtcpRttCallback& rtt_cb,
@@ -66,83 +64,75 @@ void CastTransportSenderIPC::InitializeVideo(
   Send(new CastHostMsg_InitializeVideo(channel_id_, config));
 }
 
-void CastTransportSenderIPC::InsertFrame(
-    uint32_t ssrc,
-    const media::cast::EncodedFrame& frame) {
+void CastTransportIPC::InsertFrame(uint32_t ssrc,
+                                   const media::cast::EncodedFrame& frame) {
   Send(new CastHostMsg_InsertFrame(channel_id_, ssrc, frame));
 }
 
-void CastTransportSenderIPC::SendSenderReport(
+void CastTransportIPC::SendSenderReport(
     uint32_t ssrc,
     base::TimeTicks current_time,
     media::cast::RtpTimeTicks current_time_as_rtp_timestamp) {
-  Send(new CastHostMsg_SendSenderReport(channel_id_,
-                                        ssrc,
-                                        current_time,
+  Send(new CastHostMsg_SendSenderReport(channel_id_, ssrc, current_time,
                                         current_time_as_rtp_timestamp));
 }
 
-void CastTransportSenderIPC::CancelSendingFrames(
+void CastTransportIPC::CancelSendingFrames(
     uint32_t ssrc,
     const std::vector<uint32_t>& frame_ids) {
-  Send(new CastHostMsg_CancelSendingFrames(channel_id_,
-                                           ssrc,
-                                           frame_ids));
+  Send(new CastHostMsg_CancelSendingFrames(channel_id_, ssrc, frame_ids));
 }
 
-void CastTransportSenderIPC::ResendFrameForKickstart(uint32_t ssrc,
-                                                     uint32_t frame_id) {
-  Send(new CastHostMsg_ResendFrameForKickstart(channel_id_,
-                                               ssrc,
-                                               frame_id));
+void CastTransportIPC::ResendFrameForKickstart(uint32_t ssrc,
+                                               uint32_t frame_id) {
+  Send(new CastHostMsg_ResendFrameForKickstart(channel_id_, ssrc, frame_id));
 }
 
-void CastTransportSenderIPC::AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
-                                                 uint32_t rtp_receiver_ssrc) {
+void CastTransportIPC::AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
+                                           uint32_t rtp_receiver_ssrc) {
   Send(new CastHostMsg_AddValidRtpReceiver(channel_id_, rtp_sender_ssrc,
                                            rtp_receiver_ssrc));
 }
 
-void CastTransportSenderIPC::InitializeRtpReceiverRtcpBuilder(
+void CastTransportIPC::InitializeRtpReceiverRtcpBuilder(
     uint32_t rtp_receiver_ssrc,
     const media::cast::RtcpTimeData& time_data) {
   Send(new CastHostMsg_InitializeRtpReceiverRtcpBuilder(
       channel_id_, rtp_receiver_ssrc, time_data));
 }
 
-void CastTransportSenderIPC::AddCastFeedback(
+void CastTransportIPC::AddCastFeedback(
     const media::cast::RtcpCastMessage& cast_message,
     base::TimeDelta target_delay) {
   Send(
       new CastHostMsg_AddCastFeedback(channel_id_, cast_message, target_delay));
 }
 
-void CastTransportSenderIPC::AddPli(
-    const media::cast::RtcpPliMessage& pli_message) {
+void CastTransportIPC::AddPli(const media::cast::RtcpPliMessage& pli_message) {
   Send(new CastHostMsg_AddPli(channel_id_, pli_message));
 }
 
-void CastTransportSenderIPC::AddRtcpEvents(
+void CastTransportIPC::AddRtcpEvents(
     const media::cast::ReceiverRtcpEventSubscriber::RtcpEvents& rtcp_events) {
   Send(new CastHostMsg_AddRtcpEvents(channel_id_, rtcp_events));
 }
 
-void CastTransportSenderIPC::AddRtpReceiverReport(
+void CastTransportIPC::AddRtpReceiverReport(
     const media::cast::RtcpReportBlock& rtp_receiver_report_block) {
   Send(new CastHostMsg_AddRtpReceiverReport(channel_id_,
                                             rtp_receiver_report_block));
 }
 
-void CastTransportSenderIPC::SendRtcpFromRtpReceiver() {
+void CastTransportIPC::SendRtcpFromRtpReceiver() {
   Send(new CastHostMsg_SendRtcpFromRtpReceiver(channel_id_));
 }
 
-void CastTransportSenderIPC::OnNotifyStatusChange(
+void CastTransportIPC::OnNotifyStatusChange(
     media::cast::CastTransportStatus status) {
   status_callback_.Run(status);
 }
 
-void CastTransportSenderIPC::OnRawEvents(
+void CastTransportIPC::OnRawEvents(
     const std::vector<media::cast::PacketEvent>& packet_events,
     const std::vector<media::cast::FrameEvent>& frame_events) {
   // Note: Casting away const to avoid having to copy all the data elements.  As
@@ -160,8 +150,7 @@ void CastTransportSenderIPC::OnRawEvents(
                            std::move(taken_packet_events));
 }
 
-void CastTransportSenderIPC::OnRtt(uint32_t rtp_sender_ssrc,
-                                   base::TimeDelta rtt) {
+void CastTransportIPC::OnRtt(uint32_t rtp_sender_ssrc, base::TimeDelta rtt) {
   ClientMap::iterator it = clients_.find(rtp_sender_ssrc);
   if (it == clients_.end()) {
     LOG(ERROR) << "Received RTT report for unknown SSRC: " << rtp_sender_ssrc;
@@ -171,7 +160,7 @@ void CastTransportSenderIPC::OnRtt(uint32_t rtp_sender_ssrc,
     it->second.rtt_cb.Run(rtt);
 }
 
-void CastTransportSenderIPC::OnRtcpCastMessage(
+void CastTransportIPC::OnRtcpCastMessage(
     uint32_t rtp_sender_ssrc,
     const media::cast::RtcpCastMessage& cast_message) {
   ClientMap::iterator it = clients_.find(rtp_sender_ssrc);
@@ -184,7 +173,7 @@ void CastTransportSenderIPC::OnRtcpCastMessage(
   it->second.cast_message_cb.Run(cast_message);
 }
 
-void CastTransportSenderIPC::OnReceivedPli(uint32_t rtp_sender_ssrc) {
+void CastTransportIPC::OnReceivedPli(uint32_t rtp_sender_ssrc) {
   ClientMap::iterator it = clients_.find(rtp_sender_ssrc);
   if (it == clients_.end()) {
     LOG(ERROR) << "Received picture loss indicator for unknown SSRC: "
@@ -195,8 +184,7 @@ void CastTransportSenderIPC::OnReceivedPli(uint32_t rtp_sender_ssrc) {
     it->second.pli_cb.Run();
 }
 
-void CastTransportSenderIPC::OnReceivedPacket(
-    const media::cast::Packet& packet) {
+void CastTransportIPC::OnReceivedPacket(const media::cast::Packet& packet) {
   if (!packet_callback_.is_null()) {
     // TODO(hubbe): Perhaps an non-ownership-transferring cb here?
     scoped_ptr<media::cast::Packet> packet_copy(
@@ -207,7 +195,7 @@ void CastTransportSenderIPC::OnReceivedPacket(
   }
 }
 
-void CastTransportSenderIPC::Send(IPC::Message* message) {
+void CastTransportIPC::Send(IPC::Message* message) {
   if (CastIPCDispatcher::Get()) {
     CastIPCDispatcher::Get()->Send(message);
   } else {

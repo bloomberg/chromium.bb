@@ -34,7 +34,7 @@ class FrameInput;
 class RawEventSubscriberBundle;
 
 namespace transport {
-class CastTransportSender;
+class CastTransport;
 }  // namespace transport
 }  // namespace cast
 }  // namespace media
@@ -65,7 +65,7 @@ class CastSessionDelegateBase {
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<media::cast::CastEnvironment> cast_environment_;
-  scoped_ptr<media::cast::CastTransportSender> cast_transport_;
+  scoped_ptr<media::cast::CastTransport> cast_transport_;
 
   // Proxy to the IO message loop.
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

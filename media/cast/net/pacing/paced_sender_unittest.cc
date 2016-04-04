@@ -38,7 +38,7 @@ const uint32_t kAudioFrameRtpTimestamp = 23456;
 // check that.
 const uint16_t kRtcpPacketIdMagic = UINT16_C(31611);
 
-class TestPacketSender : public PacketSender {
+class TestPacketSender : public PacketTransport {
  public:
   TestPacketSender() : bytes_sent_(0) {}
 

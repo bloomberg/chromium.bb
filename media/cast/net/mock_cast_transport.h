@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_SENDER_H_
-#define MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_SENDER_H_
+#ifndef MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_H_
+#define MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_H_
 
 #include <stdint.h>
 
-#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/cast_transport.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
 namespace cast {
 
-class MockCastTransportSender : public CastTransportSender {
+class MockCastTransport : public CastTransport {
  public:
-  MockCastTransportSender();
-  virtual ~MockCastTransportSender();
+  MockCastTransport();
+  virtual ~MockCastTransport();
 
   MOCK_METHOD4(InitializeAudio,
                void(const CastTransportRtpConfig& config,
@@ -33,9 +33,8 @@ class MockCastTransportSender : public CastTransportSender {
                void(uint32_t ssrc,
                     base::TimeTicks current_time,
                     RtpTimeTicks current_time_as_rtp_timestamp));
-  MOCK_METHOD2(CancelSendingFrames, void(
-      uint32_t ssrc,
-      const std::vector<uint32_t>& frame_ids));
+  MOCK_METHOD2(CancelSendingFrames,
+               void(uint32_t ssrc, const std::vector<uint32_t>& frame_ids));
   MOCK_METHOD2(ResendFrameForKickstart, void(uint32_t ssrc, uint32_t frame_id));
   MOCK_METHOD0(PacketReceiverForTesting, PacketReceiverCallback());
   MOCK_METHOD2(AddValidRtpReceiver,
@@ -58,4 +57,4 @@ class MockCastTransportSender : public CastTransportSender {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_SENDER_H_
+#endif  // MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_H_

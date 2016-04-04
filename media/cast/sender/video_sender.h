@@ -25,7 +25,7 @@ class VideoFrame;
 
 namespace cast {
 
-class CastTransportSender;
+class CastTransport;
 class VideoEncoder;
 class VideoFrameFactory;
 
@@ -46,7 +46,7 @@ class VideoSender : public FrameSender,
               const StatusChangeCallback& status_change_cb,
               const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
               const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
-              CastTransportSender* const transport_sender,
+              CastTransport* const transport_sender,
               const PlayoutDelayChangeCB& playout_delay_change_cb);
 
   ~VideoSender() override;

@@ -24,7 +24,7 @@ class VideoSender;
 class CastSenderImpl : public CastSender {
  public:
   CastSenderImpl(scoped_refptr<CastEnvironment> cast_environment,
-                 CastTransportSender* const transport_sender);
+                 CastTransport* const transport_sender);
 
   void InitializeAudio(const AudioSenderConfig& audio_config,
                        const StatusChangeCallback& status_change_cb) final;
@@ -56,7 +56,7 @@ class CastSenderImpl : public CastSender {
   scoped_refptr<CastEnvironment> cast_environment_;
   // The transport sender is owned by the owner of the CastSender, and should be
   // valid throughout the lifetime of the CastSender.
-  CastTransportSender* const transport_sender_;
+  CastTransport* const transport_sender_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CastSenderImpl> weak_factory_;

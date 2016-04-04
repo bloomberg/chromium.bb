@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/net/mock_cast_transport_sender.h"
+#include "media/cast/net/mock_cast_transport.h"
 
 namespace media {
 namespace cast {
 
-MockCastTransportSender::MockCastTransportSender() {}
+MockCastTransport::MockCastTransport() {}
 
-MockCastTransportSender::~MockCastTransportSender() {}
+MockCastTransport::~MockCastTransport() {}
 
 }  // namespace cast
 }  // namespace media

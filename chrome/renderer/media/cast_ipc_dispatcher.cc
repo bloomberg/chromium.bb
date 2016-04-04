@@ -6,7 +6,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "chrome/common/cast_messages.h"
-#include "chrome/renderer/media/cast_transport_sender_ipc.h"
+#include "chrome/renderer/media/cast_transport_ipc.h"
 #include "ipc/ipc_message_macros.h"
 
 CastIPCDispatcher* CastIPCDispatcher::global_instance_ = NULL;
@@ -37,7 +37,7 @@ void CastIPCDispatcher::Send(IPC::Message* message) {
   }
 }
 
-int32_t CastIPCDispatcher::AddSender(CastTransportSenderIPC* sender) {
+int32_t CastIPCDispatcher::AddSender(CastTransportIPC* sender) {
   return id_map_.Add(sender);
 }
 
@@ -82,7 +82,7 @@ void CastIPCDispatcher::OnChannelClosing() {
 void CastIPCDispatcher::OnNotifyStatusChange(
     int32_t channel_id,
     media::cast::CastTransportStatus status) {
-  CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
+  CastTransportIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->OnNotifyStatusChange(status);
   } else {
@@ -95,7 +95,7 @@ void CastIPCDispatcher::OnRawEvents(
     int32_t channel_id,
     const std::vector<media::cast::PacketEvent>& packet_events,
     const std::vector<media::cast::FrameEvent>& frame_events) {
-  CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
+  CastTransportIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->OnRawEvents(packet_events, frame_events);
   } else {
@@ -106,7 +106,7 @@ void CastIPCDispatcher::OnRawEvents(
 void CastIPCDispatcher::OnRtt(int32_t channel_id,
                               uint32_t ssrc,
                               base::TimeDelta rtt) {
-  CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
+  CastTransportIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->OnRtt(ssrc, rtt);
   } else {
@@ -118,7 +118,7 @@ void CastIPCDispatcher::OnRtcpCastMessage(
     int32_t channel_id,
     uint32_t ssrc,
     const media::cast::RtcpCastMessage& cast_message) {
-  CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
+  CastTransportIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->OnRtcpCastMessage(ssrc, cast_message);
   } else {
@@ -127,7 +127,7 @@ void CastIPCDispatcher::OnRtcpCastMessage(
 }
 
 void CastIPCDispatcher::OnReceivedPli(int32_t channel_id, int32_t ssrc) {
-  CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
+  CastTransportIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->OnReceivedPli(ssrc);
   } else {
@@ -138,7 +138,7 @@ void CastIPCDispatcher::OnReceivedPli(int32_t channel_id, int32_t ssrc) {
 
 void CastIPCDispatcher::OnReceivedPacket(int32_t channel_id,
                                          const media::cast::Packet& packet) {
-  CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
+  CastTransportIPC* sender = id_map_.Lookup(channel_id);
   if (sender) {
     sender->OnReceivedPacket(packet);
   } else {

@@ -34,7 +34,7 @@ const int kMaxFrameBurst = 5;
 
 FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                          bool is_audio,
-                         CastTransportSender* const transport_sender,
+                         CastTransport* const transport_sender,
                          int rtp_timebase,
                          uint32_t ssrc,
                          double max_frame_rate,

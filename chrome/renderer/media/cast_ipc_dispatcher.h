@@ -15,12 +15,12 @@
 #include "ipc/message_filter.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/cast_transport.h"
 
-class CastTransportSenderIPC;
+class CastTransportIPC;
 
 // This dispatcher listens to incoming IPC messages and sends
-// the call to the correct CastTransportSenderIPC instance.
+// the call to the correct CastTransportIPC instance.
 class CastIPCDispatcher : public IPC::MessageFilter {
  public:
   explicit CastIPCDispatcher(
@@ -28,7 +28,7 @@ class CastIPCDispatcher : public IPC::MessageFilter {
 
   static CastIPCDispatcher* Get();
   void Send(IPC::Message* message);
-  int32_t AddSender(CastTransportSenderIPC* sender);
+  int32_t AddSender(CastTransportIPC* sender);
   void RemoveSender(int32_t channel_id);
 
   // IPC::MessageFilter implementation
@@ -68,7 +68,7 @@ class CastIPCDispatcher : public IPC::MessageFilter {
 
   // A map of stream ids to delegates; must only be accessed on
   // |io_message_loop_|.
-  IDMap<CastTransportSenderIPC> id_map_;
+  IDMap<CastTransportIPC> id_map_;
   DISALLOW_COPY_AND_ASSIGN(CastIPCDispatcher);
 };
 

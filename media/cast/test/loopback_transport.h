@@ -26,7 +26,7 @@ class PacketPipe;
 }  // namespace test
 
 // Class that sends the packet to a receiver through a stack of PacketPipes.
-class LoopBackTransport : public PacketSender {
+class LoopBackTransport : public PacketTransport {
  public:
   explicit LoopBackTransport(
       scoped_refptr<CastEnvironment> cast_environment);

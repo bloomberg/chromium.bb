@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This class maintains a send transport for audio and video in a Cast
-// Streaming session.
+// This class maintains a transport for audio and video in a Cast Streaming
+// session.
 // Audio, video frames and RTCP messages are submitted to this object
 // and then packetized and paced to the underlying UDP socket.
 //
 // The hierarchy of send transport in a Cast Streaming session:
 //
-// CastTransportSender              RTP                      RTCP
+// CastTransport              RTP                      RTCP
 // ------------------------------------------------------------------
 //                      TransportEncryptionHandler (A/V)
 //                      RtpSender (A/V)                   Rtcp (A/V)
@@ -21,8 +21,8 @@
 // PacedSender and UdpTransport are shared between all RTP and RTCP
 // streams.
 
-#ifndef MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
-#define MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
+#ifndef MEDIA_CAST_NET_CAST_TRANSPORT_IMPL_H_
+#define MEDIA_CAST_NET_CAST_TRANSPORT_IMPL_H_
 
 #include <stdint.h>
 
@@ -39,8 +39,8 @@
 #include "base/time/time.h"
 #include "media/cast/common/transport_encryption_handler.h"
 #include "media/cast/logging/logging_defines.h"
+#include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/net/rtcp/sender_rtcp_session.h"
@@ -53,18 +53,18 @@ namespace cast {
 
 class UdpTransport;
 
-class CastTransportSenderImpl final : public CastTransportSender {
+class CastTransportImpl final : public CastTransport {
  public:
-  CastTransportSenderImpl(
+  CastTransportImpl(
       base::TickClock* clock,  // Owned by the caller.
       base::TimeDelta logging_flush_interval,
       scoped_ptr<Client> client,
-      scoped_ptr<PacketSender> transport,
+      scoped_ptr<PacketTransport> transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
-  ~CastTransportSenderImpl() final;
+  ~CastTransportImpl() final;
 
-  // CastTransportSender implementation.
+  // CastTransport implementation for sending.
   void InitializeAudio(const CastTransportRtpConfig& config,
                        const RtcpCastMessageCallback& cast_message_cb,
                        const RtcpRttCallback& rtt_cb,
@@ -100,7 +100,7 @@ class CastTransportSenderImpl final : public CastTransportSender {
   // Note, these options may be ignored on some platforms.
   void SetOptions(const base::DictionaryValue& options) final;
 
-  // CastTransportReceiver implementation.
+  // CastTransport implementation for receiving.
   void AddValidRtpReceiver(uint32_t rtp_sender_ssrc,
                            uint32_t rtp_receiver_ssrc) final;
 
@@ -117,11 +117,10 @@ class CastTransportSenderImpl final : public CastTransportSender {
   void SendRtcpFromRtpReceiver() final;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, NacksCancelRetransmits);
-  FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, CancelRetransmits);
-  FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest, Kickstart);
-  FRIEND_TEST_ALL_PREFIXES(CastTransportSenderImplTest,
-                           DedupRetransmissionWithAudio);
+  FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, NacksCancelRetransmits);
+  FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, CancelRetransmits);
+  FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, Kickstart);
+  FRIEND_TEST_ALL_PREFIXES(CastTransportImplTest, DedupRetransmissionWithAudio);
 
   // Resend packets for the stream identified by |ssrc|.
   // If |cancel_rtx_if_not_in_list| is true then transmission of packets for the
@@ -151,7 +150,7 @@ class CastTransportSenderImpl final : public CastTransportSender {
   base::TickClock* const clock_;  // Not owned by this class.
   const base::TimeDelta logging_flush_interval_;
   const scoped_ptr<Client> transport_client_;
-  const scoped_ptr<PacketSender> transport_;
+  const scoped_ptr<PacketTransport> transport_;
   const scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
 
   // FrameEvents and PacketEvents pending delivery via raw events callback.
@@ -198,12 +197,12 @@ class CastTransportSenderImpl final : public CastTransportSender {
 
   scoped_ptr<RtcpBuilder> rtcp_builder_at_rtp_receiver_;
 
-  base::WeakPtrFactory<CastTransportSenderImpl> weak_factory_;
+  base::WeakPtrFactory<CastTransportImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastTransportSenderImpl);
+  DISALLOW_COPY_AND_ASSIGN(CastTransportImpl);
 };
 
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_IMPL_H_
+#endif  // MEDIA_CAST_NET_CAST_TRANSPORT_IMPL_H_

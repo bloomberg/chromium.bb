@@ -93,7 +93,7 @@ void InProcessReceiver::StartOnMainThread() {
 
   DCHECK(!transport_ && !cast_receiver_);
 
-  transport_ = CastTransportSender::Create(
+  transport_ = CastTransport::Create(
       cast_environment_->Clock(), base::TimeDelta(),
       make_scoped_ptr(new InProcessReceiver::TransportClient(this)),
       make_scoped_ptr(new UdpTransport(

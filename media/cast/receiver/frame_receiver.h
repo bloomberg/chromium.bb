@@ -56,7 +56,7 @@ class FrameReceiver : public RtpPayloadFeedback,
   FrameReceiver(const scoped_refptr<CastEnvironment>& cast_environment,
                 const FrameReceiverConfig& config,
                 EventMediaType event_media_type,
-                CastTransportSender* const transport);
+                CastTransport* const transport);
 
   ~FrameReceiver() final;
 
@@ -134,7 +134,7 @@ class FrameReceiver : public RtpPayloadFeedback,
   const scoped_refptr<CastEnvironment> cast_environment_;
 
   // Transport used to send data back.
-  CastTransportSender* const transport_;
+  CastTransport* const transport_;
 
   // Deserializes a packet into a RtpHeader + payload bytes.
   RtpParser packet_parser_;

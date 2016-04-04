@@ -48,7 +48,7 @@ PacedSender::PacedSender(
     size_t max_burst_size,
     base::TickClock* clock,
     std::vector<PacketEvent>* recent_packet_events,
-    PacketSender* transport,
+    PacketTransport* transport,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner)
     : clock_(clock),
       recent_packet_events_(recent_packet_events),

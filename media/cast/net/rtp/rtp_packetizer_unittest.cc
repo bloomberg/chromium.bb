@@ -28,7 +28,7 @@ static const int kSsrc = 0x12345;
 static const unsigned int kFrameSize = 5000;
 }
 
-class TestRtpPacketTransport : public PacketSender {
+class TestRtpPacketTransport : public PacketTransport {
  public:
   explicit TestRtpPacketTransport(RtpPacketizerConfig config)
       : config_(config),

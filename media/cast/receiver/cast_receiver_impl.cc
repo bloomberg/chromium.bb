@@ -24,7 +24,7 @@ scoped_ptr<CastReceiver> CastReceiver::Create(
     scoped_refptr<CastEnvironment> cast_environment,
     const FrameReceiverConfig& audio_config,
     const FrameReceiverConfig& video_config,
-    CastTransportSender* const transport) {
+    CastTransport* const transport) {
   return scoped_ptr<CastReceiver>(new CastReceiverImpl(
       cast_environment, audio_config, video_config, transport));
 }
@@ -33,7 +33,7 @@ CastReceiverImpl::CastReceiverImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const FrameReceiverConfig& audio_config,
     const FrameReceiverConfig& video_config,
-    CastTransportSender* const transport)
+    CastTransport* const transport)
     : cast_environment_(cast_environment),
       audio_receiver_(cast_environment, audio_config, AUDIO_EVENT, transport),
       video_receiver_(cast_environment, video_config, VIDEO_EVENT, transport),

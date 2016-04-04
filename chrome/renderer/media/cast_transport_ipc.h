@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_MEDIA_CAST_TRANSPORT_SENDER_IPC_H_
-#define CHROME_RENDERER_MEDIA_CAST_TRANSPORT_SENDER_IPC_H_
+#ifndef CHROME_RENDERER_MEDIA_CAST_TRANSPORT_IPC_H_
+#define CHROME_RENDERER_MEDIA_CAST_TRANSPORT_IPC_H_
 
 #include <stdint.h>
 
@@ -13,27 +13,24 @@
 #include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/cast_transport.h"
 
-// This implementation of the CastTransportSender interface
-// communicates with the browser process over IPC and relays
-// all calls to/from the transport sender to the browser process.
-// The primary reason for this arrangement is to give the
+// This implementation of the CastTransport interface communicates with the
+// browser process over IPC and relays all calls to/from the cast transport to
+// the browser process. The primary reason for this arrangement is to give the
 // renderer less direct control over the UDP sockets.
-class CastTransportSenderIPC
-    : public media::cast::CastTransportSender {
+class CastTransportIPC : public media::cast::CastTransport {
  public:
-  CastTransportSenderIPC(
-      const net::IPEndPoint& local_end_point,
-      const net::IPEndPoint& remote_end_point,
-      scoped_ptr<base::DictionaryValue> options,
-      const media::cast::PacketReceiverCallback& packet_callback,
-      const media::cast::CastTransportStatusCallback& status_cb,
-      const media::cast::BulkRawEventsCallback& raw_events_cb);
+  CastTransportIPC(const net::IPEndPoint& local_end_point,
+                   const net::IPEndPoint& remote_end_point,
+                   scoped_ptr<base::DictionaryValue> options,
+                   const media::cast::PacketReceiverCallback& packet_callback,
+                   const media::cast::CastTransportStatusCallback& status_cb,
+                   const media::cast::BulkRawEventsCallback& raw_events_cb);
 
-  ~CastTransportSenderIPC() override;
+  ~CastTransportIPC() override;
 
-  // media::cast::CastTransportSender implementation.
+  // media::cast::CastTransport implementation.
   void InitializeAudio(
       const media::cast::CastTransportRtpConfig& config,
       const media::cast::RtcpCastMessageCallback& cast_message_cb,
@@ -67,8 +64,7 @@ class CastTransportSenderIPC
       const media::cast::RtcpReportBlock& rtp_receiver_report_block) override;
   void SendRtcpFromRtpReceiver() override;
   void SetOptions(const base::DictionaryValue& options) final {}
-  void OnNotifyStatusChange(
-      media::cast::CastTransportStatus status);
+  void OnNotifyStatusChange(media::cast::CastTransportStatus status);
   void OnRawEvents(const std::vector<media::cast::PacketEvent>& packet_events,
                    const std::vector<media::cast::FrameEvent>& frame_events);
   void OnRtt(uint32_t rtp_sender_ssrc, base::TimeDelta rtt);
@@ -97,7 +93,7 @@ class CastTransportSenderIPC
   typedef std::map<uint32_t, ClientCallbacks> ClientMap;
   ClientMap clients_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastTransportSenderIPC);
+  DISALLOW_COPY_AND_ASSIGN(CastTransportIPC);
 };
 
-#endif  // CHROME_RENDERER_MEDIA_CAST_TRANSPORT_SENDER_IPC_H_
+#endif  // CHROME_RENDERER_MEDIA_CAST_TRANSPORT_IPC_H_

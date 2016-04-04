@@ -49,10 +49,10 @@
 #include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/simple_event_subscriber.h"
+#include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
-#include "media/cast/net/cast_transport_sender.h"
-#include "media/cast/net/cast_transport_sender_impl.h"
+#include "media/cast/net/cast_transport_impl.h"
 #include "media/cast/test/loopback_transport.h"
 #include "media/cast/test/skewed_single_thread_task_runner.h"
 #include "media/cast/test/skewed_tick_clock.h"
@@ -81,12 +81,12 @@ void ExpectAudioSuccess(OperationalStatus status) {
 
 }  // namespace
 
-// Wraps a CastTransportSender and records some statistics about
+// Wraps a CastTransport and records some statistics about
 // the data that goes through it.
-class CastTransportSenderWrapper : public CastTransportSender {
+class CastTransportWrapper : public CastTransport {
  public:
   // Takes ownership of |transport|.
-  void Init(CastTransportSender* transport,
+  void Init(CastTransport* transport,
             uint64_t* encoded_video_bytes,
             uint64_t* encoded_audio_bytes) {
     transport_.reset(transport);
@@ -175,7 +175,7 @@ class CastTransportSenderWrapper : public CastTransportSender {
   void SetOptions(const base::DictionaryValue& options) final {}
 
  private:
-  scoped_ptr<CastTransportSender> transport_;
+  scoped_ptr<CastTransport> transport_;
   uint32_t audio_ssrc_, video_ssrc_;
   uint64_t* encoded_video_bytes_;
   uint64_t* encoded_audio_bytes_;
@@ -431,10 +431,10 @@ class RunOneBenchmark {
   scoped_refptr<CastEnvironment> cast_environment_sender_;
   scoped_refptr<CastEnvironment> cast_environment_receiver_;
 
-  LoopBackTransport* receiver_to_sender_;  // Owned by CastTransportSenderImpl.
-  LoopBackTransport* sender_to_receiver_;  // Owned by CastTransportSenderImpl.
-  CastTransportSenderWrapper transport_sender_;
-  scoped_ptr<CastTransportSender> transport_receiver_;
+  LoopBackTransport* receiver_to_sender_;  // Owned by CastTransportImpl.
+  LoopBackTransport* sender_to_receiver_;  // Owned by CastTransportImpl.
+  CastTransportWrapper transport_sender_;
+  scoped_ptr<CastTransport> transport_receiver_;
   uint64_t video_bytes_encoded_;
   uint64_t audio_bytes_encoded_;
 
@@ -450,7 +450,7 @@ class RunOneBenchmark {
 
 namespace {
 
-class TransportClient : public CastTransportSender::Client {
+class TransportClient : public CastTransport::Client {
  public:
   explicit TransportClient(RunOneBenchmark* run_one_benchmark)
       : run_one_benchmark_(run_one_benchmark) {}
@@ -479,14 +479,14 @@ class TransportClient : public CastTransportSender::Client {
 void RunOneBenchmark::Create(const MeasuringPoint& p) {
   sender_to_receiver_ = new LoopBackTransport(cast_environment_sender_);
   transport_sender_.Init(
-      new CastTransportSenderImpl(
+      new CastTransportImpl(
           testing_clock_sender_, base::TimeDelta::FromSeconds(1),
           make_scoped_ptr(new TransportClient(nullptr)),
           make_scoped_ptr(sender_to_receiver_), task_runner_sender_),
       &video_bytes_encoded_, &audio_bytes_encoded_);
 
   receiver_to_sender_ = new LoopBackTransport(cast_environment_receiver_);
-  transport_receiver_.reset(new CastTransportSenderImpl(
+  transport_receiver_.reset(new CastTransportImpl(
       testing_clock_receiver_, base::TimeDelta::FromSeconds(1),
       make_scoped_ptr(new TransportClient(this)),
       make_scoped_ptr(receiver_to_sender_), task_runner_receiver_));

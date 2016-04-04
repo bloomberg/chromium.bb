@@ -19,7 +19,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/constants.h"
-#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/cast_transport.h"
 
 namespace gfx {
 class Size;
@@ -85,12 +85,12 @@ class AudioFrameInput : public base::RefCountedThreadSafe<AudioFrameInput> {
 using StatusChangeCallback = base::Callback<void(OperationalStatus)>;
 
 // All methods of CastSender must be called on the main thread.
-// Provided CastTransportSender will also be called on the main thread.
+// Provided CastTransport will also be called on the main thread.
 class CastSender {
  public:
   static scoped_ptr<CastSender> Create(
       scoped_refptr<CastEnvironment> cast_environment,
-      CastTransportSender* const transport_sender);
+      CastTransport* const transport_sender);
 
   virtual ~CastSender() {}
 

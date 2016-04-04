@@ -180,8 +180,8 @@
         'sender/video_sender.h',
         'sender/vp8_encoder.cc',
         'sender/vp8_encoder.h',
-        'sender/vp8_quantizer_parser.h',
         'sender/vp8_quantizer_parser.cc',
+        'sender/vp8_quantizer_parser.h',
       ], # sources
       'conditions': [
         # use a restricted subset of media and no software codecs on iOS
@@ -200,7 +200,7 @@
             'sender/vp8_encoder.cc',
             'sender/vp8_encoder.h',
             'sender/vp8_quantizer_parser.cc',
-	    'sender/vp8_quantizer_parser.h',
+            'sender/vp8_quantizer_parser.h',
           ],
         }], # OS=="ios"
         # iOS and OS X encoders
@@ -231,17 +231,15 @@
         '<(DEPTH)/net/net.gyp:net',
       ],
       'sources': [
+        'net/cast_transport.h',
         'net/cast_transport_config.cc',
         'net/cast_transport_config.h',
         'net/cast_transport_defines.h',
-        'net/cast_transport_sender.h',
-        'net/cast_transport_sender_impl.cc',
-        'net/cast_transport_sender_impl.h',
+        'net/cast_transport_impl.cc',
+        'net/cast_transport_impl.h',
         'net/pacing/paced_sender.cc',
         'net/pacing/paced_sender.h',
         'net/rtcp/receiver_rtcp_event_subscriber.cc',
-        'net/rtcp/sender_rtcp_session.cc',
-        'net/rtcp/sender_rtcp_session.h',
         'net/rtcp/receiver_rtcp_session.cc',
         'net/rtcp/receiver_rtcp_session.h',
         'net/rtcp/rtcp_builder.cc',
@@ -250,6 +248,8 @@
         'net/rtcp/rtcp_defines.h',
         'net/rtcp/rtcp_utility.cc',
         'net/rtcp/rtcp_utility.h',
+        'net/rtcp/sender_rtcp_session.cc',
+        'net/rtcp/sender_rtcp_session.h',
         'net/rtp/packet_storage.cc',
         'net/rtp/packet_storage.h',
         'net/rtp/rtp_defines.cc',

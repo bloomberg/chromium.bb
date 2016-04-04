@@ -17,7 +17,7 @@
 #include "media/cast/constants.h"
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "media/cast/net/cast_transport_sender_impl.h"
+#include "media/cast/net/cast_transport_impl.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/sender/fake_video_encode_accelerator_factory.h"
 #include "media/cast/sender/video_frame_factory.h"
@@ -47,7 +47,7 @@ void SaveOperationalStatus(OperationalStatus* out_status,
   *out_status = in_status;
 }
 
-class TestPacketSender : public PacketSender {
+class TestPacketSender : public PacketTransport {
  public:
   TestPacketSender()
       : number_of_rtp_packets_(0),
@@ -115,7 +115,7 @@ class PeerVideoSender : public VideoSender {
       const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
-      CastTransportSender* const transport_sender)
+      CastTransport* const transport_sender)
       : VideoSender(cast_environment,
                     video_config,
                     status_change_cb,
@@ -127,7 +127,7 @@ class PeerVideoSender : public VideoSender {
   using VideoSender::OnReceivedPli;
 };
 
-class TransportClient : public CastTransportSender::Client {
+class TransportClient : public CastTransport::Client {
  public:
   TransportClient() {}
 
@@ -161,9 +161,9 @@ class VideoSenderTest : public ::testing::Test {
     last_pixel_value_ = kPixelValue;
     transport_ = new TestPacketSender();
     transport_sender_.reset(
-        new CastTransportSenderImpl(testing_clock_, base::TimeDelta(),
-                                    make_scoped_ptr(new TransportClient()),
-                                    make_scoped_ptr(transport_), task_runner_));
+        new CastTransportImpl(testing_clock_, base::TimeDelta(),
+                              make_scoped_ptr(new TransportClient()),
+                              make_scoped_ptr(transport_), task_runner_));
   }
 
   ~VideoSenderTest() override {}
@@ -238,8 +238,8 @@ class VideoSenderTest : public ::testing::Test {
   const scoped_refptr<CastEnvironment> cast_environment_;
   OperationalStatus operational_status_;
   FakeVideoEncodeAcceleratorFactory vea_factory_;
-  TestPacketSender* transport_;  // Owned by CastTransportSender.
-  scoped_ptr<CastTransportSenderImpl> transport_sender_;
+  TestPacketSender* transport_;  // Owned by CastTransport.
+  scoped_ptr<CastTransportImpl> transport_sender_;
   scoped_ptr<PeerVideoSender> video_sender_;
   int last_pixel_value_;
   base::TimeTicks first_frame_timestamp_;

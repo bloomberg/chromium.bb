@@ -6,17 +6,17 @@
 // frames (both audio and video), encrypts their encoded data, packetizes them
 // and feeds them into a transport (e.g., UDP).
 
-// Construction of the Cast Sender and the Cast Transport Sender should be done
+// Construction of the Cast Sender and the Cast Transport should be done
 // in the following order:
-// 1. Create CastTransportSender.
-// 2. Create CastSender (accepts CastTransportSender as an input).
+// 1. Create CastTransport.
+// 2. Create CastSender (accepts CastTransport as an input).
 
-// Destruction: The CastTransportSender is assumed to be valid as long as the
+// Destruction: The CastTransport is assumed to be valid as long as the
 // CastSender is alive. Therefore the CastSender should be destructed before the
-// CastTransportSender.
+// CastTransport.
 
-#ifndef MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_H_
-#define MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_H_
+#ifndef MEDIA_CAST_NET_CAST_TRANSPORT_H_
+#define MEDIA_CAST_NET_CAST_TRANSPORT_H_
 
 #include <stdint.h>
 
@@ -56,13 +56,11 @@ typedef base::Callback<void(scoped_ptr<std::vector<FrameEvent>>,
                             scoped_ptr<std::vector<PacketEvent>>)>
     BulkRawEventsCallback;
 
-// TODO(xjz): Rename CastTransportSender as it also deals with receiving
-// packets. http://crbug.com/589157.
 // The application should only trigger this class from the transport thread.
-class CastTransportSender : public base::NonThreadSafe {
+class CastTransport : public base::NonThreadSafe {
  public:
   // Interface used for receiving status updates, raw events, and RTP packets
-  // from CastTransportSender.
+  // from CastTransport.
   class Client {
    public:
     virtual ~Client(){};
@@ -72,7 +70,7 @@ class CastTransportSender : public base::NonThreadSafe {
 
     // Raw events will be invoked on this callback periodically, according to
     // the configured logging flush interval passed to
-    // CastTransportSender::Create().
+    // CastTransport::Create().
     virtual void OnLoggingEventsReceived(
         scoped_ptr<std::vector<FrameEvent>> frame_events,
         scoped_ptr<std::vector<PacketEvent>> packet_events) = 0;
@@ -81,14 +79,14 @@ class CastTransportSender : public base::NonThreadSafe {
     virtual void ProcessRtpPacket(scoped_ptr<Packet> packet) = 0;
   };
 
-  static scoped_ptr<CastTransportSender> Create(
+  static scoped_ptr<CastTransport> Create(
       base::TickClock* clock,  // Owned by the caller.
       base::TimeDelta logging_flush_interval,
       scoped_ptr<Client> client,
-      scoped_ptr<PacketSender> transport,
+      scoped_ptr<PacketTransport> transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
-  virtual ~CastTransportSender() {}
+  virtual ~CastTransport() {}
 
   // Audio/Video initialization.
   // Encoded frames cannot be transmitted until the relevant initialize method
@@ -163,4 +161,4 @@ class CastTransportSender : public base::NonThreadSafe {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_NET_CAST_TRANSPORT_SENDER_H_
+#endif  // MEDIA_CAST_NET_CAST_TRANSPORT_H_

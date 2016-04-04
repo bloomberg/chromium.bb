@@ -30,7 +30,7 @@ class CastReceiverImpl : public CastReceiver {
   CastReceiverImpl(scoped_refptr<CastEnvironment> cast_environment,
                    const FrameReceiverConfig& audio_config,
                    const FrameReceiverConfig& video_config,
-                   CastTransportSender* const transport);
+                   CastTransport* const transport);
 
   ~CastReceiverImpl() final;
 

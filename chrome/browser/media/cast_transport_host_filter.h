@@ -15,7 +15,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/net/cast_transport_sender.h"
+#include "media/cast/net/cast_transport.h"
 #include "media/cast/net/udp_transport.h"
 
 namespace content {
@@ -90,7 +90,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
              const base::DictionaryValue& options);
   void OnDelete(int32_t channel_id);
 
-  IDMap<media::cast::CastTransportSender, IDMapOwnPointer> id_map_;
+  IDMap<media::cast::CastTransport, IDMapOwnPointer> id_map_;
 
   // Clock used by Cast transport.
   base::DefaultTickClock clock_;

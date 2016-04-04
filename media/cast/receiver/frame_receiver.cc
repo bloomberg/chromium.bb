@@ -38,7 +38,7 @@ FrameReceiver::FrameReceiver(
     const scoped_refptr<CastEnvironment>& cast_environment,
     const FrameReceiverConfig& config,
     EventMediaType event_media_type,
-    CastTransportSender* const transport)
+    CastTransport* const transport)
     : cast_environment_(cast_environment),
       transport_(transport),
       packet_parser_(config.sender_ssrc, config.rtp_payload_type),
