@@ -1784,6 +1784,38 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
   EXPECT_FALSE(recycle_tiling->TileAt(0, 0));
 }
 
+TEST(PictureLayerTilingTest, InvalidateAfterComputeTilePriorityRects) {
+  FakePictureLayerTilingClient pending_client;
+  pending_client.SetTileSize(gfx::Size(100, 100));
+
+  scoped_refptr<FakeRasterSource> raster_source =
+      FakeRasterSource::CreateFilled(gfx::Size(100, 100));
+  scoped_ptr<TestablePictureLayerTiling> pending_tiling =
+      TestablePictureLayerTiling::Create(PENDING_TREE, 1.0f, raster_source,
+                                         &pending_client, LayerTreeSettings());
+  pending_tiling->set_resolution(HIGH_RESOLUTION);
+
+  // Ensure that we can compute tile priority rects, invalidate, and compute the
+  // rects again. It is important that the second compute tile priority rects
+  // return true, indicating that things have changed (since invalidation has
+  // changed things). This causes PrepareTiles to be properly scheduled. If the
+  // second ComputeTilePriorityRects returns false, then we assume that
+  // PrepareTiles isn't needed and we signal that we're ready to draw
+  // immediately, which can cause visual glitches.
+  //
+  // This can happen we if we process an impl frame deadline before processing a
+  // commit. That is, when we draw we ComputeTilePriorityRects. If we process
+  // the commit afterwards, it would use the same timestamp and sometimes would
+  // use the same viewport to compute tile priority rects again.
+  double time = 1.;
+  gfx::Rect viewport(0, 0, 100, 100);
+  EXPECT_TRUE(pending_tiling->ComputeTilePriorityRects(viewport, 1.0f, time,
+                                                       Occlusion()));
+  pending_tiling->Invalidate(viewport);
+  EXPECT_TRUE(pending_tiling->ComputeTilePriorityRects(viewport, 1.0f, time,
+                                                       Occlusion()));
+}
+
 TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
   // The tiling has four rows and three columns.
   Initialize(gfx::Size(150, 100), 1.f, gfx::Size(250, 150));

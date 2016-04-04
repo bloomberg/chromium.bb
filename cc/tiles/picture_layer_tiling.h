@@ -403,6 +403,7 @@ class CC_EXPORT PictureLayerTiling {
   bool has_soon_border_rect_tiles_;
   bool has_eventually_rect_tiles_;
   bool all_tiles_done_;
+  bool invalidated_since_last_compute_priority_rects_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PictureLayerTiling);

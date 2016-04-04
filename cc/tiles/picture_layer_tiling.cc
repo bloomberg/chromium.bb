@@ -74,7 +74,8 @@ PictureLayerTiling::PictureLayerTiling(
       has_skewport_rect_tiles_(false),
       has_soon_border_rect_tiles_(false),
       has_eventually_rect_tiles_(false),
-      all_tiles_done_(true) {
+      all_tiles_done_(true),
+      invalidated_since_last_compute_priority_rects_(false) {
   DCHECK(!raster_source->IsSolidColor());
   gfx::Size content_bounds =
       gfx::ScaleToCeiledSize(raster_source_->GetSize(), contents_scale);
@@ -287,6 +288,7 @@ void PictureLayerTiling::SetRasterSourceAndResize(
 
 void PictureLayerTiling::Invalidate(const Region& layer_invalidation) {
   DCHECK(tree_ != ACTIVE_TREE || !client_->GetPendingOrActiveTwinTiling(this));
+  invalidated_since_last_compute_priority_rects_ = true;
   RemoveTilesInRegion(layer_invalidation, true /* recreate tiles */);
 }
 
@@ -638,11 +640,13 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
     set_all_tiles_done(false);
   }
 
+  bool invalidated = invalidated_since_last_compute_priority_rects_;
+  invalidated_since_last_compute_priority_rects_ = false;
   if (!NeedsUpdateForFrameAtTimeAndViewport(current_frame_time_in_seconds,
                                             viewport_in_layer_space)) {
     // This should never be zero for the purposes of has_ever_been_updated().
     DCHECK_NE(current_frame_time_in_seconds, 0.0);
-    return false;
+    return invalidated;
   }
 
   const float content_to_screen_scale = ideal_contents_scale / contents_scale_;
