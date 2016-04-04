@@ -36,6 +36,9 @@ def ToGNString(value, allow_dicts = True):
         value.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$') + \
         '"'
 
+  if isinstance(value, unicode):
+    return ToGNString(value.encode('utf-8'))
+
   if isinstance(value, bool):
     if value:
       return "true"
