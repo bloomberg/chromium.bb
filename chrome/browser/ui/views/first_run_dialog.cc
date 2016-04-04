@@ -93,6 +93,8 @@ FirstRunDialog::FirstRunDialog(Profile* profile)
   layout->StartRowWithPadding(0, 0, 0, related_y);
   report_crashes_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_OPTIONS_ENABLE_LOGGING));
+  // Having this box checked means the user has to opt-out of metrics recording.
+  report_crashes_->SetChecked(!first_run::IsMetricsReportingOptIn());
   layout->AddView(report_crashes_);
 }
 

@@ -35,7 +35,7 @@ void RegisterMetricsReportingStatePrefs(PrefRegistrySimple* registry);
 // enable checkbox on first-run was default unchecked. If it was opt-out, then
 // the checkbox was default checked. This should only be set once, and only
 // during first-run.
-void SetMetricsReportingDefaultOptIn(PrefService* local_state, bool opt_in);
+void RecordMetricsReportingDefaultOptIn(PrefService* local_state, bool opt_in);
 
 // Gets information about the default value for the enable metrics reporting
 // checkbox shown during first-run.

@@ -12,6 +12,7 @@
 // us improve Chromium.
 @interface FirstRunDialogController : NSWindowController {
  @private
+  // Bound to the value of the checkbox in FirstRunDialog.xib.
   BOOL statsEnabled_;
   BOOL makeDefaultBrowser_;
 

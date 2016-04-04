@@ -115,7 +115,8 @@ bool ShowFirstRun(Profile* profile) {
 // True when the stats checkbox should be checked by default. This is only
 // the case when the canary is running.
 bool StatsCheckboxDefault() {
-  return chrome::GetChannel() == version_info::Channel::CANARY;
+  // Opt-in means the checkbox is unchecked by default.
+  return !first_run::IsMetricsReportingOptIn();
 }
 
 }  // namespace

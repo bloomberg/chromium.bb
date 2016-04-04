@@ -136,7 +136,7 @@ bool IsMetricsReportingPolicyManaged() {
   return pref && pref->IsManaged();
 }
 
-void SetMetricsReportingDefaultOptIn(PrefService* local_state, bool opt_in) {
+void RecordMetricsReportingDefaultOptIn(PrefService* local_state, bool opt_in) {
   DCHECK(GetMetricsReportingDefaultOptIn(local_state) ==
          metrics::MetricsServiceClient::DEFAULT_UNKNOWN);
   local_state->SetInteger(prefs::kMetricsDefaultOptIn,
