@@ -28,7 +28,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
-#include "ui/base/cocoa/controls/hyperlink_text_view.h"
+#import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -69,7 +69,8 @@ scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
   base::scoped_nsobject<NSTableView> tableView_;
   base::scoped_nsobject<NSButton> connectButton_;
   base::scoped_nsobject<NSButton> cancelButton_;
-  base::scoped_nsobject<HyperlinkTextView> message_;
+  base::scoped_nsobject<NSTextField> message_;
+  base::scoped_nsobject<NSButton> getHelpButton_;
   bool buttonPressed_;
 
   Browser* browser_;                                  // Weak.
@@ -127,14 +128,20 @@ scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
 // Creates the "Cancel" button.
 - (base::scoped_nsobject<NSButton>)cancelButton;
 
-// Creates the help link.
-- (base::scoped_nsobject<HyperlinkTextView>)message;
+// Creates the message.
+- (base::scoped_nsobject<NSTextField>)message;
+
+// Creates the "Get help" button.
+- (base::scoped_nsobject<NSButton>)getHelpButton;
 
 // Called when the "Connect" button is pressed.
 - (void)onConnect:(id)sender;
 
 // Called when the "Cancel" button is pressed.
 - (void)onCancel:(id)sender;
+
+// Called when the "Get help" button is pressed.
+- (void)onGetHelpPressed:(id)sender;
 
 @end
 
@@ -238,7 +245,11 @@ scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
 
   // Message.
   message_ = [self message];
+  CGFloat messageWidth = NSWidth([message_ frame]);
   CGFloat messageHeight = NSHeight([message_ frame]);
+
+  // Get help button.
+  getHelpButton_ = [self getHelpButton];
 
   // Separator.
   CGFloat separatorOriginX = 0.0f;
@@ -313,6 +324,15 @@ scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
   [message_ setFrameOrigin:NSMakePoint(messageOriginX, messageOriginY)];
   [view addSubview:message_];
 
+  // Get help button.
+  getHelpButton_ = [self getHelpButton];
+  CGFloat getHelpButtonOriginX =
+      kMarginX + messageWidth - kHorizontalPadding / 2;
+  CGFloat getHelpButtonOriginY = kMarginY;
+  [getHelpButton_
+      setFrameOrigin:NSMakePoint(getHelpButtonOriginX, getHelpButtonOriginY)];
+  [view addSubview:getHelpButton_];
+
   bubbleFrame = [[self window] frameRectForContentRect:bubbleFrame];
   if ([[self window] isVisible]) {
     // Unfortunately, calling -setFrame followed by -setFrameOrigin  (called
@@ -330,7 +350,7 @@ scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
     [self setAnchorPoint:[self getExpectedAnchorPoint]];
     [self showWindow:nil];
     [[self window] makeFirstResponder:nil];
-    [[self window] setInitialFirstResponder:connectButton_.get()];
+    [[self window] setInitialFirstResponder:tableView_.get()];
   }
 }
 
@@ -462,40 +482,32 @@ scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
   return [self buttonWithTitle:cancelTitle action:@selector(onCancel:)];
 }
 
-- (base::scoped_nsobject<HyperlinkTextView>)message {
-  base::scoped_nsobject<HyperlinkTextView> textView(
-      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
+- (base::scoped_nsobject<NSTextField>)message {
+  base::scoped_nsobject<NSTextField> messageView(
+      [[NSTextField alloc] initWithFrame:NSZeroRect]);
+  [messageView setDrawsBackground:NO];
+  [messageView setBezeled:NO];
+  [messageView setEditable:NO];
+  [messageView setSelectable:NO];
+  [messageView
+      setStringValue:l10n_util::GetNSStringF(IDS_CHOOSER_BUBBLE_FOOTNOTE_TEXT,
+                                             base::string16())];
+  [messageView setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+  [messageView sizeToFit];
+  return messageView;
+}
 
-  base::string16 linkString =
-      l10n_util::GetStringUTF16(IDS_CHOOSER_BUBBLE_GET_HELP_LINK_TEXT);
-
-  NSString* text =
-      l10n_util::GetNSStringF(IDS_CHOOSER_BUBBLE_FOOTNOTE_TEXT, linkString);
-  [textView setMessage:text
-              withFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]
-          messageColor:[NSColor blackColor]];
-
-  NSColor* linkColor =
-      skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
-  [textView
-      addLinkRange:NSMakeRange([text length] - linkString.size(),
-                               linkString.size())
-           withURL:base::SysUTF8ToNSString(
-                       chooserBubbleController_->GetHelpCenterUrl().spec())
-         linkColor:linkColor];
-
-  // Removes the underlining from the link.
-  NSTextStorage* textStorage = [textView textStorage];
-  [textStorage addAttribute:NSUnderlineStyleAttributeName
-                      value:@(NSUnderlineStyleNone)
-                      range:NSMakeRange(0, [text length])];
-
-  [textView setVerticallyResizable:YES];
-  [textView
-      setFrameSize:NSMakeSize(kChooserBubbleWidth - 2 * kMarginX, MAXFLOAT)];
-  [textView sizeToFit];
-
-  return textView;
+- (base::scoped_nsobject<NSButton>)getHelpButton {
+  base::scoped_nsobject<NSButton> button(
+      [[NSButton alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<HyperlinkButtonCell> cell([[HyperlinkButtonCell alloc]
+      initTextCell:l10n_util::GetNSString(
+                       IDS_CHOOSER_BUBBLE_GET_HELP_LINK_TEXT)]);
+  [button setCell:cell.get()];
+  [button sizeToFit];
+  [button setTarget:self];
+  [button setAction:@selector(onGetHelpPressed:)];
+  return button;
 }
 
 + (CGFloat)matchWidthsOf:(NSView*)viewA andOf:(NSView*)viewB {
@@ -526,6 +538,10 @@ scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
   buttonPressed_ = true;
   chooserBubbleController_->Cancel();
   [self close];
+}
+
+- (void)onGetHelpPressed:(id)sender {
+  chooserBubbleController_->OpenHelpCenterUrl();
 }
 
 @end
