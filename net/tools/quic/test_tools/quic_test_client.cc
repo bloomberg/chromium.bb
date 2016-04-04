@@ -43,6 +43,7 @@ class RecordingProofVerifier : public ProofVerifier {
  public:
   // ProofVerifier interface.
   QuicAsyncStatus VerifyProof(const string& hostname,
+                              const uint16_t port,
                               const string& server_config,
                               QuicVersion quic_version,
                               StringPiece chlo_hash,

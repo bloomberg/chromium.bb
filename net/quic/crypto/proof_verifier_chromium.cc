@@ -63,6 +63,7 @@ class ProofVerifierChromium::Job {
   // Starts the proof verification.  If |QUIC_PENDING| is returned, then
   // |callback| will be invoked asynchronously when the verification completes.
   QuicAsyncStatus VerifyProof(const std::string& hostname,
+                              const uint16_t port,
                               const std::string& server_config,
                               QuicVersion quic_version,
                               base::StringPiece chlo_hash,
@@ -106,6 +107,8 @@ class ProofVerifierChromium::Job {
 
   // |hostname| specifies the hostname for which |certs| is a valid chain.
   std::string hostname_;
+  // |port| specifies the target port for the connection.
+  uint16_t port_;
 
   scoped_ptr<ProofVerifierCallback> callback_;
   scoped_ptr<ProofVerifyDetailsChromium> verify_details_;
@@ -158,6 +161,7 @@ ProofVerifierChromium::Job::~Job() {
 
 QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     const string& hostname,
+    const uint16_t port,
     const string& server_config,
     QuicVersion quic_version,
     StringPiece chlo_hash,
@@ -224,6 +228,7 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
   }
 
   hostname_ = hostname;
+  port_ = port;
 
   next_state_ = STATE_VERIFY_CERT;
   switch (DoLoop(OK)) {
@@ -323,12 +328,11 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
             verify_details_->ct_verify_result.verified_scts, net_log_);
   }
 
-  // TODO(estark): replace 0 below with the port of the connection.
   if (transport_security_state_ &&
       (result == OK ||
        (IsCertificateError(result) && IsCertStatusMinorError(cert_status))) &&
       !transport_security_state_->CheckPublicKeyPins(
-          HostPortPair(hostname_, 0),
+          HostPortPair(hostname_, port_),
           cert_verify_result.is_issued_by_known_root,
           cert_verify_result.public_key_hashes, cert_.get(),
           cert_verify_result.verified_cert.get(),
@@ -435,6 +439,7 @@ ProofVerifierChromium::~ProofVerifierChromium() {
 
 QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     const std::string& hostname,
+    const uint16_t port,
     const std::string& server_config,
     QuicVersion quic_version,
     base::StringPiece chlo_hash,
@@ -456,7 +461,7 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
               transport_security_state_, cert_transparency_verifier_,
               chromium_context->cert_verify_flags, chromium_context->net_log));
   QuicAsyncStatus status = job->VerifyProof(
-      hostname, server_config, quic_version, chlo_hash, certs, cert_sct,
+      hostname, port, server_config, quic_version, chlo_hash, certs, cert_sct,
       signature, error_details, verify_details, callback);
   if (status == QUIC_PENDING) {
     active_jobs_.insert(job.release());

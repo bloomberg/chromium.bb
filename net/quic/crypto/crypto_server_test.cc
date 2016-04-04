@@ -874,7 +874,7 @@ TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
   CryptoUtils::HashHandshakeMessage(msg, &chlo_hash);
   EXPECT_EQ(QUIC_SUCCESS,
             proof_verifier->VerifyProof(
-                "test.example.com", scfg_str.as_string(), client_version_,
+                "test.example.com", 443, scfg_str.as_string(), client_version_,
                 chlo_hash, certs, "", proof.as_string(), verify_context.get(),
                 &error_details, &details, &callback));
 }

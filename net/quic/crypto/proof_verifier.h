@@ -75,6 +75,7 @@ class NET_EXPORT_PRIVATE ProofVerifier {
   // The signature uses SHA-256 as the hash function and PSS padding in the
   // case of RSA.
   virtual QuicAsyncStatus VerifyProof(const std::string& hostname,
+                                      const uint16_t port,
                                       const std::string& server_config,
                                       QuicVersion quic_version,
                                       base::StringPiece chlo_hash,

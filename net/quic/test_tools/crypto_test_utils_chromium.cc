@@ -150,6 +150,7 @@ class FakeProofVerifier : public TestProofVerifierChromium {
 
   // ProofVerifier interface
   QuicAsyncStatus VerifyProof(const std::string& hostname,
+                              const uint16_t port,
                               const std::string& server_config,
                               QuicVersion quic_version,
                               StringPiece chlo_hash,

@@ -56,6 +56,7 @@ class TestProofVerifierCallback : public ProofVerifierCallback {
 // matches |expected_ok|.
 void RunVerification(ProofVerifier* verifier,
                      const string& hostname,
+                     const uint16_t port,
                      const string& server_config,
                      QuicVersion quic_version,
                      StringPiece chlo_hash,
@@ -72,7 +73,7 @@ void RunVerification(ProofVerifier* verifier,
       new TestProofVerifierCallback(&comp_callback, &ok, &error_details);
 
   QuicAsyncStatus status = verifier->VerifyProof(
-      hostname, server_config, quic_version, chlo_hash, certs, "", proof,
+      hostname, port, server_config, quic_version, chlo_hash, certs, "", proof,
       verify_context.get(), &error_details, &details, callback);
 
   switch (status) {
@@ -122,9 +123,11 @@ TEST_P(ProofTest, DISABLED_Verify) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
+  const uint16_t port = 8443;
   const string first_chlo_hash = "first chlo hash bytes";
   const string second_chlo_hash = "first chlo hash bytes";
   const QuicVersion quic_version = GetParam();
+
   scoped_refptr<ProofSource::Chain> chain;
   scoped_refptr<ProofSource::Chain> first_chain;
   string error_details, signature, first_signature, first_cert_sct, cert_sct;
@@ -147,25 +150,26 @@ TEST_P(ProofTest, DISABLED_Verify) {
   }
   ASSERT_EQ(first_cert_sct, cert_sct);
 
-  RunVerification(verifier.get(), hostname, server_config, quic_version,
+  RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                   first_chlo_hash, chain->certs, signature, true);
 
-  RunVerification(verifier.get(), "foo.com", server_config, quic_version,
+  RunVerification(verifier.get(), "foo.com", port, server_config, quic_version,
                   first_chlo_hash, chain->certs, signature, false);
 
-  RunVerification(verifier.get(), server_config.substr(1, string::npos),
+  RunVerification(verifier.get(), server_config.substr(1, string::npos), port,
                   server_config, quic_version, first_chlo_hash, chain->certs,
                   signature, false);
 
   const string corrupt_signature = "1" + signature;
-  RunVerification(verifier.get(), hostname, server_config, quic_version,
+  RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                   first_chlo_hash, chain->certs, corrupt_signature, false);
 
   vector<string> wrong_certs;
   for (size_t i = 1; i < chain->certs.size(); i++) {
     wrong_certs.push_back(chain->certs[i]);
   }
-  RunVerification(verifier.get(), "foo.com", server_config, quic_version,
+
+  RunVerification(verifier.get(), "foo.com", port, server_config, quic_version,
                   first_chlo_hash, wrong_certs, corrupt_signature, false);
 }
 
@@ -280,6 +284,7 @@ TEST_P(ProofTest, VerifyRSAKnownAnswerTest) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
+  const uint16_t port = 8443;
   const string chlo_hash = "proof nonce bytes";
   const QuicVersion quic_version = GetParam();
 
@@ -300,23 +305,23 @@ TEST_P(ProofTest, VerifyRSAKnownAnswerTest) {
   for (size_t i = 0; i < signatures.size(); i++) {
     const string& signature = signatures[i];
 
-    RunVerification(verifier.get(), hostname, server_config, quic_version,
+    RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, certs, signature, true);
-    RunVerification(verifier.get(), "foo.com", server_config, quic_version,
-                    chlo_hash, certs, signature, false);
-    RunVerification(verifier.get(), hostname,
+    RunVerification(verifier.get(), "foo.com", port, server_config,
+                    quic_version, chlo_hash, certs, signature, false);
+    RunVerification(verifier.get(), hostname, port,
                     server_config.substr(1, string::npos), quic_version,
                     chlo_hash, certs, signature, false);
 
     const string corrupt_signature = "1" + signature;
-    RunVerification(verifier.get(), hostname, server_config, quic_version,
+    RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, certs, corrupt_signature, false);
 
     vector<string> wrong_certs;
     for (size_t i = 1; i < certs.size(); i++) {
       wrong_certs.push_back(certs[i]);
     }
-    RunVerification(verifier.get(), hostname, server_config, quic_version,
+    RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, wrong_certs, signature, false);
   }
 }
@@ -370,6 +375,7 @@ TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
 
   const string server_config = "server config bytes";
   const string hostname = "test.example.com";
+  const uint16_t port = 8443;
   const string chlo_hash = "chlo_hash nonce bytes";
   const QuicVersion quic_version = GetParam();
 
@@ -392,13 +398,13 @@ TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
     const string& signature = signatures[i];
 
     LOG(ERROR) << "=================== expect ok =====================";
-    RunVerification(verifier.get(), hostname, server_config, quic_version,
+    RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, certs, signature, true);
     LOG(ERROR) << "=================== hose_name = foo.com =============";
-    RunVerification(verifier.get(), "foo.com", server_config, quic_version,
-                    chlo_hash, certs, signature, false);
+    RunVerification(verifier.get(), "foo.com", port, server_config,
+                    quic_version, chlo_hash, certs, signature, false);
     LOG(ERROR) << "================== server_config ====================";
-    RunVerification(verifier.get(), hostname,
+    RunVerification(verifier.get(), hostname, port,
                     server_config.substr(1, string::npos), quic_version,
                     chlo_hash, certs, signature, false);
 
@@ -407,13 +413,13 @@ TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
     string corrupt_signature = signature;
     corrupt_signature[corrupt_signature.size() - 1] += 1;
     LOG(ERROR) << "================= corrupt signature =======================";
-    RunVerification(verifier.get(), hostname, server_config, quic_version,
+    RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, certs, corrupt_signature, false);
 
     // Prepending a "1" makes the DER invalid.
     const string bad_der_signature1 = "1" + signature;
     LOG(ERROR) << "=========================bad der signature ===============";
-    RunVerification(verifier.get(), hostname, server_config, quic_version,
+    RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, certs, bad_der_signature1, false);
 
     vector<string> wrong_certs;
@@ -421,7 +427,7 @@ TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
       wrong_certs.push_back(certs[i]);
     }
     LOG(ERROR) << "==================== wrong certs =========================";
-    RunVerification(verifier.get(), hostname, server_config, quic_version,
+    RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, wrong_certs, signature, false);
   }
 }
