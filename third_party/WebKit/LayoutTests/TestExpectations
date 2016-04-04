@@ -1109,11 +1109,6 @@ crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
 
-crbug.com/598549 fast/images/jpeg-yuv-progressive-canvas.html [ NeedsRebaseline ]
-crbug.com/598549 fast/images/jpeg-yuv-progressive-image.html [ NeedsRebaseline ]
-crbug.com/598549 virtual/gpu-rasterization/fast/images/jpeg-yuv-progressive-image.html [ NeedsRebaseline ]
-crbug.com/598549 virtual/gpu-rasterization/fast/images/jpeg-yuv-progressive-canvas.html [ NeedsRebaseline ]
-
 crbug.com/595483 [ Android ] editing/caret/caret-color.html [ Failure Crash ]
 crbug.com/595483 [ Android ] fast/invalid/009.html [ Failure Crash ]
 crbug.com/595483 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Crash ]
