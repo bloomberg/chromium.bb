@@ -71,7 +71,6 @@ class HostMappingRules;
 class HostResolver;
 class HttpAuthHandlerRegistryFactory;
 class HttpAuthPreferences;
-class HttpNetworkSession;
 class HttpServerProperties;
 class HttpTransactionFactory;
 class HttpUserAgentSettings;
@@ -108,26 +107,6 @@ class IOThreadPeer;
 class IOThread : public content::BrowserThreadDelegate {
  public:
   struct Globals {
-    template <typename T>
-    class Optional {
-     public:
-      Optional() : set_(false) {}
-
-      void set(T value) {
-        set_ = true;
-        value_ = value;
-      }
-      void CopyToIfSet(T* value) const {
-        if (set_) {
-          *value = value_;
-        }
-      }
-
-     private:
-      bool set_;
-      T value_;
-    };
-
     class SystemRequestContextLeakChecker {
      public:
       explicit SystemRequestContextLeakChecker(Globals* globals);
@@ -198,57 +177,221 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::HostMappingRules> host_mapping_rules;
     scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     scoped_ptr<net::NetworkQualityEstimator> network_quality_estimator;
-    bool ignore_certificate_errors;
-    uint16_t testing_fixed_http_port;
-    uint16_t testing_fixed_https_port;
-    Optional<bool> enable_tcp_fast_open_for_ssl;
 
-    Optional<net::NextProto> spdy_default_protocol;
-    Optional<bool> enable_spdy31;
-    Optional<bool> enable_http2;
-    std::set<net::HostPortPair> forced_spdy_exclusions;
-    Optional<bool> parse_alternative_services;
-    Optional<bool> enable_alternative_service_with_different_host;
-    Optional<double> alternative_service_probability_threshold;
-
-    Optional<bool> enable_npn;
-
-    Optional<bool> enable_brotli;
-
-    Optional<bool> enable_priority_dependencies;
-
-    Optional<bool> enable_quic;
-    Optional<bool> disable_quic_on_timeout_with_open_streams;
-    Optional<bool> enable_quic_for_proxies;
-    Optional<bool> enable_quic_port_selection;
-    Optional<bool> quic_always_require_handshake_confirmation;
-    Optional<bool> quic_disable_connection_pooling;
-    Optional<float> quic_load_server_info_timeout_srtt_multiplier;
-    Optional<bool> quic_enable_connection_racing;
-    Optional<bool> quic_enable_non_blocking_io;
-    Optional<bool> quic_disable_disk_cache;
-    Optional<bool> quic_prefer_aes;
-    Optional<int> quic_max_number_of_lossy_connections;
-    Optional<float> quic_packet_loss_threshold;
-    Optional<int> quic_socket_receive_buffer_size;
-    Optional<bool> quic_delay_tcp_race;
-    Optional<size_t> quic_max_packet_length;
-    net::QuicTagVector quic_connection_options;
-    Optional<std::string> quic_user_agent_id;
-    Optional<net::QuicVersionVector> quic_supported_versions;
-    std::set<net::HostPortPair> origins_to_force_quic_on;
-    Optional<bool> quic_close_sessions_on_ip_change;
-    Optional<int> quic_idle_connection_timeout_seconds;
-    Optional<bool> quic_disable_preconnect_if_0rtt;
-    std::unordered_set<std::string> quic_host_whitelist;
-    Optional<bool> quic_migrate_sessions_on_network_change;
-    Optional<bool> quic_migrate_sessions_early;
-    bool enable_user_alternate_protocol_ports;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful
     // information to the renderer so it can show a more specific error page.
     scoped_ptr<chrome_browser_net::DnsProbeService> dns_probe_service;
-    bool enable_token_binding;
+  };
+
+  // Helper class to configure HttpNetworkSession::Params and
+  // HttpServerProperties based on field trials, policy, and command line.
+  class NetworkSessionConfigurator {
+   public:
+    // Configure |params| based on field trials and policy arguments.
+    static void ParseFieldTrials(bool is_spdy_allowed_by_policy,
+                                 bool is_quic_allowed_by_policy,
+                                 net::HttpNetworkSession::Params* params);
+
+    // Configure |params| based on field trials, policy arguments,
+    // and command line.
+    static void ParseFieldTrialsAndCommandLine(
+        bool is_spdy_allowed_by_policy,
+        bool is_quic_allowed_by_policy,
+        net::HttpNetworkSession::Params* params);
+
+    // Returns true if QUIC should be enabled for data reduction proxy, either
+    // as a result of a field trial or a command line flag.
+    static bool ShouldEnableQuicForDataReductionProxy(
+        const base::CommandLine& command_line);
+
+   private:
+    // Map from name to value for all parameters associate with a field trial.
+    using VariationParameters = std::map<std::string, std::string>;
+
+    static void ParseFieldTrialsAndCommandLineInternal(
+        const base::CommandLine& command_line,
+        bool is_spdy_allowed_by_policy,
+        bool is_quic_allowed_by_policy,
+        net::HttpNetworkSession::Params* params);
+
+    // Configures Alternative Services based on command line options and the
+    // field trial group.
+    static void ConfigureAltSvcParams(const base::CommandLine& command_line,
+                                      base::StringPiece altsvc_trial_group,
+                                      net::HttpNetworkSession::Params* params);
+
+    // Configures QUIC options based on the flags in |command_line| as well as
+    // the QUIC field trial group and parameters.  Must be called before
+    // ConfigureSpdyParams.
+    static void ConfigureQuicParams(
+        const base::CommandLine& command_line,
+        base::StringPiece quic_trial_group,
+        const VariationParameters& quic_trial_params,
+        bool is_quic_allowed_by_policy,
+        net::HttpNetworkSession::Params* params);
+
+    // Configures available SPDY protocol versions and parameters based on
+    // command line flags as well as SPDY field trial group and parameters.
+    // Must be called after ConfigureQuicParams.
+    static void ConfigureSpdyParams(
+        const base::CommandLine& command_line,
+        base::StringPiece spdy_trial_group,
+        const VariationParameters& spdy_trial_params,
+        bool is_spdy_allowed_by_policy,
+        net::HttpNetworkSession::Params* params);
+
+    // Configure TCP FastOpen based on the field trial group.
+    static void ConfigureTCPFastOpenParams(
+        base::StringPiece tfo_trial_group,
+        net::HttpNetworkSession::Params* params);
+
+    // Configures NPN based on command line and the field trial group.
+    static void ConfigureNPNParams(const base::CommandLine& command_line,
+                                   base::StringPiece npn_trial_group,
+                                   net::HttpNetworkSession::Params* params);
+
+    // Configures the use of priority dependencies based on the field trial
+    // group.
+    static void ConfigurePriorityDependencies(
+        base::StringPiece priority_dependencies_trial_group,
+        net::HttpNetworkSession::Params* params);
+
+    // Returns true if QUIC should be disabled when a connection times out with
+    // open streams.
+    static bool ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC should be enabled, either as a result of a field
+    // trial or a command line flag.
+    static bool ShouldEnableQuic(const base::CommandLine& command_line,
+                                 base::StringPiece quic_trial_group,
+                                 bool quic_allowed_by_policy);
+
+    // Returns true if QUIC should be enabled for proxies, either as a result of
+    // a field trial or a command line flag.
+    static bool ShouldEnableQuicForProxies(
+        const base::CommandLine& command_line,
+        base::StringPiece quic_trial_group,
+        bool quic_allowed_by_policy);
+
+    // Returns true if the selection of the ephemeral port in bind() should be
+    // performed by Chromium, and false if the OS should select the port.  The
+    // OS option is used to prevent Windows from posting a security warning
+    // dialog.
+    static bool ShouldEnableQuicPortSelection(
+        const base::CommandLine& command_line);
+
+    // Returns true if QUIC should always require handshake confirmation during
+    // the QUIC handshake.
+    static bool ShouldQuicAlwaysRequireHandshakeConfirmation(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC should disable connection pooling.
+    static bool ShouldQuicDisableConnectionPooling(
+        const VariationParameters& quic_trial_params);
+
+    // Returns the ratio of time to load QUIC sever information from disk cache
+    // to 'smoothed RTT' based on field trial. Returns 0 if there is an error
+    // parsing the field trial params, or if the default value should be used.
+    static float GetQuicLoadServerInfoTimeoutSrttMultiplier(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC's connection racing should be enabled.
+    static bool ShouldQuicEnableConnectionRacing(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC's should use non-blocking IO.
+    static bool ShouldQuicEnableNonBlockingIO(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC shouldn't load QUIC server information from the disk
+    // cache.
+    static bool ShouldQuicDisableDiskCache(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC should prefer AES-GCN even without hardware support.
+    static bool ShouldQuicPreferAes(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC should enable alternative services for different
+    // host.
+    static bool ShouldQuicEnableAlternativeServicesForDifferentHost(
+        const base::CommandLine& command_line,
+        const VariationParameters& quic_trial_params);
+
+    // Returns the maximum number of QUIC connections with high packet loss in a
+    // row after which QUIC should be disabled.  Returns 0 if the default value
+    // should be used.
+    static int GetQuicMaxNumberOfLossyConnections(
+        const VariationParameters& quic_trial_params);
+
+    // Returns the packet loss rate in fraction after which a QUIC connection is
+    // closed and is considered as a lossy connection. Returns 0 if the default
+    // value should be used.
+    static float GetQuicPacketLossThreshold(
+        const VariationParameters& quic_trial_params);
+
+    // Returns the size of the QUIC receive buffer to use, or 0 if the default
+    // should be used.
+    static int GetQuicSocketReceiveBufferSize(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC should delay TCP connection when QUIC works.
+    static bool ShouldQuicDelayTcpRace(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC should close sessions when any of the client's IP
+    // addresses change.
+    static bool ShouldQuicCloseSessionsOnIpChange(
+        const VariationParameters& quic_trial_params);
+
+    // Returns the idle connection timeout for QUIC connections.  Returns 0 if
+    // there is an error parsing any of the options, or if the default value
+    // should be used.
+    static int GetQuicIdleConnectionTimeoutSeconds(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if PreConnect should be disabled if QUIC can do 0RTT.
+    static bool ShouldQuicDisablePreConnectIfZeroRtt(
+        const VariationParameters& quic_trial_params);
+
+    // Returns the set of hosts to whitelist for QUIC.
+    static std::unordered_set<std::string> GetQuicHostWhitelist(
+        const base::CommandLine& command_line,
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC should migrate sessions when primary network
+    // changes.
+    static bool ShouldQuicMigrateSessionsOnNetworkChange(
+        const VariationParameters& quic_trial_params);
+
+    // Returns true if QUIC should migrate sessions early.
+    static bool ShouldQuicMigrateSessionsEarly(
+        const VariationParameters& quic_trial_params);
+
+    // Returns the maximum length for QUIC packets, based on any flags in
+    // |command_line| or the field trial.  Returns 0 if there is an error
+    // parsing any of the options, or if the default value should be used.
+    static size_t GetQuicMaxPacketLength(
+        const base::CommandLine& command_line,
+        const VariationParameters& quic_trial_params);
+
+    // Returns the QUIC versions specified by any flags in |command_line| or
+    // |quic_trial_params|.
+    static net::QuicVersion GetQuicVersion(
+        const base::CommandLine& command_line,
+        const VariationParameters& quic_trial_params);
+
+    // Returns the QUIC version specified by |quic_version| or
+    // QUIC_VERSION_UNSUPPORTED if |quic_version| is invalid.
+    static net::QuicVersion ParseQuicVersion(const std::string& quic_version);
+
+    // Returns the QUIC connection options specified by any flags in
+    // |command_line| or |quic_trial_params|.
+    static net::QuicTagVector GetQuicConnectionOptions(
+        const base::CommandLine& command_line,
+        const VariationParameters& quic_trial_params);
   };
 
   // |net_log| must either outlive the IOThread or be NULL.
@@ -282,7 +425,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // called on the IO thread.
   void ClearHostCache();
 
-  void InitializeNetworkSessionParams(net::HttpNetworkSession::Params* params);
+  const net::HttpNetworkSession::Params& NetworkSessionParams() const;
 
   base::TimeTicks creation_time() const;
 
@@ -291,9 +434,6 @@ class IOThread : public content::BrowserThreadDelegate {
   static bool ShouldEnableQuicForDataReductionProxy();
 
  private:
-  // Map from name to value for all parameters associate with a field trial.
-  typedef std::map<std::string, std::string> VariationParameters;
-
   // Provide SystemURLRequestContextGetter with access to
   // InitSystemRequestContext().
   friend class SystemURLRequestContextGetter;
@@ -312,27 +452,6 @@ class IOThread : public content::BrowserThreadDelegate {
       net::HttpNetworkSession::Params* params);
 
   void InitializeNetworkOptions(const base::CommandLine& parsed_command_line);
-
-  // Sets up TCP FastOpen if enabled via field trials or via the command line.
-  void ConfigureTCPFastOpen(const base::CommandLine& command_line);
-
-  // Configures available SPDY protocol versions in |globals| based on the flags
-  // in |command_lin| as well as SPDY field trial group and parameters.  Must be
-  // called after ConfigureQuicGlobals.
-  static void ConfigureSpdyGlobals(const base::CommandLine& command_line,
-                                   base::StringPiece quic_trial_group,
-                                   const VariationParameters& quic_trial_params,
-                                   Globals* globals);
-
-  // Configures Alternative Services in |globals| based on the field trial
-  // group.
-  static void ConfigureAltSvcGlobals(const base::CommandLine& command_line,
-                                     base::StringPiece altsvc_trial_group,
-                                     IOThread::Globals* globals);
-
-  // Configures NPN in |globals| based on the field trial group.
-  static void ConfigureNPNGlobals(base::StringPiece npn_trial_group,
-                                  Globals* globals);
 
   // Global state must be initialized on the IO thread, then this
   // method must be invoked on the UI thread.
@@ -358,13 +477,6 @@ class IOThread : public content::BrowserThreadDelegate {
   void UpdateNegotiateDisableCnameLookup();
   void UpdateNegotiateEnablePort();
 
-  // Configure the use of priority dependencies in SPDY/HTTP2
-  void ConfigurePriorityDependencies();
-
-  // Configures QUIC options based on the flags in |command_line| as
-  // well as the QUIC field trial group.
-  void ConfigureQuic(const base::CommandLine& command_line);
-
   extensions::EventRouterForwarder* extension_event_router_forwarder() {
 #if defined(ENABLE_EXTENSIONS)
     return extension_event_router_forwarder_;
@@ -372,153 +484,9 @@ class IOThread : public content::BrowserThreadDelegate {
     return NULL;
 #endif
   }
-  // Configures QUIC options in |globals| based on the flags in |command_line|
-  // as well as the QUIC field trial group and parameters.  Must be called
-  // before ConfigureSpdyGlobals.
-  static void ConfigureQuicGlobals(
-      const base::CommandLine& command_line,
-      base::StringPiece quic_trial_group,
-      const VariationParameters& quic_trial_params,
-      bool quic_allowed_by_policy,
-      Globals* globals);
-
-  // Returns true if QUIC should be disabled when a connection times out with
-  // open streams.
-  static bool ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC should be enabled, either as a result
-  // of a field trial or a command line flag.
-  static bool ShouldEnableQuic(
-      const base::CommandLine& command_line,
-      base::StringPiece quic_trial_group,
-      bool quic_allowed_by_policy);
-
-  // Returns true if QUIC should be enabled for proxies, either as a result
-  // of a field trial or a command line flag.
-  static bool ShouldEnableQuicForProxies(
-      const base::CommandLine& command_line,
-      base::StringPiece quic_trial_group,
-      bool quic_allowed_by_policy);
-
-  // Returns true if the selection of the ephemeral port in bind() should be
-  // performed by Chromium, and false if the OS should select the port.  The OS
-  // option is used to prevent Windows from posting a security security warning
-  // dialog.
-  static bool ShouldEnableQuicPortSelection(
-      const base::CommandLine& command_line);
-
-  // Returns true if QUIC should always require handshake confirmation during
-  // the QUIC handshake.
-  static bool ShouldQuicAlwaysRequireHandshakeConfirmation(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC should disable connection pooling.
-  static bool ShouldQuicDisableConnectionPooling(
-      const VariationParameters& quic_trial_params);
-
-  // Returns the ratio of time to load QUIC sever information from disk cache to
-  // 'smoothed RTT' based on field trial. Returns 0 if there is an error parsing
-  // the field trial params, or if the default value should be used.
-  static float GetQuicLoadServerInfoTimeoutSrttMultiplier(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC's connection racing should be enabled.
-  static bool ShouldQuicEnableConnectionRacing(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC's should use non-blocking IO.
-  static bool ShouldQuicEnableNonBlockingIO(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC shouldn't load QUIC server information from the disk
-  // cache.
-  static bool ShouldQuicDisableDiskCache(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC should prefer AES-GCN even without hardware support.
-  static bool ShouldQuicPreferAes(const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC should enable alternative services for different host.
-  static bool ShouldQuicEnableAlternativeServicesForDifferentHost(
-      const base::CommandLine& command_line,
-      const VariationParameters& quic_trial_params);
-
-  // Returns the maximum number of QUIC connections with high packet loss in a
-  // row after which QUIC should be disabled.  Returns 0 if the default value
-  // should be used.
-  static int GetQuicMaxNumberOfLossyConnections(
-      const VariationParameters& quic_trial_params);
-
-  // Returns the packet loss rate in fraction after which a QUIC connection is
-  // closed and is considered as a lossy connection. Returns 0 if the default
-  // value should be used.
-  static float GetQuicPacketLossThreshold(
-      const VariationParameters& quic_trial_params);
-
-  // Returns the size of the QUIC receive buffer to use, or 0 if
-  // the default should be used.
-  static int GetQuicSocketReceiveBufferSize(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC should delay TCP connection when QUIC works.
-  static bool ShouldQuicDelayTcpRace(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC should close sessions when any of the client's
-  // IP addresses change.
-  static bool ShouldQuicCloseSessionsOnIpChange(
-      const VariationParameters& quic_trial_params);
-
-  // Returns the idle connection timeout for QUIC connections.  Returns 0 if
-  // there is an error parsing any of the options, or if the default value
-  // should be used.
-  static int GetQuicIdleConnectionTimeoutSeconds(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if PreConnect should be disabled if QUIC can do 0RTT.
-  static bool ShouldQuicDisablePreConnectIfZeroRtt(
-      const VariationParameters& quic_trial_params);
-
-  // Returns the set of hosts to whitelist for QUIC.
-  static std::unordered_set<std::string> GetQuicHostWhitelist(
-      const base::CommandLine& command_line,
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC should migrate sessions when primary network
-  // changes.
-  static bool ShouldQuicMigrateSessionsOnNetworkChange(
-      const VariationParameters& quic_trial_params);
-
-  // Returns true if QUIC should migrate sessions early.
-  static bool ShouldQuicMigrateSessionsEarly(
-      const VariationParameters& quic_trial_params);
-
-  // Returns the maximum length for QUIC packets, based on any flags in
-  // |command_line| or the field trial.  Returns 0 if there is an error
-  // parsing any of the options, or if the default value should be used.
-  static size_t GetQuicMaxPacketLength(
-      const base::CommandLine& command_line,
-      const VariationParameters& quic_trial_params);
-
-  // Returns the QUIC versions specified by any flags in |command_line|
-  // or |quic_trial_params|.
-  static net::QuicVersion GetQuicVersion(
-      const base::CommandLine& command_line,
-      const VariationParameters& quic_trial_params);
-
-  // Returns the QUIC version specified by |quic_version| or
-  // QUIC_VERSION_UNSUPPORTED if |quic_version| is invalid.
-  static net::QuicVersion ParseQuicVersion(const std::string& quic_version);
-
-  // Returns the QUIC connection options specified by any flags in
-  // |command_line| or |quic_trial_params|.
-  static net::QuicTagVector GetQuicConnectionOptions(
-      const base::CommandLine& command_line,
-      const VariationParameters& quic_trial_params);
-
   static net::URLRequestContext* ConstructSystemRequestContext(
       IOThread::Globals* globals,
+      const net::HttpNetworkSession::Params& params,
       net::NetLog* net_log);
 
   // TODO(willchan): Remove proxy script fetcher context since it's not
@@ -526,6 +494,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // See IOThread::Globals for details.
   static net::URLRequestContext* ConstructProxyScriptFetcherContext(
       IOThread::Globals* globals,
+      const net::HttpNetworkSession::Params& params,
       net::NetLog* net_log);
 
   // The NetLog is owned by the browser process, to allow logging from other
@@ -547,6 +516,9 @@ class IOThread : public content::BrowserThreadDelegate {
   // lifetime of the IO thread.
 
   Globals* globals_;
+
+  net::HttpNetworkSession::Params params_;
+  NetworkSessionConfigurator network_session_configurator_;
 
   // Observer that logs network changes to the ChromeNetLog.
   class LoggingNetworkChangeObserver;
@@ -590,8 +562,8 @@ class IOThread : public content::BrowserThreadDelegate {
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;
 
-  // True if SPDY is disabled by policy.
-  bool is_spdy_disabled_by_policy_;
+  // True if SPDY is allowed by policy.
+  bool is_spdy_allowed_by_policy_;
 
   // True if QUIC is allowed by policy.
   bool is_quic_allowed_by_policy_;

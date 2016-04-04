@@ -1284,12 +1284,11 @@ void ProfileIOData::DestroyResourceContext() {
 
 scoped_ptr<net::HttpNetworkSession> ProfileIOData::CreateHttpNetworkSession(
     const ProfileParams& profile_params) const {
-  net::HttpNetworkSession::Params params;
   net::URLRequestContext* context = main_request_context();
 
   IOThread* const io_thread = profile_params.io_thread;
 
-  io_thread->InitializeNetworkSessionParams(&params);
+  net::HttpNetworkSession::Params params(io_thread->NetworkSessionParams());
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(context,
                                                                  &params);
   if (!IsOffTheRecord()) {

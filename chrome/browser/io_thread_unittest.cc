@@ -21,13 +21,13 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert_net/nss_ocsp.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,233 +44,245 @@
 
 namespace test {
 
-using ::testing::ElementsAre;
 using ::testing::ReturnRef;
 
 // Class used for accessing IOThread methods (friend of IOThread).
 class IOThreadPeer {
  public:
-  static void ConfigureQuicGlobals(
-      const base::CommandLine& command_line,
-      base::StringPiece quic_trial_group,
-      const std::map<std::string, std::string>& quic_trial_params,
-      bool is_quic_allowed_by_policy,
-      IOThread::Globals* globals) {
-    IOThread::ConfigureQuicGlobals(command_line, quic_trial_group,
-                                   quic_trial_params, is_quic_allowed_by_policy,
-                                   globals);
-  }
-
-  static void ConfigureSpdyGlobals(
-      const base::CommandLine& command_line,
-      base::StringPiece spdy_trial_group,
-      const std::map<std::string, std::string>& spdy_trial_params,
-      IOThread::Globals* globals) {
-    IOThread::ConfigureSpdyGlobals(command_line, spdy_trial_group,
-                                   spdy_trial_params, globals);
-  }
-
-  static void ConfigureAltSvcGlobals(const base::CommandLine& command_line,
-                                     base::StringPiece altsvc_trial_group,
-                                     IOThread::Globals* globals) {
-    IOThread::ConfigureAltSvcGlobals(command_line, altsvc_trial_group, globals);
-  }
-
-  static void ConfigureNPNGlobals(base::StringPiece npn_trial_group,
-                                  IOThread::Globals* globals) {
-    IOThread::ConfigureNPNGlobals(npn_trial_group, globals);
-  }
-
-  static void InitializeNetworkSessionParamsFromGlobals(
-      const IOThread::Globals& globals,
-      net::HttpNetworkSession::Params* params) {
-    IOThread::InitializeNetworkSessionParamsFromGlobals(globals, params);
-  }
-
   static net::HttpAuthPreferences* GetAuthPreferences(IOThread* io_thread) {
     return io_thread->globals()->http_auth_preferences.get();
   }
 };
 
-class IOThreadTest : public testing::Test {
+class NetworkSessionConfiguratorTest : public testing::Test {
  public:
-  IOThreadTest()
-      : command_line_(base::CommandLine::NO_PROGRAM),
-        is_quic_allowed_by_policy_(true) {
-    globals_.http_server_properties.reset(new net::HttpServerPropertiesImpl());
+  NetworkSessionConfiguratorTest()
+      : is_spdy_allowed_by_policy_(true), is_quic_allowed_by_policy_(true) {
+    field_trial_list_.reset(
+        new base::FieldTrialList(new base::MockEntropyProvider()));
+    variations::testing::ClearAllVariationParams();
   }
 
-  void ConfigureQuicGlobals() {
-    IOThreadPeer::ConfigureQuicGlobals(command_line_,
-                                       field_trial_group_,
-                                       field_trial_params_,
-                                       is_quic_allowed_by_policy_,
-                                       &globals_);
+  void ParseFieldTrials() {
+    network_session_configurator_.ParseFieldTrials(
+        is_spdy_allowed_by_policy_, is_quic_allowed_by_policy_, &params_);
   }
 
-  void ConfigureSpdyGlobals() {
-    IOThreadPeer::ConfigureSpdyGlobals(command_line_, field_trial_group_,
-                                       field_trial_params_, &globals_);
+  void ParseFieldTrialsAndCommandLine() {
+    network_session_configurator_.ParseFieldTrialsAndCommandLine(
+        is_spdy_allowed_by_policy_, is_quic_allowed_by_policy_, &params_);
   }
 
-  void ConfigureAltSvcGlobals() {
-    IOThreadPeer::ConfigureAltSvcGlobals(command_line_, field_trial_group_,
-                                         &globals_);
-  }
-
-  void ConfigureNPNGlobals() {
-    IOThreadPeer::ConfigureNPNGlobals(field_trial_group_, &globals_);
-  }
-
-  void InitializeNetworkSessionParams(net::HttpNetworkSession::Params* params) {
-    IOThreadPeer::InitializeNetworkSessionParamsFromGlobals(globals_, params);
-  }
-
-  base::CommandLine command_line_;
-  IOThread::Globals globals_;
-  std::string field_trial_group_;
+  bool is_spdy_allowed_by_policy_;
   bool is_quic_allowed_by_policy_;
-  std::map<std::string, std::string> field_trial_params_;
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
+  net::HttpNetworkSession::Params params_;
+
+ private:
+  IOThread::NetworkSessionConfigurator network_session_configurator_;
 };
 
-TEST_F(IOThreadTest, InitializeNetworkSessionParamsFromGlobals) {
-  globals_.quic_connection_options.push_back(net::kTBBR);
-  globals_.quic_connection_options.push_back(net::kTIME);
+TEST_F(NetworkSessionConfiguratorTest, Defaults) {
+  ParseFieldTrialsAndCommandLine();
 
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(globals_.quic_connection_options,
-            params.quic_connection_options);
+  EXPECT_FALSE(params_.ignore_certificate_errors);
+  EXPECT_EQ(0u, params_.testing_fixed_http_port);
+  EXPECT_EQ(0u, params_.testing_fixed_https_port);
+  EXPECT_TRUE(params_.enable_spdy31);
+  EXPECT_TRUE(params_.enable_http2);
+  EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
+  EXPECT_FALSE(params_.parse_alternative_services);
+  EXPECT_FALSE(params_.enable_alternative_service_with_different_host);
+  EXPECT_TRUE(params_.enable_npn);
+  EXPECT_TRUE(params_.enable_priority_dependencies);
+  EXPECT_FALSE(params_.enable_quic);
+  EXPECT_FALSE(params_.enable_quic_for_proxies);
+  EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
-TEST_F(IOThreadTest, SpdyFieldTrialHoldbackEnabled) {
+TEST_F(NetworkSessionConfiguratorTest, IgnoreCertificateErrors) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "ignore-certificate-errors");
+
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_TRUE(params_.ignore_certificate_errors);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, TestingFixedPort) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "testing-fixed-http-port", "42");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "testing-fixed-https-port", "1234");
+
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(42u, params_.testing_fixed_http_port);
+  EXPECT_EQ(1234u, params_.testing_fixed_https_port);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, AltSvcFieldTrialEnabled) {
+  base::FieldTrialList::CreateFieldTrial("ParseAltSvc", "AltSvcEnabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.parse_alternative_services);
+  EXPECT_FALSE(params_.enable_alternative_service_with_different_host);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, AltSvcFieldTrialDisabled) {
+  base::FieldTrialList::CreateFieldTrial("ParseAltSvc", "AltSvcDisabled");
+
+  ParseFieldTrials();
+
+  EXPECT_FALSE(params_.parse_alternative_services);
+  EXPECT_FALSE(params_.enable_alternative_service_with_different_host);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, SpdyFieldTrialHoldbackEnabled) {
   net::HttpStreamFactory::set_spdy_enabled(true);
-  field_trial_group_ = "SpdyDisabled";
-  ConfigureSpdyGlobals();
+  base::FieldTrialList::CreateFieldTrial("SPDY", "SpdyDisabled");
+
+  ParseFieldTrials();
+
   EXPECT_FALSE(net::HttpStreamFactory::spdy_enabled());
 }
 
-TEST_F(IOThreadTest, SpdyFieldTrialSpdy31Enabled) {
-  field_trial_group_ = "Spdy31Enabled";
-  ConfigureSpdyGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_spdy31);
-  EXPECT_FALSE(params.enable_http2);
+TEST_F(NetworkSessionConfiguratorTest, SpdyFieldTrialSpdy31Enabled) {
+  base::FieldTrialList::CreateFieldTrial("SPDY", "Spdy31Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_spdy31);
+  EXPECT_FALSE(params_.enable_http2);
 }
 
-TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
-  field_trial_group_ = "Spdy4Enabled";
-  ConfigureSpdyGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_spdy31);
-  EXPECT_TRUE(params.enable_http2);
+TEST_F(NetworkSessionConfiguratorTest, SpdyFieldTrialSpdy4Enabled) {
+  base::FieldTrialList::CreateFieldTrial("SPDY", "Spdy4Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_spdy31);
+  EXPECT_TRUE(params_.enable_http2);
 }
 
-TEST_F(IOThreadTest, SpdyFieldTrialDefault) {
-  field_trial_group_ = "";
-  ConfigureSpdyGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_spdy31);
-  EXPECT_TRUE(params.enable_http2);
+TEST_F(NetworkSessionConfiguratorTest, SpdyFieldTrialParametrized) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_spdy31"] = "false";
+  field_trial_params["enable_http2"] = "true";
+  variations::AssociateVariationParams("SPDY", "ParametrizedHTTP2Only",
+                                       field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("SPDY", "ParametrizedHTTP2Only");
+
+  ParseFieldTrials();
+
+  EXPECT_FALSE(params_.enable_spdy31);
+  EXPECT_TRUE(params_.enable_http2);
 }
 
-TEST_F(IOThreadTest, SpdyFieldTrialParametrized) {
-  field_trial_params_["enable_spdy31"] = "false";
-  field_trial_params_["enable_http2"] = "true";
-  field_trial_group_ = "ParametrizedHTTP2Only";
-  ConfigureSpdyGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_FALSE(params.enable_spdy31);
-  EXPECT_TRUE(params.enable_http2);
-}
-
-TEST_F(IOThreadTest, SpdyCommandLineDisableHttp2) {
-  command_line_.AppendSwitch("disable-http2");
+TEST_F(NetworkSessionConfiguratorTest, SpdyCommandLineDisableHttp2) {
   // Command line should overwrite field trial group.
-  field_trial_group_ = "Spdy4Enabled";
-  ConfigureSpdyGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_FALSE(params.enable_spdy31);
-  EXPECT_FALSE(params.enable_http2);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("disable-http2");
+  base::FieldTrialList::CreateFieldTrial("SPDY", "Spdy4Enabled");
+
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_FALSE(params_.enable_spdy31);
+  EXPECT_FALSE(params_.enable_http2);
 }
 
-TEST_F(IOThreadTest, NPNFieldTrialEnabled) {
-  field_trial_group_ = "Enable-experiment";
-  ConfigureNPNGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_npn);
+TEST_F(NetworkSessionConfiguratorTest, SpdyDisallowedByPolicy) {
+  is_spdy_allowed_by_policy_ = false;
+
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_FALSE(params_.enable_spdy31);
+  EXPECT_FALSE(params_.enable_http2);
 }
 
-TEST_F(IOThreadTest, NPNFieldTrialDisabled) {
-  field_trial_group_ = "Disable-holdback";
-  ConfigureNPNGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_FALSE(params.enable_npn);
+TEST_F(NetworkSessionConfiguratorTest, NPNFieldTrialEnabled) {
+  base::FieldTrialList::CreateFieldTrial("NPN", "Enable-experiment");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_npn);
 }
 
-TEST_F(IOThreadTest, DisableQuicByDefault) {
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_FALSE(params.enable_quic);
-  EXPECT_FALSE(params.enable_quic_for_proxies);
-  EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
+TEST_F(NetworkSessionConfiguratorTest, NPNFieldTrialDisabled) {
+  base::FieldTrialList::CreateFieldTrial("NPN", "Disable-holdback");
+
+  ParseFieldTrials();
+
+  EXPECT_FALSE(params_.enable_npn);
 }
 
-TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
-  field_trial_group_ = "Enabled";
+TEST_F(NetworkSessionConfiguratorTest, PriorityDependenciesTrialEnabled) {
+  base::FieldTrialList::CreateFieldTrial("SpdyEnableDependencies",
+                                         "Enable-experiment");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params default_params;
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_quic);
-  EXPECT_FALSE(params.disable_quic_on_timeout_with_open_streams);
-  EXPECT_TRUE(params.enable_quic_for_proxies);
-  EXPECT_EQ(1350u, params.quic_max_packet_length);
-  EXPECT_EQ(default_params.quic_supported_versions,
-            params.quic_supported_versions);
-  EXPECT_EQ(net::QuicTagVector(), params.quic_connection_options);
-  EXPECT_FALSE(params.quic_always_require_handshake_confirmation);
-  EXPECT_FALSE(params.quic_disable_connection_pooling);
-  EXPECT_EQ(0.25f, params.quic_load_server_info_timeout_srtt_multiplier);
-  EXPECT_FALSE(params.quic_enable_connection_racing);
-  EXPECT_FALSE(params.quic_enable_non_blocking_io);
-  EXPECT_FALSE(params.quic_disable_disk_cache);
-  EXPECT_FALSE(params.quic_prefer_aes);
-  EXPECT_FALSE(params.parse_alternative_services);
-  EXPECT_FALSE(params.enable_alternative_service_with_different_host);
-  EXPECT_EQ(0, params.quic_max_number_of_lossy_connections);
-  EXPECT_EQ(1.0f, params.quic_packet_loss_threshold);
-  EXPECT_FALSE(params.quic_delay_tcp_race);
-  EXPECT_FALSE(params.quic_close_sessions_on_ip_change);
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_priority_dependencies);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, PriorityDependenciesTrialDisabled) {
+  base::FieldTrialList::CreateFieldTrial("SpdyEnableDependencies",
+                                         "Disable-holdback");
+
+  ParseFieldTrials();
+
+  EXPECT_FALSE(params_.enable_priority_dependencies);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_quic);
+  EXPECT_FALSE(params_.disable_quic_on_timeout_with_open_streams);
+  EXPECT_TRUE(params_.enable_quic_for_proxies);
+  EXPECT_EQ(1350u, params_.quic_max_packet_length);
+  EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
+  EXPECT_FALSE(params_.quic_always_require_handshake_confirmation);
+  EXPECT_FALSE(params_.quic_disable_connection_pooling);
+  EXPECT_EQ(0.25f, params_.quic_load_server_info_timeout_srtt_multiplier);
+  EXPECT_FALSE(params_.quic_enable_connection_racing);
+  EXPECT_FALSE(params_.quic_enable_non_blocking_io);
+  EXPECT_FALSE(params_.quic_disable_disk_cache);
+  EXPECT_FALSE(params_.quic_prefer_aes);
+  EXPECT_FALSE(params_.parse_alternative_services);
+  EXPECT_FALSE(params_.enable_alternative_service_with_different_host);
+  EXPECT_EQ(0, params_.quic_max_number_of_lossy_connections);
+  EXPECT_EQ(1.0f, params_.quic_packet_loss_threshold);
+  EXPECT_FALSE(params_.quic_delay_tcp_race);
+  EXPECT_FALSE(params_.quic_close_sessions_on_ip_change);
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
-            params.quic_idle_connection_timeout_seconds);
-  EXPECT_FALSE(params.quic_disable_preconnect_if_0rtt);
-  EXPECT_FALSE(params.quic_migrate_sessions_on_network_change);
-  EXPECT_FALSE(params.quic_migrate_sessions_early);
+            params_.quic_idle_connection_timeout_seconds);
+  EXPECT_FALSE(params_.quic_disable_preconnect_if_0rtt);
+  EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change);
+  EXPECT_FALSE(params_.quic_migrate_sessions_early);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
-  EXPECT_TRUE(params.quic_host_whitelist.empty());
+  EXPECT_TRUE(params_.quic_host_whitelist.empty());
+
+  net::HttpNetworkSession::Params default_params;
+  EXPECT_EQ(default_params.quic_supported_versions,
+            params_.quic_supported_versions);
 }
 
-TEST_F(IOThreadTest,
+TEST_F(NetworkSessionConfiguratorTest,
        DisableQuicWhenConnectionTimesOutWithOpenStreamsFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["disable_quic_on_timeout_with_open_streams"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.disable_quic_on_timeout_with_open_streams);
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["disable_quic_on_timeout_with_open_streams"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.disable_quic_on_timeout_with_open_streams);
 }
 
-TEST_F(IOThreadTest, EnableQuicFromQuicProxyFieldTrialGroup) {
+TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromQuicProxyFieldTrialGroup) {
   const struct {
     std::string field_trial_group_name;
     bool expect_enable_quic;
@@ -295,365 +307,394 @@ TEST_F(IOThreadTest, EnableQuicFromQuicProxyFieldTrialGroup) {
       },
   };
 
+  field_trial_list_.reset();
   for (size_t i = 0; i < arraysize(tests); ++i) {
     base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
     base::FieldTrialList::CreateFieldTrial(
         data_reduction_proxy::params::GetQuicFieldTrialName(),
         tests[i].field_trial_group_name);
 
-    ConfigureQuicGlobals();
-    net::HttpNetworkSession::Params params;
-    InitializeNetworkSessionParams(&params);
-    EXPECT_FALSE(params.enable_quic) << i;
-    EXPECT_EQ(tests[i].expect_enable_quic, params.enable_quic_for_proxies) << i;
+    ParseFieldTrials();
+
+    EXPECT_FALSE(params_.enable_quic) << i;
+    EXPECT_EQ(tests[i].expect_enable_quic, params_.enable_quic_for_proxies)
+        << i;
     EXPECT_EQ(tests[i].expect_enable_quic,
               IOThread::ShouldEnableQuicForDataReductionProxy())
         << i;
   }
 }
 
-TEST_F(IOThreadTest, EnableQuicFromCommandLine) {
-  command_line_.AppendSwitch("enable-quic");
+TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromCommandLine) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_quic);
-  EXPECT_TRUE(params.enable_quic_for_proxies);
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_TRUE(params_.enable_quic);
+  EXPECT_TRUE(params_.enable_quic_for_proxies);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
 }
 
-TEST_F(IOThreadTest, AltSvcFieldTrialEnabled) {
-  field_trial_group_ = "AltSvcEnabled";
-  ConfigureAltSvcGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.parse_alternative_services);
-  EXPECT_FALSE(params.enable_alternative_service_with_different_host);
+TEST_F(NetworkSessionConfiguratorTest,
+       EnableAlternativeServicesFromCommandLineWithQuicDisabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "enable-alternative-services");
+
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_FALSE(params_.enable_quic);
+  EXPECT_TRUE(params_.parse_alternative_services);
+  EXPECT_TRUE(params_.enable_alternative_service_with_different_host);
 }
 
-TEST_F(IOThreadTest, AltSvcFieldTrialDisabled) {
-  field_trial_group_ = "AltSvcDisabled";
-  ConfigureAltSvcGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_FALSE(params.parse_alternative_services);
-  EXPECT_FALSE(params.enable_alternative_service_with_different_host);
+TEST_F(NetworkSessionConfiguratorTest,
+       EnableAlternativeServicesFromCommandLineWithQuicEnabled) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      "enable-alternative-services");
+
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_TRUE(params_.enable_quic);
+  EXPECT_TRUE(params_.parse_alternative_services);
+  EXPECT_TRUE(params_.enable_alternative_service_with_different_host);
 }
 
-TEST_F(IOThreadTest, EnableAlternativeServicesFromCommandLineWithQuicDisabled) {
-  command_line_.AppendSwitch("enable-alternative-services");
+TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromCommandLine) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "quic-max-packet-length", "1450");
 
-  ConfigureAltSvcGlobals();
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_FALSE(params.enable_quic);
-  EXPECT_TRUE(params.parse_alternative_services);
-  EXPECT_TRUE(params.enable_alternative_service_with_different_host);
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(1450u, params_.quic_max_packet_length);
 }
 
-TEST_F(IOThreadTest, EnableAlternativeServicesFromCommandLineWithQuicEnabled) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitch("enable-alternative-services");
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicCloseSessionsOnIpChangeFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["close_sessions_on_ip_change"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
-  ConfigureAltSvcGlobals();
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_quic);
-  EXPECT_TRUE(params.parse_alternative_services);
-  EXPECT_TRUE(params.enable_alternative_service_with_different_host);
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_close_sessions_on_ip_change);
 }
 
-TEST_F(IOThreadTest, PacketLengthFromCommandLine) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitchASCII("quic-max-packet-length", "1450");
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicIdleConnectionTimeoutSecondsFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["idle_connection_timeout_seconds"] = "300";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(1450u, params.quic_max_packet_length);
+  ParseFieldTrials();
+
+  EXPECT_EQ(300, params_.quic_idle_connection_timeout_seconds);
 }
 
-TEST_F(IOThreadTest, QuicCloseSessionsOnIpChangeFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["close_sessions_on_ip_change"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_close_sessions_on_ip_change);
+TEST_F(NetworkSessionConfiguratorTest, QuicDisablePreConnectIfZeroRtt) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["disable_preconnect_if_0rtt"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_disable_preconnect_if_0rtt);
 }
 
-TEST_F(IOThreadTest, QuicIdleConnectionTimeoutSecondsFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["idle_connection_timeout_seconds"] = "300";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(300, params.quic_idle_connection_timeout_seconds);
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicMigrateSessionsOnNetworkChangeFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["migrate_sessions_on_network_change"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_migrate_sessions_on_network_change);
 }
 
-TEST_F(IOThreadTest, QuicDisablePreConnectIfZeroRtt) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["disable_preconnect_if_0rtt"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_disable_preconnect_if_0rtt);
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicMigrateSessionsEarlyFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["migrate_sessions_early"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_migrate_sessions_early);
 }
 
-TEST_F(IOThreadTest, QuicMigrateSessionsOnNetworkChangeFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["migrate_sessions_on_network_change"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_migrate_sessions_on_network_change);
+TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["max_packet_length"] = "1450";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(1450u, params_.quic_max_packet_length);
 }
 
-TEST_F(IOThreadTest, QuicMigrateSessionsEarlyFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["migrate_sessions_early"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_migrate_sessions_early);
-}
-
-TEST_F(IOThreadTest, PacketLengthFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["max_packet_length"] = "1450";
-
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(1450u, params.quic_max_packet_length);
-}
-
-TEST_F(IOThreadTest, QuicVersionFromCommandLine) {
-  command_line_.AppendSwitch("enable-quic");
+TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromCommandLine) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
   std::string version =
       net::QuicVersionToString(net::QuicSupportedVersions().back());
-  command_line_.AppendSwitchASCII("quic-version", version);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII("quic-version",
+                                                            version);
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
+  ParseFieldTrialsAndCommandLine();
+
   net::QuicVersionVector supported_versions;
   supported_versions.push_back(net::QuicSupportedVersions().back());
-  EXPECT_EQ(supported_versions, params.quic_supported_versions);
+  EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 
-TEST_F(IOThreadTest, QuicVersionFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["quic_version"] =
+TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["quic_version"] =
       net::QuicVersionToString(net::QuicSupportedVersions().back());
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
+  ParseFieldTrials();
+
   net::QuicVersionVector supported_versions;
   supported_versions.push_back(net::QuicSupportedVersions().back());
-  EXPECT_EQ(supported_versions, params.quic_supported_versions);
+  EXPECT_EQ(supported_versions, params_.quic_supported_versions);
 }
 
-TEST_F(IOThreadTest, QuicConnectionOptionsFromCommandLine) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitchASCII("quic-connection-options",
-                                  "TIME,TBBR,REJ");
+TEST_F(NetworkSessionConfiguratorTest, QuicConnectionOptionsFromCommandLine) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "quic-connection-options", "TIME,TBBR,REJ");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
+  ParseFieldTrialsAndCommandLine();
 
   net::QuicTagVector options;
   options.push_back(net::kTIME);
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);
-  EXPECT_EQ(options, params.quic_connection_options);
+  EXPECT_EQ(options, params_.quic_connection_options);
 }
 
-TEST_F(IOThreadTest, QuicConnectionOptionsFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["connection_options"] = "TIME,TBBR,REJ";
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicConnectionOptionsFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["connection_options"] = "TIME,TBBR,REJ";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
+  ParseFieldTrials();
 
   net::QuicTagVector options;
   options.push_back(net::kTIME);
   options.push_back(net::kTBBR);
   options.push_back(net::kREJ);
-  EXPECT_EQ(options, params.quic_connection_options);
+  EXPECT_EQ(options, params_.quic_connection_options);
 }
 
-TEST_F(IOThreadTest,
+TEST_F(NetworkSessionConfiguratorTest,
        QuicAlwaysRequireHandshakeConfirmationFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["always_require_handshake_confirmation"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_always_require_handshake_confirmation);
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["always_require_handshake_confirmation"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_always_require_handshake_confirmation);
 }
 
-TEST_F(IOThreadTest,
+TEST_F(NetworkSessionConfiguratorTest,
        QuicDisableConnectionPoolingFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["disable_connection_pooling"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_disable_connection_pooling);
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["disable_connection_pooling"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_disable_connection_pooling);
 }
 
-TEST_F(IOThreadTest, QuicLoadServerInfoTimeToSmoothedRttFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["load_server_info_time_to_srtt"] = "0.5";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(0.5f, params.quic_load_server_info_timeout_srtt_multiplier);
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicLoadServerInfoTimeToSmoothedRttFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["load_server_info_time_to_srtt"] = "0.5";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(0.5f, params_.quic_load_server_info_timeout_srtt_multiplier);
 }
 
-TEST_F(IOThreadTest, QuicEnableConnectionRacing) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["enable_connection_racing"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_enable_connection_racing);
+TEST_F(NetworkSessionConfiguratorTest, QuicEnableConnectionRacing) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_connection_racing"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_enable_connection_racing);
 }
 
-TEST_F(IOThreadTest, QuicEnableNonBlockingIO) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["enable_non_blocking_io"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_enable_non_blocking_io);
+TEST_F(NetworkSessionConfiguratorTest, QuicEnableNonBlockingIO) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_non_blocking_io"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_enable_non_blocking_io);
 }
 
-TEST_F(IOThreadTest, QuicDisableDiskCache) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["disable_disk_cache"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_disable_disk_cache);
+TEST_F(NetworkSessionConfiguratorTest, QuicDisableDiskCache) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["disable_disk_cache"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_disable_disk_cache);
 }
 
-TEST_F(IOThreadTest, QuicPreferAes) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["prefer_aes"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_prefer_aes);
+TEST_F(NetworkSessionConfiguratorTest, QuicPreferAes) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["prefer_aes"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_prefer_aes);
 }
 
-TEST_F(IOThreadTest, QuicEnableAlternativeServicesFromFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["enable_alternative_service_with_different_host"] =
-      "true";
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicEnableAlternativeServicesFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["enable_alternative_service_with_different_host"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.enable_alternative_service_with_different_host);
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_alternative_service_with_different_host);
   // QUIC AltSvc pooling parameter should also enable AltSvc parsing.
-  EXPECT_TRUE(params.parse_alternative_services);
+  EXPECT_TRUE(params_.parse_alternative_services);
 }
 
-TEST_F(IOThreadTest, QuicMaxNumberOfLossyConnectionsFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["max_number_of_lossy_connections"] = "5";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(5, params.quic_max_number_of_lossy_connections);
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicMaxNumberOfLossyConnectionsFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["max_number_of_lossy_connections"] = "5";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(5, params_.quic_max_number_of_lossy_connections);
 }
 
-TEST_F(IOThreadTest, QuicPacketLossThresholdFieldTrialParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["packet_loss_threshold"] = "0.5";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(0.5f, params.quic_packet_loss_threshold);
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicPacketLossThresholdFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["packet_loss_threshold"] = "0.5";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(0.5f, params_.quic_packet_loss_threshold);
 }
 
-TEST_F(IOThreadTest, QuicReceiveBufferSize) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["receive_buffer_size"] = "2097152";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(2097152, params.quic_socket_receive_buffer_size);
+TEST_F(NetworkSessionConfiguratorTest, QuicReceiveBufferSize) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["receive_buffer_size"] = "2097152";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_EQ(2097152, params_.quic_socket_receive_buffer_size);
 }
 
-TEST_F(IOThreadTest, QuicDelayTcpConnection) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["delay_tcp_race"] = "true";
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_TRUE(params.quic_delay_tcp_race);
+TEST_F(NetworkSessionConfiguratorTest, QuicDelayTcpConnection) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["delay_tcp_race"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_delay_tcp_race);
 }
 
-TEST_F(IOThreadTest, QuicOriginsToForceQuicOn) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitchASCII("origin-to-force-quic-on",
-                                  "www.example.com:443, www.example.org:443");
+TEST_F(NetworkSessionConfiguratorTest, QuicOriginsToForceQuicOn) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "origin-to-force-quic-on", "www.example.com:443, www.example.org:443");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(2u, params.origins_to_force_quic_on.size());
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(2u, params_.origins_to_force_quic_on.size());
   EXPECT_TRUE(
-      ContainsKey(params.origins_to_force_quic_on,
+      ContainsKey(params_.origins_to_force_quic_on,
                   net::HostPortPair::FromString("www.example.com:443")));
   EXPECT_TRUE(
-      ContainsKey(params.origins_to_force_quic_on,
+      ContainsKey(params_.origins_to_force_quic_on,
                   net::HostPortPair::FromString("www.example.org:443")));
 }
 
-TEST_F(IOThreadTest, QuicWhitelistFromCommandLinet) {
-  command_line_.AppendSwitch("enable-quic");
-  command_line_.AppendSwitchASCII("quic-host-whitelist",
-                                  "www.example.org, www.example.com");
+TEST_F(NetworkSessionConfiguratorTest, QuicWhitelistFromCommandLinet) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("enable-quic");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "quic-host-whitelist", "www.example.org, www.example.com");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(2u, params.quic_host_whitelist.size());
-  EXPECT_TRUE(ContainsKey(params.quic_host_whitelist, "www.example.org"));
-  EXPECT_TRUE(ContainsKey(params.quic_host_whitelist, "www.example.com"));
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_EQ(2u, params_.quic_host_whitelist.size());
+  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.org"));
+  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.com"));
 }
 
-TEST_F(IOThreadTest, QuicWhitelistFromParams) {
-  field_trial_group_ = "Enabled";
-  field_trial_params_["quic_host_whitelist"] =
+TEST_F(NetworkSessionConfiguratorTest, QuicWhitelistFromParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["quic_host_whitelist"] =
       "www.example.org, www.example.com";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
-  ConfigureQuicGlobals();
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_EQ(2u, params.quic_host_whitelist.size());
-  EXPECT_TRUE(ContainsKey(params.quic_host_whitelist, "www.example.org"));
-  EXPECT_TRUE(ContainsKey(params.quic_host_whitelist, "www.example.com"));
+  ParseFieldTrials();
+
+  EXPECT_EQ(2u, params_.quic_host_whitelist.size());
+  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.org"));
+  EXPECT_TRUE(ContainsKey(params_.quic_host_whitelist, "www.example.com"));
 }
 
-TEST_F(IOThreadTest, QuicDisallowedByPolicy) {
-  command_line_.AppendSwitch(switches::kEnableQuic);
+TEST_F(NetworkSessionConfiguratorTest, QuicDisallowedByPolicy) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableQuic);
   is_quic_allowed_by_policy_ = false;
-  ConfigureQuicGlobals();
 
-  net::HttpNetworkSession::Params params;
-  InitializeNetworkSessionParams(&params);
-  EXPECT_FALSE(params.enable_quic);
+  ParseFieldTrialsAndCommandLine();
+
+  EXPECT_FALSE(params_.enable_quic);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, TCPFastOpenHttpsEnabled) {
+  base::FieldTrialList::CreateFieldTrial("TCPFastOpen", "HttpsEnabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_tcp_fast_open_for_ssl);
 }
 
 class IOThreadTestWithIOThreadObject : public testing::Test {
@@ -722,14 +763,13 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
 #endif
     // The IOThread constructor registers the IOThread object with as the
     // BrowserThreadDelegate for the io thread.
-    io_thread_.reset(new IOThread(&pref_service_, &policy_service_,
-                                         nullptr,
+    io_thread_.reset(new IOThread(&pref_service_, &policy_service_, nullptr,
 #if defined(ENABLE_EXTENSIONS)
-                                         event_router_forwarder_.get()
+                                  event_router_forwarder_.get()
 #else
-                                         nullptr
+                                  nullptr
 #endif
-                                             ));
+                                      ));
     // Now that IOThread object is registered starting the threads will
     // call the IOThread::Init(). This sets up the environment needed for
     // these tests.
