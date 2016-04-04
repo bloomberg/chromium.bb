@@ -140,6 +140,11 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     EXPECT_EQ(SERVICE_WORKER_OK, status);
   }
 
+  void SendSetHostedVersionId(int provider_id, int64_t version_id) {
+    dispatcher_host_->OnMessageReceived(
+        ServiceWorkerHostMsg_SetVersionId(provider_id, version_id));
+  }
+
   void SendProviderCreated(ServiceWorkerProviderType type,
                            const GURL& pattern) {
     const int64_t kProviderId = 99;
@@ -729,6 +734,31 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
   for (TransferredMessagePort port : ports)
     EXPECT_FALSE(MessagePortService::GetInstance()->AreMessagesHeld(port.id));
   EXPECT_EQ(ref_count, sender_worker_handle->ref_count());
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, OnSetHostedVersionId) {
+  GURL pattern = GURL("http://www.example.com/");
+  GURL script_url = GURL("http://www.example.com/service_worker.js");
+
+  Initialize(make_scoped_ptr(new FailToStartWorkerTestHelper));
+  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, pattern);
+  SetUpRegistration(pattern, script_url);
+
+  const int64_t kProviderId = 99;  // Dummy value
+  bool called;
+  ServiceWorkerStatusCode status;
+  // StartWorker puts the worker in STARTING state but it will have no
+  // process id yet.
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        base::Bind(&SaveStatusCallback, &called, &status));
+  EXPECT_NE(version_->embedded_worker()->process_id(),
+            provider_host_->process_id());
+  // SendSetHostedVersionId should reject because the provider host process id
+  // is different.
+  SendSetHostedVersionId(kProviderId, version_->version_id());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
+      ServiceWorkerMsg_AssociateRegistration::ID));
 }
 
 }  // namespace content

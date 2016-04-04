@@ -848,12 +848,16 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
   if (!provider_host->IsContextAlive())
     return;
 
+  // We might not be STARTING if the stop sequence was entered (STOPPING) or
+  // ended up being detached (STOPPED).
   ServiceWorkerVersion* version = GetContext()->GetLiveVersion(version_id);
-  if (!version || version->running_status() == ServiceWorkerVersion::STOPPING)
+  if (!version || version->running_status() != ServiceWorkerVersion::STARTING)
     return;
 
-  if (!provider_host->SetHostedVersionId(version_id))
+  if (!provider_host->SetHostedVersion(version)) {
     bad_message::ReceivedBadMessage(this, bad_message::SWDH_SET_HOSTED_VERSION);
+    return;
+  }
 
   // Retrieve the registration associated with |version|. The registration
   // must be alive because the version keeps it during starting worker.

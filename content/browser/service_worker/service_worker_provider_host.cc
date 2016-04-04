@@ -185,25 +185,21 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
       notify_controllerchange));
 }
 
-bool ServiceWorkerProviderHost::SetHostedVersionId(int64_t version_id) {
-  if (!context_)
-    return true;  // System is shutting down.
+bool ServiceWorkerProviderHost::SetHostedVersion(
+    ServiceWorkerVersion* version) {
+  // TODO(falken): Unclear why we check active_version. Should this just check
+  // that IsProviderForClient() is false?
   if (active_version())
     return false;  // Unexpected bad message.
 
-  ServiceWorkerVersion* live_version = context_->GetLiveVersion(version_id);
-  if (!live_version)
-    return true;  // Was deleted before it got started.
-
-  ServiceWorkerVersionInfo info = live_version->GetInfo();
-  if (info.running_status != ServiceWorkerVersion::STARTING ||
-      info.process_id != render_process_id_) {
+  DCHECK_EQ(ServiceWorkerVersion::STARTING, version->running_status());
+  if (version->embedded_worker()->process_id() != render_process_id_) {
     // If we aren't trying to start this version in our process
     // something is amiss.
     return false;
   }
 
-  running_hosted_version_ = live_version;
+  running_hosted_version_ = version;
   return true;
 }
 
