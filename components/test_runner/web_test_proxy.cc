@@ -31,11 +31,6 @@
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_runner.h"
-// FIXME: Including platform_canvas.h here is a layering violation.
-#include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/platform/WebClipboard.h"
-#include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebLayoutAndPaintAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -58,26 +53,6 @@
 namespace test_runner {
 
 namespace {
-
-class CaptureCallback : public blink::WebCompositeAndReadbackAsyncCallback {
- public:
-  CaptureCallback(const base::Callback<void(const SkBitmap&)>& callback);
-  virtual ~CaptureCallback();
-
-  void set_wait_for_popup(bool wait) { wait_for_popup_ = wait; }
-  void set_popup_position(const gfx::Point& position) {
-    popup_position_ = position;
-  }
-
-  // WebCompositeAndReadbackAsyncCallback implementation.
-  void didCompositeAndReadback(const SkBitmap& bitmap) override;
-
- private:
-  base::Callback<void(const SkBitmap&)> callback_;
-  SkBitmap main_bitmap_;
-  bool wait_for_popup_;
-  gfx::Point popup_position_;
-};
 
 class LayoutAndPaintCallback : public blink::WebLayoutAndPaintAsyncCallback {
  public:
@@ -152,7 +127,6 @@ blink::WebView* WebTestProxyBase::GetWebView() const {
 }
 
 void WebTestProxyBase::Reset() {
-  drag_image_.reset();
   animate_scheduled_ = false;
 }
 
@@ -200,154 +174,6 @@ void WebTestProxyBase::ShowValidationMessage(
 
 std::string WebTestProxyBase::DumpBackForwardLists() {
   return DumpAllBackForwardLists(test_interfaces_, delegate_);
-}
-
-void WebTestProxyBase::DrawSelectionRect(SkCanvas* canvas) {
-  // See if we need to draw the selection bounds rect. Selection bounds
-  // rect is the rect enclosing the (possibly transformed) selection.
-  // The rect should be drawn after everything is laid out and painted.
-  if (!test_interfaces_->GetTestRunner()->shouldDumpSelectionRect())
-    return;
-  // If there is a selection rect - draw a red 1px border enclosing rect
-  blink::WebRect wr = GetWebView()->mainFrame()->selectionBoundsRect();
-  if (wr.isEmpty())
-    return;
-  // Render a red rectangle bounding selection rect
-  SkPaint paint;
-  paint.setColor(0xFFFF0000);  // Fully opaque red
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setStrokeWidth(1.0f);
-  SkIRect rect;  // Bounding rect
-  rect.set(wr.x, wr.y, wr.x + wr.width, wr.y + wr.height);
-  canvas->drawIRect(rect, paint);
-}
-
-void WebTestProxyBase::CopyImageAtAndCapturePixels(
-    int x, int y, const base::Callback<void(const SkBitmap&)>& callback) {
-  DCHECK(!callback.is_null());
-  uint64_t sequence_number =  blink::Platform::current()->clipboard()->
-      sequenceNumber(blink::WebClipboard::Buffer());
-  GetWebView()->copyImageAt(blink::WebPoint(x, y));
-  if (sequence_number == blink::Platform::current()->clipboard()->
-      sequenceNumber(blink::WebClipboard::Buffer())) {
-    SkBitmap emptyBitmap;
-    callback.Run(emptyBitmap);
-    return;
-  }
-
-  blink::WebData data = blink::Platform::current()->clipboard()->readImage(
-      blink::WebClipboard::Buffer());
-  blink::WebImage image = blink::WebImage::fromData(data, blink::WebSize());
-  const SkBitmap& bitmap = image.getSkBitmap();
-  SkAutoLockPixels autoLock(bitmap);
-  callback.Run(bitmap);
-}
-
-void WebTestProxyBase::CapturePixelsForPrinting(
-    const base::Callback<void(const SkBitmap&)>& callback) {
-  web_widget_->updateAllLifecyclePhases();
-
-  blink::WebSize page_size_in_pixels = web_widget_->size();
-  blink::WebFrame* web_frame = GetWebView()->mainFrame();
-
-  int page_count = web_frame->printBegin(page_size_in_pixels);
-  int totalHeight = page_count * (page_size_in_pixels.height + 1) - 1;
-
-  bool is_opaque = false;
-  skia::RefPtr<SkCanvas> canvas(skia::AdoptRef(skia::TryCreateBitmapCanvas(
-      page_size_in_pixels.width, totalHeight, is_opaque)));
-  if (!canvas) {
-    callback.Run(SkBitmap());
-    return;
-  }
-  web_frame->printPagesWithBoundaries(canvas.get(), page_size_in_pixels);
-  web_frame->printEnd();
-
-  DrawSelectionRect(canvas.get());
-  const SkBitmap bitmap = skia::ReadPixels(canvas.get());
-  callback.Run(bitmap);
-}
-
-CaptureCallback::CaptureCallback(
-    const base::Callback<void(const SkBitmap&)>& callback)
-    : callback_(callback), wait_for_popup_(false) {
-}
-
-CaptureCallback::~CaptureCallback() {
-}
-
-void CaptureCallback::didCompositeAndReadback(const SkBitmap& bitmap) {
-  TRACE_EVENT2("shell",
-               "CaptureCallback::didCompositeAndReadback",
-               "x",
-               bitmap.info().width(),
-               "y",
-               bitmap.info().height());
-  if (!wait_for_popup_) {
-    callback_.Run(bitmap);
-    delete this;
-    return;
-  }
-  if (main_bitmap_.isNull()) {
-    bitmap.deepCopyTo(&main_bitmap_);
-    return;
-  }
-  SkCanvas canvas(main_bitmap_);
-  canvas.drawBitmap(bitmap, popup_position_.x(), popup_position_.y());
-  callback_.Run(main_bitmap_);
-  delete this;
-}
-
-void WebTestProxyBase::CapturePixelsAsync(
-    const base::Callback<void(const SkBitmap&)>& callback) {
-  TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixelsAsync");
-  DCHECK(!callback.is_null());
-
-  if (test_interfaces_->GetTestRunner()->shouldDumpDragImage()) {
-    if (drag_image_.isNull()) {
-      // This means the test called dumpDragImage but did not initiate a drag.
-      // Return a blank image so that the test fails.
-      SkBitmap bitmap;
-      bitmap.allocN32Pixels(1, 1);
-      {
-        SkAutoLockPixels lock(bitmap);
-        bitmap.eraseColor(0);
-      }
-      callback.Run(bitmap);
-      return;
-    }
-
-    callback.Run(drag_image_.getSkBitmap());
-    return;
-  }
-
-  if (test_interfaces_->GetTestRunner()->isPrinting()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&WebTestProxyBase::CapturePixelsForPrinting,
-                              base::Unretained(this), callback));
-    return;
-  }
-
-  CaptureCallback* capture_callback = new CaptureCallback(base::Bind(
-      &WebTestProxyBase::DidCapturePixelsAsync, base::Unretained(this),
-      callback));
-  web_widget_->compositeAndReadbackAsync(capture_callback);
-  if (blink::WebPagePopup* popup = web_widget_->pagePopup()) {
-    capture_callback->set_wait_for_popup(true);
-    capture_callback->set_popup_position(
-        delegate_->ConvertDIPToNative(popup->positionRelativeToOwner()));
-    popup->compositeAndReadbackAsync(capture_callback);
-  }
-}
-
-void WebTestProxyBase::DidCapturePixelsAsync(
-    const base::Callback<void(const SkBitmap&)>& callback,
-    const SkBitmap& bitmap) {
-  SkCanvas canvas(bitmap);
-  DrawSelectionRect(&canvas);
-  if (!callback.is_null())
-    callback.Run(bitmap);
 }
 
 void LayoutAndPaintCallback::didLayoutAndPaint() {
@@ -429,10 +255,8 @@ void WebTestProxyBase::StartDragging(blink::WebLocalFrame* frame,
                                      blink::WebDragOperationsMask mask,
                                      const blink::WebImage& image,
                                      const blink::WebPoint& point) {
-  if (test_interfaces_->GetTestRunner()->shouldDumpDragImage()) {
-    if (drag_image_.isNull())
-      drag_image_ = image;
-  }
+  test_interfaces_->GetTestRunner()->setDragImage(image);
+
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.
   test_interfaces_->GetEventSender()->DoDragDrop(data, mask);
