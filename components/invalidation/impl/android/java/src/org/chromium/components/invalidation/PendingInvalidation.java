@@ -122,16 +122,28 @@ public class PendingInvalidation {
         if (!(other instanceof PendingInvalidation)) return false;
         PendingInvalidation otherInvalidation = (PendingInvalidation) other;
         if (mObjectSource != otherInvalidation.mObjectSource) return false;
-        if (mObjectSource == 0) return true;
-        if (!mObjectId.equals(otherInvalidation.mObjectId)) return false;
-        if (!mPayload.equals(otherInvalidation.mPayload)) return false;
-        return mVersion == otherInvalidation.mVersion;
+        if (mObjectId == null) {
+            if (otherInvalidation.mObjectId != null) return false;
+        } else {
+            if (!mObjectId.equals(otherInvalidation.mObjectId)) return false;
+        }
+        if (mVersion != otherInvalidation.mVersion) return false;
+        if (mPayload == null) {
+            if (otherInvalidation.mPayload != null) return false;
+        } else {
+            if (!mPayload.equals(otherInvalidation.mPayload)) return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return mObjectId == null ? mObjectSource : mObjectSource ^ mObjectId.hashCode()
-                        ^ Long.valueOf(mVersion).hashCode();
+        int hashCode = 0;
+        if (mObjectId != null) hashCode ^= mObjectId.hashCode();
+        hashCode ^= mObjectSource;
+        hashCode ^= Long.valueOf(mVersion).hashCode();
+        if (mPayload != null) hashCode ^= mPayload.hashCode();
+        return hashCode;
     }
 
     @Override

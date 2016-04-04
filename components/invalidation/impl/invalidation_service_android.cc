@@ -154,8 +154,12 @@ void InvalidationServiceAndroid::Invalidate(
         return;
       }
       max_invalidation_versions_[object_id] = version;
-      object_invalidation_map.Insert(syncer::Invalidation::Init(
-          object_id, version, ConvertJavaStringToUTF8(env, java_payload)));
+      std::string payload;
+      if (!java_payload.is_null())
+        ConvertJavaStringToUTF8(env, java_payload, &payload);
+
+      object_invalidation_map.Insert(
+          syncer::Invalidation::Init(object_id, version, payload));
     }
   }
 
