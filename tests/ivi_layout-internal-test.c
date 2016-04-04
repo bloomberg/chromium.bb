@@ -44,6 +44,7 @@ struct test_context {
 
 	struct wl_listener layer_property_changed;
 	struct wl_listener layer_created;
+	struct wl_listener layer_removed;
 };
 
 static void
@@ -767,11 +768,13 @@ test_layer_create_notification(struct test_context *ctx)
 }
 
 static void
-test_layer_remove_notification_callback(struct ivi_layout_layer *ivilayer,
-					void *userdata)
+test_layer_remove_notification_callback(struct wl_listener *listener, void *data)
 {
-	struct test_context *ctx = userdata;
+	struct test_context *ctx =
+			container_of(listener, struct test_context,
+					layer_removed);
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_layer *ivilayer = data;
 	const struct ivi_layout_layer_properties *prop =
 		lyt->get_properties_of_layer(ivilayer);
 
@@ -793,17 +796,19 @@ test_layer_remove_notification(struct test_context *ctx)
 	struct ivi_layout_layer *ivilayers[LAYER_NUM] = {};
 
 	ctx->user_flags = 0;
+	ctx->layer_removed.notify = test_layer_remove_notification_callback;
 
 	ivilayers[0] = lyt->layer_create_with_dimension(layers[0], 200, 300);
-	iassert(lyt->add_notification_remove_layer(
-		    test_layer_remove_notification_callback, ctx) == IVI_SUCCEEDED);
+	iassert(lyt->add_listener_remove_layer(&ctx->layer_removed) == IVI_SUCCEEDED);
 	lyt->layer_destroy(ivilayers[0]);
 
 	iassert(ctx->user_flags == 1);
 
 	ctx->user_flags = 0;
 	ivilayers[1] = lyt->layer_create_with_dimension(layers[1], 250, 350);
-	lyt->remove_notification_remove_layer(test_layer_remove_notification_callback, ctx);
+
+	// remove layer property changed listener.
+	wl_list_remove(&ctx->layer_removed.link);
 	lyt->layer_destroy(ivilayers[1]);
 
 	iassert(ctx->user_flags == 0);
@@ -860,7 +865,7 @@ test_layer_bad_remove_notification(struct test_context *ctx)
 {
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
 
-	iassert(lyt->add_notification_remove_layer(NULL, NULL) == IVI_FAILED);
+	iassert(lyt->add_listener_remove_layer(NULL) == IVI_FAILED);
 }
 
 static void

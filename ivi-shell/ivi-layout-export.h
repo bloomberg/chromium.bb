@@ -138,10 +138,6 @@ enum ivi_layout_transition_type{
 	IVI_LAYOUT_TRANSITION_MAX,
 };
 
-typedef void (*layer_remove_notification_func)(
-			struct ivi_layout_layer *ivilayer,
-			void *userdata);
-
 typedef void (*surface_remove_notification_func)(
 			struct ivi_layout_surface *ivisurf,
 			void *userdata);
@@ -345,15 +341,14 @@ struct ivi_layout_interface {
 	int32_t (*add_listener_create_layer)(struct wl_listener *listener);
 
 	/**
-	 * \brief register/unregister for notification when ivi_layer is removed
+	 * \brief add a listener for notification when ivi_layer is removed
+	 *
+	 * When an ivi_layer is removed, a signal is emitted
+	 * to the listening controller plugins.
+	 * The pointer of the removed ivi_layer is sent as the void *data argument
+	 * to the wl_listener::notify callback function of the listener.
 	 */
-	int32_t (*add_notification_remove_layer)(
-				layer_remove_notification_func callback,
-				void *userdata);
-
-	void (*remove_notification_remove_layer)(
-				layer_remove_notification_func callback,
-				void *userdata);
+	int32_t (*add_listener_remove_layer)(struct wl_listener *listener);
 
 	/**
 	 * \brief Create a ivi_layer which should be managed by the service
