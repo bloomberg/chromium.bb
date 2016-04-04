@@ -17,7 +17,7 @@ public:
     static RawPtr<FEBoxReflect> create(Filter*, ReflectionDirection, float offset);
 
     // FilterEffect implementation
-    FloatRect mapRect(const FloatRect&, bool forward = true) final;
+    FloatRect mapRect(const FloatRect&, bool forward = true) const final;
     TextStream& externalRepresentation(TextStream&, int indentation) const final;
     PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder&) final;
 

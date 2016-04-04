@@ -92,16 +92,16 @@ public:
     // destination rect. Note that these are not necessarily the inverse of
     // each other. For example, for FEGaussianBlur, they are the same
     // transformation.
-    virtual FloatRect mapRect(const FloatRect& rect, bool forward = true) { return rect; }
+    virtual FloatRect mapRect(const FloatRect& rect, bool forward = true) const { return rect; }
     // A version of the above that is used for calculating paint rects. We can't
     // use mapRect above for that, because that is also used for calculating effect
     // regions for CSS filters and has undesirable effects for tile and
     // displacement map.
-    virtual FloatRect mapPaintRect(const FloatRect& rect, bool forward)
+    virtual FloatRect mapPaintRect(const FloatRect& rect, bool forward) const
     {
         return mapRect(rect, forward);
     }
-    FloatRect mapRectRecursive(const FloatRect&);
+    FloatRect mapRectRecursive(const FloatRect&) const;
 
     virtual FilterEffectType getFilterEffectType() const { return FilterEffectTypeUnknown; }
 

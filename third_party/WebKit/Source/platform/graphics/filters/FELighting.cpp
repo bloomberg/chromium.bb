@@ -50,7 +50,7 @@ FELighting::FELighting(Filter* filter, LightingType lightingType, const Color& l
 {
 }
 
-FloatRect FELighting::mapPaintRect(const FloatRect& rect, bool)
+FloatRect FELighting::mapPaintRect(const FloatRect& rect, bool) const
 {
     FloatRect result = rect;
     // The areas affected need to be a pixel bigger to accommodate the Sobel kernel.

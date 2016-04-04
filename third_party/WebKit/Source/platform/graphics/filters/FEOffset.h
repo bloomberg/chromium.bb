@@ -37,7 +37,7 @@ public:
     float dy() const;
     void setDy(float);
 
-    FloatRect mapRect(const FloatRect&, bool forward = true) final;
+    FloatRect mapRect(const FloatRect&, bool forward = true) const final;
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 

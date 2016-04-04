@@ -44,10 +44,10 @@ RawPtr<FEDropShadow> FEDropShadow::create(Filter* filter, float stdX, float stdY
     return new FEDropShadow(filter, stdX, stdY, dx, dy, shadowColor, shadowOpacity);
 }
 
-FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward)
+FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward) const
 {
     FloatRect result = rect;
-    Filter* filter = this->getFilter();
+    const Filter* filter = this->getFilter();
     ASSERT(filter);
 
     FloatRect offsetRect = rect;

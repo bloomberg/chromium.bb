@@ -26,7 +26,7 @@ FEBoxReflect::~FEBoxReflect()
 {
 }
 
-FloatRect FEBoxReflect::mapRect(const FloatRect& rect, bool forward)
+FloatRect FEBoxReflect::mapRect(const FloatRect& rect, bool forward) const
 {
     SkMatrix flipMatrix = SkiaImageFilterBuilder().matrixForBoxReflectFilter(
         m_reflectionDirection, m_offset);

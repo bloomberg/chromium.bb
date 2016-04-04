@@ -48,7 +48,7 @@ public:
     float scale() const;
     bool setScale(float);
 
-    FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
+    FloatRect mapPaintRect(const FloatRect&, bool forward = true) const final;
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 

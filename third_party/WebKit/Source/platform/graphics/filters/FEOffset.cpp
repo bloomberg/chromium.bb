@@ -63,7 +63,7 @@ void FEOffset::setDy(float dy)
     m_dy = dy;
 }
 
-FloatRect FEOffset::mapRect(const FloatRect& rect, bool forward)
+FloatRect FEOffset::mapRect(const FloatRect& rect, bool forward) const
 {
     FloatRect result = rect;
     if (forward)

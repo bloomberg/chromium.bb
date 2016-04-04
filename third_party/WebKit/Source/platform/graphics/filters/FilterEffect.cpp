@@ -85,7 +85,7 @@ FloatRect FilterEffect::determineAbsolutePaintRect(const FloatRect& originalRequ
     return inputUnion;
 }
 
-FloatRect FilterEffect::mapRectRecursive(const FloatRect& rect)
+FloatRect FilterEffect::mapRectRecursive(const FloatRect& rect) const
 {
     FloatRect result;
     if (m_inputEffects.size() > 0) {

@@ -31,7 +31,7 @@ class PLATFORM_EXPORT FETile final : public FilterEffect {
 public:
     static RawPtr<FETile> create(Filter*);
 
-    FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
+    FloatRect mapPaintRect(const FloatRect&, bool forward = true) const final;
 
     FilterEffectType getFilterEffectType() const override { return FilterEffectTypeTile; }
 

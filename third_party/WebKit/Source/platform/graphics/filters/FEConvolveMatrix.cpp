@@ -54,7 +54,7 @@ RawPtr<FEConvolveMatrix> FEConvolveMatrix::create(Filter* filter, const IntSize&
         preserveAlpha, kernelMatrix);
 }
 
-FloatRect FEConvolveMatrix::mapPaintRect(const FloatRect& rect, bool forward)
+FloatRect FEConvolveMatrix::mapPaintRect(const FloatRect& rect, bool forward) const
 {
     FloatRect result = rect;
     if (parametersValid()) {

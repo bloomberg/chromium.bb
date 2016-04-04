@@ -50,7 +50,7 @@ public:
     bool setEdgeMode(EdgeModeType);
     bool setPreserveAlpha(bool);
 
-    FloatRect mapPaintRect(const FloatRect&, bool forward = true) final;
+    FloatRect mapPaintRect(const FloatRect&, bool forward = true) const final;
 
     TextStream& externalRepresentation(TextStream&, int indention) const override;
 

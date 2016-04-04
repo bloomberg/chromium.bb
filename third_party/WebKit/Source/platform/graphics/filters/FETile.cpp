@@ -38,7 +38,7 @@ RawPtr<FETile> FETile::create(Filter* filter)
     return new FETile(filter);
 }
 
-FloatRect FETile::mapPaintRect(const FloatRect& rect, bool forward)
+FloatRect FETile::mapPaintRect(const FloatRect& rect, bool forward) const
 {
     return forward ? maxEffectRect() : inputEffect(0)->maxEffectRect();
 }

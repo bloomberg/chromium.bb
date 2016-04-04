@@ -70,14 +70,13 @@ IntSize FEGaussianBlur::calculateUnscaledKernelSize(const FloatPoint& std)
     return kernelSize;
 }
 
-IntSize FEGaussianBlur::calculateKernelSize(Filter* filter, const FloatPoint& std)
+IntSize FEGaussianBlur::calculateKernelSize(const Filter* filter, const FloatPoint& std)
 {
     FloatPoint stdError(filter->applyHorizontalScale(std.x()), filter->applyVerticalScale(std.y()));
-
     return calculateUnscaledKernelSize(stdError);
 }
 
-FloatRect FEGaussianBlur::mapRect(const FloatRect& rect, bool)
+FloatRect FEGaussianBlur::mapRect(const FloatRect& rect, bool) const
 {
     FloatRect result = rect;
     IntSize kernelSize = calculateKernelSize(getFilter(), FloatPoint(m_stdX, m_stdY));

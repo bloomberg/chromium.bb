@@ -45,7 +45,7 @@ RawPtr<FEDisplacementMap> FEDisplacementMap::create(Filter* filter, ChannelSelec
     return new FEDisplacementMap(filter, xChannelSelector, yChannelSelector, scale);
 }
 
-FloatRect FEDisplacementMap::mapPaintRect(const FloatRect& rect, bool)
+FloatRect FEDisplacementMap::mapPaintRect(const FloatRect& rect, bool) const
 {
     FloatRect result = rect;
     result.inflateX(getFilter()->applyHorizontalScale(m_scale / 2));
