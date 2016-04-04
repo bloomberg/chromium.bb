@@ -924,22 +924,14 @@ ActiveScriptWrappable* {{v8_class}}::toActiveScriptWrappable(v8::Local<v8::Objec
 {% block ref_object_and_deref_object %}
 void {{v8_class}}::refObject(ScriptWrappable* scriptWrappable)
 {
-{% if gc_type == 'WillBeGarbageCollectedObject' %}
-#if !ENABLE(OILPAN)
-    scriptWrappable->toImpl<{{cpp_class}}>()->ref();
-#endif
-{% elif gc_type == 'RefCountedObject' %}
+{% if gc_type == 'RefCountedObject' %}
     scriptWrappable->toImpl<{{cpp_class}}>()->ref();
 {% endif %}
 }
 
 void {{v8_class}}::derefObject(ScriptWrappable* scriptWrappable)
 {
-{% if gc_type == 'WillBeGarbageCollectedObject' %}
-#if !ENABLE(OILPAN)
-    scriptWrappable->toImpl<{{cpp_class}}>()->deref();
-#endif
-{% elif gc_type == 'RefCountedObject' %}
+{% if gc_type == 'RefCountedObject' %}
     scriptWrappable->toImpl<{{cpp_class}}>()->deref();
 {% endif %}
 }

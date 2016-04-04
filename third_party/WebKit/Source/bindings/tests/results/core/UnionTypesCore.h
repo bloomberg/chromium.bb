@@ -25,7 +25,6 @@ class TestInterface2;
 class TestInterfaceEmpty;
 class TestInterfaceGarbageCollected;
 class TestInterfaceImplementation;
-class TestInterfaceWillBeGarbageCollected;
 
 class CORE_EXPORT ArrayBufferOrArrayBufferViewOrDictionary final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -737,59 +736,6 @@ struct NativeValueTraits<TestInterfaceOrTestInterfaceEmpty> {
     CORE_EXPORT static TestInterfaceOrTestInterfaceEmpty nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
-class CORE_EXPORT TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-public:
-    TestInterfaceWillBeGarbageCollectedOrTestDictionary();
-    bool isNull() const { return m_type == SpecificTypeNone; }
-
-    bool isTestInterfaceWillBeGarbageCollected() const { return m_type == SpecificTypeTestInterfaceWillBeGarbageCollected; }
-    TestInterfaceWillBeGarbageCollected* getAsTestInterfaceWillBeGarbageCollected() const;
-    void setTestInterfaceWillBeGarbageCollected(TestInterfaceWillBeGarbageCollected*);
-    static TestInterfaceWillBeGarbageCollectedOrTestDictionary fromTestInterfaceWillBeGarbageCollected(TestInterfaceWillBeGarbageCollected*);
-
-    bool isTestDictionary() const { return m_type == SpecificTypeTestDictionary; }
-    TestDictionary getAsTestDictionary() const;
-    void setTestDictionary(TestDictionary);
-    static TestInterfaceWillBeGarbageCollectedOrTestDictionary fromTestDictionary(TestDictionary);
-
-    TestInterfaceWillBeGarbageCollectedOrTestDictionary(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&);
-    ~TestInterfaceWillBeGarbageCollectedOrTestDictionary();
-    TestInterfaceWillBeGarbageCollectedOrTestDictionary& operator=(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&);
-    DECLARE_TRACE();
-
-private:
-    enum SpecificTypes {
-        SpecificTypeNone,
-        SpecificTypeTestInterfaceWillBeGarbageCollected,
-        SpecificTypeTestDictionary,
-    };
-    SpecificTypes m_type;
-
-    Member<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollected;
-    TestDictionary m_testDictionary;
-
-    friend CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
-};
-
-class V8TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
-public:
-    CORE_EXPORT static void toImpl(v8::Isolate*, v8::Local<v8::Value>, TestInterfaceWillBeGarbageCollectedOrTestDictionary&, UnionTypeConversionMode, ExceptionState&);
-};
-
-CORE_EXPORT v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Local<v8::Object>, v8::Isolate*);
-
-template <class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl)
-{
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
-}
-
-template <>
-struct NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary> {
-    CORE_EXPORT static TestInterfaceWillBeGarbageCollectedOrTestDictionary nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
-
 class CORE_EXPORT UnrestrictedDoubleOrString final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
@@ -862,7 +808,6 @@ WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TestInterface2OrUint8Array);
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TestInterfaceGarbageCollectedOrString);
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TestInterfaceOrLong);
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TestInterfaceOrTestInterfaceEmpty);
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::TestInterfaceWillBeGarbageCollectedOrTestDictionary);
 WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::UnrestrictedDoubleOrString);
 
 #endif // UnionTypeCore_h

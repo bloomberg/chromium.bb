@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
-#include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 #include "wtf/GetPtr.h"
@@ -195,46 +194,6 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
     v8::Local<v8::Value> argv[] = { stringArgHandle };
 
     ScriptController::callFunction(m_scriptState->getExecutionContext(), m_callback.newLocal(m_scriptState->isolate()), thisHandle, 1, argv, m_scriptState->isolate());
-}
-
-void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const HeapVector<Member<TestInterfaceWillBeGarbageCollected>>& sequenceArg)
-{
-    if (!canInvokeCallback())
-        return;
-
-    if (!m_scriptState->contextIsValid())
-        return;
-
-    ScriptState::Scope scope(m_scriptState.get());
-    v8::Local<v8::Value> sequenceArgHandle = toV8(sequenceArg, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (sequenceArgHandle.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        return;
-    }
-    v8::Local<v8::Value> argv[] = { sequenceArgHandle };
-
-    ScriptController::callFunction(m_scriptState->getExecutionContext(), m_callback.newLocal(m_scriptState->isolate()), v8::Undefined(m_scriptState->isolate()), 1, argv, m_scriptState->isolate());
-}
-
-void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedArrayArg(const HeapVector<Member<TestInterfaceWillBeGarbageCollected>>& arrayArg)
-{
-    if (!canInvokeCallback())
-        return;
-
-    if (!m_scriptState->contextIsValid())
-        return;
-
-    ScriptState::Scope scope(m_scriptState.get());
-    v8::Local<v8::Value> arrayArgHandle = toV8(arrayArg, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (arrayArgHandle.IsEmpty()) {
-        if (!isScriptControllerTerminating())
-            CRASH();
-        return;
-    }
-    v8::Local<v8::Value> argv[] = { arrayArgHandle };
-
-    ScriptController::callFunction(m_scriptState->getExecutionContext(), m_callback.newLocal(m_scriptState->isolate()), v8::Undefined(m_scriptState->isolate()), 1, argv, m_scriptState->isolate());
 }
 
 } // namespace blink

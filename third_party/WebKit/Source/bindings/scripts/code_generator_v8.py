@@ -122,7 +122,6 @@ def set_global_type_info(info_provider):
     IdlType.set_enums(info_provider.enumerations)
     IdlType.set_implemented_as_interfaces(interfaces_info['implemented_as_interfaces'])
     IdlType.set_garbage_collected_types(interfaces_info['garbage_collected_interfaces'])
-    IdlType.set_will_be_garbage_collected_types(interfaces_info['will_be_garbage_collected_interfaces'])
     v8_types.set_component_dirs(interfaces_info['component_dirs'])
 
 

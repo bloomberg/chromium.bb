@@ -213,7 +213,6 @@ interface TestObject {
     [PerWorldBindings, PutForwards=href] readonly attribute TestNode locationWithPerWorldBindings;
     [PutForwards=href, LegacyInterfaceTypeChecking] readonly attribute TestNode locationLegacyInterfaceTypeChecking;
     [PutForwards=attr1] readonly attribute TestInterfaceGarbageCollected locationGarbageCollected;
-    [PutForwards=attr1] readonly attribute TestInterfaceWillBeGarbageCollected locationWillBeGarbageCollected;
     [RaisesException] attribute long raisesExceptionLongAttribute;
     [RaisesException=Getter] attribute long raisesExceptionGetterLongAttribute;
     [RaisesException=Setter] attribute long setterRaisesExceptionLongAttribute;
@@ -368,7 +367,6 @@ interface TestObject {
     sequence<long>? nullableLongSequenceMethod();
     // Union types
     (TestInterfaceGarbageCollected or DOMString) testInterfaceGarbageCollectedOrDOMStringMethod();
-    (TestInterfaceWillBeGarbageCollected or TestDictionary) testInterfaceWillBeGarbageCollectedOrTestDictionaryMethod();
     (boolean or DOMString or unrestricted double) booleanOrDOMStringOrUnrestrictedDoubleMethod();
     (TestInterface or long) testInterfaceOrLongMethod();
     void voidMethodDoubleOrDOMStringArg((double or DOMString) arg);
@@ -443,7 +441,6 @@ interface TestObject {
     void voidMethodVariadicTestInterfaceEmptyArg(TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
     void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg, TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
     void voidMethodVariadicTestInterfaceGarbageCollectedArg(TestInterfaceGarbageCollected... variadicTestInterfaceGarbageCollectedArg);
-    void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg(TestInterfaceWillBeGarbageCollected... variadicTestInterfaceWillBeGarbageCollectedArg);
 
     // Overloaded methods
     void overloadedMethodA(long longArg);
@@ -580,8 +577,6 @@ interface TestObject {
     [Unforgeable] void unforgeableVoidMethod();
     void voidMethodTestInterfaceGarbageCollectedSequenceArg(sequence<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedSequenceArg);
     void voidMethodTestInterfaceGarbageCollectedArrayArg(TestInterfaceGarbageCollected[] testInterfaceGarbageCollectedArrayArg);
-    void voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg(sequence<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedSequenceArg);
-    void voidMethodTestInterfaceWillBeGarbageCollectedArrayArg(TestInterfaceWillBeGarbageCollected[] testInterfaceWillBeGarbageCollectedArrayArg);
     [NewObject] TestInterface newObjectTestInterfaceMethod();
 
     serializer DOMString serializerMethod();
@@ -591,8 +586,6 @@ interface TestObject {
     attribute TestInterface testInterfaceAttribute; // [ImplementedAs]
     attribute TestInterfaceGarbageCollected testInterfaceGarbageCollectedAttribute; // [GarbageCollected]
     attribute TestInterfaceGarbageCollected? testInterfaceGarbageCollectedOrNullAttribute; // [GarbageCollected]
-    attribute TestInterfaceWillBeGarbageCollected testInterfaceWillBeGarbageCollectedAttribute; // [WillBeGarbageCollected]
-    attribute TestInterfaceWillBeGarbageCollected? testInterfaceWillBeGarbageCollectedOrNullAttribute; // [WillBeGarbageCollected]
 
     // Private scripts
     [ImplementedInPrivateScript] void voidMethodImplementedInPrivateScript();

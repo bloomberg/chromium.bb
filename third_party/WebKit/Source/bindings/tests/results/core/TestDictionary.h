@@ -14,7 +14,6 @@
 #include "bindings/tests/idls/core/TestInterface2.h"
 #include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
 #include "bindings/tests/idls/core/TestInterfaceImplementation.h"
-#include "bindings/tests/idls/core/TestInterfaceWillBeGarbageCollected.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/Element.h"
@@ -154,19 +153,6 @@ public:
     const Vector<RefPtr<TestInterfaceImplementation>>& testInterfaceSequenceMember() const { return m_testInterfaceSequenceMember.get(); }
     void setTestInterfaceSequenceMember(const Vector<RefPtr<TestInterfaceImplementation>>& value) { m_testInterfaceSequenceMember = value; }
 
-    bool hasTestInterfaceWillBeGarbageCollectedMember() const { return m_testInterfaceWillBeGarbageCollectedMember; }
-    TestInterfaceWillBeGarbageCollected* testInterfaceWillBeGarbageCollectedMember() const { return m_testInterfaceWillBeGarbageCollectedMember; }
-    void setTestInterfaceWillBeGarbageCollectedMember(TestInterfaceWillBeGarbageCollected* value) { m_testInterfaceWillBeGarbageCollectedMember = value; }
-
-    bool hasTestInterfaceWillBeGarbageCollectedOrNullMember() const { return m_testInterfaceWillBeGarbageCollectedOrNullMember; }
-    TestInterfaceWillBeGarbageCollected* testInterfaceWillBeGarbageCollectedOrNullMember() const { return m_testInterfaceWillBeGarbageCollectedOrNullMember; }
-    void setTestInterfaceWillBeGarbageCollectedOrNullMember(TestInterfaceWillBeGarbageCollected* value) { m_testInterfaceWillBeGarbageCollectedOrNullMember = value; }
-    void setTestInterfaceWillBeGarbageCollectedOrNullMemberToNull() { m_testInterfaceWillBeGarbageCollectedOrNullMember = Member<TestInterfaceWillBeGarbageCollected>(); }
-
-    bool hasTestInterfaceWillBeGarbageCollectedSequenceMember() const { return !m_testInterfaceWillBeGarbageCollectedSequenceMember.isNull(); }
-    const HeapVector<Member<TestInterfaceWillBeGarbageCollected>>& testInterfaceWillBeGarbageCollectedSequenceMember() const { return m_testInterfaceWillBeGarbageCollectedSequenceMember.get(); }
-    void setTestInterfaceWillBeGarbageCollectedSequenceMember(const HeapVector<Member<TestInterfaceWillBeGarbageCollected>>& value) { m_testInterfaceWillBeGarbageCollectedSequenceMember = value; }
-
     bool hasUint8ArrayMember() const { return m_uint8ArrayMember; }
     PassRefPtr<DOMUint8Array> uint8ArrayMember() const { return m_uint8ArrayMember; }
     void setUint8ArrayMember(PassRefPtr<DOMUint8Array> value) { m_uint8ArrayMember = value; }
@@ -207,9 +193,6 @@ private:
     RefPtr<TestInterfaceImplementation> m_testInterfaceMember;
     RefPtr<TestInterfaceImplementation> m_testInterfaceOrNullMember;
     Nullable<Vector<RefPtr<TestInterfaceImplementation>>> m_testInterfaceSequenceMember;
-    Member<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollectedMember;
-    Member<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollectedOrNullMember;
-    Nullable<HeapVector<Member<TestInterfaceWillBeGarbageCollected>>> m_testInterfaceWillBeGarbageCollectedSequenceMember;
     RefPtr<DOMUint8Array> m_uint8ArrayMember;
     Nullable<double> m_unrestrictedDoubleMember;
 

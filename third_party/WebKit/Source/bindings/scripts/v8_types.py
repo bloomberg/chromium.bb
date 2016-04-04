@@ -258,10 +258,6 @@ def cpp_template_type(template, inner_type):
 def cpp_ptr_type(old_type, new_type, gc_type):
     if gc_type == 'GarbageCollectedObject':
         return new_type
-    if gc_type == 'WillBeGarbageCollectedObject':
-        if old_type == 'Vector':
-            return 'WillBe' + new_type
-        return old_type + 'WillBe' + new_type
     return old_type
 
 
@@ -305,31 +301,16 @@ IdlType.set_garbage_collected_types = classmethod(
         cls.garbage_collected_types.update(new_garbage_collected_types))
 
 
-# [WillBeGarbageCollected]
-IdlType.will_be_garbage_collected_types = set()
-
-IdlType.is_will_be_garbage_collected = property(
-    lambda self: self.base_type in IdlType.will_be_garbage_collected_types)
-
-IdlType.set_will_be_garbage_collected_types = classmethod(
-    lambda cls, new_will_be_garbage_collected_types:
-        cls.will_be_garbage_collected_types.update(new_will_be_garbage_collected_types))
-
-
 def gc_type(idl_type):
     if idl_type.is_garbage_collected or idl_type.is_dictionary or idl_type.is_union_type:
         return 'GarbageCollectedObject'
-    if idl_type.is_will_be_garbage_collected:
-        return 'WillBeGarbageCollectedObject'
     return 'RefCountedObject'
 
 IdlTypeBase.gc_type = property(gc_type)
 
 
 def is_traceable(idl_type):
-    return (idl_type.is_garbage_collected
-            or idl_type.is_will_be_garbage_collected
-            or idl_type.is_dictionary)
+    return (idl_type.is_garbage_collected or idl_type.is_dictionary)
 
 IdlTypeBase.is_traceable = property(is_traceable)
 IdlUnionType.is_traceable = property(lambda self: True)

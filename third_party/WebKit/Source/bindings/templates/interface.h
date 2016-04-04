@@ -66,10 +66,6 @@ public:
     {
         {% if gc_type == 'GarbageCollectedObject' %}
         visitor->trace(scriptWrappable->toImpl<{{cpp_class}}>());
-        {% elif gc_type == 'WillBeGarbageCollectedObject' %}
-#if ENABLE(OILPAN)
-        visitor->trace(scriptWrappable->toImpl<{{cpp_class}}>());
-#endif
         {% endif %}
     }
     {% if has_visit_dom_wrapper %}

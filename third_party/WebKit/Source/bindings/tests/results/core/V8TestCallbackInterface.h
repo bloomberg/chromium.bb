@@ -36,8 +36,6 @@ public:
     void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;
     void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) override;
     void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
-    void voidMethodWillBeGarbageCollectedSequenceArg(const HeapVector<Member<TestInterfaceWillBeGarbageCollected>>& sequenceArg) override;
-    void voidMethodWillBeGarbageCollectedArrayArg(const HeapVector<Member<TestInterfaceWillBeGarbageCollected>>& arrayArg) override;
 private:
     CORE_EXPORT V8TestCallbackInterface(v8::Local<v8::Function>, ScriptState*);
 

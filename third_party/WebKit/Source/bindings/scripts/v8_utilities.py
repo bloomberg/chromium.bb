@@ -324,13 +324,11 @@ def exposed(member, interface):
     return exposure_set.code()
 
 
-# [GarbageCollected], [WillBeGarbageCollected]
+# [GarbageCollected]
 def gc_type(definition):
     extended_attributes = definition.extended_attributes
     if 'GarbageCollected' in extended_attributes:
         return 'GarbageCollectedObject'
-    elif 'WillBeGarbageCollected' in extended_attributes:
-        return 'WillBeGarbageCollectedObject'
     return 'RefCountedObject'
 
 

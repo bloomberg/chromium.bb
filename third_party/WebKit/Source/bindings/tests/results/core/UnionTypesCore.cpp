@@ -16,7 +16,6 @@
 #include "bindings/core/v8/V8TestInterface2.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
-#include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/tests/idls/core/TestImplements2.h"
 #include "bindings/tests/idls/core/TestImplements3Implementation.h"
@@ -1447,109 +1446,6 @@ TestInterfaceOrTestInterfaceEmpty NativeValueTraits<TestInterfaceOrTestInterface
 {
     TestInterfaceOrTestInterfaceEmpty impl;
     V8TestInterfaceOrTestInterfaceEmpty::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
-    return impl;
-}
-
-TestInterfaceWillBeGarbageCollectedOrTestDictionary::TestInterfaceWillBeGarbageCollectedOrTestDictionary()
-    : m_type(SpecificTypeNone)
-{
-}
-
-TestInterfaceWillBeGarbageCollected* TestInterfaceWillBeGarbageCollectedOrTestDictionary::getAsTestInterfaceWillBeGarbageCollected() const
-{
-    ASSERT(isTestInterfaceWillBeGarbageCollected());
-    return m_testInterfaceWillBeGarbageCollected;
-}
-
-void TestInterfaceWillBeGarbageCollectedOrTestDictionary::setTestInterfaceWillBeGarbageCollected(TestInterfaceWillBeGarbageCollected* value)
-{
-    ASSERT(isNull());
-    m_testInterfaceWillBeGarbageCollected = value;
-    m_type = SpecificTypeTestInterfaceWillBeGarbageCollected;
-}
-
-TestInterfaceWillBeGarbageCollectedOrTestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::fromTestInterfaceWillBeGarbageCollected(TestInterfaceWillBeGarbageCollected* value)
-{
-    TestInterfaceWillBeGarbageCollectedOrTestDictionary container;
-    container.setTestInterfaceWillBeGarbageCollected(value);
-    return container;
-}
-
-TestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::getAsTestDictionary() const
-{
-    ASSERT(isTestDictionary());
-    return m_testDictionary;
-}
-
-void TestInterfaceWillBeGarbageCollectedOrTestDictionary::setTestDictionary(TestDictionary value)
-{
-    ASSERT(isNull());
-    m_testDictionary = value;
-    m_type = SpecificTypeTestDictionary;
-}
-
-TestInterfaceWillBeGarbageCollectedOrTestDictionary TestInterfaceWillBeGarbageCollectedOrTestDictionary::fromTestDictionary(TestDictionary value)
-{
-    TestInterfaceWillBeGarbageCollectedOrTestDictionary container;
-    container.setTestDictionary(value);
-    return container;
-}
-
-TestInterfaceWillBeGarbageCollectedOrTestDictionary::TestInterfaceWillBeGarbageCollectedOrTestDictionary(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&) = default;
-TestInterfaceWillBeGarbageCollectedOrTestDictionary::~TestInterfaceWillBeGarbageCollectedOrTestDictionary() = default;
-TestInterfaceWillBeGarbageCollectedOrTestDictionary& TestInterfaceWillBeGarbageCollectedOrTestDictionary::operator=(const TestInterfaceWillBeGarbageCollectedOrTestDictionary&) = default;
-
-DEFINE_TRACE(TestInterfaceWillBeGarbageCollectedOrTestDictionary)
-{
-    visitor->trace(m_testInterfaceWillBeGarbageCollected);
-    visitor->trace(m_testDictionary);
-}
-
-void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState)
-{
-    if (v8Value.IsEmpty())
-        return;
-
-    if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
-        return;
-
-    if (V8TestInterfaceWillBeGarbageCollected::hasInstance(v8Value, isolate)) {
-        RawPtr<TestInterfaceWillBeGarbageCollected> cppValue = V8TestInterfaceWillBeGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(v8Value));
-        impl.setTestInterfaceWillBeGarbageCollected(cppValue);
-        return;
-    }
-
-    if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
-        TestDictionary cppValue;
-        V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState);
-        if (exceptionState.hadException())
-            return;
-        impl.setTestDictionary(cppValue);
-        return;
-    }
-
-    exceptionState.throwTypeError("The provided value is not of type '(TestInterfaceWillBeGarbageCollected or TestDictionary)'");
-}
-
-v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    switch (impl.m_type) {
-    case TestInterfaceWillBeGarbageCollectedOrTestDictionary::SpecificTypeNone:
-        return v8::Null(isolate);
-    case TestInterfaceWillBeGarbageCollectedOrTestDictionary::SpecificTypeTestInterfaceWillBeGarbageCollected:
-        return toV8(impl.getAsTestInterfaceWillBeGarbageCollected(), creationContext, isolate);
-    case TestInterfaceWillBeGarbageCollectedOrTestDictionary::SpecificTypeTestDictionary:
-        return toV8(impl.getAsTestDictionary(), creationContext, isolate);
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    return v8::Local<v8::Value>();
-}
-
-TestInterfaceWillBeGarbageCollectedOrTestDictionary NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
-{
-    TestInterfaceWillBeGarbageCollectedOrTestDictionary impl;
-    V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(isolate, value, impl, UnionTypeConversionMode::NotNullable, exceptionState);
     return impl;
 }
 

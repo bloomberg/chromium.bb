@@ -45,7 +45,6 @@
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
-#include "bindings/core/v8/V8TestInterfaceWillBeGarbageCollected.h"
 #include "bindings/core/v8/V8TestNode.h"
 #include "bindings/core/v8/V8TestObject.h"
 #include "bindings/core/v8/V8Uint8Array.h"
@@ -3260,48 +3259,6 @@ static void locationGarbageCollectedAttributeSetterCallback(const v8::FunctionCa
     TestObjectV8Internal::locationGarbageCollectedAttributeSetter(v8Value, info);
 }
 
-static void locationWillBeGarbageCollectedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toImpl(holder);
-    RawPtr<TestInterfaceWillBeGarbageCollected> cppValue(impl->locationWillBeGarbageCollected());
-    if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
-        return;
-    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
-    if (!v8Value.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "locationWillBeGarbageCollected"), v8Value);
-        v8SetReturnValue(info, v8Value);
-    }
-}
-
-static void locationWillBeGarbageCollectedAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectV8Internal::locationWillBeGarbageCollectedAttributeGetter(info);
-}
-
-static void locationWillBeGarbageCollectedAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "locationWillBeGarbageCollected", "TestObject", holder, info.GetIsolate());
-    TestObject* proxyImpl = V8TestObject::toImpl(holder);
-    RawPtr<TestInterfaceWillBeGarbageCollected> impl = WTF::getPtr(proxyImpl->locationWillBeGarbageCollected());
-    if (!impl)
-        return;
-    TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceWillBeGarbageCollected'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    impl->setAttr1(WTF::getPtr(cppValue));
-}
-
-static void locationWillBeGarbageCollectedAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
-    TestObjectV8Internal::locationWillBeGarbageCollectedAttributeSetter(v8Value, info);
-}
-
 static void raisesExceptionLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
@@ -4734,70 +4691,6 @@ static void testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback(
 {
     v8::Local<v8::Value> v8Value = info[0];
     TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8Value, info);
-}
-
-static void testInterfaceWillBeGarbageCollectedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceWillBeGarbageCollectedAttribute()), impl);
-}
-
-static void testInterfaceWillBeGarbageCollectedAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectV8Internal::testInterfaceWillBeGarbageCollectedAttributeAttributeGetter(info);
-}
-
-static void testInterfaceWillBeGarbageCollectedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceWillBeGarbageCollectedAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(holder);
-    TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    if (!cppValue) {
-        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceWillBeGarbageCollected'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    impl->setTestInterfaceWillBeGarbageCollectedAttribute(WTF::getPtr(cppValue));
-}
-
-static void testInterfaceWillBeGarbageCollectedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
-    TestObjectV8Internal::testInterfaceWillBeGarbageCollectedAttributeAttributeSetter(v8Value, info);
-}
-
-static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceWillBeGarbageCollectedOrNullAttribute()), impl);
-}
-
-static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetter(info);
-}
-
-static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceWillBeGarbageCollectedOrNullAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(holder);
-    TestInterfaceWillBeGarbageCollected* cppValue = V8TestInterfaceWillBeGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-    if (!cppValue && !isUndefinedOrNull(v8Value)) {
-        exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceWillBeGarbageCollected'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    impl->setTestInterfaceWillBeGarbageCollectedOrNullAttribute(WTF::getPtr(cppValue));
-}
-
-static void testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
-    TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeSetter(v8Value, info);
 }
 
 static void readonlyShortAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6497,19 +6390,6 @@ static void testInterfaceGarbageCollectedOrDOMStringMethodMethodCallback(const v
     TestObjectV8Internal::testInterfaceGarbageCollectedOrDOMStringMethodMethod(info);
 }
 
-static void testInterfaceWillBeGarbageCollectedOrTestDictionaryMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    TestInterfaceWillBeGarbageCollectedOrTestDictionary result;
-    impl->testInterfaceWillBeGarbageCollectedOrTestDictionaryMethod(result);
-    v8SetReturnValue(info, result);
-}
-
-static void testInterfaceWillBeGarbageCollectedOrTestDictionaryMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrTestDictionaryMethodMethod(info);
-}
-
 static void booleanOrDOMStringOrUnrestrictedDoubleMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -7890,29 +7770,6 @@ static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethod(const v8::F
 static void voidMethodVariadicTestInterfaceGarbageCollectedArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectV8Internal::voidMethodVariadicTestInterfaceGarbageCollectedArgMethod(info);
-}
-
-static void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    HeapVector<Member<TestInterfaceWillBeGarbageCollected>> variadicTestInterfaceWillBeGarbageCollectedArg;
-    {
-        for (int i = 0; i < info.Length(); ++i) {
-            if (!V8TestInterfaceWillBeGarbageCollected::hasInstance(info[i], info.GetIsolate())) {
-                exceptionState.throwTypeError("parameter 1 is not of type 'TestInterfaceWillBeGarbageCollected'.");
-                exceptionState.throwIfNeeded();
-                return;
-            }
-            variadicTestInterfaceWillBeGarbageCollectedArg.append(V8TestInterfaceWillBeGarbageCollected::toImpl(v8::Local<v8::Object>::Cast(info[i])));
-        }
-    }
-    impl->voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg(variadicTestInterfaceWillBeGarbageCollectedArg);
-}
-
-static void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectV8Internal::voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethod(info);
 }
 
 static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -10897,52 +10754,6 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback(const 
     TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedArrayArgMethod(info);
 }
 
-static void voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    HeapVector<Member<TestInterfaceWillBeGarbageCollected>> testInterfaceWillBeGarbageCollectedSequenceArg;
-    {
-        testInterfaceWillBeGarbageCollectedSequenceArg = (toMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
-        if (exceptionState.throwIfNeeded())
-            return;
-    }
-    impl->voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg(testInterfaceWillBeGarbageCollectedSequenceArg);
-}
-
-static void voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectV8Internal::voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethod(info);
-}
-
-static void voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceWillBeGarbageCollectedArrayArg", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        setMinimumArityTypeError(exceptionState, 1, info.Length());
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    HeapVector<Member<TestInterfaceWillBeGarbageCollected>> testInterfaceWillBeGarbageCollectedArrayArg;
-    {
-        testInterfaceWillBeGarbageCollectedArrayArg = (toMemberNativeArray<TestInterfaceWillBeGarbageCollected, V8TestInterfaceWillBeGarbageCollected>(info[0], 1, info.GetIsolate(), exceptionState));
-        if (exceptionState.throwIfNeeded())
-            return;
-    }
-    impl->voidMethodTestInterfaceWillBeGarbageCollectedArrayArg(testInterfaceWillBeGarbageCollectedArrayArg);
-}
-
-static void voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectV8Internal::voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethod(info);
-}
-
 static void newObjectTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
@@ -11671,7 +11482,6 @@ const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {
     {"locationWithPerWorldBindings", TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"locationLegacyInterfaceTypeChecking", TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeGetterCallback, TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"locationGarbageCollected", TestObjectV8Internal::locationGarbageCollectedAttributeGetterCallback, TestObjectV8Internal::locationGarbageCollectedAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"locationWillBeGarbageCollected", TestObjectV8Internal::locationWillBeGarbageCollectedAttributeGetterCallback, TestObjectV8Internal::locationWillBeGarbageCollectedAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"raisesExceptionLongAttribute", TestObjectV8Internal::raisesExceptionLongAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"raisesExceptionGetterLongAttribute", TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"setterRaisesExceptionLongAttribute", TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeGetterCallback, TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
@@ -11715,8 +11525,6 @@ const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {
     {"testInterfaceAttribute", TestObjectV8Internal::testInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"testInterfaceGarbageCollectedAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"testInterfaceGarbageCollectedOrNullAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceWillBeGarbageCollectedAttribute", TestObjectV8Internal::testInterfaceWillBeGarbageCollectedAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceWillBeGarbageCollectedAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceWillBeGarbageCollectedOrNullAttribute", TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrNullAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"readonlyShortAttribute", TestObjectV8Internal::readonlyShortAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"shortAttribute", TestObjectV8Internal::shortAttributeAttributeGetterCallback, TestObjectV8Internal::shortAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"stringAttribute", TestObjectV8Internal::stringAttributeAttributeGetterCallback, TestObjectV8Internal::stringAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
@@ -11811,7 +11619,6 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"nullableTestInterfaceMethod", TestObjectV8Internal::nullableTestInterfaceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"nullableLongSequenceMethod", TestObjectV8Internal::nullableLongSequenceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"testInterfaceGarbageCollectedOrDOMStringMethod", TestObjectV8Internal::testInterfaceGarbageCollectedOrDOMStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"testInterfaceWillBeGarbageCollectedOrTestDictionaryMethod", TestObjectV8Internal::testInterfaceWillBeGarbageCollectedOrTestDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"booleanOrDOMStringOrUnrestrictedDoubleMethod", TestObjectV8Internal::booleanOrDOMStringOrUnrestrictedDoubleMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"testInterfaceOrLongMethod", TestObjectV8Internal::testInterfaceOrLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodDoubleOrDOMStringArg", TestObjectV8Internal::voidMethodDoubleOrDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
@@ -11869,7 +11676,6 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodVariadicTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodVariadicTestInterfaceEmptyArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodVariadicTestInterfaceGarbageCollectedArg", TestObjectV8Internal::voidMethodVariadicTestInterfaceGarbageCollectedArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodVariadicTestInterfaceWillBeGarbageCollectedArg", TestObjectV8Internal::voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"overloadedMethodA", TestObjectV8Internal::overloadedMethodAMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"overloadedMethodB", TestObjectV8Internal::overloadedMethodBMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"overloadedMethodC", TestObjectV8Internal::overloadedMethodCMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
@@ -11949,8 +11755,6 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"unforgeableVoidMethod", TestObjectV8Internal::unforgeableVoidMethodMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance},
     {"voidMethodTestInterfaceGarbageCollectedSequenceArg", TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedSequenceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodTestInterfaceGarbageCollectedArrayArg", TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg", TestObjectV8Internal::voidMethodTestInterfaceWillBeGarbageCollectedSequenceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-    {"voidMethodTestInterfaceWillBeGarbageCollectedArrayArg", TestObjectV8Internal::voidMethodTestInterfaceWillBeGarbageCollectedArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"newObjectTestInterfaceMethod", TestObjectV8Internal::newObjectTestInterfaceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"serializerMethod", TestObjectV8Internal::serializerMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodImplementedInPrivateScript", TestObjectV8Internal::voidMethodImplementedInPrivateScriptMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},

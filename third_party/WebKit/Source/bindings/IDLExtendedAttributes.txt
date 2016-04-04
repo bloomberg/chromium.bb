@@ -97,4 +97,3 @@ TreatUndefinedAs=NullString
 URL
 Unforgeable
 Unscopeable
-WillBeGarbageCollected

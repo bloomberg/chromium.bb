@@ -92,7 +92,6 @@ INHERITED_EXTENDED_ATTRIBUTES = set([
     'ActiveScriptWrappable',
     'DependentLifetime',
     'GarbageCollected',
-    'WillBeGarbageCollected',
 ])
 
 # Main variable (filled in and exported)
@@ -169,7 +168,6 @@ def compute_global_type_info():
     dictionaries = {}
     component_dirs = {}
     implemented_as_interfaces = {}
-    will_be_garbage_collected_interfaces = set()
     garbage_collected_interfaces = set()
     callback_interfaces = set()
 
@@ -186,8 +184,6 @@ def compute_global_type_info():
             implemented_as_interfaces[interface_name] = interface_info['implemented_as']
 
         inherited_extended_attributes = interface_info['inherited_extended_attributes']
-        if 'WillBeGarbageCollected' in inherited_extended_attributes:
-            will_be_garbage_collected_interfaces.add(interface_name)
         if 'GarbageCollected' in inherited_extended_attributes:
             garbage_collected_interfaces.add(interface_name)
 
@@ -196,7 +192,6 @@ def compute_global_type_info():
     interfaces_info['dictionaries'] = dictionaries
     interfaces_info['implemented_as_interfaces'] = implemented_as_interfaces
     interfaces_info['garbage_collected_interfaces'] = garbage_collected_interfaces
-    interfaces_info['will_be_garbage_collected_interfaces'] = will_be_garbage_collected_interfaces
     interfaces_info['component_dirs'] = component_dirs
 
 

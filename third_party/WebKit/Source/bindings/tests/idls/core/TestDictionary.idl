@@ -14,13 +14,10 @@ dictionary TestDictionary {
     TestInterface? testInterfaceOrNullMember;
     TestInterfaceGarbageCollected testInterfaceGarbageCollectedMember;
     TestInterfaceGarbageCollected? testInterfaceGarbageCollectedOrNullMember;
-    TestInterfaceWillBeGarbageCollected testInterfaceWillBeGarbageCollectedMember;
-    TestInterfaceWillBeGarbageCollected? testInterfaceWillBeGarbageCollectedOrNullMember;
     DOMString[] stringArrayMember;
     sequence<DOMString> stringSequenceMember = [];
     sequence<TestInterface> testInterfaceSequenceMember = [];
     sequence<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedSequenceMember = [];
-    sequence<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedSequenceMember = [];
     TestEnum enumMember = "foo";
     sequence<TestEnum> enumSequenceMember;
     Element? elementOrNullMember;

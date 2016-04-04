@@ -20,7 +20,6 @@ TestDictionary::TestDictionary()
     setStringSequenceMember(Vector<String>());
     setTestInterfaceGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceGarbageCollected>>());
     setTestInterfaceSequenceMember(Vector<RefPtr<TestInterfaceImplementation>>());
-    setTestInterfaceWillBeGarbageCollectedSequenceMember(HeapVector<Member<TestInterfaceWillBeGarbageCollected>>());
     setUnrestrictedDoubleMember(3.14);
 }
 
@@ -40,9 +39,6 @@ DEFINE_TRACE(TestDictionary)
     visitor->trace(m_testInterfaceGarbageCollectedMember);
     visitor->trace(m_testInterfaceGarbageCollectedOrNullMember);
     visitor->trace(m_testInterfaceGarbageCollectedSequenceMember);
-    visitor->trace(m_testInterfaceWillBeGarbageCollectedMember);
-    visitor->trace(m_testInterfaceWillBeGarbageCollectedOrNullMember);
-    visitor->trace(m_testInterfaceWillBeGarbageCollectedSequenceMember);
 }
 
 } // namespace blink

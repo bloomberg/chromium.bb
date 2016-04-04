@@ -935,7 +935,7 @@ Usage: `[GarbageCollected]` can be specified on interfaces, and is inherited:
 ] interface BatteryManager { ... };
 ```
 
-In order to generate correct binding layer code for an interface, `[GarbageCollected]` must be supplied if the object is an Oilpan-based object. Using both `[GarbageCollected]` and `[WillBeGarbageCollected]` is not allowed, but an interface object deriving from an interface annotated with `[WillBeGarbageCollected]` may override it with `[GarbageCollected]`.
+In order to generate correct binding layer code for an interface, `[GarbageCollected]` must be supplied if the object is an Oilpan-based object.
 
 
 ### [Iterable] _(i)_
@@ -1287,23 +1287,6 @@ The `[SetWrapperReferenceFrom]` extended attribute takes a value, which is the f
 The code generates a function called `YYY::visitDOMWrapper` which is called by `V8GCController` before GC. The function adds implicit references from this object's wrapper to a target object's wrapper to keeps it alive.
 
 The `[SetWrapperReferenceTo]` extended attribute takes a value, which is the method name to call to get the target object. For example, with the above declaration a call will be made to `YYY::targetMethod()` to get the target of the reference.
-
-### [WillBeGarbageCollected] _(i)_
-
-Summary: The `[WillBeGarbageCollected]` attributes indicates that if Oilpan is enabled, the object resides on its heap and is controlled by the Oilpan garbage collector.
-
-Usage: `[WillBeGarbageCollected]` can be specified on interfaces, and is inherited:
-
-```webidl
-[
-  WillBeGarbageCollected
-] interface AnimationEffect { ... };
-```
-
-The attribute supports transitioning an object to Oilpan, allowing it to be Oilpan controlled if Oilpan is universally enabled, but implemented as a 'normal' ref-counted object if not. The generated bindings code will handle either case, depending on that compile-time setting (i.e., Oilpan enabled or not.)
-
-When the Oilpan transition period is over, support for `[WillBeGarbageCollected]` will be phased out. So, unless there are existing constraints why you have to use the conditional `[WillBeGarbageCollected]`, using `[GarbageCollected]` is preferable.
-
 
 ## Rare Blink-specific IDL Extended Attributes
 

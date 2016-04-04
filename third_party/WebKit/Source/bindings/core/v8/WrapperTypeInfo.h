@@ -92,7 +92,8 @@ struct WrapperTypeInfo {
 
     enum GCType {
         GarbageCollectedObject,
-        WillBeGarbageCollectedObject,
+        // TODO(haraken): Remove RefCountedObject. All DOM objects that inherit
+        // from ScriptWrappable must be moved to Oilpan's heap.
         RefCountedObject,
     };
 
@@ -130,11 +131,7 @@ struct WrapperTypeInfo {
 
     bool isGarbageCollected() const
     {
-        return (gcType == GarbageCollectedObject
-#if ENABLE(OILPAN)
-                || gcType == WillBeGarbageCollectedObject
-#endif
-                );
+        return gcType == GarbageCollectedObject;
     }
 
     void refObject(ScriptWrappable* scriptWrappable) const
