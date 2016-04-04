@@ -4,6 +4,8 @@
 
 #include "media/audio/win/waveout_output_win.h"
 
+#pragma comment(lib, "winmm.lib")
+
 #include "base/atomicops.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"

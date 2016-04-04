@@ -4,6 +4,8 @@
 
 #include "media/audio/win/wavein_input_win.h"
 
+#pragma comment(lib, "winmm.lib")
+
 #include "base/logging.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/win/audio_manager_win.h"

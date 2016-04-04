@@ -928,8 +928,6 @@
               '-lmfplat.lib',
               '-lmfreadwrite.lib',
               '-lmfuuid.lib',
-              '-lsetupapi.lib',
-              '-lwinmm.lib',
             ],
           },
           # Specify delayload for media.dll.
