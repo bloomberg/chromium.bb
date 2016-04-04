@@ -37,9 +37,6 @@
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 
-// Libraries required for the SetupAPI and Wbem APIs used here.
-#pragma comment(lib, "setupapi.lib")
-
 // The following are defined in various DDK headers, and we (re)define them here
 // to avoid adding the DDK as a chrome dependency.
 #define DRV_QUERYDEVICEINTERFACE 0x80c

@@ -171,7 +171,11 @@ source_set("audio") {
       "win/waveout_output_win.h",
     ]
 
-    libs += [ "dxguid.lib" ]
+    libs += [
+      "dxguid.lib",
+      "setupapi.lib",
+      "winmm.lib",
+    ]
   }
 
   if (is_android) {
