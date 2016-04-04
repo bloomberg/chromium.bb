@@ -113,10 +113,6 @@
   // Nothing, yet.
 }
 
-- (void)handlePassKitObject:(NSData*)data {
-  // Nothing yet.
-}
-
 @end
 
 namespace {
