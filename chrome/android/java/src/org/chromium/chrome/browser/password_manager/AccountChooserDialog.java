@@ -5,13 +5,13 @@
 package org.chromium.chrome.browser.password_manager;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -38,7 +39,6 @@ public class AccountChooserDialog
         extends DialogFragment implements DialogInterface.OnClickListener {
     private final Context mContext;
     private final Credential[] mCredentials;
-    private final ImageView[] mAvatarViews;
 
     /**
      * Title of the dialog, contains Smart Lock branding for the Smart Lock users.
@@ -62,7 +62,6 @@ public class AccountChooserDialog
         mNativeAccountChooserDialog = nativeAccountChooserDialog;
         mContext = context;
         mCredentials = credentials.clone();
-        mAvatarViews = new ImageView[mCredentials.length];
         mTitle = title;
         mTitleLinkStart = titleLinkStart;
         mTitleLinkEnd = titleLinkEnd;
@@ -99,16 +98,12 @@ public class AccountChooserDialog
                     LayoutInflater inflater = LayoutInflater.from(getContext());
                     convertView =
                             inflater.inflate(R.layout.account_chooser_dialog_item, parent, false);
-                } else {
-                    int oldPosition = (int) convertView.getTag();
-                    mAvatarViews[oldPosition] = null;
                 }
                 convertView.setTag(position);
 
                 Credential credential = getItem(position);
 
                 ImageView avatarView = (ImageView) convertView.findViewById(R.id.profile_image);
-                mAvatarViews[position] = avatarView;
                 Bitmap avatar = credential.getAvatar();
                 if (avatar != null) {
                     avatarView.setImageBitmap(avatar);
@@ -199,12 +194,17 @@ public class AccountChooserDialog
 
     @CalledByNative
     private void imageFetchComplete(int index, Bitmap avatarBitmap) {
+        assert index >= 0 && index < mCredentials.length;
+        assert mCredentials[index] != null;
         avatarBitmap = AccountManagementFragment.makeRoundUserPicture(avatarBitmap);
-        if (index >= 0 && index < mCredentials.length && mCredentials[index] != null) {
-            mCredentials[index].setBitmap(avatarBitmap);
-        }
-        if (index >= 0 && index < mAvatarViews.length && mAvatarViews[index] != null) {
-            mAvatarViews[index].setImageBitmap(avatarBitmap);
+        mCredentials[index].setBitmap(avatarBitmap);
+        ListView view = mDialog.getListView();
+        if (index >= view.getFirstVisiblePosition() && index <= view.getLastVisiblePosition()) {
+            // Profile image is in the visible range.
+            View credentialView = view.getChildAt(index - view.getFirstVisiblePosition());
+            if (credentialView == null) return;
+            ImageView avatar = (ImageView) credentialView.findViewById(R.id.profile_image);
+            avatar.setImageBitmap(avatarBitmap);
         }
     }
 
