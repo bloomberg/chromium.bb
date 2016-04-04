@@ -91,7 +91,7 @@ const unsigned int kTbExtNum = 24;
 
 // Token Binding ProtocolVersions supported.
 const uint8_t kTbProtocolVersionMajor = 0;
-const uint8_t kTbProtocolVersionMinor = 4;
+const uint8_t kTbProtocolVersionMinor = 5;
 const uint8_t kTbMinProtocolVersionMajor = 0;
 const uint8_t kTbMinProtocolVersionMinor = 3;
 
