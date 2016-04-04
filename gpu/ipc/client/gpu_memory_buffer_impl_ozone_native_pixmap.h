@@ -54,6 +54,7 @@ class GPU_EXPORT GpuMemoryBufferImplOzoneNativePixmap
       scoped_ptr<ui::ClientNativePixmap> native_pixmap);
 
   scoped_ptr<ui::ClientNativePixmap> pixmap_;
+  void* data_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplOzoneNativePixmap);
 };
