@@ -3824,19 +3824,19 @@ PaintInvalidationReason LayoutBox::getPaintInvalidationReason(const LayoutBoxMod
         && hasLayer() && layer()->transform() && !layer()->transform()->isIdentityOrTranslation())
         return PaintInvalidationBoundsChange;
 
+    if (style()->backgroundLayers().thisOrNextLayersUseContentBox() || style()->maskLayers().thisOrNextLayersUseContentBox() || style()->boxSizing() == BoxSizingBorderBox) {
+        LayoutRect oldContentBoxRect = m_rareData ? m_rareData->m_previousContentBoxRect : LayoutRect();
+        LayoutRect newContentBoxRect = contentBoxRect();
+        if (oldContentBoxRect != newContentBoxRect)
+            return PaintInvalidationContentBoxChange;
+    }
+
     if (!style()->hasBackground() && !style()->hasBoxDecorations()) {
         // We could let incremental invalidation cover non-composited scrollbars, but just
         // do a full invalidation because incremental invalidation will go away with slimming paint.
         if (invalidationReason == PaintInvalidationIncremental && hasNonCompositedScrollbars())
             return PaintInvalidationBorderBoxChange;
         return invalidationReason;
-    }
-
-    if (style()->backgroundLayers().thisOrNextLayersUseContentBox() || style()->maskLayers().thisOrNextLayersUseContentBox()) {
-        LayoutRect oldContentBoxRect = m_rareData ? m_rareData->m_previousContentBoxRect : LayoutRect();
-        LayoutRect newContentBoxRect = contentBoxRect();
-        if (oldContentBoxRect != newContentBoxRect)
-            return PaintInvalidationContentBoxChange;
     }
 
     if (style()->backgroundLayers().thisOrNextLayersHaveLocalAttachment()) {
@@ -4514,6 +4514,10 @@ bool LayoutBox::needToSavePreviousBoxSizes()
     // full invalidate once the paint rect becomes non-empty.
     if (paintInvalidationSize.isEmpty())
         return false;
+
+    // If we use border-box sizing we need to track changes in the size of the content box.
+    if (style()->boxSizing() == BoxSizingBorderBox)
+        return true;
 
     // We need the old box sizes only when the box has background, decorations, or masks.
     // Main LayoutView paints base background, thus interested in box size.

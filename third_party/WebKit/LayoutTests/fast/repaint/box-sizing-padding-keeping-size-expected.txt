@@ -4,7 +4,13 @@
     {
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "drawsContent": true
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 200, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'"
+      ]
     }
   ]
 }
