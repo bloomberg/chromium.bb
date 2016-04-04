@@ -152,6 +152,7 @@ source_set("ui") {
       "//chrome/common/net",
       "//chrome/installer/util:with_no_strings",
       "//components/autofill/content/browser:risk_proto",
+      "//components/browsing_data_ui",
       "//components/bubble:bubble",
       "//components/crash/core/browser",
       "//components/net_log",

@@ -58,6 +58,18 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // bottom of the dialog.
   void OnStateChanged() override;
 
+  // Finds out whether we should show a notice informing the user about other
+  // forms of browsing history. Responds with an asynchronous callback to
+  // |UpdateHistoryNotice|.
+  void RefreshHistoryNotice();
+
+  // Shows or hides the notice about other forms of browsing history.
+  void UpdateHistoryNotice(bool show);
+
+  // Remembers whether we should popup a dialog about other forms of browsing
+  // history when the user deletes the history for the first time.
+  void UpdateHistoryDeletionDialog(bool show);
+
   // If non-null it means removal is in progress.
   BrowsingDataRemover* remover_;
 
@@ -76,6 +88,16 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
 
   // Informs us whether the user is syncing their data.
   ProfileSyncService* sync_service_;
+
+  // Whether we should show a notice about other forms of browsing history.
+  bool should_show_history_notice_;
+
+  // Whether we should popup a dialog about other forms of browsing history
+  // when the user deletes their browsing history for the first time.
+  bool should_show_history_deletion_dialog_;
+
+  // A weak pointer factory for asynchronous calls referencing this class.
+  base::WeakPtrFactory<ClearBrowserDataHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearBrowserDataHandler);
 };

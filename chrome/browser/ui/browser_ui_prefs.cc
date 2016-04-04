@@ -69,6 +69,8 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kDeleteTimePeriod,
       0,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kClearBrowsingDataHistoryNoticeShownTimes, 0);
   registry->RegisterInt64Pref(prefs::kLastClearBrowsingDataTime, 0);
   registry->RegisterIntegerPref(prefs::kModuleConflictBubbleShown, 0);
   registry->RegisterBooleanPref(prefs::kCheckDefaultBrowser, true);

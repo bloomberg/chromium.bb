@@ -7567,6 +7567,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS_SIMPLE" desc="A text shown at the bottom of the Clear Browsing Data dialog, informing the user that some data types will not be cleared.">
         Some settings that may reflect browsing habits will not be cleared.
       </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_FOOTER" desc="A text shown at the bottom of the Clear Browsing Data dialog, informing the user that deleting Chrome browsing history will not delete other forms of history stored at Google My Activity.">
+        Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>history.google.com<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE" desc="A dialog informing the user that their Chrome browsing history was deleted, but other forms of history can still be found on Google My Activity.">
+        The selected data has been removed from Chrome and synced devices. Your Google Account may have other forms of browsing history like searches and activity from other Google services at <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>history.google.com<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE" desc="Title of a dialog that informs the user that the deletion of Chrome's browsing data has been completed.">
+        Cleared Chrome data
+      </message>
       <message name="IDS_CLEAR_BROWSING_DATA_SYNCED_DELETION" desc="Information that data which is synced across user's devices will be deleted from all those devices.">
         This clears synced data from all devices.
       </message>

@@ -100,9 +100,11 @@ cr.define('options', function() {
      * clear browsing data dialog and warns that the deletion may be synced.
      * @param {boolean} simple Whether to use a simple support string.
      * @param {boolean} syncing Whether the user uses Sync.
+     * @param {boolean} showHistoryFooter Whether to show an additional footer
+     *     about other forms of browsing history.
      * @private
      */
-    createFooter_: function(simple, syncing) {
+    createFooter_: function(simple, syncing, showHistoryFooter) {
       // The localized string is of the form "Saved [content settings] and
       // {search engines} will not be cleared and may reflect your browsing
       // habits.", or of the form "Some settings that may reflect browsing
@@ -166,15 +168,19 @@ cr.define('options', function() {
       $('clear-browser-data-old-learn-more-link').hidden = simple;
       $('clear-browser-data-footer-learn-more-link').hidden = !simple;
       $('flash-storage-settings').hidden = simple;
+      $('clear-browser-data-history-footer').hidden = !showHistoryFooter;
     },
 
     /**
      * Shows or hides the sync warning based on whether the user uses Sync.
      * @param {boolean} syncing Whether the user uses Sync.
+     * @param {boolean} showHistoryFooter Whether the user syncs history
+     *     and conditions are met to show an additional history footer.
      * @private
      */
-    updateSyncWarning_: function(syncing) {
+    updateSyncWarningAndHistoryFooter_: function(syncing, showHistoryFooter) {
       $('clear-browser-data-sync-warning').hidden = !syncing;
+      $('clear-browser-data-history-footer').hidden = !showHistoryFooter;
     },
 
     /**
@@ -283,12 +289,16 @@ cr.define('options', function() {
     ClearBrowserDataOverlay.getInstance().updateCounter_(pref_name, text);
   };
 
-  ClearBrowserDataOverlay.createFooter = function(simple, syncing) {
-    ClearBrowserDataOverlay.getInstance().createFooter_(simple, syncing);
+  ClearBrowserDataOverlay.createFooter = function(
+      simple, syncing, showHistoryFooter) {
+    ClearBrowserDataOverlay.getInstance().createFooter_(
+      simple, syncing, showHistoryFooter);
   };
 
-  ClearBrowserDataOverlay.updateSyncWarning = function(syncing) {
-    ClearBrowserDataOverlay.getInstance().updateSyncWarning_(syncing);
+  ClearBrowserDataOverlay.updateSyncWarningAndHistoryFooter = function(
+      syncing, showHistoryFooter) {
+    ClearBrowserDataOverlay.getInstance().updateSyncWarningAndHistoryFooter_(
+        syncing, showHistoryFooter);
   };
 
   ClearBrowserDataOverlay.setClearing = function(clearing) {
@@ -303,13 +313,17 @@ cr.define('options', function() {
     $('clear-browser-data-info-banner').innerText = text;
   };
 
-  ClearBrowserDataOverlay.doneClearing = function() {
+  ClearBrowserDataOverlay.doneClearing = function(showHistoryNotice) {
     // The delay gives the user some feedback that the clearing
     // actually worked. Otherwise the dialog just vanishes instantly in most
     // cases.
     window.setTimeout(function() {
       ClearBrowserDataOverlay.setClearing(false);
-      ClearBrowserDataOverlay.dismiss();
+
+      if (showHistoryNotice)
+        PageManager.showPageByName('clearBrowserDataHistoryNotice');
+      else
+        ClearBrowserDataOverlay.dismiss();
     }, 200);
   };
 

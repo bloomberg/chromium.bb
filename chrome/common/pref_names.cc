@@ -880,6 +880,8 @@ const char kDeauthorizeContentLicenses[] =
 const char kDeleteTimePeriod[] = "browser.clear_data.time_period";
 const char kLastClearBrowsingDataTime[] =
     "browser.last_clear_browsing_data_time";
+const char kClearBrowsingDataHistoryNoticeShownTimes[] =
+    "browser.clear_data.history_notice_shown_times";
 
 // Boolean pref to define the default values for using spellchecker.
 const char kEnableContinuousSpellcheck[] = "browser.enable_spellchecking";

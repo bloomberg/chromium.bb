@@ -306,6 +306,7 @@ extern const char kForceYouTubeSafetyMode[];
 extern const char kRecordHistory[];
 extern const char kDeleteTimePeriod[];
 extern const char kLastClearBrowsingDataTime[];
+extern const char kClearBrowsingDataHistoryNoticeShownTimes[];
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 extern const char kUsesSystemTheme[];
 #endif

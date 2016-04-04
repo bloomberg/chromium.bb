@@ -77,6 +77,7 @@ var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 <include src="browser_options_profile_list.js">
 <include src="browser_options_startup_page_list.js">
 <include src="clear_browser_data_overlay.js">
+<include src="clear_browser_data_history_notice_overlay.js">
 <include src="confirm_dialog.js">
 <include src="content_settings.js">
 <include src="content_settings_exceptions_area.js">
