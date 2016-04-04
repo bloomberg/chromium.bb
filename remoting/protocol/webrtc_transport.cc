@@ -47,6 +47,11 @@ const char kTransportNamespace[] = "google:remoting:webrtc";
 const char kDisableAuthenticationSwitchName[] = "disable-authentication";
 #endif
 
+bool IsValidSessionDescriptionType(const std::string& type) {
+  return type == webrtc::SessionDescriptionInterface::kOffer ||
+         type == webrtc::SessionDescriptionInterface::kAnswer;
+}
+
 // Normalizes the SDP message to make sure the text used for HMAC signatures
 // verifications is the same that was signed on the sending side. This is
 // necessary because WebRTC generates SDP with CRLF line endings which are
@@ -221,7 +226,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     std::string type = session_description->Attr(QName(std::string(), "type"));
     std::string sdp =
         NormalizeSessionDescription(session_description->BodyText());
-    if (type.empty() || sdp.empty()) {
+    if (!IsValidSessionDescriptionType(type) || sdp.empty()) {
       LOG(ERROR) << "Incorrect session description format.";
       return false;
     }
@@ -230,7 +235,7 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
         session_description->Attr(QName(std::string(), "signature"));
     std::string signature;
     if (!base::Base64Decode(signature_base64, &signature) ||
-        !handshake_hmac_.Verify(sdp, signature)) {
+        !handshake_hmac_.Verify(type + " " + sdp, signature)) {
       LOG(WARNING) << "Received session-description with invalid signature.";
       bool ignore_error = false;
 #if !defined(NDEBUG)
@@ -334,7 +339,7 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
 
   std::string digest;
   digest.resize(handshake_hmac_.DigestLength());
-  CHECK(handshake_hmac_.Sign(description_sdp,
+  CHECK(handshake_hmac_.Sign(description->type() + " " + description_sdp,
                              reinterpret_cast<uint8_t*>(&(digest[0])),
                              digest.size()));
   std::string digest_base64;
