@@ -23,5 +23,5 @@ per-file ChildProcessLauncherTest.java=mariakhomenko@chromium.org
 per-file ServiceRegistryTest.java=ppi@chromium.org
 
 # Java Bridge
-per-file JavaBridge*=mnaganov@chromium.org
+per-file JavaBridge*=michaelbai@chromium.org
 per-file JavaBridge*=torne@chromium.org
