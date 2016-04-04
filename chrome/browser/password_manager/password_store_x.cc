@@ -28,9 +28,10 @@ using password_manager::PasswordStoreDefault;
 
 namespace {
 
-bool AddLoginToBackend(const scoped_ptr<PasswordStoreX::NativeBackend>& backend,
-                       const PasswordForm& form,
-                       PasswordStoreChangeList* changes) {
+bool AddLoginToBackend(
+    const std::unique_ptr<PasswordStoreX::NativeBackend>& backend,
+    const PasswordForm& form,
+    PasswordStoreChangeList* changes) {
   *changes = backend->AddLogin(form);
   return (!changes->empty() &&
           changes->back().type() == PasswordStoreChange::ADD);
@@ -61,7 +62,7 @@ bool RemoveLoginsByURLAndTimeFromBackend(
 PasswordStoreX::PasswordStoreX(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    scoped_ptr<password_manager::LoginDatabase> login_db,
+    std::unique_ptr<password_manager::LoginDatabase> login_db,
     NativeBackend* backend)
     : PasswordStoreDefault(main_thread_runner,
                            db_thread_runner,

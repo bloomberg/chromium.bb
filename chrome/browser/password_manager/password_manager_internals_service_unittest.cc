@@ -28,9 +28,9 @@ class MockLogReceiver : public password_manager::LogReceiver {
 
 enum ProfileType { NORMAL_PROFILE, INCOGNITO_PROFILE };
 
-scoped_ptr<TestingProfile> CreateProfile(ProfileType type) {
+std::unique_ptr<TestingProfile> CreateProfile(ProfileType type) {
   TestingProfile::Builder builder;
-  scoped_ptr<TestingProfile> profile(builder.Build());
+  std::unique_ptr<TestingProfile> profile(builder.Build());
 #if !defined(NDEBUG)
   // During the test cases, the profiles may get created on the same address. To
   // avoid over-zealous asserts we need to mark the newly created one as "live".
@@ -54,7 +54,7 @@ class PasswordManagerInternalsServiceTest : public testing::Test {
 // When the profile is not incognito, it should be possible to activate the
 // service.
 TEST_F(PasswordManagerInternalsServiceTest, ServiceActiveNonIncognito) {
-  scoped_ptr<TestingProfile> profile(CreateProfile(NORMAL_PROFILE));
+  std::unique_ptr<TestingProfile> profile(CreateProfile(NORMAL_PROFILE));
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(
           profile.get());
@@ -74,7 +74,7 @@ TEST_F(PasswordManagerInternalsServiceTest, ServiceActiveNonIncognito) {
 // When the browser profile is incognito, it should not be possible to activate
 // the service.
 TEST_F(PasswordManagerInternalsServiceTest, ServiceNotActiveIncognito) {
-  scoped_ptr<TestingProfile> profile(CreateProfile(INCOGNITO_PROFILE));
+  std::unique_ptr<TestingProfile> profile(CreateProfile(INCOGNITO_PROFILE));
   ASSERT_TRUE(profile);
 
   Profile* incognito_profile = profile->GetOffTheRecordProfile();

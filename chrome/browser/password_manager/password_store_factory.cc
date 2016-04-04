@@ -4,11 +4,11 @@
 
 #include "chrome/browser/password_manager/password_store_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/environment.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -150,7 +150,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 #endif
   Profile* profile = static_cast<Profile*>(context);
 
-  scoped_ptr<password_manager::LoginDatabase> login_db(
+  std::unique_ptr<password_manager::LoginDatabase> login_db(
       password_manager::CreateLoginDatabase(profile->GetPath()));
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
@@ -166,7 +166,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
                             WebDataServiceFactory::GetPasswordWebDataForProfile(
                                 profile, ServiceAccessType::EXPLICIT_ACCESS));
 #elif defined(OS_MACOSX)
-  scoped_ptr<crypto::AppleKeychain> keychain(
+  std::unique_ptr<crypto::AppleKeychain> keychain(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           os_crypt::switches::kUseMockKeychain)
           ? new crypto::MockAppleKeychain()
@@ -207,7 +207,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   PrefService* prefs = profile->GetPrefs();
   LocalProfileId id = GetLocalProfileId(prefs);
 
-  scoped_ptr<PasswordStoreX::NativeBackend> backend;
+  std::unique_ptr<PasswordStoreX::NativeBackend> backend;
   if (used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
       used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
     // KDE3 didn't use DBus, which our KWallet store uses.
@@ -294,7 +294,7 @@ bool PasswordStoreFactory::ServiceIsNULLWhileTesting() const {
 
 #if defined(USE_X11)
 base::nix::DesktopEnvironment PasswordStoreFactory::GetDesktopEnvironment() {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
   return base::nix::GetDesktopEnvironment(env.get());
 }
 

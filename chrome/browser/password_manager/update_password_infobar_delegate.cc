@@ -4,6 +4,7 @@
 
 #include "chrome/browser/password_manager/update_password_infobar_delegate.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -22,14 +23,14 @@
 // static
 void UpdatePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    scoped_ptr<password_manager::PasswordFormManager> form_to_save) {
+    std::unique_ptr<password_manager::PasswordFormManager> form_to_save) {
   const bool is_smartlock_branding_enabled =
       password_bubble_experiment::IsSmartLockBrandingEnabled(
           ProfileSyncServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents->GetBrowserContext())));
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(make_scoped_ptr(new UpdatePasswordInfoBar(
-          make_scoped_ptr(new UpdatePasswordInfoBarDelegate(
+      ->AddInfoBar(base::WrapUnique(new UpdatePasswordInfoBar(
+          base::WrapUnique(new UpdatePasswordInfoBarDelegate(
               web_contents, std::move(form_to_save),
               is_smartlock_branding_enabled)))));
 }
@@ -58,7 +59,7 @@ UpdatePasswordInfoBarDelegate::GetCurrentForms() const {
 
 UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
     content::WebContents* web_contents,
-    scoped_ptr<password_manager::PasswordFormManager> form_to_update,
+    std::unique_ptr<password_manager::PasswordFormManager> form_to_update,
     bool is_smartlock_branding_enabled)
     : is_smartlock_branding_enabled_(is_smartlock_branding_enabled) {
   // TODO(melandory): Add histograms, crbug.com/577129

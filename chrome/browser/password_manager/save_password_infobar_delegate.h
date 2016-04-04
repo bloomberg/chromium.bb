@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/password_manager/password_manager_infobar_delegate.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -35,7 +36,7 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   // for |web_contents|.
   static void Create(
       content::WebContents* web_contents,
-      scoped_ptr<password_manager::PasswordFormManager> form_to_save);
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_save);
 
   ~SavePasswordInfoBarDelegate() override;
 
@@ -52,14 +53,14 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   // Makes a ctor available in tests.
   SavePasswordInfoBarDelegate(
       content::WebContents* web_contents,
-      scoped_ptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
       bool is_smartlock_branding_enabled,
       bool should_show_first_run_experience);
 
  private:
   // The PasswordFormManager managing the form we're asking the user about,
   // and should update as per her decision.
-  scoped_ptr<password_manager::PasswordFormManager> form_to_save_;
+  std::unique_ptr<password_manager::PasswordFormManager> form_to_save_;
 
   // Used to track the results we get from the info bar.
   password_manager::metrics_util::UIDismissalReason infobar_response_;
@@ -81,7 +82,7 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
 
 // Creates the platform-specific SavePassword InfoBar. This function is defined
 // in platform-specific .cc (or .mm) files.
-scoped_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
-    scoped_ptr<SavePasswordInfoBarDelegate> delegate);
+std::unique_ptr<infobars::InfoBar> CreateSavePasswordInfoBar(
+    std::unique_ptr<SavePasswordInfoBarDelegate> delegate);
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_SAVE_PASSWORD_INFOBAR_DELEGATE_H_

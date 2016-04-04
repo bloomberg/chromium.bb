@@ -21,15 +21,15 @@ class AutoSigninFirstRunDialogAndroidTest
   PrefService* prefs();
 
  protected:
-  scoped_ptr<AutoSigninFirstRunDialogAndroid> CreateDialog();
+  std::unique_ptr<AutoSigninFirstRunDialogAndroid> CreateDialog();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutoSigninFirstRunDialogAndroidTest);
 };
 
-scoped_ptr<AutoSigninFirstRunDialogAndroid>
+std::unique_ptr<AutoSigninFirstRunDialogAndroid>
 AutoSigninFirstRunDialogAndroidTest::CreateDialog() {
-  scoped_ptr<AutoSigninFirstRunDialogAndroid> dialog(
+  std::unique_ptr<AutoSigninFirstRunDialogAndroid> dialog(
       new AutoSigninFirstRunDialogAndroid(web_contents()));
   return dialog;
 }
@@ -44,7 +44,7 @@ TEST_F(AutoSigninFirstRunDialogAndroidTest,
        CheckResetOfPrefAfterFirstRunMessageWasShown) {
   prefs()->SetBoolean(
       password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
-  scoped_ptr<AutoSigninFirstRunDialogAndroid> dialog(CreateDialog());
+  std::unique_ptr<AutoSigninFirstRunDialogAndroid> dialog(CreateDialog());
   dialog.reset();
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kWasAutoSignInFirstRunExperienceShown));

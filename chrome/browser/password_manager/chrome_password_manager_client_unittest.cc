@@ -168,7 +168,7 @@ TEST_F(ChromePasswordManagerClientTest,
 TEST_F(ChromePasswordManagerClientTest,
        IsAutomaticPasswordSavingEnabledWhenFlagIsSetTest) {
   // Add the enable-automatic-password-saving feature.
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::vector<const base::Feature*> enabled_features;
   std::vector<const base::Feature*> disabled_features;
   enabled_features.push_back(
@@ -284,7 +284,7 @@ TEST_F(ChromePasswordManagerClientTest,
 }
 
 TEST_F(ChromePasswordManagerClientTest, SavingAndFillingEnabledConditionsTest) {
-  scoped_ptr<MockChromePasswordManagerClient> client(
+  std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(web_contents()));
   // Functionality disabled if there is SSL errors.
   EXPECT_CALL(*client, DidLastPageLoadEncounterSSLErrors())

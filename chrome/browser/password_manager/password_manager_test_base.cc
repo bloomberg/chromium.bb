@@ -170,12 +170,12 @@ class BubbleObserver : public PromptObserver {
   DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
 };
 
-scoped_ptr<PromptObserver> PromptObserver::Create(
+std::unique_ptr<PromptObserver> PromptObserver::Create(
     content::WebContents* web_contents) {
   if (ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled()) {
-    return scoped_ptr<PromptObserver>(new BubbleObserver(web_contents));
+    return std::unique_ptr<PromptObserver>(new BubbleObserver(web_contents));
   } else {
-    return scoped_ptr<PromptObserver>(new InfoBarObserver(web_contents));
+    return std::unique_ptr<PromptObserver>(new InfoBarObserver(web_contents));
   }
 }
 
@@ -232,7 +232,7 @@ void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
   NavigateToFile(filename);
 
   NavigationObserver observer(WebContents());
-  scoped_ptr<PromptObserver> prompt_observer(
+  std::unique_ptr<PromptObserver> prompt_observer(
       PromptObserver::Create(WebContents()));
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submission_script));
   observer.Wait();

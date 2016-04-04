@@ -10,11 +10,11 @@
 
 #include <limits>
 #include <list>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -147,12 +147,12 @@ uint32_t GetUintFromAttributes(GHashTable* attrs, const char* keyname) {
 // Convert the attributes into a new PasswordForm.
 // Note: does *not* get the actual password, as that is not a key attribute!
 // Returns nullptr if the attributes are for the wrong application.
-scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
+std::unique_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   base::StringPiece app_value = GetStringFromAttributes(attrs, "application");
   if (!app_value.starts_with(kLibsecretAppString))
-    return scoped_ptr<PasswordForm>();
+    return std::unique_ptr<PasswordForm>();
 
-  scoped_ptr<PasswordForm> form(new PasswordForm());
+  std::unique_ptr<PasswordForm> form(new PasswordForm());
   form->origin = GURL(GetStringFromAttributes(attrs, "origin_url"));
   form->action = GURL(GetStringFromAttributes(attrs, "action_url"));
   form->username_element =
@@ -647,7 +647,7 @@ ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
       continue;
     }
     GHashTable* attrs = secret_item_get_attributes(secretItem);
-    scoped_ptr<PasswordForm> form(FormOutOfAttributes(attrs));
+    std::unique_ptr<PasswordForm> form(FormOutOfAttributes(attrs));
     g_hash_table_unref(attrs);
     if (form) {
       if (lookup_form && form->signon_realm != lookup_form->signon_realm) {

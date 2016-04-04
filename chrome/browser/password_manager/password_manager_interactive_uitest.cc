@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
   NavigateToFile("/password/signup_form.html");
 
   NavigationObserver observer(WebContents());
-  scoped_ptr<PromptObserver> prompt_observer(
+  std::unique_ptr<PromptObserver> prompt_observer(
       PromptObserver::Create(WebContents()));
   std::string fill_and_submit =
       "document.getElementById('username_field').value = 'temp';"
@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
   WaitForElementValue("username_field", "tempORARY");
 
   NavigationObserver second_observer(WebContents());
-  scoped_ptr<PromptObserver> second_prompt_observer(
+  std::unique_ptr<PromptObserver> second_prompt_observer(
       PromptObserver::Create(WebContents()));
   std::string submit =
       "document.getElementById('input_submit_button').click();";

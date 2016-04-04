@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_TEST_BASE_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_TEST_BASE_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
@@ -76,7 +77,8 @@ class PromptObserver {
 
   // Chooses the right implementation of PromptObserver and creates an instance
   // of it.
-  static scoped_ptr<PromptObserver> Create(content::WebContents* web_contents);
+  static std::unique_ptr<PromptObserver> Create(
+      content::WebContents* web_contents);
 
  protected:
   PromptObserver();

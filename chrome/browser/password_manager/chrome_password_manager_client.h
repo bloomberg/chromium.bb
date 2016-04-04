@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_CHROME_PASSWORD_MANAGER_CLIENT_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_CHROME_PASSWORD_MANAGER_CLIENT_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/content/browser/credential_manager_dispatcher.h"
@@ -51,7 +51,7 @@ class ChromePasswordManagerClient
   bool IsSavingAndFillingEnabledForCurrentPage() const override;
   bool IsFillingEnabledForCurrentPage() const override;
   bool PromptUserToSaveOrUpdatePassword(
-      scoped_ptr<password_manager::PasswordFormManager> form_to_save,
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
       password_manager::CredentialSourceType type,
       bool update_password) override;
   bool PromptUserToChooseCredentials(
@@ -65,16 +65,17 @@ class ChromePasswordManagerClient
       ScopedVector<autofill::PasswordForm> local_forms,
       const GURL& origin) override;
   void NotifyUserCouldBeAutoSignedIn(
-      scoped_ptr<autofill::PasswordForm> form) override;
+      std::unique_ptr<autofill::PasswordForm> form) override;
   void NotifySuccessfulLoginWithExistingPassword(
       const autofill::PasswordForm& form) override;
-  void AutomaticPasswordSave(scoped_ptr<password_manager::PasswordFormManager>
-                                 saved_form_manager) override;
+  void AutomaticPasswordSave(
+      std::unique_ptr<password_manager::PasswordFormManager> saved_form_manager)
+      override;
   void PasswordWasAutofilled(
       const autofill::PasswordFormMap& best_matches,
       const GURL& origin,
-      const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches)
-      const override;
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>*
+          federated_matches) const override;
   PrefService* GetPrefs() override;
   password_manager::PasswordStore* GetPasswordStore() const override;
   password_manager::PasswordSyncState GetPasswordSyncState() const override;
@@ -181,11 +182,11 @@ class ChromePasswordManagerClient
 
   const password_manager::SyncCredentialsFilter credentials_filter_;
 
-  scoped_ptr<password_manager::LogManager> log_manager_;
+  std::unique_ptr<password_manager::LogManager> log_manager_;
 
   // Set during 'NotifyUserCouldBeAutoSignedIn' in order to store the
   // form for potential use during 'NotifySuccessfulLoginWithExistingPassword'.
-  scoped_ptr<autofill::PasswordForm> possible_auto_sign_in_;
+  std::unique_ptr<autofill::PasswordForm> possible_auto_sign_in_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_UPDATE_PASSWORD_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_UPDATE_PASSWORD_INFOBAR_DELEGATE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/password_manager/password_manager_infobar_delegate.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -26,7 +26,7 @@ class UpdatePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
  public:
   static void Create(
       content::WebContents* web_contents,
-      scoped_ptr<password_manager::PasswordFormManager> form_to_update);
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_update);
 
   ~UpdatePasswordInfoBarDelegate() override;
 
@@ -53,7 +53,7 @@ class UpdatePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
  private:
   UpdatePasswordInfoBarDelegate(
       content::WebContents* web_contents,
-      scoped_ptr<password_manager::PasswordFormManager> form_to_update,
+      std::unique_ptr<password_manager::PasswordFormManager> form_to_update,
       bool is_smartlock_branding_enabled);
 
   // ConfirmInfoBarDelegate:

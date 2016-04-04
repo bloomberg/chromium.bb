@@ -213,7 +213,7 @@ bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
 }
 
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
-    scoped_ptr<password_manager::PasswordFormManager> form_to_save,
+    std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
     password_manager::CredentialSourceType type,
     bool update_password) {
   // Save password infobar and the password bubble prompts in case of
@@ -316,7 +316,7 @@ void ChromePasswordManagerClient::NotifyUserAutoSignin(
 }
 
 void ChromePasswordManagerClient::NotifyUserCouldBeAutoSignedIn(
-    scoped_ptr<autofill::PasswordForm> form) {
+    std::unique_ptr<autofill::PasswordForm> form) {
   possible_auto_sign_in_ = std::move(form);
 }
 
@@ -341,7 +341,7 @@ void ChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
 }
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(
-    scoped_ptr<password_manager::PasswordFormManager> saved_form) {
+    std::unique_ptr<password_manager::PasswordFormManager> saved_form) {
 #if BUILDFLAG(ANDROID_JAVA_UI)
   GeneratedPasswordSavedInfoBarDelegateAndroid::Create(web_contents());
 #else
@@ -357,8 +357,8 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 void ChromePasswordManagerClient::PasswordWasAutofilled(
     const autofill::PasswordFormMap& best_matches,
     const GURL& origin,
-    const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches)
-    const {
+    const std::vector<std::unique_ptr<autofill::PasswordForm>>*
+        federated_matches) const {
 #if !BUILDFLAG(ANDROID_JAVA_UI)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
@@ -397,7 +397,7 @@ ChromePasswordManagerClient::GetPasswordSyncState() const {
 bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
   DCHECK(web_contents());
 
-  scoped_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
+  std::unique_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
   if (log_manager_->IsLoggingActive()) {
     logger.reset(new password_manager::BrowserSavePasswordProgressLogger(
         log_manager_.get()));

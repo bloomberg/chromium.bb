@@ -8,6 +8,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -99,7 +100,7 @@ class PasswordStoreProxyMacTest
   void TearDown() override;
 
   void CreateAndInitPasswordStore(
-      scoped_ptr<password_manager::LoginDatabase> login_db);
+      std::unique_ptr<password_manager::LoginDatabase> login_db);
 
   void ClosePasswordStore();
 
@@ -146,7 +147,7 @@ PasswordStoreProxyMacTest::~PasswordStoreProxyMacTest() {
 }
 
 void PasswordStoreProxyMacTest::SetUp() {
-  scoped_ptr<password_manager::LoginDatabase> login_db(
+  std::unique_ptr<password_manager::LoginDatabase> login_db(
       new password_manager::LoginDatabase(test_login_db_file_path()));
   CreateAndInitPasswordStore(std::move(login_db));
 }
@@ -156,10 +157,10 @@ void PasswordStoreProxyMacTest::TearDown() {
 }
 
 void PasswordStoreProxyMacTest::CreateAndInitPasswordStore(
-    scoped_ptr<password_manager::LoginDatabase> login_db) {
+    std::unique_ptr<password_manager::LoginDatabase> login_db) {
   store_ = new PasswordStoreProxyMac(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      make_scoped_ptr(new crypto::MockAppleKeychain), std::move(login_db),
+      base::WrapUnique(new crypto::MockAppleKeychain), std::move(login_db),
       &testing_prefs_);
   ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
 }
@@ -336,7 +337,7 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
   // explosions, but fail without side effect, return no data and trigger no
   // notifications.
   ClosePasswordStore();
-  CreateAndInitPasswordStore(make_scoped_ptr(new BadLoginDatabase));
+  CreateAndInitPasswordStore(base::WrapUnique(new BadLoginDatabase));
   FinishAsyncProcessing();
   EXPECT_FALSE(login_db());
 
@@ -350,9 +351,9 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
       PasswordForm::SCHEME_HTML, "http://www.facebook.com/",
       "http://www.facebook.com/index.html", "login", L"username", L"password",
       L"submit", L"not_joe_user", L"12345", true, false, 1};
-  scoped_ptr<PasswordForm> form =
+  std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(www_form_data);
-  scoped_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
+  std::unique_ptr<PasswordForm> blacklisted_form(new PasswordForm(*form));
   blacklisted_form->signon_realm = "http://foo.example.com";
   blacklisted_form->origin = GURL("http://foo.example.com/origin");
   blacklisted_form->action = GURL("http://foo.example.com/action");
@@ -412,8 +413,8 @@ class PasswordStoreProxyMacMigrationTest : public PasswordStoreProxyMacTest {
   void TestMigration(bool lock_keychain);
 
  protected:
-  scoped_ptr<password_manager::LoginDatabase> login_db_;
-  scoped_ptr<crypto::MockAppleKeychain> keychain_;
+  std::unique_ptr<password_manager::LoginDatabase> login_db_;
+  std::unique_ptr<crypto::MockAppleKeychain> keychain_;
   base::HistogramTester histogram_tester_;
 };
 

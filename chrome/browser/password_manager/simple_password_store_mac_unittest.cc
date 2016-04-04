@@ -41,7 +41,7 @@ class SimplePasswordStoreMacTest : public testing::Test {
     OSCrypt::UseMockKeychain(true);
 
     // Setup LoginDatabase.
-    scoped_ptr<password_manager::LoginDatabase> login_db(
+    std::unique_ptr<password_manager::LoginDatabase> login_db(
         new password_manager::LoginDatabase(test_login_db_file_path()));
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
@@ -51,7 +51,7 @@ class SimplePasswordStoreMacTest : public testing::Test {
         base::Bind(&InitOnBackgroundThread, base::Unretained(login_db.get())));
     store_ = new SimplePasswordStoreMac(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI), nullptr,
-        scoped_ptr<password_manager::LoginDatabase>());
+        std::unique_ptr<password_manager::LoginDatabase>());
     file_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&SimplePasswordStoreMac::InitWithTaskRunner, store_,

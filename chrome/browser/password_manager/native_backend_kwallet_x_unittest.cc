@@ -503,7 +503,7 @@ dbus::Response* NativeBackendKWalletTest::KLauncherMethodCall(
   if (kwallet_runnable_)
     kwallet_running_ = true;
 
-  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
   writer.AppendInt32(klauncher_ret_);
   writer.AppendString(std::string());  // dbus_name
@@ -520,7 +520,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
 
   if (ContainsKey(failing_methods_, method_call->GetMember()))
     return nullptr;
-  scoped_ptr<dbus::Response> response;
+  std::unique_ptr<dbus::Response> response;
   if (method_call->GetMember() == "isEnabled") {
     response = dbus::Response::CreateEmpty();
     dbus::MessageWriter writer(response.get());

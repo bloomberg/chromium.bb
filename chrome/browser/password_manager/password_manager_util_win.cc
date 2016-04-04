@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <wincred.h>
 
+#include <memory>
+
 // SECURITY_WIN32 must be defined in order to get
 // EXTENDED_NAME_FORMAT enumeration.
 #define SECURITY_WIN32 1
@@ -19,7 +21,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/worker_pool.h"
@@ -188,8 +189,8 @@ void GetOsPasswordStatusInternal(PasswordCheckPrefs* prefs,
   }
 }
 
-void ReplyOsPasswordStatus(scoped_ptr<PasswordCheckPrefs> prefs,
-                           scoped_ptr<OsPasswordStatus> status) {
+void ReplyOsPasswordStatus(std::unique_ptr<PasswordCheckPrefs> prefs,
+                           std::unique_ptr<OsPasswordStatus> status) {
   PrefService* local_state = g_browser_process->local_state();
   prefs->Write(local_state);
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus", *status,
@@ -200,9 +201,9 @@ void GetOsPasswordStatus() {
   // Preferences can be accessed on the UI thread only.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PrefService* local_state = g_browser_process->local_state();
-  scoped_ptr<PasswordCheckPrefs> prefs(new PasswordCheckPrefs);
+  std::unique_ptr<PasswordCheckPrefs> prefs(new PasswordCheckPrefs);
   prefs->Read(local_state);
-  scoped_ptr<OsPasswordStatus> status(
+  std::unique_ptr<OsPasswordStatus> status(
       new OsPasswordStatus(PASSWORD_STATUS_UNKNOWN));
   PasswordCheckPrefs* prefs_weak = prefs.get();
   OsPasswordStatus* status_weak = status.get();

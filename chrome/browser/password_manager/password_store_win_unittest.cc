@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/password_manager/password_store_win.h"
+
 #include <windows.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,13 +14,12 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/password_manager/password_store_win.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/os_crypt/ie7_password_win.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -127,7 +129,7 @@ class PasswordStoreWinTest : public testing::Test {
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
     // Need to add at least one table so the database gets created.
-    wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new LoginsTable()));
+    wdbs_->AddTable(std::unique_ptr<WebDatabaseTable>(new LoginsTable()));
     wdbs_->LoadDatabase();
     wds_ = new PasswordWebDataService(
         wdbs_,
@@ -161,7 +163,7 @@ class PasswordStoreWinTest : public testing::Test {
     return new PasswordStoreWin(
         base::ThreadTaskRunnerHandle::Get(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
-        make_scoped_ptr(new LoginDatabase(test_login_db_file_path())),
+        base::WrapUnique(new LoginDatabase(test_login_db_file_path())),
         wds_.get());
   }
 
@@ -171,7 +173,7 @@ class PasswordStoreWinTest : public testing::Test {
   content::TestBrowserThread db_thread_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestingProfile> profile_;
   scoped_refptr<PasswordWebDataService> wds_;
   scoped_refptr<WebDatabaseService> wdbs_;
   scoped_refptr<PasswordStore> store_;
@@ -232,7 +234,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
     L"",
     true, false, 1,
   };
-  scoped_ptr<PasswordForm> form =
+  std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);
 
   // The returned form will not have 'action' or '*_element' fields set. This
@@ -279,7 +281,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_OutstandingWDSQueries) {
     L"",
     true, false, 1,
   };
-  scoped_ptr<PasswordForm> form =
+  std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);
 
   MockPasswordStoreConsumer consumer;
@@ -328,7 +330,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
     L"",
     true, false, 1,
   };
-  scoped_ptr<PasswordForm> form =
+  std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);
 
   PasswordFormData expected_form_data = {
@@ -384,7 +386,7 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
     L"",
     true, false, 1,
   };
-  scoped_ptr<PasswordForm> form =
+  std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);
 
   MockPasswordStoreConsumer consumer;

@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_MAC_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_MAC_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "components/password_manager/core/browser/login_database.h"
@@ -44,7 +44,7 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   PasswordStoreMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-      scoped_ptr<crypto::AppleKeychain> keychain);
+      std::unique_ptr<crypto::AppleKeychain> keychain);
 
   // Sets the background thread.
   void InitWithTaskRunner(
@@ -102,8 +102,8 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   void AddSiteStatsImpl(
       const password_manager::InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
-  std::vector<scoped_ptr<password_manager::InteractionsStats>> GetSiteStatsImpl(
-      const GURL& origin_domain) override;
+  std::vector<std::unique_ptr<password_manager::InteractionsStats>>
+  GetSiteStatsImpl(const GURL& origin_domain) override;
 
   // Adds the given form to the Keychain if it's something we want to store
   // there (i.e., not a blacklist entry or a federated login). Returns true if
@@ -129,7 +129,7 @@ class PasswordStoreMac : public password_manager::PasswordStore {
   // |orphaned_forms|.
   void CleanOrphanedForms(ScopedVector<autofill::PasswordForm>* orphaned_forms);
 
-  scoped_ptr<crypto::AppleKeychain> keychain_;
+  std::unique_ptr<crypto::AppleKeychain> keychain_;
 
   // The login metadata SQL database. The caller is resonsible for initializing
   // it.

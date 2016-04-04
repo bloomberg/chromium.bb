@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,7 +26,7 @@
 // static
 void SavePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    scoped_ptr<password_manager::PasswordFormManager> form_to_save) {
+    std::unique_ptr<password_manager::PasswordFormManager> form_to_save) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   sync_driver::SyncService* sync_service =
@@ -37,7 +38,7 @@ void SavePasswordInfoBarDelegate::Create(
       password_bubble_experiment::ShouldShowSavePromptFirstRunExperience(
           sync_service, profile->GetPrefs());
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(CreateSavePasswordInfoBar(make_scoped_ptr(
+      ->AddInfoBar(CreateSavePasswordInfoBar(base::WrapUnique(
           new SavePasswordInfoBarDelegate(web_contents, std::move(form_to_save),
                                           is_smartlock_branding_enabled,
                                           should_show_first_run_experience))));
@@ -56,7 +57,7 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
 
 SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     content::WebContents* web_contents,
-    scoped_ptr<password_manager::PasswordFormManager> form_to_save,
+    std::unique_ptr<password_manager::PasswordFormManager> form_to_save,
     bool is_smartlock_branding_enabled,
     bool should_show_first_run_experience)
     : PasswordManagerInfoBarDelegate(),

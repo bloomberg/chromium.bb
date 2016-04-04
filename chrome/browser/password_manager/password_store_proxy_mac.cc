@@ -18,8 +18,8 @@ using password_manager::PasswordStoreChangeList;
 
 PasswordStoreProxyMac::PasswordStoreProxyMac(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-    scoped_ptr<crypto::AppleKeychain> keychain,
-    scoped_ptr<password_manager::LoginDatabase> login_db,
+    std::unique_ptr<crypto::AppleKeychain> keychain,
+    std::unique_ptr<password_manager::LoginDatabase> login_db,
     PrefService* prefs)
     : PasswordStore(main_thread_runner, nullptr),
       login_metadata_db_(std::move(login_db)) {
@@ -225,7 +225,7 @@ void PasswordStoreProxyMac::RemoveSiteStatsImpl(const GURL& origin_domain) {
   GetBackend()->RemoveSiteStatsImpl(origin_domain);
 }
 
-std::vector<scoped_ptr<password_manager::InteractionsStats>>
+std::vector<std::unique_ptr<password_manager::InteractionsStats>>
 PasswordStoreProxyMac::GetSiteStatsImpl(const GURL& origin_domain) {
   return GetBackend()->GetSiteStatsImpl(origin_domain);
 }

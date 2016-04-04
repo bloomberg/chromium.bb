@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -91,7 +91,7 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   // case this PasswordStoreX will act the same as PasswordStoreDefault.
   PasswordStoreX(scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
                  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-                 scoped_ptr<password_manager::LoginDatabase> login_db,
+                 std::unique_ptr<password_manager::LoginDatabase> login_db,
                  NativeBackend* backend);
 
  private:
@@ -142,7 +142,7 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   ssize_t MigrateLogins();
 
   // The native backend in use, or NULL if none.
-  scoped_ptr<NativeBackend> backend_;
+  std::unique_ptr<NativeBackend> backend_;
   // Whether we have already attempted migration to the native store.
   bool migration_checked_;
   // Whether we should allow falling back to the default store. If there is

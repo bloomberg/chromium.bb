@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
 class PasswordWebDataService;
@@ -29,7 +30,7 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
   PasswordStoreWin(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
       scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-      scoped_ptr<password_manager::LoginDatabase> login_db,
+      std::unique_ptr<password_manager::LoginDatabase> login_db,
       const scoped_refptr<PasswordWebDataService>& web_data_service);
 
   // PasswordStore:
@@ -45,9 +46,9 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
 
   // password_manager::PasswordStore:
   void GetLoginsImpl(const autofill::PasswordForm& form,
-                     scoped_ptr<GetLoginsRequest> request) override;
+                     std::unique_ptr<GetLoginsRequest> request) override;
 
-  scoped_ptr<DBHandler> db_handler_;
+  std::unique_ptr<DBHandler> db_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreWin);
 };

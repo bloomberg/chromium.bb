@@ -7,13 +7,13 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -156,7 +156,7 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
   PendingRequestMap::iterator i = pending_requests_.find(handle);
   DCHECK(i != pending_requests_.end());
 
-  scoped_ptr<PasswordForm> form(i->second.form);
+  std::unique_ptr<PasswordForm> form(i->second.form);
   ResultCallback result_callback(i->second.result_callback);
   pending_requests_.erase(i);
 
@@ -174,7 +174,7 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
 PasswordStoreWin::PasswordStoreWin(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
-    scoped_ptr<password_manager::LoginDatabase> login_db,
+    std::unique_ptr<password_manager::LoginDatabase> login_db,
     const scoped_refptr<PasswordWebDataService>& web_data_service)
     : PasswordStoreDefault(main_thread_runner,
                            db_thread_runner,
@@ -197,8 +197,9 @@ void PasswordStoreWin::ShutdownOnUIThread() {
   PasswordStoreDefault::ShutdownOnUIThread();
 }
 
-void PasswordStoreWin::GetLoginsImpl(const PasswordForm& form,
-                                     scoped_ptr<GetLoginsRequest> request) {
+void PasswordStoreWin::GetLoginsImpl(
+    const PasswordForm& form,
+    std::unique_ptr<GetLoginsRequest> request) {
   // When importing from IE7, the credentials are first stored into a temporary
   // Web SQL database. Then, after each GetLogins() request that does not yield
   // any matches from the LoginDatabase, the matching credentials in the Web SQL

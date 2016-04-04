@@ -8,13 +8,14 @@
 #include <gnome-keyring.h>
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -109,7 +110,8 @@ const char kGnomeKeyringAppString[] = "chrome";
 // Convert the attributes of a given keyring entry into a new PasswordForm.
 // Note: does *not* get the actual password, as that is not a key attribute!
 // Returns NULL if the attributes are for the wrong application.
-scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
+std::unique_ptr<PasswordForm> FormFromAttributes(
+    GnomeKeyringAttributeList* attrs) {
   // Read the string and int attributes into the appropriate map.
   std::map<std::string, std::string> string_attr_map;
   std::map<std::string, uint32_t> uint_attr_map;
@@ -123,9 +125,9 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   // Check to make sure this is a password we care about.
   const std::string& app_value = string_attr_map["application"];
   if (!base::StringPiece(app_value).starts_with(kGnomeKeyringAppString))
-    return scoped_ptr<PasswordForm>();
+    return std::unique_ptr<PasswordForm>();
 
-  scoped_ptr<PasswordForm> form(new PasswordForm());
+  std::unique_ptr<PasswordForm> form(new PasswordForm());
   form->origin = GURL(string_attr_map["origin_url"]);
   form->action = GURL(string_attr_map["action_url"]);
   form->username_element = UTF8ToUTF16(string_attr_map["username_element"]);
@@ -194,7 +196,7 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
     GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
     GnomeKeyringAttributeList* attrs = data->attributes;
 
-    scoped_ptr<PasswordForm> form(FormFromAttributes(attrs));
+    std::unique_ptr<PasswordForm> form(FormFromAttributes(attrs));
     if (form) {
       if (lookup_form && form->signon_realm != lookup_form->signon_realm) {
         if (lookup_form->scheme != PasswordForm::SCHEME_HTML ||
@@ -305,8 +307,9 @@ class GKRMethod : public GnomeKeyringLoader {
     }
   };
 
-  typedef scoped_ptr<GnomeKeyringAttributeList,
-                     GnomeKeyringAttributeListFreeDeleter> ScopedAttributeList;
+  typedef std::unique_ptr<GnomeKeyringAttributeList,
+                          GnomeKeyringAttributeListFreeDeleter>
+      ScopedAttributeList;
 
   // Helper methods to abbreviate Gnome Keyring long API names.
   static void AppendString(ScopedAttributeList* list,
@@ -338,7 +341,7 @@ class GKRMethod : public GnomeKeyringLoader {
   // Additionally, |lookup_form_->signon_realm| is also used to narrow down the
   // found logins to those which indeed PSL-match the look-up. And finally,
   // |lookup_form_| set to NULL means that PSL matching is not required.
-  scoped_ptr<PasswordForm> lookup_form_;
+  std::unique_ptr<PasswordForm> lookup_form_;
 };
 
 void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {

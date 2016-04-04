@@ -34,8 +34,8 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
  public:
   PasswordStoreProxyMac(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-      scoped_ptr<crypto::AppleKeychain> keychain,
-      scoped_ptr<password_manager::LoginDatabase> login_db,
+      std::unique_ptr<crypto::AppleKeychain> keychain,
+      std::unique_ptr<password_manager::LoginDatabase> login_db,
       PrefService* prefs);
 
   bool Init(const syncer::SyncableService::StartSyncFlare& flare) override;
@@ -99,8 +99,8 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
   void AddSiteStatsImpl(
       const password_manager::InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
-  std::vector<scoped_ptr<password_manager::InteractionsStats>> GetSiteStatsImpl(
-      const GURL& origin_domain) override;
+  std::vector<std::unique_ptr<password_manager::InteractionsStats>>
+  GetSiteStatsImpl(const GURL& origin_domain) override;
 
   scoped_refptr<PasswordStoreMac> password_store_mac_;
   scoped_refptr<SimplePasswordStoreMac> password_store_simple_;
@@ -108,10 +108,10 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
   // The login metadata SQL database. If opening the DB on |thread_| fails,
   // |login_metadata_db_| will be reset to NULL for the lifetime of |this|.
   // The ownership may be transferred to |password_store_simple_|.
-  scoped_ptr<password_manager::LoginDatabase> login_metadata_db_;
+  std::unique_ptr<password_manager::LoginDatabase> login_metadata_db_;
 
   // Thread that the synchronous methods are run on.
-  scoped_ptr<base::Thread> thread_;
+  std::unique_ptr<base::Thread> thread_;
 
   // Current migration status for the profile.
   IntegerPrefMember migration_status_;
