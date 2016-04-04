@@ -42,6 +42,16 @@ fi
 # We want to update the bundled tools even under MinGW.
 if [ $MINGW = 0 ]; then
   $COMSPEC /c `cygpath -w "$base_dir/bootstrap/win/win_tools.bat"`
+  case $? in
+    123)
+      # msys environment was upgraded, need to quit.
+      exit 123
+      ;;
+    0)
+      ;;
+    *)
+      exit $?
+  esac
 fi
 
 CANONICAL_GIT_URL="https://chromium.googlesource.com/chromium/tools/depot_tools.git"

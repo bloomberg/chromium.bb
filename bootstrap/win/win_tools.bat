@@ -3,8 +3,8 @@
 :: Use of this source code is governed by a BSD-style license that can be
 :: found in the LICENSE file.
 
-:: This script will try to find if svn and python are accessible and it not,
-:: it will try to download it and 'install' it in depot_tools.
+:: This script will determine if python, git, or svn binaries need updates.  It
+:: returns 123 if the user's shell must restart, otherwise !0 is failure
 
 :: Sadly, we can't use SETLOCAL here otherwise it ERRORLEVEL is not correctly
 :: returned.
@@ -83,7 +83,7 @@ set GIT_EXE_PATH=%GIT_INST_DIR%\bin\git.exe
 for /d %%i in ("%WIN_TOOLS_ROOT_DIR%\git-*_bin") do (
   if not "%%i" == "%WIN_TOOLS_ROOT_DIR%\git-%GIT_VERSION%_bin" (
     echo Cleaning old git installation %%i
-    rmdir /s /q "%%i"
+    rmdir /s /q "%%i" > NUL
   )
 )
 
@@ -97,7 +97,7 @@ if errorlevel 1 goto :GIT_INSTALL
 :: Several git versions can live side-by-side; check the top-level
 :: batch script to make sure it points to the desired version.
 for %%f in (git.bat gitk.bat ssh.bat ssh-keygen.bat git-bash) do (
-  find "%GIT_BIN_DIR%" "%WIN_TOOLS_ROOT_DIR%\%%f" 2>nul 1>nul
+  %FIND_EXE% "%GIT_BIN_DIR%" "%WIN_TOOLS_ROOT_DIR%\%%f" 2>nul 1>nul
   if errorlevel 1 goto :GIT_MAKE_BATCH_FILES
 )
 goto :SYNC_GIT_HELP_FILES
@@ -127,6 +127,8 @@ if errorlevel 1 goto :GIT_FAIL
 del "%GIT_DOWNLOAD_PATH%"
 if not exist "%GIT_INST_DIR%\." goto :GIT_FAIL
 
+set DID_UPGRADE=1
+
 :GIT_MAKE_BATCH_FILES
 :: Create the batch files.
 set GIT_TEMPL=%~dp0git.template.bat
@@ -153,6 +155,17 @@ call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.fscache true
 ::      actually changed.
 :: /y : Don't prompt for overwrites (yes)
 xcopy /i /q /d /y "%WIN_TOOLS_ROOT_DIR%\man\html\*" "%GIT_INST_DIR%\mingw64\share\doc\git-doc" > NUL
+
+:: MSYS users need to restart their shell.
+if defined MSYSTEM if defined DID_UPGRADE (
+  echo.
+  echo.
+  echo [1;31mIMPORTANT:[0m
+  echo depot_tools' git distribution has been updated while inside of a MinGW
+  echo shell. In order to complete the upgrade, please exit the shell and re-run
+  echo `git bash` from cmd.
+  exit 123
+)
 
 goto :SVN_CHECK
 

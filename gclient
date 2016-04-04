@@ -7,6 +7,16 @@ base_dir=$(dirname "$0")
 
 if [[ "#grep#fetch#cleanup#diff#" != *"#$1#"* ]]; then
   "$base_dir"/update_depot_tools "$@"
+  case $? in
+    123)
+      # msys environment was upgraded, need to quit.
+      exit 0
+      ;;
+    0)
+      ;;
+    *)
+      exit $?
+  esac
 fi
 
 PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/gclient.py" "$@"
