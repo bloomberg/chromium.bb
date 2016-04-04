@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 

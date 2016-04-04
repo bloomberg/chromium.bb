@@ -5,6 +5,7 @@
 #include "content/public/test/sandbox_file_system_test_helper.h"
 
 #include "base/files/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_context.h"

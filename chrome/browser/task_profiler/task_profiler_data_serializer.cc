@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "chrome/common/chrome_content_client.h"

@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/files/file.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"

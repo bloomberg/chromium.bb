@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NAVIGATION_HANDLE_H_
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_HANDLE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/referrer.h"

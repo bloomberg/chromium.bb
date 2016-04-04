@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "content/browser/fileapi/sandbox_database_test_helper.h"
 #include "storage/browser/fileapi/sandbox_origin_database.h"

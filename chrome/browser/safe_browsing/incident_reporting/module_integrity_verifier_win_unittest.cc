@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/native_library.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"

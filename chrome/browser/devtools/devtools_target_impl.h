@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/devtools_discovery/basic_target_descriptor.h"
 
 class Profile;

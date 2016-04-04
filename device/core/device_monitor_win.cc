@@ -11,6 +11,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/message_window.h"

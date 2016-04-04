@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/display/display_export.h"
 #include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/native_widget_types.h"

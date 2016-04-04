@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/composition_text.h"

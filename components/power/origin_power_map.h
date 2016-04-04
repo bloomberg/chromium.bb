@@ -9,6 +9,7 @@
 
 #include "base/callback_list.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 

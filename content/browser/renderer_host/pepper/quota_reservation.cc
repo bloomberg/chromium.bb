@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/quota/open_file_handle.h"

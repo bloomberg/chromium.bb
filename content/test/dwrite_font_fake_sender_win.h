@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"

@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 

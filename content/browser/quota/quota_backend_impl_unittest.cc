@@ -10,6 +10,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"

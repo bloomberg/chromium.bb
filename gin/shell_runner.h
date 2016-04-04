@@ -6,6 +6,7 @@
 #define GIN_SHELL_RUNNER_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "gin/runner.h"
 
 namespace gin {

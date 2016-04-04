@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/site_instance.h"
