@@ -1538,6 +1538,8 @@ public:
 private:
     UseMixin()
     {
+        // Verify that WTF::IsGarbageCollectedType<> works as expected for mixins.
+        static_assert(WTF::IsGarbageCollectedType<UseMixin>::value, "IsGarbageCollectedType<> sanity check failed for GC mixin.");
         s_traceCount = 0;
     }
 };

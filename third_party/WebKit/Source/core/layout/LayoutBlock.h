@@ -349,7 +349,7 @@ protected:
     // happen after all layout is done, i.e. during updateLayerPositionsAfterLayout. However,
     // that currently fails a layout test. To fix this bug in time for M50, we use this temporary
     // hack. The real fix is tracked in crbug.com/600036
-    typedef WTF::HashMap<PaintLayerScrollableArea*, DoublePoint> ScrollPositionMap;
+    typedef PersistentHeapHashMap<Member<PaintLayerScrollableArea>, DoublePoint> ScrollPositionMap;
     static void startDelayUpdateScrollInfo();
     static bool finishDelayUpdateScrollInfo(SubtreeLayoutScope*, ScrollPositionMap*);
 

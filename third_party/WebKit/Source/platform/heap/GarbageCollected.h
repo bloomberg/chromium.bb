@@ -197,6 +197,7 @@ public:
 // when the constructor of the recorded GarbageCollectedMixinConstructorMarker
 // runs.
 #define USING_GARBAGE_COLLECTED_MIXIN(TYPE)                             \
+    IS_GARBAGE_COLLECTED_TYPE();                                        \
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::Visitor*, TYPE)       \
     DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(blink::InlinedGlobalMarkingVisitor, TYPE) \
     DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE)             \
