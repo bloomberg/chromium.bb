@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/pepper/pepper_tcp_server_socket_message_filter.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,6 +16,7 @@
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/socket_permission_request.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "ppapi/c/pp_errors.h"
@@ -171,7 +173,7 @@ void PepperTCPServerSocketMessageFilter::DoListen(
     int32_t backlog) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  net::IPAddressNumber address;
+  std::vector<uint8_t> address;
   uint16_t port;
   if (state_ != STATE_BEFORE_LISTENING ||
       !NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &address, &port)) {
@@ -185,7 +187,7 @@ void PepperTCPServerSocketMessageFilter::DoListen(
   socket_.reset(new net::TCPSocket(NULL, net::NetLog::Source()));
   int net_result = net::OK;
   do {
-    net::IPEndPoint ip_end_point(address, port);
+    net::IPEndPoint ip_end_point(net::IPAddress(address), port);
     net_result = socket_->Open(ip_end_point.GetFamily());
     if (net_result != net::OK)
       break;
