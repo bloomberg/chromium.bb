@@ -32,6 +32,7 @@
 #define VisualViewport_h
 
 #include "core/CoreExport.h"
+#include "core/events/Event.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
@@ -61,8 +62,13 @@ class LocalFrame;
 // offset is set through the GraphicsLayer <-> CC sync mechanisms. Its contents is the page's
 // main FrameView, which corresponds to the outer viewport. The inner viewport is always contained
 // in the outer viewport and can pan within it.
-class CORE_EXPORT VisualViewport final : public GarbageCollectedFinalized<VisualViewport>, public GraphicsLayerClient, public ScrollableArea {
+class CORE_EXPORT VisualViewport final
+    : public GarbageCollectedFinalized<VisualViewport>
+    , public GraphicsLayerClient
+    , public ScriptWrappable
+    , public ScrollableArea {
     USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static RawPtr<VisualViewport> create(FrameHost& host)
     {
@@ -197,6 +203,15 @@ public:
     Widget* getWidget() override;
     CompositorAnimationTimeline* compositorAnimationTimeline() const override;
 
+    // Visual Viewport API implementation.
+    double scrollLeft();
+    double scrollTop();
+    void setScrollLeft(double x);
+    void setScrollTop(double y);
+    double clientWidth();
+    double clientHeight();
+    double pageScale();
+
     // Used for gathering data on user pinch-zoom statistics.
     void userDidChangeScale();
     void sendUMAMetrics();
@@ -210,6 +225,10 @@ private:
     explicit VisualViewport(FrameHost&);
 
     bool visualViewportSuppliesScrollbars() const;
+
+    void updateLayoutIgnorePendingStylesheets();
+
+    void enqueueChangedEvent();
 
     // GraphicsLayerClient implementation.
     bool needsRepaint(const GraphicsLayer&) const { ASSERT_NOT_REACHED(); return true; }

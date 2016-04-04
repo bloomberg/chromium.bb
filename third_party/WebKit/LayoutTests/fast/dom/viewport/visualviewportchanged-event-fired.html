@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<style>
+    body {
+        height: 2000px;
+        width: 2000px;
+    }
+</style>
+
+<script>
+    window.jsTestIsAsync = true;
+    var numCalls = 0;
+
+    description("This test verifies that that visualviewportchanged event gets \
+        fired when the visual viewport is scaled or scrolled.");
+
+    function verifySetViewportOffsets() {
+        // Set viewport offset. Listener called twice.
+        document.visualViewport.scrollTop = 20;
+        requestAnimationFrame(function() {
+            shouldBe("numCalls", "3");
+            document.visualViewport.scrollLeft = 0;
+            requestAnimationFrame(function() {
+                shouldBe("numCalls", "4");
+                finishJSTest();
+            });
+        });
+    }
+
+    function runTest() {
+        if (!window.eventSender || !window.internals) {
+            finishJSTest();
+            return;
+        }
+        // Turn off smooth scrolling.
+        internals.settings.setScrollAnimatorEnabled(false);
+
+        document.addEventListener('visualviewportchanged', function(e) {
+            numCalls++;
+        });
+
+        // Scroll both viewports. Listner not called.
+        eventSender.mouseMoveTo(100, 100);
+        eventSender.continuousMouseScrollBy(100, 100);
+        shouldBe("numCalls", "0");
+
+        // Scale and scroll visual viewport. Listener called twice.
+        internals.setPageScaleFactor(2);
+        requestAnimationFrame(function() {
+            shouldBe("numCalls", "1");
+            internals.setVisualViewportOffset(10, 10);
+            requestAnimationFrame(function() {
+                shouldBe("numCalls", "2");
+                verifySetViewportOffsets();
+            });
+        });
+    }
+</script>
+
+<body onload="runTest()"></body>

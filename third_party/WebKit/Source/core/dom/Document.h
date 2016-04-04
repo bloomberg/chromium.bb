@@ -51,6 +51,7 @@
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/OriginsUsingFeatures.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/CollectionType.h"
 #include "core/html/parser/ParserSynchronizationPolicy.h"
 #include "core/page/PageVisibilityState.h"
@@ -298,6 +299,7 @@ public:
     HeapVector<Member<Element>> elementsFromPoint(int x, int y) const;
     RawPtr<Range> caretRangeFromPoint(int x, int y);
     Element* scrollingElement();
+    VisualViewport* visualViewport();
 
     String readyState() const;
 
@@ -900,6 +902,7 @@ public:
     // Only one event for a target/event type combination will be dispatched per frame.
     void enqueueUniqueAnimationFrameEvent(RawPtr<Event>);
     void enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryListListener>>&);
+    void enqueueVisualViewportChangedEvent();
 
     void dispatchEventsForPrinting();
 

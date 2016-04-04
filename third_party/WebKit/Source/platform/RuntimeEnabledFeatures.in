@@ -223,6 +223,7 @@ XSLT status=stable
 smil status=stable
 ScrollCustomization
 ScrollRestoration status=stable
+VisualViewportAPI status=experimental
 WakeLock status=experimental
 WebFontsIntervention status=experimental
 WebFontsInterventionTrigger

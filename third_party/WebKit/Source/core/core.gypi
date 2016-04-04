@@ -162,6 +162,7 @@
             'frame/History.idl',
             'frame/ImageBitmap.idl',
             'frame/Location.idl',
+            'frame/VisualViewport.idl',
             'html/FormData.idl',
             'html/HTMLAllCollection.idl',
             'html/HTMLAnchorElement.idl',

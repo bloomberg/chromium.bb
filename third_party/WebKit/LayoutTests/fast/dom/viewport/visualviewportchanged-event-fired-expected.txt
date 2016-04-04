@@ -1,0 +1,14 @@
+This test verifies that that visualviewportchanged event gets fired when the visual viewport is scaled or scrolled.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS numCalls is 0
+PASS numCalls is 1
+PASS numCalls is 2
+PASS numCalls is 3
+PASS numCalls is 4
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,26 @@
+This test verifies the dimensions of the visual viewport returned by the JS visual viewport API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+    **** Initial visual viewport dimensions *****
+PASS document.visualViewport.scrollTop is 0
+PASS document.visualViewport.scrollLeft is 0
+PASS document.visualViewport.clientWidth is 800
+PASS document.visualViewport.clientHeight is 600
+PASS document.visualViewport.pageScale is 1
+    **** Viewport dimensions after scale and scroll *****
+PASS document.visualViewport.scrollTop is 10
+PASS document.visualViewport.scrollLeft is 10
+PASS document.visualViewport.clientWidth is 400
+PASS document.visualViewport.clientHeight is 300
+PASS document.visualViewport.pageScale is 2
+    **** Writable viewport dimensions *****
+PASS document.visualViewport.scrollTop is 20
+PASS document.visualViewport.scrollLeft is 0
+PASS document.visualViewport.scrollTop is 0
+PASS document.visualViewport.scrollTop is 20.5
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

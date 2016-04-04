@@ -1230,6 +1230,13 @@ Element* Document::scrollingElement()
     return body();
 }
 
+VisualViewport* Document::visualViewport()
+{
+    if (FrameHost* host = frameHost())
+        return &host->visualViewport();
+    return nullptr;
+}
+
 /*
  * Performs three operations:
  *  1. Convert control characters to spaces
@@ -4016,6 +4023,13 @@ void Document::enqueueResizeEvent()
 void Document::enqueueMediaQueryChangeListeners(HeapVector<Member<MediaQueryListListener>>& listeners)
 {
     ensureScriptedAnimationController().enqueueMediaQueryChangeListeners(listeners);
+}
+
+void Document::enqueueVisualViewportChangedEvent()
+{
+    RawPtr<Event> event = Event::create(EventTypeNames::visualviewportchanged);
+    event->setTarget(this);
+    ensureScriptedAnimationController().enqueuePerFrameEvent(event.release());
 }
 
 void Document::dispatchEventsForPrinting()

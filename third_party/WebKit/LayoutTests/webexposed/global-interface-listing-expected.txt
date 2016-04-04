@@ -1193,6 +1193,7 @@ interface Document : Node
     getter timeline
     getter title
     getter visibilityState
+    getter visualViewport
     getter webkitCurrentFullScreenElement
     getter webkitFullscreenElement
     getter webkitFullscreenEnabled
@@ -6359,6 +6360,16 @@ interface VideoTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
+interface VisualViewport
+    attribute @@toStringTag
+    getter clientHeight
+    getter clientWidth
+    getter pageScale
+    getter scrollLeft
+    getter scrollTop
+    method constructor
+    setter scrollLeft
+    setter scrollTop
 interface WaveShaperNode : AudioNode
     attribute @@toStringTag
     getter curve

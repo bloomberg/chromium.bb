@@ -85,6 +85,24 @@ DEFINE_TRACE(VisualViewport)
     ScrollableArea::trace(visitor);
 }
 
+void VisualViewport::updateLayoutIgnorePendingStylesheets()
+{
+    if (!mainFrame())
+        return;
+
+    if (Document* document = mainFrame()->document())
+        document->updateLayoutIgnorePendingStylesheets();
+}
+
+void VisualViewport::enqueueChangedEvent()
+{
+    if (!RuntimeEnabledFeatures::visualViewportAPIEnabled())
+        return;
+
+    if (Document* document = mainFrame()->document())
+        document->enqueueVisualViewportChangedEvent();
+}
+
 void VisualViewport::setSize(const IntSize& size)
 {
     if (m_size == size)
@@ -103,6 +121,8 @@ void VisualViewport::setSize(const IntSize& size)
 
     if (!mainFrame())
         return;
+
+    enqueueChangedEvent();
 
     bool autosizerNeedsUpdating = widthDidChange
         && mainFrame()->settings()
@@ -189,6 +209,55 @@ void VisualViewport::setScale(float scale)
     setScaleAndLocation(scale, m_offset);
 }
 
+double VisualViewport::scrollLeft()
+{
+    updateLayoutIgnorePendingStylesheets();
+
+    return visibleRect().x();
+}
+
+double VisualViewport::scrollTop()
+{
+    updateLayoutIgnorePendingStylesheets();
+
+    return visibleRect().y();
+}
+
+void VisualViewport::setScrollLeft(double x)
+{
+    updateLayoutIgnorePendingStylesheets();
+
+    setLocation(FloatPoint(x, visibleRect().y()));
+}
+
+void VisualViewport::setScrollTop(double y)
+{
+    updateLayoutIgnorePendingStylesheets();
+
+    setLocation(FloatPoint(visibleRect().x(), y));
+}
+
+double VisualViewport::clientWidth()
+{
+    updateLayoutIgnorePendingStylesheets();
+
+    return visibleRect().width();
+}
+
+double VisualViewport::clientHeight()
+{
+    updateLayoutIgnorePendingStylesheets();
+
+    return visibleRect().height();
+}
+
+double VisualViewport::pageScale()
+{
+    updateLayoutIgnorePendingStylesheets();
+
+    return m_scale;
+}
+
 void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location)
 {
     if (!mainFrame())
@@ -223,6 +292,8 @@ void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location
 
     if (!valuesChanged)
         return;
+
+    enqueueChangedEvent();
 
     InspectorInstrumentation::didUpdateLayout(mainFrame());
     mainFrame()->loader().saveScrollState();

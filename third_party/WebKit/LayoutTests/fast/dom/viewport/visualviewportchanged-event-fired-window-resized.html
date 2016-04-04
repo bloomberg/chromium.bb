@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+
+<script>
+    window.jsTestIsAsync = true;
+    var numCalls = 0;
+
+    description("This test verifies that that visualviewportchanged event gets \
+        fired when the window is resized.");
+
+    function runTest() {
+        if (!window.eventSender || !window.internals || !window.testRunner) {
+            finishJSTest();
+            return;
+        }
+
+        testRunner.useUnfortunateSynchronousResizeMode();
+
+        // Turn off smooth scrolling.
+        internals.settings.setScrollAnimatorEnabled(false);
+
+        document.addEventListener('visualviewportchanged', function(e) {
+            numCalls++;
+        });
+
+        resizeTo(outerWidth - 24, outerHeight - 24);
+        requestAnimationFrame(function() {
+            shouldBe("numCalls", "1");
+            resizeTo(outerWidth + 24, outerHeight + 24);
+            requestAnimationFrame(function() {
+                shouldBe("numCalls", "2");
+                finishJSTest();
+            });
+        });
+    }
+</script>
+
+<body onload="runTest()"></body>
