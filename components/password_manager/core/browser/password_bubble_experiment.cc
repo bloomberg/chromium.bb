@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -28,7 +29,8 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown, false);
 
   registry->RegisterBooleanPref(
-      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 }
 
 int GetSmartBubbleDismissalThreshold() {
