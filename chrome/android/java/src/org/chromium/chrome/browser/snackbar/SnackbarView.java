@@ -186,9 +186,10 @@ class SnackbarView {
         }
         Bitmap profileImage = snackbar.getProfileImage();
         if (profileImage != null) {
+            mProfileImageView.setVisibility(View.VISIBLE);
             mProfileImageView.setImageBitmap(profileImage);
         } else {
-            mView.removeView(mProfileImageView);
+            mProfileImageView.setVisibility(View.GONE);
         }
         return true;
     }
