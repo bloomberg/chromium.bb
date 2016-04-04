@@ -72,6 +72,9 @@ class SharedContextRateLimiter;
 #define USE_IOSURFACE_FOR_2D_CANVAS 0
 #endif
 
+// TODO: Fix background rendering and remove this workaround. crbug.com/600386
+#define CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU 0
+
 class PLATFORM_EXPORT Canvas2DLayerBridge : public WebExternalTextureLayerClient, public WebThread::TaskObserver, public RefCounted<Canvas2DLayerBridge> {
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:

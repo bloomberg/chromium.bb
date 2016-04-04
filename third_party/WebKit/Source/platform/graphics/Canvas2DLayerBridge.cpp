@@ -476,8 +476,7 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
 
     bool wantAcceleration = shouldAccelerate(hint);
     bool surfaceIsAccelerated;
-
-    if (isHidden() && wantAcceleration) {
+    if (CANVAS2D_BACKGROUND_RENDER_SWITCH_TO_CPU && isHidden() && wantAcceleration) {
         wantAcceleration = false;
         m_softwareRenderingWhileHidden = true;
     }
