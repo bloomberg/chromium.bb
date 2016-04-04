@@ -1315,11 +1315,10 @@ crbug.com/587779 [ Linux Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-s
 
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 
-# An upcoming Skia change (https://codereview.chromium.org/1848953002/) will cause minor pixel diffs.
-crbug.com/599933 css3/filters/effect-reference-hw.html [ NeedsManualRebaseline ]
-crbug.com/599933 css3/filters/effect-reference-colorspace-hw.html [ NeedsManualRebaseline ]
-crbug.com/599933 css3/filters/effect-reference-ordering-hw.html [ NeedsManualRebaseline ]
-crbug.com/599933 css3/filters/effect-reference-zoom-hw.html [ NeedsManualRebaseline ]
+crbug.com/599933 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+crbug.com/599933 css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
+crbug.com/599933 css3/filters/effect-reference-ordering-hw.html [ NeedsRebaseline ]
+crbug.com/599933 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
 
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
