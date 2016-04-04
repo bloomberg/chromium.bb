@@ -692,10 +692,10 @@ TEST_F(SuggestionsServiceTest, GetBlacklistedUrl) {
   EXPECT_FALSE(SuggestionsService::GetBlacklistedUrl(*fetcher, &retrieved_url));
 
   // An actual blacklist request.
-  string blacklisted_url = "http://blacklisted.com/a?b=c&d=e";
-  string encoded_blacklisted_url =
+  std::string blacklisted_url = "http://blacklisted.com/a?b=c&d=e";
+  std::string encoded_blacklisted_url =
       "http%3A%2F%2Fblacklisted.com%2Fa%3Fb%3Dc%26d%3De";
-  string blacklist_request_prefix(
+  std::string blacklist_request_prefix(
       SuggestionsService::BuildSuggestionsBlacklistURLPrefix());
   request_url.reset(
       new GURL(blacklist_request_prefix + encoded_blacklisted_url));

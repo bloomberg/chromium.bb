@@ -60,7 +60,7 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
   // From QuicSession.
   MOCK_METHOD3(OnConnectionClosed,
                void(QuicErrorCode error,
-                    const string& error_details,
+                    const std::string& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,

@@ -54,7 +54,7 @@ class NET_EXPORT QuicP2PSession : public QuicSession {
 
   // QuicConnectionVisitorInterface overrides.
   void OnConnectionClosed(QuicErrorCode error,
-                          const string& error_details,
+                          const std::string& error_details,
                           ConnectionCloseSource source) override;
 
   void SetDelegate(Delegate* delegate);

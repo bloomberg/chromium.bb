@@ -69,7 +69,7 @@ QuicP2PStream* QuicP2PSession::CreateOutgoingDynamicStream(
 }
 
 void QuicP2PSession::OnConnectionClosed(QuicErrorCode error,
-                                        const string& error_details,
+                                        const std::string& error_details,
                                         ConnectionCloseSource source) {
   QuicSession::OnConnectionClosed(error, error_details, source);
 

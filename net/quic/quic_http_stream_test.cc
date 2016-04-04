@@ -54,6 +54,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::string;
 using testing::_;
 using testing::AnyNumber;
 using testing::Return;
@@ -191,7 +192,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         mock_writes_[i] = MockWrite(writes_[i].mode, writes_[i].packet->data(),
                                     writes_[i].packet->length());
       }
-    };
+    }
 
     socket_data_.reset(new StaticSocketDataProvider(
         nullptr, 0, mock_writes_.get(), writes_.size()));
@@ -236,7 +237,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     session_.reset(new QuicChromiumClientSession(
         connection_, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
-        &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
+        &transport_security_state_,
+        make_scoped_ptr(static_cast<QuicServerInfo*>(nullptr)),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
                      PRIVACY_MODE_DISABLED),
         kQuicYieldAfterPacketsRead,
@@ -272,13 +274,13 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         SpdyUtils::SerializeUncompressedHeaders(push_promise_);
   }
 
-  void SetRequest(const std::string& method,
-                  const std::string& path,
+  void SetRequest(const string& method,
+                  const string& path,
                   RequestPriority priority) {
     request_headers_ = maker_.GetRequestHeaders(method, "http", path);
   }
 
-  void SetResponse(const std::string& status, const std::string& body) {
+  void SetResponse(const string& status, const string& body) {
     response_headers_ = maker_.GetResponseHeaders(status);
     response_data_ = body;
   }
@@ -438,8 +440,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   scoped_refptr<IOBufferWithSize> read_buffer_;
   SpdyHeaderBlock request_headers_;
   SpdyHeaderBlock response_headers_;
-  std::string request_data_;
-  std::string response_data_;
+  string request_data_;
+  string response_data_;
   QuicClientPushPromiseIndex push_promise_index_;
 
   // For server push testing
@@ -510,7 +512,7 @@ TEST_P(QuicHttpStreamTest, GetRequest) {
 
   EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
 
-  SetResponse("404 Not Found", std::string());
+  SetResponse("404 Not Found", string());
   size_t spdy_response_header_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
       2, kFin, &spdy_response_header_frame_length));
@@ -564,7 +566,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
 
   EXPECT_EQ(ERR_IO_PENDING, stream_->ReadResponseHeaders(callback_.callback()));
 
-  SetResponse("200 OK", std::string());
+  SetResponse("200 OK", string());
 
   // Send the response headers.
   size_t spdy_response_header_frame_length;
@@ -656,7 +658,7 @@ TEST_P(QuicHttpStreamTest, GetRequestLargeResponse) {
   headers[":status"] = "200 OK";
   headers[":version"] = "HTTP/1.1";
   headers["content-type"] = "text/plain";
-  headers["big6"] = std::string(1000, 'x');  // Lots of x's.
+  headers["big6"] = string(1000, 'x');  // Lots of x's.
 
   response_headers_ = headers;
   size_t spdy_response_headers_frame_length;
@@ -857,7 +859,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
   ProcessPacket(ConstructAckPacket(1, 0, 0));
 
   // Send the response headers (but not the body).
-  SetResponse("200 OK", std::string());
+  SetResponse("200 OK", string());
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
       2, !kFin, &spdy_response_headers_frame_length));
@@ -924,7 +926,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequest) {
   ProcessPacket(ConstructAckPacket(1, 0, 0));
 
   // Send the response headers (but not the body).
-  SetResponse("200 OK", std::string());
+  SetResponse("200 OK", string());
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
       2, !kFin, &spdy_response_headers_frame_length));
@@ -991,7 +993,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithFinalEmptyDataPacket) {
   ProcessPacket(ConstructAckPacket(1, 0, 0));
 
   // Send the response headers (but not the body).
-  SetResponse("200 OK", std::string());
+  SetResponse("200 OK", string());
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
       2, !kFin, &spdy_response_headers_frame_length));
@@ -1054,7 +1056,7 @@ TEST_P(QuicHttpStreamTest, SendChunkedPostRequestWithOneEmptyDataPacket) {
   ProcessPacket(ConstructAckPacket(1, 0, 0));
 
   // Send the response headers (but not the body).
-  SetResponse("200 OK", std::string());
+  SetResponse("200 OK", string());
   size_t spdy_response_headers_frame_length;
   ProcessPacket(ConstructResponseHeadersPacket(
       2, !kFin, &spdy_response_headers_frame_length));
@@ -1648,7 +1650,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
   // Ack the request.
   ProcessPacket(ConstructAckPacket(2, 0, 0));
 
-  SetResponse("404 Not Found", std::string());
+  SetResponse("404 Not Found", string());
   size_t spdy_response_header_frame_length;
   ProcessPacket(InnerConstructResponseHeadersPacket(
       3, stream_id_ + 2, kFin, &spdy_response_header_frame_length));
