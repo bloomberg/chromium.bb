@@ -593,6 +593,10 @@
         'chrome/browser/resources/ntp_android/|'\
         'chrome/browser/ui/webui/ntp/',
     },
+    'offline_pages': {
+      'filepath': 'components/offline_pages/'\
+                  '|chrome/browser/android/offline_pages/'
+    },
     'omnibox': {
       'filepath': 'chrome/browser/autocomplete/'\
                   '|chrome/browser/ui/.*/omnibox/'
@@ -1454,6 +1458,7 @@
                       'mlamouri+watch-notifications@chromium.org'],
     'ntp': ['dbeam+watch-ntp@chromium.org',
             'pedrosimonetti+watch@chromium.org'],
+    'offline_pages': ['dimich+watch@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'options': ['dbeam+watch-options@chromium.org',
                 'michaelpg+watch-options@chromium.org'],
