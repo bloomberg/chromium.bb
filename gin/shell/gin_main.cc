@@ -5,6 +5,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/i18n/icu_util.h"
 #include "base/macros.h"
@@ -67,6 +68,9 @@ int main(int argc, char** argv) {
 #endif
 
   base::MessageLoop message_loop;
+
+  // Initialize the base::FeatureList since IsolateHolder can depend on it.
+  base::FeatureList::SetInstance(make_scoped_ptr(new base::FeatureList));
 
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                  gin::IsolateHolder::kStableV8Extras,

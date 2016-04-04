@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/debugger.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
@@ -130,6 +131,12 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #if defined(OS_LINUX)
   LinuxSandbox::InitializeSandbox();
 #endif
+
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      command_line.GetSwitchValueASCII(switches::kEnableFeatures),
+      command_line.GetSwitchValueASCII(switches::kDisableFeatures));
+  base::FeatureList::SetInstance(std::move(feature_list));
 
   ChildProcess ppapi_process;
   ppapi_process.set_main_thread(

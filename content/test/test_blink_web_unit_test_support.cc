@@ -4,6 +4,7 @@
 
 #include "content/test/test_blink_web_unit_test_support.h"
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -117,6 +118,10 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
       scheduler::LazySchedulerMessageLoopDelegateForTests::Create()));
   web_thread_ = renderer_scheduler_->CreateMainThread();
 
+  // Set up a FeatureList instance, so that code using that API will not hit a
+  // an error that it's not set. Cleared by ClearInstanceForTesting() below.
+  base::FeatureList::SetInstance(make_scoped_ptr(new base::FeatureList));
+
   blink::initialize(this);
   blink::setLayoutTestMode(true);
   blink::WebRuntimeFeatures::enableApplicationCache(true);
@@ -156,6 +161,9 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   if (renderer_scheduler_)
     renderer_scheduler_->Shutdown();
   blink::shutdown();
+
+  // Clear the FeatureList that was registered in the constructor.
+  base::FeatureList::ClearInstanceForTesting();
 }
 
 blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::blobRegistry() {

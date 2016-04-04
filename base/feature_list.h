@@ -147,10 +147,10 @@ class BASE_EXPORT FeatureList {
 
   // Initializes and sets an instance of FeatureList with feature overrides via
   // command-line flags |enable_features| and |disable_features| if one has not
-  // already been set from command-line flags. No-op otherwise. See
-  // InitializeFromCommandLine for more details about |enable_features| and
-  // |disable_features| parameters.
-  static void InitializeInstance(const std::string& enable_features,
+  // already been set from command-line flags. Returns true if an instance did
+  // not previously exist. See InitializeFromCommandLine() for more details
+  // about |enable_features| and |disable_features| parameters.
+  static bool InitializeInstance(const std::string& enable_features,
                                  const std::string& disable_features);
 
   // Returns the singleton instance of FeatureList. Will return null until an

@@ -82,6 +82,8 @@ class TestSuite {
 
   bool initialized_command_line_;
 
+  bool created_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(TestSuite);
 };
 

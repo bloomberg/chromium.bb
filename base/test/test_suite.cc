@@ -100,14 +100,15 @@ int RunUnitTestsUsingBaseTestSuite(int argc, char **argv) {
                          Bind(&TestSuite::Run, Unretained(&test_suite)));
 }
 
-TestSuite::TestSuite(int argc, char** argv) : initialized_command_line_(false) {
+TestSuite::TestSuite(int argc, char** argv)
+    : initialized_command_line_(false), created_feature_list_(false) {
   PreInitialize();
   InitializeFromCommandLine(argc, argv);
 }
 
 #if defined(OS_WIN)
 TestSuite::TestSuite(int argc, wchar_t** argv)
-    : initialized_command_line_(false) {
+    : initialized_command_line_(false), created_feature_list_(false) {
   PreInitialize();
   InitializeFromCommandLine(argc, argv);
 }
@@ -226,14 +227,7 @@ int TestSuite::Run() {
   test_listener_ios::RegisterTestEndListener();
 #endif
 
-  // Set up a FeatureList instance, so that code using that API will not hit a
-  // an error that it's not set. Cleared by ClearInstanceForTesting() below.
-  base::FeatureList::SetInstance(WrapUnique(new base::FeatureList));
-
   int result = RUN_ALL_TESTS();
-
-  // Clear the FeatureList that was registered above.
-  FeatureList::ClearInstanceForTesting();
 
 #if defined(OS_MACOSX)
   // This MUST happen before Shutdown() since Shutdown() tears down
@@ -295,6 +289,13 @@ void TestSuite::Initialize() {
     debug::WaitForDebugger(60, true);
   }
 #endif
+
+  // Set up a FeatureList instance, so that code using that API will not hit a
+  // an error that it's not set. If a FeatureList was created in this way (i.e.
+  // one didn't exist previously), it will be cleared in Shutdown() via
+  // ClearInstanceForTesting().
+  created_feature_list_ =
+      FeatureList::InitializeInstance(std::string(), std::string());
 
 #if defined(OS_IOS)
   InitIOSTestMessageLoop();
@@ -364,6 +365,9 @@ void TestSuite::Initialize() {
 }
 
 void TestSuite::Shutdown() {
+  // Clear the FeatureList that was created by Initialize().
+  if (created_feature_list_)
+    FeatureList::ClearInstanceForTesting();
 }
 
 }  // namespace base
