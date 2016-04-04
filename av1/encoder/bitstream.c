@@ -117,13 +117,13 @@ static void write_drl_idx(const AV1_COMMON *cm,
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   if (mbmi_ext->ref_mv_count[ref_frame_type] > 2) {
     uint8_t drl0_ctx =
-        av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 0);
+        av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
     aom_prob drl0_prob = cm->fc->drl_prob0[drl0_ctx];
     aom_write(w, mbmi->ref_mv_idx != 0, drl0_prob);
     if (mbmi_ext->ref_mv_count[ref_frame_type] > 3 &&
         mbmi->ref_mv_idx > 0) {
       uint8_t drl1_ctx =
-          av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 1);
+          av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], 2);
       aom_prob drl1_prob = cm->fc->drl_prob1[drl1_ctx];
       aom_write(w, mbmi->ref_mv_idx != 1, drl1_prob);
     }
