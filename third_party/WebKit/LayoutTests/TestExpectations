@@ -889,6 +889,7 @@ crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure
 
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Skip ]
 crbug.com/587165 [ Win7 Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
+crbug.com/587165 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
 
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
