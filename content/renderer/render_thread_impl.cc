@@ -59,7 +59,6 @@
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_message_filter.h"
-#include "content/child/plugin_messages.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/resource_scheduling_filter.h"
 #include "content/child/runtime_features.h"
@@ -185,9 +184,6 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <objbase.h>
-#else
-// TODO(port)
-#include "content/child/npapi/np_channel_base.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)

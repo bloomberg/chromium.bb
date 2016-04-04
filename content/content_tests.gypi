@@ -760,7 +760,6 @@
       'browser/renderer_host/pepper/pepper_gamepad_host_unittest.cc',
       'browser/renderer_host/pepper/pepper_printing_host_unittest.cc',
       'browser/renderer_host/pepper/quota_reservation_unittest.cc',
-      'child/npapi/plugin_lib_unittest.cc',
       'renderer/pepper/event_conversion_unittest.cc',
       'renderer/pepper/host_var_tracker_unittest.cc',
       'renderer/pepper/mock_resource.h',

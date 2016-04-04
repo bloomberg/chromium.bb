@@ -78,50 +78,11 @@ source_set("child") {
   if (enable_plugins) {
     deps += [ "//ppapi/proxy" ]
   } else {
-    sources -= [
-      "browser_font_resource_trusted.cc",
-      "npapi/plugin_host.cc",
-      "npapi/plugin_host.h",
-      "npapi/plugin_instance.cc",
-      "npapi/plugin_instance.h",
-      "npapi/plugin_lib.cc",
-      "npapi/plugin_lib.h",
-      "npapi/webplugin.h",
-      "npapi/webplugin_delegate.h",
-      "npapi/webplugin_delegate_impl.cc",
-      "npapi/webplugin_delegate_impl.h",
-      "npapi/webplugin_resource_client.h",
-    ]
-
-    if (is_mac) {
-      sources -= [
-        "npapi/plugin_instance_mac.mm",
-        "npapi/plugin_web_event_converter_mac.h",
-        "npapi/plugin_web_event_converter_mac.mm",
-        "npapi/webplugin_accelerated_surface_mac.h",
-        "npapi/webplugin_delegate_impl_mac.mm",
-      ]
-    } else if (is_win) {
-      sources -= [ "npapi/webplugin_delegate_impl_win.cc" ]
-    } else if (is_android) {
-      sources -= [ "npapi/webplugin_delegate_impl_android.cc" ]
-    }
-    if (use_aura) {
-      sources -= [ "npapi/webplugin_delegate_impl_aura.cc" ]
-    }
+    sources -= [ "browser_font_resource_trusted.cc" ]
   }
 
   configs += [
     "//content:content_implementation",
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
-
-  if (use_aura && is_mac) {
-    # This file is already excluded on non-Mac.
-    sources -= [ "npapi/webplugin_delegate_impl_mac.mm" ]
-  }
-
-  if (is_win || !use_aura) {
-    sources -= [ "npapi/webplugin_delegate_impl_aura.cc" ]
-  }
 }

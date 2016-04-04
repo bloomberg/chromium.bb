@@ -1,4 +1,3 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -149,36 +148,12 @@
       'child/notifications/pending_notification.h',
       'child/notifications/pending_notifications_tracker.cc',
       'child/notifications/pending_notifications_tracker.h',
-      'child/npapi/np_channel_base.cc',
-      'child/npapi/np_channel_base.h',
-      'child/npapi/plugin_host.cc',
-      'child/npapi/plugin_host.h',
-      'child/npapi/plugin_instance.cc',
-      'child/npapi/plugin_instance.h',
-      'child/npapi/plugin_instance_mac.mm',
-      'child/npapi/plugin_lib.cc',
-      'child/npapi/plugin_lib.h',
-      'child/npapi/plugin_web_event_converter_mac.h',
-      'child/npapi/plugin_web_event_converter_mac.mm',
-      'child/npapi/webplugin.h',
-      'child/npapi/webplugin_accelerated_surface_mac.h',
-      'child/npapi/webplugin_delegate.h',
-      'child/npapi/webplugin_delegate_impl.cc',
-      'child/npapi/webplugin_delegate_impl.h',
-      'child/npapi/webplugin_delegate_impl_android.cc',
-      'child/npapi/webplugin_delegate_impl_aura.cc',
-      'child/npapi/webplugin_delegate_impl_mac.mm',
-      'child/npapi/webplugin_delegate_impl_win.cc',
-      'child/npapi/webplugin_resource_client.h',
       'child/permissions/permission_dispatcher.cc',
       'child/permissions/permission_dispatcher.h',
       'child/permissions/permission_dispatcher_thread_proxy.cc',
       'child/permissions/permission_dispatcher_thread_proxy.h',
       'child/permissions/permission_observers_registry.cc',
       'child/permissions/permission_observers_registry.h',
-      'child/plugin_message_generator.cc',
-      'child/plugin_message_generator.h',
-      'child/plugin_messages.h',
       'child/power_monitor_broadcast_source.cc',
       'child/power_monitor_broadcast_source.h',
       'child/process_control_impl.cc',
@@ -294,20 +269,6 @@
     ['enable_plugins==0', {
       'sources!': [
         'child/browser_font_resource_trusted.cc',
-      ],
-      'sources/': [
-        ['exclude', '^child/npapi/plugin_'],
-        ['exclude', '^child/npapi/webplugin_'],
-      ],
-    }],
-    ['use_aura==1', {
-      'sources!': [
-        'child/npapi/webplugin_delegate_impl_mac.mm',
-      ],
-    }],
-    ['OS=="win"', {
-      'sources!': [
-        'child/npapi/webplugin_delegate_impl_aura.cc',
       ],
     }],
   ],
