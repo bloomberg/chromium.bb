@@ -31,11 +31,6 @@
 <translation id="138361230106469022">こんにちは、<ph name="FULL_NAME" /> さん</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1389974829397082527">ブックマークはありません</translation>
-<translation id="1390350022570422499">Chrome で、Bluetooth を介して近くのウェブページを検出し表示できるようになりました。
-
-端末のロックが解除されている場合、Chrome では近くのページがスキャンされます。スキャンされたページは Google サービスに送られ、ページ結果の品質向上に使用されます。
-
-Chrome のプライバシー設定でフィジカル ウェブを管理できます。</translation>
 <translation id="1404122904123200417">埋め込み先: <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">「トラッキング拒否」</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> は既に存在しているためダウンロードできませんでした。</translation>
@@ -78,6 +73,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1984937141057606926">サードパーティを除いて許可する</translation>
 <translation id="1994173015038366702">サイトの URL</translation>
+<translation id="2001120796168634316">リンク先のページを保存しておく</translation>
 <translation id="200669432486043882">ファイルを交換</translation>
 <translation id="2038563949887743358">[PC 版サイトを見る] をオンにします</translation>
 <translation id="2073235970478114994">画像を読み込む</translation>
@@ -96,7 +92,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="2268044343513325586">絞り込み</translation>
 <translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
 <translation id="2316129865977710310">いいえ</translation>
-<translation id="2319528413610359757"><ph name="PUBLISHER" /> の読者向け</translation>
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
 <translation id="2329597144923131178">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
 <translation id="2343328333327081434">インストール中...</translation>
@@ -136,6 +131,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="2762000892062317888">たった今</translation>
 <translation id="2770465223704140727">リストから削除</translation>
 <translation id="278029852808208386">Bluetooth デバイスが見つかりませんでした。<ph name="BEGIN_LINK" />もう一度検索してください<ph name="END_LINK" />。</translation>
+<translation id="2811892995384186721">お使いの端末が表示されない場合は、<ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="2836148919159985482">全画面表示を終了するには戻るボタンをタップします。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2870560284913253234">サイト</translation>
@@ -199,7 +195,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="3672452749423051839">アクセスエラー時の候補表示</translation>
 <translation id="3732088672634061408">興味や関心を取得できませんでした。</translation>
 <translation id="3738139272394829648">タップして検索</translation>
-<translation id="3774280986422214650">この機能を有効にすると、Google サーバーを経由して HTTPS ページをプロキシ送信する試験運用に参加することになります。</translation>
 <translation id="3809549525127675114">「<ph name="VIDEO_TITLE" />」が終了しました</translation>
 <translation id="3828029223314399057">ブックマークを検索</translation>
 <translation id="3871171699884605801">子供向けのアカウントで閲覧履歴を消去することはできません</translation>
@@ -214,7 +209,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="3992315671621218278">リンクを保存</translation>
 <translation id="4002066346123236978">タイトル</translation>
 <translation id="4035611068038188272">現在 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> をブックマークに使用しています。</translation>
-<translation id="403659016947612156">フィジカル ウェブのページが近くにあります</translation>
 <translation id="4042870126885713738">ウェブアドレスが解決されない場合や接続を確立できない場合にアドバイスを表示します</translation>
 <translation id="4056223980640387499">セピア</translation>
 <translation id="4062305924942672200">法的情報</translation>
@@ -274,7 +268,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="4816465935029283692">データタイプ</translation>
 <translation id="4827948050554950725">クレジット カードを追加</translation>
 <translation id="4836364883164334657">このサイトへの接続はプライベート接続ではありません。悪意のあるユーザーが、<ph name="DOMAIN_NAME" /> 上のあなたの情報（写真、パスワード、メッセージ、クレジット カード番号など）を不正に取得しようとしている可能性があります。</translation>
-<translation id="4842511359652954519">もっと見る</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> でこのサイトのパスワードを更新しますか？</translation>
 <translation id="4881695831933465202">開く</translation>
@@ -287,7 +280,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="497421865427891073">次に進む</translation>
 <translation id="4996978546172906250">共有方法</translation>
 <translation id="5000922062037820727">ブロック（推奨）</translation>
-<translation id="5014582685689328551">Chrome を使用して閲覧可能です</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
@@ -322,7 +314,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="5308933389783727448">保存したページを検索</translation>
 <translation id="5313967007315987356">サイトを追加</translation>
 <translation id="5317780077021120954">保存</translation>
-<translation id="5323972449344932352">Chrome を起動</translation>
 <translation id="5324858694974489420">保護者設定</translation>
 <translation id="5327248766486351172">名前</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> を削除しました</translation>
@@ -401,7 +392,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6192792657125177640">例外</translation>
-<translation id="6208263165776660488">Chrome のタブが移動しました</translation>
 <translation id="6231464350722415003">指定するウェブサイト上で JavaScript を許可し、その他のウェブサイト上ではブロックします</translation>
 <translation id="6232535412751077445">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。
 
@@ -490,9 +480,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> では地域の検索結果を表示するためにユーザーの位置情報が使用されます</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">ブックマークを削除</translation>
-<translation id="7324738665594301612">Google では試験運用の一環として、Google サーバーを経由して HTTPS ページをプロキシ送信するテストを行っています。</translation>
 <translation id="7346217184097589238">保存済みのサイトの設定は消去されず、普段の閲覧行動を反映した設定などが残る可能性もあります。</translation>
-<translation id="7346909386216857016">OK</translation>
 <translation id="7347770551817603360">オフライン コンテンツ</translation>
 <translation id="7363354739009474003">「<ph name="VIDEO_TITLE" />」を読み込んでいます</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />にキャストしています</translation>
@@ -515,7 +503,6 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="7588950540487816470">フィジカルウェブ</translation>
 <translation id="7596558890252710462">オペレーティング システム</translation>
 <translation id="7599840151813361502"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />へのログインは維持されます</translation>
-<translation id="7603403729818446828">スマートフォンの [概要] 画面にタブと最近使ったアプリを表示します。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で変更できます。</translation>
 <translation id="7607002721634913082">一時停止中</translation>
 <translation id="7612619742409846846">次のユーザーとして Google にログインしています:</translation>
 <translation id="7619072057915878432">ネットワーク障害が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
@@ -564,6 +551,7 @@ Chrome のプライバシー設定でフィジカル ウェブを管理できま
 <translation id="8173098127580644436">始めから</translation>
 <translation id="8200772114523450471">再開</translation>
 <translation id="8209050860603202033">画像を開く</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> の接続先を選択:</translation>
 <translation id="8218346974737627104">ログインの確認</translation>
 <translation id="8218934717680664417">ワンタップで検索が可能に</translation>
 <translation id="8223946939421658889">データを消去する期間:</translation>

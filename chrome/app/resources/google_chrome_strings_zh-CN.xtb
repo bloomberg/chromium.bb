@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome - 通知</translation>
 <translation id="1104959162601287462">关于 Chrome 操作系统(&amp;C)</translation>
 <translation id="110877069173485804">这是您的专属Chrome</translation>
-<translation id="1225016890511909183">Chrome 会妥善地存储您的信息，这样您日后就不必重新输入了。不过，您将来付款时仍需验证信用卡的安全码。</translation>
 <translation id="123620459398936149">Chrome操作系统无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="127345590676626841">Chrome会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chrome会重新启动，然后您就可以开始使用了。</translation>
 <translation id="1302523850133262269">Chrome正在安装最新的系统更新，请稍候。</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">获取 Chrome 操作系统使用帮助</translation>
 <translation id="1818142563254268765">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chrome。</translation>
+<translation id="1864458292167284385">Chrome 应用启动器即将停用。</translation>
 <translation id="1877026089748256423">Chrome版本太旧</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="2084710999043359739">添加到 Chrome 浏览器</translation>
@@ -88,6 +88,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了 Certificate Transparency 信息，但 Chrome 无法识别任何 Certificate Transparency 日志。</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
+<translation id="396182988103551265">请使用 Chrome 书签栏中的 <ph name="APPS_ICON_IMAGE" /> 快捷方式来继续访问您的应用。</translation>
 <translation id="4042449298237264661">此计算机将不会再收到 Google Chrome 更新，因为 Windows XP 和 Windows Vista 不再受支持。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
@@ -103,7 +104,6 @@
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="4480040274068703980">登录时出现错误，Chrome操作系统无法同步您的数据。</translation>
-<translation id="4513711165509885787">您的帐单明细已保存在 Chrome 中。</translation>
 <translation id="4561051373932531560">您可以在 Google Chrome 浏览器中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="4631713731678262610">在 Chrome 菜单中隐藏</translation>

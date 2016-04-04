@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">โปรดปิดหน้าต่าง Chromium ทั้งหมด (รวมทั้งในโหมด Windows 8 ด้วย) และลองอีกครั้ง</translation>
 <translation id="1708666629004767631">Chromium รุ่นใหม่ที่ปลอดภัยกว่าเดิมพร้อมให้ใช้งานแล้ว</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> อาจเป็นอันตรายต่อการท่องเว็บของคุณ Chromium จึงบล็อกไว้</translation>
-<translation id="1745962126679160932">Chromium จะเก็บข้อมูลของคุณอย่างปลอดภัยเพื่อให้คุณไม่จำเป็นต้องพิมพ์ข้อมูลนั้นอีกครั้ง แต่คุณจะยังคงต้องยืนยันรหัสรักษาความปลอดภัยของบัตรของคุณสำหรับการชำระเงินในอนาคต</translation>
 <translation id="1774152462503052664">ให้ Chromium ทำงานในพื้นหลัง</translation>
 <translation id="1779356040007214683">เพื่อให้ Chromium ปลอดภัยขึ้น เราได้ปิดส่วนขยายบางรายการที่ไม่ได้ระบุไว้ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจถูกเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
 <translation id="1808667845054772817">ติดตั้ง Chromium ใหม่</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium ไม่ตอบสนอง เปิดใหม่เลยหรือไม่</translation>
 <translation id="1967743265616885482">เป็นที่ทราบกันว่าโมดูลที่มีชื่อเดียวกันนี้จะขัดแย้งกับ Chromium</translation>
 <translation id="2077129598763517140">ใช้การเร่งฮาร์ดแวร์เมื่อสามารถใช้ได้</translation>
+<translation id="2103655854491303969">เครื่องเรียกใช้งานแอป Chromium จะเลิกใช้งานในเร็วๆ นี้</translation>
 <translation id="2117181891440368863">Chromium ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้ และเซิร์ฟเวอร์ให้ข้อมูลความโปร่งใสของใบรับรองแล้ว แต่ข้อมูลไม่ถูกต้อง</translation>
 <translation id="2119636228670142020">เกี่ยวกับ &amp;Chromium OS</translation>
 <translation id="2158734852934720349">ใบอนุญาตโอเพนซอร์สของ Chromium OS</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">Chromium OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="2558641060352364164">เว็บไซต์นี้ใช้ปลั๊กอิน Chromium Frame ซึ่งจะยกเลิกการสนับสนุนในเร็วๆ นี้ โปรดถอนการติดตั้งและอัปเกรดเป็นเบราว์เซอร์ที่ทันสมัย</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">ใช้ทางลัด <ph name="APPS_ICON_IMAGE" /> ในแถบบุ๊กมาร์กของ Chromium เพื่อเข้าถึงแอปของคุณต่อไป</translation>
 <translation id="2602806952220118310">Chromium - การแจ้งเตือน</translation>
 <translation id="2636877269779209383">Chromium ต้องการเข้าถึงกล้องถ่ายรูปเพื่อแชร์กับเว็บไซต์นี้</translation>
 <translation id="2648074677641340862">เกิดข้อผิดพลาดของระบบปฏิบัติในระหว่างการติดตั้ง โปรดดาวน์โหลด Chromium อีกครั้ง</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">เป็นที่ทราบกันว่าโมดูลนี้ขัดแย้งกับ Chromium</translation>
 <translation id="4423735387467980091">กำหนดค่าและควบคุม Chromium</translation>
 <translation id="4458285410772214805">โปรดออกจากระบบ และลงชื่อเข้าใช้อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
-<translation id="4488676065623537541">รายละเอียดการเรียกเก็บเงินของคุณได้รับการบันทึกไว้ใน Chromium แล้ว</translation>
 <translation id="4549794359424059447">Chromium เวอร์ชันต่อไปจะไม่รองรับ Windows XP หรือ Windows Vista อีกต่อไป</translation>
 <translation id="4567424176335768812">คุณกำลังลงชื่อเข้าใช้เป็น <ph name="USER_EMAIL_ADDRESS" /> ตอนนี้คุณสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
 <translation id="457845228957001925">ข้อมูลสำคัญเกี่ยวกับข้อมูล Chromium ของคุณ</translation>

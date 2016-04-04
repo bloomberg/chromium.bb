@@ -17,7 +17,7 @@
 <translation id="3414292259312108062">‏Chrome יאחסן את הסיסמה ב<ph name="BEGIN_LINK" />סיסמאות Google השמורות<ph name="END_LINK" /> ויזין אותה באופן אוטומטי כדי שלא תצטרך לזכור אותה.</translation>
 <translation id="3567664240939803299">‏האם אתה מעוניין ש-Google Smart Lock ישמור את הסיסמה לאתר זה?</translation>
 <translation id="3586931643579894722">הסתר פרטים</translation>
-<translation id="3736520371357197498">אם אתה מבין את הסיכונים בנוגע לאבטחה שלך, תוכל <ph name="BEGIN_LINK" />לבקר באתר לא בטוח זה<ph name="END_LINK" /> לפני הסרת התכניות המסוכנות.</translation>
+<translation id="3736520371357197498">אם אתה מבין את הסיכונים בנוגע לאבטחה שלך, תוכל <ph name="BEGIN_LINK" />להיכנס לאתר לא בטוח זה<ph name="END_LINK" /> לפני הסרת התכניות המסוכנות.</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="4098354747657067197">זהירות, אתר מטעה</translation>
 <translation id="4121993058175073134">כדי לשלוח נתוני ייצוא ברשת, הגדר את חשבון האימייל שלך ביישום 'הגדרות'.</translation>
@@ -37,7 +37,7 @@
 <translation id="6344783595350022745">טקסט נקי</translation>
 <translation id="6456425917241817154">‏סיסמה שנוצרה על ידי Chrome</translation>
 <translation id="6535543971741225613">‏האתר שאליו אתה מנסה להיכנס מתנהג בצורה משונה, ו-‏Chrome אינו יכול לוודא כי כתובת האתר שלו נכונה. מטעמי אבטחה, מומלץ שלא תמשיך, ואולי כדאי שתנסה שוב מחר או שתעבור לאתר אחר.</translation>
-<translation id="6740369132746915122">אם אתה מבין את סיכוני האבטחה, תוכל <ph name="BEGIN_LINK" />לבקר באתר הזה, שאינו מאובטח<ph name="END_LINK" />.</translation>
+<translation id="6740369132746915122">אם אתה מבין את סיכוני האבטחה, תוכל <ph name="BEGIN_LINK" />להיכנס לאתר הזה, שאינו מאובטח<ph name="END_LINK" />.</translation>
 <translation id="7222245588540287464">האם מופעל חיפוש קולי לפי הקשר</translation>
 <translation id="724691107663265825">האתר שלפניך מכיל תוכנה זדונית</translation>
 <translation id="7456847797759667638">פתח מיקום...</translation>
@@ -46,8 +46,8 @@
 <translation id="7779249319235708104">התקפת דיוג לפניך</translation>
 <translation id="7961015016161918242">אף פעם</translation>
 <translation id="820854170120587500">‏'גלישה בטוחה של Google' זיהתה לאחרונה דיוג באתר <ph name="SITE" />‏. <ph name="BEGIN_LINK" />אתרי דיוג<ph name="END_LINK" /> מתחזים לאתרים אחרים כדי להטעות אותך.</translation>
-<translation id="834457929814110454">אם אתה מבין את סיכוני האבטחה, תוכל <ph name="BEGIN_LINK" />לבקר באתר לא בטוח זה<ph name="END_LINK" /> לפני הסרת התכניות המסוכנות.</translation>
-<translation id="8543181531796978784">באפשרותך <ph name="BEGIN_ERROR_LINK" />לדווח על בעיית זיהוי<ph name="END_ERROR_LINK" /> או, אם אתה מבין את סיכוני האבטחה, <ph name="BEGIN_LINK" />לבקר באתר הזה, שאינו מאובטח<ph name="END_LINK" />.</translation>
+<translation id="834457929814110454">אם אתה מבין את סיכוני האבטחה, תוכל <ph name="BEGIN_LINK" />להיכנס לאתר לא בטוח זה<ph name="END_LINK" /> לפני הסרת התכניות המסוכנות.</translation>
+<translation id="8543181531796978784">באפשרותך <ph name="BEGIN_ERROR_LINK" />לדווח על בעיית זיהוי<ph name="END_ERROR_LINK" /> או, אם אתה מבין את סיכוני האבטחה, <ph name="BEGIN_LINK" />להיכנס לאתר הזה, שאינו מאובטח<ph name="END_LINK" />.</translation>
 <translation id="8761567432415473239">‏גלישה בטוחה של Google <ph name="BEGIN_LINK" />איתרה לאחרונה תוכניות מזיקות<ph name="END_LINK" /> באתר <ph name="SITE" />.</translation>
 <translation id="8996941253935762404">האתר שאתה עומד לעבור אליו מכיל תוכניות מזיקות</translation>
 <translation id="9035022520814077154">שגיאת אבטחה</translation>

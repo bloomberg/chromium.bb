@@ -773,7 +773,6 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 <translation id="402759845255257575">Non consentire ad alcun sito di eseguire JavaScript</translation>
 <translation id="4027608872760987929">Attiva il provider di ricerca predefinito</translation>
 <translation id="4039085364173654945">Consente di stabilire se per i contenuti secondari di terze parti presenti in una pagina è consentita la visualizzazione di una finestra di dialogo Autorizzazione di base HTTP. Generalmente questa norma non è attiva per tutela dal phishing. Se questa norma non viene impostata, l'impostazione verrà disattivata e per i contenuti secondari di terze parti non potrà essere visualizzata una finestra di dialogo Autorizzazione di base HTTP.</translation>
-<translation id="4052765007567912447">Consente di stabilire se l'utente può visualizzare le password in testo non crittografato in Gestione password. Se disattivi questa impostazione, Gestione password impedisce la visualizzazione delle password memorizzate in testo non crittografato nella finestra Gestione password. Se attivi questa norma o non la imposti, gli utenti potranno visualizzare le loro password in testo non crittografato in Gestione password.</translation>
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
 <translation id="4088589230932595924">Modalità di navigazione in incognito forzata</translation>
 <translation id="4088983553732356374">Consente di stabilire se consentire o meno ai siti web di impostare dati locali. L'impostazione dei dati locali può essere consentita o vietata per tutti i siti web.
@@ -1116,7 +1115,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se specificata, questa norma aggiunge un parametro di query chiamato "restrict" all'URL utilizzato per recuperare il numero di inizializzazione delle varianti. Il valore del parametro sarà il valore specificato in questa norma.
 
       Se non è specificata, questa norma non modifica l'URL del numero di inizializzazione delle varianti.</translation>
-<translation id="5564962323737505851">Configura Gestione password. Se Gestione password è abilitata, puoi scegliere di consentire o meno all'utente di visualizzare le password memorizzate in testo non crittografato.</translation>
 <translation id="556941986578702361">Controlla la visualizzazione automatica dello shelf in <ph name="PRODUCT_OS_NAME" />.
 
       Se il criterio è impostato su "AlwaysAutoHideShelf", lo scaffale non sarà mai visualizzato.
@@ -1220,7 +1218,6 @@ Se la norma non viene impostata, la lettura vocale viene disattivata alla prima 
 <translation id="5893553533827140852">Se questa impostazione è attivata, le richieste di autenticazione Gnubby verranno trasferite al proxy attraverso una connessione host remota.
 
           Se questa impostazione è disattivata o non configurata, le richieste di autenticazione Gnubby non verranno trasferite al proxy.</translation>
-<translation id="5912364507361265851">Consenti agli utenti di mostrare le password in Gestione password</translation>
 <translation id="5921713479449475707">Permetti download di aggiornamento automatico tramite HTTP</translation>
 <translation id="5921888683953999946">Consente di impostare lo stato predefinito della funzione di accessibilità del puntatore grande nella schermata di accesso.
 
@@ -1763,6 +1760,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
 <translation id="7882585827992171421">Questa norma è attiva soltanto in modalità retail.
 
       Consente di stabilire l'ID dell'estensione da utilizzare come screensaver nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
+<translation id="7882890448959833986">Elimina l'avviso di sistema operativo non supportato</translation>
 <translation id="7912255076272890813">Configura tipi di app/estensioni consentiti</translation>
 <translation id="793134539373873765">Consente di specificare se p2p deve essere utilizzato per i payload di aggiornamento del sistema operativo. Se questa norma viene impostata su True, i dispositivi condivideranno e proveranno a consumare i payload di aggiornamento sulla LAN, riducendo potenzialmente l'utilizzo e la congestione della larghezza di banda Internet. Se il payload di aggiornamento non è disponibile sulla LAN, il dispositivo ripiegherà sul download da un server di aggiornamento. Se la norma viene impostata su False o non viene configurata, non verrà utilizzato p2p.</translation>
 <translation id="7933141401888114454">Attivazione della creazione di utenti controllati</translation>
@@ -1817,6 +1815,7 @@ Se questa norma non viene impostata, viene utilizzato un periodo di tempo predef
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di inattività.</translation>
 <translation id="8140204717286305802">Consente di comunicare al server l'elenco di interfacce di rete con i relativi tipi e indirizzi hardware. Se la norma viene impostata su False, l'elenco di interfacce non viene comunicato.</translation>
 <translation id="8146727383888924340">Consenti agli utenti di utilizzare le offerte tramite la registrazione a Chrome OS</translation>
+<translation id="8148785525797916822">Elimina l'avviso che viene mostrato quando <ph name="PRODUCT_NAME" /> è in esecuzione su un computer o l'avviso di sistema operativo non più supportato.</translation>
 <translation id="8148901634826284024">Consente di attivare la funzione di accessibilità della modalità ad alto contrasto.
 
 Se la norma viene impostata su true, la modalità ad alto contrasto sarà sempre attiva.

@@ -896,11 +896,6 @@
 <translation id="4039085364173654945">Policyn styr om underordnat innehåll från tredje part på en sida får öppna en dialogruta för HTTP Basic Auth.
 
           Policyn är normalt inaktiverad som skydd mot lösenordsfiske. Om policyn inte anges är inställningen inaktiverad och underordnat innehåll från tredje part får inte öppna en dialogruta för HTTP Basic Auth.</translation>
-<translation id="4052765007567912447">Policyn avgör om användare får visa lösenord i lösenordshanteraren.
-
-          Om du inaktiverar inställningen går det inte att visa sparade lösenord som vanlig text i lösenordshanteraren.
-
-          Om du aktiverar eller inte anger policyn kan användarna visa lösenord som vanlig text i lösenordshanteraren.</translation>
 <translation id="4056910949759281379">Inaktivera SPDY-protokoll</translation>
 <translation id="4088589230932595924">Tvingat inkognitoläge</translation>
 <translation id="4088983553732356374">Innebär att du kan ange om webbplatser ska få ange lokal data. Att ange lokal data kan tillåtas för alla webbplatser eller nekas för alla webbplatser.
@@ -1305,7 +1300,6 @@
       Om den anges läggs en frågeparameter som kallas "restrict" till i webbadressen som används för att hämta startvärdet för Variations. Värdet för parametern kommer att vara det värde som anges i policyn.
 
       Om den inte anges ändras inte webbadressen för startvärdet för Variations.</translation>
-<translation id="5564962323737505851">Konfigurerar lösenordshanteraren. Om lösenordshanteraren är aktiverad kan du välja att aktivera eller inaktivera huruvida användare får visa sparade lösenord med vanlig text.</translation>
 <translation id="556941986578702361">Kontrollera hur <ph name="PRODUCT_OS_NAME" />-hyllan döljs automatiskt.
 
       Om policyn har angetts till AlwaysAutoHideShelf döljs alltid hyllan automatiskt.
@@ -1416,7 +1410,6 @@
 <translation id="5893553533827140852">Om inställningen är aktiverad kommer gnubby-autentiseringsbegäranden att skickas via proxy via en fjärranslutning.
 
           Om inställningen är inaktiverad eller inte konfigurerad kommer gnubby-autentiseringsbegäranden inte att skickas via proxy.</translation>
-<translation id="5912364507361265851">Tillåt att användarna visar lösenord i lösenordshanteraren</translation>
 <translation id="5921713479449475707">Tillåt nedladdning av automatiska uppdateringar via HTTP</translation>
 <translation id="5921888683953999946">Ange standardläget för hjälpmedelsfunktionen med en stor markör på inloggningsskärmen.
 
@@ -2055,6 +2048,7 @@
 <translation id="7882585827992171421">Den här policyn är bara aktiv i återförsäljarläge.
 
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
+<translation id="7882890448959833986">Ignorera varningar för operativsystem som inte stöds</translation>
 <translation id="7912255076272890813">Konfigurera tillåtna app- och tilläggstyper</translation>
 <translation id="793134539373873765">Anger om p2p ska användas för uppdateringar av betalningar i operativsystemet. Om policyn är inställd på Sant kommer enheterna att dela och försöka använda uppdateringar av betalningar i det lokala nätverket och eventuellt reducera användningen av bandbredd och överbelastning. Om uppdateringar av betalningar inte är tillgängliga i det lokala nätverket kommer enheten att återgå till att ladda ned från en uppdateringsserver. Om policyn är inställd på Falskt eller inte konfigurerad kommer p2p inte att användas.</translation>
 <translation id="7933141401888114454">Aktivera alternativet att skapa övervakade användare</translation>
@@ -2117,6 +2111,7 @@
 
       Om principen anges som False skickas inte gränssnittslistan.</translation>
 <translation id="8146727383888924340">Tillåt att användare utnyttjar erbjudanden via registrering i Chrome OS</translation>
+<translation id="8148785525797916822">Ignorerar varningar som visas när <ph name="PRODUCT_NAME" /> körs på en dator eller i ett operativsystem som inte längre stöds.</translation>
 <translation id="8148901634826284024">Aktivera hjälpmedelsfunktionerna i högkontrastläge.
 
           Om den här principen är sann är högkontrastläget alltid aktiverat.

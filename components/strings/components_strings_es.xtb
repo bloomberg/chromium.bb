@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1753706481035618306">Número de página</translation>
 <translation id="1763864636252898013">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, el sistema operativo de tu dispositivo no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
-<translation id="1775135663370355363">Mostrando historial de este dispositivo. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Parámetros de solicitud o solicitud no válidos</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Ocultar opciones avanzadas</translation>
 <translation id="3479539252931486093">¿No te lo esperabas? <ph name="BEGIN_LINK" />Notifícanoslo<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">No hemos podido contactar con tu padre/madre/tutor. Vuelve a intentarlo.</translation>
-<translation id="3516765099410062445">Mostrando historial de dispositivos en los que has iniciado sesión. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3528171143076753409">El certificado de servidor no es de confianza.</translation>
 <translation id="3539171420378717834">Guardar una copia de la tarjeta en este dispositivo</translation>

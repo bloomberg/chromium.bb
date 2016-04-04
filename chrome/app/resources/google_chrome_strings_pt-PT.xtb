@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome – Notificações</translation>
 <translation id="1104959162601287462">Acerca do SO &amp;Chrome</translation>
 <translation id="110877069173485804">Este é o seu Chrome</translation>
-<translation id="1225016890511909183">O Chrome armazenará as suas informações em segurança para que não necessite de as introduzir novamente, mas continuará a ser necessário confirmar o código de segurança do seu cartão para futuros pagamentos.</translation>
 <translation id="123620459398936149">O SO Chrome não conseguiu sincronizar os dados. Atualize a sua frase de acesso de sincronização.</translation>
 <translation id="127345590676626841">O Chrome é atualizado automaticamente para que tenha sempre a versão mais recente. Quando a transferência estiver concluída, o Chrome irá reiniciar e o processo estará terminado.</translation>
 <translation id="1302523850133262269">Aguarde até que o Chrome instale as atualizações do sistema mais recentes.</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obter ajuda para utilizar o SO Chrome</translation>
 <translation id="1818142563254268765">Não foi possível atualizar automaticamente o Chrome para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de atualizar o Chrome.</translation>
+<translation id="1864458292167284385">O Iniciador de Aplicações do Chrome será descontinuado.</translation>
 <translation id="1877026089748256423">O Chrome está desatualizado</translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2084710999043359739">Adicionar ao Chrome</translation>
@@ -88,6 +88,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">O Chrome confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website. O servidor forneceu informações de Transparência do certificado, mas o Chrome não reconheceu os registos de Transparência do certificado.</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
+<translation id="396182988103551265">Utilize o atalho <ph name="APPS_ICON_IMAGE" /> na barra de marcadores do Chrome para continuar a aceder às aplicações.</translation>
 <translation id="4042449298237264661">Este computador deixará de receber atualizações do Google Chrome, uma vez que o Windows XP e o Windows Vista já não são suportados.</translation>
 <translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
@@ -102,7 +103,6 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="4407807842708586359">SO do Google Chrome</translation>
 <translation id="4458285410772214805">Termine sessão e volte a iniciar sessão para que esta alteração tenha efeito.</translation>
 <translation id="4480040274068703980">O SO Chrome não conseguiu sincronizar os dados devido a um erro no início de sessão.</translation>
-<translation id="4513711165509885787">Os seus detalhes de faturação foram guardados no Chrome.</translation>
 <translation id="4561051373932531560">O Google Chrome permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
 <translation id="4567424176335768812">Tem sessão iniciada como <ph name="USER_EMAIL_ADDRESS" />. Agora, pode aceder aos seus marcadores, ao histórico e a outras definições em todos os dispositivos com sessão iniciada.</translation>
 <translation id="4631713731678262610">Ocultar no menu do Chrome</translation>

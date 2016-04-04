@@ -790,7 +790,6 @@
 <translation id="4039085364173654945">Określa, czy umieszczona na stronie treść dodatkowa innej firmy może wyświetlać okno dialogowe z podstawowym uwierzytelnianiem HTTP. 
 
 Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku nieskonfigurowania zasady ustawienie jest wyłączone i treść dodatkowa innej firmy nie może wyświetlać okna dialogowego z podstawowym uwierzytelnianiem HTTP.</translation>
-<translation id="4052765007567912447">Pozwala określić, czy użytkownik może wyświetlać tekst haseł w menedżerze haseł. Jeśli wyłączysz to ustawienie, w oknie menedżera haseł nie będzie można wyświetlać tekstu przechowywanych haseł. W przypadku włączenia lub nieskonfigurowania tej zasady użytkownicy będą mogli wyświetlać tekst haseł w menedżerze haseł.</translation>
 <translation id="4056910949759281379">Wyłącz protokół SPDY</translation>
 <translation id="4088589230932595924">Tryb incognito wymuszany</translation>
 <translation id="4088983553732356374">Pozwala określić, czy witryny mogą tworzyć dane lokalne. Może to być dozwolone lub zabronione dla wszystkich witryn.
@@ -1144,7 +1143,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Ustawienie tej zasady powoduje dodanie parametru „restrict” do URL-a używanego do pobierania odmiany. Wartość parametru będzie taka sama jak wartość określona w tej zasadzie.
 
       Jeśli zasada nie zostanie określona, nie będzie modyfikować URL-a odmian.</translation>
-<translation id="5564962323737505851">Pozwala skonfigurować menedżera haseł. Po włączeniu menedżera haseł możesz włączyć lub wyłączyć opcję umożliwiającą użytkownikowi wyświetlenie tekstu zapisanych haseł.</translation>
 <translation id="556941986578702361">Steruje autoukrywaniem półki <ph name="PRODUCT_OS_NAME" />.
 
       W przypadku ustawienia wartości „AlwaysAutoHideShelf” półka zawsze będzie ukrywana automatycznie.
@@ -1249,7 +1247,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5893553533827140852">Jeśli włączysz to ustawienie, żądania uwierzytelniania Gnubby będą przesyłane przez serwer proxy podczas zdalnego połączenia z hostem.
 
           Jeśli wyłączysz to ustawienie lub go nie skonfigurujesz, żądania uwierzytelniania Gnubby nie będą przesyłane przez serwer proxy.</translation>
-<translation id="5912364507361265851">Zezwalaj użytkownikom na pokazywanie haseł w menedżerze haseł</translation>
 <translation id="5921713479449475707">Zezwalaj na pobieranie aktualizacji automatycznych przez HTTP</translation>
 <translation id="5921888683953999946">Ustawia domyślny stan funkcji ułatwień dostępu w postaci dużego kursora na ekranie logowania.
 
@@ -1799,6 +1796,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7882585827992171421">Ta zasada jest aktywna tylko w trybie sklepu.
 
       Określa identyfikator rozszerzenia używanego jako wygaszacz ekranu na ekranie logowania. Rozszerzenie musi być częścią pakietu aplikacji skonfigurowanego dla tej domeny przez zasadę DeviceAppPack.</translation>
+<translation id="7882890448959833986">Ukryj ostrzeżenie o nieobsługiwanym systemie operacyjnym</translation>
 <translation id="7912255076272890813">Skonfiguruj dozwolone typy aplikacji/rozszerzeń</translation>
 <translation id="793134539373873765">Określa, czy do pobierania aktualizacji systemu operacyjnego ma być używana sieć P2P. Jeśli w tej opcji ustawisz wartość Prawda, urządzenia będą dzieliły aktualizacje w sieci LAN i próbowały pobierać je z tej sieci, co może zmniejszyć wykorzystanie i obciążenie łącza internetowego. Jeśli aktualizacje nie będą dostępne w sieci LAN, urządzenie przełączy się na pobieranie aktualizacji z serwera. Jeśli ustawisz w tej opcji wartość Fałsz, sieć P2P nie będzie używana.</translation>
 <translation id="7933141401888114454">Włącz tworzenie użytkowników nadzorowanych</translation>
@@ -1856,6 +1854,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada ma wartość Fałsz, lista interfejsów nie zostanie zgłoszona.</translation>
 <translation id="8146727383888924340">Zezwalaj użytkownikom na wykorzystanie ofert w procesie rejestracji systemu operacyjnego Chrome</translation>
+<translation id="8148785525797916822">Ukrywanie ostrzeżenia pojawiającego się, gdy <ph name="PRODUCT_NAME" /> działa na komputerze lub w systemie operacyjnym, który nie jest obsługiwany.</translation>
 <translation id="8148901634826284024">Włącza funkcję ułatwień dostępu w postaci trybu wysokiego kontrastu.
 
           Jeśli ta zasada ma wartość „prawda”, tryb wysokiego kontrastu jest zawsze włączony.

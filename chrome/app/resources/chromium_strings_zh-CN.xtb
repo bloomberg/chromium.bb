@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">请关闭所有 Chromium 窗口（包括 Windows 8 模式下的窗口），然后重试。</translation>
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" />会影响您的浏览体验，因此Chromium已将其阻止。</translation>
-<translation id="1745962126679160932">Chromium 会妥善地存储您的信息，这样您日后就不必重新输入了。不过，您将来付款时仍需验证信用卡的安全码。</translation>
 <translation id="1774152462503052664">让 Chromium 在后台运行</translation>
 <translation id="1779356040007214683">为了提高 Chromium 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中、可能是在您不知情的情况下添加的扩展程序。</translation>
 <translation id="1808667845054772817">重新安装Chromium</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium 未响应。要立即重新启动吗？</translation>
 <translation id="1967743265616885482">已发现一个同名的模块与 Chromium 存在冲突。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
+<translation id="2103655854491303969">Chromium 应用启动器即将停用。</translation>
 <translation id="2117181891440368863">Chromium 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了 Certificate Transparency 信息，但这些信息无效。</translation>
 <translation id="2119636228670142020">关于 Chromium 操作系统(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium操作系统开放源代码许可</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">您的帐户登录详细信息已过期，Chromium操作系统无法同步您的数据。</translation>
 <translation id="2558641060352364164">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后升级到新型浏览器。</translation>
 <translation id="2572494885440352020">Chromium 帮助程序</translation>
+<translation id="2595977381794111014">请使用 Chromium 书签栏中的 <ph name="APPS_ICON_IMAGE" /> 快捷方式来继续访问您的应用。</translation>
 <translation id="2602806952220118310">Chromium - 通知</translation>
 <translation id="2636877269779209383">Chromium 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
 <translation id="4423735387467980091">自定义及控制 Chromium</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
-<translation id="4488676065623537541">您的帐单明细已保存在 Chromium 中。</translation>
 <translation id="4549794359424059447">Chromium 的后续版本将不再支持 Windows XP 或 Windows Vista。</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="457845228957001925">与您的 Chromium 数据相关的重要信息</translation>

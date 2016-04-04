@@ -159,7 +159,6 @@
     Anda perlu menyediakan profil anda semula.<ph name="BR" />
     <ph name="BR" />
     Pada skrin berikutnya, sila hantar maklum balas untuk membantu kami menyelesaikan isu ini.</translation>
-<translation id="1216954813581739968">Dayakan tab untuk Perkongsian Desktop</translation>
 <translation id="121827551500866099">Paparkan semua muat turun...</translation>
 <translation id="122082903575839559">Algoritma Tandatangan Sijil</translation>
 <translation id="1221024147024329929">PKCS #1 MD2 Dengan Penyulitan RSA</translation>
@@ -390,6 +389,7 @@
 <translation id="1545786162090505744">URL dengan %s sebagai ganti pertanyaan</translation>
 <translation id="1546280085599573572">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda mengklik butang Laman Utama.</translation>
 <translation id="1546795794523394272">Selamat datang ke Chromebox untuk mesyuarat!</translation>
+<translation id="1547572086206517271">Perlu muat semula</translation>
 <translation id="1547964879613821194">Bahasa Inggeris Kanada</translation>
 <translation id="1548132948283577726">Tapak yang langsung tidak menyimpan kata laluan anda muncul di sini.</translation>
 <translation id="1549045574060481141">Sahkan Muat Turun</translation>
@@ -618,6 +618,7 @@
 <translation id="1891196807951270080">Dayakan penyimpanan halaman yang dilawat baru-baru ini dalam pemacu setempat untuk kegunaan luar talian. Untuk mendayakannya, anda perlu mendayakan Halaman Luar Talian.</translation>
 <translation id="1891668193654680795">Percayakan sijil ini untuk mengenalpasti pembuat perisian.</translation>
 <translation id="189210018541388520">Buka skrin penuh</translation>
+<translation id="1892754076732315533">Pengalaman pengguna baharu yang dipermudahkan apabila memasuki keadaan skrin penuh dicetus halaman atau kunci penuding tetikus.</translation>
 <translation id="1893046049133338222">ARC: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="1893406696975231168">Aliran peruntukan awan gagal</translation>
 <translation id="189358972401248634">Bahasa lain</translation>
@@ -1323,6 +1324,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="288042212351694283">Mengakses peranti Universal 2nd Factor anda</translation>
 <translation id="2881966438216424900">Terakhir diakses:</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> akan dimulakan semula dan ditetapkan semula buat sementara waktu</translation>
+<translation id="2885278018040587402">https://support.google.com/chrome/answer/3060053?hl=<ph name="GRITLANGCODE_1" /></translation>
 <translation id="2885378588091291677">Pengurus Tugas</translation>
 <translation id="2887525882758501333">Dokumen PDF</translation>
 <translation id="2888807692577297075">Tiada item yang sepadan dengan &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
@@ -1753,6 +1755,7 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3479552764303398839">Bukan sekarang</translation>
 <translation id="3480892288821151001">Letakkan tetingkap di kiri</translation>
 <translation id="3481915276125965083">Pop muncul berikut disekat pada halaman ini:</translation>
+<translation id="3482214069979148937">Tekan |<ph name="ACCELERATOR" />| untuk keluar daripada skrin penuh</translation>
 <translation id="3484869148456018791">Dapatkan sijil baharu</translation>
 <translation id="3487007233252413104">fungsi awanama</translation>
 <translation id="348771913750618459">Aliran log masuk berasaskan iframe</translation>
@@ -1847,7 +1850,6 @@ Daripada <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3593965109698325041">Kekangan Nama Sijil</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
 <translation id="3600456501114769456">Akses kepada fail setempat pada peranti anda dilumpuhkan oleh pentadbir anda.</translation>
-<translation id="3601395307734599350">Semua sambungan anda berada di sini</translation>
 <translation id="3603385196401704894">Bahasa Perancis Kanada</translation>
 <translation id="3603622770190368340">Dapatkan sijil rangkaian</translation>
 <translation id="3605780360466892872">Buttondown</translation>
@@ -2230,7 +2232,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="4151403195736952345">Gunakan lalai global (Kesan)</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tab}}</translation>
 <translation id="4154664944169082762">Cap jari</translation>
-<translation id="4157188838832721931">Lumpuhkan gesaan kepada pengguna yang meminta kata laluan OS mereka sebelum mendedahkan kata laluan pada halaman kata laluan.</translation>
 <translation id="4157869833395312646">Kriptografi Berpintu Pelayan Microsoft</translation>
 <translation id="4158739975813877944">Buka senarai main</translation>
 <translation id="4159681666905192102">Ini ialah akaun untuk kanak-kanak yang diurus oleh <ph name="CUSTODIAN_EMAIL" /> dan <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
@@ -2274,7 +2275,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="4218259925454408822">Log masuk akaun lain</translation>
 <translation id="4219614746733932747">Jika didayakan, Blink menggunakan mekanisme pengezuman bagi mengubah skala kandungan untuk faktor skala peranti.</translation>
 <translation id="4220865787605972627">Benarkan penentukuran warna paparan jika paparan itu menyokong ciri tersebut.</translation>
-<translation id="4233506668751282421">Dayakan Audio untuk Perkongsian Desktop</translation>
 <translation id="4235200303672858594">Keseluruhan skrin</translation>
 <translation id="4235813040357936597">Tambah akaun untuk <ph name="PROFILE_NAME" /></translation>
 <translation id="4240069395079660403"><ph name="PRODUCT_NAME" /> tidak boleh dipaparkan dalam bahasa ini</translation>
@@ -2282,7 +2282,6 @@ Semua pengguna mesti melog keluar untuk meneruskan.</translation>
 <translation id="4242577469625748426">Gagal memasang tetapan dasar pada peranti: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4243835228168841140"><ph name="FULLSCREEN_ORIGIN" /> mahu melumpuhkan kursor tetikus anda.</translation>
 <translation id="424546999567421758">Penggunaan tinggi cakera dikesan</translation>
-<translation id="4247072926966606568">Jika bendera ini dihidupkan, tetingkap pemilih perkongsian desktop akan membenarkan pengguna memilih sama ada hendak berkongsi audio atau tidak.</translation>
 <translation id="424726838611654458">Sentiasa buka dalam Adobe Reader</translation>
 <translation id="4249248555939881673">Menunggu sambungan rangkaian...</translation>
 <translation id="4249373718504745892">Halaman ini telah disekat daripada mengakses kamera dan mikrofon anda.</translation>
@@ -2355,7 +2354,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4358697938732213860">Tambah alamat</translation>
 <translation id="4359408040881008151">Dipasang kerana sambungan yang bergantung.</translation>
 <translation id="4361190688154226069">Sasaran berasaskan segi empat tepat dalam paparan</translation>
-<translation id="4363372140743955595">Pengesahan Semula Pengurus Kata Laluan</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> dimuat turun</translation>
 <translation id="4364830672918311045">Paparkan pemberitahuan</translation>
 <translation id="4365673000813822030">Alamak, Penyegerakan telah berhenti berfungsi.</translation>
@@ -2412,6 +2410,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4449935293120761385">Mengenai Auto Isi</translation>
 <translation id="4449996769074858870">Tab ini sedang memainkan audio.</translation>
 <translation id="4450974146388585462">Diagnosis</translation>
+<translation id="4452426408005428395">Tidak perlu</translation>
 <translation id="4454939697743986778">Sijil ini telah dipasang oleh pentadbir sistem anda.</translation>
 <translation id="445923051607553918">Sertai rangkaian Wi-Fi</translation>
 <translation id="4462159676511157176">Nama pelayan tersuai</translation>
@@ -2489,7 +2488,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4594109696316595112">Pengaktifan sekali: Taip kata laluan anda untuk mengaktifkan Smart Lock pada <ph name="DEVICE_TYPE" /> ini. Dengan Smart Lock, telefon anda akan membuka kunci peranti ini —tanpa kata laluan. Untuk mengubah atau melumpuhkan ciri ini, lawati tetapan <ph name="DEVICE_TYPE" /> anda.</translation>
 <translation id="4595560905247879544">Apl dan sambungan hanya boleh diubah suai oleh pengurus (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4601242977939794209">Penukar EMF</translation>
-<translation id="4601250583401186741">Pasangkan dengan pengawal</translation>
 <translation id="4602466770786743961">Sentiasa benarkan <ph name="HOST" /> mengakses kamera dan mikrofon anda</translation>
 <translation id="4605399136610325267">Internet tidak disambungkan</translation>
 <translation id="4608500690299898628">&amp;Cari...</translation>
@@ -2785,6 +2783,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5039804452771397117">Benarkan</translation>
 <translation id="5045550434625856497">Kata laluan tidak sah</translation>
 <translation id="5048179823246820836">Nordic</translation>
+<translation id="5048294425697652159">Dayakan Klien Quirks untuk penentukuran paparan.</translation>
 <translation id="5053604404986157245">Kata laluan TPM yang dihasilkan secara rawak tidak tersedia. Perkara ini biasa berlaku selepas Powerwash.</translation>
 <translation id="5053803681436838483">Alamat penghantaran baharu...</translation>
 <translation id="5055309315264875868">Tunjukkan pautan dalam halaman tetapan pengurus kata laluan untuk mengurus kata laluan disegerakkan anda dalam talian.</translation>
@@ -2882,7 +2881,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="5188893945248311098">Keperluan gerak isyarat untuk main semula media</translation>
 <translation id="5189060859917252173">Sijil "<ph name="CERTIFICATE_NAME" />" mewakili Pihak Berkuasa Pensijilan.</translation>
-<translation id="5196117515621749903">Muatkan semula cache yang mengabaikan</translation>
 <translation id="5196716972587102051">2</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5197680270886368025">Penyegerakan selesai.</translation>
@@ -2897,6 +2895,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="521582610500777512">Foto telah dibuang</translation>
 <translation id="5218183485292899140">Bahasa Perancis Switzerland</translation>
 <translation id="5218766986344577658">Tetingkap Timbul Penyahtaksaan Pautan</translation>
+<translation id="5220992698394817380">Dayakan ikut serta menu IME</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="5225324770654022472">Paparkan pintasan apl</translation>
 <translation id="5227536357203429560">Tambah rangkaian persendirian...</translation>
@@ -2939,6 +2938,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5271247532544265821">Togol mod Bahasa Cina Mudah/Tradisional</translation>
 <translation id="5271549068863921519">Simpan kata laluan</translation>
 <translation id="5273628206174272911">Navigasi sejarah percubaan sebagai tindak balas kepada tatal lampau melintang.</translation>
+<translation id="5275194674756975076">OK, muat semula</translation>
 <translation id="5275795814002959418"><ph name="COUNT" /> daripada tapak ini</translation>
 <translation id="5275973617553375938">Fail yang diperoleh semula dari Google Drive</translation>
 <translation id="527605719918376753">Redam tab</translation>
@@ -3012,6 +3012,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5368720394188453070">Telefon anda dikunci. Buka kuncinya untuk masuk.</translation>
 <translation id="5369927996833026114">Terokai Pelancar Apl Chrome</translation>
 <translation id="5370819323174483825">&amp;Muat semula</translation>
+<translation id="5372066618989754822">Dayakan akses ke menu IME baharu dalam halaman Tetapan Bahasa.</translation>
 <translation id="5372529912055771682">Mod pendaftaran yang diberikan tidak disokong oleh versi sistem pengendalian ini. Sila pastikan anda menjalankan versi terbaharu dan cuba lagi.</translation>
 <translation id="5374359983950678924">Tukar gambar</translation>
 <translation id="5376169624176189338">Klik untuk kembali, tahan untuk lihat sejarah</translation>
@@ -3197,6 +3198,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5626134646977739690">Nama:</translation>
 <translation id="5627086634964711283">Sambungan turut mengawal halaman yang ditunjukkan apabila anda mengklik butang Laman Utama.</translation>
 <translation id="5627259319513858869">Membolehkan penggunaan ciri kanvas eksperimen yang masih dalam pembangunan.</translation>
+<translation id="5627618611556177958">WebUSB</translation>
 <translation id="5630163645818715367">Reka bentuk bahan di krom atas penyemak imbas</translation>
 <translation id="5633060877636360447">Tindakan ini akan memadamkan sekurang-kurangnya <ph name="TOTAL_COUNT" /> item daripada peranti ini selama-lamanya tetapi tidak akan mengosongkan item yang disegerakkan daripada peranti lain.</translation>
 <translation id="5636996382092289526">Untuk menggunakan <ph name="NETWORK_ID" /> anda mungkin perlu <ph name="LINK_START" />melawat halaman log masuk rangkaian<ph name="LINK_END" /> terlebih dahulu, yang akan terbuka secara automatik dalam beberapa saat. Jika ini tidak berlaku, rangkaian tersebut tidak boleh digunakan.</translation>
@@ -3227,6 +3229,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5678862612529498267">Serlahkan objek dengan fokus papan kekunci</translation>
 <translation id="5678955352098267522">Baca data anda di <ph name="WEBSITE_1" /></translation>
 <translation id="5680928275846978395">Penapisan Teks dalam Mod Ikhtisar</translation>
+<translation id="5683818630978268777">UI kunci papan kekunci percubaan.</translation>
 <translation id="5684661240348539843">Pengecam Aset</translation>
 <translation id="569068482611873351">Import...</translation>
 <translation id="56907980372820799">Pautkan data</translation>
@@ -3565,7 +3568,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="621638399744152264"><ph name="VALUE" />%</translation>
 <translation id="6217714497624616387">Pelarasan sentuh</translation>
 <translation id="6218364611373262432">Tetapkan semula keadaan pemasangan pelancar apl pada setiap mula semula. Walaupun bendera ini ditetapkan, Chrome akan lupa yang pelancar telah dipasang pada setiap permulaan. Ciri ini digunakan untuk menguji aliran pemasangan pelancar apl.</translation>
-<translation id="6219616557885484178">Pilih daripada lebih sejuta apl dan permainan di Google Play untuk dipasang dan gunakannya pada <ph name="DEVICE_TYPE" /> anda.</translation>
+<translation id="6219616557885484178">Pilih daripada lebih sejuta apl dan permainan di Google Play untuk dipasang dan digunakan pada <ph name="DEVICE_TYPE" /> anda.</translation>
 <translation id="6219717821796422795">Hanyu</translation>
 <translation id="6220413761270491930">Ralat Memuatkan Sambungan</translation>
 <translation id="6221345481584921695">Penyemakan Selamat Google <ph name="BEGIN_LINK" />telah mengesan perisian hasad<ph name="END_LINK" /> pada <ph name="SITE" /> baru-baru ini. Tapak web yang lazimnya selamat kadangkala dijangkiti oleh perisian hasad. Kandungan berniat jahat datang dari <ph name="SUBRESOURCE_HOST" />, pengedar perisian hasad yang diketahui.</translation>
@@ -3692,7 +3695,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6420676428473580225">Tambahkan pada Desktop</translation>
 <translation id="6422329785618833949">Foto diterbalikkan</translation>
 <translation id="642282551015776456">Nama ini tidak boleh digunakan sebagai nama fail atau folder</translation>
-<translation id="642322423610046417">Gunakan menu konteks (klik kanan) untuk mengalih keluar sambungan yang tidak diperlukan.</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6423731501149634044">Gunakan Adobe Reader sebagai alat lihat PDF lalai anda?</translation>
 <translation id="6425092077175753609">Bahan</translation>
@@ -3763,6 +3765,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
+<translation id="6526654154229718724">Mod skrin penuh dengan kunci papan kekunci percubaan memerlukan pengguna untuk menekan kekunci Esc untuk keluar.</translation>
 <translation id="6527303717912515753">Kongsi</translation>
 <translation id="6528546217685656218">Kunci Peribadi untuk Sijil Pelanggan tiada atau tidak sah.</translation>
 <translation id="653019979737152879">Menyegerakkan <ph name="FILE_NAME" />...</translation>
@@ -3942,6 +3945,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6825883775269213504">Bahasa Rusia</translation>
 <translation id="6827236167376090743">Video ini akan terus dimainkan untuk tempoh yang lama.</translation>
 <translation id="6828153365543658583">Hadkan log masuk bagi pengguna berikut:</translation>
+<translation id="6828860976882136098">Gagal menyediakan kemas kini automatik untuk semua pengguna (ralat sebelum pelaksanaan: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="6829250331733125857">Dapatkan bantuan berhubung <ph name="DEVICE_TYPE" /> anda.</translation>
 <translation id="6829270497922309893">Daftar dalam organisasi anda</translation>
 <translation id="6830590476636787791">Peralihan animasi dalam tutorial kendalian kali pertama</translation>
@@ -3965,7 +3969,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="6860427144121307915">Buka dalam Tab</translation>
 <translation id="6862635236584086457">Semua fail yang disimpan di dalam folder ini disokong dalam talian secara automatik</translation>
 <translation id="6865313869410766144">Autolengkap data borang</translation>
-<translation id="6865319096921627602">Mendayakan saluran media yang disatukan pada Android.</translation>
 <translation id="6867678160199975333">Beralih kepada <ph name="NEW_PROFILE_NAME" /></translation>
 <translation id="6869402422344886127">Kotak pilihan ditandakan</translation>
 <translation id="6870130893560916279">Papan kekunci Ukraine</translation>
@@ -4060,6 +4063,7 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7006017748900345484">Pengekod/penyahkod video perisian H.264 WebRTC</translation>
 <translation id="7006634003215061422">Jidar bawah</translation>
 <translation id="7006844981395428048">Audio $1</translation>
+<translation id="7008270479623533562">Untuk menjalankan sambungan ini, anda perlu memuatkan semula halaman. Anda boleh menjalankan sambungan ini secara automatik pada tapak ini dengan mengklik kanan pada ikon sambungan.</translation>
 <translation id="7009045250432250765">Autoisi satu klik</translation>
 <translation id="7010160495478792664">Nyahkod video yang dipecut perkakasan jika tersedia.</translation>
 <translation id="7010400591230614821">Strategi pelepasan tab agresif</translation>
@@ -4224,7 +4228,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7256710573727326513">Buka dalam tab</translation>
 <translation id="7257173066616499747">Rangkaian Wi-Fi</translation>
 <translation id="7257666756905341374">Baca data yang anda salin dan tampal</translation>
-<translation id="7260002739296185724">Membolehkan penggunaan AVFoundation untuk merakam video dan pemantauan peranti video pada OS X &gt;= 10.7. QTKit akan digunakan sebaliknya.</translation>
 <translation id="7260504762447901703">Batalkan akses</translation>
 <translation id="7262004276116528033">Perkhidmatan log masuk ini dihoskan oleh <ph name="SAML_DOMAIN" /></translation>
 <translation id="7262221505565121">Pengecualian akses pemalam tanpa kotak pasir</translation>
@@ -4262,7 +4265,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="7314278895724341067">Dayakan halaman luar talian NTP</translation>
 <translation id="7317938878466090505"><ph name="PROFILE_NAME" /> (semasa)</translation>
 <translation id="7321545336522791733">Pelayan tidak dapat dihubungi</translation>
-<translation id="7324841169865301118">Membolehkan pengguna memilih tab untuk perkongsian desktop.</translation>
 <translation id="7325437708553334317">Sambungan Kontras Tinggi</translation>
 <translation id="7326565110843845436">Klik tiga jari pad sentuh</translation>
 <translation id="73289266812733869">Nyahpilih</translation>
@@ -5013,7 +5015,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8426519927982004547">HTTPS/SSL</translation>
 <translation id="8427933533533814946">Foto oleh</translation>
 <translation id="8428213095426709021">Tetapan</translation>
-<translation id="8432590265309978927">Sokongan yang bersifat sangat eksperimental untuk menghasilkan iframes silang tapak dalam proses yang berasingan.</translation>
 <translation id="8432745813735585631">Papan kekunci AS Colemak</translation>
 <translation id="8434177709403049435">&amp;Mengekod</translation>
 <translation id="8434480141477525001">Port Nyahpepijat NaCl</translation>
@@ -5210,7 +5211,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8713979477561846077">Dayakan ciri autobetul papan kekunci fizikal untuk papan kekunci AS, yang boleh memberi cadangan semasa anda menaip pada papan kekunci fizikal.</translation>
 <translation id="871476437400413057">Kata laluan disimpan Google</translation>
 <translation id="8714838604780058252">Grafik latar</translation>
-<translation id="8716065142695381595">Mendayakan saluran media yang disatukan (Android dan desktop) pada Android.</translation>
 <translation id="8722421161699219904">Papan kekunci Antarabangsa AS</translation>
 <translation id="872451400847464257">Edit Enjin Carian</translation>
 <translation id="8724859055372736596">&amp;Paparkan dalam Folder</translation>
@@ -5230,6 +5230,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8737685506611670901">Buka pautan <ph name="PROTOCOL" /> dan bukannya <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741881454555234096">Tepatkan lagi kedudukan gerak isyarat sentuh untuk mengimbangi sentuhan peleraian tidak elok berbanding penggunaan tetikus.</translation>
+<translation id="8743712320294854924">Tunjukkan pilihan input yang dikembangkan dalam rak.</translation>
 <translation id="874420130893181774">Kaedah input Pinyin Tradisional</translation>
 <translation id="8744525654891896746">Pilih avatar untuk pengguna diselia ini</translation>
 <translation id="8744641000906923997">Romaji</translation>
@@ -5299,6 +5300,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8848709220963126773">Suis mod kekunci anjak</translation>
 <translation id="8852742364582744935">Apl dan sambungan berikut telah ditambah:</translation>
+<translation id="8853611566624224021">Dayakan pengambilan fail paparan icc daripada Pelayan Quirks untuk penentukuran warna paparan.</translation>
 <translation id="885381502874625531">Papan kekunci bahasa Belarus</translation>
 <translation id="8856844195561710094">Gagal untuk menghentikan penemuan peranti Bluetooth.</translation>
 <translation id="885701979325669005">Storan</translation>
@@ -5348,7 +5350,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8925458182817574960">&amp;Tetapan</translation>
 <translation id="8926389886865778422">Jangan tanya lagi</translation>
 <translation id="8926518602592448999">Lumpuhkan Sambungan Mod Pembangun</translation>
-<translation id="8929454297483336498">Penggunaan API Mac OS X AVFoundation berbanding QTKit</translation>
 <translation id="8931394284949551895">Peranti baharu</translation>
 <translation id="8932730422557198035">Gunakan API Midi Android</translation>
 <translation id="8933960630081805351">&amp;Paparkan dalam Pencari</translation>
@@ -5362,6 +5363,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="894360074127026135">Peningkatan Antarabangsa Netscape</translation>
 <translation id="8944779739948852228">Pencetak dikesan</translation>
 <translation id="8946359700442089734">Ciri penyahpepijatan tidak didayakan sepenuhnya pada peranti ini <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
+<translation id="8946784827990177241">Dayakan sokongan WebUSB.</translation>
 <translation id="89515141420106838">Mendayakan apl Galeri Gedung Web Chrome untuk pemacu pencetak. Apl ini menggelintar Gedung Web Chrome untuk mencari sambungan yang menyokong pencetakan ke pencetak USB dengan ID USB khas.</translation>
 <translation id="895347679606913382">Memulakan...</translation>
 <translation id="8954952943849489823">Pemindahan gagal, ralat tidak dijangkakan: $1</translation>
@@ -5505,6 +5507,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9154194610265714752">Dikemas kini</translation>
 <translation id="9154418932169119429">Imej ini tidak boleh didapati di luar talian.</translation>
 <translation id="91568222606626347">Buat Pintasan...</translation>
+<translation id="9157697743260533322">Gagal menyediakan kemas kini automatik untuk semua pengguna (ralat sebelum pelancaran: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Op! Masalah komunikasi rangkaian berlaku semasa pengesahan. Sila periksa sambungan rangkaian anda dan cuba lagi.</translation>
 <translation id="9159562891634783594">Dayakan pendaftaran pencetak awan yang belum didaftarkan dari pratonton cetakan.</translation>
 <translation id="9166510596677678112">E-mel kepada orang ini</translation>
@@ -5516,7 +5519,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9170848237812810038">&amp;Buat asal</translation>
 <translation id="9170884462774788842">Program lain pada komputer anda menambah tema yang boleh mengubah cara Chrome berfungsi.</translation>
 <translation id="9177499212658576372">Anda sedang disambungkan ke rangkaian <ph name="NETWORK_TYPE" />.</translation>
-<translation id="9177556055091995297">Urus kad kredit</translation>
 <translation id="917858577839511832">Rundingan dengan DTLS 1.2 untuk WebRTC</translation>
 <translation id="917861274483335838">Urus penyekatan pemalam...</translation>
 <translation id="9179348476548754105">Cara pengurus kata laluan mengendalikan autolengkap bagi bukti kelayakan penyegerakan untuk halaman pengesahan semula transaksi sahaja.</translation>
@@ -5559,7 +5561,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="951981865514037445"><ph name="URL" /> mahu menggunakan lokasi peranti anda.</translation>
 <translation id="952838760238220631">Dayakan sokongan Pengekodan Kandungan Brotli.</translation>
 <translation id="952992212772159698">Tidak diaktifkan</translation>
-<translation id="953000875543358078">Ini mungkin mengambil masa sehingga seminit atau lebih</translation>
+<translation id="953000875543358078">Pemuatan ini mungkin mengambil masa sehingga seminit atau lebih</translation>
 <translation id="960987915827980018">Tinggal kira-kira 1jam</translation>
 <translation id="96421021576709873">Rangkaian Wi-Fi</translation>
 <translation id="965490406356730238">Dayakan nyahkod mjpeg yang dipercepat perkakasan untuk bingkai diabadikan jika tersedia.</translation>

@@ -23,7 +23,6 @@
 <translation id="1699664235656412242">እባክዎ ሁሉንም የChromium መስኮቶችን (በWindows 8 ሁነታ ላይ ያሉትንም ጨምሮ) ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="1708666629004767631">አዲስና ደህንነቱ ይበልጥ የተጠበቀ የChromium ስሪት አለ።</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> የአሰሳ ተሞክሮዎን ሊጎዳው ይችላል፣ ስለዚህ Chromium አግዶታል።</translation>
-<translation id="1745962126679160932">Chromium መረጃዎን በድጋሚ መተየብ እንዳይኖርብዎ ደህንነቱ በተጠበቀ ሁኔታ ያስቀምጣል፣ ነገር ግን ለወደፊት ክፍያዎች አሁንም የካርድዎን የደህንነት ኮድ ማረጋገጥ አለብዎ።</translation>
 <translation id="1774152462503052664">Chromium ጀርባ ላይ ይሂድ</translation>
 <translation id="1779356040007214683">Chromium ይበልጥ ደህንነቱ የተጠበቀ እንዲሆን ለማድረግ፣ በ<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ውስጥ ያልተጠቀሱ እና እርስዎ ሳያውቋቸው የታከሉ ሊሆኑ የሚችሉ የተወሰኑ ዝርዝሮችን አሰናክለናል።</translation>
 <translation id="1808667845054772817">Chromiumን ዳግም ጫን</translation>
@@ -33,6 +32,7 @@
 <translation id="1929939181775079593">Chromium መልስ አይሰጥም። አሁን ዳግም ይጀምር?</translation>
 <translation id="1967743265616885482">ተመሳሳይ ስም ያለው ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="2077129598763517140">ሲገኝ የሃርድዌር ማጣደፍን ተጠቀም</translation>
+<translation id="2103655854491303969">የChromium የመተግበሪያ ማስጀመሪያው ይቋረጣል።</translation>
 <translation id="2117181891440368863"><ph name="ISSUER" /> የዚህን የድር ጣቢያ ምስክር ወረቀት እንደሰጠ Chromium አረጋግጧል። አገልጋዩ የምስክር ወረቀት ግልፅነት መረጃን አቅርቧል፣ ሆኖም ግን ልክ ያልሆነ ነበር።</translation>
 <translation id="2119636228670142020">&amp;ስለChromium ስርዓተ ክወና</translation>
 <translation id="2158734852934720349">Chromium OS የክፍት ምንጭ ፈቃዶች</translation>
@@ -48,6 +48,7 @@
 <translation id="2535480412977113886">የመለያ መግቢያ ዝርዝሮችዎ ጊዜ ያለፈባቸው ስለሆኑ Chromium OS ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="2558641060352364164">ይህ ጣቢያ በቅርቡ የማይደገፍ የሚሆን የChromium ክፈፍ ተሰኪውን እየተጠቀመ ነው። እባክዎ ያራግፉትና ወደ ዘመናዊ አሳሽ ያሻሽሉ።</translation>
 <translation id="2572494885440352020">Chromium አጋዥ</translation>
+<translation id="2595977381794111014">መተግበሪያዎችዎን መድረሱን ለመቀጠል በChromium ዕልባቶች አሞሌ ውስጥ የ<ph name="APPS_ICON_IMAGE" /> አቋራጩን ይጠቀሙ።</translation>
 <translation id="2602806952220118310">Chromium - ማሳወቂያዎች</translation>
 <translation id="2636877269779209383">Chromium ይህን ለዚህ ጣቢያ ለማጋራት የካሜራ መዳረሻ ያስፈልገዋል።</translation>
 <translation id="2648074677641340862">በጭነት ጊዜ የስርዓተ ክወና ስህተት ተፈጥሯል። እባክዎ Chromiumን እንደገና ያውርዱት።</translation>
@@ -102,7 +103,6 @@
 <translation id="4330585738697551178">ይህ ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="4423735387467980091">Chromiumን ያብጁ እና ይቆጣጠሩ</translation>
 <translation id="4458285410772214805">ይሄ ለውጥ እንዲተገበር እባክዎ ይውጡ እና እንደገና ይግቡ።</translation>
-<translation id="4488676065623537541">የክፍያ መጠየቂያ ዝርዝሮችዎ በChromium ውስጥ ተቀምጠዋል።</translation>
 <translation id="4549794359424059447">የወደፊት የChromium ስሪቶች ከአሁን በኋላ Windows XP ወይም Windows Vistaን አይደግፉም።</translation>
 <translation id="4567424176335768812">እንደ <ph name="USER_EMAIL_ADDRESS" /> ሆነው ገብተዋል። አሁን የእርስዎን ዕልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች በመለያ በገቡ ሁሉም መሣሪያዎችዎ ላይ መድረስ ይችላሉ።</translation>
 <translation id="457845228957001925">የChromium ውሂብዎን በተመለከተ አስፈላጊ መረጃ</translation>

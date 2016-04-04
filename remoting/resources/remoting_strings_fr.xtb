@@ -24,11 +24,9 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="1546934824884762070">Une erreur inattendue s'est produite. Veuillez signaler le problème aux développeurs.</translation>
 <translation id="1619813076098775562">Connexion avec l'appareil Cast interrompue</translation>
 <translation id="1643640058022401035">En quittant cette page, vous mettrez fin à la session Google Chromoting.</translation>
-<translation id="1646994964686260497">Aucun appareil auquel se connecter.</translation>
 <translation id="1654128982815600832">Activation des connexions à distance pour cet ordinateur en cours…</translation>
 <translation id="170207782578677537">Échec de l'enregistrement de cet ordinateur.</translation>
 <translation id="1704090719919187045">Préférences relatives à l'hôte Chromoting</translation>
-<translation id="1738759452976856405">Arrêter l'enregistrement</translation>
 <translation id="174018511426417793">Aucun ordinateur n'est enregistré. Pour activer les connexions à distance à un ordinateur, installez l'application Bureau à distance Google Chrome sur celui-ci, puis cliquez sur "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Connexion en cours…</translation>
 <translation id="1770394049404108959">Je n'arrive pas à ouvrir l'application.</translation>
@@ -124,7 +122,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
 <translation id="3989511127559254552">Pour continuer, vous devez autoriser l'accès étendu à votre ordinateur. Vous n'aurez à effectuer cette opération qu'une seule fois.</translation>
 <translation id="4006787130661126000">Si vous souhaitez utiliser le bureau à distance Google Chrome pour accéder à cet ordinateur, vous devez activer les connexions à distance.</translation>
-<translation id="401121182145179743">Vous devez tout d'abord configurer votre ordinateur pour l'accès à distance.</translation>
 <translation id="4028465833180158312">• Mises à jour de l'interface utilisateur de Material Design
 • Crédits de licence tiers
 • Affichage d'informations pour les ordinateurs à distance qui sont hors connexion</translation>
@@ -237,7 +234,6 @@ Google Chrome</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Voulez-vous vraiment désactiver les connexions à distance à <ph name="HOSTNAME" /> ? Si vous changez d'avis, vous devrez réactiver les connexions depuis cet ordinateur.</translation>
 <translation id="6998989275928107238">À</translation>
-<translation id="7017806586333792422">Démarrer l'enregistrement</translation>
 <translation id="7019153418965365059">Erreur d'hôte non reconnue : <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistance à distance</translation>
 <translation id="7038683108611689168">Aidez-nous à améliorer Google Chromoting en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>

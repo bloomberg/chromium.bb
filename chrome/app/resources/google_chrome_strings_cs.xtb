@@ -12,7 +12,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1073391069195728457">Chrome – oznámení</translation>
 <translation id="1104959162601287462">O operačním systému &amp;Chrome</translation>
 <translation id="110877069173485804">Toto je váš Chrome</translation>
-<translation id="1225016890511909183">Prohlížeč Chrome vaše informace bezpečně uloží, abyste je nemuseli zadávat znovu. I přesto však bude třeba ověřit bezpečnostní kód karty pro budoucí platby.</translation>
 <translation id="123620459398936149">Chrome OS vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="127345590676626841">Chrome se automaticky aktualizuje, abyste měli vždy nejaktuálnější verzi. Až toto stahování skončí, Chrome se restartuje a budete moci pokračovat.</translation>
 <translation id="1302523850133262269">Počkejte prosím, než Chrome nainstaluje nejnovější aktualizace systému.</translation>
@@ -37,6 +36,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pomoc s používáním systému Chrome OS</translation>
 <translation id="1818142563254268765">Prohlížeč Chrome se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chrome je potřeba aktualizovat.</translation>
+<translation id="1864458292167284385">Spouštěč aplikací Chrome již nebude podporován</translation>
 <translation id="1877026089748256423">Chrome je zastaralý</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2084710999043359739">Přidat do prohlížeče Chrome</translation>
@@ -92,6 +92,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl údaje Certificate Transparency, Chrome však žádný z uvedených protokolů Certificate Transparency neuznává.</translation>
 <translation id="3889417619312448367">Odinstalovat Google Chrome</translation>
+<translation id="396182988103551265">K aplikacím přistupujte pomocí zástupce <ph name="APPS_ICON_IMAGE" /> na liště záložek prohlížeče Chrome.</translation>
 <translation id="4042449298237264661">Google Chrome se v tomto počítači již nebude aktualizovat, protože systémy Windows XP a Windows Vista již nejsou podporovány.</translation>
 <translation id="4050175100176540509">V nejnovější verzi jsou k dispozici důležitá vylepšení zabezpečení a nové funkce.</translation>
 <translation id="4053720452172726777">Přizpůsobit a ovládat Google Chrome</translation>
@@ -106,7 +107,6 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
 <translation id="4480040274068703980">Chrome OS vaše data nemohl synchronizovat z důvodu chyby při přihlášení.</translation>
-<translation id="4513711165509885787">Fakturační údaje byly uloženy do prohlížeče Chrome.</translation>
 <translation id="4561051373932531560">Google Chrome umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
 <translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="4631713731678262610">Skrýt v nabídce Chrome</translation>

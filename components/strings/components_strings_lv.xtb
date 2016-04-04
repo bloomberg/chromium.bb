@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Atvērt cilnes</translation>
 <translation id="1753706481035618306">Lapas numurs</translation>
 <translation id="1763864636252898013">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts netiek uzskatīts par uzticamu jūsu ierīces operētājsistēmā. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
-<translation id="1775135663370355363">Tiek rādīta vēsture no šīs ierīces. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Pieprasījums vai tā parametri nebija derīgi.</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Slēpt papildu informāciju</translation>
 <translation id="3479539252931486093">Vai tas bija negaidīti? <ph name="BEGIN_LINK" />Informējiet mūs<ph name="END_LINK" />!</translation>
 <translation id="3498215018399854026">Mēs nevarējām sasniegt jūsu māti/tēvu. Lūdzu, mēģiniet vēlreiz.</translation>
-<translation id="3516765099410062445">Tiek rādīta vēsture no ierīcēm, kurās esat pierakstījies. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="3527085408025491307">Mape</translation>
 <translation id="3528171143076753409">Servera sertifikāts nav uzticams.</translation>
 <translation id="3539171420378717834">Saglabāt šīs kartes kopiju šajā ierīcē</translation>

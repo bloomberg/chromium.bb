@@ -24,11 +24,9 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="1546934824884762070">Vyskytla sa neočakávaná chyba. Nahláste tento problém vývojárom.</translation>
 <translation id="1619813076098775562">Pripojenie k zariadeniu Cast bolo zavreté.</translation>
 <translation id="1643640058022401035">Ak opustíte túto stránku, relácia aplikácie Chromoting sa ukončí.</translation>
-<translation id="1646994964686260497">Na pripojenie nie sú k dispozícii žiadne zariadenia.</translation>
 <translation id="1654128982815600832">Prebieha povoľovanie vzdialených pripojení pre tento počítač...</translation>
 <translation id="170207782578677537">Registrácia tohto počítača zlyhala.</translation>
 <translation id="1704090719919187045">Predvoľby hostiteľa funkcie Chromoting</translation>
-<translation id="1738759452976856405">Zastaviť zaznamenávanie</translation>
 <translation id="174018511426417793">Nie sú zaregistrované žiadne počítače. Ak chcete povoliť vzdialené pripojenie k inému počítaču, nainštalujte na ňom Vzdialenú plochu Chrome a potom kliknite na tlačidlo <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Prebieha pripájanie...</translation>
 <translation id="1770394049404108959">Aplikáciu nemôžem spustiť.</translation>
@@ -124,7 +122,6 @@ Hostiteľ</translation>
 <translation id="3950820424414687140">Prihlásiť sa</translation>
 <translation id="3989511127559254552">Ak chcete pokračovať, musíte najprv udeliť rozšírené povolenia na prístup k vášmu počítaču. Stačí to urobiť len raz.</translation>
 <translation id="4006787130661126000">Ak chcete na prístup k tomuto počítaču použiť Vzdialenú plochu Chrome, musíte povoliť vzdialené pripojenia.</translation>
-<translation id="401121182145179743">Najprv musíte v počítači nastaviť vzdialený prístup.</translation>
 <translation id="4028465833180158312">• Aktualizácie používateľského rozhrania Material Design.
 • Uvedenie licencií tretích strán.
 • Zobrazenie informácií o vzdialených počítačoch, ktoré sú offline.</translation>
@@ -237,7 +234,6 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Naozaj chcete zakázať vzdialené pripojenia k počítaču <ph name="HOSTNAME" />? Ak zmeníte názor, pripojenie budete musieť znova povoliť priamo z uvedeného počítača.</translation>
 <translation id="6998989275928107238">Komu</translation>
-<translation id="7017806586333792422">Spustiť zaznamenávanie</translation>
 <translation id="7019153418965365059">Nerozpoznaná chyba hostiteľa: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Pomoc na diaľku</translation>
 <translation id="7038683108611689168">Pomôžte nám zlepšiť aplikáciu Chromoting tým, že nám umožníte zhromažďovať štatistiky používania a správy o zlyhaní.</translation>

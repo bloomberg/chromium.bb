@@ -23,7 +23,6 @@
 <translation id="1699664235656412242">Затворите све Chromium прозоре (укључујући оне у режиму Windows 8) и покушајте поново.</translation>
 <translation id="1708666629004767631">Доступна је нова, безбеднија верзија Chromium-а.</translation>
 <translation id="1725059042853530269">Датотека <ph name="FILE_NAME" /> може негативно да утиче на доживљај прегледања, па ју је Chromium блокирао.</translation>
-<translation id="1745962126679160932">Chromium ће безбедно складиштити информације, па нећете морати поново да их уносите, али ћете и даље морати да верификујете безбедносни кôд картице за будућа плаћања.</translation>
 <translation id="1774152462503052664">Нека Chromium ради у позадини</translation>
 <translation id="1779356040007214683">Да бисмо учинили Chromium безбеднијим, онемогућили смо неке додатке које не наводи <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и који су можда додати без вашег знања.</translation>
 <translation id="1808667845054772817">Поново инсталирај Chromium</translation>
@@ -33,6 +32,7 @@
 <translation id="1929939181775079593">Chromium не реагује. Желите ли да га одмах поново покренете?</translation>
 <translation id="1967743265616885482">Модул истог назива се већ сукобљавао са Chromium-ом.</translation>
 <translation id="2077129598763517140">Користи хардверско убрзање када је доступно</translation>
+<translation id="2103655854491303969">Покретач Chromium апликација се укида.</translation>
 <translation id="2117181891440368863">Chromium је верификовао да је <ph name="ISSUER" /> издао сертификат овог сајта. Сервер је послао информације о транспарентности сертификата, али оне су неважеће.</translation>
 <translation id="2119636228670142020">О &amp;Chromium ОС-у</translation>
 <translation id="2158734852934720349">Лиценце отвореног кода за Chromium ОС</translation>
@@ -48,6 +48,7 @@
 <translation id="2535480412977113886">Chromium ОС не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="2558641060352364164">Овај сајт користи додатну компоненту Chromium Frame која ускоро више неће бити подржана. Деинсталирајте је и надоградите на модеран прегледач.</translation>
 <translation id="2572494885440352020">Chromium помагач</translation>
+<translation id="2595977381794111014">Користите пречицу за <ph name="APPS_ICON_IMAGE" /> у Chromium траци са обележивачима да бисте наставили да приступате апликацијама.</translation>
 <translation id="2602806952220118310">Chromium – Обавештења</translation>
 <translation id="2636877269779209383">Chromium захтева приступ камери да би је делио са овим сајтом.</translation>
 <translation id="2648074677641340862">Током инсталације је дошло до грешке у оперативном систему. Преузмите Chromium поново.</translation>
@@ -102,7 +103,6 @@
 <translation id="4330585738697551178">За овај модул је познато да се сукобљава са Chromium-ом.</translation>
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
 <translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
-<translation id="4488676065623537541">Детаљи обрачуна су сачувани у Chromium-у.</translation>
 <translation id="4549794359424059447">Будуће верзије Chromium-а више неће подржавати Windows XP или Windows Vista-у.</translation>
 <translation id="4567424176335768812">Пријављени сте као <ph name="USER_EMAIL_ADDRESS" />. Сада можете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
 <translation id="457845228957001925">Важне информације у вези са Chromium подацима</translation>

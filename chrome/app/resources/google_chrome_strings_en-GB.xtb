@@ -12,7 +12,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1073391069195728457">Chrome - Notifications</translation>
 <translation id="1104959162601287462">About &amp;Chrome OS</translation>
 <translation id="110877069173485804">This is your Chrome</translation>
-<translation id="1225016890511909183">Chrome will securely store your information so you don't need to type it in again, but you will still need to verify your card's security code for future payments.</translation>
 <translation id="123620459398936149">Chrome OS could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="127345590676626841">Chrome updates automatically so that you always have the freshest version. When this download completes, Chrome will restart and you'll be on your way.</translation>
 <translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
@@ -37,6 +36,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Get help with using Chrome OS</translation>
 <translation id="1818142563254268765">Chrome could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to update Chrome.</translation>
+<translation id="1864458292167284385">The Chrome App Launcher is going away.</translation>
 <translation id="1877026089748256423">Chrome is out of date</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2084710999043359739">Add to Chrome</translation>
@@ -92,6 +92,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied Certificate Transparency information, but Chrome did not recognise any of the Certificate Transparency logs.</translation>
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
+<translation id="396182988103551265">Use the <ph name="APPS_ICON_IMAGE" /> shortcut in the Chrome bookmarks bar to continue accessing your apps.</translation>
 <translation id="4042449298237264661">This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported.</translation>
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
@@ -106,7 +107,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
 <translation id="4480040274068703980">Chrome OS could not sync your data due to an error signing in.</translation>
-<translation id="4513711165509885787">Your billing details have been saved in Chrome.</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="4631713731678262610">Hide in Chrome menu</translation>

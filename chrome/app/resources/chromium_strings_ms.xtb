@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Sila tutup semua tetingkap Chromium (termasuk yang di dalam mod Windows 8) dan cuba lagi.</translation>
 <translation id="1708666629004767631">Terdapat versi Chromium baharu yang lebih selamat tersedia.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> boleh membahayakan pelayaran anda, jadi Kromium telah menyekatnya.</translation>
-<translation id="1745962126679160932">Chromium akan menyimpan maklumat anda dengan selamat supaya anda tidak perlu menaipkannya semula, tetapi anda masih perlu mengesahkan kod keselamatan kad anda untuk pembayaran pada masa hadapan.</translation>
 <translation id="1774152462503052664">Benarkan Chromium dijalankan dalam latar belakang</translation>
 <translation id="1779356040007214683">Untuk menjadikan Chromium lebih selamat, kami melumpuhkan beberapa sambungan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
 <translation id="1808667845054772817">Pasang semula Chromium</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium tidak responsif. Lancarkan semula sekarang?</translation>
 <translation id="1967743265616885482">Modul dengan nama yang sama telah diketahui bercanggah dengan Chromium.</translation>
 <translation id="2077129598763517140">Gunakan pecutan perkakasan apabila tersedia</translation>
+<translation id="2103655854491303969">Pelancar Apl Chromium akan ditamatkan.</translation>
 <translation id="2117181891440368863">Chromium mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil, tetapi tidak sah.</translation>
 <translation id="2119636228670142020">Mengenai &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Lesen sumber terbuka Chromium OS</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">OS Chromium tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="2558641060352364164">Tapak ini menggunakan pemalam Chromium Frame yang tidak akan disokong tidak lama lagi. Sila nyahpasangnya dan naik taraf kepada penyemak imbas moden.</translation>
 <translation id="2572494885440352020">Pembantu Chromium</translation>
+<translation id="2595977381794111014">Gunakan pintasan <ph name="APPS_ICON_IMAGE" /> dalam bar penanda halaman Chromium untuk terus mengakses apl anda.</translation>
 <translation id="2602806952220118310">Chromium - Pemberitahuan</translation>
 <translation id="2636877269779209383">Chromium memerlukan akses kamera untuk mengongsinya dengan tapak ini.</translation>
 <translation id="2648074677641340862">Ralat sistem pengendalian berlaku semasa pemasangan. Sila muat turun Chromium semula.</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">Modul ini diketahui bercanggah dengan Chromium.</translation>
 <translation id="4423735387467980091">Sesuaikan dan kawal Chromium</translation>
 <translation id="4458285410772214805">Sila log keluar dan log masuk semula supaya perubahan ini boleh dilaksanakan.</translation>
-<translation id="4488676065623537541">Butiran pengebilan anda telah disimpan dalam Chromium.</translation>
 <translation id="4549794359424059447">Versi Chromium yang akan datang tidak lagi akan menyokong Windows XP atau Windows Vista.</translation>
 <translation id="4567424176335768812">Anda telah log masuk sebagai <ph name="USER_EMAIL_ADDRESS" />. Sekarang anda boleh mengakses penanda halaman, sejarah dan tetapan anda yang lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="457845228957001925">Maklumat penting mengenai data Chromium anda</translation>

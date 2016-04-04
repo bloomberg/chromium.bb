@@ -31,11 +31,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="138361230106469022">Witamy, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1389974829397082527">Tu nie ma zakładek</translation>
-<translation id="1390350022570422499">Chrome może teraz wyszukiwać i pokazywać pobliskie strony internetowe przy użyciu Bluetooth.
-
-Gdy Twoje urządzenie jest odblokowane, Chrome wyszukuje strony wysyłane przez obiekty w pobliżu. Następnie strony te trafiają do usługi Google, która zwiększa trafność wyników.
-
-Internet rzeczy możesz skonfigurować w ustawieniach prywatności w Chrome.</translation>
 <translation id="1404122904123200417">Umieszczone na <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Bez śledzenia”</translation>
 <translation id="1409879593029778104">Plik <ph name="FILE_NAME" /> nie został pobrany, bo już istnieje.</translation>
@@ -78,6 +73,7 @@ Internet rzeczy możesz skonfigurować w ustawieniach prywatności w Chrome.</tr
 <translation id="1974060860693918893">Zaawansowane</translation>
 <translation id="1984937141057606926">Dozwolone, z wyjątkiem witryn innych firm</translation>
 <translation id="1994173015038366702">URL strony</translation>
+<translation id="2001120796168634316">Zapisz linkowaną stronę na później</translation>
 <translation id="200669432486043882">Zastąp plik</translation>
 <translation id="2038563949887743358">Włącz opcję „Wersja na komputer”</translation>
 <translation id="2073235970478114994">Załaduj zdjęcia</translation>
@@ -96,7 +92,6 @@ Internet rzeczy możesz skonfigurować w ustawieniach prywatności w Chrome.</tr
 <translation id="2268044343513325586">Zawęź</translation>
 <translation id="2315043854645842844">Wybieranie certyfikatu klienta nie jest obsługiwane przez ten system operacyjny.</translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
-<translation id="2319528413610359757">Dla czytelników – <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
 <translation id="2329597144923131178">Zaloguj się, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach.</translation>
 <translation id="2343328333327081434">Instaluję…</translation>
@@ -136,6 +131,7 @@ Internet rzeczy możesz skonfigurować w ustawieniach prywatności w Chrome.</tr
 <translation id="2762000892062317888">przed chwilą</translation>
 <translation id="2770465223704140727">Usuń z listy</translation>
 <translation id="278029852808208386">Nie znaleziono urządzeń Bluetooth. <ph name="BEGIN_LINK" />Wyszukaj ponownie<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Nie widzisz swojego urządzenia? <ph name="BEGIN_LINK" />Skorzystaj z pomocy<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
 <translation id="2870560284913253234">Witryna</translation>
@@ -199,7 +195,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3672452749423051839">Podpowiedzi przy błędach nawigacji</translation>
 <translation id="3732088672634061408">Nie udało się pobrać zainteresowań.</translation>
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
-<translation id="3774280986422214650">Jeśli włączysz tę funkcję, weźmiesz udział w eksperymencie polegającym na przekazywaniu stron HTTPS przez serwery Google.</translation>
 <translation id="3809549525127675114">Zakończono odtwarzanie „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="3828029223314399057">Przeszukaj zakładki</translation>
 <translation id="3871171699884605801">Na kontach dla dzieci nie można usunąć historii przeglądania</translation>
@@ -214,7 +209,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3992315671621218278">Zapisz link</translation>
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="4035611068038188272">Zakładki zajmują obecnie <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">W pobliżu są strony internetu rzeczy</translation>
 <translation id="4042870126885713738">Pokazuj podpowiedzi, gdy nie można znaleźć adresu internetowego lub nawiązać połączenia</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Informacje prawne</translation>
@@ -274,7 +268,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4816465935029283692">Typy danych</translation>
 <translation id="4827948050554950725">Dodaj kartę kredytową</translation>
 <translation id="4836364883164334657">Połączenie ze stroną nie jest prywatne. Hakerzy mogą próbować wykraść Twoje informacje z <ph name="DOMAIN_NAME" /> (np. zdjęcia, hasła, wiadomości lub dane kart kredytowych).</translation>
-<translation id="4842511359652954519">Dowiedz się więcej</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4875622588773761625">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło do tej strony?</translation>
 <translation id="4881695831933465202">Otwórz</translation>
@@ -287,7 +280,6 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="497421865427891073">Dalej</translation>
 <translation id="4996978546172906250">Udostępnij przez</translation>
 <translation id="5000922062037820727">Zablokowane (zalecane)</translation>
-<translation id="5014582685689328551">Zobacz je w Chrome</translation>
 <translation id="5016205925109358554">Szeryfowa</translation>
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="5040262127954254034">Prywatność</translation>
@@ -322,7 +314,6 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="5308933389783727448">Szukaj na zapisanych stronach</translation>
 <translation id="5313967007315987356">Dodaj stronę</translation>
 <translation id="5317780077021120954">Zapisz</translation>
-<translation id="5323972449344932352">Uruchom Chrome</translation>
 <translation id="5324858694974489420">Ustawienia rodzicielskie</translation>
 <translation id="5327248766486351172">Nazwa</translation>
 <translation id="5345040418939504969">Usunięto: <ph name="BOOKMARK_TITLE" /></translation>
@@ -401,7 +392,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
-<translation id="6208263165776660488">Karty Chrome zostały przeniesione</translation>
 <translation id="6231464350722415003">Zezwalaj na JavaScript na określonych stronach i blokuj go wszędzie indziej</translation>
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
 
@@ -490,9 +480,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> korzysta z danych o Twojej lokalizacji, by pokazywać wyniki wyszukiwania lokalnego</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pomoc<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Usuń zakładkę</translation>
-<translation id="7324738665594301612">W ramach eksperymentu testujemy przekazywanie stron HTTPS przez serwery Google.</translation>
 <translation id="7346217184097589238">Zapisane ustawienia witryny nie zostaną usunięte i mogą odzwierciedlać Twoje nawyki przeglądania.</translation>
-<translation id="7346909386216857016">OK</translation>
 <translation id="7347770551817603360">Treść offline</translation>
 <translation id="7363354739009474003">Wczytuję „<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">Przesyłam na ekran <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7588950540487816470">Internet rzeczy</translation>
 <translation id="7596558890252710462">System operacyjny</translation>
 <translation id="7599840151813361502">Nie spowoduje to wylogowania Cię z <ph name="BEGIN_LINK" />kont Google<ph name="END_LINK" /></translation>
-<translation id="7603403729818446828">Karty będą teraz widoczne  obok ostatnio używanych aplikacji na ekranie Przegląd na telefonie. Opcje wyświetlania możesz określić w <ph name="BEGIN_LINK" />Ustawieniach<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Wstrzymano</translation>
 <translation id="7612619742409846846">Jesteś zalogowany w Google jako</translation>
 <translation id="7619072057915878432">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu problemów z siecią.</translation>
@@ -564,6 +551,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="8173098127580644436">od początku</translation>
 <translation id="8200772114523450471">Wznów</translation>
 <translation id="8209050860603202033">Otwórz grafikę</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> chce się połączyć z:</translation>
 <translation id="8218346974737627104">Potwierdź, że chcesz się zalogować</translation>
 <translation id="8218934717680664417">Teraz możesz wyszukiwać jednym kliknięciem</translation>
 <translation id="8223946939421658889">Wyczyść dane</translation>

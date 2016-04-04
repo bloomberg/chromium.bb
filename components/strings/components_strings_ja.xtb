@@ -77,7 +77,6 @@
 <translation id="17513872634828108">開いているタブ</translation>
 <translation id="1753706481035618306">ページ番号</translation>
 <translation id="1763864636252898013">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
-<translation id="1775135663370355363">このデバイスから履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">同期パスフレーズを更新してください。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
@@ -253,7 +252,6 @@
 <translation id="3462200631372590220">詳細情報を表示しない</translation>
 <translation id="3479539252931486093">想定外の動作である場合は、<ph name="BEGIN_LINK" />問題を報告<ph name="END_LINK" />してください。</translation>
 <translation id="3498215018399854026">現在、保護者にたずねることができません。もう一度お試しください。</translation>
-<translation id="3516765099410062445">ログインしているデバイスから履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3528171143076753409">サーバーの証明書を信頼できません。</translation>
 <translation id="3539171420378717834">このデバイスにこのカード情報のコピーを保存する</translation>

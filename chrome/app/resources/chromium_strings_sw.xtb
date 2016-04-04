@@ -23,7 +23,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1699664235656412242">Tafadhali funga madirisha yote ya Chromium (pamoja na yaliyo kwenye modi ya Window 8) na ujaribu tena.</translation>
 <translation id="1708666629004767631">Kuna toleo jipya, na salama linalopatikana la Chromium.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> inaweza kudhuru hali yako ya kuvinjari, kwa hivyo Chromium imeizuia.</translation>
-<translation id="1745962126679160932">Chromium itahifadhi kwa usalama maelezo yako ili usihitaji kuyachapa tena, lakini bado utahitaji kudhibitisha msimbo wa usalama wa kadi yako kwa malipo ya siku za usoni.</translation>
 <translation id="1774152462503052664">Acha Chromium iendeshe katika mandharinyuma</translation>
 <translation id="1779356040007214683">Ili kufanya Chromium salama zaidi, tumezima baadhi ya viendelezi ambavyo havijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na ambavyo huendwa viliongezwa pasipo ridhaa yako.</translation>
 <translation id="1808667845054772817">Sakinisha Chromium Upya</translation>
@@ -33,6 +32,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1929939181775079593">Chromium haiamiliki. Zindua upya sasa?</translation>
 <translation id="1967743265616885482">Kijenzi kilicho na jina sawa kimejulikana kuwa na ukinzani na Chromium.</translation>
 <translation id="2077129598763517140">Tumia uongezaji kasi wa maunzi wakati unapatikana</translation>
+<translation id="2103655854491303969">Kifungua Programu cha Chromium kinatoweka.</translation>
 <translation id="2117181891440368863">Chromium ilithibitisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii. Seva ilitoa maelezo ya Cheti cha Uwazi, lakini hayakuwa sahihi.</translation>
 <translation id="2119636228670142020">Kuhusu Chromium OS</translation>
 <translation id="2158734852934720349">Leseni za programu huria kwenye Chromium OS</translation>
@@ -48,6 +48,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2535480412977113886">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>
 <translation id="2558641060352364164">Tovuti hii inatumia programu-jalizi ya Fremu ya Chromium ambayo haitaweza kutumika hivi karibuni. Tafadhali iondoe na upate toleo jipya la kivinjari cha kisasa.</translation>
 <translation id="2572494885440352020">Kisaidizi cha Chromium</translation>
+<translation id="2595977381794111014">Tumia njia ya mkato ya <ph name="APPS_ICON_IMAGE" /> katika sehemu ya alamisho za Chromium ili uendelee kufikia programu zako.</translation>
 <translation id="2602806952220118310">Chromium - Arifa</translation>
 <translation id="2636877269779209383">Chromium inahitaji idhini ya kufikia kamera ili iishiriki na tovuti hii.</translation>
 <translation id="2648074677641340862">Hitilafu ya mfumo wa uendeshaji imetokea wakati wa usakinishaji. Tafadhali pakua Chromium tena.</translation>
@@ -102,7 +103,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="4330585738697551178">Kijenzi hiki kinajulikana kwa kuwa na ukinzani na Chromium.</translation>
 <translation id="4423735387467980091">Dhibiti na ugeuze Chromium ikufae</translation>
 <translation id="4458285410772214805">Tafadhali toka na uingie tena ili mabadiliko haya yafanye kazi.</translation>
-<translation id="4488676065623537541">Maelezo yako ya utozwaji yamehifadhiwa katika Chromium.</translation>
 <translation id="4549794359424059447">Matoleo ya siku za usoni ya Chromium hayatatumia tena Windows XP au Windows Vista.</translation>
 <translation id="4567424176335768812">Umeingia katika akaunti kama <ph name="USER_EMAIL_ADDRESS" />. Sasa unaweza kupata alamisho, historia, na mipangilio yako mingine kwenye vifaa vyako vyote vilivyoingia katika akaunti.</translation>
 <translation id="457845228957001925">Maelezo muhimu kuhusu data yako ya Chromium</translation>

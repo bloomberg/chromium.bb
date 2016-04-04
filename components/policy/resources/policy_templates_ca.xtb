@@ -793,7 +793,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="402759845255257575">No permetis que cap lloc web executi JavaScript</translation>
 <translation id="4027608872760987929">Activa el proveïdor de cerca predeterminat</translation>
 <translation id="4039085364173654945">Controla si el contingut secundari de tercers en una pàgina pot fer aparèixer un quadre de diàleg d'autenticació bàsica HTTP. Normalment es desactiva com a defensa de pesca (suplantació d'identitat). Si no es defineix aquesta política, aquest paràmetre es desactivarà i el contingut secundari de tercers no podrà fer aparèixer un quadre de diàleg d'autenticació bàsica HTTP.</translation>
-<translation id="4052765007567912447">Controla si l'usuari pot mostrar les contrasenyes en text no xifrat en el gestor de contrasenyes. Si desactiveu aquest paràmetre, el gestor de contrasenyes no permetrà mostrar les contrasenyes emmagatzemades en text no xifrat a la finestra del gestor de contrasenyes. Si activeu aquesta política o si no la definiu, els usuaris podran veure les seves contrasenyes en text no xifrat al gestor de contrasenyes.</translation>
 <translation id="4056910949759281379">Desactiva el protocol SPDY</translation>
 <translation id="4088589230932595924">S'ha forçat el mode d'incògnit</translation>
 <translation id="4088983553732356374">Us permet establir si els llocs web estan autoritzats per establir les dades locals. L'ajust de les dades locals es pot autoritzar o denegar per a tots els llocs web.
@@ -1147,7 +1146,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
       Si s'especifica, afegirà un paràmetre de consulta anomenat "restrict" a l'URL utilitzat per obtenir el valor seed de les variacions. El valor del paràmetre serà el valor especificat en aquesta política.
 
       Si no s'especifica, no modificarà l'URL del valor seed de les variacions.</translation>
-<translation id="5564962323737505851">Configura el gestor de contrasenyes. Si el gestor de contrasenyes està activat, podeu activar o desactivar la possibilitat que l'usuari mostri les contrasenyes emmagatzemades com a text no xifrat.</translation>
 <translation id="556941986578702361">Controla l'ocultació automàtica del prestatge de <ph name="PRODUCT_OS_NAME" />.
 
 Si aquesta política es defineix com a "AlwaysAutoHideShelf", el prestatge s'amagarà sempre automàticament.
@@ -1254,7 +1252,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5893553533827140852">Si s'activa aquesta opció de configuració, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari a través d'una connexió d'amfitrió remot.
 
           Si es desactiva o no es configura aquesta opció, les sol·licituds d'autenticació Gnubby s'enviaran per un servidor intermediari.</translation>
-<translation id="5912364507361265851">Permet que els usuaris mostrin les contrasenyes al Gestor de contrasenyes</translation>
 <translation id="5921713479449475707">Permet les baixades d'actualització automàtica mitjançant HTTP</translation>
 <translation id="5921888683953999946">Establiu l'estat predeterminat de la funció d'accessibilitat del cursor gran a la pantalla d'inici de sessió.
 
@@ -1635,9 +1632,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si la política RestoreOnStartup s'estableix per restaurar els URL de les sessions anteriors, aquesta política no es respectarà i les galetes s'emmagatzemaran permanentment per a aquests llocs.</translation>
 <translation id="7207095846245296855">Força l'aplicació de Google SafeSearch</translation>
-<translation id="7213425178181578730">Si aquesta política s'estableix en false, <ph name="PRODUCT_OS_NAME" /> desactivarà el Bluetooth i l'usuari no el podrà tornar a activar.
+<translation id="7213425178181578730">Si aquesta política s'estableix en "false", <ph name="PRODUCT_OS_NAME" /> desactivarà el Bluetooth i l'usuari no el podrà tornar a activar.
 
-      Si aquesta política s'estableix en true o es deixa sense establir, l'usuari podrà activar o desactivar el Bluetooth com vulgui.
+      Si aquesta política s'estableix en "true" o es deixa sense establir, l'usuari podrà activar o desactivar el Bluetooth com vulgui.
 
       Si aquesta política s'estableix, l'usuari no la podrà canviar ni substituir.</translation>
 <translation id="7216442368414164495">Permet que els usuaris activin els informes ampliats de la Navegació segura</translation>
@@ -1817,6 +1814,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7882585827992171421">Aquesta política només està activa en mode de venda.
 
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a protector de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
+<translation id="7882890448959833986">Suprimeix l'advertiment de sistema operatiu no compatible</translation>
 <translation id="7912255076272890813">Configuració dels tipus d'aplicacions i d'extensions permeses</translation>
 <translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la càrrega útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
 <translation id="7933141401888114454">Activa la creació d'usuaris supervisats.</translation>
@@ -1874,6 +1872,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si la política s'estableix com a falsa, no s'informarà de la llista de la interfície.</translation>
 <translation id="8146727383888924340">Permet que els usuaris bescanviïn ofertes a través del registre de Chrome OS.</translation>
+<translation id="8148785525797916822">Suprimeix l'advertiment que es mostra quan <ph name="PRODUCT_NAME" /> s'executa en un ordinador o un sistema operatiu que ja no s'admet.</translation>
 <translation id="8148901634826284024">Activeu la funció d'accessibilitat del mode de contrast elevat.
 
           Si el valor d'aquesta política s'estableix a vertader, el mode de contrast elevat sempre estarà activat.

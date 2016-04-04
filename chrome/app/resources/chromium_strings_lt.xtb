@@ -23,7 +23,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1699664235656412242">Uždarykite visus „Chromium“ langus (įskaitant atidarytus veikiant „Windows 8“ režimui) ir bandykite dar kartą.</translation>
 <translation id="1708666629004767631">Pasiekiama nauja, saugesnė „Chromium“ versija.</translation>
 <translation id="1725059042853530269">„<ph name="FILE_NAME" />“ gali pakenkti jūsų naršymo funkcijoms, todėl „Chromium“ jį užblokavo.</translation>
-<translation id="1745962126679160932">„Chromium“ patikimai saugos jūsų informaciją, kad nebereikėtų jos vėl įvesti, bet ateityje atlikdami mokėjimus vis tiek turėsite patvirtinti kortelės saugos kodą.</translation>
 <translation id="1774152462503052664">Paleisti „Chromium“ fone</translation>
 <translation id="1779356040007214683">Kad „Chromium“ padarytume saugesnę, išjungėme kai kuriuos plėtinius, kurių nėra „<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />“ sąraše ir kurie galėjo būti pridėti be jūsų žinios.</translation>
 <translation id="1808667845054772817">Iš naujo įdiegti „Chromium“</translation>
@@ -33,6 +32,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1929939181775079593">„Chromium“ neatsako. Paleisti iš naujo dabar?</translation>
 <translation id="1967743265616885482">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Chromium“.</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
+<translation id="2103655854491303969">Nutraukiamas „Chromium“ programų paleidimo priemonės teikimas.</translation>
 <translation id="2117181891440368863">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė sertifikato skaidrumo informaciją, bet ji negalioja.</translation>
 <translation id="2119636228670142020">Apie &amp;„Chromium“ OS</translation>
 <translation id="2158734852934720349">„Chromium“ OS atvirojo šaltinio licencijos</translation>
@@ -48,6 +48,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="2535480412977113886">„Chromium“ OS negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="2558641060352364164">Šioje svetainėje naudojamas „Chromium“ rėmelio papildinys, kuris greitai bus nepalaikomas. Pašalinkite jį ir atsisiųskite modernią naršyklę.</translation>
 <translation id="2572494885440352020">„Chromium“ pagalbos priemonė</translation>
+<translation id="2595977381794111014">„Chromium“ žymių juostoje naudokite spartųjį klavišą <ph name="APPS_ICON_IMAGE" />, kad ir toliau pasiektumėte savo programas.</translation>
 <translation id="2602806952220118310">„Chromium“ – pranešimai</translation>
 <translation id="2636877269779209383">„Chromium“ reikia pasiekti fotoaparatą, kad galėtų bendrinti jį su šia svetaine.</translation>
 <translation id="2648074677641340862">Diegiant įvyko operacinės sistemos klaida. Atsisiųskite „Chromium“ dar kartą.</translation>
@@ -102,7 +103,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4330585738697551178">Šis modulis žinomas kaip prieštaraujantis „Chromium“.</translation>
 <translation id="4423735387467980091">Tinkinkite ir valdykite „Chromium“</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
-<translation id="4488676065623537541">Išsami atsiskaitymo informacija išsaugota „Chromium“.</translation>
 <translation id="4549794359424059447">Būsimų versijų „Chromium“ nebebus palaikoma naudojant „Windows XP“ ar „Windows Vista“.</translation>
 <translation id="4567424176335768812">Esate prisijungę kaip <ph name="USER_EMAIL_ADDRESS" />. Dabar galite pasiekti savo žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="457845228957001925">Svarbi informacija apie jūsų „Chromium“ duomenis</translation>

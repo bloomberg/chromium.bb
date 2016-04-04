@@ -12,7 +12,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1073391069195728457">„Chrome“ – pranešimai</translation>
 <translation id="1104959162601287462">Apie „&amp;Chrome“ OS</translation>
 <translation id="110877069173485804">Tai jūsų „Chrome“</translation>
-<translation id="1225016890511909183">„Chrome“ patikimai saugos jūsų informaciją, kad nebereikėtų jos vėl įvesti, bet ateityje atlikdami mokėjimus vis tiek turėsite patvirtinti kortelės saugos kodą.</translation>
 <translation id="123620459398936149">„Chrome“ OS negali sinchronizuoti duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="127345590676626841">„Chrome“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija. Baigus atsisiųsti, „Chrome“ bus paleista iš naujo ir galėsite pradėti ja naudotis.</translation>
 <translation id="1302523850133262269">Palaukite, kol „Chrome“ įdiegs naujausius sistemos naujinius.</translation>
@@ -37,6 +36,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Gauti su „Chrome“ OS naudojimu susijusios pagalbos</translation>
 <translation id="1818142563254268765">„Chrome“ nepavyko atsinaujinti į naujausią versiją, todėl negalite naudoti puikių naujų funkcijų ir saugos pataisymų. Reikia atnaujinti „Chrome“.</translation>
+<translation id="1864458292167284385">Nutraukiamas „Chrome“ programų paleidimo priemonės teikimas.</translation>
 <translation id="1877026089748256423">„Chrome“ versija yra pasenusi</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="2084710999043359739">Pridėti į „Chrome“</translation>
@@ -92,6 +92,7 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="3870154837782082782">„Google Inc.“</translation>
 <translation id="3881912906674381083">„Chrome“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė sertifikato skaidrumo informaciją, bet „Chrome“ neatpažino jokių sertifikato skaidrumo žurnalų.</translation>
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
+<translation id="396182988103551265">„Chrome“ žymių juostoje naudokite spartųjį klavišą <ph name="APPS_ICON_IMAGE" />, kad ir toliau pasiektumėte savo programas.</translation>
 <translation id="4042449298237264661">Šis kompiuteris nebegaus „Google Chrome“ naujinių, nes nebepalaikoma „Windows XP“ ir „Windows Vista“.</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
 <translation id="4053720452172726777">Tinkinkite ir valdykite „Google Chrome“</translation>
@@ -107,7 +108,6 @@ Prisijungus bet kuriuo būdu, „Chrome“ informacija, pvz., žymės, istorija 
 <translation id="4407807842708586359">„Google Chrome OS“</translation>
 <translation id="4458285410772214805">Atsijunkite ir prisijunkite iš naujo, kad šis pakeitimas būtų pritaikytas.</translation>
 <translation id="4480040274068703980">„Chrome“ OS negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
-<translation id="4513711165509885787">Išsami atsiskaitymo informacija išsaugota „Chrome“.</translation>
 <translation id="4561051373932531560">Naudodami „Google Chrome“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="4567424176335768812">Esate prisijungę kaip <ph name="USER_EMAIL_ADDRESS" />. Dabar galite pasiekti savo žymes, istoriją ir kitus nustatymus visuose įrenginiuose, kuriuose esate prisijungę.</translation>
 <translation id="4631713731678262610">Paslėpti „Chrome“ meniu elementą</translation>

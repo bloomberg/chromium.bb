@@ -876,11 +876,6 @@
 <translation id="4039085364173654945">Juhib, kas lehel olev kolmanda osapoole alamsisu võib HTTP Basic Authi hüpikdialoogina avaneda.
 
           Tavaliselt on see andmepüügi eest kaitsmiseks keelatud. Kui see reegel ei ole määratud, siis see keelatakse ja kolmanda osapoole alamsisu ei saa HTTP Basic Authi hüpikdialoogina avaneda.</translation>
-<translation id="4052765007567912447">Juhib, kas kasutaja võib paroolihalduses paroole tavatekstina vaadata.
-
-          Seade keelamisel ei luba paroolihaldur salvestatud paroole paroolihalduri aknas tavatekstina kuvada.
-
-          Kui lubate reegli või jätate selle määramata, siis saavad kasutajad paroolihalduris paroole tavatekstina vaadata.</translation>
 <translation id="4056910949759281379">Keela SPDY-protokoll</translation>
 <translation id="4088589230932595924">Inkognito režiim on jõustatud</translation>
 <translation id="4088983553732356374">Võimaldab teil seadistada, kas veebisaitidel on lubatud määrata kohalikke andmeid. Kohalike andmete määramise saab lubada või keelata kõigi veebisaitide jaoks.
@@ -1281,7 +1276,6 @@
       Kui see on määratud, lisatakse päringu parameeter „restrict” URL-ile, mida kasutatakse variatsioonide lähteväärtuse toomiseks. Parameetri väärtus on selles reeglis määratud väärtus.
 
       Kui seda ei määrata, siis variatsioonide lähteväärtuse URL-i ei muudeta.</translation>
-<translation id="5564962323737505851">Seadistab paroolihalduri. Kui paroolihaldur on lubatud, siis võite kasutajatel lubada või keelata talletatud paroolide näitamise tavatekstina.</translation>
 <translation id="556941986578702361">Seadistage hoidla <ph name="PRODUCT_OS_NAME" /> automaatne peitmine.
 
       Kui reegel on seatud väärtusele „AlwaysAutoHideShelf”, peidetakse hoidla alati automaatselt.
@@ -1392,7 +1386,6 @@
 <translation id="5893553533827140852">Kui see seade on lubatud, siis edastatakse gnubby autentimistaotlused puhverserverisse kaughosti ühenduse abil.
 
           Kui see seade on keelatud või seadistamata, siis ei edastata gnubby autentimistaotlusi puhverserveri abil.</translation>
-<translation id="5912364507361265851">Luba kasutajatel paroolihalduris paroolide näitamine</translation>
 <translation id="5921713479449475707">Automaatsete allalaadimiste lubamine HTTP kaudu</translation>
 <translation id="5921888683953999946">Sisselogimisekraanil suure kursori hõlbustusfunktsiooni vaikeoleku määramine.
 
@@ -2025,6 +2018,7 @@
 <translation id="7882585827992171421">Reegel on aktiivne ainult jaerežiimis.
 
       Määrab laienduse ID, mida kasutatakse sisselogimisekraani ekraanisäästjana. Laiendus peab kuuluma AppPacki, mis on seadistatud domeenile DeviceAppPack-reegliga.</translation>
+<translation id="7882890448959833986">Toetuseta OS-is hoiatuse blokeerimine</translation>
 <translation id="7912255076272890813">Seadista lubatud rakenduste/laienduste tüübid</translation>
 <translation id="793134539373873765">Määrab, kas OS-i värskendamise lastide jaoks kasutatakse p2p-võrgustikku. Kui väärtuseks on seatud Tõene, siis seade jagab ja proovib tarbida värskendamise laste LAN-is, vähendades potentsiaalselt Interneti-ribalaiuse kasutamist ja ummistumist. Kui värskendamise last pole LAN-is saadaval, naaseb seade allalaadimise juurde värskendusserverist. Kui väärtuseks on seatud Vale või see pole määratud, siis p2p-võrgustikku ei kasutata.</translation>
 <translation id="7933141401888114454">Järelevalvega kasutajate loomise lubamine</translation>
@@ -2089,6 +2083,7 @@
 
       Kui reegel määratakse olekule Väär, siis liideseloendit ei edastata.</translation>
 <translation id="8146727383888924340">Lubage kasutajatel pakkumisi lunastada Chrome OS-i registreerimise kaudu</translation>
+<translation id="8148785525797916822">Blokeerib hoiatuse, mis kuvatakse, kui teenust <ph name="PRODUCT_NAME" /> käitatakse arvutis või operatsioonisüsteemis, mida enam ei toetata.</translation>
 <translation id="8148901634826284024">Suure kontrastsusega režiimi hõlbustusfunktsiooni lubamine.
 
           Kui reegel on seatud väärtusele Tõene, on suure kontrastsusega režiim alati lubatud.

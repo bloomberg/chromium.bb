@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Open tabs</translation>
 <translation id="1753706481035618306">Page number</translation>
 <translation id="1763864636252898013">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
-<translation id="1775135663370355363">Showing history from this device. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Please update your sync passphrase.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Hide advanced</translation>
 <translation id="3479539252931486093">Was this unexpected? <ph name="BEGIN_LINK" />Let us know<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">We could not reach your parent at the moment. Please try again.</translation>
-<translation id="3516765099410062445">Showing history from your signed-in devices. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
 <translation id="3539171420378717834">Keep a copy of this card on this device</translation>

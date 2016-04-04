@@ -24,11 +24,9 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="1546934824884762070">Si è verificato un errore imprevisto. Segnala il problema agli sviluppatori.</translation>
 <translation id="1619813076098775562">Connessione al dispositivo di trasmissione interrotta.</translation>
 <translation id="1643640058022401035">Se esci da questa pagina, la sessione Chromoting verrà terminata.</translation>
-<translation id="1646994964686260497">Non ci sono dispositivi a cui connettersi.</translation>
 <translation id="1654128982815600832">Attivazione connessioni remote per questo computer in corso…</translation>
 <translation id="170207782578677537">Impossibile registrare il computer.</translation>
 <translation id="1704090719919187045">Preferenze host Chromoting</translation>
-<translation id="1738759452976856405">Interrompi registrazione</translation>
 <translation id="174018511426417793">Non sono presenti computer registrati. Per attivare le connessioni remote su un computer, installa Chrome Remote Desktop sul computer e fai clic su "<ph name="BUTTON_NAME" />".</translation>
 <translation id="1742469581923031760">Connessione in corso...</translation>
 <translation id="1770394049404108959">Non riesco ad aprire l'applicazione.</translation>
@@ -124,7 +122,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Accedi</translation>
 <translation id="3989511127559254552">Per continuare devi concedere autorizzazioni di accesso esteso per il tuo computer. È necessario eseguire questa operazione solo una volta.</translation>
 <translation id="4006787130661126000">Per accedere a questo computer utilizzando Chrome Remote Desktop devi attivare le connessioni remote.</translation>
-<translation id="401121182145179743">Devi eseguire prima la configurazione del computer per poter effettuare l'accesso remoto.</translation>
 <translation id="4028465833180158312">• Aggiornamenti all'interfaccia utente di material design.
 • Crediti per le licenze di terze parti.
 • Informazioni visualizzate per computer remoti offline.</translation>
@@ -237,7 +234,6 @@ Remote Desktop</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Vuoi disattivare le connessioni remote a <ph name="HOSTNAME" />? Se cambi idea, dovrai utilizzare il computer in questione per riattivare le connessioni.</translation>
 <translation id="6998989275928107238">A</translation>
-<translation id="7017806586333792422">Avvia registrazione</translation>
 <translation id="7019153418965365059">Errore host non riconosciuto: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistenza remota</translation>
 <translation id="7038683108611689168">Aiutaci a migliorare Chromoting consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>

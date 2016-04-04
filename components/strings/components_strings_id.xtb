@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Buka tab</translation>
 <translation id="1753706481035618306">Nomor laman</translation>
 <translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
-<translation id="1775135663370355363">Menampilkan riwayat dari perangkat ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Perbarui frasa sandi sinkronisasi Anda.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak valid</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Sembunyikan lanjutan</translation>
 <translation id="3479539252931486093">Apakah hal ini tidak diharapkan? <ph name="BEGIN_LINK" />Beri tahu kami<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Orang tua Anda saat ini tidak dapat dihubungi. Coba lagi.</translation>
-<translation id="3516765099410062445">Menampilkan riwayat dari perangkat Anda yang sudah masuk. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528171143076753409">Sertifikat server tidak dipercaya.</translation>
 <translation id="3539171420378717834">Menyimpan salinan kartu ini di perangkat ini</translation>

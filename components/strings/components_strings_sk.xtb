@@ -74,7 +74,6 @@
 <translation id="17513872634828108">Otvorené karty</translation>
 <translation id="1753706481035618306">Číslo stránky</translation>
 <translation id="1763864636252898013">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho zariadenia nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
-<translation id="1775135663370355363">Zobrazuje sa história tohto zariadenia. <ph name="BEGIN_LINK" />Viac informácií<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Aktualizujte prístupovú frázu na synchronizáciu.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Neplatná žiadosť alebo parametre žiadosti</translation>
@@ -241,7 +240,6 @@
 <translation id="3462200631372590220">Skryť rozšírené podrobnosti</translation>
 <translation id="3479539252931486093">Neočakávali ste to? <ph name="BEGIN_LINK" />Dajte nám vedieť<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">V tejto chvíli sa nám nepodarilo spojiť s vaším rodičom. Skúste to znova neskôr.</translation>
-<translation id="3516765099410062445">Zobrazuje sa história zo zariadení, na ktorých ste prihlásený/-á. <ph name="BEGIN_LINK" />Viac informácií<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Priečinok</translation>
 <translation id="3528171143076753409">Certifikát servera nie je dôveryhodný.</translation>
 <translation id="3539171420378717834">Ponechať kópiu tejto karty na tomto zariadení</translation>

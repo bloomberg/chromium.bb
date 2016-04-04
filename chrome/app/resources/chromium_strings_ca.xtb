@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Tanqueu totes les finestres de Chromium (incloses les del mode Windows 8) i torneu-ho a provar.</translation>
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> podria perjudicar la vostra experiència de navegació i, per això, Chromium l'ha bloquejat.</translation>
-<translation id="1745962126679160932">Chromium emmagatzemarà de manera segura la vostra informació perquè no hàgiu de tornar-la a escriure, però continuareu havent de verificar el codi de seguretat de la targeta per a pagaments futurs.</translation>
 <translation id="1774152462503052664">Permet que Chromium s'executi en segon pla</translation>
 <translation id="1779356040007214683">Perquè Chromium sigui més segur, hem desactivat algunes de les extensions que no apareixen a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="1808667845054772817">Torna a instal·lar Chromium</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium no respon. Voleu tornar-lo a iniciar ara?</translation>
 <translation id="1967743265616885482">Se sap que un mòdul amb el mateix nom entra en conflicte amb Chromium.</translation>
 <translation id="2077129598763517140">Utilitza l'acceleració per maquinari quan estigui disponible</translation>
+<translation id="2103655854491303969">El menú d'aplicacions de Chromium deixarà de funcionar.</translation>
 <translation id="2117181891440368863">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web. El servidor ha proporcionat informació sobre Transparència de certificats, però no era vàlida.</translation>
 <translation id="2119636228670142020">Quant a &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Llicències de programari lliure de Chromium OS</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">Chromium OS no ha pogut sincronitzar les vostres dades perquè la informació d'inici de sessió del vostre compte no està actualitzada.</translation>
 <translation id="2558641060352364164">Aquest lloc fa servir el connector Chromium Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i instal·leu un navegador més modern.</translation>
 <translation id="2572494885440352020">Aplicació auxiliar de Chromium</translation>
+<translation id="2595977381794111014">Feu servir la drecera <ph name="APPS_ICON_IMAGE" /> de la barra d'adreces d'interès de Chromium per continuar accedint a les vostres aplicacions.</translation>
 <translation id="2602806952220118310">Chromium: notificacions</translation>
 <translation id="2636877269779209383">Chromium necessita accedir a la càmera per compartir-la amb aquest lloc.</translation>
 <translation id="2648074677641340862">S'ha produït un error en el sistema operatiu durant la instal·lació. Torneu a baixar Chromium.</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">Se sap que aquest mòdul entra en conflicte amb Chromium.</translation>
 <translation id="4423735387467980091">Personalitza i controla Chromium</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
-<translation id="4488676065623537541">Els detalls de facturació s'han desat a Chromium.</translation>
 <translation id="4549794359424059447">Les versions futures de Chromium ja no admetran Windows XP ni Windows Vista.</translation>
 <translation id="4567424176335768812">Heu iniciat la sessió com a <ph name="USER_EMAIL_ADDRESS" />. Ja podeu accedir a les vostres adreces d'interès, al vostre historial i a altres paràmetres en tots els dispositius en què hàgiu iniciat la sessió.</translation>
 <translation id="457845228957001925">Informació important sobre les dades de Chromium</translation>

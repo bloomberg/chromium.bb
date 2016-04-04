@@ -31,11 +31,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="138361230106469022">Hola, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1389974829397082527">No hi ha cap adreça d'interès aquí</translation>
-<translation id="1390350022570422499">Chrome ara pot cercar i mostrar-vos pàgines web que teniu a prop mitjançant el Bluetooth.
-
-Quan tingueu el dispositiu desbloquejat, Chrome cercarà pàgines que tingueu a prop. Aquestes pàgines es processaran mitjançant un servei de Google per millorar la qualitat dels resultats.
-
-Podeu controlar el Web físic a la configuració de privadesa de Chrome.</translation>
 <translation id="1404122904123200417">Inserit a <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">No segueixis</translation>
 <translation id="1409879593029778104">No s'ha baixat el fitxer <ph name="FILE_NAME" /> perquè ja existeix.</translation>
@@ -78,6 +73,7 @@ Podeu controlar el Web físic a la configuració de privadesa de Chrome.</transl
 <translation id="1974060860693918893">Configuració avançada</translation>
 <translation id="1984937141057606926">Permeses, excepte les de tercers</translation>
 <translation id="1994173015038366702">URL del lloc</translation>
+<translation id="2001120796168634316">Desa pàg. enllaç. per a més tard</translation>
 <translation id="200669432486043882">Substitueix el fitxer</translation>
 <translation id="2038563949887743358">Activa la sol·licitud del lloc per a ordinadors</translation>
 <translation id="2073235970478114994">Carrega les imatges</translation>
@@ -96,7 +92,6 @@ Podeu controlar el Web físic a la configuració de privadesa de Chrome.</transl
 <translation id="2268044343513325586">Restringeix</translation>
 <translation id="2315043854645842844">El sistema operatiu no permet seleccionar el certificat del client.</translation>
 <translation id="2316129865977710310">No, gràcies</translation>
-<translation id="2319528413610359757">Per a lectors de: <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Arrossegueu el control lliscant fins que ho pugueu llegir còmodament. El text ha de ser almenys així de gran després de tocar dos cops un paràgraf.</translation>
 <translation id="2329597144923131178">Inicieu la sessió per tenir adreces d'interès, historial, contrasenyes i altres opcions de configuració en tots els dispositius.</translation>
 <translation id="2343328333327081434">Instal·lant…</translation>
@@ -136,6 +131,7 @@ Podeu controlar el Web físic a la configuració de privadesa de Chrome.</transl
 <translation id="2762000892062317888">ara mateix</translation>
 <translation id="2770465223704140727">Suprimeix de la llista</translation>
 <translation id="278029852808208386">No s'ha trobat cap dispositiu Bluetooth. <ph name="BEGIN_LINK" />Torneu a fer la cerca<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">No veieu el vostre dispositiu? <ph name="BEGIN_LINK" />Obteniu ajuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toqueu el botó Enrere per sortir de la pantalla completa.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Lloc</translation>
@@ -199,7 +195,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3672452749423051839">Suggeriments d'errors de navegació</translation>
 <translation id="3732088672634061408">No s'han pogut recuperar els interessos.</translation>
 <translation id="3738139272394829648">Toca per cercar</translation>
-<translation id="3774280986422214650">Si activeu aquesta funció, participareu en un experiment que utilitza servidors de Google com a servidors intermediaris per a pàgines HTTPS.</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" ha finalitzat</translation>
 <translation id="3828029223314399057">Cerca adreces d'interès</translation>
 <translation id="3871171699884605801">L'historial de navegació no es pot esborrar amb un compte infantil</translation>
@@ -214,7 +209,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3992315671621218278">Desa l'enllaç</translation>
 <translation id="4002066346123236978">Títol</translation>
 <translation id="4035611068038188272">En aquests moments, les adreces d'interès ocupen <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">Hi ha pàgines del Web físic a prop</translation>
 <translation id="4042870126885713738">Mostra suggeriments quan no es resol una adreça web o quan no es pot establir una connexió</translation>
 <translation id="4056223980640387499">Sèpia</translation>
 <translation id="4062305924942672200">Informació legal</translation>
@@ -274,7 +268,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4816465935029283692">Tipus de dades</translation>
 <translation id="4827948050554950725">Afegeix una targeta de crèdit</translation>
 <translation id="4836364883164334657">La vostra connexió a aquest lloc no és privada. És possible que alguns atacants provin de robar-vos informació (per exemple, fotos, contrasenyes, missatges i dades de targetes de crèdit) del domini <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Més informació</translation>
 <translation id="4850886885716139402">Visualització</translation>
 <translation id="4875622588773761625">Voleu que <ph name="PASSWORD_MANAGER_BRAND" /> actualitzi la vostra contrasenya per a aquest lloc?</translation>
 <translation id="4881695831933465202">Obre</translation>
@@ -287,7 +280,6 @@ Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la se
 <translation id="497421865427891073">Vés endavant</translation>
 <translation id="4996978546172906250">Compartir mitjançant</translation>
 <translation id="5000922062037820727">Bloquejat (recomanat)</translation>
-<translation id="5014582685689328551">Utilitzeu Chrome per navegar-hi</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5040262127954254034">Privadesa</translation>
@@ -322,7 +314,6 @@ Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la se
 <translation id="5308933389783727448">Cerca a les pàgines desades</translation>
 <translation id="5313967007315987356">Afegeix un lloc</translation>
 <translation id="5317780077021120954">Desa</translation>
-<translation id="5323972449344932352">Inicia Chrome</translation>
 <translation id="5324858694974489420">Configuració parental</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> s'ha suprimit</translation>
@@ -401,7 +392,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="6159335304067198720"><ph name="PERCENT" /> de reducció de dades</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6192792657125177640">Excepcions</translation>
-<translation id="6208263165776660488">Les pestanyes de Chrome s'han mogut</translation>
 <translation id="6231464350722415003">Permet JavaScript als llocs webs que especifiqueu alhora que es bloqueja per a la resta d'Internet</translation>
 <translation id="6232535412751077445">Si activeu l'opció No segueixis, s'inclourà una sol·licitud al trànsit de navegació. Que s'apliqui o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta.
 
@@ -490,9 +480,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilitza la vostra ubicació per mostrar resultats de cerca locals</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Suprimeix l'adreça d'interès</translation>
-<translation id="7324738665594301612">Estem fent proves d'ús de servidors de Google com a servidors intermediaris per a pàgines HTTPS com a part d'un experiment.</translation>
 <translation id="7346217184097589238">La configuració desada del lloc no s'esborrarà i pot reflectir els vostres hàbits de navegació.</translation>
-<translation id="7346909386216857016">D'acord</translation>
 <translation id="7347770551817603360">Contingut sense connexió</translation>
 <translation id="7363354739009474003">S'està carregant "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">S'està emetent a <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7588950540487816470">El Web físic</translation>
 <translation id="7596558890252710462">Sistema operatiu</translation>
 <translation id="7599840151813361502">No es tancarà la sessió dels <ph name="BEGIN_LINK" />comptes de Google<ph name="END_LINK" />.</translation>
-<translation id="7603403729818446828">A la pantalla Visió general del telèfon podeu veure les pestanyes juntament amb altres aplicacions recents. Podeu controlar aquesta funció a la <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">En pausa</translation>
 <translation id="7612619742409846846">Heu iniciat la sessió a Google com a</translation>
 <translation id="7619072057915878432">No s'ha pogut baixar <ph name="FILE_NAME" /> a causa d'errors a la xarxa.</translation>
@@ -564,6 +551,7 @@ Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis 
 <translation id="8173098127580644436">des de l'inici (totes)</translation>
 <translation id="8200772114523450471">Reempren</translation>
 <translation id="8209050860603202033">Obre la imatge</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> vol connectar amb:</translation>
 <translation id="8218346974737627104">Confirmació de l'inici de sessió</translation>
 <translation id="8218934717680664417">Ara podeu fer cerques amb un sol toc</translation>
 <translation id="8223946939421658889">Esborra les dades</translation>
@@ -622,7 +610,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8987061207681586800">Personalitzar Chrome</translation>
 <translation id="9019902583201351841">Gestionat pels pares</translation>
 <translation id="9020607083536754075">Tanca la pestanya actual i torna a l'aplicació anterior</translation>
-<translation id="9038649477754266430">Utilitzeu un servei de predicció per poder carregar les pàgines més ràpidament</translation>
+<translation id="9038649477754266430">Utilitza un servei de predicció per poder carregar les pàgines més ràpidament</translation>
 <translation id="9050666287014529139">Frase de contrasenya</translation>
 <translation id="9060538597317784206">Mostra l'aplicació <ph name="APP_NAME" /> a Play Store.  Puntuació: <ph name="APP_RATING" />.</translation>
 <translation id="9063523880881406963">Desactiva la sol·licitud del lloc per a ordinadors</translation>

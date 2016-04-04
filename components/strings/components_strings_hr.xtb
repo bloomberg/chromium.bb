@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Otvorene kartice</translation>
 <translation id="1753706481035618306">Broj stranice</translation>
 <translation id="1763864636252898013">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; operativni sustav vašeg uređaja smatra da njegov sigurnosni certifikat nije pouzdan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
-<translation id="1775135663370355363">Prikazuje se povijest s tog uređaja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Ažurirajte zaporku za sinkronizaciju.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Nevažeći zahtjev ili parametri zahtjeva</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Sakrij napredno</translation>
 <translation id="3479539252931486093">Niste to očekivali? <ph name="BEGIN_LINK" />Javite nam<ph name="END_LINK" />.</translation>
 <translation id="3498215018399854026">Nismo uspjeli stupiti u kontakt s tvojim roditeljem. Pokušaj ponovo.</translation>
-<translation id="3516765099410062445">Prikazuje se povijest s uređaja na kojima se prijavljujete. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3528171143076753409">Certifikat poslužitelja nije pouzdan.</translation>
 <translation id="3539171420378717834">Zadrži kopiju te kartice na uređaju</translation>

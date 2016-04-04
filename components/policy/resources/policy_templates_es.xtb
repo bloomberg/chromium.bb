@@ -890,11 +890,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 <translation id="4039085364173654945">Permite controlar si el contenido secundario de terceros de una página web se puede mostrar en un cuadro de diálogo emergente de autenticación básica HTTP.
 
           Esta opción suele estar inhabilitada para defender al usuario frente a los ataques de phishing. Si no se establece esta política, esta opción estará inhabilitada y el contenido secundario de terceros no podrá mostrarse como un cuadro de diálogo emergente de autenticación básica HTTP.</translation>
-<translation id="4052765007567912447">Permite controlar si las contraseñas se pueden mostrar sin cifrar a los usuarios en el administrador de contraseñas.
-
-          Si inhabilitas esta opción, no se podrán ver contraseñas almacenadas sin cifrar en la ventana del administrador de contraseñas.
-
-          Si habilitas esta opción o si no estableces esta política, los usuarios podrán ver sus contraseñas sin cifrar en el administrador de contraseñas.</translation>
 <translation id="4056910949759281379">Inhabilitar protocolo SPDY</translation>
 <translation id="4088589230932595924">Modo de incógnito forzado</translation>
 <translation id="4088983553732356374">Permite seleccionar si los sitios web tienen permiso para establecer datos locales. El establecimiento de datos locales se puede permitir o rechazar en todos los sitios web.
@@ -1297,7 +1292,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se especifica, se añadirá un parámetro de consulta restrict a la URL utilizada para la obtención de la base de las variaciones. El valor del parámetro será el valor especificado en esta política.
 
       Si no se especifica, no se modificará la URL de la base de las variaciones.</translation>
-<translation id="5564962323737505851">Permite configurar el Administrador de contraseñas. Si el Administrador de contraseñas está habilitado, tienes la posibilidad de habilitar o inhabilitar la opción de visualización de contraseñas almacenadas de los usuarios sin encriptar.</translation>
 <translation id="556941986578702361">Permite controlar la opción para ocultar automáticamente los archivos de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece en "AlwaysAutoHideShelf", los archivos se ocultarán automáticamente.
@@ -1409,7 +1403,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5893553533827140852">Si esta opción está habilitada, las solicitudes de autenticación gnubby se representarán a través de una conexión de host remota.
 
           Si esta opción está inhabilitada o no está configurada, no se representarán solicitudes de autenticación gnubby.</translation>
-<translation id="5912364507361265851">Permitir que los usuarios muestren contraseñas en el Administrador de contraseñas</translation>
 <translation id="5921713479449475707">Permitir descargas de actualizaciones automáticas a través de HTTP</translation>
 <translation id="5921888683953999946">Establece el estado predeterminado de la función de accesibilidad del cursor grande en la pantalla de inicio de sesión.
 
@@ -1844,9 +1837,9 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
           Si la política RestoreOnStartup se configura para restaurar las URL de sesiones anteriores, esta política no se respetará y las cookies se almacenarán de forma permanente para estos sitios web.</translation>
 <translation id="7207095846245296855">Forzar Google SafeSearch</translation>
-<translation id="7213425178181578730">Si se asigna el valor False a esta política, <ph name="PRODUCT_OS_NAME" /> inhabilitará la conexión Bluetooth y el usuario no podrá volver a habilitarla.
+<translation id="7213425178181578730">Si se asigna el valor False a esta política, <ph name="PRODUCT_OS_NAME" /> inhabilitará la conexión Bluetooth, y el usuario no podrá volver a habilitarla.
 
-      Si se asigna el valor true a esta política o si esta no se configura, el usuario podrá habilitar o inhabilitar la conexión Bluetooth cuando lo desee.
+      Si se asigna el valor True a esta política o si esta no se configura, el usuario podrá habilitar o inhabilitar la conexión Bluetooth cuando lo desee.
 
       Si se establece esta política, el usuario no podrá cambiar esta opción ni anularla.</translation>
 <translation id="7216442368414164495">Permitir a los usuarios habilitar los informes ampliados de la función de navegación segura</translation>
@@ -2037,6 +2030,7 @@ Si se asigna el valor false a la política, no se proporcionará información so
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo comercial.
 
       Permite determinar el ID de la extensión que se debe utilizar como salvapantallas en la pantalla de inicio de sesión. La extensión debe formar parte del paquete AppPack configurado para ese dominio a través de la política DeviceAppPack.</translation>
+<translation id="7882890448959833986">Suprimir la advertencia de SO no admitido</translation>
 <translation id="7912255076272890813">Configurar tipos de extensiones o aplicaciones permitidos</translation>
 <translation id="793134539373873765">Especifica si la conexión P2P se debe utilizar para cargas útiles de actualizaciones del sistema operativo. Si esta política se establece en True, los dispositivos compartirán e intentarán consumir cargas útiles de actualizaciones en la red LAN, reduciendo de forma potencial la congestión y el uso del ancho de banda. Si la carga útil de actualizaciones no está disponible en la red LAN, el dispositivo deberá realizar la descarga desde un servidor de actualizaciones. Si se establece en False o no se configura, no se utilizará la conexión P2P.</translation>
 <translation id="7933141401888114454">Habilitar la creación de usuarios supervisados</translation>
@@ -2098,6 +2092,7 @@ Si no se establece la política, el dispositivo tendrá un formato de reloj de 2
 
 Si la política está establecida en False, no se informará sobre la lista de interfaces.</translation>
 <translation id="8146727383888924340">Permitir a los usuarios canjear ofertas a través del servicio de registro de Chrome OS</translation>
+<translation id="8148785525797916822">Suprime la advertencia que aparece cuando <ph name="PRODUCT_NAME" /> se ejecuta en un ordenador o en un sistema operativo que ya no se admite.</translation>
 <translation id="8148901634826284024">Habilita la función de accesibilidad del modo de contraste alto.
 
           Si el valor de esta política se establece en True, siempre se habilitará el modo de contraste alto.

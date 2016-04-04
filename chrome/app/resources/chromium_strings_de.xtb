@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Schließen Sie alle Chromium-Fenster einschließlich der Fenster im Windows 8-Modus und versuchen Sie es erneut.</translation>
 <translation id="1708666629004767631">Es gibt eine neue, sicherere Version von Chromium.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> kann Ihre Browsererfahrung beeinträchtigen und wurde daher von Chromium blockiert.</translation>
-<translation id="1745962126679160932">Ihre Informationen werden von Chromium sicher gespeichert. Dadurch brauchen Sie sie nicht erneut einzugeben. Sie müssen aber bei zukünftigen Zahlungen immer noch den Sicherheitscode Ihrer Karte bestätigen.</translation>
 <translation id="1774152462503052664">Chromium im Hintergrund ausführen</translation>
 <translation id="1779356040007214683">Um Chromium sicherer zu machen, haben wir einige Erweiterungen deaktiviert, die nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt sind und möglicherweise ohne Ihr Wissen hinzugefügt wurden.</translation>
 <translation id="1808667845054772817">Chromium neu installieren</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium reagiert nicht. Jetzt neu starten?</translation>
 <translation id="1967743265616885482">Es ist bekannt, dass ein Modul mit dem gleichen Namen einen Konflikt mit Chromium verursacht.</translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
+<translation id="2103655854491303969">Der Chromium App Launcher wird eingestellt.</translation>
 <translation id="2117181891440368863">Chromium hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat. Zwar hat der Server Informationen zur Zertifikatstransparenz bereitgestellt, diese waren jedoch ungültig.</translation>
 <translation id="2119636228670142020">Über &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Open-Source-Lizenzen für Chromium OS</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">Chromium OS konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos veraltet sind.</translation>
 <translation id="2558641060352364164">Diese Website verwendet das Chromium Frame-Plug-in, das bald nicht mehr unterstützt wird. Bitte deinstallieren Sie das Plug-in und führen Sie ein Upgrade auf einen neueren Browser aus.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">Verwenden Sie für den weiteren Zugriff auf Ihre Apps die Verknüpfung <ph name="APPS_ICON_IMAGE" /> in der Chromium-Lesezeichenleiste.</translation>
 <translation id="2602806952220118310">Chromium – Benachrichtigungen</translation>
 <translation id="2636877269779209383">Chromium benötigt Zugriff auf die Kamera, um ihn mit dieser Website teilen zu können.</translation>
 <translation id="2648074677641340862">Während der Installation ist ein Fehler im Betriebssystem aufgetreten. Bitte laden Sie Chromium erneut herunter.</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">Es ist bekannt, dass dieses Modul einen Konflikt mit Chromium verursacht.</translation>
 <translation id="4423735387467980091">Chromium anpassen und einstellen</translation>
 <translation id="4458285410772214805">Melden Sie sich ab und wieder an, damit diese Änderung wirksam wird.</translation>
-<translation id="4488676065623537541">Ihre Zahlungsangaben wurden in Chromium gespeichert.</translation>
 <translation id="4549794359424059447">Künftige Versionen von Chromium unterstützen Windows XP und Windows Vista nicht mehr.</translation>
 <translation id="4567424176335768812">Sie sind als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind nun Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
 <translation id="457845228957001925">Wichtige Informationen zu Ihren Chromium-Daten</translation>

@@ -12,7 +12,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1073391069195728457">Chrome – Obvestila</translation>
 <translation id="1104959162601287462">O &amp;sistemu Chrome OS</translation>
 <translation id="110877069173485804">To je vaš Chrome</translation>
-<translation id="1225016890511909183">Chrome bo varno shranil vaše podatke, tako da vam jih ne bo treba več vnesti, vendar boste za plačila v prihodnosti še vedno morali preveriti varnostno kodo kartice.</translation>
 <translation id="123620459398936149">Chrome OS ne more sinhronizirati vaših podatkov. Posodobite geslo za Google Sync.</translation>
 <translation id="127345590676626841">Chrome se samodejno posodablja, zato boste vedno imeli najnovejšo različico. Ko bo ta prenos končan, se bo Chrome znova zagnal in lahko boste nadaljevali z delom.</translation>
 <translation id="1302523850133262269">Počakajte, da Chrome namesti najnovejše sistemske posodobitve.</translation>
@@ -37,6 +36,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pomoč pri uporabi sistema Chrome OS</translation>
 <translation id="1818142563254268765">Chrome se ni mogel posodobiti na najnovejšo različico, zato ste prikrajšani za izjemne nove funkcije in varnostne popravke. Chrome morate posodobiti.</translation>
+<translation id="1864458292167284385">Chromov zaganjalnik aplikacij se poslavlja.</translation>
 <translation id="1877026089748256423">Chrome je zastarel</translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
 <translation id="2084710999043359739">Dodaj v Chrome</translation>
@@ -92,6 +92,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal podatke o preglednosti potrdila, vendar Chrome ni prepoznal nobenega od dnevnikov o preglednost potrdila.</translation>
 <translation id="3889417619312448367">Odstrani Google Chrome</translation>
+<translation id="396182988103551265">Če želite še naprej dostopati do aplikacij, uporabite bližnjico <ph name="APPS_ICON_IMAGE" /> v zaznamkih v Chromu.</translation>
 <translation id="4042449298237264661">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker sistema Windows XP in Windows Vista nista več podprta.</translation>
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
 <translation id="4053720452172726777">Prilagajanje in nadziranje Google Chroma</translation>
@@ -106,7 +107,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
 <translation id="4480040274068703980">Chrome OS ni mogel sinhronizirati podatkov zaradi napake pri prijavi.</translation>
-<translation id="4513711165509885787">Vaše podrobnosti za obračun so shranjene v Chrome.</translation>
 <translation id="4561051373932531560">Google Chrome vam omogoča, da na spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
 <translation id="4567424176335768812">Prijavljeni ste kot <ph name="USER_EMAIL_ADDRESS" />. Zdaj imate dostop do zaznamkov, zgodovine in drugih nastavitev v vseh napravah, v katerih ste prijavljeni.</translation>
 <translation id="4631713731678262610">Skrij v meniju Chroma</translation>

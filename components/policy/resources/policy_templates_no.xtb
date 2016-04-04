@@ -15,12 +15,12 @@
       Hvis den settes til «true» (sann) eller ikke angis, rapporteres statistikken.</translation>
 <translation id="1046484220783400299">Slå på avviklede nettplattformfunksjoner for en begrenset periode</translation>
 <translation id="1047128214168693844">Ikke la noen nettsteder spore brukernes fysiske plassering</translation>
-<translation id="1057535219415338480">Aktiverer nettverksforslag i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
+<translation id="1057535219415338480">Slår på nettverksforutsigelse i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
 
       Dette kontrollerer både DNS-forhåndshenting og TCP- samt SSl-forhåndstilkobling og forhåndsgjengivelse av nettsteder. Navnet på retningslinjene viser til DNS-forhåndshenting av historiske grunner.
-      Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME" />.
+      Hvis du slår denne innstillingen på eller av, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />.
 
-      Hvis denne retningslinjen ikke angis, aktiveres dette, men brukeren kan endre på det.</translation>
+      Hvis denne regelen ikke angis, kommer den til å være på, men brukeren kan velge å slå den av.</translation>
 <translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
 <translation id="108735515923160176">Konfigurerer typen standardstartside i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre startsideinnstillingene. Du kan velge mellom å spesifisere en hvilken som helst nettadresse som startside og å bruke Ny fane-siden.
 
@@ -699,7 +699,7 @@
 <translation id="3417418267404583991">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, aktiverer <ph name="PRODUCT_OS_NAME" /> gjestepålogging. Gjestepålogginger er anonyme brukerøkter og krever ikke passord.
 
       Hvis denne retningslinjen er angitt som Usann, tillater ikke <ph name="PRODUCT_OS_NAME" /> at gjesteøkter startes.</translation>
-<translation id="3428247105888806363">Aktivering av nettverksforslag.</translation>
+<translation id="3428247105888806363">Slå på nettverksforutsigelse</translation>
 <translation id="3460784402832014830">Spesifiserer nettadressen som søkemotoren bruker for å levere en ny fane-side.
 
           Denne innstillingen er valgfri. Hvis den ikke angis, leveres ingen nye fane-side.
@@ -846,7 +846,6 @@
 <translation id="4039085364173654945">Kontrollerer om tredjeparts underinnhold på en side kan åpne en HTTP Basic Auth-dialogrute som forgrunnsvindu.
 
           Dette deaktiveres vanligvis for å beskytte seg mot nettfisking. Hvis denne retningslinjen ikke er angitt, er den deaktivert, og tredjeparts underinnhold kan ikke åpne en HTTP Basic Auth-dialogrute som forgrunnsvindu.</translation>
-<translation id="4052765007567912447">Kontrollerer om brukeren kan vise passord i klartekst i passordbehandlingen. Hvis du deaktiverer denne innstillingen, tillater ikke passordbehandlingen at lagrede passord vises i klartekst i vinduet til passordbehandlingen. Hvis du aktiverer eller ikke angir denne retningslinjen, kan brukerne se passordene i klartekst i passordbehandlingen.</translation>
 <translation id="4056910949759281379">Deaktiver SPDY-protokoll</translation>
 <translation id="4088589230932595924">Tvungen inkognitomodus</translation>
 <translation id="4088983553732356374">Gjør det mulig å velge om nettsteder kan angi lokale data. Dette kan enten tillates for alle nettsteder eller blokkeres for alle nettsteder.
@@ -1239,7 +1238,6 @@
       Hvis angitt, legges et parameter kalt «begrenset» til nettadressen som brukes til å hente startverdien for variasjonene. Verdien av parameteret er verdien angitt i denne innstillingen.
 
       Hvis ikke angitt, endres ikke nettadressen for startverdien.</translation>
-<translation id="5564962323737505851">Konfigurerer passordbehandling. Hvis passordbehandling er aktivert, kan du velge å aktivere eller deaktivere hvorvidt brukeren kan vise lagrede passord i klartekst.</translation>
 <translation id="556941986578702361">Kontroller automatisk skjuling av <ph name="PRODUCT_OS_NAME" />-hyllen.
 
       Hvis denne innstillingen angis til «AlwaysAutoHideShelf'», skjules alltid hyllen automatisk.
@@ -1350,7 +1348,6 @@
 <translation id="5893553533827140852">Hvis denne innstillingen er aktivert sendes gnubby-godkjenningsforespørsler via en proxy-tjener på en ekstern tjenertilkobling.
 
           Hvis denne innstillingen ikke er aktivert sendes ikke gnubby-godkjenningsforespørsler via en proxy-tjener.</translation>
-<translation id="5912364507361265851">Tillat brukere å vise passord i passordbehandling</translation>
 <translation id="5921713479449475707">Tillat automatisk oppdatering av nedlastinger via HTTP</translation>
 <translation id="5921888683953999946">Angi standardtilstand for den store musepekerens tilgjengelighet på påloggingssiden.
 

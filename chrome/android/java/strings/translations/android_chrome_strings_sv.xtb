@@ -31,11 +31,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="138361230106469022">Hej <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1389974829397082527">Det finns inga bokmärken i den här mappen</translation>
-<translation id="1390350022570422499">Nu kan Chrome hitta och visa webbsidor nära dig med hjälp av Bluetooth.
-
-Chrome söker efter sidor i närheten när enheten är olåst. Sidorna skickas via en tjänst från Google för att förbättra kvaliteten på sidresultaten.
-
-Du kan kontrollera Physical Web i sekretessinställningarna för Chrome.</translation>
 <translation id="1404122904123200417">Inbäddad i <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Do Not Track</translation>
 <translation id="1409879593029778104">Nedladdningen av <ph name="FILE_NAME" /> hindrades eftersom filen redan finns.</translation>
@@ -78,6 +73,7 @@ Du kan kontrollera Physical Web i sekretessinställningarna för Chrome.</transl
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1984937141057606926">Tillåts, men inte från tredje part</translation>
 <translation id="1994173015038366702">Webbadress</translation>
+<translation id="2001120796168634316">Spara den länkade sidan</translation>
 <translation id="200669432486043882">Ersätt fil</translation>
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
 <translation id="2073235970478114994">Läs in bilder</translation>
@@ -96,7 +92,6 @@ Du kan kontrollera Physical Web i sekretessinställningarna för Chrome.</transl
 <translation id="2268044343513325586">Finjustera</translation>
 <translation id="2315043854645842844">Val av certifikat på klienten stöds inte av operativsystemet.</translation>
 <translation id="2316129865977710310">Nej tack</translation>
-<translation id="2319528413610359757">För personer som läser <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
 <translation id="2329597144923131178">Logga in så blir bokmärken, historik, lösenord med mera tillgängligt på alla dina enheter.</translation>
 <translation id="2343328333327081434">Installerar …</translation>
@@ -136,6 +131,7 @@ Du kan kontrollera Physical Web i sekretessinställningarna för Chrome.</transl
 <translation id="2762000892062317888">nyss</translation>
 <translation id="2770465223704140727">Ta bort från listan</translation>
 <translation id="278029852808208386">Inga Bluetooth-enheter hittades. <ph name="BEGIN_LINK" />Gör om sökningen<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tryck på bakåtknappen om du vill lämna helskärmsläget.</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
 <translation id="2870560284913253234">Webbplats</translation>
@@ -199,7 +195,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3672452749423051839">Förslag vid navigeringsfel</translation>
 <translation id="3732088672634061408">Det gick inte att hämta intressen.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
-<translation id="3774280986422214650">Om du aktiverar den här funktionen deltar du i ett experiment där HTTPS-sidor skickas via Googles servrar som proxy.</translation>
 <translation id="3809549525127675114">Uppspelningen av <ph name="VIDEO_TITLE" /> har avslutats</translation>
 <translation id="3828029223314399057">Sök efter bokmärken</translation>
 <translation id="3871171699884605801">Webbhistoriken kan inte rensas med barnkonton</translation>
@@ -214,7 +209,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3992315671621218278">Spara länk</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4035611068038188272">För närvarande används <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> av bokmärken.</translation>
-<translation id="403659016947612156">Det finns Physical Web-sidor i närheten</translation>
 <translation id="4042870126885713738">Visa förslag när det inte går att öppna en webbadress eller upprätta en anslutning</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
@@ -274,7 +268,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4827948050554950725">Lägg till ett kreditkort</translation>
 <translation id="4836364883164334657">Anslutningen till den här webbplatsen är inte privat. Hackare kan försöka stjäla information (till exempel bilder, lösenord, meddelanden och kreditkortsuppgifter) från <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Läs mer</translation>
 <translation id="4850886885716139402">Visa</translation>
 <translation id="4875622588773761625">Vill du att lösenordet för den här webbplatsen ska uppdateras med <ph name="PASSWORD_MANAGER_BRAND" />?</translation>
 <translation id="4881695831933465202">Öppna</translation>
@@ -287,7 +280,6 @@ Du behöver bara öppna Chrome på datorn, öppna menyn och välja Logga in i Ch
 <translation id="497421865427891073">Fortsätt</translation>
 <translation id="4996978546172906250">Dela via</translation>
 <translation id="5000922062037820727">Blockerad (rekommenderas)</translation>
-<translation id="5014582685689328551">Bläddra bland dem i Chrome</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5040262127954254034">Sekretess</translation>
@@ -322,7 +314,6 @@ Du behöver bara öppna Chrome på datorn, öppna menyn och välja Logga in i Ch
 <translation id="5308933389783727448">Sök i sparade sidor</translation>
 <translation id="5313967007315987356">Lägg till webbplats</translation>
 <translation id="5317780077021120954">Spara</translation>
-<translation id="5323972449344932352">Starta Chrome</translation>
 <translation id="5324858694974489420">Föräldrainställningar</translation>
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> raderades</translation>
@@ -401,7 +392,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6192792657125177640">Undantag</translation>
-<translation id="6208263165776660488">Flikar i Chrome har flyttats</translation>
 <translation id="6231464350722415003">Tillåt JavaScript på webbplatser som du anger och blockera det för resten av webben</translation>
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
 
@@ -490,9 +480,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hjälp<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Ta bort bokmärke</translation>
-<translation id="7324738665594301612">Som en del av ett experiment testar vi att skicka HTTPS-sidor via Googles servrar som proxy.</translation>
 <translation id="7346217184097589238">Webbplatsinställningar som har sparats raderas inte och kan visa dina surfvanor.</translation>
-<translation id="7346909386216857016">OK, jag förstår</translation>
 <translation id="7347770551817603360">Offlineinnehåll</translation>
 <translation id="7363354739009474003">Läser in <ph name="VIDEO_TITLE" /></translation>
 <translation id="7366340029385295517">Castar till <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7596558890252710462">Operativsystem</translation>
 <translation id="7599840151813361502">Du loggas inte ut från dina <ph name="BEGIN_LINK" />Google-konton<ph name="END_LINK" /></translation>
-<translation id="7603403729818446828">Gör så att flikar visas tillsammans med de senaste apparna på skärmen. Du kan styra detta i <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Pausad</translation>
 <translation id="7612619742409846846">Inloggad i Google som</translation>
 <translation id="7619072057915878432">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av nätverksfel.</translation>
@@ -564,6 +551,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="8173098127580644436">tidens början</translation>
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> vill ansluta till:</translation>
 <translation id="8218346974737627104">Bekräfta inloggning</translation>
 <translation id="8218934717680664417">Nu kan du söka med en tryckning</translation>
 <translation id="8223946939421658889">Rensa data från</translation>

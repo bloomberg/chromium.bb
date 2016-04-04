@@ -77,7 +77,6 @@
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1753706481035618306">頁碼</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
-<translation id="1775135663370355363">在這台裝置中顯示紀錄項目。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">請更新您的同步通關密語。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">要求或要求參數無效</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">隱藏詳細資料</translation>
 <translation id="3479539252931486093">這是未預期的情況嗎？<ph name="BEGIN_LINK" />通知我們<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">我們暫時無法與您的家長聯絡，請再試一次。</translation>
-<translation id="3516765099410062445">在已登入的裝置中顯示紀錄項目。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3528171143076753409">伺服器憑證授權不可靠。</translation>
 <translation id="3539171420378717834">在這個裝置上保留這張信用卡的複本</translation>

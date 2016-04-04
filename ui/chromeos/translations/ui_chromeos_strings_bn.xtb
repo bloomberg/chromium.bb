@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">অভিনন্দন! আপনার '<ph name="NAME" />' ডেটা পরিষেবা সক্রিয় করা হয়েছে এবং ব্যবহার করার জন্য প্রস্তুত৷</translation>
 <translation id="2649120831653069427">রেনবোফিশ</translation>
 <translation id="2670531586141364277">'<ph name="NAME" />' এর সক্রিয়করণের জন্য একটি নেটওয়ার্ক সংযোগের প্রয়োজন৷</translation>
+<translation id="277257480934873581"><ph name="NAME" /> এ পুনরায় সংযোগ করছে</translation>
 <translation id="2894654529758326923">তথ্য</translation>
 <translation id="2951236788251446349">জেলিফিশ</translation>
 <translation id="2966449113954629791">আপনি হয়তো আপনার মোবাইল ডেটার প্রদত্ত পরিমান ব্যবহার করে ফেলেছেন৷ আরো ডেটা কিনতে <ph name="NAME" /> সক্রিয়করণ পোর্টালে যান৷</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP ব্যর্থ</translation>
 <translation id="8372369524088641025">খারাপ WEP কী</translation>
 <translation id="8454013096329229812">Wi-Fi চালু আছে৷</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: পুনরায় সংযোগ করছে...</translation>
 <translation id="8688591111840995413">খারাপ পাসওয়ার্ড</translation>
 <translation id="8714406895390098252">সাইকেল</translation>
 <translation id="8808686172382650546">বিড়াল</translation>

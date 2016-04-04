@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Mga bukas na tab</translation>
 <translation id="1753706481035618306">Numero ng page</translation>
 <translation id="1763864636252898013">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng operating system ng iyong device ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
-<translation id="1775135663370355363">Ipinapakita ang kasaysayan mula sa device na ito. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Mangyaring i-update ang iyong passphrase ng pag-sync.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Di-wastong kahilingan o mga parameter ng kahilingan</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Itago ang advanced</translation>
 <translation id="3479539252931486093">Hindi mo ba ito inaasahan? <ph name="BEGIN_LINK" />Ipaalam sa amin<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Hindi namin makaugnayan ang iyong magulang sa sandaling ito. Pakisubukang muli.</translation>
-<translation id="3516765099410062445">Ipinapakita ang kasaysayan mula sa iyong mga naka-sign in na device. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528171143076753409">Hindi pinagkakatiwalaan ang certificate ng server.</translation>
 <translation id="3539171420378717834">Magtago ng kopya ng card na ito sa device na ito</translation>

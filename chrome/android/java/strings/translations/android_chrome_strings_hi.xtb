@@ -31,11 +31,6 @@
 <translation id="138361230106469022">नमस्‍ते, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">खोज</translation>
 <translation id="1389974829397082527">यहां कोई बुकमार्क नहीं है</translation>
-<translation id="1390350022570422499">Chrome अब ब्लूटूथ का उपयोग करके आपको आस-पास के वेब पृष्ठ ढूंढ़कर दिखा सकता है.
-
-आपका डिवाइस अनलॉक होने पर Chrome आस-पास के पृष्ठों के लिए स्कैन करेगा. पृष्ठ के परिणामों की गुणवत्ता बेहतर बनाने के लिए ये पृष्ठ एक Google सेवा से गुज़रेंगे.
-
-आप शारीरिक वेब को Chrome गोपनीयता सेटिंग में नियंत्रित कर सकते हैं.</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> में एम्बेड किया गया है</translation>
 <translation id="1406000523432664303">“नज़र न रखें”</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> डाउनलोड को रोका गया क्‍योंकि फ़ाइल पहले से मौजूद है.</translation>
@@ -78,6 +73,7 @@
 <translation id="1974060860693918893">उन्नत</translation>
 <translation id="1984937141057606926">तृतीय-पक्ष को छोड़कर अनुमति है</translation>
 <translation id="1994173015038366702">साइट URL</translation>
+<translation id="2001120796168634316">लिंक किया गया पृष्ठ बाद के लिए सहेजें</translation>
 <translation id="200669432486043882">फ़ाइल प्रतिस्‍थापित करें</translation>
 <translation id="2038563949887743358">अनुरोध डेस्कटॉप साइट चालू करें</translation>
 <translation id="2073235970478114994">चित्र लोड करें</translation>
@@ -96,7 +92,6 @@
 <translation id="2268044343513325586">परिशोधित करें</translation>
 <translation id="2315043854645842844">क्लाइंट-साइड प्रमाणपत्र चयन ऑपरेटिंग सिस्टम के द्वारा समर्थित नहीं है.</translation>
 <translation id="2316129865977710310">जी रहने दें</translation>
-<translation id="2319528413610359757"><ph name="PUBLISHER" /> के पाठकों के लिए</translation>
 <translation id="2321958826496381788">स्‍लाइडर को तब तक खींचें, जब तक कि आपको इसे पढ़ने में सुविधा न हो. पैराग्राफ़ पर डबल-टैप करने के बाद लेख को इतना बड़ा दिखाई देना चाहिए.</translation>
 <translation id="2329597144923131178">सभी डिवाइसों पर बुकमार्क, इतिहास, पासवर्ड और अन्‍य सेटिंग प्राप्‍त करने हेतु प्रवेश करें.</translation>
 <translation id="2343328333327081434">इंस्टॉल जारी...</translation>
@@ -136,6 +131,7 @@
 <translation id="2762000892062317888">अभी-अभी</translation>
 <translation id="2770465223704140727">सूची से निकालें</translation>
 <translation id="278029852808208386">कोई ब्‍लूटूथ डिवाइस नहीं मिला. <ph name="BEGIN_LINK" />फिर से खोजें<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">आपका डिवाइस दिखाई नहीं दे रहा है? <ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">पूर्ण स्क्रीन से बाहर निकलने के लिए वापस जाएं बटन स्पर्श करें.</translation>
 <translation id="2842985007712546952">मूल फ़ोल्‍डर</translation>
 <translation id="2870560284913253234">साइट</translation>
@@ -199,7 +195,6 @@
 <translation id="3672452749423051839">मार्गदर्शक त्रुटि सुझाव</translation>
 <translation id="3732088672634061408">रुचियां पुनर्प्राप्‍त नहीं की जा सकीं.</translation>
 <translation id="3738139272394829648">खोजने के लिए स्पर्श करें</translation>
-<translation id="3774280986422214650">यदि आप इस सुविधा को सक्षम करते हैं, तो आप ऐसे प्रयोग का भाग होंगे जो HTTPS पृष्‍ठों को Google सर्वरों के द्वारा प्रॉक्‍सी करता है.</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />” समाप्‍त</translation>
 <translation id="3828029223314399057">बुकमार्क खोजें</translation>
 <translation id="3871171699884605801">ब्राउज़िंग इतिहास को बच्‍चों के खातों से साफ़ नहीं किया जा सकता</translation>
@@ -214,7 +209,6 @@
 <translation id="3992315671621218278">लिंक सहेजें</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4035611068038188272">बुकमार्क वर्तमान में <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> का उपयोग कर रहे हैं.</translation>
-<translation id="403659016947612156">शारीरिक वेब पृष्ठ आस-पास हैं</translation>
 <translation id="4042870126885713738">किसी वेब पते का समाधान ना होने या कनेक्शन ना हो सकने पर सुझाव दिखाएं</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">वैधानिक जानकारी</translation>
@@ -274,7 +268,6 @@
 <translation id="4816465935029283692">डेटा प्रकार</translation>
 <translation id="4827948050554950725">क्रेडिट कार्ड जोड़ें</translation>
 <translation id="4836364883164334657">इस साइट से आपका कनेक्‍शन निजी नहीं है. हो सकता है कि हमलावर <ph name="DOMAIN_NAME" /> से आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुराने का प्रयास कर रहे हों.</translation>
-<translation id="4842511359652954519">अधिक पढ़ें</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="4875622588773761625">क्या आप चाहते हैं कि <ph name="PASSWORD_MANAGER_BRAND" /> इस साइट के लिए आपके पासवर्ड को अपडेट करे?</translation>
 <translation id="4881695831933465202">खोलें</translation>
@@ -287,7 +280,6 @@
 <translation id="497421865427891073">आगे जाएं</translation>
 <translation id="4996978546172906250">इसके द्वारा साझा करें</translation>
 <translation id="5000922062037820727">अवरोधित (सुझाया गया)</translation>
-<translation id="5014582685689328551">उन्हें ब्राउज़ करने के लिए Chrome का उपयोग करें</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">अनुमति दें</translation>
 <translation id="5040262127954254034">गोपनीयता</translation>
@@ -322,7 +314,6 @@
 <translation id="5308933389783727448">सहेजे गए पृष्ठ खोजें</translation>
 <translation id="5313967007315987356">साइट जोड़ें</translation>
 <translation id="5317780077021120954">सहेजें</translation>
-<translation id="5323972449344932352">Chrome लॉन्च करें</translation>
 <translation id="5324858694974489420">अभिभावकीय सेटिंग</translation>
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> हटाया गया</translation>
@@ -401,7 +392,6 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
-<translation id="6208263165776660488">Chrome टैब ले जाए गए हैं</translation>
 <translation id="6231464350722415003">JavaScript को शेष वेब पर अवरुद्ध करते हुए उसे निर्दिष्‍ट वेबसाइट पर अनुमति दें</translation>
 <translation id="6232535412751077445">“नज़र न रखें” सक्षम करने का अर्थ है कि आपके ब्राउज़िंग ट्रैफ़िक के साथ एक अनुरोध शामिल किया जाएगा. कोई भी प्रभाव इस बात पर निर्भर करता है कि वेबसाइट अनुरोध का प्रतिसाद देती है या नहीं और अनुरोध को किस तरह समझा जाता है.
 
@@ -490,9 +480,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />, स्थानीय खोज परिणाम दिखाने के लिए आपके स्थान का उपयोग करता है</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />सहायता<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">बुकमार्क हटाएं</translation>
-<translation id="7324738665594301612">हम किसी प्रयोग के भाग के रूप में Google सर्वरों के द्वारा HTTPS पृष्‍ठों को प्रॉक्‍सी करने का परीक्षण कर रहे हैं.</translation>
 <translation id="7346217184097589238">सहेजी गईं साइट सेटिंग हटाई नहीं जाएंगी और वे आपकी ब्राउज़िंग की आदतों को प्रदर्शित कर सकती हैं.</translation>
-<translation id="7346909386216857016">ठीक है, समझ लिया</translation>
 <translation id="7347770551817603360">ऑफ़लाइन सामग्री</translation>
 <translation id="7363354739009474003">“<ph name="VIDEO_TITLE" />” लोड हो रहा है</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" /> पर कास्ट किया जा रहा है</translation>
@@ -515,7 +503,6 @@
 <translation id="7588950540487816470">वास्तविक वेब</translation>
 <translation id="7596558890252710462">ऑपरेटिंग सिस्टम</translation>
 <translation id="7599840151813361502">आप अपने <ph name="BEGIN_LINK" />Google खातों<ph name="END_LINK" /> से प्रस्‍थान नहीं करेंगे</translation>
-<translation id="7603403729818446828">अपने फ़ोन की अवलोकन स्‍क्रीन पर हाल ही के अन्‍य टैब के साथ अपने टैब देखें. आप इसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में नियंत्रित कर सकते हैं.</translation>
 <translation id="7607002721634913082">रोका गया</translation>
 <translation id="7612619742409846846">Google में इस रूप में प्रवेश किया हुआ है</translation>
 <translation id="7619072057915878432">नेटवर्क विफलताओं के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
@@ -564,6 +551,7 @@
 <translation id="8173098127580644436">प्रारंभ समय</translation>
 <translation id="8200772114523450471">फिर से शुरू करें</translation>
 <translation id="8209050860603202033">चित्र खोलें</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> इसके साथ कनेक्ट करना चाहता है:</translation>
 <translation id="8218346974737627104">प्रवेश की दुबारा पूछें</translation>
 <translation id="8218934717680664417">अब आप एक स्पर्श से खोज कर सकते हैं</translation>
 <translation id="8223946939421658889">इस समय से डेटा साफ़ करें</translation>

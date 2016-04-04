@@ -23,7 +23,6 @@
 <translation id="1699664235656412242">કૃપા કરીને તમામ Chromium વિંડોઝ (Windows 8 મોડમાં હોય તે સહિત) બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="1708666629004767631">Chromium નું નવું, સલામત સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> તમારા બ્રાઉઝિંગ અનુભવને નુકસાન પહોંચાડી શકે છે, તેથી Chromium એ તેને અવરોધિત કરી છે.</translation>
-<translation id="1745962126679160932">Chromium તમારી માહિતીને સુરક્ષિત રીતે સંગ્રહિત કરશે જેથી તમારે ફરીથી તેને ટાઇપ કરવાની જરૂર નથી, પરંતુ તમારે હજુ પણ ભવિષ્યમાં ચુકવણી માટે તમારા કાર્ડના સુરક્ષા કોડ ચકાસવાની જરૂર પડશે.</translation>
 <translation id="1774152462503052664">Chromium ને પૃષ્ઠભૂમિમાં ચાલવા દો</translation>
 <translation id="1779356040007214683">Chromium ને સુરક્ષિત બનાવવા માટે, અમે <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યાં હોઈ શકે છે તેવા કેટલાક એક્સ્ટેન્શન્સને અક્ષમ કર્યા છે.</translation>
 <translation id="1808667845054772817">Chromium ફરીથી ઇન્સ્ટોલ કરો</translation>
@@ -33,6 +32,7 @@
 <translation id="1929939181775079593">Chromium પ્રતિસાદ આપતું નથી. હવે ફરીથી લોંચ કરીએ?</translation>
 <translation id="1967743265616885482">આ જ નામનું એક મોડ્યુલ Chromium સાથે વિરોધાભાસમાં જાણમાં આવ્યું છે.</translation>
 <translation id="2077129598763517140">હાર્ડવેર ઍક્સિલરેશન ઉપલબ્ધ હોવા પર ઉપયોગ કરો</translation>
+<translation id="2103655854491303969">Chromium ઍપ લૉન્ચર બંધ કરવામાં આવી રહ્યું છે.</translation>
 <translation id="2117181891440368863">Chromium એ ચકાસ્યું કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર ઇસ્યુ કર્યું છે. સર્વરે પ્રમાણપત્ર પારદર્શિતા માહિતી પૂરી પાડેલી, પરંતુ તે અમાન્ય હતી.</translation>
 <translation id="2119636228670142020">&amp;Chromium OS વિશે</translation>
 <translation id="2158734852934720349">Chromium OS ખુલ્લા સ્ત્રોત લાઇસેંસેસ</translation>
@@ -48,6 +48,7 @@
 <translation id="2535480412977113886">તમારી એકાઉન્ટ સાઇન ઇન વિગતો જૂની હોવાને કારણે Chromium OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
 <translation id="2558641060352364164">આ સાઇટ Chromium ફ્રેમ પ્લગિનનો ઉપયોગ કરી રહી છે જે ટૂંક સમયમાં અસમર્થિત થશે. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને આધુનિક બ્રાઉઝરમાં અપગ્રેડ કરો.</translation>
 <translation id="2572494885440352020">Chromium હેલ્પર</translation>
+<translation id="2595977381794111014">તમારી ઍપ્લિકેશનોને ઍક્સેસ કરવાનું ચાલુ રાખવા માટે Chromium બુકમાર્ક્સ બારમાં <ph name="APPS_ICON_IMAGE" /> શૉર્ટકટનો ઉપયોગ કરો.</translation>
 <translation id="2602806952220118310">Chromium - સૂચનાઓ</translation>
 <translation id="2636877269779209383">Chromium ને આ સાઇટ સાથે કૅમેરો શેર કરવા માટે તેની ઍક્સેસની જરૂર છે.</translation>
 <translation id="2648074677641340862">ઇન્સ્ટોલેશન દરમ્યાન ઓપરેટિંગ સિસ્ટમ ભૂલ આવી. કૃપા કરીને ફરીથી Chromium ડાઉનલોડ કરો.</translation>
@@ -103,7 +104,6 @@
 <translation id="4330585738697551178">આ મોડ્યુલ Chromium સાથે વિરોધાભાસ માટે જાણીતું છે.</translation>
 <translation id="4423735387467980091">Chromium ને કસ્ટમાઇઝ અને નિયંત્રિત કરો</translation>
 <translation id="4458285410772214805">કૃપા કરીને આ પરિવર્તનને પ્રભાવમાં લાવવા માટે સાઇન આઉટ કરો અને ફરીથી સાઇન ઇન કરો.</translation>
-<translation id="4488676065623537541">તમારી બિલિંગ વિગતો Chromium માં સાચવવામાં આવી છે.</translation>
 <translation id="4549794359424059447">Chromium ના ભાવિ સંસ્કરણો હવેથી Windows XP અથવા Windows Vista ને સમર્થિત કરશે નહિ.</translation>
 <translation id="4567424176335768812">તમે <ph name="USER_EMAIL_ADDRESS" /> તરીકે સાઇન ઇન છો. હવે તમે તમારા બધા સાઇન ઇન કરેલા ઉપકરણો પર તમારા બુકમાર્ક્સ, ઇતિહાસ અને અન્ય સેટિંગ્સને ઍક્સેસ કરી શકો છો.</translation>
 <translation id="457845228957001925">તમારા Chromium ડેટા અંગેની મહત્વપૂર્ણ માહિતી</translation>

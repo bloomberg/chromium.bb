@@ -24,11 +24,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="1546934824884762070">An unexpected error occurred. Please report this problem to the developers.</translation>
 <translation id="1619813076098775562">Closed connection to Cast device.</translation>
 <translation id="1643640058022401035">Leaving this page will end your Chromoting session.</translation>
-<translation id="1646994964686260497">There's nothing to connect to.</translation>
 <translation id="1654128982815600832">Enabling remote connections for this computer…</translation>
 <translation id="170207782578677537">Failed to register this computer.</translation>
 <translation id="1704090719919187045">Chromoting Host Preferences</translation>
-<translation id="1738759452976856405">Stop Recording</translation>
 <translation id="174018511426417793">You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Connecting…</translation>
 <translation id="1770394049404108959">I can't open the application.</translation>
@@ -124,7 +122,6 @@ Host</translation>
 <translation id="3950820424414687140">Sign in</translation>
 <translation id="3989511127559254552">To continue, you must first grant extended access permissions to your computer. You only have to do this once.</translation>
 <translation id="4006787130661126000">You must enable remote connections if you want to use Chrome Remote Desktop to access this computer.</translation>
-<translation id="401121182145179743">You need first to set up your computer for remote access.</translation>
 <translation id="4028465833180158312">• Material Design UI updates.
 • Third-party licensing credits.
 • Information shown for remote computers that are offline.</translation>
@@ -237,7 +234,6 @@ Desktop Host</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Are you sure you want to disable remote connections to <ph name="HOSTNAME" />? If you change your mind, you'll need to visit that computer to re-enable connections.</translation>
 <translation id="6998989275928107238">To</translation>
-<translation id="7017806586333792422">Start Recording</translation>
 <translation id="7019153418965365059">Unrecognised host error: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Remote Assistance</translation>
 <translation id="7038683108611689168">Help us improve Chromoting by allowing us to collect usage statistics and crash reports.</translation>

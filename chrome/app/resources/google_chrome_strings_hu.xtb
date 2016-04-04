@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome – Értesítések</translation>
 <translation id="1104959162601287462">A &amp;Chrome OS névjegye</translation>
 <translation id="110877069173485804">Ez az Ön Chrome-ja</translation>
-<translation id="1225016890511909183">A Chrome biztonságosan tárolja az adatait, így nem kell újra begépelnie azokat, de kártyája biztonsági kódját igazolnia kell majd a későbbi kifizetésekhez.</translation>
 <translation id="123620459398936149">A Chrome OS nem tudta szinkronizálni az adatokat. Kérjük, frissítse szinkronizálási összetett jelszavát.</translation>
 <translation id="127345590676626841">A Chrome automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik. A letöltés befejezése után a Chrome újraindul, és máris rendelkezésre áll.</translation>
 <translation id="1302523850133262269">Kérjük, várjon, amíg a Chrome telepíti a legutóbbi rendszerfrissítéseket.</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">A Chrome OS használatával kapcsolatos súgó</translation>
 <translation id="1818142563254268765">A Chrome nem tudott frissíteni a legújabb verzióra, ezért Ön nem rendelkezik a remek új funkciókkal és biztonsági javításokkal. A Chrome frissítése szükséges.</translation>
+<translation id="1864458292167284385">A Chrome Alkalmazásindító meg fog szűnni.</translation>
 <translation id="1877026089748256423">A Chrome elavult</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="2084710999043359739">Hozzáadás a Chrome-hoz</translation>
@@ -88,6 +88,7 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">A Chrome megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver megadott tanúsítványátláthatósági adatokat, de a Chrome nem ismerte fel a tanúsítványátláthatósági naplók egyikét sem.</translation>
 <translation id="3889417619312448367">A Google Chrome eltávolítása</translation>
+<translation id="396182988103551265">Alkalmazásait továbbra is elérheti a Chrome-könyvjelzősáv <ph name="APPS_ICON_IMAGE" /> parancsikonjának használatával.</translation>
 <translation id="4042449298237264661">Ez a számítógép a továbbiakban már nem fogja megkapni a Google Chrome frissítéseit, mert a Windows XP és Windows Vista rendszereket már nem támogatjuk.</translation>
 <translation id="4050175100176540509">A legújabb verzióban fontos biztonsági fejlesztések és új funkciók érhetők el.</translation>
 <translation id="4053720452172726777">A Google Chrome személyre szabása és beállításai</translation>
@@ -102,7 +103,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
 <translation id="4480040274068703980">A Chrome OS egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
-<translation id="4513711165509885787">Számlázási adatait a Chrome mentette.</translation>
 <translation id="4561051373932531560">A Google Chrome egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-pal!</translation>
 <translation id="4567424176335768812">A(z) <ph name="USER_EMAIL_ADDRESS" /> címmel van bejelentkezve. Elérheti könyvjelzőit, előzményeit és más beállításait minden olyan eszközön, amelyen bejelentkezett.</translation>
 <translation id="4631713731678262610">Elrejtés a Chrome-menüben</translation>

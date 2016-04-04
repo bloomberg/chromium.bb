@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Sulje kaikki Chromium-ikkunat (myös Windows 8 -tilassa käytettävät) ja yritä uudelleen.</translation>
 <translation id="1708666629004767631">Chromiumista on saatavilla uusi, turvallisempi versio.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> voi vahingoittaa selauskokemustasi, joten Chromium esti sen.</translation>
-<translation id="1745962126679160932">Chromium tallentaa tietosi turvalliseen paikkaan, jottei sinun tarvitse kirjoittaa tietoja uudelleen. Sinun täytyy kuitenkin vahvistaa korttisi turvakoodi tulevien maksujen yhteydessä.</translation>
 <translation id="1774152462503052664">Jätä Chromium käyntiin taustalle</translation>
 <translation id="1779356040007214683">Paransimme Chromiumin turvallisuutta poistamalla käytöstä sovelluksia, joita ei löydy kohteesta <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja jotka on voitu lisätä ilman lupaasi.</translation>
 <translation id="1808667845054772817">Asenna Chromium uudelleen</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="1967743265616885482">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Chromiumin kanssa.</translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
+<translation id="2103655854491303969">Chromiumin sovellusten käynnistysohjelma poistuu käytöstä</translation>
 <translation id="2117181891440368863">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin lähetti Certificate Transparency -tiedot, mutta ne eivät pidä paikkaansa.</translation>
 <translation id="2119636228670142020">Tietoja &amp;Chromium-käyttöjärjestelmästä</translation>
 <translation id="2158734852934720349">Chromium-käyttöjärjestelmän avoimen lähdekoodin lisenssit</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="2558641060352364164">Tämä sivusto käyttää Chromium-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">Voit jatkaa sovellustesi käyttöä Chromiumin kirjanmerkkipalkissa olevalla <ph name="APPS_ICON_IMAGE" />-pikanäppäimellä.</translation>
 <translation id="2602806952220118310">Chromium – ilmoitukset</translation>
 <translation id="2636877269779209383">Chromium tarvitsee kameran käyttöoikeuden, jotta voi jakaa sen sivustolle.</translation>
 <translation id="2648074677641340862">Asennuksessa ilmeni käyttöjärjestelmävirhe. Lataa Chromium uudelleen.</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">Tämän moduulin tiedetään aiheuttavan ristiriitoja Chromiumin kanssa.</translation>
 <translation id="4423735387467980091">Chromiumin muokkaus ja hallinta</translation>
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
-<translation id="4488676065623537541">Laskutustietosi on tallennettu Chromiumiin.</translation>
 <translation id="4549794359424059447">Chromiumin tulevat versiot eivät enää tue Windows XP:tä tai Windows Vistaa.</translation>
 <translation id="4567424176335768812">Olet kirjautunut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS" />. Nyt voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="457845228957001925">Tärkeitä tietoja Chromium-tiedoistasi</translation>

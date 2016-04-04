@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome – Notificări</translation>
 <translation id="1104959162601287462">Despre sistemul de operare &amp;Chrome</translation>
 <translation id="110877069173485804">Acesta este browserul dvs. Chrome</translation>
-<translation id="1225016890511909183">Chrome va stoca în siguranță informațiile dvs., astfel încât să nu trebuiască să le introduceți din nou, dar va trebui în continuare să confirmați codul de securitate al cardului pentru viitoarele plăți.</translation>
 <translation id="123620459398936149">Sistemul de operare Chrome nu a putut sincroniza datele. Actualizați parola de acces pentru sincronizare.</translation>
 <translation id="127345590676626841">Chrome se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune. După această descărcare, Chrome va reporni și va fi gata de utilizare.</translation>
 <translation id="1302523850133262269">Așteaptă până când Chrome instalează cele mai recente actualizări de sistem.</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chrome</translation>
 <translation id="1818142563254268765">Chrome nu s-a putut actualiza automat la cea mai recentă versiune, astfel încât pierdeți noi funcții excelente și remedieri de securitate. Trebuie să actualizați Chrome.</translation>
+<translation id="1864458292167284385">Lansatorul de aplicații Chrome nu va mai fi disponibil.</translation>
 <translation id="1877026089748256423">Chrome nu este actualizat</translation>
 <translation id="2077129598763517140">Utilizează accelerarea hardware când este disponibilă</translation>
 <translation id="2084710999043359739">Adaugă în Chrome</translation>
@@ -88,6 +88,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații privind Certificate Transparency, însă Chrome nu a recunoscut niciunul dintre jurnalele Certificate Transparency.</translation>
 <translation id="3889417619312448367">Dezinstalează Google Chrome</translation>
+<translation id="396182988103551265">Folosește comanda rapidă <ph name="APPS_ICON_IMAGE" /> din bara de marcaje din Chrome pentru a accesa în continuare aplicațiile.</translation>
 <translation id="4042449298237264661">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Windows XP și Windows Vista nu mai sunt acceptate.</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
@@ -102,7 +103,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="4407807842708586359">Sistemul de operare Google Chrome</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
 <translation id="4480040274068703980">Sistemul de operare Chrome nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
-<translation id="4513711165509885787">Detaliile de facturare au fost salvate în Chrome.</translation>
 <translation id="4561051373932531560">Cu Google Chrome, poți să dai clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
 <translation id="4567424176335768812">V-ați conectat ca <ph name="USER_EMAIL_ADDRESS" />. Acum vă puteți accesa marcajele, istoricul și alte setări de pe toate dispozitivele pe care v-ați conectat.</translation>
 <translation id="4631713731678262610">Ascunde în meniul Chrome</translation>

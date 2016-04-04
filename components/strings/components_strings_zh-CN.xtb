@@ -75,7 +75,6 @@
 <translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="1753706481035618306">页码</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
-<translation id="1775135663370355363">目前显示的是通过此设备浏览的内容记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">请更新您的同步密码。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
@@ -244,7 +243,6 @@
 <translation id="3462200631372590220">隐藏详情</translation>
 <translation id="3479539252931486093">不应该出现这种情况？请<ph name="BEGIN_LINK" />告诉我们<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">我们暂时无法与您父母取得联系，请重试。</translation>
-<translation id="3516765099410062445">显示的是您登录过的设备中的历史记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3528171143076753409">服务器的证书不受信任。</translation>
 <translation id="3539171420378717834">在此设备上保存此信用卡的副本</translation>

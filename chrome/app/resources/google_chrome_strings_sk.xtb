@@ -12,7 +12,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1073391069195728457">Chrome – upozornenia</translation>
 <translation id="1104959162601287462">Informácie o systéme &amp;Chrome OS</translation>
 <translation id="110877069173485804">Toto je váš prehliadač Chrome</translation>
-<translation id="1225016890511909183">Chrome vaše informácie bezpečne uloží, aby ste ich už nemuseli zadávať znova. V prípade budúcich platieb však budete musieť bezpečnostný kód svojej karty stále overiť.</translation>
 <translation id="123620459398936149">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
 <translation id="127345590676626841">Chrome sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu. Po dokončení sťahovania sa Chrome reštartujte a začnete používať aktuálnu verziu.</translation>
 <translation id="1302523850133262269">Počkajte, kým Chrome nainštaluje najnovšie aktualizácie systému.</translation>
@@ -35,6 +34,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Získajte pomoc pri používaní systému Chrome OS</translation>
 <translation id="1818142563254268765">Prehliadač Chrome sa nedokázal aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré skvelé nové funkcie a bezpečnostné opravy. Prehliadač Chrome je potrebné aktualizovať.</translation>
+<translation id="1864458292167284385">Čoskoro ukončíme používanie Spúšťača aplikácií Chrome.</translation>
 <translation id="1877026089748256423">Prehliadač Chrome je zastaraný</translation>
 <translation id="2077129598763517140">Používať hardvérovú akceleráciu (keď je dostupná)</translation>
 <translation id="2084710999043359739">Pridať do prehliadača Chrome</translation>
@@ -90,6 +90,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="3870154837782082782">Spoločnosť Google Inc.</translation>
 <translation id="3881912906674381083">Chrome overil, že certifikát tohto webu bol vydaný vydavateľom <ph name="ISSUER" />. Server poskytol informácie o transparentnosti certifikátu, Chrome však nerozpoznal žiadne denníky transparentnosti certifikátu.</translation>
 <translation id="3889417619312448367">Odinštalovanie prehliadača Google Chrome</translation>
+<translation id="396182988103551265">K aplikáciám môžete naďalej pristupovať pomocou skratky <ph name="APPS_ICON_IMAGE" /> na paneli so záložkami prehliadača Chrome.</translation>
 <translation id="4042449298237264661">Tento počítač už nebude dostávať aktualizácie prehliadača Google Chrome, pretože systémy Windows XP a Windows Vista už nie sú podporované.</translation>
 <translation id="4050175100176540509">V najnovšej verzii sú k dispozícii dôležité vylepšenia zabezpečenia a nové funkcie.</translation>
 <translation id="4053720452172726777">Prispôsobiť a ovládať prehliadač Google Chrome</translation>
@@ -104,7 +105,6 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Ak chcete, aby sa zmeny prejavili, odhláste sa a znova sa prihláste.</translation>
 <translation id="4480040274068703980">Systému OS Chrome sa nepodarilo synchronizovať vaše údaje, pretože sa pri prihlasovaní vyskytla chyba.</translation>
-<translation id="4513711165509885787">Vaše fakturačné údaje sa uložili do prehliadača Chrome.</translation>
 <translation id="4561051373932531560">Prehliadač Google Chrome vám umožňuje vybrať telefónne číslo na webe a zavolať naň pomocou aplikácie Skype.</translation>
 <translation id="4567424176335768812">Ste prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS" />. Teraz môžete na všetkých zariadeniach, kde ste prihlásený/-á, pristupovať k svojim záložkám, histórii a ďalším nastaveniam.</translation>
 <translation id="4631713731678262610">Skryť v Ponuke Chrome</translation>

@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome - Оповещения</translation>
 <translation id="1104959162601287462">О &amp;Chrome OS</translation>
 <translation id="110877069173485804">Ваш персональный Chrome</translation>
-<translation id="1225016890511909183">Chrome будет хранить ваши данные в защищенном виде, и их не придется вводить повторно – достаточно будет лишь указать код безопасности кредитной карты.</translation>
 <translation id="123620459398936149">Не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="127345590676626841">Chrome обновляется автоматически, поэтому у вас всегда будет установлена последняя версия. После завершения скачивания и перезагрузки вы сможете продолжить работу.</translation>
 <translation id="1302523850133262269">Подождите, пока Chrome устанавливает последние обновления системы</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Помощь по использованию Chrome OS</translation>
 <translation id="1818142563254268765">Не удалось установить последнюю версию Chrome. Обновите браузер, чтобы применить исправления безопасности и воспользоваться новыми замечательными функциями.</translation>
+<translation id="1864458292167284385">Мы прекращаем поддержку Панели запуска приложений Chromе</translation>
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
 <translation id="2077129598763517140">Использовать аппаратное ускорение (при наличии)</translation>
 <translation id="2084710999043359739">Установить</translation>
@@ -88,6 +88,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Данные Chrome подтверждают, что издатель сертификата сайта – <ph name="ISSUER" />. Сервер предоставил временные метки сертификата, однако распознать их журналы не удалось.</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
+<translation id="396182988103551265">Используйте ярлык <ph name="APPS_ICON_IMAGE" /> в панели закладок Chrome, чтобы получить доступ к приложениям.</translation>
 <translation id="4042449298237264661">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
@@ -102,7 +103,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Чтобы изменения вступили в силу, выполните вход еще раз.</translation>
 <translation id="4480040274068703980">Не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
-<translation id="4513711165509885787">Платежные данные сохранены в Chrome.</translation>
 <translation id="4561051373932531560">В Google Chrome вы можете нажать на любой номер телефона и позвонить на него через Skype!</translation>
 <translation id="4567424176335768812">Вы вошли с помощью аккаунта <ph name="USER_EMAIL_ADDRESS" />. Ваши закладки, история и другие настройки теперь доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="4631713731678262610">Не показывать в меню Google Chrome</translation>

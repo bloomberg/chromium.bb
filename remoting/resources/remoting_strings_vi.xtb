@@ -24,11 +24,9 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="1546934824884762070">Đã xảy ra lỗi không mong muốn. Vui lòng báo cáo vấn đề này cho nhà phát triển.</translation>
 <translation id="1619813076098775562">Đã đóng kết nối tới Thiết bị truyền.</translation>
 <translation id="1643640058022401035">Thoát khỏi trang này sẽ kết thúc phiên Kết nối từ xa trên Chrome của bạn.</translation>
-<translation id="1646994964686260497">Không có máy tính nào để kết nối.</translation>
 <translation id="1654128982815600832">Đang bật kết nối từ xa cho máy tính này…</translation>
 <translation id="170207782578677537">Không thể đăng ký máy tính này.</translation>
 <translation id="1704090719919187045">Tùy chọn máy chủ kết nối từ xa trên Chrome</translation>
-<translation id="1738759452976856405">Dừng quay</translation>
 <translation id="174018511426417793">Bạn chưa đăng ký máy tính nào. Để bật kết nối từ xa với một máy tính, hãy cài đặt Chrome Remote Desktop trên máy tính đó và nhấp “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Đang kết nối...</translation>
 <translation id="1770394049404108959">Tôi không thể mở ứng dụng.</translation>
@@ -124,7 +122,6 @@ trên Chrome</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="3989511127559254552">Để tiếp tục, trước tiên, bạn phải cấp các quyền truy cập mở rộng cho máy tính của mình. Bạn chỉ phải thực hiện việc này một lần.</translation>
 <translation id="4006787130661126000">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Chrome Remote Desktop để truy cập vào máy tính này.</translation>
-<translation id="401121182145179743">Trước tiên, bạn cần thiết lập máy tính để truy cập từ xa.</translation>
 <translation id="4028465833180158312">• Bản cập nhật giao diện người dùng thiết kế material design.
 • Tín dụng cấp phép bên thứ ba.
 • Thông tin được hiển thị cho các máy tính từ xa đang ngoại tuyến.</translation>
@@ -237,7 +234,6 @@ Remote Desktop</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Bạn có chắc chắn muốn tắt kết nối từ xa với <ph name="HOSTNAME" /> không? Nếu bạn thay đổi ý định, bạn cần truy cập vào máy tính đó để bật lại kết nối.</translation>
 <translation id="6998989275928107238">Đến</translation>
-<translation id="7017806586333792422">Bắt đầu quay</translation>
 <translation id="7019153418965365059">Lỗi máy chủ không xác định: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Hỗ trợ từ xa</translation>
 <translation id="7038683108611689168">Giúp chúng tôi cải thiện Kết nối từ xa trên Chrome bằng cách cho phép chúng tôi thu thập số liệu thống kê sử dụng và báo cáo sự cố.</translation>

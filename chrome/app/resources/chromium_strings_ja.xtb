@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Chromium のウィンドウ（Windows 8 モードのウィンドウを含む）をすべて閉じてからもう一度お試しください。</translation>
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> はブラウジング環境に害を及ぼす可能性があるため、Chromium によってブロックされました。</translation>
-<translation id="1745962126679160932">Chromium で情報が安全に保存されるので、再度入力する必要はありません。ただし、今後もお支払いの際にカードのセキュリティ コードを入力する必要があります。</translation>
 <translation id="1774152462503052664">Chromium をバックグラウンドで実行する</translation>
 <translation id="1779356040007214683">Chromium をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
 <translation id="1808667845054772817">Chromium を再インストール</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
+<translation id="2103655854491303969">Chromium アプリ ランチャーを非表示にします。</translation>
 <translation id="2117181891440368863">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報がサーバーから提供されましたが無効でした。</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium OS オープンソース ライセンス</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">アカウントのログイン情報が最新ではないため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="2558641060352364164">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、最新のブラウザにアップグレードしてください。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">今後アプリにアクセスするには、Chromium ブックマーク バーの <ph name="APPS_ICON_IMAGE" /> ショートカットを使用してください。</translation>
 <translation id="2602806952220118310">Chromium - お知らせ</translation>
 <translation id="2636877269779209383">このサイトとカメラを共有するには、Chromium にカメラへのアクセスを許可する必要があります。</translation>
 <translation id="2648074677641340862">インストール中にオペレーティング システム エラーが発生しました。Chromium をダウンロードし直してください。</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">このモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
-<translation id="4488676065623537541">お支払い情報を Chromium に保存しました。</translation>
 <translation id="4549794359424059447">Chromium の今後のバージョンでは Windows XP と Windows Vista はサポートされなくなります。</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="457845228957001925">Chromium データに関する重要な情報</translation>

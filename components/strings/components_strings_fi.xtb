@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Avoimet välilehdet</translation>
 <translation id="1753706481035618306">Sivunumero</translation>
 <translation id="1763864636252898013">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; laitteesi käyttöjärjestelmä ei luota sen suojausvarmenteeseen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
-<translation id="1775135663370355363">Näytetään tämän laitteen historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Pyyntö on virheellinen tai pyynnön parametrit ovat virheelliset</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Piilota lisäasetukset</translation>
 <translation id="3479539252931486093">Etkö odottanut tätä? <ph name="BEGIN_LINK" />Kerro siitä meille.<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Emme tavoittaneet vanhempaasi. Yritä uudelleen.</translation>
-<translation id="3516765099410062445">Näytetään kirjautuneiden laitteiden historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Kansio</translation>
 <translation id="3528171143076753409">Palvelimen varmenne ei ole luotettava.</translation>
 <translation id="3539171420378717834">Säilytä tämän kortin kopio laitteella.</translation>

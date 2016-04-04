@@ -24,11 +24,9 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="1546934824884762070">Det oppsto en uventet feil. Rapportér dette problemet til utviklerne.</translation>
 <translation id="1619813076098775562">Lukket tilkobling til Cast-enhet.</translation>
 <translation id="1643640058022401035">Hvis du forlater denne siden, avsluttes Chromoting-økten din.</translation>
-<translation id="1646994964686260497">Det finnes ingenting å koble til.</translation>
 <translation id="1654128982815600832">Slår på eksterne tilkoblinger for denne datamaskinen …</translation>
 <translation id="170207782578677537">Kunne ikke registrere denne datamaskinen.</translation>
 <translation id="1704090719919187045">Alternativer for Chromoting-vert</translation>
-<translation id="1738759452976856405">Stopp innspilling</translation>
 <translation id="174018511426417793">Du har ikke registrert noen datamaskiner. For å aktivere ekstern tilkobling til en datamaskin må du installere Chrome Eksternt skrivebord på maskinen, og klikke på «<ph name="BUTTON_NAME" />».</translation>
 <translation id="1742469581923031760">Kobler til …</translation>
 <translation id="1770394049404108959">Jeg kan ikke åpne appen.</translation>
@@ -124,7 +122,6 @@ Vert</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="3989511127559254552">Før du kan fortsette, må du gi datamaskinen utvidede tilgangstillatelser. Det er bare nødvendig å gjøre dette én gang.</translation>
 <translation id="4006787130661126000">Du må aktivere eksterne tilkoblinger hvis du vil ha tilgang til denne datamaskinen gjennom Chrome Eksternt skrivebord.</translation>
-<translation id="401121182145179743">Du må først konfigurere datamaskinen for ekstern tilgang.</translation>
 <translation id="4028465833180158312">• Oppdateringer av «Material Design»-grensesnittet.
 • Kildereferanser for tredjepartslisenser.
 • Informasjon blir vist for eksterne datamaskiner som ikke er på nettet.</translation>
@@ -237,7 +234,6 @@ skrivebord-vert</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Er du sikker på at du vil deaktivere eksterne tilkoblinger til <ph name="HOSTNAME" />? Hvis du ombestemmer deg, må du tilbake til datamaskinen for å gjenopprette tilkoblingene.</translation>
 <translation id="6998989275928107238">Til</translation>
-<translation id="7017806586333792422">Start innspilling</translation>
 <translation id="7019153418965365059">Ukjent vertsfeil: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Fjernhjelp</translation>
 <translation id="7038683108611689168">Hjelp oss med å gjøre Chromoting bedre ved å samle inn bruksstatistikk og programstopprapporter.</translation>

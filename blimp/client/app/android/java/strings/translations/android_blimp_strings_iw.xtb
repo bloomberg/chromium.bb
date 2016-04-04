@@ -12,9 +12,10 @@
 <translation id="4542350224991263059">ההקצאה נכשלה. פג תוקף אסימון הגישה של המשתמש.</translation>
 <translation id="4562971394107096647">ההקצאה נכשלה. שגיאת שרת.</translation>
 <translation id="4641972508298030550">לא ניתן לאמת את המשתמש.</translation>
+<translation id="5184329579814168207">‏פתח ב-Chrome</translation>
 <translation id="5860346505531085166">ההקצאה נכשלה. אין לחשבון הרשאת גישה.</translation>
 <translation id="704835510384979817">ההקצאה נכשלה. לא נמצאה גירסת מנוע תואמת.</translation>
-<translation id="7536363920335771251">‏המנוע מנותק. סיבה: %1$s</translation>
+<translation id="7536363920335771251">‏המנוע מנותק. הסיבה: %1$s</translation>
 <translation id="7961542533680218955">ההקצאה הצליחה.</translation>
 <translation id="8514856595257368555">האסימון אוחזר.</translation>
 </translationbundle>

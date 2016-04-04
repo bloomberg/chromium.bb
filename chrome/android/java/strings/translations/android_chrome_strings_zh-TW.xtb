@@ -31,11 +31,6 @@
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好：</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1389974829397082527">這裡沒有任何書籤</translation>
-<translation id="1390350022570422499">Chrome 現在可透過藍牙尋找並顯示附近的網頁。
-
-Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Google 服務處理過後，可讓網頁搜尋結果的品質更臻完善。
-
-您可以在 Chrome 隱私權設定中管理實體化網路。</translation>
 <translation id="1404122904123200417">內嵌位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">「不追蹤」</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> 檔案已存在，因此無法下載。</translation>
@@ -78,6 +73,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="1974060860693918893">進階</translation>
 <translation id="1984937141057606926">允許 (第三方網站除外)</translation>
 <translation id="1994173015038366702">網站網址</translation>
+<translation id="2001120796168634316">儲存連結的網頁以供日後使用</translation>
 <translation id="200669432486043882">取代檔案</translation>
 <translation id="2038563949887743358">開啟「要求電腦版網站」</translation>
 <translation id="2073235970478114994">載入圖片</translation>
@@ -96,7 +92,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="2268044343513325586">修正搜尋</translation>
 <translation id="2315043854645842844">作業系統不允許您在用戶端選取憑證。</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
-<translation id="2319528413610359757">「<ph name="PUBLISHER" />」讀者文摘</translation>
 <translation id="2321958826496381788">拖曳滑桿，將文字調整到您可以舒適閱讀的大小。當您輕按兩下文字段落，文字至少應呈現這樣的大小。</translation>
 <translation id="2329597144923131178">登入後，即可從您使用的任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定。</translation>
 <translation id="2343328333327081434">安裝中…</translation>
@@ -136,6 +131,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="2762000892062317888">剛剛</translation>
 <translation id="2770465223704140727">從清單中移除</translation>
 <translation id="278029852808208386">找不到藍牙裝置，請<ph name="BEGIN_LINK" />重新搜尋<ph name="END_LINK" />。</translation>
+<translation id="2811892995384186721">找不到您的裝置嗎？<ph name="BEGIN_LINK" />尋求協助<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2870560284913253234">網站</translation>
@@ -199,7 +195,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
 <translation id="3732088672634061408">無法擷取興趣資料。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
-<translation id="3774280986422214650">啟用這項實驗功能後，您將體驗透過 Google 伺服器對 HTTPS 網頁執行 Proxy 處理的效能。</translation>
 <translation id="3809549525127675114">「<ph name="VIDEO_TITLE" />」已結束</translation>
 <translation id="3828029223314399057">搜尋書籤</translation>
 <translation id="3871171699884605801">無法清除兒童專用帳戶的瀏覽紀錄</translation>
@@ -214,7 +209,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="3992315671621218278">儲存連結</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4035611068038188272">書籤目前使用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> 的儲存空間。</translation>
-<translation id="403659016947612156">附近有實體化網路網頁</translation>
 <translation id="4042870126885713738">在無法解析網址或建立連線時顯示建議</translation>
 <translation id="4056223980640387499">深褐色調</translation>
 <translation id="4062305924942672200">法律資訊</translation>
@@ -274,7 +268,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="4816465935029283692">資料類型</translation>
 <translation id="4827948050554950725">新增信用卡</translation>
 <translation id="4836364883164334657">您與這個網站之間的連線不是私人連線。攻擊者可能會嘗試從 <ph name="DOMAIN_NAME" /> 竊取您的資訊 (例如相片、密碼、郵件和信用卡資訊)。</translation>
-<translation id="4842511359652954519">閱讀完整內容</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4875622588773761625">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您在這個網站設定的密碼嗎？</translation>
 <translation id="4881695831933465202">開啟</translation>
@@ -287,7 +280,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="497421865427891073">往前</translation>
 <translation id="4996978546172906250">分享方式：</translation>
 <translation id="5000922062037820727">已封鎖 (建議)</translation>
-<translation id="5014582685689328551">透過 Chrome 瀏覽這些網頁</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">隱私權</translation>
@@ -322,7 +314,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="5308933389783727448">搜尋儲存的網頁</translation>
 <translation id="5313967007315987356">新增網站</translation>
 <translation id="5317780077021120954">儲存</translation>
-<translation id="5323972449344932352">啟動 Chrome</translation>
 <translation id="5324858694974489420">家長設定</translation>
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5345040418939504969">已刪除的「<ph name="BOOKMARK_TITLE" />」</translation>
@@ -401,7 +392,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據流量</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6192792657125177640">例外</translation>
-<translation id="6208263165776660488">Chrome 分頁已移至新的位置</translation>
 <translation id="6231464350722415003">允許在您指定的網站上執行 JavaScript，但禁止其他網站執行</translation>
 <translation id="6232535412751077445">啟用「不追蹤」功能即表示要求將會包含在您的瀏覽流量中，其效用取決於網站是否回應要求以及如何解讀要求。
 
@@ -490,9 +480,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 會使用您的位置資訊來顯示當地搜尋結果</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />說明<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">刪除書籤</translation>
-<translation id="7324738665594301612">我們正在執行實驗功能，測試透過 Google 伺服器對 HTTPS 網頁執行 Proxy 處理的效能。</translation>
 <translation id="7346217184097589238">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。</translation>
-<translation id="7346909386216857016">好，我瞭解了</translation>
 <translation id="7347770551817603360">離線內容</translation>
 <translation id="7363354739009474003">正在載入「<ph name="VIDEO_TITLE" />」</translation>
 <translation id="7366340029385295517">正在投放到 <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7588950540487816470">實體化網路</translation>
 <translation id="7596558890252710462">作業系統</translation>
 <translation id="7599840151813361502">您不會因此登出 <ph name="BEGIN_LINK" />Google 帳戶<ph name="END_LINK" /></translation>
-<translation id="7603403729818446828">手機的「總覽」畫面會顯示您的分頁和其他最近使用過的應用程式。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中控管這項功能。</translation>
 <translation id="7607002721634913082">已暫停</translation>
 <translation id="7612619742409846846">已使用下列帳戶登入 Google：</translation>
 <translation id="7619072057915878432">無法連上網路，因此無法下載 <ph name="FILE_NAME" />。</translation>
@@ -564,6 +551,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="8173098127580644436">不限時間</translation>
 <translation id="8200772114523450471">繼續</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> 要求連線至：</translation>
 <translation id="8218346974737627104">確認登入</translation>
 <translation id="8218934717680664417">從現在起，只要輕觸即可搜尋</translation>
 <translation id="8223946939421658889">資料清除範圍：</translation>

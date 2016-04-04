@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome - सूचनाएं</translation>
 <translation id="1104959162601287462">&amp;Chrome OS के बारे में</translation>
 <translation id="110877069173485804">यह आपका Chrome है</translation>
-<translation id="1225016890511909183">Chrome आपकी जानकारी को सुरक्षित रूप से संगृहीत करेगा इसलिए आपको इसे फिर से लिखने की आवश्यकता नहीं है, लेकिन भविष्य के भुगतानों के लिए आपको अभी भी अपने कार्ड के सुरक्षा कोड का सत्यापन करना होगा.</translation>
 <translation id="123620459398936149">Chrome OS आपका डेटा समन्वयित नहीं कर सका. कृपया अपना समन्वयन पासफ़्रेज़ अपडेट करें.</translation>
 <translation id="127345590676626841">Chrome अपने आप अपडेट हो जाता है ताकि आपके पास हमेशा सबसे नवीनतम वर्शन रहे. जब यह डाउनलोड पूर्ण हो जाता है, तो Chrome पुन: प्रारंभ होगा और आप आगे बढ़ जाएंगे.</translation>
 <translation id="1302523850133262269">कृपया Chrome के द्वारा नवीनतम सिस्टम अपडेट इंस्टॉल करने के दौरान प्रतीक्षा करें.</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS का उपयोग करने के बारे में सहायता प्राप्त करें</translation>
 <translation id="1818142563254268765">Chrome स्वयं को नवीनतम वर्शन में अपडेट नहीं कर सका, इसलिए आप शानदार नई सुविधाओं और सुरक्षा समाधानों का लाभ नहीं ले पा रहे हैं. आपको Chrome को अपडेट करना होगा.</translation>
+<translation id="1864458292167284385">Chrome ऐप्लिकेशन लॉन्चर बंद किया जा रहा है.</translation>
 <translation id="1877026089748256423">Chrome पुराना हो गया है</translation>
 <translation id="2077129598763517140">उपलब्ध होने पर हार्डवेयर त्वरण का उपयोग करें</translation>
 <translation id="2084710999043359739">Chrome में जोड़ें</translation>
@@ -88,6 +88,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ने सत्यापित किया है कि <ph name="ISSUER" /> ने इस वेबसाइट का प्रमाणपत्र जारी किया है. सर्वर ने प्रमाणपत्र पारदर्शिता जानकारी प्रदान की है, लेकिन Chrome ने किसी भी प्रमाणपत्र पारदर्शिता लॉग को नहीं पहचाना.</translation>
 <translation id="3889417619312448367">Google Chrome को विस्थापित करें</translation>
+<translation id="396182988103551265">अपने ऐप्लिकेशन एक्सेस करना जारी रखने के लिए Chrome बुकमार्क बार में <ph name="APPS_ICON_IMAGE" /> शॉर्टकट का उपयोग करें.</translation>
 <translation id="4042449298237264661">यह कंप्‍यूटर अब Google Chrome के अपडेट प्राप्‍त नहीं करेगा क्‍योंकि Windows XP और Windows Vista अब समर्थित नहीं है.</translation>
 <translation id="4050175100176540509">महत्‍वपूर्ण सुरक्षा सुधार और नई सुविधाएं नवीनतम वर्शन में उपलब्‍ध हैं.</translation>
 <translation id="4053720452172726777">Google Chrome कस्टमाइज़ करें और नियंत्रित करें</translation>
@@ -102,7 +103,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">इस परिवर्तन के प्रभावी होने के लिए, कृपया प्रस्थान करें और पुन: प्रवेश करें.</translation>
 <translation id="4480040274068703980">प्रवेश करने संबंधी त्रुटि के कारण Chrome OS आपका डेटा सिंक नहीं कर सका.</translation>
-<translation id="4513711165509885787">आपका बिलिंग विवरण Chrome में सहेज लिया गया है.</translation>
 <translation id="4561051373932531560">Google Chrome आपको वेब पर फ़ोन नंबर क्लिक करने और उसे Skype से कॉल करने की सुविधा देता है!</translation>
 <translation id="4567424176335768812">आपने <ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश किया हुआ है. अब आप अपने सभी प्रवेश किए हुए डिवाइस पर अपने बुकमार्क, इतिहास, और अन्य सेटिंग की एक्सेस कर सकेंगे.</translation>
 <translation id="4631713731678262610">Chrome मेनू में छिपाएं</translation>

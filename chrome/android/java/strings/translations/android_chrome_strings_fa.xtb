@@ -31,11 +31,6 @@
 <translation id="138361230106469022">سلام، <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1389974829397082527">نشانکی در اینجا وجود ندارد</translation>
-<translation id="1390350022570422499">‏اکنون Chrome می‌تواند صفحه‌های وب نزدیک شما را با استفاده از بلوتوث پیدا کند و به شما نشان دهد.
-
-هنگامی که قفل دستگاهتان باز است، Chrome برای صفحه‌های وب اطراف جستجو می‌کند. این صفحه‌ها از یکی از سرویس‌های Google عبور می‌کنند تا کیفیت نتایج صفحه بهتر شود.
-
-می‌توانید «وب فیزیکی» را در تنظیمات حریم خصوصی Chrome کنترل کنید.</translation>
 <translation id="1404122904123200417">جاسازی شده در <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">«ردیابی نشود»</translation>
 <translation id="1409879593029778104">دانلود <ph name="FILE_NAME" /> انجام نشد زیرا فایل از قبل موجود است.</translation>
@@ -78,6 +73,7 @@
 <translation id="1974060860693918893">پیشرفته</translation>
 <translation id="1984937141057606926">مجاز، به غیر از طرف ثالث</translation>
 <translation id="1994173015038366702">نشانی وب سایت</translation>
+<translation id="2001120796168634316">ذخیره صفحه پیوند داده شده برای بعد</translation>
 <translation id="200669432486043882">جایگزینی فایل</translation>
 <translation id="2038563949887743358">روشن کردن درخواست سایت رایانه‌ای</translation>
 <translation id="2073235970478114994">بارگیری تصاویر</translation>
@@ -96,7 +92,6 @@
 <translation id="2268044343513325586">فیلتر</translation>
 <translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
 <translation id="2316129865977710310">نه سپاسگزارم</translation>
-<translation id="2319528413610359757">برای خوانندگان <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">لغزنده را بکشید تا زمانی که بتوانید این متن را به راحتی بخوانید. بعد از دو ضربه متوالی روی یک پاراگراف، اندازه نوشتار حداقل باید به این بزرگی باشد.</translation>
 <translation id="2329597144923131178">برای دریافت نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیماتتان در همه دستگاه‌ها، وارد سیستم شوید.</translation>
 <translation id="2343328333327081434">در حال نصب…</translation>
@@ -136,6 +131,7 @@
 <translation id="2762000892062317888">هم‌اکنون</translation>
 <translation id="2770465223704140727">حذف از لیست</translation>
 <translation id="278029852808208386">دستگاه بلوتوثی پیدا نشد. <ph name="BEGIN_LINK" />دوباره جستجو کنید<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">دستگاهتان را نمی‌بینید؟ <ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">برای خروج از حالت تمام صفحه، دکمه برگشت را لمس کنید.</translation>
 <translation id="2842985007712546952">پوشه اصلی</translation>
 <translation id="2870560284913253234">سایت</translation>
@@ -199,7 +195,6 @@
 <translation id="3672452749423051839">پیشنهادات خطای پیمایش</translation>
 <translation id="3732088672634061408">علایق بازیابی نشدند.</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
-<translation id="3774280986422214650">‏اگر این قابلیت را فعال کنید، بخشی از آزمایشی خواهید بود که صفحات HTTPS را از طریق سرورهای Google پروکسی می‌کند.</translation>
 <translation id="3809549525127675114">«<ph name="VIDEO_TITLE" />» به پایان رسید</translation>
 <translation id="3828029223314399057">جستجوی نشانک‌ها</translation>
 <translation id="3871171699884605801">با حساب‌های مخصوص کودکان نمی‌توان سابقه مرور را پاک کرد</translation>
@@ -214,7 +209,6 @@
 <translation id="3992315671621218278">ذخیره پیوند</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4035611068038188272">نشانک‌ها درحال حاضر <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> فضا اشغال کرده‌اند.</translation>
-<translation id="403659016947612156">صفحه‌های «وب فیزیکی» در اطراف هستند</translation>
 <translation id="4042870126885713738">وقتی آدرس وب شناسایی نمی‌شود یا اتصال برقرار نمی‌شود، پیشنهاداتی نشان داده می‌شود</translation>
 <translation id="4056223980640387499">سپیا</translation>
 <translation id="4062305924942672200">اطلاعات حقوقی</translation>
@@ -274,7 +268,6 @@
 <translation id="4816465935029283692">انواع داده</translation>
 <translation id="4827948050554950725">افزودن کارت اعتباری</translation>
 <translation id="4836364883164334657">اتصال شما به این سایت خصوصی نیست. مهاجمین ممکن است برای سرقت اطلاعاتتان (به‌عنوان مثال، عکس‌ها، گذرواژه‌ها، پیام‌ها و کارت‌های اعتباری) از <ph name="DOMAIN_NAME" /> تلاش کنند.</translation>
-<translation id="4842511359652954519">بیشتر بخوانید</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4875622588773761625">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای این سایت به‌روزرسانی کند؟</translation>
 <translation id="4881695831933465202">باز کردن</translation>
@@ -287,7 +280,6 @@
 <translation id="497421865427891073">جلو رفتن</translation>
 <translation id="4996978546172906250">اشتراک‌گذاری از طریق</translation>
 <translation id="5000922062037820727">مسدود (توصیه می‌شود)</translation>
-<translation id="5014582685689328551">‏برای مرور آن‌ها از Chrome استفاده کنید</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
@@ -322,7 +314,6 @@
 <translation id="5308933389783727448">جستجوی صفحات ذخیره‌شده</translation>
 <translation id="5313967007315987356">افزودن سایت</translation>
 <translation id="5317780077021120954">ذخیره</translation>
-<translation id="5323972449344932352">‏راه‌اندازی Chrome</translation>
 <translation id="5324858694974489420">تنظیمات والدین</translation>
 <translation id="5327248766486351172">نام</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> حذف شد</translation>
@@ -400,7 +391,6 @@
 <translation id="6159335304067198720">ذخیره داده‌ها: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
-<translation id="6208263165776660488">‏برگه‌های Chrome جابه‌جا شده‌اند</translation>
 <translation id="6231464350722415003">جاوااسکریپت در وب‌سایت‌هایی که تعیین می‌کنید مجاز باشد اما برای بقیه وب غیرمجاز باشد</translation>
 <translation id="6232535412751077445">فعال کردن «ردیابی نشود» به این معنی است که درخواستی به ترافیک مرور شما اضافه می‌شود. هر گونه اثری به این بستگی دارد که وب‌سایت به درخواست‌ پاسخ می‌دهد یا نه و درخواست چگونه تفسیر می‌شود.
 
@@ -489,9 +479,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> از موقعیت مکانی شما برای نمایش نتایج جستجوی محلی استفاده می‌کند</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />راهنما<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">حذف نشانک</translation>
-<translation id="7324738665594301612">‏در حال آزمایش پروکسی کردن صفحات HTTPS از طریق سرورهای Google به عنوان بخشی از یک آزمایش هستیم.</translation>
 <translation id="7346217184097589238">تنظیمات سایت ذخیره‌شده حذف نخواهند شد و می‌توانند منعکس‌کننده عادات مرور شما باشند.</translation>
-<translation id="7346909386216857016">بله متوجه شدم.</translation>
 <translation id="7347770551817603360">محتوای آفلاین</translation>
 <translation id="7363354739009474003">در حال بارگیری «<ph name="VIDEO_TITLE" />»</translation>
 <translation id="7366340029385295517">درحال فرستادن به <ph name="SCREEN_NAME" /></translation>
@@ -514,7 +502,6 @@
 <translation id="7588950540487816470">وب فیزیکی</translation>
 <translation id="7596558890252710462">سیستم عامل</translation>
 <translation id="7599840151813361502">‏از سیستم <ph name="BEGIN_LINK" />حساب‌های Google<ph name="END_LINK" /> خود خارج نخواهید شد</translation>
-<translation id="7603403729818446828">برگه‌ها و سایر برنامه‌های اخیرتان را در صفحه نمای کلی تلفن ببینید. می‌توانید این را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> کنترل کنید.</translation>
 <translation id="7607002721634913082">متوقف</translation>
 <translation id="7612619742409846846">‏ثبت ورودشده در Google به‌عنوان</translation>
 <translation id="7619072057915878432">به‌دلیل نقص‌هایی در شبکه، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
@@ -563,6 +550,7 @@
 <translation id="8173098127580644436">از ابتدا</translation>
 <translation id="8200772114523450471">ازسرگیری</translation>
 <translation id="8209050860603202033">باز کردن تصویر</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> می‌خواهد متصل شود به:</translation>
 <translation id="8218346974737627104">تأیید ورود به سیستم</translation>
 <translation id="8218934717680664417">اکنون می‌توانید با یک لمس جستجو کنید</translation>
 <translation id="8223946939421658889">پاک کردن داده‌ها از</translation>

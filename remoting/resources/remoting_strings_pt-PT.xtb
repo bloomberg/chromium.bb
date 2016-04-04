@@ -24,11 +24,9 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Comunique este problema aos programadores.</translation>
 <translation id="1619813076098775562">Terminou a ligação ao Dispositivo de transmissão.</translation>
 <translation id="1643640058022401035">Se sair desta página, terminará a sessão do Chromoting.</translation>
-<translation id="1646994964686260497">Não há computadores aos quais estabelecer ligação.</translation>
 <translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
 <translation id="170207782578677537">Falha ao registar o computador.</translation>
 <translation id="1704090719919187045">Preferências do Anfitrião do Chromoting</translation>
-<translation id="1738759452976856405">Parar gravação</translation>
 <translation id="174018511426417793">Não existem computadores registados. Para ativar as ligações remotas a um computador, instale o Ambiente de Trabalho Remoto do Chrome aí e clique em “<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">A ligar...</translation>
 <translation id="1770394049404108959">Não consigo abrir a aplicação.</translation>
@@ -124,7 +122,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Iniciar sessão</translation>
 <translation id="3989511127559254552">Para continuar, precisa primeiro de conceder autorizações de acesso alargadas ao computador. Apenas tem de efetuar esta operação uma vez.</translation>
 <translation id="4006787130661126000">Se pretende utilizar o Ambiente de Trabalho Remoto do Chrome para aceder ao computador, é necessário ativar as ligações remotas.</translation>
-<translation id="401121182145179743">Primeiro, tem de configurar o computador para acesso remoto.</translation>
 <translation id="4028465833180158312">• Atualizações de material design da IU.
 • Créditos de licenciamento de terceiros.
 • Apresentação de informações para computadores remotos offline.</translation>
@@ -237,7 +234,6 @@ Remoto do Chrome</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Tem a certeza de que pretende desativar as ligações remotas a <ph name="HOSTNAME" />? Se mudar de ideias, será necessário aceder a esse computador e voltar a ativar as ligações.</translation>
 <translation id="6998989275928107238">Para</translation>
-<translation id="7017806586333792422">Iniciar gravação</translation>
 <translation id="7019153418965365059">Erro de anfitrião não reconhecido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistência Remota</translation>
 <translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>

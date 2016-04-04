@@ -12,9 +12,10 @@
 <translation id="4542350224991263059">Oppgaven kunne ikke utføres. Brukerens tilgangstoken er utløpt..</translation>
 <translation id="4562971394107096647">Oppgaven kunne ikke utføres. Tjenerfeil.</translation>
 <translation id="4641972508298030550">Kan ikke autentisere brukeren.</translation>
+<translation id="5184329579814168207">Åpne i Chrome</translation>
 <translation id="5860346505531085166">Oppgaven kunne ikke utføres. Kontoen har ikke tilgang.</translation>
 <translation id="704835510384979817">Oppgaven kunne ikke utføres. Ingen samsvarende motorversjon.</translation>
-<translation id="7536363920335771251">Motoren er koblet fra. Grunn: %1$s</translation>
+<translation id="7536363920335771251">Motoren er koblet fra. Årsak: %1$s</translation>
 <translation id="7961542533680218955">Oppgaven ble utført.</translation>
 <translation id="8514856595257368555">Tokenet er hentet.</translation>
 </translationbundle>

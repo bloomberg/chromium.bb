@@ -74,7 +74,6 @@
 <translation id="17513872634828108">Otevřené karty</translation>
 <translation id="1753706481035618306">Číslo stránky</translation>
 <translation id="1763864636252898013">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho zařízení nedůvěřuje jeho bezpečnostnímu certifikátu. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
-<translation id="1775135663370355363">Zobrazuje se historie z tohoto zařízení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Neplatný požadavek nebo parametry požadavku</translation>
@@ -241,7 +240,6 @@
 <translation id="3462200631372590220">Skrýt rozšířené</translation>
 <translation id="3479539252931486093">Nebylo toto očekáváno? <ph name="BEGIN_LINK" />Informujte nás<ph name="END_LINK" />.</translation>
 <translation id="3498215018399854026">V tuto chvíli se nám s vaším rodičem nepodařilo spojit. Zkuste to prosím znovu.</translation>
-<translation id="3516765099410062445">Zobrazuje se historie všech přihlášených zařízení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Složka</translation>
 <translation id="3528171143076753409">Certifikát serveru není důvěryhodný.</translation>
 <translation id="3539171420378717834">Uchovat kopii této karty v tomto zařízení</translation>

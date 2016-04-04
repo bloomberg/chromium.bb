@@ -31,11 +31,6 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="138361230106469022">Hei, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1389974829397082527">Ei kirjanmerkkejä</translation>
-<translation id="1390350022570422499">Chrome voi nyt hakea ja näyttää lähistöllä olevia verkkosivuja Bluetoothin kautta.
-
-Kun laitteen lukitus avataan, Chrome etsii lähistöllä olevia sivuja. Google käsittelee sivut palvelussaan parantaakseen tuloksien laatua.
-
-Voit hallinnoida Fyysinen web ‑ominaisuuksia Chromen tietosuoja-asetuksissa.</translation>
 <translation id="1404122904123200417">Upotettu osoitteeseen <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Do Not Track</translation>
 <translation id="1409879593029778104">Tiedoston <ph name="FILE_NAME" /> lataus estettiin, koska tiedosto on jo olemassa.</translation>
@@ -78,6 +73,7 @@ Voit hallinnoida Fyysinen web ‑ominaisuuksia Chromen tietosuoja-asetuksissa.</
 <translation id="1974060860693918893">Lisäasetukset</translation>
 <translation id="1984937141057606926">Sallittu, paitsi kolmannen osapuolen evästeet</translation>
 <translation id="1994173015038366702">Sivuston URL-osoite</translation>
+<translation id="2001120796168634316">Tallenna linkitetty sivu</translation>
 <translation id="200669432486043882">Korvaa tiedosto.</translation>
 <translation id="2038563949887743358">Ota käyttöön Käytä tietokoneversiota</translation>
 <translation id="2073235970478114994">Lataa kuvat</translation>
@@ -96,7 +92,6 @@ Voit hallinnoida Fyysinen web ‑ominaisuuksia Chromen tietosuoja-asetuksissa.</
 <translation id="2268044343513325586">Tarkenna</translation>
 <translation id="2315043854645842844">Käyttöjärjestelmä ei tue palvelimen varmennevalintaa.</translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
-<translation id="2319528413610359757">Julkaisun <ph name="PUBLISHER" /> lukijoille</translation>
 <translation id="2321958826496381788">Vedä liukusäädintä, kunnes voit lukea tämän mukavasti. Tekstin tulisi olla vähintään näin suurta kaksoisnapautettuasi kappaletta.</translation>
 <translation id="2329597144923131178">Kirjaudu ja käytä kirjanm., historiaa, salasan. ja muita asetuksia kaikissa laitteissasi.</translation>
 <translation id="2343328333327081434">Asennetaan…</translation>
@@ -136,6 +131,7 @@ Voit hallinnoida Fyysinen web ‑ominaisuuksia Chromen tietosuoja-asetuksissa.</
 <translation id="2762000892062317888">äsken</translation>
 <translation id="2770465223704140727">Poista luettelosta</translation>
 <translation id="278029852808208386">Bluetooth-laitteita ei löytynyt. <ph name="BEGIN_LINK" />Hae uudelleen<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Etkö näe laitettasi? <ph name="BEGIN_LINK" />Tutustu ohjeisiin.<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Poistu koko näytön tilasta Takaisin-painikkeella.</translation>
 <translation id="2842985007712546952">Ylätason kansio</translation>
 <translation id="2870560284913253234">Sivusto</translation>
@@ -199,7 +195,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3672452749423051839">Selausvirheiden ehdotukset</translation>
 <translation id="3732088672634061408">Kiinnostuksen kohteita ei voitu hakea.</translation>
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
-<translation id="3774280986422214650">Jos otat tämän toiminnon käyttöön, osallistut kokeiluun, jossa HTTP-sivut lähetetään Googlen välityspalvelimien kautta.</translation>
 <translation id="3809549525127675114"><ph name="VIDEO_TITLE" /> päättyi</translation>
 <translation id="3828029223314399057">Hae kirjanmerkeistä</translation>
 <translation id="3871171699884605801">Lasten tileillä ei voi tyhjentää selaushistoriaa.</translation>
@@ -214,7 +209,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3992315671621218278">Tallenna linkki</translation>
 <translation id="4002066346123236978">Nimi</translation>
 <translation id="4035611068038188272">Kirjanmerkit vievät tällä hetkellä <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> tilaa.</translation>
-<translation id="403659016947612156">Lähistöllä on Fyysinen web ‑sivuja.</translation>
 <translation id="4042870126885713738">Näytä ehdotuksia, jos verkko-osoitetta ei tunnisteta tai yhteyttä ei voi muodostaa.</translation>
 <translation id="4056223980640387499">Seepia</translation>
 <translation id="4062305924942672200">Oikeudelliset tiedot</translation>
@@ -274,7 +268,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4816465935029283692">Tietotyypit</translation>
 <translation id="4827948050554950725">Lisää luottokortti</translation>
 <translation id="4836364883164334657">Yhteytesi tälle sivulle ei ole salattu. Hyökkääjät voivat yrittää varastaa tietojasi (kuten kuvia, salasanoja, viestejä tai luottokorttitietoja) kohteesta <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Lisätietoja</translation>
 <translation id="4850886885716139402">Näytä</translation>
 <translation id="4875622588773761625">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tämän sivuston salasanasi?</translation>
 <translation id="4881695831933465202">Avaa</translation>
@@ -287,7 +280,6 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="497421865427891073">Siirry eteenpäin</translation>
 <translation id="4996978546172906250">Jaa tällä palvelulla:</translation>
 <translation id="5000922062037820727">Estetty (suositus)</translation>
-<translation id="5014582685689328551">Selaa niitä Chromella.</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5040262127954254034">Tietosuoja</translation>
@@ -322,7 +314,6 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="5308933389783727448">Hae tallennetuista sivuista</translation>
 <translation id="5313967007315987356">Lisää sivusto</translation>
 <translation id="5317780077021120954">Tallenna</translation>
-<translation id="5323972449344932352">Käynnistä Chrome</translation>
 <translation id="5324858694974489420">Vanhempien asetukset</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> poistettiin.</translation>
@@ -401,7 +392,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="6159335304067198720"><ph name="PERCENT" /> vähemmän tiedonsiirtoa</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="6192792657125177640">Poikkeukset</translation>
-<translation id="6208263165776660488">Chrome-välilehdet ovat muuttaneet</translation>
 <translation id="6231464350722415003">Salli JavaScript määrittämissäsi sivustoissa mutta estä se muissa sivustoissa.</translation>
 <translation id="6232535412751077445">Do Not Track -toiminnon käyttöönotto tarkoittaa sitä, että selausliikenteeseesi sisällytetään pyyntö. Sen vaikutus riippuu siitä, vastaako verkkosivusto pyyntöön ja miten pyyntöä tulkitaan.
 
@@ -490,9 +480,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> käyttää sijaintiasi paikallisten hakutulosten näyttämiseen.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ohjeita<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Poista kirjanmerkki</translation>
-<translation id="7324738665594301612">Testaamme HTTPS-sivujen lähettämistä Googlen välityspalvelimien kautta osana kokeilua.</translation>
 <translation id="7346217184097589238">Tallennettuja sivustoasetuksia ei poisteta, ja ne saattavat liittyä selaustapoihisi.</translation>
-<translation id="7346909386216857016">OK!</translation>
 <translation id="7347770551817603360">Offline-sisältö</translation>
 <translation id="7363354739009474003">Ladataan videota <ph name="VIDEO_TITLE" /></translation>
 <translation id="7366340029385295517">Suoratoistetaan näytöllä <ph name="SCREEN_NAME" />.</translation>
@@ -515,7 +503,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7588950540487816470">Fyysinen web</translation>
 <translation id="7596558890252710462">Käyttöjärjestelmä</translation>
 <translation id="7599840151813361502">Sinua ei kirjata ulos <ph name="BEGIN_LINK" />Google-tileiltäsi<ph name="END_LINK" />.</translation>
-<translation id="7603403729818446828">Näet välilehdet ja viimeksi käytetyt sovellukset puhelimen Viimeisimmät-näkymässä. Voit muuttaa valintaa <ph name="BEGIN_LINK" />asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Keskeytetty</translation>
 <translation id="7612619742409846846">Olet kirjautunut Googleen käyttäjänä</translation>
 <translation id="7619072057915878432">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui verkkovirheen vuoksi.</translation>
@@ -564,6 +551,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="8173098127580644436">alusta asti</translation>
 <translation id="8200772114523450471">Jatka</translation>
 <translation id="8209050860603202033">Avaa kuva</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> haluaa muodostaa yhteyden seuraaviin laitteisiin:</translation>
 <translation id="8218346974737627104">Kirjautumisen vahvistaminen</translation>
 <translation id="8218934717680664417">Nyt voit tehdä hakuja yhdellä kosketuksella</translation>
 <translation id="8223946939421658889">Poista tiedot</translation>

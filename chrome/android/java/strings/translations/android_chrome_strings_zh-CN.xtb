@@ -31,11 +31,6 @@
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好！</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
-<translation id="1390350022570422499">Chrome 现在可以通过蓝牙寻找并向您显示附近的网页。
-
-当您的设备处于解锁状态时，Chrome 会检测附近的网页。接下来，相关 Google 服务会处理这些网页，以提高网页搜索结果的质量。
-
-您可以在 Chrome 隐私设置中管理实物网。</translation>
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“不跟踪”</translation>
 <translation id="1409879593029778104">系统已阻止下载 <ph name="FILE_NAME" />，因为文件已存在。</translation>
@@ -78,6 +73,7 @@
 <translation id="1974060860693918893">高级</translation>
 <translation id="1984937141057606926">允许（第三方除外）</translation>
 <translation id="1994173015038366702">网站网址</translation>
+<translation id="2001120796168634316">保存链接页以备后用</translation>
 <translation id="200669432486043882">替换文件</translation>
 <translation id="2038563949887743358">开启“请求切换到桌面版网站”</translation>
 <translation id="2073235970478114994">加载图片</translation>
@@ -96,7 +92,6 @@
 <translation id="2268044343513325586">优化</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
-<translation id="2319528413610359757">面向《<ph name="PUBLISHER" />》的读者</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
 <translation id="2329597144923131178">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置。</translation>
 <translation id="2343328333327081434">正在安装…</translation>
@@ -136,6 +131,7 @@
 <translation id="2762000892062317888">刚刚</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
 <translation id="278029852808208386">未发现任何蓝牙设备。<ph name="BEGIN_LINK" />重新搜索<ph name="END_LINK" />。</translation>
+<translation id="2811892995384186721">没看到您的设备？<ph name="BEGIN_LINK" />寻求帮助<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">触摸“返回”按钮即可退出全屏模式。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2870560284913253234">网站</translation>
@@ -199,7 +195,6 @@
 <translation id="3672452749423051839">导航错误建议</translation>
 <translation id="3732088672634061408">无法检索兴趣相关数据。</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
-<translation id="3774280986422214650">如果您启用了此功能，您将参与到通过 Google 服务器代理 HTTPS 网页的实验中。</translation>
 <translation id="3809549525127675114">“<ph name="VIDEO_TITLE" />”已播放完毕</translation>
 <translation id="3828029223314399057">搜索书签</translation>
 <translation id="3871171699884605801">无法清除未成年人帐户的浏览记录</translation>
@@ -214,7 +209,6 @@
 <translation id="3992315671621218278">保存链接</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4035611068038188272">书签目前占用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> 的空间。</translation>
-<translation id="403659016947612156">附近有实物网网页</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
 <translation id="4056223980640387499">棕色调</translation>
 <translation id="4062305924942672200">法律信息</translation>
@@ -274,7 +268,6 @@
 <translation id="4816465935029283692">数据类型</translation>
 <translation id="4827948050554950725">添加信用卡</translation>
 <translation id="4836364883164334657">您与此网站之间的连接不是私密连接。攻击者可能会试图从 <ph name="DOMAIN_NAME" /> 窃取您的信息（例如照片、密码、电子邮件和信用卡信息）。</translation>
-<translation id="4842511359652954519">了解详情</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4875622588773761625">要让<ph name="PASSWORD_MANAGER_BRAND" />更新您登录此网站时使用的密码吗？</translation>
 <translation id="4881695831933465202">打开</translation>
@@ -287,7 +280,6 @@
 <translation id="497421865427891073">前进</translation>
 <translation id="4996978546172906250">分享方式</translation>
 <translation id="5000922062037820727">已阻止（推荐）</translation>
-<translation id="5014582685689328551">使用 Chrome 浏览这些网页</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
@@ -322,7 +314,6 @@
 <translation id="5308933389783727448">搜索保存的网页</translation>
 <translation id="5313967007315987356">添加网站</translation>
 <translation id="5317780077021120954">保存</translation>
-<translation id="5323972449344932352">启动 Chrome</translation>
 <translation id="5324858694974489420">家长设置</translation>
 <translation id="5327248766486351172">名称</translation>
 <translation id="5345040418939504969">已删除“<ph name="BOOKMARK_TITLE" />”</translation>
@@ -401,7 +392,6 @@
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6192792657125177640">例外</translation>
-<translation id="6208263165776660488">Chrome 标签页已移至新的位置</translation>
 <translation id="6231464350722415003">允许在您指定的网站上运行 JavaScript，同时禁止在其他网站上运行 JavaScript</translation>
 <translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
 
@@ -490,9 +480,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />帮助<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">删除书签</translation>
-<translation id="7324738665594301612">我们正在作为某项实验的参与者对通过 Google 服务器代理 HTTPS 网页进行测试。</translation>
 <translation id="7346217184097589238">已保存的网站设置不会被删除，并且可能会反映您的浏览习惯。</translation>
-<translation id="7346909386216857016">知道了</translation>
 <translation id="7347770551817603360">离线内容</translation>
 <translation id="7363354739009474003">正在加载“<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">正在投射至<ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@
 <translation id="7588950540487816470">实物网</translation>
 <translation id="7596558890252710462">操作系统</translation>
 <translation id="7599840151813361502">您不会因此而退出自己的 <ph name="BEGIN_LINK" />Google 帐户<ph name="END_LINK" /></translation>
-<translation id="7603403729818446828">您目前打开的标签页和最近用过的其他应用都会显示在您手机的“概览”屏幕上。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />部分控制此功能。</translation>
 <translation id="7607002721634913082">已暂停</translation>
 <translation id="7612619742409846846">已使用以下帐户登录 Google：</translation>
 <translation id="7619072057915878432">未能成功下载 <ph name="FILE_NAME" />，因为出现了网络故障。</translation>
@@ -564,6 +551,7 @@
 <translation id="8173098127580644436">自始至今</translation>
 <translation id="8200772114523450471">继续</translation>
 <translation id="8209050860603202033">打开图片</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> 想连接到：</translation>
 <translation id="8218346974737627104">确认登录</translation>
 <translation id="8218934717680664417">现在，您只需触摸一下即可启动搜索</translation>
 <translation id="8223946939421658889">清除以下时间段内的数据：</translation>

@@ -77,7 +77,6 @@
 <translation id="17513872634828108">File deschise</translation>
 <translation id="1753706481035618306">Numărul paginii</translation>
 <translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
-<translation id="1775135663370355363">Se afișează istoricul de pe dispozitiv. <ph name="BEGIN_LINK" />Aflați mai multe<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Actualizează expresia de acces pentru sincronizare.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
@@ -253,7 +252,6 @@
 <translation id="3462200631372590220">Ascundeți detaliile avansate</translation>
 <translation id="3479539252931486093">A fost o situație neașteptată? <ph name="BEGIN_LINK" />Anunță-ne<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Momentan, nu ți-am putut contacta părintele. Încearcă din nou.</translation>
-<translation id="3516765099410062445">Se afișează istoricul din dispozitivele de pe care v-ați conectat. <ph name="BEGIN_LINK" />Aflați mai multe<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Dosar</translation>
 <translation id="3528171143076753409">Certificatul serverului nu este de încredere.</translation>
 <translation id="3539171420378717834">Păstrează o copie a cardului pe dispozitiv</translation>
@@ -268,6 +266,8 @@
 <translation id="3609138628363401169">Serverul nu acceptă extensia de renegociere TLS.</translation>
 <translation id="362276910939193118">Afișează întregul istoric</translation>
 <translation id="3623476034248543066">Afișați valoarea</translation>
+<translation id="3630155396527302611">Dacă este deja inclus ca program căruia i se permite să acceseze rețeaua, încearcă
+      să îl elimini din listă și să îl adaugi din nou.</translation>
 <translation id="3648607100222897006">Aceste funcții experimentale pot oricând să se schimbe, să nu mai funcționeze sau să dispară. Nu oferim absolut nicio garanție cu privire la efectele activării acestor experimente. Se poate chiar ca browserul să se defecteze brusc. Lăsând gluma la o parte, browserul poate să șteargă toate datele sau securitatea și confidențialitatea datelor se pot compromite într-un mod neașteptat. Toate experimentele pe care le activezi vor fi activate pentru toți utilizatorii acestui browser. Continuă cu prudență.</translation>
 <translation id="3650584904733503804">Validarea a reușit</translation>
 <translation id="3651020361689274926">Resursa solicitată nu mai există și nu apare nicio adresă de redirecționare. Se pare că această stare este definitivă.</translation>

@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Kérjük, zárja be az összes Chromium-ablakot (köztük a Windows 8-módban lévőket is), majd próbálja újra.</translation>
 <translation id="1708666629004767631">Elérhető a Chromium új, biztonságosabb verziója.</translation>
 <translation id="1725059042853530269">A(z) <ph name="FILE_NAME" /> káros lehet böngészési élményére, ezért a Chromium letiltotta azt.</translation>
-<translation id="1745962126679160932">A Chromium biztonságosan tárolja az Ön adatait, így nem kell újra begépelnie azokat, de kártyája biztonsági kódját igazolnia kell majd a későbbi kifizetésekhez.</translation>
 <translation id="1774152462503052664">A Chromium fusson a háttérben</translation>
 <translation id="1779356040007214683">A Chromium biztonságosabbá tétele érdekében kikapcsoltunk néhány bővítményt, amelyek nem a(z) <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> szolgáltatásból származnak, és előfordulhat, hogy az Ön tudta nélkül lettek telepítve.</translation>
 <translation id="1808667845054772817">A Chromium újratelepítése</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
 <translation id="1967743265616885482">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Chromiummal.</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
+<translation id="2103655854491303969">A Chromium Alkalmazásindító meg fog szűnni.</translation>
 <translation id="2117181891440368863">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver megadott tanúsítványátláthatósági adatokat, de azok érvénytelenek.</translation>
 <translation id="2119636228670142020">A &amp;Chromium OS névjegye</translation>
 <translation id="2158734852934720349">Chromium OS nyílt forráskódú licencek</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">A Chromium OS nem tudta szinkronizálni az adatokat, mert a fiók bejelentkezési adatai elavultak.</translation>
 <translation id="2558641060352364164">Ez a webhely a Chromium Frame beépülő modult használja, amelynek támogatása hamarosan megszűnik. Kérjük, távolítsa el, majd frissítsen egy modern böngészőre.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">Alkalmazásait továbbra is elérheti a Chromium-könyvjelzősáv <ph name="APPS_ICON_IMAGE" /> parancsikonjának használatával.</translation>
 <translation id="2602806952220118310">Chromium – Értesítések</translation>
 <translation id="2636877269779209383">A Chromiumnak hozzáférésre van szüksége a kamerához, hogy megoszthassa azt a webhellyel.</translation>
 <translation id="2648074677641340862">Az operációs rendszer hibát jelzett a telepítés során. Kérjük, töltse le újra a Chromiumot.</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">Ismereteink szerint ez a modul ütközik a Chromiummal.</translation>
 <translation id="4423735387467980091">A Chromium személyre szabása és beállításai</translation>
 <translation id="4458285410772214805">Kérjük, jelentkezzen ki, majd jelentkezzen be újra a módosítás aktiválásához.</translation>
-<translation id="4488676065623537541">Számlázási adatait a Chromium mentette.</translation>
 <translation id="4549794359424059447">A Chromium jövőbeli verziói nem fogják támogatni a következő rendszereket: Windows XP és Windows Vista.</translation>
 <translation id="4567424176335768812">A(z) <ph name="USER_EMAIL_ADDRESS" /> címmel van bejelentkezve. Elérheti könyvjelzőit, előzményeit és más beállításait minden olyan eszközön, amelyen bejelentkezett.</translation>
 <translation id="457845228957001925">Fontos információ az Ön Chromium-adatairól</translation>

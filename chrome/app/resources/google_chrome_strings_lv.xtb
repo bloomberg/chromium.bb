@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome — paziņojumi</translation>
 <translation id="1104959162601287462">Par &amp;Chrome OS</translation>
 <translation id="110877069173485804">Šis ir jūsu pārlūks Chrome</translation>
-<translation id="1225016890511909183">Chrome droši saglabās jūsu informāciju, lai tā vairs nebūtu atkārtoti jāievada, bet, veicot turpmākus maksājumus, jums joprojām būs jāapstiprina kartes drošības kods.</translation>
 <translation id="123620459398936149">Chrome OS nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
 <translation id="127345590676626841">Pārlūks Chrome tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija. Kad šī lejupielāde būs pabeigta, pārlūks Chrome tiks restartēts un varēsiet sākt lietot visjaunāko versiju.</translation>
 <translation id="1302523850133262269">Lūdzu, uzgaidiet, kamēr Chrome instalē jaunākos sistēmas atjauninājumus.</translation>
@@ -35,6 +34,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Saņemt palīdzību par Chrome OS izmantošanu</translation>
 <translation id="1818142563254268765">Pārlūku Chrome nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Atjauniniet pārlūku Chrome.</translation>
+<translation id="1864458292167284385">Chrome lietotņu palaidēja darbība tiek pārtraukta.</translation>
 <translation id="1877026089748256423">Chrome versija ir novecojusi.</translation>
 <translation id="2077129598763517140">Izmantot aparatūras paātrināšanas režīmu, kad tas ir pieejams</translation>
 <translation id="2084710999043359739">Pievienot pārlūkam Chrome</translation>
@@ -90,6 +90,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza Certificate Transparency informāciju, taču Chrome neatpazina nevienu no Certificate Transparency žurnāliem.</translation>
 <translation id="3889417619312448367">Atinstalēt Google Chrome</translation>
+<translation id="396182988103551265">Lai turpmāk piekļūtu savām lietotnēm, izmantojiet saīsni <ph name="APPS_ICON_IMAGE" /> Chrome grāmatzīmju joslā.</translation>
 <translation id="4042449298237264661">Šajā datorā vairs netiks saņemti Google Chrome atjauninājumi, jo operētājsistēmas Windows XP un Windows Vista vairs netiek atbalstītas.</translation>
 <translation id="4050175100176540509">Jaunākajā versijā ir pieejami svarīgi drošības uzlabojumi un jaunas funkcijas.</translation>
 <translation id="4053720452172726777">Pielāgot un kontrolēt Google Chrome</translation>
@@ -104,7 +105,6 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Lūdzu, izrakstieties un pierakstieties vēlreiz, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="4480040274068703980">Chrome OS nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
-<translation id="4513711165509885787">Jūsu norēķinu dati ir saglabāti pārlūkā Chrome.</translation>
 <translation id="4561051373932531560">Google Chrome ļauj jums noklikšķināt uz tālruņa numura un zvanīt ar to pakalpojumā Skype!</translation>
 <translation id="4567424176335768812">Jūs esat pierakstījies kā <ph name="USER_EMAIL_ADDRESS" />. Tagad varat piekļūt savām grāmatzīmēm, vēsturei un citiem iestatījumiem visās ierīcēs, kurās esat pierakstījies.</translation>
 <translation id="4631713731678262610">Paslēpt Chrome izvēlnē</translation>

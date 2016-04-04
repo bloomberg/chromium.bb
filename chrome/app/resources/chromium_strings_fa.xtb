@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">‏لطفاً تمام پنجره‌های Chromium را ببندید (از جمله آنهایی که در حالت Windows 8 هستند) و دوباره امتحان کنید.</translation>
 <translation id="1708666629004767631">‏نسخه جدید و امن‌تری از Chromium موجود است.</translation>
 <translation id="1725059042853530269">‏<ph name="FILE_NAME" /> ممکن است اثر نامطلوبی بر تجربه مرور شما بگذارد، بنابراین Chromium آن را مسدود کرده است.</translation>
-<translation id="1745962126679160932">‏Chromium اطلاعات شما را به صورت ایمن ذخیره می‌کند بنابراین لازم نیست دوباره آن را تایپ کنید، اما برای پرداخت‌های بعدی همچنان باید کد امنیتی کارت خود را تأیید کنید.</translation>
 <translation id="1774152462503052664">‏اجازه به Chromium برای اجرا در پس‌زمینه</translation>
 <translation id="1779356040007214683">‏برای ایمن‌تر کردن Chromium، برخی از افزونه‌هایی را که در <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست شده‌اند و ممکن است بدون اطلاع شما اضافه شده باشند، غیرفعال کردیم.</translation>
 <translation id="1808667845054772817">‏نصب مجدد Chromium</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">‏Chromium پاسخ نمی‌دهد. مجدداً راه‌اندازی شود؟</translation>
 <translation id="1967743265616885482">‏یک مدول همنام با Chromium تداخل دارد.</translation>
 <translation id="2077129598763517140">در صورت امکان از شتاب سخت‌افزاری استفاده شود</translation>
+<translation id="2103655854491303969">‏راه‌انداز برنامه Chromium از دور خارج می‌شود.</translation>
 <translation id="2117181891440368863">‏Chromium تأیید کرد <ph name="ISSUER" /> گواهی‌نامه این وب‌سایت را صادر کرده است. سرور، اطلاعات «شفافیت گواهی‌نامه» را ارائه کرد اما این اطلاعات نامعتبر بود.</translation>
 <translation id="2119636228670142020">‏درباره &amp;سیستم عامل Chromium </translation>
 <translation id="2158734852934720349">‏مجوزهای منبع باز سیستم عامل Chromium</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">‏سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود زیرا جزئیات ورود به حساب شما به‌روز نیست.</translation>
 <translation id="2558641060352364164">‏این سایت از افزایه Chromium Frame استفاده می‌کند که به زودی پشتیبانی از آن متوقف می‌شود. لطفاً آن را حذف نصب کرده و به مرورگر جدیدی ارتقا دهید.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">‏برای ادامه دسترسی به برنامه‌هایتان از میان‌بر <ph name="APPS_ICON_IMAGE" /> در نوار نشانک‌های Chromium استفاده کنید.</translation>
 <translation id="2602806952220118310">‏Chromium - اعلان‌ها</translation>
 <translation id="2636877269779209383">‏Chromium نیاز به مجوز دسترسی به دوربین دارد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="2648074677641340862">‏یک خطای سیستم عامل در طول نصب روی داد. لطفاً Chromium را دوباره نصب کنید.</translation>
@@ -99,7 +100,6 @@
 <translation id="4330585738697551178">‏این مدول با Chromium تداخل دارد.</translation>
 <translation id="4423735387467980091">‏سفارشی کردن و کنترل Chromium</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
-<translation id="4488676065623537541">‏جزئیات صورت‌حساب شما در Chromium ذخیره شده است.</translation>
 <translation id="4549794359424059447">‏نسخه‌های آینده Chromium دیگر از Windows XP یا Windows Vista پشتیبانی نمی‌کند.</translation>
 <translation id="4567424176335768812">با حساب <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم شده‌اید. اکنون در همه دستگاه‌هایی که با آنها به سیستم وارد شده‌اید می‌توانید به نشانک‌ها، سابقه و دیگر تنظیماتتان دسترسی داشته باشید.</translation>
 <translation id="457845228957001925">‏اطلاعات مهم در مورد داده‌های Chromium</translation>

@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Закрийте всі вікна Chromium (зокрема вікна в режимі Windows 8) і повторіть спробу.</translation>
 <translation id="1708666629004767631">Доступна нова, надійніша версія Chromium.</translation>
 <translation id="1725059042853530269">Файл <ph name="FILE_NAME" /> може погіршити перегляд веб-сторінок, тому Chromium блокує його.</translation>
-<translation id="1745962126679160932">Chromium надійно зберігатиме вашу інформацію, тож вам не потрібно буде вводити її знову. Але під час майбутніх платежів ви все одно маєте підтверджувати код безпеки картки.</translation>
 <translation id="1774152462503052664">Дозволити Chromium працювати у фоновому режимі</translation>
 <translation id="1779356040007214683">Щоб зробити Chromium безпечнішим, ми вимкнути деякі розширення, джерелом яких не є <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, і які, можливо, було додано без вашого відома.</translation>
 <translation id="1808667845054772817">Перевстановити Chromium</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium не відповідає. Перезапустити зараз?</translation>
 <translation id="1967743265616885482">Відомо, що модуль із такою назвою конфліктує з Chromium.</translation>
 <translation id="2077129598763517140">Використовувати апаратне прискорення, якщо доступно</translation>
+<translation id="2103655854491303969">Панель запуску додатків Chromium більше не доступна.</translation>
 <translation id="2117181891440368863">Chromium підтвердив, що компанія <ph name="ISSUER" /> видала сертифікат цього веб-сайту. Сервер надав інформацію про прозорість сертифіката, але вона недійсна.</translation>
 <translation id="2119636228670142020">Про &amp;ОС Chromium</translation>
 <translation id="2158734852934720349">Ліцензії ОС Chromium із відкритим кодом</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">ОС Chromium не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="2558641060352364164">Цей сайт використовує Chromium Frame. Ми припиняємо підтримку цього плагіна. Видаліть його та встановіть сучасний веб-переглядач.</translation>
 <translation id="2572494885440352020">Помічник Chromium</translation>
+<translation id="2595977381794111014">Відкривайте додатки за допомогою ярлика <ph name="APPS_ICON_IMAGE" /> на панелі закладок Chromium.</translation>
 <translation id="2602806952220118310">Chromium – сповіщення</translation>
 <translation id="2636877269779209383">Chromium потрібен доступ до камери, щоб використовувати її на цьому сайті.</translation>
 <translation id="2648074677641340862">Під час встановлення сталася помилка операційної системи. Завантажте Chromium ще раз.</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">Відомо, що цей модуль конфліктує з Chromium.</translation>
 <translation id="4423735387467980091">Налаштування та керування Chromium</translation>
 <translation id="4458285410772214805">Щоб зміна почала діяти, вийдіть і ввійдіть знову.</translation>
-<translation id="4488676065623537541">Ваші платіжні дані збережено в Chromium.</translation>
 <translation id="4549794359424059447">Наступні версії Chromium не підтримуватимуть Windows XP та Windows Vista.</translation>
 <translation id="4567424176335768812">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
 <translation id="457845228957001925">Важлива інформація про ваші дані Chromium</translation>

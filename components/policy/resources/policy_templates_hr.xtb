@@ -788,7 +788,6 @@
 <translation id="402759845255257575">Nemoj dopustiti nijednoj web-lokaciji da pokreće JavaScript</translation>
 <translation id="4027608872760987929">Omogući zadanog davatelja usluge pretraživanja</translation>
 <translation id="4039085364173654945">Nadzire smije li podsadržaj treće strane na stranici prikazivati skočni dijaloški okvir HTTP Basic Auth. Obično je to onemogućeno radi obrane od krađe identiteta. Ako ovo pravilo nije postavljeno, to je onemogućeno i podsadržajima treće strane neće biti dopušteno prikazivanje skočnog dijaloškog okvira HTTP Basic Auth.</translation>
-<translation id="4052765007567912447">Nadzire može li korisnik vidjeti zaporke u nešifriranom tekstu u upravitelju zaporki. Ako onemogućite ovu postavku, upravitelj zaporki ne dopušta prikaz pohranjenih zaporki u nešifriranom tekstu u prozoru upravitelja zaporki. Ako omogućite ili ne postavite ovo pravilo, korisnici mogu vidjeti svoje zaporke u nešifriranom tekstu u upravitelju zaporki.</translation>
 <translation id="4056910949759281379">Onemogući SPDY protokol</translation>
 <translation id="4088589230932595924">Anoniman način rada prisilno je uključen</translation>
 <translation id="4088983553732356374">Omogućuje vam da odredite je li web-lokacijama dopušteno postavljanje lokalnih podataka. Postavljanje lokalnih podataka može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije.
@@ -1146,7 +1145,6 @@
       Ako je naveden, parametar upita pod nazivom "restrict" dodat će se URL-u za dohvaćanje vrijednosti varijacija. Vrijednost parametra bit će vrijednost navedena u ovom pravilu.
 
       Ako nije naveden, URL vrijednosti varijacija neće se izmijeniti.</translation>
-<translation id="5564962323737505851">Konfigurira upravitelja zaporki. Ako je upravitelj zaporki omogućen, možete omogućiti ili onemogućiti korisničku opciju prikazivanja pohranjenih lozinki čitljivim tekstom.</translation>
 <translation id="556941986578702361">Kontroliraj automatsko skrivanje police proizvoda <ph name="PRODUCT_OS_NAME" />.
 
       Ako je ta polica postavljena na "AlwaysAutoHideShelf", polica će uvijek biti automatski skrivena.
@@ -1251,7 +1249,6 @@
 <translation id="5893553533827140852">Ako je ta postavka omogućena, zahtjevi autentifikacije "gnubby" proslijedit će se putem proxyja vezom udaljenog hosta.
 
           Ako je ta postavka onemogućena ili nije konfigurirana, zahtjevi autentifikacije "gnubby" neće se prosljeđivati putem proxyja.</translation>
-<translation id="5912364507361265851">Omogući korisnicima prikazivanje zaporki u Upravitelju zaporki</translation>
 <translation id="5921713479449475707">Dopusti preuzimanja automatskog ažuriranja putem HTTP-a</translation>
 <translation id="5921888683953999946">Postavi zadano stanje značajke pristupačnosti velikog pokazivača na zaslonu za prijavu.
 
@@ -1807,6 +1804,7 @@
 <translation id="7882585827992171421">To je pravilo aktivno samo u prodajnom načinu.
 
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
+<translation id="7882890448959833986">Spriječi upozorenje o nepodržanom OS-u</translation>
 <translation id="7912255076272890813">Konfiguriraj dopuštene vrste aplikacija/proširenja</translation>
 <translation id="793134539373873765">Određuje hoće li se p2p upotrebljavati za podatke ažuriranja OS-a. Ako je postavljeno na Točno, uređaji će dijeliti i pokušati konzumirati podatke ažuriranja na LAN-u potencijalno smanjujući potrošnju internetske propusnosti i zagušenje. Ako podaci ažuriranja nisu dostupni na LAN-u, uređaj će prijeći na preuzimanje s poslužitelja ažuriranja. Ako je postavljeno na Netočno ili nije konfigurirano, p2p se neće upotrebljavati.</translation>
 <translation id="7933141401888114454">Omogući izradu nadziranih korisnika</translation>
@@ -1864,6 +1862,7 @@
 
       Ako se pravilo postavi na neistinito, popis sučelja neće se generirati.</translation>
 <translation id="8146727383888924340">Dopusti korisnicima da iskoriste ponude tijekom registracije OS-a Chrome</translation>
+<translation id="8148785525797916822">Sprječava upozorenje koje se prikazuje kada se <ph name="PRODUCT_NAME" /> izvodi na računalima ili operativnim sustavima koji više nisu podržani.</translation>
 <translation id="8148901634826284024">Omogući značajku pristupačnosti načina visokog kontrasta.
 
           Ako se to pravilo postavi na točno, način visokog kontrasta uvijek će biti omogućen.

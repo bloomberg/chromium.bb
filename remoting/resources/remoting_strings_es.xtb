@@ -24,11 +24,9 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="1546934824884762070">Se ha producido un error inesperado. Comunícaselo a los desarrolladores.</translation>
 <translation id="1619813076098775562">Se ha cerrado la conexión al dispositivo de transmisión.</translation>
 <translation id="1643640058022401035">Si abandonas esta página, finalizará tu sesión en Chromoting.</translation>
-<translation id="1646994964686260497">No hay ningún ordenador al que conectarse.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas con este ordenador...</translation>
 <translation id="170207782578677537">No se ha podido registrar este ordenador.</translation>
 <translation id="1704090719919187045">Preferencias de host de Chromoting</translation>
-<translation id="1738759452976856405">Detener grabación</translation>
 <translation id="174018511426417793">No tienes ningún ordenador registrado. Para habilitar conexiones remotas con un ordenador, instala Escritorio remoto de Chrome en él y haz clic en <ph name="BUTTON_NAME" />.</translation>
 <translation id="1742469581923031760">Conectando...</translation>
 <translation id="1770394049404108959">No puedo abrir la aplicación.</translation>
@@ -124,7 +122,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
 <translation id="3989511127559254552">Para continuar, primero debes conceder permisos de acceso ampliados a tu ordenador. Solo debes realizar esta acción una vez.</translation>
 <translation id="4006787130661126000">Si quieres utilizar Escritorio remoto de Chrome para acceder a este ordenador, debes habilitar las conexiones remotas.</translation>
-<translation id="401121182145179743">En primer lugar, necesitas configurar el acceso remoto en tu ordenador.</translation>
 <translation id="4028465833180158312">• Actualizaciones de Material Design en la interfaz de usuario.
 • Créditos de licencias de terceros.
 • Ahora se muestra información para los ordenadores remotos que no están conectados.</translation>
@@ -176,7 +173,7 @@ remoto de Chrome</translation>
 <translation id="518094545883702183">Esta información solo se utiliza para diagnosticar el problema del que has informado, solo está disponible para la persona que examine tu informe y se conserva durante un período de hasta 30 días.</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
 <translation id="5254120496627797685">Si abandonas esta página, finalizará tu sesión en Escritorio remoto de Chrome.</translation>
-<translation id="5308380583665731573">Conexiones</translation>
+<translation id="5308380583665731573">Conectar</translation>
 <translation id="5363265567587775042">Pregunta al usuario el ordenador al que se quiere acceder para hacer clic en <ph name="SHARE" /> y proporcionar el código de acceso.</translation>
 <translation id="5379087427956679853">Escritorio remoto de Chrome permite compartir de forma segura tu ordenador a través de Internet. Ambos usuarios deben estar ejecutando la aplicación Escritorio remoto de Chrome, que está disponible en la página <ph name="URL" />.</translation>
 <translation id="5394895745784982830">Para Mac (OS X 10.6 y versiones superiores)</translation>
@@ -237,7 +234,6 @@ remoto de Chrome</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6985691951107243942">¿Seguro que quieres inhabilitar las conexiones remotas con <ph name="HOSTNAME" />? Si cambias de opinión, tendrás que volver a habilitar las conexiones desde ese ordenador.</translation>
 <translation id="6998989275928107238">Para</translation>
-<translation id="7017806586333792422">Iniciar grabación</translation>
 <translation id="7019153418965365059">Error de host no reconocido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Asistencia remota</translation>
 <translation id="7038683108611689168">Ayúdanos a mejorar la aplicación Chromoting autorizando la recopilación de estadísticas de uso e informes sobre fallos.</translation>

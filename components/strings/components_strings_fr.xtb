@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Onglets ouverts</translation>
 <translation id="1753706481035618306">Numéro de page</translation>
 <translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
-<translation id="1775135663370355363">Affichage de l'historique de cet appareil : <ph name="BEGIN_LINK" />en savoir plus<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Mettre à jour votre phrase secrète de synchronisation</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">La demande ou ses paramètres ne sont pas valides.</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Masquer les paramètres avancés</translation>
 <translation id="3479539252931486093">S'agit-il d'une erreur inattendue ? <ph name="BEGIN_LINK" />Signalez-nous ce problème.<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Impossible de joindre votre parent pour le moment. Veuillez réessayer.</translation>
-<translation id="3516765099410062445">Affichage de l'historique des appareils auxquels vous êtes connecté : <ph name="BEGIN_LINK" />en savoir plus<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3528171143076753409">Le certificat du serveur n'est pas approuvé.</translation>
 <translation id="3539171420378717834">Conserver une copie de cette carte sur cet appareil</translation>

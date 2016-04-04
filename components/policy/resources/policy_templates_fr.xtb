@@ -895,11 +895,6 @@ Si cette règle n'est pas configurée, les cookies tiers sont activés, mais l'u
 <translation id="4039085364173654945">Contrôle si un sous-contenu tiers sur une page est autorisé à ouvrir une boîte de dialogue d'authentification de base HTTP ( Basic Auth) dans une fenêtre pop-up. 
 
 Cette option est habituellement désactivée dans le cadre de la protection contre le phishing. Si cette règle n'est pas configurée, cette option est désactivée et le sous-contenu tiers n'est pas autorisé à afficher une boîte de dialogue d'authentification de base HTTP.</translation>
-<translation id="4052765007567912447">Contrôle si l'utilisateur peut afficher les mots de passe en texte clair dans le gestionnaire de mots de passe. 
-
-Si vous désactivez ce paramètre, le gestionnaire de mots de passe ne permet pas d'afficher les mots de passe stockés en texte clair dans la fenêtre du gestionnaire de mots de passe. 
-
-Si vous activez cette règle ou si vous ne la configurez pas, les utilisateurs peuvent afficher leurs mots de passe en texte clair dans le gestionnaire de mots de passe.</translation>
 <translation id="4056910949759281379">Désactiver le protocole SPDY</translation>
 <translation id="4088589230932595924">Mode navigation privée forcé</translation>
 <translation id="4088983553732356374">Vous permet de définir si les sites Web sont autorisés à configurer les données locales. La configuration des données locales peut être soit autorisée, soit bloquée pour tous les sites Web.
@@ -1308,7 +1303,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est spécifiée, un paramètre de requête "restrict" est ajouté à l'URL utilisée pour récupérer la valeur de départ des variantes. La valeur de ce paramètre correspond à la valeur définie dans cette règle.
 
       Si elle n'est pas spécifiée, l'URL utilisée pour récupérer la valeur de départ des variantes n'est pas modifiée.</translation>
-<translation id="5564962323737505851">Configure le gestionnaire de mots de passe. Si le gestionnaire de mots de passe est activé, vous pouvez activer ou désactiver la stratégie permettant à l'utilisateur d'afficher en texte clair les mots de passe enregistrés.</translation>
 <translation id="556941986578702361">Définit si l'étagère <ph name="PRODUCT_OS_NAME" /> doit être masquée automatiquement ou non.
 
       Si cette règle est définie sur "AlwaysAutoHideShelf", l'étagère est toujours masquée automatiquement.
@@ -1419,7 +1413,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="5893553533827140852">Si ce paramètre est activé, les demandes d'authentification gnubby seront envoyées par un proxy via une connexion hôte à distance.
 
           S'il est désactivé ou n'est pas configuré, ces demandes ne seront pas envoyées par un proxy.</translation>
-<translation id="5912364507361265851">Permet aux utilisateurs d'afficher les mots de passe dans le gestionnaire de mots de passe.</translation>
 <translation id="5921713479449475707">Autoriser les téléchargements de mise à jour automatique via HTTP</translation>
 <translation id="5921888683953999946">Définit l'état par défaut de la fonctionnalité d'accessibilité de grand curseur sur l'écran de connexion.
 
@@ -2053,6 +2046,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="7882585827992171421">Cette règle n'est active qu'en mode "point de vente".
 
        Détermine l'identifiant de l'extension à utiliser comme économiseur d'écran sur l'écran de connexion. L'extension doit faire partie de l'AppPack configuré pour ce domaine via la règle DeviceAppPack.</translation>
+<translation id="7882890448959833986">Supprimer l'avertissement relatif au système d'exploitation non compatible</translation>
 <translation id="7912255076272890813">Configurer les types d'applications ou d'extensions autorisés</translation>
 <translation id="793134539373873765">Indiquer si une connexion P2P doit être utilisée pour les charges utiles de mise à jour de l'OS. Si le paramètre est défini sur "True", les charges utiles de mise à jour sur le réseau local sont partagées et utilisées par les appareils, ce qui peut avoir pour effet de réduire la quantité de bande passante utilisée et l'encombrement sur Internet. Si la charge utile de mise à jour n'est pas disponible sur le réseau local, le téléchargement est effectué sur l'appareil à partir d'un serveur de mise à jour. Si le paramètre est défini sur "False", ou s'il n'est pas configuré, la connexion P2P n'est pas utilisée.</translation>
 <translation id="7933141401888114454">Autoriser la création de comptes utilisateurs supervisés</translation>
@@ -2115,6 +2109,7 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 
       Si la règle est définie sur "False", aucune liste d'interfaces n'est générée.</translation>
 <translation id="8146727383888924340">Autoriser les utilisateurs à profiter de leurs offres via le service d'enregistrement Chrome OS</translation>
+<translation id="8148785525797916822">Supprime l'avertissement qui s'affiche lorsque l'application <ph name="PRODUCT_NAME" /> s'exécute sur un ordinateur ou un système d'exploitation qui n'est plus accepté.</translation>
 <translation id="8148901634826284024">Active la fonctionnalité d'accessibilité du mode Contraste élevé.
 
           Si vous définissez cette règle sur "True", le mode Contraste élevé est activé en permanence.

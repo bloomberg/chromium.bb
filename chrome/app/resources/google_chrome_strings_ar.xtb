@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">‏Chrome - الإشعارات</translation>
 <translation id="1104959162601287462">‏حول &amp;نظام التشغيل Google Chrome</translation>
 <translation id="110877069173485804">‏هذا Chrome الخاص بك</translation>
-<translation id="1225016890511909183">‏سيخزن Chrome معلوماتك في مكان آمن ولذلك لن تحتاج إلى كتابتها مرة أخرى، ولكن سيظل يلزمك التحقق من رمز الأمان في بطاقتك لإجراء عمليات دفع مستقبلية.</translation>
 <translation id="123620459398936149">‏تعذر على نظام التشغيل Chrome مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
 <translation id="127345590676626841">‏يجري تحديث Chrome تلقائيًا بحيث يكون لديك أحدث إصدار. عند اكتمال هذا التحميل، ستتم إعادة تشغيل Chrome وستبدأ العمل.</translation>
 <translation id="1302523850133262269">‏الرجاء الانتظار لحين تثبيت Chrome لآخر تحديثات النظام.</translation>
@@ -35,6 +34,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">‏الحصول على مساعدة بشأن استخدام نظام التشغيل Chrome</translation>
 <translation id="1818142563254268765">‏تعذر تحديث Chrome إلى أحدث إصدار، وبالتالي تفوتك ميزات جديدة رائعة وإصلاحات للأمان. يلزمك تحديث Chrome.</translation>
+<translation id="1864458292167284385">‏إيقاف Launcher تطبيقات Chrome.</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
 <translation id="2084710999043359739">‏إضافة إلى Chrome</translation>
@@ -90,6 +90,7 @@
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
 <translation id="3881912906674381083">‏تحقق Chrome من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكن لم يتعرّف Chrome على أي سجلات لشفافية الشهادة.</translation>
 <translation id="3889417619312448367">‏إزالة Google Chrome</translation>
+<translation id="396182988103551265">‏استخدام الاختصار <ph name="APPS_ICON_IMAGE" /> في شريط الإشارات المرجعية لـ Chrome لمواصلة الدخول إلى تطبيقاتك.</translation>
 <translation id="4042449298237264661">‏لن يستلم هذا الكمبيوتر تحديثات لـ Google Chrome لأن Windows XP وWindows Vista أصبحا غير مدعومين.</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
 <translation id="4053720452172726777">‏تخصيص Google Chrome والتحكم فيه</translation>
@@ -104,7 +105,6 @@
 <translation id="4407807842708586359">‏نظام تشغيل Google Chrome</translation>
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
 <translation id="4480040274068703980">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لوجود خطأ في تسجيل الدخول.</translation>
-<translation id="4513711165509885787">‏تم حفظ تفاصيل الفوترة في Chrome.</translation>
 <translation id="4561051373932531560">‏يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS" />. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
 <translation id="4631713731678262610">‏الإخفاء في قائمة Chrome</translation>

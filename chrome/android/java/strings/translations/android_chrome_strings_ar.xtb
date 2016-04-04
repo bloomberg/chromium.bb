@@ -31,11 +31,6 @@
 <translation id="138361230106469022">مرحبًا، <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1389974829397082527">ليست هناك إشارات مرجعية هنا</translation>
-<translation id="1390350022570422499">‏يمكن لمتصفح Chrome الآن العثور على صفحات الويب المجاورة وعرضها باستخدام البلوتوث.
-
-سيبحث Chrome عن صفحات الأجهزة المجاورة عند إلغاء قفل جهازك. وستمر هذه الصفحات عبر خدمة Google لتحسين جودة نتائج الصفحات.
-
-يمكنك التحكم في الشبكة المادية في إعدادات الخصوصية في Chrome.</translation>
 <translation id="1404122904123200417">تم التضمين في <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"عدم التعقب"</translation>
 <translation id="1409879593029778104">مُنع تنزيل الملف <ph name="FILE_NAME" /> لأنه موجود بالفعل.</translation>
@@ -78,6 +73,7 @@
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="1984937141057606926">مسموح باستثناء الجهات الخارجية</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
+<translation id="2001120796168634316">حفظ الصفحة المرتبطة لوقت لاحق</translation>
 <translation id="200669432486043882">استبدال ملف</translation>
 <translation id="2038563949887743358">تشغيل طلب موقع الويب لسطح المكتب</translation>
 <translation id="2073235970478114994">تحميل الصور</translation>
@@ -96,7 +92,6 @@
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
-<translation id="2319528413610359757">لقراء <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">يمكنك سحب شريط التمرير حتى تتمكن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرتين على إحدى الفقرات.</translation>
 <translation id="2329597144923131178">سجّل الدخول للحصول على الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى على كل أجهزتك.</translation>
 <translation id="2343328333327081434">جارٍ التثبيت...</translation>
@@ -136,6 +131,7 @@
 <translation id="2762000892062317888">الآن</translation>
 <translation id="2770465223704140727">إزالة من القائمة</translation>
 <translation id="278029852808208386">لم يتم العثور على أجهزة بلوتوث. <ph name="BEGIN_LINK" />ابحث مرة أخرى<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">ألا ترى جهازك؟ <ph name="BEGIN_LINK" />احصل على المساعدة<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2870560284913253234">الموقع</translation>
@@ -197,7 +193,6 @@
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
 <translation id="3732088672634061408">تعذَّر استرداد الاهتمامات.</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
-<translation id="3774280986422214650">‏إذا تم تمكين هذه الميزة، فستصبح جزءًا من تجربة تنشِئ خادمًا وكيلاً لصفحات HTTPS عبر خوادم Google.</translation>
 <translation id="3809549525127675114">تم الانتهاء من تشغيل "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="3828029223314399057">بحث في الإشارات المرجعية</translation>
 <translation id="3871171699884605801">يتعذر مسح سجل التصفح بحسابات الأطفال</translation>
@@ -212,7 +207,6 @@
 <translation id="3992315671621218278">حفظ الرابط</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4035611068038188272">تشغل الإشارات المرجعية حاليًا <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">صفحات الشبكة المادية مجاورة</translation>
 <translation id="4042870126885713738">عرض اقتراحات عند تعذر فتح عنوان ويب أو تعذر إجراء اتصال</translation>
 <translation id="4056223980640387499">بني داكن</translation>
 <translation id="4062305924942672200">المعلومات القانونية</translation>
@@ -273,7 +267,6 @@
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4827948050554950725">إضافة بطاقة ائتمان</translation>
 <translation id="4836364883164334657">اتصالك بهذا الموقع ليس له خصوصية. قد يحاول المهاجمون سرقة معلوماتك (على سبيل المثال، الصور، وكلمات المرور، والرسائل وبطاقات الائتمان) من <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">مزيد من المعلومات</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4875622588773761625">هل تريد تحديث كلمة مرورك لهذا الموقع من خلال <ph name="PASSWORD_MANAGER_BRAND" />؟</translation>
 <translation id="4881695831933465202">فتح</translation>
@@ -286,7 +279,6 @@
 <translation id="497421865427891073">انتقال للأمام</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5000922062037820727">محظور (موصى به)</translation>
-<translation id="5014582685689328551">‏استخدام Chrome لتصفحها</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
@@ -321,7 +313,6 @@
 <translation id="5308933389783727448">البحث في الصفحات المحفوظة</translation>
 <translation id="5313967007315987356">إضافة موقع ويب</translation>
 <translation id="5317780077021120954">حفظ</translation>
-<translation id="5323972449344932352">‏تشغيل Chrome</translation>
 <translation id="5324858694974489420">الإعدادات الأبوية</translation>
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5345040418939504969">تم حذف <ph name="BOOKMARK_TITLE" /></translation>
@@ -400,7 +391,6 @@
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6192792657125177640">الاستثناءات</translation>
-<translation id="6208263165776660488">‏تم نقل علامات تبويب Chrome</translation>
 <translation id="6231464350722415003">السماح لجافا سكريبت بالعمل على المواقع التي تحددها بينما يتم حظرها على بقية مواقع الويب</translation>
 <translation id="6232535412751077445">يعني تمكين ميزة "عدم التعقب" تضمين الطلب مع عدد زيارات التصفح. ويعتمد أي تأثير على استجابة موقع الويب للطلب من عدمه، بالإضافة إلى كيفية تفسير الطلب.
 
@@ -489,9 +479,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />مساعدة<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">حذف الإشارة المرجعية</translation>
-<translation id="7324738665594301612">‏نختبر إنشاء خادم وكيل لصفحات HTTPS عبر خوادم Google كجزء من التجربة.</translation>
 <translation id="7346217184097589238">لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عاداتك في التصفح.</translation>
-<translation id="7346909386216857016">موافق، حسنًا</translation>
 <translation id="7347770551817603360">محتوى بلا اتصال</translation>
 <translation id="7363354739009474003">يتم الآن تحميل "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">جارٍ الإرسال إلى <ph name="SCREEN_NAME" /></translation>
@@ -514,7 +502,6 @@
 <translation id="7588950540487816470">الشبكة المادية</translation>
 <translation id="7596558890252710462">نظام التشغيل</translation>
 <translation id="7599840151813361502">‏لن يتم تسجيل خروجك من <ph name="BEGIN_LINK" />حسابات Google<ph name="END_LINK" />.</translation>
-<translation id="7603403729818446828">يمكن عرض علامات التبويب باستخدام التطبيقات الأخيرة الأخرى على شاشة النظرة العامة على الهاتف. يمكن التحكم في ذلك من خلال <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">تعليق التحميل</translation>
 <translation id="7612619742409846846">‏تسجيل الدخول إلى Google باسم</translation>
 <translation id="7619072057915878432">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب إخفاقات الشبكة.</translation>
@@ -563,6 +550,7 @@
 <translation id="8173098127580644436">بدايةَ الوقت</translation>
 <translation id="8200772114523450471">استئناف</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
+<translation id="8215250379351058554">يريد <ph name="SITE" /> الاتصال بـ:</translation>
 <translation id="8218346974737627104">تأكيد تسجيل الدخول</translation>
 <translation id="8218934717680664417">يمكنك الآن البحث بلمسة واحدة</translation>
 <translation id="8223946939421658889">محو البيانات من</translation>

@@ -31,11 +31,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="138361230106469022">Xin chào <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1389974829397082527">Không có dấu trang ở đây</translation>
-<translation id="1390350022570422499">Giờ đây Chrome có thể tìm và hiển thị cho bạn các trang web lân cận bằng Bluetooth.
-
-Chrome sẽ quét tìm các trang lân cận khi thiết bị của bạn được mở khóa. Các trang này sẽ được chuyển tới một dịch vụ của Google để cải thiện chất lượng của kết quả trang.
-
-Bạn có thể kiểm soát Web trong cuộc sống trong cài đặt bảo mật của Chrome.</translation>
 <translation id="1404122904123200417">Được nhúng trong <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Không theo dõi”</translation>
 <translation id="1409879593029778104">Đã ngăn tải xuống <ph name="FILE_NAME" /> do tệp này đã tồn tại.</translation>
@@ -78,6 +73,7 @@ Bạn có thể kiểm soát Web trong cuộc sống trong cài đặt bảo m�
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="1984937141057606926">Được cho phép, ngoại trừ cookie của bên thứ ba</translation>
 <translation id="1994173015038366702">URL trang web</translation>
+<translation id="2001120796168634316">Lưu trang liên kết để xem sau</translation>
 <translation id="200669432486043882">Thay thế tệp</translation>
 <translation id="2038563949887743358">Bật Yêu cầu trang web cho máy tính</translation>
 <translation id="2073235970478114994">Tải hình ảnh</translation>
@@ -96,7 +92,6 @@ Bạn có thể kiểm soát Web trong cuộc sống trong cài đặt bảo m�
 <translation id="2268044343513325586">Tinh chỉnh</translation>
 <translation id="2315043854645842844">Lựa chọn chứng chỉ phía ứng dụng khách không được hệ điều hành hỗ trợ.</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
-<translation id="2319528413610359757">Dành cho người đọc <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
 <translation id="2329597144923131178">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
 <translation id="2343328333327081434">Đang cài đặt…</translation>
@@ -136,6 +131,7 @@ Bạn có thể kiểm soát Web trong cuộc sống trong cài đặt bảo m�
 <translation id="2762000892062317888">vừa xong</translation>
 <translation id="2770465223704140727">Xóa khỏi danh sách</translation>
 <translation id="278029852808208386">Không tìm thấy thiết bị bluetooth. <ph name="BEGIN_LINK" />Tìm kiếm lại<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Không thấy thiết bị của bạn? <ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="2842985007712546952">Thư mục gốc</translation>
 <translation id="2870560284913253234">Trang web</translation>
@@ -199,7 +195,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="3672452749423051839">Đề xuất lỗi điều hướng</translation>
 <translation id="3732088672634061408">Không thể truy xuất sở thích.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
-<translation id="3774280986422214650">Nếu bật tính năng này, bạn sẽ trở thành một phần của thử nghiệm ủy quyền trang HTTPS thông qua máy chủ Google.</translation>
 <translation id="3809549525127675114">Đã phát xong “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="3828029223314399057">Tìm kiếm dấu trang</translation>
 <translation id="3871171699884605801">Không thể xóa lịch sử duyệt web bằng tài khoản dành cho trẻ em</translation>
@@ -214,7 +209,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="3992315671621218278">Lưu liên kết</translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
 <translation id="4035611068038188272">Dấu trang hiện sử dụng <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">Các trang Web trong cuộc sống ở gần đây</translation>
 <translation id="4042870126885713738">Hiển thị các đề xuất khi địa chỉ web không khắc phục được hoặc kết nối không thể được thực hiện</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
 <translation id="4062305924942672200">Thông tin pháp lý</translation>
@@ -274,7 +268,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4816465935029283692">Loại dữ liệu</translation>
 <translation id="4827948050554950725">Thêm thẻ tín dụng</translation>
 <translation id="4836364883164334657">Kết nối của bạn tới trang web này không ở chế độ riêng tư. Những kẻ tấn công có thể tìm cách lấy cắp thông tin của bạn (ví dụ: ảnh, mật khẩu, tin nhắn và thẻ tín dụng) từ <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Đọc thêm</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="4875622588773761625">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu của mình cho trang web này không?</translation>
 <translation id="4881695831933465202">Mở</translation>
@@ -287,7 +280,6 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="497421865427891073">Đi về phía trước</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
 <translation id="5000922062037820727">Bị chặn (được đề xuất)</translation>
-<translation id="5014582685689328551">Sử dụng Chrome để duyệt qua chúng</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5040262127954254034">Bảo mật</translation>
@@ -322,7 +314,6 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5308933389783727448">Tìm kiếm các trang đã lưu</translation>
 <translation id="5313967007315987356">Thêm trang web</translation>
 <translation id="5317780077021120954">Lưu</translation>
-<translation id="5323972449344932352">Khởi chạy Chrome</translation>
 <translation id="5324858694974489420">Cài đặt của phụ huynh</translation>
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5345040418939504969">Đã xóa <ph name="BOOKMARK_TITLE" /></translation>
@@ -401,7 +392,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6159335304067198720">Tiết kiệm <ph name="PERCENT" /> dữ liệu</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
-<translation id="6208263165776660488">Tab Chrome đã di chuyển</translation>
 <translation id="6231464350722415003">Cho phép JavaScript trên các trang web bạn chỉ định trong khi chặn đối với các phần web khác</translation>
 <translation id="6232535412751077445">Bật tính năng “Không theo dõi” nghĩa là một yêu cầu sẽ được đi kèm với lưu lượng duyệt web của bạn. Mọi ảnh hưởng đều phụ thuộc vào việc trang web có phản hồi yêu cầu không và cách thức diễn giải yêu cầu.
 
@@ -490,9 +480,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> sử dụng vị trí của bạn để hiển thị kết quả tìm kiếm địa phương</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Trợ giúp<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Xóa dấu trang</translation>
-<translation id="7324738665594301612">Chúng tôi đang kiểm tra việc ủy quyền các trang HTTPS thông qua máy chủ Google dưới dạng một phần của thử nghiệm.</translation>
 <translation id="7346217184097589238">Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn.</translation>
-<translation id="7346909386216857016">Ok</translation>
 <translation id="7347770551817603360">Nội dung ngoại tuyến</translation>
 <translation id="7363354739009474003">Đang tải “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">Đang truyền tới <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7588950540487816470">Web trong cuộc sống</translation>
 <translation id="7596558890252710462">Hệ điều hành</translation>
 <translation id="7599840151813361502">Bạn sẽ không bị đăng xuất khỏi <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của mình</translation>
-<translation id="7603403729818446828">Xem các tab của bạn với các ứng dụng gần đây khác trên màn hình Tổng quan của điện thoại. Bạn có thể kiểm soát cài đặt này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Đã tạm dừng</translation>
 <translation id="7612619742409846846">Đã đăng nhập vào Google bằng</translation>
 <translation id="7619072057915878432">Tải xuống không thành công <ph name="FILE_NAME" /> do lỗi mạng.</translation>
@@ -564,6 +551,7 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 <translation id="8173098127580644436">mọi thứ</translation>
 <translation id="8200772114523450471">Tiếp tục</translation>
 <translation id="8209050860603202033">Mở ảnh</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> muốn kết nối với:</translation>
 <translation id="8218346974737627104">Xác nhận đăng nhập</translation>
 <translation id="8218934717680664417">Bạn hiện có thể tìm kiếm bằng một lần chạm</translation>
 <translation id="8223946939421658889">Xóa dữ liệu khỏi</translation>

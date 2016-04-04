@@ -31,11 +31,6 @@
 <translation id="138361230106469022">Здравствуйте, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1389974829397082527">Закладок пока нет</translation>
-<translation id="1390350022570422499">С помощью Bluetooth Chrome может находить веб-страницы, связанные с объектами вокруг вас, и показывать их.
-
-Браузер будет искать их, когда ваше устройство разблокировано. Чтобы улучшить работу функции, страницы будут отправляться через сервис Google.
-
-Включить или отключить Интернет вокруг нас можно в разделе "Личные данные" настроек Chrome.</translation>
 <translation id="1404122904123200417">Встроено в <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Запрет отслеживания</translation>
 <translation id="1409879593029778104">Скачивание файла <ph name="FILE_NAME" /> остановлено, так как он уже существует.</translation>
@@ -78,6 +73,7 @@
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1984937141057606926">Разрешено, кроме сторонних сайтов</translation>
 <translation id="1994173015038366702">Адрес сайта</translation>
+<translation id="2001120796168634316">Сохранить страницу офлайн</translation>
 <translation id="200669432486043882">Заменить файл</translation>
 <translation id="2038563949887743358">Включить полную версию сайта</translation>
 <translation id="2073235970478114994">Загрузить изображения</translation>
@@ -96,7 +92,6 @@
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2315043854645842844">Сертификат, выбранный клиентом, не поддерживается операционной системой.</translation>
 <translation id="2316129865977710310">Спасибо, не надо</translation>
-<translation id="2319528413610359757">Читателям издания "<ph name="PUBLISHER" />"</translation>
 <translation id="2321958826496381788">Перемещайте ползунок, пока текст не станет удобным для чтения. После двойного нажатия на абзац текст должен быть такого размера.</translation>
 <translation id="2329597144923131178">Войдите, чтобы синхронизировать закладки, пароли, историю и т. д. на всех устройствах.</translation>
 <translation id="2343328333327081434">Установка…</translation>
@@ -136,6 +131,7 @@
 <translation id="2762000892062317888">только что</translation>
 <translation id="2770465223704140727">Удалить из списка</translation>
 <translation id="278029852808208386">Устройства Bluetooth не обнаружены. <ph name="BEGIN_LINK" />Повторите попытку<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Не можете найти устройство? <ph name="BEGIN_LINK" />Узнайте<ph name="END_LINK" />, как это исправить.</translation>
 <translation id="2836148919159985482">Чтобы выйти из полноэкранного режима, нажмите кнопку "Назад".</translation>
 <translation id="2842985007712546952">Родительская папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -199,7 +195,6 @@
 <translation id="3672452749423051839">Подсказки при ошибке навигации</translation>
 <translation id="3732088672634061408">Не удалось получить данные об интересах</translation>
 <translation id="3738139272394829648">Быстрый поиск</translation>
-<translation id="3774280986422214650">Это экспериментальная функция. Когда она включена, серверы Google сжимают HTTP-страницы.</translation>
 <translation id="3809549525127675114">Воспроизведение видео "<ph name="VIDEO_TITLE" />" завершено</translation>
 <translation id="3828029223314399057">Искать в закладках</translation>
 <translation id="3871171699884605801">Историю просмотров нельзя очистить из детского аккаунта</translation>
@@ -214,7 +209,6 @@
 <translation id="3992315671621218278">Сохранить ссылку</translation>
 <translation id="4002066346123236978">Название</translation>
 <translation id="4035611068038188272">Сохраненные закладки занимают <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">Интернет вокруг нас нашел веб-страницы.</translation>
 <translation id="4042870126885713738">Предлагать альтернативы, если веб-адрес недоступен или с ним не удается установить соединение</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4062305924942672200">Юридическая информация</translation>
@@ -274,7 +268,6 @@
 <translation id="4816465935029283692">Типы данных</translation>
 <translation id="4827948050554950725">Добавить кредитную карту</translation>
 <translation id="4836364883164334657">Подключение не защищено. Злоумышленники могут похитить ваши данные (например, пароли, сообщения или номера банковских карт) в домене <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Подробнее…</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4875622588773761625">Обновить пароль для этого сайта в сервисе "<ph name="PASSWORD_MANAGER_BRAND" />"?</translation>
 <translation id="4881695831933465202">Открыть</translation>
@@ -287,7 +280,6 @@
 <translation id="497421865427891073">Вперед</translation>
 <translation id="4996978546172906250">Способ отправки</translation>
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
-<translation id="5014582685689328551">Откройте их в Chrome.</translation>
 <translation id="5016205925109358554">С засечками</translation>
 <translation id="5039804452771397117">Разрешить</translation>
 <translation id="5040262127954254034">Личные данные</translation>
@@ -322,7 +314,6 @@
 <translation id="5308933389783727448">Искать по сохраненным страницам</translation>
 <translation id="5313967007315987356">Добавить сайт</translation>
 <translation id="5317780077021120954">Сохранить</translation>
-<translation id="5323972449344932352">Запустить Chrome</translation>
 <translation id="5324858694974489420">Родительские настройки</translation>
 <translation id="5327248766486351172">Название</translation>
 <translation id="5345040418939504969">Закладка "<ph name="BOOKMARK_TITLE" />" удалена</translation>
@@ -401,7 +392,6 @@
 <translation id="6159335304067198720">Сжатие данных: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Подробнее...</translation>
 <translation id="6192792657125177640">Исключения</translation>
-<translation id="6208263165776660488">Где искать вкладки</translation>
 <translation id="6231464350722415003">Разрешить JavaScript на указанных сайтах и блокировать на всех остальных</translation>
 <translation id="6232535412751077445">Если вы запретите отслеживание, в запросы браузера будет включена специальная команда. Сайты могут интерпретировать ее и отвечать на нее по-разному.
 
@@ -490,9 +480,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Удалить закладку</translation>
-<translation id="7324738665594301612">Мы тестируем новую функцию: серверы Google сжимают данные HTTPS-страниц.</translation>
 <translation id="7346217184097589238">Настройки сайтов не изменятся, а следовательно сохранятся и данные о вашей работе в Интернете.</translation>
-<translation id="7346909386216857016">ОК</translation>
 <translation id="7347770551817603360">Офлайн-контент</translation>
 <translation id="7363354739009474003">Загрузка видео "<ph name="VIDEO_TITLE" />"…</translation>
 <translation id="7366340029385295517">Транслируется на экран устройства "<ph name="SCREEN_NAME" />"</translation>
@@ -515,7 +503,6 @@
 <translation id="7588950540487816470">Интернет вокруг нас</translation>
 <translation id="7596558890252710462">Операционная система</translation>
 <translation id="7599840151813361502">Вам не придется повторно входить в свои <ph name="BEGIN_LINK" />аккаунты Google<ph name="END_LINK" />.</translation>
-<translation id="7603403729818446828">Вы найдете все вкладки в списке недавно использованных приложений, нажав на значок "Обзор". Вернуться к прежнему интерфейсу можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Приостановлен</translation>
 <translation id="7612619742409846846">Вы вошли в аккаунт</translation>
 <translation id="7619072057915878432">Не удалось скачать файл <ph name="FILE_NAME" /> из-за сбоев сети.</translation>
@@ -564,6 +551,7 @@
 <translation id="8173098127580644436">все время</translation>
 <translation id="8200772114523450471">Возобновить</translation>
 <translation id="8209050860603202033">Открыть изображение</translation>
+<translation id="8215250379351058554">Сайт <ph name="SITE" /> запрашивает подключение к:</translation>
 <translation id="8218346974737627104">Подтвердите вход</translation>
 <translation id="8218934717680664417">Теперь поиск работает в одно касание!</translation>
 <translation id="8223946939421658889">Удалить данные за</translation>

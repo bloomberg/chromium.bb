@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome - お知らせ</translation>
 <translation id="1104959162601287462">Chrome OS について(&amp;C)</translation>
 <translation id="110877069173485804">自分好みに設定</translation>
-<translation id="1225016890511909183">Chrome で情報が安全に保存されるので、再度入力する必要はありません。ただし、今後もお支払いの際にカードのセキュリティ コードを入力する必要があります。</translation>
 <translation id="123620459398936149">Chrome OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="127345590676626841">Chrome は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chrome が再起動し、すぐにお使いいただけます。</translation>
 <translation id="1302523850133262269">Chrome は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
 <translation id="1818142563254268765">Chrome を最新バージョンに自動更新できませんでした。新機能とセキュリティの修正が適用されていません。Chrome を更新する必要があります。</translation>
+<translation id="1864458292167284385">Chrome アプリ ランチャーを非表示にします。</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2084710999043359739">Chrome に追加</translation>
@@ -88,6 +88,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報がサーバーから提供されましたが、証明書の透明性ログを認識できませんでした。</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
+<translation id="396182988103551265">今後アプリにアクセスするには、Chrome ブックマーク バーの <ph name="APPS_ICON_IMAGE" /> ショートカットを使用してください。</translation>
 <translation id="4042449298237264661">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
 <translation id="4053720452172726777">Google Chrome の設定</translation>
@@ -102,7 +103,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">変更内容を反映するには、一度ログアウトして、もう一度ログインしてください。</translation>
 <translation id="4480040274068703980">ログイン時にエラーが発生したため、Chrome OS はデータを同期できませんでした。</translation>
-<translation id="4513711165509885787">お支払い情報を Chrome に保存しました。</translation>
 <translation id="4561051373932531560">Google Chrome では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="4631713731678262610">Chrome メニューで非表示</translation>

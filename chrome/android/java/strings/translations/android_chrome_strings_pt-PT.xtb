@@ -31,11 +31,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="138361230106469022">Olá, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1389974829397082527">Nenhum marcador aqui</translation>
-<translation id="1390350022570422499">Agora, o Chrome pode procurar e apresentar páginas Web próximas através de Bluetooth.
-
-O Chrome procura páginas próximas quando o dispositivo está desbloqueado. Estas páginas passam por um serviço Google para melhorar a qualidade dos resultados da página.
-
-Pode controlar a Web física nas definições de privacidade do Chrome.</translation>
 <translation id="1404122904123200417">Incorporado em <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Não Monitorizar"</translation>
 <translation id="1409879593029778104">A transferência de <ph name="FILE_NAME" /> foi impedida porque o ficheiro já existe.</translation>
@@ -78,6 +73,7 @@ Pode controlar a Web física nas definições de privacidade do Chrome.</transla
 <translation id="1974060860693918893">Avançadas</translation>
 <translation id="1984937141057606926">Permitidos, exceto de terceiros</translation>
 <translation id="1994173015038366702">URL do site</translation>
+<translation id="2001120796168634316">Guardar pág. ligação p/ depois</translation>
 <translation id="200669432486043882">Substituir ficheiro</translation>
 <translation id="2038563949887743358">Ativar Pedir site para computador</translation>
 <translation id="2073235970478114994">Carregar imagens</translation>
@@ -96,7 +92,6 @@ Pode controlar a Web física nas definições de privacidade do Chrome.</transla
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
 <translation id="2316129865977710310">Não, obrigado</translation>
-<translation id="2319528413610359757">Para leitores de <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
 <translation id="2329597144923131178">Inicie sessão para aceder aos marcadores, ao histórico, às palavras-passe e a outras definições em todos os dispositivos.</translation>
 <translation id="2343328333327081434">A instalar...</translation>
@@ -136,6 +131,7 @@ Pode controlar a Web física nas definições de privacidade do Chrome.</transla
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2770465223704140727">Remover da lista</translation>
 <translation id="278029852808208386">Não foram encontrados dispositivos Bluetooth. <ph name="BEGIN_LINK" />Procure novamente<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Não vê o seu dispositivo? <ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Toque no botão de retrocesso para sair do ecrã inteiro.</translation>
 <translation id="2842985007712546952">Pasta superior</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -199,7 +195,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
 <translation id="3732088672634061408">Não foi possível obter os interesses.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
-<translation id="3774280986422214650">Se ativar esta funcionalidade, fará parte de uma experiência que utiliza páginas HTTPS com proxy através dos servidores da Google.</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" concluído</translation>
 <translation id="3828029223314399057">Pesquisar marcadores</translation>
 <translation id="3871171699884605801">Não é possível limpar o histórico de navegação nas contas para crianças</translation>
@@ -214,7 +209,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3992315671621218278">Guardar link</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4035611068038188272">Atualmente, os marcadores ocupam <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">Existem páginas da Web física próximas</translation>
 <translation id="4042870126885713738">Mostrar sugestões quando um endereço Web não responder ou não for possível estabelecer ligação</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4062305924942672200">Informações legais</translation>
@@ -274,7 +268,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4827948050554950725">Adicionar cartão de crédito</translation>
 <translation id="4836364883164334657">A sua ligação a este site não é privada. É possível que utilizadores mal intencionados estejam a tentar roubar as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito) de <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Ler mais</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4875622588773761625">Pretende que o <ph name="PASSWORD_MANAGER_BRAND" /> atualize a sua palavra-passe para este site?</translation>
 <translation id="4881695831933465202">Abrir</translation>
@@ -287,7 +280,6 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="497421865427891073">Avançar</translation>
 <translation id="4996978546172906250">Partilhar através de</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
-<translation id="5014582685689328551">Utilize o Chrome para os visualizar</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
@@ -322,7 +314,6 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5308933389783727448">Pesquisar páginas guardadas</translation>
 <translation id="5313967007315987356">Adicionar site</translation>
 <translation id="5317780077021120954">Guardar</translation>
-<translation id="5323972449344932352">Iniciar o Chrome</translation>
 <translation id="5324858694974489420">Definições parentais</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> eliminado</translation>
@@ -401,7 +392,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6159335304067198720"><ph name="PERCENT" /> de poupança de dados</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6192792657125177640">Excepções</translation>
-<translation id="6208263165776660488">Os separadores do Chrome mudaram de sítio</translation>
 <translation id="6231464350722415003">Permitir JavaScript em site especificados e bloqueá-lo no resto da Web</translation>
 <translation id="6232535412751077445">A ativação da funcionalidade "Não Monitorizar" significa que é incluído um pedido no seu tráfego de navegação. Qualquer efeito depende de um Website responder ou não ao pedido e do modo como o pedido é interpretado.
 
@@ -490,9 +480,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza a sua localização para mostrar resultados da pesquisa locais</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Ajuda<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Eliminar marcador</translation>
-<translation id="7324738665594301612">Estamos a testar a utilização de páginas HTTPS com proxy através dos servidores da Google no âmbito de uma experiência.</translation>
 <translation id="7346217184097589238">As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação.</translation>
-<translation id="7346909386216857016">OK, compreendi</translation>
 <translation id="7347770551817603360">Conteúdo offline</translation>
 <translation id="7363354739009474003">A carregar "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">A transmitir para <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7588950540487816470">Web física</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7599840151813361502">A sessão nas suas <ph name="BEGIN_LINK" />Contas Google<ph name="END_LINK" /> não é terminada</translation>
-<translation id="7603403729818446828">Veja os seus separadores com outras aplicações recentes no ecrã Vista geral do telemóvel. Pode controlar esta função nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Em pausa</translation>
 <translation id="7612619742409846846">Iniciou sessão no Google como</translation>
 <translation id="7619072057915878432">A transferência de <ph name="FILE_NAME" /> falhou devido a falhas de rede.</translation>
@@ -564,6 +551,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="8173098127580644436">desde sempre</translation>
 <translation id="8200772114523450471">Continuar</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> pretende estabelecer ligação a:</translation>
 <translation id="8218346974737627104">Confirmar início de sessão</translation>
 <translation id="8218934717680664417">Agora pode pesquisar com um toque</translation>
 <translation id="8223946939421658889">Limpar dados</translation>

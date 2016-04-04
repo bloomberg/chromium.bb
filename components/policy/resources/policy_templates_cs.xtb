@@ -859,11 +859,6 @@ Není-li tato zásada nastavena, výchozí frekvence jsou tři minuty. Minimáln
 <translation id="4039085364173654945">Kontroluje, zda je na stránce u obsahu třetích stran povoleno vyskakování dialogového okna HTTP Basic Auth.
 
           Tato možnost je obvykle vypnuta jako ochrana proti phishingu. Pokud zásada není nastavena, je tato možnost vypnuta a u obsahu třetích stran nebude povoleno vyskakování dialogového okna HTTP Basic Auth.</translation>
-<translation id="4052765007567912447">Určuje, zda mohou uživatelé ve správci hesel zobrazit hesla jako čitelný text.
-
-         Pokud toto nastavení deaktivujete, v okně správce hesel nebude možné zobrazit uložená hesla jako čitelný text.
-
-          Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správci hesel moci zobrazit uložená hesla jako čitelný text.</translation>
 <translation id="4056910949759281379">Deaktivovat protokol SPDY</translation>
 <translation id="4088589230932595924">Anonymní režim je povinný.</translation>
 <translation id="4088983553732356374">Umožňuje určit, zda mohou webové stránky nastavovat místní data. Nastavení místních dat lze buď povolit pro všechny weby, nebo je pro všechny weby zakázat.
@@ -1259,7 +1254,6 @@ Až bude okamžité přihlašování podporovat všechny přihlašovací procesy
       Je-li zásada stanovena, bude k adrese URL přidán parametr dotazu s názvem „omezit“, který se použije k načtení počáteční hodnoty variace. Hodnota parametru bude představovat hodnotu stanovenou v této zásadě.
 
      Pokud zásada stanovena není, adresa URL počáteční hodnoty variace se nezmění.</translation>
-<translation id="5564962323737505851">Slouží ke konfiguraci správce hesel. Pokud je správce hesel aktivní, můžete se rozhodnout, zda uživatelům povolíte zobrazovat hesla jako čitelný text.</translation>
 <translation id="556941986578702361">Řídí automatické skrývání poličky systému <ph name="PRODUCT_OS_NAME" />.
 
 Pokud je tato zásada nastavena na hodnotu AlwaysAutoHideShelf, polička se vždy automaticky skryje.
@@ -1371,7 +1365,6 @@ Tato zásada není k dispozici v instancích Windows, které nejsou připojen�
 <translation id="5893553533827140852">Pokud je toto nastavení povoleno, žádosti gnubby o ověření budou zprostředkovány přes připojení ke vzdálenému hostiteli.
 
           Pokud je toto nastavení zakázáno nebo není nakonfigurováno, žádosti gnubby o ověření nebudou zprostředkovány.</translation>
-<translation id="5912364507361265851">Umožnit uživatelům zobrazit hesla ve Správci hesel</translation>
 <translation id="5921713479449475707">Povolení stahování automatických aktualizací prostřednictvím protokolu HTTP</translation>
 <translation id="5921888683953999946">Nastavuje výchozí stav funkce usnadnění přístupu pomocí velkého kurzoru na přihlašovací obrazovce.
 
@@ -1995,6 +1988,7 @@ Pokud je tato zásada nastavena na hodnotu False, informace o relaci se hlásit
 <translation id="7882585827992171421">Tato zásada je aktivní pouze v režimu prodeje.
 
       Určuje ID rozšíření, které se použije jako spořič obrazovky na přihlašovací obrazovce. Rozšíření musí být součásti balíčku AppPack, který je pro tuto doménu nakonfigurován v rámci zásady DeviceAppPack.</translation>
+<translation id="7882890448959833986">Potlačit upozornění ohledně nepodporovaného operačního systému</translation>
 <translation id="7912255076272890813">Konfigurovat povolené typy aplikací nebo rozšíření</translation>
 <translation id="793134539373873765">Určuje, zda má být pro datové části aktualizací operačního systému použita síť p2p. Pokud zásadu nastavíte na hodnotu True, zařízení budou sdílet pokus o využití datových částí aktualizace v síti LAN, což může vést ke snížení zahlcení a míry využití připojení k internetu. Pokud datová část aktualizace není v síti LAN k dispozici, zařízení přepne zpět na stahování ze serveru aktualizace. Pokud tuto zásadu nenakonfigurujete nebo ji nastavíte na hodnotu False, síť p2p nebude použita.</translation>
 <translation id="7933141401888114454">Povolit vytváření dozorovaných uživatelů</translation>
@@ -2053,6 +2047,7 @@ Tato zásada není k dispozici v instancích Windows, které nejsou připojen�
 
       Pokud je tato zásada nastavena na hodnotu false, seznam rozhraní odesílán nebude.</translation>
 <translation id="8146727383888924340">Povolit uživatelům uplatnit při registraci systému Chrome OS nabídky</translation>
+<translation id="8148785525797916822">Potlačí upozornění, které se zobrazuje, když je prohlížeč <ph name="PRODUCT_NAME" /> spuštěn na počítači nebo v operačním systému, který již není podporován.</translation>
 <translation id="8148901634826284024">Aktivuje funkci usnadnění přístupu pomocí vysokého kontrastu.
 
 Pokud je tato zásada nastavena na hodnotu true, režim vysokého kontrastu bude vždy aktivní.

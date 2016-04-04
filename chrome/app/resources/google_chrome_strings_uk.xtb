@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome – сповіщення</translation>
 <translation id="1104959162601287462">Про &amp;ОС Chrome</translation>
 <translation id="110877069173485804">Це ваш Chrome</translation>
-<translation id="1225016890511909183">Chrome надійно зберігатиме вашу інформацію, тож вам не потрібно буде вводити її знову. Але під час майбутніх платежів ви все одно маєте підтверджувати код безпеки картки.</translation>
 <translation id="123620459398936149">ОС Chrome не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="127345590676626841">Chrome оновлюється автоматично, щоб у вас завжди була найновіша версія. Коли це завантаження завершиться, Chrome перезапуститься, і ви зможете продовжувати роботу.</translation>
 <translation id="1302523850133262269">Зачекайте, доки Chrome установить найновіші оновлення системи.</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Отримати довідку щодо користування ОС Chrome</translation>
 <translation id="1818142563254268765">Не вдалось оновити Chrome до останньої версії. Щоб застосувати виправлення системи безпеки та скористатись новими цікавими функціями, оновіть Chrome.</translation>
+<translation id="1864458292167284385">Панель запуску програм Chrome більше не доступна.</translation>
 <translation id="1877026089748256423">Версія Chrome застаріла</translation>
 <translation id="2077129598763517140">Використовувати апаратне прискорення, якщо доступно</translation>
 <translation id="2084710999043359739">Додати в Chrome</translation>
@@ -88,6 +88,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome підтвердив, що компанія <ph name="ISSUER" /> видала сертифікат цього веб-сайту. Сервер надав інформацію про прозорість сертифіката, але Chromium не вдалося розпізнати журнали прозорості сертифіката.</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
+<translation id="396182988103551265">Відкривайте додатки за допомогою ярлика <ph name="APPS_ICON_IMAGE" /> на панелі закладок Chrome.</translation>
 <translation id="4042449298237264661">На цей комп’ютер не надходитимуть оновлення Google Chrome, оскільки Windows XP та Windows Vista більше не підтримуються.</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="4053720452172726777">Налаштування та керування Google Chrome</translation>
@@ -102,7 +103,6 @@
 <translation id="4407807842708586359">ОС Google Chrome</translation>
 <translation id="4458285410772214805">Щоб зміна почала діяти, вийдіть і ввійдіть знову.</translation>
 <translation id="4480040274068703980">ОС Chrome не вдалося синхронізувати ваші дані через помилку входу.</translation>
-<translation id="4513711165509885787">Ваші платіжні дані збережено в Chrome.</translation>
 <translation id="4561051373932531560">Google Chrome дозволяє натиснути номер телефону в Інтернеті та здійснити виклик через Skype.</translation>
 <translation id="4567424176335768812">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
 <translation id="4631713731678262610">Сховати в меню Chrome</translation>

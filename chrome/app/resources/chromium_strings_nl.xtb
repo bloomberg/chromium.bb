@@ -23,7 +23,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1699664235656412242">Sluit alle Chromium-vensters (inclusief de vensters in Windows 8-modus) en probeer het opnieuw.</translation>
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
 <translation id="1725059042853530269">Chromium heeft <ph name="FILE_NAME" /> geblokkeerd omdat het bestand een negatieve invloed kan hebben op je browserervaring.</translation>
-<translation id="1745962126679160932">Chromium slaat je gegevens veilig op, zodat je deze niet opnieuw hoeft op te geven, maar je moet nog steeds de beveiligingscode van je kaart opgeven voor toekomstige betalingen.</translation>
 <translation id="1774152462503052664">Chromium laten uitvoeren op de achtergrond</translation>
 <translation id="1779356040007214683">Om Chromium veiliger te maken, hebben we een aantal extensies uitgeschakeld die niet worden vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> en mogelijk zonder je medeweten zijn geïnstalleerd.</translation>
 <translation id="1808667845054772817">Chromium opnieuw installeren</translation>
@@ -33,6 +32,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1929939181775079593">Chromium reageert niet. Nu opnieuw starten?</translation>
 <translation id="1967743265616885482">Van een module met dezelfde naam is bekend dat deze conflicteert met Chromium.</translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
+<translation id="2103655854491303969">De Chromium App Launcher gaat verdwijnen.</translation>
 <translation id="2117181891440368863">Chromium heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft certificaattransparantiegegevens geleverd, maar deze waren ongeldig.</translation>
 <translation id="2119636228670142020">Over &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Open-sourcelicenties van Chromium OS</translation>
@@ -48,6 +48,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2535480412977113886">Chromium OS kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="2558641060352364164">Deze site maakt gebruik van de plug-in Chromium Frame die binnenkort niet meer wordt ondersteund. Verwijder deze en voer een upgrade naar een moderne browser uit.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">Gebruik de snelkoppeling <ph name="APPS_ICON_IMAGE" /> op de Chromium-bladwijzerbalk om toegang te krijgen tot je apps.</translation>
 <translation id="2602806952220118310">Chromium - Meldingen</translation>
 <translation id="2636877269779209383">Chromium heeft cameratoegang nodig om het item te delen met deze site.</translation>
 <translation id="2648074677641340862">Er is tijdens de installatie een fout opgetreden in het besturingssysteem. Download Chromium opnieuw.</translation>
@@ -102,7 +103,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4330585738697551178">Van deze module is bekend dat deze conflicteert met  Chromium.</translation>
 <translation id="4423735387467980091">Chromium aanpassen en beheren</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
-<translation id="4488676065623537541">Je factureringsgegevens zijn opgeslagen in Chromium.</translation>
 <translation id="4549794359424059447">Toekomstige versies van Chromium bieden geen ondersteuning meer voor Windows XP en Windows Vista.</translation>
 <translation id="4567424176335768812">Je bent ingelogd als <ph name="USER_EMAIL_ADDRESS" />. Je hebt nu toegang tot je bladwijzers, geschiedenis en andere instellingen op al je apparaten waarop je bent ingelogd.</translation>
 <translation id="457845228957001925">Belangrijke informatie over je Chromium-gegevens</translation>

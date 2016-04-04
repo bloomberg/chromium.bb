@@ -31,11 +31,6 @@
 <translation id="138361230106469022">שלום <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">חפש</translation>
 <translation id="1389974829397082527">אין כאן סימניות</translation>
-<translation id="1390350022570422499">‏נוספה האפשרות ש-Chrome ימצא דפי אינטרנט בקרבת מקום ויציג אותם באמצעות Bluetooth.
-
-Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול. דפים אלה יעברו דרך שירות Google כדי לשפר את איכות התוצאות.
-
-ניתן לשלוט באינטרנט הווירטופיזי בהגדרות הפרטיות של Chrome.</translation>
 <translation id="1404122904123200417">מוטבע ב-<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">'ללא מעקב'</translation>
 <translation id="1409879593029778104">הורדת <ph name="FILE_NAME" /> נמנעה מכיוון שהקובץ כבר קיים.</translation>
@@ -78,6 +73,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="1984937141057606926">מותר, מלבד צד שלישי</translation>
 <translation id="1994173015038366702">כתובת אתר</translation>
+<translation id="2001120796168634316">שמור דף מקושר למועד מאוחר יותר</translation>
 <translation id="200669432486043882">החלף קובץ</translation>
 <translation id="2038563949887743358">הפעל את 'בקש אתר עבור מחשב שולחני'</translation>
 <translation id="2073235970478114994">טען תמונות</translation>
@@ -96,7 +92,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="2268044343513325586">צמצם</translation>
 <translation id="2315043854645842844">מערכת ההפעלה אינה תומכת בבחירת אישור בצד הלקוח.</translation>
 <translation id="2316129865977710310">לא, תודה</translation>
-<translation id="2319528413610359757">לקוראים של <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">גרור את המחוון עד שתוכל לקרוא את הקטע הזה בצורה נוחה. לאחר שתקיש פעמיים על פיסקה, הטקסט אמור להיות מוצג בגודל הזה לפחות.</translation>
 <translation id="2329597144923131178">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך.</translation>
 <translation id="2343328333327081434">מתקין...</translation>
@@ -136,6 +131,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="2762000892062317888">ברגע זה</translation>
 <translation id="2770465223704140727">הסר מהרשימה</translation>
 <translation id="278029852808208386">‏לא נמצאו מכשירי Bluetooth. <ph name="BEGIN_LINK" />חפש שוב<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">אינך רואה את המכשיר? <ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">כדי לצאת ממסך מלא, גע בלחצן 'הקודם'.</translation>
 <translation id="2842985007712546952">תיקיית אב</translation>
 <translation id="2870560284913253234">אתר</translation>
@@ -199,7 +195,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="3672452749423051839">הצעות לשגיאת ניווט</translation>
 <translation id="3732088672634061408">לא ניתן היה לאחזר את תחומי העניין.</translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
-<translation id="3774280986422214650">‏אם תפעיל את התכונה הזו, תצטרף לניסוי המעביר דפי HTTPS דרך שרתי proxy של Google.</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" הסתיים</translation>
 <translation id="3828029223314399057">חפש סימניות</translation>
 <translation id="3871171699884605801">לא ניתן למחוק את היסטוריית הגלישה בחשבונות של ילדים</translation>
@@ -214,7 +209,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="3992315671621218278">שמור את הקישור</translation>
 <translation id="4002066346123236978">כותרת</translation>
 <translation id="4035611068038188272">הסימניות תופסות כרגע <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /></translation>
-<translation id="403659016947612156">דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="4042870126885713738">הצג הצעות כאשר כתובת אינטרנט אינה מזוהה או כשלא ניתן ליצור חיבור</translation>
 <translation id="4056223980640387499">חום-ספיה</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
@@ -274,7 +268,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="4816465935029283692">סוגי נתונים</translation>
 <translation id="4827948050554950725">הוסף כרטיס אשראי</translation>
 <translation id="4836364883164334657">החיבור אל האתר הזה אינו פרטי. ייתכן שתוקפים מנסים לגנוב את המידע שלך (לדוגמה: תמונות, סיסמאות, הודעות וכרטיסי אשראי) מ-<ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">קרא עוד</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4875622588773761625">האם תרצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה שלך בשביל האתר הזה?</translation>
 <translation id="4881695831933465202">פתח</translation>
@@ -287,7 +280,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="497421865427891073">המשך קדימה</translation>
 <translation id="4996978546172906250">שתף באמצעות</translation>
 <translation id="5000922062037820727">חסומה (מומלץ)</translation>
-<translation id="5014582685689328551">‏השתמש ב-Chrome כדי לגלוש בהם</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">אפשר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
@@ -322,7 +314,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="5308933389783727448">חפש בדפים שנשמרו</translation>
 <translation id="5313967007315987356">הוסף אתר</translation>
 <translation id="5317780077021120954">שמור</translation>
-<translation id="5323972449344932352">‏הפעל את Chrome</translation>
 <translation id="5324858694974489420">הגדרות הורים</translation>
 <translation id="5327248766486351172">שם</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> נמחק</translation>
@@ -401,7 +392,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
-<translation id="6208263165776660488">‏כרטיסיות Chrome עברו למקום אחר</translation>
 <translation id="6231464350722415003">‏התר JavaScript באתרים שתציין, תוך חסימה של JavaScript בכל שאר האתרים</translation>
 <translation id="6232535412751077445">אם תפעיל את התכונה 'אל תעקוב', בקשה זו תיכלל בתנועת הגלישה שלך. השפעת הבקשה תלויה באופן הפעולה של כל אתר - אם הוא מגיב לבקשה או לא, וכיצד הוא מפרש אותה.
 
@@ -490,9 +480,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> משתמש במיקום שלך כדי להציג תוצאות חיפוש מקומיות</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />עזרה<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">מחק סימניה</translation>
-<translation id="7324738665594301612">‏אנו בודקים את ההעברה של דפי HTTPS בשרתי proxy של Google כחלק מניסוי.</translation>
 <translation id="7346217184097589238">הגדרות אתרים ששמרת לא יימחקו והן עשויות לשקף את הרגלי הגלישה שלך.</translation>
-<translation id="7346909386216857016">בסדר, הבנתי</translation>
 <translation id="7347770551817603360">תוכן לא מקוון</translation>
 <translation id="7363354739009474003">טוען את "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">מעביר אל <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
 <translation id="7596558890252710462">מערכת הפעלה</translation>
 <translation id="7599840151813361502">‏לא תתבצע יציאה מ<ph name="BEGIN_LINK" />חשבונות Google<ph name="END_LINK" /> שלך</translation>
-<translation id="7603403729818446828">במסך הסקירה של הטלפון מוצגות הכרטיסיות יחד עם האפליקציות האחרונות האחרות שבהן השתמשת. ניתן לשלוט בהגדרה הזו דרך <ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">מושהה</translation>
 <translation id="7612619742409846846">‏מחובר ל-Google בשם</translation>
 <translation id="7619072057915878432">הורדת <ph name="FILE_NAME" /> נכשלה עקב כשלים ברשת.</translation>
@@ -564,6 +551,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="8173098127580644436">משחר ההיסטוריה</translation>
 <translation id="8200772114523450471">חדש</translation>
 <translation id="8209050860603202033">פתח את התמונה</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> רוצה להתחבר אל:</translation>
 <translation id="8218346974737627104">אשר את הכניסה</translation>
 <translation id="8218934717680664417">עכשיו אפשר לחפש בנגיעה אחת</translation>
 <translation id="8223946939421658889">נקה נתונים</translation>

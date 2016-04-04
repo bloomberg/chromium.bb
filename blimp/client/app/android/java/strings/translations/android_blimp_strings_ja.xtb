@@ -12,6 +12,7 @@
 <translation id="4542350224991263059">割り当てが失敗しました。ユーザー アクセス トークンが期限切れです。</translation>
 <translation id="4562971394107096647">割り当てが失敗しました。サーバーエラーが発生しました。</translation>
 <translation id="4641972508298030550">ユーザーを認証できません。</translation>
+<translation id="5184329579814168207">Chromeで開く</translation>
 <translation id="5860346505531085166">割り当てが失敗しました。アカウントにアクセス権がありません。</translation>
 <translation id="704835510384979817">割り当てが失敗しました。一致するエンジン バージョンがありません。</translation>
 <translation id="7536363920335771251">エンジンが切断されました。原因: %1$s</translation>

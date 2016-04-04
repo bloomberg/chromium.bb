@@ -800,7 +800,6 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 <translation id="402759845255257575">Tillad ikke, at websites kører JavaScript</translation>
 <translation id="4027608872760987929">Aktiver standardsøgemaskine</translation>
 <translation id="4039085364173654945">Kontrollerer, om underlæggende tredjepartsindhold på en side har tilladelse til at vise et pop op-vindue med dialogboksen HTTP Basic Auth. Den er typisk deaktiveret som et phishingforsvar. Hvis denne politik ikke er angivet, deaktiveres den og underlæggende tredjepartsindhold har ikke tilladelse til at vise et pop op-vindue med dialogboksen HTTP Basic Auth.</translation>
-<translation id="4052765007567912447">Kontrollerer, om brugeren kan vise adgangskoder med tydelig tekst i Adgangskodemanager. Hvis du deaktiverer denne indstilling, tillader Adgangsmanageren ikke visning af gemte adgangskoder med tydelig tekst i vinduet Adgangsmanager. Hvis du aktiverer eller ikke angiver denne politik, kan brugerne se deres adgangskoder med tydelig tekst i Adgangsmanager.</translation>
 <translation id="4056910949759281379">Deaktiver SPDY-protokol</translation>
 <translation id="4088589230932595924">Inkognitotilstand er gennemtvunget</translation>
 <translation id="4088983553732356374">Giver dig mulighed for at angive, om websites må angive lokale data. Angivelse af lokale data kan enten være tilladt for alle websites eller forbudt for alle websites.
@@ -1161,7 +1160,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       Hvis dette er angivet, føjes der en forespørgselsparameter med navnet "restrict" til den webadresse, der bruges til at hente variationbasistallet. Værdien for parameteren er den værdi, der er angivet i denne politik.
 
       Hvis dette ikke er angivet, ændres variationbasistallet ikke.</translation>
-<translation id="5564962323737505851">Konfigurerer Adgangskodemanager. Hvis Adgangskodemanager er aktiveret, kan du vælge at aktivere eller deaktivere, om brugeren må vise gemte adgangskoder i ren tekst.</translation>
 <translation id="556941986578702361">Administrer, hvornår <ph name="PRODUCT_OS_NAME" />-hylden skjules automatisk.
 
       Hvis denne politik er angivet som "AlwaysAutoHideShelf'", skjules hylden altid automatisk.
@@ -1266,7 +1264,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5893553533827140852">Hvis denne indstilling er aktiveret, oprettes der en proxyforbindelse for anmodninger om gnubby-godkendelse på tværs af en fjernhostforbindelse.
 
           Hvis denne indstilling er deaktiveret eller ikke er konfigureret, oprettes der ingen proxyforbindelse for anmodninger om gnubby-godkendelse.</translation>
-<translation id="5912364507361265851">Tillad brugerne at vise adgangskoder i Adgangskodemanager</translation>
 <translation id="5921713479449475707">Tillad download af automatiske opdateringer via HTTP</translation>
 <translation id="5921888683953999946">Indstil standardtilstanden for hjælpefunktionen med den store markør på loginskærmen.
 
@@ -1840,6 +1837,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7882585827992171421">Denne politik er kun aktiv i detailtilstand.
 
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>
+<translation id="7882890448959833986">Ignorer advarslen om manglende understøttelse af OS</translation>
 <translation id="7912255076272890813">Konfigurer tilladte app-/udvidelsestyper</translation>
 <translation id="793134539373873765">Angiver, om p2p skal anvendes til OS-opdateringsdata. Hvis denne politik angives til Sand, vil enheder dele og forsøge at forbruge opdateringsdata på LAN-netværket, hvor den potentielt kan reducere forbruget og overbelastningen af internetbåndbredden. Hvis opdateringsdata ikke er tilgængelige på LAN-netværket, vil enheden i stedet downloade fra en opdateringsserver. Hvis den angives til Falsk eller ikke konfigureres, vil p2p ikke blive anvendt.</translation>
 <translation id="7933141401888114454">Aktivér oprettelse af administrerede brugere</translation>
@@ -1897,6 +1895,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis politikken er angivet til Falsk, rapporteres listen over grænseflader ikke.</translation>
 <translation id="8146727383888924340">Tillad, at brugerne indløser kampagnetilbud via Chrome OS-registrering</translation>
+<translation id="8148785525797916822">Ignorerer den advarsel, der vises, når <ph name="PRODUCT_NAME" /> kører på en computer eller et operativsystem, der ikke længere understøttes.</translation>
 <translation id="8148901634826284024">Aktivér hjælpefunktionen Høj kontrast.
 
           Hvis denne politik angives som sand, vil høj kontrast altid være aktiveret.

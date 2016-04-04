@@ -880,11 +880,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="4039085364173654945">Kontroluje, či má vnorený obsah tretej strany na stránke povolenie zobrazovať kontextové dialógové okno s protokolom HTTP Basic Auth.
 
           Táto funkcia je zvyčajne zakázaná kvôli ochrane pred phishingom (neoprávneným získavaním údajov). Ak toto pravidlo nie je nastavené, je zakázané a vnorenému obsahu tretej strany sa nepovolí zobrazovať kontextové dialógové okno s protokolom HTTP Basic Auth.</translation>
-<translation id="4052765007567912447">Určuje, či môžu používatelia zobraziť heslá v správcovi hesiel formou čitateľného textu.
-
-          Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť uložené heslá formou čitateľného textu.
-
-          Ak toto nastavenie povolíte alebo ho nenastavíte, používatelia budú môcť v správcovi hesiel zobraziť uložené heslá formou čitateľného textu.</translation>
 <translation id="4056910949759281379">Zakázať protokol SPDY</translation>
 <translation id="4088589230932595924">Vynútený režim inkognito</translation>
 <translation id="4088983553732356374">Umožňuje nastaviť, či môžu webové stránky nastavovať miestne údaje. Nastavenie miestnych údajov je možné buď povoliť pre všetky webové stránky, alebo ho pre všetky webové stránky zakázať.
@@ -1286,7 +1281,6 @@ Ak sa toto pravidlo nenastaví, nenainštalujú sa automaticky žiadne aplikáci
       Ak je pravidlo stanovené, pridá sa k webovej adrese parameter dopytu s názvom „obmedziť“, ktorý sa použije na načítanie počiatočnej hodnoty variácie. Hodnota parametra bude predstavovať hodnotu stanovenú v tomto pravidle.
 
       Ak pravidlo stanovené nie je, webová adresa počiatočnej hodnoty variácie sa nezmení.</translation>
-<translation id="5564962323737505851">Konfiguruje správcu hesiel. Ak je správca hesiel povolený, môžete povoliť alebo zakázať, či môže používateľ uchovávať heslá formou čitateľného textu.</translation>
 <translation id="556941986578702361">Ovláda nastavenie automatického skrývania poličky systému <ph name="PRODUCT_OS_NAME" />.
 
       Ak je toto pravidlo nastavené na hodnotu AlwaysAutoHideShelf, polička sa bude skrývať automaticky.
@@ -1397,7 +1391,6 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 <translation id="5893553533827140852">Ak je toto nastavenie povolené, žiadosti o overenie gnubby budú sprostredkované cez vzdialené pripojenie hostiteľa.
 
           Ak je toto nastavenie zakázané alebo nie je nakonfigurované, žiadosti o overenie gnubby nebudú sprostredkované.</translation>
-<translation id="5912364507361265851">Umožňuje používateľom zobraziť heslá v Správcovi hesiel</translation>
 <translation id="5921713479449475707">Povoliť stiahnutia automatických aktualizácií prostredníctvom protokolu HTTP</translation>
 <translation id="5921888683953999946">Nastaví predvolený stav veľkého kurzora (funkcia na uľahčenie prístupu) na prihlasovacej obrazovke.
 
@@ -2030,6 +2023,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7882585827992171421">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
       Určuje identifikátor rozšírenia, ktoré sa má použiť ako šetrič obrazovky na prihlasovacej obrazovke. Rozšírenie musí byť súčasťou balíka AppPack, ktorý bol pre túto doménu nakonfigurovaný v rámci pravidla DeviceAppPack.</translation>
+<translation id="7882890448959833986">Zrušenie zobrazovania upozornenia na nepodporovaný operačný systém</translation>
 <translation id="7912255076272890813">Nakonfigurovať povolené typy aplikácií/rozšírení</translation>
 <translation id="793134539373873765">Určuje, či sa pri aktualizovaní OS má použiť protokol p2p. Ak je táto možnosť nastavená na hodnotu True, zariadenia budú zdieľať aktualizácie a pokúsia sa ich sťahovať v sieti LAN, čím potenciálne znížia využitie a preťaženie rýchlosti pripojenia. Ak sa aktualizácie nedajú vykonať v sieti LAN, zariadenie ich prevezme z aktualizačného servera. Ak je táto možnosť nastavená na hodnotu False alebo nie je nakonfigurovaná, protokol p2p sa nepoužije.</translation>
 <translation id="7933141401888114454">Povoliť vytváranie kontrolovaných používateľov</translation>
@@ -2093,6 +2087,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
       Ak je pravidlo nastavené na hodnotu False, zoznam rozhraní sa nenahlási.</translation>
 <translation id="8146727383888924340">Povoliť používateľom uplatniť ponuky pri registrácii systému OS Chrome</translation>
+<translation id="8148785525797916822">Zruší zobrazenie upozornenia spúšťaného vtedy, keď <ph name="PRODUCT_NAME" /> používate v počítači alebo operačnom systéme, ktorý už nie je podporovaný.</translation>
 <translation id="8148901634826284024">Povolí režim vysokého kontrastu (funkcia na uľahčenie prístupu).
 
       Ak toto nastavenie povolíte, bude režim vysokého kontrastu vždy zapnutý.

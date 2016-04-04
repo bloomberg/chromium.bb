@@ -31,11 +31,6 @@
 <translation id="138361230106469022">Pozdravljeni, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Išči</translation>
 <translation id="1389974829397082527">Tu ni nobenega zaznamka</translation>
-<translation id="1390350022570422499">Chrome lahko zdaj z uporabo Bluetootha poišče in prikaže spletne strani v bližini.
-
-Ko je naprava odklenjena, bo Chrome iskal strani v bližini. Te strani bo zaradi izboljšanja kakovosti rezultatov za strani obdelala Googlova storitev.
-
-Fizični splet lahko nadzirate v Chromovih nastavitvah zasebnosti.</translation>
 <translation id="1404122904123200417">Vdelano v URL <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">»Ne sledi«</translation>
 <translation id="1409879593029778104">Prenos datoteke <ph name="FILE_NAME" /> je bil preprečen, ker datoteka že obstaja.</translation>
@@ -78,6 +73,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah zasebnosti.</translation>
 <translation id="1974060860693918893">Dodatno</translation>
 <translation id="1984937141057606926">Dovoljeno, razen za druga spletna mesta</translation>
 <translation id="1994173015038366702">URL spletnega mesta</translation>
+<translation id="2001120796168634316">Shrani stran s povezave</translation>
 <translation id="200669432486043882">Zamenjava datoteke</translation>
 <translation id="2038563949887743358">Vklop možnosti »Zahteva za namizno spletno mesto«</translation>
 <translation id="2073235970478114994">Naloži slike</translation>
@@ -96,7 +92,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah zasebnosti.</translation>
 <translation id="2268044343513325586">Izboljšaj iskanje</translation>
 <translation id="2315043854645842844">Operacijski sistem ne podpira izbire potrdila pri odjemalcu.</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
-<translation id="2319528413610359757">Za bralce izdajatelja <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Drsnik povlecite do želene velikosti pisave. Besedilo naj bo po dvakratnem dotiku odstavka videti vsaj tolikšno.</translation>
 <translation id="2329597144923131178">Prijavite se, da boste lahko dostopali do zaznamkov, zgodovine, gesel in drugih nastavitev v vseh napravah.</translation>
 <translation id="2343328333327081434">Nameščanje ...</translation>
@@ -136,6 +131,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah zasebnosti.</translation>
 <translation id="2762000892062317888">pravkar</translation>
 <translation id="2770465223704140727">Odstrani s seznama</translation>
 <translation id="278029852808208386">Najdena ni bila nobena naprava Bluetooth. <ph name="BEGIN_LINK" />Iščite znova<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Vaša naprava ni prikazana? <ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Dotaknite se gumba za nazaj, če želite zapreti celozaslonski način.</translation>
 <translation id="2842985007712546952">Nadrejena mapa</translation>
 <translation id="2870560284913253234">Spletno mesto</translation>
@@ -199,7 +195,6 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="3672452749423051839">Predlogi za napake pri krmarjenju</translation>
 <translation id="3732088672634061408">Zanimanj ni bilo mogoče pridobiti.</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
-<translation id="3774280986422214650">Če omogočite to funkcijo, boste sodelovali v preskusu, ki strani HTTPS prenaša prek Googlovih strežnikov proxy.</translation>
 <translation id="3809549525127675114">Predvajanje videoposnetka »<ph name="VIDEO_TITLE" />« je končano</translation>
 <translation id="3828029223314399057">Išči po zaznamkih</translation>
 <translation id="3871171699884605801">Z računom za otroke ni mogoče izbrisati zgodovine brskanja</translation>
@@ -214,7 +209,6 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="3992315671621218278">Shrani povezavo</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4035611068038188272">Zaznamki trenutno zasedajo <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">Strani za Fizični splet so v bližini</translation>
 <translation id="4042870126885713738">Pokaži predloge, ko spletnega naslova ni mogoče razrešiti ali povezave ni mogoče vzpostaviti</translation>
 <translation id="4056223980640387499">Sepija</translation>
 <translation id="4062305924942672200">Pravne informacije</translation>
@@ -274,7 +268,6 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4816465935029283692">Vrste podatkov</translation>
 <translation id="4827948050554950725">Dodaj kreditno kartico</translation>
 <translation id="4836364883164334657">Vaša povezava s tem spletnim mestom ni zasebna. Napadalci morda poskušajo ukrasti vaše podatke (na primer fotografije, gesla, sporočila in podatke o kreditnih karticah) iz domene <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Več o tem</translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4875622588773761625">Ali želite, da <ph name="PASSWORD_MANAGER_BRAND" /> posodobi geslo za to spletno mesto?</translation>
 <translation id="4881695831933465202">Odpri</translation>
@@ -287,7 +280,6 @@ V računalniku odprite Chrome, nato meni in izberite »Prijava v Chrome …«</t
 <translation id="497421865427891073">Pojdi naprej</translation>
 <translation id="4996978546172906250">Skupna raba prek</translation>
 <translation id="5000922062037820727">Blokirano (priporočeno)</translation>
-<translation id="5014582685689328551">Uporabite Chrome, če jih želite prebrskati</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Dovoli</translation>
 <translation id="5040262127954254034">Zasebnost</translation>
@@ -322,7 +314,6 @@ V računalniku odprite Chrome, nato meni in izberite »Prijava v Chrome …«</t
 <translation id="5308933389783727448">Išči po shranjenih straneh</translation>
 <translation id="5313967007315987356">Dodajanje mesta</translation>
 <translation id="5317780077021120954">Shrani</translation>
-<translation id="5323972449344932352">Zagon Chroma</translation>
 <translation id="5324858694974489420">Starševske nastavitve</translation>
 <translation id="5327248766486351172">Ime</translation>
 <translation id="5345040418939504969">Izbrisano: <ph name="BOOKMARK_TITLE" /></translation>
@@ -401,7 +392,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6159335304067198720">Prihranek pri prenosu podatkov: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="6192792657125177640">Izjeme</translation>
-<translation id="6208263165776660488">Chromovi zavihki so premaknjeni na drugo mesto</translation>
 <translation id="6231464350722415003">Dovoli JavaScript na spletnih mestih, ki jih določite, drugod po spletu pa ga blokira.</translation>
 <translation id="6232535412751077445">Če omogočite možnost »Ne sledi«, bo zahteva vključena v vaš promet brskanja. Učinek je odvisen od odziva spletnega mesta na zahtevo in od tega, kako si zahtevo razlaga.
 
@@ -490,9 +480,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uporablja vašo lokacijo za prikaz lokalnih rezultatov iskanja</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pomoč<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Izbriši zaznamek</translation>
-<translation id="7324738665594301612">Prenos strani HTTPS prek Googlovih strežnikov proxy preskušamo v okviru preskusa.</translation>
 <translation id="7346217184097589238">Shranjene nastavitve mest ne bodo izbrisane in morda kažejo vaše navade brskanja.</translation>
-<translation id="7346909386216857016">V redu, razumem</translation>
 <translation id="7347770551817603360">Vsebina brez povezave</translation>
 <translation id="7363354739009474003">Nalaganje videoposnetka »<ph name="VIDEO_TITLE" />«</translation>
 <translation id="7366340029385295517">Predvajanje na zaslonu <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7588950540487816470">Fizični splet</translation>
 <translation id="7596558890252710462">Operacijski sistem</translation>
 <translation id="7599840151813361502">Iz <ph name="BEGIN_LINK" />Google Računov<ph name="END_LINK" /> ne boste odjavljeni</translation>
-<translation id="7603403729818446828">Prikažite zavihke z drugimi nedavnimi aplikacijami na zaslonu za pregled v telefonu. To lahko nadzirate v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Začasno ustavljeno</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
 <translation id="7619072057915878432">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi napak v omrežju.</translation>
@@ -564,6 +551,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, brsk
 <translation id="8173098127580644436">od začetka</translation>
 <translation id="8200772114523450471">Nadaljuj</translation>
 <translation id="8209050860603202033">Odpri sliko</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> se želi povezati s tem:</translation>
 <translation id="8218346974737627104">Potrditev prijave</translation>
 <translation id="8218934717680664417">Zdaj lahko iščete z enim dotikom</translation>
 <translation id="8223946939421658889">Brisanje podatkov</translation>

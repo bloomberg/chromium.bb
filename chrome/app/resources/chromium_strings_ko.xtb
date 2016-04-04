@@ -23,7 +23,6 @@
 <translation id="1699664235656412242">Chromium 창(Windows 8 모드의 창 포함)을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" />이(가) 인터넷 사용 환경을 손상할 수 있어서 Chromium에서 차단했습니다.</translation>
-<translation id="1745962126679160932">Chromium은 사용자의 정보를 안전하게 저장하므로 정보를 다시 입력할 필요가 없지만 향후 결제 시 카드의 보안 코드는 확인해야 합니다.</translation>
 <translation id="1774152462503052664">백그라운드에서 Chromium을 실행</translation>
 <translation id="1779356040007214683">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="1808667845054772817">Chromium 재설치</translation>
@@ -33,6 +32,7 @@
 <translation id="1929939181775079593">Chromium이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="1967743265616885482">같은 이름의 모듈이 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
+<translation id="2103655854491303969">Chromium 앱 런처 서비스 중단 예정</translation>
 <translation id="2117181891440368863">Chromium에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공했으나, 올바르지 않았습니다.</translation>
 <translation id="2119636228670142020">Chromium OS 정보</translation>
 <translation id="2158734852934720349">Chromium OS 오픈소스 라이선스</translation>
@@ -48,6 +48,7 @@
 <translation id="2535480412977113886">계정의 로그인 세부정보가 오래되어 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="2558641060352364164">이 사이트에서 곧 지원이 중단되는 Chromium 프레임 플러그인을 사용하고 있습니다. 플러그인을 제거하고 최신 브라우저로 업그레이드하세요.</translation>
 <translation id="2572494885440352020">Chromium 도우미</translation>
+<translation id="2595977381794111014">앱에 계속 액세스하려면 Chromium 북마크바의 <ph name="APPS_ICON_IMAGE" /> 단축키를 사용하세요.</translation>
 <translation id="2602806952220118310">Chromium - 알림</translation>
 <translation id="2636877269779209383">Chromium이 이 사이트와 카메라를 공유하려면 카메라 액세스가 필요합니다.</translation>
 <translation id="2648074677641340862">설치 중 운영체제 오류가 발생했습니다. Chromium을 다시 다운로드하세요.</translation>
@@ -102,7 +103,6 @@
 <translation id="4330585738697551178">이 모듈은 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="4423735387467980091">Chromium 맞춤설정 및 제어</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
-<translation id="4488676065623537541">결제 세부정보가 Chromium에 저장되었습니다.</translation>
 <translation id="4549794359424059447">Chromium 향후 버전에서는 더 이상 Windows XP 또는 Windows Vista를 지원하지 않습니다.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="457845228957001925">Chromium 데이터 관련 중요 정보</translation>

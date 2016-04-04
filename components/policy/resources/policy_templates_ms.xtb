@@ -890,11 +890,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="4039085364173654945">Mengawal sama ada kandungan kecil pihak ketiga pada halaman dibenarkan untuk menimbulkan kotak dialog Pengesahan Asas HTTP.
 
           Biasanya perkara ini dilumpuhkan sebagai perlindungan daripada pemancingan data. Jika dasar ini tidak ditetapkan, tetapan ini dilumpuhkan dan kandungan kecil pihak ketiga tidak akan dibenarkan untuk menimbulkan kotak dialog Pengesahan Asas HTTP.</translation>
-<translation id="4052765007567912447">Mengawal sama ada pengguna boleh memaparkan kata laluan menggunakan teks jelas dalam pengurus kata laluan.
-
-          Jika anda melumpuhkan tetapan ini, pengurus kata laluan tidak membenarkan pemaparan kata laluan yang disimpan menggunakan teks jelas dalam tetingkap pengurus kata laluan.
-
-          Jika anda mendayakan atau tidak menetapkan dasar ini, pengguna boleh melihat kata laluan mereka dalam teks jelas dalam pengurus kata laluan.</translation>
 <translation id="4056910949759281379">Lumpuhkan protokol SPDY</translation>
 <translation id="4088589230932595924">Mod Inkognito dipaksa</translation>
 <translation id="4088983553732356374">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk menetapkan data setempat. Penetapan data setempat boleh dibenarkan untuk semua tapak web atau dinafikan untuk semua tapak web.
@@ -1297,7 +1292,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika ditetapkan, parameter pertanyaan yang dipanggil 'hadkan' akan ditambahkan kepada URL yang digunakan untuk mengambil benih Variasi. Nilai yang dinyatakan dalam dasar ini akan menjadi nilai parameter.
 
       Jika tidak ditetapkan, URL benih Variasi tidak akan diubah suai.</translation>
-<translation id="5564962323737505851">Mengkonfigurasi pengurus kata laluan. Jika pengurus kata laluan didayakan, maka anda boleh memilih untuk mendayakan atau melumpuhkan sama ada pengguna boleh menunjukkan kata laluan yang disimpan dalam teks yang jelas.</translation>
 <translation id="556941986578702361">Mengawal penyembunyian automatik rak <ph name="PRODUCT_OS_NAME" />.
 
       Jika dasar ini ditetapkan kepada 'AlwaysAutoHideShelf', rak akan sentiasa disembunyikan secara automatik.
@@ -1408,7 +1402,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="5893553533827140852">Jika tetapan ini didayakan, maka permintaan pengesahan gnubby akan diproksikan merentas sambungan hos jauh.
 
           Jika tetapan ini dilumpuhkan atau tidak dikonfigurasikan, permintaan pengesahan gnubby tidak akan diproksikan.</translation>
-<translation id="5912364507361265851">Benarkan pengguna menunjukkan kata laluan dalam Pengurus Kata Laluan</translation>
 <translation id="5921713479449475707">Benarkan muat turun auto kemas kini melalui HTTP</translation>
 <translation id="5921888683953999946">Tetapkan keadaan lalai ciri kebolehcapaian kursor besar pada skrin log masuk. 
 
@@ -2044,6 +2037,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7882585827992171421">Dasar ini aktif dalam mod runcit sahaja.
 
       Menentukan id sambungan untuk digunakan sebagai penyelamat skrin pada skrin log masuk. Sambungan mestilah sebahagian daripada AppPack yang dikonfigurasikan untuk domain ini melalui dasar DeviceAppPack.</translation>
+<translation id="7882890448959833986">Sekat amaran OS yang tidak disokong</translation>
 <translation id="7912255076272890813">Konfigurasi jenis apl/sambungan yang dibenarkan</translation>
 <translation id="793134539373873765">Menentukan sama ada p2p akan digunakan untuk beban bayar kemas kini OS. Jika ditetapkan kepada Benar, peranti akan berkongsi dan cuba menggunakan beban bayar kemas kini pada LAN, berkemungkinan mengurangkan penggunaan dan kesesakan lebar jalur Internet. Jika beban bayar kemas kini tidak tersedia pada LAN, peranti ini akan kembali kepada memuat turun dari pelayan kemas kini. Jika ditetapkan kepada Palsu atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Dayakan penghasilan pengguna di bawah seliaan</translation>
@@ -2106,6 +2100,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Jika dasar ditetapkan sebagai tidak benar, senarai antara muka tidak akan dilaporkan.</translation>
 <translation id="8146727383888924340">Benarkan pengguna menebus tawaran melalui Pendaftaran OS Chrome</translation>
+<translation id="8148785525797916822">Menyekat amaran yang dipaparkan semasa <ph name="PRODUCT_NAME" /> dijalankan pada komputer atau sistem pengendalian yang tidak disokong lagi.</translation>
 <translation id="8148901634826284024">Dayakan ciri kebolehcapaian mod kontras tinggi.
 
           Jika dasar ini ditetapkan kepada benar, mod kontras tinggi akan sentiasa didayakan.

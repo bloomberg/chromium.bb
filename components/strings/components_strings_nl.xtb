@@ -74,7 +74,6 @@
 <translation id="17513872634828108">Geopende tabbladen</translation>
 <translation id="1753706481035618306">Paginanummer</translation>
 <translation id="1763864636252898013">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
-<translation id="1775135663370355363">Geschiedenis van dit apparaat wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Ongeldige aanvraag of aanvraagparameters</translation>
@@ -241,7 +240,6 @@
 <translation id="3462200631372590220">Gedetailleerde informatie verbergen</translation>
 <translation id="3479539252931486093">Wat dit onverwacht? <ph name="BEGIN_LINK" />Laat het ons weten<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">We kunnen je ouder momenteel niet bereiken. Probeer het opnieuw.</translation>
-<translation id="3516765099410062445">Geschiedenis van je ingelogde apparaten wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Map</translation>
 <translation id="3528171143076753409">Het servercertificaat is niet betrouwbaar.</translation>
 <translation id="3539171420378717834">Een exemplaar van deze kaart op dit apparaat bewaren</translation>
@@ -401,7 +399,7 @@
 <translation id="5439770059721715174">Schemavalidatiefout op '<ph name="ERROR_PATH" />': <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Alle opgeslagen pagina's weergeven</translation>
 <translation id="5452270690849572955">Deze pagina op <ph name="HOST_NAME" /> kan niet worden gevonden</translation>
-<translation id="5455374756549232013">Onjuiste tijdstempel van beleid</translation>
+<translation id="5455374756549232013">Onjuist tijdstempel van beleid</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> van <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="5470861586879999274">&amp;Opnieuw bewerken</translation>
 <translation id="5492298309214877701">Deze site op het intranet van het bedrijf, de organisatie of de school heeft dezelfde URL als een externe website.

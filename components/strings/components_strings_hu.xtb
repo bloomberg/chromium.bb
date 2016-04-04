@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Megnyitott lapok</translation>
 <translation id="1753706481035618306">Oldalszám</translation>
 <translation id="1763864636252898013">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa az Ön eszközének operációs rendszere szerint nem megbízható. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
-<translation id="1775135663370355363">Előzmények megjelenítése erről az eszközről. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Kérjük, frissítse szinkronizálási összetett jelszavát.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Érvénytelen kérés vagy kérésparaméter</translation>
@@ -252,7 +251,6 @@
 <translation id="3462200631372590220">Speciális beállítások elrejtése</translation>
 <translation id="3479539252931486093">Ez váratlanul érte Önt? <ph name="BEGIN_LINK" />Tudassa velünk.<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Jelenleg nem tudjuk elérni szüleidet. Próbálkozz újra.</translation>
-<translation id="3516765099410062445">Előzmények megjelenítése bejelentkezett eszközeiről. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mappa</translation>
 <translation id="3528171143076753409">A szervezet tanúsítványa nem megbízható.</translation>
 <translation id="3539171420378717834">A kártya másolatának megőrzése az eszközön</translation>

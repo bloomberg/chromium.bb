@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome – Underretninger</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="110877069173485804">Dette er din Chrome-browser</translation>
-<translation id="1225016890511909183">Chrome vil lagre dine oplysninger på sikker vis, så du ikke behøver at angive dem igen, men du skal stadig bekræfte dit korts sikkerhedskode ved fremtidige betalinger.</translation>
 <translation id="123620459398936149">Chrome OS kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
 <translation id="127345590676626841">Chrome opdateres automatisk, så du altid har den nyeste version. Når downloaden er fuldført, genstartes Chrome, og så er du godt på vej.</translation>
 <translation id="1302523850133262269">Vent, mens Chrome installerer de nyeste systemopdateringer.</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Få hjælp til at bruge Chrome OS</translation>
 <translation id="1818142563254268765">Chrome kunne ikke opdatere sig selv til den nyeste version, så du går glip af nye fantastiske funktioner og sikkerhedsrettelser. Du skal opdatere Chrome.</translation>
+<translation id="1864458292167284385">Chrome-applisten forsvinder.</translation>
 <translation id="1877026089748256423">Chrome er forældet</translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
 <translation id="2084710999043359739">Føj til Chrome</translation>
@@ -88,6 +88,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website. Serveren leverede Certificate Transparency-oplysninger, men Chrome genkender ikke nogen af Certificate Transparency-logfilerne.</translation>
 <translation id="3889417619312448367">Afinstaller Google Chrome</translation>
+<translation id="396182988103551265">Fortsæt med at bruge dine apps via genvejen for <ph name="APPS_ICON_IMAGE" /> på bogmærkelinjen i Chrome.</translation>
 <translation id="4042449298237264661">Denne computer vil ikke længere modtage Google Chrome-opdateringer, fordi Windows XP og Windows Vista ikke længere understøttes.</translation>
 <translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
 <translation id="4053720452172726777">Tilpas og kontrollér Google Chrome</translation>
@@ -102,7 +103,6 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Du skal logge ud og logge ind igen, for at denne ændring kan træde i kraft.</translation>
 <translation id="4480040274068703980">Chrome OS kunne ikke synkronisere dine data på grund af en fejl under login.</translation>
-<translation id="4513711165509885787">Dine faktureringsoplysninger er nu gemt i Chrome.</translation>
 <translation id="4561051373932531560">Med Google Chrome kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
 <translation id="4567424176335768812">Du er logget ind som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du få adgang til dine bogmærker, din historik og andre indstillinger på alle de enheder, hvor du er logget ind.</translation>
 <translation id="4631713731678262610">Skjul i Chrome-menuen</translation>

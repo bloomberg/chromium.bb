@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome - Notifiche</translation>
 <translation id="1104959162601287462">Informazioni su &amp;Chrome OS</translation>
 <translation id="110877069173485804">Questo è il tuo Chrome</translation>
-<translation id="1225016890511909183">In Chrome le tue informazioni verranno memorizzate in modo sicuro per consentirti di non doverle digitare di nuovo, ma dovrai comunque verificare il codice di sicurezza della tua carta per i pagamenti futuri.</translation>
 <translation id="123620459398936149">Impossibile sincronizzare i tuoi dati in Chrome OS. Aggiorna la passphrase di sincronizzazione.</translation>
 <translation id="127345590676626841">Chrome si aggiorna automaticamente per consentirti di avere sempre la versione più recente. Al termine del download, Chrome si riavvierà e potrai procedere.</translation>
 <translation id="1302523850133262269">Attendi mentre Chrome installa gli aggiornamenti di sistema più recenti.</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Ricevi assistenza per l'utilizzo di Chrome OS</translation>
 <translation id="1818142563254268765">Chrome non è riuscito ad aggiornarsi all'ultima versione, quindi ti stai perdendo le nuove funzioni e correzioni per la sicurezza. Devi aggiornare Chrome.</translation>
+<translation id="1864458292167284385">Avvio applicazioni di Chrome non sarà più disponibile.</translation>
 <translation id="1877026089748256423">Chrome non è aggiornato</translation>
 <translation id="2077129598763517140">Usa accelerazione hardware quando disponibile</translation>
 <translation id="2084710999043359739">Aggiungi a Chrome</translation>
@@ -88,6 +88,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ha verificato che <ph name="ISSUER" /> ha rilasciato il certificato del sito web. Il server ha fornito le informazioni relative a Certificate Transparency, ma non è stato riconosciuto nessun log di Certificate Transparency.</translation>
 <translation id="3889417619312448367">Disinstalla Google Chrome</translation>
+<translation id="396182988103551265">Per continuare ad accedere alle tue app, utilizza la scorciatoia <ph name="APPS_ICON_IMAGE" /> nella barra dei Preferiti di Chrome.</translation>
 <translation id="4042449298237264661">Questo computer non riceverà più gli aggiornamenti di Google Chrome perché Windows XP e Windows Vista non sono più supportati.</translation>
 <translation id="4050175100176540509">Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
 <translation id="4053720452172726777">Personalizza e controlla Google Chrome</translation>
@@ -102,7 +103,6 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Esci ed esegui di nuovo l'accesso per applicare la modifica.</translation>
 <translation id="4480040274068703980">Impossibile sincronizzare i dati in Chrome OS a causa di un errore durante l'accesso.</translation>
-<translation id="4513711165509885787">I tuoi dettagli di fatturazione sono stati salvati in Chrome.</translation>
 <translation id="4561051373932531560">Google Chrome ti permette di scegliere un numero di telefono sul Web e di chiamarlo con Skype.</translation>
 <translation id="4567424176335768812">Hai eseguito l'accesso come <ph name="USER_EMAIL_ADDRESS" />. Ora puoi accedere ai tuoi Preferiti, alla tua cronologia e ad altre impostazioni su tutti i tuoi dispositivi su cui esegui l'accesso.</translation>
 <translation id="4631713731678262610">Nascondi in menu Chrome</translation>

@@ -23,7 +23,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1699664235656412242">Zavřete všechna okna prohlížeče Chromium (včetně oken v režimu Windows 8) a zkuste to znovu.</translation>
 <translation id="1708666629004767631">K dispozici je nová, bezpečnější verze prohlížeče Chromium.</translation>
 <translation id="1725059042853530269">Soubor <ph name="FILE_NAME" /> může narušit prohlížení internetu, aplikace Chromium jej proto zablokovala.</translation>
-<translation id="1745962126679160932">Prohlížeč Chromium vaše informace bezpečně uloží, abyste je nemuseli zadávat znovu. I přesto však bude třeba ověřit bezpečnostní kód karty pro budoucí platby.</translation>
 <translation id="1774152462503052664">Nechat prohlížeč Chromium spuštěný na pozadí</translation>
 <translation id="1779356040007214683">Aby bylo Chromium bezpečnější, deaktivovali jsme některá rozšíření, která nejsou uvedena na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohla být přidána bez vašeho vědomí.</translation>
 <translation id="1808667845054772817">Přeinstalovat Chromium</translation>
@@ -33,6 +32,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1929939181775079593">Prohlížeč Chromium neodpovídá. Chcete jej znovu načíst?</translation>
 <translation id="1967743265616885482">O modulu se stejným názvem je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
+<translation id="2103655854491303969">Spouštěč aplikací Chromium již nebude podporován.</translation>
 <translation id="2117181891440368863">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl údaje Certificate Transparency, byly však neplatné.</translation>
 <translation id="2119636228670142020">O systému &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS – licence open source</translation>
@@ -48,6 +48,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2535480412977113886">Chromium OS nemůže synchronizovat data, protože vaše přihlašovací údaje k účtu jsou zastaralé.</translation>
 <translation id="2558641060352364164">Tento web používá plugin Chromium Frame, jehož podpora bude brzy ukončena. Odinstalujte jej a přejděte na moderní prohlížeč.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">K aplikacím přistupujte pomocí zástupce <ph name="APPS_ICON_IMAGE" /> na liště záložek prohlížeče Chromium.</translation>
 <translation id="2602806952220118310">Chromium – oznámení</translation>
 <translation id="2636877269779209383">Prohlížeč Chromium potřebuje přístup k fotoaparátu, aby jej mohl sdílet s těmito stránkami.</translation>
 <translation id="2648074677641340862">Během instalace došlo k chybě operačního systému. Stáhněte prosím Chromium znovu.</translation>
@@ -102,7 +103,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4330585738697551178">O tomto modulu je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="4423735387467980091">Přizpůsobit a ovládat Chromium</translation>
 <translation id="4458285410772214805">Chcete-li, aby se změny projevily, odhlaste se a znovu se přihlaste.</translation>
-<translation id="4488676065623537541">Fakturační údaje byly uloženy do prohlížeče Chromium.</translation>
 <translation id="4549794359424059447">Budoucí verze prohlížeče Chromium již nebudou podporovat systémy Windows XP a Windows Vista.</translation>
 <translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="457845228957001925">Důležité informace o datech prohlížeče Chromium</translation>

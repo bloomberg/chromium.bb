@@ -23,7 +23,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1699664235656412242">Please close all Chromium windows (including those in Windows 8 mode) and try again.</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" /> may harm your browsing experience, so Chromium has blocked it.</translation>
-<translation id="1745962126679160932">Chromium will securely store your information so that you don't need to type it in again, but you will still need to verify your card's security code for future payments.</translation>
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="1808667845054772817">Reinstall Chromium</translation>
@@ -33,6 +32,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="1967743265616885482">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
+<translation id="2103655854491303969">The Chromium App Launcher is going away.</translation>
 <translation id="2117181891440368863">Chromium verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied Certificate Transparency information, but it was invalid.</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS open source licences</translation>
@@ -48,6 +48,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2535480412977113886">Chromium OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="2558641060352364164">This site is using the Chromium Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">Use the <ph name="APPS_ICON_IMAGE" /> shortcut in the Chromium bookmarks bar to continue accessing your apps.</translation>
 <translation id="2602806952220118310">Chromium - Notifications</translation>
 <translation id="2636877269779209383">Chromium needs camera access to share it with this site.</translation>
 <translation id="2648074677641340862">An operating system error occurred during installation. Please download Chromium again.</translation>
@@ -102,7 +103,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4330585738697551178">This module is known to conflict with Chromium.</translation>
 <translation id="4423735387467980091">Customise and control Chromium</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
-<translation id="4488676065623537541">Your billing details have been saved in Chromium.</translation>
 <translation id="4549794359424059447">Future versions of Chromium will no longer support Windows XP or Windows Vista.</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="457845228957001925">Important information regarding your Chromium data</translation>

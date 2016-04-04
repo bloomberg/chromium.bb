@@ -799,7 +799,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="402759845255257575">Não permitir que os sites executem JavaScript</translation>
 <translation id="4027608872760987929">Ativar o fornecedor de pesquisas personalizado</translation>
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros numa página tem permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP. Normalmente, esta definição está desativada como uma defesa contra phishing. Se esta política não for definida, a definição será desativada e o subconteúdo de terceiros não terá permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP.</translation>
-<translation id="4052765007567912447">Controla se o utilizador pode visualizar palavras-passe em texto normal no gestor de palavras-passe. Se desativar esta definição, o gestor de palavras-passe não permite a apresentação de palavras-passe guardadas em texto normal na respetiva janela. Se ativar ou não definir esta política, os utilizadores podem ver as suas palavras-passe em texto normal no gestor de palavras-passe.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
 <translation id="4088589230932595924">Modo de navegação anónima forçado</translation>
 <translation id="4088983553732356374">Permite-lhe definir se os Websites estão autorizados a definir dados locais. A definição dos dados locais pode ser autorizada para todos os Websites ou negada para todos os Websites.
@@ -1153,7 +1152,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se estiver especificada, irá adicionar um parâmetro de consulta denominado "restrito" ao URL utilizado para obter a semente Variações. O valor do parâmetro será o valor especificado nesta política.
 
       Se não estiver especificada, não irá modificar o URL da semente Variações.</translation>
-<translation id="5564962323737505851">Configura o gestor de palavras-passe. Se o gestor de palavras-passe estiver ativado, pode optar por permitir ou impedir que os utilizadores mostrem palavras-passe armazenadas em texto não encriptado.</translation>
 <translation id="556941986578702361">Controlar a ocultação automática da prateleira do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida como 'AlwaysAutoHideShelf', a prateleira será sempre ocultada automaticamente.
@@ -1258,7 +1256,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="5893553533827140852">Se esta definição estiver ativada, os pedidos de autenticação gnubby serão utilizados com proxy numa ligação de anfitrião remoto.
 
           Se esta definição estiver desativada ou não estiver configurada, os pedidos de autenticação não serão utilizados com proxy.</translation>
-<translation id="5912364507361265851">Permitir que os utilizadores mostrem palavras-passe no Gestor de Palavras-Passe</translation>
 <translation id="5921713479449475707">Permitir transferências de atualização automática por HTTP</translation>
 <translation id="5921888683953999946">Definir o estado predefinido da funcionalidade de acessibilidade do cursor grande no ecrã de início de sessão.
 
@@ -1818,6 +1815,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7882585827992171421">Esta política está ativa apenas no modo de retalho.
 
       Determina a ID da extensão a utilizar como proteção de ecrã no ecrã de início de sessão. A extensão deve ser parte do AppPack que está configurado para este domínio através da política DeviceAppPack.</translation>
+<translation id="7882890448959833986">Suprimir o aviso de SO não suportado</translation>
 <translation id="7912255076272890813">Configurar tipos de aplicações/extensões permitidos</translation>
 <translation id="793134539373873765">Especifica se o p2p será utilizado para cargas úteis de atualização do SO. Se estiver definido como Verdadeiro, os dispositivos irão partilhar e tentar consumir cargas úteisde atualização na LAN, reduzindo potencialmente a utilização e o congestionamento da largura de banda da Internet. Se a carga útil de atualização não estiver disponível na LAN, o dispositivo irá regressar à transferência a partir de um servidor de atualização. Se estiver definido como Falso ou se não estiver configurado, o p2p não será utilizado.</translation>
 <translation id="7933141401888114454">Permitir a criação de utilizadores supervisionados</translation>
@@ -1875,6 +1873,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se a política estiver definida como "false", a lista de interfaces não será comunicada.</translation>
 <translation id="8146727383888924340">Permitir que os utilizadores resgatem ofertas através do Registo no SO Chrome</translation>
+<translation id="8148785525797916822">Suprime o aviso apresentado quando o <ph name="PRODUCT_NAME" /> está em execução num computador ou num sistema operativo que já não é suportado.</translation>
 <translation id="8148901634826284024">Ativar a funcionalidade de acessibilidade do modo de alto contraste.
 
           Se esta política estiver definida como verdadeira, o modo de alto contraste estará sempre ativado.

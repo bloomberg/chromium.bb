@@ -31,11 +31,6 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="138361230106469022">Hallo <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1389974829397082527">Geen bladwijzers</translation>
-<translation id="1390350022570422499">Chrome kan webpagina's in de buurt nu vinden en weergeven via Bluetooth.
-
-Chrome scant op webpagina's in de buurt wanneer je apparaat is ontgrendeld. Deze pagina's worden verwerkt door een Google-service om de kwaliteit van paginaresultaten te verbeteren.
-
-Je kunt het Fysieke web beheren in de privacyinstellingen van Chrome.</translation>
 <translation id="1404122904123200417">Ingesloten in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Niet bijhouden</translation>
 <translation id="1409879593029778104">Downloaden van <ph name="FILE_NAME" /> is voorkomen omdat het bestand al bestaat.</translation>
@@ -78,6 +73,7 @@ Je kunt het Fysieke web beheren in de privacyinstellingen van Chrome.</translati
 <translation id="1974060860693918893">Geavanceerd</translation>
 <translation id="1984937141057606926">Toegestaan, behalve van derden</translation>
 <translation id="1994173015038366702">Site-URL</translation>
+<translation id="2001120796168634316">Gelinkte pagina opslaan voor later</translation>
 <translation id="200669432486043882">Bestand vervangen</translation>
 <translation id="2038563949887743358">'Desktopsite aanvragen' inschakelen</translation>
 <translation id="2073235970478114994">Afbeeldingen laden</translation>
@@ -96,7 +92,6 @@ Je kunt het Fysieke web beheren in de privacyinstellingen van Chrome.</translati
 <translation id="2268044343513325586">Verfijnen</translation>
 <translation id="2315043854645842844">Certificaatselectie aan clientzijde wordt niet ondersteund door het besturingssysteem.</translation>
 <translation id="2316129865977710310">Nee, bedankt</translation>
-<translation id="2319528413610359757">Voor lezers van <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Sleep de schuifknop tot je deze tekst prettig kunt lezen. De tekst moet minimaal deze grootte hebben nadat je op een alinea hebt dubbelgetikt.</translation>
 <translation id="2329597144923131178">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten te gebruiken.</translation>
 <translation id="2343328333327081434">Installeren…</translation>
@@ -136,6 +131,7 @@ Je kunt het Fysieke web beheren in de privacyinstellingen van Chrome.</translati
 <translation id="2762000892062317888">zojuist</translation>
 <translation id="2770465223704140727">Verwijderen uit lijst</translation>
 <translation id="278029852808208386">Geen Bluetooth-apparaten gevonden. <ph name="BEGIN_LINK" />Zoek nogmaals<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Wordt je apparaat niet weergegeven? <ph name="BEGIN_LINK" />Raadpleeg de Help<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tik op de knop Terug om het volledige scherm te sluiten.</translation>
 <translation id="2842985007712546952">Bovenliggende map</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -199,7 +195,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="3672452749423051839">Suggesties bij navigatiefouten</translation>
 <translation id="3732088672634061408">Kan interesses niet ophalen.</translation>
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
-<translation id="3774280986422214650">Als je deze functie inschakelt, maak je deel uit van een experiment dat HTTPS-pagina's via proxy overdraagt via de servers van Google.</translation>
 <translation id="3809549525127675114">'<ph name="VIDEO_TITLE" />' is afgelopen</translation>
 <translation id="3828029223314399057">Zoeken in bladwijzers</translation>
 <translation id="3871171699884605801">Browsegeschiedenis kan niet worden verwijderd bij accounts voor kinderen</translation>
@@ -214,7 +209,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="3992315671621218278">Link opslaan</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4035611068038188272">Bladwijzers nemen momenteel <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> in beslag.</translation>
-<translation id="403659016947612156">Er zijn Fysieke webpagina's in de buurt</translation>
 <translation id="4042870126885713738">Suggesties weergeven wanneer een webadres onjuist is of er geen verbinding kan worden gemaakt</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Juridische informatie</translation>
@@ -274,7 +268,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4816465935029283692">Gegevenstypen</translation>
 <translation id="4827948050554950725">Een creditcard toevoegen</translation>
 <translation id="4836364883164334657">Je verbinding met deze site is niet privé. Aanvallers kunnen mogelijk je informatie (bijvoorbeeld foto's, wachtwoorden, berichten en creditcardgegevens) stelen van <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Meer informatie</translation>
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="4875622588773761625">Wil je dat <ph name="PASSWORD_MANAGER_BRAND" /> je wachtwoord voor deze site updatet?</translation>
 <translation id="4881695831933465202">Openen</translation>
@@ -287,7 +280,6 @@ Open Chrome op je computer, ga naar het menu en selecteer 'Inloggen bij Chrome'.
 <translation id="497421865427891073">Naar voren gaan</translation>
 <translation id="4996978546172906250">Delen via</translation>
 <translation id="5000922062037820727">Geblokkeerd (aanbevolen)</translation>
-<translation id="5014582685689328551">Gebruik Chrome om te browsen op deze pagina's</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="5040262127954254034">Privacy</translation>
@@ -322,7 +314,6 @@ Open Chrome op je computer, ga naar het menu en selecteer 'Inloggen bij Chrome'.
 <translation id="5308933389783727448">Zoeken in opgeslagen pagina's</translation>
 <translation id="5313967007315987356">Site toevoegen</translation>
 <translation id="5317780077021120954">Opslaan</translation>
-<translation id="5323972449344932352">Chrome starten</translation>
 <translation id="5324858694974489420">Instellingen voor ouders</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> is verwijderd</translation>
@@ -401,7 +392,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="6159335304067198720"><ph name="PERCENT" /> besparing van data</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
 <translation id="6192792657125177640">Uitzonderingen</translation>
-<translation id="6208263165776660488">Chrome-tabbladen zijn verplaatst</translation>
 <translation id="6231464350722415003">JavaScript toestaan op websites die jij opgeeft terwijl dit voor de rest van internet wordt geblokkeerd</translation>
 <translation id="6232535412751077445">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
 
@@ -490,9 +480,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> gebruikt je locatie om lokale zoekresultaten weer te geven</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Help<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Bladwijzer verwijderen</translation>
-<translation id="7324738665594301612">We testen het via proxy overdragen van HTTPS-pagina's via servers van Google als onderdeel van een experiment.</translation>
 <translation id="7346217184097589238">Opgeslagen site-instellingen worden niet verwijderd en kunnen je browsegedrag weerspiegelen.</translation>
-<translation id="7346909386216857016">OK</translation>
 <translation id="7347770551817603360">Offline content</translation>
 <translation id="7363354739009474003">'<ph name="VIDEO_TITLE" />' laden</translation>
 <translation id="7366340029385295517">Casten naar <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7588950540487816470">Fysieke web</translation>
 <translation id="7596558890252710462">Besturingssysteem</translation>
 <translation id="7599840151813361502">Je wordt niet uitgelogd van je <ph name="BEGIN_LINK" />Google-accounts<ph name="END_LINK" /></translation>
-<translation id="7603403729818446828">Bekijk je tabbladen met andere recente apps op het overzichtsscherm van je telefoon. Je kunt dit beheren via <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Onderbroken</translation>
 <translation id="7612619742409846846">Ingelogd bij Google als</translation>
 <translation id="7619072057915878432">Downloaden van <ph name="FILE_NAME" /> is mislukt door netwerkfouten.</translation>
@@ -564,6 +551,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="8173098127580644436">het eerste gebruik</translation>
 <translation id="8200772114523450471">Hervatten</translation>
 <translation id="8209050860603202033">Afbeelding openen</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> wil verbinden met:</translation>
 <translation id="8218346974737627104">Inloggen bevestigen</translation>
 <translation id="8218934717680664417">Je kunt nu zoeken met één tik</translation>
 <translation id="8223946939421658889">Gegevens wissen van</translation>

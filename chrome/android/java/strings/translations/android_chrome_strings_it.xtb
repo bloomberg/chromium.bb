@@ -31,11 +31,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="138361230106469022">Ciao <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1389974829397082527">Nessun Preferito qui</translation>
-<translation id="1390350022570422499">Chrome è ora in grado di trovare e mostrarti pagine web nelle vicinanze tramite Bluetooth.
-
-Chrome cerca pagine nelle vicinanze quando il dispositivo è sbloccato. Tali pagine passeranno attraverso un servizio di Google per migliorare la qualità dei risultati.
-
-Puoi gestire il Physical Web nelle impostazioni sulla privacy di Chrome.</translation>
 <translation id="1404122904123200417">Incorporato in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Non tenere traccia"</translation>
 <translation id="1409879593029778104">Download di <ph name="FILE_NAME" /> impedito perché il file esiste già.</translation>
@@ -78,6 +73,7 @@ Puoi gestire il Physical Web nelle impostazioni sulla privacy di Chrome.</transl
 <translation id="1974060860693918893">Avanzate</translation>
 <translation id="1984937141057606926">Consentiti, tranne i cookie di terze parti</translation>
 <translation id="1994173015038366702">URL sito</translation>
+<translation id="2001120796168634316">Salva pagina collegata per dopo</translation>
 <translation id="200669432486043882">Sostituisci file</translation>
 <translation id="2038563949887743358">Attiva Richiedi sito desktop</translation>
 <translation id="2073235970478114994">Carica immagini</translation>
@@ -96,7 +92,6 @@ Puoi gestire il Physical Web nelle impostazioni sulla privacy di Chrome.</transl
 <translation id="2268044343513325586">Perfeziona</translation>
 <translation id="2315043854645842844">La selezione del certificato lato client non è supportata dal sistema operativo.</translation>
 <translation id="2316129865977710310">No, grazie</translation>
-<translation id="2319528413610359757">Per i lettori di: <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
 <translation id="2329597144923131178">Accedi per visualizzare i tuoi Preferiti, la cronologia, le password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="2343328333327081434">Installazione…</translation>
@@ -136,6 +131,7 @@ Puoi gestire il Physical Web nelle impostazioni sulla privacy di Chrome.</transl
 <translation id="2762000892062317888">in questo istante</translation>
 <translation id="2770465223704140727">Rimuovi dall'elenco</translation>
 <translation id="278029852808208386">Nessun dispositivo Bluetooth trovato. <ph name="BEGIN_LINK" />Esegui di nuovo la ricerca<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Non trovi il tuo dispositivo? <ph name="BEGIN_LINK" />Ricevi assistenza<ph name="END_LINK" />.</translation>
 <translation id="2836148919159985482">Tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="2842985007712546952">Cartella principale</translation>
 <translation id="2870560284913253234">Sito</translation>
@@ -199,7 +195,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
 <translation id="3732088672634061408">Impossibile recuperare gli interessi.</translation>
 <translation id="3738139272394829648">Tocca per cercare</translation>
-<translation id="3774280986422214650">Se attivi questa funzione, parteciperai a un esperimento che esegue il proxy delle pagine HTTPS tramite i server di Google.</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" terminato</translation>
 <translation id="3828029223314399057">Cerca tra i Preferiti</translation>
 <translation id="3871171699884605801">Impossibile cancellare la cronologia di navigazione con account di minori</translation>
@@ -214,7 +209,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3992315671621218278">Salva link</translation>
 <translation id="4002066346123236978">Titolo</translation>
 <translation id="4035611068038188272">Attualmente i preferiti occupano <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">Pagine Physical Web nelle vicinanze</translation>
 <translation id="4042870126885713738">Mostra suggerimenti quando un indirizzo web non viene risolto o non è possibile stabilire una connessione</translation>
 <translation id="4056223980640387499">Seppia</translation>
 <translation id="4062305924942672200">Informazioni legali</translation>
@@ -274,7 +268,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4816465935029283692">Tipi di dati</translation>
 <translation id="4827948050554950725">Aggiungi carta di credito</translation>
 <translation id="4836364883164334657">La tua connessione a questo sito non è privata. I malintenzionati potrebbero provare a impossessarsi dei tuoi dati da <ph name="DOMAIN_NAME" /> (ad esempio, foto, password, messaggi e carte di credito).</translation>
-<translation id="4842511359652954519">Ulteriori informazioni</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="4875622588773761625">Vuoi che <ph name="PASSWORD_MANAGER_BRAND" /> aggiorni la password di questo sito?</translation>
 <translation id="4881695831933465202">Apri</translation>
@@ -287,7 +280,6 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="497421865427891073">Avanti</translation>
 <translation id="4996978546172906250">Condividi tramite</translation>
 <translation id="5000922062037820727">Bloccata (opzione consigliata)</translation>
-<translation id="5014582685689328551">Visitali con Chrome</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="5040262127954254034">Privacy</translation>
@@ -322,7 +314,6 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5308933389783727448">Cerca nelle pagine salvate</translation>
 <translation id="5313967007315987356">Aggiungi sito</translation>
 <translation id="5317780077021120954">Salva</translation>
-<translation id="5323972449344932352">Avvia Chrome</translation>
 <translation id="5324858694974489420">Impostazioni controllo genitori</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> eliminato</translation>
@@ -401,7 +392,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6159335304067198720">Riduzioni dei dati: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
-<translation id="6208263165776660488">Le schede di Chrome sono state spostate</translation>
 <translation id="6231464350722415003">Consenti JavaScript sui siti web da te specificati e bloccalo per tutti gli altri siti web</translation>
 <translation id="6232535412751077445">Se attivi l'opzione "Non tenere traccia", verrà inclusa una richiesta nel tuo traffico di navigazione. Gli effetti dipendono dall'eventuale risposta dei siti web alla richiesta e dall'interpretazione di quest'ultima.
 
@@ -490,9 +480,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utilizza la tua posizione per mostrare i risultati della ricerca locale.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Guida<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Elimina preferito</translation>
-<translation id="7324738665594301612">Stiamo testando il proxy delle pagine HTTPS tramite i server di Google nell'ambito di un esperimento.</translation>
 <translation id="7346217184097589238">Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione.</translation>
-<translation id="7346909386216857016">OK</translation>
 <translation id="7347770551817603360">Contenuto offline</translation>
 <translation id="7363354739009474003">Caricamento di "<ph name="VIDEO_TITLE" />" in corso</translation>
 <translation id="7366340029385295517">Trasmissione su <ph name="SCREEN_NAME" /> in corso</translation>
@@ -515,7 +503,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
 <translation id="7599840151813361502">Non uscirai dai tuoi <ph name="BEGIN_LINK" />account Google<ph name="END_LINK" /></translation>
-<translation id="7603403729818446828">Visualizza le tue schede con altre app recenti nella schermata Panoramica del telefono. Puoi controllare questa opzione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">In pausa</translation>
 <translation id="7612619742409846846">Accesso effettuato a Google come</translation>
 <translation id="7619072057915878432">Download di <ph name="FILE_NAME" /> non riuscito a causa di errori di rete.</translation>
@@ -564,6 +551,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="8173098127580644436">tutto</translation>
 <translation id="8200772114523450471">Riprendi</translation>
 <translation id="8209050860603202033">Apri immagine</translation>
+<translation id="8215250379351058554">Il sito <ph name="SITE" /> vuole collegarsi a:</translation>
 <translation id="8218346974737627104">Conferma accesso</translation>
 <translation id="8218934717680664417">Ora è sufficiente un solo tocco per cercare</translation>
 <translation id="8223946939421658889">Cancella dati a partire da:</translation>

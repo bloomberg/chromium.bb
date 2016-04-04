@@ -892,11 +892,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="4039085364173654945">Določa, ali lahko podvsebina drugega ponudnika na strani odpre pojavno pogovorno okno HTTP Basic Auth.
 
           Običajno je to onemogočeno kot zaščita pred lažnim predstavljanjem. Če ta pravilnik ni nastavljen, je to onemogočeno in podvsebina drugega ponudnika ne bo mogla odpreti pojavnega pogovornega okna HTTP Basic Auth.</translation>
-<translation id="4052765007567912447">Nadzira, ali lahko uporabnik v upravitelju gesel prikaže gesla v besedilni obliki.
-
-         Če to nastavitev onemogočite, upravitelj gesel v svojem oknu ne dovoli prikaza shranjenih gesel v besedilni obliki.
-
-          Če ta pravilnik omogočite ali ga ne nastavite, si lahko uporabniki v upravitelju gesel ogledujejo gesla v besedilni obliki.</translation>
 <translation id="4056910949759281379">Onemogoči protokol SPDY</translation>
 <translation id="4088589230932595924">Vsiljen način brez beleženja zgodovine</translation>
 <translation id="4088983553732356374">Omogoča, da nastavite, ali je spletnim mestom dovoljeno nastavljanje lokalnih podatkov. Nastavljanje lokalnih podatkov je lahko dovoljeno za vsa mesta ali onemogočeno za vsa mesta.
@@ -1299,7 +1294,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je pravilnik določen, se URL-ju za prenos semen različic doda parameter poizvedbe »restrict«. Vrednost parametra je vrednost, določena v tem pravilniku.
 
       Če pravilnik ni določen, se URL semen različic ne spremeni.</translation>
-<translation id="5564962323737505851">Nastavi upravitelja gesel. Če je omogočen, lahko izberete, ali želite omogočiti ali onemogočiti, ali lahko uporabnik prikaže gesla z vidnim besedilom.</translation>
 <translation id="556941986578702361">Nadzira samodejno skrivanje police v sistemu <ph name="PRODUCT_OS_NAME" />.
 
       Če je ta pravilnik nastavljen na »AlwaysAutoHideShelf«, se bo polica vedno samodejno skrila.
@@ -1412,7 +1406,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5893553533827140852">Če je ta nastavitev omogočena, bodo zahteve za preverjanje pristnosti »gnubby« posredovane prek povezave z oddaljenim gostiteljem.
 
           Če je ta nastavitev onemogočena ali ni konfigurirana, zahteve za preverjanje pristnosti »gnubby« ne bodo posredovane.</translation>
-<translation id="5912364507361265851">Dovoli uporabnikom, da pokažejo gesla v upravitelju gesel</translation>
 <translation id="5921713479449475707">Dovoli samoposodobitvene prenose prek HTTP</translation>
 <translation id="5921888683953999946">Nastavitev privzetega stanja funkcije velikega kazalca za ljudi s posebnimi potrebami na prijavnem zaslonu.
 
@@ -2051,6 +2044,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7882585827992171421">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
       Določa ID razširitve, ki se uporabi kot ohranjevalnik zaslona na zaslonu za prijavo. Razširitev mora biti del paketa AppPack, ki je za to domeno nastavljen s pravilnikom »DeviceAppPack«.</translation>
+<translation id="7882890448959833986">Onemogočanje opozorila glede nepodprtega operacijskega sistema</translation>
 <translation id="7912255076272890813">Konfiguracija dovoljenih vrst aplikacij/razširitev</translation>
 <translation id="793134539373873765">Določa, ali se za prenos posodobitvenih paketov operacijskega sistema uporablja p2p. Če je nastavljeno na »True«, naprave dajo posodobitvene pakete v skupno rabo v krajevnem omrežju in jih poskušajo uporabiti ter s tem morebiti zmanjšati uporabo internetne pasovne širine in zamašitve. Če posodobitveni paket ni na voljo v krajevnem omrežju, ga naprava poskuša prenesti iz posodobitvenegea strežnika. Če je nastavljeno na »False« ali ni nastavljeno, se uporabi p2p.</translation>
 <translation id="7933141401888114454">Omogoči ustvarjanje zaščitenih uporabnikov</translation>
@@ -2113,6 +2107,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če je pravilnik nastavljen na »False«, se o seznamu vmesnikov ne poroča.</translation>
 <translation id="8146727383888924340">Uporabnikom dovoli unovčenje ponudb prek registracije sistema Chrome OS.</translation>
+<translation id="8148785525797916822">Onemogoči opozorilo, ki se pojavi, ko se <ph name="PRODUCT_NAME" /> izvaja v računalniku ali operacijskem sistemu, ki ni več podprt.</translation>
 <translation id="8148901634826284024">Omogoči visokokontrastni način funkcij za ljudi s posebnimi potrebami.
 
           Če je ta pravilnik vklopljen, bo vedno omogočen visokokontrastni način.

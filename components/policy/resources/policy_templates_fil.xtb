@@ -885,11 +885,6 @@
 <translation id="4039085364173654945">Kinokontrol kung papayagan ang sub-content ng third-party sa isang pahina na mag-pop-up ng isang dialog box ng HTTP Basic Auth.
 
           Karaniwang hindi ito pinapagana bilang isang depensa sa phishing. Kung hindi nakatakda ang patakarang ito, hindi ito pinapagana at hindi papayagan ang sub-content ng third-party na mag-pop up ng isang dialog box ng HTTP Basic Auth.</translation>
-<translation id="4052765007567912447">Kinokontrol kung maaaring magpakita ang user o hindi ng mga password sa malinaw na teksto sa tagapamahala ng password.
-
-          Kung hindi mo pinagana ang setting na ito, hindi pinapayagan ng tagapamahala ng password ang pagpapakita ng mga naka-imbak na password sa malinaw na teksto sa window ng tagapamahala ng password.
-
-          Kung pinagana o hindi mo itinakda ang patakarang ito, makikita ng mga user ang kanilang mga password sa malinaw na teksto sa tagapamahala ng password.</translation>
 <translation id="4056910949759281379">Huwag paganahin ang SPDY protocol</translation>
 <translation id="4088589230932595924">Pinuwersa ang mode na incognito</translation>
 <translation id="4088983553732356374">Nagbibigay-daan sa iyong itakda kung maaari bang magtakda ng lokal na data ang mga website. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagtatakda ng lokal na data.
@@ -1291,7 +1286,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung tinukoy ito, magdaragdag ito ng parameter ng query na tinatawag na 'paghigpitan' sa URL na ginagamit upang kunin ang seed ng Mga Variation. Ang halaga ng parameter ay ang halagang tutukuyin sa patakarang ito.
 
       Kung hindi ito tinukoy, hindi nito babaguhin ang URL ng seed ng Mga Variation.</translation>
-<translation id="5564962323737505851">Kino-configure ang tagapamahala ng password. Kung pinagana ang tagapamahala ng password, maaari mong piliing paganahin o hindi paganahin kung maaaring ipakita ng user ang mga naka-imbak na password sa malinaw na teksto.</translation>
 <translation id="556941986578702361">Kontrolin ang awtomatikong pagtatago ng shelf ng <ph name="PRODUCT_OS_NAME" />.
 
       Kung nakatakda ang patakarang ito sa 'AlwaysAutoHideShelf', palaging awtomatikong itatago ang shelf.
@@ -1402,7 +1396,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5893553533827140852">Kung naka-enable ang setting na ito, ipo-proxy ang mga kahilingan sa pagpapatunay ng gnubby sa isang malayuang koneksyon sa host.
 
           Kung naka-disable o hindi naka-configure ang setting na ito, hindi ipo-proxy ang mga kahilingan sa pagpapatunay ng gnubby.</translation>
-<translation id="5912364507361265851">Payagan ang mga user na ipakita ang mga password sa Tagapamahala ng Password</translation>
 <translation id="5921713479449475707">Pinapayagan ang mga pag-download ng autoupdate sa pamamagitan ng HTTP</translation>
 <translation id="5921888683953999946">Itakda ang default na katayuan ng pagiging naa-access ng malaking cursor sa screen sa pag-login.
 
@@ -2036,6 +2029,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7882585827992171421">Sa retail mode lamang aktibo ang patakarang ito.
 
       Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
+<translation id="7882890448959833986">Pigilan ang babala ng hindi sinusuportahang OS</translation>
 <translation id="7912255076272890813">I-configure ang mga pinapayagang uri ng app/extension</translation>
 <translation id="793134539373873765">Tinutukoy kung gagamitin ang p2p para sa mga payload sa pag-update ng OS. Kung nakatakda sa True, ang mga device ay magbabahagi at susubukang gamitin ang mga payload sa pag-update sa LAN, na malamang na babawasan ang paggamit at pagsikip sa Internet bandwidth. Kung hindi available sa LAN ang payload sa pag-update, babalik ang device sa pag-download mula sa server sa pag-update. Kung nakatakda sa False o hindi naka-configure, hindi gagamitin ang p2p.</translation>
 <translation id="7933141401888114454">I-enable ang paggawa ng mga pinapangasiwaang user</translation>
@@ -2098,6 +2092,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung nakatakda ang patakarang ito sa false, hindi i-uulat ang listahan ng interface.</translation>
 <translation id="8146727383888924340">Payagan ang mga user na kumuha ng mga alok sa pamamagitan ng Pagpaparehistro ng Chrome OS</translation>
+<translation id="8148785525797916822">Pinipigilan ang babalang lumalabas kapag gumagana ang <ph name="PRODUCT_NAME" /> sa isang computer o operating system na hindi na sinusuportahan.</translation>
 <translation id="8148901634826284024">I-enable ang tampok na high contrast mode.
 
           Kung nakatakda sa true ang patakarang ito, palaging naka-enable ang high contrast mode.

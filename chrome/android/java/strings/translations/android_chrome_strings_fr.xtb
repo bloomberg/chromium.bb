@@ -31,11 +31,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="138361230106469022">Bonjour "<ph name="FULL_NAME" />"</translation>
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1389974829397082527">Aucun favori ici</translation>
-<translation id="1390350022570422499">Chrome peut désormais rechercher et afficher des pages Web à proximité à l'aide du Bluetooth.
-
-Chrome recherche les pages à proximité lorsque l'appareil est déverrouillé. Ces pages sont analysées par un service Google pour améliorer la qualité des résultats.
-
-Vous pouvez contrôler le Web physique dans les paramètres de confidentialité de Chrome.</translation>
 <translation id="1404122904123200417">Intégration sur <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Interdire le suivi</translation>
 <translation id="1409879593029778104">Le téléchargement du fichier "<ph name="FILE_NAME" />" a été bloqué, car le fichier existe déjà.</translation>
@@ -78,6 +73,7 @@ Vous pouvez contrôler le Web physique dans les paramètres de confidentialité 
 <translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="1984937141057606926">Autorisés, sauf cookies tiers</translation>
 <translation id="1994173015038366702">URL du site</translation>
+<translation id="2001120796168634316">Page liée à consulter plus tard</translation>
 <translation id="200669432486043882">Remplacer un fichier</translation>
 <translation id="2038563949887743358">Activer "Voir version ordinateur"</translation>
 <translation id="2073235970478114994">Charger les images</translation>
@@ -96,7 +92,6 @@ Vous pouvez contrôler le Web physique dans les paramètres de confidentialité 
 <translation id="2268044343513325586">Affiner</translation>
 <translation id="2315043854645842844">La sélection de certificat côté client n'est pas compatible avec le système d'exploitation.</translation>
 <translation id="2316129865977710310">Non merci</translation>
-<translation id="2319528413610359757">Pour les lecteurs de la publication "<ph name="PUBLISHER" />"</translation>
 <translation id="2321958826496381788">Faites glisser le curseur pour lire le texte aisément. Sa taille doit être similaire à celle-ci lorsque vous appuyez deux fois sur un paragraphe.</translation>
 <translation id="2329597144923131178">Connectez-vous pour synchroniser favoris, historique, mots de passe et autres sur vos appareils. </translation>
 <translation id="2343328333327081434">Installation…</translation>
@@ -136,6 +131,7 @@ Vous pouvez contrôler le Web physique dans les paramètres de confidentialité 
 <translation id="2762000892062317888">à l'instant</translation>
 <translation id="2770465223704140727">Retirer de la liste</translation>
 <translation id="278029852808208386">Aucun appareil Bluetooth trouvé. <ph name="BEGIN_LINK" />Relancez la recherche<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Votre appareil ne s'affiche pas ? <ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Appuyez sur le bouton Retour pour quitter le mode plein écran.</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -199,7 +195,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
 <translation id="3732088672634061408">Impossible de récupérer les centres d'intérêt.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
-<translation id="3774280986422214650">Si vous activez cette fonctionnalité, vous participerez à une expérience qui consiste à envoyer par proxy des pages HTTPS via les serveurs Google.</translation>
 <translation id="3809549525127675114">Lecture de la vidéo "<ph name="VIDEO_TITLE" />" terminée.</translation>
 <translation id="3828029223314399057">Rechercher dans les favoris</translation>
 <translation id="3871171699884605801">L'historique de navigation des comptes pour enfants ne peut être effacé.</translation>
@@ -214,7 +209,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3992315671621218278">Enregistrer le lien</translation>
 <translation id="4002066346123236978">Titre</translation>
 <translation id="4035611068038188272">Les favoris occupent actuellement <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">Pages Web physique à proximité</translation>
 <translation id="4042870126885713738">Afficher d'autres solutions lorsqu'une adresse Web ne peut pas être résolue ou qu'une connexion ne peut pas être établie</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4062305924942672200">Informations légales</translation>
@@ -274,7 +268,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4816465935029283692">Types de données</translation>
 <translation id="4827948050554950725">Ajouter une carte de paiement</translation>
 <translation id="4836364883164334657">Votre connexion à ce site n'est pas en mode privé. Il se peut que des individus malveillants tentent de voler vos informations (photos, mots de passe, messages, numéros de carte de paiement, etc.) à partir de <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Lire la suite</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="4875622588773761625">Voulez-vous que <ph name="PASSWORD_MANAGER_BRAND" /> modifie votre mot de passe pour ce site ?</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
@@ -287,7 +280,6 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="497421865427891073">Avancer</translation>
 <translation id="4996978546172906250">Partager via</translation>
 <translation id="5000922062037820727">Bloquée (recommandé)</translation>
-<translation id="5014582685689328551">Utilisez Chrome pour les parcourir</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
@@ -322,7 +314,6 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5308933389783727448">Rechercher sur pages enregistrées</translation>
 <translation id="5313967007315987356">Ajouter un site</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
-<translation id="5323972449344932352">Lancer Chrome</translation>
 <translation id="5324858694974489420">Paramètres parentaux</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5345040418939504969">Le favori "<ph name="BOOKMARK_TITLE" />" a été supprimé.</translation>
@@ -402,7 +393,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="6159335304067198720">Économies de données de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6192792657125177640">Exceptions</translation>
-<translation id="6208263165776660488">Les onglets de Chrome ont été déplacés</translation>
 <translation id="6231464350722415003">Autoriser le langage JavaScript sur les sites Web que vous spécifiez, tout en le bloquant pour le reste du Web</translation>
 <translation id="6232535412751077445">Si vous interdisez le suivi, une demande sera incluse dans le trafic lié à votre navigation. Les résultats obtenus dépendent de la réponse du site (s'il répond ou non) et de la manière dont il interprète la demande.
 
@@ -491,9 +481,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Aide<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Supprimer le favori</translation>
-<translation id="7324738665594301612">Dans le cadre d'une expérience, nous testons actuellement l'envoi par proxy de pages HTTPS via les serveurs Google.</translation>
 <translation id="7346217184097589238">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation.</translation>
-<translation id="7346909386216857016">OK</translation>
 <translation id="7347770551817603360">Contenu hors connexion</translation>
 <translation id="7363354739009474003">Chargement de la vidéo "<ph name="VIDEO_TITLE" />" en cours…</translation>
 <translation id="7366340029385295517">Diffusion sur "<ph name="SCREEN_NAME" />" en cours…</translation>
@@ -516,7 +504,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7588950540487816470">Web physique</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>
 <translation id="7599840151813361502">Vous ne serez pas déconnecté de vos <ph name="BEGIN_LINK" />comptes Google<ph name="END_LINK" />.</translation>
-<translation id="7603403729818446828">Affichez vos onglets ainsi que d'autres applications récemment utilisées sur l'écran "Aperçu" de votre téléphone. Vous pouvez contrôler ce réglage dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Suspendu</translation>
 <translation id="7612619742409846846">Connecté à Google en tant que</translation>
 <translation id="7619072057915878432">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'échec du réseau.</translation>
@@ -565,6 +552,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="8173098127580644436">depuis le début</translation>
 <translation id="8200772114523450471">Reprendre</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> tente de se connecter au site suivant :</translation>
 <translation id="8218346974737627104">Confirmer la connexion</translation>
 <translation id="8218934717680664417">Vous pouvez maintenant effectuer des recherches d'une seule pression.</translation>
 <translation id="8223946939421658889">Effacer les données</translation>

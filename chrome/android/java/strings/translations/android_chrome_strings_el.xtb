@@ -31,11 +31,6 @@
 <translation id="138361230106469022">Γεια σας, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="1389974829397082527">Δεν υπάρχουν σελιδοδείκτες εδώ</translation>
-<translation id="1390350022570422499">Τώρα το Chrome μπορεί να εντοπίζει και να εμφανίζει κοντινές ιστοσελίδες χωρίς τη χρήση του Bluetooth.
-
-Το Chrome θα σαρώσει τις κοντινές σελίδες όταν ξεκλειδωθεί η συσκευή σας. Αυτές οι σελίδες θα περάσουν από μια υπηρεσία Google για τη βελτίωση της ποιότητας των αποτελεσμάτων σελίδων.
-
-Μπορείτε να ελέγξετε τη λειτουργία του Φυσικού δικτύου από τις ρυθμίσεις απορρήτου του Chrome.</translation>
 <translation id="1404122904123200417">Ενσωματωμένο σε <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Να μην γίνεται εντοπισμός"</translation>
 <translation id="1409879593029778104">Η λήψη του αρχείου <ph name="FILE_NAME" /> απετράπη, επειδή το αρχείο υπάρχει ήδη.</translation>
@@ -78,6 +73,7 @@
 <translation id="1974060860693918893">Σύνθετες</translation>
 <translation id="1984937141057606926">Να επιτρέπονται, εκτός από τα cookie τρίτου μέρους</translation>
 <translation id="1994173015038366702">URL ιστότοπου</translation>
+<translation id="2001120796168634316">Αποθ. συνδ. σελ. για αργότερα</translation>
 <translation id="200669432486043882">Αντικατάσταση αρχείου</translation>
 <translation id="2038563949887743358">Ενεργοποίηση αιτήματος ιστότοπου για υπολογιστές</translation>
 <translation id="2073235970478114994">Φόρτωση εικόνων</translation>
@@ -96,7 +92,6 @@
 <translation id="2268044343513325586">Περιορισμός</translation>
 <translation id="2315043854645842844">Η επιλογή πιστοποιητικού από τον πελάτη δεν υποστηρίζεται από το λειτουργικό σύστημα.</translation>
 <translation id="2316129865977710310">Όχι, ευχαριστώ</translation>
-<translation id="2319528413610359757">Για τους αναγνώστες του/της <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Σύρετε το ρυθμιστικό έως ότου να διαβάσετε αυτό το μήνυμα άνετα. Το κείμενο θα πρέπει να είναι τουλάχιστον τόσο μεγάλο αφού πατήσετε δύο φορές σε μια παράγραφο.</translation>
 <translation id="2329597144923131178">Συνδεθείτε για χρήση σελιδοδεικτών, ιστορικού, κωδ.πρόσβ. κ.λπ. σε όλες τις συσκευές.</translation>
 <translation id="2343328333327081434">Εγκατάσταση…</translation>
@@ -136,6 +131,7 @@
 <translation id="2762000892062317888">μόλις τώρα</translation>
 <translation id="2770465223704140727">Κατάργηση από τη λίστα</translation>
 <translation id="278029852808208386">Δεν βρέθηκαν συσκευές Bluetooth. <ph name="BEGIN_LINK" />Νέα αναζήτηση<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Δεν βλέπετε τη συσκευή σας; <ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Πατήστε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
 <translation id="2842985007712546952">Γονικός φάκελος</translation>
 <translation id="2870560284913253234">Ιστότοπος</translation>
@@ -199,7 +195,6 @@
 <translation id="3672452749423051839">Προτάσεις σφάλματος πλοήγησης</translation>
 <translation id="3732088672634061408">Δεν ήταν δυνατή η ανάκτηση ενδιαφερόντων.</translation>
 <translation id="3738139272394829648">Αγγίξτε για αναζήτηση</translation>
-<translation id="3774280986422214650">Αν ενεργοποιήσετε αυτήν τη λειτουργία, θα λάβετε μέρος σε ένα πείραμα το οποίο χρησιμοποιεί διακομιστή μεσολάβησης μέσω διακομιστών της Google για σελίδες HTTPS.</translation>
 <translation id="3809549525127675114">Ολοκληρώθηκε "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="3828029223314399057">Αναζήτηση σελιδοδεικτών</translation>
 <translation id="3871171699884605801">Δεν είναι δυνατή η εκκαθάριση του ιστορικού περιήγησης για παιδικούς λογαριασμούς</translation>
@@ -214,7 +209,6 @@
 <translation id="3992315671621218278">Αποθήκευση συνδέσμου</translation>
 <translation id="4002066346123236978">Τίτλος</translation>
 <translation id="4035611068038188272">Αυτήν τη στιγμή, οι σελιδοδείκτες καταλαμβάνουν <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">Υπάρχουν κοντινές σελίδες Φυσικού δικτύου</translation>
 <translation id="4042870126885713738">Εμφάνιση προτάσεων όταν μια διεύθυνση ιστού δεν αναλύεται σωστά ή δεν είναι δυνατό να πραγματοποιηθεί σύνδεση</translation>
 <translation id="4056223980640387499">Σέπια</translation>
 <translation id="4062305924942672200">Νομικές πληροφορίες</translation>
@@ -274,7 +268,6 @@
 <translation id="4816465935029283692">Τύποι δεδομένων</translation>
 <translation id="4827948050554950725">Προσθήκη πιστωτικής κάρτας</translation>
 <translation id="4836364883164334657">Η σύνδεσή σας με αυτόν τον ιστότοπο δεν είναι ιδιωτική. Ο τομέας <ph name="DOMAIN_NAME" /> ενδέχεται να δέχεται επίθεση από εισβολείς που προσπαθούν να υποκλέψουν τις πληροφορίες σας (για παράδειγμα, φωτογραφίες, κωδικούς πρόσβασης, μηνύματα και πιστωτικές κάρτες).</translation>
-<translation id="4842511359652954519">Διαβάστε περισσότερα</translation>
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="4875622588773761625">Θέλετε το <ph name="PASSWORD_MANAGER_BRAND" /> να ενημερώσει τον κωδικό πρόσβασής σας για αυτόν τον ιστότοπο;</translation>
 <translation id="4881695831933465202">Άνοιγμα</translation>
@@ -287,7 +280,6 @@
 <translation id="497421865427891073">Μετάβαση προς τα εμπρός</translation>
 <translation id="4996978546172906250">Κοινή χρήση μέσω</translation>
 <translation id="5000922062037820727">Αποκλείεται (συνιστάται)</translation>
-<translation id="5014582685689328551">Χρησιμοποιήστε το Chrome για να περιηγηθείτε σε αυτές</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Επιτρέπεται</translation>
 <translation id="5040262127954254034">Απόρρητο</translation>
@@ -322,7 +314,6 @@
 <translation id="5308933389783727448">Αναζήτηση αποθηκευμένων σελίδων</translation>
 <translation id="5313967007315987356">Προσθήκη ιστότοπου</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
-<translation id="5323972449344932352">Εκκίνηση Chrome</translation>
 <translation id="5324858694974489420">Ρυθμίσεις γονικού ελέγχου</translation>
 <translation id="5327248766486351172">Όνομα</translation>
 <translation id="5345040418939504969">Ο σελιδοδείκτης <ph name="BOOKMARK_TITLE" /> διαγράφηκε</translation>
@@ -402,7 +393,6 @@
 <translation id="6159335304067198720">Εξοικονόμηση δεδομένων κατά <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
 <translation id="6192792657125177640">Εξαιρέσεις</translation>
-<translation id="6208263165776660488">Οι καρτέλες του Chrome μετακινήθηκαν</translation>
 <translation id="6231464350722415003">Να επιτρέπεται η JavaScript στους ιστότοπους που προσδιορίζετε και αποκλεισμός για τον υπόλοιπο ιστό</translation>
 <translation id="6232535412751077445">Η ενεργοποίηση της επιλογής "Να μην γίνεται εντοπισμός" σημαίνει ότι θα συμπεριληφθεί ένα αίτημα με την επισκεψιμότητα της περιήγησής σας. Τυχόν αποτελέσματα εξαρτώνται από το κατά πόσο ένας ιστότοπος ανταποκρίνεται στο αίτημα, καθώς και από τον τρόπο με τον οποίο ερμηνεύεται το αίτημα.
 
@@ -491,9 +481,7 @@
 <translation id="7244362611678346589">Το <ph name="SEARCH_ENGINE_URL" /> χρησιμοποιεί την τοποθεσία σας για την εμφάνιση τοπικών αποτελεσμάτων αναζήτησης</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Βοήθεια<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Διαγραφή σελιδοδείκτη</translation>
-<translation id="7324738665594301612">Δοκιμάζουμε τη μεσολάβηση σελίδων HTTPS μέσω διακομιστών της Google στο πλαίσιο ενός πειράματος.</translation>
 <translation id="7346217184097589238">Οι αποθηκευμένες ρυθμίσεις ιστότοπων δεν θα διαγραφούν και ενδέχεται να υποδεικνύουν τις συνήθειες περιήγησης.</translation>
-<translation id="7346909386216857016">Εντάξει, το κατάλαβα</translation>
 <translation id="7347770551817603360">Περιεχόμενο εκτός σύνδεσης</translation>
 <translation id="7363354739009474003">Φόρτωση "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Μετάδοση στη συσκευή <ph name="SCREEN_NAME" /></translation>
@@ -516,7 +504,6 @@
 <translation id="7588950540487816470">Φυσικό δίκτυο</translation>
 <translation id="7596558890252710462">Λειτουργικό σύστημα</translation>
 <translation id="7599840151813361502">Δεν θα αποσυνδεθείτε από τους <ph name="BEGIN_LINK" />Λογαριασμούς Google<ph name="END_LINK" /></translation>
-<translation id="7603403729818446828">Δείτε τις καρτέλες σας με άλλες πρόσφατες εφαρμογές στην οθόνη "Επισκόπηση" του τηλεφώνου σας. Μπορείτε να ελέγξετε αυτήν την επιλογή στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Έγινε παύση</translation>
 <translation id="7612619742409846846">Έχετε συνδεθεί στο Google ως</translation>
 <translation id="7619072057915878432">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω προβλημάτων στο δίκτυο.</translation>
@@ -565,6 +552,7 @@
 <translation id="8173098127580644436">από την αρχή</translation>
 <translation id="8200772114523450471">Συνέχιση</translation>
 <translation id="8209050860603202033">Άνοιγμα εικόνας</translation>
+<translation id="8215250379351058554">Ο ιστότοπος <ph name="SITE" /> θέλει να συνδεθεί στο:</translation>
 <translation id="8218346974737627104">Επιβεβαίωση σύνδεσης</translation>
 <translation id="8218934717680664417">Τώρα μπορείτε να αναζητήσετε με ένα μόνο άγγιγμα</translation>
 <translation id="8223946939421658889">Εκκαθάριση δεδομένων από</translation>

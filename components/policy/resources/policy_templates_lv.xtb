@@ -891,11 +891,6 @@
 <translation id="4039085364173654945">Nosaka, vai lapā ietvertajam trešās puses sekundārajam saturam ir atļauts atvērt HTTP pamata autentifikācijas dialoglodziņu.
 
           Parasti šī iespēja ir atspējota kā aizsardzība pret pikšķerēšanu. Ja šī politika nav iestatīta, tā tiks atspējota un trešās puses sekundārajam saturam nebūs atļauts atvērt HTTP pamata autentifikācijas dialoglodziņu.</translation>
-<translation id="4052765007567912447">Nosaka, vai lietotājs var rādīt paroles paroļu pārvaldniekā atklātā tekstā.
-
-          Ja šis iestatījums ir atspējots, paroļu pārvaldnieks neļauj rādīt saglabātās paroles paroļu pārvaldnieka logā atklātā tekstā.
-
-          Ja šī politika ir iespējota vai nav iestatīta, lietotāji var skatīt paroles paroļu pārvaldniekā atklātā tekstā.</translation>
 <translation id="4056910949759281379">Atspējo SPDY protokolu</translation>
 <translation id="4088589230932595924">Inkognito režīms piespiedu kārtā</translation>
 <translation id="4088983553732356374">Izmantojot šo politiku, varat norādīt, vai vietnes var iestatīt lokālos datus. Lokālo datu iestatīšana var būt vai nu atļauta visām vietnēm, vai arī liegta visām vietnēm.
@@ -1300,7 +1295,6 @@
       Ja ir norādīta šīs politikas vērtība, vietrādim URL, kas tiek izmantots variantu sākotnējās vērtības iegūšanai, tiks pievienots vaicājuma parametrs “restrict”. Parametra vērtība būs šīs politikas norādītā vērtība.
 
       Ja šīs politikas vērtība nav norādīta, variantu sākotnējās vērtības URL netiks modificēts.</translation>
-<translation id="5564962323737505851">Konfigurē paroļu pārvaldnieku. Ja paroļu pārvaldnieks ir iespējots, var izvēlēties iespējot vai atspējot saglabāto paroļu rādīšanu nešifrētā tekstā.</translation>
 <translation id="556941986578702361">Kontrolējiet <ph name="PRODUCT_OS_NAME" /> plaukta automātisko slēpšanu.
 
       Ja šai politikai tiks izvēlēts iestatījums “AlwaysAutoHideShelf”, plaukts vienmēr tiks automātiski slēpts.
@@ -1411,7 +1405,6 @@
 <translation id="5893553533827140852">Ja šis iestatījums ir iespējots, Gnubby autentifikācijas pieprasījumiem tiks izmantoti starpniekserveri attālā saimniekdatora tīklā.
 
           Ja šis iestatījums ir atspējots vai nav konfigurēts, Gnubby autentifikācijas pieprasījumiem netiks izmantoti starpniekserveri.</translation>
-<translation id="5912364507361265851">Atļauj rādīt paroles paroļu pārvaldniekā</translation>
 <translation id="5921713479449475707">Atļaut automātiski atjaunināt lejupielādes, izmantojot HTTP</translation>
 <translation id="5921888683953999946">Iestatiet lielā kursora pieejamības funkcijas noklusējuma stāvokli pieteikšanās ekrānā.
 
@@ -2049,6 +2042,7 @@
 <translation id="7882585827992171421">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
       Nosaka paplašinājuma ID, kas jāizmanto kā ekrānsaudzētājs pierakstīšanās ekrānā. Paplašinājumam ir jābūt daļai no AppPack, kas konfigurēts šim domēnam, izmantojot politiku DeviceAppPack.</translation>
+<translation id="7882890448959833986">Brīdinājuma par neatbalstītu OS rādīšanas apturēšana</translation>
 <translation id="7912255076272890813">Atļauto lietotņu/paplašinājumu veidu konfigurēšana</translation>
 <translation id="793134539373873765">Norāda, vai operētājsistēmas atjaunināšanas vērtumiem izmantot P2P. Ja ir iestatīta vērtība “True”, ierīces kopīgos un mēģinās izmantot atjaunināšanas vērtumus LAN tīklā, tādējādi, iespējams, samazinot interneta joslas platuma lietojumu un pārblīvi. Ja LAN tīklā nav pieejams atjaunināšanas vērtums, ierīce izmantos lejupielādi no atjaunināšanas servera. Ja ir iestatīta vērtība “False” vai šis iestatījums nav konfigurēts, P2P netiks lietots.</translation>
 <translation id="7933141401888114454">Iespējot uzraudzīto lietotāju kontu izveidi</translation>
@@ -2111,6 +2105,7 @@
 
       Ja šīs politikas iestatījums ir “False”, saskarņu saraksts netiks nosūtīts.</translation>
 <translation id="8146727383888924340">Atļaut lietotājiem izpirkt piedāvājumus, izmantojot Chrome OS reģistrāciju</translation>
+<translation id="8148785525797916822">Aptur brīdinājuma rādīšanu, kad <ph name="PRODUCT_NAME" /> darbojas datorā vai operētājsistēmā, kura vairs netiek atbalstīta.</translation>
 <translation id="8148901634826284024">Iespējojiet augsta kontrasta pieejamības funkciju.
 
           Ja šī politika ir iestatīta uz “true”, augsta kontrasta režīms vienmēr būs iespējots.

@@ -6,13 +6,16 @@
 <translation id="2023631438558435272">Atribuirea nu a reușit. Răspuns nevalid.</translation>
 <translation id="2353984724370197742">Atribuirea nu a reușit. Solicitarea din rețea nu a reușit.</translation>
 <translation id="3046825211487065480">Atribuirea nu a reușit. A fost trimisă o a doua solicitare înainte ca prima solicitare să primească răspuns.</translation>
+<translation id="3346106862344060497">Motor conectat.</translation>
 <translation id="3407245330823033366">Alege un cont de folosit cu Blimp.</translation>
 <translation id="3775180005489871350">Atribuirea nu a reușit. Eroarea 400 (BAD_REQUEST).</translation>
 <translation id="4542350224991263059">Atribuirea nu a reușit. Indicativul de acces al utilizatorului a expirat.</translation>
 <translation id="4562971394107096647">Atribuirea nu a reușit. Eroare de server.</translation>
 <translation id="4641972508298030550">Utilizatorul nu poate fi autentificat.</translation>
+<translation id="5184329579814168207">Deschide în Chrome</translation>
 <translation id="5860346505531085166">Atribuirea nu a reușit. Contul nu are acces.</translation>
 <translation id="704835510384979817">Atribuirea nu a reușit. Nicio versiune a motorului potrivită.</translation>
+<translation id="7536363920335771251">Motor deconectat, motiv: %1$s</translation>
 <translation id="7961542533680218955">Atribuirea a reușit.</translation>
 <translation id="8514856595257368555">Indicativul a fost preluat.</translation>
 </translationbundle>

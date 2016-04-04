@@ -12,7 +12,6 @@
 <translation id="1073391069195728457">Chrome - સૂચનાઓ</translation>
 <translation id="1104959162601287462">&amp;Chrome OS વિશે</translation>
 <translation id="110877069173485804">આ તમારું Chrome છે</translation>
-<translation id="1225016890511909183">Chrome તમારી માહિતીને સુરક્ષિત રીતે સંગ્રહિત કરશે જેથી તમારે ફરીથી તેને ટાઇપ કરવાની જરૂર નથી, પરંતુ તમારે હજુ પણ ભવિષ્યમાં ચુકવણી માટે તમારા કાર્ડના સુરક્ષા કોડ ચકાસવાની જરૂર પડશે.</translation>
 <translation id="123620459398936149">Chrome OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી. કૃપા કરીને તમારા સમન્વયન પાસફ્રેઝને અપડેટ કરો.</translation>
 <translation id="127345590676626841">Chrome આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા તાજું સંસ્કરણ રહે છે. જ્યારે આ ડાઉનલોડ પૂર્ણ થાય છે, ત્યારે Chrome પુનઃપ્રારંભ થશે અને તમે તમારા માર્ગે હશો.</translation>
 <translation id="1302523850133262269">કૃપા કરીને Chrome નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
@@ -37,6 +36,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS નો ઉપયોગ કરવા સહાય મેળવો</translation>
 <translation id="1818142563254268765">Chrome પોતાને નવીનતમ સંસ્કરણ પર અપડેટ કરી શક્યું નથી, જેથી તમે અદ્ભુત નવી સુવિધાઓ અને સુરક્ષા સુધારાઓ ગુમાવી રહ્યાં છો. તમારે Chrome ને અપડેટ કરવાની જરૂર છે.</translation>
+<translation id="1864458292167284385">Chrome ઍપ લૉન્ચર બંધ કરવામાં આવી રહ્યું છે.</translation>
 <translation id="1877026089748256423">Chrome જૂનું થઈ ગયું છે</translation>
 <translation id="2077129598763517140">હાર્ડવેર ઍક્સિલરેશન ઉપલબ્ધ હોવા પર ઉપયોગ કરો</translation>
 <translation id="2084710999043359739">Chrome માં ઉમેરો</translation>
@@ -92,6 +92,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome એ ચકાસ્યું કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર ઇસ્યુ કર્યું છે. સર્વરે પ્રમાણપત્ર પારદર્શિતા માહિતી પૂરી પાડેલી, પરંતુ Chrome એ કોઈપણ પ્રમાણપત્ર પારદર્શિતા લૉગ્સને ઓળખ્યાં ન હતાં.</translation>
 <translation id="3889417619312448367">Google Chrome ને અનઇન્સ્ટોલ કરો</translation>
+<translation id="396182988103551265">તમારી ઍપ્લિકેશનોને ઍક્સેસ કરવાનું ચાલુ રાખવા માટે Chrome બુકમાર્ક્સ બારમાં <ph name="APPS_ICON_IMAGE" /> શૉર્ટકટનો ઉપયોગ કરો.</translation>
 <translation id="4042449298237264661">આ કમ્પ્યુટર હવેથી Google Chrome અપડેટ્સ પ્રાપ્ત કરશે નહિ કારણકે Windows XP અને Windows Vista હવેથી સમર્થિત નથી.</translation>
 <translation id="4050175100176540509">નવીનતમ સંસ્કરણમાં મહત્વપૂર્ણ સુરક્ષા સુધારણાઓ અને નવી સુવિધાઓ ઉપલબ્ધ છે.</translation>
 <translation id="4053720452172726777">Google Chrome ને કસ્ટમાઇઝ કરો અને તેનું નિયંત્રણ કરો</translation>
@@ -106,7 +107,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">કૃપા કરીને આ પરિવર્તનને પ્રભાવમાં લાવવા માટે સાઇન આઉટ કરો અને ફરીથી સાઇન ઇન કરો.</translation>
 <translation id="4480040274068703980">સાઇન ઇનમાં ભૂલ આવવાને કારણે Chrome OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી.</translation>
-<translation id="4513711165509885787">તમારી બિલિંગ વિગતો Chrome માં સાચવવામાં આવી છે.</translation>
 <translation id="4561051373932531560">Google Chrome થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
 <translation id="4567424176335768812">તમે <ph name="USER_EMAIL_ADDRESS" /> તરીકે સાઇન ઇન છો. હવે તમે તમારા બધા સાઇન ઇન કરેલા ઉપકરણો પર તમારા બુકમાર્ક્સ, ઇતિહાસ અને અન્ય સેટિંગ્સને ઍક્સેસ કરી શકો છો.</translation>
 <translation id="4631713731678262610">Chrome મેનૂમાં છુપાવો</translation>

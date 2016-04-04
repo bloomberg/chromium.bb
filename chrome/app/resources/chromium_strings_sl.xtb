@@ -23,7 +23,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1699664235656412242">Zaprite vsa okna Chromiuma (tudi tista v načinu Windows 8) in poskusite znova.</translation>
 <translation id="1708666629004767631">Na voljo je nova, varnejša različica Chromiuma.</translation>
 <translation id="1725059042853530269">Datoteka <ph name="FILE_NAME" /> morda škodljivo vpliva na brskanje, zato jo je Chromium blokiral.</translation>
-<translation id="1745962126679160932">Chromium bo varno shranil vaše podatke, tako da vam jih ne bo treba več vnesti, vendar boste za plačila v prihodnosti še vedno morali preveriti varnostno kodo kartice.</translation>
 <translation id="1774152462503052664">Naj se Chromium izvaja v ozadju</translation>
 <translation id="1779356040007214683">Zaradi večje varnosti smo v Chromiumu onemogočili nekatere razširitve, ki niso navedene v storitvi <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> in so bile morda dodane brez vaše vednosti.</translation>
 <translation id="1808667845054772817">Vnovična namestitev Chromiuma</translation>
@@ -33,6 +32,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1929939181775079593">Chromium se ne odziva. Ga želite znova zagnati?</translation>
 <translation id="1967743265616885482">Modul z istim imenom je že bil v sporu s Chromiumom.</translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
+<translation id="2103655854491303969">Zaganjalnik aplikacij v Chromiumu se poslavlja.</translation>
 <translation id="2117181891440368863">Chromium je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal podatke o preglednosti potrdila, vendar so bili neveljavni.</translation>
 <translation id="2119636228670142020">O sistemu &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Odprtokodne licence za Chromium OS</translation>
@@ -48,6 +48,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2535480412977113886">Chromium OS ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="2558641060352364164">To spletno mesto uporablja vtičnik Chromium Frame, za katerega podpora kmalu ne bo več na voljo. Odstranite ga in nadgradite na sodoben brskalnik.</translation>
 <translation id="2572494885440352020">Pomoč za Chromium</translation>
+<translation id="2595977381794111014">Če želite še naprej dostopati do aplikacij, uporabite bližnjico <ph name="APPS_ICON_IMAGE" /> v zaznamkih v Chromiumu.</translation>
 <translation id="2602806952220118310">Chrome – Obvestila</translation>
 <translation id="2636877269779209383">Chromium potrebuje dostop do kamere, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
 <translation id="2648074677641340862">Napaka v operacijskem sistemu med namestitvijo. Znova prenesite Chromium.</translation>
@@ -102,7 +103,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4330585738697551178">Za ta modul je znano, da je v sporu s Chromiumom.</translation>
 <translation id="4423735387467980091">Prilagajanje in nadziranje Chromiuma</translation>
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
-<translation id="4488676065623537541">Vaše podrobnosti za obračun so shranjene v Chromium.</translation>
 <translation id="4549794359424059447">Prihodnje različice Chromiuma ne bodo več podpirale sistema Windows XP ali Windows Vista.</translation>
 <translation id="4567424176335768812">Prijavljeni ste kot <ph name="USER_EMAIL_ADDRESS" />. Zdaj imate dostop do zaznamkov, zgodovine in drugih nastavitev v vseh napravah, v katerih ste prijavljeni.</translation>
 <translation id="457845228957001925">Pomembne informacije o vaših podatkih v Chromiumu</translation>

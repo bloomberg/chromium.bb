@@ -889,11 +889,6 @@
 <translation id="4039085364173654945">Bir sayfadaki üçüncü taraf alt içeriğinin bir HTTP Basic Auth iletişim kutusu görüntülemesine izin verilip verilmeyeceğini denetler.
 
           Genellikle, kimlik avından korunma amacıyla bu özellik devre dışı bırakılır. Bu politika ayarlanmazsa, bu özellik devre dışı bırakılır ve üçüncü taraf alt içeriğinin bir HTTP Basic Auth iletişim kutusu görüntülemesine izin verilmez.</translation>
-<translation id="4052765007567912447">Kullanıcının şifreleri şifre yöneticisinde açık metin olarak gösterip gösteremeyeceğini kontrol eder.
-
-          Bu ayarı devre dışı bırakırsanız, şifre yöneticisi kaydedilen şifrelerin şifre yöneticisi penceresinde açık metin olarak gösterilmesine izin vermez.
-
-          Bu politikayı etkinleştirirseniz veya ayarlamazsanız, kullanıcılar şifrelerini şifre yöneticisinde açık metin olarak görüntüleyebilirler.</translation>
 <translation id="4056910949759281379">SPDY protokolünü devre dışı bırak</translation>
 <translation id="4088589230932595924">Gizli mod zorunlu</translation>
 <translation id="4088983553732356374">Web sitelerinin yerel verileri ayarlamasına izin verilip verilmeyeceğini belirlemenize olanak sağlar. Yerel verileri ayarlamaları için ya tüm web sitelerine izin verilir ya da hiçbirine izin verilmez.
@@ -1296,7 +1291,6 @@ politikayı geçersiz kılamaz.
       Belirtilirse, Varyasyon temeli almak üzere kullanılan URL'ye 'restrict' adlı bir parametre eklenir. Parametrenin değeri bu politikada belirlenen değer olacaktır.
 
       Belirtilmezse, Varyasyon temeli URL'sinde değişiklik yapılmaz.</translation>
-<translation id="5564962323737505851">Şifre yöneticisini yapılandırır. Şifre yöneticisi etkinleştirilirse, kullanıcının depolanmış olan şifreleri açık metin olarak görüntüleyebilmesini etkinleştirmeyi veya devre dışı bırakmayı seçebilirsiniz.</translation>
 <translation id="556941986578702361"><ph name="PRODUCT_OS_NAME" /> rafının otomatik gizlenmesini kontrol eder.
 
       Bu politika 'AlwaysAutoHideShelf' seçeneğine ayarlanırsa, raf her zaman otomatik olarak gizlenir.
@@ -1406,7 +1400,6 @@ politikayı geçersiz kılamaz.
 <translation id="5893553533827140852">Bu ayar etkinleştirilirse gnubby kimlik doğrulama isteklerinde uzaktan ana bilgisayar bağlantısı üzerinden proxy kullanılır.
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
-<translation id="5912364507361265851">Kullanıcıların şifreleri Şifre Yöneticisi'nde görüntülemelerine izin ver</translation>
 <translation id="5921713479449475707">HTTP aracılığıyla otomatik güncelleme indirmeye izin ver</translation>
 <translation id="5921888683953999946">Giriş ekranında büyük imleç erişilebilirlik özelliğinin varsayılan durumunu ayarla.
 
@@ -1578,6 +1571,7 @@ politikayı geçersiz kılamaz.
       Bu ayarı devre dışı bırakırsanız kullanıcıların Smart Lock'u kullanmasına izin verilmez.
 
       Bu politika ayarlanmadan bırakılırsa, varsayılan olarak kuruluş tarafından yönetilen kullanıcılara izin verilmezken, yönetilmeyen kullanıcılara izin verilir.</translation>
+<translation id="6491139795995924304">Cihazda Bluetooth'a izin ver</translation>
 <translation id="6513756852541213407"><ph name="PRODUCT_NAME" /> tarafından kullanılan proxy sunucuyu belirlemenize olanak sağlar ve kullanıcıların proxy ayarlarını değiştirmelerini önler. 
 
           Hiç proxy sunucu kullanmamayı ve her zaman doğrudan bağlanmayı seçerseniz diğer tüm seçenekler yoksayılır. 
@@ -1851,6 +1845,11 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 
           "RestoreOnStartup" politikası önceki oturumlara ilişkin URL'leri geri yükleyecek şekilde ayarlanmışsa bu politika yoksayılır ve o siteler için çerezler kalıcı olarak depolanır.</translation>
 <translation id="7207095846245296855">Google Güvenli Arama'yı zorla</translation>
+<translation id="7213425178181578730">Bu politika yanlış değerine ayarlanırsa <ph name="PRODUCT_OS_NAME" />, Bluetooth'u devre dışı bırakır ve kullanıcı, bu işlevi etkinleştiremez.
+
+      Bu politika doğru değerine ayarlanır veya ayarlanmadan bırakılırsa kullanıcı, Bluetooth'u istediği gibi etkinleştirebilir veya devre dışı bırakabilir.
+
+      Bu politika ayarlanırsa kullanıcı, bunu değiştiremez veya geçersiz kılamaz.</translation>
 <translation id="7216442368414164495">Kullanıcıların Güvenli Tarama genişletilmiş raporlamasını etkinleştirmesine izin ver</translation>
 <translation id="7227967227357489766">Cihaza giriş yapmalarına izin verilen kullanıcıların listesini tanımlar. Girişler <ph name="USER_WHITELIST_ENTRY_FORMAT" /> biçimindedir (örneğin, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Bir etki alanı üzerinde keyfi kullanıcılara izin vermek için <ph name="USER_WHITELIST_ENTRY_WILDCARD" /> biçiminde girişler kullanın.
 
@@ -2031,6 +2030,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="7882585827992171421">Bu politika yalnızca perakende modunda etkindir.
 
       Oturum açma ekranında ekran koruyucu olarak kullanılacak uzantının kimliğini belirler. Uzantı, DeviceAppPack politikası kullanılarak bu alan adı için yapılandırılmış AppPack'in bir parçası olmalıdır.</translation>
+<translation id="7882890448959833986">Desteklenmeyen OS uyarısını gizle</translation>
 <translation id="7912255076272890813">İzin verilen uygulama/uzantı türlerini yapılandır</translation>
 <translation id="793134539373873765">OS güncelleme yükleri için p2p'nin kullanılıp kullanılmayacağını belirtir. Doğru seçeneğine ayarlanırsa, cihazlar LAN üzerindeki yükleri paylaşır ve kullanmaya çalışır, bu da İnternet bant genişliği kullanımını ve tıkanıklığını potansiyel olarak azaltır. Güncelleme yükü LAN'da kullanılamıyorsa, cihaz bir güncelleme sunucusundan indirme işlemine geçer. Yanlış seçeneğine ayarlanırsa veya yapılandırılmazsa p2p kullanılmaz.</translation>
 <translation id="7933141401888114454">Denetlenen kullanıcılar oluşturmayı etkinleştir</translation>
@@ -2092,6 +2092,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 
       Bu politika yanlış değerine ayarlanırsa arayüz listesi rapor edilmez.</translation>
 <translation id="8146727383888924340">Kullanıcıların Chrome OS Kaydını kullanarak tekliflerden yararlanmasına izin ver</translation>
+<translation id="8148785525797916822"><ph name="PRODUCT_NAME" />, artık desteklenmeyen bir bilgisayarda veya işletim sisteminde çalışırken görüntülenen uyarıyı gizler.</translation>
 <translation id="8148901634826284024">Yüksek kontrast modu erişilebilirlik özelliğini etkinleştir.
 
           Bu politika true (doğru) olarak ayarlanırsa, yüksek kontrast modu her zaman etkin olur.

@@ -77,7 +77,6 @@
 <translation id="17513872634828108">열린 탭</translation>
 <translation id="1753706481035618306">페이지 번호</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
-<translation id="1775135663370355363">이 기기의 방문 기록을 표시합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">동기화 암호를 업데이트하세요.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">잘못된 요청 또는 요청 매개변수</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">세부정보 숨기기</translation>
 <translation id="3479539252931486093">예기치 않은 문제가 발생했나요? <ph name="BEGIN_LINK" />Google에 알리기<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
-<translation id="3516765099410062445">로그인한 기기의 방문 기록을 표시합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>

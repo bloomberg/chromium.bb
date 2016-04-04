@@ -24,11 +24,9 @@ Pentru informații privind confidențialitatea, accesați Politica de confidenț
 <translation id="1546934824884762070">A apărut o eroare neașteptată. Raportați această problemă dezvoltatorilor.</translation>
 <translation id="1619813076098775562">Conexiunea la dispozitivul de proiecție a fost închisă.</translation>
 <translation id="1643640058022401035">Părăsind această pagină, veți încheia sesiunea Chromoting.</translation>
-<translation id="1646994964686260497">Niciun dispozitiv la care te poți conecta.</translation>
 <translation id="1654128982815600832">Se activează conexiunile la distanță pentru acest computer…</translation>
 <translation id="170207782578677537">Înregistrarea acestui computer nu a reușit.</translation>
 <translation id="1704090719919187045">Preferințe gazdă Chromoting</translation>
-<translation id="1738759452976856405">Oprește înregistrarea</translation>
 <translation id="174018511426417793">Nu aveți niciun computer înregistrat. Pentru a activa conexiunile la distanță pentru un alt computer, instalați Desktop la distanță Chrome pe acesta și dați clic pe „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Se conectează…</translation>
 <translation id="1770394049404108959">Nu pot deschide aplicația.</translation>
@@ -124,7 +122,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Conectează-te</translation>
 <translation id="3989511127559254552">Pentru a continua, trebuie să acorzi permisiuni extinse de acces la computer. Acest lucru este necesar o singură dată.</translation>
 <translation id="4006787130661126000">Trebuie să activați conexiunile la distanță dacă doriți să utilizați Desktop la distanță Chrome pentru a accesa acest computer.</translation>
-<translation id="401121182145179743">Mai întâi, trebuie să configurezi computerul pentru accesul la distanță.</translation>
 <translation id="4028465833180158312">• Actualizări ale interfeței de utilizare care folosește designul material.
 • Credite de licențiere terță parte.
 • Informații afișate pentru computerele la distanță care sunt offline.</translation>
@@ -237,7 +234,6 @@ la distanță Chrome</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Sigur doriți să dezactivați conexiunile la distanță la <ph name="HOSTNAME" />? Dacă vă răzgândiți, va trebui să accesați computerul respectiv pentru a reactiva conexiunile.</translation>
 <translation id="6998989275928107238">La</translation>
-<translation id="7017806586333792422">Pornește înregistrarea</translation>
 <translation id="7019153418965365059">Eroare nerecunoscută a gazdei: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Asistență la distanță</translation>
 <translation id="7038683108611689168">Ajutați-ne să îmbunătățim Chromoting, permițându-ne să colectăm statistici de utilizare și rapoarte de blocare.</translation>

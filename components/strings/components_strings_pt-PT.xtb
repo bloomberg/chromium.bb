@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Separadores abertos</translation>
 <translation id="1753706481035618306">Número de página</translation>
 <translation id="1763864636252898013">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o sistema operativo do seu dispositivo não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
-<translation id="1775135663370355363">A mostrar o histórico deste dispositivo. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Atualize a frase de acesso de sincronização.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Pedido ou parâmetros do pedido inválidos</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Ocultar avançadas</translation>
 <translation id="3479539252931486093">Esta ação foi inesperada? <ph name="BEGIN_LINK" />Informe-nos<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Não conseguimos falar com o(a) seu (sua) pai/mãe de momento. Tente novamente.</translation>
-<translation id="3516765099410062445">A mostrar o histórico do seus dispositivos com sessão iniciada. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3528171143076753409">O certificado do servidor não é fidedigno.</translation>
 <translation id="3539171420378717834">Guardar uma cópia deste cartão neste dispositivo</translation>

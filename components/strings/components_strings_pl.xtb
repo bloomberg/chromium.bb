@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Otwarte karty</translation>
 <translation id="1753706481035618306">Numer strony</translation>
 <translation id="1763864636252898013">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
-<translation id="1775135663370355363">Wyświetlanie historii z tego urządzenia. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Zaktualizuj swoje hasło synchronizacji.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Nieprawidłowe żądanie lub jego parametry</translation>
@@ -253,7 +252,6 @@
 <translation id="3462200631372590220">Ukryj zaawansowane</translation>
 <translation id="3479539252931486093">Zaskoczyło Cię to? <ph name="BEGIN_LINK" />Daj nam znać<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Obecnie nie możemy się skontaktować z Twoim rodzicem. Spróbuj ponownie.</translation>
-<translation id="3516765099410062445">Wyświetlanie historii z zalogowanych urządzeń. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528171143076753409">Certyfikat serwera nie jest zaufany.</translation>
 <translation id="3539171420378717834">Zachowaj kopię tej karty na urządzeniu</translation>

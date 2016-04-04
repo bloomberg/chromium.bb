@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome – ilmoitukset</translation>
 <translation id="1104959162601287462">Tietoja &amp;Chrome-käyttöjärjestelmästä</translation>
 <translation id="110877069173485804">Tämä on oma Chromesi</translation>
-<translation id="1225016890511909183">Chrome tallentaa tietosi turvalliseen paikkaan, jottei sinun tarvitse kirjoittaa tietoja uudelleen. Sinun täytyy kuitenkin vahvistaa korttisi turvakoodi tulevien maksujen yhteydessä.</translation>
 <translation id="123620459398936149">Chrome-käyttöjärjestelmä ei voinut synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="127345590676626841">Chrome päivittyy automaattisesti, joten käytössäsi on aina uusin versio. Kun lataus on valmis, Chrome käynnistyy uudelleen ja voit aloittaa käytön.</translation>
 <translation id="1302523850133262269">Odota hetki, Chrome asentaa uusimpia järjestelmäpäivityksiä.</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Apua Chrome-käyttöjärjestelmän käytössä</translation>
 <translation id="1818142563254268765">Chrome ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Päivitä Chrome.</translation>
+<translation id="1864458292167284385">Chromen sovellusten käynnistysohjelma poistuu käytöstä</translation>
 <translation id="1877026089748256423">Chrome on vanhentunut</translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2084710999043359739">Lisää Chromeen</translation>
@@ -88,6 +88,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin lähetti Certificate Transparency -tiedot, mutta Chrome ei tunnistanut Certificate Transparency -lokitietoja.</translation>
 <translation id="3889417619312448367">Poista Google Chromen asennus</translation>
+<translation id="396182988103551265">Voit jatkaa sovellustesi käyttöä Chromen kirjanmerkkipalkissa olevalla <ph name="APPS_ICON_IMAGE" />-pikanäppäimellä.</translation>
 <translation id="4042449298237264661">Tämän tietokoneen Google Chromea ei enää päivitetä, koska Windows XP:tä ja Windows Vistaa ei enää tueta.</translation>
 <translation id="4050175100176540509">Uusimmassa versiossa on käytettävissä tärkeitä turvallisuusparannuksia ja uusia ominaisuuksia.</translation>
 <translation id="4053720452172726777">Google Chromen muokkaaminen ja hallinta</translation>
@@ -103,7 +104,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
 <translation id="4480040274068703980">Chrome-käyttöjärjestelmä ei voi synkronoida tietoja kirjautumisvirheen vuoksi.</translation>
-<translation id="4513711165509885787">Laskutustietosi on tallennettu Chromeen.</translation>
 <translation id="4561051373932531560">Google Chromen avulla voit klikata puhelinnumeroa verkossa ja soittaa siihen Skypellä!</translation>
 <translation id="4567424176335768812">Olet kirjautunut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS" />. Nyt voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="4631713731678262610">Piilota Chrome-valikossa</translation>

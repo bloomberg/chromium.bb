@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Açık sekmeler</translation>
 <translation id="1753706481035618306">Sayfa numarası</translation>
 <translation id="1763864636252898013">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. cihazınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
-<translation id="1775135663370355363">Bu cihazın geçmişi gösteriliyor. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Lütfen senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Geçersiz istek veya istek parametreleri</translation>
@@ -253,7 +252,6 @@
 <translation id="3462200631372590220">Gelişmiş bilgileri gizle</translation>
 <translation id="3479539252931486093">Bu beklenmedik bir durum mu? <ph name="BEGIN_LINK" />Bize bildirin<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Şu anda ebeveyninize erişemedik. Lütfen tekrar deneyin.</translation>
-<translation id="3516765099410062445">Oturum açtığınız cihazlardan geçmiş bilgileri gösteriliyor. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Klasör</translation>
 <translation id="3528171143076753409">Sunucunun sertifikasına güvenilmiyor.</translation>
 <translation id="3539171420378717834">Bu kartın bir kopyasını bu cihazda tut</translation>
@@ -268,6 +266,8 @@
 <translation id="3609138628363401169">Sunucu TLS yeniden anlaşma uzantısını desteklemiyor.</translation>
 <translation id="362276910939193118">Tam Geçmişi Göster</translation>
 <translation id="3623476034248543066">Değeri göster</translation>
+<translation id="3630155396527302611">Ağa erişmesine izin verilmiş bir program olarak zaten listeleniyorsa,
+    listeden kaldırıp tekrar eklemeyi deneyin.</translation>
 <translation id="3648607100222897006">Bu deneysel özellikler zaman zaman değişebilir, bozulabilir veya kullanımdan kaldırılabilir. Bu deneylerden herhangi birini açtığınızda tarayıcınızın aniden yanmaya başlaması mümkün olduğundan, başınıza gelebilecekler konusunda kesinlikle hiçbir garanti vermeyiz. Şaka bir yana, tarayıcınız tüm verilerinizi silebilir ya da güvenliğiniz ve gizliliğiniz beklenmedik şekillerde riske girebilir. Etkinleştireceğiniz her deney bu tarayıcının tüm kullanıcıları için etkin hale gelecektir. Lütfen dikkatle ilerleyin.</translation>
 <translation id="3650584904733503804">Doğrulama başarılı</translation>
 <translation id="3651020361689274926">İstenen kaynak artık mevcut değil ve yönlendirme adresi yok. Bunun kalıcı bir durum olması bekleniyor.</translation>
@@ -730,7 +730,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="901974403500617787">Tüm sistem için geçerli olan işaretler sadece sahibi <ph name="OWNER_EMAIL" /> tarafından ayarlanabilir.</translation>
 <translation id="9020142588544155172">Sunucu bağlantıyı reddetti.</translation>
 <translation id="9020542370529661692">Bu sayfa <ph name="TARGET_LANGUAGE" /> diline çevrildi</translation>
-<translation id="9038649477754266430">Sayfaları daha hızlı yüklemek için bir tahmin hizmeti kullanın</translation>
+<translation id="9038649477754266430">Sayfaları daha hızlı yüklemek için bir tahmin hizmeti kullan</translation>
 <translation id="9039213469156557790">Ayrıca, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın davranışını değiştirmek üzere kullanılabilir.</translation>
 <translation id="9049981332609050619"><ph name="DOMAIN" /> alan adına erişmeye çalıştınız, ancak sunucu geçersiz bir sertifika sağladı.</translation>
 <translation id="9050666287014529139">Parola</translation>

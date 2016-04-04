@@ -31,7 +31,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="138361230106469022">Hi, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1389974829397082527">No bookmarks here</translation>
-<translation id="1390350022570422499">Chrome can now find and show you nearby web pages using Bluetooth. Chrome will scan for nearby pages when your device is unlocked. These pages will go through a Google service to improve the quality of page results. You can control the Physical Web in Chrome privacy settings.</translation>
 <translation id="1404122904123200417">Embedded in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> download prevented because file already exists.</translation>
@@ -74,6 +73,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1984937141057606926">Allowed, except third-party</translation>
 <translation id="1994173015038366702">Site URL</translation>
+<translation id="2001120796168634316">Save linked page for later</translation>
 <translation id="200669432486043882">Replace file</translation>
 <translation id="2038563949887743358">Turn on Request desktop site</translation>
 <translation id="2073235970478114994">Load images</translation>
@@ -92,7 +92,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2316129865977710310">No, thank you</translation>
-<translation id="2319528413610359757">For readers of <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
 <translation id="2329597144923131178">Sign in to get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="2343328333327081434">Installing…</translation>
@@ -132,6 +131,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2762000892062317888">just now</translation>
 <translation id="2770465223704140727">Remove from list</translation>
 <translation id="278029852808208386">No Bluetooth devices found. <ph name="BEGIN_LINK" />Search again<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Not seeing your device? <ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Touch the back button to exit full screen.</translation>
 <translation id="2842985007712546952">Parent folder</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -195,7 +195,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3672452749423051839">Navigation error suggestions</translation>
 <translation id="3732088672634061408">Could not retrieve interests.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
-<translation id="3774280986422214650">If you enable this feature, you will be part of an experiment that proxies HTTPS pages through Google servers.</translation>
 <translation id="3809549525127675114">Finished “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="3828029223314399057">Search bookmarks</translation>
 <translation id="3871171699884605801">Browsing history can’t be cleared with accounts for kids</translation>
@@ -210,7 +209,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3992315671621218278">Save link</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4035611068038188272">Bookmarks are currently taking up <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">Physical web pages are nearby</translation>
 <translation id="4042870126885713738">Show suggestions when a web address does not resolve or a connection cannot be made</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Legal information</translation>
@@ -270,7 +268,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4816465935029283692">Data types</translation>
 <translation id="4827948050554950725">Add credit card</translation>
 <translation id="4836364883164334657">Your connection to this site is not private. Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Read more</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4875622588773761625">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update your password for this site?</translation>
 <translation id="4881695831933465202">Open</translation>
@@ -283,7 +280,6 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="497421865427891073">go forward</translation>
 <translation id="4996978546172906250">Share via</translation>
 <translation id="5000922062037820727">Blocked (recommended)</translation>
-<translation id="5014582685689328551">Use Chrome to browse them</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
@@ -318,7 +314,6 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5308933389783727448">Search saved pages</translation>
 <translation id="5313967007315987356">Add site</translation>
 <translation id="5317780077021120954">Save</translation>
-<translation id="5323972449344932352">Launch Chrome</translation>
 <translation id="5324858694974489420">Parental Settings</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5345040418939504969">Deleted <ph name="BOOKMARK_TITLE" /></translation>
@@ -397,7 +392,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6192792657125177640">Exceptions</translation>
-<translation id="6208263165776660488">Chrome tabs have moved</translation>
 <translation id="6231464350722415003">Allow JavaScript on websites that you specify while blocking it for the rest of the web</translation>
 <translation id="6232535412751077445">Enabling “Do Not Track” means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
 
@@ -486,9 +480,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Help<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Delete bookmark</translation>
-<translation id="7324738665594301612">We are testing the proxying of HTTPS pages through Google servers as part of an experiment.</translation>
 <translation id="7346217184097589238">Saved site settings will not be deleted and may reflect your browsing habits.</translation>
-<translation id="7346909386216857016">OK, got it</translation>
 <translation id="7347770551817603360">Offline content</translation>
 <translation id="7363354739009474003">Loading “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">Casting to <ph name="SCREEN_NAME" /></translation>
@@ -511,7 +503,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7588950540487816470">Physical web</translation>
 <translation id="7596558890252710462">Operating system</translation>
 <translation id="7599840151813361502">You won’t be signed out of your <ph name="BEGIN_LINK" />Google Accounts<ph name="END_LINK" /></translation>
-<translation id="7603403729818446828">See your tabs with other recent apps on your phone’s Overview screen. You can control this in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Paused</translation>
 <translation id="7612619742409846846">Signed in to Google as</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> download failed due to network failures.</translation>
@@ -560,6 +551,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8173098127580644436">beginning of time</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8209050860603202033">Open image</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> wants to connect to:</translation>
 <translation id="8218346974737627104">Confirm sign-in</translation>
 <translation id="8218934717680664417">Now you can search with one touch</translation>
 <translation id="8223946939421658889">Clear data from the</translation>

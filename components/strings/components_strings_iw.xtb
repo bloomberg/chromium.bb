@@ -76,7 +76,6 @@
 <translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1753706481035618306">מספר דף</translation>
 <translation id="1763864636252898013">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המכשיר. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
-<translation id="1775135663370355363">מציג היסטוריה מהמכשיר הזה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">עדכן את משפט-הסיסמה של הסינכרון.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
@@ -253,7 +252,6 @@
 <translation id="3462200631372590220">הסתר פרטים מתקדמים</translation>
 <translation id="3479539252931486093">האם זה קרה באופן בלתי צפוי? <ph name="BEGIN_LINK" />ספר לנו על כך<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">לא הצלחנו ליצור קשר עם ההורה שלך. נסה שוב מאוחר יותר.</translation>
-<translation id="3516765099410062445">מציג היסטוריה מהמכשירים שבהם אתה מחובר לחשבון. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">תיקיה</translation>
 <translation id="3528171143076753409">אישור השרת אינו מהימן.</translation>
 <translation id="3539171420378717834">שמור עותק של הכרטיס הזה במכשיר הזה</translation>
@@ -370,7 +368,7 @@
 1240185477879256427אתר
 Del</translation>
 <translation id="477518548916168453">השרת אינו תומך בפונקציונליות הדרושה למילוי הבקשה.</translation>
-<translation id="4782449893814226250">שאלת את הוריך אם זה בסדר לבקר בדף זה.</translation>
+<translation id="4782449893814226250">שאלת את הוריך אם זה בסדר להיכנס לדף זה.</translation>
 <translation id="4800132727771399293">‏בדוק את תאריך התפוגה ואת ה-CVC ונסה שוב</translation>
 <translation id="4807049035289105102">‏לא ניתן לבקר כעת באתר <ph name="SITE" /> מכיוון שהאתר שלח אישורים משובשים ש-Google Chrome אינו יכול לעבד. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, כך שסביר להניח שהדף הזה יפעל מאוחר יותר.</translation>
 <translation id="4813512666221746211">שגיאת רשת</translation>
@@ -474,7 +472,7 @@ Del</translation>
 <translation id="6146055958333702838">בדוק את הכבלים והפעל מחדש את הנתבים, המודמים ושאר התקני הרשת
   שאתה משתמש בהם.</translation>
 <translation id="614940544461990577">נסה:</translation>
-<translation id="6150607114729249911">אופס! עליך לשאול את ההורים שלך אם אתה יכול לבקר בדף הזה.</translation>
+<translation id="6150607114729249911">אופס! עליך לשאול את ההורים שלך אם אתה יכול להיכנס לדף הזה.</translation>
 <translation id="6151417162996330722">תקופת התוקף של אישור השרת ארוכה מדי.</translation>
 <translation id="6154808779448689242">אסימון המדיניות שהוחזר אינו תואם לאסימון הנוכחי</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
@@ -571,7 +569,7 @@ Del</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /> בנושא זה.</translation>
 <translation id="7219179957768738017">החיבור משתמש ב-<ph name="SSL_VERSION" />.</translation>
 <translation id="7225807090967870017">מזהה גרסה</translation>
-<translation id="7231308970288859235">אופס! עליך לשאול את ההורה שלך אם אתה יכול לבקר בדף הזה.</translation>
+<translation id="7231308970288859235">אופס! עליך לשאול את ההורה שלך אם אתה יכול להיכנס לדף הזה.</translation>
 <translation id="7246609911581847514">אתה רואה את ההודעה הזו מפני שהמנהל שלך צריך לאשר אתרים חדשים עם הביקור הראשון שלך.</translation>
 <translation id="725866823122871198">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במחשב שלך שגויים.</translation>
 <translation id="7265986070661382626">לא ניתן לבקר כעת ב-<ph name="SITE" /> מכיוון שהאתר <ph name="BEGIN_LINK" />משתמש בהצמדת אישורים<ph name="END_LINK" />. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, כך שסביר להניח שהדף יפעל מאוחר יותר.</translation>
@@ -642,7 +640,7 @@ Del</translation>
 <translation id="7894616681410591072">אופס! אתה צריך אישור מ<ph name="NAME" /> כדי לגשת לדף הזה.</translation>
 <translation id="790025292736025802"><ph name="URL" /> לא נמצא</translation>
 <translation id="7912024687060120840">בתיקייה:</translation>
-<translation id="7920092496846849526">שאלת את ההורים אם זה בסדר לבקר בדף זה.</translation>
+<translation id="7920092496846849526">שאלת את ההורים אם זה בסדר להיכנס לדף זה.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">אישור השרת עדיין לא בתוקף.</translation>
 <translation id="7951415247503192394">(32 סיביות)</translation>

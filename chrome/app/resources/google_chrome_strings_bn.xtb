@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Chrome - বিজ্ঞপ্তিগুলি</translation>
 <translation id="1104959162601287462">&amp;Chrome OS সম্বন্ধে</translation>
 <translation id="110877069173485804">এটি হল আপনার Chrome</translation>
-<translation id="1225016890511909183">Chrome আপনার তথ্য নিরাপদে সঞ্চয় করে নেবে তাই আপনার আর টাইপ করা প্রয়োজন হবে না, কিন্তু ভবিষ্যতের অর্থপ্রদানের জন্য আপনাকে এখনো আপনার কার্ডের নিরাপত্তা কোড যাচাইকরণের প্রয়োজন হবে৷</translation>
 <translation id="123620459398936149">Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="127345590676626841">Chrome স্বয়ংক্রিয়ভাবে আপডেট হয় তাই আপনার কাছে সর্বদা নবীনতম সংস্করণটি থাকে৷ এই ডাউনলোডটি সম্পূর্ণ হলে, Chrome পুনরায় চালু হবে এবং আপনি আবার আগের মতো Chrome ব্যবহার করতে পারবেন৷</translation>
 <translation id="1302523850133262269">Chrome যখন সাম্প্রতিক সিস্টেম আপডেটগুলিকে ইনস্টল করে তখন দয়া করে অপেক্ষা করুন৷</translation>
@@ -35,6 +34,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS ব্যবহার করে সাহায্য নিন</translation>
 <translation id="1818142563254268765">Chrome নিজে থেকেই এর সর্বশেষ সংস্করণে আপডেট হতে পারেনি, সেহেতু আপনি কিছু অসাধারণ নতুন বৈশিষ্ট্য ও নিরাপত্তা সমাধান উপভোগ করতে পারছেন না। আপনাকে Chrome আপডেট করতে হবে।</translation>
+<translation id="1864458292167284385">Chrome অ্যাপ্লিকেশান লঞ্চার চলে যাচ্ছে।</translation>
 <translation id="1877026089748256423">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="2077129598763517140">যখনই উপলব্ধ তখন হার্ডওয়্যার অ্যাক্সিলারেশন ব্যবহার করুন</translation>
 <translation id="2084710999043359739">Chrome এ জুড়ুন</translation>
@@ -90,6 +90,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome যাচাই করেছে যে <ph name="ISSUER" /> এই ওয়েবসাইটের শংসাপত্র জারি করেছে। সার্ভারটি শংসাপত্র স্বচ্ছতা তথ্য সরবরাহ করেছে, কিন্তু Chrome শংসাপত্র স্বচ্ছতা লগের কোনোটিই শনাক্ত করতে পারছে না।</translation>
 <translation id="3889417619312448367">Google Chrome আনইনস্টল করুন</translation>
+<translation id="396182988103551265">আপনার অ্যাপ্লিকেশানগুলি অ্যাক্সেস করা চালিয়ে যেতে Chrome বুকমার্কস দণ্ডের <ph name="APPS_ICON_IMAGE" /> শর্টকাট ব্যবহার করুন।</translation>
 <translation id="4042449298237264661">Windows XP ও Windows Vista আর সমর্থিত না হওয়ায় এই কম্পিউটারটি আর Google Chrome আপডেট গ্রহণ করবে না।</translation>
 <translation id="4050175100176540509">গুরুত্বপূর্ণ নিরাপত্তা উন্নতি এবং নতুন বৈশিষ্ট্যগুলি সর্বশেষ সংস্করণে উপলব্ধ।</translation>
 <translation id="4053720452172726777">Google Chrome কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
@@ -104,7 +105,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে সাইন আউট এবং পুনরায় সাইন ইন করুন৷</translation>
 <translation id="4480040274068703980">সাইন ইনে ত্রুটির কারণে Chrome OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
-<translation id="4513711165509885787">আপনার বিলের বিশদ বিবরণ Chrome এ সংরক্ষিত হয়েছে৷</translation>
 <translation id="4561051373932531560">Google Chrome আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
 <translation id="4567424176335768812">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে সাইন ইন করেছেন৷ এখন আপনি আপনার সমস্ত সাইন ইন করা ডিভাইসে আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস অ্যাক্সেস করতে পারেন৷</translation>
 <translation id="4631713731678262610">Chromium মেনুর মধ্যে লুকান</translation>

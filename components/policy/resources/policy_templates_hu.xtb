@@ -790,7 +790,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="402759845255257575">JavaScript futtatásának tiltása minden webhely számára</translation>
 <translation id="4027608872760987929">Alapértelmezett keresési szolgáltató engedélyezése</translation>
 <translation id="4039085364173654945">Azt szabályozza, hogy harmadik felek altartalma az oldalon megnyithat-e HTTP Basic Auth párbeszédpanelt. Ez általában le van tiltva az adathalászat elleni védelem miatt. Ha a házirend nincs beállítva, akkor ez a letiltás nincs konfigurálva, és a harmadik féltől származó altartalom számára nem lesz engedélyezve a HTTP Basic Auth párbeszédpanel megnyitása.</translation>
-<translation id="4052765007567912447">Azt szabályozza, hogy a felhasználók megjeleníthetik-e jelszavaikat egyszerű szövegként a jelszókezelőben. Ha kikapcsolja ezt a beállítást, a jelszókezelő nem engedi a tárolt jelszavak egyszerű szövegként való megjelenítését a jelszókezelő ablakában. Ha bekapcsolja vagy konfigurálatlanul hagyja ezt a beállítást, a felhasználók egyszerű szövegként tekinthetik meg a tárolt jelszavakat a jelszókezelőben.</translation>
 <translation id="4056910949759281379">SPDY protokoll letiltása</translation>
 <translation id="4088589230932595924">Inkognitómód kényszerítve</translation>
 <translation id="4088983553732356374">Azt határozza meg, hogy a webhelyek tárolhatnak-e helyi adatokat. A helyi adatok beállítását egyszerre lehet engedélyezni vagy letiltani az összes webhelynél.
@@ -1144,7 +1143,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha meg van határozva, egy „restrict” nevű lekérdezési paramétert ad a Variations seed lekérdezésére használatos URL-hez. A paraméter értéke a házirendben meghatározott érték lesz.
 
       Ha nincs meghatározva, nem változtat a Variations seed URL-jén.</translation>
-<translation id="5564962323737505851">Beállítja a jelszókezelőt. Ha a jelszókezelő engedélyezve van, akkor választhat, hogy engedélyezi vagy letiltja a tárolt jelszavak egyszerű szövegként való megjelenítését a felhasználók számára.</translation>
 <translation id="556941986578702361">A(z) <ph name="PRODUCT_OS_NAME" /> polc automatikus elrejtését szabályozza.
 
       Ha az irányelv 'AlwaysAutoHideShelf' értékre van beállítva, akkor a rendszer mindig automatikusan elrejti a polcot.
@@ -1249,7 +1247,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="5893553533827140852">Ha ez a beállítás engedélyezett, akkor a gnubby hitelesítési kéréseket a rendszer távoli szerverkapcsolaton keresztül proxyzza.
 
           Ha a beállítás tiltva van, vagy nincs konfigurálva, akkor a rendszer nem proxyzza a gnubby hitelesítési kéréseket.</translation>
-<translation id="5912364507361265851">Lehetővé teszi, hogy a felhasználók megjelenítsék a jelszavakat a Jelszókezelőben</translation>
 <translation id="5921713479449475707">Automatikus frissítési letöltések engedélyezése HTTP-n keresztül</translation>
 <translation id="5921888683953999946">A nagy egérmutató kisegítő lehetőség alapértelmezett állapotának megadása a bejelentkezési képernyőn.
 
@@ -1809,6 +1806,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="7882585827992171421">Ez a házirend csak kiállító módban aktív.
 
       Meghatározza a bejelentkezési képernyőn képernyőkímélőként használni kívánt bővítmény azonosítóját. A bővítménynek abban az alkalmazáscsomagban kell lennie, amely meg van határozva ennél a domainnél az DeviceAppPack házirend használatával.</translation>
+<translation id="7882890448959833986">A nem támogatott operációs rendszerre vonatkozó figyelmeztetés elrejtése</translation>
 <translation id="7912255076272890813">Engedélyezett alkalmazás-/bővítménytípusok konfigurálása</translation>
 <translation id="793134539373873765">Megadja, hogy a rendszer egyenrangú kapcsolatot használjon-e az operációs rendszer frissítési tartalmai esetében. Ha „igaz” értékre van állítva, az eszközök megosztják és megpróbálják felhasználni a frissítési tartalmat a helyi hálózaton, és lehetőség szerint csökkentik a felhasznált internetes sávszélességet, valamint a túlterhelést. Ha a frissítési tartalom nem érhető el a helyi hálózaton, az eszköz inkább egy frissítési szerverről végzi el a letöltést. Ha „hamis” értékre van állítva, vagy nincs beállítva, a rendszer nem használ egyenrangú kapcsolatot.</translation>
 <translation id="7933141401888114454">Felügyelt felhasználók létrehozásának engedélyezése</translation>
@@ -1866,6 +1864,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       Ha az irányelv értéke hamis, az interfészek listáját a rendszer nem jelenti.</translation>
 <translation id="8146727383888924340">Ajánlatok beváltásának engedélyezése a felhasználók számára Chrome OS-regisztráció útján</translation>
+<translation id="8148785525797916822">Elveti a figyelmeztetést, amely akkor jelenik meg, ha a <ph name="PRODUCT_NAME" /> a továbbiakban már nem támogatott számítógépen vagy operációs rendszeren fut.</translation>
 <translation id="8148901634826284024">A nagy kontrasztú mód kisegítő lehetőség engedélyezése.
 
           Ha a házirend értéke igaz, a nagy kontrasztú mód mindig engedélyezve lesz.

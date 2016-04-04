@@ -12,7 +12,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1073391069195728457">Chrome - Notificaciones</translation>
 <translation id="1104959162601287462">Información de &amp;Chrome OS</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
-<translation id="1225016890511909183">Chrome almacenará de forma segura tu información, de modo que no tendrás que volver a introducirla, aunque tendrás que seguir verificando el código de seguridad de tu tarjeta para futuros pagos.</translation>
 <translation id="123620459398936149">Chrome OS no ha podido sincronizar tus datos. Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="127345590676626841">Chrome se actualiza automáticamente para que siempre dispongas de la última versión. Cuando se complete la descarga, Chrome se reiniciará automáticamente.</translation>
 <translation id="1302523850133262269">Espera mientras Chrome instala las últimas actualizaciones del sistema.</translation>
@@ -37,6 +36,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obtener ayuda de Chrome OS</translation>
 <translation id="1818142563254268765">Chrome no ha podido actualizarse automáticamente a la última versión, por lo que te estás perdiendo algunos magníficos parches de seguridad y fantásticas funciones nuevas. Tendrás que actualizar Chrome.</translation>
+<translation id="1864458292167284385">El menú de aplicaciones de Chrome va a desaparecer.</translation>
 <translation id="1877026089748256423">Chrome no está actualizado</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2084710999043359739">Añadir a Chrome</translation>
@@ -92,6 +92,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ha verificado que <ph name="ISSUER" />emitió el certificado de este sitio web. El servidor ha proporcionado información de Transparencia de certificados, pero Chrome no ha reconocido ninguno de los registros de estos datos.</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
+<translation id="396182988103551265">Utiliza el acceso directo de <ph name="APPS_ICON_IMAGE" /> situado en la barra de marcadores de Chrome para seguir accediendo a tus aplicaciones.</translation>
 <translation id="4042449298237264661">Este ordenador dejará de recibir actualizaciones de Google Chrome porque ya no es compatible con Windows XP y Windows Vista.</translation>
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
@@ -106,7 +107,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Cierra la sesión y vuelve a iniciarla para que se aplique el cambio.</translation>
 <translation id="4480040274068703980">Chrome OS no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
-<translation id="4513711165509885787">Se ha guardado la información de facturación en Chrome.</translation>
 <translation id="4561051373932531560">Google Chrome te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
 <translation id="4567424176335768812">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes acceder a tus marcadores, a tu historial y a otras opciones en todos los dispositivos en los que hayas iniciado sesión.</translation>
 <translation id="4631713731678262610">Ocultar en el menú de Chrome</translation>

@@ -12,6 +12,7 @@
 <translation id="4542350224991263059">Ha fallado la asignación. Ha caducado el token de acceso del usuario.</translation>
 <translation id="4562971394107096647">Ha fallado la asignación. Error del servidor.</translation>
 <translation id="4641972508298030550">No ha sido posible autenticar el usuario.</translation>
+<translation id="5184329579814168207">Abrir en Chrome</translation>
 <translation id="5860346505531085166">Ha fallado la asignación. La cuenta no dispone de acceso.</translation>
 <translation id="704835510384979817">Ha fallado la asignación. La versión del motor no coincide.</translation>
 <translation id="7536363920335771251">Motivo por el que el motor está desconectado: %1$s</translation>

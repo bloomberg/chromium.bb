@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Åbne faner</translation>
 <translation id="1753706481035618306">Sidetal</translation>
 <translation id="1763864636252898013">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din enhed ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
-<translation id="1775135663370355363">Viser historik fra denne enhed. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Opdater din adgangssætning til synkronisering.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Skjul avanceret</translation>
 <translation id="3479539252931486093">Var dette uventet? <ph name="BEGIN_LINK" />Giv os gerne feedback<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Vi kan ikke få fat i din forælder på nuværende tidspunkt. Prøv igen.</translation>
-<translation id="3516765099410062445">Viser historik fra de enheder, hvor du er logget ind. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3528171143076753409">Serverens certifikat er ikke troværdigt.</translation>
 <translation id="3539171420378717834">Gem en kopi af dette kort på denne enhed</translation>

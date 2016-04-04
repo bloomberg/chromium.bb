@@ -12,6 +12,7 @@
 <translation id="4542350224991263059">Échec de l'attribution. Le jeton d'accès utilisateur a expiré.</translation>
 <translation id="4562971394107096647">Échec de l'attribution. Erreur du serveur.</translation>
 <translation id="4641972508298030550">Impossible d'authentifier l'utilisateur.</translation>
+<translation id="5184329579814168207">Ouvrir dans Chrome</translation>
 <translation id="5860346505531085166">Échec de l'attribution. Le compte ne dispose pas de l'accès.</translation>
 <translation id="704835510384979817">Échec de l'attribution. Aucune version de moteur correspondante.</translation>
 <translation id="7536363920335771251">Moteur déconnecté. Motif : %1$s</translation>

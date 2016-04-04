@@ -10,7 +10,6 @@
 <translation id="1073391069195728457">Google Chrome - Notificações</translation>
 <translation id="1104959162601287462">Sobre o Chrome OS</translation>
 <translation id="110877069173485804">Este é seu Chrome</translation>
-<translation id="1225016890511909183">O Google Chrome armazena suas informações com segurança para que não seja necessário digitá-las novamente, mas você ainda precisa confirmar o código de segurança de seu cartão para pagamentos futuros.</translation>
 <translation id="123620459398936149">O Google Chrome não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
 <translation id="127345590676626841">O Chrome é atualizado automaticamente para que você sempre tenha a versão mais recente. Quando o download estiver concluído, o Chrome será reiniciado e você estará pronto.</translation>
 <translation id="1302523850133262269">Aguarde enquanto o Chrome instala as últimas atualizações do sistema.</translation>
@@ -33,6 +32,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obter ajuda para usar o Chrome OS</translation>
 <translation id="1818142563254268765">Não foi possível atualizar o Google Chrome para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança incríveis. Atualize o Chrome.</translation>
+<translation id="1864458292167284385">O Iniciador de aplicativos do Google Chrome será desativado.</translation>
 <translation id="1877026089748256423">O Google Chrome está desatualizado</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2084710999043359739">Adicionar ao Google Chrome</translation>
@@ -88,6 +88,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">O Chrome verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor forneceu informações de Transparência de certificado, mas o Chrome não reconheceu nenhum dos registros de Transparência de certificado.</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
+<translation id="396182988103551265">Use o atalho <ph name="APPS_ICON_IMAGE" /> na barra de favoritos do Chrome para continuar acessando seus apps.</translation>
 <translation id="4042449298237264661">Este computador não receberá mais atualizações do Google Chrome porque o Windows XP e o Windows Vista não são mais compatíveis.</translation>
 <translation id="4050175100176540509">Melhorias de segurança importantes e novos recursos estão disponíveis na versão mais recente.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
@@ -103,7 +104,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="4480040274068703980">O Chrome OS não pôde sincronizar seus dados devido a um erro durante o login.</translation>
-<translation id="4513711165509885787">Seus dados para cobrança foram salvos no Google Chrome.</translation>
 <translation id="4561051373932531560">O Google Chrome permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
 <translation id="4567424176335768812">Você está conectado como <ph name="USER_EMAIL_ADDRESS" />. Agora você pode acessar seus favoritos, histórico e outras configurações em todos os seus dispositivos conectados.</translation>
 <translation id="4631713731678262610">Esconder no menu do Google Chrome</translation>

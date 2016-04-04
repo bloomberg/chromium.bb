@@ -881,11 +881,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4039085364173654945">Kiểm soát liệu nội dung phụ của bên thứ ba trên trang có được phép bật lên hộp thoại Xác thực cơ bản HTTP hay không.
 
           Thông thường, chính sách này được tắt nhằm đề phòng hoạt động lừa đảo. Nếu không thiết lập chính sách này, chính sách sẽ bị tắt và nội dung phụ bên thứ ba sẽ không được phép bật lên hộp thoại Xác thực cơ bản HTTP.</translation>
-<translation id="4052765007567912447">Kiểm soát liệu người dùng có thể hiển thị mật khẩu dưới dạng văn bản rõ ràng trong trình quản lý mật khẩu hay không.
-
-          Nếu bạn tắt cài đặt này, trình quản lý mật khẩu không cho phép hiển thị mật khẩu được lưu trữ dưới dạng văn bản rõ ràng trong cửa sổ trình quản lý mật khẩu.
-
-          Nếu bạn bật hoặc không thiết lập chính sách này, người dùng có thể xem mật khẩu của họ dưới dạng văn bản rõ ràng trong trình quản lý mật khẩu.</translation>
 <translation id="4056910949759281379">Vô hiệu hóa giao thức SPDY</translation>
 <translation id="4088589230932595924">Bắt buộc chế độ ẩn danh</translation>
 <translation id="4088983553732356374">Cho phép bạn đặt trang web được phép hay không được phép đặt dữ liệu cục bộ. Bạn có thể cho phép hoặc từ chối cho phép tất cả các trang web đặt dữ liệu cục bộ.
@@ -1287,7 +1282,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu được chỉ định, sẽ thêm thông số truy vấn được gọi là 'restrict' vào URL được sử dụng để tìm nạp khởi đầu Biến thể. Giá trị của thông số sẽ là giá trị được chỉ định trong chính sách này.
 
       Nếu không được chỉ định, sẽ không sửa đổi URL khởi đầu Biến thể.</translation>
-<translation id="5564962323737505851">Định cấu hình trình quản lý mật khẩu. Nếu bật trình quản lý mật khẩu, bạn có thể chọn bật hoặc tắt chế độ người dùng có thể hiển thị mật khẩu được lưu trữ bằng văn bản rõ ràng hay không.</translation>
 <translation id="556941986578702361">Kiểm soát tự động ẩn giá <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt thành 'Luôn tự động ẩn giá', giá sẽ luôn tự động ẩn.
@@ -1400,7 +1394,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5893553533827140852">Nếu cài đặt này được bật, yêu cầu xác thực gnubby sẽ được proxy qua kết nối máy chủ từ xa.
 
           Nếu cài đặt này bị tắt hoặc không được định cấu hình, yêu cầu xác thực gnubby sẽ không được proxy.</translation>
-<translation id="5912364507361265851">Cho phép người dùng hiển thị mật khẩu trong Trình quản lý mật khẩu</translation>
 <translation id="5921713479449475707">Cho phép tài nguyên đã tải xuống tự động cập nhật qua HTTP</translation>
 <translation id="5921888683953999946">Đặt trạng thái mặc định của tính năng trợ năng con trỏ lớn trên màn hình đăng nhập.
 
@@ -2025,6 +2018,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7882585827992171421">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Xác định id của tiện ích được sử dụng làm trình bảo vệ màn hình trên màn hình đăng nhập. Tiện ích phải thuộc AppPack được định cấu hình cho miền này thông qua chính sách DeviceAppPack.</translation>
+<translation id="7882890448959833986">Ẩn cảnh báo hệ điều hành không được hỗ trợ</translation>
 <translation id="7912255076272890813">Định cấu hình loại ứng dụng/tiện ích được cho phép</translation>
 <translation id="793134539373873765">Chỉ định có sử dụng p2p cho các phần tải dữ liệu cập nhật OS không. Nếu được đặt thành True, các thiết bị sẽ chia sẻ và cố gắng sử dụng các phần tải dữ liệu cập nhật trên LAN, có thể làm giảm nghẽn và mức sử dụng băng thông Internet. Nếu phần tải dữ liệu cập nhật không khả dụng trên LAN, thiết bị sẽ quay lại tải xuống từ máy chủ cập nhật. Nếu được đặt thành False hay không được định cấu hình, p2p sẽ không được sử dụng.</translation>
 <translation id="7933141401888114454">Cho phép tạo người dùng được giám sát</translation>
@@ -2087,6 +2081,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách được đặt giá trị thành sai, danh sách giao diện sẽ không được báo cáo.</translation>
 <translation id="8146727383888924340">Cho phép người dùng đổi phiếu mua hàng thông qua Đăng ký Chrome OS</translation>
+<translation id="8148785525797916822">Ẩn cảnh báo xuất hiện khi <ph name="PRODUCT_NAME" /> đang chạy trên máy tính hoặc hệ điều hành không được hỗ trợ nữa.</translation>
 <translation id="8148901634826284024">Bật tính năng trợ năng chế độ tương phản cao.
 
           Nếu chính sách này được đặt thành true, chế độ tương phản cao sẽ luôn được bật.

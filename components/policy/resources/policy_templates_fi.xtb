@@ -788,7 +788,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="402759845255257575">Älä salli sivustojen käyttää JavaScriptiä</translation>
 <translation id="4027608872760987929">Ota oletushakupalvelu käyttöön</translation>
 <translation id="4039085364173654945">Määrittää, saako sivulla oleva kolmannen osapuolen alasisältö näyttää HTTP Basic Auth -valintaikkunan. Asetus on yleensä poistettu käytöstä tietojenkalastelun estotoimenpiteenä. Jos käytäntöä ei ole määritetty, asetus ei ole käytössä eikä kolmannen osapuolen alasisältö saa näyttää HTTP Basic Auth -valintaikkunaa.</translation>
-<translation id="4052765007567912447">Määrittää, voiko käyttäjä näyttää salasanat tekstinä salasanojen hallinnassa. Jos poistat tämän asetuksen käytöstä, salasanojen hallinta ei näytä tallennettuja salasanoja tekstinä. Jos otat asetuksen käyttöön tai et määritä asetusta, käyttäjät voivat nähdä salasanat tekstinä salasanojen hallinnassa.</translation>
 <translation id="4056910949759281379">Poista SPDY-protokolla käytöstä</translation>
 <translation id="4088589230932595924">Incognito-tila pakotettu</translation>
 <translation id="4088983553732356374">Tällä käytännöllä määritetään, onko sivustoilla lupa luoda paikallisia tietoja. Paikallisten tietojen luominen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta.
@@ -1145,7 +1144,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
       Jos käytäntö määritetään, kyselyparametri "restrict" lisätään Variations-siemenarvon hakemiseen käytettävään URL-osoitteeseen. Parametrin arvo on tässä käytännössä määritetty arvo.
 
       Jos käytäntöä ei määritetä, Variations-siemenarvon URL-osoitetta ei muokata.</translation>
-<translation id="5564962323737505851">Määrittää salasanan hallinnan asetukset. Jos salasanan hallinta on käytössä, voit valita, voivatko käyttäjät katsella tallennettuja salasanoja tekstimuodossa.</translation>
 <translation id="556941986578702361">Hallinnoi <ph name="PRODUCT_OS_NAME" /> -hyllyn automaattista piilottamista.
 
 Jos tämän käytännön arvo on AlwaysAutoHideShelf, hylly piilotetaan aina automaattisesti.
@@ -1250,7 +1248,6 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 <translation id="5893553533827140852">Jos asetus on käytössä, gnubby-todennuspyynnöt lähetetään välityspalvelimen kautta etäisäntäyhteyden avulla.
 
           Jos asetus ei ole käytössä tai sitä ei ole määritetty, gnubby-todennuspyyntöjä ei lähetetä välityspalvelimen kautta.</translation>
-<translation id="5912364507361265851">Anna käyttäjien katsella salasanoja salasanan hallinnassa</translation>
 <translation id="5921713479449475707">Salli automaattiset päivitykset HTTP:n kautta</translation>
 <translation id="5921888683953999946">Määritä suuren osoittimen käytettävyysominaisuuden oletustila kirjautumisnäytössä.
 
@@ -1808,6 +1805,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7882585827992171421">Tämä käytäntö toimii vain myyntitilassa.
 
       Määrittää tunnuksen perusteella laajennuksen, jota käytetään kirjautumisruudulla näytönsäästäjänä. Laajennuksen täytyy kuulua AppPack-sovelluspakettiin, joka on määritetty käytössä olevalle toimialueelle DeviceAppPack-käytännön kautta.</translation>
+<translation id="7882890448959833986">Älä näytä varoitusta käyttöjärjestelmän tuen päättymisestä</translation>
 <translation id="7912255076272890813">Määritä sallitut sovellus- ja laajennustyypit</translation>
 <translation id="793134539373873765">Tarkentaa, käytetäänkö p2p-menetelmää käyttöjärjestelmän päivityksen tietosisältöön. Jos määritys on Tosi, laitteet jakavat ja yrittävät käyttää päivitysten tietosisältöjä LAN-verkossa, mahdollisesti vähentäen laajakaistan käyttöä ja ruuhkaa. Jos päivityksen tietosisältö ei ole LAN-verkossa, laite palaa lataamaan päivityspalvelimelta. Jos määritys on Epätosi tai sitä ei ole asetettu, p2p-menetelmää ei käytetä.</translation>
 <translation id="7933141401888114454">Ota valvottujen käyttäjien luominen käyttöön</translation>
@@ -1865,6 +1863,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Jos käytännön arvoksi on määritetty epätosi, käyttöliittymäluetteloa ei ilmoiteta.</translation>
 <translation id="8146727383888924340">Salli käyttäjien lunastaa tarjouksia Chrome-käyttöjärjestelmän rekisteröitymisen kautta</translation>
+<translation id="8148785525797916822">Älä näytä varoitusta, kun <ph name="PRODUCT_NAME" /> on käytössä tietokoneella tai käyttöjärjestelmässä, jonka tuki on päättynyt.</translation>
 <translation id="8148901634826284024">Ota käyttöön suuri kontrasti -tilan käytettävyysominaisuus.
 
           Jos tämän käytännön arvoksi on määritetty tosi, suuri kontrasti -tila on aina käytössä.

@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">‏الرجاء إغلاق جميع نوافذ Chromium (بما في ذلك تلك المفتوحة في وضع Windows 8) ثم إعادة المحاولة.</translation>
 <translation id="1708666629004767631">‏يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
 <translation id="1725059042853530269">‏قد يضر <ph name="FILE_NAME" /> بتجربة متصفحك، لذلك فقد حظره Chromium.</translation>
-<translation id="1745962126679160932">‏سيخزن Chromium معلوماتك في مكان آمن ولذلك لن تحتاج إلى كتابتها مرة أخرى، ولكن سيظل يلزمك التحقق من رمز الأمان في بطاقتك لإجراء عمليات دفع مستقبلية.</translation>
 <translation id="1774152462503052664">‏دع Chromium يعمل في الخلفية</translation>
 <translation id="1779356040007214683">‏لجعل Chromium أكثر أمانًا، تم تعطيل بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
 <translation id="1808667845054772817">‏إعادة تثبيت Chromium</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">‏لا يستجيب Chromium. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="1967743265616885482">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Chromium.</translation>
 <translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
+<translation id="2103655854491303969">‏إيقاف Launcher تطبيقات Chromium.</translation>
 <translation id="2117181891440368863">‏تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكنها غير صالحة.</translation>
 <translation id="2119636228670142020">‏حول ن&amp;ظام التشغيل Chromium</translation>
 <translation id="2158734852934720349">‏تراخيص مفتوحة المصدر لنظام التشغيل Chromium</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="2558641060352364164">‏هذا الموقع يستخدم المكون الإضافي Chromium Frame والذي سيصبح غير معتمد قريبًا. يُرجى إلغاء تثبيته والترقية إلى متصفّح حديث.</translation>
 <translation id="2572494885440352020">‏أداة مساعدة Chromium</translation>
+<translation id="2595977381794111014">‏استخدام الاختصار <ph name="APPS_ICON_IMAGE" /> في شريط الإشارات المرجعية لـ Chromium لمواصلة الدخول إلى تطبيقاتك.</translation>
 <translation id="2602806952220118310">‏Chromium - الإشعارات</translation>
 <translation id="2636877269779209383">‏يحتاج Chromium الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
 <translation id="2648074677641340862">‏حدث خطأ في نظام التشغيل أثناء عملية التثبيت. الرجاء إعادة تنزيل Chromium.</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">‏هذه الوحدة معروف أنها تتعارض مع Chromium.</translation>
 <translation id="4423735387467980091">‏تخصيص Chromium والتحكم فيه</translation>
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
-<translation id="4488676065623537541">‏تم حفظ تفاصيل الفوترة في Chromium.</translation>
 <translation id="4549794359424059447">‏لن تدعم الإصدارات المستقبلية من Chromium أنظمة Windows XP أو Windows Vista.</translation>
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS" />. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
 <translation id="457845228957001925">‏معلومات مهمة بخصوص بياناتك في Chromium</translation>

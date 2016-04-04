@@ -31,11 +31,6 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="138361230106469022">Pozdrav, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1389974829397082527">Nema nijedne oznake</translation>
-<translation id="1390350022570422499">Chrome sada može pronaći i prikazati web-stranice u blizini putem Bluetootha.
-
-Chrome će tražiti stranice u blizini kad je uređaj otključan. Googleova služba obradit će te stranice radi poboljšanja kvalitete rezultata stranica.
-
-Fizičkim webom možete upravljati u Chromeovim postavkama privatnosti.</translation>
 <translation id="1404122904123200417">Ugrađeno u <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Nemoj pratiti"</translation>
 <translation id="1409879593029778104">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo jer datoteka već postoji.</translation>
@@ -78,6 +73,7 @@ Fizičkim webom možete upravljati u Chromeovim postavkama privatnosti.</transla
 <translation id="1974060860693918893">Napredno</translation>
 <translation id="1984937141057606926">Dopušteno, osim treće strane</translation>
 <translation id="1994173015038366702">URL web-lokacije</translation>
+<translation id="2001120796168634316">Spremi povezanu stranicu</translation>
 <translation id="200669432486043882">Zamijeni datoteku</translation>
 <translation id="2038563949887743358">Uključivanje zahtjeva za prikaz klasične web-lokacije</translation>
 <translation id="2073235970478114994">Učitaj slike</translation>
@@ -96,7 +92,6 @@ Fizičkim webom možete upravljati u Chromeovim postavkama privatnosti.</transla
 <translation id="2268044343513325586">Pročišćavanje</translation>
 <translation id="2315043854645842844">Operativni sustav ne podržava odabir klijentskog certifikata.</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
-<translation id="2319528413610359757">Za čitatelje izdavača <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Pomičite klizač dok ne budete mogli čitati ovaj tekst bez poteškoća. Tekst bi trebao biti barem ovoliko velik nakon što dvaput dodirnete odlomak.</translation>
 <translation id="2329597144923131178">Prijavite se da biste imali svoje oznake, povijest, zaporke i druge postavke na svim svojim uređajima.</translation>
 <translation id="2343328333327081434">Instaliranje…</translation>
@@ -136,6 +131,7 @@ Fizičkim webom možete upravljati u Chromeovim postavkama privatnosti.</transla
 <translation id="2762000892062317888">upravo sada</translation>
 <translation id="2770465223704140727">Ukloni s popisa</translation>
 <translation id="278029852808208386">Nije pronađen nijedan Bluetooth uređaj. <ph name="BEGIN_LINK" />Pretražite ponovo<ph name="END_LINK" />.</translation>
+<translation id="2811892995384186721">Ne vidite svoj uređaj? <ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Dodirnite gumb Natrag da biste zatvorili prikaz na cijelom zaslonu.</translation>
 <translation id="2842985007712546952">Nadređena mapa</translation>
 <translation id="2870560284913253234">Web lokacija</translation>
@@ -199,7 +195,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3672452749423051839">Prijedlozi pogreške kretanja</translation>
 <translation id="3732088672634061408">Interesi nisu dohvaćeni.</translation>
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
-<translation id="3774280986422214650">Ako omogućite tu značajku, bit ćete dio eksperimenta koji upotrebljava proxy za obradu HTTPS stranica putem Googleovih poslužitelja.</translation>
 <translation id="3809549525127675114">Videozapis "<ph name="VIDEO_TITLE" />" je završen</translation>
 <translation id="3828029223314399057">Pretraži oznake</translation>
 <translation id="3871171699884605801">Povijest pregledavanja ne može se ukloniti s računa za djecu</translation>
@@ -214,7 +209,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3992315671621218278">Spremi vezu</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4035611068038188272">Oznake trenutačno zauzimaju <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
-<translation id="403659016947612156">U blizini postoje stranice Fizičkog weba</translation>
 <translation id="4042870126885713738">Prikaži prijedloge kada se ne razriješi web-adresa ili nije moguće uspostaviti vezu</translation>
 <translation id="4056223980640387499">Sepija</translation>
 <translation id="4062305924942672200">Pravne informacije</translation>
@@ -274,7 +268,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="4816465935029283692">Vrste podataka</translation>
 <translation id="4827948050554950725">Dodaj kreditnu karticu</translation>
 <translation id="4836364883164334657">Vaša veza s tom web-lokacijom nije privatna. Napadači možda pokušavaju ukrasti vaše podatke (na primjer, fotografije, zaporke, poruke i brojeve kreditnih kartica) s <ph name="DOMAIN_NAME" />.</translation>
-<translation id="4842511359652954519">Pročitajte više</translation>
 <translation id="4850886885716139402">Prikaz</translation>
 <translation id="4875622588773761625">Želite li da <ph name="PASSWORD_MANAGER_BRAND" /> ažurira vašu zaporku za tu web-lokaciju?</translation>
 <translation id="4881695831933465202">Otvori</translation>
@@ -287,7 +280,6 @@ Samo otvorite Chrome na računalu, otvorite izbornik i odaberite "Prijava na Chr
 <translation id="497421865427891073">Idi naprijed</translation>
 <translation id="4996978546172906250">Dijeli putem</translation>
 <translation id="5000922062037820727">Blokirano (preporučeno)</translation>
-<translation id="5014582685689328551">Pregledavajte ih pomoću Chromea</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Dopusti</translation>
 <translation id="5040262127954254034">Privatnost</translation>
@@ -322,7 +314,6 @@ Samo otvorite Chrome na računalu, otvorite izbornik i odaberite "Prijava na Chr
 <translation id="5308933389783727448">Pretraži spremljene stranice</translation>
 <translation id="5313967007315987356">Dodaj web-lokaciju</translation>
 <translation id="5317780077021120954">Spremi</translation>
-<translation id="5323972449344932352">Pokreni Chrome</translation>
 <translation id="5324858694974489420">Postavke nadređenog računa</translation>
 <translation id="5327248766486351172">Naziv</translation>
 <translation id="5345040418939504969">Izbrisana je oznaka <ph name="BOOKMARK_TITLE" /></translation>
@@ -401,7 +392,6 @@ Međutim, niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od
 <translation id="6159335304067198720"><ph name="PERCENT" /> manji podatkovni promet</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6192792657125177640">Iznimke</translation>
-<translation id="6208263165776660488">Chromeove su kartice premještene</translation>
 <translation id="6231464350722415003">Dopušta se JavaScript na web-lokacijama koje navedete, ali se blokira za ostatak weba</translation>
 <translation id="6232535412751077445">Omogućivanje opcije "Nemoj pratiti" znači da će se u promet pregledavanja uključiti zahtjev. Učinak ovisi o tome odgovara li web-lokacija na taj zahtjev i kako se zahtjev tumači.
 
@@ -490,9 +480,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> upotrebljava vašu lokaciju za prikazivanje lokalnih rezultata pretraživanja</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Pomoć<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Izbriši oznaku</translation>
-<translation id="7324738665594301612">Testiramo upotrebu proxyja za obradu HTTPS stranica putem Googleovih poslužitelja u eksperimentu.</translation>
 <translation id="7346217184097589238">Spremljene postavke web-lokacija neće se izbrisati i mogu odražavati vaše navike tijekom pregledavanja.</translation>
-<translation id="7346909386216857016">Dobro, shvaćam</translation>
 <translation id="7347770551817603360">Offline sadržaj</translation>
 <translation id="7363354739009474003">Učitavanje videozapisa "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Emitiranje na uređaj <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7588950540487816470">Fizički web</translation>
 <translation id="7596558890252710462">Operativni sustav</translation>
 <translation id="7599840151813361502">Nećete se odjaviti sa svojih <ph name="BEGIN_LINK" />Google računa<ph name="END_LINK" /></translation>
-<translation id="7603403729818446828">Pregledajte svoje kartice s drugim nedavnim aplikacijama na zaslonu Pregled na telefonu. Time možete upravljati u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>
 <translation id="7607002721634913082">Pauzirano</translation>
 <translation id="7612619742409846846">Prijavljeni ste na Google kao</translation>
 <translation id="7619072057915878432">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo zbog kvarova na mreži.</translation>
@@ -564,6 +551,7 @@ No niste nevidljivi. Anonimni način neće sakriti vaše pregledavanje od poslod
 <translation id="8173098127580644436">od početka</translation>
 <translation id="8200772114523450471">Nastavi</translation>
 <translation id="8209050860603202033">Otvori sliku</translation>
+<translation id="8215250379351058554">Web-lokacija <ph name="SITE" /> želi se povezati s uređajem:</translation>
 <translation id="8218346974737627104">Potvrda prijave</translation>
 <translation id="8218934717680664417">Sada možete pretraživati jednim dodirom</translation>
 <translation id="8223946939421658889">Izbriši podatke</translation>

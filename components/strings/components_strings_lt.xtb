@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Atidaryti skirtukai</translation>
 <translation id="1753706481035618306">Puslapio numeris</translation>
 <translation id="1763864636252898013">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas įrenginio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
-<translation id="1775135663370355363">Rodoma šio įrenginio istorija. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Netinkama užklausa arba jos parametrai</translation>
@@ -255,7 +254,6 @@
 <translation id="3462200631372590220">Slėpti išsamią informaciją</translation>
 <translation id="3479539252931486093">Ar tai buvo netikėta? <ph name="BEGIN_LINK" />Praneškime mums apie tai<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Šiuo metu nepavyko susisiekti su jūsų tėvu. Bandykite dar kartą.</translation>
-<translation id="3516765099410062445">Rodoma įrenginių, kuriuose esate prisijungę, istorija. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Aplankas</translation>
 <translation id="3528171143076753409">Serverio sertifikatas nepatikimas.</translation>
 <translation id="3539171420378717834">Išsaugoti kortelės kopiją įrenginyje</translation>

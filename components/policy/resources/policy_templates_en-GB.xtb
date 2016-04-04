@@ -890,11 +890,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4039085364173654945">Controls whether third-party sub-content on a page is allowed to pop up an HTTP Basic Auth dialogue box.
 
           Typically this is disabled as a phishing defence. If this policy is not set, this is disabled and third-party sub-content will not be allowed to pop up a HTTP Basic Auth dialogue box.</translation>
-<translation id="4052765007567912447">Controls whether the user may show passwords in clear text in the password manager.
-
-          If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
-
-          If you enable or do not set this policy, users can view their passwords in clear text in the password manager.</translation>
 <translation id="4056910949759281379">Disable SPDY protocol</translation>
 <translation id="4088589230932595924">Incognito mode forced.</translation>
 <translation id="4088983553732356374">Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
@@ -1300,7 +1295,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If specified, will add a query parameter called 'restrict' to the URL used to fetch the Variations seed. The value of the parameter will be the value specified in this policy.
 
       If not specified, will not modify the Variations seed URL.</translation>
-<translation id="5564962323737505851">Configures the password manager. If the password manager is enabled, then you can choose to enable or disable whether the user may show stored passwords in clear text.</translation>
 <translation id="556941986578702361">Control auto-hiding of the <ph name="PRODUCT_OS_NAME" /> shelf.
 
       If this policy is set to 'AlwaysAutoHideShelf', the shelf will always auto-hide.
@@ -1413,7 +1407,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5893553533827140852">If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
 
           If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
-<translation id="5912364507361265851">Allow users to show passwords in Password Manager</translation>
 <translation id="5921713479449475707">Allow autoupdate downloads via HTTP</translation>
 <translation id="5921888683953999946">Set the default state of the large cursor accessibility feature on the login screen.
 
@@ -2051,6 +2044,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7882585827992171421">This policy is active in retail mode only.
 
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
+<translation id="7882890448959833986">Suppress the unsupported OS warning</translation>
 <translation id="7912255076272890813">Configure allowed app/extension types</translation>
 <translation id="793134539373873765">Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.</translation>
 <translation id="7933141401888114454">Enable creation of supervised users</translation>
@@ -2113,6 +2107,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If the policy is set to false, the interface list will not be reported.</translation>
 <translation id="8146727383888924340">Allow users to redeem offers through Chrome OS Registration</translation>
+<translation id="8148785525797916822">Suppresses the warning that appears when <ph name="PRODUCT_NAME" /> is running on a computer or operating system that is no longer supported.</translation>
 <translation id="8148901634826284024">Enable the high contrast mode accessibility feature.
 
           If this policy is set to true, high contrast mode will always be enabled.

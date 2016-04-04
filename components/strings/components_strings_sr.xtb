@@ -76,7 +76,6 @@
 <translation id="17513872634828108">Отворене картице</translation>
 <translation id="1753706481035618306">Број странице</translation>
 <translation id="1763864636252898013">Овај сервер не може да докаже да је <ph name="DOMAIN" />; оперативни систем уређаја нема поверења у његов безбедносни сертификат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
-<translation id="1775135663370355363">Приказујемо историју са овог уређаја. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Ажурирај приступну фразу за синхронизацију</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Неважећи захтев или параметри захтева</translation>
@@ -253,7 +252,6 @@
 <translation id="3462200631372590220">Сакриј напредно</translation>
 <translation id="3479539252931486093">Да ли је ово било неочекивано? <ph name="BEGIN_LINK" />Обавестите нас<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Тренутно не можемо да контактирамо родитеља. Покушај поново.</translation>
-<translation id="3516765099410062445">Приказујемо историју са уређаја на које сте пријављени. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Директоријум</translation>
 <translation id="3528171143076753409">Сертификат сервера није поуздан.</translation>
 <translation id="3539171420378717834">Задржи копију ове картице на овом уређају</translation>

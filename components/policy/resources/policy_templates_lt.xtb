@@ -892,11 +892,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="4039085364173654945">Valdoma, ar trečiosios šalies papildomas turinys puslapyje gali būti pateiktas iššokančiajame HTTP pagrindinės prieigos teisės dialogo lange.
 
           Įprastai tai neleidžiama siekiant apsisaugoti nuo sukčiavimo. Nenustačius šios politikos, tai neleidžiama ir trečiosios šalies papildomo turinio neleidžiama pateikti iššokančiajame HTTP pagrindinės prieigos teisės dialogo lange.</translation>
-<translation id="4052765007567912447">Valdoma, ar naudotojas (-a) gali rodyti aiškiai parašytus slaptažodžius slaptažodžių tvarkytuvėje.
-
-          Jei neleisite šio nustatymo, slaptažodžių tvarkytuvės lange nebus leidžiama rodyti aiškiai parašytų išsaugotų slaptažodžių.
-
-          Jei įgalinsite šią politiką arba jos nenustatysite, naudotojai galės peržiūrėti aiškiai parašytus slaptažodžius slaptažodžių tvarkytuvėje.</translation>
 <translation id="4056910949759281379">Neleisti SPDY protokolo</translation>
 <translation id="4088589230932595924">Įjungtas inkognito režimas</translation>
 <translation id="4088983553732356374">Leidžiama nustatyti, ar svetainėms galima nustatyti vietinius duomenis. Nustatyti vietinius duomenis galima leisti arba uždrausti visoms svetainėms.
@@ -1300,7 +1295,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei jis nurodytas, prie pateikiant variantų pirminę reikšmę naudojamo URL bus pridėtas URL parametras „restrict“. Parametro vertė bus šioje politikoje nustatyta vertė.
 
       Jei ši politika nenustatyta, variantų pirminės reikšmės URL keičiamas nebus.</translation>
-<translation id="5564962323737505851">Konfigūruojama slaptažodžių tvarkytuvė. Jei slaptažodžių tvarkytuvė įgalinta, galite pasirinkti įgalinti naudotojo galimybę pateikti saugomus slaptažodžius aiškiu tekstu arba neleisti naudotis šia galimybe.</translation>
 <translation id="556941986578702361">Valdomas automatinis „<ph name="PRODUCT_OS_NAME" />“ lentynos paslėpimas.
 
       Jei ši politika nustatyta kaip „Visada automatiškai paslėpti lentyną“, lentyna visada automatiškai paslepiama.
@@ -1413,7 +1407,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="5893553533827140852">Jei šis nustatymas įgalintas, „Gnubby“ autentifikavimo užklausos bus perduotos įgaliotajam serveriui nuotolinės prieglobos ryšiu.
 
           Jei šis nustatymas išjungtas arba nesukonfigūruotas, „Gnubby“ autentifikavimo užklausos nebus perduotos įgaliotajam serveriui.</translation>
-<translation id="5912364507361265851">Leisti naudotojams rodyti slaptažodžius slaptažodžių tvarkytuvėje</translation>
 <translation id="5921713479449475707">Leisti automatinio naujinio atsisiuntimus naudojant HTTP</translation>
 <translation id="5921888683953999946">Nustatyti numatytąją didelio žymeklio pasiekiamumo funkciją prisijungimo ekrane.
 
@@ -2053,6 +2046,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7882585827992171421">Ši politika taikoma tik mažmeninės prekybos režimu.
 
       Nustatomas plėtinio, kuris turėtų būti naudojamas kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti „AppPack“ (programų paketo), kuris sukonfigūruotas šiam domenui taikant politiką „DeviceAppPack“ (įrenginio programų paketas), dalis.</translation>
+<translation id="7882890448959833986">Nerodyti nepalaikomos OS įspėjimo</translation>
 <translation id="7912255076272890813">Konfigūruoti leidžiamus programų / plėtinių tipus</translation>
 <translation id="793134539373873765">Nurodoma, ar P2P bus naudojamas naudingosiose OS naujinių apkrovose. Jei ši politika galioja, įrenginiai bendrins ir bandys naudoti naujinio naudingąsias apkrovas per LAN, taip potencialiai sumažindami interneto pralaidumo naudojimą ir perpildymą. Jei naujinio naudingoji apkrova nepasiekiama naudojant LAN, įrenginys vykdys atsisiuntimą iš naujinio serverio. Jei ši politika negalioja ar yra nesukonfigūruota, P2P nebus naudojama.</translation>
 <translation id="7933141401888114454">Įgalinti prižiūrimų naudotojų kūrimą</translation>
@@ -2115,6 +2109,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei politika nustatyta kaip „False“, sąsajų sąrašas nebus pateiktas.</translation>
 <translation id="8146727383888924340">Leisti naudotojams pasinaudoti pasiūlymais atliekant „Chrome“ OS registraciją</translation>
+<translation id="8148785525797916822">Nerodomas įspėjimas, kuris rodomas, kai „<ph name="PRODUCT_NAME" />“ veikia kompiuteryje ar operacinėje sistemoje, kuri nebepalaikoma.</translation>
 <translation id="8148901634826284024">Įgalinti didelio kontrasto režimo pasiekiamumo funkciją.
 
           Jei ši politika galioja, didelio kontrasto režimas bus visada įgalintas.

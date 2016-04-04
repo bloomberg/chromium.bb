@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Lukk alle Chromium-vinduene (inkludert de i Windows 8-modus) og prøv på nytt.</translation>
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
 <translation id="1725059042853530269"><ph name="FILE_NAME" />-filen kan gi deg en dårligere leseopplevelse, så Chromium har blokkert den.</translation>
-<translation id="1745962126679160932">Chromium lagrer informasjonen din sikkert, slik at du slipper å skrive den inn på nytt. Du må imidlertid bekrefte sikkerhetskoden for kortet ved fremtidige betalinger.</translation>
 <translation id="1774152462503052664">La Chromium kjøre i bakgrunnen</translation>
 <translation id="1779356040007214683">For å gjøre Chromium tryggere, har vi deaktivert noen utvidelser som ikke er oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt uten at du har vært klar over det.</translation>
 <translation id="1808667845054772817">Installer Chromium på nytt</translation>
@@ -100,7 +99,6 @@
 <translation id="4330585738697551178">Denne modulen er kjent for å komme i konflikt med Chromium.</translation>
 <translation id="4423735387467980091">Tilpass og kontrollér Chromium</translation>
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
-<translation id="4488676065623537541">Faktureringsdetaljene dine er lagret i Chromium.</translation>
 <translation id="4549794359424059447">Fremtidige versjoner av Chromium kommer ikke lenger til å støtte Windows XP eller Windows Vista.</translation>
 <translation id="4567424176335768812">Du er logget på som <ph name="USER_EMAIL_ADDRESS" />. Nå kan du bruke bokmerkene, loggen og andre innstillinger på alle enhetene du er logget på.</translation>
 <translation id="457845228957001925">Viktig informasjon om Chromium-dataene dine</translation>

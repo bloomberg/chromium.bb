@@ -779,7 +779,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="402759845255257575">No permitir que los sitios ejecuten JavaScript.</translation>
 <translation id="4027608872760987929">Habilitar el proveedor de búsqueda predeterminado</translation>
 <translation id="4039085364173654945">Controla si se permite que el subcontenido de terceros en una página muestre cuadros de diálogo emergentes de autenticación básica de HTTP. Normalmente, esto se inhabilita a modo defensa contra la suplantación de identidad. Si esta política no se configura, se inhabilita esta opción y no se permite que el subcontenido de terceros muestre cuadros de diálogo emergentes de autenticación básica de HTTP.</translation>
-<translation id="4052765007567912447">Controla si el usuario puede mostrar contraseñas no cifradas en el administrador de contraseñas. Si se inhabilita esta configuración, el administrador de contraseñas no permitirá mostrar las contraseñas no cifradas en la ventana del administrador de contraseñas. Si se habilita esta política o si no se configura, los usuarios podrán ver sus contraseñas no cifradas en el administrador de contraseñas.</translation>
 <translation id="4056910949759281379">Inhabilitar el protocolo SPDY</translation>
 <translation id="4088589230932595924">Modo incógnito forzado</translation>
 <translation id="4088983553732356374">Permite establecer si los sitios web pueden configurar datos locales. La configuración de datos locales puede permitirse para todos los sitios web o rechazarse para todos ellos.
@@ -1134,7 +1133,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si se especifica, agregará un parámetro de consulta llamado "restringir" a la URL que se utiliza para obtener el valor de inicialización de las variaciones. El valor del parámetro será el valor especificado en esta política.
 
       Si no se especifica, no se modificará la URL del valor de inicialización de las variaciones.</translation>
-<translation id="5564962323737505851">Configura el administrador de contraseñas. Si el administrador de contraseñas está habilitado, podrás optar por habilitar o inhabilitar la opción que permite al usuario mostrar las contraseñas almacenadas en texto sin cifrar.</translation>
 <translation id="556941986578702361">Permite controlar la opción para ocultar automáticamente los archivos de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece en "AlwaysAutoHideShelf", los archivos se ocultarán automáticamente.
@@ -1238,7 +1236,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="5893553533827140852">Si esta opción está habilitada, las solicitudes de autenticación gnubby se representarán a través de una conexión de host remota.
 
           Si esta opción está inhabilitada o no está configurada, no se representarán solicitudes de autenticación gnubby.</translation>
-<translation id="5912364507361265851">Permitir que los usuarios muestren las contraseñas en el Administrador de contraseñas.</translation>
 <translation id="5921713479449475707">Permitir descargas de actualizaciones automáticas a través de HTTP</translation>
 <translation id="5921888683953999946">Establece el estado predeterminado de la función de accesibilidad del cursor grande en la pantalla de acceso.
 
@@ -1793,6 +1790,7 @@ desactivarlo).</translation>
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo de venta.
 
       Determina la ID de la extensión que se debe utilizar como protector de pantalla en la página de acceso. La extensión debe formar parte del AppPack configurado para este dominio a través de la política DeviceAppPack.</translation>
+<translation id="7882890448959833986">Eliminar la advertencia de SO incompatible</translation>
 <translation id="7912255076272890813">Configurar tipos de extensiones o aplicaciones permitidos</translation>
 <translation id="793134539373873765">Especifica si se debe utilizar la conexión P2P para cargas de actualizaciones del sistema operativo. Si esta política se establece en True, los dispositivos compartirán e intentarán consumir cargas de actualizaciones en la red LAN, y reducirán de forma potencial la congestión y el uso del ancho de banda de Internet. Si la carga de actualizaciones no está disponible en la red LAN, el dispositivo deberá realizar la descarga desde un servidor de actualizaciones. Si se establece en False o no se configura, no se utilizará la conexión P2P.</translation>
 <translation id="7933141401888114454">Habilita la creación de usuarios supervisados.</translation>
@@ -1849,6 +1847,7 @@ desactivarlo).</translation>
 
       Si esta política se establece en "False", no se informará sobre la lista de interfaces.</translation>
 <translation id="8146727383888924340">Permite a los usuarios canjear ofertas a través del Registro del Sistema operativo Chrome.</translation>
+<translation id="8148785525797916822">Elimina la advertencia que aparece cuando se ejecuta <ph name="PRODUCT_NAME" /> en una computadora o sistema operativo que ya no son compatibles.</translation>
 <translation id="8148901634826284024">Habilita la función de accesibilidad del modo de contraste alto.
 
           Si esta política se establece como verdadera, el modo de contraste alto estará siempre habilitado.

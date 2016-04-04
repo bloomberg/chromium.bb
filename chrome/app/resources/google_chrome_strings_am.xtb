@@ -12,7 +12,6 @@
 <translation id="1073391069195728457">Chrome - ማሳወቂያዎች</translation>
 <translation id="1104959162601287462">ስለ &amp;Chrome ስርዓተ ክወና</translation>
 <translation id="110877069173485804">ይሄ የእርስዎ Chrome ነው</translation>
-<translation id="1225016890511909183">Chrome መረጃዎን በድጋሚ መተየብ እንዳይኖርብዎ ደህንነቱ በተጠበቀ ሁኔታ ያስቀምጣል፣ ነገር ግን ለወደፊት ክፍያዎች አሁንም የካርድዎን የደህንነት ኮድ ማረጋገጥ አለብዎ።</translation>
 <translation id="123620459398936149">Chrome OS ውሂብዎን ሊያመሳስል አልቻለም። እባክዎ የማመሳሰያ ይለፍ ሐረግዎን ያዘምኑት።</translation>
 <translation id="127345590676626841">Chrome በራስ-ሰር ስለሚዘምን ሁልጊዜ ትኩሱ ስሪት ነው የሚኖርዎ። ይህ ውርድ ሲጠናቀቅ Chrome ዳግም ይጀምርና እርስዎም ስራዎን ይቀጥላሉ።</translation>
 <translation id="1302523850133262269">እባክዎ Chrome የቅርብ ጊዜዎቹን ዝማኔዎች እስኪጭን ድረስ ይጠብቁ።</translation>
@@ -37,6 +36,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome ስርዓተ ክወናን መጠቀም ላይ እገዛን ያግኙ</translation>
 <translation id="1818142563254268765">Chrome እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ አንዳንድ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጡዎት ነው። Chromeን ማዘመን አለብዎት።</translation>
+<translation id="1864458292167284385">የChrome የመተግበሪያ ማስጀመሪያው ይቋረጣል።</translation>
 <translation id="1877026089748256423">Chrome ጊዜው አልፎበታል</translation>
 <translation id="2077129598763517140">ሲገኝ የሃርድዌር ማጣደፍን ተጠቀም</translation>
 <translation id="2084710999043359739">ወደ Chrome አክል</translation>
@@ -92,6 +92,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083"><ph name="ISSUER" /> የዚህን የድር ጣቢያ ምስክር ወረቀት እንደሰጠ Chrome አረጋግጧል። አገልጋዩ የምስክር ወረቀት ግልፅነት መረጃን አቅርቧል፣ ሆኖም ግን Chrome ማንኛውንም የምስክር ወረቀት ግልፅነት ምዝግብ ማስታወሻዎችን አያውቅም።</translation>
 <translation id="3889417619312448367">Google Chromeን አራግፍ</translation>
+<translation id="396182988103551265">መተግበሪያዎችዎን መድረሱን ለመቀጠል በChrome ዕልባቶች አሞሌ ውስጥ የ<ph name="APPS_ICON_IMAGE" /> አቋራጩን ይጠቀሙ።</translation>
 <translation id="4042449298237264661">Windows XP እና Windows Vista ከእንግዲህ ስለማይደገፉ ይህ ኮምፒውተር ከአሁን በኋላ የGoogle Chrome ዝማኔዎችን አይቀበልም።</translation>
 <translation id="4050175100176540509">አስፈላጊ የደህንነት ማሻሻያዎች እና አዲስ ባህሪያት በቅርብ ጊዜው ስሪቱ ላይ ይገኛሉ።</translation>
 <translation id="4053720452172726777">Google Chromeን ያብጁ እና ይቆጣጠሩ</translation>
@@ -106,7 +107,6 @@
 <translation id="4407807842708586359">Google Chrome ስርዓተ ክወና</translation>
 <translation id="4458285410772214805">ይሄ ለውጥ እንዲተገበር እባክዎ ይውጡ እና እንደገና ይግቡ።</translation>
 <translation id="4480040274068703980">Chrome OS እየተገባ ሳለ በተፈጠረ አንድ ስህተት ምክንያት ውሂብዎን ማመሳሰል አልቻለም።</translation>
-<translation id="4513711165509885787">የክፍያ መጠየቂያ ዝርዝሮችዎ በChrome ውስጥ ተቀምጠዋል።</translation>
 <translation id="4561051373932531560">Google Chrome ድር ላይ ያለ ስልክ ቁጥር ጠቅ እንዲያደርጉት እና በSkype እንዲደውሉለት ያስችልዎታል!</translation>
 <translation id="4567424176335768812">እንደ <ph name="USER_EMAIL_ADDRESS" /> ሆነው ገብተዋል። አሁን የእርስዎን ዕልባቶች፣ ታሪክ እና ሌሎች ቅንብሮች በመለያ በገቡ ሁሉም መሣሪያዎችዎ ላይ መድረስ ይችላሉ።</translation>
 <translation id="4631713731678262610">በChrome ምናሌ ውስጥ ደብቅ</translation>

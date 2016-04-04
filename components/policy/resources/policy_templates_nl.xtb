@@ -882,11 +882,6 @@
 <translation id="4039085364173654945">Hiermee wordt bepaald of subinhoud van derden op een pagina een dialoogvenster voor algemene HTTP-authenticatie als pop-up mag weergeven.
 
           Deze optie is meestal uitgeschakeld als beveiliging tegen phishing. Als dit beleid niet wordt ingesteld, wordt de optie uitgeschakeld en mag subinhoud van derden geen dialoogvenster voor algemene HTTP-authenticatie als pop-up weergeven.</translation>
-<translation id="4052765007567912447">Hiermee wordt bepaald of de gebruiker wachtwoorden als leesbare tekst mag weergeven in Wachtwoordbeheer.
-
-          Als je deze instelling uitschakelt, staat Wachtwoordbeheer de gebruiker niet toe opgeslagen wachtwoorden als leesbare tekst weer te geven in het venster van Wachtwoordbeheer.
-
-          Als je deze instelling inschakelt of niet configureert, kunnen gebruikers hun wachtwoorden als leesbare tekst bekijken in Wachtwoordbeheer.</translation>
 <translation id="4056910949759281379">SPDY-protocol uitschakelen</translation>
 <translation id="4088589230932595924">Incognitomodus afgedwongen</translation>
 <translation id="4088983553732356374">Hiermee kun je instellen of websites lokaal gegevens mogen instellen. Het instellen van lokale gegevens kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
@@ -1285,7 +1280,6 @@
       Als dit is gespecificeerd, wordt een queryparameter met de naam 'restrict' toegevoegd aan de URL die wordt gebruikt om de seed voor varianten op te halen. De waarde van de parameter is de waarde die wordt opgegeven in dit beleid.
 
       Als dit niet is gespecificeerd, wordt de URL voor de seed voor varianten niet aangepast.</translation>
-<translation id="5564962323737505851">Hiermee wordt Wachtwoordbeheer geconfigureerd. Als Wachtwoordbeheer is ingeschakeld, kun je specificeren of de gebruiker opgeslagen wachtwoorden als leesbare tekst mag weergeven.</translation>
 <translation id="556941986578702361">Het automatisch verbergen van het <ph name="PRODUCT_OS_NAME" />-archief beheren.
 
       Als dit beleid is ingesteld op 'AlwaysAutoHideShelf', wordt het archief altijd automatisch verborgen.
@@ -1397,7 +1391,6 @@
 <translation id="5893553533827140852">Als deze instelling is ingeschakeld, worden gnubby-verificatieverzoeken verzonden via een proxy met een externe hostverbinding.
 
           Als deze instelling uitgeschakeld of niet geconfigureerd is, worden gnubby-verificatieverzoeken niet via een proxy verzonden.</translation>
-<translation id="5912364507361265851">Gebruikers toestaan wachtwoorden weer te geven in Wachtwoordbeheer</translation>
 <translation id="5921713479449475707">Downloads voor automatische updates via HTTP toestaan</translation>
 <translation id="5921888683953999946">De standaardstatus van de toegankelijkheidsfunctie 'Grote muisaanwijzer' op het inlogscherm instellen.
 
@@ -2026,6 +2019,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7882585827992171421">Dit beleid is alleen actief in de commerciële modus.
 
       Hiermee bepaal je de ID van de extensie die moet worden gebruikt als schermbeveiliging voor het inlogvenster. De extensie moet onderdeel zijn van het AppPack dat is geconfigureerd voor dit domein via het beleid DeviceAppPack.</translation>
+<translation id="7882890448959833986">De waarschuwing voor een niet-ondersteund besturingssysteem negeren</translation>
 <translation id="7912255076272890813">Toegestane typen apps/extensies configureren</translation>
 <translation id="793134539373873765">Specificeert of p2p wordt gebruikt voor netto-updateladingen voor het besturingssysteem. Als dit is ingesteld op 'Waar', proberen apparaten netto-updateladingen (payloads) op te halen via het LAN, waardoor bandbreedtegebruik en vertraging kunnen worden verminderd. Als de netto-updatelading niet beschikbaar is via het LAN, gaat het apparaat over tot downloaden via een updateserver. Als deze instelling is ingesteld op 'Niet waar' of niet is geconfigureerd, wordt 2p2 niet gebruikt.</translation>
 <translation id="7933141401888114454">Maken van bewaakte gebruikers inschakelen</translation>
@@ -2088,6 +2082,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als het beleid is ingesteld op 'onwaar' (false), wordt de interfacelijst niet gerapporteerd.</translation>
 <translation id="8146727383888924340">Gebruikers toestaan aanbiedingen in te wisselen via registratie van Chrome OS</translation>
+<translation id="8148785525797916822">Hiermee wordt de waarschuwing genegeerd die wordt weergegeven wanneer <ph name="PRODUCT_NAME" /> wordt uitgevoerd op een computer die of besturingssysteem dat niet meer wordt ondersteund.</translation>
 <translation id="8148901634826284024">De toegankelijkheidsfunctie Modus voor hoog contrast inschakelen.
 
           Als dit beleid op 'waar' is ingesteld, is de modus voor hoog contrast altijd ingeschakeld.

@@ -12,7 +12,6 @@
 <translation id="1073391069195728457">Chrome - 알림</translation>
 <translation id="1104959162601287462">Chrome OS 정보(&amp;C)</translation>
 <translation id="110877069173485804">나만의 Chrome</translation>
-<translation id="1225016890511909183">Chromium은 사용자의 정보를 안전하게 저장하므로 정보를 다시 입력할 필요가 없지만 향후 결제 시 카드의 보안 코드는 확인해야 합니다.</translation>
 <translation id="123620459398936149">Chrome OS에서 데이터를 동기화하지 못했습니다. 동기화 암호를 업데이트하세요.</translation>
 <translation id="127345590676626841">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다. 이 다운로드가 완료되면 Chrome이 다시 시작되며 계속 작업할 수 있습니다.</translation>
 <translation id="1302523850133262269">Chrome에서 최신 시스템 업데이트를 설치하는 동안 잠시 기다려 주세요.</translation>
@@ -37,6 +36,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS 사용에 대한 도움말</translation>
 <translation id="1818142563254268765">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 업데이트해야 합니다.</translation>
+<translation id="1864458292167284385">Chrome 앱 런처 서비스 중단 예정</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="2084710999043359739">Chrome에 추가</translation>
@@ -92,6 +92,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공했으나, Chromium에서 인증서 투명성 로그를 인식하지 못했습니다.</translation>
 <translation id="3889417619312448367">Chrome 제거</translation>
+<translation id="396182988103551265">앱에 계속 액세스하려면 Chrome 북마크바의 <ph name="APPS_ICON_IMAGE" /> 단축키를 사용하세요.</translation>
 <translation id="4042449298237264661">Windows XP와 Windows Vista가 더 이상 지원되지 않으므로 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
@@ -106,7 +107,6 @@
 <translation id="4407807842708586359">Chrome OS</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
 <translation id="4480040274068703980">로그인 중 오류가 발생하여 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
-<translation id="4513711165509885787">결제 세부정보가 Chrome에 저장되었습니다.</translation>
 <translation id="4561051373932531560">Chrome을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="4631713731678262610">Chrome 메뉴에서 숨기기</translation>

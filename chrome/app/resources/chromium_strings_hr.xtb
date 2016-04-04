@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Zatvorite sve prozore u Chromiumu (uključujući i one u načinu sustava Windows 8) i pokušajte ponovo.</translation>
 <translation id="1708666629004767631">Dostupna je nova, sigurnija verzija preglednika Chromium.</translation>
 <translation id="1725059042853530269">Datoteka <ph name="FILE_NAME" /> može uzrokovati štetu prilikom pregledavanja, pa ju je Chromium blokirao.</translation>
-<translation id="1745962126679160932">Chromium će pohraniti vaše podatke na siguran način tako da ih ne morate ponovo unositi, ali ćete prilikom budućih plaćanja i dalje morati potvrđivati sigurnosni kôd kartice.</translation>
 <translation id="1774152462503052664">Neka Chromium radi u pozadini</translation>
 <translation id="1779356040007214683">Kako bismo Chromium učinili sigurnijim, onemogućili smo neka proširenja koja nisu navedena u trgovini <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i možda su dodana bez vašeg znanja.</translation>
 <translation id="1808667845054772817">Ponovo instaliraj Chromium</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium ne reagira. Ponovo pokrenuti sada?</translation>
 <translation id="1967743265616885482">Modul s tim nazivom već je bio u konfliktu s preglednikom Chromium.</translation>
 <translation id="2077129598763517140">Upotrijebi hardversko ubrzanje kada je dostupno</translation>
+<translation id="2103655854491303969">Povlačimo Pokretač aplikacija za Chromium.</translation>
 <translation id="2117181891440368863">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj, no nisu bile važeće.</translation>
 <translation id="2119636228670142020">O OS-u &amp;Chromium</translation>
 <translation id="2158734852934720349">Licence otvorenog izvornog koda OS-a Chromium</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">OS Chromium nije mogao sinkronizirati podatke vašeg računa jer su pojedinosti prijave na račun zastarjele.</translation>
 <translation id="2558641060352364164">Web-lokacija upotrebljava dodatak Chromium Frame koji se uskoro više neće podržavati. Deinstalirajte ga i nadogradite na suvremeni preglednik.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
+<translation id="2595977381794111014">Svojim aplikacijama možete pristupati pomoću prečaca <ph name="APPS_ICON_IMAGE" /> na traci oznaka u Chromiumu.</translation>
 <translation id="2602806952220118310">Chromium – obavijesti</translation>
 <translation id="2636877269779209383">Chromium treba imati pristup kameri da bi je dijelio s ovom web-lokacijom.</translation>
 <translation id="2648074677641340862">Došlo je do pogreške operativnog sustava tijekom instalacije. Ponovo preuzmite Chromium.</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">Za taj se modul već zna da je u konfliktu s Chromiumom.</translation>
 <translation id="4423735387467980091">Prilagodite Chromium i upravljajte njime</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
-<translation id="4488676065623537541">Vaše pojedinosti o naplati spremljene su u Chromium.</translation>
 <translation id="4549794359424059447">Buduće verzije Chromiuma više neće podržavati sustave Windows XP i Windows Vista.</translation>
 <translation id="4567424176335768812">Prijavljeni ste kao <ph name="USER_EMAIL_ADDRESS" />. Sada možete pristupiti svojim oznakama, povijesti i drugim postavkama na svim uređajima na kojima se prijavljujete.</translation>
 <translation id="457845228957001925">Važne informacije o vašim podacima u sustavu Chromium</translation>

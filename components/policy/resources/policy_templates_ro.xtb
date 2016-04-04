@@ -805,7 +805,6 @@
 <translation id="402759845255257575">Nu permite niciunui site să ruleze JavaScript</translation>
 <translation id="4027608872760987929">Activează furnizorul de căutare prestabilit</translation>
 <translation id="4039085364173654945">Stabilește dacă subconținutul terță parte dintr-o anumită pagină poate afișa într-o ferestră de tip pop-up o casetă de dialog pentru autentificarea HTTP de bază. De obicei, aceasta este dezactivată ca măsură de precauție împotriva atacurilor de tip phishing. Dacă această politică nu este setată, această funcție este dezactivată, iar subconținutul terță parte nu va avea permisiunea de a afișa într-o ferestră de tip pop-up o casetă de dialog pentru autentificarea HTTP de bază.</translation>
-<translation id="4052765007567912447">Stabilește dacă utilizatorul poate afișa parolele în text clar în managerul de parole. Dacă dezactivați această setare, nu se permite afișarea în text clar în fereastra managerului de parole a parolelor stocate. Dacă activați sau nu configurați această setare, utilizatorii pot vedea în text clar parolele în managerul de parole.</translation>
 <translation id="4056910949759281379">Dezactivează protocolul SPDY</translation>
 <translation id="4088589230932595924">Modul incognito a fost impus</translation>
 <translation id="4088983553732356374">Îți permite să setezi dacă site-urile au permisiunea de a seta date locale. Setarea datelor locale poate fi permisă sau refuzată în bloc pentru toate site-urile.
@@ -1163,7 +1162,6 @@
       Dacă este specificată, politica va adăuga un parametru de interogare numit „restrict” la adresa URL utilizată pentru preluarea valorii de bază pentru variante. Valoarea parametrului va fi valoarea specificată în această politică.
 
       Dacă nu este specificată, politica nu va modifica adresa URL a valorii de bază pentru variante.</translation>
-<translation id="5564962323737505851">Configurează managerul de parole. Dacă managerul de parole este activat, poți opta să activezi sau să dezactivezi posibilitatea unui utilizator de a afișa parolele stocate ca text simplu.</translation>
 <translation id="556941986578702361">Controlați ascunderea automată a raftului <ph name="PRODUCT_OS_NAME" />.
 
       Dacă această politică este setată la „AlwaysAutoHideShelf”, raftul va fi întotdeauna ascuns automat.
@@ -1268,7 +1266,6 @@
 <translation id="5893553533827140852">Dacă această setare este activată, solicitările de autentificare gnubby vor fi trimise printr-un proxy folosindu-se o conexiune a gazdei la distanță.
 
           Dacă această setare este dezactivată sau nu este configurată, solicitările de autentificare gnubby nu vor fi trimise printr-un proxy.</translation>
-<translation id="5912364507361265851">Permite utilizatorilor să afișeze parolele în managerul de parole</translation>
 <translation id="5921713479449475707">Permite descărcarea actualizărilor automate prin HTTP</translation>
 <translation id="5921888683953999946">Setați funcția de accesibilitate pentru cursorul mare ca stare prestabilită pe ecranul de conectare.
 
@@ -1422,6 +1419,7 @@
       Dacă dezactivezi această setare, utilizatorii nu vor avea permisiunea să folosească Smart Lock.
 
       Dacă politica nu este configurată, în mod prestabilit, permisiunea nu este acordată utilizatorilor gestionați de companie și este acordată utilizatorilor care nu sunt gestionați.</translation>
+<translation id="6491139795995924304">Permite Bluetooth pe dispozitiv</translation>
 <translation id="6513756852541213407">Vă permite să specificați serverul proxy utilizat de <ph name="PRODUCT_NAME" /> și împiedică modificarea setărilor de proxy de către utilizatori. Dacă alegeți să nu utilizați niciodată un server proxy și să vă conectați întotdeauna în mod direct, toate celelalte opțiuni sunt ignorate. Dacă alegeți să utilizați setările proxy-ului pentru sistem sau detectarea automată a serverului proxy, toate celelalte opțiuni sunt ignorate. Dacă alegeți modul server proxy fix, puteți specifica opțiuni suplimentare în „Adresa IP sau adresa URL a serverului proxy” și „Lista cu valori separate prin virgulă a regulilor de ocolire a proxy-ului”. Dacă alegeți să utilizați un script .pac pentru proxy, trebuie să specificați adresa URL a scriptului în „Adresa URL a unui fișier .pac pentru proxy”. Pentru exemple detaliate, accesați: <ph name="PROXY_HELP_URL" /> Dacă activați această setare, <ph name="PRODUCT_NAME" /> ignoră toate opțiunile legate de serverul proxy specificate din linia de comandă. Dacă această politică rămâne nesetată, utilizatorii vor putea să aleagă ei înșiși setările de proxy.</translation>
 <translation id="6520802717075138474">Importați motoarele de căutare din browserul prestabilit, la prima rulare</translation>
 <translation id="653608967792832033">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este blocat atunci când dispozitivul funcționează pe baterie.
@@ -1652,6 +1650,11 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă politica „RestoreOnStartup” este setată pentru restabilirea adreselor URL din sesiunile anterioare, această politică nu va fi respectată, iar cookie-urile vor fi stocate permanent pentru site-urile respective.</translation>
 <translation id="7207095846245296855">Impune Căutarea sigură Google</translation>
+<translation id="7213425178181578730">Dacă această politică este dezactivată, <ph name="PRODUCT_OS_NAME" /> va dezactiva conexiunea Bluetooth, iar utilizatorul nu o va putea reactiva.
+
+      Dacă această politică este activată sau nu este configurată, utilizatorul va putea activa sau dezactiva conexiunea Bluetooth după cum dorește.
+
+      Dacă această politică este configurată, utilizatorul nu o poate modifica sau ignora.</translation>
 <translation id="7216442368414164495">Permite utilizatorilor să activeze raportarea detaliată privind Navigarea sigură</translation>
 <translation id="7227967227357489766">Această politică definește lista de utilizatori care au permisiunea de a se conecta la dispozitiv. Intrările sunt de forma <ph name="USER_WHITELIST_ENTRY_FORMAT" />, cum ar fi <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Pentru a accepta utilizatori arbitrari pe un anumit domeniu, utilizați intrări de forma <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
@@ -1825,6 +1828,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7882585827992171421">Această politică este activă numai în modul Vânzare.
 
       Politica stabilește codul extensiei de utilizat ca screen saver pentru ecranul de conectare. Extensia trebuie să facă parte din pachetul de aplicații care este configurat pentru acest domeniu prin intermediul politicii DeviceAppPack.</translation>
+<translation id="7882890448959833986">Elimină avertismentul privind sistemul de operare neacceptat</translation>
 <translation id="7912255076272890813">Configurați tipurile de aplicații/extensii permise</translation>
 <translation id="793134539373873765">Specifică dacă trebuie utilizată o rețea p2p pentru încărcările utile ale actualizărilor sistemului de operare. Dacă politica este activată, dispozitivele vor utiliza în comun și vor încerca să consume încărcările utile ale actualizărilor în rețeaua LAN, ceea ce ar putea reduce utilizarea lățimii de bandă de internet și ar evita congestionarea traficului. Dacă încărcarea utilă a actualizărilor nu este disponibilă în rețeaua LAN, dispozitivul va utiliza pentru descărcare un server cu actualizări. Dacă politica nu este activată sau nu este configurată, nu va fi utilizată o rețea p2p.</translation>
 <translation id="7933141401888114454">Permiteți crearea de utilizatori monitorizați</translation>
@@ -1882,6 +1886,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă politica este dezactivată, lista cu interfețe nu va fi raportată.</translation>
 <translation id="8146727383888924340">Permiteți utilizatorilor să valorifice oferte prin înregistrarea sistemului de operare Chrome</translation>
+<translation id="8148785525797916822">Elimină avertismentul care apare când <ph name="PRODUCT_NAME" /> rulează pe un computer sau pe un sistem de operare care nu mai este acceptat.</translation>
 <translation id="8148901634826284024">Activați funcția de accesibilitate pentru modul de contrast ridicat.
 
           Dacă această politică este activată, modul de contrast ridicat va fi întotdeauna activat.

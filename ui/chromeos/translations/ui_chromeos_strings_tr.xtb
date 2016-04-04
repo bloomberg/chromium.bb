@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Tebrikler! '<ph name="NAME" />' veri hizmetiniz etkinleştirildi ve kullanıma hazır.</translation>
 <translation id="2649120831653069427">Gökkuşağı Balığı</translation>
 <translation id="2670531586141364277">'<ph name="NAME" />' ağının etkinleştirilmesi için ağ bağlantısı gereklidir.</translation>
+<translation id="277257480934873581"><ph name="NAME" /> ile yeniden bağlantı kuruluyor</translation>
 <translation id="2894654529758326923">Bilgiler</translation>
 <translation id="2951236788251446349">Denizanası</translation>
 <translation id="2966449113954629791">Mobil veri kullanım hakkınızı doldurmuş olabilirsiniz. Daha fazla veri satın almak için <ph name="NAME" /> etkinleştirme portalını ziyaret edin.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP başarısız oldu</translation>
 <translation id="8372369524088641025">Hatalı WEP anahtarı</translation>
 <translation id="8454013096329229812">Kablosuz açık.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Yeniden bağlanılıyor...</translation>
 <translation id="8688591111840995413">Yanlış şifre</translation>
 <translation id="8714406895390098252">Bisiklet</translation>
 <translation id="8808686172382650546">Kedi</translation>

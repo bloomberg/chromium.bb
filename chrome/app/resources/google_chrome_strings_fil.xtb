@@ -12,7 +12,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1073391069195728457">Chrome - Mga Notification</translation>
 <translation id="1104959162601287462">Tungkol sa &amp;Chrome OS</translation>
 <translation id="110877069173485804">Ito ang iyong Chrome</translation>
-<translation id="1225016890511909183">Secure na iiimbak ng Chrome ang iyong impormasyon upang hindi mo na ito kailangang i-type muli, ngunit kakailanganin mo pa ring i-verify ang panseguridad na code ng iyong card para sa mga pagbabayad sa hinaharap.</translation>
 <translation id="123620459398936149">Hindi ma-sync ng Chrome OS ang iyong data. Paki-update ang iyong Passphrase sa pag-sync.</translation>
 <translation id="127345590676626841">Awtomatikong nag-a-update ang Chrome upang palagi kang may pinakabagong bersyon. Kapag nakumpleto ang pag-download na ito, magre-restart ang Chrome at makakapagpatuloy ka na.</translation>
 <translation id="1302523850133262269">Mangyaring maghintay habang ini-install ng Chrome ang mga pinakabagong update sa system.</translation>
@@ -37,6 +36,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Kumuha ng tulong sa paggamit ng Chrome OS</translation>
 <translation id="1818142563254268765">Hindi ma-update ng Chrome ang sarili nito patungo sa pinakabagong bersyon, kaya napapalampas mo ang mahuhusay na bagong feature at pag-aayos sa seguridad. Kailangan mong i-update ang Chrome.</translation>
+<translation id="1864458292167284385">Umaalis na ang Chrome App Launcher.</translation>
 <translation id="1877026089748256423">Luma na ang Chrome</translation>
 <translation id="2077129598763517140">Gamitin ang pagpapabilis ng hardware kapag available</translation>
 <translation id="2084710999043359739">Idagdag sa Chrome</translation>
@@ -92,6 +92,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Nagbigay ang server ng impormasyon tungkol sa Certificate Transparency, ngunit hindi natukoy ng Chrome ang alinman sa mga log ng Certificate Transparency</translation>
 <translation id="3889417619312448367">I-uninstall ang Google Chrome</translation>
+<translation id="396182988103551265">Gamitin ang shortcut ng <ph name="APPS_ICON_IMAGE" /> sa Chrome bookmarks bar upang patuloy na ma-access ang iyong mga app.</translation>
 <translation id="4042449298237264661">Hindi na makakatanggap ang computer na ito ng mga update sa Google Chrome dahil hindi na sinusuportahan ang Windows XP at Windows Vista.</translation>
 <translation id="4050175100176540509">May available na mahahalagang pagpapahusay sa seguridad at mga bagong feature sa pinakabagong bersyon.</translation>
 <translation id="4053720452172726777">I-customize at kontrolin ang Google Chrome</translation>
@@ -106,7 +107,6 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
 <translation id="4480040274068703980">Hindi ma-sync ng Chrome OS ang iyong data dahil sa isang error sa pagsa-sign in.</translation>
-<translation id="4513711165509885787">Na-save na sa Chrome ang iyong mga detalye ng pagsingil.</translation>
 <translation id="4561051373932531560">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
 <translation id="4567424176335768812">Naka-sign in ka bilang <ph name="USER_EMAIL_ADDRESS" />. Maaari mo na ngayong i-access ang iyong mga bookmark, kasaysayan, at iba pang setting sa lahat ng iyong device na naka-sign in.</translation>
 <translation id="4631713731678262610">Itago sa menu ng Chrome</translation>

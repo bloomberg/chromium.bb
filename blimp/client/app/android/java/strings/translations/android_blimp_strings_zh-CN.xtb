@@ -12,9 +12,10 @@
 <translation id="4542350224991263059">无法获取任务，因为用户访问令牌已过期。</translation>
 <translation id="4562971394107096647">无法获取任务，因为出现了服务器错误。</translation>
 <translation id="4641972508298030550">无法对用户进行身份验证。</translation>
+<translation id="5184329579814168207">在 Chrome 中打开</translation>
 <translation id="5860346505531085166">无法获取任务，因为相关帐户无访问权限。</translation>
 <translation id="704835510384979817">无法获取任务，因为没有相符的引擎版本。</translation>
-<translation id="7536363920335771251">引擎已断开，原因是：%1$s</translation>
+<translation id="7536363920335771251">引擎已断开，原因：%1$s</translation>
 <translation id="7961542533680218955">已成功获取任务。</translation>
 <translation id="8514856595257368555">已检索到令牌。</translation>
 </translationbundle>

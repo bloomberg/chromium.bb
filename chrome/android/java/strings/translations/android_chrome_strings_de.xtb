@@ -31,11 +31,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="138361230106469022">Hallo <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1389974829397082527">Keine Lesezeichen vorhanden</translation>
-<translation id="1390350022570422499">Mit Chrome werden Ihnen nun über Bluetooth Webseiten in Ihrer Nähe angezeigt.
-
-Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Seiten werden durch einen Google-Dienst überprüft, um die Qualität der Seitenergebnisse zu verbessern.
-
-Über die Chrome-Datenschutzeinstellungen können Sie das Physical Web verwalten.</translation>
 <translation id="1404122904123200417">Eingebettet in <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Do Not Track"</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, da die Datei bereits vorhanden ist.</translation>
@@ -78,6 +73,7 @@ Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Se
 <translation id="1974060860693918893">Erweitert</translation>
 <translation id="1984937141057606926">Zugelassen, außer Cookies Dritter</translation>
 <translation id="1994173015038366702">Website-URL</translation>
+<translation id="2001120796168634316">Verlinkte Seite für später speichern</translation>
 <translation id="200669432486043882">Datei ersetzen</translation>
 <translation id="2038563949887743358">"Desktop-Version anfordern" aktivieren</translation>
 <translation id="2073235970478114994">Bilder laden</translation>
@@ -96,7 +92,6 @@ Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Se
 <translation id="2268044343513325586">Verfeinern</translation>
 <translation id="2315043854645842844">Die clientseitige Zertifikatauswahl wird vom Betriebssystem nicht unterstützt.</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
-<translation id="2319528413610359757">Für Leser von <ph name="PUBLISHER" /></translation>
 <translation id="2321958826496381788">Ziehen Sie den Schieberegler, bis Sie diesen Text problemlos lesen können. Nach dem Doppeltippen auf einen Abschnitt sollte der Text mindestens so groß sein.</translation>
 <translation id="2329597144923131178">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
 <translation id="2343328333327081434">Wird installiert…</translation>
@@ -136,6 +131,7 @@ Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Se
 <translation id="2762000892062317888">gerade eben</translation>
 <translation id="2770465223704140727">Aus Liste entfernen</translation>
 <translation id="278029852808208386">Keine Bluetooth-Geräte gefunden. <ph name="BEGIN_LINK" />Wiederholen Sie die Suche.<ph name="END_LINK" /></translation>
+<translation id="2811892995384186721">Ihr Gerät ist nicht zu sehen? <ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="2836148919159985482">Tippen Sie zum Beenden des Vollbildmodus auf die Zurück-Taste.</translation>
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2870560284913253234">Website</translation>
@@ -199,7 +195,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3672452749423051839">Vorschläge bei Navigationsfehlern</translation>
 <translation id="3732088672634061408">Interessen konnten nicht abgerufen werden.</translation>
 <translation id="3738139272394829648">Zum Suchen tippen</translation>
-<translation id="3774280986422214650">Wenn Sie diese Funktion aktivieren, werden HTTPS-Seiten experimentell über Google-Proxy-Server geleitet.</translation>
 <translation id="3809549525127675114">"<ph name="VIDEO_TITLE" />" vollständig abgespielt</translation>
 <translation id="3828029223314399057">In Lesezeichen suchen</translation>
 <translation id="3871171699884605801">Der Browserverlauf kann nicht über ein Kinderkonto gelöscht werden.</translation>
@@ -214,7 +209,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3992315671621218278">Link speichern</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4035611068038188272">Lesezeichen belegen momentan <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> Speicherplatz.</translation>
-<translation id="403659016947612156">Physical Web-Seiten in der Nähe vorhanden</translation>
 <translation id="4042870126885713738">Vorschläge einblenden, wenn eine Webadresse nicht gefunden oder keine Verbindung hergestellt werden kann</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
@@ -274,7 +268,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4816465935029283692">Datentypen</translation>
 <translation id="4827948050554950725">Kreditkarte hinzufügen</translation>
 <translation id="4836364883164334657">Ihre Verbindung zu dieser Website ist nicht sicher. Unbefugte Dritte könnten versuchen, Ihre Informationen von <ph name="DOMAIN_NAME" /> zu stehlen, etwa Fotos, Passwörter, Nachrichten oder Kreditkartendaten.</translation>
-<translation id="4842511359652954519">Mehr anzeigen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4875622588773761625">Soll <ph name="PASSWORD_MANAGER_BRAND" /> Ihr Passwort für diese Website aktualisieren?</translation>
 <translation id="4881695831933465202">Öffnen</translation>
@@ -287,7 +280,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="497421865427891073">Weiter</translation>
 <translation id="4996978546172906250">Teilen über</translation>
 <translation id="5000922062037820727">Blockiert (empfohlen)</translation>
-<translation id="5014582685689328551">Sie können sich diese mit Chrome ansehen.</translation>
 <translation id="5016205925109358554">Serifenschrift</translation>
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5040262127954254034">Datenschutz</translation>
@@ -322,7 +314,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5308933389783727448">Gespeicherte Seiten durchsuchen</translation>
 <translation id="5313967007315987356">Website hinzufügen</translation>
 <translation id="5317780077021120954">Speichern</translation>
-<translation id="5323972449344932352">Chrome starten</translation>
 <translation id="5324858694974489420">Jugendschutzeinstellungen</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> gelöscht</translation>
@@ -401,7 +392,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
-<translation id="6208263165776660488">Die Chrome-Tabs sind umgezogen.</translation>
 <translation id="6231464350722415003">JavaScript wird auf von Ihnen angegebenen Websites ausgeführt und auf allen anderen Websites blockiert.</translation>
 <translation id="6232535412751077445">Wenn Sie das Kästchen "Do Not Track" anklicken, wird mit Ihren Browserzugriffen eine Anforderung gesendet. Wie sich diese Anforderung auswirkt, hängt davon ab, ob eine Website darauf reagiert und wie die Anforderung interpretiert wird.
 
@@ -490,9 +480,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> zeigt Ihnen lokale Suchergebnisse basierend auf Ihrem Standort.</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />Hilfe<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">Lesezeichen löschen</translation>
-<translation id="7324738665594301612">Wir testen die experimentelle Verwendung von Google-Proxy-Servern für HTTPS-Seiten.</translation>
 <translation id="7346217184097589238">Gespeicherte Website-Einstellungen werden nicht gelöscht und können möglicherweise Ihre Surfgewohnheiten wiedergeben.</translation>
-<translation id="7346909386216857016">OK</translation>
 <translation id="7347770551817603360">Offlineinhalt</translation>
 <translation id="7363354739009474003">"<ph name="VIDEO_TITLE" />" wird geladen.</translation>
 <translation id="7366340029385295517">Übertragung an <ph name="SCREEN_NAME" /></translation>
@@ -515,7 +503,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7596558890252710462">Betriebssystem</translation>
 <translation id="7599840151813361502">Sie werden nicht von Ihren <ph name="BEGIN_LINK" />Google-Konten<ph name="END_LINK" /> abgemeldet.</translation>
-<translation id="7603403729818446828">Auf dem Übersichtsbildschirm Ihres Smartphones sehen Sie Ihre Tabs mit anderen kürzlich verwendeten Apps. Sie können diese Funktion in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> anpassen.</translation>
 <translation id="7607002721634913082">Angehalten</translation>
 <translation id="7612619742409846846">Bei Google angemeldet als</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> konnte aufgrund von Netzwerkfehlern nicht heruntergeladen werden.</translation>
@@ -564,6 +551,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="8173098127580644436">für den gesamten Zeitraum</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
 <translation id="8209050860603202033">Bild öffnen</translation>
+<translation id="8215250379351058554"><ph name="SITE" /> möchte eine Verbindung herstellen mit:</translation>
 <translation id="8218346974737627104">Anmeldung bestätigen</translation>
 <translation id="8218934717680664417">Jetzt durch einfaches Tippen suchen</translation>
 <translation id="8223946939421658889">Daten löschen</translation>

@@ -789,7 +789,6 @@
 <translation id="402759845255257575">不允許任何網站執行 JavaScript</translation>
 <translation id="4027608872760987929">啟用預設搜尋引擎</translation>
 <translation id="4039085364173654945">控制是否允許網頁上的第三方附屬內容彈出「HTTP 基本驗證」對話方塊。為了防止網路釣魚，這項功能通常會停用。如果未設定這項政策，系統會停用這項功能，並且不允許第三方附屬內容彈出「HTTP 基本驗證」對話方塊。</translation>
-<translation id="4052765007567912447">控制使用者是否要在密碼管理員中以清楚文字顯示密碼。如果您停用這項設定，密碼管理員就不會允許在密碼管理員視窗中以清楚文字顯示儲存的密碼。如果您啟用或未設定這項政策，使用者即可在密碼管理員中查看到清楚的密碼文字。</translation>
 <translation id="4056910949759281379">停用 SPDY 通訊協定</translation>
 <translation id="4088589230932595924">強制使用無痕模式</translation>
 <translation id="4088983553732356374">可讓您設定是否允許網站設定本機資料。您可以允許所有網站都能設定本機資料，也可以禁止所有網站設定本機資料。
@@ -1143,7 +1142,6 @@
       如果指定這項政策，系統在連結變異版本種子的擷取網址時，會加入「restrict」這個查詢參數。參數值即為這項政策中指定的值。
 
       如果未指定這項政策，則系統不會修改變異版本種子網址。</translation>
-<translation id="5564962323737505851">設定密碼管理員。如果已啟用密碼管理員，那麼您就能選擇是否要允許使用者以純文字顯示儲存密碼。</translation>
 <translation id="556941986578702361">設定 <ph name="PRODUCT_OS_NAME" /> 檔案櫃的自動隱藏功能。
 
       如果您將這項政策設為「AlwaysAutoHideShelf」，檔案櫃就會一律自動隱藏。
@@ -1249,7 +1247,6 @@
 <translation id="5893553533827140852">啟用這項設定時，系統將透過遠端主機連線以 Proxy 處理 gnubby 驗證要求。
 
           如果停用或不設定這項設定，系統將不會以 Proxy 處理 gnubby 驗證要求。</translation>
-<translation id="5912364507361265851">允許使用者在密碼管理員中顯示密碼</translation>
 <translation id="5921713479449475707">允許透過 HTTP 自動更新下載</translation>
 <translation id="5921888683953999946">設定大型游標協助功能在登入畫面的預設狀態。
 
@@ -1806,6 +1803,7 @@
 <translation id="7882585827992171421">這項政策僅在零售模式下有效。
 
       決定使用擴充程式 ID 當做登入畫面的螢幕保護程式。該擴充功能必須屬於您透過 DeviceAppPack 政策為這個網域設定的 AppPack。</translation>
+<translation id="7882890448959833986">偵測到不支援的作業系統時不顯示警告</translation>
 <translation id="7912255076272890813">設定允許的應用程式/擴充功能類型</translation>
 <translation id="793134539373873765">指定是否使用 P2P 更新裝載作業系統。如果設為 True，裝置將會在 LAN 上共用並嘗試使用更新裝載，藉此降低網際網路頻寬用量及減輕壅塞。如果 LAN 上未提供更新裝載，裝置將回歸至更新伺服器進行下載。如果設為 False 或未設定，則不會使用 P2P。</translation>
 <translation id="7933141401888114454">啟用建立受監管使用者的功能</translation>
@@ -1862,6 +1860,7 @@
 
       如果這項政策設為 False，則不會回報介面清單。</translation>
 <translation id="8146727383888924340">允許使用者透過 Chrome OS Registration 兌換優惠</translation>
+<translation id="8148785525797916822">在我們已停止支援的電腦或作業系統執行 <ph name="PRODUCT_NAME" /> 時，不顯示警告訊息。</translation>
 <translation id="8148901634826284024">啟用高反差模式協助功能。
 
           如果您將這項政策設為 True，系統將一律啟用高反差模式。

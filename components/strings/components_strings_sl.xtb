@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Odpri zavihke</translation>
 <translation id="1753706481035618306">Številka strani</translation>
 <translation id="1763864636252898013">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; operacijski sistem vaše naprave ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
-<translation id="1775135663370355363">Prikaz zgodovine te naprave. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Posodobite geslo za sinhronizacijo.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
@@ -255,7 +254,6 @@
 <translation id="3462200631372590220">Skrij podrobnosti</translation>
 <translation id="3479539252931486093">Ali tega niste pričakovali? <ph name="BEGIN_LINK" />Sporočite nam<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Trenutno ni mogoče vzpostaviti stika s staršem. Poskusi znova pozneje.</translation>
-<translation id="3516765099410062445">Prikaz zgodovine naprav, v katere ste prijavljeni. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3528171143076753409">Potrdilo strežnika ni zaupanja vredno.</translation>
 <translation id="3539171420378717834">Ohrani kopijo te kartice v tej napravi</translation>

@@ -21,7 +21,6 @@
 <translation id="1699664235656412242">Sulgege kõik Chromiumi aknad (ka Windows 8 režiimis) ja proovige uuesti.</translation>
 <translation id="1708666629004767631">Saadaval on Chromiumi uus, turvalisem versioon.</translation>
 <translation id="1725059042853530269">Fail <ph name="FILE_NAME" /> võib teie kasutuskogemust sirvimisel kahjustada, seetõttu on Chromium selle blokeerinud.</translation>
-<translation id="1745962126679160932">Chromium salvestab turvaliselt teie teabe, nii et te ei pea seda uuesti sisestama, kuid peate ka tulevaste maksete puhul kinnitama oma kaardi turvakoodi.</translation>
 <translation id="1774152462503052664">Luba Chromiumil taustal töötada</translation>
 <translation id="1779356040007214683">Chromiumi turvalisemaks muutmiseks keelasime mõned laiendused, mida ei leidu veebipoes <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ja mille lisamisest te ei pruugi teadlik olla.</translation>
 <translation id="1808667845054772817">Installi Chromium uuesti</translation>
@@ -31,6 +30,7 @@
 <translation id="1929939181775079593">Chromium ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="1967743265616885482">Samanimeline moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
+<translation id="2103655854491303969">Lõpetame Chromiumi rakenduste käivitaja toe pakkumise.</translation>
 <translation id="2117181891440368863">Chromium kinnitas, et selle veebisaidi sertifikaadi andis välja väljaandja <ph name="ISSUER" />. Server esitas sertifikaadi läbipaistvuse teabe, aga see oli kehtetu.</translation>
 <translation id="2119636228670142020">Teave &amp;Chromium OS-i kohta</translation>
 <translation id="2158734852934720349">Chromium OS-i avatud lähtekoodi litsentsid</translation>
@@ -46,6 +46,7 @@
 <translation id="2535480412977113886">Chromium OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="2558641060352364164">See sait kasutab pistikprogrammi Chromium Frame, mille tugi peagi lõpeb. Desinstallige see ja täiendage moodsale brauserile.</translation>
 <translation id="2572494885440352020">Chromiumi abiline</translation>
+<translation id="2595977381794111014">Oma rakendustele pääsete edaspidi juurde Chromiumi järjehoidjate ribal oleva otsetee <ph name="APPS_ICON_IMAGE" /> kaudu.</translation>
 <translation id="2602806952220118310">Chromium – märguanded</translation>
 <translation id="2636877269779209383">Chromiumil on vaja kaamerale juurdepääsu selle jagamiseks saidiga.</translation>
 <translation id="2648074677641340862">Installimisel ilmnes operatsioonisüsteemi viga. Laadige Chromium uuesti alla.</translation>
@@ -100,7 +101,6 @@
 <translation id="4330585738697551178">See moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="4423735387467980091">Chromiumi kohandamine ja juhtimine</translation>
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
-<translation id="4488676065623537541">Teie arvelduse detailid on salvestatud Chromiumi.</translation>
 <translation id="4549794359424059447">Chromiumi tulevased versioonid ei toeta enam Windows XP-d ega Windows Vistat.</translation>
 <translation id="4567424176335768812">Olete sisse logitud aadressiga <ph name="USER_EMAIL_ADDRESS" />. Nüüd on teil juurdepääs oma järjehoidjatele, ajaloole ja muudele seadetele kõigis seadmetes, kuhu olete sisse logitud.</translation>
 <translation id="457845228957001925">Oluline teave teie Chromiumi andmete kohta</translation>

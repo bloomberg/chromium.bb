@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Felicitări! Serviciul de date „<ph name="NAME" />” a fost activat și este gata de utilizare.</translation>
 <translation id="2649120831653069427">Pește</translation>
 <translation id="2670531586141364277">Activarea rețelei „<ph name="NAME" />” necesită o conexiune la rețea.</translation>
+<translation id="277257480934873581">Se reconectează la <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informații</translation>
 <translation id="2951236788251446349">Meduză</translation>
 <translation id="2966449113954629791">Este posibil să fi epuizat datele mobile puse la dispoziție. Accesați portalul de activare <ph name="NAME" /> pentru a cumpăra mai multe date.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP nu a reușit</translation>
 <translation id="8372369524088641025">Cheie WEP greșită</translation>
 <translation id="8454013096329229812">Conexiunea Wi-Fi este activată.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: se reconectează...</translation>
 <translation id="8688591111840995413">Parolă greșită</translation>
 <translation id="8714406895390098252">Bicicletă</translation>
 <translation id="8808686172382650546">Pisică</translation>

@@ -12,7 +12,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1073391069195728457">Chrome - Arifa</translation>
 <translation id="1104959162601287462">Kuhusu &amp;Chrome OS</translation>
 <translation id="110877069173485804">Hii ndiyo Chrome yako</translation>
-<translation id="1225016890511909183">Chrome itahifadhi kwa usalama maelezo yako ili usihitaji kuyachapa tena, lakini bado utahitaji kudhibitisha msimbo wa usalama wa kadi yako kwa malipo siku za usoni.</translation>
 <translation id="123620459398936149">Mfumo wa Uendeshaji wa Chrome haukuweza kusawazisha data yako. Tafadhali sasisha kauli ya siri unayotumia Kusawazisha.</translation>
 <translation id="127345590676626841">Chrome husasisha kiotomatiki ili uwe na toleo jipya zaidi wakati wowote. Upakuaji huu unapokamilika, Chrome itajizima na kuwaka tena na utaanza kutumia.</translation>
 <translation id="1302523850133262269">Tafadhali subiri Chrome inaposakinisha sasisho mpya za mfumo.</translation>
@@ -37,6 +36,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pata msaada wa kutumia Chrome OS</translation>
 <translation id="1818142563254268765">Chrome haikuweza kupata toleo jipya, kwa hivyo unakosa vipengele vipya vizuri na marekebisho ya usalama. Unahitaji kupata toleo jipya la Chrome.</translation>
+<translation id="1864458292167284385">Kifungua Programu cha Chrome kinatoweka.</translation>
 <translation id="1877026089748256423">Toleo hili la Chrome limepitwa na wakati</translation>
 <translation id="2077129598763517140">Tumia uongezaji kasi wa maunzi wakati unapatikana</translation>
 <translation id="2084710999043359739">Ongeza kwenye Chrome</translation>
@@ -92,6 +92,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ilithibithisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii. Seva ilitoa maelezo ya Cheti cha Uwazi, lakini Chrome haikutambua kumbukumbu zozote za Cheti cha Uwazi.</translation>
 <translation id="3889417619312448367">Ondoa Google Chrome</translation>
+<translation id="396182988103551265">Tumia njia ya mkato ya <ph name="APPS_ICON_IMAGE" /> katika sehemu ya alamisho za Chrome ili uendelee kufikia programu zako.</translation>
 <translation id="4042449298237264661">Kompyuta hii haitapokea tena sasisho za Google Chrome kwa sababu Windows XP na Windows Vista hazitumiki tena.</translation>
 <translation id="4050175100176540509">Maboresho muhimu ya usalama na vipengele vipya vinapatikana katika toleo jipya.</translation>
 <translation id="4053720452172726777">Dhibiti  na ugeuze Google Chrome ikufae</translation>
@@ -106,7 +107,6 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Tafadhali toka na uingie tena ili mabadiliko haya yafanye kazi.</translation>
 <translation id="4480040274068703980">Mfumo wa Uendeshaji wa Chrome haukuweza kusawazisha data yako kutokana na hitilafu wakati wa kuingia katika akaunti.</translation>
-<translation id="4513711165509885787">Maelezo yako ya utozwaji yamehifadhiwa katika Chrome.</translation>
 <translation id="4561051373932531560">Google Chrome inakuwezesha kubofya nambari ya simu kwenye wavuti na kuipigia simu kwa Skype!</translation>
 <translation id="4567424176335768812">Umeingia katika akaunti kama <ph name="USER_EMAIL_ADDRESS" />. Sasa unaweza kupata alamisho, historia, na mipangilio yako mingine kwenye vifaa vyako vyote vilivyoingia katika akaunti.</translation>
 <translation id="4631713731678262610">Ficha katika menyu ya Chrome</translation>

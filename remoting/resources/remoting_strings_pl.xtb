@@ -24,11 +24,9 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="1546934824884762070">Wystąpił nieoczekiwany błąd. Zgłoś ten problem programistom.</translation>
 <translation id="1619813076098775562">Połączenie z urządzeniem Cast zostało zakończone.</translation>
 <translation id="1643640058022401035">Jeśli opuścisz tę stronę, sesja Chromoting zostanie zakończona.</translation>
-<translation id="1646994964686260497">Brak komputera zdalnego.</translation>
 <translation id="1654128982815600832">Włączam połączenia zdalne z tym komputerem…</translation>
 <translation id="170207782578677537">Nie udało się zarejestrować tego komputera.</translation>
 <translation id="1704090719919187045">Ustawienia hosta funkcji Chromoting</translation>
-<translation id="1738759452976856405">Zatrzymaj nagrywanie</translation>
 <translation id="174018511426417793">Nie masz zarejestrowanych komputerów. Aby umożliwić zdalne połączenia z komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij „<ph name="BUTTON_NAME" />”.</translation>
 <translation id="1742469581923031760">Łączę…</translation>
 <translation id="1770394049404108959">Nie mogę otworzyć aplikacji.</translation>
@@ -124,7 +122,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Zaloguj się</translation>
 <translation id="3989511127559254552">Aby przejść dalej, musisz najpierw przyznać rozszerzone uprawnienia dostępu do swojego komputera. Trzeba to zrobić tylko raz.</translation>
 <translation id="4006787130661126000">Jeśli chcesz korzystać z tego komputera przez Pulpit zdalny Chrome, musisz włączyć połączenia zdalne.</translation>
-<translation id="401121182145179743">Najpierw musisz skonfigurować funkcję dostępu zdalnego na komputerze.</translation>
 <translation id="4028465833180158312">• Zaktualizowano interfejs Material Design.
 • Dodano informacje o licencjach firm zewnętrznych.
 • Dodano wyświetlanie informacji o komputerach zdalnych, które są offline.</translation>
@@ -237,7 +234,6 @@ zdalnego Chrome</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Na pewno chcesz wyłączyć połączenia zdalne z: <ph name="HOSTNAME" />? Jeśli zmienisz zdanie, połączenia będzie trzeba włączyć na tamtym komputerze.</translation>
 <translation id="6998989275928107238">Do</translation>
-<translation id="7017806586333792422">Rozpocznij nagrywanie</translation>
 <translation id="7019153418965365059">Nieznany błąd hosta: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Pomoc zdalna</translation>
 <translation id="7038683108611689168">Pomóż nam udoskonalić Chromoting, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>

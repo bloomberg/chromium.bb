@@ -774,7 +774,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="402759845255257575">Não permitir que nenhum site execute o JavaScript</translation>
 <translation id="4027608872760987929">Ativar o provedor de pesquisa padrão</translation>
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros em uma página pode acionar pop-up de uma caixa de diálogo básica de autorização HTTP. Normalmente, esta função é desativada como proteção contra phishing. Se esta política não estiver definida, a função é desativada e o subconteúdo de terceiros não terá permissão para acionar pop-up de uma caixa de diálogo básica de autorização HTTP.</translation>
-<translation id="4052765007567912447">Controla se é permitido ao usuário mostrar senhas em texto não criptografado no gerenciador de senhas. Se desativar esta configuração, o gerenciador de senhas não permitirá a exibição de senhas armazenadas em texto não criptografado na janela do gerenciador de senhas. Se ativar ou não definir esta política, os usuários poderão visualizar suas senhas em texto não criptografado no gerenciador de senhas.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
 <translation id="4088589230932595924">Modo de navegação anônima forçado</translation>
 <translation id="4088983553732356374">Permite que você configure se os websites têm ou não permissão para definir dados locais. É possível permitir a configuração dos dados locais para todos os websites ou negá-la a todos eles.
@@ -1119,7 +1118,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se especificada, a política adicionará um parâmetro de consulta chamado "restrict" ao URL usado para buscar o termo-semente "Variações". O valor do parâmetro será o valor especificado nesta política.
 
       Se não for especificada, a política não modificará o URL do termo-semente "Variações".</translation>
-<translation id="5564962323737505851">Configura o gerenciador de senhas. Se o gerenciador de senhas estiver ativado, você poderá optar por ativar ou desativar a opção de o usuário poder mostrar as senhas armazenadas em texto não criptografado.</translation>
 <translation id="556941986578702361">Controla a ocultação automática da estante do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida como "AlwaysAutoHideShelf", a estante sempre será ocultada automaticamente.
@@ -1224,7 +1222,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="5893553533827140852">Quando essa configuração está ativada, as solicitações de autenticação gnubby são transmitidas por proxy por meio de uma conexão de host remoto.
 
            Se essa configuração não está ativada ou configurada, as solicitações de autenticação gnubby não são transmitidas por proxy.</translation>
-<translation id="5912364507361265851">Permitir que os usuários exibam senhas no gerenciador de senhas</translation>
 <translation id="5921713479449475707">Permitir atualização automática de downloads via HTTP</translation>
 <translation id="5921888683953999946">Definir o estado padrão do recurso de acessibilidade do cursor grande na tela de login.
 
@@ -1782,6 +1779,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7882585827992171421">Esta política só fica ativada em modo de varejo.
 
       Determina a identificação da extensão a ser usada como protetor de tela na tela de login. A extensão deve ser parte do AppPack configurado para este domínio por meio da política DeviceAppPack.</translation>
+<translation id="7882890448959833986">Remover o aviso de SO não compatível</translation>
 <translation id="7912255076272890813">Configurar tipos permitidos de aplicativo/extensão</translation>
 <translation id="793134539373873765">Especifica se p2p deve ser usado para cargas de atualização do sistema operacional. Se for definido como verdadeiro, os dispositivos compartilharão e tentarão consumir as cargas de atualização na LAN, possivelmente reduzindo o uso de largura de banda de Internet e o congestionamento. Se a carga de atualização não estiver disponível na LAN, o dispositivo voltará a fazer download a partir de um servidor de atualização. Se for definido como falso ou não for configurado, o p2p não será usado.</translation>
 <translation id="7933141401888114454">Ativar a criação de usuários supervisionados</translation>
@@ -1839,6 +1837,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se a política estiver definida como "False", a lista de interfaces não será informada.</translation>
 <translation id="8146727383888924340">Permitir que os usuários resgatem ofertas pelo Registro do Chrome OS</translation>
+<translation id="8148785525797916822">Remove o aviso que é exibido quando o <ph name="PRODUCT_NAME" /> é executado em um computador ou sistema operacional com o qual não é mais compatível.</translation>
 <translation id="8148901634826284024">Ativar o recurso de acessibilidade do modo de alto contraste.
 
           Se esta política for definida como "verdadeira", o modo de alto contraste estará sempre ativado.

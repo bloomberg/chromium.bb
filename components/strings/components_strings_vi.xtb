@@ -77,7 +77,6 @@
 <translation id="17513872634828108">Tab đang mở</translation>
 <translation id="1753706481035618306">Số trang</translation>
 <translation id="1763864636252898013">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành thiết bị của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
-<translation id="1775135663370355363">Hiển thị lịch sử từ thiết bị này. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="1783075131180517613">Vui lòng cập nhật cụm mật khẩu đồng bộ hóa của bạn.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
@@ -254,7 +253,6 @@
 <translation id="3462200631372590220">Ẩn chi tiết</translation>
 <translation id="3479539252931486093">Trang web này có như bạn mong đợi không? Hãy <ph name="BEGIN_LINK" />cho chúng tôi biết<ph name="END_LINK" /></translation>
 <translation id="3498215018399854026">Chúng tôi không thể liên lạc với cha mẹ của bạn vào thời điểm này. Vui lòng thử lại.</translation>
-<translation id="3516765099410062445">Hiển thị lịch sử từ các thiết bị mà bạn đã đăng nhập. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="3528171143076753409">Chứng chỉ của máy chủ không đáng tin cậy.</translation>
 <translation id="3539171420378717834">Giữ bản sao thẻ này trên thiết bị này</translation>
