@@ -14,10 +14,6 @@
     <org.chromium.chrome.browser.preferences.SearchEnginePreference
         android:key="search_engine"
         android:title="@string/prefs_search_engine"/>
-    <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.DocumentModePreference"
-        android:key="document_mode"
-        android:title="@string/tabs_and_apps_title" />
     <org.chromium.chrome.browser.preferences.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillPreferences"
         android:key="autofill_settings"

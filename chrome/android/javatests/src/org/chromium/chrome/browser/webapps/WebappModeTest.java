@@ -16,6 +16,7 @@ import android.view.View;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -229,7 +230,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      */
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
-    @MediumTest
+    @DisabledTest
     public void testWebappHandlesWindowOpenInDocumentMode() throws Exception {
         triggerWindowOpenAndWaitForDocumentLoad(ONCLICK_LINK, true);
     }
@@ -248,7 +249,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      */
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
-    @MediumTest
+    @DisabledTest
     public void testWebappHandlesSuppressedWindowOpenInDocumentMode() throws Exception {
         triggerWindowOpenAndWaitForDocumentLoad(HREF_NO_REFERRER_LINK, false);
     }

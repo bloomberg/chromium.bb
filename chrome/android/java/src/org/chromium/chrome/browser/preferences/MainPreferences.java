@@ -11,10 +11,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -24,7 +21,6 @@ import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
@@ -105,21 +101,6 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
             }
         });
         mSignInPreference.setEnabled(true);
-
-        // TODO(dfalcantara): Delete this preference entirely.  https://crbug.com/582539
-        Preference documentMode = findPreference(PREF_DOCUMENT_MODE);
-        boolean showDocumentToggle = FeatureUtilities.isDocumentModeEligible(getActivity());
-        if (CommandLine.getInstance().hasSwitch(
-                ChromeSwitches.ENABLE_FORCED_MIGRATION_TO_TABBED_MODE)) {
-            showDocumentToggle &=
-                    FeatureUtilities.isDocumentMode(ApplicationStatus.getApplicationContext());
-        }
-        if (showDocumentToggle) {
-            setOnOffSummary(documentMode,
-                    !DocumentModeManager.getInstance(getActivity()).isOptedOutOfDocumentMode());
-        } else {
-            getPreferenceScreen().removePreference(documentMode);
-        }
 
         ChromeBasePreference autofillPref =
                 (ChromeBasePreference) findPreference(PREF_AUTOFILL_SETTINGS);

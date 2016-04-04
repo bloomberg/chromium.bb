@@ -13,7 +13,6 @@ import android.preference.PreferenceManager;
 import android.util.Pair;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLine;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -21,7 +20,6 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -519,10 +517,7 @@ public class DocumentModeAssassin {
 
     /** @return Whether or not a migration to tabbed mode from document mode is necessary. */
     public boolean isMigrationNecessary() {
-        return (CommandLine.getInstance().hasSwitch(
-                        ChromeSwitches.ENABLE_FORCED_MIGRATION_TO_TABBED_MODE)
-                || FeatureUtilities.isForcedToMigrateToTabbedMode())
-               && FeatureUtilities.isDocumentMode(ApplicationStatus.getApplicationContext());
+        return FeatureUtilities.isDocumentMode(ApplicationStatus.getApplicationContext());
     }
 
     /** @return Context to use when grabbing SharedPreferences, Files, and other resources. */

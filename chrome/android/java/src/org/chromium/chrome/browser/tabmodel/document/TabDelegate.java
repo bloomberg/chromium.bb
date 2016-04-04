@@ -5,14 +5,11 @@
 package org.chromium.chrome.browser.tabmodel.document;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLine;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;
@@ -24,7 +21,6 @@ import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -167,29 +163,18 @@ public class TabDelegate extends TabCreator {
         assert !(type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
                 && asyncParams.getWebContents() != null);
 
-        Context context = ApplicationStatus.getApplicationContext();
-
-        boolean mayLaunchDocumentActivity = isAllowedToLaunchDocumentActivity(context);
-        assert mayLaunchDocumentActivity || (asyncParams.getWebContents() == null);
-
-        if (FeatureUtilities.isDocumentMode(context) && mayLaunchDocumentActivity) {
-            AsyncDocumentLauncher.getInstance().enqueueLaunch(mIsIncognito, parentId, asyncParams);
-        } else {
-            Intent intent = createNewTabIntent(asyncParams, parentId);
-            IntentHandler.startActivityForTrustedIntent(intent, context);
-        }
+        Intent intent = createNewTabIntent(asyncParams, parentId);
+        IntentHandler.startActivityForTrustedIntent(
+                intent, ApplicationStatus.getApplicationContext());
     }
 
     private Intent createNewTabIntent(AsyncTabCreationParams asyncParams, int parentId) {
-        Context context = ApplicationStatus.getApplicationContext();
-
-        // TODO(dfalcantara): Is it possible to get rid of this conditional?
         int assignedTabId = TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
         AsyncTabParamsManager.add(assignedTabId, asyncParams);
 
         Intent intent = new Intent(
                 Intent.ACTION_VIEW, Uri.parse(asyncParams.getLoadUrlParams().getUrl()));
-        intent.setClass(context, ChromeLauncherActivity.class);
+        intent.setClass(ApplicationStatus.getApplicationContext(), ChromeLauncherActivity.class);
         intent.putExtra(IntentHandler.EXTRA_TAB_ID, assignedTabId);
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
         intent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
@@ -206,13 +191,5 @@ public class TabDelegate extends TabCreator {
 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
-    }
-
-    /**
-     * @return Whether the TabDelegate is allowed to directly launch a DocumentActivity.
-     */
-    protected boolean isAllowedToLaunchDocumentActivity(Context context) {
-        return !CommandLine.getInstance().hasSwitch(
-                ChromeSwitches.ENABLE_FORCED_MIGRATION_TO_TABBED_MODE);
     }
 }

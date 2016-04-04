@@ -9,6 +9,7 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_D
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentModeTestBase;
@@ -16,6 +17,7 @@ import org.chromium.chrome.browser.document.DocumentModeTestBase;
 /**
  * Tests that DocumentActivity is hardware accelerated only high-end devices.
  */
+@DisabledTest
 public class DocumentActivityHWATest extends DocumentModeTestBase {
 
     @SmallTest

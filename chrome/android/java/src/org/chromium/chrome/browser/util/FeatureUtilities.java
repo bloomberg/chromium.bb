@@ -48,8 +48,6 @@ public class FeatureUtilities {
     private static String sCachedHerbFlavor;
     private static boolean sIsHerbFlavorCached;
 
-    private static Boolean sIsForcedToMigrate;
-
     /** Used to track if cached command line flags should be refreshed. */
     private static CommandLine.ResetListener sResetListener = null;
 
@@ -198,19 +196,6 @@ public class FeatureUtilities {
     }
 
     /**
-     * @return Whether or not users are being forced to migrate to tabbed mode.
-     */
-    public static boolean isForcedToMigrateToTabbedMode() {
-        if (sIsForcedToMigrate == null) {
-            Context context = ApplicationStatus.getApplicationContext();
-            sIsForcedToMigrate =
-                    ChromePreferenceManager.getInstance(context).getCachedIsForcedToMigrate();
-        }
-
-        return sIsForcedToMigrate;
-    }
-
-    /**
      * @return Which flavor of Herb is being tested.  See {@link ChromeSwitches#HERB_FLAVOR_ANISE}
      *         and its related switches.
      */
@@ -242,17 +227,6 @@ public class FeatureUtilities {
      */
     public static void cacheNativeFlags() {
         cacheHerbFlavor();
-
-        // Check whether the user is being forced to migrate.
-        CommandLine instance = CommandLine.getInstance();
-        boolean wasForcedToMigrate = isForcedToMigrateToTabbedMode();
-        boolean forceMigration = instance.hasSwitch(
-                ChromeSwitches.ENABLE_FORCED_MIGRATION_TO_TABBED_MODE);
-        if (wasForcedToMigrate != forceMigration) {
-            Context context = ApplicationStatus.getApplicationContext();
-            ChromePreferenceManager.getInstance(context).setCachedIsForcedToMigrate(forceMigration);
-            sIsForcedToMigrate = forceMigration;
-        }
     }
 
     /**

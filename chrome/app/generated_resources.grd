@@ -14574,12 +14574,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_ELDERBERRY" desc="CCT everywhere" translateable="false">
         ELDERBERRY: All View Intents in CCT v2
       </message>
-      <message name="IDS_FLAGS_FORCE_MIGRATION_TO_TABBED_MODE_NAME" desc="Name for the flag to force users into tabbed mode from document mode." translateable="false">
-        Force users into tabbed mode
-      </message>
-      <message name="IDS_FLAGS_FORCE_MIGRATION_TO_TABBED_MODE_DESCRIPTION" desc="Description for the flag to force users into tabbed mode from document mode." translateable="false">
-        If enabled, Chrome will automatically migrate users out of document mode and into tabbed mode when it launches.
-      </message>
       <message name="IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_NAME" desc="Name for the flag to enable tab switcher in document mode.">
         Enable tab switcher in document mode.
       </message>

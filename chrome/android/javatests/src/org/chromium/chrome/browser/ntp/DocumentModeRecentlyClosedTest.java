@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.document.DocumentActivity;
@@ -33,6 +34,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests that the "Recently closed" list of Tabs in the "Recent Tabs" menu is updated properly.
  */
+@DisabledTest
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
 

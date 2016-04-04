@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -125,12 +124,6 @@ public class EmbedContentViewActivity extends FullScreenActivity {
 
     @Override
     protected TabDelegate createTabDelegate(boolean incognito) {
-        return new TabDelegate(incognito) {
-            @Override
-            protected boolean isAllowedToLaunchDocumentActivity(Context context) {
-                // Catch a corner case where the user can bypass the ToS.  crbug.com/516645
-                return FirstRunFlowSequencer.checkIfFirstRunIsNecessary(context, false) == null;
-            }
-        };
+        return new TabDelegate(incognito);
     }
 }

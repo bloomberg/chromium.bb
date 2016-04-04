@@ -231,12 +231,6 @@ public abstract class ChromeSwitches {
             "disable-web-notification-custom-layouts";
 
     /**
-     * Forces a user down the document to tabbed mode migration pathway.
-     */
-    public static final String ENABLE_FORCED_MIGRATION_TO_TABBED_MODE =
-            "enable-forced-migration-to-tabbed-mode";
-
-    /**
      * Determines which of the Herb prototypes is being tested.
      * See about:flags for descriptions.
      */

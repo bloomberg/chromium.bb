@@ -19,6 +19,7 @@ import android.view.View;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -48,6 +49,7 @@ import java.util.List;
 /**
  * General tests for how Document mode Activities interact with each other.
  */
+@DisabledTest
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentModeTest extends DocumentModeTestBase {
     /** Opens a new page with a huge URL via window.open(). */

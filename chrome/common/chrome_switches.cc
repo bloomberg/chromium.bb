@@ -1309,8 +1309,6 @@ const char kTabManagementExperimentTypeDill[] =
     "tab-management-experiment-type-dill";
 const char kTabManagementExperimentTypeElderberry[] =
     "tab-management-experiment-type-elderberry";
-const char kEnableForcedMigrationToTabbedMode[] =
-    "enable-forced-migration-to-tabbed-mode";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_LINUX)

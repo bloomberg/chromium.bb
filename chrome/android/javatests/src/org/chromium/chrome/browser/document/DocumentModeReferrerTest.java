@@ -11,6 +11,7 @@ import android.os.Build;
 import android.provider.Browser;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
@@ -28,6 +29,7 @@ import java.util.concurrent.Callable;
  * Tests that Document mode handles referrers correctly.
  */
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+@DisabledTest
 public class DocumentModeReferrerTest extends DocumentModeTestBase {
     private static final int ACTIVITY_START_TIMEOUT = 1000;
 

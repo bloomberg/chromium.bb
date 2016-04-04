@@ -13,6 +13,7 @@ import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
@@ -31,6 +32,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
  * Integration tests in document mode for the BindingManager API. This test plants a mock
  * BindingManager implementation and verifies that the signals it relies on are correctly delivered.
  */
+@DisabledTest
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 public class BindingManagerInDocumentModeIntegrationTest extends DocumentModeTestBase {
     private static class MockBindingManager implements BindingManager {
