@@ -322,6 +322,8 @@ bool RtcpParser::ParseFeedbackCommon(base::BigEndianReader* reader,
   // Please note, this frame_id is still only 8-bit!
   cast_message_.ack_frame_id = last_frame_id;
 
+  cast_message_.missing_frames_and_packets.clear();
+  cast_message_.received_later_frames.clear();
   for (size_t i = 0; i < number_of_lost_fields; i++) {
     uint8_t frame_id;
     uint16_t packet_id;
