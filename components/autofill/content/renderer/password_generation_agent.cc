@@ -376,6 +376,8 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
     return false;
 
   const blink::WebInputElement* element = toWebInputElement(&web_element);
+  if (element && element->isPasswordField())
+    last_focused_password_element_ = *element;
   if (!element || *element != generation_element_)
     return false;
 
@@ -465,16 +467,10 @@ void PasswordGenerationAgent::HidePopup() {
 }
 
 void PasswordGenerationAgent::OnUserTriggeredGeneratePassword() {
-  blink::WebDocument doc = render_frame()->GetWebFrame()->document();
-  if (doc.isNull())
+  if (last_focused_password_element_.isNull())
     return;
 
-  blink::WebElement focused_element = doc.focusedElement();
-  const blink::WebInputElement* element = toWebInputElement(&focused_element);
-  if (!element || !element->isPasswordField())
-    return;
-
-  blink::WebFormElement form = element->form();
+  blink::WebFormElement form = last_focused_password_element_.form();
   scoped_ptr<PasswordForm> password_form;
   std::vector<blink::WebFormControlElement> control_elements;
   if (!form.isNull()) {
@@ -482,20 +478,23 @@ void PasswordGenerationAgent::OnUserTriggeredGeneratePassword() {
     control_elements = form_util::ExtractAutofillableElementsInForm(form);
   } else {
     const blink::WebFrame& frame = *render_frame()->GetWebFrame();
+    blink::WebDocument doc = frame.document();
+    if (doc.isNull())
+      return;
     password_form =
         CreatePasswordFormFromUnownedInputElements(frame, nullptr, nullptr);
     control_elements =
-        form_util::GetUnownedFormFieldElements(frame.document().all(), nullptr);
+        form_util::GetUnownedFormFieldElements(doc.all(), nullptr);
   }
 
   if (!password_form)
     return;
 
-  generation_element_ = *element;
+  generation_element_ = last_focused_password_element_;
   std::vector<blink::WebInputElement> password_elements;
   GetAccountCreationPasswordFields(control_elements, &password_elements);
   password_elements = FindPasswordElementsForGeneration(
-      password_elements, element->nameForAutofill());
+      password_elements, last_focused_password_element_.nameForAutofill());
   generation_form_data_.reset(new AccountCreationFormData(
       make_linked_ptr(password_form.release()), password_elements));
   is_manually_triggered_ = true;

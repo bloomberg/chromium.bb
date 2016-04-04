@@ -596,4 +596,15 @@ TEST_F(PasswordGenerationAgentTest, ManualGenerationNoFormTest) {
   ExpectGenerationAvailable("second_password", false);
 }
 
+TEST_F(PasswordGenerationAgentTest, ManualGenerationChangeFocusTest) {
+  // This test simulates focus change after user triggered password generation.
+  // PasswordGenerationAgent should save last focused password element and
+  // generate password, even if focused element has changed.
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  FocusField("first_password");
+  ShowGenerationPopUpManually("username" /* current focus */);
+  ExpectGenerationAvailable("first_password", true);
+  ExpectGenerationAvailable("second_password", false);
+}
+
 }  // namespace autofill

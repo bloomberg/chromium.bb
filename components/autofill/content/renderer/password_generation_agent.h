@@ -126,6 +126,11 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
   // Element where we want to trigger password generation UI.
   blink::WebInputElement generation_element_;
 
+  // Password element that had focus last. Since Javascript could change focused
+  // element after the user triggered a generation request, it is better to save
+  // the last focused password element.
+  blink::WebInputElement last_focused_password_element_;
+
   // If the password field at |generation_element_| contains a generated
   // password.
   bool password_is_generated_;
