@@ -54,29 +54,33 @@ enum InkDropSubAnimations {
   // |large_size_| circle.
   ACTION_PENDING_TRANSFORM,
 
-  // QUICK_ACTION sub animations.
+  // ACTION_TRIGGERED sub animations.
 
-  // The QUICK_ACTION sub animation that is fading out to a hidden opacity.
-  QUICK_ACTION_FADE_OUT,
+  // The ACTION_TRIGGERED sub animation that is fading out to a hidden opacity.
+  ACTION_TRIGGERED_FADE_OUT,
 
-  // The QUICK_ACTION sub animation that transforms the shape to a |large_size_|
+  // The ACTION_TRIGGERED sub animation that transforms the shape to a
+  // |large_size_|
   // circle.
-  QUICK_ACTION_TRANSFORM,
+  ACTION_TRIGGERED_TRANSFORM,
 
-  // SLOW_ACTION_PENDING sub animations.
+  // ALTERNATE_ACTION_PENDING sub animations.
 
-  // The SLOW_ACTION_PENDING animation has only one sub animation which animates
+  // The ALTERNATE_ACTION_PENDING animation has only one sub animation which
+  // animates
   // to a |small_size_| rounded rectangle at visible opacity.
-  SLOW_ACTION_PENDING,
+  ALTERNATE_ACTION_PENDING,
 
-  // SLOW_ACTION sub animations.
+  // ALTERNATE_ACTION_TRIGGERED sub animations.
 
-  // The SLOW_ACTION sub animation that is fading out to a hidden opacity.
-  SLOW_ACTION_FADE_OUT,
+  // The ALTERNATE_ACTION_TRIGGERED sub animation that is fading out to a hidden
+  // opacity.
+  ALTERNATE_ACTION_TRIGGERED_FADE_OUT,
 
-  // The SLOW_ACTION sub animation that transforms the shape to a |large_size_|
+  // The ALTERNATE_ACTION_TRIGGERED sub animation that transforms the shape to a
+  // |large_size_|
   // rounded rectangle.
-  SLOW_ACTION_TRANSFORM,
+  ALTERNATE_ACTION_TRIGGERED_TRANSFORM,
 
   // ACTIVATED sub animations.
 
@@ -99,7 +103,7 @@ enum InkDropSubAnimations {
   DEACTIVATED_TRANSFORM,
 };
 
-// The scale factor used to burst the QUICK_ACTION bubble as it fades out.
+// The scale factor used to burst the ACTION_TRIGGERED bubble as it fades out.
 const float kQuickActionBurstScale = 1.3f;
 
 // Duration constants for InkDropStateSubAnimations. See the
@@ -109,11 +113,11 @@ int kAnimationDurationInMs[] = {
     200,  // HIDDEN_TRANSFORM
     0,    // ACTION_PENDING_FADE_IN
     160,  // ACTION_PENDING_TRANSFORM
-    150,  // QUICK_ACTION_FADE_OUT
-    160,  // QUICK_ACTION_TRANSFORM
-    200,  // SLOW_ACTION_PENDING
-    150,  // SLOW_ACTION_FADE_OUT
-    200,  // SLOW_ACTION_TRANSFORM
+    150,  // ACTION_TRIGGERED_FADE_OUT
+    160,  // ACTION_TRIGGERED_TRANSFORM
+    200,  // ALTERNATE_ACTION_PENDING
+    150,  // ALTERNATE_ACTION_TRIGGERED_FADE_OUT
+    200,  // ALTERNATE_ACTION_TRIGGERED_TRANSFORM
     200,  // ACTIVATED_CIRCLE_TRANSFORM
     160,  // ACTIVATED_RECT_TRANSFORM
     150,  // DEACTIVATED_FADE_OUT
@@ -274,7 +278,7 @@ void SquareInkDropAnimation::AnimateStateChange(
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
-    case InkDropState::QUICK_ACTION: {
+    case InkDropState::ACTION_TRIGGERED: {
       DCHECK(old_ink_drop_state == InkDropState::HIDDEN ||
              old_ink_drop_state == InkDropState::ACTION_PENDING);
       if (old_ink_drop_state == InkDropState::HIDDEN) {
@@ -282,43 +286,44 @@ void SquareInkDropAnimation::AnimateStateChange(
                            animation_observer);
       }
       AnimateToOpacity(kHiddenOpacity,
-                       GetAnimationDuration(QUICK_ACTION_FADE_OUT),
+                       GetAnimationDuration(ACTION_TRIGGERED_FADE_OUT),
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
                        gfx::Tween::EASE_IN_OUT, animation_observer);
       gfx::Size s = ScaleToRoundedSize(large_size_, kQuickActionBurstScale);
       CalculateCircleTransforms(s, &transforms);
       AnimateToTransforms(transforms,
-                          GetAnimationDuration(QUICK_ACTION_TRANSFORM),
+                          GetAnimationDuration(ACTION_TRIGGERED_TRANSFORM),
                           ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
     }
-    case InkDropState::SLOW_ACTION_PENDING:
+    case InkDropState::ALTERNATE_ACTION_PENDING:
       DCHECK(old_ink_drop_state == InkDropState::ACTION_PENDING);
       AnimateToOpacity(kVisibleOpacity,
-                       GetAnimationDuration(SLOW_ACTION_PENDING),
+                       GetAnimationDuration(ALTERNATE_ACTION_PENDING),
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN, animation_observer);
       CalculateRectTransforms(small_size_, small_corner_radius_, &transforms);
-      AnimateToTransforms(transforms, GetAnimationDuration(SLOW_ACTION_PENDING),
+      AnimateToTransforms(transforms,
+                          GetAnimationDuration(ALTERNATE_ACTION_PENDING),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
-    case InkDropState::SLOW_ACTION: {
-      DCHECK(old_ink_drop_state == InkDropState::SLOW_ACTION_PENDING);
+    case InkDropState::ALTERNATE_ACTION_TRIGGERED: {
+      DCHECK(old_ink_drop_state == InkDropState::ALTERNATE_ACTION_PENDING);
       base::TimeDelta visible_duration =
-          GetAnimationDuration(SLOW_ACTION_TRANSFORM) -
-          GetAnimationDuration(SLOW_ACTION_FADE_OUT);
+          GetAnimationDuration(ALTERNATE_ACTION_TRIGGERED_TRANSFORM) -
+          GetAnimationDuration(ALTERNATE_ACTION_TRIGGERED_FADE_OUT);
       AnimateToOpacity(kVisibleOpacity, visible_duration,
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN_OUT, animation_observer);
-      AnimateToOpacity(kHiddenOpacity,
-                       GetAnimationDuration(SLOW_ACTION_FADE_OUT),
+      AnimateToOpacity(kHiddenOpacity, GetAnimationDuration(
+                                           ALTERNATE_ACTION_TRIGGERED_FADE_OUT),
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
                        gfx::Tween::EASE_IN_OUT, animation_observer);
       CalculateRectTransforms(large_size_, large_corner_radius_, &transforms);
-      AnimateToTransforms(transforms,
-                          GetAnimationDuration(SLOW_ACTION_TRANSFORM),
+      AnimateToTransforms(transforms, GetAnimationDuration(
+                                          ALTERNATE_ACTION_TRIGGERED_TRANSFORM),
                           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                           gfx::Tween::EASE_IN_OUT, animation_observer);
       break;

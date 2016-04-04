@@ -57,7 +57,9 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icons_public.h"
+#include "ui/views/animation/flood_fill_ink_drop_animation.h"
 #include "ui/views/animation/ink_drop_delegate.h"
+#include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -158,6 +160,7 @@ DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
       dragging_(false),
       starting_drag_(false),
       model_(download_item),
+      ink_drop_delegate_(this, this),
       save_button_(nullptr),
       discard_button_(nullptr),
       dropdown_button_(new BarControlButton(this)),
@@ -184,9 +187,6 @@ DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
       rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(1);
   status_font_list_ =
       rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(-2);
-
-  body_hover_animation_.reset(new gfx::SlideAnimation(this));
-  drop_hover_animation_.reset(new gfx::SlideAnimation(this));
 
   SetAccessibilityFocusable(true);
 
@@ -376,8 +376,6 @@ gfx::Size DownloadItemViewMd::GetPreferredSize() const {
                                    2 * kMinimumVerticalPadding + child_height));
 }
 
-// Handle a mouse click and open the context menu if the mouse is
-// over the drop-down region.
 bool DownloadItemViewMd::OnMousePressed(const ui::MouseEvent& event) {
   HandlePressEvent(event, event.IsOnlyLeftMouseButton());
   return true;
@@ -392,6 +390,7 @@ bool DownloadItemViewMd::OnMouseDragged(const ui::MouseEvent& event) {
   if (!starting_drag_) {
     starting_drag_ = true;
     drag_start_point_ = event.location();
+    ink_drop_delegate_.OnAction(views::InkDropState::HIDDEN);
   }
   if (dragging_) {
     if (download()->GetState() == DownloadItem::COMPLETE) {
@@ -414,7 +413,7 @@ void DownloadItemViewMd::OnMouseReleased(const ui::MouseEvent& event) {
 
 void DownloadItemViewMd::OnMouseCaptureLost() {
   // Mouse should not activate us in dangerous mode.
-  if (mode_ == DANGEROUS_MODE)
+  if (mode_ != NORMAL_MODE)
     return;
 
   if (dragging_) {
@@ -431,6 +430,8 @@ bool DownloadItemViewMd::OnKeyPressed(const ui::KeyEvent& event) {
 
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
+    ink_drop_delegate_.set_last_ink_drop_location(
+        GetLocalBounds().CenterPoint());
     // OpenDownload may delete this, so don't add any code after this line.
     OpenDownload();
     return true;
@@ -461,6 +462,30 @@ void DownloadItemViewMd::GetAccessibleState(ui::AXViewState* state) {
 
 void DownloadItemViewMd::OnThemeChanged() {
   UpdateColorsFromTheme();
+}
+
+void DownloadItemViewMd::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  InkDropHostView::AddInkDropLayer(ink_drop_layer);
+  // The layer that's added to host the ink drop layer must mask to bounds
+  // so the hover effect is clipped while animating open.
+  layer()->SetMasksToBounds(true);
+}
+
+scoped_ptr<views::InkDropAnimation> DownloadItemViewMd::CreateInkDropAnimation()
+    const {
+  return make_scoped_ptr(new views::FloodFillInkDropAnimation(
+      size(), ink_drop_delegate_.last_ink_drop_location(),
+      color_utils::DeriveDefaultIconColor(GetTextColor())));
+}
+
+scoped_ptr<views::InkDropHover> DownloadItemViewMd::CreateInkDropHover() const {
+  if (IsShowingWarningDialog())
+    return nullptr;
+
+  gfx::Size size = GetPreferredSize();
+  return make_scoped_ptr(new views::InkDropHover(
+      size, kInkDropSmallCornerRadius, gfx::Rect(size).CenterPoint(),
+      color_utils::DeriveDefaultIconColor(GetTextColor())));
 }
 
 void DownloadItemViewMd::OnGestureEvent(ui::GestureEvent* event) {
@@ -704,6 +729,7 @@ void DownloadItemViewMd::OpenDownload() {
                            base::Time::Now() - creation_time_);
 
   UpdateAccessibleName();
+  ink_drop_delegate_.OnAction(views::InkDropState::ACTION_TRIGGERED);
 
   // Calling download()->OpenDownload may delete this, so this must be
   // the last thing we do.
@@ -799,6 +825,9 @@ void DownloadItemViewMd::HandlePressEvent(const ui::LocatedEvent& event,
   // Stop any completion animation.
   if (complete_animation_.get() && complete_animation_->is_animating())
     complete_animation_->End();
+
+  ink_drop_delegate_.set_last_ink_drop_location(event.location());
+  ink_drop_delegate_.OnAction(views::InkDropState::ACTION_PENDING);
 }
 
 void DownloadItemViewMd::HandleClickEvent(const ui::LocatedEvent& event,
@@ -825,9 +854,11 @@ void DownloadItemViewMd::SetDropdownState(State new_state) {
       new_state == PUSHED ? gfx::VectorIconId::FIND_NEXT
                           : gfx::VectorIconId::FIND_PREV,
       base::Bind(&DownloadItemViewMd::GetTextColor, base::Unretained(this)));
-  dropdown_button_->ink_drop_delegate()->OnAction(
-      new_state == PUSHED ? views::InkDropState::ACTIVATED
-                          : views::InkDropState::DEACTIVATED);
+  if (new_state != dropdown_state_) {
+    dropdown_button_->ink_drop_delegate()->OnAction(
+        new_state == PUSHED ? views::InkDropState::ACTIVATED
+                            : views::InkDropState::DEACTIVATED);
+  }
   dropdown_button_->OnThemeChanged();
   dropdown_state_ = new_state;
   SchedulePaint();
@@ -1073,10 +1104,10 @@ void DownloadItemViewMd::ProgressTimerFired() {
     SchedulePaint();
 }
 
-SkColor DownloadItemViewMd::GetTextColor() {
+SkColor DownloadItemViewMd::GetTextColor() const {
   return GetTextColorForThemeProvider(GetThemeProvider());
 }
 
-SkColor DownloadItemViewMd::GetDimmedTextColor() {
+SkColor DownloadItemViewMd::GetDimmedTextColor() const {
   return SkColorSetA(GetTextColor(), 0xC7);
 }

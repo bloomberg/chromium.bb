@@ -39,8 +39,8 @@ const int kHoverFadeInAfterAnimationDelayInMs = 1000;
 // automatically transition to the InkDropState::HIDDEN state.
 bool ShouldAnimateToHidden(InkDropState ink_drop_state) {
   switch (ink_drop_state) {
-    case views::InkDropState::QUICK_ACTION:
-    case views::InkDropState::SLOW_ACTION:
+    case views::InkDropState::ACTION_TRIGGERED:
+    case views::InkDropState::ALTERNATE_ACTION_TRIGGERED:
     case views::InkDropState::DEACTIVATED:
       return true;
     default:
@@ -79,6 +79,7 @@ bool InkDropAnimationControllerImpl::IsVisible() const {
 
 void InkDropAnimationControllerImpl::AnimateToState(
     InkDropState ink_drop_state) {
+  DestroyHiddenTargetedAnimations();
   if (!ink_drop_animation_)
     CreateInkDropAnimation();
 
@@ -87,17 +88,16 @@ void InkDropAnimationControllerImpl::AnimateToState(
                                   kHoverFadeOutBeforeAnimationDurationInMs));
   }
 
-  CompleteHiddenTargetedAnimations();
   ink_drop_animation_->AnimateToState(ink_drop_state);
 }
 
 void InkDropAnimationControllerImpl::SnapToActivated() {
+  DestroyHiddenTargetedAnimations();
   if (!ink_drop_animation_)
     CreateInkDropAnimation();
 
   SetHoveredInternal(false, base::TimeDelta());
 
-  CompleteHiddenTargetedAnimations();
   ink_drop_animation_->SnapToActivated();
 }
 
@@ -110,10 +110,11 @@ void InkDropAnimationControllerImpl::SetHovered(bool is_hovered) {
                                       kHoverFadeOutFromUserInputDurationInMs));
 }
 
-void InkDropAnimationControllerImpl::CompleteHiddenTargetedAnimations() {
-  if (ink_drop_animation_->target_ink_drop_state() == InkDropState::HIDDEN ||
-      ShouldAnimateToHidden(ink_drop_animation_->target_ink_drop_state())) {
-    ink_drop_animation_->HideImmediately();
+void InkDropAnimationControllerImpl::DestroyHiddenTargetedAnimations() {
+  if (ink_drop_animation_ &&
+      (ink_drop_animation_->target_ink_drop_state() == InkDropState::HIDDEN ||
+       ShouldAnimateToHidden(ink_drop_animation_->target_ink_drop_state()))) {
+    DestroyInkDropAnimation();
   }
 }
 

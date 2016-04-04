@@ -16,12 +16,12 @@ std::string ToString(InkDropState state) {
       return std::string("HIDDEN");
     case InkDropState::ACTION_PENDING:
       return std::string("ACTION_PENDING");
-    case InkDropState::QUICK_ACTION:
-      return std::string("QUICK_ACTION");
-    case InkDropState::SLOW_ACTION_PENDING:
-      return std::string("SLOW_ACTION_PENDING");
-    case InkDropState::SLOW_ACTION:
-      return std::string("SLOW_ACTION");
+    case InkDropState::ACTION_TRIGGERED:
+      return std::string("ACTION_TRIGGERED");
+    case InkDropState::ALTERNATE_ACTION_PENDING:
+      return std::string("ALTERNATE_ACTION_PENDING");
+    case InkDropState::ALTERNATE_ACTION_TRIGGERED:
+      return std::string("ALTERNATE_ACTION_TRIGGERED");
     case InkDropState::ACTIVATED:
       return std::string("ACTIVATED");
     case InkDropState::DEACTIVATED:

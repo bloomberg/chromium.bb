@@ -433,7 +433,7 @@ CustomButton::CustomButton(ButtonListener* listener)
       ink_drop_delegate_(nullptr),
       notify_action_(NOTIFY_ON_RELEASE),
       has_ink_drop_action_on_click_(false),
-      ink_drop_action_on_click_(InkDropState::QUICK_ACTION),
+      ink_drop_action_on_click_(InkDropState::ACTION_TRIGGERED),
       ink_drop_base_color_(gfx::kPlaceholderColor),
       md_focus_ring_(nullptr) {
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);

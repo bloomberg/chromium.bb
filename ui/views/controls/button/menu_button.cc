@@ -150,7 +150,7 @@ bool MenuButton::Activate(const ui::Event* event) {
 
     if (ink_drop_delegate() && !increment_pressed_lock_called &&
         pressed_lock_count_ == 0) {
-      ink_drop_delegate()->OnAction(InkDropState::QUICK_ACTION);
+      ink_drop_delegate()->OnAction(InkDropState::ACTION_TRIGGERED);
     }
 
     // We must return false here so that the RootView does not get stuck

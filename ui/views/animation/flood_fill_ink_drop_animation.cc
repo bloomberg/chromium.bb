@@ -18,7 +18,7 @@ namespace {
 
 // The minimum radius to use when scaling the painted layers. Smaller values
 // were causing visual anomalies.
-const float kMinRadius = 0.01f;
+const float kMinRadius = 1.f;
 
 // All the sub animations that are used to animate each of the InkDropStates.
 // These are used to get time durations with
@@ -45,21 +45,23 @@ enum InkDropSubAnimations {
   // bounds.
   ACTION_PENDING_TRANSFORM,
 
-  // QUICK_ACTION sub animations.
+  // ACTION_TRIGGERED sub animations.
 
-  // The QUICK_ACTION sub animation that is fading out to a hidden opacity.
-  QUICK_ACTION_FADE_OUT,
+  // The ACTION_TRIGGERED sub animation that is fading out to a hidden opacity.
+  ACTION_TRIGGERED_FADE_OUT,
 
-  // SLOW_ACTION_PENDING sub animations.
+  // ALTERNATE_ACTION_PENDING sub animations.
 
-  // The SLOW_ACTION_PENDING animation has only one sub animation which animates
+  // The ALTERNATE_ACTION_PENDING animation has only one sub animation which
+  // animates
   // the circleto fill the bounds at visible opacity.
-  SLOW_ACTION_PENDING,
+  ALTERNATE_ACTION_PENDING,
 
-  // SLOW_ACTION sub animations.
+  // ALTERNATE_ACTION_TRIGGERED sub animations.
 
-  // The SLOW_ACTION sub animation that is fading out to a hidden opacity.
-  SLOW_ACTION_FADE_OUT,
+  // The ALTERNATE_ACTION_TRIGGERED sub animation that is fading out to a hidden
+  // opacity.
+  ALTERNATE_ACTION_TRIGGERED_FADE_OUT,
 
   // ACTIVATED sub animations.
 
@@ -83,9 +85,9 @@ int kAnimationDurationInMs[] = {
     300,  // HIDDEN_TRANSFORM
     0,    // ACTION_PENDING_FADE_IN
     240,  // ACTION_PENDING_TRANSFORM
-    300,  // QUICK_ACTION_FADE_OUT
-    200,  // SLOW_ACTION_PENDING
-    300,  // SLOW_ACTION_FADE_OUT
+    300,  // ACTION_TRIGGERED_FADE_OUT
+    200,  // ALTERNATE_ACTION_PENDING
+    300,  // ALTERNATE_ACTION_TRIGGERED_FADE_OUT
     150,  // ACTIVATED_FADE_IN
     200,  // ACTIVATED_TRANSFORM
     300,  // DEACTIVATED_FADE_OUT
@@ -98,25 +100,6 @@ base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
            ? 1
            : views::InkDropAnimation::kSlowAnimationDurationFactor) *
       kAnimationDurationInMs[state]);
-}
-
-// Calculates the largest distance from |point| to the corners of a rectangle
-// with origin (0, 0) and the given |size|.
-float CalculateLargestDistanceToCorners(const gfx::Size& size,
-                                        const gfx::Point& point) {
-  const float top_left_distance = gfx::Vector2dF(point.x(), point.y()).Length();
-  const float top_right_distance =
-      gfx::Vector2dF(size.width() - point.x(), point.y()).Length();
-  const float bottom_left_distance =
-      gfx::Vector2dF(point.x(), size.height() - point.y()).Length();
-  const float bottom_right_distance =
-      gfx::Vector2dF(size.width() - point.x(), size.height() - point.y())
-          .Length();
-
-  float largest_distance = std::max(top_left_distance, top_right_distance);
-  largest_distance = std::max(largest_distance, bottom_left_distance);
-  largest_distance = std::max(largest_distance, bottom_right_distance);
-  return largest_distance;
 }
 
 }  // namespace
@@ -161,7 +144,7 @@ FloodFillInkDropAnimation::~FloodFillInkDropAnimation() {
 void FloodFillInkDropAnimation::SnapToActivated() {
   InkDropAnimation::SnapToActivated();
   SetOpacity(kVisibleOpacity);
-  painted_layer_.SetTransform(GetActivatedTargetTransform());
+  painted_layer_.SetTransform(GetMaxSizeTargetTransform());
 }
 
 ui::Layer* FloodFillInkDropAnimation::GetRootLayer() {
@@ -180,7 +163,6 @@ void FloodFillInkDropAnimation::AnimateStateChange(
     case InkDropState::HIDDEN:
       if (!IsVisible()) {
         SetStateToHidden();
-        break;
       } else {
         AnimateToOpacity(kHiddenOpacity, GetAnimationDuration(HIDDEN_FADE_OUT),
                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
@@ -204,15 +186,13 @@ void FloodFillInkDropAnimation::AnimateStateChange(
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
                        gfx::Tween::EASE_IN, animation_observer);
 
-      const gfx::Transform transform = CalculateTransform(
-          CalculateLargestDistanceToCorners(size_, center_point_));
-      AnimateToTransform(transform,
+      AnimateToTransform(GetMaxSizeTargetTransform(),
                          GetAnimationDuration(ACTION_PENDING_TRANSFORM),
                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                          gfx::Tween::FAST_OUT_SLOW_IN, animation_observer);
       break;
     }
-    case InkDropState::QUICK_ACTION: {
+    case InkDropState::ACTION_TRIGGERED: {
       DCHECK(old_ink_drop_state == InkDropState::HIDDEN ||
              old_ink_drop_state == InkDropState::ACTION_PENDING);
       if (old_ink_drop_state == InkDropState::HIDDEN) {
@@ -220,28 +200,27 @@ void FloodFillInkDropAnimation::AnimateStateChange(
                            animation_observer);
       }
       AnimateToOpacity(kHiddenOpacity,
-                       GetAnimationDuration(QUICK_ACTION_FADE_OUT),
+                       GetAnimationDuration(ACTION_TRIGGERED_FADE_OUT),
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
                        gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
     }
-    case InkDropState::SLOW_ACTION_PENDING: {
+    case InkDropState::ALTERNATE_ACTION_PENDING: {
       DCHECK(old_ink_drop_state == InkDropState::ACTION_PENDING);
       AnimateToOpacity(kVisibleOpacity,
-                       GetAnimationDuration(SLOW_ACTION_PENDING),
+                       GetAnimationDuration(ALTERNATE_ACTION_PENDING),
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN, animation_observer);
-      const gfx::Transform transform = CalculateTransform(
-          CalculateLargestDistanceToCorners(size_, center_point_));
-      AnimateToTransform(transform, GetAnimationDuration(SLOW_ACTION_PENDING),
+      AnimateToTransform(GetMaxSizeTargetTransform(),
+                         GetAnimationDuration(ALTERNATE_ACTION_PENDING),
                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                          gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
     }
-    case InkDropState::SLOW_ACTION:
-      DCHECK(old_ink_drop_state == InkDropState::SLOW_ACTION_PENDING);
-      AnimateToOpacity(kHiddenOpacity,
-                       GetAnimationDuration(SLOW_ACTION_FADE_OUT),
+    case InkDropState::ALTERNATE_ACTION_TRIGGERED:
+      DCHECK(old_ink_drop_state == InkDropState::ALTERNATE_ACTION_PENDING);
+      AnimateToOpacity(kHiddenOpacity, GetAnimationDuration(
+                                           ALTERNATE_ACTION_TRIGGERED_FADE_OUT),
                        ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
                        gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
@@ -249,7 +228,7 @@ void FloodFillInkDropAnimation::AnimateStateChange(
       AnimateToOpacity(kVisibleOpacity, GetAnimationDuration(ACTIVATED_FADE_IN),
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN, animation_observer);
-      AnimateToTransform(GetActivatedTargetTransform(),
+      AnimateToTransform(GetMaxSizeTargetTransform(),
                          GetAnimationDuration(ACTIVATED_TRANSFORM),
                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                          gfx::Tween::EASE_IN_OUT, animation_observer);
@@ -265,8 +244,7 @@ void FloodFillInkDropAnimation::AnimateStateChange(
 }
 
 void FloodFillInkDropAnimation::SetStateToHidden() {
-  gfx::Transform transform = CalculateTransform(kMinRadius);
-  painted_layer_.SetTransform(transform);
+  painted_layer_.SetTransform(CalculateTransform(kMinRadius));
   root_layer_.SetOpacity(InkDropAnimation::kHiddenOpacity);
   root_layer_.SetVisible(false);
 }
@@ -336,9 +314,11 @@ gfx::Transform FloodFillInkDropAnimation::CalculateTransform(
   return transform;
 }
 
-gfx::Transform FloodFillInkDropAnimation::GetActivatedTargetTransform() const {
+gfx::Transform FloodFillInkDropAnimation::GetMaxSizeTargetTransform() const {
+  // TODO(estade): get rid of this 2, but make the fade out start before the
+  // active/action transform is done.
   return CalculateTransform(
-      CalculateLargestDistanceToCorners(size_, center_point_));
+      gfx::Vector2dF(size_.width(), size_.height()).Length() / 2);
 }
 
 }  // namespace views

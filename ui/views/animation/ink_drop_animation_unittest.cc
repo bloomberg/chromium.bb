@@ -130,7 +130,7 @@ TEST_P(InkDropAnimationTest, ActionPendingOpacity) {
 
 TEST_P(InkDropAnimationTest, QuickActionOpacity) {
   ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_PENDING);
-  ink_drop_animation_->AnimateToState(views::InkDropState::QUICK_ACTION);
+  ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
   test_api_->CompleteAnimations();
 
   EXPECT_EQ(InkDropAnimation::kHiddenOpacity, test_api_->GetCurrentOpacity());
@@ -138,7 +138,8 @@ TEST_P(InkDropAnimationTest, QuickActionOpacity) {
 
 TEST_P(InkDropAnimationTest, SlowActionPendingOpacity) {
   ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_PENDING);
-  ink_drop_animation_->AnimateToState(views::InkDropState::SLOW_ACTION_PENDING);
+  ink_drop_animation_->AnimateToState(
+      views::InkDropState::ALTERNATE_ACTION_PENDING);
   test_api_->CompleteAnimations();
 
   EXPECT_EQ(InkDropAnimation::kVisibleOpacity, test_api_->GetCurrentOpacity());
@@ -146,8 +147,10 @@ TEST_P(InkDropAnimationTest, SlowActionPendingOpacity) {
 
 TEST_P(InkDropAnimationTest, SlowActionOpacity) {
   ink_drop_animation_->AnimateToState(views::InkDropState::ACTION_PENDING);
-  ink_drop_animation_->AnimateToState(views::InkDropState::SLOW_ACTION_PENDING);
-  ink_drop_animation_->AnimateToState(views::InkDropState::SLOW_ACTION);
+  ink_drop_animation_->AnimateToState(
+      views::InkDropState::ALTERNATE_ACTION_PENDING);
+  ink_drop_animation_->AnimateToState(
+      views::InkDropState::ALTERNATE_ACTION_TRIGGERED);
   test_api_->CompleteAnimations();
 
   EXPECT_EQ(InkDropAnimation::kHiddenOpacity, test_api_->GetCurrentOpacity());
@@ -210,7 +213,7 @@ TEST_P(InkDropAnimationTest, VerifyObserversAreNotifiedOfSuccessfulAnimations) {
 
 TEST_P(InkDropAnimationTest, VerifyObserversAreNotifiedOfPreemptedAnimations) {
   ink_drop_animation_->AnimateToState(InkDropState::ACTION_PENDING);
-  ink_drop_animation_->AnimateToState(InkDropState::SLOW_ACTION_PENDING);
+  ink_drop_animation_->AnimateToState(InkDropState::ALTERNATE_ACTION_PENDING);
 
   EXPECT_EQ(2, observer_.last_animation_ended_ordinal());
   EXPECT_EQ(InkDropAnimationObserver::InkDropAnimationEndedReason::PRE_EMPTED,

@@ -31,9 +31,10 @@
 #include "content/public/browser/download_manager.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/animation/button_ink_drop_delegate.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/view.h"
 
 class BarControlButton;
 class DownloadShelfView;
@@ -61,8 +62,8 @@ class LabelButton;
 
 // The DownloadItemView in MD style. This is copied from DownloadItemView,
 // which it should eventually replace.
-class DownloadItemViewMd : public views::ButtonListener,
-                           public views::View,
+class DownloadItemViewMd : public views::InkDropHostView,
+                           public views::ButtonListener,
                            public views::ContextMenuController,
                            public content::DownloadItem::Observer,
                            public gfx::AnimationDelegate {
@@ -102,6 +103,11 @@ class DownloadItemViewMd : public views::ButtonListener,
                       base::string16* tooltip) const override;
   void GetAccessibleState(ui::AXViewState* state) override;
   void OnThemeChanged() override;
+
+  // Overridden from view::InkDropHostView:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  scoped_ptr<views::InkDropAnimation> CreateInkDropAnimation() const override;
+  scoped_ptr<views::InkDropHover> CreateInkDropHover() const override;
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -220,10 +226,10 @@ class DownloadItemViewMd : public views::ButtonListener,
   void ProgressTimerFired();
 
   // Returns the base text color.
-  SkColor GetTextColor();
+  SkColor GetTextColor() const;
 
   // Returns a slightly dimmed version of the base text color.
-  SkColor GetDimmedTextColor();
+  SkColor GetDimmedTextColor() const;
 
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
@@ -269,12 +275,10 @@ class DownloadItemViewMd : public views::ButtonListener,
   // A model class to control the status text we display.
   DownloadItemModel model_;
 
-  // Hover animations for our body and drop buttons.
-  scoped_ptr<gfx::SlideAnimation> body_hover_animation_;
-  scoped_ptr<gfx::SlideAnimation> drop_hover_animation_;
-
   // Animation for download complete.
   scoped_ptr<gfx::SlideAnimation> complete_animation_;
+
+  views::ButtonInkDropDelegate ink_drop_delegate_;
 
   // Progress animation
   base::RepeatingTimer progress_timer_;

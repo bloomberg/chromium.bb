@@ -42,9 +42,9 @@ class SquareInkDropAnimationTestApi;
 //
 //   {All InkDropStates}      => HIDDEN
 //   HIDDEN                   => ACTION_PENDING
-//   HIDDEN, ACTION_PENDING   => QUICK_ACTION
-//   ACTION_PENDING           => SLOW_ACTION_PENDING
-//   SLOW_ACTION_PENDING      => SLOW_ACTION
+//   HIDDEN, ACTION_PENDING   => ACTION_TRIGGERED
+//   ACTION_PENDING           => ALTERNATE_ACTION_PENDING
+//   ALTERNATE_ACTION_PENDING      => ALTERNATE_ACTION_TRIGGERED
 //   {All InkDropStates}      => ACTIVATED
 //   {All InkDropStates}      => DEACTIVATED
 //

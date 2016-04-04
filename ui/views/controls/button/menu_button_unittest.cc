@@ -447,7 +447,7 @@ TEST_F(MenuButtonTest,
   button()->set_ink_drop_delegate(&ink_drop_delegate);
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::QUICK_ACTION, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::ACTION_TRIGGERED, ink_drop_delegate.state());
 }
 
 TEST_F(

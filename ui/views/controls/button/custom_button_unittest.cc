@@ -95,15 +95,15 @@ class TestInkDropDelegateThatTracksVisibilty : public InkDropDelegate {
   void OnAction(InkDropState state) override {
     switch (state) {
       case InkDropState::ACTION_PENDING:
-      case InkDropState::SLOW_ACTION_PENDING:
+      case InkDropState::ALTERNATE_ACTION_PENDING:
       case InkDropState::ACTIVATED:
         *ink_shown_ = true;
         break;
       case InkDropState::HIDDEN:
         *ink_hidden_ = true;
         break;
-      case InkDropState::QUICK_ACTION:
-      case InkDropState::SLOW_ACTION:
+      case InkDropState::ACTION_TRIGGERED:
+      case InkDropState::ALTERNATE_ACTION_TRIGGERED:
       case InkDropState::DEACTIVATED:
         break;
     }

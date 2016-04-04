@@ -44,9 +44,8 @@ class VIEWS_EXPORT InkDropAnimationControllerImpl
   friend class InkDropAnimationControllerFactoryTest;
   friend class InkDropAnimationControllerImplTest;
 
-  // Forcibly transition to the HIDDEN state if completing the current animation
-  // sequence would eventually be HIDDEN.
-  void CompleteHiddenTargetedAnimations();
+  // Destroys |ink_drop_animation_| if it's targeted to the HIDDEN state.
+  void DestroyHiddenTargetedAnimations();
 
   // Creates a new InkDropAnimation and sets it to |ink_drop_animation_|. If
   // |ink_drop_animation_| wasn't null then it will be destroyed using

@@ -110,7 +110,8 @@ TEST_P(InkDropAnimationControllerFactoryTest, StateIsHiddenInitially) {
 
 TEST_P(InkDropAnimationControllerFactoryTest, TypicalQuickAction) {
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTION_PENDING);
-  ink_drop_animation_controller_->AnimateToState(InkDropState::QUICK_ACTION);
+  ink_drop_animation_controller_->AnimateToState(
+      InkDropState::ACTION_TRIGGERED);
   EXPECT_EQ(InkDropState::HIDDEN,
             ink_drop_animation_controller_->GetTargetInkDropState());
 }
@@ -125,8 +126,9 @@ TEST_P(InkDropAnimationControllerFactoryTest, CancelQuickAction) {
 TEST_P(InkDropAnimationControllerFactoryTest, TypicalSlowAction) {
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_animation_controller_->AnimateToState(
-      InkDropState::SLOW_ACTION_PENDING);
-  ink_drop_animation_controller_->AnimateToState(InkDropState::SLOW_ACTION);
+      InkDropState::ALTERNATE_ACTION_PENDING);
+  ink_drop_animation_controller_->AnimateToState(
+      InkDropState::ALTERNATE_ACTION_TRIGGERED);
   EXPECT_EQ(InkDropState::HIDDEN,
             ink_drop_animation_controller_->GetTargetInkDropState());
 }
@@ -134,7 +136,7 @@ TEST_P(InkDropAnimationControllerFactoryTest, TypicalSlowAction) {
 TEST_P(InkDropAnimationControllerFactoryTest, CancelSlowAction) {
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_animation_controller_->AnimateToState(
-      InkDropState::SLOW_ACTION_PENDING);
+      InkDropState::ALTERNATE_ACTION_PENDING);
   ink_drop_animation_controller_->AnimateToState(InkDropState::HIDDEN);
   EXPECT_EQ(InkDropState::HIDDEN,
             ink_drop_animation_controller_->GetTargetInkDropState());
@@ -151,7 +153,7 @@ TEST_P(InkDropAnimationControllerFactoryTest, TypicalQuickActivated) {
 TEST_P(InkDropAnimationControllerFactoryTest, TypicalSlowActivated) {
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTION_PENDING);
   ink_drop_animation_controller_->AnimateToState(
-      InkDropState::SLOW_ACTION_PENDING);
+      InkDropState::ALTERNATE_ACTION_PENDING);
   ink_drop_animation_controller_->AnimateToState(InkDropState::ACTIVATED);
   ink_drop_animation_controller_->AnimateToState(InkDropState::DEACTIVATED);
   EXPECT_EQ(InkDropState::HIDDEN,

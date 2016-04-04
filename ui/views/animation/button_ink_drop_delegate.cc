@@ -66,10 +66,10 @@ void ButtonInkDropDelegate::OnGestureEvent(ui::GestureEvent* event) {
       event->SetHandled();
       break;
     case ui::ET_GESTURE_LONG_PRESS:
-      ink_drop_state = InkDropState::SLOW_ACTION_PENDING;
+      ink_drop_state = InkDropState::ALTERNATE_ACTION_PENDING;
       break;
     case ui::ET_GESTURE_LONG_TAP:
-      ink_drop_state = InkDropState::SLOW_ACTION;
+      ink_drop_state = InkDropState::ALTERNATE_ACTION_TRIGGERED;
       break;
     case ui::ET_GESTURE_END:
       if (current_ink_drop_state == InkDropState::ACTIVATED)
@@ -82,9 +82,11 @@ void ButtonInkDropDelegate::OnGestureEvent(ui::GestureEvent* event) {
       return;
   }
 
+  last_ink_drop_location_ = event->location();
+
   if (ink_drop_state == InkDropState::HIDDEN &&
-      (current_ink_drop_state == InkDropState::QUICK_ACTION ||
-       current_ink_drop_state == InkDropState::SLOW_ACTION ||
+      (current_ink_drop_state == InkDropState::ACTION_TRIGGERED ||
+       current_ink_drop_state == InkDropState::ALTERNATE_ACTION_TRIGGERED ||
        current_ink_drop_state == InkDropState::DEACTIVATED)) {
     // These InkDropStates automatically transition to the HIDDEN state so we
     // don't make an explicit call. Explicitly animating to HIDDEN in this case

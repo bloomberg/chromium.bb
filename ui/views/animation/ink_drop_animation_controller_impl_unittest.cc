@@ -73,7 +73,7 @@ TEST_F(InkDropAnimationControllerImplTest,
        HoverDoesntFadeInAfterAnimationIfHoverNotSet) {
   ink_drop_host_.set_should_show_hover(true);
   ink_drop_animation_controller_.SetHovered(false);
-  ink_drop_animation_controller_.AnimateToState(InkDropState::QUICK_ACTION);
+  ink_drop_animation_controller_.AnimateToState(InkDropState::ACTION_TRIGGERED);
 
   EXPECT_FALSE(task_runner_->HasPendingTask());
   EXPECT_FALSE(is_hover_fading_in_or_visible());
@@ -83,7 +83,7 @@ TEST_F(InkDropAnimationControllerImplTest,
        HoverFadesInAfterAnimationWhenHostIsHovered) {
   ink_drop_host_.set_should_show_hover(true);
   ink_drop_animation_controller_.SetHovered(true);
-  ink_drop_animation_controller_.AnimateToState(InkDropState::QUICK_ACTION);
+  ink_drop_animation_controller_.AnimateToState(InkDropState::ACTION_TRIGGERED);
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
 
@@ -96,7 +96,7 @@ TEST_F(InkDropAnimationControllerImplTest,
        HoverDoesntFadeInAfterAnimationWhenHostIsNotHovered) {
   ink_drop_host_.set_should_show_hover(false);
   ink_drop_animation_controller_.SetHovered(true);
-  ink_drop_animation_controller_.AnimateToState(InkDropState::QUICK_ACTION);
+  ink_drop_animation_controller_.AnimateToState(InkDropState::ACTION_TRIGGERED);
 
   EXPECT_TRUE(task_runner_->HasPendingTask());
 
@@ -112,7 +112,7 @@ TEST_F(InkDropAnimationControllerImplTest,
   ink_drop_animation_controller_.SetHovered(true);
   EXPECT_TRUE(is_hover_fading_in_or_visible());
 
-  ink_drop_animation_controller_.AnimateToState(InkDropState::QUICK_ACTION);
+  ink_drop_animation_controller_.AnimateToState(InkDropState::ACTION_TRIGGERED);
   EXPECT_FALSE(is_hover_fading_in_or_visible());
 }
 
