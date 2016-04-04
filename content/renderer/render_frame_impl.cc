@@ -257,6 +257,7 @@ using blink::WebExternalPopupMenu;
 using blink::WebExternalPopupMenuClient;
 using blink::WebFindOptions;
 using blink::WebFrame;
+using blink::WebFrameLoadType;
 using blink::WebFrameSerializer;
 using blink::WebFrameSerializerClient;
 using blink::WebHistoryItem;
@@ -2103,7 +2104,10 @@ void RenderFrameImpl::OnPostMessageEvent(
 }
 
 void RenderFrameImpl::OnReload(bool ignore_cache) {
-  frame_->reload(ignore_cache);
+  // TODO(crbug.com/599364): Rename |ignore_cache| or change it to enum.
+  // Eventually we may remove FrameMsg_Reload, and use FrameMsg_Navigate.
+  frame_->reload(ignore_cache ? WebFrameLoadType::ReloadBypassingCache
+                              : WebFrameLoadType::Reload);
 }
 
 void RenderFrameImpl::OnReloadLoFiImages() {
@@ -5307,8 +5311,8 @@ void RenderFrameImpl::NavigateInternal(
   if (is_reload) {
     bool ignore_cache = (common_params.navigation_type ==
                          FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE);
-    load_type = ignore_cache ? blink::WebFrameLoadType::ReloadBypassingCache
-                             : blink::WebFrameLoadType::Reload;
+    load_type = ignore_cache ? WebFrameLoadType::ReloadBypassingCache
+                             : WebFrameLoadType::Reload;
 
     if (!browser_side_navigation) {
       const GURL override_url =
@@ -5682,8 +5686,8 @@ void RenderFrameImpl::LoadDataURL(
   if (net::DataURL::Parse(data_url, &mime_type, &charset, &data)) {
     const GURL base_url = params.base_url_for_data_url.is_empty() ?
         params.url : params.base_url_for_data_url;
-    bool replace = load_type == blink::WebFrameLoadType::ReloadBypassingCache ||
-                   load_type == blink::WebFrameLoadType::Reload;
+    bool replace = load_type == WebFrameLoadType::ReloadBypassingCache ||
+                   load_type == WebFrameLoadType::Reload;
 
     frame->loadData(
         WebData(data.c_str(), data.length()), WebString::fromUTF8(mime_type),

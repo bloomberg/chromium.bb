@@ -170,7 +170,7 @@ void History::go(ExecutionContext* context, int delta)
     if (delta)
         m_frame->loader().client()->navigateBackForward(delta);
     else
-        m_frame->reload(FrameLoadTypeReload, ClientRedirect);
+        m_frame->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
 }
 
 KURL History::urlForState(const String& urlString)

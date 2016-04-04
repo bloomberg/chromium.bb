@@ -74,7 +74,7 @@ public:
     void init();
 
     ResourceRequest resourceRequestForReload(FrameLoadType, const KURL& overrideURL = KURL(),
-        ClientRedirectPolicy = NotClientRedirect);
+        ClientRedirectPolicy = ClientRedirectPolicy::NotClientRedirect);
 
     ProgressTracker& progress() const { return *m_progressTracker; }
 

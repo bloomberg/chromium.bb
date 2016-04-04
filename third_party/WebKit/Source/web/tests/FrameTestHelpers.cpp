@@ -135,13 +135,13 @@ void loadHistoryItem(WebFrame* frame, const WebHistoryItem& item, WebHistoryLoad
 
 void reloadFrame(WebFrame* frame)
 {
-    frame->reload(false);
+    frame->reload(WebFrameLoadType::Reload);
     pumpPendingRequestsForFrameToLoad(frame);
 }
 
 void reloadFrameIgnoringCache(WebFrame* frame)
 {
-    frame->reload(true);
+    frame->reload(WebFrameLoadType::ReloadBypassingCache);
     pumpPendingRequestsForFrameToLoad(frame);
 }
 

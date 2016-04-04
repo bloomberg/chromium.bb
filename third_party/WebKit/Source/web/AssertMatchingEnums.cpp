@@ -40,6 +40,7 @@
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameTypes.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
@@ -109,6 +110,7 @@
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "public/web/WebAXEnums.h"
 #include "public/web/WebAXObject.h"
+#include "public/web/WebClientRedirectPolicy.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebFormElement.h"
@@ -381,6 +383,9 @@ STATIC_ASSERT_ENUM(WebApplicationCacheHost::ProgressEvent, ApplicationCacheHost:
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::UpdateReadyEvent, ApplicationCacheHost::UPDATEREADY_EVENT);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::CachedEvent, ApplicationCacheHost::CACHED_EVENT);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::ObsoleteEvent, ApplicationCacheHost::OBSOLETE_EVENT);
+
+STATIC_ASSERT_ENUM(WebClientRedirectPolicy::NotClientRedirect, ClientRedirectPolicy::NotClientRedirect);
+STATIC_ASSERT_ENUM(WebClientRedirectPolicy::ClientRedirect, ClientRedirectPolicy::ClientRedirect);
 
 STATIC_ASSERT_ENUM(WebCursorInfo::TypePointer, Cursor::Pointer);
 STATIC_ASSERT_ENUM(WebCursorInfo::TypeCross, Cursor::Cross);

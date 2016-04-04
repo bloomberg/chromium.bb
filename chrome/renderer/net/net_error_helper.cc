@@ -305,7 +305,10 @@ void NetErrorHelper::SendTrackingRequest(
 }
 
 void NetErrorHelper::ReloadPage(bool ignore_cache) {
-  render_frame()->GetWebFrame()->reload(ignore_cache);
+  // TODO(crbug.com/599364): Rename |ignore_cache| or change it to enum.
+  render_frame()->GetWebFrame()->reload(
+      ignore_cache ? blink::WebFrameLoadType::ReloadBypassingCache
+                   : blink::WebFrameLoadType::Reload);
 }
 
 void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {

@@ -68,6 +68,7 @@ class WebScriptExecutionCallback;
 class WebSuspendableTask;
 class WebView;
 class WebViewImpl;
+enum class WebFrameLoadType;
 struct FrameLoadRequest;
 struct WebPrintParams;
 
@@ -122,8 +123,8 @@ public:
         int argc,
         v8::Local<v8::Value> argv[]) override;
     v8::Local<v8::Context> mainWorldScriptContext() const override;
-    void reload(bool ignoreCache) override;
-    void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache) override;
+    void reload(WebFrameLoadType) override;
+    void reloadWithOverrideURL(const WebURL& overrideUrl, WebFrameLoadType) override;
     void reloadImage(const WebNode&) override;
     void reloadLoFiImages() override;
     void loadRequest(const WebURLRequest&) override;

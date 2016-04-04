@@ -265,12 +265,12 @@ v8::Local<v8::Context> WebRemoteFrameImpl::deprecatedMainWorldScriptContext() co
     return toV8Context(frame(), DOMWrapperWorld::mainWorld());
 }
 
-void WebRemoteFrameImpl::reload(bool ignoreCache)
+void WebRemoteFrameImpl::reload(WebFrameLoadType)
 {
     ASSERT_NOT_REACHED();
 }
 
-void WebRemoteFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache)
+void WebRemoteFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, WebFrameLoadType)
 {
     ASSERT_NOT_REACHED();
 }

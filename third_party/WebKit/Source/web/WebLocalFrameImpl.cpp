@@ -850,20 +850,19 @@ bool WebFrame::scriptCanAccess(WebFrame* target)
     return BindingSecurity::shouldAllowAccessToFrame(mainThreadIsolate(), callingDOMWindow(mainThreadIsolate()), target->toImplBase()->frame(), DoNotReportSecurityError);
 }
 
-void WebLocalFrameImpl::reload(bool ignoreCache)
+void WebLocalFrameImpl::reload(WebFrameLoadType loadType)
 {
     // TODO(clamy): Remove this function once RenderFrame calls load for all
     // requests.
-    reloadWithOverrideURL(KURL(), ignoreCache);
+    reloadWithOverrideURL(KURL(), loadType);
 }
 
-void WebLocalFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache)
+void WebLocalFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, WebFrameLoadType loadType)
 {
     // TODO(clamy): Remove this function once RenderFrame calls load for all
     // requests.
     DCHECK(frame());
-    WebFrameLoadType loadType = ignoreCache ?
-        WebFrameLoadType::ReloadBypassingCache : WebFrameLoadType::Reload;
+    DCHECK(loadType == WebFrameLoadType::Reload || loadType == WebFrameLoadType::ReloadBypassingCache);
     WebURLRequest request = requestForReload(loadType, overrideUrl);
     if (request.isNull())
         return;
@@ -1928,7 +1927,7 @@ void WebLocalFrameImpl::load(const WebURLRequest& request, WebFrameLoadType webF
 
     FrameLoadRequest frameRequest = FrameLoadRequest(nullptr, resourceRequest);
     if (isClientRedirect)
-        frameRequest.setClientRedirect(ClientRedirect);
+        frameRequest.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
     RawPtr<HistoryItem> historyItem = RawPtr<HistoryItem>(item);
     frame()->loader().load(
         frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem.get(),
@@ -1958,7 +1957,7 @@ void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType,
     DCHECK(frameRequest.substituteData().isValid());
     frameRequest.setReplacesCurrentItem(replace);
     if (isClientRedirect)
-        frameRequest.setClientRedirect(ClientRedirect);
+        frameRequest.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
 
     RawPtr<HistoryItem> historyItem = RawPtr<HistoryItem>(item);
     frame()->loader().load(

@@ -119,7 +119,7 @@ protected:
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(originDocument(), m_url, "_self", m_shouldCheckMainWorldContentSecurityPolicy);
         request.setReplacesCurrentItem(replacesCurrentItem());
-        request.setClientRedirect(ClientRedirect);
+        request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
         frame->loader().load(request);
     }
 
@@ -146,7 +146,7 @@ public:
         request.setReplacesCurrentItem(replacesCurrentItem());
         if (equalIgnoringFragmentIdentifier(frame->document()->url(), request.resourceRequest().url()))
             request.resourceRequest().setCachePolicy(ValidatingCacheData);
-        request.setClientRedirect(ClientRedirect);
+        request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
         frame->loader().load(request);
     }
 
@@ -180,12 +180,11 @@ public:
     void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        ResourceRequest resourceRequest =
-            frame->loader().resourceRequestForReload(FrameLoadTypeReload, KURL(), ClientRedirect);
+        ResourceRequest resourceRequest = frame->loader().resourceRequestForReload(FrameLoadTypeReload, KURL(), ClientRedirectPolicy::ClientRedirect);
         if (resourceRequest.isNull())
             return;
         FrameLoadRequest request = FrameLoadRequest(nullptr, resourceRequest);
-        request.setClientRedirect(ClientRedirect);
+        request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
         frame->loader().load(request, FrameLoadTypeReload);
     }
 
@@ -209,7 +208,7 @@ public:
         SubstituteData substituteData(SharedBuffer::create(), "text/plain", "UTF-8", KURL(), ForceSynchronousLoad);
         FrameLoadRequest request(originDocument(), url(), substituteData);
         request.setReplacesCurrentItem(true);
-        request.setClientRedirect(ClientRedirect);
+        request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
         frame->loader().load(request);
     }
 private:
@@ -334,7 +333,7 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
             FrameLoadRequest request(originDocument, m_frame->document()->completeURL(url), "_self");
             request.setReplacesCurrentItem(replacesCurrentItem);
             if (replacesCurrentItem)
-                request.setClientRedirect(ClientRedirect);
+                request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
             m_frame->loader().load(request);
             return;
         }

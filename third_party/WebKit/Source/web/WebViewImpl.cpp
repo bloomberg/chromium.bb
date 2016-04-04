@@ -2838,8 +2838,8 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
         FrameLoadRequest request = FrameLoadRequest(
             nullptr,
             m_page->deprecatedLocalMainFrame()->loader().resourceRequestForReload(
-                FrameLoadTypeReload, KURL(), ClientRedirect));
-        request.setClientRedirect(ClientRedirect);
+                FrameLoadTypeReload, KURL(), ClientRedirectPolicy::ClientRedirect));
+        request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
         m_page->deprecatedLocalMainFrame()->loader().load(request, FrameLoadTypeReload);
     }
 }

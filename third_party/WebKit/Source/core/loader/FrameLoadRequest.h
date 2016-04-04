@@ -101,7 +101,7 @@ private:
         , m_frameName(frameName)
         , m_substituteData(substituteData)
         , m_replacesCurrentItem(false)
-        , m_clientRedirect(NotClientRedirect)
+        , m_clientRedirect(ClientRedirectPolicy::NotClientRedirect)
         , m_shouldSendReferrer(MaybeSendReferrer)
         , m_shouldSetOpener(MaybeSetOpener)
         , m_shouldCheckMainWorldContentSecurityPolicy(shouldCheckMainWorldContentSecurityPolicy)

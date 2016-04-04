@@ -147,7 +147,7 @@ ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadTyp
     // current document. If this reload is a client redirect (e.g., location.reload()),
     // it was initiated by something in the current document and should
     // therefore show the current document's url as the referrer.
-    if (clientRedirectPolicy == ClientRedirect) {
+    if (clientRedirectPolicy == ClientRedirectPolicy::ClientRedirect) {
         request.setHTTPReferrer(Referrer(m_frame->document()->outgoingReferrer(),
             m_frame->document()->getReferrerPolicy()));
     }
@@ -727,7 +727,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_frame->eventHandler().stopAutoscroll();
         m_frame->localDOMWindow()->enqueueHashchangeEvent(oldURL, url);
     }
-    m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
+    m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirectPolicy::ClientRedirect);
     updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, ScrollRestorationAuto, frameLoadType);
 
     m_documentLoader->initialScrollState().wasScrolledByUser = false;
@@ -1392,7 +1392,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     frameLoadRequest.resourceRequest().setRequestContext(determineRequestContextFromNavigationType(navigationType));
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
-    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirect))
+    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirectPolicy::ClientRedirect))
         return;
     if (!shouldClose(navigationType == NavigationTypeReload))
         return;
@@ -1408,7 +1408,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     m_provisionalDocumentLoader = client()->createDocumentLoader(m_frame, request, frameLoadRequest.substituteData().isValid() ? frameLoadRequest.substituteData() : defaultSubstituteDataForURL(request.url()));
     m_provisionalDocumentLoader->setNavigationType(navigationType);
     m_provisionalDocumentLoader->setReplacesCurrentHistoryItem(type == FrameLoadTypeReplaceCurrentItem);
-    m_provisionalDocumentLoader->setIsClientRedirect(frameLoadRequest.clientRedirect() == ClientRedirect);
+    m_provisionalDocumentLoader->setIsClientRedirect(frameLoadRequest.clientRedirect() == ClientRedirectPolicy::ClientRedirect);
 
     InspectorInstrumentation::didStartProvisionalLoad(m_frame);
 

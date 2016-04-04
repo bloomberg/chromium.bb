@@ -42,6 +42,7 @@
 #include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebFrameLoadType.h"
 #include "public/web/WebTreeScopeType.h"
 
 struct NPObject;
@@ -337,12 +338,12 @@ public:
     // Navigation ----------------------------------------------------------
 
     // Reload the current document.
-    // True |ignoreCache| explicitly bypasses caches.
-    // False |ignoreCache| revalidates any existing cache entries.
-    virtual void reload(bool ignoreCache = false) = 0;
+    // Note: reload() and reloadWithOverrideURL() will be deprecated.
+    // Do not use these APIs any more, but use loadRequest() instead.
+    virtual void reload(WebFrameLoadType = WebFrameLoadType::Reload) = 0;
 
     // This is used for situations where we want to reload a different URL because of a redirect.
-    virtual void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache = false) = 0;
+    virtual void reloadWithOverrideURL(const WebURL& overrideUrl, WebFrameLoadType = WebFrameLoadType::Reload) = 0;
 
     // Load the given URL.
     virtual void loadRequest(const WebURLRequest&) = 0;

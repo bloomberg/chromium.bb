@@ -19,6 +19,7 @@ namespace blink {
 class FrameHost;
 class FrameOwner;
 class RemoteFrame;
+enum class WebFrameLoadType;
 
 class WEB_EXPORT WebRemoteFrameImpl final : public WebFrameImplBase, WTF_NON_EXPORTED_BASE(public WebRemoteFrame) {
 public:
@@ -66,8 +67,8 @@ public:
         v8::Local<v8::Value> argv[]) override;
     v8::Local<v8::Context> mainWorldScriptContext() const override;
     v8::Local<v8::Context> deprecatedMainWorldScriptContext() const override;
-    void reload(bool ignoreCache) override;
-    void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache) override;
+    void reload(WebFrameLoadType) override;
+    void reloadWithOverrideURL(const WebURL& overrideUrl, WebFrameLoadType) override;
     void loadRequest(const WebURLRequest&) override;
     void loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebURLRequest::CachePolicy) override;
     void loadHTMLString(
