@@ -100,6 +100,7 @@ for %%f in (git.bat gitk.bat ssh.bat ssh-keygen.bat git-bash) do (
   %FIND_EXE% "%GIT_BIN_DIR%" "%WIN_TOOLS_ROOT_DIR%\%%f" 2>nul 1>nul
   if errorlevel 1 goto :GIT_MAKE_BATCH_FILES
 )
+if not exist %GIT_INST_DIR%\etc\profile.d\python.sh goto :GIT_MAKE_BATCH_FILES
 goto :SYNC_GIT_HELP_FILES
 
 :GIT_INSTALL
@@ -138,6 +139,7 @@ call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/g" -e "s/GIT_PROGRAM/cmd\\\\gitk.ex
 call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/g" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh.exe/g" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh.bat"
 call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/g" -e "s/GIT_PROGRAM/usr\\\\bin\\\\ssh-keygen.exe/g" < %GIT_TEMPL% > "%WIN_TOOLS_ROOT_DIR%\ssh-keygen.bat"
 call "%SED%" -e "s/GIT_BIN_DIR/%GIT_BIN_DIR%/g" -e "s/PYTHON_BIN_DIR/python276_bin/g" -e "s/SVN_BIN_DIR/svn_bin/g" < %~dp0git-bash.template.sh > "%WIN_TOOLS_ROOT_DIR%\git-bash"
+copy "%~dp0profile.d.python.sh" %GIT_INST_DIR%\etc\profile.d\python.sh > NUL
 
 :: Ensure various git configurations are set correctly at they system level.
 call "%WIN_TOOLS_ROOT_DIR%\git.bat" config --system core.autocrlf false
