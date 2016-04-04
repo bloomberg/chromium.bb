@@ -83,6 +83,8 @@ struct test_context {
 	const struct ivi_layout_interface *layout_interface;
 	struct wl_resource *runner_resource;
 	uint32_t user_flags;
+
+	struct wl_listener surface_property_changed;
 };
 
 static struct test_context static_context;
@@ -809,13 +811,14 @@ RUNNER_TEST(cleanup_layer)
 }
 
 static void
-test_surface_properties_changed_notification_callback(struct ivi_layout_surface *ivisurf,
-						      const struct ivi_layout_surface_properties *prop,
-						      enum ivi_layout_notification_mask mask,
-						      void *userdata)
+test_surface_properties_changed_notification_callback(struct wl_listener *listener, void *data)
+
 {
-	struct test_context *ctx = userdata;
+	struct test_context *ctx =
+			container_of(listener, struct test_context,
+					surface_property_changed);
 	const struct ivi_layout_interface *lyt = ctx->layout_interface;
+	struct ivi_layout_surface *ivisurf = data;
 
 	runner_assert_or_return(lyt->get_id_of_surface(ivisurf) == IVI_TEST_SURFACE_ID(0));
 
@@ -833,8 +836,10 @@ RUNNER_TEST(surface_properties_changed_notification)
 	ivisurf = lyt->get_surface_from_id(id_surface);
 	runner_assert(ivisurf != NULL);
 
-	runner_assert(lyt->surface_add_notification(
-		      ivisurf, test_surface_properties_changed_notification_callback, ctx) == IVI_SUCCEEDED);
+	ctx->surface_property_changed.notify = test_surface_properties_changed_notification_callback;
+
+	runner_assert(lyt->surface_add_listener(
+		      ivisurf, &ctx->surface_property_changed) == IVI_SUCCEEDED);
 
 	lyt->commit_changes();
 
@@ -855,7 +860,8 @@ RUNNER_TEST(surface_properties_changed_notification)
 
 	runner_assert(ctx->user_flags == 0);
 
-	lyt->surface_remove_notification(ivisurf);
+	// remove surface property changed listener.
+	wl_list_remove(&ctx->surface_property_changed.link);
 	ctx->user_flags = 0;
 	runner_assert(lyt->surface_set_destination_rectangle(
 		      ivisurf, 40, 50, 400, 500) == IVI_SUCCEEDED);
@@ -981,10 +987,7 @@ RUNNER_TEST(surface_remove_notification_p3)
 }
 
 static void
-test_surface_bad_properties_changed_notification_callback(struct ivi_layout_surface *ivisurf,
-							  const struct ivi_layout_surface_properties *prop,
-							  enum ivi_layout_notification_mask mask,
-							  void *userdata)
+test_surface_bad_properties_changed_notification_callback(struct wl_listener *listener, void *data)
 {
 }
 
@@ -996,8 +999,10 @@ RUNNER_TEST(surface_bad_properties_changed_notification)
 	ivisurf = lyt->get_surface_from_id(IVI_TEST_SURFACE_ID(0));
 	runner_assert(ivisurf != NULL);
 
-	runner_assert(lyt->surface_add_notification(
-		      NULL, test_surface_bad_properties_changed_notification_callback, NULL) == IVI_FAILED);
-	runner_assert(lyt->surface_add_notification(
-		      ivisurf, NULL, NULL) == IVI_FAILED);
+	ctx->surface_property_changed.notify = test_surface_bad_properties_changed_notification_callback;
+
+	runner_assert(lyt->surface_add_listener(
+		      NULL, &ctx->surface_property_changed) == IVI_FAILED);
+	runner_assert(lyt->surface_add_listener(
+		      ivisurf, NULL) == IVI_FAILED);
 }
