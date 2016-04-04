@@ -121,15 +121,15 @@ public:
 private:
     friend class DequeIteratorBase<T, inlineCapacity, Allocator>;
 
-    class Buffer : public VectorBuffer<T, INLINE_CAPACITY, Allocator> {
-        WTF_MAKE_NONCOPYABLE(Buffer);
+    class BackingBuffer : public VectorBuffer<T, INLINE_CAPACITY, Allocator> {
+        WTF_MAKE_NONCOPYABLE(BackingBuffer);
     private:
         using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
         using Base::m_size;
 
     public:
-        Buffer() : Base() { }
-        explicit Buffer(size_t capacity) : Base(capacity) { }
+        BackingBuffer() : Base() { }
+        explicit BackingBuffer(size_t capacity) : Base(capacity) { }
 
         void setSize(size_t size)
         {
@@ -145,7 +145,7 @@ private:
     void expandCapacityIfNeeded();
     void expandCapacity();
 
-    Buffer m_buffer;
+    BackingBuffer m_buffer;
     unsigned m_start;
     unsigned m_end;
 };
@@ -317,7 +317,7 @@ inline void Deque<T, inlineCapacity, Allocator>::finalize()
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::swap(Deque& other)
 {
-    typename Buffer::OffsetRange thisHole;
+    typename BackingBuffer::OffsetRange thisHole;
     if (m_start <= m_end) {
         m_buffer.setSize(m_end);
         thisHole.begin = 0;
@@ -327,7 +327,7 @@ inline void Deque<T, inlineCapacity, Allocator>::swap(Deque& other)
         thisHole.begin = m_end;
         thisHole.end = m_start;
     }
-    typename Buffer::OffsetRange otherHole;
+    typename BackingBuffer::OffsetRange otherHole;
     if (other.m_start <= other.m_end) {
         other.m_buffer.setSize(other.m_end);
         otherHole.begin = 0;
