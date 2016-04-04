@@ -154,7 +154,6 @@ blink::WebView* WebTestProxyBase::GetWebView() const {
 void WebTestProxyBase::Reset() {
   drag_image_.reset();
   animate_scheduled_ = false;
-  accept_languages_ = "";
 }
 
 blink::WebSpellCheckClient* WebTestProxyBase::GetSpellCheckClient() const {
@@ -222,14 +221,6 @@ void WebTestProxyBase::DrawSelectionRect(SkCanvas* canvas) {
   SkIRect rect;  // Bounding rect
   rect.set(wr.x, wr.y, wr.x + wr.width, wr.y + wr.height);
   canvas->drawIRect(rect, paint);
-}
-
-void WebTestProxyBase::SetAcceptLanguages(const std::string& accept_languages) {
-  bool notify = accept_languages_ != accept_languages;
-  accept_languages_ = accept_languages;
-
-  if (notify)
-    GetWebView()->acceptLanguagesChanged();
 }
 
 void WebTestProxyBase::CopyImageAtAndCapturePixels(
@@ -534,7 +525,8 @@ void WebTestProxyBase::ResetInputMethod() {
 }
 
 blink::WebString WebTestProxyBase::acceptLanguages() {
-  return blink::WebString::fromUTF8(accept_languages_);
+  return blink::WebString::fromUTF8(
+      test_interfaces_->GetTestRunner()->GetAcceptLanguages());
 }
 
 }  // namespace test_runner

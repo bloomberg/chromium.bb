@@ -28,6 +28,8 @@ void LayoutTestRuntimeFlags::Reset() {
   set_policy_delegate_should_notify_done(false);
   set_wait_until_done(false);
 
+  set_accept_languages("");
+
   // No need to report the initial state - only the future delta is important.
   tracked_dictionary().ResetChangeTracking();
 }

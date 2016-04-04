@@ -38,6 +38,17 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   }                                                                 \
   void set_##name(bool new_value) { dict_.SetBoolean(#name, new_value); }
 
+#define DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG(name)               \
+  std::string name() const {                                       \
+    std::string result;                                            \
+    bool found = dict_.current_values().GetString(#name, &result); \
+    DCHECK(found);                                                 \
+    return result;                                                 \
+  }                                                                \
+  void set_##name(const std::string& new_value) {                  \
+    dict_.SetString(#name, new_value);                             \
+  }
+
   // If true, the test_shell will generate pixel results in DumpAsText mode.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(generate_pixel_results)
 
@@ -80,7 +91,11 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // If true, the policy delegate will signal layout test completion.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(policy_delegate_should_notify_done)
 
+  // Contents of Accept-Language HTTP header requested by the test.
+  DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG(accept_languages)
+
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
+#undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
 
   // Reports whether recursing over child frames is necessary.
   bool dump_child_frames() const {
