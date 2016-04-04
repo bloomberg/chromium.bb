@@ -1182,7 +1182,7 @@ HistoryView.prototype.showWebHistoryNotification = function(
   }
 
   if (message)
-    this.showNotification(message);
+    this.showNotification(message, false /* isWarning */);
 };
 
 /**
