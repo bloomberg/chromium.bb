@@ -42,12 +42,12 @@ namespace blink {
 // Stable features are enabled by default.
 class WebRuntimeFeatures {
 public:
+    // Enable features with status=experimental listed in
+    // Source/platform/RuntimeEnabledFeatures.in.
     BLINK_EXPORT static void enableExperimentalFeatures(bool);
 
-    BLINK_EXPORT static void enableWebBluetooth(bool);
-
-    BLINK_EXPORT static void enableWebUsb(bool);
-
+    // Enable features with status=test listed in
+    // Source/platform/RuntimeEnabledFeatures.in.
     BLINK_EXPORT static void enableTestOnlyFeatures(bool);
 
     // Enables a feature by its string identifier from
@@ -57,113 +57,60 @@ public:
     // before blink::initialize().
     BLINK_EXPORT static void enableFeatureFromString(const std::string& name, bool enable);
 
-    BLINK_EXPORT static void enableApplicationCache(bool);
-
-    BLINK_EXPORT static void enableAudioOutputDevices(bool);
-
-    BLINK_EXPORT static void enableCanvas2dImageChromium(bool);
-
-    BLINK_EXPORT static void enableDatabase(bool);
-
     BLINK_EXPORT static void enableCompositedSelectionUpdate(bool);
     BLINK_EXPORT static bool isCompositedSelectionUpdateEnabled();
-
-    BLINK_EXPORT static void enableDecodeToYUV(bool);
 
     BLINK_EXPORT static void enableDisplayList2dCanvas(bool);
     BLINK_EXPORT static void forceDisplayList2dCanvas(bool);
     BLINK_EXPORT static void forceDisable2dCanvasCopyOnWrite(bool);
 
-    BLINK_EXPORT static void enableCompositorAnimationTimelines(bool);
-
-    BLINK_EXPORT static void enableDocumentWriteEvaluator(bool);
-
-    BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
-
     BLINK_EXPORT static void enableExperimentalFramework(bool);
     BLINK_EXPORT static bool isExperimentalFrameworkEnabled();
 
-    BLINK_EXPORT static void enableFastMobileScrolling(bool);
-
-    BLINK_EXPORT static void enableFileSystem(bool);
-
-    BLINK_EXPORT static void enableImageColorProfiles(bool);
-
-    BLINK_EXPORT static void enableSubpixelFontScaling(bool);
-
-    BLINK_EXPORT static void enableMediaCapture(bool);
-
-    BLINK_EXPORT static void enableMediaRecorder(bool);
-
-    BLINK_EXPORT static void enableNotificationActionIcons(bool);
-
-    BLINK_EXPORT static void enableNotificationConstructor(bool);
-
-    BLINK_EXPORT static void enableNotifications(bool);
-
-    BLINK_EXPORT static void enableNavigatorContentUtils(bool);
-
-    BLINK_EXPORT static void enableNetworkInformation(bool);
-
-    BLINK_EXPORT static void enableOrientationEvent(bool);
-
-    BLINK_EXPORT static void enablePagePopup(bool);
-
-    BLINK_EXPORT static void enablePermissionsAPI(bool);
-
-    BLINK_EXPORT static void enableRequestAutocomplete(bool);
-
-    BLINK_EXPORT static void enableScriptedSpeech(bool);
-
-    BLINK_EXPORT static void enableSlimmingPaintV2(bool);
-
-    BLINK_EXPORT static void enableTouch(bool);
-
-    BLINK_EXPORT static void enableWebGLDraftExtensions(bool);
-
-    BLINK_EXPORT static void enableWebGLImageChromium(bool);
-
-    BLINK_EXPORT static void enableXSLT(bool);
-
-    BLINK_EXPORT static void enableOverlayScrollbars(bool);
-
-    BLINK_EXPORT static void forceOverlayFullscreenVideo(bool);
-
-    BLINK_EXPORT static void enableSharedWorker(bool);
-
-    BLINK_EXPORT static void enablePreciseMemoryInfo(bool);
-
-    BLINK_EXPORT static void enableLayerSquashing(bool) { }
-
+    BLINK_EXPORT static void enableApplicationCache(bool);
+    BLINK_EXPORT static void enableAudioOutputDevices(bool);
+    BLINK_EXPORT static void enableCanvas2dImageChromium(bool);
     BLINK_EXPORT static void enableCredentialManagerAPI(bool);
-
-    BLINK_EXPORT static void enableCSSViewport(bool);
-
-    BLINK_EXPORT static void enableV8IdleTasks(bool);
-
-    BLINK_EXPORT static void enableReducedReferrerGranularity(bool);
-
-    BLINK_EXPORT static void enablePushMessaging(bool);
-
-    BLINK_EXPORT static void enablePushMessagingData(bool);
-
-    BLINK_EXPORT static void enablePushMessagingHasPermission(bool);
-
-    BLINK_EXPORT static void enableUnsafeES3APIs(bool);
-
-    BLINK_EXPORT static void enableWebVR(bool);
-
+    BLINK_EXPORT static void enableDatabase(bool);
+    BLINK_EXPORT static void enableDecodeToYUV(bool);
+    BLINK_EXPORT static void enableDocumentWriteEvaluator(bool);
+    BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
+    BLINK_EXPORT static void enableFastMobileScrolling(bool);
+    BLINK_EXPORT static void enableFileSystem(bool);
+    BLINK_EXPORT static void enableImageColorProfiles(bool);
+    BLINK_EXPORT static void enableMediaCapture(bool);
+    BLINK_EXPORT static void enableNavigatorContentUtils(bool);
+    BLINK_EXPORT static void enableNetworkInformation(bool);
     BLINK_EXPORT static void enableNewMediaPlaybackUi(bool);
-
+    BLINK_EXPORT static void enableNotificationActionIcons(bool);
+    BLINK_EXPORT static void enableNotificationConstructor(bool);
+    BLINK_EXPORT static void enableNotifications(bool);
+    BLINK_EXPORT static void enableOrientationEvent(bool);
+    BLINK_EXPORT static void enableOverlayScrollbars(bool);
+    BLINK_EXPORT static void enablePagePopup(bool);
+    BLINK_EXPORT static void enablePermissionsAPI(bool);
+    BLINK_EXPORT static void enablePreciseMemoryInfo(bool);
     BLINK_EXPORT static void enablePresentationAPI(bool);
-
-    BLINK_EXPORT static void enableWebFontsIntervention(bool);
-
-    BLINK_EXPORT static void enableWebFontsInterventionTrigger(bool);
-
-    BLINK_EXPORT static void enableScrollAnchoring(bool);
-
+    BLINK_EXPORT static void enablePushMessaging(bool);
+    BLINK_EXPORT static void enableReducedReferrerGranularity(bool);
     BLINK_EXPORT static void enableRenderingPipelineThrottling(bool);
+    BLINK_EXPORT static void enableRequestAutocomplete(bool);
+    BLINK_EXPORT static void enableScriptedSpeech(bool);
+    BLINK_EXPORT static void enableScrollAnchoring(bool);
+    BLINK_EXPORT static void enableSharedWorker(bool);
+    BLINK_EXPORT static void enableSlimmingPaintV2(bool);
+    BLINK_EXPORT static void enableTouch(bool);
+    BLINK_EXPORT static void enableUnsafeES3APIs(bool);
+    BLINK_EXPORT static void enableV8IdleTasks(bool);
+    BLINK_EXPORT static void enableWebBluetooth(bool);
+    BLINK_EXPORT static void enableWebFontsIntervention(bool);
+    BLINK_EXPORT static void enableWebFontsInterventionTrigger(bool);
+    BLINK_EXPORT static void enableWebGLDraftExtensions(bool);
+    BLINK_EXPORT static void enableWebGLImageChromium(bool);
+    BLINK_EXPORT static void enableWebUsb(bool);
+    BLINK_EXPORT static void enableWebVR(bool);
+    BLINK_EXPORT static void enableXSLT(bool);
+    BLINK_EXPORT static void forceOverlayFullscreenVideo(bool);
 
     // TODO(nhiroki): Remove after ExtendableMessageEvent is shipped
     // (crbug.com/543198).

@@ -150,11 +150,6 @@ void WebRuntimeFeatures::enableMediaCapture(bool enable)
     RuntimeEnabledFeatures::setMediaCaptureEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableMediaRecorder(bool enable)
-{
-    RuntimeEnabledFeatures::setMediaRecorderEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableNotificationActionIcons(bool enable)
 {
     RuntimeEnabledFeatures::setNotificationActionIconsEnabled(enable);
@@ -255,11 +250,6 @@ void WebRuntimeFeatures::enableCredentialManagerAPI(bool enable)
     RuntimeEnabledFeatures::setCredentialManagerEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableCSSViewport(bool enable)
-{
-    RuntimeEnabledFeatures::setCSSViewportEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableV8IdleTasks(bool enable)
 {
     RuntimeEnabledFeatures::setV8IdleTasksEnabled(enable);
@@ -273,11 +263,6 @@ void WebRuntimeFeatures::enableReducedReferrerGranularity(bool enable)
 void WebRuntimeFeatures::enablePushMessaging(bool enable)
 {
     RuntimeEnabledFeatures::setPushMessagingEnabled(enable);
-}
-
-void WebRuntimeFeatures::enablePushMessagingData(bool enable)
-{
-    RuntimeEnabledFeatures::setPushMessagingDataEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableUnsafeES3APIs(bool enable)
