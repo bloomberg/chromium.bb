@@ -444,10 +444,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       if (bsize >= BLOCK_8X8) {
         write_inter_mode(cm, w, mode, mode_ctx);
 #if CONFIG_REF_MV
-        if (mode == NEARMV && mbmi->ref_frame[1] == NONE) {
-          if (mbmi_ext->ref_mv_count[mbmi->ref_frame[0]] > 2) {
+        if (mode == NEARMV) {
+          const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+          if (mbmi_ext->ref_mv_count[ref_frame_type] > 2) {
             aom_write_bit(w, mbmi->ref_mv_idx != 0);
-            if (mbmi_ext->ref_mv_count[mbmi->ref_frame[0]] > 3 &&
+            if (mbmi_ext->ref_mv_count[ref_frame_type] > 3 &&
                 mbmi->ref_mv_idx > 0)
               aom_write_bit(w, mbmi->ref_mv_idx != 1);
           }
