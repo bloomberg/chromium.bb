@@ -328,6 +328,18 @@ Polymer({
     },
 
     /**
+     * Title text for the search button.
+     * @private {string}
+     */
+    searchButtonTitle_: {
+      type: String,
+      readOnly: true,
+      value: function() {
+        return loadTimeData.getString('searchButtonTitle');
+      },
+    },
+
+    /**
      * Label text for the user search input.
      * @private {string}
      */

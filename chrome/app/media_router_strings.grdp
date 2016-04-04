@@ -15,6 +15,20 @@
    Learn more
   </message>
 
+  <!-- Button Titles -->
+  <message name="IDS_MEDIA_ROUTER_BACK_BUTTON_TITLE" desc="Back button title, which is spoken when a screen reader is being used.">
+    Back
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CLOSE_BUTTON_TITLE" desc="Close button title, which is spoken when a screen reader is being used.">
+    Close
+  </message>
+  <message name="IDS_MEDIA_ROUTER_DROP_DOWN_BUTTON_TITLE" desc="Drop down button title, which is spoken when a screen reader is being used.">
+    Drop down
+  </message>
+  <message name="IDS_MEDIA_ROUTER_SEARCH_BUTTON_TITLE" desc="Search button title, which is spoken when a screen reader is being used.">
+    Search
+  </message>
+
   <!-- Cast Modes -->
   <message name="IDS_MEDIA_ROUTER_AUTO_CAST_MODE" desc="Title for auto cast mode that appears as the header of a list of devices. This represents the mode that will be initially shown, if the list of sinks supports more than one of the cast modes below. Note that auto mode is not a real cast mode and merely serves as a proxy for the other cast modes. This is NOT shown as a dropdown option.">
     Cast to

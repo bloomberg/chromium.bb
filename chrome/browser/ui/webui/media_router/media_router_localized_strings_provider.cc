@@ -17,6 +17,14 @@ void AddMediaRouterStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("mediaRouterTitle", IDS_MEDIA_ROUTER_TITLE);
   html_source->AddLocalizedString("learnMoreText",
                                   IDS_MEDIA_ROUTER_LEARN_MORE);
+  html_source->AddLocalizedString("backButtonTitle",
+                                  IDS_MEDIA_ROUTER_BACK_BUTTON_TITLE);
+  html_source->AddLocalizedString("closeButtonTitle",
+                                  IDS_MEDIA_ROUTER_CLOSE_BUTTON_TITLE);
+  html_source->AddLocalizedString("dropDownButtonTitle",
+                                  IDS_MEDIA_ROUTER_DROP_DOWN_BUTTON_TITLE);
+  html_source->AddLocalizedString("searchButtonTitle",
+                                  IDS_MEDIA_ROUTER_SEARCH_BUTTON_TITLE);
 }
 
 void AddRouteDetailsStrings(content::WebUIDataSource* html_source) {
