@@ -58,6 +58,11 @@
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
+    "prefix": "gpu-rasterization",
+    "base": "fast/images",
+    "args": ["--force-gpu-rasterization"]
+  },
+  {
     "prefix": "stable",
     "base": "webexposed",
     "args": ["--stable-release-mode"]
