@@ -14,7 +14,7 @@ class CSSValueNonInterpolableValue : public NonInterpolableValue {
 public:
     ~CSSValueNonInterpolableValue() final { }
 
-    static PassRefPtr<CSSValueNonInterpolableValue> create(RawPtr<CSSValue> cssValue)
+    static PassRefPtr<CSSValueNonInterpolableValue> create(CSSValue* cssValue)
     {
         return adoptRef(new CSSValueNonInterpolableValue(cssValue));
     }
@@ -24,7 +24,7 @@ public:
     DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
 private:
-    CSSValueNonInterpolableValue(RawPtr<CSSValue> cssValue)
+    CSSValueNonInterpolableValue(CSSValue* cssValue)
         : m_cssValue(cssValue)
     {
         ASSERT(m_cssValue);

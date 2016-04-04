@@ -41,7 +41,7 @@ class AnimatableUnknown final : public AnimatableValue {
 public:
     ~AnimatableUnknown() override { }
 
-    static PassRefPtr<AnimatableUnknown> create(RawPtr<CSSValue> value)
+    static PassRefPtr<AnimatableUnknown> create(CSSValue* value)
     {
         return adoptRef(new AnimatableUnknown(value));
     }
@@ -50,7 +50,7 @@ public:
         return adoptRef(new AnimatableUnknown(cssValuePool().createIdentifierValue(value)));
     }
 
-    RawPtr<CSSValue> toCSSValue() const { return m_value; }
+    CSSValue* toCSSValue() const { return m_value; }
     CSSValueID toCSSValueID() const { return toCSSPrimitiveValue(m_value.get())->getValueID(); }
 
 protected:
@@ -62,7 +62,7 @@ protected:
     bool usesDefaultInterpolationWith(const AnimatableValue*) const override { return true; }
 
 private:
-    explicit AnimatableUnknown(RawPtr<CSSValue> value)
+    explicit AnimatableUnknown(CSSValue* value)
         : m_value(value)
     {
         ASSERT(m_value);

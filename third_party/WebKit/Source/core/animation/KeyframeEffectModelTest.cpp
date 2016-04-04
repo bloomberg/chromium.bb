@@ -80,7 +80,7 @@ void expectDoubleValue(double expectedValue, PassRefPtr<Interpolation> interpola
     if (value->isLength())
         actualValue = toAnimatableLength(value.get())->getLength(1, ValueRangeAll).value();
     else
-        actualValue = toCSSPrimitiveValue(toAnimatableUnknown(value.get())->toCSSValue().get())->getDoubleValue();
+        actualValue = toCSSPrimitiveValue(toAnimatableUnknown(value.get())->toCSSValue())->getDoubleValue();
 
     EXPECT_FLOAT_EQ(static_cast<float>(expectedValue), actualValue);
 }

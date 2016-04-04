@@ -206,12 +206,12 @@ PassRefPtr<TimingFunction> AnimationInputHelpers::parseTimingFunction(const Stri
     if (string.isEmpty())
         return nullptr;
 
-    RawPtr<CSSValue> value = CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
+    CSSValue* value = CSSParser::parseSingleValue(CSSPropertyTransitionTimingFunction, string);
     if (!value || !value->isValueList()) {
         ASSERT(!value || value->isCSSWideKeyword());
         return nullptr;
     }
-    CSSValueList* valueList = toCSSValueList(value.get());
+    CSSValueList* valueList = toCSSValueList(value);
     if (valueList->length() > 1)
         return nullptr;
     return CSSToStyleMap::mapAnimationTimingFunction(*valueList->item(0), true);

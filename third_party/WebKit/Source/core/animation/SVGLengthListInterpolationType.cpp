@@ -59,7 +59,7 @@ void SVGLengthListInterpolationType::composite(UnderlyingValueOwner& underlyingV
         underlyingValueOwner.set(*this, value);
 }
 
-RawPtr<SVGPropertyBase> SVGLengthListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+SVGPropertyBase* SVGLengthListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
     ASSERT_NOT_REACHED();
     // This function is no longer called, because apply has been overridden.
@@ -71,13 +71,13 @@ void SVGLengthListInterpolationType::apply(const InterpolableValue& interpolable
     SVGElement& element = environment.svgElement();
     SVGLengthContext lengthContext(&element);
 
-    RawPtr<SVGLengthList> result = SVGLengthList::create(m_unitMode);
+    SVGLengthList* result = SVGLengthList::create(m_unitMode);
     const InterpolableList& list = toInterpolableList(interpolableValue);
     for (size_t i = 0; i < list.length(); i++) {
         result->append(SVGLengthInterpolationType::resolveInterpolableSVGLength(*list.get(i), lengthContext, m_unitMode, m_negativeValuesForbidden));
     }
 
-    element.setWebAnimatedAttribute(attribute(), result.release());
+    element.setWebAnimatedAttribute(attribute(), result);
 }
 
 } // namespace blink

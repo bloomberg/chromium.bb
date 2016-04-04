@@ -40,10 +40,10 @@ InterpolationValue SVGRectInterpolationType::maybeConvertSVGValue(const SVGPrope
     return InterpolationValue(result.release());
 }
 
-RawPtr<SVGPropertyBase> SVGRectInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+SVGPropertyBase* SVGRectInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
     const InterpolableList& list = toInterpolableList(interpolableValue);
-    RawPtr<SVGRect> result = SVGRect::create();
+    SVGRect* result = SVGRect::create();
     result->setX(toInterpolableNumber(list.get(RectX))->value());
     result->setY(toInterpolableNumber(list.get(RectY))->value());
     result->setWidth(toInterpolableNumber(list.get(RectWidth))->value());

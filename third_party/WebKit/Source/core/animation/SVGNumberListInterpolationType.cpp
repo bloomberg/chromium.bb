@@ -78,13 +78,13 @@ void SVGNumberListInterpolationType::composite(UnderlyingValueOwner& underlyingV
         underlyingList.getMutable(i)->scale(underlyingFraction);
 }
 
-RawPtr<SVGPropertyBase> SVGNumberListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+SVGPropertyBase* SVGNumberListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
-    RawPtr<SVGNumberList> result = SVGNumberList::create();
+    SVGNumberList* result = SVGNumberList::create();
     const InterpolableList& list = toInterpolableList(interpolableValue);
     for (size_t i = 0; i < list.length(); i++)
         result->append(SVGNumber::create(toInterpolableNumber(list.get(i))->value()));
-    return result.release();
+    return result;
 }
 
 } // namespace blink

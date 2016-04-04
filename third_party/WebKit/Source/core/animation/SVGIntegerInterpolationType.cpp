@@ -21,7 +21,7 @@ InterpolationValue SVGIntegerInterpolationType::maybeConvertSVGValue(const SVGPr
     return InterpolationValue(InterpolableNumber::create(toSVGInteger(svgValue).value()));
 }
 
-RawPtr<SVGPropertyBase> SVGIntegerInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+SVGPropertyBase* SVGIntegerInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
     double value = toInterpolableNumber(interpolableValue).value();
     return SVGInteger::create(round(value));

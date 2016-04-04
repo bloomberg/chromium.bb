@@ -287,7 +287,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
 {
     ASSERT(CSSPropertyMetadata::isInterpolableProperty(property));
     if (value->isUnknown()) {
-        StyleBuilder::applyProperty(property, state, toAnimatableUnknown(value)->toCSSValue().get());
+        StyleBuilder::applyProperty(property, state, toAnimatableUnknown(value)->toCSSValue());
         return;
     }
     ComputedStyle* style = state.style();

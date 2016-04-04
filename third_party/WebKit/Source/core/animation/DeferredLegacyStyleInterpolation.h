@@ -26,7 +26,7 @@ class CSSValuePair;
 
 class CORE_EXPORT DeferredLegacyStyleInterpolation : public StyleInterpolation {
 public:
-    static PassRefPtr<DeferredLegacyStyleInterpolation> create(RawPtr<CSSValue> start, RawPtr<CSSValue> end, CSSPropertyID id)
+    static PassRefPtr<DeferredLegacyStyleInterpolation> create(CSSValue* start, CSSValue* end, CSSPropertyID id)
     {
         return adoptRef(new DeferredLegacyStyleInterpolation(start, end, id));
     }
@@ -47,7 +47,7 @@ public:
     static bool interpolationRequiresStyleResolve(const CSSQuadValue&);
 
 private:
-    DeferredLegacyStyleInterpolation(RawPtr<CSSValue> start, RawPtr<CSSValue> end, CSSPropertyID id)
+    DeferredLegacyStyleInterpolation(CSSValue* start, CSSValue* end, CSSPropertyID id)
         : StyleInterpolation(InterpolableNumber::create(0), InterpolableNumber::create(1), id)
         , m_startCSSValue(start)
         , m_endCSSValue(end)

@@ -31,7 +31,7 @@ public:
     class NewAnimation {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
-        NewAnimation(AtomicString name, size_t nameIndex, const InertEffect& effect, Timing timing, RawPtr<StyleRuleKeyframes> styleRule)
+        NewAnimation(AtomicString name, size_t nameIndex, const InertEffect& effect, Timing timing, StyleRuleKeyframes* styleRule)
             : name(name)
             , nameIndex(nameIndex)
             , effect(effect)
@@ -58,7 +58,7 @@ public:
     class UpdatedAnimation {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
-        UpdatedAnimation(size_t index, Animation* animation, const InertEffect& effect, Timing specifiedTiming, RawPtr<StyleRuleKeyframes> styleRule)
+        UpdatedAnimation(size_t index, Animation* animation, const InertEffect& effect, Timing specifiedTiming, StyleRuleKeyframes* styleRule)
             : index(index)
             , animation(animation)
             , effect(&effect)
@@ -120,7 +120,7 @@ public:
         m_updatedCompositorKeyframes.clear();
     }
 
-    void startAnimation(const AtomicString& animationName, size_t nameIndex, const InertEffect& effect, const Timing& timing, RawPtr<StyleRuleKeyframes> styleRule)
+    void startAnimation(const AtomicString& animationName, size_t nameIndex, const InertEffect& effect, const Timing& timing, StyleRuleKeyframes* styleRule)
     {
         m_newAnimations.append(NewAnimation(animationName, nameIndex, effect, timing, styleRule));
     }
@@ -136,7 +136,7 @@ public:
         m_animationIndicesWithPauseToggled.append(index);
     }
     void updateAnimation(size_t index, Animation* animation, const InertEffect& effect, const Timing& specifiedTiming,
-        RawPtr<StyleRuleKeyframes> styleRule)
+        StyleRuleKeyframes* styleRule)
     {
         m_animationsWithUpdates.append(UpdatedAnimation(index, animation, effect, specifiedTiming, styleRule));
         m_suppressedAnimations.add(animation);

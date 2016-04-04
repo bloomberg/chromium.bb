@@ -16,7 +16,7 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
 public:
     ~CSSImageNonInterpolableValue() final { }
 
-    static PassRefPtr<CSSImageNonInterpolableValue> create(RawPtr<CSSValue> start, RawPtr<CSSValue> end)
+    static PassRefPtr<CSSImageNonInterpolableValue> create(CSSValue* start, CSSValue* end)
     {
         return adoptRef(new CSSImageNonInterpolableValue(start, end));
     }
@@ -29,7 +29,7 @@ public:
 
     static PassRefPtr<CSSImageNonInterpolableValue> merge(PassRefPtr<NonInterpolableValue> start, PassRefPtr<NonInterpolableValue> end);
 
-    RawPtr<CSSValue> crossfade(double progress) const
+    CSSValue* crossfade(double progress) const
     {
         if (m_isSingle || progress <= 0)
             return m_start;
@@ -41,7 +41,7 @@ public:
     DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
 private:
-    CSSImageNonInterpolableValue(RawPtr<CSSValue> start, RawPtr<CSSValue> end)
+    CSSImageNonInterpolableValue(CSSValue* start, CSSValue* end)
         : m_start(start)
         , m_end(end)
         , m_isSingle(m_start == m_end)
@@ -93,14 +93,14 @@ PairwiseInterpolationValue CSSImageInterpolationType::staticMergeSingleConversio
         CSSImageNonInterpolableValue::merge(start.nonInterpolableValue, end.nonInterpolableValue));
 }
 
-RawPtr<CSSValue> CSSImageInterpolationType::createCSSValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)
+CSSValue* CSSImageInterpolationType::createCSSValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)
 {
     return toCSSImageNonInterpolableValue(nonInterpolableValue)->crossfade(toInterpolableNumber(interpolableValue).value());
 }
 
-RawPtr<StyleImage> CSSImageInterpolationType::resolveStyleImage(CSSPropertyID property, const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, StyleResolverState& state)
+StyleImage* CSSImageInterpolationType::resolveStyleImage(CSSPropertyID property, const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, StyleResolverState& state)
 {
-    RawPtr<CSSValue> image = createCSSValue(interpolableValue, nonInterpolableValue);
+    CSSValue* image = createCSSValue(interpolableValue, nonInterpolableValue);
     return state.styleImage(property, *image);
 }
 
@@ -151,13 +151,13 @@ class ParentImageChecker : public InterpolationType::ConversionChecker {
 public:
     ~ParentImageChecker() final {}
 
-    static PassOwnPtr<ParentImageChecker> create(CSSPropertyID property, RawPtr<StyleImage> inheritedImage)
+    static PassOwnPtr<ParentImageChecker> create(CSSPropertyID property, StyleImage* inheritedImage)
     {
         return adoptPtr(new ParentImageChecker(property, inheritedImage));
     }
 
 private:
-    ParentImageChecker(CSSPropertyID property, RawPtr<StyleImage> inheritedImage)
+    ParentImageChecker(CSSPropertyID property, StyleImage* inheritedImage)
         : m_property(property)
         , m_inheritedImage(inheritedImage)
     { }

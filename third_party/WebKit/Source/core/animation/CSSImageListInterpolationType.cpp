@@ -100,7 +100,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertValue(const CSSVal
     if (value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueNone)
         return nullptr;
 
-    RawPtr<CSSValueList> tempList = nullptr;
+    CSSValueList* tempList = nullptr;
     if (!value.isBaseValueList()) {
         tempList = CSSValueList::createCommaSeparated();
         tempList->append(const_cast<CSSValue*>(&value)); // Take ref.

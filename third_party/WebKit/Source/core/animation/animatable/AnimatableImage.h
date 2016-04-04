@@ -40,7 +40,7 @@ namespace blink {
 class AnimatableImage final : public AnimatableValue {
 public:
     ~AnimatableImage() override { }
-    static PassRefPtr<AnimatableImage> create(RawPtr<CSSValue> value)
+    static PassRefPtr<AnimatableImage> create(CSSValue* value)
     {
         return adoptRef(new AnimatableImage(value));
     }
@@ -51,7 +51,7 @@ protected:
     bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
-    AnimatableImage(RawPtr<CSSValue> value)
+    AnimatableImage(CSSValue* value)
         : m_value(value)
     {
         ASSERT(m_value.get());

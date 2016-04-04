@@ -303,7 +303,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
             RefPtr<TimingFunction> keyframeTimingFunction = timing.timingFunction;
             timing.timingFunction = Timing::defaults().timingFunction;
 
-            RawPtr<StyleRuleKeyframes> keyframesRule = resolver->findKeyframesRule(elementForScoping, name);
+            StyleRuleKeyframes* keyframesRule = resolver->findKeyframesRule(elementForScoping, name);
             if (!keyframesRule)
                 continue; // Cancel the animation if there's no style rule for it.
 
@@ -744,7 +744,7 @@ EventTarget* CSSAnimations::AnimationEventDelegate::eventTarget() const
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)
 {
     if (m_animationTarget->document().hasListenerType(listenerType)) {
-        RawPtr<AnimationEvent> event = AnimationEvent::create(eventName, m_name, elapsedTime);
+        AnimationEvent* event = AnimationEvent::create(eventName, m_name, elapsedTime);
         event->setTarget(eventTarget());
         document().enqueueAnimationFrameEvent(event);
     }
@@ -805,7 +805,7 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const AnimationEff
         double elapsedTime = timing.iterationDuration;
         const AtomicString& eventType = EventTypeNames::transitionend;
         String pseudoElement = PseudoElement::pseudoElementNameForEvents(getPseudoId());
-        RawPtr<TransitionEvent> event = TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement);
+        TransitionEvent* event = TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement);
         event->setTarget(eventTarget());
         document().enqueueAnimationFrameEvent(event);
     }

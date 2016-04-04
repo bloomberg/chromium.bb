@@ -25,8 +25,8 @@ public:
     static InterpolationValue maybeConvertStyleImage(const StyleImage&, bool acceptGradients);
     static InterpolationValue maybeConvertStyleImage(const StyleImage* image, bool acceptGradients) { return image ? maybeConvertStyleImage(*image, acceptGradients) : nullptr; }
     static PairwiseInterpolationValue staticMergeSingleConversions(InterpolationValue&& start, InterpolationValue&& end);
-    static RawPtr<CSSValue> createCSSValue(const InterpolableValue&, const NonInterpolableValue*);
-    static RawPtr<StyleImage> resolveStyleImage(CSSPropertyID, const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&);
+    static CSSValue* createCSSValue(const InterpolableValue&, const NonInterpolableValue*);
+    static StyleImage* resolveStyleImage(CSSPropertyID, const InterpolableValue&, const NonInterpolableValue*, StyleResolverState&);
     static bool equalNonInterpolableValues(const NonInterpolableValue*, const NonInterpolableValue*);
 
 private:

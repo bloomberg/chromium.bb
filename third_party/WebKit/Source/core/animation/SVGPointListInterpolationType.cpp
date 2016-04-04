@@ -61,9 +61,9 @@ void SVGPointListInterpolationType::composite(UnderlyingValueOwner& underlyingVa
         underlyingValueOwner.set(*this, value);
 }
 
-RawPtr<SVGPropertyBase> SVGPointListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+SVGPropertyBase* SVGPointListInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
 {
-    RawPtr<SVGPointList> result = SVGPointList::create();
+    SVGPointList* result = SVGPointList::create();
 
     const InterpolableList& list = toInterpolableList(interpolableValue);
     ASSERT(list.length() % 2 == 0);
@@ -74,7 +74,7 @@ RawPtr<SVGPropertyBase> SVGPointListInterpolationType::appliedSVGValue(const Int
         result->append(SVGPoint::create(point));
     }
 
-    return result.release();
+    return result;
 }
 
 } // namespace blink

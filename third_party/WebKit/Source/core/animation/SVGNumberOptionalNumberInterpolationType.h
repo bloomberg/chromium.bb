@@ -19,7 +19,7 @@ public:
 private:
     InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
     InterpolationValue maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
-    RawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
+    SVGPropertyBase* appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
 };
 
 } // namespace blink

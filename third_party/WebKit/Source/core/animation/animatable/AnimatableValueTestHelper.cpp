@@ -152,7 +152,7 @@ void PrintTo(const AnimatableTransform& animTransform, ::std::ostream* os)
 
 void PrintTo(const AnimatableUnknown& animUnknown, ::std::ostream* os)
 {
-    PrintTo(*(animUnknown.toCSSValue().get()), os, "AnimatableUnknown");
+    PrintTo(*(animUnknown.toCSSValue()), os, "AnimatableUnknown");
 }
 
 void PrintTo(const AnimatableVisibility& animVisibility, ::std::ostream* os)

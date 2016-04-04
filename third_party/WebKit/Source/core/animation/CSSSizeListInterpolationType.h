@@ -22,7 +22,7 @@ public:
 private:
     InterpolationValue maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const final
     {
-        RawPtr<CSSValueList> tempList = nullptr;
+        CSSValueList* tempList = nullptr;
         if (!value.isBaseValueList()) {
             tempList = CSSValueList::createCommaSeparated();
             tempList->append(const_cast<CSSValue*>(&value)); // Take ref.

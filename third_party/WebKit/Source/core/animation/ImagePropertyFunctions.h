@@ -29,7 +29,7 @@ public:
         }
     }
 
-    static void setStyleImage(CSSPropertyID property, ComputedStyle& style, RawPtr<StyleImage> image)
+    static void setStyleImage(CSSPropertyID property, ComputedStyle& style, StyleImage* image)
     {
         switch (property) {
         case CSSPropertyBorderImageSource:

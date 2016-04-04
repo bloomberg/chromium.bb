@@ -23,7 +23,7 @@ public:
     }
 
     void setCSSPropertyValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
-    void setCSSPropertyValue(CSSPropertyID, RawPtr<CSSValue>);
+    void setCSSPropertyValue(CSSPropertyID, CSSValue*);
     void setPresentationAttributeValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
     void setSVGAttributeValue(const QualifiedName&, const String& value);
 

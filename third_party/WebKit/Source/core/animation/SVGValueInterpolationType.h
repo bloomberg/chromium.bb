@@ -40,7 +40,7 @@ private:
         underlyingValueOwner.set(*this, value);
     }
 
-    RawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
+    SVGPropertyBase* appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
 };
 
 } // namespace blink
