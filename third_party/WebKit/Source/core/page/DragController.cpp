@@ -243,7 +243,15 @@ bool DragController::performDrag(DragData* dragData)
             // Sending an event can result in the destruction of the view and part.
             DataTransfer* dataTransfer = createDraggingDataTransfer(DataTransferReadable, dragData);
             dataTransfer->setSourceOperation(dragData->draggingSourceOperationMask());
-            preventedDefault = mainFrame->eventHandler().performDragAndDrop(createMouseEvent(dragData), dataTransfer) != WebInputEventResult::NotHandled;
+            EventHandler& eventHandler = mainFrame->eventHandler();
+            preventedDefault = eventHandler.performDragAndDrop(createMouseEvent(dragData), dataTransfer) != WebInputEventResult::NotHandled;
+            if (!preventedDefault) {
+                // When drop target is plugin element and it can process drag, we
+                // should prevent default behavior.
+                const IntPoint point = mainFrame->view()->rootFrameToContents(dragData->clientPosition());
+                const HitTestResult result = eventHandler.hitTestResultAtPoint(point);
+                preventedDefault |= isHTMLPlugInElement(*result.innerNode()) && toHTMLPlugInElement(result.innerNode())->canProcessDrag();
+            }
             dataTransfer->setAccessPolicy(DataTransferNumb); // Invalidate clipboard here for security
         }
         if (preventedDefault) {

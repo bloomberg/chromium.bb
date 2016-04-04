@@ -488,3 +488,50 @@ function testAddContentScriptWithCode(url) {
   webview.src = url;
   document.body.appendChild(webview);
 }
+
+function testDragAndDropToInput() {
+  var css = document.createElement("style");
+  css.type = "text/css";
+  css.innerHTML = "html, body { height: 400px }";
+  document.body.appendChild(css);
+
+  var contents = document.getElementById("contents");
+  while (contents.childElementCount) {
+    contents.removeChild(contents.firstChild);
+  }
+  var webview = document.createElement('webview');
+
+  webview.id = 'webview';
+  webview.style = "width:640px; height:480px";
+
+  window.addEventListener('message', function (e) {
+    var data = JSON.parse(e.data)[0];
+    console.log("get message: " + data);
+    if (data === "connected") {
+      chrome.send('testResult', [true]);
+      return;
+    }
+
+    chrome.send(data);
+  });
+
+  webview.addEventListener('loadstop', function (e) {
+    if (webview.src != 'about:blank')
+      return;
+    console.log("load stop of src = :" + webview.src);
+    webview.executeScript({ file: 'test/draganddroptoinput.js' },
+      function (results) {
+      console.log("finish guest load");
+      webview.contentWindow.postMessage(
+        JSON.stringify(['create-channel']), '*');
+    });
+  });
+
+  // For debug messages from guests.
+  webview.addEventListener('consolemessage', function (e) {
+    console.log('[Guest]: ' + e.message);
+  });
+
+  webview.src = 'about:blank';
+  contents.appendChild(webview);
+}
