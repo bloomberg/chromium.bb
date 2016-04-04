@@ -231,6 +231,8 @@ public:
 
     HTMLFormElement* currentForm() const;
 
+    // TODO(tkent): This function has a bug that scrolling doesn't work well in
+    // a case of RangeSelection. crbug.com/443061
     void revealSelection(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, RevealExtentOption = DoNotRevealExtent);
     void setSelectionFromNone();
 
