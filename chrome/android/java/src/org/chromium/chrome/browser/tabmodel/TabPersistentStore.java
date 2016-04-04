@@ -329,17 +329,20 @@ public class TabPersistentStore extends TabPersister {
             for (Tab tab : mTabsToSave) {
                 int id = tab.getId();
                 boolean incognito = tab.isIncognito();
+                FileOutputStream stream = null;
                 try {
                     TabState state = tab.getState();
                     if (state != null) {
-                        TabState.saveState(
-                                openTabStateOutputStream(id, incognito), state, incognito);
+                        stream = openTabStateOutputStream(id, incognito);
+                        TabState.saveState(stream, state, incognito);
                     }
                 } catch (IOException e) {
                     logSaveException(e);
                 } catch (OutOfMemoryError e) {
                     Log.w(TAG, "Out of memory error while attempting to save tab state.  Erasing.");
                     deleteTabState(id, incognito);
+                } finally {
+                    StreamUtil.closeQuietly(stream);
                 }
             }
             mTabsToSave.clear();
