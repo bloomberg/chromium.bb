@@ -101,7 +101,7 @@ void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
   sink->SwitchOutputDevice(device_id, security_origin, callback);
 }
 
-bool IsSuspendUponHiddenEnabled() {
+bool IsBackgroundedSuspendEnabled() {
 #if !defined(OS_ANDROID)
   // Suspend/Resume is only enabled by default on Android.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -110,6 +110,14 @@ bool IsSuspendUponHiddenEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableMediaSuspend);
 #endif
+}
+
+bool IsNetworkStateError(blink::WebMediaPlayer::NetworkState state) {
+  bool result = state == blink::WebMediaPlayer::NetworkStateFormatError ||
+                state == blink::WebMediaPlayer::NetworkStateNetworkError ||
+                state == blink::WebMediaPlayer::NetworkStateDecodeError;
+  DCHECK_EQ(state > blink::WebMediaPlayer::NetworkStateLoaded, result);
+  return result;
 }
 
 }  // namespace
@@ -139,8 +147,12 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     linked_ptr<UrlIndex> url_index,
     const WebMediaPlayerParams& params)
     : frame_(frame),
+      delegate_state_(DelegateState::GONE),
+      is_idle_(false),
+      must_suspend_(false),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
+      highest_ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       preload_(BufferedDataSource::AUTO),
       buffering_strategy_(
           BufferedDataSourceInterface::BUFFERING_STRATEGY_NORMAL),
@@ -155,7 +167,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                      base::Unretained(this)),
           base::Bind(&WebMediaPlayerImpl::OnPipelineSeeked, AsWeakPtr()),
           base::Bind(&WebMediaPlayerImpl::OnPipelineSuspended, AsWeakPtr()),
-          base::Bind(&WebMediaPlayerImpl::OnPipelineResumed, AsWeakPtr()),
           base::Bind(&WebMediaPlayerImpl::OnPipelineError, AsWeakPtr())),
       load_type_(LoadTypeURL),
       opaque_(false),
@@ -346,31 +357,24 @@ void WebMediaPlayerImpl::play() {
   }
 #endif
 
-  const bool was_paused = paused_;
   paused_ = false;
+  is_idle_ = false;
   pipeline_.SetPlaybackRate(playback_rate_);
 
   if (data_source_)
     data_source_->MediaIsPlaying();
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
-
-  if (playback_rate_ > 0 && was_paused) {
-    NotifyPlaybackStarted();
-
-    // Resume the player if allowed. We always call Resume() in case there is a
-    // pending suspend that should be aborted. If the pipeline is not suspended,
-    // Resume() will have no effect.
-    if (IsAutomaticResumeAllowed())
-      pipeline_controller_.Resume();
-  }
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::pause() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  const bool was_already_paused = paused_ || playback_rate_ == 0;
+  // We update the paused state even when casting, since we expect pause() to be
+  // called when casting begins, and when we exit casting we should end up in a
+  // paused state.
   paused_ = true;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
@@ -390,9 +394,7 @@ void WebMediaPlayerImpl::pause() {
       ended_ ? pipeline_.GetMediaDuration() : pipeline_.GetMediaTime();
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
-
-  if (!was_already_paused)
-    NotifyPlaybackPaused();
+  UpdatePlayState();
 }
 
 bool WebMediaPlayerImpl::supportsSave() const {
@@ -408,8 +410,6 @@ void WebMediaPlayerImpl::seek(double seconds) {
 
 void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  ended_ = false;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   if (isRemote()) {
@@ -444,17 +444,20 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
     return;
   }
 
+  // TODO(sandersd): Ideally we would not clear the idle state if
+  // |pipeline_controller_| can elide the seek.
+  is_idle_ = false;
+  ended_ = false;
+
   seeking_ = true;
   seek_time_ = time;
   if (paused_)
     paused_time_ = time;
   pipeline_controller_.Seek(time, time_updated);
 
-  // Resume the pipeline if allowed so that the correct frame is displayed. We
-  // always call Resume() in case there is a pending suspend that should be
-  // aborted. If the pipeline is not suspended, Resume() will have no effect.
-  if (IsAutomaticResumeAllowed())
-    pipeline_controller_.Resume();
+  // This needs to be called after Seek() so that if a resume is triggered, it
+  // is to the correct time.
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::setRate(double rate) {
@@ -472,10 +475,6 @@ void WebMediaPlayerImpl::setRate(double rate) {
       rate = kMinRate;
     else if (rate > kMaxRate)
       rate = kMaxRate;
-    if (playback_rate_ == 0 && !paused_)
-      NotifyPlaybackStarted();
-  } else if (playback_rate_ != 0 && !paused_) {
-    NotifyPlaybackPaused();
   }
 
   playback_rate_ = rate;
@@ -573,6 +572,7 @@ bool WebMediaPlayerImpl::paused() const {
   if (isRemote())
     return cast_impl_.paused();
 #endif
+
   return pipeline_.GetPlaybackRate() == 0.0f;
 }
 
@@ -896,17 +896,11 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
 void WebMediaPlayerImpl::OnPipelineSuspended() {
 #if defined(OS_ANDROID)
   if (isRemote()) {
-    if (delegate_)
-      delegate_->PlayerGone(delegate_id_);
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
-    if (frame) {
+    if (frame)
       compositor_->PaintFrameUsingOldRenderingPath(frame);
-    }
   }
 #endif
-
-  memory_usage_reporting_timer_.Stop();
-  ReportMemoryUsage();
 
   // If we're not in an aggressive buffering state, tell the data source we have
   // enough data so that it may release the connection.
@@ -916,20 +910,11 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
       data_source_->OnBufferingHaveEnough(true);
   }
 
+  ReportMemoryUsage();
+
   if (pending_suspend_resume_cycle_) {
     pending_suspend_resume_cycle_ = false;
-    pipeline_controller_.Resume();
-    return;
-  }
-}
-
-void WebMediaPlayerImpl::OnPipelineResumed() {
-  if (playback_rate_ > 0 && !paused_) {
-    NotifyPlaybackStarted();
-  } else if (!playback_rate_ || paused_ || ended_) {
-    // Resend our paused notification so the pipeline is considered for idle
-    // resource reclamation; duplicate pause notifications are ignored.
-    NotifyPlaybackPaused();
+    UpdatePlayState();
   }
 }
 
@@ -943,6 +928,11 @@ void WebMediaPlayerImpl::OnPipelineEnded() {
 
   ended_ = true;
   client_->timeChanged();
+
+  // We don't actually want this to run until |client_| calls seek() or pause(),
+  // but that should have already happened in timeChanged() and so this is
+  // expected to be a no-op.
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
@@ -952,11 +942,6 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 
   if (suppress_destruction_errors_)
     return;
-
-  // Release the delegate for player errors; this drops the media session and
-  // avoids idle suspension from ticking.
-  if (delegate_)
-    delegate_->PlayerGone(delegate_id_);
 
 #if defined(OS_ANDROID)
   // For 10% of pipeline decode failures log the playback URL. The URL is set
@@ -974,10 +959,11 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
     // Any error that occurs before reaching ReadyStateHaveMetadata should
     // be considered a format error.
     SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
-    return;
+  } else {
+    SetNetworkState(PipelineErrorToNetworkState(error));
   }
 
-  SetNetworkState(PipelineErrorToNetworkState(error));
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::OnPipelineMetadata(
@@ -1007,14 +993,7 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
     client_->setWebLayer(video_weblayer_.get());
   }
 
-  // Tell the delegate we can now be safely suspended due to inactivity if a
-  // subsequent play event does not occur.
-  if (paused_)
-    NotifyPlaybackPaused();
-
-  // If the frame is hidden, it may be time to suspend playback.
-  if (delegate_ && delegate_->IsHidden())
-    OnHidden();
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
@@ -1043,6 +1022,8 @@ void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
   // Once we have enough, start reporting the total memory usage. We'll also
   // report once playback starts.
   ReportMemoryUsage();
+
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
@@ -1076,86 +1057,32 @@ void WebMediaPlayerImpl::OnAddTextTrack(
 
 void WebMediaPlayerImpl::OnHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (!IsSuspendUponHiddenEnabled())
-    return;
-
-#if defined(OS_ANDROID)  // WMPI_CAST
-  // If we're remote, the pipeline should already be suspended.
-  if (isRemote())
-    return;
-#endif
-
-  // Don't suspend before metadata is available, as we don't know if there is a
-  // video track yet.
-  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
-    return;
-
-  // Don't suspend players which only have audio and have not completed
-  // playback. The user can still control these players via the MediaSession UI.
-  // If the player has never started playback, OnSuspendRequested() will handle
-  // release of any idle resources.
-  if (!hasVideo() && !paused_ && !ended_)
-    return;
-
-  // Always reset the buffering strategy to normal when suspending for hidden to
-  // prevent an idle network connection from lingering.
-  setBufferingStrategy(WebMediaPlayer::BufferingStrategy::Normal);
-  pipeline_controller_.Suspend();
-  // If we're in the middle of a suspend/resume cycle we no longer want to
-  // resume when the suspend completes.
-  pending_suspend_resume_cycle_ = false;
-  if (delegate_)
-    delegate_->PlayerGone(delegate_id_);
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::OnShown() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (!IsSuspendUponHiddenEnabled())
-    return;
-
-#if defined(OS_ANDROID)  // WMPI_CAST
-  // If we're remote, the pipeline should stay suspended.
-  if (isRemote())
-    return;
-#endif
-
-  // If we do not yet have metadata, the only way we could have been suspended
-  // is by a OnSuspendRequested() with |must_suspend| set. In that case we need
-  // to resume, otherwise playback will be broken.
-  //
-  // Otherwise, resume if we should be playing.
-  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata ||
-      (!ended_ && !paused_)) {
-    pipeline_controller_.Resume();
-  }
+  must_suspend_ = false;
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-#if defined(OS_ANDROID)  // WMPI_CAST
-  // If we're remote, the pipeline should already be suspended.
-  if (isRemote())
-    return;
-#endif
 
 #if defined(OS_MACOSX)
   // TODO(sandersd): Idle suspend is disabled on OSX since hardware decoded
   // frames are owned by the video decoder in the GPU process. A mechanism for
   // detaching ownership from the decoder is needed. http://crbug.com/595716.
   return;
-#else
-  // Suspend should never be requested unless required or we're already in an
-  // idle state (paused or ended).
-  DCHECK(must_suspend || paused_ || ended_);
-
-  // Always suspend, but only notify the delegate if we must; this allows any
-  // exposed UI for player controls to continue to function even though the
-  // player has now been suspended.
-  pipeline_controller_.Suspend();
-  if (must_suspend && delegate_)
-    delegate_->PlayerGone(delegate_id_);
 #endif
+
+  if (must_suspend) {
+    must_suspend_ = true;
+  } else {
+    is_idle_ = true;
+  }
+
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::OnPlay() {
@@ -1174,9 +1101,10 @@ void WebMediaPlayerImpl::OnVolumeMultiplierUpdate(double multiplier) {
 }
 
 void WebMediaPlayerImpl::ScheduleRestart() {
-  if (!pipeline_controller_.IsSuspended()) {
+  // TODO(watk): All restart logic should be moved into PipelineController.
+  if (pipeline_.IsRunning() && !pipeline_controller_.IsPipelineSuspended()) {
     pending_suspend_resume_cycle_ = true;
-    pipeline_controller_.Suspend();
+    UpdatePlayState();
   }
 }
 
@@ -1208,25 +1136,22 @@ void WebMediaPlayerImpl::OnRemotePlaybackEnded() {
 
 void WebMediaPlayerImpl::OnDisconnectedFromRemoteDevice(double t) {
   DoSeek(base::TimeDelta::FromSecondsD(t), false);
-  if (delegate_ && !delegate_->IsHidden())
-    pipeline_controller_.Resume();
 
   // We already told the delegate we're paused when remoting started.
   client_->playbackStateChanged();
   client_->disconnectedFromRemoteDevice();
+
+  UpdatePlayState();
 }
 
 void WebMediaPlayerImpl::SuspendForRemote() {
-  if (!pipeline_controller_.IsSuspended()) {
-    pipeline_controller_.Suspend();
-  } else {
-    // TODO(sandersd): If PipelineController::Suspend() called |suspended_cb|
-    // when already suspended, we wouldn't need this case.
+  if (pipeline_controller_.IsPipelineSuspended()) {
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
-    if (frame) {
+    if (frame)
       compositor_->PaintFrameUsingOldRenderingPath(frame);
-    }
   }
+
+  UpdatePlayState();
 }
 
 gfx::Size WebMediaPlayerImpl::GetCanvasSize() const {
@@ -1247,6 +1172,11 @@ void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
 
   if (!success) {
     SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
+
+    // Not really necessary, since the pipeline was never started, but it at
+    // least this makes sure that the error handling code is in sync.
+    UpdatePlayState();
+
     return;
   }
 
@@ -1374,6 +1304,8 @@ void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
     SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
 
   ready_state_ = state;
+  highest_ready_state_ = std::max(highest_ready_state_, ready_state_);
+
   // Always notify to ensure client has the latest value.
   client_->readyStateChanged();
 }
@@ -1394,6 +1326,8 @@ double WebMediaPlayerImpl::GetPipelineDuration() const {
 }
 
 void WebMediaPlayerImpl::OnDurationChanged() {
+  // TODO(sandersd): We should call delegate_->DidPlay() with the new duration,
+  // especially if it changed from  <5s to >5s.
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return;
 
@@ -1456,50 +1390,149 @@ WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
   return video_frame;
 }
 
-void WebMediaPlayerImpl::NotifyPlaybackStarted() {
+void WebMediaPlayerImpl::UpdatePlayState() {
 #if defined(OS_ANDROID)  // WMPI_CAST
-  // We do not tell our delegates about remote playback, because that would
-  // keep the device awake, which is not what we want.
-  if (isRemote())
-    return;
+  bool is_remote = isRemote();
+#else
+  bool is_remote = false;
 #endif
+  bool is_backgrounded =
+      IsBackgroundedSuspendEnabled() && delegate_ && delegate_->IsHidden();
+  PlayState state =
+      UpdatePlayState_ComputePlayState(is_remote, is_backgrounded);
+  SetDelegateState(state.delegate_state);
+  SetMemoryReportingState(state.is_memory_reporting_enabled);
+  SetSuspendState(state.is_suspended || pending_suspend_resume_cycle_);
+}
 
-  // NotifyPlaybackStarted() may be called by interactions while suspended,
-  // (play/pause in particular). Those actions won't have any effect until the
-  // pipeline is resumed.
-  // TODO(dalecurtis): Should these be dropped at the call sites instead?
-  // Alternatively, rename this method to include Maybe or Changed, and handle
-  // multiple calls safely.
-  if (pipeline_controller_.IsSuspended())
+void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state) {
+  if (!delegate_ || delegate_state_ == new_state)
     return;
 
-  if (delegate_) {
-    delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
-                       pipeline_.GetMediaDuration());
-  }
-  if (!memory_usage_reporting_timer_.IsRunning()) {
-    memory_usage_reporting_timer_.Start(FROM_HERE,
-                                        base::TimeDelta::FromSeconds(2), this,
-                                        &WebMediaPlayerImpl::ReportMemoryUsage);
+  delegate_state_ = new_state;
+
+  switch (delegate_state_) {
+    case DelegateState::GONE:
+      delegate_->PlayerGone(delegate_id_);
+      break;
+    case DelegateState::PLAYING:
+      delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
+                         pipeline_.GetMediaDuration());
+      break;
+    case DelegateState::PAUSED:
+      delegate_->DidPause(delegate_id_, false);
+      break;
+    case DelegateState::ENDED:
+      delegate_->DidPause(delegate_id_, true);
+      break;
   }
 }
 
-void WebMediaPlayerImpl::NotifyPlaybackPaused() {
-#if defined(OS_ANDROID)  // WMPI_CAST
-  if (isRemote())
+void WebMediaPlayerImpl::SetMemoryReportingState(
+    bool is_memory_reporting_enabled) {
+  if (memory_usage_reporting_timer_.IsRunning() ==
+      is_memory_reporting_enabled) {
     return;
-#endif
+  }
 
-  // Same as above, NotifyPlaybackPaused() may be called by interactions while
-  // suspended, but those actions won't have any effect until the pipeline is
-  // resumed.
-  if (pipeline_controller_.IsSuspended())
+  if (is_memory_reporting_enabled) {
+    memory_usage_reporting_timer_.Start(FROM_HERE,
+                                        base::TimeDelta::FromSeconds(2), this,
+                                        &WebMediaPlayerImpl::ReportMemoryUsage);
+  } else {
+    memory_usage_reporting_timer_.Stop();
+    ReportMemoryUsage();
+  }
+}
+
+void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
+  // Do not change the state after an error has occurred.
+  // TODO(sandersd): Update PipelineController to remove the need for this.
+  if (IsNetworkStateError(network_state_))
     return;
 
-  if (delegate_)
-    delegate_->DidPause(delegate_id_, ended_);
-  memory_usage_reporting_timer_.Stop();
-  ReportMemoryUsage();
+  if (is_suspended) {
+    pipeline_controller_.Suspend();
+  } else {
+    pipeline_controller_.Resume();
+  }
+}
+
+WebMediaPlayerImpl::PlayState
+WebMediaPlayerImpl::UpdatePlayState_ComputePlayState(bool is_remote,
+                                                     bool is_backgrounded) {
+  PlayState result;
+
+  // This includes both data source (before pipeline startup) and pipeline
+  // errors.
+  bool has_error = IsNetworkStateError(network_state_);
+
+  // After HaveMetadata, we know which tracks are present and the duration.
+  bool have_metadata = ready_state_ >= WebMediaPlayer::ReadyStateHaveMetadata;
+
+  // After HaveFutureData, Blink will call play() if the state is not paused.
+  bool have_future_data =
+      highest_ready_state_ >= WebMediaPlayer::ReadyStateHaveFutureData;
+
+  // Background suspend is not enabled for audio-only players.
+  bool background_suspended = is_backgrounded && have_metadata && hasVideo();
+
+  // Idle suspend is enabled once there is future data. We don't want to idle
+  // suspend before that because play() may never be triggered to leave the idle
+  // state. There could be other theoretical problems if the page is waiting for
+  // other events before actually calling play(), but at least we don't break
+  // Blink.
+  //
+  // TODO(sandersd): Make the delegate suspend idle players immediately when
+  // hidden.
+  // TODO(sandersd): If Blink told us the paused state sooner, we could
+  // idle suspend sooner.
+  bool idle_suspended = is_idle_ && have_future_data;
+
+  // Combined suspend state.
+  result.is_suspended =
+      is_remote || must_suspend_ || idle_suspended || background_suspended;
+
+  // We do not treat |playback_rate_| == 0 as paused. For the media session,
+  // being paused implies displaying a play button, which is incorrect in this
+  // case. For memory usage reporting, we just use the same definition (but we
+  // don't have to).
+  //
+  // Similarly, we don't consider |ended_| to be paused. Blink will immediately
+  // call pause() or seek(), so |ended_| should not affect the computation.
+  // Despite that, |ended_| does result in a separate paused state, to simplfy
+  // the contract for SetDelegateState().
+  //
+  // |has_session| is used to decide when to create a media session. Idle
+  // suspension does not destroy the media session, because we expect that the
+  // notification controls (and audio focus) remain. We also require:
+  //   - |have_metadata|, since the tracks and duration are passed to DidPlay().
+  //   - |have_future_data|, since we need to know whether we are paused to
+  //     correctly configure the session.
+  //
+  // TODO(sandersd): If Blink told us the paused state sooner, we could create
+  // the media session sooner.
+  bool can_play = !has_error && !is_remote && have_future_data;
+  bool has_session = can_play && !must_suspend_ && !background_suspended;
+
+  if (!has_session) {
+    result.delegate_state = DelegateState::GONE;
+  } else if (paused_) {
+    // TODO(sandersd): There should be a paused+seeking state, during which
+    // the idle timer is disabled. Without that, idle suspending before or
+    // during seeking will have bad results.
+    result.delegate_state =
+        ended_ ? DelegateState::ENDED : DelegateState::PAUSED;
+  } else {
+    result.delegate_state = DelegateState::PLAYING;
+  }
+
+  // It's not  critical if some cases where memory usage can change are missed,
+  // since media memory changes are usually gradual.
+  result.is_memory_reporting_enabled =
+      can_play && !result.is_suspended && !paused_;
+
+  return result;
 }
 
 void WebMediaPlayerImpl::ReportMemoryUsage() {
@@ -1540,15 +1573,6 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
   const int64_t delta = current_memory_usage - last_reported_memory_usage_;
   last_reported_memory_usage_ = current_memory_usage;
   adjust_allocated_memory_cb_.Run(delta);
-}
-
-bool WebMediaPlayerImpl::IsAutomaticResumeAllowed() {
-#if defined(OS_ANDROID)
-  return !hasVideo() || (delegate_ && !delegate_->IsHidden());
-#else
-  // On non-Android platforms Resume() is always allowed.
-  return true;
-#endif
 }
 
 }  // namespace media

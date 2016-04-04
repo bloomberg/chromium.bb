@@ -41,7 +41,6 @@ class MEDIA_EXPORT PipelineController {
   using RendererFactoryCB = base::Callback<scoped_ptr<Renderer>(void)>;
   using SeekedCB = base::Callback<void(bool time_updated)>;
   using SuspendedCB = base::Callback<void()>;
-  using ResumedCB = base::Callback<void()>;
 
   // Construct a PipelineController wrapping |pipeline_|. |pipeline_| must
   // outlive the resulting PipelineController. The callbacks are:
@@ -49,14 +48,12 @@ class MEDIA_EXPORT PipelineController {
   //     renderers when starting and resuming.
   //   - |seeked_cb| is called upon reaching a stable state if a seek occured.
   //   - |suspended_cb| is called immediately after suspendeding.
-  //   - |resumed_cb| is called immediately after resuming.
   //   - |error_cb| is called if any operation on |pipeline_| does not result
   //     in PIPELINE_OK or its error callback is called.
   PipelineController(Pipeline* pipeline,
                      const RendererFactoryCB& renderer_factory_cb,
                      const SeekedCB& seeked_cb,
                      const SuspendedCB& suspended_cb,
-                     const ResumedCB& resumed_cb,
                      const PipelineStatusCB& error_cb);
   ~PipelineController();
 
@@ -104,8 +101,11 @@ class MEDIA_EXPORT PipelineController {
   //   - Resume() is processed immediately while in the SUSPENDED state.
   bool IsStable();
 
-  // Returns true if |pipeline_| is suspended.
+  // Returns true if the current target state is suspended.
   bool IsSuspended();
+
+  // Returns true if |pipeline_| is suspended.
+  bool IsPipelineSuspended();
 
  private:
   // Attempts to make progress from the current state to the target state.
@@ -127,9 +127,6 @@ class MEDIA_EXPORT PipelineController {
 
   // Called immediately when |pipeline_| completes a suspend operation.
   SuspendedCB suspended_cb_;
-
-  // Called immediately when |pipeline_| completes a resume operation.
-  ResumedCB resumed_cb_;
 
   // Called immediately when any operation on |pipeline_| results in an error.
   PipelineStatusCB error_cb_;
@@ -155,10 +152,6 @@ class MEDIA_EXPORT PipelineController {
   // Indicates that time has been changed by a seek, which will be reported at
   // the next seeked callback.
   bool pending_time_updated_ = false;
-
-  // Indicates that the |pipeline_| was suspended, and therefore that a resumed
-  // callback should be issued the next time we enter State::PLAYING.
-  bool pending_resumed_cb_ = false;
 
   // The target time of the active seek; valid while SEEKING or RESUMING.
   base::TimeDelta seek_time_;

@@ -36,8 +36,6 @@ class PipelineControllerTest : public ::testing::Test {
                                         base::Unretained(this)),
                              base::Bind(&PipelineControllerTest::OnSuspended,
                                         base::Unretained(this)),
-                             base::Bind(&PipelineControllerTest::OnResumed,
-                                        base::Unretained(this)),
                              base::Bind(&PipelineControllerTest::OnError,
                                         base::Unretained(this))) {}
 
@@ -84,12 +82,12 @@ class PipelineControllerTest : public ::testing::Test {
     pipeline_controller_.Suspend();
     Mock::VerifyAndClear(&pipeline_);
     EXPECT_FALSE(pipeline_controller_.IsStable());
-    EXPECT_FALSE(pipeline_controller_.IsSuspended());
+    EXPECT_FALSE(pipeline_controller_.IsPipelineSuspended());
     return suspend_cb;
   }
 
   PipelineStatusCB ResumePipeline() {
-    EXPECT_TRUE(pipeline_controller_.IsSuspended());
+    EXPECT_TRUE(pipeline_controller_.IsPipelineSuspended());
     PipelineStatusCB resume_cb;
     EXPECT_CALL(pipeline_, Resume(_, _, _))
         .WillOnce(
@@ -99,7 +97,7 @@ class PipelineControllerTest : public ::testing::Test {
     pipeline_controller_.Resume();
     Mock::VerifyAndClear(&pipeline_);
     EXPECT_FALSE(pipeline_controller_.IsStable());
-    EXPECT_FALSE(pipeline_controller_.IsSuspended());
+    EXPECT_FALSE(pipeline_controller_.IsPipelineSuspended());
     return resume_cb;
   }
 
@@ -118,8 +116,6 @@ class PipelineControllerTest : public ::testing::Test {
 
   void OnSuspended() { was_suspended_ = true; }
 
-  void OnResumed() { was_resumed_ = true; }
-
   void OnError(PipelineStatus status) { NOTREACHED(); }
 
   base::MessageLoop message_loop_;
@@ -131,7 +127,6 @@ class PipelineControllerTest : public ::testing::Test {
   bool was_seeked_ = false;
   bool last_seeked_time_updated_ = false;
   bool was_suspended_ = false;
-  bool was_resumed_ = false;
   base::TimeDelta last_resume_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PipelineControllerTest);
@@ -145,7 +140,6 @@ TEST_F(PipelineControllerTest, Startup) {
   EXPECT_TRUE(was_seeked_);
   EXPECT_FALSE(last_seeked_time_updated_);
   EXPECT_FALSE(was_suspended_);
-  EXPECT_FALSE(was_resumed_);
   EXPECT_TRUE(pipeline_controller_.IsStable());
 }
 
@@ -156,11 +150,9 @@ TEST_F(PipelineControllerTest, SuspendResume) {
 
   Complete(SuspendPipeline());
   EXPECT_TRUE(was_suspended_);
-  EXPECT_FALSE(was_resumed_);
   EXPECT_FALSE(pipeline_controller_.IsStable());
 
   Complete(ResumePipeline());
-  EXPECT_TRUE(was_resumed_);
   EXPECT_TRUE(pipeline_controller_.IsStable());
 
   // |was_seeked_| should not be affected by Suspend()/Resume() at all.
@@ -194,7 +186,6 @@ TEST_F(PipelineControllerTest, SuspendResumeTime) {
   message_loop_.RunUntilIdle();
 
   Complete(ResumePipeline());
-  EXPECT_TRUE(was_resumed_);
   EXPECT_EQ(seek_time, last_resume_time_);
 }
 
@@ -207,7 +198,6 @@ TEST_F(PipelineControllerTest, SuspendResumeTime_WithStreamingData) {
   message_loop_.RunUntilIdle();
 
   Complete(ResumePipeline());
-  EXPECT_TRUE(was_resumed_);
   EXPECT_EQ(base::TimeDelta(), last_resume_time_);
 }
 

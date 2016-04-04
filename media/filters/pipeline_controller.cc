@@ -16,20 +16,17 @@ PipelineController::PipelineController(
     const RendererFactoryCB& renderer_factory_cb,
     const SeekedCB& seeked_cb,
     const SuspendedCB& suspended_cb,
-    const ResumedCB& resumed_cb,
     const PipelineStatusCB& error_cb)
     : pipeline_(pipeline),
       renderer_factory_cb_(renderer_factory_cb),
       seeked_cb_(seeked_cb),
       suspended_cb_(suspended_cb),
-      resumed_cb_(resumed_cb),
       error_cb_(error_cb),
       weak_factory_(this) {
   DCHECK(pipeline_);
   DCHECK(!renderer_factory_cb_.is_null());
   DCHECK(!seeked_cb_.is_null());
   DCHECK(!suspended_cb_.is_null());
-  DCHECK(!resumed_cb_.is_null());
   DCHECK(!error_cb_.is_null());
 }
 
@@ -114,12 +111,17 @@ void PipelineController::Resume() {
 
 bool PipelineController::IsStable() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return (state_ == State::PLAYING);
+  return state_ == State::PLAYING;
 }
 
 bool PipelineController::IsSuspended() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return (state_ == State::SUSPENDED);
+  return (pending_suspend_ || state_ == State::SUSPENDED) && !pending_resume_;
+}
+
+bool PipelineController::IsPipelineSuspended() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return state_ == State::SUSPENDED;
 }
 
 void PipelineController::OnPipelineStatus(State state,
@@ -137,16 +139,7 @@ void PipelineController::OnPipelineStatus(State state,
     // Start(), Seek(), or Resume() completed; we can be sure that
     // |demuxer_| got the seek it was waiting for.
     waiting_for_seek_ = false;
-    if (pending_resumed_cb_) {
-      pending_resumed_cb_ = false;
-
-      // Warning: possibly reentrant. The state may change inside this callback.
-      // It must be safe to call Dispatch() twice in a row here.
-      resumed_cb_.Run();
-    }
   } else if (state == State::SUSPENDED) {
-    pending_resumed_cb_ = true;
-
     // Warning: possibly reentrant. The state may change inside this callback.
     // It must be safe to call Dispatch() twice in a row here.
     suspended_cb_.Run();

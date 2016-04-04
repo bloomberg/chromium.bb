@@ -199,9 +199,28 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // TODO(hubbe): WMPI_CAST make private.
   void OnPipelineSeeked(bool time_updated);
 
+  // Distinct states that |delegate_| can be in.
+  // TODO(sandersd): This should move into WebMediaPlayerDelegate.
+  // (Public for testing.)
+  enum class DelegateState {
+    GONE,
+    PLAYING,
+    PAUSED,
+    ENDED,
+  };
+
+  // Playback state variables computed together in UpdatePlayState().
+  // (Public for testing.)
+  struct PlayState {
+    DelegateState delegate_state;
+    bool is_memory_reporting_enabled;
+    bool is_suspended;
+  };
+
  private:
+  friend class WebMediaPlayerImplTest;
+
   void OnPipelineSuspended();
-  void OnPipelineResumed();
   void OnPipelineEnded();
   void OnPipelineError(PipelineStatus error);
   void OnPipelineMetadata(PipelineMetadata metadata);
@@ -278,10 +297,28 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Called when a CDM has been attached to the |pipeline_|.
   void OnCdmAttached(bool success);
 
-  // Notifies |delegate_| that playback has started or was paused; also starts
-  // or stops the memory usage reporting timer respectively.
-  void NotifyPlaybackStarted();
-  void NotifyPlaybackPaused();
+  // Inspects the current playback state and:
+  //   - notifies |delegate_|,
+  //   - toggles the memory usage reporting timer, and
+  //   - toggles suspend/resume as necessary.
+  //
+  // This method should be called any time its dependent values change. These
+  // are:
+  //   - isRemote(),
+  //   - hasVideo(),
+  //   - delegate_->IsHidden(),
+  //   - network_state_, ready_state_,
+  //   - is_idle_, must_suspend_,
+  //   - paused_, ended_,
+  //   - pending_suspend_resume_cycle_.
+  void UpdatePlayState();
+
+  // Methods internal to UpdatePlayState().
+  PlayState UpdatePlayState_ComputePlayState(bool is_remote,
+                                             bool is_backgrounded);
+  void SetDelegateState(DelegateState new_state);
+  void SetMemoryReportingState(bool is_memory_reporting_enabled);
+  void SetSuspendState(bool is_suspended);
 
   // Called at low frequency to tell external observers how much memory we're
   // using for video playback.  Called by |memory_usage_reporting_timer_|.
@@ -290,14 +327,21 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void ReportMemoryUsage();
   void FinishMemoryUsageReport(int64_t demuxer_memory_usage);
 
-  // Indicates if automatic resumption of a suspended playback is allowed.
-  bool IsAutomaticResumeAllowed();
-
   blink::WebLocalFrame* frame_;
 
-  // TODO(hclam): get rid of these members and read from the pipeline directly.
+  // The playback state last reported to |delegate_|, to avoid setting duplicate
+  // states. (Which can have undesired effects like resetting the idle timer.)
+  DelegateState delegate_state_;
+
+  // Set when OnSuspendRequested() is called with |must_suspend| unset.
+  bool is_idle_;
+
+  // Set when OnSuspendRequested() is called with |must_suspend| set.
+  bool must_suspend_;
+
   blink::WebMediaPlayer::NetworkState network_state_;
   blink::WebMediaPlayer::ReadyState ready_state_;
+  blink::WebMediaPlayer::ReadyState highest_ready_state_;
 
   // Preload state for when |data_source_| is created after setPreload().
   BufferedDataSource::Preload preload_;
