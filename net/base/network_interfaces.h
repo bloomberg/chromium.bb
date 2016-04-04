@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_address.h"
-#include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 
@@ -41,15 +40,6 @@ enum IPAddressAttributes {
 // interface.
 struct NET_EXPORT NetworkInterface {
   NetworkInterface();
-  // Deprecated. Use the IPAddress constructor instead.
-  // https://crbug.com/496258.
-  NetworkInterface(const std::string& name,
-                   const std::string& friendly_name,
-                   uint32_t interface_index,
-                   NetworkChangeNotifier::ConnectionType type,
-                   const IPAddressNumber& address,
-                   uint32_t prefix_length,
-                   int ip_address_attributes);
   NetworkInterface(const std::string& name,
                    const std::string& friendly_name,
                    uint32_t interface_index,

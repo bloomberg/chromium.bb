@@ -180,9 +180,9 @@ bool GetNetworkListImpl(NetworkInterfaceList* networks,
                   network_endpoint.FromSockAddr(
                       prefix->Address.lpSockaddr,
                       prefix->Address.iSockaddrLength) &&
-                  IPNumberMatchesPrefix(endpoint.address().bytes(),
-                                        network_endpoint.address().bytes(),
-                                        prefix->PrefixLength)) {
+                  IPAddressMatchesPrefix(endpoint.address(),
+                                         network_endpoint.address(),
+                                         prefix->PrefixLength)) {
                 prefix_length =
                     std::max<size_t>(prefix_length, prefix->PrefixLength);
               }
@@ -212,12 +212,11 @@ bool GetNetworkListImpl(NetworkInterfaceList* networks,
               ip_address_attributes |= IP_ADDRESS_ATTRIBUTE_DEPRECATED;
             }
           }
-          networks->push_back(
-              NetworkInterface(adapter->AdapterName,
-                               base::SysWideToNativeMB(adapter->FriendlyName),
-                               index, GetNetworkInterfaceType(adapter->IfType),
-                               endpoint.address().bytes(), prefix_length,
-                               ip_address_attributes));
+          networks->push_back(NetworkInterface(
+              adapter->AdapterName,
+              base::SysWideToNativeMB(adapter->FriendlyName), index,
+              GetNetworkInterfaceType(adapter->IfType), endpoint.address(),
+              prefix_length, ip_address_attributes));
         }
       }
     }

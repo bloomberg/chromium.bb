@@ -67,10 +67,6 @@ bool TryConvertNativeToNetIPAttributes(int native_attributes,
 
 namespace internal {
 
-inline const unsigned char* GetIPAddressData(const IPAddressNumber& ip) {
-  return ip.data();
-}
-
 // Gets the connection type for interface |ifname| by checking for wireless
 // or ethtool extensions.
 NetworkChangeNotifier::ConnectionType GetInterfaceConnectionType(
