@@ -1368,3 +1368,5 @@ crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pas
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
 crbug.com/599662 inspector/sources/debugger-ui/debugger-save-to-temp-var.html [ Failure Crash ]
+
+crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
