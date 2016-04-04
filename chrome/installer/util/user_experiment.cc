@@ -35,8 +35,6 @@
 #include "chrome/installer/util/product.h"
 #include "content/public/common/result_codes.h"
 
-#pragma comment(lib, "wtsapi32.lib")
-
 namespace installer {
 
 namespace {

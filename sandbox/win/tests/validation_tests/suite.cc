@@ -13,8 +13,6 @@
 #include "sandbox/win/tests/common/controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#pragma comment(lib, "shlwapi.lib")
-
 namespace {
 
 void TestProcessAccess(sandbox::TestRunner* runner, DWORD target) {

@@ -239,6 +239,8 @@ test("sbox_validation_tests") {
     "//base/test:test_support",
     "//testing/gtest",
   ]
+
+  libs = [ "shlwapi.lib" ]
 }
 
 test("sbox_unittests") {

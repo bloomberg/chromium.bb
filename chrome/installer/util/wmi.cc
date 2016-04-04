@@ -11,8 +11,6 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 
-#pragma comment(lib, "wbemuuid.lib")
-
 using base::win::ScopedVariant;
 
 namespace installer {

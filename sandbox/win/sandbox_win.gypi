@@ -251,6 +251,11 @@
         'tests/validation_tests/commands.h',
         'tests/validation_tests/suite.cc',
       ],
+      'link_settings': {
+        'libraries': [
+          '-lshlwapi.lib',
+        ],
+      },
     },
     {
       'target_name': 'sbox_unittests',
