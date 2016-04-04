@@ -212,7 +212,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       web_ui_type_(WebUI::kNoWebUI),
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
-      is_in_commit_(false),
       last_navigation_lofi_state_(LOFI_UNSPECIFIED),
       weak_ptr_factory_(this) {
   frame_tree_->AddRenderViewHostRef(render_view_host_);
@@ -258,8 +257,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // Release the WebUI instances before all else as the WebUI may accesses the
   // RenderFrameHost during cleanup.
   ClearAllWebUI();
-
-  CHECK(!is_in_commit_);
 
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
@@ -1091,19 +1088,8 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     }
   }
 
-  // TODO(clamy): Remove this once enough data has been gathered for
-  // crbug.com/589365.
-  is_in_commit_ = true;
-  navigation_handle_->set_is_in_commit(true);
-
   accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, validated_params);
-
-  // TODO(clamy): Remove this once enough data has been gathered for
-  // crbug.com/589365.
-  is_in_commit_ = false;
-  if (navigation_handle_.get())
-    navigation_handle_->set_is_in_commit(false);
 
   // For a top-level frame, there are potential security concerns associated
   // with displaying graphics from a previously loaded page after the URL in
