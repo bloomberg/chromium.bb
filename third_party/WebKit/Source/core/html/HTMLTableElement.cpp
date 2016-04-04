@@ -410,18 +410,18 @@ const StylePropertySet* HTMLTableElement::additionalPresentationAttributeStyle()
         // Setting the border to 'hidden' allows it to win over any border
         // set on the table's cells during border-conflict resolution.
         if (m_rulesAttr != UnsetRules) {
-            DEFINE_STATIC_LOCAL(StylePropertySet, solidBorderStyle, (createBorderStyle(CSSValueHidden)));
-            return &solidBorderStyle;
+            DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, solidBorderStyle, (createBorderStyle(CSSValueHidden)));
+            return solidBorderStyle;
         }
         return nullptr;
     }
 
     if (m_borderColorAttr) {
-        DEFINE_STATIC_LOCAL(StylePropertySet, solidBorderStyle, (createBorderStyle(CSSValueSolid)));
-        return &solidBorderStyle;
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, solidBorderStyle, (createBorderStyle(CSSValueSolid)));
+        return solidBorderStyle;
     }
-    DEFINE_STATIC_LOCAL(StylePropertySet, outsetBorderStyle, (createBorderStyle(CSSValueOutset)));
-    return &outsetBorderStyle;
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, outsetBorderStyle, (createBorderStyle(CSSValueOutset)));
+    return outsetBorderStyle;
 }
 
 HTMLTableElement::CellBorders HTMLTableElement::getCellBorders() const
@@ -517,11 +517,11 @@ const StylePropertySet* HTMLTableElement::additionalGroupStyle(bool rows)
         return nullptr;
 
     if (rows) {
-        DEFINE_STATIC_LOCAL(StylePropertySet, rowBorderStyle, (createGroupBorderStyle(true)));
-        return &rowBorderStyle;
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, rowBorderStyle, (createGroupBorderStyle(true)));
+        return rowBorderStyle;
     }
-    DEFINE_STATIC_LOCAL(StylePropertySet, columnBorderStyle, (createGroupBorderStyle(false)));
-    return &columnBorderStyle;
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(StylePropertySet, columnBorderStyle, (createGroupBorderStyle(false)));
+    return columnBorderStyle;
 }
 
 bool HTMLTableElement::isURLAttribute(const Attribute& attribute) const

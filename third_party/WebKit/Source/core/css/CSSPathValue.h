@@ -20,7 +20,7 @@ public:
     static RawPtr<CSSPathValue> create(PassRefPtr<StylePath>);
     static RawPtr<CSSPathValue> create(PassOwnPtr<SVGPathByteStream>);
 
-    static CSSPathValue& emptyPathValue();
+    static CSSPathValue* emptyPathValue();
 
     StylePath* stylePath() const { return m_stylePath.get(); }
     String customCSSText() const;

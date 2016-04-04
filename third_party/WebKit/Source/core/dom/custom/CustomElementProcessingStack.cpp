@@ -42,8 +42,8 @@ size_t CustomElementProcessingStack::s_elementQueueEnd = kNumSentinels;
 
 CustomElementProcessingStack& CustomElementProcessingStack::instance()
 {
-    DEFINE_STATIC_LOCAL(CustomElementProcessingStack, instance, (new CustomElementProcessingStack));
-    return instance;
+    DEFINE_STATIC_LOCAL(Persistent<CustomElementProcessingStack>, instance, (new CustomElementProcessingStack()));
+    return *instance;
 }
 
 // Dispatches callbacks when popping the processing stack.

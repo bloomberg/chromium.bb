@@ -140,8 +140,8 @@ const char* boolString(bool val)
 
 DocumentElementSetMap& documentToElementSetMap()
 {
-    DEFINE_STATIC_LOCAL(DocumentElementSetMap, map, (new DocumentElementSetMap));
-    return map;
+    DEFINE_STATIC_LOCAL(Persistent<DocumentElementSetMap>, map, (new DocumentElementSetMap()));
+    return *map;
 }
 
 void addElementToDocumentMap(HTMLMediaElement* element, Document* document)

@@ -54,14 +54,14 @@ namespace blink {
 
 static ImageEventSender& loadEventSender()
 {
-    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (ImageEventSender::create(EventTypeNames::load)));
-    return sender;
+    DEFINE_STATIC_LOCAL(Persistent<ImageEventSender>, sender, (ImageEventSender::create(EventTypeNames::load)));
+    return *sender;
 }
 
 static ImageEventSender& errorEventSender()
 {
-    DEFINE_STATIC_LOCAL(ImageEventSender, sender, (ImageEventSender::create(EventTypeNames::error)));
-    return sender;
+    DEFINE_STATIC_LOCAL(Persistent<ImageEventSender>, sender, (ImageEventSender::create(EventTypeNames::error)));
+    return *sender;
 }
 
 static inline bool pageIsBeingDismissed(Document* document)

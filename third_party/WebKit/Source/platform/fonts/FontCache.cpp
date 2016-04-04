@@ -297,9 +297,9 @@ static bool invalidateFontCache = false;
 
 HeapHashSet<WeakMember<FontCacheClient>>& fontCacheClients()
 {
-    DEFINE_STATIC_LOCAL(HeapHashSet<WeakMember<FontCacheClient>>, clients, (new HeapHashSet<WeakMember<FontCacheClient>>));
+    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<WeakMember<FontCacheClient>>>, clients, (new HeapHashSet<WeakMember<FontCacheClient>>()));
     invalidateFontCache = true;
-    return clients;
+    return *clients;
 }
 
 void FontCache::addClient(FontCacheClient* client)

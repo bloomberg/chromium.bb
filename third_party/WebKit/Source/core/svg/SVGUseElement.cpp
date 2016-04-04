@@ -48,8 +48,8 @@ namespace blink {
 
 static SVGUseEventSender& svgUseLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(SVGUseEventSender, sharedLoadEventSender, (SVGUseEventSender::create(EventTypeNames::load)));
-    return sharedLoadEventSender;
+    DEFINE_STATIC_LOCAL(Persistent<SVGUseEventSender>, sharedLoadEventSender, (SVGUseEventSender::create(EventTypeNames::load)));
+    return *sharedLoadEventSender;
 }
 
 inline SVGUseElement::SVGUseElement(Document& document)

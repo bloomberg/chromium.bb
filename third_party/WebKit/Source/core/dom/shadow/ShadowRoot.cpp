@@ -297,7 +297,7 @@ void ShadowRoot::invalidateDescendantInsertionPoints()
 
 const HeapVector<Member<InsertionPoint>>& ShadowRoot::descendantInsertionPoints()
 {
-    DEFINE_STATIC_LOCAL(HeapVector<Member<InsertionPoint>>, emptyList, (new HeapVector<Member<InsertionPoint>>));
+    DEFINE_STATIC_LOCAL(PersistentHeapVector<Member<InsertionPoint>>, emptyList, ());
     if (m_shadowRootRareData && m_descendantInsertionPointsIsValid)
         return m_shadowRootRareData->descendantInsertionPoints();
 
@@ -349,7 +349,7 @@ unsigned ShadowRoot::descendantSlotCount() const
 
 const HeapVector<Member<HTMLSlotElement>>& ShadowRoot::descendantSlots()
 {
-    DEFINE_STATIC_LOCAL(HeapVector<Member<HTMLSlotElement>>, emptyList, (new HeapVector<Member<HTMLSlotElement>>));
+    DEFINE_STATIC_LOCAL(PersistentHeapVector<Member<HTMLSlotElement>>, emptyList, ());
     if (m_descendantSlotsIsValid) {
         ASSERT(m_shadowRootRareData);
         return m_shadowRootRareData->descendantSlots();

@@ -39,10 +39,10 @@ RawPtr<CSSPathValue> createPathValue()
 
 } // namespace
 
-CSSPathValue& CSSPathValue::emptyPathValue()
+CSSPathValue* CSSPathValue::emptyPathValue()
 {
-    DEFINE_STATIC_LOCAL(CSSPathValue, empty, (createPathValue()));
-    return empty;
+    DEFINE_STATIC_LOCAL(Persistent<CSSPathValue>, empty, (createPathValue()));
+    return empty.get();
 }
 
 String CSSPathValue::customCSSText() const

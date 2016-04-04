@@ -301,8 +301,8 @@ DEFINE_TRACE(EventHandler)
 
 DragState& EventHandler::dragState()
 {
-    DEFINE_STATIC_LOCAL(DragState, state, (new DragState));
-    return state;
+    DEFINE_STATIC_LOCAL(Persistent<DragState>, state, (new DragState()));
+    return *state;
 }
 
 void EventHandler::clear()

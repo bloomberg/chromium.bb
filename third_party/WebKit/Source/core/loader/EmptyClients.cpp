@@ -45,8 +45,8 @@ namespace blink {
 
 void fillWithEmptyClients(Page::PageClients& pageClients)
 {
-    DEFINE_STATIC_LOCAL(ChromeClient, dummyChromeClient, (EmptyChromeClient::create()));
-    pageClients.chromeClient = &dummyChromeClient;
+    DEFINE_STATIC_LOCAL(Persistent<ChromeClient>, dummyChromeClient, (EmptyChromeClient::create()));
+    pageClients.chromeClient = dummyChromeClient.get();
 
     DEFINE_STATIC_LOCAL(EmptyContextMenuClient, dummyContextMenuClient, ());
     pageClients.contextMenuClient = &dummyContextMenuClient;

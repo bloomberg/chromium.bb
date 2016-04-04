@@ -141,18 +141,18 @@ ComputedStyle* StyleResolver::s_styleNotYetAvailable;
 
 static StylePropertySet* leftToRightDeclaration()
 {
-    DEFINE_STATIC_LOCAL(MutableStylePropertySet, leftToRightDecl, (MutableStylePropertySet::create(HTMLQuirksMode)));
-    if (leftToRightDecl.isEmpty())
-        leftToRightDecl.setProperty(CSSPropertyDirection, CSSValueLtr);
-    return &leftToRightDecl;
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(MutableStylePropertySet, leftToRightDecl, (MutableStylePropertySet::create(HTMLQuirksMode)));
+    if (leftToRightDecl->isEmpty())
+        leftToRightDecl->setProperty(CSSPropertyDirection, CSSValueLtr);
+    return leftToRightDecl;
 }
 
 static StylePropertySet* rightToLeftDeclaration()
 {
-    DEFINE_STATIC_LOCAL(MutableStylePropertySet, rightToLeftDecl, (MutableStylePropertySet::create(HTMLQuirksMode)));
-    if (rightToLeftDecl.isEmpty())
-        rightToLeftDecl.setProperty(CSSPropertyDirection, CSSValueRtl);
-    return &rightToLeftDecl;
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(MutableStylePropertySet, rightToLeftDecl, (MutableStylePropertySet::create(HTMLQuirksMode)));
+    if (rightToLeftDecl->isEmpty())
+        rightToLeftDecl->setProperty(CSSPropertyDirection, CSSValueRtl);
+    return rightToLeftDecl;
 }
 
 static void collectScopedResolversForHostedShadowTrees(const Element& element, HeapVector<Member<ScopedStyleResolver>, 8>& resolvers)

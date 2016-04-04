@@ -468,7 +468,7 @@ Page* InspectorOverlay::overlayPage()
 
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
 
-    DEFINE_STATIC_LOCAL(FrameLoaderClient, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
+    DEFINE_STATIC_LOCAL(Persistent<FrameLoaderClient>, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     DCHECK(!m_overlayChromeClient);
@@ -495,7 +495,7 @@ Page* InspectorOverlay::overlayPage()
     // through some non-composited paint function.
     overlaySettings.setAcceleratedCompositingEnabled(false);
 
-    RawPtr<LocalFrame> frame = LocalFrame::create(&dummyFrameLoaderClient, &m_overlayPage->frameHost(), 0);
+    RawPtr<LocalFrame> frame = LocalFrame::create(dummyFrameLoaderClient.get(), &m_overlayPage->frameHost(), 0);
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     FrameLoader& loader = frame->loader();

@@ -39,6 +39,7 @@ template<typename T, typename Generator, typename Traits> class WeakIdentifierMa
     USING_FAST_MALLOC(WeakIdentifierMap);
 public:
     using IdentifierType = typename Generator::IdentifierType;
+    using ReferenceType = RawPtr<WeakIdentifierMap<T, Generator, Traits, false>>;
 
     static IdentifierType identifier(T* object)
     {
@@ -92,6 +93,7 @@ template<typename T, typename Generator, typename Traits> class WeakIdentifierMa
     : public GarbageCollected<WeakIdentifierMap<T, Generator, Traits, true>> {
 public:
     using IdentifierType = typename Generator::IdentifierType;
+    using ReferenceType = Persistent<WeakIdentifierMap<T, Generator, Traits, true>>;
 
     static IdentifierType identifier(T* object)
     {
@@ -144,15 +146,14 @@ private:
     template<> WeakIdentifierMap<T, ##__VA_ARGS__>& WeakIdentifierMap<T, ##__VA_ARGS__>::instance(); \
     extern template class WeakIdentifierMap<T, ##__VA_ARGS__>;
 
-#define DEFINE_WEAK_IDENTIFIER_MAP(T, ...)   \
+#define DEFINE_WEAK_IDENTIFIER_MAP(T, ...) \
     template class WeakIdentifierMap<T, ##__VA_ARGS__>; \
     template<> WeakIdentifierMap<T, ##__VA_ARGS__>& WeakIdentifierMap<T, ##__VA_ARGS__>::instance() \
     { \
-        using RefType = WeakIdentifierMap<T, ##__VA_ARGS__>; \
+        using RefType = WeakIdentifierMap<T, ##__VA_ARGS__>::ReferenceType; \
         DEFINE_STATIC_LOCAL(RefType, mapInstance, (new WeakIdentifierMap<T, ##__VA_ARGS__>())); \
-        return mapInstance; \
+        return *mapInstance; \
     }
-
 } // namespace blink
 
 #endif // WeakIdentifierMap_h

@@ -1852,8 +1852,13 @@ public:
     static LineClampValue initialLineClamp() { return LineClampValue(); }
     static ETextSecurity initialTextSecurity() { return TSNONE; }
     static Color initialTapHighlightColor();
+#if ENABLE(OILPAN)
     static const FilterOperations& initialFilter();
     static const FilterOperations& initialBackdropFilter();
+#else
+    static const FilterOperations& initialFilter() { DEFINE_STATIC_LOCAL(FilterOperations, ops, ()); return ops; }
+    static const FilterOperations& initialBackdropFilter() { DEFINE_STATIC_LOCAL(FilterOperations, ops, ()); return ops; }
+#endif
     static WebBlendMode initialBlendMode() { return WebBlendModeNormal; }
     static EIsolation initialIsolation() { return IsolationAuto; }
 private:

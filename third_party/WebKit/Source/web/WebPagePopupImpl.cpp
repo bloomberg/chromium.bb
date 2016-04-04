@@ -277,8 +277,8 @@ bool WebPagePopupImpl::initializePage()
     m_page->settings().setScrollAnimatorEnabled(m_webView->page()->settings().scrollAnimatorEnabled());
 
     provideContextFeaturesTo(*m_page, adoptPtr(new PagePopupFeaturesClient()));
-    DEFINE_STATIC_LOCAL(FrameLoaderClient, emptyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
-    RawPtr<LocalFrame> frame = LocalFrame::create(&emptyFrameLoaderClient, &m_page->frameHost(), 0);
+    DEFINE_STATIC_LOCAL(Persistent<FrameLoaderClient>, emptyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
+    RawPtr<LocalFrame> frame = LocalFrame::create(emptyFrameLoaderClient.get(), &m_page->frameHost(), 0);
     frame->setPagePopupOwner(m_popupClient->ownerElement());
     frame->setView(FrameView::create(frame.get()));
     frame->init();

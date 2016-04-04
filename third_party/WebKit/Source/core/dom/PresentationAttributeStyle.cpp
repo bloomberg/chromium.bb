@@ -68,8 +68,8 @@ public:
 using PresentationAttributeCache = HeapHashMap<unsigned, Member<PresentationAttributeCacheEntry>, AlreadyHashed>;
 static PresentationAttributeCache& presentationAttributeCache()
 {
-    DEFINE_STATIC_LOCAL(PresentationAttributeCache, cache, (new PresentationAttributeCache));
-    return cache;
+    DEFINE_STATIC_LOCAL(Persistent<PresentationAttributeCache>, cache, (new PresentationAttributeCache()));
+    return *cache;
 }
 
 class PresentationAttributeCacheCleaner {

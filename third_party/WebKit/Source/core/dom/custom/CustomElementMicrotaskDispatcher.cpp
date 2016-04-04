@@ -22,8 +22,8 @@ CustomElementMicrotaskDispatcher::CustomElementMicrotaskDispatcher()
 
 CustomElementMicrotaskDispatcher& CustomElementMicrotaskDispatcher::instance()
 {
-    DEFINE_STATIC_LOCAL(CustomElementMicrotaskDispatcher, instance, (new CustomElementMicrotaskDispatcher));
-    return instance;
+    DEFINE_STATIC_LOCAL(Persistent<CustomElementMicrotaskDispatcher>, instance, (new CustomElementMicrotaskDispatcher()));
+    return *instance;
 }
 
 void CustomElementMicrotaskDispatcher::enqueue(CustomElementCallbackQueue* queue)

@@ -30,8 +30,6 @@
 
 #include "core/editing/markers/DocumentMarker.h"
 
-#include "wtf/StdLibExtras.h"
-
 namespace blink {
 
 DocumentMarkerDetails::~DocumentMarkerDetails()
@@ -85,9 +83,9 @@ private:
 
 RawPtr<DocumentMarkerTextMatch> DocumentMarkerTextMatch::create(bool match)
 {
-    DEFINE_STATIC_LOCAL(DocumentMarkerTextMatch, trueInstance, (new DocumentMarkerTextMatch(true)));
-    DEFINE_STATIC_LOCAL(DocumentMarkerTextMatch, falseInstance, (new DocumentMarkerTextMatch(false)));
-    return match ? &trueInstance : &falseInstance;
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(DocumentMarkerTextMatch, trueInstance, (new DocumentMarkerTextMatch(true)));
+    DEFINE_STATIC_REF_WILL_BE_PERSISTENT(DocumentMarkerTextMatch, falseInstance, (new DocumentMarkerTextMatch(false)));
+    return match ? trueInstance : falseInstance;
 }
 
 inline DocumentMarkerTextMatch* toDocumentMarkerTextMatch(DocumentMarkerDetails* details)

@@ -42,8 +42,8 @@ using namespace HTMLNames;
 
 static SourceEventSender& sourceErrorEventSender()
 {
-    DEFINE_STATIC_LOCAL(SourceEventSender, sharedErrorEventSender, (SourceEventSender::create(EventTypeNames::error)));
-    return sharedErrorEventSender;
+    DEFINE_STATIC_LOCAL(Persistent<SourceEventSender>, sharedErrorEventSender, (SourceEventSender::create(EventTypeNames::error)));
+    return *sharedErrorEventSender;
 }
 
 class HTMLSourceElement::Listener final : public MediaQueryListListener {

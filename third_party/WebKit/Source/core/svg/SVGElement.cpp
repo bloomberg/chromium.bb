@@ -538,8 +538,8 @@ void SVGElement::removeInstanceMapping(SVGElement* instance)
 
 static HeapHashSet<WeakMember<SVGElement>>& emptyInstances()
 {
-    DEFINE_STATIC_LOCAL(HeapHashSet<WeakMember<SVGElement>>, emptyInstances, (new HeapHashSet<WeakMember<SVGElement>>));
-    return emptyInstances;
+    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<WeakMember<SVGElement>>>, emptyInstances, (new HeapHashSet<WeakMember<SVGElement>>()));
+    return *emptyInstances;
 }
 
 const HeapHashSet<WeakMember<SVGElement>>& SVGElement::instancesForElement() const

@@ -469,7 +469,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         // types.
         EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
 
-        DEFINE_STATIC_LOCAL(FrameLoaderClient, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
+        DEFINE_STATIC_LOCAL(Persistent<FrameLoaderClient>, dummyFrameLoaderClient, (EmptyFrameLoaderClient::create()));
 
         if (m_page) {
             toLocalFrame(m_page->mainFrame())->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), AtomicString("image/svg+xml"),
@@ -512,7 +512,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         LocalFrame* frame = nullptr;
         {
             TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
-            frame = LocalFrame::create(&dummyFrameLoaderClient, &page->frameHost(), 0);
+            frame = LocalFrame::create(dummyFrameLoaderClient.get(), &page->frameHost(), 0);
             frame->setView(FrameView::create(frame));
             frame->init();
         }

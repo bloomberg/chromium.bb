@@ -148,8 +148,9 @@ namespace {
 ScrollCustomizationCallbacks& scrollCustomizationCallbacks()
 {
     ASSERT(RuntimeEnabledFeatures::scrollCustomizationEnabled());
-    DEFINE_STATIC_LOCAL(ScrollCustomizationCallbacks, scrollCustomizationCallbacks, (new ScrollCustomizationCallbacks));
-    return scrollCustomizationCallbacks;
+    DEFINE_STATIC_LOCAL(Persistent<ScrollCustomizationCallbacks>,
+        scrollCustomizationCallbacks, (new ScrollCustomizationCallbacks()));
+    return *scrollCustomizationCallbacks;
 }
 
 } // namespace

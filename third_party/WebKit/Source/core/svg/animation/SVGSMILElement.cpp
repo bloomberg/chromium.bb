@@ -81,26 +81,26 @@ inline RepeatEvent* toRepeatEvent(Event* event)
 
 static SMILEventSender& smilEndEventSender()
 {
-    DEFINE_STATIC_LOCAL(SMILEventSender, sender, (SMILEventSender::create(EventTypeNames::endEvent)));
-    return sender;
+    DEFINE_STATIC_LOCAL(Persistent<SMILEventSender>, sender, (SMILEventSender::create(EventTypeNames::endEvent)));
+    return *sender;
 }
 
 static SMILEventSender& smilBeginEventSender()
 {
-    DEFINE_STATIC_LOCAL(SMILEventSender, sender, (SMILEventSender::create(EventTypeNames::beginEvent)));
-    return sender;
+    DEFINE_STATIC_LOCAL(Persistent<SMILEventSender>, sender, (SMILEventSender::create(EventTypeNames::beginEvent)));
+    return *sender;
 }
 
 static SMILEventSender& smilRepeatEventSender()
 {
-    DEFINE_STATIC_LOCAL(SMILEventSender, sender, (SMILEventSender::create(EventTypeNames::repeatEvent)));
-    return sender;
+    DEFINE_STATIC_LOCAL(Persistent<SMILEventSender>, sender, (SMILEventSender::create(EventTypeNames::repeatEvent)));
+    return *sender;
 }
 
 static SMILEventSender& smilRepeatNEventSender()
 {
-    DEFINE_STATIC_LOCAL(SMILEventSender, sender, (SMILEventSender::create(AtomicString("repeatn"))));
-    return sender;
+    DEFINE_STATIC_LOCAL(Persistent<SMILEventSender>, sender, (SMILEventSender::create(AtomicString("repeatn"))));
+    return *sender;
 }
 
 // This is used for duration type time values that can't be negative.
@@ -1233,14 +1233,14 @@ void SVGSMILElement::notifyDependentsIntervalChanged()
     // |loopBreaker| is used to avoid infinite recursions which may be caused from:
     // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| -> |add{Begin,End}Time| -> |{begin,end}TimeChanged| -> |notifyDependentsIntervalChanged|
     // |loopBreaker| is defined as a Persistent<HeapHashSet<Member<SVGSMILElement>>>. This won't cause leaks because it is guaranteed to be empty after the root |notifyDependentsIntervalChanged| has exited.
-    DEFINE_STATIC_LOCAL(HeapHashSet<Member<SVGSMILElement>>, loopBreaker, (new HeapHashSet<Member<SVGSMILElement>>));
-    if (!loopBreaker.add(this).isNewEntry)
+    DEFINE_STATIC_LOCAL(Persistent<HeapHashSet<Member<SVGSMILElement>>>, loopBreaker, (new HeapHashSet<Member<SVGSMILElement>>()));
+    if (!loopBreaker->add(this).isNewEntry)
         return;
 
     for (SVGSMILElement* element : m_syncBaseDependents)
         element->createInstanceTimesFromSyncbase(this);
 
-    loopBreaker.remove(this);
+    loopBreaker->remove(this);
 }
 
 void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncBase)

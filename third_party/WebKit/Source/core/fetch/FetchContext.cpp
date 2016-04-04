@@ -35,8 +35,8 @@ namespace blink {
 
 FetchContext& FetchContext::nullInstance()
 {
-    DEFINE_STATIC_LOCAL(FetchContext, instance, (new FetchContext));
-    return instance;
+    DEFINE_STATIC_LOCAL(Persistent<FetchContext>, instance, (new FetchContext));
+    return *instance;
 }
 
 void FetchContext::dispatchDidChangeResourcePriority(unsigned long, ResourceLoadPriority, int)

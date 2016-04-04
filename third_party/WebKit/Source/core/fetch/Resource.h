@@ -272,6 +272,20 @@ protected:
     HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;
     HashCountedSet<ResourceClient*> m_finishedClients;
 
+    class ResourceCallback : public GarbageCollectedFinalized<ResourceCallback> {
+    public:
+        static ResourceCallback* callbackHandler();
+        DECLARE_TRACE();
+        void schedule(Resource*);
+        void cancel(Resource*);
+        bool isScheduled(Resource*) const;
+    private:
+        ResourceCallback();
+        void runTask();
+        OwnPtr<CancellableTaskFactory> m_callbackTaskFactory;
+        HeapHashSet<Member<Resource>> m_resourcesWithPendingClients;
+    };
+
     bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client) || m_finishedClients.contains(client); }
 
     struct RedirectPair {
@@ -310,8 +324,6 @@ protected:
 
 private:
     class CacheHandler;
-    class ResourceCallback;
-
     void cancelTimerFired(Timer<Resource>*);
 
     void revalidationSucceeded(const ResourceResponse&);

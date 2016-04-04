@@ -17,8 +17,8 @@ void RenderingTest::SetUp()
 {
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
-    DEFINE_STATIC_LOCAL(EmptyChromeClient, chromeClient, (EmptyChromeClient::create()));
-    pageClients.chromeClient = &chromeClient;
+    DEFINE_STATIC_LOCAL(Persistent<EmptyChromeClient>, chromeClient, (EmptyChromeClient::create()));
+    pageClients.chromeClient = chromeClient.get();
     m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients, m_frameLoaderClient.release(), settingOverrider());
 
     Settings::setMockScrollbarsEnabled(true);

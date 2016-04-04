@@ -124,8 +124,8 @@ static void parseSizes(const CharacterType* value, unsigned length, Vector<IntSi
 
 static LinkEventSender& linkLoadEventSender()
 {
-    DEFINE_STATIC_LOCAL(LinkEventSender, sharedLoadEventSender, (LinkEventSender::create(EventTypeNames::load)));
-    return sharedLoadEventSender;
+    DEFINE_STATIC_LOCAL(Persistent<LinkEventSender>, sharedLoadEventSender, (LinkEventSender::create(EventTypeNames::load)));
+    return *sharedLoadEventSender;
 }
 
 static bool styleSheetTypeIsSupported(const String& type)
