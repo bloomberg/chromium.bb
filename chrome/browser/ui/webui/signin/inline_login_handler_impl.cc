@@ -858,12 +858,13 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
 }
 
 void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
-  CloseModalSigninIfNeeded(this);
   SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
-
   Browser* browser = GetDesktopBrowser();
+  Profile* profile = Profile::FromWebUI(web_ui());
+
+  CloseModalSigninIfNeeded(this);
   if (browser && !error_msg.empty()) {
-    LoginUIServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
+    LoginUIServiceFactory::GetForProfile(profile)->
         DisplayLoginResult(browser, base::UTF8ToUTF16(error_msg));
   }
 }
