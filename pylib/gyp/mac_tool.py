@@ -8,7 +8,6 @@
 These functions are executed via gyp-mac-tool when using the Makefile generator.
 """
 
-import errno
 import fcntl
 import fnmatch
 import glob
@@ -66,17 +65,9 @@ class MacTool(object):
     elif extension == '.strings':
       self._CopyStringsFile(source, dest)
     else:
-      # Try to hard-link, but fallback to copy if the hard-link fails due
-      # to cross device link error ([Errno 18] Cross-device link).
-      try:
-        if os.path.isfile(dest):
-          os.unlink(dest)
-        os.link(source, dest)
-      except OSError, e:
-        if e.errno == errno.EXDEV:
-          shutil.copy(source, dest)
-        else:
-          raise
+      if os.path.exists(dest):
+        os.unlink(dest)
+      shutil.copy(source, dest)
 
     if extension in ('.plist', '.strings') and convert_to_binary == 'True':
       self._ConvertToBinary(dest)
