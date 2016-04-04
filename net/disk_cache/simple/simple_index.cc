@@ -153,6 +153,7 @@ SimpleIndex::SimpleIndex(
       low_watermark_(0),
       eviction_in_progress_(false),
       initialized_(false),
+      init_method_(INITIALIZE_METHOD_MAX),
       index_file_(std::move(index_file)),
       io_thread_(io_thread),
       // Creating the callback once so it is reused every time
@@ -425,6 +426,7 @@ void SimpleIndex::MergeInitializingSet(
   entries_set_.swap(*index_file_entries);
   cache_size_ = merged_cache_size;
   initialized_ = true;
+  init_method_ = load_result->init_method;
 
   // The actual IO is asynchronous, so calling WriteToDisk() shouldn't slow the
   // merge down much.

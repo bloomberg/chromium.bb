@@ -78,6 +78,14 @@ static_assert(sizeof(EntryMetadata) == 8, "incorrect metadata size");
 class NET_EXPORT_PRIVATE SimpleIndex
     : public base::SupportsWeakPtr<SimpleIndex> {
  public:
+  // Used in histograms. Please only add entries at the end.
+  enum IndexInitMethod {
+    INITIALIZE_METHOD_RECOVERED = 0,
+    INITIALIZE_METHOD_LOADED = 1,
+    INITIALIZE_METHOD_NEWCACHE = 2,
+    INITIALIZE_METHOD_MAX = 3,
+  };
+
   typedef std::vector<uint64_t> HashList;
 
   SimpleIndex(const scoped_refptr<base::SingleThreadTaskRunner>& io_thread,
@@ -138,6 +146,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // Returns whether the index has been initialized yet.
   bool initialized() const { return initialized_; }
 
+  IndexInitMethod init_method() const { return init_method_; }
+
  private:
   friend class SimpleIndexTest;
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, IndexSizeCorrectOnMerge);
@@ -178,6 +188,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // initialization.
   base::hash_set<uint64_t> removed_entries_;
   bool initialized_;
+  IndexInitMethod init_method_;
 
   scoped_ptr<SimpleIndexFile> index_file_;
 

@@ -1088,6 +1088,25 @@ void SimpleEntryImpl::GetAvailableRangeInternal(
 }
 
 void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
+  if (!backend_) {
+    // If there's no backend, we want to truncate the files rather than delete
+    // them. Removing files will update the entry directory's mtime, which will
+    // likely force a full index rebuild on the next startup; this is clearly an
+    // undesirable cost. Instead, the lesser evil is to set the entry files to
+    // length zero, leaving the invalid entry in the index. On the next attempt
+    // to open the entry, it will fail asynchronously (since the magic numbers
+    // will not be found), and the files will actually be removed.
+    PostTaskAndReplyWithResult(
+        worker_pool_.get(), FROM_HERE,
+        base::Bind(&SimpleSynchronousEntry::TruncateEntryFiles, path_,
+                   entry_hash_),
+        base::Bind(&SimpleEntryImpl::DoomOperationComplete, this, callback,
+                   // Return to STATE_FAILURE after dooming, since no operation
+                   // can succeed on the truncated entry files.
+                   STATE_FAILURE));
+    state_ = STATE_IO_PENDING;
+    return;
+  }
   PostTaskAndReplyWithResult(
       worker_pool_.get(),
       FROM_HERE,

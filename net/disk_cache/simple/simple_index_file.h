@@ -37,6 +37,7 @@ struct NET_EXPORT_PRIVATE SimpleIndexLoadResult {
 
   bool did_load;
   SimpleIndex::EntrySet entries;
+  SimpleIndex::IndexInitMethod init_method;
   bool flush_required;
 };
 

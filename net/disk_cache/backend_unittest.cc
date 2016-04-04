@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -31,6 +32,7 @@
 #include "net/disk_cache/memory/mem_backend_impl.h"
 #include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
+#include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_test_util.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -3747,4 +3749,36 @@ TEST_F(DiskCacheBackendTest, SimpleCacheDeleteQuickly) {
     cache_.reset();
     EXPECT_TRUE(CleanupCacheDir());
   }
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheLateDoom) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  disk_cache::Entry *entry1, *entry2;
+  ASSERT_EQ(net::OK, CreateEntry("first", &entry1));
+  ASSERT_EQ(net::OK, CreateEntry("second", &entry2));
+  entry1->Close();
+
+  // Ensure that the directory mtime is flushed to disk before serializing the
+  // index.
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+#if defined(OS_POSIX)
+  base::File cache_dir(cache_path_,
+                       base::File::FLAG_OPEN | base::File::FLAG_READ);
+  EXPECT_TRUE(cache_dir.Flush());
+#endif  // defined(OS_POSIX)
+  cache_.reset();
+
+  // The index is now written. Dooming the last entry can't delete a file,
+  // because that would advance the cache directory mtime and invalidate the
+  // index.
+  entry2->Doom();
+  entry2->Close();
+
+  DisableFirstCleanup();
+  InitCache();
+  EXPECT_EQ(disk_cache::SimpleIndex::INITIALIZE_METHOD_LOADED,
+            simple_cache_impl_->index()->init_method());
 }

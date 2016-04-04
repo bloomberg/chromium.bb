@@ -132,6 +132,13 @@ class SimpleSynchronousEntry {
   // executed through that instance). Returns a net error code.
   static int DoomEntry(const base::FilePath& path, uint64_t entry_hash);
 
+  // Like |DoomEntry()| above, except that it truncates the entry files rather
+  // than deleting them. Used when dooming entries after the backend has
+  // shutdown. See implementation of |SimpleEntryImpl::DoomEntryInternal()| for
+  // more.
+  static int TruncateEntryFiles(const base::FilePath& path,
+                                uint64_t entry_hash);
+
   // Like |DoomEntry()| above. Deletes all entries corresponding to the
   // |key_hashes|. Succeeds only when all entries are deleted. Returns a net
   // error code.
@@ -299,6 +306,8 @@ class SimpleSynchronousEntry {
                                      int file_index);
   static bool DeleteFilesForEntryHash(const base::FilePath& path,
                                       uint64_t entry_hash);
+  static bool TruncateFilesForEntryHash(const base::FilePath& path,
+                                        uint64_t entry_hash);
 
   void RecordSyncCreateResult(CreateEntryResult result, bool had_index);
 

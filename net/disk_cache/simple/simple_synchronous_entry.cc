@@ -111,6 +111,18 @@ bool CanOmitEmptyFile(int file_index) {
   return file_index == disk_cache::simple_util::GetFileIndexFromStreamIndex(2);
 }
 
+bool TruncatePath(const FilePath& filename_to_truncate) {
+  File file_to_truncate;
+  int flags = File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WRITE |
+              File::FLAG_SHARE_DELETE;
+  file_to_truncate.Initialize(filename_to_truncate, flags);
+  if (!file_to_truncate.IsValid())
+    return false;
+  if (!file_to_truncate.SetLength(0))
+    return false;
+  return true;
+}
+
 }  // namespace
 
 namespace disk_cache {
@@ -260,6 +272,13 @@ void SimpleSynchronousEntry::CreateEntry(
 int SimpleSynchronousEntry::DoomEntry(const FilePath& path,
                                       uint64_t entry_hash) {
   const bool deleted_well = DeleteFilesForEntryHash(path, entry_hash);
+  return deleted_well ? net::OK : net::ERR_FAILED;
+}
+
+// static
+int SimpleSynchronousEntry::TruncateEntryFiles(const base::FilePath& path,
+                                               uint64_t entry_hash) {
+  const bool deleted_well = TruncateFilesForEntryHash(path, entry_hash);
   return deleted_well ? net::OK : net::ERR_FAILED;
 }
 
@@ -1157,6 +1176,23 @@ bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
   FilePath to_delete = path.AppendASCII(
       GetSparseFilenameFromEntryHash(entry_hash));
   simple_util::SimpleCacheDeleteFile(to_delete);
+  return result;
+}
+
+// static
+bool SimpleSynchronousEntry::TruncateFilesForEntryHash(
+    const FilePath& path,
+    const uint64_t entry_hash) {
+  bool result = true;
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    FilePath filename_to_truncate =
+        path.AppendASCII(GetFilenameFromEntryHashAndFileIndex(entry_hash, i));
+    if (!TruncatePath(filename_to_truncate))
+      result = false;
+  }
+  FilePath to_delete =
+      path.AppendASCII(GetSparseFilenameFromEntryHash(entry_hash));
+  TruncatePath(to_delete);
   return result;
 }
 
