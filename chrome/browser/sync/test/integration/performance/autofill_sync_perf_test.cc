@@ -21,8 +21,8 @@ using autofill::AutofillKey;
 using autofill::AutofillProfile;
 
 using autofill_helper::AllProfilesMatch;
+using autofill_helper::GetAllAutoFillProfiles;
 using autofill_helper::GetAllKeys;
-using autofill_helper::GetAllProfiles;
 using autofill_helper::GetKeyCount;
 using autofill_helper::GetProfileCount;
 using autofill_helper::RemoveKeys;
@@ -89,7 +89,7 @@ class AutofillSyncPerfTest : public SyncTest {
 
 void AutofillSyncPerfTest::AddProfiles(int profile, int num_profiles) {
   const std::vector<AutofillProfile*>& all_profiles =
-      GetAllProfiles(profile);
+      GetAllAutoFillProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     autofill_profiles.push_back(*all_profiles[i]);
@@ -102,7 +102,7 @@ void AutofillSyncPerfTest::AddProfiles(int profile, int num_profiles) {
 
 void AutofillSyncPerfTest::UpdateProfiles(int profile) {
   const std::vector<AutofillProfile*>& all_profiles =
-      GetAllProfiles(profile);
+      GetAllAutoFillProfiles(profile);
   std::vector<AutofillProfile> autofill_profiles;
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     autofill_profiles.push_back(*all_profiles[i]);

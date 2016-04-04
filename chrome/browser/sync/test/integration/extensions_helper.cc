@@ -70,9 +70,11 @@ std::string InstallExtension(Profile* profile, int index) {
 }
 
 std::string InstallExtensionForAllProfiles(int index) {
-  for (int i = 0; i < test()->num_clients(); ++i)
-    InstallExtension(test()->GetProfile(i), index);
-  return InstallExtension(test()->verifier(), index);
+  std::string extension_id;
+  for (auto* profile : test()->GetAllProfiles()) {
+    extension_id = InstallExtension(profile, index);
+  }
+  return extension_id;
 }
 
 void UninstallExtension(Profile* profile, int index) {

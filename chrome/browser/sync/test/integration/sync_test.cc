@@ -420,6 +420,17 @@ Profile* SyncTest::GetProfile(int index) {
   return profiles_[index];
 }
 
+std::vector<Profile*> SyncTest::GetAllProfiles() {
+  std::vector<Profile*> profiles;
+  if (use_verifier()) {
+    profiles.push_back(verifier());
+  }
+  for (int i = 0; i < num_clients(); ++i) {
+    profiles.push_back(GetProfile(i));
+  }
+  return profiles;
+}
+
 Browser* SyncTest::GetBrowser(int index) {
   if (browsers_.empty())
     LOG(FATAL) << "SetupClients() has not yet been called.";

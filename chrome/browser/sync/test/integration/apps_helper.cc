@@ -35,16 +35,16 @@ std::string CreateFakeAppName(int index) {
 
 namespace apps_helper {
 
-bool HasSameAppsAsVerifier(int index) {
-  return SyncAppHelper::GetInstance()->AppStatesMatch(
-      test()->GetProfile(index), test()->verifier());
+bool HasSameApps(Profile* profile1, Profile* profile2) {
+  return SyncAppHelper::GetInstance()->AppStatesMatch(profile1, profile2);
 }
 
-bool AllProfilesHaveSameAppsAsVerifier() {
-  for (int i = 0; i < test()->num_clients(); ++i) {
-    if (!HasSameAppsAsVerifier(i)) {
-      DVLOG(1) << "Profile " << i << " doesn't have the same apps as the"
-                                     " verifier profile.";
+bool AllProfilesHaveSameApps() {
+  const auto& profiles = test()->GetAllProfiles();
+  for (auto* profile : profiles) {
+    if (profile != profiles.front() &&
+        !HasSameApps(profiles.front(), profile)) {
+      DVLOG(1) << "Profiles apps do not match.";
       return false;
     }
   }
@@ -66,9 +66,11 @@ std::string InstallPlatformApp(Profile* profile, int index) {
 }
 
 std::string InstallAppForAllProfiles(int index) {
-  for (int i = 0; i < test()->num_clients(); ++i)
-    InstallApp(test()->GetProfile(i), index);
-  return InstallApp(test()->verifier(), index);
+  std::string extension_id;
+  for (auto* profile : test()->GetAllProfiles()) {
+    extension_id = InstallApp(profile, index);
+  }
+  return extension_id;
 }
 
 void UninstallApp(Profile* profile, int index) {
@@ -86,6 +88,11 @@ void DisableApp(Profile* profile, int index) {
       profile, CreateFakeAppName(index));
 }
 
+bool IsAppEnabled(Profile* profile, int index) {
+  return SyncExtensionHelper::GetInstance()->IsExtensionEnabled(
+      profile, CreateFakeAppName(index));
+}
+
 void IncognitoEnableApp(Profile* profile, int index) {
   return SyncExtensionHelper::GetInstance()->IncognitoEnableExtension(
       profile, CreateFakeAppName(index));
@@ -93,6 +100,11 @@ void IncognitoEnableApp(Profile* profile, int index) {
 
 void IncognitoDisableApp(Profile* profile, int index) {
   return SyncExtensionHelper::GetInstance()->IncognitoDisableExtension(
+      profile, CreateFakeAppName(index));
+}
+
+bool IsIncognitoEnabled(Profile* profile, int index) {
+  return SyncExtensionHelper::GetInstance()->IsIncognitoEnabled(
       profile, CreateFakeAppName(index));
 }
 

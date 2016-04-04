@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 
-using apps_helper::AllProfilesHaveSameAppsAsVerifier;
+using apps_helper::AllProfilesHaveSameApps;
 using apps_helper::InstallApp;
 using apps_helper::InstallPlatformApp;
 using sync_integration_test_util::AwaitCommitActivityCompletion;
@@ -26,7 +26,7 @@ class SingleClientAppsSyncTest : public SyncTest {
 IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithNoApps) {
   ASSERT_TRUE(SetupSync());
 
-  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+  ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithSomeLegacyApps) {
@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithSomeLegacyApps) {
 
   ASSERT_TRUE(SetupSync());
 
-  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+  ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithSomePlatformApps) {
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, StartWithSomePlatformApps) {
 
   ASSERT_TRUE(SetupSync());
 
-  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+  ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeLegacyApps) {
@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeLegacyApps) {
 
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
-  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+  ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomePlatformApps) {
@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomePlatformApps) {
 
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
-  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+  ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
@@ -104,5 +104,5 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppsSyncTest, InstallSomeApps) {
 
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
-  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+  ASSERT_TRUE(AllProfilesHaveSameApps());
 }

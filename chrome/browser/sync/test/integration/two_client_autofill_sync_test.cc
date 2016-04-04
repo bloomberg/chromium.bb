@@ -28,8 +28,8 @@ using autofill_helper::AwaitKeysMatch;
 using autofill_helper::AwaitProfilesMatch;
 using autofill_helper::CreateAutofillProfile;
 using autofill_helper::CreateUniqueAutofillProfile;
+using autofill_helper::GetAllAutoFillProfiles;
 using autofill_helper::GetAllKeys;
-using autofill_helper::GetAllProfiles;
 using autofill_helper::GetPersonalDataManager;
 using autofill_helper::GetProfileCount;
 using autofill_helper::KeysMatch;
@@ -162,40 +162,40 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   // Client1 adds a profile.
   AddProfile(1, CreateAutofillProfile(PROFILE_MARION));
   MakeABookmarkChange(1);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(2U, GetAllProfiles(0).size());
+  ASSERT_EQ(2U, GetAllAutoFillProfiles(0).size());
 
   // Client0 adds the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(2U, GetAllProfiles(0).size());
+  ASSERT_EQ(2U, GetAllAutoFillProfiles(0).size());
 
   // Client1 removes a profile.
-  RemoveProfile(1, GetAllProfiles(1)[0]->guid());
+  RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
   MakeABookmarkChange(1);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   // Client0 updates a profile.
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
                 base::ASCIIToUTF16("Bart"));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   // Client1 removes remaining profile.
-  RemoveProfile(1, GetAllProfiles(1)[0]->guid());
+  RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
   MakeABookmarkChange(1);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(0U, GetAllProfiles(0).size());
+  ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 7261786.
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddDuplicateProfiles) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 3636294.
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, SameProfileWithConflict) {
   AddProfile(1, profile1);
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 3626291.
@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddEmptyProfile) {
 
   AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(0U, GetAllProfiles(0).size());
+  ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 3616283.
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddProfile) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 3632260.
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddMultipleProfiles) {
   AddProfile(0, CreateAutofillProfile(PROFILE_FRASIER));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(3U, GetAllProfiles(0).size());
+  ASSERT_EQ(3U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 3602257.
@@ -263,12 +263,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DeleteProfile) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
-  RemoveProfile(1, GetAllProfiles(1)[0]->guid());
+  RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
   MakeABookmarkChange(1);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(0U, GetAllProfiles(0).size());
+  ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 3627300.
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MergeProfiles) {
   AddProfile(1, CreateAutofillProfile(PROFILE_FRASIER));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(3U, GetAllProfiles(0).size());
+  ASSERT_EQ(3U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 3665264.
@@ -290,19 +290,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, UpdateFields) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
                 base::ASCIIToUTF16("Lisa"));
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::EMAIL_ADDRESS),
                 base::ASCIIToUTF16("grrrl@TV.com"));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 3628299.
@@ -312,19 +312,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ConflictingFields) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
                 base::ASCIIToUTF16("Lisa"));
   MakeABookmarkChange(0);
   UpdateProfile(1,
-                GetAllProfiles(1)[0]->guid(),
+                GetAllAutoFillProfiles(1)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
                 base::ASCIIToUTF16("Bart"));
   MakeABookmarkChange(1);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
 // TCM ID - 3608295.
@@ -334,19 +334,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   base::string16 max_length_string(AutofillTable::kMaxDataLength, '.');
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FULL),
                 max_length_string);
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::EMAIL_ADDRESS),
                 max_length_string);
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::ADDRESS_HOME_LINE1),
                 max_length_string);
 
@@ -360,24 +360,24 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ExceedsMaxLength) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   base::string16 exceeds_max_length_string(
       AutofillTable::kMaxDataLength + 1, '.');
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
                 exceeds_max_length_string);
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_LAST),
                 exceeds_max_length_string);
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::EMAIL_ADDRESS),
                 exceeds_max_length_string);
   UpdateProfile(0,
-                GetAllProfiles(0)[0]->guid(),
+                GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::ADDRESS_HOME_LINE1),
                 exceeds_max_length_string);
 
@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, NoCreditCardSync) {
 
   MakeABookmarkChange(0);
   ASSERT_TRUE(AwaitProfilesMatch(0, 1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   PersonalDataManager* pdm = GetPersonalDataManager(1);
   ASSERT_EQ(0U, pdm->GetCreditCards().size());

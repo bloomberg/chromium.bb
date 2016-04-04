@@ -39,53 +39,50 @@ void SyncAppListHelper::SetupIfNecessary(SyncTest* test) {
     return;
   }
   test_ = test;
-
-  for (int i = 0; i < test->num_clients(); ++i) {
-    extensions::ExtensionSystem::Get(test_->GetProfile(i))
-        ->InitForRegularProfile(true);
+  for (auto* profile : test_->GetAllProfiles()) {
+    extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(true);
   }
-  extensions::ExtensionSystem::Get(test_->verifier())
-      ->InitForRegularProfile(true);
 
   setup_completed_ = true;
 }
 
-bool SyncAppListHelper::AppListMatchesVerifier(Profile* profile) {
-  AppListSyncableService* service =
-      AppListSyncableServiceFactory::GetForProfile(profile);
-  AppListSyncableService* verifier =
-      AppListSyncableServiceFactory::GetForProfile(test_->verifier());
+bool SyncAppListHelper::AppListMatch(Profile* profile1, Profile* profile2) {
+  AppListSyncableService* service1 =
+      AppListSyncableServiceFactory::GetForProfile(profile1);
+  AppListSyncableService* service2 =
+      AppListSyncableServiceFactory::GetForProfile(profile2);
   // Note: sync item entries may not exist in verifier, but item lists should
   // match.
-  if (service->GetModel()->top_level_item_list()->item_count() !=
-      verifier->GetModel()->top_level_item_list()->item_count()) {
+  if (service1->GetModel()->top_level_item_list()->item_count() !=
+      service2->GetModel()->top_level_item_list()->item_count()) {
     LOG(ERROR) << "Model item count: "
-               << service->GetModel()->top_level_item_list()->item_count()
+               << service1->GetModel()->top_level_item_list()->item_count()
                << " != "
-               << verifier->GetModel()->top_level_item_list()->item_count();
+               << service2->GetModel()->top_level_item_list()->item_count();
     return false;
   }
   bool res = true;
   for (size_t i = 0;
-       i < service->GetModel()->top_level_item_list()->item_count(); ++i) {
-    AppListItem* item1 = service->GetModel()->top_level_item_list()->item_at(i);
+       i < service1->GetModel()->top_level_item_list()->item_count(); ++i) {
+    AppListItem* item1 =
+        service1->GetModel()->top_level_item_list()->item_at(i);
     AppListItem* item2 =
-        verifier->GetModel()->top_level_item_list()->item_at(i);
+        service2->GetModel()->top_level_item_list()->item_at(i);
     if (item1->CompareForTest(item2))
       continue;
 
     LOG(ERROR) << "Item(" << i << "): " << item1->ToDebugString()
                << " != " << item2->ToDebugString();
     size_t index2;
-    if (!verifier->GetModel()->top_level_item_list()->FindItemIndex(item1->id(),
+    if (!service2->GetModel()->top_level_item_list()->FindItemIndex(item1->id(),
                                                                     &index2)) {
       LOG(ERROR) << " Item(" << i << "): " << item1->ToDebugString()
-                 << " Not in verifier.";
+                 << " Not in profile2.";
     } else {
       LOG(ERROR) << " Item(" << i << "): " << item1->ToDebugString()
-                 << " Has different verifier index: " << index2;
-      item2 = verifier->GetModel()->top_level_item_list()->item_at(index2);
-      LOG(ERROR) << " Verifier Item(" << index2
+                 << " Has different profile2 index: " << index2;
+      item2 = service2->GetModel()->top_level_item_list()->item_at(index2);
+      LOG(ERROR) << " profile2 Item(" << index2
                  << "): " << item2->ToDebugString();
     }
     res = false;
@@ -93,28 +90,21 @@ bool SyncAppListHelper::AppListMatchesVerifier(Profile* profile) {
   return res;
 }
 
-bool SyncAppListHelper::AllProfilesHaveSameAppListAsVerifier() {
-  bool res = true;
-  for (int i = 0; i < test_->num_clients(); ++i) {
-    if (!AppListMatchesVerifier(test_->GetProfile(i))) {
-      LOG(ERROR) << "Profile " << i
-                 << " doesn't have the same app list as the verifier profile.";
-      res = false;
-    }
-  }
-  if (!res) {
-    Profile* verifier = test_->verifier();
-    DVLOG(1) << "Verifier: "
-             << AppListSyncableServiceFactory::GetForProfile(verifier);
-    PrintAppList(test_->verifier());
-    for (int i = 0; i < test_->num_clients(); ++i) {
-      Profile* profile = test_->GetProfile(i);
-      DVLOG(1) << "Profile: " << i << ": "
+bool SyncAppListHelper::AllProfilesHaveSameAppList() {
+  const auto& profiles = test_->GetAllProfiles();
+  for (auto* profile : profiles) {
+    if (profile != profiles.front() &&
+        !AppListMatch(profiles.front(), profile)) {
+      DVLOG(1) << "Profile1: "
                << AppListSyncableServiceFactory::GetForProfile(profile);
       PrintAppList(profile);
+      DVLOG(1) << "Profile2: " <<
+          AppListSyncableServiceFactory::GetForProfile(profiles.front());
+      PrintAppList(profiles.front());
+      return false;
     }
   }
-  return res;
+  return true;
 }
 
 void SyncAppListHelper::MoveApp(Profile* profile, size_t from, size_t to) {
@@ -144,17 +134,6 @@ void SyncAppListHelper::MoveAppFromFolder(Profile* profile,
   }
   service->GetModel()->MoveItemToFolder(
       folder->item_list()->item_at(index_in_folder), "");
-}
-
-void SyncAppListHelper::CopyOrdinalsToVerifier(Profile* profile,
-                                               const std::string& id) {
-  AppListSyncableService* service =
-      AppListSyncableServiceFactory::GetForProfile(profile);
-  AppListSyncableService* verifier =
-      AppListSyncableServiceFactory::GetForProfile(test_->verifier());
-  verifier->GetModel()->top_level_item_list()->SetItemPosition(
-      verifier->GetModel()->FindItem(id),
-      service->GetModel()->FindItem(id)->position());
 }
 
 void SyncAppListHelper::PrintAppList(Profile* profile) {
