@@ -769,7 +769,7 @@ public class CustomTabActivity extends ChromeActivity {
     boolean openCurrentUrlInBrowser(boolean forceReparenting) {
         if (getActivityTab() == null) return false;
 
-        String url = getTabModelSelector().getCurrentTab().getUrl();
+        String url = getActivityTab().getUrl();
         if (DomDistillerUrlUtils.isDistilledPage(url)) {
             url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
         }
