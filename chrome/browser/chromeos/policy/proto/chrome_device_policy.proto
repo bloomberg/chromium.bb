@@ -687,6 +687,12 @@ message AllowBluetoothProto {
   optional bool allow_bluetooth = 1 [default = true];
 }
 
+// Settings that control whether a device can download hardware configuration
+// files from the Quirks Server.
+message DeviceQuirksDownloadEnabledProto {
+  optional bool quirks_download_enabled = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -736,4 +742,5 @@ message ChromeDeviceSettingsProto {
   optional LoginAuthenticationBehaviorProto login_authentication_behavior = 41;
   optional UsbDetachableWhitelistProto usb_detachable_whitelist = 42;
   optional AllowBluetoothProto allow_bluetooth = 43;
+  optional DeviceQuirksDownloadEnabledProto quirks_download_enabled = 44;
 }

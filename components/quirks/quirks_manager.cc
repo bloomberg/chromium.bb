@@ -43,7 +43,8 @@ bool CheckAndLogFile(const base::FilePath& path) {
 }
 
 base::FilePath CheckForIccFile(base::FilePath built_in_path,
-                               base::FilePath download_path) {
+                               base::FilePath download_path,
+                               bool quirks_enabled) {
   // First, look for icc file in old read-only location.  If there, we don't use
   // the Quirks server.
   // TODO(glevin): Awaiting final decision on how to handle old read-only files.
@@ -51,8 +52,7 @@ base::FilePath CheckForIccFile(base::FilePath built_in_path,
     return built_in_path;
 
   // If experimental Quirks flag isn't set, no other icc file is available.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableQuirksClient)) {
+  if (!quirks_enabled) {
     VLOG(1) << "Quirks Client disabled, no built-in icc file available.";
     return base::FilePath();
   }
@@ -126,6 +126,11 @@ void QuirksManager::OnLoginCompleted() {
     return;
 
   waiting_for_login_ = false;
+  if (!QuirksEnabled()) {
+    VLOG(1) << "Quirks Client disabled by device policy.";
+    return;
+  }
+
   for (const scoped_ptr<QuirksClient>& client : clients_)
     client->StartDownload();
 }
@@ -140,7 +145,8 @@ void QuirksManager::RequestIccProfilePath(
       blocking_pool_.get(), FROM_HERE,
       base::Bind(&CheckForIccFile,
                  delegate_->GetBuiltInDisplayProfileDirectory().Append(name),
-                 delegate_->GetDownloadDisplayProfileDirectory().Append(name)),
+                 delegate_->GetDownloadDisplayProfileDirectory().Append(name),
+                 QuirksEnabled()),
       base::Bind(&QuirksManager::OnIccFilePathRequestCompleted,
                  weak_ptr_factory_.GetWeakPtr(), product_id,
                  on_request_finished));
@@ -173,9 +179,7 @@ void QuirksManager::OnIccFilePathRequestCompleted(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If we found a file or client is disabled, inform requester.
-  if (!path.empty() ||
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableQuirksClient)) {
+  if (!path.empty() || !QuirksEnabled()) {
     on_request_finished.Run(path, false);
     // TODO(glevin): If Quirks files are ever modified on the server, we'll need
     // to modify this logic to check for updates. See crbug.com/595024.
@@ -245,6 +249,12 @@ void QuirksManager::CreateClient(
     client->StartDownload();
   else
     VLOG(2) << "Quirks Client created; waiting for login to begin download.";
+}
+
+bool QuirksManager::QuirksEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableQuirksClient) &&
+         delegate_->DevicePolicyEnabled();
 }
 
 void QuirksManager::SetLastServerCheck(int64_t product_id,

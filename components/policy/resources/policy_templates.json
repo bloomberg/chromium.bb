@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 324
+#   For your editing convenience: highest ID currently used: 325
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8376,6 +8376,32 @@
       'example_value': True,
       'tags': ['system-security'],
       'id': 324,
+    },
+    {
+      'name': 'DeviceQuirksDownloadEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:51-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 325,
+      'caption': '''Enable queries to Quirks Server for hardware profiles''',
+      'tags': [],
+      'desc':
+      '''The Quirks Server provides hardware-specific configuration files, like
+      ICC display profiles to adjust monitor calibration.
+
+      When this policy is set to false, the device will not attempt to
+      contact the Quirks Server to download configuration files.
+
+      If this policy is true or not configured then
+      <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will
+      automatically contact the Quirks Server and download configuration files,
+      if available, and store them on the device.  Such files might, for
+      example, be used to improve display quality of attached monitors.''',
     },
   ],
   'messages': {

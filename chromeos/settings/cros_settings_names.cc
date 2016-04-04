@@ -195,4 +195,8 @@ const char kLoginAuthenticationBehavior[] =
 // device.
 const char kAllowBluetooth[] = "cros.device.allow_bluetooth";
 
+// A boolean pref to enable any pings or requests to the Quirks Server.
+const char kDeviceQuirksDownloadEnabled[] =
+    "cros.device.quirks_download_enabled";
+
 }  // namespace chromeos

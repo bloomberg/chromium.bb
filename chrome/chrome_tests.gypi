@@ -826,6 +826,7 @@
       'browser/chromeos/policy/device_local_account_browsertest.cc',
       'browser/chromeos/policy/device_policy_cros_browser_test.cc',
       'browser/chromeos/policy/device_policy_cros_browser_test.h',
+      'browser/chromeos/policy/device_quirks_policy_browsertest.cc',
       'browser/chromeos/policy/device_status_collector_browsertest.cc',
       'browser/chromeos/policy/device_system_use_24hour_clock_browsertest.cc',
       'browser/chromeos/policy/display_rotation_default_handler_browsertest.cc',

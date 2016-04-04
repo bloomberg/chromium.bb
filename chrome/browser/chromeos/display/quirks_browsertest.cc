@@ -56,21 +56,6 @@ class QuirksBrowserTest : public InProcessBrowserTest {
  protected:
   ~QuirksBrowserTest() override = default;
 
-  void Initialize() {
-    // NOTE: QuirksManager::Initialize() isn't necessary here, since it'll be
-    // called in ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun().
-
-    // Create display_profiles subdirectory under temp profile directory.
-    const base::FilePath path =
-        QuirksManager::Get()->delegate()->GetDownloadDisplayProfileDirectory();
-    base::File::Error error = base::File::FILE_OK;
-    bool created = base::CreateDirectoryAndGetError(path, &error);
-    ASSERT_TRUE(created);
-
-    // Quirks clients can't run until after login.
-    quirks::QuirksManager::Get()->OnLoginCompleted();
-  }
-
   // Query QuirksManager for icc file, then run msg loop to wait for callback.
   // |find_fake_file| indicates that URLFetcher should respond with success.
   void TestQuirksClient(int64_t product_id, bool find_fake_file) {
@@ -102,7 +87,20 @@ class QuirksBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableQuirksClient);
   }
 
-  void SetUpOnMainThread() override { Initialize(); }
+  void SetUpOnMainThread() override {
+    // NOTE: QuirksManager::Initialize() isn't necessary here, since it'll be
+    // called in ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun().
+
+    // Create display_profiles subdirectory under temp profile directory.
+    const base::FilePath path =
+        QuirksManager::Get()->delegate()->GetDownloadDisplayProfileDirectory();
+    base::File::Error error = base::File::FILE_OK;
+    bool created = base::CreateDirectoryAndGetError(path, &error);
+    ASSERT_TRUE(created);
+
+    // Quirks clients can't run until after login.
+    quirks::QuirksManager::Get()->OnLoginCompleted();
+  }
 
   base::Closure end_message_loop_;  // Callback to terminate message loop.
   base::FilePath icc_path_;         // Path to icc file if found or downloaded.

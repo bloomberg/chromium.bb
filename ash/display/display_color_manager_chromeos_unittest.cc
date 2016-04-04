@@ -91,6 +91,9 @@ class QuirksManagerDelegateTestImpl : public quirks::QuirksManager::Delegate {
   }
 
   // Unused by these tests.
+  bool DevicePolicyEnabled() const override { return true; }
+
+  // Unused by these tests.
   void GetDaysSinceOobe(
       quirks::QuirksManager::DaysSinceOobeCallback callback) const override {}
 

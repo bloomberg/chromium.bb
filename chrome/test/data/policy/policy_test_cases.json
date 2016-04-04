@@ -2690,6 +2690,15 @@
   "DeviceAllowBluetooth": {
   },
 
+  "DeviceQuirksDownloadEnabled": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "DeviceQuirksDownloadEnabled": true },
+    "pref_mappings": [
+      { "pref": "cros.device.quirks_download_enabled" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

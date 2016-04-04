@@ -38,7 +38,8 @@ scoped_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
       qcms_profile_get_vcgt_channel_length(display_profile);
 
   if (!has_color_correction_matrix && !vcgt_channel_length) {
-    LOG(WARNING) << "No vcgt table in ICC file: " << path.value();
+    LOG(WARNING) << "No vcgt table or color correction matrix in ICC file: "
+                 << path.value();
     qcms_profile_release(display_profile);
     return nullptr;
   }

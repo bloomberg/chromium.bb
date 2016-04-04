@@ -9,6 +9,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,6 +51,13 @@ base::FilePath QuirksManagerDelegateImpl::GetDownloadDisplayProfileDirectory()
     directory = directory.Append(kUserDataDisplayProfilesDirectory);
   }
   return directory;
+}
+
+bool QuirksManagerDelegateImpl::DevicePolicyEnabled() const {
+  bool quirks_enabled = true;
+  chromeos::CrosSettings::Get()->GetBoolean(
+      chromeos::kDeviceQuirksDownloadEnabled, &quirks_enabled);
+  return quirks_enabled;
 }
 
 void QuirksManagerDelegateImpl::GetDaysSinceOobe(

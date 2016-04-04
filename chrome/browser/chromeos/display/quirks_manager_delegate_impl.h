@@ -20,6 +20,7 @@ class QuirksManagerDelegateImpl : public QuirksManager::Delegate {
   std::string GetApiKey() const override;
   base::FilePath GetBuiltInDisplayProfileDirectory() const override;
   base::FilePath GetDownloadDisplayProfileDirectory() const override;
+  bool DevicePolicyEnabled() const override;
   void GetDaysSinceOobe(
       QuirksManager::DaysSinceOobeCallback callback) const override;
 

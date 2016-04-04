@@ -833,8 +833,10 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::ExtensionCacheSizeProto& container(policy.extension_cache_size());
     if (container.has_extension_cache_size()) {
       policies->Set(
-          key::kExtensionCacheSize, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          key::kExtensionCacheSize,
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE,
+          POLICY_SOURCE_CLOUD,
           DecodeIntegerValue(container.extension_cache_size()).release(),
           nullptr);
     }
@@ -844,8 +846,10 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::LoginScreenDomainAutoCompleteProto& container(
         policy.login_screen_domain_auto_complete());
     policies->Set(
-        key::kDeviceLoginScreenDomainAutoComplete, POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+        key::kDeviceLoginScreenDomainAutoComplete,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
         new base::StringValue(container.login_screen_domain_auto_complete()),
         nullptr);
   }
@@ -881,6 +885,20 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     policies->Set(key::kUsbDetachableWhitelist, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, whitelist,
                   nullptr);
+  }
+
+  if (policy.has_quirks_download_enabled()) {
+    const em::DeviceQuirksDownloadEnabledProto& container(
+        policy.quirks_download_enabled());
+    if (container.has_quirks_download_enabled()) {
+      policies->Set(
+          key::kDeviceQuirksDownloadEnabled,
+          POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE,
+          POLICY_SOURCE_CLOUD,
+          new base::FundamentalValue(container.quirks_download_enabled()),
+          nullptr);
+    }
   }
 }
 

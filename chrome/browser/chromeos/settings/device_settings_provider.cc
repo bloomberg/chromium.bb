@@ -56,6 +56,7 @@ const char* const kKnownSettings[] = {
     kAccountsPrefTransferSAMLCookies,
     kAccountsPrefUsers,
     kAccountsPrefLoginScreenDomainAutoComplete,
+    kAllowBluetooth,
     kAllowRedeemChromeOsRegistrationOffers,
     kAllowedConnectionTypesForUpdate,
     kAttestationForContentProtectionEnabled,
@@ -63,7 +64,7 @@ const char* const kKnownSettings[] = {
     kDeviceDisabled,
     kDeviceDisabledMessage,
     kDeviceOwner,
-    kAllowBluetooth,
+    kDeviceQuirksDownloadEnabled,
     kDisplayRotationDefault,
     kExtensionCacheSize,
     kHeartbeatEnabled,
@@ -459,6 +460,13 @@ void DecodeGenericPolicies(
       kAllowBluetooth, policy.has_allow_bluetooth() &&
                            policy.allow_bluetooth().has_allow_bluetooth() &&
                            policy.allow_bluetooth().allow_bluetooth());
+
+  if (policy.has_quirks_download_enabled() &&
+      policy.quirks_download_enabled().has_quirks_download_enabled()) {
+    new_values_cache->SetBoolean(
+        kDeviceQuirksDownloadEnabled,
+        policy.quirks_download_enabled().quirks_download_enabled());
+  }
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,

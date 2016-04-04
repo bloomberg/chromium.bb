@@ -78,6 +78,9 @@ class QUIRKS_EXPORT QuirksManager {
     // This directory must already exist.
     virtual base::FilePath GetDownloadDisplayProfileDirectory() const = 0;
 
+    // Whether downloads are allowed by enterprise device policy.
+    virtual bool DevicePolicyEnabled() const = 0;
+
     // Gets days since first login, returned via callback.
     virtual void GetDaysSinceOobe(DaysSinceOobeCallback callback) const = 0;
 
@@ -146,6 +149,9 @@ class QUIRKS_EXPORT QuirksManager {
   // Create and start a client to download file.
   void CreateClient(int64_t product_id,
                     const RequestFinishedCallback& on_request_finished);
+
+  // Whether downloads allowed by cmd line flag and device policy.
+  bool QuirksEnabled();
 
   // Records time of most recent server check.
   void SetLastServerCheck(int64_t product_id, const base::Time& last_check);

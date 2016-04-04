@@ -98,6 +98,8 @@ CHROMEOS_EXPORT extern const char kLoginAuthenticationBehavior[];
 
 CHROMEOS_EXPORT extern const char kAllowBluetooth[];
 
+CHROMEOS_EXPORT extern const char kDeviceQuirksDownloadEnabled[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_
