@@ -81,6 +81,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/GeneratedChildren.h"
 #include "core/layout/LayoutView.h"
@@ -431,6 +432,25 @@ static void matchHostRules(const Element& element, ElementRuleCollector& collect
     }
 }
 
+static void matchSlottedRules(const Element& element, ElementRuleCollector& collector)
+{
+    HTMLSlotElement* slot = element.assignedSlot();
+    if (!slot)
+        return;
+
+    HeapVector<Member<ScopedStyleResolver>> resolvers;
+    for (; slot; slot = slot->assignedSlot()) {
+        if (ScopedStyleResolver* resolver = slot->treeScope().scopedStyleResolver())
+            resolvers.append(resolver);
+    }
+    for (auto it = resolvers.rbegin(); it != resolvers.rend(); ++it) {
+        collector.clearMatchedRules();
+        (*it)->collectMatchingTreeBoundaryCrossingRules(collector);
+        collector.sortAndTransferMatchedRules();
+        collector.finishAddingAuthorRulesForTreeScope();
+    }
+}
+
 static void matchElementScopeRules(const Element& element, ScopedStyleResolver* elementScopeResolver, ElementRuleCollector& collector)
 {
     if (elementScopeResolver) {
@@ -482,11 +502,15 @@ void StyleResolver::matchScopedRules(const Element& element, ElementRuleCollecto
     // scope, only tree-boundary-crossing rules may match.
 
     ScopedStyleResolver* elementScopeResolver = scopedResolverFor(element);
+
+    if (!document().styleEngine().mayContainV0Shadow()) {
+        matchSlottedRules(element, collector);
+        matchElementScopeRules(element, elementScopeResolver, collector);
+        return;
+    }
+
     bool matchElementScopeDone = !elementScopeResolver && !element.inlineStyle();
 
-    // TODO(kochi): This loops through m_treeBoundaryCrossingScopes because to handle
-    // Shadow DOM V0 documents as well. In pure V1 document only have to go through
-    // the chain of scopes for assigned slots. Add fast path for pure V1 document.
     for (auto it = m_treeBoundaryCrossingScopes.rbegin(); it != m_treeBoundaryCrossingScopes.rend(); ++it) {
         const TreeScope& scope = (*it)->treeScope();
         ScopedStyleResolver* resolver = scope.scopedStyleResolver();

@@ -185,6 +185,7 @@ public:
 
     ShadowCascadeOrder shadowCascadeOrder() const { return m_shadowCascadeOrder; }
     void setShadowCascadeOrder(ShadowCascadeOrder);
+    bool mayContainV0Shadow() const { return m_mayContainV0Shadow; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -260,6 +261,7 @@ private:
 
     bool m_ignorePendingStylesheets = false;
     bool m_didCalculateResolver = false;
+    bool m_mayContainV0Shadow = false;
 
     ShadowCascadeOrder m_shadowCascadeOrder = ShadowCascadeNone;
 
