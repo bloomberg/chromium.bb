@@ -108,6 +108,7 @@
             'ThreadRestrictionVerifier.h',
             'ThreadSafeRefCounted.h',
             'ThreadSpecific.h',
+            'ThreadSpecificWin.cpp',
             'Threading.h',
             'ThreadingPrimitives.h',
             'ThreadingPthreads.cpp',
