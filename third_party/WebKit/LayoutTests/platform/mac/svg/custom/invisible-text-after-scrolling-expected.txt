@@ -9,7 +9,7 @@ layer at (0,0) size 800x68
           text run at (0,18) width 132: "appear (Bug 12163)."
 layer at (10,68) size 502x502 clip at (11,69) size 485x485 scrollY 550.00 scrollWidth 5000 scrollHeight 5004
   LayoutBlockFlow (positioned) {div} at (10,68) size 502x502 [border: (1px solid #AAAAAA)]
-    LayoutSVGRoot {svg} at (11,68) size 501x502
+    LayoutSVGRoot {svg} at (11,69) size 485x485
       LayoutSVGText {text} at (-2,2) size 80x23 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (0,0) size 79x23
           chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 11 width 77.76: "just a text"

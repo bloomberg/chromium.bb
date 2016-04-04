@@ -17,6 +17,34 @@
         [8, 131, 75, 18],
         [8, 113, 75, 18],
         [8, 108, 75, 5]
+      ],
+      "paintInvalidationClients": [
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'",
+        "LayoutText #text",
+        "InlineTextBox 'CONTENT'"
       ]
     }
   ]
