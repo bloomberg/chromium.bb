@@ -300,7 +300,6 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
   return false;
 }
 
-// TODO(jln): remove callers to this broken API. See crbug.com/274855.
 void Zygote::HandleReapRequest(int fd, base::PickleIterator iter) {
   base::ProcessId child;
 
