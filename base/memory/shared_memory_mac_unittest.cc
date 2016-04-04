@@ -228,10 +228,6 @@ class SharedMemoryMacMultiProcessTest : public MultiProcessTest {
 // Tests that content written to shared memory in the server process can be read
 // by the child process.
 TEST_F(SharedMemoryMacMultiProcessTest, MachBasedSharedMemory) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (mac::IsOSSnowLeopard())
-    return;
-
   SetUpChild("MachBasedSharedMemoryClient");
 
   scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(s_memory_size));
@@ -263,10 +259,6 @@ MULTIPROCESS_TEST_MAIN(MachBasedSharedMemoryClient) {
 
 // Tests that mapping shared memory with an offset works correctly.
 TEST_F(SharedMemoryMacMultiProcessTest, MachBasedSharedMemoryWithOffset) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (mac::IsOSSnowLeopard())
-    return;
-
   SetUpChild("MachBasedSharedMemoryWithOffsetClient");
 
   SharedMemoryHandle shm(s_memory_size);
@@ -312,10 +304,6 @@ MULTIPROCESS_TEST_MAIN(MachBasedSharedMemoryWithOffsetClient) {
 // Tests that duplication and closing has the right effect on Mach reference
 // counts.
 TEST_F(SharedMemoryMacMultiProcessTest, MachDuplicateAndClose) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (mac::IsOSSnowLeopard())
-    return;
-
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
   // Making a new SharedMemoryHandle increments the name count.
@@ -341,10 +329,6 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachDuplicateAndClose) {
 
 // Tests that Mach shared memory can be mapped and unmapped.
 TEST_F(SharedMemoryMacMultiProcessTest, MachUnmapMap) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (mac::IsOSSnowLeopard())
-    return;
-
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
   scoped_ptr<SharedMemory> shared_memory = CreateSharedMemory(s_memory_size);
@@ -358,10 +342,6 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachUnmapMap) {
 // ownership, and that destroying the SharedMemory closes the SharedMemoryHandle
 // as well.
 TEST_F(SharedMemoryMacMultiProcessTest, MachSharedMemoryTakesOwnership) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (mac::IsOSSnowLeopard())
-    return;
-
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
   // Making a new SharedMemoryHandle increments the name count.
@@ -381,10 +361,6 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachSharedMemoryTakesOwnership) {
 
 // Tests that the read-only flag works.
 TEST_F(SharedMemoryMacMultiProcessTest, MachReadOnly) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (mac::IsOSSnowLeopard())
-    return;
-
   scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(s_memory_size));
 
   SharedMemoryHandle shm2 = shared_memory->handle().Duplicate();
@@ -396,10 +372,6 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachReadOnly) {
 
 // Tests that the method ShareToProcess() works.
 TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcess) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (mac::IsOSSnowLeopard())
-    return;
-
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
   {
@@ -421,10 +393,6 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcess) {
 // Tests that the method ShareReadOnlyToProcess() creates a memory object that
 // is read only.
 TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonly) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (mac::IsOSSnowLeopard())
-    return;
-
   scoped_ptr<SharedMemory> shared_memory(CreateSharedMemory(s_memory_size));
 
   // Check the protection levels.
@@ -464,10 +432,6 @@ TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonly) {
 
 // Tests that the method ShareReadOnlyToProcess() doesn't leak.
 TEST_F(SharedMemoryMacMultiProcessTest, MachShareToProcessReadonlyLeak) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (mac::IsOSSnowLeopard())
-    return;
-
   mach_msg_type_number_t active_name_count = GetActiveNameCount();
 
   {

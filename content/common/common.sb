@@ -16,7 +16,6 @@
 ; Define constants for all of the parameter strings passed in.
 (define disable-sandbox-denial-logging "DISABLE_SANDBOX_DENIAL_LOGGING")
 (define enable-logging "ENABLE_LOGGING")
-(define component-build-workaround "COMPONENT_BUILD_WORKAROUND")
 (define permitted-dir "PERMITTED_DIR")
 (define homedir-as-literal "USER_HOMEDIR_AS_LITERAL")
 (define lion-or-later "LION_OR_LATER")
@@ -50,9 +49,3 @@
 ; Allow direct access to /dev/urandom, similar to Linux/POSIX, to allow
 ; third party code (eg: bits of Adobe Flash and NSS) to function properly.
 (allow file-read-data file-read-metadata (literal "/dev/urandom"))
-
-; Enables reading file metadata for the Chrome bundle and its parent paths.
-; https://crbug.com/127465
-(if (and (param-defined? component-build-workaround)
-         (param-true? component-build-workaround))
-  (allow file-read-metadata ))

@@ -921,10 +921,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (NSRect)fullscreenButtonFrame {
-  // NSWindowFullScreenButton is 10.7+ and results in log spam on 10.6 if used.
-  if (base::mac::IsOSSnowLeopard())
-    return NSZeroRect;
-
   NSButton* fullscreenButton =
       [[self window] standardWindowButton:NSWindowFullScreenButton];
   if (!fullscreenButton)

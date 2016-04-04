@@ -706,11 +706,6 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState() {
   if (!window_visible_)
     SetVisibilityState(SHOW_INACTIVE);
 
-  if (base::mac::IsOSSnowLeopard()) {
-    NOTIMPLEMENTED();
-    return;  // TODO(tapted): Implement this for Snow Leopard.
-  }
-
   // Enable fullscreen collection behavior because:
   // 1: -[NSWindow toggleFullscreen:] would otherwise be ignored,
   // 2: the fullscreen button must be enabled so the user can leave fullscreen.

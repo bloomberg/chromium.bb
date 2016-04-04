@@ -41,9 +41,6 @@ namespace test {
 
 // Test the order of notifications sent when faking fullscreen transitions.
 TEST(ScopedFakeNSWindowFullscreenTest, TestOrdering) {
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   base::MessageLoopForUI message_loop;
 
   NSUInteger style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |

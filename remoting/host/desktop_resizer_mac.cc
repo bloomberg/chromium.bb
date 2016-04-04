@@ -47,7 +47,7 @@ DesktopResizerMac::DesktopResizerMac() {}
 
 ScreenResolution DesktopResizerMac::GetCurrentResolution() {
   CGDirectDisplayID display;
-  if (!base::mac::IsOSSnowLeopard() && GetSoleDisplayId(&display)) {
+  if (GetSoleDisplayId(&display)) {
     CGRect rect = CGDisplayBounds(display);
     return ScreenResolution(
         webrtc::DesktopSize(rect.size.width, rect.size.height),
@@ -66,7 +66,7 @@ std::list<ScreenResolution> DesktopResizerMac::GetSupportedResolutions(
 
 void DesktopResizerMac::SetResolution(const ScreenResolution& resolution) {
   CGDirectDisplayID display;
-  if (base::mac::IsOSSnowLeopard() || !GetSoleDisplayId(&display)) {
+  if (!GetSoleDisplayId(&display)) {
     return;
   }
 

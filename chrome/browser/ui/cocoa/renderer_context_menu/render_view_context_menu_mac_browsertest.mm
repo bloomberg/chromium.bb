@@ -53,10 +53,6 @@ class RenderViewContextMenuMacBrowserTest : public InProcessBrowserTest {
 // items exist and implement the expected methods, and that the filtering code
 // successfully removes those Services items.
 IN_PROC_BROWSER_TEST_F(RenderViewContextMenuMacBrowserTest, ServicesFiltering) {
-  // Services filtering does not work on Snow Leopard.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   // Confirm that the _NSServicesMenuUpdater class exists and implements the
   // method we expect it to.
   Class menuUpdaterClass = NSClassFromString(@"_NSServicesMenuUpdater");

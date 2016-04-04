@@ -77,8 +77,6 @@ class BridgedNativeWidgetUITest : public test::WidgetTest {
 // by the Widget code or elsewhere (e.g. by the user).
 TEST_F(BridgedNativeWidgetUITest, FullscreenSynchronousState) {
   EXPECT_FALSE(widget_->IsFullscreen());
-  if (base::mac::IsOSSnowLeopard())
-    return;
 
   // Allow user-initiated fullscreen changes on the Window.
   [test_window()
@@ -146,11 +144,6 @@ TEST_F(BridgedNativeWidgetUITest, FullscreenEnterAndExit) {
   EXPECT_FALSE(widget_->IsVisible());
   widget_->SetFullscreen(true);
   EXPECT_TRUE(widget_->IsVisible());
-  if (base::mac::IsOSSnowLeopard()) {
-    // On Snow Leopard, SetFullscreen() isn't implemented. But shouldn't crash.
-    EXPECT_FALSE(widget_->IsFullscreen());
-    return;
-  }
 
   EXPECT_TRUE(widget_->IsFullscreen());
   EXPECT_EQ(restored_bounds, widget_->GetRestoredBounds());
@@ -177,9 +170,6 @@ TEST_F(BridgedNativeWidgetUITest, FullscreenEnterAndExit) {
 
 // Test that Widget::Restore exits fullscreen.
 TEST_F(BridgedNativeWidgetUITest, FullscreenRestore) {
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   base::scoped_nsobject<NSWindowFullscreenNotificationWaiter> waiter(
       [[NSWindowFullscreenNotificationWaiter alloc]
           initWithWindow:test_window()]);

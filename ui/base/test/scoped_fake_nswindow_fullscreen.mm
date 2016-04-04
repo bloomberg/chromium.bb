@@ -196,10 +196,6 @@ class ScopedFakeNSWindowFullscreen::Impl {
 };
 
 ScopedFakeNSWindowFullscreen::ScopedFakeNSWindowFullscreen() {
-  // -[NSWindow toggleFullScreen:] does not exist on 10.6, so do nothing.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   DCHECK(!g_fake_fullscreen_impl);
   impl_.reset(new Impl);
   g_fake_fullscreen_impl = impl_.get();

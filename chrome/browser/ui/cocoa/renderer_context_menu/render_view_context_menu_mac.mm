@@ -107,10 +107,6 @@ NSMenuItem* GetMenuItemByID(ui::MenuModel* model,
   if (![[NSProcessInfo processInfo] cr_isMainBrowserOrTestProcess])
     return;
 
-  // Services filtering does not work on OS X 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
     // Confirm that the AppKit's private _NSServiceEntry class exists. This

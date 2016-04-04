@@ -164,10 +164,6 @@ NSData* ViewAsTIFF(NSView* view) {
 // Test that parent windows keep their traffic lights enabled when showing
 // dialogs.
 TEST_F(NativeWidgetMacInteractiveUITest, ParentWindowTrafficLights) {
-  // Snow leopard doesn't have -[NSWindow _sharesParentKeyState].
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   Widget* parent_widget = CreateTopLevelPlatformWidget();
   parent_widget->SetBounds(gfx::Rect(100, 100, 100, 100));
   ShowKeyWindow(parent_widget);

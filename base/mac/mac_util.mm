@@ -358,7 +358,7 @@ bool WasLaunchedAsLoginOrResumeItem() {
 bool WasLaunchedAsLoginItemRestoreState() {
   // "Reopen windows..." option was added for Lion.  Prior OS versions should
   // not have this behavior.
-  if (IsOSSnowLeopard() || !WasLaunchedAsLoginOrResumeItem())
+  if (!WasLaunchedAsLoginOrResumeItem())
     return false;
 
   CFStringRef app = CFSTR("com.apple.loginwindow");
@@ -385,12 +385,7 @@ bool WasLaunchedAsHiddenLoginItem() {
 
   ScopedCFTypeRef<LSSharedFileListItemRef> item(GetLoginItemForApp());
   if (!item.get()) {
-    // Lion can launch items for the resume feature.  So log an error only for
-    // Snow Leopard or earlier.
-    if (IsOSSnowLeopard())
-      DLOG(ERROR) <<
-          "Process launched at Login but can't access Login Item List.";
-
+    // OS X can launch items for the resume feature.
     return false;
   }
   return IsHiddenLoginItem(item);
@@ -487,12 +482,6 @@ enum {
 };
 
 }  // namespace
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GE_10_7)
-bool IsOSSnowLeopard() {
-  return MacOSXMinorVersion() == SNOW_LEOPARD_MINOR_VERSION;
-}
-#endif
 
 #if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_7)
 bool IsOSLion() {

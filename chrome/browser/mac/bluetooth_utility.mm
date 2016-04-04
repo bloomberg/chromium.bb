@@ -50,12 +50,6 @@ BluetoothAvailability GetBluetoothAvailability() {
     if ([lmp_version intValue] < 6)
       continue;
 
-    // Check the supported features registry entry for Bluetooth LE
-    // availability. The relevant bit has a different meaning on OSX 10.6, and
-    // could change again in the future.
-    if (base::mac::IsOSSnowLeopard())
-      return BLUETOOTH_AVAILABLE_LE_UNKNOWN;
-
     NSData* data = base::mac::ObjCCast<NSData>(
         [objc_dict objectForKey:@"HCISupportedFeatures"]);
 

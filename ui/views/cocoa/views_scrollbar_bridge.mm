@@ -4,7 +4,6 @@
 
 #import "ui/views/cocoa/views_scrollbar_bridge.h"
 
-#include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 
 @interface ViewsScrollbarBridge ()
@@ -44,10 +43,6 @@
 }
 
 + (NSScrollerStyle)getPreferredScrollerStyle {
-  if (![NSScroller respondsToSelector:@selector(preferredScrollerStyle)]) {
-    DCHECK(base::mac::IsOSSnowLeopard());
-    return NSScrollerStyleLegacy;
-  }
   return [NSScroller preferredScrollerStyle];
 }
 

@@ -61,15 +61,6 @@ gfx::Point ConvertPointFromWidgetToView(View* view, const gfx::Point& p) {
   return tmp;
 }
 
-// Helper function for Snow Leopard special cases to avoid #ifdef litter.
-bool IsTestingSnowLeopard() {
-#if defined(OS_MACOSX)
-  return base::mac::IsOSSnowLeopard();
-#else
-  return false;
-#endif
-}
-
 // This class can be used as a deleter for scoped_ptr<Widget>
 // to call function Widget::CloseNow automatically.
 struct WidgetCloser {
@@ -1160,14 +1151,8 @@ TEST_F(WidgetTest, MAYBE_GetRestoredBounds) {
   toplevel->SetFullscreen(true);
   RunPendingMessages();
 
-  if (IsTestingSnowLeopard()) {
-    // Fullscreen not implemented for Snow Leopard.
-    EXPECT_EQ(toplevel->GetWindowBoundsInScreen(),
-              toplevel->GetRestoredBounds());
-  } else {
-    EXPECT_NE(toplevel->GetWindowBoundsInScreen(),
-              toplevel->GetRestoredBounds());
-  }
+  EXPECT_NE(toplevel->GetWindowBoundsInScreen(),
+            toplevel->GetRestoredBounds());
   EXPECT_EQ(bounds, toplevel->GetRestoredBounds());
 
   toplevel->SetFullscreen(false);
@@ -3069,12 +3054,7 @@ TEST_F(WidgetTest, FullscreenFrameLayout) {
   widget->Show();
   RunPendingMessages();
 
-  if (IsTestingSnowLeopard()) {
-    // Fullscreen is currently ignored on Snow Leopard.
-    EXPECT_FALSE(frame->fullscreen_layout_called());
-  } else {
-    EXPECT_TRUE(frame->fullscreen_layout_called());
-  }
+  EXPECT_TRUE(frame->fullscreen_layout_called());
 }
 
 #if !defined(OS_CHROMEOS)

@@ -62,12 +62,6 @@ class ActivityLogApiTest : public ExtensionApiTest {
 // The test extension sends a message to its 'friend'. The test completes
 // if it successfully sees the 'friend' receive the message.
 IN_PROC_BROWSER_TEST_F(ActivityLogApiTest, MAYBE_TriggerEvent) {
-#if defined(OS_MACOSX)
-  if (base::mac::IsOSSnowLeopard()) {
-    // This test flakes on 10.6 only. http://crbug.com/499176
-    return;
-  }
-#endif
   ActivityLog::GetInstance(profile())->SetWatchdogAppActiveForTesting(true);
 
   host_resolver()->AddRule("*", "127.0.0.1");

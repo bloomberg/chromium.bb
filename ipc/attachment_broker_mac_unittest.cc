@@ -598,10 +598,6 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
 // it. The SharedMemoryHandle is sent to the privileged process using Chrome
 // IPC. The privileged process checks that it received the same memory region.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandle) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("SendSharedMemoryHandle");
 
   SendMessage1(kDataBuffer1);
@@ -624,10 +620,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandle) {
 // Similar to SendSharedMemoryHandle, but sends a very long shared memory
 // region.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleLong) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("SendSharedMemoryHandleLong");
 
   std::string buffer(1 << 23, 'a');
@@ -652,10 +644,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleLong) {
 // Similar to SendSharedMemoryHandle, but sends two different shared memory
 // regions in two messages.
 TEST_F(IPCAttachmentBrokerMacTest, SendTwoMessagesDifferentSharedMemoryHandle) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("SendTwoMessagesDifferentSharedMemoryHandle");
 
   SendMessage1(kDataBuffer1);
@@ -688,10 +676,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendTwoMessagesDifferentSharedMemoryHandle) {
 // Similar to SendSharedMemoryHandle, but sends the same shared memory region in
 // two messages.
 TEST_F(IPCAttachmentBrokerMacTest, SendTwoMessagesSameSharedMemoryHandle) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("SendTwoMessagesSameSharedMemoryHandle");
 
   {
@@ -738,10 +722,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendTwoMessagesSameSharedMemoryHandle) {
 // memory regions.
 TEST_F(IPCAttachmentBrokerMacTest,
        SendOneMessageWithTwoDifferentSharedMemoryHandles) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("SendOneMessageWithTwoDifferentSharedMemoryHandles");
 
   {
@@ -785,10 +765,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(
 // same memory region twice.
 TEST_F(IPCAttachmentBrokerMacTest,
        SendOneMessageWithTwoSameSharedMemoryHandles) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("SendOneMessageWithTwoSameSharedMemoryHandles");
 
   {
@@ -828,10 +804,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(
 
 // Sends one message with two Posix FDs and two Mach ports.
 TEST_F(IPCAttachmentBrokerMacTest, SendPosixFDAndMachPort) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath fp1, fp2;
@@ -896,10 +868,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendPosixFDAndMachPort) {
 // process. This is an unrealistic scenario, but simulates an unprivileged
 // process sending an attachment to another unprivileged process.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelf) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   SetBroker(new MockBroker);
   CommonSetUp("SendSharedMemoryHandleToSelf");
 
@@ -958,10 +926,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleToSelf) {
 // Similar to SendSharedMemoryHandle, but uses a ChannelProxy instead of a
 // Channel.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleChannelProxy) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   Init("SendSharedMemoryHandleChannelProxy");
   MachPreForkSetUp();
 
@@ -1014,10 +978,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleChannelProxy) {
 // Similar to SendSharedMemoryHandle, but first makes a copy of the handle using
 // ShareToProcess().
 TEST_F(IPCAttachmentBrokerMacTest, ShareToProcess) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("ShareToProcess");
 
   {
@@ -1048,10 +1008,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ShareToProcess) {
 // Similar to ShareToProcess, but instead shares the memory object only with
 // read permissions.
 TEST_F(IPCAttachmentBrokerMacTest, ShareReadOnlyToProcess) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("ShareReadOnlyToProcess");
 
   {
@@ -1101,10 +1057,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(ShareReadOnlyToProcess) {
 // Similar to SendSharedMemoryHandleToSelf, but the child process pretends to
 // not have the task port for the parent process.
 TEST_F(IPCAttachmentBrokerMacTest, SendSharedMemoryHandleToSelfDelayedPort) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   SetBroker(new MockBroker);
   CommonSetUp("SendSharedMemoryHandleToSelfDelayedPort");
 
@@ -1201,10 +1153,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendSharedMemoryHandleToSelfDelayedPort) {
 // resident memory at different points in time, and that measurement is
 // non-deterministic.
 TEST_F(IPCAttachmentBrokerMacTest, MemoryUsageLargeMessage) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("MemoryUsageLargeMessage");
 
   std::string test_string(g_large_message_size, 'a');
@@ -1255,10 +1203,6 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(MemoryUsageLargeMessage) {
 // resident memory at different points in time, and that measurement is
 // non-deterministic.
 TEST_F(IPCAttachmentBrokerMacTest, MemoryUsageManyMessages) {
-  // Mach-based SharedMemory isn't support on OSX 10.6.
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   CommonSetUp("MemoryUsageManyMessages");
 
   for (int i = 0; i < g_large_message_count; ++i) {

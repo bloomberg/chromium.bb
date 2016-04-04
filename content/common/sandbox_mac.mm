@@ -491,16 +491,6 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   if (!compiler.InsertBooleanParam("ELCAP_OR_LATER", elcap_or_later))
     return false;
 
-#if defined(COMPONENT_BUILD)
-  // dlopen() fails without file-read-metadata access if the executable image
-  // contains LC_RPATH load commands. The components build uses those.
-  // See http://crbug.com/127465
-  if (base::mac::IsOSSnowLeopard()) {
-    if (!compiler.InsertBooleanParam("COMPONENT_BUILD_WORKAROUND", true))
-      return false;
-  }
-#endif
-
   // Initialize sandbox.
   std::string error_str;
   bool success = compiler.CompileAndApplyProfile(&error_str);

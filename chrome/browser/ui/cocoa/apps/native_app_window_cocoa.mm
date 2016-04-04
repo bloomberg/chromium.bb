@@ -276,10 +276,6 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   [window setTitle:base::SysUTF8ToNSString(name)];
   [[window contentView] setWantsLayer:YES];
 
-  if (base::mac::IsOSSnowLeopard() &&
-      [window respondsToSelector:@selector(setBottomCornerRounded:)])
-    [window setBottomCornerRounded:NO];
-
   if (params.always_on_top)
     gfx::SetNSWindowAlwaysOnTop(window, true);
 
@@ -396,56 +392,12 @@ void NativeAppWindowCocoa::SetFullscreen(int fullscreen_types) {
   if (fullscreen)
     is_fullscreen_ = true;
 
-  if (base::mac::IsOSLionOrLater()) {
-    // If going fullscreen, but the window is constrained (fullscreen UI control
-    // is disabled), temporarily enable it. It will be disabled again on leaving
-    // fullscreen.
-    if (fullscreen && !shows_fullscreen_controls_)
-      gfx::SetNSWindowCanFullscreen(window(), true);
-    [window() toggleFullScreen:nil];
-    is_fullscreen_ = fullscreen;
-    return;
-  }
-
-  DCHECK(base::mac::IsOSSnowLeopard());
-
-  // Fade to black.
-  const CGDisplayReservationInterval kFadeDurationSeconds = 0.6;
-  bool did_fade_out = false;
-  CGDisplayFadeReservationToken token;
-  if (CGAcquireDisplayFadeReservation(kFadeDurationSeconds, &token) ==
-      kCGErrorSuccess) {
-    did_fade_out = true;
-    CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendNormal,
-        kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, /*synchronous=*/true);
-  }
-
-  // Since frameless windows insert the WebContentsView into the NSThemeFrame
-  // ([[window contentView] superview]), and since that NSThemeFrame is
-  // destroyed and recreated when we change the styleMask of the window, we
-  // need to remove the view from the window when we change the style, and
-  // add it back afterwards.
-  UninstallView();
-  if (fullscreen) {
-    UpdateRestoredBounds();
-    [window() setStyleMask:NSBorderlessWindowMask];
-    [window() setFrame:[window()
-        frameRectForContentRect:[[window() screen] frame]]
-               display:YES];
-    base::mac::RequestFullScreen(base::mac::kFullScreenModeAutoHideAll);
-  } else {
-    base::mac::ReleaseFullScreen(base::mac::kFullScreenModeAutoHideAll);
-    [window() setStyleMask:GetWindowStyleMask()];
-    [window() setFrame:restored_bounds_ display:YES];
-  }
-  InstallView();
-
-  // Fade back in.
-  if (did_fade_out) {
-    CGDisplayFade(token, kFadeDurationSeconds / 2, kCGDisplayBlendSolidColor,
-        kCGDisplayBlendNormal, 0.0, 0.0, 0.0, /*synchronous=*/false);
-    CGReleaseDisplayFadeReservation(token);
-  }
+  // If going fullscreen, but the window is constrained (fullscreen UI control
+  // is disabled), temporarily enable it. It will be disabled again on leaving
+  // fullscreen.
+  if (fullscreen && !shows_fullscreen_controls_)
+    gfx::SetNSWindowCanFullscreen(window(), true);
+  [window() toggleFullScreen:nil];
   is_fullscreen_ = fullscreen;
 }
 

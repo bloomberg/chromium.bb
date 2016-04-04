@@ -312,11 +312,6 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Minimize) {
 
 // Test Maximize, Restore combinations with their native equivalents.
 IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, Maximize) {
-  // This test is flaky on 10.6. Disable it until we're sure we need MacViews on
-  // 10.6. See http://crbug.com/503208
-  if (GetParam() && base::mac::IsOSSnowLeopard())
-    return;
-
   SetUpAppWithWindows(1);
   AppWindow* app_window = GetFirstAppWindow();
   extensions::NativeAppWindow* window = app_window->GetBaseWindow();
@@ -457,9 +452,6 @@ IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MinimizeMaximize) {
 
 // Test Maximize, Fullscreen, Restore combinations.
 IN_PROC_BROWSER_TEST_P(NativeAppWindowCocoaBrowserTest, MaximizeFullscreen) {
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 
   SetUpAppWithWindows(1);
@@ -552,8 +544,6 @@ void TestControls(AppWindow* app_window) {
 
   // The window is resizable.
   EXPECT_TRUE([ns_window styleMask] & NSResizableWindowMask);
-  if (base::mac::IsOSSnowLeopard())
-    EXPECT_TRUE([ns_window showsResizeIndicator]);
 
   // Due to this bug: http://crbug.com/362039, which manifests on the Cocoa
   // implementation but not the views one, frameless windows should have
@@ -585,8 +575,6 @@ void TestControls(AppWindow* app_window) {
 
   // Still resizable.
   EXPECT_TRUE([ns_window styleMask] & NSResizableWindowMask);
-  if (base::mac::IsOSSnowLeopard())
-    EXPECT_TRUE([ns_window showsResizeIndicator]);
 
   // Fullscreen and maximize are disabled.
   if (base::mac::IsOSLionOrLater())
@@ -602,8 +590,6 @@ void TestControls(AppWindow* app_window) {
 
   // No longer resizable.
   EXPECT_FALSE([ns_window styleMask] & NSResizableWindowMask);
-  if (base::mac::IsOSSnowLeopard())
-    EXPECT_FALSE([ns_window showsResizeIndicator]);
 
   // If a window is made fullscreen by the API, fullscreen should be enabled so
   // the user can exit fullscreen.

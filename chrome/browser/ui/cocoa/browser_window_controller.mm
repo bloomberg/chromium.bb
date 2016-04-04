@@ -260,14 +260,6 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
     // be big enough to hold all locks that'll ever be needed.
     barVisibilityLocks_.reset([[NSMutableSet setWithCapacity:10] retain]);
 
-    // Set the window to not have rounded corners, which prevents the resize
-    // control from being inset slightly and looking ugly. Only bother to do
-    // this on Snow Leopard; on Lion and later all windows have rounded bottom
-    // corners, and this won't work anyway.
-    if (base::mac::IsOSSnowLeopard() &&
-        [window respondsToSelector:@selector(setBottomCornerRounded:)])
-      [window setBottomCornerRounded:NO];
-
     // Lion will attempt to automagically save and restore the UI. This
     // functionality appears to be leaky (or at least interacts badly with our
     // architecture) and thus BrowserWindowController never gets released. This

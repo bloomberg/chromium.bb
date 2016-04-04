@@ -684,9 +684,6 @@ typedef BridgedNativeWidgetTestBase BridgedNativeWidgetSimulateFullscreenTest;
 // mashing Ctrl+Left/Right to keep OSX in a transition between Spaces to cause
 // the fullscreen transition to fail.
 TEST_F(BridgedNativeWidgetSimulateFullscreenTest, FailToEnterAndExit) {
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   base::scoped_nsobject<NSWindow> owned_window(
       [[BridgedNativeWidgetTestFullScreenWindow alloc]
           initWithContentRect:NSMakeRect(50, 50, 400, 300)

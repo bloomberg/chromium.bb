@@ -80,15 +80,7 @@ void RotatePage(CGContextRef context, const CGRect rect, int num_rotations) {
 namespace printing {
 
 PdfMetafileCg::PdfMetafileCg()
-    : page_is_open_(false),
-      thread_pdf_docs_owned_(false) {
-  if (!thread_pdf_docs.Pointer()->Get() &&
-      base::mac::IsOSSnowLeopard()) {
-    thread_pdf_docs_owned_ = true;
-    thread_pdf_docs.Pointer()->Set(
-        CFSetCreateMutable(kCFAllocatorDefault, 0, &kCFTypeSetCallBacks));
-  }
-}
+    : page_is_open_(false), thread_pdf_docs_owned_(false) {}
 
 PdfMetafileCg::~PdfMetafileCg() {
   DCHECK(thread_checker_.CalledOnValidThread());

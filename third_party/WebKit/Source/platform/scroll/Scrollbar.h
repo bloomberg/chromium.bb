@@ -116,7 +116,6 @@ public:
     bool isOverlayScrollbar() const override;
     bool shouldParticipateInHitTesting();
 
-    void windowActiveChangedForSnowLeopardOnly();
     bool isWindowActive() const;
 
     // Return if the gesture event was handled. |shouldUpdateCapture|

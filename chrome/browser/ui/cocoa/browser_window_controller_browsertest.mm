@@ -399,9 +399,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
 // DISABLED_ because it regularly times out: http://crbug.com/159002.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        DISABLED_ProfileAvatarFullscreenButton) {
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   // Initialize the locals.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(profile_manager);

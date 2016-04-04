@@ -92,8 +92,6 @@ class BootstrapSandboxTest : public base::MultiProcessTest {
   BootstrapSandboxPolicy BaselinePolicy() {
     BootstrapSandboxPolicy policy;
     policy.rules["com.apple.cfprefsd.daemon"] = Rule(POLICY_ALLOW);
-    if (base::mac::IsOSSnowLeopard())
-      policy.rules["com.apple.SecurityServer"] = Rule(POLICY_ALLOW);
     return policy;
   }
 
@@ -341,12 +339,7 @@ TEST_F(BootstrapSandboxTest, ForwardMessageInProcess) {
   send_rights = 0;
   ASSERT_EQ(KERN_SUCCESS, mach_port_get_refs(task, port, MACH_PORT_RIGHT_SEND,
       &send_rights));
-  // On 10.6, bootstrap_lookup2 may add an extra right to place it in a per-
-  // process cache.
-  if (base::mac::IsOSSnowLeopard())
-    EXPECT_TRUE(send_rights == 3u || send_rights == 2u) << send_rights;
-  else
-    EXPECT_EQ(2u, send_rights);
+  EXPECT_EQ(2u, send_rights);
 }
 
 const char kDefaultRuleTestAllow[] =

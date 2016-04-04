@@ -793,10 +793,6 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   [controller_ activate];
   chrome::testing::NSRunLoopRunAllPending();
 
-  // No fullscreen window on 10.7+.
-  if (base::mac::IsOSSnowLeopard())
-    EXPECT_TRUE(IsFrontWindow([controller_ createFullscreenWindow]));
-
   // We have to cleanup after ourselves by unfullscreening.
   [controller_ exitAnyFullscreen];
   WaitForFullScreenTransition();

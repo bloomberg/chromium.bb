@@ -94,11 +94,7 @@ class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
-// This test is flaky on MacOS 10.6.
 #if defined(OS_MACOSX)
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 
@@ -139,11 +135,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
-// This test is flaky on MacOS 10.6.
 #if defined(OS_MACOSX)
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 
@@ -192,11 +184,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
                        ESCDoesNotLeaveFullscreenWindow) {
-// This test is flaky on MacOS 10.6.
 #if defined(OS_MACOSX)
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 
@@ -242,11 +230,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
                        ESCDoesNotLeaveFullscreenDOM) {
-// This test is flaky on MacOS 10.6.
 #if defined(OS_MACOSX)
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 
@@ -302,11 +286,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 // and 'overrideEscFullscreen'.
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
                        ESCDoesNotLeaveFullscreenOldPermission) {
-// This test is flaky on MacOS 10.6.
 #if defined(OS_MACOSX)
-  if (base::mac::IsOSSnowLeopard())
-    return;
-
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 
