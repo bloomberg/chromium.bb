@@ -253,9 +253,9 @@ def main():
   if sys.platform != 'win32':
     os.symlink('clang', os.path.join(pdir, 'bin', 'clang++'))
     os.symlink('clang', os.path.join(pdir, 'bin', 'clang-cl'))
+
+  # Copy libc++ headers.
   if sys.platform == 'darwin':
-    os.symlink('libc++.1.dylib', os.path.join(pdir, 'bin', 'libc++.dylib'))
-    # Also copy libc++ headers.
     shutil.copytree(os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'include', 'c++'),
                     os.path.join(pdir, 'include', 'c++'))
 
