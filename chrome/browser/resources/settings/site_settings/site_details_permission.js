@@ -53,8 +53,8 @@ Polymer({
       for (var i = 0; i < exceptionList.length; ++i) {
         if (exceptionList[i].origin == site.origin) {
           // TODO(finnur): Convert to use attrForSelected.
-          this.$.permission.selected =
-              exceptionList[i].setting == 'allow' ? 0 : 1;
+          this.$.permission.selected = exceptionList[i].setting ==
+              settings.PermissionStringValues.ALLOW ? 0 : 1;
           this.$.details.hidden = false;
         }
       }

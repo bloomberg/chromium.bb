@@ -221,14 +221,6 @@ CrSettingsSiteSettingsTest.prototype = {
   browsePreload: 'chrome://md-settings/prefs/prefs.html',
 
   /** @override */
-  preLoad: function() {
-    SettingsPageBrowserTest.prototype.preLoad.call(this);
-
-    cr.exportPath('settings_test').siteCategoryNotifyForTest = true;
-    cr.exportPath('settings_test').siteListNotifyForTest = true;
-  },
-
-  /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'site_details_tests.js',
     'site_details_permission_tests.js',

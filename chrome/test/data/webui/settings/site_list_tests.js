@@ -192,22 +192,6 @@ cr.define('site_list', function() {
       });
 
       /**
-       * Returns a promise that resolves once the site list has been updated.
-       * @param {function()} action is executed after the listener is set up.
-       * @return {!Promise} a Promise fulfilled when the selected item changes.
-       */
-      function runAndResolveWhenSitesChanged(action) {
-        return new Promise(function(resolve, reject) {
-          var handler = function() {
-            testElement.removeEventListener('sites-changed', handler);
-            resolve();
-          };
-          testElement.addEventListener('sites-changed', handler);
-          action();
-        });
-      }
-
-      /**
        * Asserts if a menu action is incorrectly hidden.
        * @param {!HTMLElement} parentElement The parent node to start looking
        *     in.
@@ -215,14 +199,19 @@ cr.define('site_list', function() {
        *     should be hidden.
        */
       function assertMenuActionHidden(parentElement, textForHiddenAction) {
-        var actions = parentElement.$.listContainer.items;
-        for (var i = 0; i < actions.length; ++i) {
-          var content = actions[i].textContent.trim();
-          if (content == textForHiddenAction)
-            assertTrue(actions[i].hidden);
-          else
-            assertFalse(actions[i].hidden);
-        }
+        var listItem = parentElement.$.listContainer.items[0];
+        var menuItems =
+            listItem.querySelectorAll('paper-menu-button paper-item');
+        assertNotEquals(0, menuItems.length);
+
+        var found = false;
+        menuItems.forEach(function(item) {
+          var text = item.textContent.trim();
+          if (text == textForHiddenAction)
+            found = true;
+          assertEquals(text == textForHiddenAction, item.hidden);
+        });
+        assertTrue(found);
       }
 
       /**
@@ -272,179 +261,246 @@ cr.define('site_list', function() {
       });
 
       test('Empty list', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          setupLocationCategory(settings.PermissionValues.ALLOW, prefsEmpty);
-        }).then(function() {
-          assertEquals(0, testElement.sites.length);
+        setupLocationCategory(settings.PermissionValues.ALLOW, prefsEmpty);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
-          assertTrue(testElement.isAllowList_());
-          assertFalse(testElement.showSiteList_(testElement.sites, true));
-          assertFalse(testElement.showSiteList_(testElement.sites, false));
-          assertEquals('Allow - 0', testElement.computeSiteListHeader_(
-              testElement.sites, true));
-          assertEquals('Exceptions - 0', testElement.computeSiteListHeader_(
-              testElement.sites, false));
-        }.bind(this));
+            assertEquals(0, testElement.sites.length);
+
+            assertEquals(
+                settings.PermissionValues.ALLOW, testElement.categorySubtype);
+            assertEquals('Allow - 0', testElement.$.header.innerText);
+
+            // Site list should not show, no matter what category default is set
+            // to.
+            assertTrue(testElement.$.category.hidden);
+            browserProxy.resetResolver('getExceptionList');
+            testElement.categoryEnabled = false;
+            return browserProxy.whenCalled('getExceptionList').then(
+              function(contentType) {
+                assertTrue(testElement.$.category.hidden);
+                assertEquals('Exceptions - 0', testElement.$.header.innerText);
+            });
+          });
       });
 
       test('initial ALLOW state is correct', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
-        }).then(function() {
-          assertEquals(2, testElement.sites.length);
-          assertEquals('https://bar-allow.com:443', testElement.sites[0].origin);
-          assertTrue(testElement.isAllowList_());
-          assertMenuActionHidden(testElement, 'Allow');
-          // Site list should show, no matter what category default is set to.
-          assertTrue(testElement.showSiteList_(testElement.sites, true));
-          assertTrue(testElement.showSiteList_(testElement.sites, false));
-          assertEquals('Exceptions - 2', testElement.computeSiteListHeader_(
-              testElement.sites, false));
-          assertEquals('Allow - 2', testElement.computeSiteListHeader_(
-              testElement.sites, true));
-        }.bind(this));
+        setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
+
+            assertEquals(2, testElement.sites.length);
+            assertEquals(prefs.exceptions.geolocation[1].origin,
+                testElement.sites[0].origin);
+            assertEquals(
+                settings.PermissionValues.ALLOW, testElement.categorySubtype);
+            Polymer.dom.flush();  // Populates action menu.
+            assertMenuActionHidden(testElement, 'Allow');
+            assertEquals('Allow - 2', testElement.$.header.innerText);
+
+            // Site list should show, no matter what category default is set to.
+            assertFalse(testElement.$.category.hidden);
+            browserProxy.resetResolver('getExceptionList');
+            testElement.categoryEnabled = false;
+            return browserProxy.whenCalled('getExceptionList').then(
+              function(contentType) {
+                assertFalse(testElement.$.category.hidden);
+                assertEquals('Exceptions - 2', testElement.$.header.innerText);
+            });
+          });
       });
 
       test('initial BLOCK state is correct', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
-        }).then(function() {
-          assertEquals(2, testElement.sites.length);
-          assertEquals('https://bar-block.com:443', testElement.sites[0].origin);
+        setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
-          assertFalse(testElement.isAllowList_());
-          assertMenuActionHidden(testElement, 'Block');
-          // Site list should only show when category default is enabled.
-          assertFalse(testElement.showSiteList_(testElement.sites, false));
-          assertTrue(testElement.showSiteList_(testElement.sites, true));
-          assertEquals('Block - 2', testElement.computeSiteListHeader_(
-              testElement.sites, true));
-        }.bind(this));
+            assertEquals(2, testElement.sites.length);
+            assertEquals(prefs.exceptions.geolocation[3].origin,
+                testElement.sites[0].origin);
+
+            assertEquals(
+                settings.PermissionValues.BLOCK, testElement.categorySubtype);
+            Polymer.dom.flush();  // Populates action menu.
+            assertMenuActionHidden(testElement, 'Block');
+            assertEquals('Block - 2', testElement.$.header.innerText);
+
+            // Site list should only show when category default is enabled.
+            assertFalse(testElement.$.category.hidden);
+            browserProxy.resetResolver('getExceptionList');
+            testElement.categoryEnabled = false;
+            return browserProxy.whenCalled('getExceptionList').then(
+              function(contentType) {
+                assertTrue(testElement.$.category.hidden);
+            });
+          });
       });
 
       test('list items shown and clickable when data is present', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
-        }).then(function() {
-          // Required for firstItem to be found below.
-          Polymer.dom.flush();
+        setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
 
-          // Validate that the sites gets populated from pre-canned prefs.
-          assertEquals(2, testElement.sites.length);
-          assertEquals('https://bar-allow.com:443', testElement.sites[0].origin);
-          assertEquals(undefined, testElement.selectedOrigin);
+            // Required for firstItem to be found below.
+            Polymer.dom.flush();
 
-          // Validate that the sites are shown in UI and can be selected.
-          var firstItem = testElement.$.listContainer.items[0];
-          var clickable = firstItem.querySelector('.flex paper-item-body');
-          assertNotEquals(undefined, clickable);
-          MockInteractions.tap(clickable);
-          assertEquals(
-              'https://bar-allow.com:443', testElement.selectedSite.origin);
-        }.bind(this));
+            // Validate that the sites gets populated from pre-canned prefs.
+            assertEquals(2, testElement.sites.length);
+            assertEquals(prefs.exceptions.geolocation[1].origin,
+                testElement.sites[0].origin);
+            assertEquals(undefined, testElement.selectedOrigin);
+
+            // Validate that the sites are shown in UI and can be selected.
+            var firstItem = testElement.$.listContainer.items[0];
+            var clickable = firstItem.querySelector('.flex paper-item-body');
+            assertNotEquals(undefined, clickable);
+            MockInteractions.tap(clickable);
+            assertEquals(prefs.exceptions.geolocation[1].origin,
+                testElement.selectedSite.origin);
+        });
       });
 
       test('Block list open when Allow list is empty', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          // Prefs: One item in Block list, nothing in Allow list.
-          setupLocationCategory(settings.PermissionValues.BLOCK,
-                                prefsOneDisabled);
-        }).then(function() {
-          assertFalse(testElement.$.category.hidden);
-          assertTrue(testElement.$.category.opened);
-          assertNotEquals(0, testElement.$.listContainer.offsetHeight);
-        }.bind(this));
+        // Prefs: One item in Block list, nothing in Allow list.
+        setupLocationCategory(settings.PermissionValues.BLOCK,
+                              prefsOneDisabled);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
+
+            assertFalse(testElement.$.category.hidden);
+            assertTrue(testElement.$.category.opened);
+            assertNotEquals(0, testElement.$.listContainer.offsetHeight);
+        });
       });
 
       test('Block list closed when Allow list is not empty', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          // Prefs: Items in both Block and Allow list.
-          setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
-        }).then(function() {
-          assertFalse(testElement.$.category.hidden);
-          assertFalse(testElement.$.category.opened);
-          assertEquals(0, testElement.$.listContainer.offsetHeight);
-        }.bind(this));
+        // Prefs: Items in both Block and Allow list.
+        setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
+
+            assertFalse(testElement.$.category.hidden);
+            assertFalse(testElement.$.category.opened);
+            assertEquals(0, testElement.$.listContainer.offsetHeight);
+        });
       });
 
       test('Allow list is always open (Block list empty)', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          // Prefs: One item in Allow list, nothing in Block list.
-          setupLocationCategory(
-              settings.PermissionValues.ALLOW, prefsOneEnabled);
-        }).then(function() {
-          assertFalse(testElement.$.category.hidden);
-          assertTrue(testElement.$.category.opened);
-          assertNotEquals(0, testElement.$.listContainer.offsetHeight);
-        }.bind(this));
+        // Prefs: One item in Allow list, nothing in Block list.
+        setupLocationCategory(
+            settings.PermissionValues.ALLOW, prefsOneEnabled);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
+
+            assertFalse(testElement.$.category.hidden);
+            assertTrue(testElement.$.category.opened);
+            assertNotEquals(0, testElement.$.listContainer.offsetHeight);
+        });
       });
 
       test('Allow list is always open (Block list non-empty)', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          // Prefs: Items in both Block and Allow list.
-          setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
-        }).then(function() {
-          assertFalse(testElement.$.category.hidden);
-          assertTrue(testElement.$.category.opened);
-          assertNotEquals(0, testElement.$.listContainer.offsetHeight);
-        }.bind(this));
+        // Prefs: Items in both Block and Allow list.
+        setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
+
+            assertFalse(testElement.$.category.hidden);
+            assertTrue(testElement.$.category.opened);
+            assertNotEquals(0, testElement.$.listContainer.offsetHeight);
+        });
       });
 
       test('Block list hidden when empty', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          // Prefs: One item in Allow list, nothing in Block list.
-          setupLocationCategory(
-              settings.PermissionValues.BLOCK, prefsOneEnabled);
-        }).then(function() {
-          assertTrue(testElement.$.category.hidden);
-        }.bind(this));
+        // Prefs: One item in Allow list, nothing in Block list.
+        setupLocationCategory(
+            settings.PermissionValues.BLOCK, prefsOneEnabled);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
+
+            assertTrue(testElement.$.category.hidden);
+        });
       });
 
       test('Allow list hidden when empty', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          // Prefs: One item in Block list, nothing in Allow list.
-          setupLocationCategory(settings.PermissionValues.ALLOW,
-                                prefsOneDisabled);
-        }).then(function() {
-          assertTrue(testElement.$.category.hidden);
-        }.bind(this));
+        // Prefs: One item in Block list, nothing in Allow list.
+        setupLocationCategory(settings.PermissionValues.ALLOW,
+                              prefsOneDisabled);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
+
+            assertTrue(testElement.$.category.hidden);
+        });
       });
 
-      test('All sites category', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          // Prefs: Multiple and overlapping sites.
-          setupAllSitesCategory(prefsVarious);
-        }).then(function() {
-          // Required for firstItem to be found below.
-          Polymer.dom.flush();
+      test('All sites category', function(done) {
+        // Prefs: Multiple and overlapping sites.
+        setupAllSitesCategory(prefsVarious);
 
-          assertFalse(testElement.$.category.hidden);
-          // Validate that the sites gets populated from pre-canned prefs. If
-          // this fails with 5 instead of the expected 3, then the de-duping of
-          // sites is not working for site_list.
-          assertEquals(3, testElement.sites.length);
-          assertEquals('https://bar.com', testElement.sites[0].origin);
-          assertEquals('https://foo.com', testElement.sites[1].origin);
-          assertEquals('https://google.com', testElement.sites[2].origin);
-          assertEquals(undefined, testElement.selectedOrigin);
+        browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            testElement.async(function() {
+              // All Sites calls getExceptionList for all categories, starting
+              // with Cookies.
+              assertEquals(settings.ContentSettingsTypes.COOKIES, contentType);
 
-          // Validate that the sites are shown in UI and can be selected.
-          var firstItem = testElement.$.listContainer.items[1];
-          var clickable = firstItem.querySelector('.flex paper-item-body');
-          assertNotEquals(undefined, clickable);
-          MockInteractions.tap(clickable);
-          assertEquals('https://foo.com', testElement.selectedSite.origin);
-        }.bind(this));
+              // Required for firstItem to be found below.
+              Polymer.dom.flush();
+
+              assertTrue(testElement.$.category.opened);
+              assertFalse(testElement.$.category.hidden);
+              // Validate that the sites gets populated from pre-canned prefs.
+              // If this fails with 5 instead of the expected 3, then the
+              // de-duping of sites is not working for site_list.
+              assertEquals(3, testElement.sites.length);
+              assertEquals(prefsVarious.exceptions.geolocation[1].origin,
+                  testElement.sites[0].origin);
+              assertEquals(prefsVarious.exceptions.geolocation[0].origin,
+                  testElement.sites[1].origin);
+              assertEquals(prefsVarious.exceptions.notifications[0].origin,
+                  testElement.sites[2].origin);
+              assertEquals(undefined, testElement.selectedOrigin);
+
+              // Validate that the sites are shown in UI and can be selected.
+              var firstItem = testElement.$.listContainer.items[1];
+              var clickable = firstItem.querySelector('.flex paper-item-body');
+              assertNotEquals(undefined, clickable);
+              MockInteractions.tap(clickable);
+              assertEquals(prefsVarious.exceptions.geolocation[0].origin,
+                  testElement.selectedSite.origin);
+
+              done();
+          });
+        });
       });
 
       test('Mixed schemes (present and absent)', function() {
-        return runAndResolveWhenSitesChanged(function() {
-          // Prefs: One item with scheme and one without.
-          setupLocationCategory(settings.PermissionValues.ALLOW,
-                                prefsMixedSchemes);
-        }).then(function() {
-          // No further checks needed. If this fails, it will hang the test.
-        }.bind(this));
+        // Prefs: One item with scheme and one without.
+        setupLocationCategory(settings.PermissionValues.ALLOW,
+                              prefsMixedSchemes);
+        return browserProxy.whenCalled('getExceptionList').then(
+          function(contentType) {
+            // No further checks needed. If this fails, it will hang the test.
+        });
       });
     });
   }

@@ -74,27 +74,6 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
 
   /** @override */
   setDefaultValueForContentType: function(contentType, defaultValue) {
-    if (contentType == settings.ContentSettingsTypes.CAMERA)
-      this.prefs_.defaults.media_stream_camera = defaultValue == 'allow';
-    else if (contentType == settings.ContentSettingsTypes.COOKIES)
-      this.prefs_.defaults.cookies = defaultValue == 'allow';
-    else if (contentType == settings.ContentSettingsTypes.FULLSCREEN)
-      this.prefs_.defaults.fullscreen = defaultValue == 'allow';
-    else if (contentType == settings.ContentSettingsTypes.GEOLOCATION)
-      this.prefs_.defaults.geolocation = defaultValue == 'allow';
-    else if (contentType == settings.ContentSettingsTypes.IMAGES)
-      this.prefs_.defaults.images = defaultValue == 'allow';
-    else if (contentType == settings.ContentSettingsTypes.JAVASCRIPT)
-      this.prefs_.defaults.javascript = defaultValue == 'allow';
-    else if (contentType == settings.ContentSettingsTypes.MIC)
-      this.prefs_.defaults.media_stream_mic = defaultValue == 'allow';
-    else if (contentType == settings.ContentSettingsTypes.NOTIFICATIONS)
-      this.prefs_.defaults.notifications = defaultValue == 'allow';
-    else if (contentType == settings.ContentSettingsTypes.POPUPS)
-      this.prefs_.defaults.popups = defaultValue == 'allow';
-    else
-      console.log('setDefault received unknown category: ' + contentType);
-
     this.methodCalled(
         'setDefaultValueForContentType', [contentType, defaultValue]);
   },

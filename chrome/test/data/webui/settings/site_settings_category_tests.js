@@ -59,23 +59,6 @@ cr.define('site_settings_category', function() {
         document.body.appendChild(testElement);
       });
 
-      /**
-       * Returns a promise that resolves once the selected item is updated.
-       * @param {function()} action is executed after the listener is set up.
-       * @return {!Promise} a Promise fulfilled when the selected item changes.
-       */
-      function runAndResolveWhenCategoryEnabledChanged(action) {
-        return new Promise(function(resolve, reject) {
-          var handler = function() {
-            testElement.removeEventListener(
-                'category-enabled-changed', handler);
-            resolve();
-          };
-          testElement.addEventListener('category-enabled-changed', handler);
-          action();
-        });
-      }
-
       test('getDefaultValueForContentType API used', function() {
         testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
         return browserProxy.whenCalled('getDefaultValueForContentType').then(
@@ -85,31 +68,37 @@ cr.define('site_settings_category', function() {
             });
       });
 
+      function testCategoryEnabled(testElement, enabled) {
+        browserProxy.setPrefs(
+            enabled ? prefsLocationEnabled : prefsLocationDisabled);
+
+        testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
+        return browserProxy.whenCalled('getDefaultValueForContentType').then(
+          function(contentType) {
+            assertEquals(
+                settings.ContentSettingsTypes.GEOLOCATION, contentType);
+            assertEquals(enabled, testElement.categoryEnabled);
+            MockInteractions.tap(testElement.$.toggle);
+            return browserProxy.whenCalled(
+                'setDefaultValueForContentType').then(
+              function(arguments) {
+                  assertEquals(
+                      settings.ContentSettingsTypes.GEOLOCATION, arguments[0]);
+                assertEquals(
+                    enabled ? settings.PermissionValues.BLOCK :
+                        settings.PermissionValues.ASK,
+                    arguments[1]);
+                assertNotEquals(enabled, testElement.categoryEnabled);
+              });
+          });
+      }
+
       test('categoryEnabled correctly represents prefs (enabled)', function() {
-        return runAndResolveWhenCategoryEnabledChanged(function() {
-          browserProxy.setPrefs(prefsLocationEnabled);
-          testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
-        }).then(function() {
-          assertTrue(testElement.categoryEnabled);
-          MockInteractions.tap(testElement.$.toggle);
-          assertFalse(testElement.categoryEnabled);
-        });
+        return testCategoryEnabled(testElement, true);
       });
 
       test('categoryEnabled correctly represents prefs (disabled)', function() {
-        // In order for the 'change' event to trigger, the value monitored needs
-        // to actually change (the event is not sent otherwise). Therefore,
-        // ensure the initial state of enabledness is opposite of what we expect
-        // it to end at.
-        testElement.categoryEnabled = true;
-        return runAndResolveWhenCategoryEnabledChanged(function() {
-          browserProxy.setPrefs(prefsLocationDisabled);
-          testElement.category = settings.ContentSettingsTypes.GEOLOCATION;
-        }).then(function() {
-          assertFalse(testElement.categoryEnabled);
-          MockInteractions.tap(testElement.$.toggle);
-          assertTrue(testElement.categoryEnabled);
-        });
+        return testCategoryEnabled(testElement, false);
       });
 
       test('basic category tests', function() {

@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Define a global boolean for notifications (only enabled in the test class).
-cr.exportPath('settings_test');
-
-/** @type {boolean} */
-settings_test.siteListNotifyForTest;
-
 /**
  * @fileoverview
  * 'settings-site-list' shows a list of Allowed and Blocked sites for a given
@@ -39,11 +33,11 @@ Polymer({
 
     /**
      * Array of sites to display in the widget.
+     * @type {!Array<SiteException>}
      */
     sites: {
       type: Array,
       value: function() { return []; },
-      notify: true,  // !!settings_test.siteListNotifyForTest,
     },
 
     /**
@@ -135,6 +129,13 @@ Polymer({
    * @private
    */
   configureWidget_: function() {
+    // The observer for All Sites fires before the attached/ready event, so
+    // initialize this here.
+    if (this.browserProxy_ === undefined) {
+      this.browserProxy_ =
+          settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
+    }
+
     this.setUpActionMenu_();
     this.ensureOpened_();
     this.populateList_();
@@ -155,14 +156,19 @@ Polymer({
 
     // Block list should only be shown opened if there is nothing to show in
     // the allowed list.
-    var prefsProxy = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
-    prefsProxy.getExceptionList(this.category).then(function(exceptionList) {
-      for (var i = 0; i < exceptionList.length; ++i) {
-        if (exceptionList[i].setting == 'allow')
-          return;
-      }
+    if (this.category != settings.INVALID_CATEGORY_SUBTYPE) {
+      this.browserProxy_.getExceptionList(this.category).then(
+        function(exceptionList) {
+          var allowExists = exceptionList.some(function(exception) {
+            return exception.setting == settings.PermissionStringValues.ALLOW;
+          });
+          if (allowExists)
+            return;
+          this.$.category.opened = true;
+      }.bind(this));
+    } else {
       this.$.category.opened = true;
-    }.bind(this));
+    }
   },
 
   /**
@@ -196,9 +202,9 @@ Polymer({
         this.processExceptions_(lists);
       }.bind(this));
     } else {
-      var prefsProxy = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
-      prefsProxy.getExceptionList(this.category).then(function(exceptionList) {
-        this.processExceptions_([exceptionList]);
+      this.browserProxy_.getExceptionList(this.category).then(
+        function(exceptionList) {
+          this.processExceptions_([exceptionList]);
       }.bind(this));
     }
   },
@@ -223,11 +229,11 @@ Polymer({
    * @private
    */
   getAllSitesList_: function() {
-    var prefsProxy = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
     var promiseList = [];
     for (var type in settings.ContentSettingsTypes) {
       promiseList.push(
-          prefsProxy.getExceptionList(settings.ContentSettingsTypes[type]));
+          this.browserProxy_.getExceptionList(
+              settings.ContentSettingsTypes[type]));
     }
 
     return Promise.all(promiseList);
@@ -245,12 +251,12 @@ Polymer({
     for (var i = 0; i < exceptionList.length; ++i) {
       if (this.category != settings.ALL_SITES) {
         // Filter out 'Block' values if this list is handling 'Allow' items.
-        if (exceptionList[i].setting == 'block' &&
+        if (exceptionList[i].setting == settings.PermissionStringValues.BLOCK &&
             this.categorySubtype != settings.PermissionValues.BLOCK) {
           continue;
         }
         // Filter out 'Allow' values if this list is handling 'Block' items.
-        if (exceptionList[i].setting == 'allow' &&
+        if (exceptionList[i].setting == settings.PermissionStringValues.ALLOW &&
             this.categorySubtype != settings.PermissionValues.ALLOW) {
           continue;
         }

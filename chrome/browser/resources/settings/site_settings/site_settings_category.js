@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Define a global boolean for notifications (only enabled in the test class).
-cr.exportPath('settings_test');
-
-/** @type {boolean} */
-settings_test.siteCategoryNotifyForTest;
-
 /**
  * @fileoverview
  * 'site-settings-category' is the polymer element for showing a certain
@@ -32,10 +26,7 @@ Polymer({
      * example, the Location category can be set to Block/Ask so false, in that
      * case, represents Block and true represents Ask.
      */
-    categoryEnabled: {
-      type: Boolean,
-      notify: true,  // !!settings_test.siteCategoryNotifyForTest,
-    },
+    categoryEnabled: Boolean,
 
     /**
      * The site that was selected by the user in the dropdown list.
@@ -115,7 +106,7 @@ Polymer({
                 settings.PermissionValues.ASK);
         break;
       default:
-        assertNotReached();
+        assertNotReached('Invalid category: ' + this.category);
     }
   },
 
