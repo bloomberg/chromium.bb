@@ -55,9 +55,9 @@ public:
     BLINK_EXPORT WebString label() const;
 
 #if BLINK_IMPLEMENTATION
-    WebOptionElement(const PassRefPtrWillBeRawPtr<HTMLOptionElement>&);
-    WebOptionElement& operator=(const PassRefPtrWillBeRawPtr<HTMLOptionElement>&);
-    operator PassRefPtrWillBeRawPtr<HTMLOptionElement>() const;
+    WebOptionElement(const RawPtr<HTMLOptionElement>&);
+    WebOptionElement& operator=(const RawPtr<HTMLOptionElement>&);
+    operator RawPtr<HTMLOptionElement>() const;
 #endif
 };
 

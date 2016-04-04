@@ -54,9 +54,9 @@ public:
     BLINK_EXPORT WebPlugin* plugin();
 
 #if BLINK_IMPLEMENTATION
-    WebPluginDocument(const PassRefPtrWillBeRawPtr<PluginDocument>&);
-    WebPluginDocument& operator=(const PassRefPtrWillBeRawPtr<PluginDocument>&);
-    operator PassRefPtrWillBeRawPtr<PluginDocument>() const;
+    WebPluginDocument(const RawPtr<PluginDocument>&);
+    WebPluginDocument& operator=(const RawPtr<PluginDocument>&);
+    operator RawPtr<PluginDocument>() const;
 #endif
 };
 

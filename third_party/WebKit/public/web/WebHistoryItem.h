@@ -117,9 +117,9 @@ public:
     BLINK_EXPORT WebVector<WebString> getReferencedFilePaths() const;
 
 #if BLINK_IMPLEMENTATION
-    BLINK_EXPORT WebHistoryItem(const PassRefPtrWillBeRawPtr<HistoryItem>&);
-    BLINK_EXPORT WebHistoryItem& operator=(const PassRefPtrWillBeRawPtr<HistoryItem>&);
-    BLINK_EXPORT operator PassRefPtrWillBeRawPtr<HistoryItem>() const;
+    BLINK_EXPORT WebHistoryItem(const RawPtr<HistoryItem>&);
+    BLINK_EXPORT WebHistoryItem& operator=(const RawPtr<HistoryItem>&);
+    BLINK_EXPORT operator RawPtr<HistoryItem>() const;
 #endif
 
 private:

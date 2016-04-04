@@ -76,9 +76,9 @@ public:
     BLINK_EXPORT void finishRequestAutocomplete(WebFormElement::AutocompleteResult);
 
 #if BLINK_IMPLEMENTATION
-    WebFormElement(const PassRefPtrWillBeRawPtr<HTMLFormElement>&);
-    WebFormElement& operator=(const PassRefPtrWillBeRawPtr<HTMLFormElement>&);
-    operator PassRefPtrWillBeRawPtr<HTMLFormElement>() const;
+    WebFormElement(const RawPtr<HTMLFormElement>&);
+    WebFormElement& operator=(const RawPtr<HTMLFormElement>&);
+    operator RawPtr<HTMLFormElement>() const;
 #endif
 };
 

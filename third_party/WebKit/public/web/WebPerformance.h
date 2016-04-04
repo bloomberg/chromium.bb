@@ -95,8 +95,8 @@ public:
     BLINK_EXPORT double parseBlockedOnScriptLoadDuration() const;
 
 #if BLINK_IMPLEMENTATION
-    WebPerformance(const PassRefPtrWillBeRawPtr<Performance>&);
-    WebPerformance& operator=(const PassRefPtrWillBeRawPtr<Performance>&);
+    WebPerformance(const RawPtr<Performance>&);
+    WebPerformance& operator=(const RawPtr<Performance>&);
 #endif
 
 private:

@@ -68,8 +68,8 @@ public:
     BLINK_EXPORT WebElement firstItem() const;
 
 #if BLINK_IMPLEMENTATION
-    WebElementCollection(const PassRefPtrWillBeRawPtr<HTMLCollection>&);
-    WebElementCollection& operator=(const PassRefPtrWillBeRawPtr<HTMLCollection>&);
+    WebElementCollection(const RawPtr<HTMLCollection>&);
+    WebElementCollection& operator=(const RawPtr<HTMLCollection>&);
 #endif
 
 private:

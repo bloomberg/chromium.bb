@@ -55,9 +55,9 @@ public:
     BLINK_EXPORT WebVector<WebElement> listItems() const;
 
 #if BLINK_IMPLEMENTATION
-    WebSelectElement(const PassRefPtrWillBeRawPtr<HTMLSelectElement>&);
-    WebSelectElement& operator=(const PassRefPtrWillBeRawPtr<HTMLSelectElement>&);
-    operator PassRefPtrWillBeRawPtr<HTMLSelectElement>() const;
+    WebSelectElement(const RawPtr<HTMLSelectElement>&);
+    WebSelectElement& operator=(const RawPtr<HTMLSelectElement>&);
+    operator RawPtr<HTMLSelectElement>() const;
 #endif
 };
 

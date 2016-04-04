@@ -175,7 +175,7 @@ private:
 template<typename T, WebPrivatePtrDestruction crossThreadDestruction, WebPrivatePtrStrength strongOrWeak>
 class PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, RefCountedGarbageCollectedLifetime> : public PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime> {
 public:
-    void assign(const PassRefPtrWillBeRawPtr<T>& val) { PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime>::assign(val.get()); }
+    void assign(const RawPtr<T>& val) { PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime>::assign(val.get()); }
 
     void assign(const PtrStorageImpl& other) { PtrStorageImpl<T, crossThreadDestruction, strongOrWeak, GarbageCollectedLifetime>::assign(other.get()); }
 };
