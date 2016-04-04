@@ -57,10 +57,13 @@ class IOSConfigurator : public update_client::Configurator {
   ~IOSConfigurator() override {}
 };
 
+// Allows the component updater to use non-encrypted communication with the
+// update backend. The security of the update checks is enforced using
+// a custom message signing protocol and it does not depend on using HTTPS.
 IOSConfigurator::IOSConfigurator(
     const base::CommandLine* cmdline,
     net::URLRequestContextGetter* url_request_getter)
-    : configurator_impl_(cmdline, url_request_getter) {}
+    : configurator_impl_(cmdline, url_request_getter, false) {}
 
 int IOSConfigurator::InitialDelay() const {
   return configurator_impl_.InitialDelay();

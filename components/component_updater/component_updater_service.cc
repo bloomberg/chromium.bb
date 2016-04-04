@@ -264,16 +264,33 @@ bool CrxUpdateService::CheckForUpdates() {
   UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.Calls", UPDATE_TYPE_AUTOMATIC,
                             UPDATE_TYPE_COUNT);
 
-  std::vector<std::string> ids;
+  std::vector<std::string> secure_ids;    // Requires HTTPS for update checks.
+  std::vector<std::string> unsecure_ids;  // Can fallback to HTTP.
   for (const auto id : components_order_) {
     DCHECK(components_.find(id) != components_.end());
-    ids.push_back(id);
+
+    auto component(GetComponent(id));
+    if (!component || component->requires_network_encryption)
+      secure_ids.push_back(id);
+    else
+      unsecure_ids.push_back(id);
   }
 
-  update_client_->Update(
-      ids, base::Bind(&CrxUpdateService::OnUpdate, base::Unretained(this)),
-      base::Bind(&CrxUpdateService::OnUpdateComplete, base::Unretained(this),
-                 base::TimeTicks::Now()));
+  if (!unsecure_ids.empty()) {
+    update_client_->Update(
+        unsecure_ids,
+        base::Bind(&CrxUpdateService::OnUpdate, base::Unretained(this)),
+        base::Bind(&CrxUpdateService::OnUpdateComplete, base::Unretained(this),
+                   base::TimeTicks::Now()));
+  }
+
+  if (!secure_ids.empty()) {
+    update_client_->Update(
+        secure_ids,
+        base::Bind(&CrxUpdateService::OnUpdate, base::Unretained(this)),
+        base::Bind(&CrxUpdateService::OnUpdateComplete, base::Unretained(this),
+                   base::TimeTicks::Now()));
+  }
 
   return true;
 }

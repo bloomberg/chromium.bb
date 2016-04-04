@@ -34,6 +34,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 
 namespace update_client {
 
@@ -236,6 +237,14 @@ bool IsValidBrand(const std::string& brand) {
   return std::find_if_not(brand.begin(), brand.end(), [](char ch) {
            return base::IsAsciiAlpha(ch);
          }) == brand.end();
+}
+
+void RemoveUnsecureUrls(std::vector<GURL>* urls) {
+  DCHECK(urls);
+  urls->erase(std::remove_if(
+                  urls->begin(), urls->end(),
+                  [](const GURL& url) { return !url.SchemeIsCryptographic(); }),
+              urls->end());
 }
 
 }  // namespace update_client

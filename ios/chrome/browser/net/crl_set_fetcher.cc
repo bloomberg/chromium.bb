@@ -136,7 +136,8 @@ void CRLSetFetcher::RegisterComponent(uint32_t sequence_of_loaded_crl) {
   component.installer = this;
   component.name = "CRLSet";
   component.version = Version(base::UintToString(sequence_of_loaded_crl));
-  component.allow_background_download = false;
+  component.allows_background_download = false;
+  component.requires_network_encryption = false;
   if (!component.version.IsValid()) {
     NOTREACHED();
     component.version = Version("0");

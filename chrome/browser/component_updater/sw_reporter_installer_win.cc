@@ -115,6 +115,8 @@ class SwReporterInstallerTraits : public ComponentInstallerTraits {
 
   bool CanAutoUpdate() const override { return true; }
 
+  bool RequiresNetworkEncryption() const override { return false; }
+
   bool OnCustomInstall(const base::DictionaryValue& manifest,
                        const base::FilePath& install_dir) override {
     return true;

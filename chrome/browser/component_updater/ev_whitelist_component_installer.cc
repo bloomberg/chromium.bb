@@ -75,6 +75,10 @@ bool EVWhitelistComponentInstallerTraits::CanAutoUpdate() const {
   return true;
 }
 
+bool EVWhitelistComponentInstallerTraits::RequiresNetworkEncryption() const {
+  return false;
+}
+
 bool EVWhitelistComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {

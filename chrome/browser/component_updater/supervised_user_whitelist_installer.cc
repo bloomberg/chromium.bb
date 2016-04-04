@@ -5,6 +5,7 @@
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 
 #include <stddef.h>
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -248,6 +249,7 @@ class SupervisedUserWhitelistComponentInstallerTraits
   bool VerifyInstallation(const base::DictionaryValue& manifest,
                           const base::FilePath& install_dir) const override;
   bool CanAutoUpdate() const override;
+  bool RequiresNetworkEncryption() const override;
   bool OnCustomInstall(const base::DictionaryValue& manifest,
                        const base::FilePath& install_dir) override;
   void ComponentReady(const base::Version& version,
@@ -273,6 +275,11 @@ bool SupervisedUserWhitelistComponentInstallerTraits::VerifyInstallation(
 }
 
 bool SupervisedUserWhitelistComponentInstallerTraits::CanAutoUpdate() const {
+  return true;
+}
+
+bool SupervisedUserWhitelistComponentInstallerTraits::
+    RequiresNetworkEncryption() const {
   return true;
 }
 

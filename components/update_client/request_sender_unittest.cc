@@ -45,7 +45,9 @@ class RequestSenderTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void RequestSenderComplete(int error, const std::string& response);
+  void RequestSenderComplete(int error,
+                             const std::string& response,
+                             int retry_after_sec);
 
  protected:
   void Quit();
@@ -124,7 +126,8 @@ void RequestSenderTest::Quit() {
 }
 
 void RequestSenderTest::RequestSenderComplete(int error,
-                                              const std::string& response) {
+                                              const std::string& response,
+                                              int retry_after_sec) {
   error_ = error;
   response_ = response;
 

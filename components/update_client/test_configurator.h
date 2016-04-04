@@ -83,6 +83,8 @@ class TestConfigurator : public Configurator {
   void SetInitialDelay(int seconds);
   void SetDownloadPreference(const std::string& download_preference);
   void SetUseCupSigning(bool use_cup_signing);
+  void SetUpdateCheckUrl(const GURL& url);
+  void SetPingUrl(const GURL& url);
 
  private:
   friend class base::RefCountedThreadSafe<TestConfigurator>;
@@ -96,6 +98,8 @@ class TestConfigurator : public Configurator {
   int ondemand_time_;
   std::string download_preference_;
   bool use_cup_signing_;
+  GURL update_check_url_;
+  GURL ping_url_;
 
   scoped_refptr<net::TestURLRequestContextGetter> context_;
 

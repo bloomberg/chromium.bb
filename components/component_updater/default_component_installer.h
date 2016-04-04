@@ -49,6 +49,10 @@ class ComponentInstallerTraits {
   // during component registration from the UI thread.
   virtual bool CanAutoUpdate() const = 0;
 
+  // Returns true if the network communication related to this component
+  // must be encrypted.
+  virtual bool RequiresNetworkEncryption() const = 0;
+
   // OnCustomInstall is called during the installation process. Components that
   // require custom installation operations should implement them here.
   // Returns false if a custom operation failed, and true otherwise.

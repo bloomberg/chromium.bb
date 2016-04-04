@@ -55,10 +55,16 @@ int TestConfigurator::UpdateDelay() const {
 }
 
 std::vector<GURL> TestConfigurator::UpdateUrl() const {
+  if (!update_check_url_.is_empty())
+    return std::vector<GURL>(1, update_check_url_);
+
   return MakeDefaultUrls();
 }
 
 std::vector<GURL> TestConfigurator::PingUrl() const {
+  if (!ping_url_.is_empty())
+    return std::vector<GURL>(1, ping_url_);
+
   return UpdateUrl();
 }
 
@@ -131,6 +137,14 @@ void TestConfigurator::SetUseCupSigning(bool use_cup_signing) {
 void TestConfigurator::SetDownloadPreference(
     const std::string& download_preference) {
   download_preference_ = download_preference;
+}
+
+void TestConfigurator::SetUpdateCheckUrl(const GURL& url) {
+  update_check_url_ = url;
+}
+
+void TestConfigurator::SetPingUrl(const GURL& url) {
+  ping_url_ = url;
 }
 
 scoped_refptr<base::SequencedTaskRunner>

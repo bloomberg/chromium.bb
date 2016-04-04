@@ -33,6 +33,15 @@ std::string SanitizeBrand(const std::string& brand) {
   return IsValidBrand(brand) ? brand : std::string("");
 }
 
+// Returns true if at least one item requires network encryption.
+bool IsEncryptionRequired(const std::vector<CrxUpdateItem*>& items) {
+  for (const auto& item : items) {
+    if (item->component.requires_network_encryption)
+      return true;
+  }
+  return false;
+}
+
 // Builds an update check request for |components|. |additional_attributes| is
 // serialized as part of the <request> element of the request to customize it
 // with data that is not platform or component specific. For each |item|, a
@@ -93,7 +102,9 @@ class UpdateCheckerImpl : public UpdateChecker {
       const UpdateCheckCallback& update_check_callback) override;
 
  private:
-  void OnRequestSenderComplete(int error, const std::string& response);
+  void OnRequestSenderComplete(int error,
+                               const std::string& response,
+                               int retry_after_sec);
   base::ThreadChecker thread_checker_;
 
   const scoped_refptr<Configurator> config_;
@@ -123,26 +134,30 @@ bool UpdateCheckerImpl::CheckForUpdates(
 
   update_check_callback_ = update_check_callback;
 
+  auto urls(config_->UpdateUrl());
+  if (IsEncryptionRequired(items_to_check))
+    RemoveUnsecureUrls(&urls);
+
   request_sender_.reset(new RequestSender(config_));
   request_sender_->Send(
       config_->UseCupSigning(),
       BuildUpdateCheckRequest(*config_, items_to_check, additional_attributes),
-      config_->UpdateUrl(),
-      base::Bind(&UpdateCheckerImpl::OnRequestSenderComplete,
-                 base::Unretained(this)));
+      urls, base::Bind(&UpdateCheckerImpl::OnRequestSenderComplete,
+                       base::Unretained(this)));
   return true;
 }
 
 void UpdateCheckerImpl::OnRequestSenderComplete(int error,
-                                                const std::string& response) {
+                                                const std::string& response,
+                                                int retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!error) {
     UpdateResponse update_response;
     if (update_response.Parse(response)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(update_check_callback_, error, update_response.results()));
+          FROM_HERE, base::Bind(update_check_callback_, error,
+                                update_response.results(), retry_after_sec));
       return;
     }
 
@@ -151,8 +166,8 @@ void UpdateCheckerImpl::OnRequestSenderComplete(int error,
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(update_check_callback_, error, UpdateResponse::Results()));
+      FROM_HERE, base::Bind(update_check_callback_, error,
+                            UpdateResponse::Results(), retry_after_sec));
 }
 
 }  // namespace

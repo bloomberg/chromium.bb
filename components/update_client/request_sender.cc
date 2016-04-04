@@ -4,6 +4,8 @@
 
 #include "components/update_client/request_sender.h"
 
+#include <algorithm>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -17,6 +19,7 @@
 #include "components/update_client/utils.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
 
 namespace update_client {
 
@@ -27,6 +30,25 @@ const int kKeyVersion = 5;
 const char kKeyPubBytesBase64[] =
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEB+Yi+3SdJKCyFJmm+suW3CyXygvVsbDbPnJgoC"
     "X4GeTtoL8Q/WjPx7CGtXOL1Xjbx0VPPN3DrvqZSL/oXy9hVw==";
+
+// The ETag header carries the ECSDA signature of the protocol response, if
+// signing has been used.
+const char kHeaderEtag[] = "ETag";
+
+// The server uses the optional X-Retry-After header to indicate that the
+// current request should not be attempted again. Any response received along
+// with the X-Retry-After header should be interpreted as it would have been
+// without the X-Retry-After header.
+//
+// In addition to the presence of the header, the value of the header is
+// used as a signal for when to do future update checks, but only when the
+// response is over https. Values over http are not trusted and are ignored.
+//
+// The value of the header is the number of seconds to wait before trying to do
+// a subsequent update check. The upper bound for the number of seconds to wait
+// before trying to do a subsequent update check is capped at 24 hours.
+const char kHeaderXRetryAfter[] = "X-Retry-After";
+const int64_t kMaxRetryAfterSec = 24 * 60 * 60;
 
 }  // namespace
 
@@ -55,7 +77,7 @@ void RequestSender::Send(bool use_signing,
   request_sender_callback_ = request_sender_callback;
 
   if (urls_.empty()) {
-    return HandleSendError(-1);
+    return HandleSendError(-1, 0);
   }
 
   cur_url_ = urls_.begin();
@@ -63,7 +85,7 @@ void RequestSender::Send(bool use_signing,
   if (use_signing_) {
     public_key_ = GetKey(kKeyPubBytesBase64);
     if (public_key_.empty())
-      return HandleSendError(-1);
+      return HandleSendError(-1, 0);
   }
 
   SendInternal();
@@ -91,16 +113,18 @@ void RequestSender::SendInternal() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&RequestSender::SendInternalComplete, base::Unretained(this),
-                   -1, std::string(), std::string()));
+                   -1, std::string(), std::string(), 0));
 }
 
 void RequestSender::SendInternalComplete(int error,
                                          const std::string& response_body,
-                                         const std::string& response_etag) {
+                                         const std::string& response_etag,
+                                         int retry_after_sec) {
   if (!error) {
     if (!use_signing_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(request_sender_callback_, 0, response_body));
+          FROM_HERE, base::Bind(request_sender_callback_, 0, response_body,
+                                retry_after_sec));
       return;
     }
 
@@ -108,7 +132,8 @@ void RequestSender::SendInternalComplete(int error,
     DCHECK(signer_.get());
     if (signer_->ValidateResponse(response_body, response_etag)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(request_sender_callback_, 0, response_body));
+          FROM_HERE, base::Bind(request_sender_callback_, 0, response_body,
+                                retry_after_sec));
       return;
     }
 
@@ -116,35 +141,49 @@ void RequestSender::SendInternalComplete(int error,
   }
 
   DCHECK(error);
-  if (++cur_url_ != urls_.end() &&
+
+  // A positive |retry_after_sec| is a hint from the server that the client
+  // should not send further request until the cooldown has expired.
+  if (retry_after_sec <= 0 && ++cur_url_ != urls_.end() &&
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&RequestSender::SendInternal, base::Unretained(this)))) {
     return;
   }
 
-  HandleSendError(error);
+  HandleSendError(error, retry_after_sec);
 }
 
 void RequestSender::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(source);
 
-  VLOG(1) << "request completed from url: " << source->GetOriginalURL().spec();
+  const GURL original_url(source->GetOriginalURL());
+  VLOG(1) << "request completed from url: " << original_url.spec();
 
   const int fetch_error(GetFetchError(*source));
   std::string response_body;
   CHECK(source->GetResponseAsString(&response_body));
 
+  int64_t retry_after_sec(-1);
+  const auto status(source->GetStatus().status());
+  if (original_url.SchemeIsCryptographic() &&
+      status == net::URLRequestStatus::SUCCESS) {
+    retry_after_sec = GetInt64HeaderValue(source, kHeaderXRetryAfter);
+    retry_after_sec = std::min(retry_after_sec, kMaxRetryAfterSec);
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&RequestSender::SendInternalComplete, base::Unretained(this),
-                 fetch_error, response_body, GetServerETag(source)));
+      FROM_HERE, base::Bind(&RequestSender::SendInternalComplete,
+                            base::Unretained(this), fetch_error, response_body,
+                            GetStringHeaderValue(source, kHeaderEtag),
+                            static_cast<int>(retry_after_sec)));
 }
 
-void RequestSender::HandleSendError(int error) {
+void RequestSender::HandleSendError(int error, int retry_after_sec) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(request_sender_callback_, error, std::string()));
+      FROM_HERE, base::Bind(request_sender_callback_, error, std::string(),
+                            retry_after_sec));
 }
 
 std::string RequestSender::GetKey(const char* key_bytes_base64) {
@@ -166,15 +205,23 @@ GURL RequestSender::BuildUpdateUrl(const GURL& url,
   return url.ReplaceComponents(replacements);
 }
 
-std::string RequestSender::GetServerETag(const net::URLFetcher* source) {
+std::string RequestSender::GetStringHeaderValue(const net::URLFetcher* source,
+                                                const char* header_name) {
   const auto response_headers(source->GetResponseHeaders());
   if (!response_headers)
     return std::string();
 
   std::string etag;
-  return response_headers->EnumerateHeader(nullptr, "ETag", &etag)
+  return response_headers->EnumerateHeader(nullptr, header_name, &etag)
              ? etag
              : std::string();
+}
+
+int64_t RequestSender::GetInt64HeaderValue(const net::URLFetcher* source,
+                                           const char* header_name) {
+  const auto response_headers(source->GetResponseHeaders());
+  return response_headers ? response_headers->GetInt64HeaderValue(header_name)
+                          : -1;
 }
 
 }  // namespace update_client

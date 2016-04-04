@@ -64,10 +64,13 @@ class ChromeConfigurator : public update_client::Configurator {
   ~ChromeConfigurator() override {}
 };
 
+// Allows the component updater to use non-encrypted communication with the
+// update backend. The security of the update checks is enforced using
+// a custom message signing protocol and it does not depend on using HTTPS.
 ChromeConfigurator::ChromeConfigurator(
     const base::CommandLine* cmdline,
     net::URLRequestContextGetter* url_request_getter)
-    : configurator_impl_(cmdline, url_request_getter) {}
+    : configurator_impl_(cmdline, url_request_getter, false) {}
 
 int ChromeConfigurator::InitialDelay() const {
   return configurator_impl_.InitialDelay();

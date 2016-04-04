@@ -81,4 +81,35 @@ TEST(UpdateClientUtils, IsValidBrand) {
   EXPECT_FALSE(IsValidBrand(std::string("\xaa")));   // Has non-ASCII char.
 }
 
+TEST(UpdateClientUtils, RemoveUnsecureUrls) {
+  const GURL test1[] = {GURL("http://foo"), GURL("https://foo")};
+  std::vector<GURL> urls(std::begin(test1), std::end(test1));
+  RemoveUnsecureUrls(&urls);
+  EXPECT_EQ(1u, urls.size());
+  EXPECT_EQ(urls[0], GURL("https://foo"));
+
+  const GURL test2[] = {GURL("https://foo"), GURL("http://foo")};
+  urls.assign(std::begin(test2), std::end(test2));
+  RemoveUnsecureUrls(&urls);
+  EXPECT_EQ(1u, urls.size());
+  EXPECT_EQ(urls[0], GURL("https://foo"));
+
+  const GURL test3[] = {GURL("https://foo"), GURL("https://bar")};
+  urls.assign(std::begin(test3), std::end(test3));
+  RemoveUnsecureUrls(&urls);
+  EXPECT_EQ(2u, urls.size());
+  EXPECT_EQ(urls[0], GURL("https://foo"));
+  EXPECT_EQ(urls[1], GURL("https://bar"));
+
+  const GURL test4[] = {GURL("http://foo")};
+  urls.assign(std::begin(test4), std::end(test4));
+  RemoveUnsecureUrls(&urls);
+  EXPECT_EQ(0u, urls.size());
+
+  const GURL test5[] = {GURL("http://foo"), GURL("http://bar")};
+  urls.assign(std::begin(test5), std::end(test5));
+  RemoveUnsecureUrls(&urls);
+  EXPECT_EQ(0u, urls.size());
+}
+
 }  // namespace update_client

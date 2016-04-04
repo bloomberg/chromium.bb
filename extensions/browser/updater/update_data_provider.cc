@@ -48,8 +48,8 @@ void UpdateDataProvider::GetData(
     crypto::SHA256HashString(pubkey_bytes, info->pk_hash.data(),
                              info->pk_hash.size());
     info->version = *extension->version();
-    info->allow_background_download = false;
-
+    info->allows_background_download = false;
+    info->requires_network_encryption = true;
     info->installer = new UpdateInstallShim(
         id, extension->path(),
         base::Bind(&UpdateDataProvider::RunInstallCallback, this));

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_UPDATE_CLIENT_REQUEST_SENDER_H_
 #define COMPONENTS_UPDATE_CLIENT_REQUEST_SENDER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -35,8 +37,13 @@ class Configurator;
 class RequestSender : public net::URLFetcherDelegate {
  public:
   // If |error| is 0, then the response is provided in the |response| parameter.
-  using RequestSenderCallback =
-      base::Callback<void(int error, const std::string& response)>;
+  // |retry_after_sec| contains the value of the X-Retry-After response header,
+  // when the response was received from a cryptographically secure URL. The
+  // range for this value is [-1, 86400]. If |retry_after_sec| is -1 it means
+  // that the header could not be found, or trusted, or had an invalid value.
+  // The upper bound represents a delay of one day.
+  using RequestSenderCallback = base::Callback<
+      void(int error, const std::string& response, int retry_after_sec)>;
 
   static int kErrorResponseNotTrusted;
 
@@ -57,9 +64,15 @@ class RequestSender : public net::URLFetcherDelegate {
   // Decodes and returns the public key used by CUP.
   static std::string GetKey(const char* key_bytes_base64);
 
-  // Returns the Etag of the server response or an empty string if the
-  // Etag is not available.
-  static std::string GetServerETag(const net::URLFetcher* source);
+  // Returns the string value of a header of the server response or an empty
+  // string if the header is not available.
+  static std::string GetStringHeaderValue(const net::URLFetcher* source,
+                                          const char* header_name);
+
+  // Returns the integral value of a header of the server response or -1 if
+  // if the header is not available or a conversion error has occured.
+  static int64_t GetInt64HeaderValue(const net::URLFetcher* source,
+                                     const char* header_name);
 
   // Overrides for URLFetcherDelegate.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -67,19 +80,20 @@ class RequestSender : public net::URLFetcherDelegate {
   // Implements the error handling and url fallback mechanism.
   void SendInternal();
 
-  // Called when SendInternal complets. |response_body|and |response_etag|
+  // Called when SendInternal completes. |response_body| and |response_etag|
   // contain the body and the etag associated with the HTTP response.
   void SendInternalComplete(int error,
                             const std::string& response_body,
-                            const std::string& response_etag);
+                            const std::string& response_etag,
+                            int retry_after_sec);
 
   // Helper function to handle a non-continuable error in Send.
-  void HandleSendError(int error);
+  void HandleSendError(int error, int retry_after_sec);
 
   base::ThreadChecker thread_checker_;
 
   const scoped_refptr<Configurator> config_;
-  bool use_signing_;
+  bool use_signing_;  // True if CUP signing is used.
   std::vector<GURL> urls_;
   std::string request_body_;
   RequestSenderCallback request_sender_callback_;

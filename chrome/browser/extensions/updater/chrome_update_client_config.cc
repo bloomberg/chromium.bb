@@ -13,11 +13,13 @@
 
 namespace extensions {
 
+// For privacy reasons, requires encryption of the component updater
+// communication with the update backend.
 ChromeUpdateClientConfig::ChromeUpdateClientConfig(
     content::BrowserContext* context)
     : impl_(base::CommandLine::ForCurrentProcess(),
-            context->GetRequestContext()) {
-}
+            context->GetRequestContext(),
+            true) {}
 
 int ChromeUpdateClientConfig::InitialDelay() const {
   return impl_.InitialDelay();

@@ -63,6 +63,10 @@ class UpdateEngine {
  private:
   void UpdateComplete(UpdateContext* update_context, int error);
 
+  // Returns true if the update engine rejects this update call because it
+  // occurs too soon.
+  bool IsThrottled(bool is_foreground) const;
+
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<Configurator> config_;
@@ -78,6 +82,12 @@ class UpdateEngine {
 
   // Contains the contexts associated with each update in progress.
   std::set<UpdateContext*> update_contexts_;
+
+  // Implements a rate limiting mechanism for background update checks. Has the
+  // effect of rejecting the update call if the update call occurs before
+  // a certain time, which is negotiated with the server as part of the
+  // update protocol. See the comments for X-Retry-After header.
+  base::Time throttle_updates_until_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateEngine);
 };
@@ -135,6 +145,9 @@ struct UpdateContext {
 
   // Contains the ids of the items to update.
   std::queue<std::string> queue;
+
+  // The time in seconds to wait until doing further update checks.
+  int retry_after_sec_;
 };
 
 }  // namespace update_client

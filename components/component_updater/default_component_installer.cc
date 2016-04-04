@@ -260,6 +260,8 @@ void DefaultComponentInstaller::FinishRegistration(
   if (installer_traits_->CanAutoUpdate()) {
     CrxComponent crx;
     crx.name = installer_traits_->GetName();
+    crx.requires_network_encryption =
+        installer_traits_->RequiresNetworkEncryption();
     crx.installer = this;
     crx.version = current_version_;
     crx.fingerprint = current_fingerprint_;

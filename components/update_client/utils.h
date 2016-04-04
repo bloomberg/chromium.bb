@@ -6,6 +6,7 @@
 #define COMPONENTS_UPDATE_CLIENT_UTILS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 
@@ -97,6 +98,9 @@ bool VerifyFileHash256(const base::FilePath& filepath,
 
 // Returns true if the |brand| parameter matches ^([a-zA-Z]{4})?$ .
 bool IsValidBrand(const std::string& brand);
+
+// Removes the unsecure urls in the |urls| parameter.
+void RemoveUnsecureUrls(std::vector<GURL>* urls);
 
 }  // namespace update_client
 

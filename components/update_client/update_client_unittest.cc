@@ -97,7 +97,7 @@ class FakePingManagerImpl : public PingManager {
   explicit FakePingManagerImpl(const scoped_refptr<Configurator>& config);
   ~FakePingManagerImpl() override;
 
-  void SendPing(const CrxUpdateItem* item) override;
+  bool SendPing(const CrxUpdateItem* item) override;
 
   const std::vector<CrxUpdateItem>& items() const;
 
@@ -113,8 +113,9 @@ FakePingManagerImpl::FakePingManagerImpl(
 FakePingManagerImpl::~FakePingManagerImpl() {
 }
 
-void FakePingManagerImpl::SendPing(const CrxUpdateItem* item) {
+bool FakePingManagerImpl::SendPing(const CrxUpdateItem* item) {
   items_.push_back(*item);
+  return true;
 }
 
 const std::vector<CrxUpdateItem>& FakePingManagerImpl::items() const {
@@ -227,7 +228,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
         const UpdateCheckCallback& update_check_callback) override {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(update_check_callback, 0, UpdateResponse::Results()));
+          base::Bind(update_check_callback, 0, UpdateResponse::Results(), 0));
       return true;
     }
   };
@@ -368,7 +369,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, 0, results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results, 0));
       return true;
     }
   };
@@ -580,7 +581,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
       results.list.push_back(result2);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, 0, results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results, 0));
       return true;
     }
   };
@@ -827,7 +828,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       results.list.push_back(result2);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, 0, results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results, 0));
       return true;
     }
   };
@@ -1099,7 +1100,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, 0, results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results, 0));
       return true;
     }
   };
@@ -1340,7 +1341,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, 0, results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results, 0));
       return true;
     }
   };
@@ -1573,7 +1574,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, 0, results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results, 0));
       return true;
     }
   };
@@ -1778,7 +1779,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
         const UpdateCheckCallback& update_check_callback) override {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(update_check_callback, 0, UpdateResponse::Results()));
+          base::Bind(update_check_callback, 0, UpdateResponse::Results(), 0));
       return true;
     }
   };
@@ -1911,7 +1912,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       results.list.push_back(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(update_check_callback, 0, results));
+          FROM_HERE, base::Bind(update_check_callback, 0, results, 0));
       return true;
     }
   };
@@ -2063,7 +2064,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
         const UpdateCheckCallback& update_check_callback) override {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(update_check_callback, 0, UpdateResponse::Results()));
+          base::Bind(update_check_callback, 0, UpdateResponse::Results(), 0));
       return true;
     }
   };
@@ -2241,6 +2242,176 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 
   update_client->SendUninstallPing("jebgalgnebhfojomionfpkfelancnnkf",
                                    base::Version("1.0"), 10);
+}
+
+TEST_F(UpdateClientTest, RetryAfter) {
+  class DataCallbackFake {
+   public:
+    static void Callback(const std::vector<std::string>& ids,
+                         std::vector<CrxComponent>* components) {
+      CrxComponent crx;
+      crx.name = "test_jebg";
+      crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
+      crx.version = Version("0.9");
+      crx.installer = new TestInstaller;
+      components->push_back(crx);
+    }
+  };
+
+  class CompletionCallbackFake {
+   public:
+    static void Callback(const base::Closure& quit_closure, int error) {
+      static int num_call = 0;
+      ++num_call;
+
+      EXPECT_LE(num_call, 4);
+
+      if (num_call == 1) {
+        EXPECT_EQ(0, error);
+      } else if (num_call == 2) {
+        // This request is throttled since the update engine received a
+        // positive |retry_after_sec| value in the update check response.
+        EXPECT_EQ(Error::ERROR_UPDATE_RETRY_LATER, error);
+      } else if (num_call == 3) {
+        // This request is a foreground Install, which is never throttled.
+        // The update engine received a |retry_after_sec| value of 0, which
+        // resets the throttling.
+        EXPECT_EQ(0, error);
+      } else if (num_call == 4) {
+        // This request succeeds since there is no throttling in effect.
+        EXPECT_EQ(0, error);
+      }
+
+      quit_closure.Run();
+    }
+  };
+
+  class FakeUpdateChecker : public UpdateChecker {
+   public:
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
+      return scoped_ptr<UpdateChecker>(new FakeUpdateChecker());
+    }
+
+    bool CheckForUpdates(
+        const std::vector<CrxUpdateItem*>& items_to_check,
+        const std::string& additional_attributes,
+        const UpdateCheckCallback& update_check_callback) override {
+      static int num_call = 0;
+      ++num_call;
+
+      EXPECT_LE(num_call, 3);
+
+      int retry_after_sec(0);
+      if (num_call == 1) {
+        // Throttle the next call.
+        retry_after_sec = 60 * 60;  // 1 hour.
+      }
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(update_check_callback, 0,
+                                UpdateResponse::Results(), retry_after_sec));
+      return true;
+    }
+  };
+
+  class FakeCrxDownloader : public CrxDownloader {
+   public:
+    static scoped_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        net::URLRequestContextGetter* context_getter,
+        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+      return scoped_ptr<CrxDownloader>(new FakeCrxDownloader());
+    }
+
+   private:
+    FakeCrxDownloader()
+        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+    ~FakeCrxDownloader() override {}
+
+    void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
+  };
+
+  class FakePingManager : public FakePingManagerImpl {
+   public:
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+        : FakePingManagerImpl(config) {}
+    ~FakePingManager() override { EXPECT_TRUE(items().empty()); }
+  };
+
+  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
+  scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
+      &FakeCrxDownloader::Create));
+
+  MockObserver observer;
+
+  InSequence seq;
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
+  EXPECT_CALL(observer, OnEvent(Events::COMPONENT_NOT_UPDATED,
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
+
+  update_client->AddObserver(&observer);
+
+  std::vector<std::string> ids;
+  ids.push_back(std::string("jebgalgnebhfojomionfpkfelancnnkf"));
+
+  {
+    // The engine handles this Update call but responds with a valid
+    // |retry_after_sec|, which causes subsequent calls to fail.
+    base::RunLoop runloop;
+    update_client->Update(
+        ids, base::Bind(&DataCallbackFake::Callback),
+        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    runloop.Run();
+  }
+
+  {
+    // This call will result in a completion callback invoked with
+    // Error::ERROR_UPDATE_RETRY_LATER.
+    base::RunLoop runloop;
+    update_client->Update(
+        ids, base::Bind(&DataCallbackFake::Callback),
+        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    runloop.Run();
+  }
+
+  {
+    // The Install call is handled, and the throttling is reset due to
+    // the value of |retry_after_sec| in the completion callback.
+    base::RunLoop runloop;
+    update_client->Install(
+        std::string("jebgalgnebhfojomionfpkfelancnnkf"),
+        base::Bind(&DataCallbackFake::Callback),
+        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    runloop.Run();
+  }
+
+  {
+    // This call succeeds.
+    base::RunLoop runloop;
+    update_client->Update(
+        ids, base::Bind(&DataCallbackFake::Callback),
+        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    runloop.Run();
+  }
+
+  update_client->RemoveObserver(&observer);
 }
 
 }  // namespace update_client

@@ -30,6 +30,7 @@ class EVWhitelistComponentInstallerTraits : public ComponentInstallerTraits {
  private:
   // The following methods override ComponentInstallerTraits.
   bool CanAutoUpdate() const override;
+  bool RequiresNetworkEncryption() const override;
   bool OnCustomInstall(const base::DictionaryValue& manifest,
                        const base::FilePath& install_dir) override;
   bool VerifyInstallation(const base::DictionaryValue& manifest,

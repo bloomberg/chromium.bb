@@ -52,8 +52,8 @@ CrxUpdateItem::CrxUpdateItem(const CrxUpdateItem& other) = default;
 CrxUpdateItem::~CrxUpdateItem() {
 }
 
-CrxComponent::CrxComponent() : allow_background_download(true) {
-}
+CrxComponent::CrxComponent()
+    : allows_background_download(true), requires_network_encryption(true) {}
 
 CrxComponent::CrxComponent(const CrxComponent& other) = default;
 

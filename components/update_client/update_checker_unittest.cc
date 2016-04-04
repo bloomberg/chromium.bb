@@ -47,7 +47,9 @@ class UpdateCheckerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void UpdateCheckComplete(int error, const UpdateResponse::Results& results);
+  void UpdateCheckComplete(int error,
+                           const UpdateResponse::Results& results,
+                           int retry_after_sec);
 
  protected:
   void Quit();
@@ -129,7 +131,8 @@ void UpdateCheckerTest::Quit() {
 
 void UpdateCheckerTest::UpdateCheckComplete(
     int error,
-    const UpdateResponse::Results& results) {
+    const UpdateResponse::Results& results,
+    int retry_after_sec) {
   error_ = error;
   results_ = results;
   Quit();
@@ -306,6 +309,27 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
   // Expect an error since the response is not trusted.
   EXPECT_EQ(-10000, error_);
   EXPECT_EQ(0ul, results_.list.size());
+}
+
+// Tests that the UpdateCheckers will not make an update check for a
+// component that requires encryption when the update check URL is unsecure.
+TEST_F(UpdateCheckerTest, UpdateCheckRequiresEncryptionError) {
+  config_->SetUpdateCheckUrl(GURL("http:\\foo\bar"));
+
+  update_checker_ = UpdateChecker::Create(config_);
+
+  CrxUpdateItem item(BuildCrxUpdateItem());
+  item.component.requires_network_encryption = true;
+  std::vector<CrxUpdateItem*> items_to_check;
+  items_to_check.push_back(&item);
+
+  update_checker_->CheckForUpdates(
+      items_to_check, "", base::Bind(&UpdateCheckerTest::UpdateCheckComplete,
+                                     base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_EQ(-1, error_);
+  EXPECT_EQ(0u, results_.list.size());
 }
 
 }  // namespace update_client

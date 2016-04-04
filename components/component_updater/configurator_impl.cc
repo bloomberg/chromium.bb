@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "components/component_updater/component_updater_switches.h"
 #include "components/component_updater/component_updater_url_constants.h"
-#include "components/update_client/configurator.h"
+#include "components/update_client/utils.h"
 #include "components/version_info/version_info.h"
 
 #if defined(OS_WIN)
@@ -82,12 +82,14 @@ std::string GetSwitchArgument(const std::vector<std::string>& vec,
 
 ConfiguratorImpl::ConfiguratorImpl(
     const base::CommandLine* cmdline,
-    net::URLRequestContextGetter* url_request_getter)
+    net::URLRequestContextGetter* url_request_getter,
+    bool require_encryption)
     : url_request_getter_(url_request_getter),
       fast_update_(false),
       pings_enabled_(false),
       deltas_enabled_(false),
-      background_downloads_enabled_(false) {
+      background_downloads_enabled_(false),
+      require_encryption_(require_encryption) {
   // Parse comma-delimited debug flags.
   std::vector<std::string> switch_values = base::SplitString(
       cmdline->GetSwitchValueASCII(switches::kComponentUpdater), ",",
@@ -140,9 +142,14 @@ std::vector<GURL> ConfiguratorImpl::UpdateUrl() const {
   std::vector<GURL> urls;
   if (url_source_override_.is_valid()) {
     urls.push_back(GURL(url_source_override_));
-  } else {
-    urls.push_back(GURL(kUpdaterDefaultUrl));
+    return urls;
   }
+
+  urls.push_back(GURL(kUpdaterDefaultUrl));
+  urls.push_back(GURL(kUpdaterFallbackUrl));
+  if (require_encryption_)
+    update_client::RemoveUnsecureUrls(&urls);
+
   return urls;
 }
 

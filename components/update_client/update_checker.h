@@ -25,7 +25,9 @@ struct CrxUpdateItem;
 class UpdateChecker {
  public:
   using UpdateCheckCallback =
-      base::Callback<void(int error, const UpdateResponse::Results& results)>;
+      base::Callback<void(int error,
+                          const UpdateResponse::Results& results,
+                          int retry_after_sec)>;
 
   using Factory =
       scoped_ptr<UpdateChecker> (*)(const scoped_refptr<Configurator>& config);

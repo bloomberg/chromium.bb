@@ -294,7 +294,7 @@ bool ActionUpdateFull::IsBackgroundDownload(const CrxUpdateItem* item) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // On demand component updates are always downloaded in foreground.
-  return !item->on_demand && item->component.allow_background_download &&
+  return !item->on_demand && item->component.allows_background_download &&
          update_context_->config->UseBackgroundDownloader();
 }
 

@@ -36,7 +36,9 @@ class ActionUpdateCheck : public Action, private ActionImpl {
   void Run(UpdateContext* update_context, Callback callback) override;
 
  private:
-  void UpdateCheckComplete(int error, const UpdateResponse::Results& results);
+  void UpdateCheckComplete(int error,
+                           const UpdateResponse::Results& results,
+                           int retry_after_sec);
 
   void OnUpdateCheckSucceeded(const UpdateResponse::Results& results);
   void OnUpdateCheckFailed(int error);

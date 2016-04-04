@@ -27,7 +27,8 @@ namespace component_updater {
 class ConfiguratorImpl {
  public:
   ConfiguratorImpl(const base::CommandLine* cmdline,
-                   net::URLRequestContextGetter* url_request_getter);
+                   net::URLRequestContextGetter* url_request_getter,
+                   bool require_encryption);
 
   ~ConfiguratorImpl();
 
@@ -92,6 +93,7 @@ class ConfiguratorImpl {
   bool pings_enabled_;
   bool deltas_enabled_;
   bool background_downloads_enabled_;
+  bool require_encryption_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfiguratorImpl);
 };

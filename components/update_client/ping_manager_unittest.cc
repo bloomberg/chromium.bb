@@ -177,4 +177,23 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   interceptor->Reset();
 }
 
+// Tests that sending the ping fails when the component requires encryption but
+// the ping URL is unsecure.
+TEST_F(ComponentUpdaterPingManagerTest, PingManagerRequiresEncryptionTest) {
+  config_->SetPingUrl(GURL("http:\\foo\bar"));
+
+  {
+    CrxUpdateItem item;
+    item.component.requires_network_encryption = true;
+
+    EXPECT_FALSE(ping_manager_->SendPing(&item));
+  }
+
+  {
+    // Tests that the default for |requires_network_encryption| is true.
+    CrxUpdateItem item;
+    EXPECT_FALSE(ping_manager_->SendPing(&item));
+  }
+}
+
 }  // namespace update_client

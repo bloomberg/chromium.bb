@@ -97,8 +97,11 @@ void ActionUpdateCheck::Run(UpdateContext* update_context, Callback callback) {
 
 void ActionUpdateCheck::UpdateCheckComplete(
     int error,
-    const UpdateResponse::Results& results) {
+    const UpdateResponse::Results& results,
+    int retry_after_sec) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  update_context_->retry_after_sec_ = retry_after_sec;
 
   if (!error)
     OnUpdateCheckSucceeded(results);

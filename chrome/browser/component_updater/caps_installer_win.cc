@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -77,6 +78,8 @@ class CAPSInstallerTraits : public ComponentInstallerTraits {
   }
 
   bool CanAutoUpdate() const override { return true; }
+
+  bool RequiresNetworkEncryption() const override { return false; }
 
   bool OnCustomInstall(const base::DictionaryValue& manifest,
                        const base::FilePath& install_dir) override {

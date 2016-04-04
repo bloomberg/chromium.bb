@@ -56,6 +56,10 @@ bool CldComponentInstallerTraits::CanAutoUpdate() const {
   return true;
 }
 
+bool CldComponentInstallerTraits::RequiresNetworkEncryption() const {
+  return false;
+}
+
 bool CldComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
