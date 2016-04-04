@@ -242,7 +242,7 @@ void PaintInvalidationState::updateForChildren()
     if (box.usesCompositedScrolling())
         ASSERT(!m_clipped); // The box should establish paint invalidation container, so no m_clipped inherited.
     else
-        addClipRectRelativeToPaintOffset(LayoutRect(LayoutPoint(), LayoutSize(box.layer()->size())));
+        addClipRectRelativeToPaintOffset(box.overflowClipRect(LayoutPoint()));
 
     m_paintOffset -= box.scrolledContentOffset();
 

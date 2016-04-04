@@ -815,6 +815,11 @@ crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-ch
 crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html [ Failure ]
 crbug.com/555703 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framesize.html [ Failure ]
 
+crbug.com/599939 compositing/overflow/text-color-change.html [ NeedsRebaseline ]
+crbug.com/599939 compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
+crbug.com/599939 fast/repaint/layout-state-scrolloffset3.html [ NeedsRebaseline ]
+crbug.com/599939 svg/custom/invisible-text-after-scrolling.xhtml [ NeedsRebaseline ]
+
 crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
@@ -1335,9 +1340,7 @@ crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scro
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/layer-creation/compositing-reason-removed.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/fixed-scroll-in-empty-root-layer.html [ Failure ]
-crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/text-color-change.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Failure ]
-crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/updating-scrolling-container-and-content.html [ Failure ]
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/updating-scrolling-container.html [ Failure ]
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/invalidate-when-leaving-squashed-layer.html [ Failure ]
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/squashing/invalidation-for-subpixel-offset-of-squashed-layer.html [ Failure ]

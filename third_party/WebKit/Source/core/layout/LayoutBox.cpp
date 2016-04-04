@@ -976,10 +976,8 @@ bool LayoutBox::applyOverflowClip(LayoutRect& rect, VisualRectFlags visualRectFl
 
     flipForWritingMode(rect);
 
-    // size() is inaccurate if we're in the middle of a layout of this LayoutBox, so use the
-    // layer's size instead. Even if the layer's size is wrong, the layer itself will issue paint invalidations
-    // anyway if its size does change.
-    LayoutRect clipRect(LayoutPoint(), LayoutSize(layer()->size()));
+    LayoutRect clipRect = overflowClipRect(LayoutPoint());
+
     bool doesIntersect;
     if (visualRectFlags & EdgeInclusive) {
         doesIntersect = rect.inclusiveIntersect(clipRect);
