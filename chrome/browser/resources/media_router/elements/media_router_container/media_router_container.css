@@ -198,6 +198,10 @@ paper-menu {
 }
 
 #sink-search-input {
+  --paper-input-container: {
+    margin: 8px 0;
+    padding: 0;
+  };
   --paper-input-container-focus-color: rgb(33, 150, 243);
   --paper-input-container-input: {
     font-size: 12px;
