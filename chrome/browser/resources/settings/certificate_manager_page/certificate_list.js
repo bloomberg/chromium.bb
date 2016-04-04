@@ -19,4 +19,86 @@ Polymer({
     /** @type {!settings.CertificateType} */
     certificateType: String,
   },
+
+  behaviors: [I18nBehavior],
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getDescription_: function() {
+    switch (this.certificateType) {
+      case settings.CertificateType.PERSONAL:
+        return this.i18n('certificateManagerYourCertificatesDescription');
+      case settings.CertificateType.SERVER:
+        return this.i18n('certificateManagerServersDescription');
+      case settings.CertificateType.CA:
+        return this.i18n('certificateManagerAuthoritiesDescription');
+      case settings.CertificateType.OTHER:
+        return this.i18n('certificateManagerOthersDescription');
+    }
+
+    assertNotReached();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  canImport_: function() {
+    return this.certificateType != settings.CertificateType.OTHER;
+  },
+
+  /**
+   * Handles a rejected Promise returned from |browserProxy_|.
+   * @param {null|!CertificatesError|!CertificatesImportError} error
+   * @private
+   */
+  onRejected_: function(error) {
+    if (error === null) {
+      // Nothing to do here. Null indicates that the user clicked "cancel" on
+      // a native file chooser dialog.
+      return;
+    }
+
+    // Otherwise propagate the error to the parents, such that a dialog
+    // displaying the error will be shown.
+    this.fire('certificates-error', error);
+  },
+
+
+  /** @private */
+  dispatchImportActionEvent_: function() {
+    this.fire(
+        settings.CertificateActionEvent,
+        /** @type {!CertificateActionEventDetail} */ ({
+          action: settings.CertificateAction.IMPORT,
+          subnode: null,
+          certificateType: this.certificateType,
+        }));
+  },
+
+  /** @private */
+  onImportTap_: function() {
+    var browserProxy = settings.CertificatesBrowserProxyImpl.getInstance();
+    if (this.certificateType == settings.CertificateType.PERSONAL) {
+      browserProxy.importPersonalCertificate(false).then(
+          function(showPasswordPrompt) {
+            if (showPasswordPrompt)
+              this.dispatchImportActionEvent_();
+          }.bind(this),
+          this.onRejected_.bind(this));
+    } else if (this.certificateType == settings.CertificateType.CA) {
+      browserProxy.importCaCertificate().then(
+          function(certificateName) {
+            this.dispatchImportActionEvent_();
+          }.bind(this),
+          this.onRejected_.bind(this));
+    } else if (this.certificateType == settings.CertificateType.SERVER) {
+      browserProxy.importServerCertificate().catch(
+          this.onRejected_.bind(this));
+    } else {
+      assertNotReached();
+    }
+  },
 });

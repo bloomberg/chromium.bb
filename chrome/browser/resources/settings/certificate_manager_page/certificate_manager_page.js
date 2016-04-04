@@ -103,39 +103,59 @@ Polymer({
   /** @override */
   ready: function() {
     this.addEventListener(settings.CertificateActionEvent, function(event) {
-      this.dialogModel_ = event.detail.subnode;
-      this.dialogModelCertificateType_ = event.detail.certificateType;
-      if (event.detail.action == settings.CertificateAction.EDIT) {
-        this.openDialog_(
-            'settings-ca-trust-edit-dialog',
-            'showCaTrustEditDialog_');
-      } else if (event.detail.action == settings.CertificateAction.DELETE) {
-        this.openDialog_(
-            'settings-certificate-delete-confirmation-dialog',
-            'showDeleteConfirmationDialog_');
-      } else if (event.detail.action ==
-          settings.CertificateAction.EXPORT_PERSONAL) {
-        this.openDialog_(
-            'settings-certificate-password-encryption-dialog',
-            'showPasswordEncryptionDialog_');
-      } else if (event.detail.action ==
-          settings.CertificateAction.IMPORT_PERSONAL) {
-        this.openDialog_(
-            'settings-certificate-password-decryption-dialog',
-            'showPasswordDecryptionDialog_');
-      } else if (event.detail.action == settings.CertificateAction.IMPORT_CA) {
-        // TODO(dpapad): Implement this.
+      if (event.detail.action == settings.CertificateAction.IMPORT) {
+        this.handleImportAction_(event.detail);
+      } else {
+        this.dialogModel_ = event.detail.subnode;
+        this.dialogModelCertificateType_ = event.detail.certificateType;
+        if (event.detail.action == settings.CertificateAction.EDIT) {
+          this.openDialog_(
+              'settings-ca-trust-edit-dialog',
+              'showCaTrustEditDialog_');
+        } else if (event.detail.action == settings.CertificateAction.DELETE) {
+          this.openDialog_(
+              'settings-certificate-delete-confirmation-dialog',
+              'showDeleteConfirmationDialog_');
+        } else if (event.detail.action ==
+            settings.CertificateAction.EXPORT_PERSONAL) {
+          this.openDialog_(
+              'settings-certificate-password-encryption-dialog',
+              'showPasswordEncryptionDialog_');
+        }
       }
+
+      event.stopPropagation();
+    }.bind(this));
+
+    this.addEventListener('certificates-error', function(event) {
+      this.errorDialogModel_ = event.detail;
+      this.openDialog_(
+          'settings-certificates-error-dialog',
+          'showErrorDialog_');
       event.stopPropagation();
     }.bind(this));
   },
 
   /**
-   * Opens a dialog and registers listeners for
-   *  1) Removing the dialog from the DOM once is closed.
-   *  2) Showing an error dialog if necessary.
-   * The listeners are destroyed when the dialog is removed (because of
-   * 'restamp');
+   * Handles a |CertificateAction.IMPORT| for cases where a dialog needs to be
+   * displayed to the user.
+   * @param {!CertificateActionEventDetail} eventdetail
+   * @private
+   */
+  handleImportAction_: function(actionEvent) {
+    if (actionEvent.certificateType == settings.CertificateType.PERSONAL) {
+      this.openDialog_(
+          'settings-certificate-password-decryption-dialog',
+          'showPasswordDecryptionDialog_');
+    } else if (actionEvent.certificateType == settings.CertificateType.CA) {
+      // TODO(dpapad): Implement this.
+    }
+  },
+
+  /**
+   * Opens a dialog and registers a listener for removing the dialog from the
+   * DOM once is closed. The listener is destroyed when the dialog is removed
+   * (because of 'restamp').
    *
    * @param {string} dialogTagName The tag name of the dialog to be shown.
    * @param {string} domIfBooleanName The name of the boolean variable
@@ -148,12 +168,6 @@ Polymer({
       var dialog = this.$$(dialogTagName);
       dialog.addEventListener('iron-overlay-closed', function() {
         this.set(domIfBooleanName, false);
-      }.bind(this));
-      dialog.addEventListener('certificates-error', function(event) {
-        this.errorDialogModel_ = event.detail;
-        this.openDialog_(
-            'settings-certificates-error-dialog',
-            'showErrorDialog_');
       }.bind(this));
     }.bind(this));
   },

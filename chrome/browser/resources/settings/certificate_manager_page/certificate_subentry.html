@@ -54,10 +54,6 @@
             <paper-item id="export" on-tap="onExportTap_">
               $i18n{certificateManagerExport}
             </paper-item>
-            <paper-item hidden$="[[!canImport_(certificateType)]]"
-                on-tap="onImportTap_">
-              $i18n{certificateManagerImport}
-            </paper-item>
             <paper-item id="delete" hidden$="[[model.readonly]]"
                 on-tap="onDeleteTap_">
               $i18n{certificateManagerDelete}

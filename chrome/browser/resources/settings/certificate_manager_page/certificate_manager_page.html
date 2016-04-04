@@ -13,9 +13,17 @@
 <dom-module id="settings-certificate-manager-page">
   <template>
     <style>
-      /* TODO(dpapad): Find exact color value to use. */
       :host {
-        --paper-tabs-selection-bar-color: blue;
+        --paper-tabs-selection-bar-color: var(--paper-blue-500);
+      }
+
+      paper-tabs {
+        height: 40px;
+        margin-bottom: 24px;
+      }
+
+      paper-tab {
+        text-transform: uppercase;
       }
     </style>
 
@@ -43,7 +51,7 @@
       </settings-certificates-error-dialog>
     </template>
 
-    <paper-tabs selected="{{selected}}">
+    <paper-tabs noink selected="{{selected}}">
       <paper-tab>$i18n{certificateManagerYourCertificates}</paper-tab>
       <paper-tab>$i18n{certificateManagerServers}</paper-tab>
       <paper-tab>$i18n{certificateManagerAuthorities}</paper-tab>

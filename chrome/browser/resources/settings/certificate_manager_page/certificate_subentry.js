@@ -12,7 +12,7 @@
  * component.
  * @typedef {{
  *   action: !settings.CertificateAction,
- *   subnode: !CertificateSubnode,
+ *   subnode: ?CertificateSubnode,
  *   certificateType: !settings.CertificateType
  * }}
  */
@@ -27,8 +27,7 @@ cr.define('settings', function() {
     DELETE: 0,
     EDIT: 1,
     EXPORT_PERSONAL: 2,
-    IMPORT_CA: 3,
-    IMPORT_PERSONAL: 4,
+    IMPORT: 3,
   };
 
   /**
@@ -81,7 +80,7 @@ Polymer({
   /**
    * Handles the case where a call to the browser resulted in a rejected
    * promise.
-   * @param {null|!CertificatesError|!CertificatesImportError} error
+   * @param {?CertificatesError} error
    * @private
    */
   onRejected_: function(error) {
@@ -141,32 +140,6 @@ Polymer({
     }
   },
 
-  /** @private */
-  onImportTap_: function() {
-    this.closePopupMenu_();
-    if (this.certificateType == settings.CertificateType.PERSONAL) {
-      // TODO(dpapad): Figure out when to pass true (ChromeOS?).
-      this.browserProxy_.importPersonalCertificate(false).then(
-          function(showPasswordPrompt) {
-            if (showPasswordPrompt) {
-              this.dispatchCertificateActionEvent_(
-                  settings.CertificateAction.IMPORT_PERSONAL);
-            }
-          }.bind(this),
-          this.onRejected_.bind(this));
-    } else if (this.certificateType == settings.CertificateType.CA) {
-      this.browserProxy_.importCaCertificate().then(
-          function(certificateName) {
-            this.dispatchCertificateActionEvent_(
-                settings.CertificateAction.IMPORT_CA);
-          }.bind(this),
-          this.onRejected_.bind(this));
-    } else if (this.certificateType == settings.CertificateType.SERVER) {
-      this.browserProxy_.importServerCertificate().catch(
-          this.onRejected_.bind(this));
-    }
-  },
-
   /**
    * @param {string} certificateType The type of this certificate.
    * @return {boolean} Whether the certificate can be edited.
@@ -174,15 +147,6 @@ Polymer({
    */
   canEdit_: function(certificateType) {
     return this.certificateType == settings.CertificateType.CA;
-  },
-
-  /**
-   * @param {string} certificateType The type of this certificate.
-   * @return {boolean} Whether a certificate can be imported.
-   * @private
-   */
-  canImport_: function(certificateType) {
-    return this.certificateType != settings.CertificateType.OTHER;
   },
 
   /** @private */

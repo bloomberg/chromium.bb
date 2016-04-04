@@ -20,7 +20,10 @@ cr.define('certificate_manager_page', function() {
       'exportPersonalCertificate',
       'exportPersonalCertificatePasswordSelected',
       'getCaCertificateTrust',
+      'importCaCertificate',
+      'importPersonalCertificate',
       'importPersonalCertificatePasswordSelected',
+      'importServerCertificate',
       'refreshCertificates',
       'viewCertificate',
     ]);
@@ -46,6 +49,18 @@ cr.define('certificate_manager_page', function() {
     getCaCertificateTrust: function(id) {
       this.methodCalled('getCaCertificateTrust', id);
       return Promise.resolve(this.caTrustInfo_);
+    },
+
+    /** @override */
+    importServerCertificate: function() {
+      this.methodCalled('importServerCertificate');
+      return Promise.resolve();
+    },
+
+    /** @override */
+    importCaCertificate: function() {
+      this.methodCalled('importCaCertificate');
+      return Promise.resolve('dummyName');
     },
 
     /** @override */
@@ -86,6 +101,12 @@ cr.define('certificate_manager_page', function() {
       this.resolverMap_.get(
           'exportPersonalCertificatePasswordSelected').resolve(password);
       return this.fulfillRequest_();
+    },
+
+    /** @override */
+    importPersonalCertificate: function() {
+      this.methodCalled('importPersonalCertificate');
+      return Promise.resolve(true);
     },
 
     /** @override */
@@ -554,7 +575,7 @@ cr.define('certificate_manager_page', function() {
   }
 
   function registerPageTests() {
-    /** @type {?SettingsCertificateManagerPage} */
+    /** @type {?SettingsCertificateManagerPageElement} */
     var page = null;
 
     /** @type {?TestCertificatesBrowserProxy} */
@@ -635,13 +656,13 @@ cr.define('certificate_manager_page', function() {
        *     simulate.
        */
       function dispatchCertificateActionEvent(action) {
-        var eventDetail = /** @type {!CertificateActionEventDetail} */ ({
+        page.fire(
+            settings.CertificateActionEvent,
+            /** @type {!CertificateActionEventDetail} */ ({
           action: action,
           subnode: createSampleCertificateSubnode(),
           certificateType: settings.CertificateType.PERSONAL
-        });
-        page.dispatchEvent(new CustomEvent(
-            settings.CertificateActionEvent, {detail: eventDetail}));
+        }));
       }
 
       /**
@@ -660,25 +681,95 @@ cr.define('certificate_manager_page', function() {
 
       test('OpensDialog_DeleteConfirmation', function() {
         testDialogOpensOnAction(
-              'settings-certificate-delete-confirmation-dialog',
-              settings.CertificateAction.DELETE);
+            'settings-certificate-delete-confirmation-dialog',
+            settings.CertificateAction.DELETE);
       });
 
       test('OpensDialog_PasswordEncryption', function() {
         testDialogOpensOnAction(
-              'settings-certificate-password-encryption-dialog',
-              settings.CertificateAction.EXPORT_PERSONAL);
+            'settings-certificate-password-encryption-dialog',
+            settings.CertificateAction.EXPORT_PERSONAL);
       });
 
       test('OpensDialog_PasswordDecryption', function() {
         testDialogOpensOnAction(
-              'settings-certificate-password-decryption-dialog',
-              settings.CertificateAction.IMPORT_PERSONAL);
+            'settings-certificate-password-decryption-dialog',
+            settings.CertificateAction.IMPORT);
       });
 
       test('OpensDialog_CaTrustEdit', function() {
         testDialogOpensOnAction(
-              'settings-ca-trust-edit-dialog', settings.CertificateAction.EDIT);
+            'settings-ca-trust-edit-dialog', settings.CertificateAction.EDIT);
+      });
+    });
+  }
+
+  function registerCertificateListTests() {
+    /** @type {?SettingsCertificateListElement} */
+    var element = null;
+
+    /** @type {?TestCertificatesBrowserProxy} */
+    var browserProxy = null;
+
+    suite('CertificateListTests', function() {
+      setup(function() {
+        browserProxy = new TestCertificatesBrowserProxy();
+        settings.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+        PolymerTest.clearBody();
+        element = document.createElement('settings-certificate-list');
+        document.body.appendChild(element);
+      });
+
+      teardown(function() { element.remove(); });
+
+      /**
+       * Tests the "Import" button functionality.
+       * @param {!settings.CertificateType} certificateType
+       * @param {string} proxyMethodName The name of the proxy method expected
+       *     to be called.
+       * @param {boolean} actionEventExpected Whether a
+       *     settings.CertificateActionEvent is expected to fire as a result
+       *     tapping the Import button.
+       */
+      function testImportForCertificateType(
+          certificateType, proxyMethodName, actionEventExpected) {
+        element.certificateType = certificateType
+        Polymer.dom.flush();
+
+        var importButton = element.$$('paper-button');
+        assertTrue(!!importButton);
+
+        var waitForActionEvent = actionEventExpected ?
+            eventToPromise(settings.CertificateActionEvent, element) :
+            Promise.resolve(null);
+
+        MockInteractions.tap(importButton);
+        return browserProxy.whenCalled(proxyMethodName).then(function() {
+          return waitForActionEvent;
+        }).then(function(event) {
+          if (actionEventExpected) {
+            assertEquals(
+                settings.CertificateAction.IMPORT, event.detail.action);
+            assertEquals(certificateType, event.detail.certificateType);
+          }
+        });
+      }
+
+      test('ImportButton_Personal', function() {
+        return testImportForCertificateType(
+            settings.CertificateType.PERSONAL,
+            'importPersonalCertificate', true);
+      });
+
+      test('ImportButton_Server', function() {
+        return testImportForCertificateType(
+            settings.CertificateType.SERVER, 'importServerCertificate',
+            false);
+      });
+
+      test('ImportButton_CA', function() {
+        return testImportForCertificateType(
+            settings.CertificateType.CA, 'importCaCertificate', true);
       });
     });
   }
@@ -691,6 +782,7 @@ cr.define('certificate_manager_page', function() {
       registerPasswordDecryptDialogTests();
       registerPageTests();
       registerCertificateSubentryTests();
+      registerCertificateListTests();
     },
   };
 });

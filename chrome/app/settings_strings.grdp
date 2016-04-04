@@ -225,11 +225,20 @@
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_YOUR_CERTIFICATES" desc="Label for the your certificates tab in certificate manager.">
       Your certificates
     </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_YOUR_CERTIFICATES_DESCRIPTION" desc="Label for your certificates subtitle tab in certificate manager.">
+      You have certificates from these organizations that identify you
+    </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_SERVERS" desc="Label for the servers tab in certificate manager.">
       Servers
     </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_SERVERS_DESCRIPTION" desc="Label for servers subtitle tab in certificate manager.">
+      You have certificates on file that identify these servers
+    </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES" desc="Label for the authorities tab in certificate manager.">
       Authorities
+    </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES_DESCRIPTION" desc="Label for authorities subtitle tab in certificate manager.">
+      You have certificates on file that identify these certificate authorities
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_VIEW" desc="Label for view button in certificate manager.">
       View
@@ -254,6 +263,9 @@
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS" desc="Label for the others tab in certificate manager.">
       Others
+    </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS_DESCRIPTION" desc="Label for others subtitle tab in certificate manager.">
+      You have certificates on file that do not fit in any of the other categories
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_USAGE_SSL_CLIENT" desc="The description of a certificate that is verified for use as an SSL client">
       SSL Client Certificate
